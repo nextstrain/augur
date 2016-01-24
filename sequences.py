@@ -90,30 +90,16 @@ class sequence_set(object):
     def filter(self, func):
         self.raw_seqs = {key:seq for key, seq in self.raw_seqs.iteritems() if func(seq)}
 
-    def clock_filter(self, root_seq=None, n_iqd=3, plot=False):
-        from Bio.Align import MultipleSeqAlignment
+    def clock_filter(self, root_seq=None, n_iqd=5):
         if root_seq is None:
             af = calc_af(self.aln, nuc_alpha)
-            root_seq = np.fromstring(nuc_alpha, 'S1')[af.argmax(axis=0)]
+            root_seq = np.fromstring(nuc_alpha[af.argmax(axis=0)])
 
-        date_vs_distance = {}
-        for seq in self.aln:
-            date_vs_distance[seq.id] = (seq.attributes['date'].toordinal(),
-                np.mean((np.array(seq)!=root_seq)&(np.array(seq)!='-')&(root_seq!='-')))
-        date_vs_distance_array=np.array(date_vs_distance.values())
-        from scipy.stats import linregress, scoreatpercentile
-        slope, intercept, rval, pval, stderr = linregress(date_vs_distance_array[:,0], date_vs_distance_array[:,1])
-        residuals = intercept + slope*date_vs_distance_array[:,0]
-        IQD = scoreatpercentile(residuals, 75) - scoreatpercentile(residuals,25)
-        if plot:
-            import matplotlib.pyplot as plt
-            plt.ion()
-            plt.scatter(date_vs_distance_array[:,0], date_vs_distance_array[:,1])
-
-        print("before clock filter:",len(self.aln))
-        self.aln = MultipleSeqAlignment([seq for seq in self.aln
-                        if abs(intercept+slope*date_vs_distance[seq.id][0] - date_vs_distance[seq.id][1])<n_iqd*IQD])
-        print("after clock filter:",len(self.aln))
+        date_vs_distance = []
+        for seq in self.raw_seqs:
+            date_vs_distance.append((seq.attributes['date'].toordinal(),
+                np.mean((np.array(seq)==root_seq)&(np.array(seq)!='-')&(root_seq!='-'))))
+        self.raw_seqs = {key:seq for key, seq in self.raw_seqs.iteritems() if func(seq)
 
     def subsample(self, category=None, priority=None, threshold=None):
         '''
@@ -234,7 +220,7 @@ class sequence_set(object):
         if hasattr(self, "translations"):
             for prot, aln in self.translations.iteritems():
                 self.af[prot] = calc_af(aln, aa_alpha)
-                self.entropy[prot] = -(self.af[prot]*np.log(self.af[prot]+TINY)).sum(axis=0)
+                self.entropy[prot] = -(af*np.log(af+TINY)).sum(axis=0)
 
     def translate(self, proteins=None):
         from Bio.SeqFeature import FeatureLocation
@@ -273,7 +259,7 @@ class sequence_set(object):
                 entropy_json[feat] = {'pos':range(0,n), 'codon':[x//3 for x in range(0,n)], 'val':S}
             else:
                 entropy_json[feat] = {'pos':[x for x in self.proteins[feat]][::3],
-                                      'codon':[(x-self.proteins[feat].start)//3 for x in self.proteins[feat]][::3], 'val':S}
+                                      'codon':[x//3 for x in self.proteins[feat]][::3], 'val':S}
         write_json(entropy_json, fname, indent=0)
 
 if __name__=="__main__":
@@ -281,11 +267,9 @@ if __name__=="__main__":
     myseqs.ungap()
     myseqs.parse({0:"subtype", 1:"country", 2:"date", 4:"name", 5:"id", 6:"patient", 7:"accession"})
     myseqs.parse_date(["%Y-%m-%d", "%Y"])
-    myseqs.filter(lambda x:x.attributes['subtype']=='B')
     myseqs.subsample(category = lambda x:x.attributes['date'].year)
     myseqs.codon_align(prune=True)
     myseqs.strip_non_reference()
-    myseqs.clock_filter(n_iqd=3, plot=True)
     #myseqs.align()
     myseqs.diversity_statistics()
     myseqs.translate()
