@@ -3,15 +3,15 @@ parse, subsample, and align a sequence data set
 '''
 import os, re, time, csv, sys
 from io_util import myopen, make_dir, remove_dir, tree_to_json, write_json
+from seq_util import pad_nucleotide_sequences, nuc_alpha, aa_alpha
 from collections import defaultdict
 from Bio import SeqIO
 import numpy as np
-from seq_util import pad_nucleotide_sequences, nuc_alpha, aa_alpha
 
 TINY = 1e-10
 
 def fix_names(n):
-    return n.replace(" ","_").replace("(",'_').replace(")",'_')
+    return n.replace(" ","_").replace("(",'_').replace(")",'_').replace(',','_').replace(':','_').replace('.','_').replace(';','_')
 
 def calc_af(aln, alpha):
     aln_array = np.array(aln)
@@ -32,7 +32,6 @@ class sequence_set(object):
                 for x in self.raw_seqs.values():
                     x.id = fix_names(x.id)
                     x.name = fix_names(x.id)
-                    x.description = fix_names(x.description)
         if 'run_dir' not in kwarks:
             import random
             self.run_dir = '_'.join(['temp', time.strftime('%Y%m%d-%H%M%S',time.gmtime()), str(random.randint(0,1000000))])
@@ -40,8 +39,8 @@ class sequence_set(object):
             self.run_dir = kwarks['run_dir']
 
         if reference is not None:
-            if type(reference) is str and reference in self.raw_seqs:
-                self.reference = self.raw_seqs[reference]
+            if type(reference) is str and fix_names(reference) in self.raw_seqs:
+                self.reference = self.raw_seqs[fix_names(reference)]
             else:
                 self.reference = reference
         else: self.reference=None
@@ -56,7 +55,7 @@ class sequence_set(object):
             for ii, val in enumerate(words):
                 if ii in fields and val not in ["", "-"]:
                     seq.attributes[fields[ii]] = val
-                seq.id = seq.description.strip(" ")
+                seq.description = seq.description.strip(" ")
 
     def ungap(self):
         '''
@@ -145,6 +144,7 @@ class sequence_set(object):
 
         self.aln = AlignIO.read('temp_out.fasta', 'fasta')
         self.sequence_lookup = {seq.id:seq for seq in self.aln}
+        self.reference_aligned = self.sequence_lookup[self.reference.id]
         # add attributes to alignment
         for seqid, seq in self.seqs.iteritems():
             self.sequence_lookup[seqid].attributes = seq.attributes
