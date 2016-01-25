@@ -3,15 +3,15 @@ parse, subsample, and align a sequence data set
 '''
 import os, re, time, csv, sys
 from io_util import myopen, make_dir, remove_dir, tree_to_json, write_json
-from seq_util import pad_nucleotide_sequences, nuc_alpha, aa_alpha
 from collections import defaultdict
 from Bio import SeqIO
 import numpy as np
+from seq_util import pad_nucleotide_sequences, nuc_alpha, aa_alpha
 
 TINY = 1e-10
 
 def fix_names(n):
-    return n.replace(" ","_").replace("(",'_').replace(")",'_').replace(',','_').replace(':','_').replace('.','_').replace(';','_')
+    return n.replace(" ","_").replace("(",'_').replace(")",'_')
 
 def calc_af(aln, alpha):
     aln_array = np.array(aln)
@@ -32,6 +32,7 @@ class sequence_set(object):
                 for x in self.raw_seqs.values():
                     x.id = fix_names(x.id)
                     x.name = fix_names(x.id)
+                    x.description = fix_names(x.description)
         if 'run_dir' not in kwarks:
             import random
             self.run_dir = '_'.join(['temp', time.strftime('%Y%m%d-%H%M%S',time.gmtime()), str(random.randint(0,1000000))])
@@ -39,8 +40,8 @@ class sequence_set(object):
             self.run_dir = kwarks['run_dir']
 
         if reference is not None:
-            if type(reference) is str and fix_names(reference) in self.raw_seqs:
-                self.reference = self.raw_seqs[fix_names(reference)]
+            if type(reference) is str and reference in self.raw_seqs:
+                self.reference = self.raw_seqs[reference]
             else:
                 self.reference = reference
         else: self.reference=None
@@ -55,7 +56,7 @@ class sequence_set(object):
             for ii, val in enumerate(words):
                 if ii in fields and val not in ["", "-"]:
                     seq.attributes[fields[ii]] = val
-                seq.description = seq.description.strip(" ")
+                seq.id = seq.description.strip(" ")
 
     def ungap(self):
         '''
@@ -89,16 +90,30 @@ class sequence_set(object):
     def filter(self, func):
         self.raw_seqs = {key:seq for key, seq in self.raw_seqs.iteritems() if func(seq)}
 
-    def clock_filter(self, root_seq=None, n_iqd=5):
+    def clock_filter(self, root_seq=None, n_iqd=3, plot=False):
+        from Bio.Align import MultipleSeqAlignment
         if root_seq is None:
             af = calc_af(self.aln, nuc_alpha)
-            root_seq = np.fromstring(nuc_alpha[af.argmax(axis=0)])
+            root_seq = np.fromstring(nuc_alpha, 'S1')[af.argmax(axis=0)]
 
-        date_vs_distance = []
-        for seq in self.raw_seqs:
-            date_vs_distance.append((seq.attributes['date'].toordinal(),
-                np.mean((np.array(seq)==root_seq)&(np.array(seq)!='-')&(root_seq!='-'))))
-        self.raw_seqs = {key:seq for key, seq in self.raw_seqs.iteritems() if func(seq)
+        date_vs_distance = {}
+        for seq in self.aln:
+            date_vs_distance[seq.id] = (seq.attributes['date'].toordinal(),
+                np.mean((np.array(seq)!=root_seq)&(np.array(seq)!='-')&(root_seq!='-')))
+        date_vs_distance_array=np.array(date_vs_distance.values())
+        from scipy.stats import linregress, scoreatpercentile
+        slope, intercept, rval, pval, stderr = linregress(date_vs_distance_array[:,0], date_vs_distance_array[:,1])
+        residuals = intercept + slope*date_vs_distance_array[:,0]
+        IQD = scoreatpercentile(residuals, 75) - scoreatpercentile(residuals,25)
+        if plot:
+            import matplotlib.pyplot as plt
+            plt.ion()
+            plt.scatter(date_vs_distance_array[:,0], date_vs_distance_array[:,1])
+
+        print("before clock filter:",len(self.aln))
+        self.aln = MultipleSeqAlignment([seq for seq in self.aln
+                        if abs(intercept+slope*date_vs_distance[seq.id][0] - date_vs_distance[seq.id][1])<n_iqd*IQD])
+        print("after clock filter:",len(self.aln))
 
     def subsample(self, category=None, priority=None, threshold=None):
         '''
@@ -144,7 +159,6 @@ class sequence_set(object):
 
         self.aln = AlignIO.read('temp_out.fasta', 'fasta')
         self.sequence_lookup = {seq.id:seq for seq in self.aln}
-        self.reference_aligned = self.sequence_lookup[self.reference.id]
         # add attributes to alignment
         for seqid, seq in self.seqs.iteritems():
             self.sequence_lookup[seqid].attributes = seq.attributes
@@ -220,7 +234,7 @@ class sequence_set(object):
         if hasattr(self, "translations"):
             for prot, aln in self.translations.iteritems():
                 self.af[prot] = calc_af(aln, aa_alpha)
-                self.entropy[prot] = -(af*np.log(af+TINY)).sum(axis=0)
+                self.entropy[prot] = -(self.af[prot]*np.log(self.af[prot]+TINY)).sum(axis=0)
 
     def translate(self, proteins=None):
         from Bio.SeqFeature import FeatureLocation
@@ -259,7 +273,7 @@ class sequence_set(object):
                 entropy_json[feat] = {'pos':range(0,n), 'codon':[x//3 for x in range(0,n)], 'val':S}
             else:
                 entropy_json[feat] = {'pos':[x for x in self.proteins[feat]][::3],
-                                      'codon':[x//3 for x in self.proteins[feat]][::3], 'val':S}
+                                      'codon':[(x-self.proteins[feat].start)//3 for x in self.proteins[feat]][::3], 'val':S}
         write_json(entropy_json, fname, indent=0)
 
 if __name__=="__main__":
@@ -267,9 +281,11 @@ if __name__=="__main__":
     myseqs.ungap()
     myseqs.parse({0:"subtype", 1:"country", 2:"date", 4:"name", 5:"id", 6:"patient", 7:"accession"})
     myseqs.parse_date(["%Y-%m-%d", "%Y"])
+    myseqs.filter(lambda x:x.attributes['subtype']=='B')
     myseqs.subsample(category = lambda x:x.attributes['date'].year)
     myseqs.codon_align(prune=True)
     myseqs.strip_non_reference()
+    myseqs.clock_filter(n_iqd=3, plot=True)
     #myseqs.align()
     myseqs.diversity_statistics()
     myseqs.translate()

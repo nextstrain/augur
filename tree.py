@@ -56,7 +56,6 @@ class tree(object):
     def timetree(self):
         self.tt.init_date_constraints(self.gtr)
         self.tt.coalescent_model(self.gtr, Tc=0.05)
-        self.timetree=True
 
     def refine(self):
         from treetime.treetime.utils import opt_branch_len
@@ -76,11 +75,10 @@ class tree(object):
             clade += 1
             if node.up is not None: #try:
                 node.xvalue = node.up.xvalue+node.opt_branch_length
-                if self.timetree:
-                    node.tvalue = node.numdate - self.tree.root.numdate
+                node.tvalue = node.numdate - self.tree.root.numdate
             else:
                 node.xvalue = 0
-                if self.timetree: node.tvalue = 0
+                node.tvalue = 0
             if node.is_terminal():
                 node.yvalue = yvalue
                 yvalue += 1
