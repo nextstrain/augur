@@ -60,10 +60,18 @@ class tree(object):
         self.tt.optimize_seq_and_branch_len(self.gtr)
 
 
-    def timetree(self):
+    def timetree(self, Tc=0.05):
         self.tt.init_date_constraints(self.gtr)
-        self.tt.coalescent_model(self.gtr, Tc=0.05)
+        self.tt.coalescent_model(self.gtr, Tc=Tc)
         self.is_timetree=True
+
+    def add_translations(self):
+        from Bio import Seq
+        for node in self.tree.find_clades():
+            if not hasattr(node, "translations"):
+                node.translations={}
+            for prot in self.proteins:
+                node.translations[prot] = Seq.translate(str(self.proteins[prot].extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
 
     def refine(self):
         from treetime.treetime.utils import opt_branch_len
@@ -72,7 +80,11 @@ class tree(object):
             node.opt_branch_length = opt_branch_len(node)
             if node.up is not None:
                 node.muts = ",".join(["".join(map(str, x)) for x in node.mutations])
-
+                node.aa_muts = {}
+                for prot in node.translations:
+                    node.aa_muts[prot] = ",".join([anc+str(pos+1)+der for pos, (anc, der)
+                                            in enumerate(zip(node.up.translations[prot], node.translations[prot]))
+                                            if anc!=der])
 
     def layout(self):
         """Add clade, xvalue, yvalue, mutation and trunk attributes to all nodes in tree"""
@@ -98,12 +110,12 @@ class tree(object):
             node.yvalue = np.mean([x.yvalue for x in node.clades])
 
 
-    def export(self):
+    def export(self, path = '', extra_attr = ['aa_muts']):
         from Bio import Seq
         from itertools import izip
-        timetree_fname = 'tree.json'
-        sequence_fname = 'sequences.json'
-        tree_json = tree_to_json(self.tree.root)
+        timetree_fname = path+'tree.json'
+        sequence_fname = path+'sequences.json'
+        tree_json = tree_to_json(self.tree.root, extra_attr=extra_attr)
         write_json(tree_json, timetree_fname, indent=None)
         elems = {}
         elems['root'] = {}
@@ -118,13 +130,11 @@ class tree(object):
                 elems[node.clade] = {}
                 elems[node.clade]['nuc'] = {pos:state for pos, (state, ancstate) in
                                 enumerate(izip(node.sequence, self.tree.root.sequence)) if state!=ancstate}
-        for prot in self.proteins:
-            for node in self.tree.find_clades():
-                if hasattr(node, "clade") and hasattr(node, "sequence"):
-                    tmp = Seq.translate(str(self.proteins[prot].extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
-
+        for node in self.tree.find_clades():
+            if hasattr(node, "clade") and hasattr(node, "translations"):
+                for prot in self.proteins:
                     elems[node.clade][prot] = {pos:state for pos, (state, ancstate) in
-                                    enumerate(izip(tmp, elems['root'][prot])) if state!=ancstate}
+                                    enumerate(izip(node.translations[prot], elems['root'][prot])) if state!=ancstate}
 
         write_json(elems, sequence_fname, indent=None)
 
