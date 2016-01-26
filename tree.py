@@ -9,6 +9,7 @@ class tree(object):
     def __init__(self, aln, proteins=None, **kwarks):
         super(tree, self).__init__()
         self.aln = aln
+        self.sequence_lookup = {seq.id:seq for seq in aln}
         self.nuc = kwarks['nuc'] if 'nuc' in kwarks else True
         if proteins!=None:
             self.proteins = proteins
@@ -21,7 +22,7 @@ class tree(object):
             self.run_dir = kwarks['run_dir']
 
 
-    def build(self):
+    def build(self, root='midpoint'):
         from Bio import Phylo, AlignIO
         from treetime.treetime import io
         from treetime.treetime import utils
@@ -38,16 +39,22 @@ class tree(object):
         os.system(" ".join(tree_cmd))
         self.tt = io.treetime_from_newick('initial_tree.nwk')
         self.tree = self.tt.tree
+        if root=='midpoint': self.tt.tree.root_at_midpoint()
         io.set_seqs_to_leaves(self.tt, self.aln)
         io.set_node_dates_from_dic(self.tt, {seq.id:utils.numeric_date(seq.attributes['date'])
                                 for seq in self.aln if 'date' in seq.attributes})
+        for node in self.tree.get_terminals():
+            if node.name in self.sequence_lookup:
+                if 'date' in self.sequence_lookup[node.name].attributes:
+                    node.date = self.sequence_lookup[node.name].attributes['date'].strftime('%Y-%m-%d')
 
         os.chdir('..')
         remove_dir(self.run_dir)
+        self.is_timetree=False
+
 
     def ancestral(self):
         from treetime.treetime.gtr import GTR
-        self.tt.tree.root_at_midpoint()
         self.tt.set_additional_tree_params()
         self.gtr = GTR.standard()
         self.tt.optimize_seq_and_branch_len(self.gtr)
@@ -56,6 +63,7 @@ class tree(object):
     def timetree(self):
         self.tt.init_date_constraints(self.gtr)
         self.tt.coalescent_model(self.gtr, Tc=0.05)
+        self.is_timetree=True
 
     def refine(self):
         from treetime.treetime.utils import opt_branch_len
@@ -74,8 +82,12 @@ class tree(object):
             node.clade = clade
             clade += 1
             if node.up is not None: #try:
-                node.xvalue = node.up.xvalue+node.opt_branch_length
-                node.tvalue = node.numdate - self.tree.root.numdate
+                if self.is_timetree:
+                    node.xvalue = node.up.xvalue+node.opt_branch_length
+                    node.tvalue = node.numdate - self.tree.root.numdate
+                else:
+                    node.xvalue = node.up.xvalue+node.branch_length
+                    node.tvalue = 0
             else:
                 node.xvalue = 0
                 node.tvalue = 0

@@ -1,5 +1,5 @@
 nuc_alpha = 'ACGT-N'
-aa_alpha = 'ACDEFGHIKLMNPQRSTVWY*X'
+aa_alpha = 'ACDEFGHIKLMNPQRSTVWY*-X'
 
 def pad_nucleotide_sequences(aln_aa, seq_nuc):
     '''

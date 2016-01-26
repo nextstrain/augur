@@ -11,7 +11,7 @@ from seq_util import pad_nucleotide_sequences, nuc_alpha, aa_alpha
 TINY = 1e-10
 
 def fix_names(n):
-    return n.replace(" ","_").replace("(",'_').replace(")",'_')
+    return n.replace(" ","_").replace("(",'_').replace(")",'_').replace("'",'_').replace(":",'_')
 
 def calc_af(aln, alpha):
     aln_array = np.array(aln)
@@ -40,8 +40,8 @@ class sequence_set(object):
             self.run_dir = kwarks['run_dir']
 
         if reference is not None:
-            if type(reference) is str and reference in self.raw_seqs:
-                self.reference = self.raw_seqs[reference]
+            if type(reference) is str and fix_names(reference) in self.raw_seqs:
+                self.reference = self.raw_seqs[fix_names(reference)]
             else:
                 self.reference = reference
         else: self.reference=None
@@ -56,7 +56,6 @@ class sequence_set(object):
             for ii, val in enumerate(words):
                 if ii in fields and val not in ["", "-"]:
                     seq.attributes[fields[ii]] = val
-                seq.id = seq.description.strip(" ")
 
     def ungap(self):
         '''
@@ -159,6 +158,7 @@ class sequence_set(object):
 
         self.aln = AlignIO.read('temp_out.fasta', 'fasta')
         self.sequence_lookup = {seq.id:seq for seq in self.aln}
+        self.reference_aligned = self.sequence_lookup[self.reference.id]
         # add attributes to alignment
         for seqid, seq in self.seqs.iteritems():
             self.sequence_lookup[seqid].attributes = seq.attributes
@@ -229,12 +229,12 @@ class sequence_set(object):
             return
         aln_array = np.array(self.aln)
         self.af = {'nuc': calc_af(self.aln, nuc_alpha)}
-        self.entropy ={'nuc': -(self.af['nuc'][:-1]*np.log(self.af['nuc'][:-1]+TINY)).sum(axis=0)}
+        self.entropy ={'nuc': -(self.af['nuc'][:-2]*np.log(self.af['nuc'][:-2]+TINY)).sum(axis=0)}
 
         if hasattr(self, "translations"):
             for prot, aln in self.translations.iteritems():
                 self.af[prot] = calc_af(aln, aa_alpha)
-                self.entropy[prot] = -(self.af[prot]*np.log(self.af[prot]+TINY)).sum(axis=0)
+                self.entropy[prot] = -(self.af[prot][:-2]*np.log(self.af[prot][:-2]+TINY)).sum(axis=0)
 
     def translate(self, proteins=None):
         from Bio.SeqFeature import FeatureLocation
@@ -258,7 +258,9 @@ class sequence_set(object):
                     tmpseq.attributes = seq.attributes
                     tmpseq.seq = Seq(str(Seq(str(tmpseq.seq).replace('---', 'NNN')).translate()).replace('X','-'))
                 except:
-                    import ipdb; ipdb.set_trace()
+                    tmpseq.seq = Seq(str(Seq(str(tmpseq.seq).replace('-', 'N')).translate()).replace('X','-'))
+                    print("Trouble translating",seq.id)
+                    #import ipdb; ipdb.set_trace()
                 aa_seqs.append(tmpseq)
             self.translations[prot] = MultipleSeqAlignment(aa_seqs)
 
