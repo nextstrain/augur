@@ -106,10 +106,12 @@ class tree(object):
                                 for seq in self.aln if 'date' in seq.attributes})
         for node in self.tree.get_terminals():
             if node.name in self.sequence_lookup:
-                if 'date' in self.sequence_lookup[node.name].attributes:
-                    node.date = self.sequence_lookup[node.name].attributes['date'].strftime('%Y-%m-%d')
-
-
+                seq = self.sequence_lookup[node.name]
+                for attr in seq.attributes:
+                    if attr == 'date':
+                        node.date = seq.attributes['date'].strftime('%Y-%m-%d')
+                    else:
+                        node.__setattr__(attr, seq.attributes[attr])
 
         os.chdir('..')
         remove_dir(self.run_dir)

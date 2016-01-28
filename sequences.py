@@ -54,8 +54,11 @@ class sequence_set(object):
             if not hasattr(seq, "attributes"): seq.attributes = {}
             words = map(lambda x:x.strip(),seq.description.replace(">","").split(sep))
             for ii, val in enumerate(words):
-                if ii in fields and val not in ["", "-"]:
-                    seq.attributes[fields[ii]] = val
+                if ii in fields:
+                    if val not in ["", "-"]:
+                        seq.attributes[fields[ii]] = val
+                    else:
+                        seq.attributes[fields[ii]] = ""
 
     def ungap(self):
         '''
@@ -70,7 +73,7 @@ class sequence_set(object):
             return
         from datetime import datetime
         for seq in self.raw_seqs.values():
-            if 'date' in seq.attributes:
+            if 'date' in seq.attributes and seq.attributes['date']!='':
                 for fmt in fmts:
                     try:
                         if callable(fmt):
@@ -84,7 +87,7 @@ class sequence_set(object):
                         continue
 
         if prune:
-            self.raw_seqs = {k:v for k,v in self.raw_seqs.iteritems() if 'date' in v.attributes}
+            self.raw_seqs = {k:v for k,v in self.raw_seqs.iteritems() if 'date' in v.attributes and v.attributes['date']!=''}
 
     def filter(self, func):
         self.raw_seqs = {key:seq for key, seq in self.raw_seqs.iteritems() if func(seq)}
