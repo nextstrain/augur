@@ -4,6 +4,27 @@ from io_util import make_dir, remove_dir, tree_to_json, write_json
 from sequences import sequence_set
 import numpy as np
 
+def resolve_polytomies(tree):
+    for node in tree.get_nonterminals('preorder'):
+        node.confidence = None
+        if len(node.clades)>2:
+            n = len(node.clades)
+            children = list(node.clades)
+            node.clades = []
+            node.split(branch_length=1e-5)
+            if n>3:
+                node.clades[0].clades = children[:len(children)//2]
+                node.clades[1].clades = children[len(children)//2:]
+                for c in node.clades:
+                    c.name=''
+                    c.confidence = None
+            else:
+                node.clades[0] = children[0]
+                node.clades[1].clades = children[1:]
+                node.clades[1].confidence = None
+                node.clades[1].name = None
+
+
 class tree(object):
     """tree builds a phylgenetic tree from an alignment and exports it for web visualization"""
     def __init__(self, aln, proteins=None, **kwarks):
@@ -22,10 +43,11 @@ class tree(object):
             self.run_dir = kwarks['run_dir']
 
 
-    def build(self, root='midpoint'):
+    def build(self, root='midpoint', raxml=True, raxml_time_limit=0.5):
         from Bio import Phylo, AlignIO
         from treetime.treetime import io
         from treetime.treetime import utils
+        import subprocess, glob, shutil
         make_dir(self.run_dir)
         os.chdir(self.run_dir)
         for seq in self.aln: seq.name=seq.id
@@ -35,9 +57,48 @@ class tree(object):
         if self.nuc: tree_cmd.append("-nt")
         tree_cmd.append("temp.fasta")
         tree_cmd.append(">")
-        tree_cmd.append("initial_tree.nwk")
+        tree_cmd.append("initial_tree.newick")
         os.system(" ".join(tree_cmd))
-        self.tt = io.treetime_from_newick('initial_tree.nwk')
+
+        out_fname = "tree_infer.newick"
+        if raxml:
+            if raxml_time_limit>0:
+                tmp_tree = Phylo.read('initial_tree.newick','newick')
+                resolve_polytomies(tmp_tree)
+                Phylo.write(tmp_tree,'initial_tree.newick', 'newick')
+                AlignIO.write(self.aln,"temp.phyx", "phylip-relaxed")
+                print( "RAxML tree optimization with time limit", raxml_time_limit,  "hours")
+                # using exec to be able to kill process
+                end_time = time.time() + int(raxml_time_limit*3600)
+                process = subprocess.Popen("exec raxml -f d -T 6 -j -s temp.phyx -n topology -c 25 -m GTRCAT -p 344312987 -t initial_tree.newick", shell=True)
+                while (time.time() < end_time):
+                    if os.path.isfile('RAxML_result.topology'):
+                        break
+                    time.sleep(10)
+                process.terminate()
+
+                checkpoint_files = glob.glob("RAxML_checkpoint*")
+                if os.path.isfile('RAxML_result.topology'):
+                    checkpoint_files.append('RAxML_result.topology')
+                if len(checkpoint_files) > 0:
+                    last_tree_file = checkpoint_files[-1]
+                    shutil.copy(last_tree_file, 'raxml_tree.newick')
+                else:
+                    shutil.copy("initial_tree.newick", 'raxml_tree.newick')
+            else:
+                shutil.copy("initial_tree.newick", 'raxml_tree.newick')
+
+            try:
+                print("RAxML branch length optimization")
+                os.system("raxml -f e -T 6 -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick")
+                shutil.copy('RAxML_result.branches', out_fname)
+            except:
+                print("RAxML branch length optimization failed")
+                shutil.copy('raxml_tree.newick', out_fname)
+        else:
+            shutil.copy('initial_tree.newick', out_fname)
+
+        self.tt = io.treetime_from_newick(out_fname)
         self.tree = self.tt.tree
         if root=='midpoint': self.tt.tree.root_at_midpoint()
         io.set_seqs_to_leaves(self.tt, self.aln)
@@ -47,6 +108,8 @@ class tree(object):
             if node.name in self.sequence_lookup:
                 if 'date' in self.sequence_lookup[node.name].attributes:
                     node.date = self.sequence_lookup[node.name].attributes['date'].strftime('%Y-%m-%d')
+
+
 
         os.chdir('..')
         remove_dir(self.run_dir)
@@ -122,7 +185,8 @@ class tree(object):
         elems['root']['nuc'] = "".join(self.tree.root.sequence)
         for prot in self.proteins:
             tmp = str(self.proteins[prot].extract(Seq.Seq(elems['root']['nuc'])))
-            elems['root'][prot] = str(Seq.translate(tmp.replace('---', 'NNN'))).replace('X','-')
+            #elems['root'][prot] = str(Seq.translate(tmp.replace('---', 'NNN'))).replace('X','-')
+            elems['root'][prot] = str(Seq.translate(tmp.replace('-', 'N'))).replace('X','-')
 
 
         for node in self.tree.find_clades():
