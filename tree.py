@@ -64,7 +64,10 @@ class tree(object):
         if raxml:
             if raxml_time_limit>0:
                 tmp_tree = Phylo.read('initial_tree.newick','newick')
-                resolve_polytomies(tmp_tree)
+                resolve_iter = 0
+                while (not tmp_tree.is_bifurcating()) and (resolve_iter<10):
+                    resolve_iter+=1
+                    resolve_polytomies(tmp_tree)
                 Phylo.write(tmp_tree,'initial_tree.newick', 'newick')
                 AlignIO.write(self.aln,"temp.phyx", "phylip-relaxed")
                 print( "RAxML tree optimization with time limit", raxml_time_limit,  "hours")
