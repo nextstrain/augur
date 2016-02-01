@@ -228,7 +228,7 @@ class sequence_set(object):
 
     def diversity_statistics(self):
         if not hasattr(self, "aln"):
-            print("calculate alignment frist")
+            print("calculate alignment first")
             return
         aln_array = np.array(self.aln)
         self.af = {'nuc': calc_af(self.aln, nuc_alpha)}
