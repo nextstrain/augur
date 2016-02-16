@@ -65,6 +65,7 @@ class tree(object):
             if raxml_time_limit>0:
                 tmp_tree = Phylo.read('initial_tree.newick','newick')
                 resolve_iter = 0
+                resolve_polytomies(tmp_tree)
                 while (not tmp_tree.is_bifurcating()) and (resolve_iter<10):
                     resolve_iter+=1
                     resolve_polytomies(tmp_tree)

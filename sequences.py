@@ -110,7 +110,10 @@ class sequence_set(object):
         if plot:
             import matplotlib.pyplot as plt
             plt.ion()
-            plt.scatter(date_vs_distance_array[:,0], date_vs_distance_array[:,1])
+            plt.scatter(date_vs_distance_array[:,0], date_vs_distance_array[:,1], c='g')
+            bad_points = abs(intercept+slope*date_vs_distance_array[:,0] - date_vs_distance_array[:,1])>n_iqd*IQD
+            plt.scatter(date_vs_distance_array[bad_points,0], date_vs_distance_array[bad_points,1], c='r')
+
 
         print("before clock filter:",len(self.aln))
         self.aln = MultipleSeqAlignment([seq for seq in self.aln
