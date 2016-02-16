@@ -105,7 +105,7 @@ class sequence_set(object):
         date_vs_distance_array=np.array(date_vs_distance.values())
         from scipy.stats import linregress, scoreatpercentile
         slope, intercept, rval, pval, stderr = linregress(date_vs_distance_array[:,0], date_vs_distance_array[:,1])
-        residuals = intercept + slope*date_vs_distance_array[:,0]
+        residuals = (intercept + slope*date_vs_distance_array[:,0]) - date_vs_distance_array[:,1]
         IQD = scoreatpercentile(residuals, 75) - scoreatpercentile(residuals,25)
         if plot:
             import matplotlib.pyplot as plt
@@ -114,7 +114,7 @@ class sequence_set(object):
 
         print("before clock filter:",len(self.aln))
         self.aln = MultipleSeqAlignment([seq for seq in self.aln
-                        if abs(intercept+slope*date_vs_distance[seq.id][0] - date_vs_distance[seq.id][1])<n_iqd*IQD])
+                    if abs(intercept+slope*date_vs_distance[seq.id][0] - date_vs_distance[seq.id][1])<n_iqd*IQD])
         print("after clock filter:",len(self.aln))
 
     def subsample(self, category=None, priority=None, threshold=None):
@@ -148,13 +148,13 @@ class sequence_set(object):
             seqs.sort(key=lambda x:x._priority, reverse=True)
             self.seqs.update({seq.id:seq for seq in seqs[:threshold( (cat, seqs) )]})
 
+        if self.reference.id not in self.seqs:
+            self.seqs[self.reference.id] = self.reference
 
     def align(self):
         from Bio import AlignIO
         make_dir(self.run_dir)
         os.chdir(self.run_dir)
-        if self.reference.id not in self.seqs:
-            self.seqs[self.reference.id] = self.reference
 
         SeqIO.write(self.seqs.values(), "temp_in.fasta", "fasta")
         os.system("mafft --anysymbol temp_in.fasta > temp_out.fasta")
@@ -180,8 +180,7 @@ class sequence_set(object):
         make_dir(self.run_dir)
         os.chdir(self.run_dir)
 
-        if self.reference.id not in self.seqs:
-            self.seqs[self.reference.id] = self.reference
+        # translage
         aa_seqs = {}
         for seq in self.seqs.values():
             tempseq = seq.seq.translate()
@@ -209,6 +208,7 @@ class sequence_set(object):
             print 'Alignment tool not supported:'+alignment_tool
             return
 
+        #generate nucleotide alignment
         self.aln = pad_nucleotide_sequences(aln_aa, self.seqs)
         self.sequence_lookup = {seq.id:seq for seq in self.aln}
         self.reference_aligned = self.sequence_lookup[self.reference.id]
@@ -227,6 +227,7 @@ class sequence_set(object):
             seq.seq = Seq("".join(np.array(seq)[ungapped]))
 
     def diversity_statistics(self):
+        ''' calculate alignment entropy of nucleotide and optionally protein alignments '''
         if not hasattr(self, "aln"):
             print("calculate alignment first")
             return
@@ -243,11 +244,11 @@ class sequence_set(object):
         from Bio.SeqFeature import FeatureLocation
         from Bio.Seq import Seq
         from Bio.Align import MultipleSeqAlignment
-        if not hasattr(self, "proteins"):
+        if not hasattr(self, "proteins"): # generate dictionaries to hold annotation and translation
             self.translations={}
             self.proteins={}
 
-        if proteins is None:
+        if proteins is None: # add a default translation of the entire sequence unless otherwise specified
             self.proteins.update({'cds':FeatureLocation(start=0, end=self.aln.get_alignment_length(), strand=1)})
         else:
             self.proteins.update(proteins)
@@ -289,9 +290,9 @@ if __name__=="__main__":
     myseqs.filter(lambda x:x.attributes['subtype']=='B')
     myseqs.subsample(category = lambda x:x.attributes['date'].year)
     myseqs.codon_align(prune=True)
+    #myseqs.align()
     myseqs.strip_non_reference()
     myseqs.clock_filter(n_iqd=3, plot=True)
-    #myseqs.align()
     myseqs.diversity_statistics()
     myseqs.translate()
 
