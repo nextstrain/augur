@@ -55,28 +55,32 @@ class frequency_estimator(object):
     genetic drift, i.e., sampling variation.
     '''
 
-    def __init__(self, observations, pivots = None, stiffness = 20.0,
-                inertia = 0.0,  tol=1e-3, pc=1e-4, **kwargs):
-        self.tps = np.array([x[0] for x in observations])
-        self.obs = np.array([x[1]>0 for x in observations])
+    def __init__(self, tps, obs, pivots = None, stiffness = 20.0,
+                inertia = 0.0,  tol=1e-3, pc=1e-4, ws=100, **kwargs):
+        tmp_obs = np.array(sorted(zip(tps, obs), key=lambda x:x[0]))
+        self.tps = tmp_obs[:,0]
+        self.obs = np.array(tmp_obs[:,1], dtype=bool)
         self.stiffness = stiffness
         self.inertia = inertia
         self.interpolation_type = 'linear'
         self.tol = tol
         self.reg = 1e-6
         self.pc = pc
+        self.ws = ws
         self.verbose = 0
+        dt = self.tps.max()-self.tps.min()
 
         if pivots is None:
-            self.pivot_tps = get_pivots(self.tps[0], self.tps[-1])
+            self.pivot_tps = get_pivots(self.tps.min(), self.tps.max())
         elif np.isscalar(pivots):
-            self.pivot_tps = np.linspace(self.tps[0], self.tps[-1], pivots)
+            self.pivot_tps = np.linspace(self.tps.min()-0.01*dt, self.tps.max()+0.01*dt, pivots)
         else:
             self.pivot_tps = pivots
 
-    def initial_guess(self, ws=50):
+
+    def initial_guess(self):
         # generate a useful initital case from a running average of the counts
-        tmp_vals = running_average(self.obs, ws)
+        tmp_vals = running_average(self.obs, self.ws)
         tmp_interpolator = interp1d(self.tps, tmp_vals, bounds_error=False, fill_value = -1)
         pivot_freq = tmp_interpolator(self.pivot_tps)
         pivot_freq[self.pivot_tps<=tmp_interpolator.x[0]] = tmp_vals[0]
@@ -106,13 +110,13 @@ class frequency_estimator(object):
 
             stiffness_LH = self.stiffLH()
             LH = stiffness_LH + bernoulli_LH
-            return -LH/len(self.obs) \
+            return -LH \
                     + 100000*(np.sum((self.pivot_freq<0)*np.abs(self.pivot_freq)) \
                     + np.sum((self.pivot_freq>1)*np.abs(self.pivot_freq-1)))
 
         from scipy.optimize import minimize
         if initial_guess is None:
-            initial_freq = fix_freq(self.initial_guess(ws=2*(min(50,len(self.obs))//2)), 0.01)
+            initial_freq = fix_freq(self.initial_guess(), 0.01)
         else:
             initial_freq = initial_guess(self.pivot_tps)
 
@@ -121,11 +125,14 @@ class frequency_estimator(object):
         self.pivot_freq = self.frequency_estimate(self.pivot_tps)
 
         # determine the optimal pivot freqquencies
-        self.sol = minimize(logLH, self.pivot_freq, bounds  = [(0,1) for ii in range(len(self.pivot_freq))] )
+        self.sol = minimize(logLH, self.pivot_freq, bounds  = [(1e-5,1-1e-5) for ii in range(len(self.pivot_freq))] )
         if self.sol['success']:
             self.pivot_freq = self.sol['x']
+            self.covariance = self.sol['hess_inv'].todense()
+            self.conf95 = 1.96*np.sqrt(np.diag(self.covariance))
         else:
             print("Optimization failed, trying with fmin")
+            #import ipdb; ipdb.set_trace()
             from scipy.optimize import fmin_powell
             self.pivot_freq = fmin_powell(logLH, self.pivot_freq, ftol = self.tol, xtol = self.tol, disp = self.verbose>0)
         self.pivot_freq = fix_freq(self.pivot_freq, 0.0001)
@@ -135,6 +142,33 @@ class frequency_estimator(object):
 
         if self.verbose: print "neg logLH using",len(self.pivot_tps),"pivots:", self.logLH(self.pivot_freq)
 
+class nested_frequencies(object):
+    """docstring for nested_frequencies"""
+    def __init__(self, tps, obs, **kwargs):
+        super(nested_frequencies, self).__init__()
+        self.tps = tps
+        self.obs = obs
+        self.kwargs = kwargs
+
+    def calc_freqs(self):
+        sorted_obs = sorted(self.obs.items(), key=lambda x:x[1].sum(), reverse=True)
+
+        fe = frequency_estimator(self.tps, sorted_obs[0][1], **self.kwargs)
+        self.pivots = fe.pivot_tps
+        self.remaining_freq = np.ones_like(self.pivots)
+
+        self.frequencies = {}
+        valid_tps = np.ones_like(self.tps, dtype=bool)
+        for mut, obs in sorted_obs[:-1]:
+            print(mut,'...',)
+            fe = frequency_estimator(self.tps[valid_tps], obs[valid_tps], **self.kwargs)
+            fe.learn()
+            print('done')
+            self.frequencies[mut] = self.remaining_freq * fe.pivot_freq
+            self.remaining_freq *= (1.0-fe.pivot_freq)
+
+        self.frequencies[sorted_obs[-1][0]] = self.remaining_freq
+        return self.frequencies
 
 class tree_frequencies(object):
     def __init__(self, tree):
@@ -142,22 +176,72 @@ class tree_frequencies(object):
 
 class alignment_frequencies(object):
 
-    def __init__(self, aln):
-        self.aln = aln
+    def __init__(self, aln, tps, **kwargs):
+        self.aln = np.array(aln)
+        self.tps = np.array(tps)
+        self.kwargs = kwargs
 
-def test():
+    def estimate_genotype_frequency(self, gt):
+        match = []
+        for pos, state in gt:
+            match.append(aln[:,pos]==state)
+        obs = match.all(axis=0)
+
+        fe = frequency_estimator(zip(self.tps, obs), **kwargs)
+        fe.learn()
+        return fe.frequency_estimate
+
+
+    def mutation_frequencies(self, min_freq=0.01, ignore_gap=True):
+        alphabet = np.unique(self.aln)
+        af = np.zeros((len(alphabet), self.aln.shape[1]))
+        for ni, n in enumerate(alphabet):
+            af[ni] = (self.aln==n).mean(axis=0)
+
+
+        if ignore_gap:
+            minor_freqs = af[alphabet!='-'].sum(axis=0) - af.max(axis=0)
+        else:
+            minor_freqs = 1.0 - af.max(axis=0)
+        self.frequencies = {}
+        for pos in np.where(minor_freqs>min_freq)[0]:
+            nis = np.argsort(af[:,pos])[::-1]
+            nis = nis[af[nis,pos]>0]
+            muts = alphabet[nis]
+
+            obs = {}
+            for ni, mut in zip(nis, muts):
+                if af[ni,pos]>min_freq and af[ni,pos]<1-min_freq:
+                    obs[(pos, mut)] = self.aln[:,pos]==mut
+                else:
+                    break
+            if len(obs)!=len(nis):
+                tmp = ~np.any(obs.values(), axis=0)
+                if any(tmp):
+                    if len(obs)==len(nis)-1:
+                        obs[(pos, muts[-1])] = tmp
+                    else:
+                        obs[(pos, 'other')] = tmp
+            print("Estimating freuencies of position:", pos)
+            print("Variants found at frequency:", [(k,o.mean()) for k,o in obs.iteritems()])
+            ne = nested_frequencies(self.tps, obs, **self.kwargs)
+            self.frequencies.update(ne.calc_freqs())
+
+
+def test_simple_estimator():
     import matplotlib.pyplot as plt
-    tps = np.sort(100 * np.random.uniform(size=100))
+    tps = np.sort(100 * np.random.uniform(size=500))
     freq_traj = [0.1]
     stiffness=100
     s=-0.02
     for dt in np.diff(tps):
         freq_traj.append(freq_traj[-1]*np.exp(-s*dt)+np.sqrt(2*np.max(0,freq_traj[-1]*(1-freq_traj[-1]))*dt/stiffness)*np.random.normal())
-    obs = np.random.uniform(size=tps.shape)<freq_traj
+    obs = np.random.uniform(size=tps.shape)<np.array(freq_traj)
 
-    fe = frequency_estimator(zip(tps, obs), pivots=20, stiffness=stiffness)
+    fe = frequency_estimator(tps, obs, pivots=20, stiffness=stiffness, inertia=0.7)
     fe.learn()
     freq = fe.frequency_estimate(fe.tps)
+
     if plot:
         plt.figure()
         plt.plot(tps, freq_traj, 'o', label = 'actual frequency')
@@ -173,9 +257,36 @@ def test():
         plt.legend(loc=2)
     return fe
 
+def test_nested_estimator():
+    import matplotlib.pyplot as plt
+    tps = np.sort(100 * np.random.uniform(size=500))
+    freq_traj = [0.1]
+    stiffness=100
+    s=-0.02
+    for dt in np.diff(tps):
+        freq_traj.append(freq_traj[-1]*np.exp(-s*dt)+np.sqrt(2*np.max(0,freq_traj[-1]*(1-freq_traj[-1]))*dt/stiffness)*np.random.normal())
+    freq_traj = np.array(freq_traj)
+    tmp = np.random.uniform(size=tps.shape)
+    obs={}
+    obs['A'] = tmp<freq_traj*0.5
+    obs['B'] = (tmp>=freq_traj*0.5)&(tmp>=freq_traj*0.7)
+    obs['C'] = tmp>=freq_traj*0.7
+
+    fe = nested_frequencies(tps, obs, pivots=20, stiffness=stiffness, inertia=0.7)
+    nested_freq = fe.calc_freqs()
+
+    if plot:
+        plt.figure()
+        for k,o in obs.iteritems():
+            plt.plot(tps, o, 'o')
+            plt.plot(fe.pivots,fe.frequencies[k], 'o')
+
+    return nested_freq
+
+
 if __name__=="__main__":
     plot=True
-    fe = test()
+    fe = test_nested_estimator()
 
 
 

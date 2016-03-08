@@ -7,6 +7,7 @@ from collections import defaultdict
 from Bio import SeqIO
 import numpy as np
 from seq_util import pad_nucleotide_sequences, nuc_alpha, aa_alpha
+from datetime import datetime
 
 TINY = 1e-10
 
@@ -21,6 +22,9 @@ def calc_af(aln, alpha):
     af[-1] = 1.0 - af[:-1].sum(axis=0)
     return af
 
+def num_date(date):
+    days_in_year = date.toordinal()- datetime(year=date.year, month=1, day=1).date().toordinal()
+    return date.year + days_in_year/365.25
 
 class sequence_set(object):
     """sequence_set subsamples a set of sequences, aligns them and exports variability statistics"""
@@ -46,13 +50,13 @@ class sequence_set(object):
                 self.reference = reference
         else: self.reference=None
 
-    def parse(self, fields, sep='|'):
+    def parse(self, fields, sep='|', strip=' '):
         '''
         split the sequence description and add annotations to sequences
         '''
         for seq in self.raw_seqs.values():
             if not hasattr(seq, "attributes"): seq.attributes = {}
-            words = map(lambda x:x.strip(),seq.description.replace(">","").split(sep))
+            words = map(lambda x:x.strip(strip),seq.description.replace(">","").split(sep))
             for ii, val in enumerate(words):
                 if ii in fields:
                     if val not in ["", "-"]:
@@ -81,30 +85,35 @@ class sequence_set(object):
                         else:
                             tmp = datetime.strptime(seq.attributes['date'], fmt).date()
                         seq.attributes['raw_date'] = seq.attributes['date']
+                        seq.attributes['num_date'] = num_date(tmp)
                         seq.attributes['date']=tmp
                         break
                     except:
                         continue
 
         if prune:
-            self.raw_seqs = {k:v for k,v in self.raw_seqs.iteritems() if 'date' in v.attributes and v.attributes['date']!=''}
+            self.raw_seqs = {k:v for k,v in self.raw_seqs.iteritems()
+                            if 'date' in v.attributes and type(v.attributes['date'])!=str}
 
     def filter(self, func):
         self.raw_seqs = {key:seq for key, seq in self.raw_seqs.iteritems() if func(seq)}
 
     def clock_filter(self, root_seq=None, n_iqd=3, plot=False):
         from Bio.Align import MultipleSeqAlignment
-        if root_seq is None:
+        if root_seq is None: # use consensus
             af = calc_af(self.aln, nuc_alpha)
             root_seq = np.fromstring(nuc_alpha, 'S1')[af.argmax(axis=0)]
+        if type(root_seq)==str and root_seq in self.sequence_lookup:
+            root_seq = np.array(self.sequence_lookup[root_seq])
 
         date_vs_distance = {}
         for seq in self.aln:
             date_vs_distance[seq.id] = (seq.attributes['date'].toordinal(),
-                np.mean((np.array(seq)!=root_seq)&(np.array(seq)!='-')&(root_seq!='-')))
+                np.mean((np.array(seq)!=root_seq)[(np.array(seq)!='-')&(root_seq!='-')]))
         date_vs_distance_array=np.array(date_vs_distance.values())
         from scipy.stats import linregress, scoreatpercentile
         slope, intercept, rval, pval, stderr = linregress(date_vs_distance_array[:,0], date_vs_distance_array[:,1])
+        print("distance vs time regression:",slope)
         residuals = (intercept + slope*date_vs_distance_array[:,0]) - date_vs_distance_array[:,1]
         IQD = scoreatpercentile(residuals, 75) - scoreatpercentile(residuals,25)
         if plot:
