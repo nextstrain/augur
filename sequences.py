@@ -30,6 +30,7 @@ class sequence_set(object):
     """sequence_set subsamples a set of sequences, aligns them and exports variability statistics"""
     def __init__(self, fname, reference= None, **kwarks):
         super(sequence_set, self).__init__()
+        self.nthreads = 2
         if os.path.isfile(fname):
             with myopen(fname) as seq_file:
                 self.raw_seqs = {fix_names(x.id):x for x in SeqIO.parse(seq_file, 'fasta')}
@@ -98,18 +99,22 @@ class sequence_set(object):
     def filter(self, func):
         self.raw_seqs = {key:seq for key, seq in self.raw_seqs.iteritems() if func(seq)}
 
-    def clock_filter(self, root_seq=None, n_iqd=3, plot=False):
+    def clock_filter(self, root_seq=None, n_iqd=3, max_gaps = 1.0, plot=False):
         from Bio.Align import MultipleSeqAlignment
         if root_seq is None: # use consensus
             af = calc_af(self.aln, nuc_alpha)
             root_seq = np.fromstring(nuc_alpha, 'S1')[af.argmax(axis=0)]
         if type(root_seq)==str and root_seq in self.sequence_lookup:
             root_seq = np.array(self.sequence_lookup[root_seq])
-
+        if max_gaps<1.0:
+            af=calc_af(self.aln, nuc_alpha)
+            good_pos = af[nuc_alpha.index('-')]<max_gaps
+        else:
+            good_pos = np.ones(self.aln.get_alignment_length(), dtype=bool)
         date_vs_distance = {}
         for seq in self.aln:
-            date_vs_distance[seq.id] = (seq.attributes['date'].toordinal(),
-                np.mean((np.array(seq)!=root_seq)[(np.array(seq)!='-')&(root_seq!='-')]))
+            date_vs_distance[seq.id] = (seq.attributes['num_date'],
+                np.mean((np.array(seq)!=root_seq)[(np.array(seq)!='-')&(root_seq!='-')&good_pos]))
         date_vs_distance_array=np.array(date_vs_distance.values())
         from scipy.stats import linregress, scoreatpercentile
         slope, intercept, rval, pval, stderr = linregress(date_vs_distance_array[:,0], date_vs_distance_array[:,1])
@@ -169,7 +174,7 @@ class sequence_set(object):
         os.chdir(self.run_dir)
 
         SeqIO.write(self.seqs.values(), "temp_in.fasta", "fasta")
-        os.system("mafft --anysymbol temp_in.fasta > temp_out.fasta")
+        os.system("mafft --anysymbol --thread " + str(self.nthreads) + " temp_in.fasta > temp_out.fasta")
 
         self.aln = AlignIO.read('temp_out.fasta', 'fasta')
         self.sequence_lookup = {seq.id:seq for seq in self.aln}

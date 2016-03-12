@@ -78,16 +78,19 @@ class frequency_estimator(object):
             self.pivot_tps = pivots
 
 
-    def initial_guess(self):
+    def initial_guess(self, pc=0.01):
         # generate a useful initital case from a running average of the counts
-        tmp_vals = running_average(self.obs, self.ws)
+        if self.ws<len(self.obs):
+            tmp_vals = running_average(self.obs, self.ws)
+        else:
+            tmp_vals = running_average(self.obs, len(self.obs))
+
         tmp_interpolator = interp1d(self.tps, tmp_vals, bounds_error=False, fill_value = -1)
         pivot_freq = tmp_interpolator(self.pivot_tps)
         pivot_freq[self.pivot_tps<=tmp_interpolator.x[0]] = tmp_vals[0]
         pivot_freq[self.pivot_tps>=tmp_interpolator.x[-1]] = tmp_vals[-1]
-        pivot_freq =fix_freq(pivot_freq, 0.95)
+        pivot_freq =fix_freq(pivot_freq, pc)
         return pivot_freq
-
 
     def stiffLH(self):
         freq = self.pivot_freq
@@ -97,8 +100,6 @@ class frequency_estimator(object):
         # return wright fisher diffusion likelihood for frequency change.
         return -0.25*self.stiffness*(np.sum((dfreq[1:] - self.inertia*dfreq[:-1])**2/(dt[1:]*pq_freq[1:-1]))
                                     +dfreq[0]**2/(dt[0]*pq_freq[0]))
-
-
 
 
     def learn(self, initial_guess=None):
@@ -116,7 +117,7 @@ class frequency_estimator(object):
 
         from scipy.optimize import minimize
         if initial_guess is None:
-            initial_freq = fix_freq(self.initial_guess(), 0.01)
+            initial_freq = self.initial_guess(pc=0.01)
         else:
             initial_freq = initial_guess(self.pivot_tps)
 
@@ -166,13 +167,88 @@ class nested_frequencies(object):
             print('done')
             self.frequencies[mut] = self.remaining_freq * fe.pivot_freq
             self.remaining_freq *= (1.0-fe.pivot_freq)
+            valid_tps = valid_tps&(~obs)
 
         self.frequencies[sorted_obs[-1][0]] = self.remaining_freq
         return self.frequencies
 
 class tree_frequencies(object):
-    def __init__(self, tree):
+    '''
+    class that estimates frequencies for nodes in the tree. each internal node is assumed
+    to be named with an attribute clade, of root doesn't have such an attribute, clades
+    will be numbered in preorder. Each node is assumed to have an attribute "num_date"
+    '''
+    def __init__(self, tree, node_filter=None, min_clades = 20, **kwargs):
         self.tree = tree
+        self.min_clades = min_clades
+        self.kwargs = kwargs
+        if node_filter is None:
+            self.node_filter = lambda x:True
+        else:
+            self.node_filter = node_filter
+        self.prepare()
+
+    def prepare(self):
+        # name nodes if they aren't already named
+        if not hasattr(self.tree.root, 'clade'):
+            for ni,node in enumerate(self.tree.find_clades(order='preorder')):
+                node.clade = ni
+
+        # extract all observations
+        tps = []
+        leaf_count = 0
+        for node in self.tree.find_clades(order='postorder'):
+            if node.is_terminal():
+                if self.node_filter(node):
+                    tps.append(node.num_date)
+                    node.leafs = np.array([leaf_count])
+                    leaf_count+=1
+                else:
+                    node.leafs = np.array([])
+            else:
+                node.leafs = np.concatenate([c.leafs for c in node.clades])
+        self.tps = np.array(tps)
+
+    def estimate_clade_frequencies(self):
+        self.frequencies = {self.tree.root.clade:1.0}
+        for node in self.tree.get_nonterminals(order='preorder'):
+            print("Estimating frequencies of children of node ",node.clade)
+            node_tps = self.tps[node.leafs]
+            obs_to_estimate = {}
+            small_clades = []
+            if len(node.clades)==1:
+                self.frequencies[node.clades[0].clade] = self.frequencies[node.clade]
+                continue
+
+            for c in node.clades:
+                if len(c.leafs)>self.min_clades:
+                    obs_to_estimate[c.clade] = np.in1d(node.leafs, c.leafs)
+                else:
+                    small_clades.append(c)
+            if len(obs_to_estimate):
+                if len(small_clades):
+                    remainder = {}
+                    for c in small_clades:
+                        remainder[c.clade] = np.in1d(node.leafs, c.leafs)
+                    if len(small_clades)==1:
+                        obs_to_estimate.update(remainder)
+                    else:
+                        obs_to_estimate['other'] = np.any(remainder.values(), axis=0)
+
+                ne = nested_frequencies(node_tps, obs_to_estimate, **self.kwargs)
+                freq_est = ne.calc_freqs()
+                for clade, tmp_freq in freq_est.iteritems():
+                    if clade!="other":
+                        self.frequencies[clade] = self.frequencies[node.clade]*tmp_freq
+                if len(small_clades)>1:
+                    for clade in small_clades:
+                        frac = 1.0*len(clade.leafs)/len(node.leafs)
+                        self.frequencies[clade.clade] = frac*freq_est["other"]
+            else:
+                for clade in small_clades:
+                    frac = 1.0*len(clade.leafs)/len(node.leafs)
+                    self.frequencies[clade.clade] = frac*self.frequencies[node.clade]
+
 
 class alignment_frequencies(object):
 
@@ -259,17 +335,17 @@ def test_simple_estimator():
 
 def test_nested_estimator():
     import matplotlib.pyplot as plt
-    tps = np.sort(100 * np.random.uniform(size=500))
+    tps = np.sort(100 * np.random.uniform(size=2000))
     freq_traj = [0.1]
-    stiffness=100
-    s=-0.02
+    stiffness=1000
+    s=-0.03
     for dt in np.diff(tps):
         freq_traj.append(freq_traj[-1]*np.exp(-s*dt)+np.sqrt(2*np.max(0,freq_traj[-1]*(1-freq_traj[-1]))*dt/stiffness)*np.random.normal())
     freq_traj = np.array(freq_traj)
     tmp = np.random.uniform(size=tps.shape)
     obs={}
     obs['A'] = tmp<freq_traj*0.5
-    obs['B'] = (tmp>=freq_traj*0.5)&(tmp>=freq_traj*0.7)
+    obs['B'] = (tmp>=freq_traj*0.5)&(tmp<freq_traj*0.7)
     obs['C'] = tmp>=freq_traj*0.7
 
     fe = nested_frequencies(tps, obs, pivots=20, stiffness=stiffness, inertia=0.7)
@@ -287,6 +363,7 @@ def test_nested_estimator():
 if __name__=="__main__":
     plot=True
     fe = test_nested_estimator()
+    #fe = test_simple_estimator()
 
 
 

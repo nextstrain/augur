@@ -30,6 +30,7 @@ class tree(object):
     def __init__(self, aln, proteins=None, **kwarks):
         super(tree, self).__init__()
         self.aln = aln
+        self.nthreads = 2
         self.sequence_lookup = {seq.id:seq for seq in aln}
         self.nuc = kwarks['nuc'] if 'nuc' in kwarks else True
         if proteins!=None:
@@ -45,8 +46,8 @@ class tree(object):
 
     def build(self, root='midpoint', raxml=True, raxml_time_limit=0.5):
         from Bio import Phylo, AlignIO
-        from treetime.treetime import io
-        from treetime.treetime import utils
+        from treetime_repo.treetime import io
+        from treetime_repo.treetime import utils
         import subprocess, glob, shutil
         make_dir(self.run_dir)
         os.chdir(self.run_dir)
@@ -74,7 +75,7 @@ class tree(object):
                 print( "RAxML tree optimization with time limit", raxml_time_limit,  "hours")
                 # using exec to be able to kill process
                 end_time = time.time() + int(raxml_time_limit*3600)
-                process = subprocess.Popen("exec raxml -f d -T 6 -j -s temp.phyx -n topology -c 25 -m GTRCAT -p 344312987 -t initial_tree.newick", shell=True)
+                process = subprocess.Popen("exec raxml -f d -T " + str(self.nthreads) + " -j -s temp.phyx -n topology -c 25 -m GTRCAT -p 344312987 -t initial_tree.newick", shell=True)
                 while (time.time() < end_time):
                     if os.path.isfile('RAxML_result.topology'):
                         break
@@ -94,7 +95,7 @@ class tree(object):
 
             try:
                 print("RAxML branch length optimization")
-                os.system("raxml -f e -T 6 -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick")
+                os.system("raxml -f e -T " + str(self.nthreads) + " -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick")
                 shutil.copy('RAxML_result.branches', out_fname)
             except:
                 print("RAxML branch length optimization failed")
@@ -102,7 +103,9 @@ class tree(object):
         else:
             shutil.copy('initial_tree.newick', out_fname)
 
-        self.tt = io.treetime_from_newick(out_fname)
+        from treetime_repo.treetime.gtr import GTR
+        self.gtr = GTR.standard()
+        self.tt = io.treetime_from_newick(self.gtr, out_fname)
         self.tree = self.tt.tree
         if root=='midpoint': self.tt.tree.root_at_midpoint()
         io.set_seqs_to_leaves(self.tt, self.aln)
@@ -130,8 +133,8 @@ class tree(object):
 
 
     def timetree(self, Tc=0.05):
-        self.tt.init_date_constraints(self.gtr)
-        self.tt.coalescent_model(self.gtr, Tc=Tc)
+        self.tt.init_date_constraints()
+        self.tt.coalescent_model(Tc=Tc)
         self.is_timetree=True
 
     def add_translations(self):
@@ -143,15 +146,16 @@ class tree(object):
                 node.translations[prot] = Seq.translate(str(self.proteins[prot].extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
 
     def refine(self):
-        from treetime.treetime.utils import opt_branch_len
+        from treetime_repo.treetime.utils import opt_branch_len
         self.tree.ladderize()
         for node in self.tree.find_clades():
             node.opt_branch_length = opt_branch_len(node)
             if node.up is not None:
                 node.muts = ",".join(["".join(map(str, x)) for x in node.mutations])
                 node.aa_muts = {}
-                for prot in node.translations:
-                    node.aa_muts[prot] = ",".join([anc+str(pos+1)+der for pos, (anc, der)
+                if hasattr(node, 'translations'):
+                    for prot in node.translations:
+                        node.aa_muts[prot] = ",".join([anc+str(pos+1)+der for pos, (anc, der)
                                             in enumerate(zip(node.up.translations[prot], node.translations[prot]))
                                             if anc!=der])
 
