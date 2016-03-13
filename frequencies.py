@@ -362,8 +362,6 @@ class alignment_frequencies(object):
                         obs[(pos, 'other')] = tmp
             print("Estimating frequencies of position:", pos)
             print("Variants found at frequency:", [(k,o.mean()) for k,o in obs.iteritems()])
-            if pos==144:
-                import ipdb; ipdb.set_trace()
 
             ne = nested_frequencies(tps, obs, self.pivots, **self.kwargs)
             self.frequencies.update(ne.calc_freqs())

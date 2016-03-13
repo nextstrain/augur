@@ -297,7 +297,7 @@ class sequence_set(object):
             else:
                 entropy_json[feat] = {'pos':[x for x in self.proteins[feat]][::3],
                                       'codon':[(x-self.proteins[feat].start)//3 for x in self.proteins[feat]][::3], 'val':S}
-        write_json(entropy_json, fname, indent=0)
+        write_json(entropy_json, fname, indent=None)
 
 if __name__=="__main__":
     myseqs = sequence_set('data/gag.fasta.gz', reference='B|FR|1985|NL4_3_LAI_NY5_pNL43_NL43|244167|NL43|325|U26942')

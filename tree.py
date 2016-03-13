@@ -107,7 +107,16 @@ class tree(object):
         self.gtr = GTR.standard()
         self.tt = io.treetime_from_newick(self.gtr, out_fname)
         self.tree = self.tt.tree
-        if root=='midpoint': self.tt.tree.root_at_midpoint()
+        if root=='midpoint':
+            self.tt.tree.root_at_midpoint()
+        elif root=='oldest':
+            tmp = self.tt.tree.get_terminals()
+            tmp.sort(key=lambda x:self.sequence_lookup[x.name].attributes['num_date'])
+            self.tt.tree.root_with_outgroup(tmp[0])
+        else:
+            print('rerooting to ',root)
+            og = [x for x in tmp if x.name==root][0]
+            self.tt.tree.root_with_outgroup(og)
         io.set_seqs_to_leaves(self.tt, self.aln)
         io.set_node_dates_from_dic(self.tt, {seq.id:utils.numeric_date(seq.attributes['date'])
                                 for seq in self.aln if 'date' in seq.attributes})
@@ -126,10 +135,8 @@ class tree(object):
 
 
     def ancestral(self):
-        from treetime.treetime.gtr import GTR
         self.tt.set_additional_tree_params()
-        self.gtr = GTR.standard()
-        self.tt.optimize_seq_and_branch_len(self.gtr)
+        self.tt.optimize_seq_and_branch_len()
 
 
     def timetree(self, Tc=0.05):
