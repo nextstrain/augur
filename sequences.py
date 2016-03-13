@@ -100,6 +100,11 @@ class sequence_set(object):
         self.raw_seqs = {key:seq for key, seq in self.raw_seqs.iteritems() if func(seq)}
 
     def clock_filter(self, root_seq=None, n_iqd=3, max_gaps = 1.0, plot=False):
+        '''
+        remove sequences form the set that are that evolve much faster or slower
+        compared the majority. Regions with predominantly gaps can be removed since
+        this can skew the evolutionary rates.
+        '''
         from Bio.Align import MultipleSeqAlignment
         if root_seq is None: # use consensus
             af = calc_af(self.aln, nuc_alpha)
@@ -250,12 +255,14 @@ class sequence_set(object):
             return
         aln_array = np.array(self.aln)
         self.af = {'nuc': calc_af(self.aln, nuc_alpha)}
-        self.entropy ={'nuc': -(self.af['nuc'][:-2]*np.log(self.af['nuc'][:-2]+TINY)).sum(axis=0)}
+        tmp_af = self.af['nuc'][:-2]/self.af['nuc'][:-2].sum(axis=0)
+        self.entropy ={'nuc': -(tmp_af*np.log(tmp_af+TINY)).sum(axis=0)}
 
         if hasattr(self, "translations"):
             for prot, aln in self.translations.iteritems():
                 self.af[prot] = calc_af(aln, aa_alpha)
-                self.entropy[prot] = -(self.af[prot][:-2]*np.log(self.af[prot][:-2]+TINY)).sum(axis=0)
+                tmp_af = self.af[prot][:-2]/self.af[prot][:-2].sum(axis=0)
+                self.entropy[prot] = -(tmp_af*np.log(self.tmp_af+TINY)).sum(axis=0)
 
     def translate(self, proteins=None):
         from Bio.SeqFeature import FeatureLocation
