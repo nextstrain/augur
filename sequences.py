@@ -262,7 +262,7 @@ class sequence_set(object):
             for prot, aln in self.translations.iteritems():
                 self.af[prot] = calc_af(aln, aa_alpha)
                 tmp_af = self.af[prot][:-2]/self.af[prot][:-2].sum(axis=0)
-                self.entropy[prot] = -(tmp_af*np.log(self.tmp_af+TINY)).sum(axis=0)
+                self.entropy[prot] = -(tmp_af*np.log(tmp_af+TINY)).sum(axis=0)
 
     def translate(self, proteins=None):
         from Bio.SeqFeature import FeatureLocation
