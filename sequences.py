@@ -139,7 +139,7 @@ class sequence_set(object):
                     if abs(intercept+slope*date_vs_distance[seq.id][0] - date_vs_distance[seq.id][1])<n_iqd*IQD])
         print("after clock filter:",len(self.aln))
 
-    def subsample(self, category=None, priority=None, threshold=None):
+    def subsample(self, category=None, priority=None, threshold=None, repeated=False):
         '''
         produce a useful set of sequences from the raw input.
         arguments:
@@ -152,7 +152,7 @@ class sequence_set(object):
         if category is None:
             category = lambda x:(x.attributes['date'].year, x.attributes['date'].month)
         if priority is None:
-            priority = lambda x:0.0
+            priority = lambda x:np.random.random()
         if threshold is None:
             threshold = lambda x:5
         elif type(threshold) is int:
@@ -161,7 +161,11 @@ class sequence_set(object):
             threshold = lambda x:tmp
 
         self.sequence_categories = defaultdict(list)
-        for seq in self.raw_seqs.values():
+        if repeated:
+            seqs_to_subsample = self.seqs.values()
+        else:
+            seqs_to_subsample = self.raw_seqs.values()
+        for seq in seqs_to_subsample:
             seq._priority = priority(seq)
             self.sequence_categories[category(seq)].append(seq)
 
