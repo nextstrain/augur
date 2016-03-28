@@ -33,7 +33,7 @@ class sequence_set(object):
         self.nthreads = 2
         if os.path.isfile(fname):
             with myopen(fname) as seq_file:
-                self.raw_seqs = {fix_names(x.id):x for x in SeqIO.parse(seq_file, 'fasta')}
+                self.raw_seqs = {fix_names(x.description):x for x in SeqIO.parse(seq_file, 'fasta')}
                 for x in self.raw_seqs.values():
                     x.id = fix_names(x.id)
                     x.name = fix_names(x.id)
@@ -51,7 +51,7 @@ class sequence_set(object):
                 self.reference = reference
         else: self.reference=None
 
-    def parse(self, fields, sep='|', strip=' '):
+    def parse(self, fields, sep='|', strip='_'):
         '''
         split the sequence description and add annotations to sequences
         '''

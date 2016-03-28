@@ -46,8 +46,6 @@ class tree(object):
 
     def build(self, root='midpoint', raxml=True, raxml_time_limit=0.5):
         from Bio import Phylo, AlignIO
-        from treetime_repo.treetime import io
-        from treetime_repo.treetime import utils
         import subprocess, glob, shutil
         make_dir(self.run_dir)
         os.chdir(self.run_dir)
@@ -102,10 +100,17 @@ class tree(object):
                 shutil.copy('raxml_tree.newick', out_fname)
         else:
             shutil.copy('initial_tree.newick', out_fname)
+        self.tt_from_file(out_fname, root)
+        os.chdir('..')
+        remove_dir(self.run_dir)
+        self.is_timetree=False
 
+
+    def tt_from_file(self, infile, root='midpoint'):
         from treetime_repo.treetime.gtr import GTR
+        from treetime_repo.treetime import io, utils
         self.gtr = GTR.standard()
-        self.tt = io.treetime_from_newick(self.gtr, out_fname)
+        self.tt = io.treetime_from_newick(self.gtr, infile)
         self.tree = self.tt.tree
         if root=='midpoint':
             self.tt.tree.root_at_midpoint()
@@ -128,10 +133,6 @@ class tree(object):
                         node.date = seq.attributes['date'].strftime('%Y-%m-%d')
                     else:
                         node.__setattr__(attr, seq.attributes[attr])
-
-        os.chdir('..')
-        remove_dir(self.run_dir)
-        self.is_timetree=False
 
 
     def ancestral(self):
