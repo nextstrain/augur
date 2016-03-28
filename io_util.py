@@ -1,3 +1,5 @@
+from __future__ import division, print_function
+
 def myopen(fname, mode='r'):
     if fname[-2:] == 'gz':
         from gzip import open as gopen
@@ -11,7 +13,7 @@ def make_dir(dname):
         try:
             os.makedirs(dname)
         except OSError as e:
-            print "Cannot create run_dir",e
+            print("Cannot create run_dir",e)
 
 def remove_dir(dname):
     import os, shutil
@@ -44,7 +46,7 @@ def tree_to_json(node, extra_attr = []):
             try:
                 tree_json[prop] = round(node.__getattribute__(prop),5)
             except:
-                print "cannot round:", node.__getattribute__(prop), "assigned as is"
+                print("cannot round:", node.__getattribute__(prop), "assigned as is")
                 tree_json[prop] = node.__getattribute__(prop)
 
     for prop in extra_attr:

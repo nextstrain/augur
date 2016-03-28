@@ -1,6 +1,7 @@
 '''
 parse, subsample, and align a sequence data set
 '''
+from __future__ import division, print_function
 import os, re, time, csv, sys
 from io_util import myopen, make_dir, remove_dir, tree_to_json, write_json
 from collections import defaultdict
@@ -143,8 +144,9 @@ class sequence_set(object):
         '''
         produce a useful set of sequences from the raw input.
         arguments:
-        category  -- callable that assigns each seqeunce to a category for subsampling
-        priority  -- callable that assigns each sequence a priority to be included in the final sample
+        category  -- callable that assigns each sequence to a category for subsampling
+        priority  -- callable that assigns each sequence a priority to be included in
+                     the final sample. this is applied independently in each category
         threshold -- callable that determines the number of sequences from each category
                      that is included in the final set. takes arguments, cat and seq
                      alternatively can be an int
@@ -165,6 +167,7 @@ class sequence_set(object):
             seqs_to_subsample = self.seqs.values()
         else:
             seqs_to_subsample = self.raw_seqs.values()
+
         for seq in seqs_to_subsample:
             seq._priority = priority(seq)
             self.sequence_categories[category(seq)].append(seq)
@@ -231,7 +234,7 @@ class sequence_set(object):
             stdout, stderr = mafft_cline()
             aln_aa = AlignIO.read(StringIO(stdout), "fasta")
         else:
-            print 'Alignment tool not supported:'+alignment_tool
+            print('Alignment tool not supported:',alignment_tool)
             return
 
         #generate nucleotide alignment

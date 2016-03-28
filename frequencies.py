@@ -1,4 +1,5 @@
 # estimates clade frequencies
+from __future__ import division, print_function
 from scipy.interpolate import interp1d
 import time
 import numpy as np
@@ -140,7 +141,7 @@ class frequency_estimator(object):
         # instantiate an interpolation object based on the optimal frequency pivots
         self.frequency_estimate = interp1d(self.pivots, self.pivot_freq, kind=self.interpolation_type, bounds_error=False)
 
-        if self.verbose: print "neg logLH using",len(self.pivots),"pivots:", self.logLH(self.pivot_freq)
+        if self.verbose: print ("neg logLH using",len(self.pivots),"pivots:", self.logLH(self.pivot_freq))
 
 class freq_est_clipped(object):
     """docstring for freq_est_clipped"""

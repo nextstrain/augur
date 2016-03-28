@@ -1,3 +1,4 @@
+from __future__ import division, print_function
 import os, time, sys
 sys.path.append('/home/richard/Projects')
 from io_util import make_dir, remove_dir, tree_to_json, write_json
