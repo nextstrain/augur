@@ -110,8 +110,8 @@ class tree(object):
     def tt_from_file(self, infile, root='midpoint'):
         from treetime_repo.treetime.gtr import GTR
         from treetime_repo.treetime import io, utils
-        self.gtr = GTR.standard()
-        self.tt = io.treetime_from_newick(self.gtr, infile)
+        gtr = GTR.standard()
+        self.tt = io.treetime_from_newick(gtr, infile)
         self.tree = self.tt.tree
         if root=='midpoint':
             self.tt.tree.root_at_midpoint()
@@ -138,11 +138,13 @@ class tree(object):
 
     def ancestral(self):
         self.tt.set_additional_tree_params()
+        self.tt.infer_gtr()
         self.tt.optimize_seq_and_branch_len()
 
-
     def timetree(self, Tc=0.05):
+        self.tt.infer_gtr()
         self.tt.init_date_constraints()
+        self.reroot_to_best_root()
         self.tt.coalescent_model(Tc=Tc)
         self.is_timetree=True
 
