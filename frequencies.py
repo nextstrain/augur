@@ -13,6 +13,7 @@ def running_average(obs, ws):
     obs     --  observations
     ws      --  window size (number of points to average)
     '''
+    ws=int(ws)
     try:
         tmp_vals = np.convolve(np.ones(ws, dtype=float)/ws, obs, mode='same')
         # fix the edges. using mode='same' assumes zeros outside the range
