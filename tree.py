@@ -107,25 +107,23 @@ class tree(object):
         self.is_timetree=False
 
 
-    def tt_from_file(self, infile, root='midpoint'):
-        from treetime_repo.treetime.gtr import GTR
-        from treetime_repo.treetime import io, utils
+    def tt_from_file(self, infile, root='none'):
+        from treetime.treetime.gtr import GTR
+        from treetime.treetime import io, utils
         gtr = GTR.standard()
         self.tt = io.treetime_from_newick(gtr, infile)
+        io.set_seqs_to_leaves(self.tt, self.aln)
+        io.set_node_dates_from_dic(self.tt, {seq.id:utils.numeric_date(seq.attributes['date'])
+                                for seq in self.aln if 'date' in seq.attributes})
         self.tree = self.tt.tree
         if root=='midpoint':
             self.tt.tree.root_at_midpoint()
+            self.set_additional_tree_params()
         elif root=='oldest':
             tmp = self.tt.tree.get_terminals()
             tmp.sort(key=lambda x:self.sequence_lookup[x.name].attributes['num_date'])
             self.tt.tree.root_with_outgroup(tmp[0])
-        else:
-            print('rerooting to ',root)
-            og = [x for x in tmp if x.name==root][0]
-            self.tt.tree.root_with_outgroup(og)
-        io.set_seqs_to_leaves(self.tt, self.aln)
-        io.set_node_dates_from_dic(self.tt, {seq.id:utils.numeric_date(seq.attributes['date'])
-                                for seq in self.aln if 'date' in seq.attributes})
+
         for node in self.tree.get_terminals():
             if node.name in self.sequence_lookup:
                 seq = self.sequence_lookup[node.name]
@@ -137,15 +135,14 @@ class tree(object):
 
 
     def ancestral(self):
-        self.tt.set_additional_tree_params()
-        self.tt.infer_gtr()
-        self.tt.optimize_seq_and_branch_len()
+        self.tt.optimize_seq_and_branch_len(infer_gtr=True)
 
-    def timetree(self, Tc=0.05):
-        self.tt.infer_gtr()
-        self.tt.init_date_constraints()
-        self.reroot_to_best_root()
-        self.tt.coalescent_model(Tc=Tc)
+    def timetree(self, Tc=0.05, infer_gtr=False,**kwarks):
+        print('rerooting...')
+        self.tt.reroot_to_best_root(infer_gtr=True)
+        print('estimating time tree with coalescent model...')
+        self.tt.coalescent_model(Tc=Tc,**kwarks)
+
         self.is_timetree=True
 
     def add_translations(self):
@@ -157,7 +154,7 @@ class tree(object):
                 node.translations[prot] = Seq.translate(str(self.proteins[prot].extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
 
     def refine(self):
-        from treetime_repo.treetime.utils import opt_branch_len
+        from treetime.treetime.utils import opt_branch_len
         self.tree.ladderize()
         for node in self.tree.find_clades():
             node.opt_branch_length = opt_branch_len(node)
