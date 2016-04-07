@@ -118,7 +118,7 @@ class tree(object):
         self.tree = self.tt.tree
         if root=='midpoint':
             self.tt.tree.root_at_midpoint()
-            self.set_additional_tree_params()
+            self.tt.set_additional_tree_params()
         elif root=='oldest':
             tmp = self.tt.reroot_to_oldest()
 
