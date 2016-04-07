@@ -120,9 +120,7 @@ class tree(object):
             self.tt.tree.root_at_midpoint()
             self.set_additional_tree_params()
         elif root=='oldest':
-            tmp = self.tt.tree.get_terminals()
-            tmp.sort(key=lambda x:self.sequence_lookup[x.name].attributes['num_date'])
-            self.tt.tree.root_with_outgroup(tmp[0])
+            tmp = self.tt.reroot_to_oldest()
 
         for node in self.tree.get_terminals():
             if node.name in self.sequence_lookup:
