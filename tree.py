@@ -143,6 +143,41 @@ class tree(object):
 
         self.is_timetree=True
 
+    def geo_inference(self, attr):
+        from treetime.gtr import GTR
+        places = set()
+        for node in self.tree.find_clades():
+            if hasattr(node, attr):
+                places.add(node.__getattribute__(attr))
+            if hasattr(node, 'sequence'):
+                node.nuc_sequence = node.sequence
+        places = sorted(places)
+        alphabet = {chr(65+i):place for i,place in enumerate(places)}
+        alphabet_rev = {v:k for k,v in alphabet.iteritems()}
+        self.tt.sequence_gtr = self.tt.gtr
+        nc = len(places)
+        myGeoGTR = GTR.custom(pi = np.ones(nc, dtype=float)/nc, W=np.ones((nc,nc)),
+                              alphabet = np.array(sorted(alphabet.keys())))
+        myGeoGTR.profile_map['-'] = np.ones(nc)
+        for node in self.tree.get_terminals():
+            if hasattr(node, attr):
+                node.sequence=np.array([alphabet_rev[node.__getattribute__(attr)]])
+            else:
+                node.sequence=np.array(['-'])
+        for node in self.tree.get_nonterminals():
+            node.__delattr__('sequence')
+        self.tt._gtr = myGeoGTR
+        self.tt.reconstruct_anc(method='ml')
+        self.tt.infer_gtr(print_raw=True)
+        self.tt.reconstruct_anc(method='ml')
+
+        self.tt.geogtr = self.tt.gtr
+        self.tt._gtr = self.tt.sequence_gtr
+        for node in self.tree.find_clades():
+            node.__setattr__(attr, alphabet[node.sequence[0]])
+            node.sequence = node.nuc_sequence
+
+
     def add_translations(self):
         from Bio import Seq
         for node in self.tree.find_clades():
