@@ -1,20 +1,14 @@
 from __future__ import division, print_function
 import os, time, gzip
 from collections import defaultdict
-from nextstrain.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
-from nextstrain.sequences import sequence_set, num_date
-from nextstrain.tree import tree
-from nextstrain.frequencies import alignment_frequencies, tree_frequencies
+from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
+from base.sequences import sequence_set, num_date
+from base.tree import tree
+from base.frequencies import alignment_frequencies, tree_frequencies
 from Bio import SeqIO
 from Bio.SeqFeature import FeatureLocation
 import numpy as np
 from datetime import datetime
-
-def fix_name(name):
-    tmp_name = name.replace('_', '').replace(' ', '').replace('\'','')\
-                   .replace('(','').replace(')','').replace('H3N2','')\
-                   .replace('Human','').replace('human','').replace('//','/')
-    return tmp_name.strip().strip('_')
 
 class zika_process(object):
     """process zika virus sequences in mutliple steps to allow visualization in browser
@@ -25,7 +19,7 @@ class zika_process(object):
         * export as json
     """
 
-    def __init__(self, fname = 'data/zika_full.fasta',
+    def __init__(self, fname = 'data/zika.fasta',
                  out_specs={'data_dir':'data/', 'prefix':'zika_', 'qualifier':''},
                  **kwargs):
         super(zika_process, self).__init__()
@@ -35,7 +29,7 @@ class zika_process(object):
         if 'outgroup' in kwargs:
             outgroup_file = kwargs['outgroup']
         else:
-            outgroup_file = 'source_data/'+out_specs['prefix']+'outgroup2.gb'
+            outgroup_file = 'zika/meta_data/'+out_specs['prefix']+'outgroup.gb'
         outliers = ['KU744693.1', 'KU866423.1', 'KU820897.1', 'KU940228','?']
         tmp_outgroup = SeqIO.read(outgroup_file, 'genbank')
         self.outgroup = tmp_outgroup.id.split('.')[0]
@@ -83,7 +77,12 @@ class zika_process(object):
     def fix_strain_names(self):
         new_raw_seqs = {}
         for desc, seq in self.seqs.raw_seqs.iteritems():
-            new_name = fix_name(seq.attributes['strain'])
+            new_name = seq.attributes['strain']
+            try:
+                tmp = float(new_name)
+                new_name = 'x'+new_name
+            except:
+                pass
             seq.attributes['strain']=new_name
             seq.name=str(new_name)
             seq.id=str(new_name)
@@ -177,4 +176,4 @@ if __name__=="__main__":
         zika.tree.geo_inference('region')
         zika.tree.geo_inference('country')
         zika.dump()
-        zika.export(prefix='web/data/zika_')
+        zika.export(prefix='json/zika_')

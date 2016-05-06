@@ -1,6 +1,5 @@
 from __future__ import division, print_function
-import os, time, sys
-sys.path.append('/home/richard/Projects')
+import os, time
 from io_util import make_dir, remove_dir, tree_to_json, write_json
 from sequences import sequence_set
 import numpy as np
@@ -108,8 +107,8 @@ class tree(object):
 
 
     def tt_from_file(self, infile, root='none'):
-        from treetime.gtr import GTR
-        from treetime import io, utils
+        from treetime.treetime.gtr import GTR
+        from treetime.treetime import io, utils
         gtr = GTR.standard()
         self.tt = io.treetime_from_newick(gtr, infile)
         io.set_seqs_to_leaves(self.tt, self.aln)
@@ -144,7 +143,7 @@ class tree(object):
         self.is_timetree=True
 
     def geo_inference(self, attr):
-        from treetime.gtr import GTR
+        from treetime.treetime.gtr import GTR
         places = set()
         for node in self.tree.find_clades():
             if hasattr(node, attr):
@@ -187,7 +186,7 @@ class tree(object):
                 node.translations[prot] = Seq.translate(str(self.proteins[prot].extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
 
     def refine(self):
-        from treetime.utils import opt_branch_len
+        from treetime.treetime.utils import opt_branch_len
         self.tree.ladderize()
         for node in self.tree.find_clades():
             node.opt_branch_length = opt_branch_len(node)
