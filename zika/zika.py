@@ -121,6 +121,7 @@ class zika_process(object):
                                                  x.attributes['date'].month),
                             threshold=params.viruses_per_month)
 
+
     def align(self):
         self.seqs.align()
         self.seqs.strip_non_reference()
@@ -129,13 +130,14 @@ class zika_process(object):
             seq.seq = '-'*99 + seq.seq[99:]
         self.seqs.translate(proteins=self.proteins)
 
+
     def build_tree(self, infile=None):
         self.tree = tree(aln=self.seqs.aln, proteins = self.proteins)
         if infile is None:
             self.tree.build()
         else:
             self.tree.tt_from_file(infile)
-        self.tree.timetree(Tc=0.005, infer_gtr=True)
+        self.tree.timetree(Tc=0.5, infer_gtr=True, n_iqd=3)
         for node in self.tree.tt.tree.get_terminals():
             if hasattr(node, "bad_branch") and node.bad_branch:
                 node.numdate = min(2016.15, node.numdate)
@@ -144,7 +146,7 @@ class zika_process(object):
         self.tree.layout()
 
 
-    def export(self, prefix='web/data/'):
+    def export(self, prefix='json/'):
         def process_freqs(freq):
             return [round(x,4) for x in freq]
         for n in self.tree.tree.find_clades():
