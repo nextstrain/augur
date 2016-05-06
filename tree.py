@@ -135,9 +135,9 @@ class tree(object):
     def ancestral(self):
         self.tt.optimize_seq_and_branch_len(infer_gtr=True)
 
-    def timetree(self, Tc=0.05, infer_gtr=False,**kwarks):
+    def timetree(self, Tc=0.05, infer_gtr=False, **kwarks):
         print('rerooting...')
-        self.tt.reroot_to_best_root(infer_gtr=True)
+        self.tt.reroot_to_best_root(infer_gtr=True, **kwarks)
         print('estimating time tree with coalescent model...')
         self.tt.coalescent_model(Tc=Tc,**kwarks)
 
