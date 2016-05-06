@@ -293,7 +293,7 @@ class sequence_set(object):
                     tmpseq.attributes = seq.attributes
                     tmpseq.seq = Seq(str(Seq(str(tmpseq.seq).replace('---', 'NNN')).translate()).replace('X','-'))
                 except:
-                    tmpseq.seq = Seq(str(Seq(str(tmpseq.seq).replace('-', 'N')).translate()).replace('X','-'))
+                    tmpseq.seq = Seq(str(Seq("".join([x if x in 'ACGT' else 'N' for x in str(tmpseq.seq)])).translate()).replace('X','-'))
                     print("Trouble translating",seq.id)
                     #import ipdb; ipdb.set_trace()
                 aa_seqs.append(tmpseq)
