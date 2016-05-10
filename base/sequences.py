@@ -29,10 +29,11 @@ def num_date(date):
 
 class sequence_set(object):
     """sequence_set subsamples a set of sequences, aligns them and exports variability statistics"""
-    def __init__(self, fname, reference= None, **kwarks):
+    def __init__(self, fname=None, reference= None, **kwarks):
         super(sequence_set, self).__init__()
+        self.kwarks = kwarks
         self.nthreads = 2
-        if os.path.isfile(fname):
+        if fname is not None and os.path.isfile(fname):
             with myopen(fname) as seq_file:
                 self.raw_seqs = {fix_names(x.description):x for x in SeqIO.parse(seq_file, 'fasta')}
                 for x in self.raw_seqs.values():
@@ -65,6 +66,16 @@ class sequence_set(object):
                         seq.attributes[fields[ii]] = val
                     else:
                         seq.attributes[fields[ii]] = ""
+
+    def from_vdb(self, virus):
+        from nextstraindb.vdb.src.vdb_download import vdb_download
+        myvdb = vdb_download(virus=virus)
+        myvdb.vdb_download(output=False)
+        for v in myvdb.viruses:
+            attr = {v[k] for k in v if k!='sequence'}
+            seq = SeqRecord(Seq(v['sequence']), id=attr['strain'], name=attr['strain'], description=attr['strain'])
+            seq.attributes = attr
+            self.raw_seqs[attr['strain']] = seq
 
     def ungap(self):
         '''
@@ -174,6 +185,8 @@ class sequence_set(object):
 
         self.seqs = {}
         for cat, seqs in self.sequence_categories.iteritems():
+            under_sampling = min(1.00, 1.0*len(seqs)/threshold)
+            for s in seqs: s.under_sampling=under_sampling
             seqs.sort(key=lambda x:x._priority, reverse=True)
             self.seqs.update({seq.id:seq for seq in seqs[:threshold( (cat, seqs) )]})
 

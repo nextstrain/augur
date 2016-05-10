@@ -71,7 +71,6 @@ class flu_process(object):
         self.seqs.raw_seqs['A/Beijing/32/1992'].attributes['date']='1992-01-01'
         self.seqs.reference = self.seqs.raw_seqs[self.outgroup]
         self.seqs.parse_date(["%Y-%m-%d"], prune=True)
-        self.geo_parse()
         self.filenames()
 
 
@@ -85,17 +84,6 @@ class flu_process(object):
         self.file_dumps['tree'] = data_path+'tree.newick'
         self.file_dumps['frequencies'] = data_path+'frequencies.pkl.gz'
         self.file_dumps['tree_frequencies'] = data_path+'tree_frequencies.pkl.gz'
-
-
-    def fix_strain_names(self):
-        new_raw_seqs = {}
-        for desc, seq in self.seqs.raw_seqs.iteritems():
-            new_name = fix_name(seq.attributes['strain'])
-            seq.attributes['strain']=new_name
-            seq.name=str(new_name)
-            seq.id=str(new_name)
-            new_raw_seqs[new_name]=seq
-        self.seqs.raw_seqs = new_raw_seqs
 
 
     def dump(self):
@@ -123,45 +111,6 @@ class flu_process(object):
         fname = self.file_dumps['tree']
         if os.path.isfile(fname):
             self.build_tree(fname)
-
-
-    def geo_parse(self):
-        import csv,re
-        reader = csv.DictReader(open("source_data/geo_synonyms.tsv"), delimiter='\t')       # list of dicts
-        label_to_country = {}
-        for line in reader:
-            label_to_country[line['label'].lower()] = line['country']
-        for strain, v in self.seqs.raw_seqs.iteritems():
-            if "country" not in v.attributes:
-                v.attributes['country'] = 'Unknown'
-                try:
-                    fixed_strain = strain.replace('_',' ')
-                    label = re.match(r'^[AB]/([^/]+)/', fixed_strain).group(1).lower()                       # check first for whole geo match
-                    if label in label_to_country:
-                        v.attributes['country'] = label_to_country[label]
-                    else:
-                        label = re.match(r'^[AB]/([^\-^\/]+)[\-\/]', fixed_strain).group(1).lower()          # check for partial geo match
-                    if label in label_to_country:
-                        v.attributes['country'] = label_to_country[label]
-                    else:
-                        label = re.match(r'^[AB]/([A-Z][a-z]+)[A-Z0-9]', fixed_strain).group(1).lower()          # check for partial geo match
-                    if label in label_to_country:
-                        v.attributes['country'] = label_to_country[label]
-                    if v.attributes['country'] == 'Unknown':
-                        print("couldn't parse location for", fixed_strain)
-                except:
-                    print("couldn't parse location for", fixed_strain, label)
-
-        reader = csv.DictReader(open("source_data/geo_regions.tsv"), delimiter='\t')        # list of dicts
-        country_to_region = {}
-        for line in reader:
-            country_to_region[line['country']] = line['region']
-        for strain, v in self.seqs.raw_seqs.iteritems():
-            v.attributes['region'] = 'Unknown'
-            if v.attributes['country'] in country_to_region:
-                v.attributes['region'] = country_to_region[v.attributes['country']]
-            if v.attributes['country'] != 'Unknown' and v.attributes['region'] == 'Unknown':
-                print("couldn't parse region for", strain, "country:", v.attributes["country"])
 
 
     def subsample(self):
