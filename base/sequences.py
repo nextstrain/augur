@@ -40,6 +40,9 @@ class sequence_set(object):
                     x.id = fix_names(x.id)
                     x.name = fix_names(x.id)
                     x.description = fix_names(x.description)
+        elif 'virus' in kwarks:
+            self.from_vdb(kwarks['virus'])
+
         if 'run_dir' not in kwarks:
             import random
             self.run_dir = '_'.join(['temp', time.strftime('%Y%m%d-%H%M%S',time.gmtime()), str(random.randint(0,1000000))])
@@ -68,11 +71,14 @@ class sequence_set(object):
                         seq.attributes[fields[ii]] = ""
 
     def from_vdb(self, virus):
-        from nextstraindb.vdb.src.vdb_download import vdb_download
+        from vdb_download import vdb_download
+        from Bio.SeqRecord import SeqRecord
+        from Bio.Seq import Seq
         myvdb = vdb_download(virus=virus)
-        myvdb.vdb_download(output=False)
+        myvdb.download(output=False)
+        self.raw_seqs={}
         for v in myvdb.viruses:
-            attr = {v[k] for k in v if k!='sequence'}
+            attr = {k:v[k] for k in v if k!='sequence'}
             seq = SeqRecord(Seq(v['sequence']), id=attr['strain'], name=attr['strain'], description=attr['strain'])
             seq.attributes = attr
             self.raw_seqs[attr['strain']] = seq
@@ -185,7 +191,7 @@ class sequence_set(object):
 
         self.seqs = {}
         for cat, seqs in self.sequence_categories.iteritems():
-            under_sampling = min(1.00, 1.0*len(seqs)/threshold)
+            under_sampling = min(1.00, 1.0*len(seqs)/threshold(cat))
             for s in seqs: s.under_sampling=under_sampling
             seqs.sort(key=lambda x:x._priority, reverse=True)
             self.seqs.update({seq.id:seq for seq in seqs[:threshold( (cat, seqs) )]})

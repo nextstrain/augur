@@ -1,5 +1,6 @@
 from __future__ import division, print_function
-import os, time, gzip
+import os, time, gzip, sys
+sys.path.append('../nextstrain-db/vdb/src')
 from collections import defaultdict
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences import sequence_set, num_date
@@ -33,6 +34,7 @@ class zika_process(object):
         outliers = ['KU744693.1', 'KU866423.1', 'KU820897.1', 'KU940228','?']
         tmp_outgroup = SeqIO.read(outgroup_file, 'genbank')
         self.outgroup = tmp_outgroup.id.split('.')[0]
+        print('Using outgroup', self.outgroup)
         genome_annotation = tmp_outgroup.features
         ref_seq = SeqIO.read(outgroup_file, 'genbank')
         self.proteins = {f.qualifiers['product'][0].split()[-1]:FeatureLocation(start=f.location.start, end=f.location.end, strand=1)
@@ -43,15 +45,18 @@ class zika_process(object):
         self.pivots = np.linspace(num_date(self.time_interval[0]),
                                   num_date(self.time_interval[1]),40)
 
-        self.seqs = sequence_set(self.fname, reference=self.outgroup)
+        self.seqs = sequence_set(fname, reference=self.outgroup, **kwargs)
+        if fname is not None:
+            self.seqs.parse({0:'strain', 2:'isolate_id', 4:'region', 5:'country', 3:'date'}, strip='_')
+            self.fix_strain_names()
         print('found',len(self.seqs.raw_seqs), 'sequences')
         self.seqs.ungap()
-        self.seqs.parse({0:'strain', 2:'isolate_id', 4:'region', 5:'country', 3:'date'}, strip='_')
-        self.fix_strain_names()
+        print(self.seqs.raw_seqs.keys())
         acc_to_strain = {s.attributes['isolate_id']:s.attributes['strain'] for s in self.seqs.raw_seqs.values()}
         strain_to_acc = {s.attributes['strain']:s.attributes['isolate_id'] for s in self.seqs.raw_seqs.values()}
         for seq in self.seqs.raw_seqs.values():
             seq.attributes['date'] = seq.attributes['date'].replace('XX', '01')
+        print(acc_to_strain[self.outgroup])
         self.seqs.raw_seqs[acc_to_strain[self.outgroup]].seq=tmp_outgroup.seq
         self.seqs.raw_seqs = {k:v for k,v in self.seqs.raw_seqs.iteritems() if k!=''}
         self.seqs.reference = self.seqs.raw_seqs[acc_to_strain[self.outgroup]]
@@ -167,7 +172,7 @@ if __name__=="__main__":
 
     params = parser.parse_args()
 
-    zika = zika_process(method='SLSQP', dtps=2.0, stiffness=20, inertia=0.9)
+    zika = zika_process(method='SLSQP', dtps=2.0, stiffness=20, inertia=0.9, virus='zika')
     if params.load:
         zika.load()
     else:
