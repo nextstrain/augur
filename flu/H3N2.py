@@ -1,10 +1,11 @@
 from __future__ import division, print_function
-import os, time, gzip
+import sys,os, time, gzip
+sys.path.append('../nextstrain-db/vdb/src')
 from collections import defaultdict
-from nextstrain.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
-from nextstrain.sequences import sequence_set, num_date
-from nextstrain.tree import tree
-from nextstrain.frequencies import alignment_frequencies, tree_frequencies
+from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
+from base.sequences import sequence_set, num_date
+from base.tree import tree
+from base.frequencies import alignment_frequencies, tree_frequencies
 from Bio import SeqIO
 from Bio.SeqFeature import FeatureLocation
 import numpy as np
@@ -39,7 +40,7 @@ class flu_process(object):
         * export as json
     """
 
-    def __init__(self, fname = 'data/H3N2_gisaid_epiflu_sequence.fasta',
+    def __init__(self, fname = 'data/H3N2.fasta',
                  out_specs={'data_dir':'data/', 'prefix':'H3N2_', 'qualifier':''},
                  **kwargs):
         super(flu_process, self).__init__()
@@ -65,7 +66,7 @@ class flu_process(object):
 
         self.seqs = sequence_set(self.fname, reference=self.outgroup)
         self.seqs.ungap()
-        self.seqs.parse({0:'strain', 1:'isolate_id', 3:'passage', 5:'date', 7:'lab', 8:"accession"}, strip='_')
+        self.seqs.parse({0:'strain', 2:'isolate_id', 4:'region', 5:'country', 3:'date'}, strip='_')
         self.fix_strain_names()
         self.seqs.raw_seqs[self.outgroup].seq=tmp_outgroup.seq
         self.seqs.raw_seqs['A/Beijing/32/1992'].attributes['date']='1992-01-01'
