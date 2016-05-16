@@ -156,10 +156,11 @@ class titers(object):
         else: # without the need for a test data set, use the entire data set for training
             self.train_titers = self.titers_normalized
 
-        # if data is to censored by date, subset the data set and reassign sera, reference strains, and test viruses
+        # if data is to censored by date, subset the data set and
+        # reassign sera, reference strains, and test viruses
         if self.date_range is not None:
             prev_years = 6 # number of years prior to cut-off to use when fitting date censored data
-            self.train_titers = {key:val for key,val in self.train_HI.iteritems()
+            self.train_titers = {key:val for key,val in self.train_titers.iteritems()
                                 if self.node_lookup[key[0]].num_date<=self.date_range[0] and
                                    self.node_lookup[key[1][0]].num_date<=self.date_range[0] and
                                    self.node_lookup[key[0]].num_date>self.date_range[1] and
@@ -168,7 +169,7 @@ class titers(object):
             ref_strains = set()
             test_strains = set()
 
-            for test,ref in self.train_HI:
+            for test,ref in self.train_titers:
                 if test.upper() in self.node_lookup and ref[0].upper() in self.node_lookup:
                     test_strains.add(test)
                     test_strains.add(ref[0])
@@ -300,7 +301,12 @@ class titers(object):
 
 
 class tree_model(titers):
-    """docstring for tree_model"""
+    """
+    tree_model extends titers and fits the antigenic differences
+    in terms of contributions on the branches of the phylogenetic tree.
+    nodes in the tree are decorated with attributes 'dTiter' that contain
+    the estimated titer drops across the branch
+    """
     def __init__(self, **kwargs):
         super(tree_model, self).__init__(**kwargs)
 
@@ -335,6 +341,8 @@ class tree_model(titers):
         '''
         walk through the tree, mark all branches that are to be included as model variables
          - no terminals
+         - criterium: callable that can be used to exclude branches e.g. if
+                      amino acid mutations map to this branch.
         '''
         if criterium is None:
             criterium = lambda x:True
@@ -384,7 +392,7 @@ class tree_model(titers):
         weights = []
         # mark HI splits have to have been run before, assigning self.titer_split_count
         n_params = self.titer_split_count + len(self.sera) + len(self.test_strains)
-        for (test, ref), val in self.train_HI.iteritems():
+        for (test, ref), val in self.train_titers.iteritems():
             if not np.isnan(val):
                 try:
                     if ref[0] in self.node_lookup and test in self.node_lookup:
@@ -439,6 +447,139 @@ class tree_model(titers):
                     + np.sum([b.dTiter for b in path if b.dTiter>cutoff])
         else:
             return None
+
+class substitution_model(titers):
+    """
+    substitution_model extends titers and implements a model that
+    seeks to describe titer differences by sums of contributions of
+    substitions separating the test and reference viruses
+    """
+    def __init__(self, proteins=None):
+        super(substitution_model, self).__init__()
+        if proteins is None:
+            self.proteins = self.tree.root.translation.keys()
+        else:
+            self.proteins = proteins
+
+    def prepare(self):
+        self.add_mutations()
+
+    def get_mutations(self, strain1, strain2):
+        ''' return amino acid mutations between viruses specified by strain names as tuples (HA1, F159S) '''
+        if strain1 in self.node_lookup and strain2 in self.node_lookup:
+            return self.get_mutations_nodes(self.node_lookup[strain1], self.node_lookup[strain2])
+        else:
+            return None
+
+    def get_mutations_nodes(self, node1, node2):
+        muts = []
+        for prot in self.proteins:
+            seq1 = node1.translation[prot]
+            seq2 = node2.translation[prot]
+            muts.extend([(prot, aa1+str(pos+1)+aa2) for pos, (aa1, aa2)
+                        in enumerate(izip(seq1, seq2)) if aa1!=aa2])
+        return muts
+
+    def determine_relevant_mutations(self, min_count=10):
+        # count how often each mutation separates a reference test virus pair
+        self.mutation_counter = defaultdict(int)
+        for (test, ref), val in self.train_titers.iteritems():
+            muts = self.get_mutations(ref[0], test)
+            if muts is None:
+                continue
+            for mut in muts:
+                self.mutation_counter[mut]+=1
+
+        # make a list of mutations deemed relevant via frequency thresholds
+        relevant_muts = []
+        for mut, count in self.mutation_counter.iteritems():
+            gene = mut[0]
+            pos = int(mut[1][1:-1])-1
+            aa1, aa2 = mut[1][0],mut[1][-1]
+            if count>min_count:
+                relevant_muts.append(mut)
+
+        relevant_muts.sort() # sort by gene
+        relevant_muts.sort(key = lambda x:int(x[1][1:-1])) # sort by position in gene
+        self.relevant_muts = relevant_muts
+        self.genetic_params = len(relevant_muts)
+
+
+    def make_seqgraph(self, colin_thres = 5):
+        '''
+        code amino acid differences between sequences into a matrix
+        the matrix has dimensions #measurements x #observed mutations
+        '''
+        seq_graph = []
+        titer_dist = []
+        weights = []
+
+        n_params = self.genetic_params + len(self.sera) + len(self.test_strains)
+        # loop over all measurements and encode the HI model as [0,1,0,1,0,0..] vector:
+        # 1-> mutation present, 0 not present, same for serum and virus effects
+        for (test, ref), val in self.train_titers.iteritems():
+            if not np.isnan(val):
+                try:
+                    muts = self.get_mutations(ref[0], test)
+                    if muts is None:
+                        continue
+                    tmp = np.zeros(n_params, dtype=int) # zero vector, ones will be filled in
+                    # determine branch indices on path
+                    mutation_indices = np.unique([self.relevant_muts.index(mut) for mut in muts
+                                                  if mut in self.relevant_muts])
+                    if len(mutation_indices): tmp[mutation_indices] = 1
+                    # add serum effect for heterologous viruses
+                    if test!=ref[0]:
+                        tmp[self.genetic_params+self.sera.index(ref)] = 1
+                    # add virus effect
+                    tmp[self.genetic_params+len(self.sera)+self.HI_strains.index(test)] = 1
+                    # append model and fit value to lists seq_graph and titer_dist
+                    seq_graph.append(tmp)
+                    titer_dist.append(val)
+                    # for each measurment (row in the big matrix), attach weight that accounts for representation of serum
+                    weights.append(1.0/(1.0 + self.serum_Kc*self.measurements_per_serum[ref]))
+                except:
+                    import pdb; pdb.set_trace()
+                    print(test, ref, "ERROR")
+
+        # convert to numpy arrays and save product of tree graph with its transpose for future use
+        self.weights = np.sqrt(weights)
+        self.titer_dist =  np.array(titer_dist)*self.weights
+        self.design_matrix = (np.array(seq_graph).T*self.weights).T
+        if colin_thres is not None:
+            self.collapse_colinear_mutations(colin_thres)
+        self.TgT = np.dot(self.design_matrix.T, self.design_matrix)
+        print ("Found", self.design_matrix.shape, "measurements x parameters")
+
+    def collapse_colinear_mutations(self, colin_thres):
+        '''
+        find colinear columns of the design matrix, collapse them into clusters
+        '''
+        TT = self.design_matrix[:,:self.genetic_params].T
+        mutation_clusters = []
+        n_measurements = self.design_matrix.shape[0]
+        # a greedy algorithm: if column is similar to existing cluster -> merge with cluster, else -> new cluster
+        for col, mut in izip(TT, self.relevant_muts):
+            col_found = False
+            for cluster in mutation_clusters:
+                # similarity is defined as number of measurements at whcih the cluster and column differ
+                if np.sum(col==cluster[0])>=n_measurements-colin_thres:
+                    cluster[1].append(mut)
+                    col_found=True
+                    print("adding",mut,"to cluster ",cluster[1])
+                    break
+            if not col_found:
+                mutation_clusters.append([col, [mut]])
+        print("dimensions of old design matrix",self.design_matrix.shape)
+        self.design_matrix = np.hstack((np.array([c[0] for c in mutation_clusters]).T,
+                                     self.design_matrix[:,self.genetic_params:]))
+        self.genetic_params = len(mutation_clusters)
+        # use the first mutation of a cluster to index the effect
+        # make a dictionary that maps this effect to the cluster
+        self.mutation_clusters = {c[1][0]:c[1] for c in mutation_clusters}
+        self.relevant_muts = [c[1][0] for c in mutation_clusters]
+        print("dimensions of new design matrix",self.design_matrix.shape)
+
 
 
 if __name__=="__main__":
