@@ -28,7 +28,6 @@ class titers(object):
         self.read_titers(titer_fname)
 
 
-
     def prepare_tree(self, tree):
         self.tree = tree # not copied, just linked
         # produce dictionaries that map node names to nodes regardless of capitalization
@@ -180,6 +179,125 @@ class titers(object):
             self.ref_strains = list(ref_strains)
             self.test_strains = list(HI_strains)
 
+    def train(self, method='nnl1reg',  lam_drop=1.0, lam_pot = 0.5, lam_avi = 3.0):
+        '''
+        determine the model parameters -- lam_drop, lam_pot, lam_avi are
+        the regularization parameters.
+        '''
+        self.lam_pot = lam_pot
+        self.lam_avi = lam_avi
+        self.lam_drop = lam_drop
+
+        if method=='l1reg':  # l1 regularized fit, no constraint on sign of effect
+            self.model_params = self.fit_l1reg()
+        elif method=='nnls':  # non-negative least square, not regularized
+            self.model_params = self.fit_nnls()
+        elif method=='nnl2reg': # non-negative L2 norm regularized fit
+            self.model_params = self.fit_nnl2reg()
+        elif method=='nnl1reg':  # non-negative fit, branch terms L1 regularized, avidity terms L2 regularized
+            self.model_params = self.fit_nnl1reg()
+
+        print('rms deviation on training set=',np.sqrt(self.fit_func()))
+
+        self.serum_potency = {serum:self.params[self.genetic_params+ii]
+                              for ii, serum in enumerate(self.sera)}
+        self.virus_effect = {strain:self.params[self.genetic_params+len(self.sera)+ii]
+                             for ii, strain in enumerate(self.HI_strains)}
+
+
+    def fit_func(self):
+        return np.mean( (self.titer_dist - np.dot(self.design_matrix, self.model_params))**2 )
+
+    ###
+    # define fitting routines for different objective functions
+    ###
+    def fit_l1reg(self):
+        '''
+        regularize genetic parameters with an l1 norm regardless of sign
+        '''
+        from cvxopt import matrix, solvers
+        n_params = self.design_matrix.shape[1]
+        n_genetic = self.genetic_params
+        n_sera = len(self.sera)
+        n_v = len(self.HI_strains)
+
+        # set up the quadratic matrix containing the deviation term (linear xterm below)
+        # and the l2-regulatization of the avidities and potencies
+        P1 = np.zeros((n_params+n_genetic,n_params+n_genetic))
+        P1[:n_params, :n_params] = self.TgT
+        for ii in xrange(n_genetic, n_genetic+n_sera):
+            P1[ii,ii]+=self.lam_pot
+        for ii in xrange(n_genetic+n_sera, n_params):
+            P1[ii,ii]+=self.lam_avi
+        P = matrix(P1)
+
+        # set up cost for auxillary parameter and the linear cross-term
+        q1 = np.zeros(n_params+n_genetic)
+        q1[:n_params] = -np.dot( self.titer_dist, self.design_matrix)
+        q1[n_params:] = self.lam_drop
+        q = matrix(q1)
+
+        # set up linear constraint matrix to regularize the HI parametesr
+        h = matrix(np.zeros(2*n_genetic))   # Gw <=h
+        G1 = np.zeros((2*n_genetic,n_params+n_genetic))
+        G1[:n_genetic, :n_genetic] = -np.eye(n_genetic)
+        G1[:n_genetic:, n_params:] = -np.eye(n_genetic)
+        G1[n_genetic:, :n_genetic] = np.eye(n_genetic)
+        G1[n_genetic:, n_params:] = -np.eye(n_genetic)
+        G = matrix(G1)
+        W = solvers.qp(P,q,G,h)
+        return np.array([x for x in W['x']])[:n_params]
+
+
+    def fit_nnls(self):
+        from scipy.optimize import nnls
+        return nnls(self.design_matrix, self.titer_dist)[0]
+
+
+    def fit_nnl2reg(self):
+        from cvxopt import matrix, solvers
+        n_params = self.design_matrix.shape[1]
+        P = matrix(np.dot(self.design_matrix.T, self.design_matrix) + self.lam_drop*np.eye(n_params))
+        q = matrix( -np.dot( self.titer_dist, self.design_matrix))
+        h = matrix(np.zeros(n_params)) # Gw <=h
+        G = matrix(-np.eye(n_params))
+        W = solvers.qp(P,q,G,h)
+        return np.array([x for x in W['x']])
+
+
+    def fit_nnl1reg(self):
+        ''' l1 regularization of titer drops with non-negativity constraints'''
+        from cvxopt import matrix, solvers
+        n_params = self.design_matrix.shape[1]
+        n_genetic = self.genetic_params
+        n_sera = len(self.sera)
+        n_v = len(self.HI_strains)
+
+        # set up the quadratic matrix containing the deviation term (linear xterm below)
+        # and the l2-regulatization of the avidities and potencies
+        P1 = np.zeros((n_params,n_params))
+        P1[:n_params, :n_params] = self.TgT
+        for ii in xrange(n_genetic, n_genetic+n_sera):
+            P1[ii,ii]+=self.lam_pot
+        for ii in xrange(n_genetic+n_sera, n_params):
+            P1[ii,ii]+=self.lam_avi
+        P = matrix(P1)
+
+        # set up cost for auxillary parameter and the linear cross-term
+        q1 = np.zeros(n_params)
+        q1[:n_params] = -np.dot(self.titer_dist, self.design_matrix)
+        q1[:n_genetic] += self.lam_drop
+        q = matrix(q1)
+
+        # set up linear constraint matrix to enforce positivity of the
+        # dTiters and bounding of dTiter by the auxillary parameter
+        h = matrix(np.zeros(n_genetic))     # Gw <=h
+        G1 = np.zeros((n_genetic,n_params))
+        G1[:n_genetic, :n_genetic] = -np.eye(n_genetic)
+        G = matrix(G1)
+        W = solvers.qp(P,q,G,h)
+        return = np.array([x for x in W['x']])[:n_params]
+
 
 class tree_model(titers):
     """docstring for tree_model"""
@@ -188,7 +306,7 @@ class tree_model(titers):
 
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
-        self.find_HI_splits()
+        self.find_titer_splits()
         self.make_treegraph()
 
     def get_path_no_terminals(self, v1, v2):
@@ -207,7 +325,7 @@ class tree_model(titers):
             for pi, (tmp_v1, tmp_v2) in enumerate(izip(p1,p2)):
                 if tmp_v1!=tmp_v2:
                     break
-            path = [n for n in p1[pi:] if n.HI_info>1] + [n for n in p2[pi:] if n.HI_info>1]
+            path = [n for n in p1[pi:] if n.titer_info>1] + [n for n in p2[pi:] if n.titer_info>1]
         else:
             path = None
         return path
@@ -236,7 +354,7 @@ class tree_model(titers):
         self.titer_split_count = 0  # titer split counter
         self.titer_split_to_branch = defaultdict(list)
         for node in self.tree.find_clades(order='preorder'):
-            node.dHI, node.cHI, node.mHI, node.constraints = 0, 0, 0, 0
+            node.dTiter, node.cTiter, node.constraints = 0, 0, 0
             if node.titer_info>1 and criterium(node):
                 node.titer_branch_index = self.titer_split_count
                 self.titer_split_to_branch[node.titer_branch_index].append(node)
@@ -250,14 +368,16 @@ class tree_model(titers):
             else:
                 node.titer_branch_index=None
 
-        print ("# of reference strains:",len(self.sera), "# of branches with HI constraint", self.titer_split_count)
+        print ("# of reference strains:",len(self.sera),
+               "# of branches with HI constraint", self.titer_split_count)
 
 
     def make_treegraph(self):
         '''
         code the path between serum and test virus of each HI measurement into a matrix
         the matrix has dimensions #measurements x #tree branches with HI info
-        if the path between test and serum goes through a branch, the corresponding matrix element is 1, 0 otherwise
+        if the path between test and serum goes through a branch,
+        the corresponding matrix element is 1, 0 otherwise
         '''
         tree_graph = []
         titer_dist = []
@@ -291,9 +411,34 @@ class tree_model(titers):
         # convert to numpy arrays and save product of tree graph with its transpose for future use
         self.weights = np.sqrt(weights)
         self.titer_dist =  np.array(titer_dist)*self.weights
-        self.tree_graph = (np.array(tree_graph).T*self.weights).T
-        self.TgT = np.dot(self.tree_graph.T, self.tree_graph)
-        print ("Found", self.tree_graph.shape, "measurements x parameters")
+        self.design_matrix = (np.array(tree_graph).T*self.weights).T
+        self.TgT = np.dot(self.design_matrix.T, self.design_matrix)
+        print ("Found", self.design_matrix.shape, "measurements x parameters")
+
+    def train_tree(self,**kwargs):
+        self.train(**kwargs)
+        for node in self.tree.find_clades(order='postorder'):
+            node.dTiter=0
+        for HI_split, branches in self.HI_split_to_branch.iteritems():
+            likely_branch = branches[np.argmax([b.n_aa_muts for b in branches])]
+            likely_branch.dTiter = self.model_params[HI_split]
+            likely_branch.constraints = self.tree_graph[:,HI_split].sum()
+
+        # integrate the tree model dTiter into a cumulative antigentic evolution score cTiter
+        for node in self.tree.find_clades(order='preorder'):
+            if node.parent_node is not None:
+                node.cTiter = node.parent_node.cTiter + node.dTiter
+            else:
+                node.cTiter=0
+
+    def predict_titer(self, virus, serum, cutoff=0.0):
+        path = self.get_path_no_terminals(virus,serum[0])
+        if path is not None:
+            return self.serum_potency[serum] \
+                    + self.virus_effect[virus] \
+                    + np.sum([b.dTiter for b in path if b.dTiter>cutoff])
+        else:
+            return None
 
 
 if __name__=="__main__":
