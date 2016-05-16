@@ -30,7 +30,7 @@ class zika_process(object):
         if 'outgroup' in kwargs:
             outgroup_file = kwargs['outgroup']
         else:
-            outgroup_file = 'zika/meta_data/'+out_specs['prefix']+'outgroup.gb'
+            outgroup_file = 'zika/metadata/'+out_specs['prefix']+'outgroup.gb'
         outliers = ['KU744693.1', 'KU866423.1', 'KU820897.1', 'KU940228','?']
         tmp_outgroup = SeqIO.read(outgroup_file, 'genbank')
         self.outgroup = tmp_outgroup.id.split('.')[0]

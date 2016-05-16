@@ -50,7 +50,7 @@ class flu_process(object):
         if 'outgroup' in kwargs:
             outgroup_file = kwargs['outgroup']
         else:
-            outgroup_file = 'source_data/'+out_specs['prefix']+'outgroup.gb'
+            outgroup_file = 'metadata/'+out_specs['prefix']+'outgroup.gb'
         tmp_outgroup = SeqIO.read(outgroup_file, 'genbank')
         self.outgroup = tmp_outgroup.features[0].qualifiers['strain'][0]
         genome_annotation = tmp_outgroup.features
@@ -66,7 +66,8 @@ class flu_process(object):
 
         self.seqs = sequence_set(self.fname, reference=self.outgroup)
         self.seqs.ungap()
-        self.seqs.parse({0:'strain', 2:'isolate_id', 4:'region', 5:'country', 3:'date'}, strip='_')
+        self.seqs.parse({0:'strain', 1:'isolate_id', 3:'passage', 5:'date', 7:'lab', 8:"accession"}, strip='_')
+        #self.seqs.parse({0:'strain', 2:'isolate_id', 4:'region', 5:'country', 3:'date'}, strip='_')
         self.fix_strain_names()
         self.seqs.raw_seqs[self.outgroup].seq=tmp_outgroup.seq
         self.seqs.raw_seqs['A/Beijing/32/1992'].attributes['date']='1992-01-01'
@@ -253,7 +254,7 @@ def H3N2_scores(tree, epitope_mask_version='wolf'):
         return distance
 
     epitope_map = {}
-    with open('source_data/H3N2_epitope_masks.tsv') as f:
+    with open('metadata/H3N2_epitope_masks.tsv') as f:
         for line in f:
             (key, value) = line.strip().split()
             epitope_map[key] = value
@@ -279,7 +280,8 @@ if __name__=="__main__":
 
     params = parser.parse_args()
 
-    flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, inertia=0.9)
+    flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, inertia=0.9,
+                      fname = '../../nextflu2/data/H3N2_gisaid_epiflu_sequence.fasta')
     if params.load:
         flu.load()
     else:
