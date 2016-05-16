@@ -191,13 +191,15 @@ class tree(object):
         for node in self.tree.find_clades():
             node.opt_branch_length = opt_branch_len(node)
             if node.up is not None:
-                node.muts = ",".join(["".join(map(str, x)) for x in node.mutations])
-                node.aa_muts = {}
+                node.mut_str = ",".join(["".join(map(str, x)) for x in node.mutations])
+                node.aa_mut_str = {}
+                node.aa_mutations = {}
                 if hasattr(node, 'translations'):
                     for prot in node.translations:
-                        node.aa_muts[prot] = ",".join([anc+str(pos+1)+der for pos, (anc, der)
-                                            in enumerate(zip(node.up.translations[prot], node.translations[prot]))
-                                            if anc!=der])
+                        node.aa_mutations[prot] = [(a,pos+1,d) for pos, (a,d) in
+                                            enumerate(zip(node.up.translations[prot],
+                                                          node.translations[prot])) if a!=d]
+                        node.aa_mut_str[prot] = ",".join(["".join(map(str,x)) for x in node.aa_mutations[prot]])
 
     def layout(self):
         """Add clade, xvalue, yvalue, mutation and trunk attributes to all nodes in tree"""
@@ -223,7 +225,7 @@ class tree(object):
             node.yvalue = np.mean([x.yvalue for x in node.clades])
 
 
-    def export(self, path = '', extra_attr = ['aa_muts']):
+    def export(self, path = '', extra_attr = ['aa_mut_str']):
         from Bio import Seq
         from itertools import izip
         timetree_fname = path+'tree.json'

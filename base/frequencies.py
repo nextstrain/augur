@@ -145,7 +145,11 @@ class frequency_estimator(object):
         if self.verbose: print ("neg logLH using",len(self.pivots),"pivots:", self.logLH(self.pivot_freq))
 
 class freq_est_clipped(object):
-    """docstring for freq_est_clipped"""
+    """
+    simple wrapper for the frequency estimator that attempts
+    to estimate a frequency trajectory on a sensible range of
+    pivots to avoid frequency optimization at points without data
+    """
     def __init__(self, tps, obs, pivots, dtps=None, **kwargs):
         super(freq_est_clipped, self).__init__()
         tmp_obs = np.array(sorted(zip(tps, obs), key=lambda x:x[0]))

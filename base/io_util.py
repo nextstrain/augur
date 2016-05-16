@@ -33,7 +33,7 @@ def write_json(data, file_name, indent=1):
 
 def tree_to_json(node, extra_attr = []):
     tree_json = {}
-    str_attr = ['country','region','clade','strain', 'date', 'muts']
+    str_attr = ['country','region','clade','strain', 'date', 'mut_str']
     num_attr = ['xvalue', 'yvalue', 'tvalue', 'num_date']
     if hasattr(node, 'name'):
         tree_json['strain'] = node.name
