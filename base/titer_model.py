@@ -18,7 +18,7 @@ class titers(object):
     Neher et al, PNAS, 2016
     '''
 
-    def __init__(self, tree, titer_fname = 'data/HI_titers.txt', **kwargs):
+    def __init__(self, tree, titer_fname = 'data/HI_titers.txt', serum_Kc=0, **kwargs):
         self.kwargs = kwargs
         # set self.tree and dress tree with a number of extra attributes
         self.prepare_tree(tree)
@@ -27,6 +27,7 @@ class titers(object):
         # self.strains and self.sources are assigned
         self.read_titers(titer_fname)
         self.normalize_titers()
+        self.serum_Kc=serum_Kc
 
 
     def prepare_tree(self, tree):
@@ -224,9 +225,9 @@ class titers(object):
 
         print('rms deviation on training set=',np.sqrt(self.fit_func()))
 
-        self.serum_potency = {serum:self.params[self.genetic_params+ii]
+        self.serum_potency = {serum:self.model_params[self.genetic_params+ii]
                               for ii, serum in enumerate(self.sera)}
-        self.virus_effect = {strain:self.params[self.genetic_params+len(self.sera)+ii]
+        self.virus_effect = {strain:self.model_params[self.genetic_params+len(self.sera)+ii]
                              for ii, strain in enumerate(self.test_strains)}
 
 
@@ -400,8 +401,9 @@ class tree_model(titers):
             else:
                 node.titer_branch_index=None
 
+        self.genetic_params = self.titer_split_count
         print ("# of reference strains:",len(self.sera),
-               "# of branches with HI constraint", self.titer_split_count)
+               "# of branches with titer constraint", self.titer_split_count)
 
 
     def make_treegraph(self):
@@ -607,8 +609,7 @@ class substitution_model(titers):
 
 
 if __name__=="__main__":
-    tm = titers(flu.tree.tree, titer_fname = '../../nextflu2/data/H3N2_HI_titers.txt')
-    tm.make_training_set(training_fraction=0.8)
-    tm.make_training_set(training_fraction=0.8, subset_strains=True)
-
     ttm = tree_model(flu.tree.tree, titer_fname = '../../nextflu2/data/H3N2_HI_titers.txt')
+    ttm.prepare(training_fraction=0.8)
+    ttm.train()
+
