@@ -2,7 +2,7 @@ from __future__ import division, print_function
 import numpy as np
 import time
 from collections import defaultdict
-from nextstrain.io_util import myopen
+from base.io_util import myopen
 from itertools import izip
 import pandas as pd
 
@@ -26,6 +26,7 @@ class titers(object):
         # read the titers and assign to self.titers, in addition
         # self.strains and self.sources are assigned
         self.read_titers(titer_fname)
+        self.normalize_titers()
 
 
     def prepare_tree(self, tree):
@@ -61,13 +62,17 @@ class titers(object):
                 if src_id not in self.excluded_tables:
                     try:
                         measurements[(test, (ref_virus, serum))].append(val)
-                        strains.update([test, ref])
+                        strains.update([test, ref_virus])
                         sources.add(src_id)
                     except:
                         print(line.strip())
         self.titers = measurements
         self.strains = list(strains)
         self.sources = list(sources)
+        print("Read titers from",self.titer_fname, 'found:')
+        print(' ---', len(self.strains), "strains")
+        print(' ---', len(self.sources), "data sources")
+        print(' ---', sum([len(x) for x in measurements.values()]), " total measurements")
 
 
     def normalize(self, ref, val):
@@ -85,19 +90,19 @@ class titers(object):
                     autologous[ref].append(val)
 
         self.autologous_titers = {}
-        for serum in all_per_serum:
+        for serum in all_titers_per_serum:
             if serum in autologous:
                 self.autologous_titers[serum] = {'val':autologous[serum], 'autologous':True}
                 print("autologous titer found for",serum)
             else:
-                if len(all_per_serum[serum])>10:
-                    self.autologous_titers[serum] = {'val':np.max(all_per_serum[serum]),
+                if len(all_titers_per_serum[serum])>10:
+                    self.autologous_titers[serum] = {'val':np.max(all_titers_per_serum[serum]),
                                                      'autologous':False}
                     print(serum,": using max titer instead of autologous,",
-                          np.max(all_per_serum[serum]))
+                          np.max(all_titers_per_serum[serum]))
                 else:
                     print("discarding",serum,"since there are only ",
-                           len(all_per_serum[serum]),'measurements')
+                           len(all_titers_per_serum[serum]),'measurements')
 
 
     def normalize_titers(self):
@@ -112,14 +117,9 @@ class titers(object):
         self.titers_normalized = {}
         self.consensus_titers_raw = {}
         self.measurements_per_serum = defaultdict(int)
-
         for (test, ref), val in self.titers.iteritems():
             if test.upper() in self.node_lookup and ref[0].upper() in self.node_lookup:
                 if ref in self.autologous_titers: # use only titers for which estimates of the autologous titer exists
-                    test_strains.add(test.upper())
-                    test_strains.add(ref[0].upper())
-                    sera.add(ref)
-                    ref_strains.add(ref[0])
                     self.titers_normalized[(test, ref)] = self.normalize(ref, val)
                     self.consensus_titers_raw[(test, ref)] = np.median(val)
                     self.measurements_per_serum[ref]+=1
@@ -127,18 +127,61 @@ class titers(object):
                     pass
                     #print "no homologous titer found:", ref
 
+        self.strain_census()
+        print("Normalized titers and restricted to measurements in tree:")
+        self.titer_stats()
+
+    def strain_census(self):
+        sera = set()
+        ref_strains = set()
+        test_strains = set()
+        if hasattr(self, 'train_titers'):
+            tt = self.train_titers
+        else:
+            tt = self.titers_normalized
+
+        for test,ref in tt:
+            if test.upper() in self.node_lookup and ref[0].upper() in self.node_lookup:
+                test_strains.add(test)
+                test_strains.add(ref[0])
+                sera.add(ref)
+                ref_strains.add(ref[0])
+
         self.sera = list(sera)
         self.ref_strains = list(ref_strains)
         self.test_strains = list(test_strains)
 
+    def titer_stats(self):
+        print(" - remaining data set")
+        print(' ---', len(self.ref_strains), " reference virues")
+        print(' ---', len(self.sera), " sera")
+        print(' ---', len(self.test_strains), " test_viruses")
+        print(' ---', len(self.titers_normalized), " non-redundant test virus/serum pairs")
+        if hasattr(self, 'train_titers'):
+            print(' ---', len(self.train_titers), " measurements in training set")
 
-    def make_training_set(self, date_range=None, training_fraction=1.0, subset_strains=False):
-        if self.training_fraction<1.0: # validation mode, set aside a fraction of measurements to validate the fit
+
+    def subset_to_date(self, date_range):
+        # if data is to censored by date, subset the data set and
+        # reassign sera, reference strains, and test viruses
+        self.train_titers = {key:val for key,val in self.train_titers.iteritems()
+                            if self.node_lookup[key[0]].num_date>=date_range[0] and
+                               self.node_lookup[key[1][0]].num_date>=date_range[0] and
+                               self.node_lookup[key[0]].num_date<date_range[1] and
+                               self.node_lookup[key[1][0]].num_date<date_range[1]}
+        self.strain_census()
+        print("Reduced training data to date range", date_range)
+        self.titer_stats()
+
+
+    def make_training_set(self, training_fraction=1.0, subset_strains=False):
+        if training_fraction<1.0: # validation mode, set aside a fraction of measurements to validate the fit
             self.test_titers, self.train_titers = {}, {}
             if subset_strains:    # exclude a fraction of test viruses as opposed to a fraction of the titers
+                from random import sample
                 tmp = set(self.test_strains)
                 tmp.difference_update(self.ref_strains) # don't use references viruses in the set to sample from
-                training_strains = sample(tmp, int(self.training_fraction*len(tmp)))
+                training_strains = sample(tmp, int(training_fraction*len(tmp)))
                 for tmpstrain in self.ref_strains:      # add all reference viruses to the training set
                     if tmpstrain not in training_strains:
                         training_strains.append(tmpstrain)
@@ -149,36 +192,17 @@ class titers(object):
                         self.test_titers[key]=val
             else: # simply use a fraction of all measurements for testing
                 for key, val in self.titers_normalized.iteritems():
-                    if np.random.uniform()>self.training_fraction:
+                    if np.random.uniform()>training_fraction:
                         self.test_titers[key]=val
                     else:
                         self.train_titers[key]=val
         else: # without the need for a test data set, use the entire data set for training
             self.train_titers = self.titers_normalized
 
-        # if data is to censored by date, subset the data set and
-        # reassign sera, reference strains, and test viruses
-        if self.date_range is not None:
-            prev_years = 6 # number of years prior to cut-off to use when fitting date censored data
-            self.train_titers = {key:val for key,val in self.train_titers.iteritems()
-                                if self.node_lookup[key[0]].num_date<=self.date_range[0] and
-                                   self.node_lookup[key[1][0]].num_date<=self.date_range[0] and
-                                   self.node_lookup[key[0]].num_date>self.date_range[1] and
-                                   self.node_lookup[key[1][0]].num_date>self.date_range[1]}
-            sera = set()
-            ref_strains = set()
-            test_strains = set()
+        self.strain_census()
+        print("Made training data as fraction",training_fraction, "of all measurements")
+        self.titer_stats()
 
-            for test,ref in self.train_titers:
-                if test.upper() in self.node_lookup and ref[0].upper() in self.node_lookup:
-                    test_strains.add(test)
-                    test_strains.add(ref[0])
-                    sera.add(ref)
-                    ref_strains.add(ref[0])
-
-            self.sera = list(sera)
-            self.ref_strains = list(ref_strains)
-            self.test_strains = list(HI_strains)
 
     def train(self, method='nnl1reg',  lam_drop=1.0, lam_pot = 0.5, lam_avi = 3.0):
         '''
@@ -203,7 +227,7 @@ class titers(object):
         self.serum_potency = {serum:self.params[self.genetic_params+ii]
                               for ii, serum in enumerate(self.sera)}
         self.virus_effect = {strain:self.params[self.genetic_params+len(self.sera)+ii]
-                             for ii, strain in enumerate(self.HI_strains)}
+                             for ii, strain in enumerate(self.test_strains)}
 
 
     def fit_func(self):
@@ -220,7 +244,7 @@ class titers(object):
         n_params = self.design_matrix.shape[1]
         n_genetic = self.genetic_params
         n_sera = len(self.sera)
-        n_v = len(self.HI_strains)
+        n_v = len(self.test_strains)
 
         # set up the quadratic matrix containing the deviation term (linear xterm below)
         # and the l2-regulatization of the avidities and potencies
@@ -272,7 +296,7 @@ class titers(object):
         n_params = self.design_matrix.shape[1]
         n_genetic = self.genetic_params
         n_sera = len(self.sera)
-        n_v = len(self.HI_strains)
+        n_v = len(self.test_strains)
 
         # set up the quadratic matrix containing the deviation term (linear xterm below)
         # and the l2-regulatization of the avidities and potencies
@@ -297,7 +321,7 @@ class titers(object):
         G1[:n_genetic, :n_genetic] = -np.eye(n_genetic)
         G = matrix(G1)
         W = solvers.qp(P,q,G,h)
-        return = np.array([x for x in W['x']])[:n_params]
+        return np.array([x for x in W['x']])[:n_params]
 
 
 class tree_model(titers):
@@ -307,8 +331,8 @@ class tree_model(titers):
     nodes in the tree are decorated with attributes 'dTiter' that contain
     the estimated titer drops across the branch
     """
-    def __init__(self, **kwargs):
-        super(tree_model, self).__init__(**kwargs)
+    def __init__(self,*args, **kwargs):
+        super(tree_model, self).__init__(*args, **kwargs)
 
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
@@ -414,7 +438,7 @@ class tree_model(titers):
                         weights.append(1.0/(1.0 + self.serum_Kc*self.measurements_per_serum[ref]))
                 except:
                     import ipdb; ipdb.set_trace()
-                    print test, ref, "ERROR"
+                    print(test, ref, "ERROR")
 
         # convert to numpy arrays and save product of tree graph with its transpose for future use
         self.weights = np.sqrt(weights)
@@ -532,7 +556,7 @@ class substitution_model(titers):
                     if test!=ref[0]:
                         tmp[self.genetic_params+self.sera.index(ref)] = 1
                     # add virus effect
-                    tmp[self.genetic_params+len(self.sera)+self.HI_strains.index(test)] = 1
+                    tmp[self.genetic_params+len(self.sera)+self.test_strains.index(test)] = 1
                     # append model and fit value to lists seq_graph and titer_dist
                     seq_graph.append(tmp)
                     titer_dist.append(val)
@@ -583,4 +607,8 @@ class substitution_model(titers):
 
 
 if __name__=="__main__":
-    pass
+    tm = titers(flu.tree.tree, titer_fname = '../../nextflu2/data/H3N2_HI_titers.txt')
+    tm.make_training_set(training_fraction=0.8)
+    tm.make_training_set(training_fraction=0.8, subset_strains=True)
+
+    ttm = tree_model(flu.tree.tree, titer_fname = '../../nextflu2/data/H3N2_HI_titers.txt')
