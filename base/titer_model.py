@@ -205,7 +205,7 @@ class titers(object):
         self.titer_stats()
 
 
-    def train(self, method='nnl1reg',  lam_drop=1.0, lam_pot = 0.5, lam_avi = 3.0):
+    def _train(self, method='nnl1reg',  lam_drop=1.0, lam_pot = 0.5, lam_avi = 3.0):
         '''
         determine the model parameters -- lam_drop, lam_pot, lam_avi are
         the regularization parameters.
@@ -486,8 +486,8 @@ class tree_model(titers):
         self.TgT = np.dot(self.design_matrix.T, self.design_matrix)
         print ("Found", self.design_matrix.shape, "measurements x parameters")
 
-    def train_tree(self,**kwargs):
-        self.train(**kwargs)
+    def train(self,**kwargs):
+        self._train(**kwargs)
         for node in self.tree.find_clades(order='postorder'):
             node.dTiter=0
         for titer_split, branches in self.titer_split_to_branch.iteritems():
@@ -517,15 +517,15 @@ class substitution_model(titers):
     seeks to describe titer differences by sums of contributions of
     substitions separating the test and reference viruses
     """
-    def __init__(self, proteins=None):
-        super(substitution_model, self).__init__()
-        if proteins is None:
-            self.proteins = self.tree.root.translation.keys()
-        else:
-            self.proteins = proteins
+    def __init__(self,*args, **kwargs):
+        super(substitution_model, self).__init__(*args, **kwargs)
+        self.proteins = self.tree.root.translations.keys()
 
-    def prepare(self):
-        self.add_mutations()
+    def prepare(self, **kwargs):
+        self.make_training_set(**kwargs)
+        self.determine_relevant_mutations()
+        self.make_seqgraph()
+
 
     def get_mutations(self, strain1, strain2):
         ''' return amino acid mutations between viruses specified by strain names as tuples (HA1, F159S) '''
@@ -537,8 +537,8 @@ class substitution_model(titers):
     def get_mutations_nodes(self, node1, node2):
         muts = []
         for prot in self.proteins:
-            seq1 = node1.translation[prot]
-            seq2 = node2.translation[prot]
+            seq1 = node1.translations[prot]
+            seq2 = node2.translations[prot]
             muts.extend([(prot, aa1+str(pos+1)+aa2) for pos, (aa1, aa2)
                         in enumerate(izip(seq1, seq2)) if aa1!=aa2])
         return muts
@@ -644,9 +644,33 @@ class substitution_model(titers):
         print("dimensions of new design matrix",self.design_matrix.shape)
 
 
+    def train(self,**kwargs):
+        self._train(**kwargs)
+        self.mutation_effects={}
+        for mi, mut in enumerate(self.relevant_muts):
+            self.mutation_effects[mut] = self.model_params[mi]
+
+
+    def predict_titer(self, virus, serum, cutoff=0.0):
+        muts= self.get_mutations(serum[0], virus)
+        if muts is not None:
+            pot = self.serum_potency[serum] if serum in self.serum_potency else 0.0
+            avi = self.virus_effect[virus] if virus in self.virus_effect else 0.0
+            return avi + pot\
+                + np.sum([self.mutation_effects[mut] for mut in muts
+                if (mut in self.mutation_effects and self.mutation_effects[mut]>cutoff)])
+        else:
+            return None
 
 if __name__=="__main__":
+    # test tree model (assumes there is a tree called flu in memory...)
     ttm = tree_model(flu.tree.tree, titer_fname = '../../nextflu2/data/H3N2_HI_titers.txt')
     ttm.prepare(training_fraction=0.8)
-    ttm.train_tree(method='nnl1reg')
+    ttm.train(method='nnl1reg')
+    ttm.validate(plot=True)
+
+    tsm = substitution_model(flu.tree.tree, titer_fname = '../../nextflu2/data/H3N2_HI_titers.txt')
+    tsm.prepare(training_fraction=0.8)
+    tsm.train(method='nnl1reg')
+    tsm.validate(plot=True)
 
