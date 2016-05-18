@@ -324,6 +324,43 @@ class titers(object):
         W = solvers.qp(P,q,G,h)
         return np.array([x for x in W['x']])[:n_params]
 
+    def validate(self, plot=False, cutoff=0.0, validation_set = None):
+        from scipy.stats import linregress, pearsonr
+        if validation_set is None:
+            validation_set=self.test_titers
+        self.validation = {}
+        for key, val in validation_set.iteritems():
+            pred_titer = self.predict_titer(key[0], key[1], cutoff=cutoff)
+            self.validation[key] = (val, pred_titer)
+
+        a = np.array(self.validation.values())
+        print ("number of prediction-measurement pairs",a.shape)
+        self.abs_error = np.mean(np.abs(a[:,0]-a[:,1]))
+        self.rms_error = np.sqrt(np.mean((a[:,0]-a[:,1])**2))
+        self.slope, self.intercept, tmpa, tmpb, tmpc = linregress(a[:,0], a[:,1])
+        print ("error (abs/rms): ",self.abs_error, self.rms_error)
+        print ("slope, intercept:", self.slope, self.intercept)
+        print ("pearson correlation:", pearsonr(a[:,0], a[:,1]))
+
+        if plot:
+            import matplotlib.pyplot as plt
+            import seaborn as sns
+            fs=16
+            sns.set_style('darkgrid')
+            plt.figure()
+            ax = plt.subplot(111)
+            plt.plot([-1,6], [-1,6], 'k')
+            plt.scatter(a[:,0], a[:,1])
+            plt.ylabel(r"predicted $\log_2$ distance", fontsize = fs)
+            plt.xlabel(r"measured $\log_2$ distance" , fontsize = fs)
+            ax.tick_params(axis='both', labelsize=fs)
+            plt.text(-2.5,6,'regularization:\nprediction error:', fontsize = fs-2)
+            plt.text(1.2,6, str(self.lam_drop)+'/'+str(self.lam_pot)+'/'+str(self.lam_avi)+' (HI/pot/avi)'
+                     +'\n'+str(round(self.abs_error, 2))\
+                     +'/'+str(round(self.rms_error, 2))+' (abs/rms)', fontsize = fs-2)
+            plt.tight_layout()
+
+
 
 class tree_model(titers):
     """
@@ -453,10 +490,10 @@ class tree_model(titers):
         self.train(**kwargs)
         for node in self.tree.find_clades(order='postorder'):
             node.dTiter=0
-        for HI_split, branches in self.HI_split_to_branch.iteritems():
-            likely_branch = branches[np.argmax([b.n_aa_muts for b in branches])]
-            likely_branch.dTiter = self.model_params[HI_split]
-            likely_branch.constraints = self.tree_graph[:,HI_split].sum()
+        for titer_split, branches in self.titer_split_to_branch.iteritems():
+            likely_branch = branches[np.argmax([b.branch_length for b in branches])]
+            likely_branch.dTiter = self.model_params[titer_split]
+            likely_branch.constraints = self.design_matrix[:,titer_split].sum()
 
         # integrate the tree model dTiter into a cumulative antigentic evolution score cTiter
         for node in self.tree.find_clades(order='preorder'):
@@ -468,9 +505,9 @@ class tree_model(titers):
     def predict_titer(self, virus, serum, cutoff=0.0):
         path = self.get_path_no_terminals(virus,serum[0])
         if path is not None:
-            return self.serum_potency[serum] \
-                    + self.virus_effect[virus] \
-                    + np.sum([b.dTiter for b in path if b.dTiter>cutoff])
+            pot = self.serum_potency[serum] if serum in self.serum_potency else 0.0
+            avi = self.virus_effect[virus] if virus in self.virus_effect else 0.0
+            return avi + pot + np.sum([b.dTiter for b in path if b.dTiter>cutoff])
         else:
             return None
 
@@ -611,5 +648,5 @@ class substitution_model(titers):
 if __name__=="__main__":
     ttm = tree_model(flu.tree.tree, titer_fname = '../../nextflu2/data/H3N2_HI_titers.txt')
     ttm.prepare(training_fraction=0.8)
-    ttm.train()
+    ttm.train_tree(method='nnl1reg')
 
