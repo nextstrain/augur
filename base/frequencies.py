@@ -232,6 +232,13 @@ class tree_frequencies(object):
     will be numbered in preorder. Each node is assumed to have an attribute "num_date"
     '''
     def __init__(self, tree, pivots, node_filter=None, min_clades = 20, **kwargs):
+        '''
+        set up the internal tree, the pivots and cutoffs
+        node_filter -- a function that can be used to exclude terminals nodes
+                       from the estimation. primarily meant for estimating region
+                       specific frequencues and training fitness models
+        min_clades  -- smallest clades for which frequencies are estimated.
+        '''
         self.tree = tree
         self.min_clades = min_clades
         self.pivots = pivots
