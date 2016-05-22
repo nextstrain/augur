@@ -308,7 +308,10 @@ class tree_frequencies(object):
                         self.frequencies[clade] = self.frequencies[node.clade]*tmp_freq
                 if len(small_clades)>1:
                     for clade in small_clades:
-                        frac = 1.0*len(clade.leafs)/len(node.leafs)
+                        if len(node.leafs):
+                            frac = 1.0*len(clade.leafs)/len(node.leafs)
+                        else:
+                            frac = 0.0
                         self.frequencies[clade.clade] = frac*freq_est["other"]
             else:
                 for clade in small_clades:
