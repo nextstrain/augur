@@ -262,10 +262,10 @@ class tree_frequencies(object):
             if node.is_terminal():
                 if self.node_filter(node):
                     tps.append(node.num_date)
-                    node.leafs = np.array([leaf_count])
+                    node.leafs = np.array([leaf_count], dtype=int)
                     leaf_count+=1
                 else:
-                    node.leafs = np.array([])
+                    node.leafs = np.array([], dtype=int)
             else:
                 node.leafs = np.concatenate([c.leafs for c in node.clades])
         self.tps = np.array(tps)
