@@ -50,11 +50,12 @@ class tree_predictor(object):
     """class implementing basic methods to extrapolate genetic diversity
     into the future. specific predictive features need to be implemented
     by the subclasses"""
-    def __init__(self, tree=None, seqs=None, features=[], **kwarks):
+    def __init__(self, tree=None, seqs=None, features=[], **kwargs):
         super(tree_predictor, self).__init__()
         self.tree = tree
         self.seqs = seqs
         self.features = features
+        self.kwargs = kwargs
 
 
     def set_train(self, train_interval, train_filter=None):
@@ -94,9 +95,10 @@ class tree_predictor(object):
         from base.frequencies import tree_frequencies
         npivots = int((self.train_interval[1]-self.train_interval[0])*12)
         pivots=np.linspace(self.train_interval[0], self.train_interval[1], 12)
-        fe = tree_frequencies(self.tree, pivots, node_filter=lambda x:x.train, min_clades=10)
+        fe = tree_frequencies(self.tree, pivots, node_filter=lambda x:x.train,
+                              min_clades=10, **self.kwargs)
         fe.estimate_clade_frequencies()
         # dictionary containing frequencies of all clades.
         # the keys are the node.clade attributes
-        return fe.frequencies
+        return fe.pivots, fe.frequencies
 

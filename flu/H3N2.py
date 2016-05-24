@@ -47,10 +47,11 @@ class flu_process(object):
         self.fname = fname
         self.kwargs = kwargs
         self.out_specs = out_specs
+        self.filenames()
         if 'outgroup' in kwargs:
             outgroup_file = kwargs['outgroup']
         else:
-            outgroup_file = 'metadata/'+out_specs['prefix']+'outgroup.gb'
+            outgroup_file = 'flu/metadata/'+out_specs['prefix']+'outgroup.gb'
         tmp_outgroup = SeqIO.read(outgroup_file, 'genbank')
         self.outgroup = tmp_outgroup.features[0].qualifiers['strain'][0]
         genome_annotation = tmp_outgroup.features
@@ -64,16 +65,6 @@ class flu_process(object):
         self.pivots = np.linspace(num_date(self.time_interval[0]),
                                   num_date(self.time_interval[1]),40)
 
-        self.seqs = sequence_set(self.fname, reference=self.outgroup)
-        self.seqs.ungap()
-        self.seqs.parse({0:'strain', 1:'isolate_id', 3:'passage', 5:'date', 7:'lab', 8:"accession"}, strip='_')
-        #self.seqs.parse({0:'strain', 2:'isolate_id', 4:'region', 5:'country', 3:'date'}, strip='_')
-        self.fix_strain_names()
-        self.seqs.raw_seqs[self.outgroup].seq=tmp_outgroup.seq
-        self.seqs.raw_seqs['A/Beijing/32/1992'].attributes['date']='1992-01-01'
-        self.seqs.reference = self.seqs.raw_seqs[self.outgroup]
-        self.seqs.parse_date(["%Y-%m-%d"], prune=True)
-        self.filenames()
 
 
     def filenames(self):
@@ -171,6 +162,7 @@ class flu_process(object):
                                       ws = self.tree.tree.count_terminals()//10, **self.kwargs)
         tree_freqs.estimate_clade_frequencies()
         self.tree_frequencies = tree_freqs.frequencies
+        self.tree_pivots = tree_freqs.pivots
 
 
     def build_tree(self, infile=None):

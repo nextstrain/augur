@@ -231,7 +231,7 @@ class tree_frequencies(object):
     to be named with an attribute clade, of root doesn't have such an attribute, clades
     will be numbered in preorder. Each node is assumed to have an attribute "num_date"
     '''
-    def __init__(self, tree, pivots, node_filter=None, min_clades = 20, **kwargs):
+    def __init__(self, tree, pivots, node_filter=None, min_clades = 20, verbose=0, **kwargs):
         '''
         set up the internal tree, the pivots and cutoffs
         node_filter -- a function that can be used to exclude terminals nodes
@@ -243,6 +243,7 @@ class tree_frequencies(object):
         self.min_clades = min_clades
         self.pivots = pivots
         self.kwargs = kwargs
+        self.verbose=verbose
         if node_filter is None:
             self.node_filter = lambda x:True
         else:
@@ -278,7 +279,7 @@ class tree_frequencies(object):
 
     def estimate_clade_frequencies(self):
         for node in self.tree.get_nonterminals(order='preorder'):
-            print("Estimating frequencies of children of node ",node.clade)
+            if self.verbose: print("Estimating frequencies of children of node ",node.clade)
             node_tps = self.tps[node.leafs]
             obs_to_estimate = {}
             small_clades = []
@@ -315,7 +316,10 @@ class tree_frequencies(object):
                         self.frequencies[clade.clade] = frac*freq_est["other"]
             else:
                 for clade in small_clades:
-                    frac = 1.0*len(clade.leafs)/len(node.leafs)
+                    if len(node.leafs):
+                        frac = 1.0*len(clade.leafs)/len(node.leafs)
+                    else:
+                        frac = 0.0
                     self.frequencies[clade.clade] = frac*self.frequencies[node.clade]
 
 
