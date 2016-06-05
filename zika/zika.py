@@ -134,7 +134,7 @@ class zika_process(object):
         #self.seqs.clock_filter(n_iqd=5, plot=True, max_gaps=0.05, root_seq=self.outgroup)
         for seq in self.seqs.aln:
             if seq.name!='Rio_S1':
-                seq.seq = '-'*99 + seq.seq[105:]
+                seq.seq = '-'*105 + seq.seq[105:]
                 seq.seq = seq.seq[:-427]+'-'*427
         self.seqs.translate(proteins=self.proteins)
 
