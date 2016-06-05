@@ -1,6 +1,5 @@
 from __future__ import division, print_function
-import sys,os, time, gzip
-sys.path.append('../nextstrain-db/vdb/src')
+import sys, os, time, gzip, glob
 from collections import defaultdict
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences import sequence_set, num_date
@@ -53,7 +52,7 @@ class flu_process(object):
         else:
             outgroup_file = 'flu/metadata/'+out_specs['prefix']+'outgroup.gb'
         tmp_outgroup = SeqIO.read(outgroup_file, 'genbank')
-        self.outgroup = tmp_outgroup.features[0].qualifiers['strain'][0]
+        self.outgroup = 'a/finland/462/2014' #(tmp_outgroup.features[0].qualifiers['strain'][0]).lower()
         genome_annotation = tmp_outgroup.features
         ref_seq = SeqIO.read(outgroup_file, 'genbank')
         self.proteins = {f.qualifiers['gene'][0]:FeatureLocation(start=f.location.start, end=f.location.end, strand=1)
@@ -65,6 +64,16 @@ class flu_process(object):
         self.pivots = np.linspace(num_date(self.time_interval[0]),
                                   num_date(self.time_interval[1]),40)
 
+
+        self.seqs = sequence_set(self.fname, reference=self.outgroup)
+        self.seqs.ungap()
+        self.seqs.parse({0:'strain', 2:'isolate_id', 3:'date', 4:'region',
+                         5:'country', 7:"city", 12:"subtype",13:'lineage'}, strip='_')
+
+        self.seqs.raw_seqs[self.outgroup].seq=tmp_outgroup.seq
+        self.seqs.reference = self.seqs.raw_seqs[self.outgroup]
+        self.seqs.parse_date(["%Y-%m-%d"], prune=True)
+        self.filenames()
 
 
     def filenames(self):
@@ -268,12 +277,13 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
     parser.add_argument('-v', '--viruses_per_month', type = int, default = 10, help='number of viruses sampled per month')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
+    parser.add_argument('-d', '--download', action='store_true', default = False, help='load from database')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
-
     params = parser.parse_args()
+    fname = sorted(glob.glob('../nextstrain-db/data/flu_h3n2*fasta'))[-1]
 
-    flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, inertia=0.9,
-                      fname = '../../nextflu2/data/H3N2_gisaid_epiflu_sequence.fasta')
+    flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20,
+                      inertia=0.9, fname = fname)
     if params.load:
         flu.load()
     else:
