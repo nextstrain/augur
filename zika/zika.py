@@ -56,7 +56,7 @@ class zika_process(object):
         acc_to_strain = {s.attributes['isolate_id']:s.attributes['strain'] for s in self.seqs.raw_seqs.values()}
         strain_to_acc = {s.attributes['strain']:s.attributes['isolate_id'] for s in self.seqs.raw_seqs.values()}
         for seq in self.seqs.raw_seqs.values():
-            seq.attributes['date'] = seq.attributes['date'].replace('XX', '01')
+            seq.attributes['date'] = seq.attributes['date'].replace('xx', '01')
         print(acc_to_strain[self.outgroup])
         self.seqs.raw_seqs[acc_to_strain[self.outgroup]].seq=tmp_outgroup.seq
         self.seqs.raw_seqs = {k:v for k,v in self.seqs.raw_seqs.iteritems() if k!=''}
