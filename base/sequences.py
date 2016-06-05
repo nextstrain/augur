@@ -221,7 +221,7 @@ class sequence_set(object):
         os.chdir('..')
         remove_dir(self.run_dir)
 
-    def codon_align(self, alignment_tool="mafft", prune=True):
+    def codon_align(self, alignment_tool="mafft", prune=True, verbose=0):
         ''' takes a nucleotide alignment, translates it, aligns the amino acids, pads the gaps
         note that this suppresses any compensated frameshift mutations
 
@@ -235,14 +235,17 @@ class sequence_set(object):
 
         # translage
         aa_seqs = {}
+        bad_seq = 0
         for seq in self.seqs.values():
             tempseq = seq.seq.translate()
             # use only sequences that translate with out trouble
             if '*' not in str(tempseq)[:-1] or prune==False:
                 aa_seqs[seq.id]=SeqRecord(tempseq,id=seq.id)
             else:
-                print(seq.id,"has premature stops, discarding")
+                if verbose: print(seq.id,"has premature stops, discarding")
+            bad_seq+='*' in str(tempseq)[:-1]
 
+        print('Number of sequences with stops:',bad_seq,'out of total',len(self.seqs))
         tmpfname = 'temp_in.fasta'
         SeqIO.write(aa_seqs.values(), tmpfname,'fasta')
 

@@ -171,6 +171,7 @@ class tree(object):
         self.tt.reconstruct_anc(method='ml')
 
         self.tt.geogtr = self.tt.gtr
+        self.tt.geogtr.alphabet_to_location = alphabet
         self.tt._gtr = self.tt.sequence_gtr
         for node in self.tree.find_clades():
             node.__setattr__(attr, alphabet[node.sequence[0]])
