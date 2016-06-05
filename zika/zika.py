@@ -27,11 +27,12 @@ class zika_process(object):
         self.fname = fname
         self.kwargs = kwargs
         self.out_specs = out_specs
-        if 'outgroup' in kwargs:
+        if 'outgroup' in kwargs: # KU926310
             outgroup_file = kwargs['outgroup']
         else:
             outgroup_file = 'zika/metadata/'+out_specs['prefix']+'outgroup.gb'
-        outliers = ['KU744693.1', 'KU866423.1', 'KU820897.1', 'KU940228','?']
+        outliers = ['KU744693.1', 'KU866423.1','KU866423','KU940228','?', 'KU744693']
+        #outliers = ['KU744693.1', 'KU866423.1', 'KU820897.1','KU866423', 'KU820897', 'KU940228','?', 'KU744693','KF993678']
         tmp_outgroup = SeqIO.read(outgroup_file, 'genbank')
         self.outgroup = tmp_outgroup.id.split('.')[0]
         print('Using outgroup', self.outgroup)
@@ -41,7 +42,7 @@ class zika_process(object):
                 for f in ref_seq.features if 'product' in f.qualifiers and f.type == 'mat_peptide'}
 
         self.time_interval = [datetime.strptime('2012-05-01', "%Y-%m-%d").date(),
-                              datetime.strptime('2016-06-01', "%Y-%m-%d").date()]
+                              datetime.strptime('2016-07-01', "%Y-%m-%d").date()]
         self.pivots = np.linspace(num_date(self.time_interval[0]),
                                   num_date(self.time_interval[1]),40)
 
@@ -132,9 +133,15 @@ class zika_process(object):
         self.seqs.strip_non_reference()
         #self.seqs.clock_filter(n_iqd=5, plot=True, max_gaps=0.05, root_seq=self.outgroup)
         for seq in self.seqs.aln:
-            seq.seq = '-'*99 + seq.seq[99:]
+            if seq.name!='Rio_S1':
+                seq.seq = '-'*99 + seq.seq[105:]
+                seq.seq = seq.seq[:-427]+'-'*427
         self.seqs.translate(proteins=self.proteins)
 
+    def remove_outgroup(self):
+        self.tree.tree.root = self.tree.tree.root.clades[1]
+        self.tree.tree.root.up = None
+        self.tree.tree.root.mutations=[]
 
     def build_tree(self, infile=None):
         self.tree = tree(aln=self.seqs.aln, proteins = self.proteins)
@@ -142,13 +149,15 @@ class zika_process(object):
             self.tree.build()
         else:
             self.tree.tt_from_file(infile)
-        self.tree.timetree(Tc=0.5, infer_gtr=True, n_iqd=3)
+        self.tree.timetree(Tc=0.005, infer_gtr=True, n_iqd=3)
         for node in self.tree.tt.tree.get_terminals():
             if hasattr(node, "bad_branch") and node.bad_branch:
                 node.numdate = min(2016.15, node.numdate)
         self.tree.add_translations()
+        self.remove_outgroup()
         self.tree.refine()
         self.tree.layout()
+
 
 
     def export(self, prefix='json/'):
@@ -158,8 +167,12 @@ class zika_process(object):
             if hasattr(n,'muts'):
                 n.nuc_muts= n.muts
         self.seqs.export_diversity(prefix+'entropy.json')
-        self.tree.export(path=prefix, extra_attr = ["country", "region", "nuc_muts",
-                                                    "aa_muts"])
+        self.tree.export(path=prefix, extra_attr = ["country", "region", "nuc_mut_str",
+                                                    "aa_mut_str"])
+        from Bio import AlignIO
+        for seq in self.seqs.aln:
+            seq.description=''
+        AlignIO.write(self.seqs.aln, prefix+'aln.fasta', 'fasta')
 
 
 if __name__=="__main__":

@@ -204,7 +204,7 @@ class tree(object):
     def layout(self):
         """Add clade, xvalue, yvalue, mutation and trunk attributes to all nodes in tree"""
         clade = 0
-        yvalue = 0
+        yvalue = self.tree.count_terminals()
         for node in self.tree.find_clades(order="preorder"):
             node.clade = clade
             clade += 1
@@ -220,7 +220,7 @@ class tree(object):
                 node.tvalue = 0
             if node.is_terminal():
                 node.yvalue = yvalue
-                yvalue += 1
+                yvalue -= 1
         for node in self.tree.get_nonterminals(order="postorder"):
             node.yvalue = np.mean([x.yvalue for x in node.clades])
 

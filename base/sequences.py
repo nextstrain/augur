@@ -69,6 +69,11 @@ class sequence_set(object):
                         seq.attributes[fields[ii]] = val
                     else:
                         seq.attributes[fields[ii]] = ""
+        if 'strain' in fields.values():
+            self.raw_seqs = {seq.attributes['strain']:seq for seq in self.raw_seqs.values()}
+            for seq in self.raw_seqs.values():
+                seq.id = seq.attributes['strain']
+
 
     def from_vdb(self, virus):
         from vdb_download import vdb_download
