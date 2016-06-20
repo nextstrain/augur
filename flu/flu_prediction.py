@@ -38,20 +38,22 @@ class flu_predictor(tree_predictor):
 
 
 if __name__=="__main__":
-    import argparse
+    import argparse, glob
 
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
 
     params = parser.parse_args()
+    fname = sorted(glob.glob('../nextstrain-db/data/flu_h3n2*fasta'))[-1]
 
     flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, inertia=0.9,
-                      fname = '../../nextflu2/data/H3N2_gisaid_epiflu_sequence.fasta')
+                      fname = fname)
     if params.load:
         flu.load()
 
     flu.estimate_tree_frequencies()
-    flu_titers = tree_model(flu.tree.tree, titer_fname = '../../nextflu2/data/H3N2_HI_titers.txt')
+    titer_fname = sorted(glob.glob('../nextstrain-db/data/h3n2*text'))[-1]
+    flu_titers = tree_model(flu.tree.tree, titer_fname = titer_fname)
     flu_titers.prepare()
     flu_titers.train()
 

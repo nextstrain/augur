@@ -255,7 +255,7 @@ def H3N2_scores(tree, epitope_mask_version='wolf'):
         return distance
 
     epitope_map = {}
-    with open('metadata/H3N2_epitope_masks.tsv') as f:
+    with open('flu/metadata/H3N2_epitope_masks.tsv') as f:
         for line in f:
             (key, value) = line.strip().split()
             epitope_map[key] = value
