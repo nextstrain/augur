@@ -197,3 +197,10 @@ if __name__=="__main__":
         zika.tree.geo_inference('country')
         zika.dump()
         zika.export(prefix='json/zika_')
+
+
+    with open('meta_data.csv', 'w') as ofile:
+        ofile.write(','.join(map(str, ['#strain', 'numdate_given','country', 'region']))+'\n')
+        for v in zika.seqs.seqs:
+            mdata = zika.seqs.seqs[v].attributes
+            ofile.write(','.join(map(str, [v, mdata['num_date'], mdata['country'], mdata['region']]))+'\n')

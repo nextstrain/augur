@@ -50,6 +50,8 @@ if __name__=="__main__":
                       fname = fname)
     if params.load:
         flu.load()
+    else:
+
 
     flu.estimate_tree_frequencies()
     titer_fname = sorted(glob.glob('../nextstrain-db/data/h3n2*text'))[-1]
@@ -63,3 +65,4 @@ if __name__=="__main__":
 
     flu_pred.compare_dfreq_with_fixation()
 
+    flu_pred.plot_all()
