@@ -1,5 +1,6 @@
 from __future__ import division, print_function
 import sys, os, time, gzip, glob
+sys.path.append('/ebio/ag-neher/share/users/rneher/nextstrain/nextstrain-augur')
 from collections import defaultdict
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences import sequence_set, num_date
@@ -39,7 +40,7 @@ class flu_process(object):
         * export as json
     """
 
-    def __init__(self, fname = 'data/H3N2.fasta',
+    def __init__(self, fname = 'data/H3N2.fasta', dt = 0.25, time_interval = ('2008-01-01', '2016-01-01'),
                  out_specs={'data_dir':'data/', 'prefix':'H3N2_', 'qualifier':''},
                  **kwargs):
         super(flu_process, self).__init__()
@@ -58,12 +59,13 @@ class flu_process(object):
         self.proteins = {f.qualifiers['gene'][0]:FeatureLocation(start=f.location.start, end=f.location.end, strand=1)
                 for f in ref_seq.features if 'gene' in f.qualifiers and f.qualifiers['gene'][0] in ['SigPep', 'HA1', 'HA2']}
 
-        self.time_interval = [datetime.strptime('2008-01-01', "%Y-%m-%d").date(),
-                              datetime.strptime('2016-01-01', "%Y-%m-%d").date()]
+        self.time_interval = [datetime.strptime(time_interval[0], "%Y-%m-%d").date(),
+                              datetime.strptime(time_interval[1], "%Y-%m-%d").date()]
         self.frequencies = defaultdict(dict)
-        self.pivots = np.linspace(num_date(self.time_interval[0]),
-                                  num_date(self.time_interval[1]),40)
-
+        self.freq_pivot_dt = dt
+        self.pivots = np.arange(num_date(self.time_interval[0]),
+                                  num_date(self.time_interval[1])+self.freq_pivot_dt,
+                                  self.freq_pivot_dt)
 
         self.seqs = sequence_set(self.fname, reference=self.outgroup)
         self.seqs.ungap()
@@ -84,6 +86,7 @@ class flu_process(object):
         self.file_dumps = {}
         self.file_dumps['seqs'] = data_path+'sequences.pkl.gz'
         self.file_dumps['tree'] = data_path+'tree.newick'
+        self.file_dumps['nodes'] = data_path+'nodes.pkl.gz'
         self.file_dumps['frequencies'] = data_path+'frequencies.pkl.gz'
         self.file_dumps['tree_frequencies'] = data_path+'tree_frequencies.pkl.gz'
 
@@ -96,8 +99,10 @@ class flu_process(object):
                 print("dumping",attr_name)
                 if attr_name=='seqs': self.seqs.raw_seqs = None
                 with myopen(fname, 'wb') as ofile:
-                    if attr_name=='tree':
-                        Phylo.write(self.tree.tree, ofile, 'newick')
+                    if attr_name=='nodes':
+                        continue
+                    elif attr_name=='tree':
+                        self.tree.dump(fname, self.file_dumps['nodes'])
                     else:
                         dump(getattr(self,attr_name), ofile, -1)
 
@@ -110,9 +115,14 @@ class flu_process(object):
                         continue
                     else:
                         setattr(self, attr_name, load(ifile))
-        fname = self.file_dumps['tree']
-        if os.path.isfile(fname):
-            self.build_tree(fname)
+
+        tree_name = self.file_dumps['tree']
+        if os.path.isfile(tree_name):
+            if os.path.isfile(self.file_dumps['nodes']):
+                node_file = self.file_dumps['nodes']
+            else:
+                node_file = None
+            self.build_tree(tree_name, node_file)
 
 
     def subsample(self):
@@ -148,7 +158,7 @@ class flu_process(object):
     def align(self):
         self.seqs.align()
         self.seqs.strip_non_reference()
-        self.seqs.clock_filter(n_iqd=3, plot=True, max_gaps=0.05, root_seq=self.outgroup)
+        self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=self.outgroup)
         self.seqs.translate(proteins=self.proteins)
 
     def estimate_mutation_frequencies(self):
@@ -156,6 +166,8 @@ class flu_process(object):
             print("Align sequences first")
             return
         time_points = [x.attributes['num_date'] for x in self.seqs.aln]
+        if max(time_points)>self.pivots[-1] or min(time_points)<self.pivots[0]:
+            print("pivots don't cover data range!")
         aln_frequencies = alignment_frequencies(self.seqs.aln, time_points,
                                 self.pivots, ws=len(time_points)/10, **self.kwargs)
         aln_frequencies.mutation_frequencies(min_freq=0.1)
@@ -174,24 +186,25 @@ class flu_process(object):
         self.tree_pivots = tree_freqs.pivots
 
 
-    def build_tree(self, infile=None):
+    def build_tree(self, infile=None, nodefile=None):
         self.tree = tree(aln=self.seqs.aln, proteins = self.proteins)
         if infile is None:
             self.tree.build()
         else:
-            self.tree.tt_from_file(infile)
-        self.tree.timetree(Tc=0.01, infer_gtr=True)
-        self.tree.add_translations()
-        self.tree.refine()
-        self.tree.layout()
+            self.tree.tt_from_file(infile, nodefile=nodefile)
+        if nodefile is None:
+            self.tree.timetree(Tc=0.01, infer_gtr=True)
+            self.tree.add_translations()
+            self.tree.refine()
+            self.tree.layout()
 
 
-    def export(self, prefix='web/data/'):
+    def export(self, prefix='web/data/', extra_attr = []):
         def process_freqs(freq):
             return [round(x,4) for x in freq]
         self.seqs.export_diversity(prefix+'entropy.json')
-        self.tree.export(path=prefix, extra_attr = ["subtype", "country", "region", "nuc_muts",
-                                                    "ep", "ne", "rb", "aa_muts","lab", "accession","isolate_id"])
+        self.tree.export(path=prefix, extra_attr = extra_attr + ["subtype", "country", "region", "nuc_muts",
+                                        "ep", "ne", "rb", "aa_muts","lab", "accession","isolate_id"])
 
         freq_json = {'pivots':process_freqs(self.pivots)}
         for gene, tmp_freqs in self.frequencies.iteritems():
@@ -202,11 +215,16 @@ class flu_process(object):
         write_json(freq_json, prefix+'frequencies.json', indent=None)
 
 
-    def HI_model(self):
-        from HI_model import HI_tree
-        self.HI = HI_tree(self.tree.tree, HI_fname = self.HI_titer_fname)
-        self.HI.map_HI(training_fraction=1.0,method='nnl1reg', map_to_tree=True)
-        self.HI.add_titers()
+    def HI_model(self, titer_fname):
+        from base.titer_model import tree_model, substitution_model
+        self.HI_tree = tree_model(self.tree.tree, titer_fname = titer_fname)
+        self.HI_tree.prepare()
+        self.HI_tree.train()
+
+        self.HI_subs = substitution_model(self.tree.tree, titer_fname = titer_fname)
+        self.HI_subs.prepare()
+        self.HI_subs.train()
+        self.tree.dump_attr.extend(['cTiter', 'dTiter'])
 
 
 def H3N2_scores(tree, epitope_mask_version='wolf'):
@@ -270,7 +288,6 @@ def H3N2_scores(tree, epitope_mask_version='wolf'):
         node.rb = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
 
 
-
 if __name__=="__main__":
     import argparse
 
@@ -280,12 +297,15 @@ if __name__=="__main__":
     parser.add_argument('-d', '--download', action='store_true', default = False, help='load from database')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
     params = parser.parse_args()
-    fname = sorted(glob.glob('../nextstrain-db/data/flu_h3n2*fasta'))[-1]
+    #fname = sorted(glob.glob('../nextstrain-db/data/flu_h3n2*fasta'))[-1]
+    fname = '../../nextflu2/data/flu_h3n2_gisaid.fasta'
+    titer_fname = sorted(glob.glob('../nextstrain-db/data/h3n2*text'))[-1]
 
-    flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20,
+    flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, dt=1.0/3, #time_interval=('1995-01-01', '2016-01-01'),
                       inertia=0.9, fname = fname)
     if params.load:
         flu.load()
+        H3N2_scores(flu.tree.tree)
     else:
         flu.subsample()
         flu.align()
@@ -295,6 +315,9 @@ if __name__=="__main__":
         flu.build_tree()
         flu.dump()
         flu.estimate_tree_frequencies()
+        flu.dump()
 
         H3N2_scores(flu.tree.tree)
-        flu.export()
+
+
+        flu.export(extra_attr=['cTiter', 'dTiter'])

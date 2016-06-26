@@ -1,6 +1,6 @@
 from __future__ import division, print_function
 import os, time
-from io_util import make_dir, remove_dir, tree_to_json, write_json
+from io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from sequences import sequence_set
 import numpy as np
 
@@ -33,6 +33,7 @@ class tree(object):
         self.nthreads = 2
         self.sequence_lookup = {seq.id:seq for seq in aln}
         self.nuc = kwarks['nuc'] if 'nuc' in kwarks else True
+        self.dump_attr = []
         if proteins!=None:
             self.proteins = proteins
         else:
@@ -42,6 +43,18 @@ class tree(object):
             self.run_dir = '_'.join(['temp', time.strftime('%Y%m%d-%H%M%S',time.gmtime()), str(random.randint(0,1000000))])
         else:
             self.run_dir = kwarks['run_dir']
+
+
+    def dump(self, treefile, nodefile):
+        from Bio import Phylo
+        Phylo.write(self.tree, treefile, 'newick')
+        node_props = {}
+        for node in self.tree.find_clades():
+            node_props[node.name] = {attr:node.__getattribute__(attr) for attr in self.dump_attr if hasattr(node, attr)}
+
+        with myopen(nodefile, 'w') as nfile:
+            from cPickle import dump
+            dump(node_props, nfile)
 
 
     def build(self, root='midpoint', raxml=True, raxml_time_limit=0.5):
@@ -106,7 +119,7 @@ class tree(object):
         self.is_timetree=False
 
 
-    def tt_from_file(self, infile, root='none'):
+    def tt_from_file(self, infile, root='none', nodefile=None):
         from treetime.gtr import GTR
         from treetime import io, utils
         gtr = GTR.standard()
@@ -130,16 +143,34 @@ class tree(object):
                     else:
                         node.__setattr__(attr, seq.attributes[attr])
 
+        if nodefile is not None:
+            print('reading node properties from file')
+            with myopen(nodefile, 'r') as infile:
+                from cPickle import load
+                node_props = load(infile)
+            for n in self.tree.find_clades():
+                if n.name in node_props:
+                    for attr in node_props[n.name]:
+                        n.__setattr__(attr, node_props[n.name][attr])
+                else:
+                    print("No node properties found for ", n.name)
+
 
     def ancestral(self):
         self.tt.optimize_seq_and_branch_len(infer_gtr=True)
+        self.dump_attr.append('sequence')
 
-    def timetree(self, Tc=0.05, infer_gtr=False, **kwarks):
-        print('rerooting...')
-        self.tt.reroot_to_best_root(infer_gtr=True, **kwarks)
+    def timetree(self, Tc=0.05, infer_gtr=False, reroot=True,  **kwarks):
+        if reroot==True:
+            print('rerooting...')
+            self.tt.reroot_to_best_root(infer_gtr=True, **kwarks)
+        else:
+            self.tt.infer_gtr()
+            self.tt.set_additional_tree_params()
+            self.tt.init_date_constraints()
         print('estimating time tree with coalescent model...')
         self.tt.coalescent_model(Tc=Tc,**kwarks)
-
+        self.dump_attr.extend(['numdate','date'])
         self.is_timetree=True
 
     def geo_inference(self, attr):
@@ -173,6 +204,7 @@ class tree(object):
         self.tt.geogtr = self.tt.gtr
         self.tt.geogtr.alphabet_to_location = alphabet
         self.tt._gtr = self.tt.sequence_gtr
+        self.dump_attr.append(attr)
         for node in self.tree.find_clades():
             node.__setattr__(attr, alphabet[node.sequence[0]])
             node.sequence = node.nuc_sequence
@@ -185,6 +217,7 @@ class tree(object):
                 node.translations={}
             for prot in self.proteins:
                 node.translations[prot] = Seq.translate(str(self.proteins[prot].extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
+        self.dump_attr.append('translations')
 
     def refine(self):
         from treetime.utils import opt_branch_len
@@ -201,6 +234,7 @@ class tree(object):
                                             enumerate(zip(node.up.translations[prot],
                                                           node.translations[prot])) if a!=d]
                         node.aa_mut_str[prot] = ",".join(["".join(map(str,x)) for x in node.aa_mutations[prot]])
+        self.dump_attr.extend(['mut_str', 'aa_mut_str', 'aa_mutations', 'opt_branch_length', 'mutations'])
 
     def layout(self):
         """Add clade, xvalue, yvalue, mutation and trunk attributes to all nodes in tree"""
@@ -224,6 +258,10 @@ class tree(object):
                 yvalue -= 1
         for node in self.tree.get_nonterminals(order="postorder"):
             node.yvalue = np.mean([x.yvalue for x in node.clades])
+        self.dump_attr.extend(['yvalue', 'xvalue'])
+        if self.is_timetree:
+            self.dump_attr.extend(['tvalue'])
+
 
 
     def export(self, path = '', extra_attr = ['aa_mut_str']):
