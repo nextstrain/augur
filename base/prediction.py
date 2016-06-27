@@ -19,7 +19,7 @@ def LBI(tree, tau=0.001, attr='lbi'):
     for node in tree.find_clades(order='postorder'):
         node.down_polarizer = 0
         node.up_polarizer = 0
-        for child in node.clades():
+        for child in node:
             node.up_polarizer += child.up_polarizer
         bl =  node.branch_length/tau
         node.up_polarizer *= np.exp(-bl)
@@ -27,22 +27,22 @@ def LBI(tree, tau=0.001, attr='lbi'):
 
     # traverse the tree in preorder (parents first) to calculate msg to children
     for node in tree.get_nonterminals(order='preorder'):
-        for child1 in node.child_nodes():
+        for child1 in node:
             child1.down_polarizer = node.down_polarizer
-            for child2 in node.child_nodes():
+            for child2 in node:
                 if child1!=child2:
                     child1.down_polarizer += child2.up_polarizer
 
-            bl =  child1.edge_length/tau
+            bl =  child1.branch_length/tau
             child1.down_polarizer *= np.exp(-bl)
             if child1.train: child1.down_polarizer += tau*(1-np.exp(-bl))
 
     # go over all nodes and calculate the LBI (can be done in any order)
     for node in tree.find_clades():
         tmp_LBI = node.down_polarizer
-        for child in node.child_nodes():
+        for child in node:
             tmp_LBI += child.up_polarizer
-        node.__setattr__(attr, transform(tmp_LBI))
+        node.__setattr__(attr, tmp_LBI)
 
 
 
@@ -101,4 +101,14 @@ class tree_predictor(object):
         # dictionary containing frequencies of all clades.
         # the keys are the node.clade attributes
         return fe.pivots, fe.frequencies
+
+
+    def calculate_LBI(self, tau=0.0005, dt=1):
+        for node in self.tree.find_clades():
+            node.LBI={}
+        for tint in self.train_intervals:
+            self.set_train((tint[1]-dt, tint[1]))
+            LBI(self.tree, tau=tau, attr='lbi')
+            for node in self.tree.find_clades():
+                node.LBI[tint] = node.lbi/tau
 

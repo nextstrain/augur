@@ -301,7 +301,7 @@ if __name__=="__main__":
     fname = '../../nextflu2/data/flu_h3n2_gisaid.fasta'
     titer_fname = sorted(glob.glob('../nextstrain-db/data/h3n2*text'))[-1]
 
-    flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, dt=1.0/3, #time_interval=('1995-01-01', '2016-01-01'),
+    flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, dt=1.0/4, time_interval=('1995-01-01', '2016-01-01'),
                       inertia=0.9, fname = fname)
     if params.load:
         flu.load()
