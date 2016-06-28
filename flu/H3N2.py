@@ -44,6 +44,7 @@ class flu_process(object):
                  out_specs={'data_dir':'data/', 'prefix':'H3N2_', 'qualifier':''},
                  **kwargs):
         super(flu_process, self).__init__()
+        print("Initializing flu_process for time interval",time_interval)
         self.fname = fname
         self.kwargs = kwargs
         self.out_specs = out_specs
@@ -109,12 +110,12 @@ class flu_process(object):
     def load(self):
         from cPickle import load
         for attr_name, fname in self.file_dumps.iteritems():
+            if attr_name=='tree':
+                continue
             if os.path.isfile(fname):
                 with myopen(fname, 'r') as ifile:
-                    if attr_name=='tree':
-                        continue
-                    else:
-                        setattr(self, attr_name, load(ifile))
+                    print('loading',attr_name,'from file',fname)
+                    setattr(self, attr_name, load(ifile))
 
         tree_name = self.file_dumps['tree']
         if os.path.isfile(tree_name):
@@ -125,7 +126,7 @@ class flu_process(object):
             self.build_tree(tree_name, node_file)
 
 
-    def subsample(self):
+    def subsample(self, sampling_threshold):
         HI_titer_count = {}
         with myopen(self.HI_strains_fname,'r') as ifile:
             for line in ifile:
@@ -146,7 +147,7 @@ class flu_process(object):
         self.seqs.subsample(category = lambda x:(x.attributes['region'],
                                                  x.attributes['date'].year,
                                                  x.attributes['date'].month),
-                            threshold=params.viruses_per_month, priority=sampling_priority )
+                            threshold=sampling_threshold, priority=sampling_priority )
         #tmp = []
         #for seq in self.seqs.seqs.values():
         #    tmp.append((seq.name, sampling_priority(seq), seq.attributes['region'], seq.attributes['date']))
@@ -295,19 +296,23 @@ if __name__=="__main__":
     parser.add_argument('-v', '--viruses_per_month', type = int, default = 10, help='number of viruses sampled per month')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
     parser.add_argument('-d', '--download', action='store_true', default = False, help='load from database')
+    parser.add_argument('-t', '--time_interval', nargs=2, default=('2010-01-01', '2016-01-01'),
+                            help='time interval to sample sequences from: provide dates as YYYY-MM-DD')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
     params = parser.parse_args()
     #fname = sorted(glob.glob('../nextstrain-db/data/flu_h3n2*fasta'))[-1]
     fname = '../../nextflu2/data/flu_h3n2_gisaid.fasta'
+    out_specs = {'data_dir':'data/', 'prefix':'H3N2_',
+                 'qualifier': params.time_interval[0]+'_'+params.time_interval[1]+'_'}
     titer_fname = sorted(glob.glob('../nextstrain-db/data/h3n2*text'))[-1]
 
-    flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, dt=1.0/4, time_interval=('1995-01-01', '2016-01-01'),
-                      inertia=0.9, fname = fname)
+    flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, dt=1.0/4, time_interval=params.time_interval,
+                      inertia=0.9, fname = fname, out_specs=out_specs)
     if params.load:
         flu.load()
         H3N2_scores(flu.tree.tree)
     else:
-        flu.subsample()
+        flu.subsample(params.viruses_per_month)
         flu.align()
         flu.dump()
         flu.estimate_mutation_frequencies()
@@ -319,5 +324,5 @@ if __name__=="__main__":
 
         H3N2_scores(flu.tree.tree)
 
-
-        flu.export(extra_attr=['cTiter', 'dTiter'])
+        flu.export(prefix='json/'+out_specs['prefix']+out_specs['qualifier'],
+                   extra_attr=['cTiter', 'dTiter'])

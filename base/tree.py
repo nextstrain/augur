@@ -122,6 +122,7 @@ class tree(object):
     def tt_from_file(self, infile, root='none', nodefile=None):
         from treetime.gtr import GTR
         from treetime import io, utils
+        print('Reading tree from file',infile)
         gtr = GTR.standard()
         self.tt = io.treetime_from_newick(gtr, infile)
         io.set_seqs_to_leaves(self.tt, self.aln)
@@ -144,7 +145,7 @@ class tree(object):
                         node.__setattr__(attr, seq.attributes[attr])
 
         if nodefile is not None:
-            print('reading node properties from file')
+            print('reading node properties from file:',nodefile)
             with myopen(nodefile, 'r') as infile:
                 from cPickle import load
                 node_props = load(infile)
@@ -160,6 +161,7 @@ class tree(object):
         self.tt.optimize_seq_and_branch_len(infer_gtr=True)
         self.dump_attr.append('sequence')
 
+
     def timetree(self, Tc=0.05, infer_gtr=False, reroot=True,  **kwarks):
         if reroot==True:
             print('rerooting...')
@@ -170,8 +172,9 @@ class tree(object):
             self.tt.init_date_constraints()
         print('estimating time tree with coalescent model...')
         self.tt.coalescent_model(Tc=Tc,**kwarks)
-        self.dump_attr.extend(['numdate','date'])
+        self.dump_attr.extend(['numdate','date','sequence'])
         self.is_timetree=True
+
 
     def geo_inference(self, attr):
         from treetime.gtr import GTR
@@ -218,6 +221,7 @@ class tree(object):
             for prot in self.proteins:
                 node.translations[prot] = Seq.translate(str(self.proteins[prot].extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
         self.dump_attr.append('translations')
+
 
     def refine(self):
         from treetime.utils import opt_branch_len

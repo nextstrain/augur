@@ -1,4 +1,4 @@
-from __future__ import division, print_func
+from __future__ import division, print_function
 import numpy as np
 #from flu import H3N2
 from base.prediction import tree_predictor, LBI
@@ -7,7 +7,7 @@ from collections import defaultdict
 
 class flu_predictor(tree_predictor):
     """class to train and evaluate influenza prediction models"""
-    def __init__(self, clade_frequencies=None, pivots=None, **kwarks):
+    def __init__(self, clade_frequencies=None, pivots=None, years=None, **kwarks):
         super(flu_predictor, self).__init__(**kwarks)
         self.global_freqs = clade_frequencies
         self.global_pivots = pivots
@@ -20,7 +20,9 @@ class flu_predictor(tree_predictor):
         # training intervals. currently use 2+2/12y worth of data up until end of Feb
         # the end of each interval will be considered the point from which on we want
         # to predict into the future
-        self.train_intervals = [(x-2, x+2.0/12) for x in range(2009,2017)]
+        if years is None:
+            years= range(2009, 2016)
+        self.train_intervals = [(x-2, x+2.0/12) for x in years]
 
     def calculate_training_frequencies(self, **kwarks):
         '''
@@ -152,13 +154,13 @@ class flu_predictor(tree_predictor):
         return dev
 
 
-    def score_model(self, clade_dt = 2, metric=metric, horizon=2):
+    def score_model(self, clade_dt = 2, metric='sq', horizon=2):
         '''
         calculate the quality of the model by summing the relevant error over all
         training intervals.
         '''
         prediction_error = 0
-        for tint in self.train_intervals[:-1]:
+        for tint in self.train_intervals:
             self.frequency_prediction(tint[1]-clade_dt, tint)
             # calculate deviations, restrict to future time points ((tint, tint+horizon))
             dev = self.prediction_error(metric=metric)[(self.global_pivots>tint[1])&
