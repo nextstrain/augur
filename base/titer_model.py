@@ -132,6 +132,7 @@ class titers(object):
         print("Normalized titers and restricted to measurements in tree:")
         self.titer_stats()
 
+
     def strain_census(self):
         sera = set()
         ref_strains = set()
@@ -213,17 +214,19 @@ class titers(object):
         self.lam_pot = lam_pot
         self.lam_avi = lam_avi
         self.lam_drop = lam_drop
+        if len(self.train_titers)==0:
+            print('no titers to train')
+        else:
+            if method=='l1reg':  # l1 regularized fit, no constraint on sign of effect
+                self.model_params = self.fit_l1reg()
+            elif method=='nnls':  # non-negative least square, not regularized
+                self.model_params = self.fit_nnls()
+            elif method=='nnl2reg': # non-negative L2 norm regularized fit
+                self.model_params = self.fit_nnl2reg()
+            elif method=='nnl1reg':  # non-negative fit, branch terms L1 regularized, avidity terms L2 regularized
+                self.model_params = self.fit_nnl1reg()
 
-        if method=='l1reg':  # l1 regularized fit, no constraint on sign of effect
-            self.model_params = self.fit_l1reg()
-        elif method=='nnls':  # non-negative least square, not regularized
-            self.model_params = self.fit_nnls()
-        elif method=='nnl2reg': # non-negative L2 norm regularized fit
-            self.model_params = self.fit_nnl2reg()
-        elif method=='nnl1reg':  # non-negative fit, branch terms L1 regularized, avidity terms L2 regularized
-            self.model_params = self.fit_nnl1reg()
-
-        print('rms deviation on training set=',np.sqrt(self.fit_func()))
+            print('rms deviation on training set=',np.sqrt(self.fit_func()))
 
         self.serum_potency = {serum:self.model_params[self.genetic_params+ii]
                               for ii, serum in enumerate(self.sera)}
@@ -374,8 +377,11 @@ class tree_model(titers):
 
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
-        self.find_titer_splits()
-        self.make_treegraph()
+        if len(self.train_titers):
+            self.find_titer_splits()
+            self.make_treegraph()
+        else:
+            print("TreeModel: no titers in training set")
 
     def get_path_no_terminals(self, v1, v2):
         '''

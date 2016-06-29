@@ -62,8 +62,11 @@ class flu_predictor(tree_predictor):
                 f0 = self.train_frequencies[train_interval][1][node.clade][-2]
                 if (node.numdate>t_cut) and (node.up.numdate<t_cut):
                     cut.append(node)
-                    tmp_freqs[node] = np.exp((self.global_pivots-t0)*node.fitness[train_interval])*f0
+                    tmp_freqs[node] = (self.global_pivots-t0)*node.fitness[train_interval] + np.log(f0+self.eps)
 
+            peak = np.max(tmp_freqs.values())
+            for node in cut:
+                tmp_freqs[node] = np.exp(np.minimum(-100,tmp_freqs[node]-peak))
             # normalize frequencies of competing clades
             total_freq = np.sum(tmp_freqs.values(), axis=0)
             for node in cut:
@@ -87,8 +90,8 @@ class flu_predictor(tree_predictor):
                     if pred == 'LBI':
                         tmp_fit += c * node.LBI[train_interval]*200
                     elif pred =='slope':
-                        slope = 2.0*((freq[node.clade][-1] - freq[node.clade][-2])/dt)/\
-                                    (self.eps+freq[node.clade][-1] + freq[node.clade][-2])
+                        slope = ((freq[node.clade][-1] - freq[node.clade][0])/dt)/\
+                                    (self.eps+np.mean(freq[node.clade]))
                         tmp_fit += c*slope
                     else:
                         tmp_fit += c*node.__getattribute__(pred)
@@ -154,7 +157,7 @@ class flu_predictor(tree_predictor):
         return dev
 
 
-    def score_model(self, clade_dt = 2, metric='sq', horizon=2):
+    def score_model(self, clade_dt = 2, metric='sq', horizon=2, **kwarks):
         '''
         calculate the quality of the model by summing the relevant error over all
         training intervals.
