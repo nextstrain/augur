@@ -54,7 +54,7 @@ class flu_process(object):
         else:
             outgroup_file = 'flu/metadata/'+out_specs['prefix']+'outgroup.gb'
         tmp_outgroup = SeqIO.read(outgroup_file, 'genbank')
-        self.outgroup = 'a/finland/462/2014' #(tmp_outgroup.features[0].qualifiers['strain'][0]).lower()
+        self.outgroup = 'a/beijing/32/1992' #(tmp_outgroup.features[0].qualifiers['strain'][0]).lower()
         genome_annotation = tmp_outgroup.features
         ref_seq = SeqIO.read(outgroup_file, 'genbank')
         self.proteins = {f.qualifiers['gene'][0]:FeatureLocation(start=f.location.start, end=f.location.end, strand=1)
@@ -123,7 +123,7 @@ class flu_process(object):
                 node_file = self.file_dumps['nodes']
             else:
                 node_file = None
-            self.build_tree(tree_name, node_file)
+            self.build_tree(tree_name, node_file, root='none')
 
 
     def subsample(self, sampling_threshold):
@@ -187,12 +187,12 @@ class flu_process(object):
         self.tree_pivots = tree_freqs.pivots
 
 
-    def build_tree(self, infile=None, nodefile=None):
+    def build_tree(self, infile=None, nodefile=None, root='best'):
         self.tree = tree(aln=self.seqs.aln, proteins = self.proteins)
         if infile is None:
-            self.tree.build()
+            self.tree.build(root=root)
         else:
-            self.tree.tt_from_file(infile, nodefile=nodefile)
+            self.tree.tt_from_file(infile, nodefile=nodefile, root=root)
         if nodefile is None:
             self.tree.timetree(Tc=0.01, infer_gtr=True)
             self.tree.add_translations()
@@ -306,7 +306,7 @@ if __name__=="__main__":
                  'qualifier': params.time_interval[0]+'_'+params.time_interval[1]+'_'}
     titer_fname = sorted(glob.glob('../nextstrain-db/data/h3n2*text'))[-1]
 
-    flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, dt=1.0/4, time_interval=params.time_interval,
+    flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, dt=1.0/6.0, time_interval=params.time_interval,
                       inertia=0.9, fname = fname, out_specs=out_specs)
     if params.load:
         flu.load()
@@ -318,6 +318,8 @@ if __name__=="__main__":
         flu.estimate_mutation_frequencies()
         flu.dump()
         flu.build_tree()
+        flu.tree.geo_inference('region')
+        flu.tree.geo_inference('country')
         flu.dump()
         flu.estimate_tree_frequencies()
         flu.dump()
@@ -325,4 +327,4 @@ if __name__=="__main__":
         H3N2_scores(flu.tree.tree)
 
         flu.export(prefix='json/'+out_specs['prefix']+out_specs['qualifier'],
-                   extra_attr=['cTiter', 'dTiter'])
+                   extra_attr=['cTiter', 'dTiter', 'aa_mut_str'])

@@ -379,7 +379,7 @@ class tree_model(titers):
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
         self.find_titer_splits()
-        if len(self.train_titers):
+        if len(self.train_titers)>1:
             self.make_treegraph()
         else:
             print("TreeModel: no titers in training set")
@@ -532,7 +532,7 @@ class substitution_model(titers):
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
         self.determine_relevant_mutations()
-        if len(self.train_titers):
+        if len(self.train_titers)>1:
             self.make_seqgraph()
         else:
             print('subsitution model: no titers to train')

@@ -57,16 +57,21 @@ class flu_predictor(tree_predictor):
             # extrapolation time point -- frequencies match exactly here.
             t0 = self.train_frequencies[train_interval][0][-2]
             # gather nodes whose branch is cut when cutting at t_cut
-            tmp_freqs = {}
+            avg_fitness = 0
+            pmass = 0
             for node in self.tree.find_clades():
-                f0 = self.train_frequencies[train_interval][1][node.clade][-2]
                 if (node.numdate>t_cut) and (node.up.numdate<t_cut):
+                    f0 = self.train_frequencies[train_interval][1][node.clade][-2]
                     cut.append(node)
-                    tmp_freqs[node] = (self.global_pivots-t0)*node.fitness[train_interval] + np.log(f0+self.eps)
+                    avg_fitness+=f0*node.fitness[train_interval]
+                    pmass+=f0
 
-            peak = np.max(tmp_freqs.values())
+            tmp_freqs = {}
+            avg_fitness/=pmass
             for node in cut:
-                tmp_freqs[node] = np.exp(np.minimum(-100,tmp_freqs[node]-peak))
+                f0 = self.train_frequencies[train_interval][1][node.clade][-2]
+                tmp_freqs[node] = np.exp((self.global_pivots-t0)*(node.fitness[train_interval]-avg_fitness))*f0
+
             # normalize frequencies of competing clades
             total_freq = np.sum(tmp_freqs.values(), axis=0)
             for node in cut:
@@ -82,19 +87,45 @@ class flu_predictor(tree_predictor):
         for node in self.tree.find_clades():
             node.fitness={}
 
+        self.mean_predictors = defaultdict(dict)
+        self.stddev_predictors = defaultdict(dict)
+
         for train_interval,(pivots, freq) in self.train_frequencies.iteritems():
             dt = pivots[-1]-pivots[-2]
+            tmp_vals = defaultdict(list)
+
             for node in self.tree.find_clades():
                 tmp_fit = 0
                 for pred, c in model.iteritems():
                     if pred == 'LBI':
-                        tmp_fit += c * node.LBI[train_interval]*200
+                        tmp_vals['LBI'].append(node.LBI[train_interval])
                     elif pred =='slope':
-                        slope = ((freq[node.clade][-1] - freq[node.clade][0])/dt)/\
-                                    (self.eps+np.mean(freq[node.clade]))
-                        tmp_fit += c*slope
+                        slope_start = -2
+                        slope_stop=-1
+                        slope = ((freq[node.clade][slope_stop] - freq[node.clade][slope_start])/dt)/\
+                                    (self.eps+np.mean(freq[node.clade][slope_start:slope_stop]))
+                        tmp_vals['slope'].append(slope)
                     else:
-                        tmp_fit += c*node.__getattribute__(pred)
+                        tmp_vals['slope'].append(node.__getattribute__(pred))
+
+            for pred, c in model.iteritems():
+                self.mean_predictors[train_interval][pred] = np.mean(tmp_vals[pred])
+                self.stddev_predictors[train_interval][pred] = np.std(tmp_vals[pred])
+
+            for node in self.tree.find_clades():
+                tmp_fit = 0
+                for pred, c in model.iteritems():
+                    if pred == 'LBI':
+                        val = node.LBI[train_interval]
+                    elif pred =='slope':
+                        slope_start = -2
+                        slope_stop=-1
+                        slope = ((freq[node.clade][slope_stop] - freq[node.clade][slope_start])/dt)/\
+                                    (self.eps+np.mean(freq[node.clade][slope_start:slope_stop]))
+                        val = slope
+                    else:
+                        val = c*node.__getattribute__(pred)
+                    tmp_fit += c*(val-self.mean_predictors[train_interval][pred])/self.stddev_predictors[train_interval][pred]
                 node.fitness[train_interval] = tmp_fit
 
 

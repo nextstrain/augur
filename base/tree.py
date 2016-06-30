@@ -119,7 +119,7 @@ class tree(object):
         self.is_timetree=False
 
 
-    def tt_from_file(self, infile, root='none', nodefile=None):
+    def tt_from_file(self, infile, root='best', nodefile=None):
         from treetime.gtr import GTR
         from treetime import io, utils
         print('Reading tree from file',infile)
@@ -134,6 +134,9 @@ class tree(object):
             self.tt.set_additional_tree_params()
         elif root=='oldest':
             tmp = self.tt.reroot_to_oldest()
+        elif root=='best':
+            self.tt.reroot_to_best_root(n_iqd=4)
+
 
         for node in self.tree.get_terminals():
             if node.name in self.sequence_lookup:
