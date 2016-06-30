@@ -36,6 +36,10 @@ class flu_predictor(tree_predictor):
             self.train_frequencies[tint] = self.estimate_training_frequencies(**kwarks)
 
 
+    def get_node_fitness(self, node, train_interval):
+        return np.sum(node.standardized_predictors[train_interval]*self.coefficients)
+
+
     def frequency_prediction(self, t_cut, train_interval):
         '''
         extrapolate clade frequencies into the future using the current fitness model
@@ -63,70 +67,63 @@ class flu_predictor(tree_predictor):
                 if (node.numdate>t_cut) and (node.up.numdate<t_cut):
                     f0 = self.train_frequencies[train_interval][1][node.clade][-2]
                     cut.append(node)
-                    avg_fitness+=f0*node.fitness[train_interval]
+                    node.tmp_fit = self.get_node_fitness(node, train_interval)
+                    avg_fitness+=f0*node.tmp_fit
                     pmass+=f0
 
             tmp_freqs = {}
             avg_fitness/=pmass
             for node in cut:
                 f0 = self.train_frequencies[train_interval][1][node.clade][-2]
-                tmp_freqs[node] = np.exp((self.global_pivots-t0)*(node.fitness[train_interval]-avg_fitness))*f0
+                tmp_freqs[node] = np.exp((self.global_pivots-t0)*(node.tmp_fit-avg_fitness))*f0
 
             # normalize frequencies of competing clades
             total_freq = np.sum(tmp_freqs.values(), axis=0)
             for node in cut:
                 self.predictions[node] = tmp_freqs[node]/total_freq
 
-    def general_fitness(self, model):
-        '''
-        calculate the fitness score of each node for each training interval
-        based on the fitness model and precomputed LBI and slopes
-        arguments:
-            model: dictionary linking predictors to their coefficients
-        '''
-        for node in self.tree.find_clades():
-            node.fitness={}
 
+    def calculate_predictors(self, predictors):
+        self.predictors = predictors
         self.mean_predictors = defaultdict(dict)
         self.stddev_predictors = defaultdict(dict)
+        for node in self.tree.find_clades():
+            node.predictors={}
+            node.standardized_predictors={}
 
         for train_interval,(pivots, freq) in self.train_frequencies.iteritems():
             dt = pivots[-1]-pivots[-2]
-            tmp_vals = defaultdict(list)
-
+            tmp_vals = []
+            all_vals = []
             for node in self.tree.find_clades():
-                tmp_fit = 0
-                for pred, c in model.iteritems():
+                tmp_vals=[]
+                for pred in predictors:
                     if pred == 'LBI':
-                        tmp_vals['LBI'].append(node.LBI[train_interval])
+                        tmp_vals.append(node.LBI[train_interval])
                     elif pred =='slope':
                         slope_start = -2
                         slope_stop=-1
                         slope = ((freq[node.clade][slope_stop] - freq[node.clade][slope_start])/dt)/\
                                     (self.eps+np.mean(freq[node.clade][slope_start:slope_stop]))
-                        tmp_vals['slope'].append(slope)
+                        tmp_vals.append(slope)
                     else:
-                        tmp_vals['slope'].append(node.__getattribute__(pred))
+                        tmp_vals.append(node.__getattribute__(pred))
+                if node.is_terminal():
+                    all_vals.append(tmp_vals)
+                node.predictors[train_interval]=np.array(tmp_vals)
 
-            for pred, c in model.iteritems():
-                self.mean_predictors[train_interval][pred] = np.mean(tmp_vals[pred])
-                self.stddev_predictors[train_interval][pred] = np.std(tmp_vals[pred])
+            tmp_mean = np.mean(all_vals, axis=0)
+            tmp_std = np.std(all_vals, axis=0)
+            for pred, avg, stddev in zip(predictors, tmp_mean, tmp_std):
+                self.mean_predictors[train_interval][pred] = avg
+                self.stddev_predictors[train_interval][pred] = stddev
+                if pred in ['slope', 'LBI']:
+                    tmp_mean=0
+                    tmp_std=1.0
 
             for node in self.tree.find_clades():
-                tmp_fit = 0
-                for pred, c in model.iteritems():
-                    if pred == 'LBI':
-                        val = node.LBI[train_interval]
-                    elif pred =='slope':
-                        slope_start = -2
-                        slope_stop=-1
-                        slope = ((freq[node.clade][slope_stop] - freq[node.clade][slope_start])/dt)/\
-                                    (self.eps+np.mean(freq[node.clade][slope_start:slope_stop]))
-                        val = slope
-                    else:
-                        val = c*node.__getattribute__(pred)
-                    tmp_fit += c*(val-self.mean_predictors[train_interval][pred])/self.stddev_predictors[train_interval][pred]
-                node.fitness[train_interval] = tmp_fit
+                tmp = (node.predictors[train_interval]-tmp_mean)/tmp_std
+                node.standardized_predictors[train_interval] = tmp
 
 
     def train_model(self,clade_dt = 2, model=None, method='SLSQP', metric='sq', plot=False):
@@ -142,21 +139,23 @@ class flu_predictor(tree_predictor):
         if model is None:
             model = {'slope':1.0}
 
-        predictors = model.keys()
         verbose=1
-        coeff = np.array([model[pred] for pred in predictors])
         from scipy.optimize import minimize
         self.calculate_LBI(dt=1) #dt is the max age of sequences used
+        self.calculate_predictors(model.keys())
+        coeff = np.array([model[pred] for pred in self.predictors])
+        self.coefficients = coeff
 
         # functon to minimize
         def cost(x):
+            self.coefficients = x
             self.general_fitness({pred:c for pred,c in zip(predictors, x)})
             current_cost = self.score_model(metric=metric)
             if verbose: print([pred+': '+str(c) for pred,c in zip(predictors, x)]+['dev:',current_cost])
             return current_cost
 
         self.sol = minimize(cost, coeff, method=method)
-        self.fitness_params = {pred:c for pred,c in zip(predictors, self.sol['x'])}
+        self.fitness_params = {pred:c for pred,c in zip(self.predictors, self.sol['x'])}
 
         # validate by plotting trajectories
         if plot:
@@ -218,10 +217,10 @@ class flu_predictor(tree_predictor):
         train_pivots = self.train_frequencies[self.current_prediction_interval][0]
         train_freqs = self.train_frequencies[self.current_prediction_interval][1]
         cols = sns.color_palette()
+        future_pivots = self.global_pivots>train_pivots[-1]
         for node in self.predictions:
             if np.max(self.predictions[node][self.global_pivots>train_pivots[0]])>0.02:
                 #print(self.predictions[t_cut_val][node])
-                future_pivots = self.global_pivots>train_pivots[0]
                 axs[0].plot(self.global_pivots[future_pivots],
                             self.predictions[node][future_pivots], ls='--', c=cols[node.clade%6])
                 axs[0].plot(self.global_pivots, self.global_freqs[node.clade], ls='-', c=cols[node.clade%6])
@@ -229,6 +228,7 @@ class flu_predictor(tree_predictor):
 
         axs[0].set_xlim(train_pivots[0]-2, train_pivots[-1]+2)
         dev = self.prediction_error()
+        dev[~future_pivots]=0.0
         axs[1].plot(self.global_pivots, dev)
         axs[1].set_xlim(train_pivots[0], train_pivots[-1]+2)
 

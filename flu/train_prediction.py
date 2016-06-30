@@ -33,20 +33,24 @@ class fitness_model_train(object):
             self.flu_trees[year] = flu
             self.pred_models[year] = flu_pred
 
+
     def add_training_frequencies(self):
         for flu_pred in self.pred_models.values():
             flu_pred.calculate_training_frequencies()
+
 
     def add_HI(self, titer_fname):
         for flu in self.flu_trees.values():
             flu.HI_model(titer_fname)
 
-    def fit_quality(self, model, **kwarks):
+
+    def fit_quality(self, **kwarks):
         current_cost=0
         for year in self.pred_models:
-            self.pred_models[year].general_fitness(model)
+            self.pred_models[year].coefficients = self.coefficients
             current_cost += self.pred_models[year].score_model(**kwarks)
         return current_cost
+
 
     def train_model(self,model=None, method='SLSQP',**kwarks):
         '''
@@ -65,12 +69,14 @@ class fitness_model_train(object):
         verbose=1
         coeff = np.array([model[pred] for pred in predictors])
         from scipy.optimize import minimize
+        for year in self.pred_models:
+            self.pred_models[year].calculate_predictors(predictors)
 
         # functon to minimize
         def cost(x):
-            model = {pred:c for pred,c in zip(predictors, x)}
-            current_cost = self.fit_quality(model,**kwarks)
-            if verbose: print([pred+': '+str(c) for pred,c in model.iteritems()]+['dev:',current_cost])
+            self.coefficients=x
+            current_cost = self.fit_quality(**kwarks)
+            if verbose: print([pred+': '+str(c) for pred,c in zip(predictors,x)]+['dev:',current_cost])
             return current_cost
 
         self.sol = minimize(cost, coeff, method=method)
@@ -78,11 +84,15 @@ class fitness_model_train(object):
 
 
     def plot_model_predictions(self, clade_dt=2, model=None):
-        if model is None:
-            model=self.fitness_params
+        if model is not None:
+            predictors = model.keys()
+            self.coefficients = np.array([model[pred] for pred in model])
+        else:
+            predictors = self.fitness_params.keys()
+
         # validate by plotting trajectories
         for year in self.pred_models:
-            self.pred_models[year].general_fitness(model)
+            self.pred_models[year].calculate_predictors(predictors)
             for tint in self.pred_models[year].train_intervals:
                 self.pred_models[year].frequency_prediction(tint[1]-clade_dt, tint)
                 self.pred_models[year].plot_prediction()
@@ -98,7 +108,7 @@ if __name__=="__main__":
     titer_fname = sorted(glob.glob('../nextstrain-db/data/h3n2*text'))[-1]
 
     fitness_trainer = fitness_model_train()
-    fitness_trainer.setup('H3N2', range(1996,2012), seq_fname)
+    fitness_trainer.setup('H3N2', range(1996,1998), seq_fname)
     fitness_trainer.add_training_frequencies()
     #fitness_trainer.add_HI(titer_fname)
     dt = 1.5
