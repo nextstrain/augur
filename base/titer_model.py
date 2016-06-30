@@ -216,6 +216,7 @@ class titers(object):
         self.lam_drop = lam_drop
         if len(self.train_titers)==0:
             print('no titers to train')
+            self.model_params = np.zeros(self.genetic_params+len(self.sera)+len(self.test_strains))
         else:
             if method=='l1reg':  # l1 regularized fit, no constraint on sign of effect
                 self.model_params = self.fit_l1reg()
@@ -377,8 +378,8 @@ class tree_model(titers):
 
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
+        self.find_titer_splits()
         if len(self.train_titers):
-            self.find_titer_splits()
             self.make_treegraph()
         else:
             print("TreeModel: no titers in training set")
@@ -495,7 +496,8 @@ class tree_model(titers):
     def train(self,**kwargs):
         self._train(**kwargs)
         for node in self.tree.find_clades(order='postorder'):
-            node.dTiter=0
+            node.dTiter=0 # reset branch properties -- only neede for tree model
+            node.cTiter=0
         for titer_split, branches in self.titer_split_to_branch.iteritems():
             likely_branch = branches[np.argmax([b.branch_length for b in branches])]
             likely_branch.dTiter = self.model_params[titer_split]
@@ -530,7 +532,10 @@ class substitution_model(titers):
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
         self.determine_relevant_mutations()
-        self.make_seqgraph()
+        if len(self.train_titers):
+            self.make_seqgraph()
+        else:
+            print('subsitution model: no titers to train')
 
 
     def get_mutations(self, strain1, strain2):
@@ -540,6 +545,7 @@ class substitution_model(titers):
         else:
             return None
 
+
     def get_mutations_nodes(self, node1, node2):
         muts = []
         for prot in self.proteins:
@@ -548,6 +554,7 @@ class substitution_model(titers):
             muts.extend([(prot, aa1+str(pos+1)+aa2) for pos, (aa1, aa2)
                         in enumerate(izip(seq1, seq2)) if aa1!=aa2])
         return muts
+
 
     def determine_relevant_mutations(self, min_count=10):
         # count how often each mutation separates a reference test virus pair
@@ -619,6 +626,7 @@ class substitution_model(titers):
             self.collapse_colinear_mutations(colin_thres)
         self.TgT = np.dot(self.design_matrix.T, self.design_matrix)
         print ("Found", self.design_matrix.shape, "measurements x parameters")
+
 
     def collapse_colinear_mutations(self, colin_thres):
         '''
