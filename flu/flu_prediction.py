@@ -231,7 +231,7 @@ class flu_predictor(tree_predictor):
         dev[~future_pivots]=0.0
         axs[1].plot(self.global_pivots, dev)
         axs[1].set_xlim(train_pivots[0], train_pivots[-1]+2)
-
+        axs[1].set_ylim(0, 3)
 
 
     def plot_all(self):

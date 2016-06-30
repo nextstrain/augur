@@ -108,13 +108,12 @@ if __name__=="__main__":
     titer_fname = sorted(glob.glob('../nextstrain-db/data/h3n2*text'))[-1]
 
     fitness_trainer = fitness_model_train()
-    fitness_trainer.setup('H3N2', range(1996,1998), seq_fname)
+    fitness_trainer.setup('H3N2', range(1996,2012), seq_fname)
     fitness_trainer.add_training_frequencies()
     #fitness_trainer.add_HI(titer_fname)
     dt = 1.5
     fitness_trainer.train_model(model={'slope':0.4, 'LBI':0.01}, metric='abs', horizon=2, clade_dt=dt)
 
-    fitness_trainer.plot_model_predictions(model={'LBI':0.0}, clade_dt=dt)
     fitness_trainer.plot_model_predictions(clade_dt=dt)
     for year,pred in fitness_trainer.pred_models.iteritems():
         print(year,pred.score_model(metric='abs', horizon=2, clade_dt=dt))
