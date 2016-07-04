@@ -144,7 +144,7 @@ class flu_process(object):
         self.seqs.raw_seqs = {k:s for k,s in self.seqs.raw_seqs.iteritems() if
                                         s.attributes['date']>=self.time_interval[0] and
                                         s.attributes['date']<self.time_interval[1]}
-        self.seqs.subsample(category = lambda x:(x.attributes['region'],
+        self.seqs.subsample(category = lambda x:(#x.attributes['region'],
                                                  x.attributes['date'].year,
                                                  x.attributes['date'].month),
                             threshold=sampling_threshold, priority=sampling_priority )
@@ -199,6 +199,11 @@ class flu_process(object):
             self.tree.refine()
             self.tree.layout()
 
+
+    def remove_outgroup(self):
+        self.tree.tree.root = self.tree.tree.root.clades[1]
+        self.tree.tree.root.branch_length=0.001
+        self.tree.tree.root.up = None
 
     def export(self, prefix='web/data/', extra_attr = []):
         def process_freqs(freq):
@@ -303,7 +308,7 @@ if __name__=="__main__":
     #fname = sorted(glob.glob('../nextstrain-db/data/flu_h3n2*fasta'))[-1]
     fname = '../../nextflu2/data/flu_h3n2_gisaid.fasta'
     out_specs = {'data_dir':'data/', 'prefix':'H3N2_',
-                 'qualifier': params.time_interval[0]+'_'+params.time_interval[1]+'_'}
+                 'qualifier': params.time_interval[0]+'_'+params.time_interval[1]+'_noregion_'}
     titer_fname = sorted(glob.glob('../nextstrain-db/data/h3n2*text'))[-1]
 
     flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, dt=1.0/6.0, time_interval=params.time_interval,
@@ -323,8 +328,11 @@ if __name__=="__main__":
         flu.dump()
         flu.estimate_tree_frequencies()
         flu.dump()
+        remove_outgroup = int(params.time_interval[0][:4])>1996
+        if remove_outgroup:
+            flu.remove_outgroup()
 
         H3N2_scores(flu.tree.tree)
 
         flu.export(prefix='json/'+out_specs['prefix']+out_specs['qualifier'],
-                   extra_attr=['cTiter', 'dTiter', 'aa_mut_str'])
+                  extra_attr=['cTiter', 'dTiter', 'aa_mut_str'])

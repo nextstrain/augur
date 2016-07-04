@@ -40,7 +40,8 @@ class fitness_model_train(object):
 
 
     def add_HI(self, titer_fname):
-        for flu in self.flu_trees.values():
+        for year, flu in self.flu_trees.iteritems():
+            print("\n\nHI of year:",year,'\n')
             flu.HI_model(titer_fname)
 
 

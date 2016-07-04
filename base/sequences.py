@@ -140,9 +140,12 @@ class sequence_set(object):
         else:
             good_pos = np.ones(self.aln.get_alignment_length(), dtype=bool)
         date_vs_distance = {}
+        self.reference_aln = None
         for seq in self.aln:
             date_vs_distance[seq.id] = (seq.attributes['num_date'],
                 np.mean((np.array(seq)!=root_seq)[(np.array(seq)!='-')&(root_seq!='-')&good_pos]))
+            if seq.id==self.reference.id:
+                self.reference_aln = seq
         date_vs_distance_array=np.array(date_vs_distance.values())
         from scipy.stats import linregress, scoreatpercentile
         slope, intercept, rval, pval, stderr = linregress(date_vs_distance_array[:,0], date_vs_distance_array[:,1])
@@ -158,8 +161,12 @@ class sequence_set(object):
 
 
         print("before clock filter:",len(self.aln))
-        self.aln = MultipleSeqAlignment([seq for seq in self.aln
-                    if abs(intercept+slope*date_vs_distance[seq.id][0] - date_vs_distance[seq.id][1])<n_iqd*IQD])
+        tmp = {seq.id:seq for seq in self.aln
+                if abs(intercept+slope*date_vs_distance[seq.id][0] - date_vs_distance[seq.id][1])<n_iqd*IQD}
+        if self.reference.id not in tmp and self.reference_aln is not None:
+            print('adding reference again after clock filter')
+            tmp[self.reference.id] = self.reference_aln
+        self.aln = MultipleSeqAlignment(tmp.values())
         print("after clock filter:",len(self.aln))
 
     def subsample(self, category=None, priority=None, threshold=None, repeated=False):
