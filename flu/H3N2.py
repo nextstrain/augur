@@ -250,7 +250,7 @@ class flu_process(object):
 
     def estimate_tree_frequencies(self, region='global'):
         '''
-        estimate frequencies of clades in the tree
+        estimate frequencies of clades in the tree, possible region specific
         '''
         if region=='global':
             node_filter_func = None
@@ -264,7 +264,7 @@ class flu_process(object):
 
         tree_freqs.estimate_clade_frequencies()
         conf = tree_freqs.calc_confidence()
-        for clade, freq in tree_freqs.iteritems():
+        for clade, freq in tree_freqs.frequencies.iteritems():
             self.tree_frequencies[(region, clade)] = freq
             self.tree_frequency_confidence[(region, clade)] = conf[clade]
         self.tree_pivots = tree_freqs.pivots
@@ -319,6 +319,7 @@ class flu_process(object):
         # construct a json file containing all frequency estimate
         # the current format is region_protein_159F
         freq_json = {'pivots':process_freqs(self.pivots)}
+        freq_json['counts'] = {x:list(counts) for x, counts in self.tip_count.iteritems()}
         for (region, gene), tmp_freqs in self.frequencies.iteritems():
             for mut, freq in tmp_freqs.iteritems():
                 label_str =  '_'.join([region, gene] + [str(mut[0]+1), mut[1]])
