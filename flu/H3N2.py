@@ -250,7 +250,7 @@ class flu_process(object):
 
     def estimate_tree_frequencies(self, region='global'):
         '''
-        estimate frequencies of clades in the tree, possible region specific
+        estimate frequencies of clades in the tree, possibly region specific
         '''
         if region=='global':
             node_filter_func = None

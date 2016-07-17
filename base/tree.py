@@ -265,38 +265,53 @@ class tree(object):
                 yvalue -= 1
         for node in self.tree.get_nonterminals(order="postorder"):
             node.yvalue = np.mean([x.yvalue for x in node.clades])
-        self.dump_attr.extend(['yvalue', 'xvalue'])
+        self.dump_attr.extend(['yvalue', 'xvalue', 'clade'])
         if self.is_timetree:
             self.dump_attr.extend(['tvalue'])
 
 
 
-    def export(self, path = '', extra_attr = ['aa_mut_str']):
+    def export(self, path = '', extra_attr = ['aa_mut_str'], plain_export = 10):
+        '''
+        export the tree data structure along with the sequence information as
+        json files for display in web browsers.
+        parameters:
+            path    -- path (incl prefix) to which the output files are written.
+                       filenames themselves are standardized  to *tree.json and *sequences.json
+            extra_attr -- attributes of tree nodes that are exported to json
+            plain_export -- store sequences are plain strings instead of
+                            differences to root if number of differences exceeds
+                            len(seq)/plain_export
+        '''
         from Bio import Seq
         from itertools import izip
         timetree_fname = path+'tree.json'
         sequence_fname = path+'sequences.json'
         tree_json = tree_to_json(self.tree.root, extra_attr=extra_attr)
         write_json(tree_json, timetree_fname, indent=None)
+
+        # prepare a json with sequence information to export.
+        # first step: add the sequence & translations of the root as string
         elems = {}
         elems['root'] = {}
         elems['root']['nuc'] = "".join(self.tree.root.sequence)
-        for prot in self.proteins:
-            tmp = str(self.proteins[prot].extract(Seq.Seq(elems['root']['nuc'])))
-            #elems['root'][prot] = str(Seq.translate(tmp.replace('---', 'NNN'))).replace('X','-')
-            elems['root'][prot] = str(Seq.translate(tmp.replace('-', 'N'))).replace('X','-')
+        for prot,seq in self.tree.root.translations.iteritems():
+            elems['root'][prot] = seq
 
-
+        # add sequence for every node in tree. code as difference to root
+        # or as full strings.
         for node in self.tree.find_clades():
-            if hasattr(node, "clade") and hasattr(node, "sequence"):
+            if hasattr(node, "clade"):
                 elems[node.clade] = {}
-                elems[node.clade]['nuc'] = {pos:state for pos, (state, ancstate) in
-                                enumerate(izip(node.sequence, self.tree.root.sequence)) if state!=ancstate}
-        for node in self.tree.find_clades():
-            if hasattr(node, "clade") and hasattr(node, "translations"):
-                for prot in self.proteins:
-                    elems[node.clade][prot] = {pos:state for pos, (state, ancstate) in
-                                    enumerate(izip(node.translations[prot], elems['root'][prot])) if state!=ancstate}
+                # loop over proteins and nucleotide sequences
+                for prot, seq in [('nuc', "".join(node.sequence))]+node.translations.items():
+                    differences = {pos:state for pos, (state, ancstate) in
+                                enumerate(izip(seq, elems['root'][prot]))
+                                if state!=ancstate}
+                    if plain_export*len(differences)<=len(seq):
+                        elems[node.clade][prot] = differences
+                    else:
+                        elems[node.clade][prot] = seq
 
         write_json(elems, sequence_fname, indent=None)
 
