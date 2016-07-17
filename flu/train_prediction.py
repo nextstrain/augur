@@ -15,23 +15,29 @@ class fitness_model_train(object):
         self.pred_models = {}
         self.flu_trees = {}
         for year in years:
-            time_interval = (str(year-3)+'-01-01', str(year+3)+'-01-01')
-            out_specs = {'data_dir':'data/', 'prefix':'H3N2_',
-                         'qualifier': time_interval[0]+'_'+time_interval[1]+'_'}
-            flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, inertia=0.9,
-                              time_interval=time_interval,
-                              fname = seq_fname, out_specs=out_specs)
-            flu.load()
-            H3N2_scores(flu.tree.tree)
-            flu.estimate_tree_frequencies()
-            flu_pred = flu_predictor(tree=flu.tree.tree, seqs=flu.seqs,
-                                     clade_frequencies = flu.tree_frequencies, years=[year],
-                                     pivots=flu.tree_pivots,inertia=1.0, stiffness=20)
+            try:
+                time_interval = (str(year-3)+'-01-01', str(year+3)+'-01-01')
+                out_specs = {'data_dir':'data/', 'prefix':'H3N2_',
+                             'qualifier': time_interval[0]+'_'+time_interval[1]+'_noregion_'}
+                flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, inertia=0.9,
+                                  time_interval=time_interval,
+                                  fname = seq_fname, out_specs=out_specs)
+                flu.load()
+                remove_outgroup = year>1998
+                if remove_outgroup:
+                    flu.remove_outgroup()
+                H3N2_scores(flu.tree.tree)
+                flu.estimate_tree_frequencies()
+                flu_pred = flu_predictor(tree=flu.tree.tree, seqs=flu.seqs,
+                                         clade_frequencies = flu.tree_frequencies, years=[year],
+                                         pivots=flu.tree_pivots,inertia=1.0, stiffness=20)
 
-            flu_pred.calculate_LBI(dt=1) #dt is the max age of sequences used
-            flu.raw_seqs = {}
-            self.flu_trees[year] = flu
-            self.pred_models[year] = flu_pred
+                flu_pred.calculate_LBI(dt=1) #dt is the max age of sequences used
+                flu.raw_seqs = {}
+                self.flu_trees[year] = flu
+                self.pred_models[year] = flu_pred
+            except:
+                print(year, "didn't load")
 
 
     def add_training_frequencies(self):
@@ -41,8 +47,19 @@ class fitness_model_train(object):
 
     def add_HI(self, titer_fname):
         for year, flu in self.flu_trees.iteritems():
-            print("\n\nHI of year:",year,'\n')
-            flu.HI_model(titer_fname)
+            try:
+                print("\n\nHI of year:",year,'\n')
+                flu.HI_model(titer_fname)
+            except:
+                print('HI failed')
+
+    def reexport(self):
+        for year, flu in self.flu_trees.iteritems():
+            print("\n\nExporting:",year,'\n')
+            out_specs = self.flu_trees[year].out_specs
+            self.flu_trees[year].export(prefix='json/'+out_specs['prefix']+out_specs['qualifier'],
+                  extra_attr=['cTiter', 'dTiter', 'aa_mut_str'])
+
 
 
     def fit_quality(self, **kwarks):
@@ -107,11 +124,13 @@ if __name__=="__main__":
     #seq_fname = sorted(glob.glob('../nextstrain-db/data/flu_h3n2*fasta'))[-1]
     seq_fname = '../../nextflu2/data/flu_h3n2_gisaid.fasta'
     titer_fname = sorted(glob.glob('../nextstrain-db/data/h3n2*text'))[-1]
+    titer_fname = '../nextstrain-db/data/h3n2_titers.txt'
 
     fitness_trainer = fitness_model_train()
-    fitness_trainer.setup('H3N2', range(1996,2012), seq_fname)
+    fitness_trainer.setup('H3N2', range(1999,2017), seq_fname)
     fitness_trainer.add_training_frequencies()
-    #fitness_trainer.add_HI(titer_fname)
+    fitness_trainer.add_HI(titer_fname)
+    fitness_trainer.reexport()
     dt = 1.5
     fitness_trainer.train_model(model={'slope':0.4, 'LBI':0.01}, metric='abs', horizon=2, clade_dt=dt)
 

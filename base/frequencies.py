@@ -7,6 +7,22 @@ import numpy as np
 debug = False
 log_thres = 10.0
 
+def make_pivots(pivots, tps):
+    '''
+    if pivots is a scalar, make a grid of pivot points covering the entire range
+    '''
+    if np.isscalar(pivots):
+        dt = tps.max()-tps.min()
+        return np.linspace(tps.min()-0.01*dt, tps.max()+0.01*dt, pivots)
+    else:
+        return pivots
+
+def count_observations(pivots, tps):
+    pivots = make_pivots(pivots, tps)
+    dt = pivots[1]-pivots[0]
+    counts, _ = np.histogram(tps, bins=[pivots[0]-0.5*dt] + list(pivots+0.5*dt))
+    return counts
+
 def running_average(obs, ws):
     '''
     calculates a running average
@@ -69,12 +85,8 @@ class frequency_estimator(object):
         self.ws = ws
         self.verbose = 0
         self.method = method
-        dt = self.tps.max()-self.tps.min()
 
-        if np.isscalar(pivots):
-            self.pivots = np.linspace(self.tps.min()-0.01*dt, self.tps.max()+0.01*dt, pivots)
-        else:
-            self.pivots = pivots
+        self.pivots = make_pivots(pivots, self.tps)
 
 
     def initial_guess(self, pc=0.01):
@@ -250,6 +262,7 @@ class tree_frequencies(object):
             self.node_filter = node_filter
         self.prepare()
 
+
     def prepare(self):
         # name nodes if they aren't already named
         if not hasattr(self.tree.root, 'clade'):
@@ -276,6 +289,7 @@ class tree_frequencies(object):
         else:
             self.frequencies = {self.tree.root.clade:np.ones_like(self.pivots)}
 
+        self.counts = count_observations(self.pivots, tps)
 
     def estimate_clade_frequencies(self):
         for node in self.tree.get_nonterminals(order='preorder'):
@@ -323,26 +337,43 @@ class tree_frequencies(object):
                     self.frequencies[clade.clade] = frac*self.frequencies[node.clade]
 
 
+    def calc_confidence(self):
+        '''
+        for each frequency trajectory, calculate the bernouilli sampling error
+        -- in reality we should look at the inverse hessian, but this is a 
+        useful approximation in most cases 
+        '''
+        self.confidence = {}
+        for key, freq in self.frequencies.iteritems():
+            # add a pseudo count 1/(n+1) and normalize to n+1
+            self.confidence[key] = np.sqrt((1.0/(1+self.counts)+freq*(1-freq))/(1.0+self.counts))
+        return self.confidence
+
+
 class alignment_frequencies(object):
 
     def __init__(self, aln, tps, pivots, **kwargs):
         self.aln = np.array(aln)
         self.tps = np.array(tps)
-        self.pivots = pivots
         self.kwargs = kwargs
+        self.pivots = pivots
+        self.counts = count_observations(self.pivots, tps)
+
 
     def estimate_genotype_frequency(self, gt):
         match = []
         for pos, state in gt:
             match.append(aln[:,pos]==state)
-        obs = match.all(axis=0)
+        obs = np.array(match).all(axis=0)
 
         fe = frequency_estimator(zip(self.tps, obs),self.pivots, **kwargs)
         fe.learn()
         return fe.frequency_estimate
 
 
-    def mutation_frequencies(self, min_freq=0.01, ignore_gap=True):
+    def mutation_frequencies(self, min_freq=0.01, include_set=None, ignore_gap=True):
+        if include_set is None: 
+            include_set=[]
         alphabet = np.unique(self.aln)
         af = np.zeros((len(alphabet), self.aln.shape[1]))
         for ni, n in enumerate(alphabet):
@@ -354,7 +385,7 @@ class alignment_frequencies(object):
         else:
             minor_freqs = 1.0 - af.max(axis=0)
         self.frequencies = {}
-        for pos in np.where(minor_freqs>min_freq)[0]:
+        for pos in set.union(set(np.where(minor_freqs>min_freq)[0]), include_set):
             nis = np.argsort(af[:,pos])[::-1]
             nis = nis[af[nis,pos]>0]
             column = self.aln[:,pos]
@@ -369,7 +400,7 @@ class alignment_frequencies(object):
             muts = alphabet[nis]
             obs = {}
             for ni, mut in zip(nis, muts):
-                if af[ni,pos]>min_freq and af[ni,pos]<1-min_freq:
+                if (af[ni,pos]>min_freq and af[ni,pos]<1-min_freq) or ni==0:
                     obs[(pos, mut)] = column==mut
                 else:
                     break
@@ -385,6 +416,13 @@ class alignment_frequencies(object):
 
             ne = nested_frequencies(tps, obs, self.pivots, **self.kwargs)
             self.frequencies.update(ne.calc_freqs())
+
+    def calc_confidence(self):
+        self.confidence = {}
+        for key, freq in self.frequencies.iteritems():
+            self.confidence[key] = np.sqrt(freq*(1-freq)/self.counts)
+
+        return self.confidence
 
 
 def test_simple_estimator():

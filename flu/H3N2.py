@@ -11,7 +11,14 @@ from Bio.SeqFeature import FeatureLocation
 import numpy as np
 from datetime import datetime
 
+regions = ['SouthAsia', 'Europe', 'China', 'NorthAmerica',
+           'China', 'SouthAmerica', 'JapanKorea', 'Oceania' ]
+
 def fix_name(name):
+    '''
+    function to harmonize names -- will become obsolete once all parsing
+    is done by the data base
+    '''
     tmp_name = name.replace('_', '').replace(' ', '').replace('\'','')\
                    .replace('(','').replace(')','').replace('H3N2','')\
                    .replace('Human','').replace('human','').replace('//','/')
@@ -31,6 +38,7 @@ def fix_name(name):
         new_name = tmp_name
     return new_name.strip().strip('_')
 
+
 class flu_process(object):
     """process influenza virus sequences in mutliple steps to allow visualization in browser
         * filtering and parsing of sequences
@@ -48,7 +56,11 @@ class flu_process(object):
         self.fname = fname
         self.kwargs = kwargs
         self.out_specs = out_specs
+        self.time_interval = [datetime.strptime(time_interval[0], "%Y-%m-%d").date(),
+                              datetime.strptime(time_interval[1], "%Y-%m-%d").date()]
         self.filenames()
+
+        # parse the outgroup information
         if 'outgroup' in kwargs:
             outgroup_file = kwargs['outgroup']
         else:
@@ -57,29 +69,39 @@ class flu_process(object):
         self.outgroup = 'a/beijing/32/1992' #(tmp_outgroup.features[0].qualifiers['strain'][0]).lower()
         genome_annotation = tmp_outgroup.features
         ref_seq = SeqIO.read(outgroup_file, 'genbank')
+
+        # grap annotation from genbank
         self.proteins = {f.qualifiers['gene'][0]:FeatureLocation(start=f.location.start, end=f.location.end, strand=1)
                 for f in ref_seq.features if 'gene' in f.qualifiers and f.qualifiers['gene'][0] in ['SigPep', 'HA1', 'HA2']}
 
-        self.time_interval = [datetime.strptime(time_interval[0], "%Y-%m-%d").date(),
-                              datetime.strptime(time_interval[1], "%Y-%m-%d").date()]
+        # set up containers for frequency estimation and pivots to use
         self.frequencies = defaultdict(dict)
+        self.frequency_confidence = defaultdict(dict)
+        self.tip_count = defaultdict(dict)
+        self.tree_frequencies = defaultdict(dict)
+        self.tree_frequency_confidence = defaultdict(dict)
         self.freq_pivot_dt = dt
         self.pivots = np.arange(num_date(self.time_interval[0]),
                                   num_date(self.time_interval[1])+self.freq_pivot_dt,
                                   self.freq_pivot_dt)
 
+        # instantiate and population the sequence objects
         self.seqs = sequence_set(self.fname, reference=self.outgroup)
         self.seqs.ungap()
         self.seqs.parse({0:'strain', 2:'isolate_id', 3:'date', 4:'region',
                          5:'country', 7:"city", 12:"subtype",13:'lineage'}, strip='_')
 
+        # make sure the reference is part of the sequence set
         self.seqs.raw_seqs[self.outgroup].seq=tmp_outgroup.seq
         self.seqs.reference = self.seqs.raw_seqs[self.outgroup]
+        # throw out sequences without dates
         self.seqs.parse_date(["%Y-%m-%d"], prune=True)
-        self.filenames()
 
 
     def filenames(self):
+        '''
+        define filenames of input files and intermediates outputs
+        '''
         data_path = self.out_specs['data_dir']+self.out_specs['prefix']
         self.HI_strains_fname = data_path+'HI_strains.txt'
         self.HI_titer_fname = data_path+'HI_titers.txt'
@@ -93,6 +115,9 @@ class flu_process(object):
 
 
     def dump(self):
+        '''
+        write the current state to file
+        '''
         from cPickle import dump
         from Bio import Phylo
         for attr_name, fname in self.file_dumps.iteritems():
@@ -103,11 +128,15 @@ class flu_process(object):
                     if attr_name=='nodes':
                         continue
                     elif attr_name=='tree':
+                        #biopython trees don't pickle well, write as newick + node info
                         self.tree.dump(fname, self.file_dumps['nodes'])
                     else:
                         dump(getattr(self,attr_name), ofile, -1)
 
     def load(self):
+        '''
+        reconstruct instance from files
+        '''
         from cPickle import load
         for attr_name, fname in self.file_dumps.iteritems():
             if attr_name=='tree':
@@ -123,16 +152,23 @@ class flu_process(object):
                 node_file = self.file_dumps['nodes']
             else:
                 node_file = None
+            # load tree, build if no tree file available
             self.build_tree(tree_name, node_file, root='none')
 
 
     def subsample(self, sampling_threshold):
+
+        def sampling_category(x):
+            return (x.attributes['region'],
+                    x.attributes['date'].year,
+                    x.attributes['date'].month)
+
+        # load HI titer count to prioritize sequences
         HI_titer_count = {}
         with myopen(self.HI_strains_fname,'r') as ifile:
             for line in ifile:
                 strain, count = line.strip().split()
                 HI_titer_count[strain]=int(count)
-
         def sampling_priority(seq):
             sname = seq.attributes['strain'].upper()
             if sname in HI_titer_count:
@@ -141,13 +177,13 @@ class flu_process(object):
                 pr = 0
             return pr + len(seq.seq)*0.0001 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD'])
 
+        # constrain to time interval
         self.seqs.raw_seqs = {k:s for k,s in self.seqs.raw_seqs.iteritems() if
                                         s.attributes['date']>=self.time_interval[0] and
                                         s.attributes['date']<self.time_interval[1]}
-        self.seqs.subsample(category = lambda x:(#x.attributes['region'],
-                                                 x.attributes['date'].year,
-                                                 x.attributes['date'].month),
-                            threshold=sampling_threshold, priority=sampling_priority )
+        self.seqs.subsample(category = sampling_category,
+                            threshold=sampling_threshold,
+                            priority=sampling_priority )
         #tmp = []
         #for seq in self.seqs.seqs.values():
         #    tmp.append((seq.name, sampling_priority(seq), seq.attributes['region'], seq.attributes['date']))
@@ -157,42 +193,96 @@ class flu_process(object):
 
 
     def align(self):
+        '''
+        align sequences, remove non-reference insertions, outlier sequences, and translate
+        '''
         self.seqs.align()
         self.seqs.strip_non_reference()
         self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=self.outgroup)
         self.seqs.translate(proteins=self.proteins)
 
-    def estimate_mutation_frequencies(self):
+
+    def estimate_mutation_frequencies(self, region="global"):
+        '''
+        calculate the frequencies of mutation in a particular region
+        currently the global frequencies should be estimated first
+        because this defines the set of positions at which frequencies in
+        other regions are estimated.
+        '''
+        def filter_alignment(aln, region=None, lower_tp=None, upper_tp=None):
+            from Bio.Align import MultipleSeqAlignment
+            tmp = aln
+            if region is not None:
+                tmp = [s for s in aln if s.attributes['region']==region]
+            if lower_tp is not None:
+                tmp = [s for s in aln if s.attributes['num_date']>=lower_tp]
+            if upper_tp is not None:
+                tmp = [s for s in aln if s.attributes['num_date']<upper_tp]
+            return MultipleSeqAlignment(aln)
+
+
         if not hasattr(self.seqs, 'aln'):
             print("Align sequences first")
             return
-        time_points = [x.attributes['num_date'] for x in self.seqs.aln]
-        if max(time_points)>self.pivots[-1] or min(time_points)<self.pivots[0]:
-            print("pivots don't cover data range!")
-        aln_frequencies = alignment_frequencies(self.seqs.aln, time_points,
-                                self.pivots, ws=len(time_points)/10, **self.kwargs)
-        aln_frequencies.mutation_frequencies(min_freq=0.1)
-        self.frequencies['nuc'] = aln_frequencies.frequencies
-        for prot in self.seqs.translations:
-            aln_frequencies = alignment_frequencies(self.seqs.translations[prot], time_points,
-                                            self.pivots, ws=len(time_points)//10, **self.kwargs)
-            aln_frequencies.mutation_frequencies(min_freq=0.01)
-            self.frequencies[prot] = aln_frequencies.frequencies
 
-    def estimate_tree_frequencies(self):
+        # loop over nucleotide sequences and translations and calcuate
+        # region specific frequencies of mutations above a certain threshold
+        for prot, aln in [('nuc',self.seqs.aln)]+ self.seqs.translations.items():
+            if region=="global":
+                tmp_aln = filter_alignment(aln, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
+                include_set=[]
+            else:
+                tmp_aln = filter_alignment(aln, region=region, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
+                include_set = set([pos for (pos, mut) in self.frequencies[(prot, 'global')]])
+            time_points = [x.attributes['num_date'] for x in tmp_aln]
+            if len(time_points)==0:
+                print('no samples in region', region, prot)
+                continue
+
+            aln_frequencies = alignment_frequencies(tmp_aln, time_points,
+                                            self.pivots, ws=max(2,len(time_points)//10),
+                                            **self.kwargs)
+            aln_frequencies.mutation_frequencies(min_freq=0.01)
+            self.frequencies[(prot, region)] = aln_frequencies.frequencies
+            self.frequency_confidence[(prot, region)] = aln_frequencies.calc_confidence()
+        self.tip_count[region]=aln_frequencies.counts
+
+
+    def estimate_tree_frequencies(self, region='global'):
+        '''
+        estimate frequencies of clades in the tree
+        '''
+        if region=='global':
+            node_filter_func = None
+        else:
+            node_filter_func = lambda x:x.region==region
+
         tree_freqs = tree_frequencies(self.tree.tree, self.pivots,
-                                      ws = self.tree.tree.count_terminals()//10, **self.kwargs)
+                                      node_filter = node_filter_func,
+                                      ws = max(2,self.tree.tree.count_terminals()//10),
+                                      **self.kwargs)
+
         tree_freqs.estimate_clade_frequencies()
-        self.tree_frequencies = tree_freqs.frequencies
+        conf = tree_freqs.calc_confidence()
+        for clade, freq in tree_freqs.iteritems():
+            self.tree_frequencies[(region, clade)] = freq
+            self.tree_frequency_confidence[(region, clade)] = conf[clade]
         self.tree_pivots = tree_freqs.pivots
 
 
     def build_tree(self, infile=None, nodefile=None, root='best'):
+        '''
+        instantiate a tree object and make a time tree
+        if infiles are None, the tree is build from scratch. Otherwise
+        the tree is loaded from file
+        '''
         self.tree = tree(aln=self.seqs.aln, proteins = self.proteins)
         if infile is None:
             self.tree.build(root=root)
         else:
             self.tree.tt_from_file(infile, nodefile=nodefile, root=root)
+        # if node file is none, no time information is available.
+        # hence make a coalescent model time tree and decorate that tree.
         if nodefile is None:
             self.tree.timetree(Tc=0.01, infer_gtr=True)
             self.tree.add_translations()
@@ -201,39 +291,70 @@ class flu_process(object):
 
 
     def remove_outgroup(self):
+        '''
+        THIS ASSUMES LADDERIZATION!
+        '''
         self.tree.tree.root = self.tree.tree.root.clades[1]
         self.tree.tree.root.branch_length=0.001
         self.tree.tree.root.up = None
 
+
     def export(self, prefix='web/data/', extra_attr = []):
+        '''
+        export the tree, sequences, frequencies to json files for visualization
+        in the browser
+        '''
+
+        # export json file that contains alignment diversity column by column
+        self.seqs.export_diversity(prefix+'entropy.json')
+        # exports the tree and the sequences inferred for all clades in the tree
+        self.tree.export(path=prefix, extra_attr = extra_attr + ["subtype", "country", "region", "nuc_muts",
+                            "ep", "ne", "rb", "aa_muts","lab", "accession","isolate_id"])
+
+
+        # local function or round frequency estimates to useful precision (reduces file size)
         def process_freqs(freq):
             return [round(x,4) for x in freq]
-        self.seqs.export_diversity(prefix+'entropy.json')
-        self.tree.export(path=prefix, extra_attr = extra_attr + ["subtype", "country", "region", "nuc_muts",
-                                        "ep", "ne", "rb", "aa_muts","lab", "accession","isolate_id"])
 
+        # construct a json file containing all frequency estimate
+        # the current format is region_protein_159F
         freq_json = {'pivots':process_freqs(self.pivots)}
-        for gene, tmp_freqs in self.frequencies.iteritems():
+        for (region, gene), tmp_freqs in self.frequencies.iteritems():
             for mut, freq in tmp_freqs.iteritems():
-                freq_json['_'.join([gene, str(mut[0]+1), mut[1]])] = process_freqs(freq)
-        for clade, freq in self.tree_frequencies.iteritems():
-            freq_json['clade_'+str(clade)] = process_freqs(freq)
+                label_str =  '_'.join([region, gene] + [str(mut[0]+1), mut[1]])
+                freq_json[label_str] = process_freqs(freq)
+        # repeat for clade frequencies in trees
+        for (region,clade), freq in self.tree_frequencies.iteritems():
+            label_str = '_'.join([region, 'clade', str(clade)])
+            freq_json[label_str] = process_freqs(freq)
+        # write to one frequency json
         write_json(freq_json, prefix+'frequencies.json', indent=None)
 
 
-    def HI_model(self, titer_fname):
+    def HI_model(self, titer_fname, **kwargs):
+        '''
+        estimate a tree and substitution model using titers titer_fname.
+        '''
         from base.titer_model import tree_model, substitution_model
-        self.HI_tree = tree_model(self.tree.tree, titer_fname = titer_fname)
-        self.HI_tree.prepare()
-        self.HI_tree.train()
-
-        self.HI_subs = substitution_model(self.tree.tree, titer_fname = titer_fname)
-        self.HI_subs.prepare()
-        self.HI_subs.train()
+        ## TREE MODEL
+        self.HI_tree = tree_model(self.tree.tree, titer_fname = titer_fname, **kwargs)
+        self.HI_tree.prepare(**kwargs)
+        self.HI_tree.train(**kwargs)
+        # add tree attributes to the list of attributes that are saved in intermediate files
         self.tree.dump_attr.extend(['cTiter', 'dTiter'])
+
+        # SUBSTITION MODEL
+        self.HI_subs = substitution_model(self.tree.tree, titer_fname = titer_fname,**kwargs)
+        self.HI_subs.prepare(**kwargs)
+        self.HI_subs.train(**kwargs)
+
 
 
 def H3N2_scores(tree, epitope_mask_version='wolf'):
+    '''
+    takes a H3N2 HA tree and assigns H3 specific characteristics to
+    internal and external nodes
+    '''
     def epitope_sites(aa):
         return aa[epitope_mask[:len(aa)]]
 
@@ -294,8 +415,62 @@ def H3N2_scores(tree, epitope_mask_version='wolf'):
         node.rb = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
 
 
+def plot_frequencies(flu, plot_regions):
+    pivots = flu.pivots
+    plt.figure()
+
+
+def plot_trace(ax, pivots, freq, err, n_std_dev=1, err_smoothing=3, show_errorbars=True, c='r', ls='-', label=None):
+    ax.plot(pivots, freq, c=c, ls=ls, label=label)
+    if show_errorbars:
+        smerr = 1.0/np.convolve(1.0/err, np.ones(err_smoothing, dtype=float)/err_smoothing, mode='same')
+        ax.fill_between(pivots, np.maximum(0,freq-n_std_dev*smerr),
+                np.minimum(1,freq+n_std_dev*smerr),
+                facecolor=c, linewidth=0, alpha=0.1)
+
+def plot_frequencies(flu, gene, mutation=None, plot_regions=None, all_muts=False, **kwargs):
+    import seaborn as sns
+    sns.set_style('whitegrid')
+    cols = sns.color_palette()
+    linestyles = ['-', '--', '-.', ':']
+    if plot_regions is None:
+        plot_regions=regions
+    pivots = flu.pivots
+    plt.figure()
+    ax=plt.subplot(111)
+    if type(mutation)==int:
+        mutations = [x for x,freq in flu.frequencies[(gene, 'global')].iteritems()
+                     if (x[0]==mutation)&(freq[0]<0.5 or all_muts)]
+    elif mutation is not None:
+        mutations = [mutation]
+    else:
+        mutations=None
+
+    if mutations is None:
+        for ri, region in enumerate(plot_regions):
+            count=flu.tip_count[region]
+            plt.plot(pivots, count, c=cols[ri%len(cols)], label=region)
+    else:
+        print("plotting mutations", mutations)
+        for ri,region in enumerate(plot_regions):
+            for mi,mut in enumerate(mutations):
+                if mut in flu.frequencies[(gene, region)]:
+                    freq = flu.frequencies[(gene, region)][mut]
+                    err = flu.frequency_confidence[(gene, region)][mut]
+                    c=cols[ri%len(cols)]
+                    label_str = str(mut[0]+1)+mut[1]+', '+region
+                    plot_trace(ax, pivots, freq, err, c=c,
+                        ls=linestyles[mi%len(linestyles)],label=label_str, **kwargs)
+                else:
+                    print(mut, 'not found in region',region)
+    ax.ticklabel_format(useOffset=False)
+    ax.legend(loc=2)
+
+
 if __name__=="__main__":
     import argparse
+    import matplotlib.pyplot as plt
+    plt.ion()
 
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
     parser.add_argument('-v', '--viruses_per_month', type = int, default = 10, help='number of viruses sampled per month')
@@ -308,11 +483,13 @@ if __name__=="__main__":
     #fname = sorted(glob.glob('../nextstrain-db/data/flu_h3n2*fasta'))[-1]
     fname = '../../nextflu2/data/flu_h3n2_gisaid.fasta'
     out_specs = {'data_dir':'data/', 'prefix':'H3N2_',
-                 'qualifier': params.time_interval[0]+'_'+params.time_interval[1]+'_noregion_'}
+                 'qualifier': params.time_interval[0]+'_'+params.time_interval[1]+'_tmp_'}
     titer_fname = sorted(glob.glob('../nextstrain-db/data/h3n2*text'))[-1]
 
-    flu = flu_process(method='SLSQP', dtps=2.0, stiffness=20, dt=1.0/6.0, time_interval=params.time_interval,
-                      inertia=0.9, fname = fname, out_specs=out_specs)
+    ppy = 12
+    flu = flu_process(method='SLSQP', dtps=2.0, stiffness=50./ppy, dt=1.0/ppy,
+                      time_interval=params.time_interval,
+                      inertia=np.exp(-1.0/ppy), fname = fname, out_specs=out_specs)
     if params.load:
         flu.load()
         H3N2_scores(flu.tree.tree)
@@ -320,7 +497,10 @@ if __name__=="__main__":
         flu.subsample(params.viruses_per_month)
         flu.align()
         flu.dump()
-        flu.estimate_mutation_frequencies()
+        # first estimate frequencies globally, then region specific
+        flu.estimate_mutation_frequencies(region="global")
+        for region in regions:
+            flu.estimate_mutation_frequencies(region=region)
         flu.dump()
         flu.build_tree()
         flu.tree.geo_inference('region')

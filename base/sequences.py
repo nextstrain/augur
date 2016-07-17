@@ -248,6 +248,7 @@ class sequence_set(object):
             # use only sequences that translate with out trouble
             if '*' not in str(tempseq)[:-1] or prune==False:
                 aa_seqs[seq.id]=SeqRecord(tempseq,id=seq.id)
+                aa_seqs[seq.id].attributes = seq.attributes
             else:
                 if verbose: print(seq.id,"has premature stops, discarding")
             bad_seq+='*' in str(tempseq)[:-1]
