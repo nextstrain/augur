@@ -6,6 +6,7 @@ from base.io_util import myopen
 from itertools import izip
 import pandas as pd
 
+TITER_ROUND=4
 
 class titers(object):
     '''
@@ -134,6 +135,9 @@ class titers(object):
 
 
     def strain_census(self):
+        '''
+        make lists of reference viruses, test viruses and 
+        '''
         sera = set()
         ref_strains = set()
         test_strains = set()
@@ -152,6 +156,7 @@ class titers(object):
         self.sera = list(sera)
         self.ref_strains = list(ref_strains)
         self.test_strains = list(test_strains)
+
 
     def titer_stats(self):
         print(" - remaining data set")
@@ -229,6 +234,8 @@ class titers(object):
 
             print('rms deviation on training set=',np.sqrt(self.fit_func()))
 
+        # extract and save the potencies and virus effects. The genetic parameters
+        # are subclass specific and need to be process by the subclass
         self.serum_potency = {serum:self.model_params[self.genetic_params+ii]
                               for ii, serum in enumerate(self.sera)}
         self.virus_effect = {strain:self.model_params[self.genetic_params+len(self.sera)+ii]
@@ -238,9 +245,92 @@ class titers(object):
     def fit_func(self):
         return np.mean( (self.titer_dist - np.dot(self.design_matrix, self.model_params))**2 )
 
-    ###
+
+    def validate(self, plot=False, cutoff=0.0, validation_set = None):
+        '''
+        predict titers of the validation set (separate set of test_titers aside previously)
+        and compare against known values. If requested by plot=True, 
+        a figure comparing predicted and measured titers is produced
+        '''
+        from scipy.stats import linregress, pearsonr
+        if validation_set is None:
+            validation_set=self.test_titers
+        self.validation = {}
+        for key, val in validation_set.iteritems():
+            pred_titer = self.predict_titer(key[0], key[1], cutoff=cutoff)
+            self.validation[key] = (val, pred_titer)
+
+        a = np.array(self.validation.values())
+        print ("number of prediction-measurement pairs",a.shape)
+        self.abs_error = np.mean(np.abs(a[:,0]-a[:,1]))
+        self.rms_error = np.sqrt(np.mean((a[:,0]-a[:,1])**2))
+        self.slope, self.intercept, tmpa, tmpb, tmpc = linregress(a[:,0], a[:,1])
+        print ("error (abs/rms): ",self.abs_error, self.rms_error)
+        print ("slope, intercept:", self.slope, self.intercept)
+        print ("pearson correlation:", pearsonr(a[:,0], a[:,1]))
+
+        if plot:
+            import matplotlib.pyplot as plt
+            import seaborn as sns
+            fs=16
+            sns.set_style('darkgrid')
+            plt.figure()
+            ax = plt.subplot(111)
+            plt.plot([-1,6], [-1,6], 'k')
+            plt.scatter(a[:,0], a[:,1])
+            plt.ylabel(r"predicted $\log_2$ distance", fontsize = fs)
+            plt.xlabel(r"measured $\log_2$ distance" , fontsize = fs)
+            ax.tick_params(axis='both', labelsize=fs)
+            plt.text(-2.5,6,'regularization:\nprediction error:', fontsize = fs-2)
+            plt.text(1.2,6, str(self.lam_drop)+'/'+str(self.lam_pot)+'/'+str(self.lam_avi)+' (HI/pot/avi)'
+                     +'\n'+str(round(self.abs_error, 2))\
+                     +'/'+str(round(self.rms_error, 2))+' (abs/rms)', fontsize = fs-2)
+            plt.tight_layout()
+
+
+    def compile_titers(self):
+        '''
+        compiles titer measurements into a json file organized by reference virus
+        during visualization, we need the average distance of a test virus from 
+        a reference virus across sera. hence the hierarchy [ref][test][serum]
+        node.clade is used as keys instead of node names
+        '''
+        def dstruct():
+            return defaultdict(dict)
+        titer_json = defaultdict(dstruct)
+
+        for key, val in self.titers_normalized.iteritems():
+            test_vir, (ref_vir, serum) = key 
+            test_clade = self.node_lookup[test_vir].clade
+            ref_clade = self.node_lookup[ref_vir].clade
+            titer_json[ref_clade][test_clade][serum] = np.round(val,TITER_ROUND) 
+
+        return titer_json
+
+
+    def compile_potencies(self):
+        '''
+        compile a json structure containing potencies for visualization
+        we need rapid access to all sera for a given reference virus, hence
+        the structure is organized by [ref][serum]
+        '''
+        potency_json = defaultdict(dict)
+        for (ref_vir, serum), val in self.serum_potency.iteritems():
+            ref_clade = self.node_lookup[ref_vir].clade
+            potency_json[ref_clade][serum] = np.round(val,TITER_ROUND)
+        return potency_json
+
+
+    def compile_virus_effects(self):
+        '''
+        compile a json structure containing virus_effects for visualization
+        '''
+        return {self.node_lookup[test_vir].clade:np.round(val,TITER_ROUND) for test_vir, val in self.virus_effect.iteritems()}
+
+
+    ##########################################################################################
     # define fitting routines for different objective functions
-    ###
+    ##########################################################################################
     def fit_l1reg(self):
         '''
         regularize genetic parameters with an l1 norm regardless of sign
@@ -328,44 +418,15 @@ class titers(object):
         W = solvers.qp(P,q,G,h)
         return np.array([x for x in W['x']])[:n_params]
 
-    def validate(self, plot=False, cutoff=0.0, validation_set = None):
-        from scipy.stats import linregress, pearsonr
-        if validation_set is None:
-            validation_set=self.test_titers
-        self.validation = {}
-        for key, val in validation_set.iteritems():
-            pred_titer = self.predict_titer(key[0], key[1], cutoff=cutoff)
-            self.validation[key] = (val, pred_titer)
-
-        a = np.array(self.validation.values())
-        print ("number of prediction-measurement pairs",a.shape)
-        self.abs_error = np.mean(np.abs(a[:,0]-a[:,1]))
-        self.rms_error = np.sqrt(np.mean((a[:,0]-a[:,1])**2))
-        self.slope, self.intercept, tmpa, tmpb, tmpc = linregress(a[:,0], a[:,1])
-        print ("error (abs/rms): ",self.abs_error, self.rms_error)
-        print ("slope, intercept:", self.slope, self.intercept)
-        print ("pearson correlation:", pearsonr(a[:,0], a[:,1]))
-
-        if plot:
-            import matplotlib.pyplot as plt
-            import seaborn as sns
-            fs=16
-            sns.set_style('darkgrid')
-            plt.figure()
-            ax = plt.subplot(111)
-            plt.plot([-1,6], [-1,6], 'k')
-            plt.scatter(a[:,0], a[:,1])
-            plt.ylabel(r"predicted $\log_2$ distance", fontsize = fs)
-            plt.xlabel(r"measured $\log_2$ distance" , fontsize = fs)
-            ax.tick_params(axis='both', labelsize=fs)
-            plt.text(-2.5,6,'regularization:\nprediction error:', fontsize = fs-2)
-            plt.text(1.2,6, str(self.lam_drop)+'/'+str(self.lam_pot)+'/'+str(self.lam_avi)+' (HI/pot/avi)'
-                     +'\n'+str(round(self.abs_error, 2))\
-                     +'/'+str(round(self.rms_error, 2))+' (abs/rms)', fontsize = fs-2)
-            plt.tight_layout()
+##########################################################################################
+# END GENERIC CLASS
+##########################################################################################
 
 
 
+##########################################################################################
+# TREE MODEL
+##########################################################################################
 class tree_model(titers):
     """
     tree_model extends titers and fits the antigenic differences
@@ -519,11 +580,18 @@ class tree_model(titers):
         else:
             return None
 
+
+
+##########################################################################################
+# SUBSTITUTION MODEL
+##########################################################################################
 class substitution_model(titers):
     """
     substitution_model extends titers and implements a model that
     seeks to describe titer differences by sums of contributions of
-    substitions separating the test and reference viruses
+    substitions separating the test and reference viruses. Sequences
+    are assumed to be attached to each terminal node in the tree as
+    node.translations
     """
     def __init__(self,*args, **kwargs):
         super(substitution_model, self).__init__(*args, **kwargs)
@@ -547,6 +615,10 @@ class substitution_model(titers):
 
 
     def get_mutations_nodes(self, node1, node2):
+        '''
+        loops over all translations (listed in self.proteins) and returns a list of 
+        between as tuples (protein, mutation) e.g. (HA1, 159F)
+        '''
         muts = []
         for prot in self.proteins:
             seq1 = node1.translations[prot]
@@ -659,10 +731,13 @@ class substitution_model(titers):
 
 
     def train(self,**kwargs):
+        '''
+        determine the model parameters. the result will be stored in self.substitution_effect
+        '''
         self._train(**kwargs)
-        self.mutation_effects={}
+        self.substitution_effect={}
         for mi, mut in enumerate(self.relevant_muts):
-            self.mutation_effects[mut] = self.model_params[mi]
+            self.substitution_effect[mut] = self.model_params[mi]
 
 
     def predict_titer(self, virus, serum, cutoff=0.0):
@@ -671,10 +746,18 @@ class substitution_model(titers):
             pot = self.serum_potency[serum] if serum in self.serum_potency else 0.0
             avi = self.virus_effect[virus] if virus in self.virus_effect else 0.0
             return avi + pot\
-                + np.sum([self.mutation_effects[mut] for mut in muts
-                if (mut in self.mutation_effects and self.mutation_effects[mut]>cutoff)])
+                + np.sum([self.substitution_effect[mut] for mut in muts
+                if (mut in self.substitution_effect and self.substitution_effect[mut]>cutoff)])
         else:
             return None
+
+    def compile_substitution_effects(self, cutoff=1e-4):
+        '''
+        compile a flat json of substitution effects for visualization, prune mutation without effect
+        '''
+        return {mut[0]+':'+mut[1]:np.round(val,int(-np.log10(cutoff))) 
+                for mut, val in self.substitution_effect.iteritems() if val>cutoff}
+
 
 if __name__=="__main__":
     # test tree model (assumes there is a tree called flu in memory...)

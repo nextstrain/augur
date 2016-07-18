@@ -299,6 +299,24 @@ class flu_process(object):
         self.tree.tree.root.up = None
 
 
+    def HI_model(self, titer_fname, **kwargs):
+        '''
+        estimate a tree and substitution model using titers titer_fname.
+        '''
+        from base.titer_model import tree_model, substitution_model
+        ## TREE MODEL
+        self.HI_tree = tree_model(self.tree.tree, titer_fname = titer_fname, **kwargs)
+        self.HI_tree.prepare(**kwargs)
+        self.HI_tree.train(**kwargs)
+        # add tree attributes to the list of attributes that are saved in intermediate files
+        self.tree.dump_attr.extend(['cTiter', 'dTiter'])
+
+        # SUBSTITION MODEL
+        self.HI_subs = substitution_model(self.tree.tree, titer_fname = titer_fname,**kwargs)
+        self.HI_subs.prepare(**kwargs)
+        self.HI_subs.train(**kwargs)
+
+
     def export(self, prefix='web/data/', extra_attr = []):
         '''
         export the tree, sequences, frequencies to json files for visualization
@@ -317,38 +335,41 @@ class flu_process(object):
             return [round(x,4) for x in freq]
 
         # construct a json file containing all frequency estimate
-        # the current format is region_protein_159F
+        # the format is region_protein:159F for mutations and region_clade:123 for clades
         freq_json = {'pivots':process_freqs(self.pivots)}
         freq_json['counts'] = {x:list(counts) for x, counts in self.tip_count.iteritems()}
         for (region, gene), tmp_freqs in self.frequencies.iteritems():
             for mut, freq in tmp_freqs.iteritems():
-                label_str =  '_'.join([region, gene] + [str(mut[0]+1), mut[1]])
+                label_str =  region+-"_"+ gene + ':' + str(mut[0]+1)+mut[1]
                 freq_json[label_str] = process_freqs(freq)
         # repeat for clade frequencies in trees
         for (region,clade), freq in self.tree_frequencies.iteritems():
-            label_str = '_'.join([region, 'clade', str(clade)])
+            label_str = region+'_clade:'+str(clade)
             freq_json[label_str] = process_freqs(freq)
         # write to one frequency json
         write_json(freq_json, prefix+'frequencies.json', indent=None)
 
 
-    def HI_model(self, titer_fname, **kwargs):
-        '''
-        estimate a tree and substitution model using titers titer_fname.
-        '''
-        from base.titer_model import tree_model, substitution_model
-        ## TREE MODEL
-        self.HI_tree = tree_model(self.tree.tree, titer_fname = titer_fname, **kwargs)
-        self.HI_tree.prepare(**kwargs)
-        self.HI_tree.train(**kwargs)
-        # add tree attributes to the list of attributes that are saved in intermediate files
-        self.tree.dump_attr.extend(['cTiter', 'dTiter'])
+    def HI_export(self, prefix):
+        if hasattr(self, 'HI_tree'):
+            # export the raw titers
+            hi_data = self.HI_tree.compile_titers()
+            write_json(hi_data, prefix+'titers.json')
+            # export the tree model (avidities and potencies only)
+            tree_model = {'potency':self.HI_tree.compile_potencies(),
+                          'avidities':self.HI_tree.compile_virus_effects()}
+            write_json(tree_model, prefix+'titer_tree_model.json')
+        else:
+            print('Tree model not yet trained')
 
-        # SUBSTITION MODEL
-        self.HI_subs = substitution_model(self.tree.tree, titer_fname = titer_fname,**kwargs)
-        self.HI_subs.prepare(**kwargs)
-        self.HI_subs.train(**kwargs)
-
+        if hasattr(self, 'HI_tree'):
+            # export the substitution model
+            subs_model = {'potency':self.HI_subs.compile_potencies(),
+                          'avidity':self.HI_subs.compile_virus_effects(),
+                          'substitution':self.HI_subs.compile_substitution_effects()}
+            write_json(subs_model, prefix+'titer_subs_model.json')
+        else:
+            print('Substitution model not yet trained')
 
 
 def H3N2_scores(tree, epitope_mask_version='wolf'):
@@ -513,7 +534,9 @@ if __name__=="__main__":
         if remove_outgroup:
             flu.remove_outgroup()
 
+        flu.HI_titers()
         H3N2_scores(flu.tree.tree)
+        flu.dump()
 
         flu.export(prefix='json/'+out_specs['prefix']+out_specs['qualifier'],
                   extra_attr=['cTiter', 'dTiter', 'aa_mut_str'])
