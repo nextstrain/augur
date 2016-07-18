@@ -287,6 +287,16 @@ class titers(object):
                      +'/'+str(round(self.rms_error, 2))+' (abs/rms)', fontsize = fs-2)
             plt.tight_layout()
 
+    def reference_virus_statistic(self):
+        '''
+        count measurements for every reference virus and serum
+        '''
+        def dstruct():
+            return defaultdict(int)
+        self.titer_counts = defaultdict(dstruct)
+        for test_vir, (ref_vir, serum) in self.titers_normalized:
+            self.titer_counts[ref_vir][serum]+=1
+
 
     def compile_titers(self):
         '''
@@ -318,6 +328,17 @@ class titers(object):
         for (ref_vir, serum), val in self.serum_potency.iteritems():
             ref_clade = self.node_lookup[ref_vir].clade
             potency_json[ref_clade][serum] = np.round(val,TITER_ROUND)
+
+        # add the average potency (weighed by the number of measurements per serum)
+        # to the exported data structure
+        self.reference_virus_statistic()
+        mean_potency = defaultdict(int)
+        for (ref_vir, serum), val in self.serum_potency.iteritems():
+            mean_potency[ref_vir] += self.titer_counts[ref_vir][serum]*val
+        for ref_vir in self.ref_strains:
+            ref_clade = self.node_lookup[ref_vir].clade
+            potency_json[ref_clade]['mean_potency'] = 1.0*mean_potency[ref_vir]/np.sum(self.titer_counts[ref_vir].values())
+
         return potency_json
 
 

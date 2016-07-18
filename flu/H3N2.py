@@ -243,8 +243,8 @@ class flu_process(object):
                                             self.pivots, ws=max(2,len(time_points)//10),
                                             **self.kwargs)
             aln_frequencies.mutation_frequencies(min_freq=0.01)
-            self.frequencies[(prot, region)] = aln_frequencies.frequencies
-            self.frequency_confidence[(prot, region)] = aln_frequencies.calc_confidence()
+            self.frequencies[(region,prot)] = aln_frequencies.frequencies
+            self.frequency_confidence[(region,prot)] = aln_frequencies.calc_confidence()
         self.tip_count[region]=aln_frequencies.counts
 
 
@@ -340,7 +340,7 @@ class flu_process(object):
         freq_json['counts'] = {x:list(counts) for x, counts in self.tip_count.iteritems()}
         for (region, gene), tmp_freqs in self.frequencies.iteritems():
             for mut, freq in tmp_freqs.iteritems():
-                label_str =  region+-"_"+ gene + ':' + str(mut[0]+1)+mut[1]
+                label_str =  region+"_"+ gene + ':' + str(mut[0]+1)+mut[1]
                 freq_json[label_str] = process_freqs(freq)
         # repeat for clade frequencies in trees
         for (region,clade), freq in self.tree_frequencies.iteritems():
@@ -349,6 +349,7 @@ class flu_process(object):
         # write to one frequency json
         write_json(freq_json, prefix+'frequencies.json', indent=None)
 
+        self.HI_export(prefix)
 
     def HI_export(self, prefix):
         if hasattr(self, 'HI_tree'):
@@ -504,8 +505,8 @@ if __name__=="__main__":
     params = parser.parse_args()
     #fname = sorted(glob.glob('../nextstrain-db/data/flu_h3n2*fasta'))[-1]
     fname = '../../nextflu2/data/flu_h3n2_gisaid.fasta'
-    out_specs = {'data_dir':'data/', 'prefix':'H3N2_',
-                 'qualifier': params.time_interval[0]+'_'+params.time_interval[1]+'_tmp_'}
+    out_specs = {'data_dir':'data/', 'prefix':'H3N2_', 'qualifier':'3y_'}
+#                 'qualifier': params.time_interval[0]+'_'+params.time_interval[1]+'_tmp_'}
     titer_fname = sorted(glob.glob('../nextstrain-db/data/h3n2*text'))[-1]
 
     ppy = 12
@@ -534,9 +535,9 @@ if __name__=="__main__":
         if remove_outgroup:
             flu.remove_outgroup()
 
-        flu.HI_titers()
+        flu.HI_model(titer_fname)
         H3N2_scores(flu.tree.tree)
         flu.dump()
 
         flu.export(prefix='json/'+out_specs['prefix']+out_specs['qualifier'],
-                  extra_attr=['cTiter', 'dTiter', 'aa_mut_str'])
+                  extra_attr=['cTiter', 'dTiter', 'aa_mut_str', 'serum'])
