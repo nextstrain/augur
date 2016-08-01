@@ -270,6 +270,60 @@ class flu_process(object):
         self.tree_pivots = tree_freqs.pivots
 
 
+    def count_mutations_per_site(self):
+        '''
+        count the number of independent mutations at each site
+        '''
+        def mut_struct():
+            return defaultdict(int)
+        mutation_dict = defaultdict(mut_struct)
+        for node in self.tree.find_clades():
+            for prot in node.aa_mutations:
+                for anc, pos, der in node.aa_mutations[prot]:
+                    mutation_dict[(prot,pos)][anc+'->'+der]+=1
+
+        for key in mutation_dict:
+            mutation_dict[key]['total'] = np.sum(mutation_dict[key].values())
+
+        self.mutation_count = mutation_dict
+
+
+    def calculate_associations(self, covariate='passage', lookup=None):
+        '''
+        calculate the association of amino acid state and
+        sequence properties such as passage
+        '''
+        if not hasattr(self, 'mutation_count'):
+            self.count_mutations_per_site()
+
+        # calculate associations
+        from scipy.stats import chi2_contingency
+        self.associations = {}
+        if lookup is None:
+            lookup=lambda x:x
+
+        # loop over all positions (currently rather clumsy)
+        for prot, pos in mutation_dict:
+            assoc = defaultdict(int)
+            for node in selt.tree.get_terminals(): # extract info from each node
+                if hasattr(node, covariate):
+                    assoc[(node.translations[prot][pos-1], lookup(node.passage))]+=1
+
+            # make contingency matrix
+            aa_states = sorted(set([x[0] for x in assoc]))
+            cov_states = sorted(set([x[1] for x in assoc]))
+            contingeny_matrix = np.zeros((aa_states, cov_states))
+            for a, c in assoc:
+                contingeny_matrix[aa_states.index(a), cov_states.index(c)] = assoc[(a,c)]
+            g, p, dof, expctd = chi2_contingency(contingeny_matrix, lambda_="log-likelihood")
+            assoc['contingency matrix'] = contingeny_matrix
+            assoc['aa']=aa_states
+            assoc['covariates']=cov_states
+            assoc['g_test'] = (g,p)
+
+            self.associations[(prot, pos)] = assoc
+
+
     def build_tree(self, infile=None, nodefile=None, root='best'):
         '''
         instantiate a tree object and make a time tree
