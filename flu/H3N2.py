@@ -60,20 +60,6 @@ class flu_process(object):
                               datetime.strptime(time_interval[1], "%Y-%m-%d").date()]
         self.filenames()
 
-        # parse the outgroup information
-        if 'outgroup' in kwargs:
-            outgroup_file = kwargs['outgroup']
-        else:
-            outgroup_file = 'flu/metadata/'+out_specs['prefix']+'outgroup.gb'
-        tmp_outgroup = SeqIO.read(outgroup_file, 'genbank')
-        self.outgroup = 'a/beijing/32/1992' #(tmp_outgroup.features[0].qualifiers['strain'][0]).lower()
-        genome_annotation = tmp_outgroup.features
-        ref_seq = SeqIO.read(outgroup_file, 'genbank')
-
-        # grap annotation from genbank
-        self.proteins = {f.qualifiers['gene'][0]:FeatureLocation(start=f.location.start, end=f.location.end, strand=1)
-                for f in ref_seq.features if 'gene' in f.qualifiers and f.qualifiers['gene'][0] in ['SigPep', 'HA1', 'HA2']}
-
         # set up containers for frequency estimation and pivots to use
         self.frequencies = defaultdict(dict)
         self.frequency_confidence = defaultdict(dict)
@@ -84,7 +70,27 @@ class flu_process(object):
         self.pivots = np.arange(num_date(self.time_interval[0]),
                                   num_date(self.time_interval[1])+self.freq_pivot_dt,
                                   self.freq_pivot_dt)
+        self.seqs=None
 
+        # parse the outgroup information
+        if 'outgroup' in kwargs:
+            outgroup_file = kwargs['outgroup']
+        else:
+            outgroup_file = 'flu/metadata/'+out_specs['prefix']+'outgroup.gb'
+        self.load_outgroup(outgroup_file)
+
+
+    def load_outgroup(self,outgroup_file):
+        self.outgroup = 'a/beijing/32/1992' #(tmp_outgroup.features[0].qualifiers['strain'][0]).lower()
+        self.outgroup_seq = SeqIO.read(outgroup_file, 'genbank')
+        self.genome_annotation = self.outgroup_seq.features
+
+        # grap annotation from genbank
+        self.proteins = {f.qualifiers['gene'][0]:FeatureLocation(start=f.location.start, end=f.location.end, strand=1)
+                for f in self.genome_annotation if 'gene' in f.qualifiers and f.qualifiers['gene'][0] in ['SigPep', 'HA1', 'HA2']}
+
+
+    def load_sequences(self):
         # instantiate and population the sequence objects
         self.seqs = sequence_set(self.fname, reference=self.outgroup)
         self.seqs.ungap()
@@ -92,7 +98,12 @@ class flu_process(object):
                          5:'country', 7:"city", 12:"subtype",13:'lineage'}, strip='_')
 
         # make sure the reference is part of the sequence set
-        self.seqs.raw_seqs[self.outgroup].seq=tmp_outgroup.seq
+        if self.outgroup in self.seqs.raw_seqs:
+            self.seqs.raw_seqs[self.outgroup].seq=self.outgroup_seq.seq
+        else:
+            print('Outgroup is not in data base')
+            self.seqs.raw_seqs[self.outgroup]=self.outgroup_seq
+
         self.seqs.reference = self.seqs.raw_seqs[self.outgroup]
         # throw out sequences without dates
         self.seqs.parse_date(["%Y-%m-%d"], prune=True)
@@ -157,6 +168,8 @@ class flu_process(object):
 
 
     def subsample(self, sampling_threshold):
+        if self.seqs is None:
+            self.load_sequences()
 
         def sampling_category(x):
             return (x.attributes['region'],
@@ -277,7 +290,7 @@ class flu_process(object):
         def mut_struct():
             return defaultdict(int)
         mutation_dict = defaultdict(mut_struct)
-        for node in self.tree.find_clades():
+        for node in self.tree.tree.find_clades():
             for prot in node.aa_mutations:
                 for anc, pos, der in node.aa_mutations[prot]:
                     mutation_dict[(prot,pos)][anc+'->'+der]+=1
@@ -303,18 +316,19 @@ class flu_process(object):
             lookup=lambda x:x
 
         # loop over all positions (currently rather clumsy)
-        for prot, pos in mutation_dict:
+        for prot, pos in self.mutation_count:
             assoc = defaultdict(int)
-            for node in selt.tree.get_terminals(): # extract info from each node
+            for node in self.tree.tree.get_terminals(): # extract info from each node
                 if hasattr(node, covariate):
-                    assoc[(node.translations[prot][pos-1], lookup(node.passage))]+=1
+                    assoc[(node.translations[prot][pos-1], lookup(node.__getattribute__(covariate)))]+=1
 
             # make contingency matrix
             aa_states = sorted(set([x[0] for x in assoc]))
             cov_states = sorted(set([x[1] for x in assoc]))
-            contingeny_matrix = np.zeros((aa_states, cov_states))
+            contingeny_matrix = np.zeros((len(aa_states), len(cov_states)))
             for a, c in assoc:
                 contingeny_matrix[aa_states.index(a), cov_states.index(c)] = assoc[(a,c)]
+            print(contingeny_matrix, assoc)
             g, p, dof, expctd = chi2_contingency(contingeny_matrix, lambda_="log-likelihood")
             assoc['contingency matrix'] = contingeny_matrix
             assoc['aa']=aa_states
