@@ -567,17 +567,17 @@ if __name__=="__main__":
     parser.add_argument('-v', '--viruses_per_month', type = int, default = 10, help='number of viruses sampled per month')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
     parser.add_argument('-d', '--download', action='store_true', default = False, help='load from database')
-    parser.add_argument('-t', '--time_interval', nargs=2, default=('2010-01-01', '2016-01-01'),
+    parser.add_argument('-t', '--time_interval', nargs=2, default=('2012-01-01', '2016-01-01'),
                             help='time interval to sample sequences from: provide dates as YYYY-MM-DD')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
     params = parser.parse_args()
     #fname = sorted(glob.glob('../nextstrain-db/data/flu_h3n2*fasta'))[-1]
-    fname = '../../nextflu2/data/flu_h3n2_gisaid.fasta'
+    fname = '../../nextflu_umbrella/nextflu2/data/flu_h3n2_gisaid.fasta'
     out_specs = {'data_dir':'data/', 'prefix':'H3N2_', 'qualifier':'3y_'}
 #                 'qualifier': params.time_interval[0]+'_'+params.time_interval[1]+'_tmp_'}
     titer_fname = sorted(glob.glob('../nextstrain-db/data/h3n2*text'))[-1]
 
-    ppy = 12
+    ppy = 4
     flu = flu_process(method='SLSQP', dtps=2.0, stiffness=50./ppy, dt=1.0/ppy,
                       time_interval=params.time_interval,
                       inertia=np.exp(-1.0/ppy), fname = fname, out_specs=out_specs)
@@ -590,8 +590,8 @@ if __name__=="__main__":
         flu.dump()
         # first estimate frequencies globally, then region specific
         flu.estimate_mutation_frequencies(region="global")
-        for region in regions:
-            flu.estimate_mutation_frequencies(region=region)
+        #for region in regions:
+        #    flu.estimate_mutation_frequencies(region=region)
         flu.dump()
         flu.build_tree()
         flu.tree.geo_inference('region')

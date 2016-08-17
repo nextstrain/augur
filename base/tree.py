@@ -120,23 +120,14 @@ class tree(object):
 
 
     def tt_from_file(self, infile, root='best', nodefile=None):
-        from treetime.gtr import GTR
-        from treetime import io, utils
+        from treetime import TreeTime
+        from treetime import utils
         print('Reading tree from file',infile)
-        gtr = GTR.standard()
-        self.tt = io.treetime_from_newick(gtr, infile)
-        io.set_seqs_to_leaves(self.tt, self.aln)
-        io.set_node_dates_from_dic(self.tt, {seq.id:utils.numeric_date(seq.attributes['date'])
-                                for seq in self.aln if 'date' in seq.attributes})
+        dates  =   {seq.id:utils.numeric_date(seq.attributes['date'])
+                    for seq in self.aln if 'date' in seq.attributes}
+        self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor', aln = self.aln)
+        self.tt.reroot(root=root)
         self.tree = self.tt.tree
-        if root=='midpoint':
-            self.tt.tree.root_at_midpoint()
-            self.tt.set_additional_tree_params()
-        elif root=='oldest':
-            tmp = self.tt.reroot_to_oldest()
-        elif root=='best':
-            self.tt.reroot_to_best_root(n_iqd=4)
-
 
         for node in self.tree.get_terminals():
             if node.name in self.sequence_lookup:
@@ -165,19 +156,11 @@ class tree(object):
         self.dump_attr.append('sequence')
 
 
-    def timetree(self, Tc=0.05, infer_gtr=False, reroot=True,  **kwarks):
-        if reroot==True:
-            print('rerooting...')
-            self.tt.reroot_to_best_root(infer_gtr=True, **kwarks)
-        else:
-            self.tt.infer_gtr()
-            self.tt.set_additional_tree_params()
-            self.tt.init_date_constraints()
-        print('estimating time tree with coalescent model...')
-        self.tt.coalescent_model(Tc=Tc,**kwarks)
+    def timetree(self, Tc=0.05, infer_gtr=True, reroot='best',  **kwarks):
+        self.tt.run(infer_gtr=infer_gtr, root=reroot, resolve_polytomies=True)
+        print('estimating time tree...')
         self.dump_attr.extend(['numdate','date','sequence'])
         self.is_timetree=True
-
 
     def geo_inference(self, attr):
         from treetime.gtr import GTR
@@ -227,10 +210,8 @@ class tree(object):
 
 
     def refine(self):
-        from treetime.utils import opt_branch_len
         self.tree.ladderize()
         for node in self.tree.find_clades():
-            node.opt_branch_length = opt_branch_len(node)
             if node.up is not None:
                 node.mut_str = ",".join(["".join(map(str, x)) for x in node.mutations])
                 node.aa_mut_str = {}
@@ -241,7 +222,8 @@ class tree(object):
                                             enumerate(zip(node.up.translations[prot],
                                                           node.translations[prot])) if a!=d]
                         node.aa_mut_str[prot] = ",".join(["".join(map(str,x)) for x in node.aa_mutations[prot]])
-        self.dump_attr.extend(['mut_str', 'aa_mut_str', 'aa_mutations', 'opt_branch_length', 'mutations'])
+        self.dump_attr.extend(['mut_str', 'aa_mut_str', 'aa_mutations', 'mutation_length', 'mutations'])
+
 
     def layout(self):
         """Add clade, xvalue, yvalue, mutation and trunk attributes to all nodes in tree"""
@@ -251,11 +233,10 @@ class tree(object):
             node.clade = clade
             clade += 1
             if node.up is not None: #try:
+                node.xvalue = node.up.xvalue+node.mutation_length
                 if self.is_timetree:
-                    node.xvalue = node.up.xvalue+node.opt_branch_length
                     node.tvalue = node.numdate - self.tree.root.numdate
                 else:
-                    node.xvalue = node.up.xvalue+node.branch_length
                     node.tvalue = 0
             else:
                 node.xvalue = 0
@@ -268,7 +249,6 @@ class tree(object):
         self.dump_attr.extend(['yvalue', 'xvalue', 'clade'])
         if self.is_timetree:
             self.dump_attr.extend(['tvalue'])
-
 
 
     def export(self, path = '', extra_attr = ['aa_mut_str'], plain_export = 10):
