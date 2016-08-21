@@ -338,7 +338,7 @@ class flu_process(object):
             self.associations[(prot, pos)] = assoc
 
 
-    def build_tree(self, infile=None, nodefile=None, root='best'):
+    def build_tree(self, infile=None, nodefile=None, root='best', Tc=0.01):
         '''
         instantiate a tree object and make a time tree
         if infiles are None, the tree is build from scratch. Otherwise
@@ -351,8 +351,12 @@ class flu_process(object):
             self.tree.tt_from_file(infile, nodefile=nodefile, root=root)
         # if node file is none, no time information is available.
         # hence make a coalescent model time tree and decorate that tree.
+        if self.rm_og:
+            flu.remove_outgroup()
+            flu.tree.tt.prepare_tree()
+
         if nodefile is None:
-            self.tree.timetree(Tc=0.01, infer_gtr=True)
+            self.tree.timetree(Tc=Tc, infer_gtr=True)
             self.tree.add_translations()
             self.tree.refine()
             self.tree.layout()
@@ -362,9 +366,10 @@ class flu_process(object):
         '''
         THIS ASSUMES LADDERIZATION!
         '''
-        self.tree.tree.root = self.tree.tree.root.clades[1]
-        self.tree.tree.root.branch_length=0.001
-        self.tree.tree.root.up = None
+        while np.sum([x.branch_length for x in self.tree.tree.root.clades])>0.02:
+            self.tree.tree.root = self.tree.tree.root.clades[1]
+            self.tree.tree.root.branch_length=0.001
+            self.tree.tree.root.up = None
 
 
     def HI_model(self, titer_fname, **kwargs):
@@ -585,6 +590,8 @@ if __name__=="__main__":
         flu.load()
         H3N2_scores(flu.tree.tree)
     else:
+        remove_outgroup = int(params.time_interval[0][:4])>1996
+        flu.rm_og = remove_outgroup
         flu.subsample(params.viruses_per_month)
         flu.align()
         flu.dump()
@@ -593,15 +600,16 @@ if __name__=="__main__":
         #for region in regions:
         #    flu.estimate_mutation_frequencies(region=region)
         flu.dump()
-        flu.build_tree()
+        flu.build_tree(Tc=0.01)
+
+        flu.tree.add_translations()
+        flu.tree.refine()
+        flu.tree.layout()
         flu.tree.geo_inference('region')
         flu.tree.geo_inference('country')
         flu.dump()
         flu.estimate_tree_frequencies()
         flu.dump()
-        remove_outgroup = int(params.time_interval[0][:4])>1996
-        if remove_outgroup:
-            flu.remove_outgroup()
 
         flu.HI_model(titer_fname)
         H3N2_scores(flu.tree.tree)

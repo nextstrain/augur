@@ -125,7 +125,7 @@ class tree(object):
         print('Reading tree from file',infile)
         dates  =   {seq.id:utils.numeric_date(seq.attributes['date'])
                     for seq in self.aln if 'date' in seq.attributes}
-        self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor', aln = self.aln)
+        self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor', aln = self.aln, verbose=3)
         self.tt.reroot(root=root)
         self.tree = self.tt.tree
 
@@ -156,8 +156,9 @@ class tree(object):
         self.dump_attr.append('sequence')
 
 
-    def timetree(self, Tc=0.05, infer_gtr=True, reroot='best',  **kwarks):
-        self.tt.run(infer_gtr=infer_gtr, root=reroot, resolve_polytomies=True)
+    def timetree(self, Tc=0.01, infer_gtr=True, reroot='best', max_iter=2, **kwarks):
+        self.tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc,
+                    resolve_polytomies=True, max_iter=max_iter)
         print('estimating time tree...')
         self.dump_attr.extend(['numdate','date','sequence'])
         self.is_timetree=True
@@ -186,9 +187,10 @@ class tree(object):
         for node in self.tree.get_nonterminals():
             node.__delattr__('sequence')
         self.tt._gtr = myGeoGTR
-        self.tt.reconstruct_anc(method='ml')
+        self.tt.use_mutation_length=False
+        self.tt.reconstruct_anc(method='ml', store_compressed=False)
         self.tt.infer_gtr(print_raw=True)
-        self.tt.reconstruct_anc(method='ml')
+        self.tt.reconstruct_anc(method='ml', store_compressed=False)
 
         self.tt.geogtr = self.tt.gtr
         self.tt.geogtr.alphabet_to_location = alphabet
@@ -197,6 +199,7 @@ class tree(object):
         for node in self.tree.find_clades():
             node.__setattr__(attr, alphabet[node.sequence[0]])
             node.sequence = node.nuc_sequence
+        self.tt.use_mutation_length=True
 
 
     def add_translations(self):
