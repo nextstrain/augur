@@ -136,7 +136,7 @@ class titers(object):
 
     def strain_census(self):
         '''
-        make lists of reference viruses, test viruses and 
+        make lists of reference viruses, test viruses and
         '''
         sera = set()
         ref_strains = set()
@@ -249,7 +249,7 @@ class titers(object):
     def validate(self, plot=False, cutoff=0.0, validation_set = None):
         '''
         predict titers of the validation set (separate set of test_titers aside previously)
-        and compare against known values. If requested by plot=True, 
+        and compare against known values. If requested by plot=True,
         a figure comparing predicted and measured titers is produced
         '''
         from scipy.stats import linregress, pearsonr
@@ -301,7 +301,7 @@ class titers(object):
     def compile_titers(self):
         '''
         compiles titer measurements into a json file organized by reference virus
-        during visualization, we need the average distance of a test virus from 
+        during visualization, we need the average distance of a test virus from
         a reference virus across sera. hence the hierarchy [ref][test][serum]
         node.clade is used as keys instead of node names
         '''
@@ -310,10 +310,10 @@ class titers(object):
         titer_json = defaultdict(dstruct)
 
         for key, val in self.titers_normalized.iteritems():
-            test_vir, (ref_vir, serum) = key 
+            test_vir, (ref_vir, serum) = key
             test_clade = self.node_lookup[test_vir].clade
             ref_clade = self.node_lookup[ref_vir].clade
-            titer_json[ref_clade][test_clade][serum] = np.round(val,TITER_ROUND) 
+            titer_json[ref_clade][test_clade][serum] = np.round(val,TITER_ROUND)
 
         return titer_json
 
@@ -637,7 +637,7 @@ class substitution_model(titers):
 
     def get_mutations_nodes(self, node1, node2):
         '''
-        loops over all translations (listed in self.proteins) and returns a list of 
+        loops over all translations (listed in self.proteins) and returns a list of
         between as tuples (protein, mutation) e.g. (HA1, 159F)
         '''
         muts = []
@@ -776,7 +776,7 @@ class substitution_model(titers):
         '''
         compile a flat json of substitution effects for visualization, prune mutation without effect
         '''
-        return {mut[0]+':'+mut[1]:np.round(val,int(-np.log10(cutoff))) 
+        return {mut[0]+':'+mut[1]:np.round(val,int(-np.log10(cutoff)))
                 for mut, val in self.substitution_effect.iteritems() if val>cutoff}
 
 

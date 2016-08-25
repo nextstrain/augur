@@ -42,6 +42,9 @@ class sequence_set(object):
                     x.description = fix_names(x.description)
         elif 'virus' in kwarks:
             self.from_vdb(kwarks['virus'])
+        else:
+            print('no input sequences found -- empty sequence set')
+            return
 
         if 'run_dir' not in kwarks:
             import random
@@ -55,6 +58,7 @@ class sequence_set(object):
             else:
                 self.reference = reference
         else: self.reference=None
+
 
     def parse(self, fields, sep='|', strip='_'):
         '''
@@ -88,6 +92,7 @@ class sequence_set(object):
             seq.attributes = attr
             self.raw_seqs[attr['strain']] = seq
 
+
     def ungap(self):
         '''
         remove previously existing gaps and make sure all sequences are upper case
@@ -116,11 +121,12 @@ class sequence_set(object):
                         continue
 
         if prune:
-            self.raw_seqs = {k:v for k,v in self.raw_seqs.iteritems()
-                            if 'date' in v.attributes and type(v.attributes['date'])!=str}
+            self.filter(func = lambda x:'date' in x.attributes and type(x.attributes['date'])!=str)
+
 
     def filter(self, func):
         self.raw_seqs = {key:seq for key, seq in self.raw_seqs.iteritems() if func(seq)}
+
 
     def clock_filter(self, root_seq=None, n_iqd=3, max_gaps = 1.0, plot=False):
         '''
@@ -169,6 +175,7 @@ class sequence_set(object):
         self.aln = MultipleSeqAlignment(tmp.values())
         print("after clock filter:",len(self.aln))
 
+
     def subsample(self, category=None, priority=None, threshold=None, repeated=False):
         '''
         produce a useful set of sequences from the raw input.
@@ -180,6 +187,7 @@ class sequence_set(object):
                      that is included in the final set. takes arguments, cat and seq
                      alternatively can be an int
         '''
+        # define filter criteria if not specified
         if category is None:
             category = lambda x:(x.attributes['date'].year, x.attributes['date'].month)
         if priority is None:
@@ -191,16 +199,19 @@ class sequence_set(object):
             tmp = threshold
             threshold = lambda x:tmp
 
+        # if we do repeated subsampling, subsamples seqs, otherwise raw_seqs
         self.sequence_categories = defaultdict(list)
         if repeated:
             seqs_to_subsample = self.seqs.values()
         else:
             seqs_to_subsample = self.raw_seqs.values()
 
+        # sort sequences into categories and assign priority score
         for seq in seqs_to_subsample:
             seq._priority = priority(seq)
             self.sequence_categories[category(seq)].append(seq)
 
+        # sample and record the degree to which a category is under_sampled
         self.seqs = {}
         for cat, seqs in self.sequence_categories.iteritems():
             under_sampling = min(1.00, 1.0*len(seqs)/threshold(cat))
@@ -208,10 +219,15 @@ class sequence_set(object):
             seqs.sort(key=lambda x:x._priority, reverse=True)
             self.seqs.update({seq.id:seq for seq in seqs[:threshold( (cat, seqs) )]})
 
+        # re-add the reference sequence is desired
         if self.reference.id not in self.seqs:
             self.seqs[self.reference.id] = self.reference
 
+
     def align(self):
+        '''
+        align sequences using mafft
+        '''
         from Bio import AlignIO
         make_dir(self.run_dir)
         os.chdir(self.run_dir)
@@ -227,6 +243,7 @@ class sequence_set(object):
             self.sequence_lookup[seqid].attributes = seq.attributes
         os.chdir('..')
         remove_dir(self.run_dir)
+
 
     def codon_align(self, alignment_tool="mafft", prune=True, verbose=0):
         ''' takes a nucleotide alignment, translates it, aligns the amino acids, pads the gaps
@@ -290,6 +307,7 @@ class sequence_set(object):
         for seq in self.aln:
             seq.seq = Seq("".join(np.array(seq)[ungapped]))
 
+
     def diversity_statistics(self):
         ''' calculate alignment entropy of nucleotide and optionally protein alignments '''
         if not hasattr(self, "aln"):
@@ -306,7 +324,11 @@ class sequence_set(object):
                 tmp_af = self.af[prot][:-2]/self.af[prot][:-2].sum(axis=0)
                 self.entropy[prot] = -(tmp_af*np.log(tmp_af+TINY)).sum(axis=0)
 
+
     def translate(self, proteins=None):
+        '''
+        make alignment of translations
+        '''
         from Bio.SeqFeature import FeatureLocation
         from Bio.Seq import Seq
         from Bio.Align import MultipleSeqAlignment
@@ -314,8 +336,10 @@ class sequence_set(object):
             self.translations={}
             self.proteins={}
 
-        if proteins is None: # add a default translation of the entire sequence unless otherwise specified
-            self.proteins.update({'cds':FeatureLocation(start=0, end=self.aln.get_alignment_length(), strand=1)})
+        # add a default translation of the entire sequence unless otherwise specified
+        if proteins is None and len(self.proteins)==0:
+            self.proteins.update({'cds':FeatureLocation(start=0,
+                end=self.aln.get_alignment_length(), strand=1)})
         else:
             self.proteins.update(proteins)
 
@@ -326,15 +350,21 @@ class sequence_set(object):
                     # soon not needed as future biopython version will translate --- into -
                     tmpseq = self.proteins[prot].extract(seq)
                     tmpseq.attributes = seq.attributes
-                    tmpseq.seq = Seq(str(Seq(str(tmpseq.seq).replace('---', 'NNN')).translate()).replace('X','-'))
+                    tmpseq.seq = Seq(str(Seq(str(tmpseq.seq).replace('---', 'NNN'))
+                                         .translate()).replace('X','-'))
                 except:
-                    tmpseq.seq = Seq(str(Seq("".join([x if x in 'ACGT' else 'N' for x in str(tmpseq.seq)])).translate()).replace('X','-'))
+                    tmpseq.seq = Seq(str(Seq("".join([x if x in 'ACGT' else 'N'
+                        for x in str(tmpseq.seq)])).translate()).replace('X','-'))
                     print("Trouble translating",seq.id)
                     #import ipdb; ipdb.set_trace()
                 aa_seqs.append(tmpseq)
             self.translations[prot] = MultipleSeqAlignment(aa_seqs)
 
+
     def export_diversity(self, fname = 'entropy.json'):
+        '''
+        write the alignment entropy of each alignment (nucleotide and translations) to file
+        '''
         if not hasattr(self, "entropy"):
             self.diversity_statistics()
         entropy_json = {}
@@ -348,8 +378,9 @@ class sequence_set(object):
                                       'codon':[(x-self.proteins[feat].start)//3 for x in self.proteins[feat]][::3], 'val':S}
         write_json(entropy_json, fname, indent=None)
 
+
 if __name__=="__main__":
-    myseqs = sequence_set('data/gag.fasta.gz', reference='B|FR|1985|NL4_3_LAI_NY5_pNL43_NL43|244167|NL43|325|U26942')
+    myseqs = sequence_set('../../nextflu_umbrella/HIV_trees/data/gag.fasta.gz', reference='B|FR|1985|NL4_3_LAI_NY5_pNL43_NL43|244167|NL43|325|U26942')
     myseqs.ungap()
     myseqs.parse({0:"subtype", 1:"country", 2:"date", 4:"name", 5:"id", 6:"patient", 7:"accession"})
     myseqs.parse_date(["%Y-%m-%d", "%Y"])

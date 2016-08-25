@@ -163,22 +163,39 @@ class tree(object):
         self.dump_attr.extend(['numdate','date','sequence'])
         self.is_timetree=True
 
+
     def geo_inference(self, attr):
+        '''
+        infer a "mugration" model by pretending each region corresponds to a sequence
+        state and repurposing the GTR inference and ancestral reconstruction
+        '''
         from treetime.gtr import GTR
+        # Determine alphabet and store reconstructed ancestral sequences
         places = set()
+        nuc_seqs = {}
+        nuc_muts = {}
         for node in self.tree.find_clades():
             if hasattr(node, attr):
                 places.add(node.__getattribute__(attr))
             if hasattr(node, 'sequence'):
-                node.nuc_sequence = node.sequence
+                nuc_seqs[node] = node.sequence
+            if hasattr(node, 'mutations'):
+                nuc_muts[node] = node.mutations
+                node.__delattr__('mutations')
+
+        # construct GTR (flat for now). The missing DATA symbol is a '-' (ord('-')==45)
         places = sorted(places)
+        nc = len(places)
+        if nc>180:
+            print("geo_inference: can't have more than 180 places!")
         alphabet = {chr(65+i):place for i,place in enumerate(places)}
         alphabet_rev = {v:k for k,v in alphabet.iteritems()}
-        self.tt.sequence_gtr = self.tt.gtr
-        nc = len(places)
+        sequence_gtr = self.tt.gtr
         myGeoGTR = GTR.custom(pi = np.ones(nc, dtype=float)/nc, W=np.ones((nc,nc)),
                               alphabet = np.array(sorted(alphabet.keys())))
         myGeoGTR.profile_map['-'] = np.ones(nc)
+
+        # set geo info to nodes as one letter sequence.
         for node in self.tree.get_terminals():
             if hasattr(node, attr):
                 node.sequence=np.array([alphabet_rev[node.__getattribute__(attr)]])
@@ -186,44 +203,58 @@ class tree(object):
                 node.sequence=np.array(['-'])
         for node in self.tree.get_nonterminals():
             node.__delattr__('sequence')
+        # set custom GTR model, run inference
         self.tt._gtr = myGeoGTR
+        tmp_use_mutation_length = self.tt.use_mutation_length
         self.tt.use_mutation_length=False
-        self.tt.reconstruct_anc(method='ml', store_compressed=False)
-        self.tt.infer_gtr(print_raw=True)
-        self.tt.reconstruct_anc(method='ml', store_compressed=False)
+        self.tt.infer_ancestral_sequences(method='ml', infer_gtr=True, store_compressed=False, pc=5.0)
 
+        # restore the nucleotide sequence and mutations to maintain expected behavior
         self.tt.geogtr = self.tt.gtr
         self.tt.geogtr.alphabet_to_location = alphabet
-        self.tt._gtr = self.tt.sequence_gtr
+        self.tt._gtr = sequence_gtr
         self.dump_attr.append(attr)
         for node in self.tree.find_clades():
             node.__setattr__(attr, alphabet[node.sequence[0]])
-            node.sequence = node.nuc_sequence
-        self.tt.use_mutation_length=True
+            if node in nuc_seqs:
+                node.sequence = nuc_seqs[node]
+            node.__setattr__(attr+'_transitions', node.mutations)
+            if node in nuc_muts:
+                node.mutations = nuc_muts[node]
+
+        self.tt.use_mutation_length=tmp_use_mutation_length
 
 
     def add_translations(self):
+        '''
+        translate the nucleotide sequence into the proteins specified
+        in self.proteins. these are expected to be SeqFeatures
+        '''
         from Bio import Seq
         for node in self.tree.find_clades():
             if not hasattr(node, "translations"):
                 node.translations={}
+                node.aa_mutations = {}
             for prot in self.proteins:
                 node.translations[prot] = Seq.translate(str(self.proteins[prot].extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
+                node.aa_mutations[prot] = [(a,pos+1,d) for pos, (a,d) in
+                                    enumerate(zip(node.up.translations[prot],
+                                                  node.translations[prot])) if a!=d]
         self.dump_attr.append('translations')
 
 
     def refine(self):
+        '''
+        add attributes for export, currently this is only mut_str and aa_mut_str
+        THIS SEEMS SUPERFLUOUS
+        '''
         self.tree.ladderize()
         for node in self.tree.find_clades():
             if node.up is not None:
-                node.mut_str = ",".join(["".join(map(str, x)) for x in node.mutations])
+                node.mut_str = ",".join(["".join(map(str, [a, pos+1, d])) for a,pos,d in node.mutations])
                 node.aa_mut_str = {}
-                node.aa_mutations = {}
                 if hasattr(node, 'translations'):
                     for prot in node.translations:
-                        node.aa_mutations[prot] = [(a,pos+1,d) for pos, (a,d) in
-                                            enumerate(zip(node.up.translations[prot],
-                                                          node.translations[prot])) if a!=d]
                         node.aa_mut_str[prot] = ",".join(["".join(map(str,x)) for x in node.aa_mutations[prot]])
         self.dump_attr.extend(['mut_str', 'aa_mut_str', 'aa_mutations', 'mutation_length', 'mutations'])
 

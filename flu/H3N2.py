@@ -384,7 +384,7 @@ class flu_process(object):
         # add tree attributes to the list of attributes that are saved in intermediate files
         self.tree.dump_attr.extend(['cTiter', 'dTiter'])
 
-        # SUBSTITION MODEL
+        # SUBSTITUTION MODEL
         self.HI_subs = substitution_model(self.tree.tree, titer_fname = titer_fname,**kwargs)
         self.HI_subs.prepare(**kwargs)
         self.HI_subs.train(**kwargs)
@@ -616,4 +616,4 @@ if __name__=="__main__":
         flu.dump()
 
         flu.export(prefix='json/'+out_specs['prefix']+out_specs['qualifier'],
-                  extra_attr=['cTiter', 'dTiter', 'aa_mut_str', 'serum'])
+                   extra_attr=['cTiter', 'dTiter', 'aa_mut_str', 'serum'])

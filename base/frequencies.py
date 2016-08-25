@@ -45,6 +45,7 @@ def running_average(obs, ws):
         tmp_vals = 0.5*np.ones_like(obs, dtype=float)
     return tmp_vals
 
+
 def fix_freq(freq, pc):
     '''
     restricts frequencies to the interval [pc, 1-pc]
@@ -52,15 +53,19 @@ def fix_freq(freq, pc):
     freq[np.isnan(freq)]=pc
     return np.minimum(1-pc, np.maximum(pc,freq))
 
+
 def logit_transform(freq, pc):
     return np.log(np.maximum(freq, pc)/np.maximum(pc,(1-freq)))
+
 
 def logit_inv(logit_freq, pc):
     tmp_freq = np.maximum(pc, np.minimum(1.0/pc, np.exp(logit_freq)))
     return tmp_freq/(1.0+tmp_freq)
 
+
 def pq(p):
     return p*(1-p)
+
 
 class frequency_estimator(object):
     '''
@@ -77,6 +82,7 @@ class frequency_estimator(object):
         self.tps = tmp_obs[:,0]
         self.obs = np.array(tmp_obs[:,1], dtype=bool)
         self.stiffness = stiffness
+
         self.inertia = inertia
         self.interpolation_type = 'linear'
         self.tol = tol
@@ -155,6 +161,7 @@ class frequency_estimator(object):
         self.frequency_estimate = interp1d(self.pivots, self.pivot_freq, kind=self.interpolation_type, bounds_error=False)
 
         if self.verbose: print ("neg logLH using",len(self.pivots),"pivots:", self.logLH(self.pivot_freq))
+
 
 class freq_est_clipped(object):
     """
@@ -236,6 +243,7 @@ class nested_frequencies(object):
 
         self.frequencies[sorted_obs[-1][0]] = self.remaining_freq
         return self.frequencies
+
 
 class tree_frequencies(object):
     '''
@@ -340,8 +348,8 @@ class tree_frequencies(object):
     def calc_confidence(self):
         '''
         for each frequency trajectory, calculate the bernouilli sampling error
-        -- in reality we should look at the inverse hessian, but this is a 
-        useful approximation in most cases 
+        -- in reality we should look at the inverse hessian, but this is a
+        useful approximation in most cases
         '''
         self.confidence = {}
         for key, freq in self.frequencies.iteritems():
@@ -351,7 +359,11 @@ class tree_frequencies(object):
 
 
 class alignment_frequencies(object):
-
+    '''
+    calculates frequencies of mutations in an alignment. uses nested frequencies
+    for mutations at a particular site such that mutations are forced to add
+    up to one.
+    '''
     def __init__(self, aln, tps, pivots, **kwargs):
         self.aln = np.array(aln)
         self.tps = np.array(tps)
@@ -361,6 +373,10 @@ class alignment_frequencies(object):
 
 
     def estimate_genotype_frequency(self, gt):
+        '''
+        slice an alignment at possibly multiple positions and calculate the
+        frequency trajectory of this multi-locus genotype
+        '''
         match = []
         for pos, state in gt:
             match.append(aln[:,pos]==state)
@@ -372,7 +388,13 @@ class alignment_frequencies(object):
 
 
     def mutation_frequencies(self, min_freq=0.01, include_set=None, ignore_gap=True):
-        if include_set is None: 
+        '''
+        estimate frequencies of single site mutations for each alignment column
+        params
+            min_freq:       the minimal minor allele frequency for a column to be included
+            include_set:    a set of sites that is to be included regardless of frequencies
+        '''
+        if include_set is None:
             include_set=[]
         alphabet = np.unique(self.aln)
         af = np.zeros((len(alphabet), self.aln.shape[1]))
@@ -381,18 +403,19 @@ class alignment_frequencies(object):
 
 
         if ignore_gap:
-            minor_freqs = af[alphabet!='-'].sum(axis=0) - af.max(axis=0)
+            minor_freqs = af[alphabet!='-'].sum(axis=0) - af[alphabet!='-'].max(axis=0)
         else:
             minor_freqs = 1.0 - af.max(axis=0)
         self.frequencies = {}
         for pos in set.union(set(np.where(minor_freqs>min_freq)[0]), include_set):
+            # indices determine the indicies of mutations in descending order by frequency
             nis = np.argsort(af[:,pos])[::-1]
             nis = nis[af[nis,pos]>0]
             column = self.aln[:,pos]
-            if ignore_gap:
-                good_pos = (column!='-')&(column!='X')
-                tps=self.tps[good_pos]
-                column = column[good_pos]
+            if ignore_gap: # subset sequences, time points and alphabet to non-gapped and non X
+                good_seq = (column!='-')&(column!='X')
+                tps=self.tps[good_seq]
+                column = column[good_seq]
                 nis = nis[(alphabet[nis]!='-')&(alphabet[nis]!='X')]
             else:
                 tps = self.tps
@@ -404,23 +427,28 @@ class alignment_frequencies(object):
                     obs[(pos, mut)] = column==mut
                 else:
                     break
+
+            # if multiple states are below frequency threshold, glob them together as 'other'
             if len(obs)!=len(nis):
-                tmp = ~np.any(obs.values(), axis=0)
+                tmp = ~np.any(obs.values(), axis=0) # pull out sequences not yet assigned
                 if any(tmp):
-                    if len(obs)==len(nis)-1:
+                    if len(obs)==len(nis)-1: # if only category left, assign it
                         obs[(pos, muts[-1])] = tmp
-                    else:
+                    else: #other wise, call that mutation 'other'
                         obs[(pos, 'other')] = tmp
             print("Estimating frequencies of position:", pos)
             print("Variants found at frequency:", [(k,o.mean()) for k,o in obs.iteritems()])
 
+            # calculate frequencies, which will be added to the frequencies dict with (pos, mut) as key
             ne = nested_frequencies(tps, obs, self.pivots, **self.kwargs)
             self.frequencies.update(ne.calc_freqs())
+
 
     def calc_confidence(self):
         self.confidence = {}
         for key, freq in self.frequencies.iteritems():
-            self.confidence[key] = np.sqrt(freq*(1-freq)/self.counts)
+            # add a pseudo count 1/(n+1) and normalize to n+1
+            self.confidence[key] = np.sqrt((1.0/(1+self.counts)+freq*(1-freq))/(1.0+self.counts))
 
         return self.confidence
 
