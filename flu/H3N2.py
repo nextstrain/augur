@@ -600,7 +600,7 @@ if __name__=="__main__":
         #for region in regions:
         #    flu.estimate_mutation_frequencies(region=region)
         flu.dump()
-        flu.build_tree(Tc=0.01)
+        flu.build_tree(Tc=0.005)
 
         flu.tree.add_translations()
         flu.tree.refine()

@@ -218,9 +218,10 @@ class tree(object):
             node.__setattr__(attr, alphabet[node.sequence[0]])
             if node in nuc_seqs:
                 node.sequence = nuc_seqs[node]
-            node.__setattr__(attr+'_transitions', node.mutations)
-            if node in nuc_muts:
-                node.mutations = nuc_muts[node]
+            if node.up is not None:
+                node.__setattr__(attr+'_transitions', node.mutations)
+                if node in nuc_muts:
+                    node.mutations = nuc_muts[node]
 
         self.tt.use_mutation_length=tmp_use_mutation_length
 
@@ -231,13 +232,18 @@ class tree(object):
         in self.proteins. these are expected to be SeqFeatures
         '''
         from Bio import Seq
-        for node in self.tree.find_clades():
+        for node in self.tree.find_clades(order='preorder'):
             if not hasattr(node, "translations"):
                 node.translations={}
                 node.aa_mutations = {}
-            for prot in self.proteins:
-                node.translations[prot] = Seq.translate(str(self.proteins[prot].extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
-                node.aa_mutations[prot] = [(a,pos+1,d) for pos, (a,d) in
+            if node.up is None:
+                for prot in self.proteins:
+                    node.translations[prot] = Seq.translate(str(self.proteins[prot].extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
+                    node.aa_mutations[prot] = []
+            else:
+                for prot in self.proteins:
+                    node.translations[prot] = Seq.translate(str(self.proteins[prot].extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
+                    node.aa_mutations[prot] = [(a,pos+1,d) for pos, (a,d) in
                                     enumerate(zip(node.up.translations[prot],
                                                   node.translations[prot])) if a!=d]
         self.dump_attr.append('translations')
