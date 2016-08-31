@@ -182,8 +182,9 @@ class tree(object):
         nuc_seqs = {}
         nuc_muts = {}
         for node in self.tree.find_clades():
-            if hasattr(node, attr):
-                places.add(node.__getattribute__(attr))
+            if hasattr(node, 'attr'):
+                if attr in node.attr:
+                    places.add(node.attr[attr])
             if hasattr(node, 'sequence'):
                 nuc_seqs[node] = node.sequence
             if hasattr(node, 'mutations'):
@@ -193,8 +194,9 @@ class tree(object):
         # construct GTR (flat for now). The missing DATA symbol is a '-' (ord('-')==45)
         places = sorted(places)
         nc = len(places)
-        if nc>180:
-            print("geo_inference: can't have more than 180 places!")
+        if nc<2 or nc>180:
+            print("geo_inference: can't have less than 2 or more than 180 places!")
+            return
         alphabet = {chr(65+i):place for i,place in enumerate(places)}
         alphabet_rev = {v:k for k,v in alphabet.iteritems()}
         sequence_gtr = self.tt.gtr
