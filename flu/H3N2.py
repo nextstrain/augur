@@ -401,8 +401,8 @@ class flu_process(object):
         # export json file that contains alignment diversity column by column
         self.seqs.export_diversity(prefix+'entropy.json')
         # exports the tree and the sequences inferred for all clades in the tree
-        self.tree.export(path=prefix, extra_attr = extra_attr + ["subtype", "country", "region", "nuc_muts",
-                            "ep", "ne", "rb", "aa_muts","lab", "accession","isolate_id"])
+        self.tree.export(path=prefix, extra_attr = extra_attr
+                         + ["ep", "ne", "rb", "muts", "aa_muts","attr"])
 
 
         # local function or round frequency estimates to useful precision (reduces file size)
@@ -622,4 +622,4 @@ if __name__=="__main__":
         flu.dump()
 
         flu.export(prefix='json/'+out_specs['prefix']+out_specs['qualifier'],
-                   extra_attr=['cTiter', 'dTiter', 'aa_mut_str', 'serum'])
+                   extra_attr=['cTiter', 'dTiter', 'serum'])

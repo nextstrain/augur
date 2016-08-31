@@ -123,23 +123,22 @@ class tree(object):
         from treetime import TreeTime
         from treetime import utils
         print('Reading tree from file',infile)
-        dates  =   {seq.id:utils.numeric_date(seq.attributes['date'])
+        dates  =   {seq.id:seq.attributes['num_date']
                     for seq in self.aln if 'date' in seq.attributes}
         self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor', aln = self.aln, verbose=4)
         self.tt.reroot(root=root)
         self.tree = self.tt.tree
 
-        for node in self.tree.get_terminals():
-            if node.name in self.sequence_lookup:
+        for node in self.tree.find_clades():
+            if node.is_terminal() and node.name in self.sequence_lookup:
                 seq = self.sequence_lookup[node.name]
-                for attr in seq.attributes:
-                    if attr == 'date':
-                        try:
-                            node.date = seq.attributes['date'].strftime('%Y-%m-%d')
-                        except:
-                            node.date = seq.attributes['date']
-                    else:
-                        node.__setattr__(attr, seq.attributes[attr])
+                node.attr = seq.attributes
+                try:
+                    node.attr['date'] = node.attr['date'].strftime('%Y-%m-%d')
+                except:
+                    pass
+            else:
+                node.attr = {}
 
         if nodefile is not None:
             print('reading node properties from file:',nodefile)
@@ -164,6 +163,11 @@ class tree(object):
                     resolve_polytomies=True, max_iter=max_iter)
         print('estimating time tree...')
         self.dump_attr.extend(['numdate','date','sequence'])
+        for node in self.tree.find_clades():
+            if hasattr(node,'attr'):
+                node.attr['num_date'] = node.numdate
+            else:
+                node.attr = {'num_date':node.numdate}
         self.is_timetree=True
 
 
@@ -219,7 +223,7 @@ class tree(object):
         self.tt._gtr = sequence_gtr
         self.dump_attr.append(attr)
         for node in self.tree.find_clades():
-            node.__setattr__(attr, alphabet[node.sequence[0]])
+            node.attr[attr] = alphabet[node.sequence[0]]
             if node in nuc_seqs:
                 node.sequence = nuc_seqs[node]
             if node.up is not None:
@@ -255,18 +259,17 @@ class tree(object):
 
     def refine(self):
         '''
-        add attributes for export, currently this is only mut_str and aa_mut_str
-        THIS SEEMS SUPERFLUOUS
+        add attributes for export, currently this is only muts and aa_muts
         '''
         self.tree.ladderize()
         for node in self.tree.find_clades():
             if node.up is not None:
-                node.mut_str = ",".join(["".join(map(str, [a, pos+1, d])) for a,pos,d in node.mutations])
-                node.aa_mut_str = {}
+                node.muts = ["".join(map(str, [a, pos+1, d])) for a,pos,d in node.mutations]
+                node.aa_muts = {}
                 if hasattr(node, 'translations'):
                     for prot in node.translations:
-                        node.aa_mut_str[prot] = ",".join(["".join(map(str,x)) for x in node.aa_mutations[prot]])
-        self.dump_attr.extend(['mut_str', 'aa_mut_str', 'aa_mutations', 'mutation_length', 'mutations'])
+                        node.aa_muts[prot] = ["".join(map(str,[a,pos+1,d])) for a,pos,d in node.aa_mutations[prot]]
+        self.dump_attr.extend(['muts', 'aa_muts', 'aa_mutations', 'mutation_length', 'mutations'])
 
 
     def layout(self):
@@ -295,7 +298,7 @@ class tree(object):
             self.dump_attr.extend(['tvalue'])
 
 
-    def export(self, path = '', extra_attr = ['aa_mut_str'], plain_export = 10):
+    def export(self, path = '', extra_attr = ['aa_muts'], plain_export = 10):
         '''
         export the tree data structure along with the sequence information as
         json files for display in web browsers.
