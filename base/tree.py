@@ -206,8 +206,9 @@ class tree(object):
 
         # set geo info to nodes as one letter sequence.
         for node in self.tree.get_terminals():
-            if hasattr(node, attr):
-                node.sequence=np.array([alphabet_rev[node.__getattribute__(attr)]])
+            if hasattr(node, 'attr'):
+                if attr in node.attr:
+                    node.sequence=np.array([alphabet_rev[node.attr[attr]]])
             else:
                 node.sequence=np.array(['-'])
         for node in self.tree.get_nonterminals():

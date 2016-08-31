@@ -499,8 +499,8 @@ class tree_model(titers):
             criterium = lambda x:True
         # flag all branches on the tree with titer_info = True if they lead to strain with titer data
         for leaf in self.tree.get_terminals():
-            if leaf.strain.upper() in self.test_strains:
-                leaf.serum = leaf.strain.upper() in self.ref_strains
+            if leaf.name.upper() in self.test_strains:
+                leaf.serum = leaf.name.upper() in self.ref_strains
                 leaf.titer_info = 1
             else:
                 leaf.serum, leaf.titer_info=False, 0
