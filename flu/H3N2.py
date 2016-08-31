@@ -280,7 +280,7 @@ class flu_process(object):
 
         tree_freqs.estimate_clade_frequencies()
         conf = tree_freqs.calc_confidence()
-        self.tree_frequencies[region] = tree_freqs.frequencies()
+        self.tree_frequencies[region] = tree_freqs.frequencies
         self.tree_frequency_confidence[region] = conf
         self.tree_pivots = tree_freqs.pivots
 
@@ -418,9 +418,10 @@ class flu_process(object):
                 label_str =  region+"_"+ gene + ':' + str(mut[0]+1)+mut[1]
                 freq_json[label_str] = process_freqs(freq)
         # repeat for clade frequencies in trees
-        for (region,clade), freq in self.tree_frequencies.iteritems():
-            label_str = region+'_clade:'+str(clade)
-            freq_json[label_str] = process_freqs(freq)
+        for region in self.tree_frequencies:
+            for clade, freq in self.tree_frequencies[region].iteritems():
+                label_str = region+'_clade:'+str(clade)
+                freq_json[label_str] = process_freqs(freq)
         # write to one frequency json
         write_json(freq_json, prefix+'frequencies.json', indent=None)
 

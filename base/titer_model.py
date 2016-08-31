@@ -311,8 +311,8 @@ class titers(object):
 
         for key, val in self.titers_normalized.iteritems():
             test_vir, (ref_vir, serum) = key
-            test_clade = self.node_lookup[test_vir].clade
-            ref_clade = self.node_lookup[ref_vir].clade
+            test_clade = self.node_lookup[test_vir.upper()].clade
+            ref_clade = self.node_lookup[ref_vir.upper()].clade
             titer_json[ref_clade][test_clade][serum] = np.round(val,TITER_ROUND)
 
         return titer_json
@@ -326,7 +326,7 @@ class titers(object):
         '''
         potency_json = defaultdict(dict)
         for (ref_vir, serum), val in self.serum_potency.iteritems():
-            ref_clade = self.node_lookup[ref_vir].clade
+            ref_clade = self.node_lookup[ref_vir.upper()].clade
             potency_json[ref_clade][serum] = np.round(val,TITER_ROUND)
 
         # add the average potency (weighed by the number of measurements per serum)
@@ -336,7 +336,7 @@ class titers(object):
         for (ref_vir, serum), val in self.serum_potency.iteritems():
             mean_potency[ref_vir] += self.titer_counts[ref_vir][serum]*val
         for ref_vir in self.ref_strains:
-            ref_clade = self.node_lookup[ref_vir].clade
+            ref_clade = self.node_lookup[ref_vir.upper()].clade
             potency_json[ref_clade]['mean_potency'] = 1.0*mean_potency[ref_vir]/np.sum(self.titer_counts[ref_vir].values())
 
         return potency_json
@@ -346,7 +346,7 @@ class titers(object):
         '''
         compile a json structure containing virus_effects for visualization
         '''
-        return {self.node_lookup[test_vir].clade:np.round(val,TITER_ROUND) for test_vir, val in self.virus_effect.iteritems()}
+        return {self.node_lookup[test_vir.upper()].clade:np.round(val,TITER_ROUND) for test_vir, val in self.virus_effect.iteritems()}
 
 
     ##########################################################################################

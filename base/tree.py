@@ -125,7 +125,7 @@ class tree(object):
         print('Reading tree from file',infile)
         dates  =   {seq.id:utils.numeric_date(seq.attributes['date'])
                     for seq in self.aln if 'date' in seq.attributes}
-        self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor', aln = self.aln, verbose=5)
+        self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor', aln = self.aln, verbose=4)
         self.tt.reroot(root=root)
         self.tree = self.tt.tree
 
