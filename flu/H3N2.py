@@ -271,7 +271,7 @@ class flu_process(object):
         if region=='global':
             node_filter_func = None
         else:
-            node_filter_func = lambda x:x.region==region
+            node_filter_func = lambda x:x.attr['region']==region
 
         tree_freqs = tree_frequencies(self.tree.tree, self.pivots,
                                       node_filter = node_filter_func,
