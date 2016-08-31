@@ -48,12 +48,12 @@ class flu_process(object):
         * export as json
     """
 
-    def __init__(self, fname = 'data/H3N2.fasta', dt = 0.25, time_interval = ('2008-01-01', '2016-01-01'),
-                 out_specs={'data_dir':'data/', 'prefix':'H3N2_', 'qualifier':''},
+    def __init__(self, data_path = 'data/h3n2', dt = 0.25, time_interval = ('2008-01-01', '2016-01-01'),
+                 out_specs={'out_dir':'data/', 'prefix':'h3n2_', 'qualifier':''},
                  **kwargs):
         super(flu_process, self).__init__()
         print("Initializing flu_process for time interval",time_interval)
-        self.fname = fname
+        self.data_path = data_path
         self.kwargs = kwargs
         self.out_specs = out_specs
         self.time_interval = [datetime.strptime(time_interval[0], "%Y-%m-%d").date(),
@@ -81,7 +81,7 @@ class flu_process(object):
 
 
     def load_outgroup(self,outgroup_file):
-        self.outgroup = 'a/beijing/32/1992' #(tmp_outgroup.features[0].qualifiers['strain'][0]).lower()
+        self.outgroup = 'A/Beijing/32/1992' #(tmp_outgroup.features[0].qualifiers['strain'][0]).lower()
         self.outgroup_seq = SeqIO.read(outgroup_file, 'genbank')
         self.genome_annotation = self.outgroup_seq.features
 
@@ -92,7 +92,7 @@ class flu_process(object):
 
     def load_sequences(self):
         # instantiate and population the sequence objects
-        self.seqs = sequence_set(self.fname, reference=self.outgroup)
+        self.seqs = sequence_set(self.sequence_fname, reference=self.outgroup)
         self.seqs.ungap()
         self.seqs.parse({0:'strain', 2:'isolate_id', 3:'date', 4:'region',
                          5:'country', 7:"city", 12:"subtype",13:'lineage'}, strip='_')
@@ -113,16 +113,18 @@ class flu_process(object):
         '''
         define filenames of input files and intermediates outputs
         '''
-        data_path = self.out_specs['data_dir']+self.out_specs['prefix']
-        self.HI_strains_fname = data_path+'HI_strains.txt'
-        self.HI_titer_fname = data_path+'HI_titers.txt'
-        data_path += self.out_specs['qualifier']
+        self.HI_strains_fname = self.data_path+'_hi_strains.tsv'
+        self.HI_titer_fname = self.data_path+'_hi_titers.tsv'
+        self.sequence_fname = self.data_path+'.fasta'
+
+        out_data_path = self.out_specs['out_dir']+self.out_specs['prefix']
+        out_data_path += self.out_specs['qualifier']
         self.file_dumps = {}
-        self.file_dumps['seqs'] = data_path+'sequences.pkl.gz'
-        self.file_dumps['tree'] = data_path+'tree.newick'
-        self.file_dumps['nodes'] = data_path+'nodes.pkl.gz'
-        self.file_dumps['frequencies'] = data_path+'frequencies.pkl.gz'
-        self.file_dumps['tree_frequencies'] = data_path+'tree_frequencies.pkl.gz'
+        self.file_dumps['seqs'] = out_data_path+'sequences.pkl.gz'
+        self.file_dumps['tree'] = out_data_path+'tree.newick'
+        self.file_dumps['nodes'] = out_data_path+'nodes.pkl.gz'
+        self.file_dumps['frequencies'] = out_data_path+'frequencies.pkl.gz'
+        self.file_dumps['tree_frequencies'] = out_data_path+'tree_frequencies.pkl.gz'
 
 
     def dump(self):
@@ -182,8 +184,9 @@ class flu_process(object):
             for line in ifile:
                 strain, count = line.strip().split()
                 HI_titer_count[strain]=int(count)
+
         def sampling_priority(seq):
-            sname = seq.attributes['strain'].upper()
+            sname = seq.attributes['strain']
             if sname in HI_titer_count:
                 pr = HI_titer_count[sname]
             else:
@@ -246,7 +249,7 @@ class flu_process(object):
                 include_set=[]
             else:
                 tmp_aln = filter_alignment(aln, region=region, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
-                include_set = set([pos for (pos, mut) in self.frequencies[(prot, 'global')]])
+                include_set = set([pos for (pos, mut) in self.frequencies[('global', prot)]])
             time_points = [x.attributes['num_date'] for x in tmp_aln]
             if len(time_points)==0:
                 print('no samples in region', region, prot)
@@ -277,9 +280,8 @@ class flu_process(object):
 
         tree_freqs.estimate_clade_frequencies()
         conf = tree_freqs.calc_confidence()
-        for clade, freq in tree_freqs.frequencies.iteritems():
-            self.tree_frequencies[(region, clade)] = freq
-            self.tree_frequency_confidence[(region, clade)] = conf[clade]
+        self.tree_frequencies[region] = tree_freqs.frequencies()
+        self.tree_frequency_confidence[region] = conf
         self.tree_pivots = tree_freqs.pivots
 
 
@@ -372,20 +374,20 @@ class flu_process(object):
             self.tree.tree.root.up = None
 
 
-    def HI_model(self, titer_fname, **kwargs):
+    def HI_model(self, **kwargs):
         '''
         estimate a tree and substitution model using titers titer_fname.
         '''
         from base.titer_model import tree_model, substitution_model
         ## TREE MODEL
-        self.HI_tree = tree_model(self.tree.tree, titer_fname = titer_fname, **kwargs)
+        self.HI_tree = tree_model(self.tree.tree, titer_fname = self.HI_titer_fname, **kwargs)
         self.HI_tree.prepare(**kwargs)
         self.HI_tree.train(**kwargs)
         # add tree attributes to the list of attributes that are saved in intermediate files
         self.tree.dump_attr.extend(['cTiter', 'dTiter'])
 
         # SUBSTITUTION MODEL
-        self.HI_subs = substitution_model(self.tree.tree, titer_fname = titer_fname,**kwargs)
+        self.HI_subs = substitution_model(self.tree.tree, titer_fname = self.HI_titer_fname,**kwargs)
         self.HI_subs.prepare(**kwargs)
         self.HI_subs.train(**kwargs)
 
@@ -496,7 +498,7 @@ def H3N2_scores(tree, epitope_mask_version='wolf'):
         return distance
 
     epitope_map = {}
-    with open('flu/metadata/H3N2_epitope_masks.tsv') as f:
+    with open('flu/metadata/h3n2_epitope_masks.tsv') as f:
         for line in f:
             (key, value) = line.strip().split()
             epitope_map[key] = value
@@ -570,28 +572,31 @@ if __name__=="__main__":
 
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
     parser.add_argument('-v', '--viruses_per_month', type = int, default = 10, help='number of viruses sampled per month')
+    parser.add_argument('-y', '--resolution', type = str, default = '3y', help='outfile suffix')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
     parser.add_argument('-d', '--download', action='store_true', default = False, help='load from database')
     parser.add_argument('-t', '--time_interval', nargs=2, default=('2012-01-01', '2016-01-01'),
                             help='time interval to sample sequences from: provide dates as YYYY-MM-DD')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
     params = parser.parse_args()
-    #fname = sorted(glob.glob('../nextstrain-db/data/flu_h3n2*fasta'))[-1]
-    fname = '../../nextflu_umbrella/nextflu2/data/flu_h3n2_gisaid.fasta'
-    out_specs = {'data_dir':'data/', 'prefix':'H3N2_', 'qualifier':'3y_'}
-#                 'qualifier': params.time_interval[0]+'_'+params.time_interval[1]+'_tmp_'}
-    titer_fname = sorted(glob.glob('../nextstrain-db/data/h3n2*text'))[-1]
+    lineage = 'h3n2'
+    data_path = '../nextstrain-db/data/'+lineage
+
+    out_specs = {'out_dir':'data/',
+                 'prefix':lineage+'_', 'qualifier':params.resolution+'_'}
 
     ppy = 4
     flu = flu_process(method='SLSQP', dtps=2.0, stiffness=50./ppy, dt=1.0/ppy,
                       time_interval=params.time_interval,
-                      inertia=np.exp(-1.0/ppy), fname = fname, out_specs=out_specs)
+                      inertia=np.exp(-1.0/ppy), data_path = data_path, out_specs=out_specs)
+    remove_outgroup = int(params.time_interval[0][:4])>1996
+    flu.rm_og = remove_outgroup
     if params.load:
         flu.load()
         H3N2_scores(flu.tree.tree)
     else:
         remove_outgroup = int(params.time_interval[0][:4])>1996
-        flu.rm_og = remove_outgroup
+        flu.load_sequences()
         flu.subsample(params.viruses_per_month)
         flu.align()
         flu.dump()
@@ -606,12 +611,12 @@ if __name__=="__main__":
         flu.tree.refine()
         flu.tree.layout()
         flu.tree.geo_inference('region')
-        flu.tree.geo_inference('country')
+        #flu.tree.geo_inference('country')
         flu.dump()
         flu.estimate_tree_frequencies()
         flu.dump()
 
-        flu.HI_model(titer_fname)
+        flu.HI_model()
         H3N2_scores(flu.tree.tree)
         flu.dump()
 

@@ -125,7 +125,7 @@ class tree(object):
         print('Reading tree from file',infile)
         dates  =   {seq.id:utils.numeric_date(seq.attributes['date'])
                     for seq in self.aln if 'date' in seq.attributes}
-        self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor', aln = self.aln, verbose=3)
+        self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor', aln = self.aln, verbose=5)
         self.tt.reroot(root=root)
         self.tree = self.tt.tree
 
@@ -134,7 +134,10 @@ class tree(object):
                 seq = self.sequence_lookup[node.name]
                 for attr in seq.attributes:
                     if attr == 'date':
-                        node.date = seq.attributes['date'].strftime('%Y-%m-%d')
+                        try:
+                            node.date = seq.attributes['date'].strftime('%Y-%m-%d')
+                        except:
+                            node.date = seq.attributes['date']
                     else:
                         node.__setattr__(attr, seq.attributes[attr])
 
@@ -207,7 +210,8 @@ class tree(object):
         self.tt._gtr = myGeoGTR
         tmp_use_mutation_length = self.tt.use_mutation_length
         self.tt.use_mutation_length=False
-        self.tt.infer_ancestral_sequences(method='ml', infer_gtr=True, store_compressed=False, pc=5.0)
+        self.tt.infer_ancestral_sequences(method='ml', infer_gtr=True,
+            store_compressed=False, pc=5.0, marginal=True)
 
         # restore the nucleotide sequence and mutations to maintain expected behavior
         self.tt.geogtr = self.tt.gtr

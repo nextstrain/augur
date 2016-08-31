@@ -27,6 +27,28 @@ def num_date(date):
     days_in_year = date.toordinal()- datetime(year=date.year, month=1, day=1).date().toordinal()
     return date.year + days_in_year/365.25
 
+def ambiguous_date_to_date_range(mydate, fmt):
+    sep = fmt.split('%')[1][-1]
+    min_date, max_date = {}, {}
+    for val, field  in zip(mydate.split(sep), fmt.split(sep+'%')):
+        f = 'year' if 'y' in field.lower() else ('day' if 'd' in field.lower() else 'month')
+        if 'XX' in val:
+            if f=='year':
+                return None, None
+            elif f=='month':
+                min_date[f]=1
+                max_date[f]=12
+            elif f=='day':
+                min_date[f]=1
+                max_date[f]=31
+        else:
+            min_date[f]=int(val)
+            max_date[f]=int(val)
+    max_date['day'] = min(max_date['day'], 31 if max_date['month'] in [1,3,5,7,8,10,12]
+                                           else 28 if max_date['month']==2 else 30)
+    return (datetime(year=min_date['year'], month=min_date['month'], day=min_date['day']).date(),
+            datetime(year=max_date['year'], month=max_date['month'], day=max_date['day']).date())
+
 class sequence_set(object):
     """sequence_set subsamples a set of sequences, aligns them and exports variability statistics"""
     def __init__(self, fname=None, reference= None, **kwarks):
@@ -109,14 +131,23 @@ class sequence_set(object):
             if 'date' in seq.attributes and seq.attributes['date']!='':
                 for fmt in fmts:
                     try:
-                        if callable(fmt):
-                            tmp = fmt(seq.attributes['date'])
+                        if 'XX' in seq.attributes['date']:
+                            min_date, max_date = ambiguous_date_to_date_range(seq.attributes['date'], fmt)
+                            seq.attributes['raw_date'] = seq.attributes['date']
+                            seq.attributes['num_date'] = np.mean((num_date(min_date), num_date(max_date)))
+                            seq.attributes['date'] = min_date
                         else:
-                            tmp = datetime.strptime(seq.attributes['date'], fmt).date()
-                        seq.attributes['raw_date'] = seq.attributes['date']
-                        seq.attributes['num_date'] = num_date(tmp)
-                        seq.attributes['date']=tmp
-                        break
+                            if callable(fmt):
+                                tmp = fmt(seq.attributes['date'])
+                            else:
+                                try:
+                                    tmp = datetime.strptime(seq.attributes['date'], fmt).date()
+                                except:
+                                    tmp = seq.attributes['date']
+                            seq.attributes['raw_date'] = seq.attributes['date']
+                            seq.attributes['num_date'] = num_date(tmp)
+                            seq.attributes['date']=tmp
+                            break
                     except:
                         continue
 
@@ -356,7 +387,6 @@ class sequence_set(object):
                     tmpseq.seq = Seq(str(Seq("".join([x if x in 'ACGT' else 'N'
                         for x in str(tmpseq.seq)])).translate()).replace('X','-'))
                     print("Trouble translating",seq.id)
-                    #import ipdb; ipdb.set_trace()
                 aa_seqs.append(tmpseq)
             self.translations[prot] = MultipleSeqAlignment(aa_seqs)
 
