@@ -136,7 +136,7 @@ class flu_process(object):
         for attr_name, fname in self.file_dumps.iteritems():
             if hasattr(self,attr_name):
                 print("dumping",attr_name)
-                if attr_name=='seqs': self.seqs.raw_seqs = None
+                #if attr_name=='seqs': self.seqs.raw_seqs = None
                 with myopen(fname, 'wb') as ofile:
                     if attr_name=='nodes':
                         continue
@@ -169,7 +169,7 @@ class flu_process(object):
             self.build_tree(tree_name, node_file, root='none')
 
 
-    def subsample(self, sampling_threshold):
+    def subsample(self, sampling_threshold, **kwargs):
         if self.seqs is None:
             self.load_sequences()
 
@@ -199,7 +199,7 @@ class flu_process(object):
                                         s.attributes['date']<self.time_interval[1]}
         self.seqs.subsample(category = sampling_category,
                             threshold=sampling_threshold,
-                            priority=sampling_priority )
+                            priority=sampling_priority, **kwargs)
         #tmp = []
         #for seq in self.seqs.seqs.values():
         #    tmp.append((seq.name, sampling_priority(seq), seq.attributes['region'], seq.attributes['date']))
@@ -384,7 +384,9 @@ class flu_process(object):
         self.HI_tree.prepare(**kwargs)
         self.HI_tree.train(**kwargs)
         # add tree attributes to the list of attributes that are saved in intermediate files
-        self.tree.dump_attr.extend(['cTiter', 'dTiter'])
+        for n in self.tree.tree.find_clades():
+            n.attr['cTiter'] = n.cTiter
+            n.attr['dTiter'] = n.dTiter
 
         # SUBSTITUTION MODEL
         self.HI_subs = substitution_model(self.tree.tree, titer_fname = self.HI_titer_fname,**kwargs)
@@ -434,7 +436,8 @@ class flu_process(object):
             write_json(hi_data, prefix+'titers.json')
             # export the tree model (avidities and potencies only)
             tree_model = {'potency':self.HI_tree.compile_potencies(),
-                          'avidities':self.HI_tree.compile_virus_effects()}
+                          'avidity':self.HI_tree.compile_virus_effects(),
+                          'dTiter':{n.clade:n.dTiter for n in self.tree.tree.find_clades() if n.dTiter>1e-6}}
             write_json(tree_model, prefix+'titer_tree_model.json')
         else:
             print('Tree model not yet trained')
@@ -509,9 +512,9 @@ def H3N2_scores(tree, epitope_mask_version='wolf'):
     root_total_aa_seq = get_total_peptide(root)
     for node in tree.find_clades():
         total_aa_seq = get_total_peptide(node)
-        node.ep = epitope_distance(total_aa_seq, root_total_aa_seq)
-        node.ne = nonepitope_distance(total_aa_seq, root_total_aa_seq)
-        node.rb = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
+        node.attr['ep'] = epitope_distance(total_aa_seq, root_total_aa_seq)
+        node.attr['ne'] = nonepitope_distance(total_aa_seq, root_total_aa_seq)
+        node.attr['rb'] = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
 
 
 def plot_frequencies(flu, plot_regions):
@@ -603,9 +606,11 @@ if __name__=="__main__":
         flu.dump()
         # first estimate frequencies globally, then region specific
         flu.estimate_mutation_frequencies(region="global")
-        #for region in regions:
-        #    flu.estimate_mutation_frequencies(region=region)
+        for region in ["China", "NorthAmerica"]:
+            flu.estimate_mutation_frequencies(region=region)
         flu.dump()
+        flu.subsample(1, repeated=True)
+        flu.align()
         flu.build_tree(Tc=0.005)
 
         flu.tree.add_translations()
@@ -622,4 +627,4 @@ if __name__=="__main__":
         flu.dump()
 
         flu.export(prefix='json/'+out_specs['prefix']+out_specs['qualifier'],
-                   extra_attr=['cTiter', 'dTiter', 'serum'])
+                   extra_attr=['serum', 'clade'])

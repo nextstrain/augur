@@ -39,10 +39,10 @@ class titers(object):
         self.node_lookup.update({n.name.lower():n for n in tree.get_terminals()})
 
         # have each node link to its parent. this will be needed for walking up and down the tree
-        self.tree.root.parent_node=None
+        self.tree.root.up=None
         for node in self.tree.get_nonterminals():
             for c in node.clades:
-                c.parent_node = node
+                c.up = node
 
 
     def read_titers(self, fname):
@@ -313,7 +313,7 @@ class titers(object):
             test_vir, (ref_vir, serum) = key
             test_clade = self.node_lookup[test_vir.upper()].clade
             ref_clade = self.node_lookup[ref_vir.upper()].clade
-            titer_json[ref_clade][test_clade][serum] = np.round(val,TITER_ROUND)
+            titer_json[ref_clade][test_clade][serum] = [np.round(val,TITER_ROUND), np.median(self.titers[key])]
 
         return titer_json
 
@@ -474,8 +474,8 @@ class tree_model(titers):
             p1 = [self.node_lookup[v1]]
             p2 = [self.node_lookup[v2]]
             for tmp_p in [p1,p2]:
-                while tmp_p[-1].parent_node != self.tree.root:
-                    tmp_p.append(tmp_p[-1].parent_node)
+                while tmp_p[-1].up != self.tree.root:
+                    tmp_p.append(tmp_p[-1].up)
                 tmp_p.append(self.tree.root)
                 tmp_p.reverse()
 
@@ -499,8 +499,8 @@ class tree_model(titers):
             criterium = lambda x:True
         # flag all branches on the tree with titer_info = True if they lead to strain with titer data
         for leaf in self.tree.get_terminals():
-            if leaf.name.upper() in self.test_strains:
-                leaf.serum = leaf.name.upper() in self.ref_strains
+            if leaf.name in self.test_strains:
+                leaf.serum = leaf.name in self.ref_strains
                 leaf.titer_info = 1
             else:
                 leaf.serum, leaf.titer_info=False, 0
@@ -587,8 +587,8 @@ class tree_model(titers):
 
         # integrate the tree model dTiter into a cumulative antigentic evolution score cTiter
         for node in self.tree.find_clades(order='preorder'):
-            if node.parent_node is not None:
-                node.cTiter = node.parent_node.cTiter + node.dTiter
+            if node.up is not None:
+                node.cTiter = node.up.cTiter + node.dTiter
             else:
                 node.cTiter=0
 
