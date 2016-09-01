@@ -254,7 +254,7 @@ class tree(object):
             else:
                 for prot in self.proteins:
                     node.translations[prot] = Seq.translate(str(self.proteins[prot].extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
-                    node.aa_mutations[prot] = [(a,pos+1,d) for pos, (a,d) in
+                    node.aa_mutations[prot] = [(a,pos,d) for pos, (a,d) in
                                     enumerate(zip(node.up.translations[prot],
                                                   node.translations[prot])) if a!=d]
         self.dump_attr.append('translations')
