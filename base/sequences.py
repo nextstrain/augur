@@ -51,17 +51,13 @@ def ambiguous_date_to_date_range(mydate, fmt):
 
 class sequence_set(object):
     """sequence_set subsamples a set of sequences, aligns them and exports variability statistics"""
-    def __init__(self, fname=None, reference= None, **kwarks):
+    def __init__(self, fname=None, reference_seq= None, **kwarks):
         super(sequence_set, self).__init__()
         self.kwarks = kwarks
         self.nthreads = 2
         if fname is not None and os.path.isfile(fname):
             with myopen(fname) as seq_file:
-                self.raw_seqs = {fix_names(x.description):x for x in SeqIO.parse(seq_file, 'fasta')}
-                for x in self.raw_seqs.values():
-                    x.id = fix_names(x.id)
-                    x.name = fix_names(x.id)
-                    x.description = fix_names(x.description)
+                self.all_seqs = {x.name:x for x in SeqIO.parse(seq_file, 'fasta')}
         elif 'virus' in kwarks:
             self.from_vdb(kwarks['virus'])
         else:
@@ -70,23 +66,25 @@ class sequence_set(object):
 
         if 'run_dir' not in kwarks:
             import random
-            self.run_dir = '_'.join(['temp', time.strftime('%Y%m%d-%H%M%S',time.gmtime()), str(random.randint(0,1000000))])
+            self.run_dir = '_'.join(['temp', time.strftime('%Y%m%d-%H%M%S',time.gmtime()),
+                                     str(random.randint(0,1000000))])
         else:
             self.run_dir = kwarks['run_dir']
 
-        if reference is not None:
-            if type(reference) is str and fix_names(reference) in self.raw_seqs:
-                self.reference = self.raw_seqs[fix_names(reference)]
+        if reference_seq is not None:
+            if type(reference_seq) is str and reference_seq in self.all_seqs:
+                self.reference_seq = self.all_seqs[reference_seq]
             else:
-                self.reference = reference
-        else: self.reference=None
+                self.reference_seq = reference_seq
+        else:
+            self.reference_seq=None
 
 
     def parse(self, fields, sep='|', strip='_'):
         '''
         split the sequence description and add annotations to sequences
         '''
-        for seq in self.raw_seqs.values():
+        for seq in self.all_seqs.values():
             if not hasattr(seq, "attributes"): seq.attributes = {}
             words = map(lambda x:x.strip(strip),seq.description.replace(">","").split(sep))
             for ii, val in enumerate(words):
@@ -96,38 +94,25 @@ class sequence_set(object):
                     else:
                         seq.attributes[fields[ii]] = ""
         if 'strain' in fields.values():
-            self.raw_seqs = {seq.attributes['strain']:seq for seq in self.raw_seqs.values()}
-            for seq in self.raw_seqs.values():
+            self.all_seqs = {seq.attributes['strain']:seq for seq in self.all_seqs.values()}
+            for seq in self.all_seqs.values():
                 seq.id = seq.attributes['strain']
-
-
-    def from_vdb(self, virus):
-        from vdb_download import vdb_download
-        from Bio.SeqRecord import SeqRecord
-        from Bio.Seq import Seq
-        myvdb = vdb_download(virus=virus)
-        myvdb.download(output=False)
-        self.raw_seqs={}
-        for v in myvdb.viruses:
-            attr = {k:v[k] for k in v if k!='sequence'}
-            seq = SeqRecord(Seq(v['sequence']), id=attr['strain'], name=attr['strain'], description=attr['strain'])
-            seq.attributes = attr
-            self.raw_seqs[attr['strain']] = seq
+                seq.name = seq.attributes['strain']
 
 
     def ungap(self):
         '''
         remove previously existing gaps and make sure all sequences are upper case
         '''
-        for seq in self.raw_seqs.values():
+        for seq in self.all_seqs.values():
             seq.seq = seq.seq.ungap('-').upper()
 
     def parse_date(self, fmts, prune=True):
-        if not hasattr(self.raw_seqs.values()[0], "attributes"):
+        if not hasattr(self.all_seqs.values()[0], "attributes"):
             print("parse meta info first")
             return
         from datetime import datetime
-        for seq in self.raw_seqs.values():
+        for seq in self.all_seqs.values():
             if 'date' in seq.attributes and seq.attributes['date']!='':
                 for fmt in fmts:
                     try:
@@ -156,7 +141,7 @@ class sequence_set(object):
 
 
     def filter(self, func):
-        self.raw_seqs = {key:seq for key, seq in self.raw_seqs.iteritems() if func(seq)}
+        self.all_seqs = {key:seq for key, seq in self.all_seqs.iteritems() if func(seq)}
 
 
     def clock_filter(self, root_seq=None, n_iqd=3, max_gaps = 1.0, plot=False):
@@ -230,12 +215,12 @@ class sequence_set(object):
             tmp = threshold
             threshold = lambda x:tmp
 
-        # if we do repeated subsampling, subsamples seqs, otherwise raw_seqs
+        # if we do repeated subsampling, subsamples seqs, otherwise all_seqs
         self.sequence_categories = defaultdict(list)
         if repeated:
             seqs_to_subsample = self.seqs.values()
         else:
-            seqs_to_subsample = self.raw_seqs.values()
+            seqs_to_subsample = self.all_seqs.values()
 
         # sort sequences into categories and assign priority score
         for seq in seqs_to_subsample:
@@ -251,8 +236,8 @@ class sequence_set(object):
             self.seqs.update({seq.id:seq for seq in seqs[:threshold( (cat, seqs) )]})
 
         # re-add the reference sequence is desired
-        if self.reference.id not in self.seqs:
-            self.seqs[self.reference.id] = self.reference
+        if self.reference_seq is not None and self.reference_seq.name not in self.seqs:
+            self.seqs[self.reference_seq.name] = self.reference_seq
 
 
     def align(self):
@@ -268,7 +253,6 @@ class sequence_set(object):
 
         self.aln = AlignIO.read('temp_out.fasta', 'fasta')
         self.sequence_lookup = {seq.id:seq for seq in self.aln}
-        self.reference_aligned = self.sequence_lookup[self.reference.id]
         # add attributes to alignment
         for seqid, seq in self.seqs.iteritems():
             self.sequence_lookup[seqid].attributes = seq.attributes
@@ -323,7 +307,6 @@ class sequence_set(object):
         #generate nucleotide alignment
         self.aln = pad_nucleotide_sequences(aln_aa, self.seqs)
         self.sequence_lookup = {seq.id:seq for seq in self.aln}
-        self.reference_aligned = self.sequence_lookup[self.reference.id]
         # add attributes to alignment
         for seq in self.seqs.values():
             if seq.id in self.sequence_lookup:
@@ -333,7 +316,7 @@ class sequence_set(object):
 
 
     def strip_non_reference(self):
-        ungapped = np.array(self.reference_aligned)!='-'
+        ungapped = np.array(self.sequence_lookup[self.reference_seq.name])!='-'
         from Bio.Seq import Seq
         for seq in self.aln:
             seq.seq = Seq("".join(np.array(seq)[ungapped]))
@@ -410,17 +393,4 @@ class sequence_set(object):
 
 
 if __name__=="__main__":
-    myseqs = sequence_set('../../nextflu_umbrella/HIV_trees/data/gag.fasta.gz', reference='B|FR|1985|NL4_3_LAI_NY5_pNL43_NL43|244167|NL43|325|U26942')
-    myseqs.ungap()
-    myseqs.parse({0:"subtype", 1:"country", 2:"date", 4:"name", 5:"id", 6:"patient", 7:"accession"})
-    myseqs.parse_date(["%Y-%m-%d", "%Y"])
-    myseqs.filter(lambda x:x.attributes['subtype']=='B')
-    myseqs.subsample(category = lambda x:x.attributes['date'].year)
-    myseqs.codon_align(prune=True)
-    #myseqs.align()
-    myseqs.strip_non_reference()
-    myseqs.clock_filter(n_iqd=3, plot=True)
-    myseqs.diversity_statistics()
-    myseqs.translate()
-
-
+    pass
