@@ -235,27 +235,30 @@ class sequence_set(object):
             seqs.sort(key=lambda x:x._priority, reverse=True)
             self.seqs.update({seq.id:seq for seq in seqs[:threshold( (cat, seqs) )]})
 
-        # re-add the reference sequence is desired
-        if self.reference_seq is not None and self.reference_seq.name not in self.seqs:
-            self.seqs[self.reference_seq.name] = self.reference_seq
-
-
     def align(self):
         '''
         align sequences using mafft
         '''
         from Bio import AlignIO
+        from Bio.Align import MultipleSeqAlignment
         make_dir(self.run_dir)
         os.chdir(self.run_dir)
-
-        SeqIO.write(self.seqs.values(), "temp_in.fasta", "fasta")
+        ref_in_set = self.reference_seq.name in self.seqs
+        if ref_in_set:
+            out_seqs = self.seqs.values()
+        else:
+            out_seqs = self.seqs.values() + [self.reference_seq]
+        print("align: reference in set",ref_in_set)
+        SeqIO.write(out_seqs, "temp_in.fasta", "fasta")
         os.system("mafft --anysymbol --thread " + str(self.nthreads) + " temp_in.fasta > temp_out.fasta")
 
-        self.aln = AlignIO.read('temp_out.fasta', 'fasta')
-        self.sequence_lookup = {seq.id:seq for seq in self.aln}
+        tmp_aln = AlignIO.read('temp_out.fasta', 'fasta')
+        self.sequence_lookup = {seq.id:seq for seq in tmp_aln}
         # add attributes to alignment
         for seqid, seq in self.seqs.iteritems():
             self.sequence_lookup[seqid].attributes = seq.attributes
+        self.aln = MultipleSeqAlignment([s for s in tmp_aln
+                            if s.name!=self.reference_seq.name or ref_in_set])
         os.chdir('..')
         remove_dir(self.run_dir)
 

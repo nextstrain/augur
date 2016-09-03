@@ -272,6 +272,11 @@ class tree(object):
                 if hasattr(node, 'translations'):
                     for prot in node.translations:
                         node.aa_muts[prot] = ["".join(map(str,[a,pos+1,d])) for a,pos,d in node.aa_mutations[prot]]
+        for node in self.tree.find_clades(order="preorder"):
+            if node.up is not None: #try:
+                node.attr["div"] = node.up.attr["div"]+node.mutation_length
+            else:
+                node.attr["div"] = 0
         self.dump_attr.extend(['muts', 'aa_muts', 'aa_mutations', 'mutation_length', 'mutations'])
 
 
@@ -395,4 +400,3 @@ if __name__=="__main__":
     myTree.refine()
     myTree.layout()
     myTree.export()
-
