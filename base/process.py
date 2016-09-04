@@ -255,7 +255,7 @@ class process(object):
         self.seqs.export_diversity(prefix+'entropy.json')
         # exports the tree and the sequences inferred for all clades in the tree
         self.tree.export(path=prefix, extra_attr = extra_attr
-                         + ["muts", "aa_muts","attr"])
+                         + ["muts", "aa_muts","attr", "clade"])
 
 
         # local function or round frequency estimates to useful precision (reduces file size)

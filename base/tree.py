@@ -306,7 +306,7 @@ class tree(object):
             self.dump_attr.extend(['tvalue'])
 
 
-    def export(self, path = '', extra_attr = ['aa_muts'], plain_export = 10):
+    def export(self, path = '', extra_attr = ['aa_muts', 'clade'], plain_export = 10):
         '''
         export the tree data structure along with the sequence information as
         json files for display in web browsers.
