@@ -54,12 +54,12 @@ class process(object):
             self.proteins = {}
 
 
-    def load_sequences(self):
+    def load_sequences(self, fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
+                                     5:'country', 7:"city", 12:"subtype",13:'lineage'}):
         # instantiate and population the sequence objects
         self.seqs = sequence_set(self.sequence_fname, reference_seq=self.reference_seq)
         self.seqs.ungap()
-        self.seqs.parse({0:'strain', 2:'isolate_id', 3:'date', 4:'region',
-                         5:'country', 7:"city", 12:"subtype",13:'lineage'}, strip='_')
+        self.seqs.parse(fields, strip='_')
 
         # make sure the reference is part of the sequence set
         if self.reference_seq is not None:
@@ -234,11 +234,11 @@ class process(object):
         else:
             self.tree.tt_from_file(infile, nodefile=nodefile, root=root)
 
-    def annotate_tree(self, Tc=0.01, timetree=False):
+    def annotate_tree(self, Tc=0.01, timetree=False, **kwargs):
         if timetree:
-            self.tree.timetree(Tc=Tc, infer_gtr=True)
+            self.tree.timetree(Tc=Tc, infer_gtr=True, **kwargs)
         else:
-            self.tree.ancestral()
+            self.tree.ancestral(**kwargs)
         self.tree.add_translations()
         self.tree.refine()
         self.tree.layout()
@@ -264,26 +264,26 @@ class process(object):
 
         # construct a json file containing all frequency estimate
         # the format is region_protein:159F for mutations and region_clade:123 for clades
-        freq_json = {'pivots':process_freqs(self.pivots)}
-        freq_json['counts'] = {x:list(counts) for x, counts in self.mutation_frequency_counts.iteritems()}
-        for (region, gene), tmp_freqs in self.mutation_frequencies.iteritems():
-            for mut, freq in tmp_freqs.iteritems():
-                label_str =  region+"_"+ gene + ':' + str(mut[0]+1)+mut[1]
-                freq_json[label_str] = process_freqs(freq)
+        if hasattr(self, 'pivots'):
+            freq_json = {'pivots':process_freqs(self.pivots)}
+        if hasattr(self, 'mutation_frequencies'):
+            freq_json['counts'] = {x:list(counts) for x, counts in self.mutation_frequency_counts.iteritems()}
+            for (region, gene), tmp_freqs in self.mutation_frequencies.iteritems():
+                for mut, freq in tmp_freqs.iteritems():
+                    label_str =  region+"_"+ gene + ':' + str(mut[0]+1)+mut[1]
+                    freq_json[label_str] = process_freqs(freq)
         # repeat for clade frequencies in trees
-        for region in self.tree_frequencies:
-            for clade, freq in self.tree_frequencies[region].iteritems():
-                label_str = region+'_clade:'+str(clade)
-                freq_json[label_str] = process_freqs(freq)
+        if hasattr(self, 'tree_frequencies'):
+            for region in self.tree_frequencies:
+                for clade, freq in self.tree_frequencies[region].iteritems():
+                    label_str = region+'_clade:'+str(clade)
+                    freq_json[label_str] = process_freqs(freq)
         # write to one frequency json
-        write_json(freq_json, prefix+'frequencies.json', indent=None)
+        if hasattr(self, 'tree_frequencies') or hasattr(self, 'mutation_frequencies'):
+            write_json(freq_json, prefix+'frequencies.json', indent=None)
 
 
 if __name__=="__main__":
-    import argparse
-    import matplotlib.pyplot as plt
-    plt.ion()
-
     lineage = 'h3n2'
     input_data_path = '../nextstrain-db/data/'+lineage
     store_data_path = 'store/'+lineage + '_'
@@ -302,6 +302,7 @@ if __name__=="__main__":
     proc.estimate_mutation_frequencies(region='global')
     proc.build_tree()
     proc.annotate_tree(Tc=0.005, timetree=True)
+    proc.estimate_tree_frequencies(region='global')
     proc.estimate_tree_frequencies(region='north_america')
     proc.tree.geo_inference('region')
     proc.export()
