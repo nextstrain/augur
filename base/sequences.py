@@ -119,7 +119,7 @@ class sequence_set(object):
                         if 'XX' in seq.attributes['date']:
                             min_date, max_date = ambiguous_date_to_date_range(seq.attributes['date'], fmt)
                             seq.attributes['raw_date'] = seq.attributes['date']
-                            seq.attributes['num_date'] = np.mean((num_date(min_date), num_date(max_date)))
+                            seq.attributes['num_date'] = np.array((num_date(min_date), num_date(max_date)))
                             seq.attributes['date'] = min_date
                         else:
                             if callable(fmt):

@@ -20,8 +20,8 @@ if __name__=="__main__":
 
     lineage = 'zika'
     input_data_path = '../nextstrain-db/data/'+lineage
-    store_data_path = 'store/'+lineage
-    build_data_path = 'build/'+lineage
+    store_data_path = 'store/'+lineage + '_'
+    build_data_path = 'build/'+lineage + '_'
 
     zika = process(input_data_path = input_data_path, store_data_path = store_data_path, build_data_path = build_data_path,
                    reference='zika/metadata/zika_outgroup.gb',
