@@ -43,6 +43,7 @@ class process(object):
         from Bio import SeqIO
         from Bio.SeqFeature import FeatureLocation
         self.reference_seq = SeqIO.read(reference_file, 'genbank')
+        self.reference_seq.id = self.reference_seq.name
         self.genome_annotation = self.reference_seq.features
         if "proteins" in self.kwargs:
             # grap annotation from genbank
@@ -66,9 +67,7 @@ class process(object):
                 self.seqs.all_seqs[self.reference_seq.name].seq=self.reference_seq.seq
             else:
                 print('Outgroup is not in data base')
-                self.seqs.all_seqs[self.reference_seq.name]=self.reference_seq
 
-            self.seqs.reference_seq = self.seqs.all_seqs[self.reference_seq.name]
             # throw out sequences without dates
         self.seqs.parse_date(["%Y-%m-%d"], prune=True)
 
@@ -235,7 +234,7 @@ class process(object):
         else:
             self.tree.tt_from_file(infile, nodefile=nodefile, root=root)
 
-    def annotate_tree(Tc=0.01, timetree=False):
+    def annotate_tree(self, Tc=0.01, timetree=False):
         if timetree:
             self.tree.timetree(Tc=Tc, infer_gtr=True)
         else:
@@ -285,10 +284,10 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     plt.ion()
 
-    lineage = 'h3n2_'
+    lineage = 'h3n2'
     input_data_path = '../nextstrain-db/data/'+lineage
-    store_data_path = 'store/'+lineage
-    build_data_path = 'build/'+lineage
+    store_data_path = 'store/'+lineage + '_'
+    build_data_path = 'build/'+lineage + '_'
 
     proc = process(input_data_path = input_data_path, store_data_path = store_data_path, build_data_path = build_data_path,
                    reference='flu/metadata/h3n2_outgroup.gb', proteins=['HA1', 'HA2'],method='SLSQP')
@@ -301,7 +300,8 @@ if __name__=="__main__":
 
     proc.align()
     proc.estimate_mutation_frequencies(region='global')
-    proc.build_tree(Tc=0.005, timetree=True)
-    proc.estimate_tree_frequencies(region='NorthAmerica')
+    proc.build_tree()
+    proc.annotate_tree(Tc=0.005, timetree=True)
+    proc.estimate_tree_frequencies(region='north_america')
     proc.tree.geo_inference('region')
     proc.export()
