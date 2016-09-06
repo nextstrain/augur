@@ -39,13 +39,7 @@ if __name__=="__main__":
 
     zika.align()
     zika.build_tree()
-    zika.tree.tt.clock_filter(reroot='best', n_iqd=3, plot=True)
-    leaves = zika.tree.tree.get_terminals()
-    for n in leaves:
-        if n.bad_branch:
-            n.up.clades = [c for c in n.up if c!=n]
-            print('pruning leaf ', n.name)
-
+    zika.clock_filter(n_iqd=3, plot=True)
     zika.annotate_tree(Tc=0.005, timetree=True, reroot='best')
     zika.tree.geo_inference('region')
     zika.export()

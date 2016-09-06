@@ -176,10 +176,11 @@ class process(object):
                 include_set=[]
             else:
                 tmp_aln = filter_alignment(aln, region=region, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
-                include_set = set([pos for (pos, mut) in self.frequencies[('global', prot)]])
+                include_set = set([pos for (pos, mut) in self.mutation_frequencies[('global', prot)]])
             time_points = [x.attributes['num_date'] for x in tmp_aln]
             if len(time_points)==0:
                 print('no samples in region', region, prot)
+                self.mutation_frequency_counts[region]=np.zeros_like(self.pivots)
                 continue
 
             aln_frequencies = alignment_frequencies(tmp_aln, time_points, self.pivots,
@@ -188,7 +189,7 @@ class process(object):
             aln_frequencies.mutation_frequencies(min_freq=0.01)
             self.mutation_frequencies[(region,prot)] = aln_frequencies.frequencies
             self.mutation_frequency_confidence[(region,prot)] = aln_frequencies.calc_confidence()
-        self.mutation_frequency_counts[region]=aln_frequencies.counts
+            self.mutation_frequency_counts[region]=aln_frequencies.counts
 
 
     def estimate_tree_frequencies(self, region='global', pivots=24):
@@ -233,6 +234,22 @@ class process(object):
             self.tree.build(root=root)
         else:
             self.tree.tt_from_file(infile, nodefile=nodefile, root=root)
+
+
+    def clock_filter(self, n_iqd=3, plot=True):
+        self.tree.tt.clock_filter(reroot='best', n_iqd=n_iqd, plot=plot)
+        leaves = [x for x in self.tree.tree.get_terminals()]
+        for n in leaves:
+            if n.bad_branch:
+                n.up.clades = [c for c in n.up if c!=n]
+                print('pruning leaf ', n.name)
+                if len(n.up.clades)==1:
+                    x = n.up.clades[0]
+                    x.branch_length += x.up.branch_length
+                    x.up.up.clades = [x] + [c for c in x.up.up if c!=x.up]
+                n.up=None
+        self.tree.tt.prepare_tree()
+
 
     def annotate_tree(self, Tc=0.01, timetree=False, **kwargs):
         if timetree:
