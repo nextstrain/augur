@@ -138,6 +138,7 @@ class flu_process(process):
 
 
     def HI_export(self):
+        from base.io_util import write_json
         prefix = self.build_data_path
         if hasattr(self, 'HI_tree'):
             # export the raw titers
@@ -294,8 +295,8 @@ if __name__=="__main__":
     params = parser.parse_args()
     lineage = 'h3n2'
     input_data_path = '../nextstrain-db/data/'+lineage
-    store_data_path = 'store/'+lineage + '_'
-    build_data_path = 'build/'+lineage + '_'
+    store_data_path = 'store/'+lineage + '_' + params.resolution +'_'
+    build_data_path = 'build/'+lineage + '_' + params.resolution +'_'
 
     ppy = 12
     flu = flu_process(input_data_path = input_data_path, store_data_path = store_data_path,
@@ -320,10 +321,10 @@ if __name__=="__main__":
     for region in regions:
         flu.estimate_mutation_frequencies(region=region)
 
-    flu.subsample(2, repeated=True)
+    flu.subsample(5, repeated=True)
     flu.align()
     flu.build_tree()
-    flu.clock_filter()
+    flu.clock_filter(n_iqd=3, plot=True)
     flu.annotate_tree(Tc=0.005, timetree=True, reroot='best')
     flu.tree.geo_inference('region')
 

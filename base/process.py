@@ -152,13 +152,13 @@ class process(object):
             if region is not None:
                 tmp = [s for s in tmp if s.attributes['region']==region]
             if lower_tp is not None:
-                tmp = [s for s in tmp if s.attributes['num_date']>=lower_tp]
+                tmp = [s for s in tmp if np.mean(s.attributes['num_date'])>=lower_tp]
             if upper_tp is not None:
-                tmp = [s for s in tmp if s.attributes['num_date']<upper_tp]
+                tmp = [s for s in tmp if np.mean(s.attributes['num_date'])<upper_tp]
             return MultipleSeqAlignment(tmp)
 
         if not hasattr(self, 'pivots'):
-            tps = np.array([x.attributes['num_date'] for x in self.seqs.seqs.values()])
+            tps = np.array([np.mean(x.attributes['num_date']) for x in self.seqs.seqs.values()])
             self.pivots=make_pivots(pivots, tps)
         else:
             print('estimate_mutation_frequencies: using self.pivots')
@@ -177,7 +177,7 @@ class process(object):
             else:
                 tmp_aln = filter_alignment(aln, region=region, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
                 include_set = set([pos for (pos, mut) in self.mutation_frequencies[('global', prot)]])
-            time_points = [x.attributes['num_date'] for x in tmp_aln]
+            time_points = [np.mean(x.attributes['num_date']) for x in tmp_aln]
             if len(time_points)==0:
                 print('no samples in region', region, prot)
                 self.mutation_frequency_counts[region]=np.zeros_like(self.pivots)
@@ -241,13 +241,15 @@ class process(object):
         leaves = [x for x in self.tree.tree.get_terminals()]
         for n in leaves:
             if n.bad_branch:
-                n.up.clades = [c for c in n.up if c!=n]
+                self.tree.tt.tree.prune(n)
                 print('pruning leaf ', n.name)
-                if len(n.up.clades)==1:
-                    x = n.up.clades[0]
-                    x.branch_length += x.up.branch_length
-                    x.up.up.clades = [x] + [c for c in x.up.up if c!=x.up]
-                n.up=None
+#                n.up.clades = [c for c in n.up if c!=n]
+#                if len(n.up.clades)==1:
+#                    x = n.up.clades[0]
+#                    x.branch_length += x.up.branch_length
+#                    x.mutation_length += x.up.mutation_length
+#                    x.up.up.clades = [x] + [c for c in x.up.up if c!=x.up]
+#                n.up=None
         self.tree.tt.prepare_tree()
 
 
@@ -266,7 +268,6 @@ class process(object):
         export the tree, sequences, frequencies to json files for visualization
         in the browser
         '''
-
         prefix = self.build_data_path
         # export json file that contains alignment diversity column by column
         self.seqs.export_diversity(prefix+'entropy.json')
