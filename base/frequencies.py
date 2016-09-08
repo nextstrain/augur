@@ -12,10 +12,10 @@ def make_pivots(pivots, tps):
     if pivots is a scalar, make a grid of pivot points covering the entire range
     '''
     if np.isscalar(pivots):
-        dt = tps.max()-tps.min()
-        return np.linspace(tps.min()-0.01*dt, tps.max()+0.01*dt, pivots)
+        dt = np.max(tps)-np.min(tps)
+        return np.linspace(np.min(tps)-0.01*dt, np.max(tps)+0.01*dt, pivots)
     else:
-        return pivots
+        return np.array(pivots)
 
 def count_observations(pivots, tps):
     pivots = make_pivots(pivots, tps)
@@ -297,7 +297,7 @@ class tree_frequencies(object):
         else:
             self.frequencies = {self.tree.root.clade:np.ones_like(self.pivots)}
 
-        self.counts = count_observations(self.pivots, tps)
+        self.counts = count_observations(self.pivots, self.tps)
 
     def estimate_clade_frequencies(self):
         for node in self.tree.get_nonterminals(order='preorder'):
@@ -369,7 +369,7 @@ class alignment_frequencies(object):
         self.tps = np.array(tps)
         self.kwargs = kwargs
         self.pivots = pivots
-        self.counts = count_observations(self.pivots, tps)
+        self.counts = count_observations(self.pivots, self.tps)
 
 
     def estimate_genotype_frequency(self, gt):
