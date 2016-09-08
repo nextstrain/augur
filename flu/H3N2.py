@@ -295,8 +295,8 @@ if __name__=="__main__":
     params = parser.parse_args()
     lineage = 'h3n2'
     input_data_path = '../nextstrain-db/data/'+lineage
-    store_data_path = 'store/'+lineage + '_' + params.resolution +'_'
-    build_data_path = 'build/'+lineage + '_' + params.resolution +'_'
+    store_data_path = 'store/'+lineage + '_' #+ params.resolution +'_'
+    build_data_path = 'build/'+lineage + '_' #+ params.resolution +'_'
 
     ppy = 12
     flu = flu_process(input_data_path = input_data_path, store_data_path = store_data_path,
@@ -305,35 +305,38 @@ if __name__=="__main__":
                    method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=50./ppy)
 
 
-    flu.load_sequences(fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
-                         5:'country', 7:"city", 12:"subtype",13:'lineage'})
+    if params.load:
+        flu.load()
+    else:
+        flu.load_sequences(fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
+                             5:'country', 7:"city", 12:"subtype",13:'lineage'})
 
-    time_interval = [datetime.strptime(x, '%Y-%m-%d').date()  for x in params.time_interval]
-    pivots = np.arange(time_interval[0].year, time_interval[1].year+time_interval[1].month/12.0, 1.0/ppy)
-    flu.seqs.filter(lambda s:
-        s.attributes['date']>=time_interval[0] and s.attributes['date']<time_interval[1])
+        time_interval = [datetime.strptime(x, '%Y-%m-%d').date()  for x in params.time_interval]
+        pivots = np.arange(time_interval[0].year, time_interval[1].year+time_interval[1].month/12.0, 1.0/ppy)
+        flu.seqs.filter(lambda s:
+            s.attributes['date']>=time_interval[0] and s.attributes['date']<time_interval[1])
 
-    flu.subsample(params.viruses_per_month)
-    flu.align()
-    flu.dump()
-    # first estimate frequencies globally, then region specific
-    flu.estimate_mutation_frequencies(region="global", pivots=pivots)
-    for region in regions:
-        flu.estimate_mutation_frequencies(region=region)
+        flu.subsample(params.viruses_per_month)
+        flu.align()
+        flu.dump()
+        # first estimate frequencies globally, then region specific
+        flu.estimate_mutation_frequencies(region="global", pivots=pivots)
+        for region in regions:
+            flu.estimate_mutation_frequencies(region=region)
 
-    flu.subsample(5, repeated=True)
-    flu.align()
-    flu.build_tree()
-    flu.clock_filter(n_iqd=3, plot=True)
-    flu.annotate_tree(Tc=0.005, timetree=True, reroot='best')
-    flu.tree.geo_inference('region')
+        flu.subsample(5, repeated=True)
+        flu.align()
+        flu.build_tree()
+        flu.clock_filter(n_iqd=3, plot=True)
+        flu.annotate_tree(Tc=0.005, timetree=True, reroot='best')
+        flu.tree.geo_inference('region')
 
-    flu.estimate_tree_frequencies()
-    flu.dump()
+        flu.estimate_tree_frequencies()
+        flu.dump()
 
-    flu.HI_model()
-    H3N2_scores(flu.tree.tree)
-    flu.dump()
+        flu.HI_model()
+        H3N2_scores(flu.tree.tree)
+        flu.dump()
 
-    flu.export(extra_attr=['serum'])
-    flu.HI_export()
+        flu.export(extra_attr=['serum'])
+        flu.HI_export()

@@ -202,7 +202,7 @@ class process(object):
             node_filter_func = lambda x:x.attr['region']==region
 
         if not hasattr(self, 'pivots'):
-            tps = np.array([x.attributes['num_date'] for x in self.seqs.seqs])
+            tps = np.array([x.attributes['num_date'] for x in self.seqs.seqs.values()])
             self.pivots=make_pivots(pivots, tps)
         else:
             print('estimate_tree_frequencies: using self.pivots')

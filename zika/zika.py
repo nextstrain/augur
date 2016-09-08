@@ -42,4 +42,5 @@ if __name__=="__main__":
     zika.clock_filter(n_iqd=3, plot=True)
     zika.annotate_tree(Tc=0.005, timetree=True, reroot='best')
     zika.tree.geo_inference('region')
+    zika.tree.geo_inference('country')
     zika.export()
