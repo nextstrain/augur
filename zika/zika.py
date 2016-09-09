@@ -28,11 +28,12 @@ if __name__=="__main__":
                    proteins=['CA', 'PRO', 'MP', 'ENV', 'NS1', 'NS2A', 'NS2B', 'NS3', 'NS4A', 'NS4B'],
                    method='SLSQP')
 
-    fasta_fields = {0:'strain', 2:'isolate_id', 3:'date', 4:'region',
-                    5:'country', 7:"city"}
+    fasta_fields = {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country', 8:'db', 10:'authors'}
     zika.load_sequences(fields=fasta_fields)
     zika.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
                                s.attributes['date']< datetime(2017,1,1).date())
+    dropped_strains = ["THA/2014/SV0127_14", "THA/PLCal_ZV/2013", "PLCal_ZV"]
+    zika.seqs.filter(lambda s: s.id not in dropped_strains)
     zika.seqs.subsample(category = lambda x:(x.attributes['region'],
                                              x.attributes['date'].year,
                                              x.attributes['date'].month), threshold=100)
