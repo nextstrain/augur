@@ -243,14 +243,23 @@ class process(object):
             if n.bad_branch:
                 self.tree.tt.tree.prune(n)
                 print('pruning leaf ', n.name)
-#                n.up.clades = [c for c in n.up if c!=n]
-#                if len(n.up.clades)==1:
-#                    x = n.up.clades[0]
-#                    x.branch_length += x.up.branch_length
-#                    x.mutation_length += x.up.mutation_length
-#                    x.up.up.clades = [x] + [c for c in x.up.up if c!=x.up]
-#                n.up=None
         self.tree.tt.prepare_tree()
+
+
+    def matchClades(self, clades):
+        '''
+        finds branches in the tree corresponding to named clades by searching for the
+        oldest node with a particular genotype
+        '''
+        def match(node, genotype):
+            return all([node.translations[gene][pos]==state if gene in node.translations else node.sequences[pos]==state
+                        for gene, pos, state in genotype])
+
+        self.clades_to_nodes = {}
+        for clade_name, genotype in clades.iteritems():
+            matching_nodes = self.tree.tree.get_nonterminals().filter(lambda x:match(x,genotype))
+            matching_nodes.sort(lambda x:x.numdate if hasattr(x,'numdate') else x.dist2root)
+            self.clades_to_nodes[clade] = matching_nodes[0]
 
 
     def annotate_tree(self, Tc=0.01, timetree=False, **kwargs):
