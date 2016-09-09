@@ -8,6 +8,8 @@ from base.io_util import myopen
 regions = ['SouthAsia', 'Europe', 'China', 'NorthAmerica',
            'China', 'SouthAmerica', 'JapanKorea', 'Oceania' ]
 
+attribute_nesting = {'geographic location':['region', 'country', 'city'],}
+
 clade_designations = { "3c3.a":[('HA1',128,'A'), ('HA1',142,'G'), ('HA1',159,'S')],
                        "3c3":   [('HA1',128,'A'), ('HA1',142,'G'), ('HA1',159,'F')],
                        "3c2.a": [('HA1',144,'S'), ('HA1',159,'Y'), ('HA1',225,'D'), ('HA1',311,'H'), ('HA2',160,'N')],

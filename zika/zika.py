@@ -10,6 +10,8 @@ from Bio.SeqFeature import FeatureLocation
 import numpy as np
 from datetime import datetime
 
+attribute_nesting = {'geographic location':['region', 'country', 'city'],}
+
 if __name__=="__main__":
     import argparse
 
@@ -43,4 +45,4 @@ if __name__=="__main__":
     zika.annotate_tree(Tc=0.005, timetree=True, reroot='best')
     zika.tree.geo_inference('region')
     zika.tree.geo_inference('country')
-    zika.export()
+    zika.export(controls = attribute_nesting)
