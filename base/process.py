@@ -246,20 +246,28 @@ class process(object):
         self.tree.tt.prepare_tree()
 
 
-    def matchClades(self, clades):
+    def matchClades(self, clades, offset=-1):
         '''
         finds branches in the tree corresponding to named clades by searching for the
-        oldest node with a particular genotype
+        oldest node with a particular genotype.
+        - params
+            - clades: a dictionary with clade names as keys and lists of genoypes as values
+            - offset: the offset to be applied to the position specification, typically -1
+                      to conform with counting starting at 0 as opposed to 1
         '''
         def match(node, genotype):
-            return all([node.translations[gene][pos]==state if gene in node.translations else node.sequences[pos]==state
+            return all([node.translations[gene][pos+offset]==state if gene in node.translations else node.sequences[pos+offset]==state
                         for gene, pos, state in genotype])
 
         self.clades_to_nodes = {}
         for clade_name, genotype in clades.iteritems():
-            matching_nodes = self.tree.tree.get_nonterminals().filter(lambda x:match(x,genotype))
-            matching_nodes.sort(lambda x:x.numdate if hasattr(x,'numdate') else x.dist2root)
-            self.clades_to_nodes[clade] = matching_nodes[0]
+            matching_nodes = filter(lambda x:match(x,genotype), self.tree.tree.get_nonterminals())
+            matching_nodes.sort(key=lambda x:x.numdate if hasattr(x,'numdate') else x.dist2root)
+            if len(matching_nodes):
+                self.clades_to_nodes[clade_name] = matching_nodes[0]
+                self.clades_to_nodes[clade_name].attr['clade_name']=clade_name
+            else:
+                print('matchClades: no match found for ', clade_name, genotype)
 
 
     def annotate_tree(self, Tc=0.01, timetree=False, **kwargs):
@@ -305,6 +313,12 @@ class process(object):
                 for clade, freq in self.tree_frequencies[region].iteritems():
                     label_str = region+'_clade:'+str(clade)
                     freq_json[label_str] = process_freqs(freq)
+        # repeat for named clades
+        if hasattr(self, 'clades_to_nodes') and hasattr(self, 'tree_frequencies'):
+            for region in self.tree_frequencies:
+                for clade, node in self.clades_to_nodes.iteritems():
+                    label_str = region+'_'+str(clade)
+                    freq_json[label_str] = process_freqs(self.tree_frequencies[region][node.clade])
         # write to one frequency json
         if hasattr(self, 'tree_frequencies') or hasattr(self, 'mutation_frequencies'):
             write_json(freq_json, prefix+'frequencies.json', indent=None)
