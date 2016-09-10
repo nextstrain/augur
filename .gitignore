@@ -1,6 +1,9 @@
 # For augur repo #
 environment*
+temp*
 data/
+build/
+store/
 
 # Compiled source #
 ###################
