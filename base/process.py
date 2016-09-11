@@ -346,6 +346,21 @@ class process(object):
             controls_json = self.make_control_json(controls)
             write_json(controls_json, prefix+'controls.json')
 
+        # write out metadata json# Write out metadata
+        print("Writing out metadata")
+        meta_json = {}
+        meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
+        try:
+            from pygit2 import Repository, discover_repository
+            current_working_directory = os.getcwd()
+            repository_path = discover_repository(current_working_directory)
+            repo = Repository(repository_path)
+            commit_id = repo[repo.head.target].id
+            meta_json["commit"] = str(commit_id)
+        except ImportError:
+            meta_json["commit"] = "unknown"
+        write_json(meta_json, prefix+'meta.json')
+
 
 if __name__=="__main__":
     lineage = 'h3n2'
