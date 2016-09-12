@@ -10,13 +10,39 @@ regions = ['SouthAsia', 'Europe', 'China', 'NorthAmerica',
 
 attribute_nesting = {'geographic location':['region', 'country', 'city'],}
 
-clade_designations = { "3c3.a":[('HA1',128,'A'), ('HA1',142,'G'), ('HA1',159,'S')],
-                       "3c3":   [('HA1',128,'A'), ('HA1',142,'G'), ('HA1',159,'F')],
-                       "3c2.a": [('HA1',144,'S'), ('HA1',159,'Y'), ('HA1',225,'D'), ('HA1',311,'H'), ('HA2',160,'N')],
-                       "171K": [('HA1',144,'S'), ('HA1',159,'Y'), ('HA1',171,'K'), ('HA1',225,'D'), ('HA1',311,'H'), ('HA2',77,'V'), ('HA2',155,'E'), ('HA2',160,'N')],
-                       "3c2":   [('HA1',144,'N'), ('HA1',159,'F'), ('HA1',225,'N'), ('HA2',160,'N'), ('HA1',142,'R')],
-                       "3c3.b": [('HA1',83,'R'), ('HA1',261,'Q'), ('HA1',62,'K'),  ('HA1',122,'D')]
+clade_designations = {"h3n2":{
+                           "3c3.a":[('HA1',128,'A'), ('HA1',142,'G'), ('HA1',159,'S')],
+                           "3c3":   [('HA1',128,'A'), ('HA1',142,'G'), ('HA1',159,'F')],
+                           "3c2.a": [('HA1',144,'S'), ('HA1',159,'Y'), ('HA1',225,'D'), ('HA1',311,'H'), ('HA2',160,'N')],
+                           "171K": [('HA1',144,'S'), ('HA1',159,'Y'), ('HA1',171,'K'), ('HA1',225,'D'), ('HA1',311,'H'), ('HA2',77,'V'), ('HA2',155,'E'), ('HA2',160,'N')],
+                           "3c2":   [('HA1',144,'N'), ('HA1',159,'F'), ('HA1',225,'N'), ('HA2',160,'N'), ('HA1',142,'R')],
+                           "3c3.b": [('HA1',83,'R'), ('HA1',261,'Q'), ('HA1',62,'K'),  ('HA1',122,'D')]
+                        },
+                       "h1n1pdm":{
+                            '2': [('HA1', 125, 'N'), ('HA1', 134 ,'A'), ('HA1', 183, 'S'), ('HA1', 31,'D'), ('HA1', 172,'N'), ('HA1', 186,'T')],
+                            '3': [('HA1', 134 ,'T'), ('HA1', 183, 'P')],
+                            '4': [('HA1', 125, 'D'), ('HA1', 134 ,'A'), ('HA1', 183, 'S')],
+                            '5': [('HA1', 87, 'N'), ('HA1', 205, 'K'), ('HA1', 216, 'V'), ('HA1', 149, 'L')],
+                            '6': [('HA1', 185,'T'),  ('HA1', 97, 'N'), ('HA1', 197, 'A')],
+                            '6c':[('HA1', 234,'I'),  ('HA1', 97, 'N'), ('HA1', 197, 'A'), ('HA1', 283,'E')],
+                            '6b':[('HA1', 163,'Q'),  ('HA1', 256, 'T'), ('HA1', 197, 'A'), ('HA1', 283,'E')],
+                            '7': [('HA1', 143,'G'),  ('HA1', 97, 'D'), ('HA1', 197, 'T')],
+                            '8': [('HA1', 186,'T'),  ('HA1', 272,'A')],
+                            '6b.1':[('HA1', 163,'Q'),  ('HA1', 256, 'T'), ('HA1', 197, 'A'), ('HA1', 283, 'E'), ('SigPep', 13, 'T'), ('HA1', 84, 'N'), ('HA1', 162, 'N')],
+                            '6b.2':[('HA1', 163,'Q'),  ('HA1', 256, 'T'), ('HA1', 197, 'A'), ('HA1', 283, 'E'), ('HA2', 164, 'G'), ('HA1', 152, 'T'), ('HA2', 174, 'E')]
+                       },
+                       "yam":{
+                            '2':  [('HA1', 48,'K'), ('HA1', 108, 'A'), ('HA1', 150, 'S')],
+                            '3':  [('HA1', 48,'R'), ('HA1', 108, 'P'), ('HA1', 150, 'I')],
+                            '3a': [('HA1', 37,'A'), ('HA1', 298, 'E'), ('HA1', 48,'R'), ('HA1', 105, 'P'), ('HA1', 150, 'I')],
+                            '172Q': [('HA1', 48,'R'), ('HA1', 108, 'P'), ('HA1', 150, 'I'), ('HA1', 116, 'K'), ('HA1', 172, 'Q')]
+                       },
+                       "vic":{
+                            '1A': [('HA1', 75,'K'), ('HA1', 58, 'L'), ('HA1', 165, 'K')],
+                            '1B': [('HA1', 75,'K'), ('HA1', 58, 'P'), ('HA1', 165, 'K')],
+                            '117V': [('HA1', 75,'K'), ('HA1', 58, 'L'), ('HA1', 165, 'K'), ('HA1', 129, 'D'), ('HA1', 117, 'V')]
                         }
+                     }
 
 class flu_process(process):
     """process influenza virus sequences in mutliple steps to allow visualization in browser
@@ -61,69 +87,7 @@ class flu_process(process):
         self.seqs.subsample(category = sampling_category,
                             threshold=sampling_threshold,
                             priority=sampling_priority, **kwargs)
-        #tmp = []
-        #for seq in self.seqs.seqs.values():
-        #    tmp.append((seq.name, sampling_priority(seq), seq.attributes['region'], seq.attributes['date']))
-        #print(sorted(tmp, key=lambda x:x[1]))
-        #self.seqs.subsample(category = lambda x:(x.attributes['date'].year,x.attributes['date'].month),
-        #                    threshold=params.viruses_per_month, repeated=True)
 
-
-
-
-    def count_mutations_per_site(self):
-        '''
-        count the number of independent mutations at each site
-        '''
-        def mut_struct():
-            return defaultdict(int)
-        mutation_dict = defaultdict(mut_struct)
-        for node in self.tree.tree.find_clades():
-            for prot in node.aa_mutations:
-                for anc, pos, der in node.aa_mutations[prot]:
-                    mutation_dict[(prot,pos)][anc+'->'+der]+=1
-
-        for key in mutation_dict:
-            mutation_dict[key]['total'] = np.sum(mutation_dict[key].values())
-
-        self.mutation_count = mutation_dict
-
-
-    def calculate_associations(self, covariate='passage', lookup=None):
-        '''
-        calculate the association of amino acid state and
-        sequence properties such as passage
-        '''
-        if not hasattr(self, 'mutation_count'):
-            self.count_mutations_per_site()
-
-        # calculate associations
-        from scipy.stats import chi2_contingency
-        self.associations = {}
-        if lookup is None:
-            lookup=lambda x:x
-
-        # loop over all positions (currently rather clumsy)
-        for prot, pos in self.mutation_count:
-            assoc = defaultdict(int)
-            for node in self.tree.tree.get_terminals(): # extract info from each node
-                if hasattr(node, covariate):
-                    assoc[(node.translations[prot][pos-1], lookup(node.__getattribute__(covariate)))]+=1
-
-            # make contingency matrix
-            aa_states = sorted(set([x[0] for x in assoc]))
-            cov_states = sorted(set([x[1] for x in assoc]))
-            contingeny_matrix = np.zeros((len(aa_states), len(cov_states)))
-            for a, c in assoc:
-                contingeny_matrix[aa_states.index(a), cov_states.index(c)] = assoc[(a,c)]
-            print(contingeny_matrix, assoc)
-            g, p, dof, expctd = chi2_contingency(contingeny_matrix, lambda_="log-likelihood")
-            assoc['contingency matrix'] = contingeny_matrix
-            assoc['aa']=aa_states
-            assoc['covariates']=cov_states
-            assoc['g_test'] = (g,p)
-
-            self.associations[(prot, pos)] = assoc
 
 
     def HI_model(self, **kwargs):
@@ -260,7 +224,7 @@ def plot_frequencies(flu, gene, mutation=None, plot_regions=None, all_muts=False
     plt.figure()
     ax=plt.subplot(111)
     if type(mutation)==int:
-        mutations = [x for x,freq in flu.frequencies[(gene, 'global')].iteritems()
+        mutations = [x for x,freq in flu.mutation_frequencies[(gene, 'global')].iteritems()
                      if (x[0]==mutation)&(freq[0]<0.5 or all_muts)]
     elif mutation is not None:
         mutations = [mutation]
@@ -275,8 +239,8 @@ def plot_frequencies(flu, gene, mutation=None, plot_regions=None, all_muts=False
         print("plotting mutations", mutations)
         for ri,region in enumerate(plot_regions):
             for mi,mut in enumerate(mutations):
-                if mut in flu.frequencies[(gene, region)]:
-                    freq = flu.frequencies[(gene, region)][mut]
+                if mut in flu.mutation_frequencies[(gene, region)]:
+                    freq = flu.mutation_frequencies[(gene, region)][mut]
                     err = flu.frequency_confidence[(gene, region)][mut]
                     c=cols[ri%len(cols)]
                     label_str = str(mut[0]+1)+mut[1]+', '+region
@@ -300,16 +264,16 @@ if __name__=="__main__":
     parser.add_argument('-d', '--download', action='store_true', default = False, help='load from database')
     parser.add_argument('-t', '--time_interval', nargs=2, default=('2012-01-01', '2016-01-01'),
                             help='time interval to sample sequences from: provide dates as YYYY-MM-DD')
+    parser.add_argument('-l', '--lineage', type = str, default = 'h3n2', help='flu lineage to process')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
     params = parser.parse_args()
-    lineage = 'h3n2'
-    input_data_path = '../nextstrain-db/data/'+lineage
-    store_data_path = 'store/'+lineage + '_' #+ params.resolution +'_'
-    build_data_path = 'build/'+lineage + '_' #+ params.resolution +'_'
+    input_data_path = '../nextstrain-db/data/'+params.lineage
+    store_data_path = 'store/'+params.lineage + '_' + params.resolution +'_'
+    build_data_path = 'build/'+params.lineage + '_' + params.resolution +'_'
 
     ppy = 12
     flu = flu_process(input_data_path = input_data_path, store_data_path = store_data_path,
-                   build_data_path = build_data_path, reference='flu/metadata/h3n2_outgroup.gb',
+                   build_data_path = build_data_path, reference='flu/metadata/'+params.lineage+'_outgroup.gb',
                    proteins=['SigPep', 'HA1', 'HA2'],
                    method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=50./ppy)
 
@@ -346,6 +310,6 @@ if __name__=="__main__":
         flu.HI_model()
         H3N2_scores(flu.tree.tree)
         flu.dump()
-
-        flu.export(extra_attr=['serum'])
+        flu.matchClades(clade_designations[params.lineage])
+        flu.export(extra_attr=['serum'], controls=attribute_nesting)
         flu.HI_export()
