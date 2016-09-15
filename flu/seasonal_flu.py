@@ -5,8 +5,12 @@ import numpy as np
 from datetime import datetime
 from base.io_util import myopen
 
-regions = ['SouthAsia', 'Europe', 'China', 'NorthAmerica',
-           'China', 'SouthAmerica', 'JapanKorea', 'Oceania', 'SouthEastAsia']
+regions = ['africa', 'south_asia', 'europe', 'china', 'north_america',
+           'china', 'south_america', 'japan_korea', 'oceania', 'southeast_asia']
+
+region_groups = {'NA':'north_america',
+                 'AS':['china', 'japan_korea', 'south_asia', 'southeast_asia'],
+                 'OC':'oceania', 'EU':'europe'}
 
 attribute_nesting = {'geographic location':['region', 'country', 'city'],}
 
@@ -200,11 +204,6 @@ def H3N2_scores(tree, epitope_mask_version='wolf'):
         node.attr['rb'] = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
 
 
-def plot_frequencies(flu, plot_regions):
-    pivots = flu.pivots
-    plt.figure()
-
-
 def plot_trace(ax, pivots, freq, err, n_std_dev=1, err_smoothing=3, show_errorbars=True, c='r', ls='-', label=None):
     ax.plot(pivots, freq, c=c, ls=ls, label=label)
     if show_errorbars:
@@ -213,7 +212,7 @@ def plot_trace(ax, pivots, freq, err, n_std_dev=1, err_smoothing=3, show_errorba
                 np.minimum(1,freq+n_std_dev*smerr),
                 facecolor=c, linewidth=0, alpha=0.1)
 
-def plot_frequencies(flu, gene, mutation=None, plot_regions=None, all_muts=False, **kwargs):
+def plot_frequencies(flu, gene, mutation=None, plot_regions=None, all_muts=False, ax=None, **kwargs):
     import seaborn as sns
     sns.set_style('whitegrid')
     cols = sns.color_palette()
@@ -221,10 +220,11 @@ def plot_frequencies(flu, gene, mutation=None, plot_regions=None, all_muts=False
     if plot_regions is None:
         plot_regions=regions
     pivots = flu.pivots
-    plt.figure()
-    ax=plt.subplot(111)
+    if ax is None:
+        plt.figure()
+        ax=plt.subplot(111)
     if type(mutation)==int:
-        mutations = [x for x,freq in flu.mutation_frequencies[(gene, 'global')].iteritems()
+        mutations = [x for x,freq in flu.mutation_frequencies[('global', gene)].iteritems()
                      if (x[0]==mutation)&(freq[0]<0.5 or all_muts)]
     elif mutation is not None:
         mutations = [mutation]
@@ -233,15 +233,15 @@ def plot_frequencies(flu, gene, mutation=None, plot_regions=None, all_muts=False
 
     if mutations is None:
         for ri, region in enumerate(plot_regions):
-            count=flu.tip_count[region]
+            count=flu.mutation_frequency_counts[region]
             plt.plot(pivots, count, c=cols[ri%len(cols)], label=region)
     else:
         print("plotting mutations", mutations)
         for ri,region in enumerate(plot_regions):
             for mi,mut in enumerate(mutations):
-                if mut in flu.mutation_frequencies[(gene, region)]:
-                    freq = flu.mutation_frequencies[(gene, region)][mut]
-                    err = flu.mutation_frequency_confidence[(gene, region)][mut]
+                if mut in flu.mutation_frequencies[(region, gene)]:
+                    freq = flu.mutation_frequencies[(region, gene)][mut]
+                    err = flu.mutation_frequency_confidence[(region, gene)][mut]
                     c=cols[ri%len(cols)]
                     label_str = str(mut[0]+1)+mut[1]+', '+region
                     plot_trace(ax, pivots, freq, err, c=c,
@@ -276,17 +276,19 @@ if __name__=="__main__":
     flu = flu_process(input_data_path = input_data_path, store_data_path = store_data_path,
                    build_data_path = build_data_path, reference='flu/metadata/'+params.lineage+'_outgroup.gb',
                    proteins=['SigPep', 'HA1', 'HA2'],
-                   method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=50./ppy)
+                   method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=2.*ppy)
 
 
     if params.load:
         flu.load()
+        flu.export()
     else:
         flu.load_sequences(fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
                              5:'country', 7:"city", 12:"subtype",13:'lineage'})
 
         time_interval = [datetime.strptime(x, '%Y-%m-%d').date()  for x in params.time_interval]
-        pivots = np.arange(time_interval[0].year, time_interval[1].year+time_interval[1].month/12.0, 1.0/ppy)
+        pivots = np.arange(time_interval[0].year+(time_interval[0].month-1)/12.0,
+                           time_interval[1].year+time_interval[1].month/12.0, 1.0/ppy)
         flu.seqs.filter(lambda s:
             s.attributes['date']>=time_interval[0] and s.attributes['date']<time_interval[1])
 
@@ -295,7 +297,7 @@ if __name__=="__main__":
         flu.dump()
         # first estimate frequencies globally, then region specific
         flu.estimate_mutation_frequencies(region="global", pivots=pivots)
-        for region in regions:
+        for region in region_groups.iteritems():
             flu.estimate_mutation_frequencies(region=region)
 
         if not params.no_tree:
