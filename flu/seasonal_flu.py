@@ -241,7 +241,7 @@ def plot_frequencies(flu, gene, mutation=None, plot_regions=None, all_muts=False
             for mi,mut in enumerate(mutations):
                 if mut in flu.mutation_frequencies[(gene, region)]:
                     freq = flu.mutation_frequencies[(gene, region)][mut]
-                    err = flu.frequency_confidence[(gene, region)][mut]
+                    err = flu.mutation_frequency_confidence[(gene, region)][mut]
                     c=cols[ri%len(cols)]
                     label_str = str(mut[0]+1)+mut[1]+', '+region
                     plot_trace(ax, pivots, freq, err, c=c,
