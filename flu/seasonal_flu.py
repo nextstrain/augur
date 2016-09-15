@@ -6,7 +6,7 @@ from datetime import datetime
 from base.io_util import myopen
 
 regions = ['SouthAsia', 'Europe', 'China', 'NorthAmerica',
-           'China', 'SouthAmerica', 'JapanKorea', 'Oceania' ]
+           'China', 'SouthAmerica', 'JapanKorea', 'Oceania', 'SouthEastAsia']
 
 attribute_nesting = {'geographic location':['region', 'country', 'city'],}
 
@@ -266,8 +266,9 @@ if __name__=="__main__":
                             help='time interval to sample sequences from: provide dates as YYYY-MM-DD')
     parser.add_argument('-l', '--lineage', type = str, default = 'h3n2', help='flu lineage to process')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
+    parser.add_argument('--no_tree', default=False, action='store_true', help = "don't build a tree")
     params = parser.parse_args()
-    input_data_path = '../nextstrain-db/data/'+params.lineage
+    input_data_path = '../fauna/data/'+params.lineage
     store_data_path = 'store/'+params.lineage + '_' + params.resolution +'_'
     build_data_path = 'build/'+params.lineage + '_' + params.resolution +'_'
 
@@ -297,19 +298,20 @@ if __name__=="__main__":
         for region in regions:
             flu.estimate_mutation_frequencies(region=region)
 
-        flu.subsample(5, repeated=True)
-        flu.align()
-        flu.build_tree()
-        flu.clock_filter(n_iqd=3, plot=True)
-        flu.annotate_tree(Tc=0.005, timetree=True, reroot='best')
-        flu.tree.geo_inference('region')
+        if not params.no_tree:
+            flu.subsample(5, repeated=True)
+            flu.align()
+            flu.build_tree()
+            flu.clock_filter(n_iqd=3, plot=True)
+            flu.annotate_tree(Tc=0.005, timetree=True, reroot='best')
+            flu.tree.geo_inference('region')
 
-        flu.estimate_tree_frequencies()
-        flu.dump()
+            flu.estimate_tree_frequencies()
+            flu.dump()
 
-        flu.HI_model()
-        H3N2_scores(flu.tree.tree)
-        flu.dump()
-        flu.matchClades(clade_designations[params.lineage])
-        flu.export(extra_attr=['serum'], controls=attribute_nesting)
-        flu.HI_export()
+            flu.HI_model()
+            H3N2_scores(flu.tree.tree)
+            flu.dump()
+            flu.matchClades(clade_designations[params.lineage])
+            flu.export(extra_attr=['serum'], controls=attribute_nesting)
+            flu.HI_export()
