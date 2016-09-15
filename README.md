@@ -83,9 +83,9 @@ The input sequences are stored in a compressed JSON format as follows:
 {
     pivots: [2013, 2013.25, 2013.5 ...],     //interpolation pivots for frequency trajectories
     // identifier format: region_category:position
-    global_protein1:135Y: [0.0, 0.1, ...],    //frequencies at the pivots points
-    global_nuc:135G: [0.0, 0.1, ...],         //nucleotide mutation frequencies
-    global_clade:2:  [0.0, 0.1, ...],         //clade frequencies
+    "global_protein1:135Y"  : [0.0, 0.1, ...],    //frequencies at the pivots points
+    "global_nuc:135G"       : [0.0, 0.1, ...],    //nucleotide mutation frequencies
+    "global_clade:2"        :  [0.0, 0.1, ...],   //clade frequencies
 }
 ```
 
