@@ -44,6 +44,7 @@ Augur outputs the tree as a JSON file modeled after the format used by d3.
         num_date: 2015.14,  // numerical date
         date: 2015-02-13    //YYYY-MM-DD date string
         div: 0.052,         //divergence from root
+        // any other attributes that auspice needs to know
     }
     children:[
         {
@@ -85,7 +86,7 @@ The input sequences are stored in a compressed JSON format as follows:
     // identifier format: region_category:position
     "global_protein1:135Y"  : [0.0, 0.1, ...],    //frequencies at the pivots points
     "global_nuc:135G"       : [0.0, 0.1, ...],    //nucleotide mutation frequencies
-    "global_clade:2"        :  [0.0, 0.1, ...],   //clade frequencies
+    "global_clade:2"        : [0.0, 0.1, ...],   //clade frequencies
 }
 ```
 
