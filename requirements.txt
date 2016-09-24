@@ -1,0 +1,10 @@
+biopython==1.64
+boto==2.38.0
+cvxopt==1.1.8
+DendroPy==3.12.0
+matplotlib==1.5.1
+pandas==0.16.2
+rethinkdb==1.13.0-2
+schedule==0.3.0
+seaborn==0.6.0
+seqmagick==0.5.0
