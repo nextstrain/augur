@@ -57,7 +57,7 @@ class tree(object):
             dump(node_props, nfile)
 
 
-    def build(self, root='midpoint', raxml=True, raxml_time_limit=0.5):
+    def build(self, root='midpoint', raxml=True, raxml_time_limit=0.5, raxml_bin='raxml'):
         from Bio import Phylo, AlignIO
         import subprocess, glob, shutil
         make_dir(self.run_dir)
@@ -86,7 +86,7 @@ class tree(object):
                 print( "RAxML tree optimization with time limit", raxml_time_limit,  "hours")
                 # using exec to be able to kill process
                 end_time = time.time() + int(raxml_time_limit*3600)
-                process = subprocess.Popen("exec raxml -f d -T " + str(self.nthreads) + " -j -s temp.phyx -n topology -c 25 -m GTRCAT -p 344312987 -t initial_tree.newick", shell=True)
+                process = subprocess.Popen("exec " + raxml_bin + " -f d -T " + str(self.nthreads) + " -j -s temp.phyx -n topology -c 25 -m GTRCAT -p 344312987 -t initial_tree.newick", shell=True)
                 while (time.time() < end_time):
                     if os.path.isfile('RAxML_result.topology'):
                         break
@@ -106,7 +106,7 @@ class tree(object):
 
             try:
                 print("RAxML branch length optimization")
-                os.system("raxml -f e -T " + str(self.nthreads) + " -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick")
+                os.system(raxml_bin + " -f e -T " + str(self.nthreads) + " -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick")
                 shutil.copy('RAxML_result.branches', out_fname)
             except:
                 print("RAxML branch length optimization failed")
