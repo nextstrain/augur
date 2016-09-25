@@ -150,7 +150,13 @@ class process(object):
             from Bio.Align import MultipleSeqAlignment
             tmp = aln
             if region is not None:
-                tmp = [s for s in tmp if s.attributes['region']==region]
+                if type(region)==str:
+                    tmp = [s for s in tmp if s.attributes['region']==region]
+                elif type(region)==list:
+                    tmp = [s for s in tmp if s.attributes['region'] in region]
+                else:
+                    print("region must be string or list")
+                    return
             if lower_tp is not None:
                 tmp = [s for s in tmp if np.mean(s.attributes['num_date'])>=lower_tp]
             if upper_tp is not None:
@@ -170,26 +176,35 @@ class process(object):
 
         # loop over nucleotide sequences and translations and calcuate
         # region specific frequencies of mutations above a certain threshold
+        if type(region)==str:
+            region_name = region
+            region_match = region
+        elif type(region)==tuple:
+            region_name=region[0]
+            region_match=region[1]
+        else:
+            print ("region must be string or tuple")
+            return
         for prot, aln in [('nuc',self.seqs.aln)]+ self.seqs.translations.items():
-            if region=="global":
+            if region_match=="global":
                 tmp_aln = filter_alignment(aln, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
                 include_set=[]
             else:
-                tmp_aln = filter_alignment(aln, region=region, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
+                tmp_aln = filter_alignment(aln, region=region_match, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
                 include_set = set([pos for (pos, mut) in self.mutation_frequencies[('global', prot)]])
             time_points = [np.mean(x.attributes['num_date']) for x in tmp_aln]
             if len(time_points)==0:
-                print('no samples in region', region, prot)
-                self.mutation_frequency_counts[region]=np.zeros_like(self.pivots)
+                print('no samples in region', region_name, prot)
+                self.mutation_frequency_counts[region_name]=np.zeros_like(self.pivots)
                 continue
 
             aln_frequencies = alignment_frequencies(tmp_aln, time_points, self.pivots,
                                             ws=max(2,len(time_points)//10),
                                             **self.kwargs)
             aln_frequencies.mutation_frequencies(min_freq=0.01)
-            self.mutation_frequencies[(region,prot)] = aln_frequencies.frequencies
-            self.mutation_frequency_confidence[(region,prot)] = aln_frequencies.calc_confidence()
-            self.mutation_frequency_counts[region]=aln_frequencies.counts
+            self.mutation_frequencies[(region_name,prot)] = aln_frequencies.frequencies
+            self.mutation_frequency_confidence[(region_name,prot)] = aln_frequencies.calc_confidence()
+            self.mutation_frequency_counts[region_name]=aln_frequencies.counts
 
 
     def estimate_tree_frequencies(self, region='global', pivots=24):
@@ -309,7 +324,8 @@ class process(object):
         # export json file that contains alignment diversity column by column
         self.seqs.export_diversity(prefix+'entropy.json')
         # exports the tree and the sequences inferred for all clades in the tree
-        self.tree.export(path=prefix, extra_attr = extra_attr
+        if hasattr(self, 'tree') and self.tree is not None:
+            self.tree.export(path=prefix, extra_attr = extra_attr
                          + ["muts", "aa_muts","attr", "clade"])
 
 
