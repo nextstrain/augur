@@ -1,5 +1,7 @@
 from __future__ import division, print_function
 from collections import defaultdict
+import sys
+sys.path.append('')  # need to import from base
 from base.process import process
 import numpy as np
 from datetime import datetime
