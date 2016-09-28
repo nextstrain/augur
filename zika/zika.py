@@ -36,7 +36,7 @@ if __name__=="__main__":
     zika.load_sequences(fields=fasta_fields)
     zika.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
                                s.attributes['date']< datetime(2017,1,1).date())
-    dropped_strains = ["THA/PLCal_ZV/2013", "PLCal_ZV"]
+    dropped_strains = ["THA/PLCal_ZV/2013", "PLCal_ZV", "Dominican_Republic/2016/PD2"]
     zika.seqs.filter(lambda s: s.id not in dropped_strains)
     zika.seqs.subsample(category = lambda x:(x.attributes['region'],
                                              x.attributes['date'].year,
