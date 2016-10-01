@@ -129,6 +129,7 @@ FEATURES             Location/Qualifiers
                      /gene="NS4B"
      CDS             8404..10359
                      /product="NS5"
+                     /gene="NS5"
      3'UTR           10363..10661
 ORIGIN
         1 gaatcagact gcgacagttc gagtttgaag cgaaagctag caacagtatc aacaggtttt

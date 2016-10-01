@@ -29,18 +29,22 @@ if __name__=="__main__":
 
     zika = process(input_data_path = input_data_path, store_data_path = store_data_path, build_data_path = build_data_path,
                    reference='zika/metadata/zika_outgroup.gb',
-                   proteins=['CA', 'PRO', 'MP', 'ENV', 'NS1', 'NS2A', 'NS2B', 'NS3', 'NS4A', 'NS4B'],
+                   proteins=['CA', 'PRO', 'MP', 'ENV', 'NS1', 'NS2A', 'NS2B', 'NS3', 'NS4A', 'NS4B', 'NS5'],
                    method='SLSQP')
 
-    fasta_fields = {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country', 8:'db', 10:'authors'}
+    fasta_fields = {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country', 6:'division', 8:'db', 10:'authors'}
     zika.load_sequences(fields=fasta_fields)
     zika.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
                                s.attributes['date']< datetime(2017,1,1).date())
-    dropped_strains = ["THA/PLCal_ZV/2013", "PLCal_ZV", "Dominican_Republic/2016/PD2"]
+    dropped_strains = [
+        "THA/PLCal_ZV/2013", "PLCal_ZV", # true strains, too basal for analysis
+        "ZF36_36S", # possible contamination
+        "Dominican_Republic/2016/PD2", "GD01", "GDZ16001" # true strains, but duplicates of other strains in dataset
+    ]
     zika.seqs.filter(lambda s: s.id not in dropped_strains)
     zika.seqs.subsample(category = lambda x:(x.attributes['region'],
                                              x.attributes['date'].year,
-                                             x.attributes['date'].month), threshold=100)
+                                             x.attributes['date'].month), threshold=1000)
 
     zika.align()
     zika.build_tree()
@@ -48,4 +52,5 @@ if __name__=="__main__":
     zika.annotate_tree(Tc=0.005, timetree=True, reroot='best')
     zika.tree.geo_inference('region')
     zika.tree.geo_inference('country')
+    zika.tree.geo_inference('division')
     zika.export(controls = attribute_nesting)
