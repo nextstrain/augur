@@ -29,7 +29,7 @@ if __name__=="__main__":
 
     ebola = process(input_data_path = input_data_path, store_data_path = store_data_path, build_data_path = build_data_path,
                    reference='ebola/metadata/ebola_outgroup.gb',
-                   proteins=['NP', 'VP35', 'VP40', 'GP1,2', 'sGP', 'VP30', 'VP24', 'L'],
+                   proteins=['NP', 'VP35', 'VP40', 'GP', 'sGP', 'VP30', 'VP24', 'L'],
                    method='SLSQP')
 
     fasta_fields = {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country', 6:'division', 8:'db', 10:'authors'}
@@ -40,7 +40,7 @@ if __name__=="__main__":
 #    ebola.seqs.filter(lambda s: s.id not in dropped_strains)
     ebola.seqs.subsample(category = lambda x:(x.attributes['region'],
                                              x.attributes['date'].year,
-                                             x.attributes['date'].month), threshold=2)
+                                             x.attributes['date'].month), threshold=1000)
 
     ebola.align()
     ebola.build_tree()

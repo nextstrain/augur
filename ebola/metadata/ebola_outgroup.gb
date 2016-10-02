@@ -36,6 +36,7 @@ FEATURES             Location/Qualifiers
      CDS             470..2689
                      /codon_start=1
                      /product="NP"
+                     /gene="NP"
                      /protein_id="AKC01489.1"
                      /db_xref="GI:806645539"
                      /translation="MDSRPQKVWMTPSLTESDMDYHKILTAGLSVQQGIVRQRVIPVY
@@ -54,6 +55,7 @@ FEATURES             Location/Qualifiers
      CDS             3129..4151
                      /codon_start=1
                      /product="VP35"
+                     /gene="VP35"
                      /protein_id="AKC01490.1"
                      /db_xref="GI:806645540"
                      /translation="MTTRTKGRGHTVATTQNDRMPGPELSGWISEQLMTGRIPVNDIF
@@ -66,6 +68,7 @@ FEATURES             Location/Qualifiers
      CDS             4479..5459
                      /codon_start=1
                      /product="VP40"
+                     /gene="VP40"
                      /protein_id="AKC01491.1"
                      /db_xref="GI:806645541"
                      /translation="MRRVILPTAPPEYMEAIYPARSNSTIARGGNSNTGFLTPESVNG
@@ -74,12 +77,13 @@ FEATURES             Location/Qualifiers
                      FVLPPVQLPQYFTFDLTALKLITQPLPAATWTDDTPTGSNGALRPGISFHPKLRPILL
                      PNKSGKKGNSADLTSPEKIQAIMTSLQDFKIVPIDPTKNIMGIEVPETLVHKLTGKKV
                      TSKNGQPIIPVLLPKYIGLDPVAPGDLTMVITQDCDTCHSPASLPAVVEK"
-     CDS             join(6039..6924,6924..8068)
+     CDS             6039..8068
                      /ribosomal_slippage
                      /note="insertion of non-template A into mRNA by
                      transcriptional editing"
                      /codon_start=1
                      /product="GP1,2"
+                     /gene="GP"
                      /protein_id="AKC01493.1"
                      /db_xref="GI:806645543"
                      /translation="MGVTGILQLPRDRFKRTSFFLWVIILFQRTFSIPLGVIHNSTLQ
@@ -97,6 +101,7 @@ FEATURES             Location/Qualifiers
      CDS             6039..7133
                      /codon_start=1
                      /product="sGP"
+                     /gene="sGP"
                      /protein_id="AKC01492.1"
                      /db_xref="GI:806645542"
                      /translation="MGVTGILQLPRDRFKRTSFFLWVIILFQRTFSIPLGVIHNSTLQ
@@ -111,6 +116,7 @@ FEATURES             Location/Qualifiers
      CDS             8509..9375
                      /codon_start=1
                      /product="VP30"
+                     /gene="VP30"
                      /protein_id="AKC01494.1"
                      /db_xref="GI:806645544"
                      /translation="MEASYERGRPRAARQHSRDGHDHHVRARSSSRENYRGEYRQSRS
@@ -122,6 +128,7 @@ FEATURES             Location/Qualifiers
      CDS             10345..11100
                      /codon_start=1
                      /product="VP24"
+                     /gene="VP24"
                      /protein_id="AKC01495.1"
                      /db_xref="GI:806645545"
                      /translation="MAKATGRYNLISPKKDLEKGVVLSDLCNFLVSQTIQGWKVYWAG
@@ -132,6 +139,7 @@ FEATURES             Location/Qualifiers
      CDS             11581..18219
                      /codon_start=1
                      /product="L"
+                     /gene="L"
                      /protein_id="AKC01496.1"
                      /db_xref="GI:806645546"
                      /translation="MATQHTQYPDARLSSPIVLDQCDLVTRACGLYSSYSLNSQLRNC
@@ -173,7 +181,7 @@ FEATURES             Location/Qualifiers
                      VDSKRGPLVSVTQHLAHLRAEIRELTNDYNQQRQSRTQTYHFIRTAKGRITKLVNDYL
                      KFFLIVQALKHNGTWQAEFKKLPELISVCNRFYHIRDCNCEERFLVQTLYLHRMQDSE
                      VKLIERLTGLLSLFPDGLYRFD"
-ORIGIN      
+ORIGIN
         1 cggacacaca aaaagaaaga agaattttta ggatcttttg tgtgcgaata actatgagga
        61 agattaataa ttttcctctc attgaaattt atatcggaat ttaaattgaa attgttactg
       121 taatcatacc tggtttgttt cagagccata tcaccaagat agagaacaac ctaggtctcc
@@ -491,4 +499,3 @@ ORIGIN
     18841 ggcattgacc acgctcatca gaaggctcac tagaataaac gttgcaaaaa ggatccctgg
     18901 aaaaatggtc gcacacaaaa atttaaaaat aaatctattt cttctttttt gtgtgtcc
 //
-
