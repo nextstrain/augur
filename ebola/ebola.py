@@ -40,12 +40,12 @@ if __name__=="__main__":
 #    ebola.seqs.filter(lambda s: s.id not in dropped_strains)
     ebola.seqs.subsample(category = lambda x:(x.attributes['region'],
                                              x.attributes['date'].year,
-                                             x.attributes['date'].month), threshold=1000)
+                                             x.attributes['date'].month), threshold=20)
 
     ebola.align()
     ebola.build_tree()
     #ebola.clock_filter(n_iqd=3, plot=True)
-    ebola.annotate_tree(Tc=0.005, timetree=True, reroot='best')
+    ebola.annotate_tree(Tc=0.0005, timetree=True, reroot='best', resolve_polytomies=False)
     #ebola.tree.geo_inference('region')
     ebola.tree.geo_inference('country')
     ebola.tree.geo_inference('division')
