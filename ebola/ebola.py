@@ -42,7 +42,7 @@ if __name__=="__main__":
     #    ebola.seqs.filter(lambda s: s.id not in dropped_strains)
         ebola.seqs.subsample(category = lambda x:(x.attributes['region'],
                                                  x.attributes['date'].year,
-                                                 x.attributes['date'].month), threshold=par.viruses_per_month)
+                                                 x.attributes['date'].month), threshold=params.viruses_per_month)
 
         ebola.align()
         ebola.build_tree()
@@ -56,4 +56,3 @@ if __name__=="__main__":
     ebola.tree.geo_inference('country')
     ebola.tree.geo_inference('division')
     ebola.export(controls = attribute_nesting)
-
