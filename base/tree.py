@@ -158,9 +158,9 @@ class tree(object):
         self.dump_attr.append('sequence')
 
 
-    def timetree(self, Tc=0.01, infer_gtr=True, reroot='best', max_iter=2, **kwarks):
+    def timetree(self, Tc=0.01, infer_gtr=True, reroot='best', resolve_polytomies=True, max_iter=2, **kwarks):
         self.tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc,
-                    resolve_polytomies=True, max_iter=max_iter)
+                    resolve_polytomies=resolve_polytomies, max_iter=max_iter)
         print('estimating time tree...')
         self.dump_attr.extend(['numdate','date','sequence'])
         for node in self.tree.find_clades():
