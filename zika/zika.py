@@ -21,6 +21,7 @@ if __name__=="__main__":
     parser.add_argument('-v', '--viruses_per_month', type = int, default = 100, help='number of viruses sampled per month')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
+    params = parser.parse_args()
 
     lineage = 'zika'
     input_data_path = '../fauna/data/'+lineage
@@ -35,23 +36,27 @@ if __name__=="__main__":
                              'NS2B', 'NS3', 'NS4A', 'NS4B', 'NS5'],
                    method='SLSQP')
 
-    fasta_fields = {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
-                    6:'division', 8:'db', 10:'authors', 11:'latitude', 12:'longitude'}
-    zika.load_sequences(fields=fasta_fields)
-    zika.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
-                               s.attributes['date']< datetime(2017,1,1).date())
-    dropped_strains = [
-        "THA/PLCal_ZV/2013", "PLCal_ZV", # true strains, too basal for analysis
-        "ZF36_36S", # possible contamination
-        "Dominican_Republic/2016/PD2", "GD01", "GDZ16001" # true strains, but duplicates of other strains in dataset
-    ]
-    zika.seqs.filter(lambda s: s.id not in dropped_strains)
-    zika.seqs.subsample(category = lambda x:(x.attributes['region'],
-                                             x.attributes['date'].year,
-                                             x.attributes['date'].month), threshold=1000)
+    if params.load:
+        zika.load()
+    else:
+        fasta_fields = {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
+                        6:'division', 8:'db', 10:'authors', 11:'latitude', 12:'longitude'}
+        zika.load_sequences(fields=fasta_fields)
+        zika.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
+                                   s.attributes['date']< datetime(2017,1,1).date())
+        dropped_strains = [
+            "THA/PLCal_ZV/2013", "PLCal_ZV", # true strains, too basal for analysis
+            "ZF36_36S", # possible contamination
+            "Dominican_Republic/2016/PD2", "GD01", "GDZ16001" # true strains, but duplicates of other strains in dataset
+        ]
+        zika.seqs.filter(lambda s: s.id not in dropped_strains)
+        zika.seqs.subsample(category = lambda x:(x.attributes['region'],
+                                                 x.attributes['date'].year,
+                                                 x.attributes['date'].month), threshold=1000)
 
-    zika.align()
-    zika.build_tree()
+        zika.align()
+        zika.build_tree()
+
     zika.clock_filter(n_iqd=3, plot=True)
     zika.annotate_tree(Tc=0.005, timetree=True, reroot='best')
     zika.tree.geo_inference('region')
