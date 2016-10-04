@@ -27,12 +27,16 @@ if __name__=="__main__":
     store_data_path = 'store/'+lineage + '_'
     build_data_path = 'build/'+lineage + '_'
 
-    zika = process(input_data_path = input_data_path, store_data_path = store_data_path, build_data_path = build_data_path,
+    zika = process(input_data_path = input_data_path,
+                   store_data_path = store_data_path,
+                   build_data_path = build_data_path,
                    reference='zika/metadata/zika_outgroup.gb',
-                   proteins=['CA', 'PRO', 'MP', 'ENV', 'NS1', 'NS2A', 'NS2B', 'NS3', 'NS4A', 'NS4B', 'NS5'],
+                   proteins=['CA', 'PRO', 'MP', 'ENV', 'NS1', 'NS2A',
+                             'NS2B', 'NS3', 'NS4A', 'NS4B', 'NS5'],
                    method='SLSQP')
 
-    fasta_fields = {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country', 6:'division', 8:'db', 10:'authors'}
+    fasta_fields = {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
+                    6:'division', 8:'db', 10:'authors', 11:'latitude', 12:'longitude'}
     zika.load_sequences(fields=fasta_fields)
     zika.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
                                s.attributes['date']< datetime(2017,1,1).date())
