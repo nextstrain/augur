@@ -38,11 +38,11 @@ if __name__=="__main__":
         ebola.load_sequences(fields=fasta_fields)
         ebola.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
                                    s.attributes['date']< datetime(2017,1,1).date())
-    #    dropped_strains = []
-    #    ebola.seqs.filter(lambda s: s.id not in dropped_strains)
-        ebola.seqs.subsample(category = lambda x:(x.attributes['region'],
-                                                 x.attributes['date'].year,
-                                                 x.attributes['date'].month), threshold=params.viruses_per_month)
+        forced_strains = [
+            "EM_076610" # flare-up index case
+        ]
+        ebola.seqs.subsample(category = lambda x:(x.attributes['region'], x.attributes['date'].year, x.attributes['date'].month),
+            threshold=params.viruses_per_month, forced_strains = forced_strains)
 
         ebola.align()
         ebola.build_tree()
