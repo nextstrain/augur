@@ -44,6 +44,7 @@ if __name__=="__main__":
         zika.load_sequences(fields=fasta_fields)
         zika.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
                                    s.attributes['date']< datetime(2017,1,1).date())
+        zika.seqs.filter(lambda s: len(s.seq)>=2000)                                   
         dropped_strains = [
             "THA/PLCal_ZV/2013", "PLCal_ZV", # true strains, too basal for analysis
             "ZF36_36S", # possible contamination
