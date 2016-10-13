@@ -17,7 +17,9 @@ class process(object):
         * export as json
     """
 
-    def __init__(self, input_data_path = 'data/test', store_data_path = 'store/test', build_data_path = 'build/test', **kwargs):
+    def __init__(self, input_data_path = 'data/test',
+                 store_data_path = 'store/test',
+                 build_data_path = 'build/test', **kwargs):
         super(process, self).__init__()
         print("Initializing process")
         for p in [input_data_path, store_data_path, build_data_path]:
@@ -49,7 +51,9 @@ class process(object):
             # grap annotation from genbank
             protein_list = self.kwargs['proteins']
             self.proteins = {f.qualifiers['gene'][0]:FeatureLocation(start=f.location.start, end=f.location.end, strand=1)
-                    for f in self.genome_annotation if 'gene' in f.qualifiers and f.qualifiers['gene'][0] in protein_list}
+                            for f in self.genome_annotation
+                                if 'gene' in f.qualifiers
+                                    and f.qualifiers['gene'][0] in protein_list}
         else:
             self.proteins = {}
 
@@ -302,6 +306,7 @@ class process(object):
             for n in self.tree.tree.get_terminals():
                 tmp = cat_count
                 for field in fields:
+                    tmp["name"] = field
                     if field in n.attr:
                         cat = n.attr[field]
                     else:
