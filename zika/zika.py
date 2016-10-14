@@ -12,7 +12,7 @@ from Bio.SeqFeature import FeatureLocation
 import numpy as np
 from datetime import datetime
 
-attribute_nesting = {'geographic location':['region', 'country', 'city'],}
+attribute_nesting = {'geographic location':['region', 'country', 'division'], 'authors':['authors']}
 
 if __name__=="__main__":
     import argparse

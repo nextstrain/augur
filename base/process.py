@@ -363,9 +363,6 @@ class process(object):
         # write to one frequency json
         if hasattr(self, 'tree_frequencies') or hasattr(self, 'mutation_frequencies'):
             write_json(freq_json, prefix+'frequencies.json', indent=None)
-        if len(controls):
-            controls_json = self.make_control_json(controls)
-            write_json(controls_json, prefix+'controls.json')
 
         # write out metadata json# Write out metadata
         print("Writing out metadata")
@@ -380,6 +377,8 @@ class process(object):
             meta_json["commit"] = str(commit_id)
         except ImportError:
             meta_json["commit"] = "unknown"
+        if len(controls):
+            metadata["controls"] = self.make_control_json(controls)
         write_json(meta_json, prefix+'meta.json')
 
 
