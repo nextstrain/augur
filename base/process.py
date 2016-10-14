@@ -40,6 +40,12 @@ class process(object):
         else:
             self.reference_seq = None
 
+        # lat/long mapping information
+        if 'lat_long_fname' in kwargs:
+            self.lat_long_fname = kwargs['lat_long_fname']
+        else:
+            self.lat_long_fname = '../fauna/source-data/geo_lat_long.tsv'
+
 
     def load_reference(self, reference_file):
         from Bio import SeqIO
@@ -319,10 +325,10 @@ class process(object):
             controls_json[super_cat] = cat_count
         return controls_json
 
-    def define_latitude_longitude(self, lat_long_fname="source-data/geo_lat_long.tsv"):
+    def define_latitude_longitude(self):
         import csv
         # get the latitude and longitudes that were already determined
-        file = open(lat_long_fname, 'r')
+        file = open(self.lat_long_fname, 'r')
         reader = csv.DictReader(filter(lambda row: row[0]!='#', file), delimiter='\t')		# list of dicts
         self.location_to_lat_long = {}
         for line in reader:
@@ -362,7 +368,7 @@ class process(object):
         Note: geo reconstruction can cause disagreements between region and country attrs on internal nodes
         '''
         geo_lookup_json = {}
-        self.define_latitude_longitude(lat_long_fname="../fauna/source-data/geo_lat_long.tsv")
+        self.define_latitude_longitude()
         if "region" in geo_attributes:
             region_to_lat_long = {}
             regions = self.tree.get_attr_list("region")

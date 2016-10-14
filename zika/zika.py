@@ -12,8 +12,8 @@ from Bio.SeqFeature import FeatureLocation
 import numpy as np
 from datetime import datetime
 
-attribute_nesting = {'geographic location':['region', 'country', 'division'], 'authors':['authors']}
-geo_attributes = ['region', 'country', 'division']
+attribute_nesting = {'geographic location':['region', 'country'], 'authors':['authors']}
+geo_attributes = ['region', 'country']
 
 if __name__=="__main__":
     import argparse
@@ -33,6 +33,7 @@ if __name__=="__main__":
                    store_data_path = store_data_path,
                    build_data_path = build_data_path,
                    reference='zika/metadata/zika_outgroup.gb',
+                   lat_long_fname='../fauna/source-data/geo_lat_long.tsv',
                    proteins=['CA', 'PRO', 'MP', 'ENV', 'NS1', 'NS2A',
                              'NS2B', 'NS3', 'NS4A', 'NS4B', 'NS5'],
                    method='SLSQP')
@@ -41,7 +42,7 @@ if __name__=="__main__":
         zika.load()
     else:
         fasta_fields = {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
-                        6:'division', 8:'db', 10:'authors', 11:'latitude', 12:'longitude'}
+                        6:'division', 8:'db', 10:'authors'}
         zika.load_sequences(fields=fasta_fields)
         zika.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
                                    s.attributes['date']< datetime(2017,1,1).date())
