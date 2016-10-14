@@ -18,7 +18,7 @@ if __name__=="__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
-    parser.add_argument('-v', '--viruses_per_month', type = int, default = 20, help='number of viruses sampled per month')
+    parser.add_argument('-v', '--viruses_per_month', type = int, default = 100, help='number of viruses sampled per month')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
     params = parser.parse_args()
