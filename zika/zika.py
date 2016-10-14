@@ -13,6 +13,7 @@ import numpy as np
 from datetime import datetime
 
 attribute_nesting = {'geographic location':['region', 'country', 'division'], 'authors':['authors']}
+geo_attributes = ['region', 'country', 'division']
 
 if __name__=="__main__":
     import argparse
@@ -51,16 +52,14 @@ if __name__=="__main__":
             "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016" # true strains, but duplicates of other strains in dataset
         ]
         zika.seqs.filter(lambda s: s.id not in dropped_strains)
-        zika.seqs.subsample(category = lambda x:(x.attributes['region'],
-                                                 x.attributes['date'].year,
-                                                 x.attributes['date'].month), threshold=1000)
+        zika.seqs.subsample(category = lambda x:(x.attributes['date'].year, x.attributes['date'].month),
+            threshold=params.viruses_per_month)
 
         zika.align()
         zika.build_tree()
 
     zika.clock_filter(n_iqd=3, plot=True)
     zika.annotate_tree(Tc=0.005, timetree=True, reroot='best')
-    zika.tree.geo_inference('region')
-    zika.tree.geo_inference('country')
-    zika.tree.geo_inference('division')
-    zika.export(controls = attribute_nesting)
+    for geo_attr in geo_attributes:
+        zika.tree.geo_inference(geo_attr)
+    zika.export(controls = attribute_nesting, geo_attributes = geo_attributes)

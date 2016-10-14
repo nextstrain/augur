@@ -319,8 +319,72 @@ class process(object):
             controls_json[super_cat] = cat_count
         return controls_json
 
+    def define_latitude_longitude(self, lat_long_fname="source-data/geo_lat_long.tsv"):
+        import csv
+        # get the latitude and longitudes that were already determined
+        file = open(lat_long_fname, 'r')
+        reader = csv.DictReader(filter(lambda row: row[0]!='#', file), delimiter='\t')		# list of dicts
+        self.location_to_lat_long = {}
+        for line in reader:
+            try:
+                self.location_to_lat_long[line['location']] = {
+                    'latitude': float(line['latitude']),
+                    'longitude': float(line['longitude'])
+                    }
+            except:
+                print("Line failed ", line)
+                raise Exception("Failed to read ", file, "please check the line that failed")
+        file.close()
 
-    def export(self, extra_attr = [], controls = {}):
+    def make_geo_lookup_json(self, geo_attributes = []):
+        '''
+        Take existing geo attributes (region, country, division) for viruses and
+        produces a lookup JSON to go from geo string to lat/long.
+        Example:
+        "geo_lookup": {
+            "country": {
+                "brazil": {
+                    "latitude": -10.3333332,
+                    "longitude": -53.1999999,
+                },
+                "colombia": {
+                    "latitude": 2.893108,
+                    "longitude": -73.7845142,
+                }
+            },
+            "region": {
+                "north_america": {
+                    "latitude": -10.3333332,
+                    "longitude": -53.1999999,
+                }
+            }
+        }
+        Note: geo reconstruction can cause disagreements between region and country attrs on internal nodes
+        '''
+        geo_lookup_json = {}
+        self.define_latitude_longitude(lat_long_fname="../fauna/source-data/geo_lat_long.tsv")
+        if "region" in geo_attributes:
+            region_to_lat_long = {}
+            regions = self.tree.get_attr_list("region")
+            for region in regions:
+                region_to_lat_long[region] = self.location_to_lat_long[region]
+            geo_lookup_json["region"] = region_to_lat_long
+        if "country" in geo_attributes:
+            country_to_lat_long = {}
+            countries = self.tree.get_attr_list("country")
+            for country in countries:
+                country_to_lat_long[country] = self.location_to_lat_long[country]
+                geo_lookup_json["country"] = country_to_lat_long
+        if "division" in geo_attributes:
+            division_to_lat_long = {}
+            divisions = self.tree.get_attr_list("division")
+            for division in divisions:
+                division_to_lat_long[division] = self.location_to_lat_long[division]
+            geo_lookup_json["division"] = division_to_lat_long
+        return geo_lookup_json
+
+
+    def export(self, extra_attr = [], controls = {}, geo_attributes = []):
         '''
         export the tree, sequences, frequencies to json files for visualization
         in the browser
@@ -379,6 +443,8 @@ class process(object):
             meta_json["commit"] = "unknown"
         if len(controls):
             meta_json["controls"] = self.make_control_json(controls)
+        if len(geo_attributes):
+            meta_json["geo"] = self.make_geo_lookup_json(geo_attributes)
         write_json(meta_json, prefix+'meta.json')
 
 

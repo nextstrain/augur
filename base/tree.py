@@ -236,6 +236,12 @@ class tree(object):
 
         self.tt.use_mutation_length=tmp_use_mutation_length
 
+    def get_attr_list(self, get_attr):
+        states = []
+        for node in self.tree.find_clades():
+            if get_attr in node.attr:
+                states.append(node.attr[get_attr])
+        return states
 
     def add_translations(self):
         '''
