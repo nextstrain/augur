@@ -378,7 +378,7 @@ class process(object):
         except ImportError:
             meta_json["commit"] = "unknown"
         if len(controls):
-            metadata["controls"] = self.make_control_json(controls)
+            meta_json["controls"] = self.make_control_json(controls)
         write_json(meta_json, prefix+'meta.json')
 
 
