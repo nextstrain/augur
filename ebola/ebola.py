@@ -12,7 +12,8 @@ from Bio.SeqFeature import FeatureLocation
 import numpy as np
 from datetime import datetime
 
-attribute_nesting = {'geographic location':['region', 'country', 'city']}
+attribute_nesting = {'geographic location':['country', 'division'], 'authors':['authors']}
+geo_attributes = ['country', 'division']
 
 if __name__=="__main__":
     import argparse
@@ -52,7 +53,6 @@ if __name__=="__main__":
 
     ebola.clock_filter(n_iqd=10, plot=True)
     ebola.annotate_tree(Tc=0.0005, timetree=True, reroot='best', resolve_polytomies=True)
-    #ebola.tree.geo_inference('region')
-    ebola.tree.geo_inference('country')
-    ebola.tree.geo_inference('division')
-    ebola.export(controls = attribute_nesting)
+    for geo_attr in geo_attributes:
+        ebola.tree.geo_inference(geo_attr)
+    ebola.export(controls = attribute_nesting, geo_attributes = geo_attributes)
