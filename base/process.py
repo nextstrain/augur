@@ -59,11 +59,13 @@ class process(object):
 
 
     def load_sequences(self, fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
-                                     5:'country', 7:"city", 12:"subtype",13:'lineage'}):
+                                     5:'country', 7:"city", 12:"subtype",13:'lineage'},
+                             prune=True, sep='|'):
         # instantiate and population the sequence objects
         self.seqs = sequence_set(self.sequence_fname, reference_seq=self.reference_seq)
+        print("Loaded %d sequences"%len(self.seqs.all_seqs))
         self.seqs.ungap()
-        self.seqs.parse(fields, strip='_')
+        self.seqs.parse(fields, sep=sep, strip='_')
 
         # make sure the reference is part of the sequence set
         if self.reference_seq is not None:
@@ -73,7 +75,7 @@ class process(object):
                 print('Outgroup is not in data base')
 
             # throw out sequences without dates
-        self.seqs.parse_date(["%Y-%m-%d"], prune=True)
+        self.seqs.parse_date(["%Y-%m-%d"], prune=prune)
 
 
     def data_filenames(self):
