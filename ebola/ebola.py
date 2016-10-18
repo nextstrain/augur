@@ -12,13 +12,14 @@ from Bio.SeqFeature import FeatureLocation
 import numpy as np
 from datetime import datetime
 
-attribute_nesting = {'geographic location':['region', 'country', 'city']}
+attribute_nesting = {'geographic location':['country', 'division'], 'authors':['authors']}
+geo_attributes = ['country', 'division']
 
 if __name__=="__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
-    parser.add_argument('-v', '--viruses_per_month', type = int, default = 20, help='number of viruses sampled per month')
+    parser.add_argument('-v', '--viruses_per_month', type = int, default = 100, help='number of viruses sampled per month')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
     params = parser.parse_args()
@@ -52,7 +53,6 @@ if __name__=="__main__":
 
     ebola.clock_filter(n_iqd=10, plot=True)
     ebola.annotate_tree(Tc=0.0005, timetree=True, reroot='best', resolve_polytomies=True)
-    #ebola.tree.geo_inference('region')
-    ebola.tree.geo_inference('country')
-    ebola.tree.geo_inference('division')
-    ebola.export(controls = attribute_nesting)
+    for geo_attr in geo_attributes:
+        ebola.tree.geo_inference(geo_attr)
+    ebola.export(controls = attribute_nesting, geo_attributes = geo_attributes)
