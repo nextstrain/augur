@@ -116,17 +116,18 @@ class tree(object):
         self.tt_from_file(out_fname, root)
         os.chdir('..')
         remove_dir(self.run_dir)
-        self.is_timetree=False
 
 
     def tt_from_file(self, infile, root='best', nodefile=None):
         from treetime import TreeTime
         from treetime import utils
+        self.is_timetree=False
         print('Reading tree from file',infile)
         dates  =   {seq.id:seq.attributes['num_date']
                     for seq in self.aln if 'date' in seq.attributes}
         self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor', aln = self.aln, verbose=4)
-        self.tt.reroot(root=root)
+        if root:
+            self.tt.reroot(root=root)
         self.tree = self.tt.tree
 
         for node in self.tree.find_clades():
