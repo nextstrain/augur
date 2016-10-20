@@ -106,7 +106,8 @@ class tree(object):
 
             try:
                 print("RAxML branch length optimization")
-                os.system(raxml_bin + " -f e -T " + str(self.nthreads) + " -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick")
+                os.system(raxml_bin + " -f e -T " + str(self.nthreads)
+                          + " -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick")
                 shutil.copy('RAxML_result.branches', out_fname)
             except:
                 print("RAxML branch length optimization failed")
@@ -154,9 +155,12 @@ class tree(object):
                     print("No node properties found for ", n.name)
 
 
-    def ancestral(self):
-        self.tt.optimize_seq_and_branch_len(infer_gtr=True)
+    def ancestral(self, **kwarks):
+        self.tt.optimize_seq_and_branch_len(infer_gtr=True, **kwarks)
         self.dump_attr.append('sequence')
+        for node in self.tree.find_clades():
+            if not hasattr(node,'attr'):
+                node.attr = {}
 
 
     def timetree(self, Tc=0.01, infer_gtr=True, reroot='best', resolve_polytomies=True, max_iter=2, **kwarks):
