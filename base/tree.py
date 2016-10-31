@@ -186,6 +186,9 @@ class tree(object):
         places = set()
         nuc_seqs = {}
         nuc_muts = {}
+        nuc_seq_LH = None
+        if hasattr(self.tt.tree,'sequence_LH'):
+            nuc_seq_LH = self.tt.tree.sequence_LH
         for node in self.tree.find_clades():
             if hasattr(node, 'attr'):
                 if attr in node.attr:
@@ -202,6 +205,7 @@ class tree(object):
         if nc<2 or nc>180:
             print("geo_inference: can't have less than 2 or more than 180 places!")
             return
+
         alphabet = {chr(65+i):place for i,place in enumerate(places)}
         alphabet_rev = {v:k for k,v in alphabet.iteritems()}
         sequence_gtr = self.tt.gtr
@@ -230,6 +234,9 @@ class tree(object):
         self.tt.geogtr.alphabet_to_location = alphabet
         self.tt._gtr = sequence_gtr
         self.dump_attr.append(attr)
+        if hasattr(self.tt.tree,'sequence_LH'):
+            self.tt.tree.geo_LH = self.tt.tree.sequence_LH
+            self.tt.tree.sequence_LH = nuc_seq_LH
         for node in self.tree.find_clades():
             node.attr[attr] = alphabet[node.sequence[0]]
             if node in nuc_seqs:
