@@ -14,6 +14,13 @@ from datetime import datetime
 
 attribute_nesting = {'geographic location':['region', 'country'], 'authors':['authors']}
 geo_attributes = ['region', 'country']
+color_options = {
+    "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
+    "division":{"key":"division", "legendTitle":"District", "menuItem":"District", "type":"discrete"},
+    "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
+    "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
+    "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
+}
 
 if __name__=="__main__":
     import argparse
@@ -63,4 +70,4 @@ if __name__=="__main__":
     zika.annotate_tree(Tc=0.005, timetree=True, reroot='best')
     for geo_attr in geo_attributes:
         zika.tree.geo_inference(geo_attr)
-    zika.export(controls = attribute_nesting, geo_attributes = geo_attributes)
+    zika.export(controls = attribute_nesting, geo_attributes = geo_attributes, color_options=color_options)

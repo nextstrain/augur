@@ -16,6 +16,17 @@ region_groups = {'NA':'north_america',
 
 attribute_nesting = {'geographic location':['region', 'country', 'city'],}
 
+color_options = {
+    "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
+    "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
+    "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
+    "ep":{"key":"ep", "legendTitle":"Epitope Mutations", "menuItem":"epitope mutations", "type":"continuous"},
+    "ne":{"key":"ne", "legendTitle":"Non-epitope Mutations", "menuItem":"nonepitope mutations", "type":"continuous"},
+    "rb":{"key":"rb", "legendTitle":"Receptor Binding Mutations", "menuItem":"RBS mutations", "type":"continuous"},
+    "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
+}
+
+
 clade_designations = {"h3n2":{
                            "3c3.a":[('HA1',128,'A'), ('HA1',142,'G'), ('HA1',159,'S')],
                            "3c3":   [('HA1',128,'A'), ('HA1',142,'G'), ('HA1',159,'F')],
@@ -317,5 +328,5 @@ if __name__=="__main__":
             H3N2_scores(flu.tree.tree)
             flu.dump()
             flu.matchClades(clade_designations[params.lineage])
-            flu.export(extra_attr=['serum'], controls=attribute_nesting)
+            flu.export(extra_attr=['serum'], controls=attribute_nesting, color_options=color_options)
             flu.HI_export()
