@@ -106,7 +106,8 @@ class tree(object):
 
             try:
                 print("RAxML branch length optimization")
-                os.system(raxml_bin + " -f e -T " + str(self.nthreads) + " -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick")
+                os.system(raxml_bin + " -f e -T " + str(self.nthreads)
+                          + " -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick")
                 shutil.copy('RAxML_result.branches', out_fname)
             except:
                 print("RAxML branch length optimization failed")
@@ -116,17 +117,18 @@ class tree(object):
         self.tt_from_file(out_fname, root)
         os.chdir('..')
         remove_dir(self.run_dir)
-        self.is_timetree=False
 
 
     def tt_from_file(self, infile, root='best', nodefile=None):
         from treetime import TreeTime
         from treetime import utils
+        self.is_timetree=False
         print('Reading tree from file',infile)
         dates  =   {seq.id:seq.attributes['num_date']
                     for seq in self.aln if 'date' in seq.attributes}
         self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor', aln = self.aln, verbose=4)
-        self.tt.reroot(root=root)
+        if root:
+            self.tt.reroot(root=root)
         self.tree = self.tt.tree
 
         for node in self.tree.find_clades():
@@ -153,9 +155,12 @@ class tree(object):
                     print("No node properties found for ", n.name)
 
 
-    def ancestral(self):
-        self.tt.optimize_seq_and_branch_len(infer_gtr=True)
+    def ancestral(self, **kwarks):
+        self.tt.optimize_seq_and_branch_len(infer_gtr=True, **kwarks)
         self.dump_attr.append('sequence')
+        for node in self.tree.find_clades():
+            if not hasattr(node,'attr'):
+                node.attr = {}
 
 
     def timetree(self, Tc=0.01, infer_gtr=True, reroot='best', resolve_polytomies=True, max_iter=2, **kwarks):
@@ -181,6 +186,9 @@ class tree(object):
         places = set()
         nuc_seqs = {}
         nuc_muts = {}
+        nuc_seq_LH = None
+        if hasattr(self.tt.tree,'sequence_LH'):
+            nuc_seq_LH = self.tt.tree.sequence_LH
         for node in self.tree.find_clades():
             if hasattr(node, 'attr'):
                 if attr in node.attr:
@@ -197,6 +205,7 @@ class tree(object):
         if nc<2 or nc>180:
             print("geo_inference: can't have less than 2 or more than 180 places!")
             return
+
         alphabet = {chr(65+i):place for i,place in enumerate(places)}
         alphabet_rev = {v:k for k,v in alphabet.iteritems()}
         sequence_gtr = self.tt.gtr
@@ -225,6 +234,9 @@ class tree(object):
         self.tt.geogtr.alphabet_to_location = alphabet
         self.tt._gtr = sequence_gtr
         self.dump_attr.append(attr)
+        if hasattr(self.tt.tree,'sequence_LH'):
+            self.tt.tree.geo_LH = self.tt.tree.sequence_LH
+            self.tt.tree.sequence_LH = nuc_seq_LH
         for node in self.tree.find_clades():
             node.attr[attr] = alphabet[node.sequence[0]]
             if node in nuc_seqs:

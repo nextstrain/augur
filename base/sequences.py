@@ -278,7 +278,7 @@ class sequence_set(object):
         make_dir(self.run_dir)
         os.chdir(self.run_dir)
 
-        # translage
+        # translate
         aa_seqs = {}
         bad_seq = 0
         for seq in self.seqs.values():

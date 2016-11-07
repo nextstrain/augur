@@ -137,11 +137,14 @@ class process(object):
             self.build_tree(tree_name, node_file, root='none')
 
 
-    def align(self, outgroup=None):
+    def align(self, outgroup=None, codon_align=False):
         '''
         align sequences, remove non-reference insertions, outlier sequences, and translate
         '''
-        self.seqs.align()
+        if codon_align:
+            self.seqs.codon_align()
+        else:
+            self.seqs.align()
         self.seqs.strip_non_reference()
         if outgroup is not None:
             self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
