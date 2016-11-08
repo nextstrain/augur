@@ -25,6 +25,7 @@ color_options = {
     "rb":{"key":"rb", "legendTitle":"Receptor Binding Mutations", "menuItem":"RBS mutations", "type":"continuous"},
     "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
 }
+panels = ['tree', 'entropy', 'frequencies']
 
 
 clade_designations = {"h3n2":{
@@ -328,5 +329,6 @@ if __name__=="__main__":
             H3N2_scores(flu.tree.tree)
             flu.dump()
             flu.matchClades(clade_designations[params.lineage])
-            flu.export(extra_attr=['serum'], controls=attribute_nesting, color_options=color_options)
+            flu.export(extra_attr=['serum'], controls=attribute_nesting,
+                       color_options=color_options, panels=panels)
             flu.HI_export()

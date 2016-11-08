@@ -14,6 +14,7 @@ from datetime import datetime
 
 attribute_nesting = {'geographic location':['region', 'country'], 'authors':['authors']}
 geo_attributes = ['region', 'country']
+panels = ['tree', 'map', 'entropy']
 color_options = {
     "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
     "division":{"key":"division", "legendTitle":"District", "menuItem":"District", "type":"discrete"},
@@ -70,4 +71,5 @@ if __name__=="__main__":
     zika.annotate_tree(Tc=0.005, timetree=True, reroot='best')
     for geo_attr in geo_attributes:
         zika.tree.geo_inference(geo_attr)
-    zika.export(controls = attribute_nesting, geo_attributes = geo_attributes, color_options=color_options)
+    zika.export(controls = attribute_nesting, geo_attributes = geo_attributes,
+                color_options=color_options, panels=panels)

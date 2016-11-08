@@ -21,6 +21,7 @@ color_options = {
     "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
     "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
 }
+panels = ['tree', 'map', 'entropy']
 
 if __name__=="__main__":
     import argparse
@@ -62,4 +63,5 @@ if __name__=="__main__":
     ebola.annotate_tree(Tc=0.0005, timetree=True, reroot='best', resolve_polytomies=True)
     for geo_attr in geo_attributes:
         ebola.tree.geo_inference(geo_attr)
-    ebola.export(controls = attribute_nesting, geo_attributes = geo_attributes, color_options=color_options)
+    ebola.export(controls = attribute_nesting, geo_attributes = geo_attributes,
+                color_options=color_options, panels=panels)
