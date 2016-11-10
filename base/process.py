@@ -37,8 +37,9 @@ class process(object):
         if 'reference' in kwargs:
             reference_file = kwargs['reference']
             self.load_reference(reference_file)
-        elif 'reference_seq' in kwargs:
+        elif 'reference_seq' in kwargs and 'proteins' in kwargs:
             self.reference_seq = kwargs['reference_seq']
+            self.proteins = kwargs['proteins']
         else:
             self.reference_seq = None
 
