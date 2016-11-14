@@ -37,9 +37,6 @@ class process(object):
         if 'reference' in kwargs:
             reference_file = kwargs['reference']
             self.load_reference(reference_file)
-        elif 'reference_seq' in kwargs and 'proteins' in kwargs:
-            self.reference_seq = kwargs['reference_seq']
-            self.proteins = kwargs['proteins']
         else:
             self.reference_seq = None
 
@@ -398,7 +395,10 @@ class process(object):
         return geo_lookup_json
 
 
-    def export(self, extra_attr = [], controls = {}, geo_attributes = []):
+    def export(self, extra_attr = [], controls = {}, geo_attributes = [],
+               color_options = {"num_date":{"key":"num_date", "legendTitle":"Sampling date",
+                                            "menuItem":"date", "type":"continuous"}},
+                panels = ['tree', 'entropy']):
         '''
         export the tree, sequences, frequencies to json files for visualization
         in the browser
@@ -445,6 +445,8 @@ class process(object):
         # write out metadata json# Write out metadata
         print("Writing out metadata")
         meta_json = {}
+        meta_json["color_options"] = color_options
+        meta_json["panels"] = panels
         meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
         try:
             from pygit2 import Repository, discover_repository
