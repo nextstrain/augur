@@ -140,9 +140,11 @@ class sequence_set(object):
             self.filter(func = lambda x:'date' in x.attributes and type(x.attributes['date'])!=str)
 
 
-    def filter(self, func):
-        self.all_seqs = {key:seq for key, seq in self.all_seqs.iteritems() if func(seq)}
-
+    def filter(self, func, leave_ref=False):
+        if leave_ref:
+            self.all_seqs = {key:seq for key, seq in self.all_seqs.iteritems() if func(seq) or key==self.reference_seq.name}
+        else:
+            self.all_seqs = {key:seq for key, seq in self.all_seqs.iteritems() if func(seq)}
 
     def clock_filter(self, root_seq=None, n_iqd=3, max_gaps = 1.0, plot=False):
         '''
