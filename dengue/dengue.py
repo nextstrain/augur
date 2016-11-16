@@ -21,13 +21,14 @@ class dengue_process(process):
 
         self.serotype = kwargs['serotype']
         if self.serotype == 'all':
-            self.lineage = 'dengue_virus'
-            self.reference_fname = './dengue/metadata/dengue_virus_%s_outgroup.gb'%'3'
+            self.lineage = 'dengue'
+            self.reference_fname = './dengue/metadata/dengue_%s_outgroup.gb'%'3'
+            newest_sequence_file = sorted(glob('../fauna/data/%s.fasta'%self.lineage), key=lambda f: os.path.getmtime(f))[-1]
         else:
-            self.lineage = 'dengue_virus_%s'%self.serotype
-            self.reference_fname = './dengue/metadata/dengue_virus_%s_outgroup.gb'%self.serotype
+            self.lineage = 'dengue_%s'%self.serotype
+            self.reference_fname = './dengue/metadata/dengue_%s_outgroup.gb'%self.serotype
+            newest_sequence_file = sorted(glob('../fauna/data/%s*.fasta'%self.lineage), key=lambda f: os.path.getmtime(f))[-1]
 
-        newest_sequence_file = sorted(glob('../fauna/data/%s*.fasta'%self.lineage))[-1]
         self.input_data_path = newest_sequence_file.split('.fasta')[0]
         self.sequence_fname = newest_sequence_file
         self.store_data_path = 'store/'+self.lineage + '_'
