@@ -73,7 +73,7 @@ if __name__=="__main__":
     parser.add_argument('-v', '--viruses_per_month', type = int, default = 100, help='number of viruses sampled per month')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
-    parser.add_argument('-serotype', type = str, choices=['1', '2', '3', '4', 'all'], help = 'which serotype of dengue to build trees for')
+    parser.add_argument('-s', '--serotype', type = str, choices=['1', '2', '3', '4', 'all'], default='all', help = 'which serotype of dengue to build trees for')
     params = parser.parse_args()
     attribute_nesting = {'geographic location':['region', 'country', 'location']}
     dengue_process(**params.__dict__)
