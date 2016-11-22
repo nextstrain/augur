@@ -382,7 +382,7 @@ class sequence_set(object):
             self.translations[prot] = MultipleSeqAlignment(aa_seqs)
 
 
-    def export_diversity(self, fname = 'entropy.json'):
+    def export_diversity(self, fname = 'entropy.json', indent=None):
         '''
         write the alignment entropy of each alignment (nucleotide and translations) to file
         '''
@@ -397,7 +397,7 @@ class sequence_set(object):
             else:
                 entropy_json[feat] = {'pos':[x for x in self.proteins[feat]][::3],
                                       'codon':[(x-self.proteins[feat].start)//3 for x in self.proteins[feat]][::3], 'val':S}
-        write_json(entropy_json, fname, indent=None)
+        write_json(entropy_json, fname, indent=indent)
 
 
 if __name__=="__main__":

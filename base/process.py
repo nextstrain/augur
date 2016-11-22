@@ -398,7 +398,7 @@ class process(object):
     def export(self, extra_attr = [], controls = {}, geo_attributes = [],
                color_options = {"num_date":{"key":"num_date", "legendTitle":"Sampling date",
                                             "menuItem":"date", "type":"continuous"}},
-                panels = ['tree', 'entropy']):
+                panels = ['tree', 'entropy'], indent=None):
         '''
         export the tree, sequences, frequencies to json files for visualization
         in the browser
@@ -409,7 +409,7 @@ class process(object):
         # exports the tree and the sequences inferred for all clades in the tree
         if hasattr(self, 'tree') and self.tree is not None:
             self.tree.export(path=prefix, extra_attr = extra_attr
-                         + ["muts", "aa_muts","attr", "clade"])
+                         + ["muts", "aa_muts","attr", "clade"], indent = indent)
 
 
         # local function or round frequency estimates to useful precision (reduces file size)
@@ -440,7 +440,7 @@ class process(object):
                     freq_json[label_str] = process_freqs(self.tree_frequencies[region][node.clade])
         # write to one frequency json
         if hasattr(self, 'tree_frequencies') or hasattr(self, 'mutation_frequencies'):
-            write_json(freq_json, prefix+'frequencies.json', indent=None)
+            write_json(freq_json, prefix+'frequencies.json', indent=indent)
 
         # write out metadata json# Write out metadata
         print("Writing out metadata")
