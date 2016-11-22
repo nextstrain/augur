@@ -14,20 +14,34 @@ from datetime import datetime
 import os
 from glob import glob
 
+def select_serotype(infile, path, serotype):
+    '''
+    Takes any-serotype fasta file, path to save output, and desired serotype.
+    Writes appropriate subset of sequences to dengue_serotype.fasta
+    Returns path to output file as string.
+    '''
+    firstfield = 'DENV%s'%serotype
+    sequences = [ i for i in SeqIO.parse(infile, 'fasta') if i.description.split('/')[0] == firstfield ]
+    SeqIO.write(sequences, path+'dengue_%s.fasta'%serotype, 'fasta')
+    return path+'dengue_%s.fasta'%serotype
 
 class dengue_process(process):
     def __init__(self, **kwargs):
         super(process, self).__init__()
 
         self.serotype = kwargs['serotype']
-        if self.serotype == 'all':
+        if self.serotype == 'any': # For any-serotype build, use dengue 3 outgroup and look for files like dengue.fasta
             self.lineage = 'dengue'
             self.reference_fname = './dengue/metadata/dengue_%s_outgroup.gb'%'3'
             newest_sequence_file = sorted(glob('../fauna/data/%s.fasta'%self.lineage), key=lambda f: os.path.getmtime(f))[-1]
         else:
-            self.lineage = 'dengue_%s'%self.serotype
+            self.lineage = 'dengue_%s'%self.serotype # For serotype-specific build, use the corresponding outgroup
             self.reference_fname = './dengue/metadata/dengue_%s_outgroup.gb'%self.serotype
-            newest_sequence_file = sorted(glob('../fauna/data/%s*.fasta'%self.lineage), key=lambda f: os.path.getmtime(f))[-1]
+            try: # Look for a serotype-specific fasta
+                newest_sequence_file = sorted(glob('../fauna/data/%s*.fasta'%self.lineage), key=lambda f: os.path.getmtime(f))[-1]
+            except: # If it doesn't exist, try to pull serotype-specific sequences out of the any-serotype fasta (warn the user of this behavior)
+                newest_sequence_file = select_serotype('../fauna/data/dengue.fasta', '../fauna/data/', self.serotype)
+                print('WARNING: Did not find serotype-specific fasta file.\nPulled sequences with serotype %s from any-serotype fasta file %s\nWrote these to file %s'%(self.serotype, '../fauna/data/dengue.fasta', newest_sequence_file))
 
         self.input_data_path = newest_sequence_file.split('.fasta')[0]
         self.sequence_fname = newest_sequence_file
@@ -48,8 +62,7 @@ class dengue_process(process):
             self.fasta_fields = {0:'strain', 1:'accession', 2:'date', 3:'region', 4:'country',
                             5:'division', 6: 'location'}
             self.dengue.load_sequences(fields=self.fasta_fields)
-
-            self.dengue.seqs.filter(lambda s: len(s.seq)>=2000)
+            self.dengue.seqs.filter(lambda s: len(s.seq)>=5000)
             self.dropped_strains = []
             self.dengue.seqs.filter(lambda s: s.id not in self.dropped_strains)
             self.dengue.seqs.subsample(category = lambda x:(x.attributes['region'],
@@ -70,7 +83,19 @@ if __name__=="__main__":
     parser.add_argument('-v', '--viruses_per_month', type = int, default = 100, help='number of viruses sampled per month')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
-    parser.add_argument('-s', '--serotype', type = str, choices=['1', '2', '3', '4', 'all'], default='all', help = 'which serotype of dengue to build trees for')
+    parser.add_argument('-s', '--serotype', type = str, choices=['1', '2', '3', '4', 'any', 'all'], default='any', help = 'which serotype of dengue to build trees for; any = include all serotypes in one build; all = run all 5 builds')
     params = parser.parse_args()
     attribute_nesting = {'geographic location':['region', 'country', 'location']}
-    dengue_process(**params.__dict__)
+    if params.serotype != 'all': # Run single build and quit.
+        output = dengue_process(**params.__dict__)
+    else: # Run all 5 builds. Call explicitly rather than loop to allow for ipython debugging of each build.
+        setattr(params, 'serotype', '1')
+        output1 = dengue_process(**params.__dict__)
+        setattr(params, 'serotype', '2')
+        output2 = dengue_process(**params.__dict__)
+        setattr(params, 'serotype', '3')
+        output3 = dengue_process(**params.__dict__)
+        setattr(params, 'serotype', '4')
+        output4 = dengue_process(**params.__dict__)
+        setattr(params, 'serotype', 'any')
+        outputany = dengue_process(**params.__dict__)
