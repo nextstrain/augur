@@ -49,14 +49,12 @@ class dengue_process(process):
                             5:'division', 6: 'location'}
             self.dengue.load_sequences(fields=self.fasta_fields)
 
-            self.dengue.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
-                                       s.attributes['date']< datetime(2017,1,1).date(), leave_ref=True)
             self.dengue.seqs.filter(lambda s: len(s.seq)>=2000)
             self.dropped_strains = []
             self.dengue.seqs.filter(lambda s: s.id not in self.dropped_strains)
             self.dengue.seqs.subsample(category = lambda x:(x.attributes['region'],
                                                      x.attributes['date'].year,
-                                                     x.attributes['date'].month), threshold=1000)
+                                                     x.attributes['date'].month), threshold=params.viruses_per_month)
             self.dengue.align()
             self.dengue.build_tree()
 
