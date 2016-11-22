@@ -38,7 +38,7 @@ class dengue_process(process):
         self.dengue = process(input_data_path = self.input_data_path,
                        store_data_path = self.store_data_path,
                        build_data_path = self.build_data_path,
-                       protein_list=self.proteins,
+                       proteins=self.proteins,
                        reference=self.reference_fname,
                        method='SLSQP')
 
@@ -61,8 +61,6 @@ class dengue_process(process):
         self.dengue.clock_filter(n_iqd=3, plot=True)
         self.dengue.annotate_tree(Tc=0.005, timetree=True, reroot='best')
         self.dengue.tree.geo_inference('region')
-        self.dengue.tree.geo_inference('country')
-        self.dengue.tree.geo_inference('division')
         self.dengue.export(controls = attribute_nesting)
 
 if __name__=="__main__":
