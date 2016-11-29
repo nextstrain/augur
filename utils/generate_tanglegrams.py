@@ -1,10 +1,11 @@
-import os
+import subprocess
 import sys
 from Bio import SeqIO
 from Bio.SeqFeature import FeatureLocation
 from Bio import AlignIO
 import re
 from glob import glob
+# import colored_traceback.always
 import argparse
 
 
@@ -15,6 +16,7 @@ parser.add_argument('-a', '--alignment', default=None, type=str, help="Full path
 parser.add_argument('-r', '--reference', default=None, type=str, help="Full path of genbank format reference file to pull gene coordinates from")
 parser.add_argument('-p', '--proteins', default=['C', 'M', 'E', 'NS1', 'NS2A', 'NS2B', 'NS3', 'NS4A', '2K', 'NS4B', 'NS5'], nargs='*', help="Names of proteins to include (must match genbank annotations). E.g.: `-p C M E NS1`")
 parser.add_argument('-o', '--outgroup', type=str, default = None, help="Taxa name to use as outgroup when rooting tree")
+parser.add_argument('-f', '--fastafield', type=int, default = 1, help="Index of | delimited fasta header field where accession numbers live. E.g., `-f 1` for >whatever|accession|blah")
 parser.add_argument('--raxmlpath', type=str, default = 'raxml', help="Path to raxml. If raxml is already in your .bashrc, leave default (just calls 'raxml')")
 parser.add_argument('-run', nargs='*', default=['a', 't', 'p'],  choices=['a', 't', 'p'], help="Which operations to do: align (a), build trees (t), plot tanglegrams (p). E.g.: `--run a t` will split the alignment, build trees, and quit. Alternatively, `--run p` will find the raxml bestTree files in the cwd and plot a tanglechain.")
 
@@ -69,7 +71,8 @@ def split_alignment(alignment_file, proteins):
         align_segment = align[:, start:end+1] #[allrows, startcolumn:endcolumn] endcolumn += 1 for inclusive slicing
         filtered_align_segment = AlignIO.MultipleSeqAlignment([])
         for seq in align_segment:
-            if float(str(seq.seq).count('-')) / float(len(str(seq.seq))) <= 0.70: # Require at least 70% of sites are not gaps to include in segment alignment
+            seq.seq.data = str(seq.seq).replace('n', '-').replace('N', '-')
+            if float(str(seq.seq).count('-')) / float(len(str(seq.seq))) <= 0.30: # Require at least 70% of sites are not gaps to include in segment alignment
                 filtered_align_segment.append(seq)
         AlignIO.write(filtered_align_segment, ofile_name, 'phylip-relaxed')
     return ofile_list
@@ -83,9 +86,14 @@ def run_raxml(alignment_list):
     for a in alignment_list:
         protein = a.split('_')[-1].split('.')[0]
         # rapid hill climbing method; 2 threads; GTR model with -c categories of rate variation; specify seed for parsimony (ensure reproducibility); in/out fnames.
-        os.system("%s -f d -T 2 -m GTRCAT -c 25 -p 344312987 -o '%s' -s %s -n topology_%s"%(args.raxmlpath, outgroup, a, protein))
-        for i in ['rm RAxML_info*', 'rm RAxML_checkpoint*', 'rm RAxML_parsimonyTree*', 'rm RAxML_result*', 'rm RAxML_log*', 'rm *.reduced']: # Cleanup
-            os.system(i)
+        try:
+            subprocess.check_call("%s -f d -T 2 -m GTRCAT -c 25 -p 344312987 -o '%s' -s %s -n topology_%s"%(args.raxmlpath, outgroup, a, protein), shell=True)
+        except:
+            print 'WARNING: OS Error raised. Most likely, your outgroup %s was not found in the alignment for protein %s. Rerunning raxml with no outgroup; tanglechain for this segment may look artificially extra tangled. If it fails again, you have some other raxml config errorself.\n\n'%(outgroup, protein)
+            subprocess.call('rm RAxML*%s'%protein, shell=True)
+            subprocess.check_call("%s -f d -T 2 -O -m GTRCAT -c 25 -p 344312987 -s %s -n topology_%s"%(args.raxmlpath, a, protein), shell=True)
+        subprocess.call(['rm RAxML_info*', 'rm RAxML_checkpoint*', 'rm RAxML_parsimonyTree*', 'rm RAxML_result*', 'rm RAxML_log*', 'rm *.reduced'], shell=True) # Cleanup
+
 
 ############ Plotting Utilities ######################
 
@@ -116,7 +124,7 @@ def untangle(tree1, tree2):
     '''
     current_distance = sum_tip_distances(tree1, tree2)
 
-    for n in sorted(tree2.nodes,key=lambda x: x.height):
+    for n in sorted(tree2.nodes,key=lambda x: -x.height):
         if n.parent=='Root':
             continue
         n.rotate()
@@ -133,12 +141,11 @@ def untangle(tree1, tree2):
 if 'a' in args.run:
     proteins, reference_seq = load_reference(reference) #[ (protein1, FeatureLocation), (protein2, FeatureLocation), ...], SeqIO.SequenceObject
     reference_acc, reference_seq = reference_seq.id.split('.')[0], str(reference_seq.seq) # NB: Expects reference_seq.id like accession.whateverversionignored
-    print 'Splitting alignment for each protein:'
-    print [p[0] for p in proteins]
+    print 'Splitting alignment for each protein:', [p[0] for p in proteins], '\n\n'
 
     compare_seq = None
-    for i in SeqIO.parse(alignment, 'fasta'): # Find the reference sequence in the alignment by matching accession numbers. NB: Expects headers like >whatever|accession.whateverversionignored|everythingelseignored
-        if i.description.split('|')[1].split('.')[0] == reference_acc:
+    for i in SeqIO.parse(alignment, 'fasta'): # Find the reference sequence in the alignment by matching accession numbers.
+        if i.description.split('|')[args.fastafield].split('.')[0] == reference_acc:
             compare_seq = str(i.seq)
     assert compare_seq != None
 
@@ -152,27 +159,25 @@ if 'a' in args.run:
 
 if 't' in args.run:
     if 'a' not in args.run: # If we didn't generate segment alignments this run, look for them in the cwd as .phyx files
-        alignments = glob('*.phyx')
-        print 'Building trees for %d alignments found in the cwd:'%len(alignments)
-        print alignments
+        alignments = [ t for t in glob('*.phyx') if t.split('_')[-1].split('.')[0] in protein_list ]
+        print 'Building trees for %d alignments found in the cwd:\n'%len(alignments), alignments, '\n\n'
     else:
-        print 'Building trees for alignments:'
-        print alignments
+        print 'Building trees for alignments:\n', alignments, '\n\n'
     assert len(alignments) > 1
 
     if args.outgroup != None: # If no outgroup taxa provided, try to use the reference sequence.
-        print 'Using specified outgroup to build trees.'
+        print 'Using specified outgroup to build trees.\n\n'
         outgroup = args.outgroup
     elif reference != None:
-        print 'No outgroup provided; using provided reference sequence as outgroup.'
+        print 'No outgroup provided; using provided reference sequence as outgroup.\n\n'
         outgroup = load_reference(reference)[1].name
     else:
-        raise ValueError, 'Must provide outgroup or reference sequence name to root trees.'
+        raise ValueError, 'Must provide outgroup or reference sequence name to root trees.\n\n'
 
     run_raxml(alignments) # Build trees.
 
 if 'p' not in args.run:
-    print 'Not plotting tanglechain per -run argument.'
+    print 'Not plotting tanglechain per -run argument.\n\n'
     sys.exit()
 else:
     pass
@@ -186,13 +191,16 @@ except Exception as e:
     print 'The baltic module is available from https://github.com/blab/baltic'
     raise e
 
-print 'Plotting tanglechain in this order:'
-print protein_list
+print 'Plotting tanglechain in this order:\n', protein_list, '\n\n'
 
 try:
-    treefiles = sorted(glob('*bestTree*'), key=lambda i: protein_list.index(i.split('_')[-1])) ##To-do: eventually, allow plotting of only some of the trees in the cwd by changing -p argument.
+    treefiles = sorted([ t for t in glob('*bestTree*') if t.split('_')[-1] in protein_list], key=lambda t: protein_list.index(t.split('_')[-1]))
+    assert len(treefiles) == len(protein_list)
 except ValueError as e: # For now, require that we can match all tree files to a protein
-    print 'Oops! Plotting without building trees? Make sure your trees are named like `whatever_protein` and you passed a list of matching `protein` names to `-p` to set the order of trees.'
+    print 'Oops! Plotting without building trees? Make sure your trees are named like `whatever_protein` and you passed a list of matching `protein` names to `-p` to set the order of trees.\n\n'
+    raise e
+except AssertionError as e:
+    print 'ERROR: Missing tree files. Looked for trees for these proteins:\n', protein_list, '\n\n'
     raise e
 
 trees = {}
@@ -202,11 +210,10 @@ for i, t in enumerate(treefiles):
     treeobject.treeStats() ## initial traversal, checks for stats
     treeobject.sortBranches() ## traverses tree, sorts branches, draws tree (sets plotting coordinates)
     trees[i] = treeobject
-print trees
-sys.exit()
-# for i in range(1,len(treefiles)):
-#     print 'Untangling tree number %d'%i
-#     untangle(trees[i-1], trees[i])
+
+for i in range(1,len(treefiles)):
+    print 'Untangling tree number %d'%i
+    untangle(trees[i-1], trees[i])
 
 ################
 ## Plot Genome Map
