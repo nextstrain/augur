@@ -276,7 +276,7 @@ if __name__=="__main__":
     parser.add_argument('-y', '--resolution', type = str, default = '3y', help='outfile suffix')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
     parser.add_argument('-d', '--download', action='store_true', default = False, help='load from database')
-    parser.add_argument('-t', '--time_interval', nargs=2, default=('2012-01-01', '2016-01-01'),
+    parser.add_argument('-t', '--time_interval', nargs=2, default=(None, None),
                             help='time interval to sample sequences from: provide dates as YYYY-MM-DD')
     parser.add_argument('-l', '--lineage', type = str, default = 'h3n2', help='flu lineage to process')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
@@ -300,7 +300,18 @@ if __name__=="__main__":
         flu.load_sequences(fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
                              5:'country', 7:"city", 12:"subtype",13:'lineage'})
 
-        time_interval = [datetime.strptime(x, '%Y-%m-%d').date()  for x in params.time_interval]
+        if params.time_interval[0] is None:
+            print("using resolution to set time interval",params.resolution)
+            try:
+                years_back = int(params.resolution[:-1])
+            except:
+                print("no time interval given")
+                years_back = 3
+            now = datetime.now().date()
+            prev = datetime(year=now.year-years_back, month=now.month, day=now.day).date()
+            time_interval = [prev, now]
+        else:
+            time_interval = [datetime.strptime(x, '%Y-%m-%d').date()  for x in params.time_interval]
         pivots = np.arange(time_interval[0].year+(time_interval[0].month-1)/12.0,
                            time_interval[1].year+time_interval[1].month/12.0, 1.0/ppy)
         flu.seqs.filter(lambda s:
