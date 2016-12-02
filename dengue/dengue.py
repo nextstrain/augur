@@ -63,7 +63,7 @@ class dengue_process(process):
                             5:'division', 6: 'location'}
             self.dengue.load_sequences(fields=self.fasta_fields)
             self.dengue.seqs.filter(lambda s: len(s.seq)>=5000)
-            self.dropped_strains = []
+            self.dropped_strains = ['DENV1/VIETNAM/BIDV992/2006', 'DENV1/FRANCE/00475/2008', 'DENV1/VIETNAM/BIDV3990/2008', 'DENV2/HAITI/DENGUEVIRUS2HOMOSAPIENS1/2016'] # probable recombinants
             self.dengue.seqs.filter(lambda s: s.id not in self.dropped_strains)
             self.dengue.seqs.subsample(category = lambda x:(x.attributes['region'],
                                                      x.attributes['date'].year,
