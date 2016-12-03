@@ -140,9 +140,11 @@ class sequence_set(object):
             self.filter(func = lambda x:'date' in x.attributes and type(x.attributes['date'])!=str)
 
 
-    def filter(self, func):
-        self.all_seqs = {key:seq for key, seq in self.all_seqs.iteritems() if func(seq)}
-
+    def filter(self, func, leave_ref=False):
+        if leave_ref:
+            self.all_seqs = {key:seq for key, seq in self.all_seqs.iteritems() if func(seq) or key==self.reference_seq.name}
+        else:
+            self.all_seqs = {key:seq for key, seq in self.all_seqs.iteritems() if func(seq)}
 
     def clock_filter(self, root_seq=None, n_iqd=3, max_gaps = 1.0, plot=False):
         '''
@@ -380,7 +382,7 @@ class sequence_set(object):
             self.translations[prot] = MultipleSeqAlignment(aa_seqs)
 
 
-    def export_diversity(self, fname = 'entropy.json'):
+    def export_diversity(self, fname = 'entropy.json', indent=None):
         '''
         write the alignment entropy of each alignment (nucleotide and translations) to file
         '''
@@ -395,7 +397,7 @@ class sequence_set(object):
             else:
                 entropy_json[feat] = {'pos':[x for x in self.proteins[feat]][::3],
                                       'codon':[(x-self.proteins[feat].start)//3 for x in self.proteins[feat]][::3], 'val':S}
-        write_json(entropy_json, fname, indent=None)
+        write_json(entropy_json, fname, indent=indent)
 
 
 if __name__=="__main__":

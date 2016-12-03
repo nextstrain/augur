@@ -324,7 +324,7 @@ class tree(object):
             self.dump_attr.extend(['tvalue'])
 
 
-    def export(self, path = '', extra_attr = ['aa_muts', 'clade'], plain_export = 10):
+    def export(self, path = '', extra_attr = ['aa_muts', 'clade'], plain_export = 10, indent=None):
         '''
         export the tree data structure along with the sequence information as
         json files for display in web browsers.
@@ -341,7 +341,7 @@ class tree(object):
         timetree_fname = path+'tree.json'
         sequence_fname = path+'sequences.json'
         tree_json = tree_to_json(self.tree.root, extra_attr=extra_attr)
-        write_json(tree_json, timetree_fname, indent=None)
+        write_json(tree_json, timetree_fname, indent=indent)
 
         # prepare a json with sequence information to export.
         # first step: add the sequence & translations of the root as string
@@ -366,7 +366,7 @@ class tree(object):
                     else:
                         elems[node.clade][prot] = seq
 
-        write_json(elems, sequence_fname, indent=None)
+        write_json(elems, sequence_fname, indent=indent)
 
 
 if __name__=="__main__":
