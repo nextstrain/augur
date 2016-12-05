@@ -50,15 +50,17 @@ if __name__=="__main__":
                        time_interval[1].year+time_interval[1].month/12.0, 1.0/ppy)
 
     # load data from all segments
-    segment_names = ['pb1', 'pb2', 'pa', 'ha', 'np', 'na', 'mp', 'ns']
+    segment_names = ['pb1', 'pb2', 'pa', 'ha', 'np', 'na', 'm', 'ns']
     segments = {}
     viruses = defaultdict(list)
     for seg in segment_names:
         input_data_path = '../fauna/data/'+params.lineage+'_'+seg
+        if seg=='m':
+            input_data_path+='p'
         store_data_path = 'store/'+params.lineage + '_' + params.resolution + '_' + seg + '_'
         build_data_path = 'build/'+params.lineage + '_' + params.resolution + '_' + seg + '_'
         flu = process(input_data_path = input_data_path, store_data_path = store_data_path,
-                       build_data_path = build_data_path, reference='flu/metadata/'+params.lineage+'_outgroup.gb',
+                       build_data_path = build_data_path, reference='flu/metadata/'+params.lineage + '_' + seg +'_outgroup.gb',
                        proteins=['SigPep', 'HA1', 'HA2'],
                        method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=2.*ppy)
 
@@ -75,8 +77,7 @@ if __name__=="__main__":
     complete_strains = filter(lambda x:len(viruses[x])==len(segment_names), viruses.keys())
     # determine filter every segment down to the sequences for which all other segments exist
     segments['ha'].seqs.filter(lambda s: s.name in complete_strains)
-    segments['ha'].seqs.filter(lambda s:
-        s.attributes['date']>=time_interval[0] and s.attributes['date']<time_interval[1])
+    segments['ha'].seqs.filter(lambda s:s.attributes['date']>=time_interval[0] and s.attributes['date']<time_interval[1])
     segments['ha'].seqs.subsample(category = sampling_category, priority = sampling_priority, threshold = params.viruses_per_month)
     strains_to_use = segments['ha'].seqs.seqs.keys()
 
@@ -107,10 +108,12 @@ if __name__=="__main__":
     for seg in segment_names:
         for leaf in segments[seg].tree.tree.get_terminals():
             leaf.attr['ladder_ranks'] = list(np.array(ladder_ranks[leaf.name]))
+            leaf.nleafs=1
 
     for seg in segment_names:
         for node in segments[seg].tree.tree.get_nonterminals(order='postorder'):
-            node.attr['ladder_ranks'] = list(np.mean([x.attr['ladder_ranks'] for x in node], axis=0))
+            node.nleafs = np.sum([x.nleafs for x in node])
+            node.attr['ladder_ranks'] = list(np.sum([x.nleafs*x.attr['ladder_ranks'] for x in node], axis=0)/node.nleafs)
 
     # align and build tree
     for seg, flu in segments.iteritems():
