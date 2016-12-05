@@ -106,9 +106,13 @@ if __name__=="__main__":
 
     for seg in segment_names:
         for leaf in segments[seg].tree.tree.get_terminals():
-            leaf.ladder_ranks = np.array(ladder_ranks[leaf.name])
+            leaf.attr['ladder_ranks'] = list(np.array(ladder_ranks[leaf.name]))
 
     for seg in segment_names:
         for node in segments[seg].tree.tree.get_nonterminals(order='postorder'):
-            node.ladder_ranks = np.mean([x.ladder_ranks for x in node], axis=0)
+            node.attr['ladder_ranks'] = list(np.mean([x.attr['ladder_ranks'] for x in node], axis=0))
 
+    # align and build tree
+    for seg, flu in segments.iteritems():
+        flu.dump()
+        flu.export(extra_attr=[], controls=attribute_nesting)
