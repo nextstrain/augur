@@ -107,13 +107,17 @@ if __name__=="__main__":
 
     for seg in segment_names:
         for leaf in segments[seg].tree.tree.get_terminals():
-            leaf.attr['ladder_ranks'] = list(np.array(ladder_ranks[leaf.name]))
+            leaf.attr['ladder_ranks'] = np.array(ladder_ranks[leaf.name])
+            print(leaf.attr['ladder_ranks'])
             leaf.nleafs=1
 
     for seg in segment_names:
         for node in segments[seg].tree.tree.get_nonterminals(order='postorder'):
             node.nleafs = np.sum([x.nleafs for x in node])
-            node.attr['ladder_ranks'] = list(np.sum([x.nleafs*x.attr['ladder_ranks'] for x in node], axis=0)/node.nleafs)
+            node.attr['ladder_ranks'] = np.sum([x.nleafs*x.attr['ladder_ranks'] for x in node], axis=0)/node.nleafs
+    for seg in segment_names:
+        for leaf in segments[seg].tree.tree.find_clades():
+            leaf.attr['ladder_ranks'] = list(leaf.attr['ladder_ranks'])
 
     # align and build tree
     for seg, flu in segments.iteritems():
