@@ -145,6 +145,7 @@ class sequence_set(object):
             self.all_seqs = {key:seq for key, seq in self.all_seqs.iteritems() if func(seq) or key==self.reference_seq.name}
         else:
             self.all_seqs = {key:seq for key, seq in self.all_seqs.iteritems() if func(seq)}
+        print("Filtered to %d sequences"%len(self.all_seqs))
 
     def clock_filter(self, root_seq=None, n_iqd=3, max_gaps = 1.0, plot=False):
         '''
@@ -239,6 +240,9 @@ class sequence_set(object):
             for s in seqs: s.under_sampling=under_sampling
             seqs.sort(key=lambda x:x._priority, reverse=True)
             self.seqs.update({seq.id:seq for seq in seqs[:threshold( (cat, seqs) )]})
+
+        print("Subsampled to %d sequences"%len(self.all_seqs))
+        print("Subsampled to %d sequences"%len(self.seqs))        
 
     def align(self):
         '''
