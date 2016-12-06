@@ -18,17 +18,17 @@ region_groups = {'NA':'north_america',
                  'OC':'oceania', 'EU':'europe'}
 
 attribute_nesting = {'geographic location':['region', 'country', 'city'],}
-#
-# color_options = {
-#     "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
-#     "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
-#     "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
+
+color_options = {
+    "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
+    "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
+    "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"}}
 #     "ep":{"key":"ep", "legendTitle":"Epitope Mutations", "menuItem":"epitope mutations", "type":"continuous"},
 #     "ne":{"key":"ne", "legendTitle":"Non-epitope Mutations", "menuItem":"nonepitope mutations", "type":"continuous"},
 #     "rb":{"key":"rb", "legendTitle":"Receptor Binding Mutations", "menuItem":"RBS mutations", "type":"continuous"},
 #     "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
 # }
-# panels = ['tree', 'entropy', 'frequencies']
+panels = ['tree', 'entropy', 'frequencies']
 
 
 class dengue_process(process):
@@ -76,13 +76,13 @@ class dengue_process(process):
 
     def titer_model(self, **kwargs):
         '''
-        estimate a tree and substitution model using titers in titer_fname.
+        estimate a titer tree and substitution model using titers in titer_fname.
         '''
         from base.titer_model import tree_model, substitution_model
         ## TREE MODEL
-        self.tree = tree_model(self.tree.tree, titer_fname = self.titer_fname, **kwargs)
-        self.tree.prepare(**kwargs) # make training set, find subtree with titer measurements, and make_treegraph
-        self.tree.train(**kwargs) # pick longest branch on path between each (test, ref) pair, assign titer drops to this branch
+        self.titer_tree = tree_model(self.tree.tree, titer_fname = self.titer_fname, **kwargs)
+        self.titer_tree.prepare(**kwargs) # make training set, find subtree with titer measurements, and make_treegraph
+        self.titer_tree.train(**kwargs) # pick longest branch on path between each (test, ref) pair, assign titer drops to this branch
                                  # then calculate a cumulative antigenic evolution score for each node
         # add tree attributes to the list of attributes that are saved in intermediate files
         for n in self.tree.tree.find_clades():
@@ -95,18 +95,18 @@ class dengue_process(process):
         # self.subs.train(**kwargs)
 
 
-    def export(self):
+    def titer_export(self):
         from base.io_util import write_json
         prefix = self.build_data_path
-        if hasattr(self, 'tree'):
+        if hasattr(self, 'titer_tree'):
             # export the raw titers
-            data = self.tree.compile_titers()
+            data = self.titer_tree.compile_titers()
             write_json(data, prefix+'titers.json', indent=1)
             # export the tree model (avidities and potencies only)
-            tree_model = {'potency':self.tree.compile_potencies(),
-                          'avidity':self.tree.compile_virus_effects(),
+            tree_model = {'potency':self.titer_tree.compile_potencies(),
+                          'avidity':self.titer_tree.compile_virus_effects(),
                           'dTiter':{n.clade:n.dTiter for n in self.tree.tree.find_clades() if n.dTiter>1e-6}}
-            write_json(tree_model, prefix+'titer_tree_model.json')
+            write_json(tree_model, prefix+'tree_model.json')
         else:
             print('Tree model not yet trained')
 
@@ -192,7 +192,7 @@ if __name__=="__main__":
     parser.add_argument('-s', '--serotype', type = str, choices=['1', '2', '3', '4', 'any', 'all'], default='any', help = 'which serotype of dengue to build trees for; any = include all serotypes in one build; all = run all 5 builds')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
     parser.add_argument('--no_tree', default=False, action='store_true', help = "don't build a tree")
-    parser.add_argument('-tf', '--titer_fname', type = str, default='agm_dengue', help = 'prefix of titer and strain fnames found in fauna/data. E.g., `agm_dengue` --> `agm_dengue_titers.tsv`, `agm_dengue_strains.tsv`')
+    parser.add_argument('-tf', '--titer_fname', type = str, default='dengue', help = 'prefix of titer and strain fnames found in fauna/data. E.g., `agm_dengue` --> `agm_dengue_titers.tsv`, `agm_dengue_strains.tsv`')
     params = parser.parse_args()
 
     # default values for --viruses_per_month and --years_back from resolution
@@ -283,7 +283,6 @@ if __name__=="__main__":
             dengue.clock_filter(n_iqd=3, plot=True)
             dengue.annotate_tree(Tc=0.005, timetree=True, reroot='best')
             # dengue.tree.geo_inference('region')
-
             # dengue.estimate_tree_frequencies()
             dengue.dump()
 
@@ -291,6 +290,5 @@ if __name__=="__main__":
             # H3N2_scores(dengue.tree.tree)
             dengue.dump()
             # dengue.matchClades(clade_designations[lineage])
-            dengue.export(extra_attr=['serum'], controls=attribute_nesting)
-                    #    color_options=color_options, panels=panels)
-            dengue.export()
+            dengue.titer_export()
+            dengue.export(extra_attr=['serum'], controls=attribute_nesting, color_options=color_options, panels=panels )
