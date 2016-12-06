@@ -57,7 +57,7 @@ class tree(object):
             dump(node_props, nfile)
 
 
-    def build(self, root='midpoint', raxml=True, raxml_time_limit=0.5, raxml_bin='raxml'):
+    def build(self, root='midpoint', raxml=True, raxml_time_limit=0.5, raxml_bin='raxml', debug=False):
         from Bio import Phylo, AlignIO
         import subprocess, glob, shutil
         make_dir(self.run_dir)
@@ -116,7 +116,8 @@ class tree(object):
             shutil.copy('initial_tree.newick', out_fname)
         self.tt_from_file(out_fname, root)
         os.chdir('..')
-        remove_dir(self.run_dir)
+        if not debug:
+            remove_dir(self.run_dir)
 
 
     def tt_from_file(self, infile, root='best', nodefile=None):

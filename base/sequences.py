@@ -242,9 +242,9 @@ class sequence_set(object):
             self.seqs.update({seq.id:seq for seq in seqs[:threshold( (cat, seqs) )]})
 
         print("Subsampled to %d sequences"%len(self.all_seqs))
-        print("Subsampled to %d sequences"%len(self.seqs))        
+        print("Subsampled to %d sequences"%len(self.seqs))
 
-    def align(self):
+    def align(self, debug=False):
         '''
         align sequences using mafft
         '''
@@ -269,10 +269,11 @@ class sequence_set(object):
         self.aln = MultipleSeqAlignment([s for s in tmp_aln
                             if s.name!=self.reference_seq.name or ref_in_set])
         os.chdir('..')
-        remove_dir(self.run_dir)
+        if not debug:
+            remove_dir(self.run_dir)
 
 
-    def codon_align(self, alignment_tool="mafft", prune=True, verbose=0):
+    def codon_align(self, alignment_tool="mafft", prune=True, verbose=0, debug=False):
         ''' takes a nucleotide alignment, translates it, aligns the amino acids, pads the gaps
         note that this suppresses any compensated frameshift mutations
 
@@ -324,7 +325,8 @@ class sequence_set(object):
             if seq.id in self.sequence_lookup:
                 self.sequence_lookup[seq.id].attributes = seq.attributes
         os.chdir('..')
-        remove_dir(self.run_dir)
+        if not debug:
+            remove_dir(self.run_dir)
 
 
     def strip_non_reference(self):
