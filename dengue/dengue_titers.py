@@ -264,12 +264,17 @@ if __name__=="__main__":
         time_interval = [datetime.strptime(x, '%Y-%m-%d').date() for x in params.time_interval]
         # pivots = np.arange(time_interval[0].year+(time_interval[0].month-1)/12.0,
         #                    time_interval[1].year+time_interval[1].month/12.0, 1.0/ppy)
+
+        dropped_strains = ['DENV1/VIETNAM/BIDV992/2006', 'DENV1/FRANCE/00475/2008', 'DENV1/VIETNAM/BIDV3990/2008', 'DENV2/HAITI/DENGUEVIRUS2HOMOSAPIENS1/2016',# probable recombinants
+        'DENV2/AUSTRALIA/QML22/2015' # Wrong serotype? Abnormal date.
+        ]
+        dengue.seqs.filter(lambda s: s.id not in dropped_strains)
         dengue.seqs.filter(lambda s:
             s.attributes['date']>=time_interval[0] and s.attributes['date']<time_interval[1])
         print(len(dengue.seqs.all_seqs))
         dengue.seqs.filter(lambda s: len(s.seq)>=900)
         dengue.subsample(params.viruses_per_month)
-        dengue.align()
+        dengue.align(debug=True)
 
         dengue.dump()
         # first estimate frequencies globally, then region specific
@@ -278,8 +283,8 @@ if __name__=="__main__":
         #     dengue.estimate_mutation_frequencies(region=region)
 
         if not params.no_tree:
-            dengue.align()
-            dengue.build_tree()
+            dengue.align(debug=True)
+            dengue.build_tree(debug=True)
             dengue.clock_filter(n_iqd=3, plot=True)
             dengue.annotate_tree(Tc=0.005, timetree=True, reroot='best')
             # dengue.tree.geo_inference('region')
