@@ -4,7 +4,7 @@ import sys
 sys.path.append('')  # need to import from base
 from base.process import process
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 from base.io_util import myopen
 
 regions = ['africa', 'south_asia', 'europe', 'china', 'north_america',
@@ -79,8 +79,6 @@ class flu_process(process):
 
 
     def subsample(self, sampling_threshold, **kwargs):
-        if self.seqs is None:
-            self.load_sequences()
 
         def sampling_category(x):
             return (x.attributes['region'],
@@ -273,18 +271,43 @@ if __name__=="__main__":
 
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
     parser.add_argument('-v', '--viruses_per_month', type = int, default = 10, help='number of viruses sampled per month')
-    parser.add_argument('-y', '--resolution', type = str, default = '3y', help='outfile suffix')
+    parser.add_argument('-y', '--years_back', type = str, default = 3, help='number of years back to sample')
+    parser.add_argument('--resolution', type = str, help ="outfile suffix, can determine -v and -y")
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
     parser.add_argument('-d', '--download', action='store_true', default = False, help='load from database')
-    parser.add_argument('-t', '--time_interval', nargs=2, default=(None, None),
-                            help='time interval to sample sequences from: provide dates as YYYY-MM-DD')
+    parser.add_argument('-t', '--time_interval', nargs=2, help='specify time interval rather than use --years_back')
     parser.add_argument('-l', '--lineage', type = str, default = 'h3n2', help='flu lineage to process')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
     parser.add_argument('--no_tree', default=False, action='store_true', help = "don't build a tree")
     params = parser.parse_args()
+
+    # default values for --viruses_per_month and --years_back from resolution
+    if params.resolution == "2y":
+		params.viruses_per_month = 15
+		params.years_back = 2
+    elif params.resolution == "3y":
+		params.viruses_per_month = 7
+		params.years_back = 3
+    elif params.resolution == "6y":
+		params.viruses_per_month = 3
+		params.years_back = 6
+    elif params.resolution == "12y":
+		params.viruses_per_month = 2
+		params.years_back = 12
+
+    # construct time_interval from years_back
+    if not params.time_interval:
+        today_str = "{:%Y-%m-%d}".format(datetime.today())
+        date_str = "{:%Y-%m-%d}".format(datetime.today() - timedelta(days=365.25 * params.years_back))
+        params.time_interval = [date_str, today_str]
+
     input_data_path = '../fauna/data/'+params.lineage
-    store_data_path = 'store/'+params.lineage + '_' + params.resolution +'_'
-    build_data_path = 'build/'+params.lineage + '_' + params.resolution +'_'
+    if params.resolution:
+        store_data_path = 'store/'+params.lineage + '_' + params.resolution +'_'
+        build_data_path = 'build/'+params.lineage + '_' + params.resolution +'_'
+    else:
+        store_data_path = 'store/'+params.lineage + '_'
+        build_data_path = 'build/'+params.lineage + '_'
 
     ppy = 12
     flu = flu_process(input_data_path = input_data_path, store_data_path = store_data_path,
@@ -300,22 +323,13 @@ if __name__=="__main__":
         flu.load_sequences(fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
                              5:'country', 7:"city", 12:"subtype",13:'lineage'})
 
-        if params.time_interval[0] is None:
-            print("using resolution to set time interval",params.resolution)
-            try:
-                years_back = int(params.resolution[:-1])
-            except:
-                print("no time interval given")
-                years_back = 3
-            now = datetime.now().date()
-            prev = datetime(year=now.year-years_back, month=now.month, day=now.day).date()
-            time_interval = [prev, now]
-        else:
-            time_interval = [datetime.strptime(x, '%Y-%m-%d').date()  for x in params.time_interval]
+        time_interval = [datetime.strptime(x, '%Y-%m-%d').date() for x in params.time_interval]
+
         pivots = np.arange(time_interval[0].year+(time_interval[0].month-1)/12.0,
                            time_interval[1].year+time_interval[1].month/12.0, 1.0/ppy)
         flu.seqs.filter(lambda s:
             s.attributes['date']>=time_interval[0] and s.attributes['date']<time_interval[1])
+        flu.seqs.filter(lambda s: len(s.seq)>=900)
 
         flu.subsample(params.viruses_per_month)
         flu.align()
@@ -326,7 +340,6 @@ if __name__=="__main__":
             flu.estimate_mutation_frequencies(region=region)
 
         if not params.no_tree:
-            flu.subsample(5, repeated=True)
             flu.align()
             flu.build_tree()
             flu.clock_filter(n_iqd=3, plot=True)

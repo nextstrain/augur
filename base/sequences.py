@@ -145,6 +145,7 @@ class sequence_set(object):
             self.all_seqs = {key:seq for key, seq in self.all_seqs.iteritems() if func(seq) or key==self.reference_seq.name}
         else:
             self.all_seqs = {key:seq for key, seq in self.all_seqs.iteritems() if func(seq)}
+        print("Filtered to %d sequences"%len(self.all_seqs))
 
     def clock_filter(self, root_seq=None, n_iqd=3, max_gaps = 1.0, plot=False):
         '''
@@ -240,7 +241,10 @@ class sequence_set(object):
             seqs.sort(key=lambda x:x._priority, reverse=True)
             self.seqs.update({seq.id:seq for seq in seqs[:threshold( (cat, seqs) )]})
 
-    def align(self):
+        print("Subsampled to %d sequences"%len(self.all_seqs))
+        print("Subsampled to %d sequences"%len(self.seqs))
+
+    def align(self, debug=False):
         '''
         align sequences using mafft
         '''
@@ -265,10 +269,11 @@ class sequence_set(object):
         self.aln = MultipleSeqAlignment([s for s in tmp_aln
                             if s.name!=self.reference_seq.name or ref_in_set])
         os.chdir('..')
-        remove_dir(self.run_dir)
+        if not debug:
+            remove_dir(self.run_dir)
 
 
-    def codon_align(self, alignment_tool="mafft", prune=True, verbose=0):
+    def codon_align(self, alignment_tool="mafft", prune=True, verbose=0, debug=False):
         ''' takes a nucleotide alignment, translates it, aligns the amino acids, pads the gaps
         note that this suppresses any compensated frameshift mutations
 
@@ -320,7 +325,8 @@ class sequence_set(object):
             if seq.id in self.sequence_lookup:
                 self.sequence_lookup[seq.id].attributes = seq.attributes
         os.chdir('..')
-        remove_dir(self.run_dir)
+        if not debug:
+            remove_dir(self.run_dir)
 
 
     def strip_non_reference(self):

@@ -114,7 +114,7 @@ class process(object):
                     else:
                         dump(getattr(self,attr_name), ofile, -1)
 
-    def load(self):
+    def load(self, debug=False):
         '''
         reconstruct instance from files
         '''
@@ -134,17 +134,17 @@ class process(object):
             else:
                 node_file = None
             # load tree, build if no tree file available
-            self.build_tree(tree_name, node_file, root='none')
+            self.build_tree(tree_name, node_file, root='none', debug=debug)
 
 
-    def align(self, outgroup=None, codon_align=False):
+    def align(self, outgroup=None, codon_align=False, debug=False):
         '''
         align sequences, remove non-reference insertions, outlier sequences, and translate
         '''
         if codon_align:
-            self.seqs.codon_align()
+            self.seqs.codon_align(debug=debug)
         else:
-            self.seqs.align()
+            self.seqs.align(debug=debug)
         self.seqs.strip_non_reference()
         if outgroup is not None:
             self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
@@ -253,7 +253,7 @@ class process(object):
         self.tree_frequency_counts[region] = tree_freqs.counts
 
 
-    def build_tree(self, infile=None, nodefile=None, root='best'):
+    def build_tree(self, infile=None, nodefile=None, root='best', debug=False):
         '''
         instantiate a tree object and make a time tree
         if infiles are None, the tree is build from scratch. Otherwise
@@ -261,7 +261,7 @@ class process(object):
         '''
         self.tree = tree(aln=self.seqs.aln, proteins = self.proteins)
         if infile is None:
-            self.tree.build(root=root)
+            self.tree.build(root=root, debug=debug)
         else:
             self.tree.tt_from_file(infile, nodefile=nodefile, root=root)
 
