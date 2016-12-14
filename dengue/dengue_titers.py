@@ -22,12 +22,11 @@ attribute_nesting = {'geographic location':['region', 'country', 'city'],}
 color_options = {
     "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
     "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
-    "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"}}
-#     "ep":{"key":"ep", "legendTitle":"Epitope Mutations", "menuItem":"epitope mutations", "type":"continuous"},
-#     "ne":{"key":"ne", "legendTitle":"Non-epitope Mutations", "menuItem":"nonepitope mutations", "type":"continuous"},
-#     "rb":{"key":"rb", "legendTitle":"Receptor Binding Mutations", "menuItem":"RBS mutations", "type":"continuous"},
-#     "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
-# }
+    "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
+    "ep":{"key":"ep", "legendTitle":"Epitope Mutations", "menuItem":"epitope mutations", "type":"continuous"},
+    "ne":{"key":"ne", "legendTitle":"Non-epitope Mutations", "menuItem":"nonepitope mutations", "type":"continuous"},
+    "rb":{"key":"rb", "legendTitle":"Receptor Binding Mutations", "menuItem":"RBS mutations", "type":"continuous"},
+    "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}}
 panels = ['tree', 'entropy', 'frequencies']
 
 
@@ -52,10 +51,13 @@ class dengue_process(process):
 
         # load titer count to prioritize sequences
         titer_count = {}
+        forced_strains = []
         with myopen(self.strains_fname,'r') as ifile:
             for line in ifile:
                 strain, count = line.strip().split()
                 titer_count[strain]=int(count)
+                if strain.startswith('DENV%s'%serotype):
+                    forced_strains.append(strain)
 
         def sampling_priority(seq):
             '''
@@ -70,9 +72,9 @@ class dengue_process(process):
 
         self.seqs.subsample(category = sampling_category,
                             threshold=sampling_threshold,
-                            priority=sampling_priority, **kwargs)
-
-
+                            priority=sampling_priority,
+                            forced_strains=forced_strains,
+                            **kwargs)
 
     def titer_model(self, **kwargs):
         '''
@@ -90,9 +92,9 @@ class dengue_process(process):
             n.attr['dTiter'] = n.dTiter
 
         # SUBSTITUTION MODEL
-        # self.subs = substitution_model(self.tree.tree, titer_fname = self.titer_fname,**kwargs)
-        # self.subs.prepare(**kwargs)
-        # self.subs.train(**kwargs)
+        self.titer_subs = substitution_model(self.tree.tree, titer_fname = self.titer_fname,**kwargs)
+        self.titer_subs.prepare(**kwargs)
+        self.titer_subs.train(**kwargs)
 
 
     def titer_export(self):
@@ -110,14 +112,14 @@ class dengue_process(process):
         else:
             print('Tree model not yet trained')
 
-        # if hasattr(self, 'tree'):
-        #     # export the substitution model
-        #     subs_model = {'potency':self.subs.compile_potencies(),
-        #                   'avidity':self.subs.compile_virus_effects(),
-        #                   'substitution':self.subs.compile_substitution_effects()}
-        #     write_json(subs_model, prefix+'titer_subs_model.json')
-        # else:
-        #     print('Substitution model not yet trained')
+        if hasattr(self, 'titer_tree'):
+            # export the substitution model
+            titer_subs_model = {'potency':self.titer_subs.compile_potencies(),
+                          'avidity':self.titer_subs.compile_virus_effects(),
+                          'substitution':self.titer_subs.compile_substitution_effects()}
+            write_json(titer_subs_model, prefix+'titer_subs_model.json')
+        else:
+            print('Substitution model not yet trained')
 
 def plot_trace(ax, pivots, freq, err, n_std_dev=1, err_smoothing=3, show_errorbars=True, c='r', ls='-', label=None):
     ax.plot(pivots, freq, c=c, ls=ls, label=label)
@@ -256,7 +258,7 @@ if __name__=="__main__":
 
     if params.load:
         dengue.load()
-        dengue.export()
+        # dengue.export()
     else:
         dengue.load_sequences(fields={0:'strain', 1:'accession', 2:'date', 3:'region', 4:'country',
                         5:'division', 6: 'location'})
@@ -291,9 +293,9 @@ if __name__=="__main__":
             # dengue.estimate_tree_frequencies()
             dengue.dump()
 
-            dengue.titer_model()
-            # H3N2_scores(dengue.tree.tree)
-            dengue.dump()
-            # dengue.matchClades(clade_designations[lineage])
-            dengue.titer_export()
-            dengue.export(extra_attr=['serum'], controls=attribute_nesting, color_options=color_options, panels=panels )
+    dengue.titer_model()
+    # H3N2_scores(dengue.tree.tree)
+    dengue.dump()
+    # dengue.matchClades(clade_designations[lineage])
+    dengue.titer_export()
+    dengue.export(extra_attr=['serum'], controls=attribute_nesting, color_options=color_options, panels=panels )
