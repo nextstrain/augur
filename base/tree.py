@@ -57,7 +57,7 @@ class tree(object):
             dump(node_props, nfile)
 
 
-    def build(self, root='midpoint', raxml=True, raxml_time_limit=0.5, raxml_bin='raxml'):
+    def build(self, root='midpoint', raxml=True, raxml_time_limit=0.5, raxml_bin='raxml', debug=False):
         from Bio import Phylo, AlignIO
         import subprocess, glob, shutil
         make_dir(self.run_dir)
@@ -120,8 +120,8 @@ class tree(object):
 
 
     def tt_from_file(self, infile, root='best', nodefile=None):
-        from treetime import TreeTime
-        from treetime import utils
+        from treetime2 import TreeTime
+        from treetime2 import utils
         self.is_timetree=False
         print('Reading tree from file',infile)
         dates  =   {seq.id:seq.attributes['num_date']
@@ -181,7 +181,7 @@ class tree(object):
         infer a "mugration" model by pretending each region corresponds to a sequence
         state and repurposing the GTR inference and ancestral reconstruction
         '''
-        from treetime.gtr import GTR
+        from treetime2 import GTR
         # Determine alphabet and store reconstructed ancestral sequences
         places = set()
         nuc_seqs = {}
@@ -227,7 +227,7 @@ class tree(object):
         tmp_use_mutation_length = self.tt.use_mutation_length
         self.tt.use_mutation_length=False
         self.tt.infer_ancestral_sequences(method='ml', infer_gtr=True,
-            store_compressed=False, pc=5.0, marginal=True)
+            store_compressed=False, pc=5.0, marginal=True, normalized_rate=False)
 
         # restore the nucleotide sequence and mutations to maintain expected behavior
         self.tt.geogtr = self.tt.gtr
@@ -324,7 +324,7 @@ class tree(object):
             self.dump_attr.extend(['tvalue'])
 
 
-    def export(self, path = '', extra_attr = ['aa_muts', 'clade'], plain_export = 10):
+    def export(self, path = '', extra_attr = ['aa_muts', 'clade'], plain_export = 10, indent=None):
         '''
         export the tree data structure along with the sequence information as
         json files for display in web browsers.
@@ -366,7 +366,7 @@ class tree(object):
                     else:
                         elems[node.clade][prot] = seq
 
-        write_json(elems, sequence_fname, indent=None)
+        write_json(elems, sequence_fname, indent=indent)
 
 
 if __name__=="__main__":

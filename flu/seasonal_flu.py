@@ -27,6 +27,19 @@ color_options = {
 }
 panels = ['tree', 'entropy', 'frequencies']
 
+outliers = {
+'h3n2':["A/Sari/388/2006", "A/SaoPaulo/36178/2015", "A/Pennsylvania/40/2010", "A/Pennsylvania/14/2010",
+        "A/Pennsylvania/09/2011", "A/OSAKA/31/2005", "A/Ohio/34/2012", "A/Kenya/170/2011", "A/Kenya/168/2011",
+        "A/Indiana/21/2013", "A/Indiana/13/2012", "A/Indiana/11/2013", "A/Indiana/08/2012", "A/Indiana/06/2013",
+        "A/India/6352/2012", "A/HuNan/01/2014", "A/Helsinki/942/2013", "A/Guam/AF2771/2011", "A/Chile/8266/2003",
+        "A/Busan/15453/2009", "A/Nepal/142/2011", "A/Kenya/155/2011", "A/Guam/AF2771/2011", "A/Michigan/82/2016",
+        "A/Ohio/27/2016", "A/Ohio/28/2016", "A/Michigan/83/2016", "A/Michigan/84/2016", "A/Jiangsu-Tianning/1707/2013",
+        "A/HuNan/1/2014", "A/Iran/227/2014", "A/Iran/234/2014", "A/Iran/140/2014"],
+'h1n1pdm': [],
+'vic':[],
+"yam":[]
+}
+
 
 clade_designations = {"h3n2":{
                            "3c3.a":[('HA1',128,'A'), ('HA1',142,'G'), ('HA1',159,'S')],
@@ -272,7 +285,8 @@ if __name__=="__main__":
     plt.ion()
 
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
-    parser.add_argument('-v', '--viruses_per_month', type = int, default = 10, help='number of viruses sampled per month')
+    parser.add_argument('-v', '--viruses_per_month_seq', type = int, default = 10, help='number of viruses sampled per month')
+    parser.add_argument('-w', '--viruses_per_month_tree', type = int, default = 10, help='number of viruses sampled per month')
     parser.add_argument('-y', '--resolution', type = str, default = '3y', help='outfile suffix')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
     parser.add_argument('-d', '--download', action='store_true', default = False, help='load from database')
@@ -316,20 +330,22 @@ if __name__=="__main__":
                            time_interval[1].year+time_interval[1].month/12.0, 1.0/ppy)
         flu.seqs.filter(lambda s:
             s.attributes['date']>=time_interval[0] and s.attributes['date']<time_interval[1])
+        flu.seqs.filter(lambda s: s.name not in outliers[params.lineage])
 
-        flu.subsample(params.viruses_per_month)
+        flu.subsample(params.viruses_per_month_seq)
         flu.align()
         flu.dump()
         # first estimate frequencies globally, then region specific
-        flu.estimate_mutation_frequencies(region="global", pivots=pivots)
-        for region in region_groups.iteritems():
-            flu.estimate_mutation_frequencies(region=region)
+        #flu.estimate_mutation_frequencies(region="global", pivots=pivots)
+        # for region in region_groups.iteritems():
+        #     flu.estimate_mutation_frequencies(region=region)
 
         if not params.no_tree:
-            flu.subsample(5, repeated=True)
+            flu.subsample(params.viruses_per_month_tree, repeated=True)
             flu.align()
             flu.build_tree()
             flu.clock_filter(n_iqd=3, plot=True)
+            flu.tree.tt.debug=True
             flu.annotate_tree(Tc=0.005, timetree=True, reroot='best')
             flu.tree.geo_inference('region')
 
@@ -343,3 +359,14 @@ if __name__=="__main__":
             flu.export(extra_attr=['serum'], controls=attribute_nesting,
                        color_options=color_options, panels=panels)
             flu.HI_export()
+
+    # plot an approximate skyline
+    from matplotlib import pyplot as plt
+    T = flu.tree.tt
+    plt.figure()
+    skyline = T.merger_model.skyline(gen = 50/T.date2dist.slope,
+                                     to_numdate = T.date2dist.to_numdate)
+    plt.ticklabel_format(useOffset=False)
+    plt.plot(skyline.x, skyline.y, lw=2)
+    plt.ylabel('effective population size')
+    plt.xlabel('year')

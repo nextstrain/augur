@@ -2,6 +2,7 @@ from __future__ import division, print_function
 from collections import defaultdict
 import sys
 sys.path.append('')  # need to import from base
+sys.path.append('/home/richard/Projects')  # need to import from base
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences import sequence_set, num_date
 from base.tree import tree
@@ -45,7 +46,6 @@ if __name__=="__main__":
                    proteins=['CA', 'PRO', 'MP', 'ENV', 'NS1', 'NS2A',
                              'NS2B', 'NS3', 'NS4A', 'NS4B', 'NS5'],
                    method='SLSQP')
-
     if params.load:
         zika.load()
     else:
@@ -66,10 +66,21 @@ if __name__=="__main__":
 
         zika.align()
         zika.build_tree()
-
+        zika.dump()
     zika.clock_filter(n_iqd=3, plot=True)
-    zika.annotate_tree(Tc=0.005, timetree=True, reroot='best')
+    zika.annotate_tree(Tc=0.02, timetree=True, reroot='best')
     for geo_attr in geo_attributes:
         zika.tree.geo_inference(geo_attr)
     zika.export(controls = attribute_nesting, geo_attributes = geo_attributes,
                 color_options=color_options, panels=panels)
+
+    # plot an approximate skyline
+    from matplotlib import pyplot as plt
+    T = zika.tree.tt
+    plt.figure()
+    skyline = T.merger_model.skyline(gen = 50/T.date2dist.slope,
+                                     to_numdate = T.date2dist.to_numdate)
+    plt.ticklabel_format(useOffset=False)
+    plt.plot(skyline.x, skyline.y)
+    plt.ylabel('effective population size')
+    plt.xlabel('year')
