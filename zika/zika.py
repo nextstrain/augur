@@ -78,9 +78,10 @@ if __name__=="__main__":
     from matplotlib import pyplot as plt
     T = zika.tree.tt
     plt.figure()
-    skyline = T.merger_model.skyline(gen = 50/T.date2dist.slope,
+    skyline = T.merger_model.skyline(n_points = 20, gen = 50/T.date2dist.slope,
                                      to_numdate = T.date2dist.to_numdate)
     plt.ticklabel_format(useOffset=False)
     plt.plot(skyline.x, skyline.y)
     plt.ylabel('effective population size')
     plt.xlabel('year')
+    plt.savefig('zika_skyline.png')
