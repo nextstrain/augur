@@ -120,8 +120,8 @@ class tree(object):
 
 
     def tt_from_file(self, infile, root='best', nodefile=None):
-        from treetime2 import TreeTime
-        from treetime2 import utils
+        from treetime import TreeTime
+        from treetime import utils
         self.is_timetree=False
         print('Reading tree from file',infile)
         dates  =   {seq.id:seq.attributes['num_date']
@@ -181,7 +181,7 @@ class tree(object):
         infer a "mugration" model by pretending each region corresponds to a sequence
         state and repurposing the GTR inference and ancestral reconstruction
         '''
-        from treetime2 import GTR
+        from treetime import GTR
         # Determine alphabet and store reconstructed ancestral sequences
         places = set()
         nuc_seqs = {}
