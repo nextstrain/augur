@@ -182,7 +182,7 @@ class tree(object):
         infer a "mugration" model by pretending each region corresponds to a sequence
         state and repurposing the GTR inference and ancestral reconstruction
         '''
-        from treetime.gtr import GTR
+        from treetime import GTR
         # Determine alphabet and store reconstructed ancestral sequences
         places = set()
         nuc_seqs = {}
@@ -228,7 +228,7 @@ class tree(object):
         tmp_use_mutation_length = self.tt.use_mutation_length
         self.tt.use_mutation_length=False
         self.tt.infer_ancestral_sequences(method='ml', infer_gtr=True,
-            store_compressed=False, pc=5.0, marginal=True)
+            store_compressed=False, pc=5.0, marginal=True, normalized_rate=False)
 
         # restore the nucleotide sequence and mutations to maintain expected behavior
         self.tt.geogtr = self.tt.gtr

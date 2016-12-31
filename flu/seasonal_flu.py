@@ -10,22 +10,51 @@ from base.io_util import myopen
 regions = ['africa', 'south_asia', 'europe', 'china', 'north_america',
            'china', 'south_america', 'japan_korea', 'oceania', 'southeast_asia']
 
+region_cmap = [
+    ["africa",          "#5097BA"],
+    ["south_america",   "#60AA9E"],
+    ["west_asia",       "#75B681"],
+    ["oceania",         "#8EBC66"],
+    ["europe",          "#AABD52"],
+    ["japan_korea",     "#C4B945"],
+    ["north_america",   "#D9AD3D"],
+    ["southeast_asia",  "#E59637"],
+    ["south_asia",      "#E67030"],
+    ["china",           "#DF4327"]
+];
+
 region_groups = {'NA':'north_america',
                  'AS':['china', 'japan_korea', 'south_asia', 'southeast_asia'],
                  'OC':'oceania', 'EU':'europe'}
 
 attribute_nesting = {'geographic location':['region', 'country', 'city'],}
 
+
+
 color_options = {
     "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
-    "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
+    "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete", "color_map":region_cmap},
     "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
     "ep":{"key":"ep", "legendTitle":"Epitope Mutations", "menuItem":"epitope mutations", "type":"continuous"},
     "ne":{"key":"ne", "legendTitle":"Non-epitope Mutations", "menuItem":"nonepitope mutations", "type":"continuous"},
     "rb":{"key":"rb", "legendTitle":"Receptor Binding Mutations", "menuItem":"RBS mutations", "type":"continuous"},
-    "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
+    "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"},
+    "cHI":{"key":"cHI", "legendTitle":"Antigenic advance", "menuItem":"Antigenic", "type":"continuous"}
 }
 panels = ['tree', 'entropy', 'frequencies']
+
+outliers = {
+'h3n2':["A/Sari/388/2006", "A/SaoPaulo/36178/2015", "A/Pennsylvania/40/2010", "A/Pennsylvania/14/2010",
+        "A/Pennsylvania/09/2011", "A/OSAKA/31/2005", "A/Ohio/34/2012", "A/Kenya/170/2011", "A/Kenya/168/2011",
+        "A/Indiana/21/2013", "A/Indiana/13/2012", "A/Indiana/11/2013", "A/Indiana/08/2012", "A/Indiana/06/2013",
+        "A/India/6352/2012", "A/HuNan/01/2014", "A/Helsinki/942/2013", "A/Guam/AF2771/2011", "A/Chile/8266/2003",
+        "A/Busan/15453/2009", "A/Nepal/142/2011", "A/Kenya/155/2011", "A/Guam/AF2771/2011", "A/Michigan/82/2016",
+        "A/Ohio/27/2016", "A/Ohio/28/2016", "A/Michigan/83/2016", "A/Michigan/84/2016", "A/Jiangsu-Tianning/1707/2013",
+        "A/HuNan/1/2014", "A/Iran/227/2014", "A/Iran/234/2014", "A/Iran/140/2014"],
+'h1n1pdm': [],
+'vic':[],
+"yam":[]
+}
 
 
 clade_designations = {"h3n2":{
@@ -270,30 +299,36 @@ if __name__=="__main__":
     plt.ion()
 
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
-    parser.add_argument('-v', '--viruses_per_month', type = int, default = 10, help='number of viruses sampled per month')
     parser.add_argument('-y', '--years_back', type = str, default = 3, help='number of years back to sample')
     parser.add_argument('--resolution', type = str, help ="outfile suffix, can determine -v and -y")
+    parser.add_argument('-v', '--viruses_per_month_seq', type = int, default = 10, help='number of viruses sampled per month')
+    parser.add_argument('-w', '--viruses_per_month_tree', type = int, default = 10, help='number of viruses sampled per month')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
     parser.add_argument('-d', '--download', action='store_true', default = False, help='load from database')
     parser.add_argument('-t', '--time_interval', nargs=2, help='specify time interval rather than use --years_back')
     parser.add_argument('-l', '--lineage', type = str, default = 'h3n2', help='flu lineage to process')
+    parser.add_argument('--new_auspice', default = False, action="store_true", help='file name for new augur')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
     parser.add_argument('--no_tree', default=False, action='store_true', help = "don't build a tree")
     params = parser.parse_args()
 
     # default values for --viruses_per_month and --years_back from resolution
     if params.resolution == "2y":
-		params.viruses_per_month = 15
-		params.years_back = 2
+        params.viruses_per_month_tree = 15
+        params.viruses_per_month_seq = 20
+        params.years_back = 2
     elif params.resolution == "3y":
-		params.viruses_per_month = 7
-		params.years_back = 3
+        params.viruses_per_month_tree = 7
+        params.viruses_per_month_seq = 20
+        params.years_back = 3
     elif params.resolution == "6y":
-		params.viruses_per_month = 3
-		params.years_back = 6
+        params.viruses_per_month_tree = 3
+        params.viruses_per_month_seq = 10
+        params.years_back = 6
     elif params.resolution == "12y":
-		params.viruses_per_month = 2
-		params.years_back = 12
+        params.viruses_per_month_tree = 2
+        params.viruses_per_month_seq = 10
+        params.years_back = 12
 
     # construct time_interval from years_back
     if not params.time_interval:
@@ -301,13 +336,18 @@ if __name__=="__main__":
         date_str = "{:%Y-%m-%d}".format(datetime.today() - timedelta(days=365.25 * params.years_back))
         params.time_interval = [date_str, today_str]
 
+    if params.new_auspice:
+        fname_prefix = "flu_"+params.lineage
+    else:
+        fname_prefix = params.lineage
+
     input_data_path = '../fauna/data/'+params.lineage
     if params.resolution:
-        store_data_path = 'store/'+params.lineage + '_' + params.resolution +'_'
-        build_data_path = 'build/'+params.lineage + '_' + params.resolution +'_'
+        store_data_path = 'store/'+ fname_prefix + '_' + params.resolution +'_'
+        build_data_path = 'build/'+ fname_prefix + '_' + params.resolution +'_'
     else:
-        store_data_path = 'store/'+params.lineage + '_'
-        build_data_path = 'build/'+params.lineage + '_'
+        store_data_path = 'store/'+ fname_prefix + '_'
+        build_data_path = 'build/'+ fname_prefix + '_'
 
     ppy = 12
     flu = flu_process(input_data_path = input_data_path, store_data_path = store_data_path,
@@ -330,19 +370,22 @@ if __name__=="__main__":
         flu.seqs.filter(lambda s:
             s.attributes['date']>=time_interval[0] and s.attributes['date']<time_interval[1])
         flu.seqs.filter(lambda s: len(s.seq)>=900)
+        flu.seqs.filter(lambda s: s.name not in outliers[params.lineage])
 
-        flu.subsample(params.viruses_per_month)
+        flu.subsample(params.viruses_per_month_seq)
         flu.align()
         flu.dump()
         # first estimate frequencies globally, then region specific
         flu.estimate_mutation_frequencies(region="global", pivots=pivots)
-        for region in region_groups.iteritems():
-            flu.estimate_mutation_frequencies(region=region)
+        # for region in region_groups.iteritems():
+        #     flu.estimate_mutation_frequencies(region=region)
 
         if not params.no_tree:
+            flu.subsample(params.viruses_per_month_tree, repeated=True)
             flu.align()
             flu.build_tree()
             flu.clock_filter(n_iqd=3, plot=True)
+            flu.tree.tt.debug=True
             flu.annotate_tree(Tc=0.005, timetree=True, reroot='best')
             flu.tree.geo_inference('region')
 
@@ -356,3 +399,15 @@ if __name__=="__main__":
             flu.export(extra_attr=['serum'], controls=attribute_nesting,
                        color_options=color_options, panels=panels)
             flu.HI_export()
+
+    # plot an approximate skyline
+    from matplotlib import pyplot as plt
+    T = flu.tree.tt
+    plt.figure()
+    skyline = T.merger_model.skyline(n_points=20, gen = 50/T.date2dist.slope,
+                                     to_numdate = T.date2dist.to_numdate)
+    plt.ticklabel_format(useOffset=False)
+    plt.plot(skyline.x, skyline.y, lw=2)
+    plt.ylabel('effective population size')
+    plt.xlabel('year')
+    plt.savefig('%s_%s_skyline.png'%(params.lineage, params.resolution))
