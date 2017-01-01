@@ -259,7 +259,7 @@ class sequence_set(object):
             out_seqs = self.seqs.values() + [self.reference_seq]
         print("align: reference in set",ref_in_set)
         SeqIO.write(out_seqs, "temp_in.fasta", "fasta")
-        os.system("mafft --anysymbol --thread " + str(self.nthreads) + " temp_in.fasta > temp_out.fasta")
+        os.system("mafft --anysymbol --thread " + str(self.nthreads) + " temp_in.fasta 1> temp_out.fasta 2>mafft_stderr")
 
         tmp_aln = AlignIO.read('temp_out.fasta', 'fasta')
         self.sequence_lookup = {seq.id:seq for seq in tmp_aln}

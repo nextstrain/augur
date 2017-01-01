@@ -27,13 +27,14 @@ def resolve_polytomies(tree):
 
 class tree(object):
     """tree builds a phylgenetic tree from an alignment and exports it for web visualization"""
-    def __init__(self, aln, proteins=None, **kwarks):
+    def __init__(self, aln, proteins=None, verbose=2, logger=None, **kwarks):
         super(tree, self).__init__()
         self.aln = aln
         self.nthreads = 2
         self.sequence_lookup = {seq.id:seq for seq in aln}
         self.nuc = kwarks['nuc'] if 'nuc' in kwarks else True
         self.dump_attr = []
+        self.verbose = verbose
         if proteins!=None:
             self.proteins = proteins
         else:
@@ -43,6 +44,12 @@ class tree(object):
             self.run_dir = '_'.join(['temp', time.strftime('%Y%m%d-%H%M%S',time.gmtime()), str(random.randint(0,1000000))])
         else:
             self.run_dir = kwarks['run_dir']
+        if logger is None:
+            def f(x,y):
+                if y>self.verbose: print(x)
+            self.logger = f
+        else:
+            self.logger=logger
 
 
     def dump(self, treefile, nodefile):
@@ -67,9 +74,7 @@ class tree(object):
 
         tree_cmd = ["fasttree"]
         if self.nuc: tree_cmd.append("-nt")
-        tree_cmd.append("temp.fasta")
-        tree_cmd.append(">")
-        tree_cmd.append("initial_tree.newick")
+        tree_cmd.extend(["temp.fasta","1>","initial_tree.newick", "2>", "fasttree_stderr"])
         os.system(" ".join(tree_cmd))
 
         out_fname = "tree_infer.newick"
@@ -83,10 +88,12 @@ class tree(object):
                     resolve_polytomies(tmp_tree)
                 Phylo.write(tmp_tree,'initial_tree.newick', 'newick')
                 AlignIO.write(self.aln,"temp.phyx", "phylip-relaxed")
-                print( "RAxML tree optimization with time limit", raxml_time_limit,  "hours")
+                self.logger( "RAxML tree optimization with time limit %d hours"%raxml_time_limit,2)
                 # using exec to be able to kill process
                 end_time = time.time() + int(raxml_time_limit*3600)
-                process = subprocess.Popen("exec " + raxml_bin + " -f d -T " + str(self.nthreads) + " -j -s temp.phyx -n topology -c 25 -m GTRCAT -p 344312987 -t initial_tree.newick", shell=True)
+                process = subprocess.Popen("exec " + raxml_bin + " -f d -T " + str(self.nthreads) +
+                                            " -j -s temp.phyx -n topology -c 25 -m GTRCAT -p 344312987"
+                                            " -t initial_tree.newick > raxml1_stdout", shell=True)
                 while (time.time() < end_time):
                     if os.path.isfile('RAxML_result.topology'):
                         break
@@ -105,12 +112,12 @@ class tree(object):
                 shutil.copy("initial_tree.newick", 'raxml_tree.newick')
 
             try:
-                print("RAxML branch length optimization")
+                self.logger("RAxML branch length optimization",2)
                 os.system(raxml_bin + " -f e -T " + str(self.nthreads)
-                          + " -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick")
+                          + " -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick  > raxml2_stdout")
                 shutil.copy('RAxML_result.branches', out_fname)
             except:
-                print("RAxML branch length optimization failed")
+                self.logger("RAxML branch length optimization failed")
                 shutil.copy('raxml_tree.newick', out_fname)
         else:
             shutil.copy('initial_tree.newick', out_fname)
@@ -124,10 +131,10 @@ class tree(object):
         from treetime import TreeTime
         from treetime import utils
         self.is_timetree=False
-        print('Reading tree from file',infile)
+        self.logger('Reading tree from file '+infile,2)
         dates  =   {seq.id:seq.attributes['num_date']
                     for seq in self.aln if 'date' in seq.attributes}
-        self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor', aln = self.aln, verbose=4)
+        self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor', aln = self.aln, verbose=self.verbose)
         if root:
             self.tt.reroot(root=root)
         self.tree = self.tt.tree
@@ -144,7 +151,7 @@ class tree(object):
                 node.attr = {}
 
         if nodefile is not None:
-            print('reading node properties from file:',nodefile)
+            self.logger('reading node properties from file: '+nodefile,2)
             with myopen(nodefile, 'r') as infile:
                 from cPickle import load
                 node_props = load(infile)
@@ -153,7 +160,7 @@ class tree(object):
                     for attr in node_props[n.name]:
                         n.__setattr__(attr, node_props[n.name][attr])
                 else:
-                    print("No node properties found for ", n.name)
+                    self.logger("No node properties found for "+n.name,2)
 
 
     def ancestral(self, **kwarks):
@@ -164,16 +171,21 @@ class tree(object):
                 node.attr = {}
 
 
-    def timetree(self, Tc=0.01, infer_gtr=True, reroot='best', resolve_polytomies=True, max_iter=2, **kwarks):
-        self.tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc,
+    def timetree(self, Tc=0.01, infer_gtr=True, reroot='best', resolve_polytomies=True, max_iter=2, confidence=False, **kwarks):
+        self.logger('estimating time tree...',2)
+        self.tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, do_marginal=confidence,
                     resolve_polytomies=resolve_polytomies, max_iter=max_iter)
-        print('estimating time tree...')
+        self.logger('estimating time tree...done',3)
         self.dump_attr.extend(['numdate','date','sequence'])
+        to_numdate = self.tt.date2dist.to_numdate
         for node in self.tree.find_clades():
             if hasattr(node,'attr'):
                 node.attr['num_date'] = node.numdate
             else:
                 node.attr = {'num_date':node.numdate}
+            if confidence:
+                node.attr["num_date_confidence"] = sorted(to_numdate(node.marginal_inverse_cdf([0.05,0.95])))
+
         self.is_timetree=True
 
 
@@ -204,7 +216,7 @@ class tree(object):
         places = sorted(places)
         nc = len(places)
         if nc<2 or nc>180:
-            print("geo_inference: can't have less than 2 or more than 180 places!")
+            self.logger("geo_inference: can't have less than 2 or more than 180 places!",1)
             return
 
         alphabet = {chr(65+i):place for i,place in enumerate(places)}

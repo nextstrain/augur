@@ -69,6 +69,8 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
     parser.add_argument('-v', '--viruses_per_month', type = int, default = 100, help='number of viruses sampled per month')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
+    parser.add_argument('--verbose', type = int, default = 2, help='throttle treetime output')
+    parser.add_argument('--confidence', default = False, action="store_true", help='evaluate confidence intervals of internal node timing')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
     params = parser.parse_args()
 
@@ -84,7 +86,7 @@ if __name__=="__main__":
                    lat_long_fname='../fauna/source-data/geo_lat_long.tsv',
                    proteins=['CA', 'PRO', 'MP', 'ENV', 'NS1', 'NS2A',
                              'NS2B', 'NS3', 'NS4A', 'NS4B', 'NS5'],
-                   method='SLSQP')
+                   method='SLSQP', verbose=params.verbose)
     if params.load:
         zika.load()
     else:
@@ -107,7 +109,7 @@ if __name__=="__main__":
         zika.build_tree()
         zika.dump()
     zika.clock_filter(n_iqd=3, plot=True)
-    zika.annotate_tree(Tc=0.02, timetree=True, reroot='best')
+    zika.annotate_tree(Tc=0.02, timetree=True, reroot='best', confidence=params.confidence)
     for geo_attr in geo_attributes:
         zika.tree.geo_inference(geo_attr)
     zika.export(controls = attribute_nesting, geo_attributes = geo_attributes,

@@ -50,7 +50,7 @@ outliers = {
         "A/India/6352/2012", "A/HuNan/01/2014", "A/Helsinki/942/2013", "A/Guam/AF2771/2011", "A/Chile/8266/2003",
         "A/Busan/15453/2009", "A/Nepal/142/2011", "A/Kenya/155/2011", "A/Guam/AF2771/2011", "A/Michigan/82/2016",
         "A/Ohio/27/2016", "A/Ohio/28/2016", "A/Michigan/83/2016", "A/Michigan/84/2016", "A/Jiangsu-Tianning/1707/2013",
-        "A/HuNan/1/2014", "A/Iran/227/2014", "A/Iran/234/2014", "A/Iran/140/2014"],
+        "A/HuNan/1/2014", "A/Iran/227/2014", "A/Iran/234/2014", "A/Iran/140/2014", "A/Jiangsu-Chongchuan/1830/2014"],
 'h1n1pdm': [],
 'vic':[],
 "yam":[]
@@ -308,6 +308,7 @@ if __name__=="__main__":
     parser.add_argument('-t', '--time_interval', nargs=2, help='specify time interval rather than use --years_back')
     parser.add_argument('-l', '--lineage', type = str, default = 'h3n2', help='flu lineage to process')
     parser.add_argument('--new_auspice', default = False, action="store_true", help='file name for new augur')
+    parser.add_argument('--confidence', default = False, action="store_true", help='evaluate confidence intervals of internal node timing')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
     parser.add_argument('--no_tree', default=False, action='store_true', help = "don't build a tree")
     params = parser.parse_args()
@@ -385,8 +386,7 @@ if __name__=="__main__":
             flu.align()
             flu.build_tree()
             flu.clock_filter(n_iqd=3, plot=True)
-            flu.tree.tt.debug=True
-            flu.annotate_tree(Tc=0.005, timetree=True, reroot='best')
+            flu.annotate_tree(Tc=0.005, timetree=True, reroot='best', confidence=params.confidence)
             flu.tree.geo_inference('region')
 
             flu.estimate_tree_frequencies()
