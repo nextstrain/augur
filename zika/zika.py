@@ -1,7 +1,7 @@
 from __future__ import division, print_function
 from collections import defaultdict
 import sys
-sys.path.append('')  # need to import from base
+sys.path.insert(0,'.')  # need to import from base
 sys.path.append('/home/richard/Projects')  # need to import from base
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences import sequence_set, num_date
@@ -109,7 +109,8 @@ if __name__=="__main__":
         zika.build_tree()
         zika.dump()
     zika.clock_filter(n_iqd=3, plot=True)
-    zika.annotate_tree(Tc=0.02, timetree=True, reroot='best', confidence=params.confidence)
+    zika.annotate_tree(Tc="skyline", timetree=True, reroot='best', confidence=params.confidence,
+                       stiffness=10.0 ,n_points = 51)
     for geo_attr in geo_attributes:
         zika.tree.geo_inference(geo_attr)
     zika.export(controls = attribute_nesting, geo_attributes = geo_attributes,
@@ -119,8 +120,7 @@ if __name__=="__main__":
     from matplotlib import pyplot as plt
     T = zika.tree.tt
     plt.figure()
-    skyline = T.merger_model.skyline(n_points = 20, gen = 50/T.date2dist.slope,
-                                     to_numdate = T.date2dist.to_numdate)
+    skyline = T.merger_model.skyline_inferred(gen = 50)
     plt.ticklabel_format(useOffset=False)
     plt.plot(skyline.x, skyline.y)
     plt.ylabel('effective population size')

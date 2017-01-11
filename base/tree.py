@@ -171,10 +171,11 @@ class tree(object):
                 node.attr = {}
 
 
-    def timetree(self, Tc=0.01, infer_gtr=True, reroot='best', resolve_polytomies=True, max_iter=2, confidence=False, **kwarks):
+    def timetree(self, Tc=0.01, infer_gtr=True, reroot='best', resolve_polytomies=True,
+                 max_iter=2, confidence=False, **kwarks):
         self.logger('estimating time tree...',2)
         self.tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, do_marginal=confidence,
-                    resolve_polytomies=resolve_polytomies, max_iter=max_iter)
+                    resolve_polytomies=resolve_polytomies, max_iter=max_iter, **kwarks)
         self.logger('estimating time tree...done',3)
         self.dump_attr.extend(['numdate','date','sequence'])
         to_numdate = self.tt.date2dist.to_numdate
