@@ -1,8 +1,7 @@
 from __future__ import division, print_function
 from collections import defaultdict
 import sys
-sys.path.append('')  # need to import from base
-sys.path.append('/home/richard/Projects')  # need to import from base
+sys.path.insert(0,'.')  # need to import from base
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences import sequence_set, num_date
 from base.tree import tree
@@ -141,7 +140,8 @@ if __name__=="__main__":
         ebola.load()
 
     ebola.clock_filter(n_iqd=10, plot=True)
-    ebola.annotate_tree(Tc=0.002, timetree=True, reroot='best', resolve_polytomies=True)
+    ebola.annotate_tree(Tc="skyline", timetree=True, reroot='best', resolve_polytomies=True,
+                        n_points=20, stiffness=3.0)
     for geo_attr in geo_attributes:
         ebola.tree.geo_inference(geo_attr)
     ebola.export(controls = attribute_nesting, geo_attributes = geo_attributes,
@@ -152,10 +152,10 @@ if __name__=="__main__":
     from matplotlib import pyplot as plt
     T = ebola.tree.tt
     plt.figure()
-    skyline = T.merger_model.skyline(n_points = 20, gen = 50/T.date2dist.slope,
-                                     to_numdate = T.date2dist.to_numdate)
+    skyline = T.merger_model.skyline_inferred(gen = 50)
     plt.ticklabel_format(useOffset=False)
     plt.plot(skyline.x, skyline.y)
+    plt.yscale('log')
     plt.ylabel('effective population size')
     plt.xlabel('year')
     plt.savefig('ebola_skyline.png')

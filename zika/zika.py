@@ -2,7 +2,6 @@ from __future__ import division, print_function
 from collections import defaultdict
 import sys
 sys.path.insert(0,'.')  # need to import from base
-sys.path.append('/home/richard/Projects')  # need to import from base
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences import sequence_set, num_date
 from base.tree import tree
@@ -123,6 +122,7 @@ if __name__=="__main__":
     skyline = T.merger_model.skyline_inferred(gen = 50)
     plt.ticklabel_format(useOffset=False)
     plt.plot(skyline.x, skyline.y)
+    plt.yscale('log')
     plt.ylabel('effective population size')
     plt.xlabel('year')
     plt.savefig('zika_skyline.png')
