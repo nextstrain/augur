@@ -29,6 +29,7 @@ region_groups = {'NA':'north_america',
 
 attribute_nesting = {'geographic location':['region', 'country', 'city'],}
 
+geo_attributes = ['region']
 
 
 color_options = {
@@ -415,7 +416,8 @@ if __name__=="__main__":
             flu.build_tree()
             flu.clock_filter(n_iqd=3, plot=True)
             flu.annotate_tree(Tc="skyline", timetree=True, reroot='best', confidence=params.confidence)
-            flu.tree.geo_inference('region')
+            for geo in geo_attributes:
+                flu.tree.geo_inference(geo)
 
             flu.estimate_tree_frequencies()
             flu.dump()
@@ -424,7 +426,7 @@ if __name__=="__main__":
             H3N2_scores(flu.tree.tree)
             flu.dump()
             flu.matchClades(clade_designations[params.lineage])
-            flu.export(extra_attr=['serum'], controls=attribute_nesting,
+            flu.export(extra_attr=['serum'], controls=attribute_nesting, geo_attributes=geo_attributes,
                        color_options=color_options, panels=panels)
             flu.HI_export()
 
