@@ -1,7 +1,7 @@
 from __future__ import division, print_function
 from collections import defaultdict
 import sys
-sys.path.append('')  # need to import from base
+sys.path.insert(0,'.')  # need to import from base
 from base.process import process
 import numpy as np
 from datetime import datetime, timedelta
@@ -46,11 +46,39 @@ panels = ['tree', 'entropy', 'frequencies']
 outliers = {
 'h3n2':["A/Sari/388/2006", "A/SaoPaulo/36178/2015", "A/Pennsylvania/40/2010", "A/Pennsylvania/14/2010",
         "A/Pennsylvania/09/2011", "A/OSAKA/31/2005", "A/Ohio/34/2012", "A/Kenya/170/2011", "A/Kenya/168/2011",
-        "A/Indiana/21/2013", "A/Indiana/13/2012", "A/Indiana/11/2013", "A/Indiana/08/2012", "A/Indiana/06/2013",
+        "A/Indiana/21/2013", "A/Indiana/13/2012", "A/Indiana/17/2013", "A/Indiana/11/2013", "A/Indiana/08/2012", "A/Indiana/06/2013",
         "A/India/6352/2012", "A/HuNan/01/2014", "A/Helsinki/942/2013", "A/Guam/AF2771/2011", "A/Chile/8266/2003",
         "A/Busan/15453/2009", "A/Nepal/142/2011", "A/Kenya/155/2011", "A/Guam/AF2771/2011", "A/Michigan/82/2016",
         "A/Ohio/27/2016", "A/Ohio/28/2016", "A/Michigan/83/2016", "A/Michigan/84/2016", "A/Jiangsu-Tianning/1707/2013",
-        "A/HuNan/1/2014", "A/Iran/227/2014", "A/Iran/234/2014", "A/Iran/140/2014", "A/Jiangsu-Chongchuan/1830/2014"],
+        "A/HuNan/1/2014", "A/Iran/227/2014", "A/Iran/234/2014", "A/Iran/140/2014", "A/Jiangsu-Chongchuan/1830/2014",
+        "A/Chile/8266/2003", "A/Louisiana/4/2003", "A/Lousiana/4/2003", "A/OSAKA/31/2005",
+        "A/Sari/388/2006", "A/HongKong/HK1/2008", "A/HongKong/HK1MA21-1/2008", "A/HongKong/HK1MA21-2/2008",
+        "A/HongKong/HK1MA21-3/2008", "A/HongKong/HK2/2008", "A/HongKong/HK2MA21-1/2008",
+        "A/HongKong/HK2MA21-2/2008", "A/HongKong/HK2MA21-3/2008", "A/HongKong/HK4/2008",
+        "A/HongKong/HK5/2008", "A/HongKong/HK5MA21-1/2008", "A/HongKong/HK5MA21-3/2008",
+        "A/HongKong/HK6/2008", "A/HongKong/HK6MA21-2/2008", "A/HongKong/HK6MA21-3/2008",
+        "A/HongKong/HK7/2008", "A/HongKong/HK8/2008", "A/HongKong/HK8MA21-1/2008",
+        "A/HongKong/HK8MA21-2/2008", "A/HongKong/HK8MA21-3/2008", "A/HongKong/HK8MA21-4/2008",
+        "A/HongKong/HK9/2008", "A/HongKong/HK9MA21-1/2008", "A/HongKong/HK9MA21-2/2008",
+        "A/HongKong/HK9MA21-3/2008", "A/HongKong/HK10/2008", "A/HongKong/HK10MA21-1/2008",
+        "A/HongKong/HK10MA21-2/2008", "A/HongKong/HK10MA21-3/2008", "A/HongKong/HK10MA21-4/2008",
+        "A/HongKong/HK11MA21-1/2008", "A/HongKong/HK11MA21-3/2008", "A/HongKong/HK11MA21-4/2008",
+        "A/HongKong/HK12/2008", "A/HongKong/HK12MA21-2/2008", "A/HongKong/HKMA12/2008",
+        "A/HongKong/HKMA12A/2008", "A/HongKong/HKMA12B/2008", "A/HongKong/HKMA12D/2008",
+        "A/HongKong/HKMA12E/2008", "A/HongKong/HKMA20B/2008", "A/HongKong/HKMA20E/2008", "A/Kansas/13/2009",
+        "A/Busan/15453/2009", "A/Pennsylvania/14/2010", "A/Pennsylvania/40/2010", "A/Guam/AF2771/2011",
+        "A/Indiana/8/2011", "A/Kenya/155/2011", "A/Kenya/168/2011", "A/Kenya/170/2011", "A/Nepal/142/2011",
+        "A/Pennsylvania/09/2011", "A/Pennsylvania/9/2011", "A/Quebec/167936/2011", "A/Quebec/170658/2011",
+        "A/India/6352/2012", "A/Indiana/08/2012", "A/Indiana/13/2012", "A/Ohio/34/2012",
+        "A/Helsinki/942/2013", "A/Indiana/06/2013", "A/Indiana/11/2013", "A/Indiana/21/2013",
+        "A/Jiangsu-Tianning/1707/2013", "A/HuNan/01/2014", "A/Jiangsu-Chongchuan/1830/2014",
+        "A/Jiangsu-Chongchuan/12179/2014", "A/Ohio/2/2014", "A/Ohio/4319/2014", "A/SaoPaulo/3-34891/2014",
+        "A/Wisconsin/24/2014", "A/NewJersey/53/2015", "A/SaoPaulo/36178/2015", "A/SaoPaulo/61282/2015",
+        "A/SaoPaulo/65194/2015", "A/Michigan/39/2015", "A/Sydney/53/2015", "A/Michigan/82/2016",
+        "A/Michigan/83/2016", "A/Michigan/84/2016", "A/Michigan/87/2016", "A/Michigan/89/2016",
+        "A/Michigan/90/2016", "A/Michigan/91/2016", "A/Michigan/93/2016", "A/Michigan/94/2016",
+        "A/Michigan/95/2016", "A/Michigan/96/2016", "A/Ohio/27/2016", "A/Ohio/28/2016", "A/Ohio/32/2016",
+        "A/Ohio/33/2016", "A/Ohio/35/2016", "A/Zhejiang-Wuxin/1300/2016"],
 'h1n1pdm': [],
 'vic':[],
 "yam":[]
@@ -386,7 +414,7 @@ if __name__=="__main__":
             flu.align()
             flu.build_tree()
             flu.clock_filter(n_iqd=3, plot=True)
-            flu.annotate_tree(Tc=0.005, timetree=True, reroot='best', confidence=params.confidence)
+            flu.annotate_tree(Tc="skyline", timetree=True, reroot='best', confidence=params.confidence)
             flu.tree.geo_inference('region')
 
             flu.estimate_tree_frequencies()
@@ -404,10 +432,11 @@ if __name__=="__main__":
     from matplotlib import pyplot as plt
     T = flu.tree.tt
     plt.figure()
-    skyline = T.merger_model.skyline(n_points=20, gen = 50/T.date2dist.slope,
-                                     to_numdate = T.date2dist.to_numdate)
-    plt.ticklabel_format(useOffset=False)
-    plt.plot(skyline.x, skyline.y, lw=2)
+    skyline, confidence = T.merger_model.skyline_inferred(gen = 50, confidence=2.0)
+    plt.fill_between(skyline.x, confidence[0], confidence[1], color=(0.8, 0.8, 0.8))
+    plt.plot(skyline.x, skyline.y)
+    plt.yscale('log')
     plt.ylabel('effective population size')
     plt.xlabel('year')
+    plt.ticklabel_format(axis='x',useOffset=False)
     plt.savefig('%s_%s_skyline.png'%(params.lineage, params.resolution))
