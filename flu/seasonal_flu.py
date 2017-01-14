@@ -79,7 +79,8 @@ outliers = {
         "A/Michigan/83/2016", "A/Michigan/84/2016", "A/Michigan/87/2016", "A/Michigan/89/2016",
         "A/Michigan/90/2016", "A/Michigan/91/2016", "A/Michigan/93/2016", "A/Michigan/94/2016",
         "A/Michigan/95/2016", "A/Michigan/96/2016", "A/Ohio/27/2016", "A/Ohio/28/2016", "A/Ohio/32/2016",
-        "A/Ohio/33/2016", "A/Ohio/35/2016", "A/Zhejiang-Wuxin/1300/2016"],
+        "A/Ohio/33/2016", "A/Ohio/35/2016", "A/Zhejiang-Wuxin/1300/2016", "A/Nanjing/1/2010", "A/StPetersburg/5/2009",
+        "A/Cambodia/NHRCC00002/2009", "A/Cambodia/NHRCC00003/2009"],
 'h1n1pdm': [],
 'vic':[],
 "yam":[]

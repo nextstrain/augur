@@ -108,8 +108,8 @@ if __name__=="__main__":
         zika.build_tree()
         zika.dump()
     zika.clock_filter(n_iqd=3, plot=True)
-    zika.annotate_tree(Tc="skyline", timetree=True, reroot='best', confidence=params.confidence,
-                       stiffness=10.0 ,n_points = 51)
+    zika.annotate_tree(Tc=0.0005, timetree=True, reroot='best', confidence=params.confidence,
+                       stiffness=10.0 ,n_points = 51, use_marginal=True)
     for geo_attr in geo_attributes:
         zika.tree.geo_inference(geo_attr)
     zika.export(controls = attribute_nesting, geo_attributes = geo_attributes,
@@ -119,6 +119,7 @@ if __name__=="__main__":
     from matplotlib import pyplot as plt
     T = zika.tree.tt
     plt.figure()
+    T.merger_model.optimize_skyline()
     skyline, confidence = T.merger_model.skyline_inferred(gen = 50, confidence=2.0)
     plt.fill_between(skyline.x, confidence[0], confidence[1], color=(0.8, 0.8, 0.8))
     plt.plot(skyline.x, skyline.y)

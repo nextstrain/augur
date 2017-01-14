@@ -172,9 +172,13 @@ class tree(object):
 
 
     def timetree(self, Tc=0.01, infer_gtr=True, reroot='best', resolve_polytomies=True,
-                 max_iter=2, confidence=False, **kwarks):
+                 max_iter=2, confidence=False, use_marginal=False, **kwarks):
         self.logger('estimating time tree...',2)
-        self.tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, do_marginal=confidence,
+        if confidence and use_marginal:
+            marginal = 'assign'
+        else:
+            marginal = confidence
+        self.tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, do_marginal=marginal,
                     resolve_polytomies=resolve_polytomies, max_iter=max_iter, **kwarks)
         self.logger('estimating time tree...done',3)
         self.dump_attr.extend(['numdate','date','sequence'])
