@@ -217,12 +217,12 @@ if __name__=="__main__":
         date_str = "{:%Y-%m-%d}".format(datetime.today() - timedelta(days=365.25 * params.years_back))
         params.time_interval = [date_str, today_str]
 
-    # For any-serotype build, use dengue 3 outgroup and look for files like dengue.fasta
+    # For any-serotype build, use dengue 4 outgroup and look for files like dengue.fasta
     serotype = params.serotype
 
     if serotype == 'any':
         lineage = 'dengue'
-        reference_fname = './dengue/metadata/dengue_%s_outgroup.gb'%'3'
+        reference_fname = './dengue/metadata/dengue_%s_outgroup.gb'%'4'
         newest_sequence_file = sorted(glob('../fauna/data/%s.fasta'%lineage), key=lambda f: os.path.getmtime(f))[-1]
 
     # For serotype-specific build, use the corresponding outgroup
@@ -251,7 +251,7 @@ if __name__=="__main__":
     ppy = 12
 
     dengue = dengue_process(input_data_path = input_data_path, store_data_path = store_data_path,
-                   build_data_path = build_data_path, reference='dengue/metadata/'+lineage+'_outgroup.gb',
+                   build_data_path = build_data_path, reference=reference_fname,
                    proteins= ['C', 'M', 'E', 'NS1', 'NS2A', 'NS2B', 'NS3', 'NS4A', '2K', 'NS4B', 'NS5'],
                    method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=2.*ppy, titer_fname = titer_fname, strain_fname = strain_fname)
 
