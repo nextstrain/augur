@@ -115,14 +115,15 @@ if __name__=="__main__":
     zika.export(controls = attribute_nesting, geo_attributes = geo_attributes,
                 color_options=color_options, panels=panels)
 
-    # plot an approximate skyline
-    from matplotlib import pyplot as plt
-    T = zika.tree.tt
-    plt.figure()
-    skyline = T.merger_model.skyline(n_points = 20, gen = 50/T.date2dist.slope,
-                                     to_numdate = T.date2dist.to_numdate)
-    plt.ticklabel_format(useOffset=False)
-    plt.plot(skyline.x, skyline.y)
-    plt.ylabel('effective population size')
-    plt.xlabel('year')
-    plt.savefig('zika_skyline.png')
+    plot_skyline = False
+    if plot_skyline: # plot an approximate skyline
+        from matplotlib import pyplot as plt
+        T = zika.tree.tt
+        plt.figure()
+        skyline = T.merger_model.skyline(n_points = 20, gen = 50/T.date2dist.slope,
+                                         to_numdate = T.date2dist.to_numdate)
+        plt.ticklabel_format(useOffset=False)
+        plt.plot(skyline.x, skyline.y)
+        plt.ylabel('effective population size')
+        plt.xlabel('year')
+        plt.savefig('zika_skyline.png')
