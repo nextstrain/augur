@@ -2,6 +2,7 @@ from __future__ import division, print_function
 from collections import defaultdict
 import sys
 sys.path.append('')  # need to import from base
+sys.path.append('/home/richard/Projects')  # need to import from base
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences import sequence_set, num_date
 from base.tree import tree
@@ -15,9 +16,89 @@ from datetime import datetime
 attribute_nesting = {'geographic location':['country', 'division'], 'authors':['authors']}
 geo_attributes = ['country', 'division']
 
+
+country_cmap = [
+    ["guinea",            "#86BB6D"],
+    ["sierra_leone",      "#4041C7"],
+    ["liberia",           "#E4682F"]
+]
+division_cmap = [
+    # generic country colors
+    ["guinea",            "#86BB6D"],
+    ["sierra_leone",      "#4041C7"],
+    ["liberia",           "#E4682F"],
+    # Guinean prefectures
+    ["boffa",             "#58A2AB"],
+    ["boke",              "#56A0AE"],
+    ["fria",              "#5BA7A6"],
+    ["gaoual",            "#62AB9C"],
+    ["koundara",          "#64AC99"],
+    ["conakry",           "#60AA9F"],
+    ["dabola",            "#84BA70"],
+    ["dinguiraye",        "#81B973"],
+    ["faranah",           "#86BB6D"],
+    ["kissidougou",       "#95BD61"],
+    ["kankan",            "#92BC63"],
+    ["kerouane",          "#9EBE5A"],
+    ["kouroussa",         "#89BB6B"],
+    ["mandiana",          "#8FBC66"],
+    ["siguiri",           "#8CBB68"],
+    ["coyah",             "#66AE95"],
+    ["dubreka",           "#5DA8A2"],
+    ["forecariah",        "#68AF92"],
+    ["kindia",            "#6AB18F"],
+    ["telimele",          "#5AA4A8"],
+    ["koubia",            "#7EB976"],
+    ["labe",              "#74B582"],
+    ["lelouma",           "#6FB388"],
+    ["mali",              "#71B485"],
+    ["tougue",            "#7CB879"],
+    ["dalaba",            "#77B67F"],
+    ["mamou",             "#79B77C"],
+    ["pita",              "#6CB28C"],
+    ["beyla",             "#A1BE58"],
+    ["gueckedou",         "#98BD5E"],
+    ["lola",              "#AABD52"],
+    ["macenta",           "#9BBE5C"],
+    ["nzerekore",         "#A4BE56"],
+    ["yamou",             "#A7BE54"],
+    # Sierra Leone districts
+    ["kailahun",          "#4C90C0"],
+    ["kenema",            "#447ECC"],
+    ["kono",              "#4272CE"],
+    ["bombali",           "#691D93"],
+    ["kambia",            "#781C86"],
+    ["koinadugu",         "#4041C7"],
+    ["port_loko",         "#691D93"],
+    ["tonkolili",         "#482BB6"],
+    ["bo",                "#4066CF"],
+    ["bonthe",            "#4041C7"],
+    ["moyamba",           "#4041C7"],
+    ["pujehun",           "#4887C6"],
+    ["western_rural",     "#482BB6"],
+    ["western_urban",     "#691D93"],
+    ["western_area",      "#5824A4"],
+    # Liberian counties
+    ["nimba",             "#E67D33"],
+    ["rivercess",         "#E68735"],
+    ["river_gee",         "#E29E39"],
+    ["sinoe",             "#E49838"],
+    ["bomi",              "#DF4528"],
+    ["bong",              "#E4682F"],
+    ["gbarpolu",           "#DC2D24"],
+    ["grand_cape_mount",  "#DB2122"],
+    ["grand_bassa",       "#E67431"],
+    ["grand_gedeh",       "#E69036"],
+    ["grand_kru",         "#DFA53B"],
+    ["lofa",              "#DE3926"],
+    ["margibi",           "#E35C2C"],
+    ["maryland",          "#DCAB3C"],
+    ["montserrado",       "#E1512A"]
+]
+
 color_options = {
-    "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
-    "division":{"key":"division", "legendTitle":"District", "menuItem":"District", "type":"discrete"},
+    "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete", "color_map":country_cmap},
+    "division":{"key":"division", "legendTitle":"District", "menuItem":"District", "type":"discrete", "color_map":division_cmap},
     "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
     "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
 }
@@ -60,8 +141,21 @@ if __name__=="__main__":
         ebola.load()
 
     ebola.clock_filter(n_iqd=10, plot=True)
-    ebola.annotate_tree(Tc=0.0005, timetree=True, reroot='best', resolve_polytomies=True)
+    ebola.annotate_tree(Tc=0.002, timetree=True, reroot='best', resolve_polytomies=True)
     for geo_attr in geo_attributes:
         ebola.tree.geo_inference(geo_attr)
     ebola.export(controls = attribute_nesting, geo_attributes = geo_attributes,
                 color_options=color_options, panels=panels)
+
+
+    # plot an approximate skyline
+    from matplotlib import pyplot as plt
+    T = ebola.tree.tt
+    plt.figure()
+    skyline = T.merger_model.skyline(n_points = 20, gen = 50/T.date2dist.slope,
+                                     to_numdate = T.date2dist.to_numdate)
+    plt.ticklabel_format(useOffset=False)
+    plt.plot(skyline.x, skyline.y)
+    plt.ylabel('effective population size')
+    plt.xlabel('year')
+    plt.savefig('ebola_skyline.png')

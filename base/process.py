@@ -19,7 +19,7 @@ class process(object):
 
     def __init__(self, input_data_path = 'data/test',
                  store_data_path = 'store/test',
-                 build_data_path = 'build/test', **kwargs):
+                 build_data_path = 'build/test', verbose=2, **kwargs):
         super(process, self).__init__()
         print("Initializing process")
         for p in [input_data_path, store_data_path, build_data_path]:
@@ -28,6 +28,7 @@ class process(object):
         self.input_data_path = input_data_path
         self.store_data_path = store_data_path
         self.build_data_path = build_data_path
+        self.verbose=verbose
         self.kwargs = kwargs
         self.data_filenames()
 
@@ -235,7 +236,7 @@ class process(object):
             tps = np.array([x.attributes['num_date'] for x in self.seqs.seqs.values()])
             self.pivots=make_pivots(pivots, tps)
         else:
-            print('estimate_tree_frequencies: using self.pivots')
+            print('estimate_tree_frequencies: using self.pivots',3)
         if not hasattr(self, 'tree_frequencies'):
             self.tree_frequencies = {}
             self.tree_frequency_confidence = {}
@@ -259,7 +260,7 @@ class process(object):
         if infiles are None, the tree is build from scratch. Otherwise
         the tree is loaded from file
         '''
-        self.tree = tree(aln=self.seqs.aln, proteins = self.proteins)
+        self.tree = tree(aln=self.seqs.aln, proteins = self.proteins, verbose=self.verbose)
         if infile is None:
             self.tree.build(root=root, debug=debug)
         else:
