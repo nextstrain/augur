@@ -81,8 +81,8 @@ outliers = {
         "A/Michigan/95/2016", "A/Michigan/96/2016", "A/Ohio/27/2016", "A/Ohio/28/2016", "A/Ohio/32/2016",
         "A/Ohio/33/2016", "A/Ohio/35/2016", "A/Zhejiang-Wuxin/1300/2016", "A/Nanjing/1/2010", "A/StPetersburg/5/2009",
         "A/Cambodia/NHRCC00002/2009", "A/Cambodia/NHRCC00003/2009"],
-'h1n1pdm': [],
-'vic':[],
+'h1n1pdm': ["A/Kenya/264/2012", "A/Iowa/39/2015", "A/Asturias/RR6898/2010", "A/Wisconsin/28/2011", "A/Brest/1161/2014", "A/Tomsk/273-MA1/2010", "A/Minnesota/46/2015", "A/Poland/16/2013", "A/Hungary/02/2013", "A/Hungary/16/2013", "A/California/07/2009NYMC-X18113/198", "A/Christchurch/16/2010NIB-74xp13/202", "A/Bari/166/2016", "A/Bari/167/2016"],
+'vic':["B/Bangkok/SI17/2012", "B/Bangkok/SI58/2012", "B/Kol/2024/2008", "B/Kolkata/2024/2008"],
 "yam":[]
 }
 
@@ -415,12 +415,14 @@ if __name__=="__main__":
             flu.subsample(params.viruses_per_month_tree, repeated=True)
             flu.align()
             flu.build_tree()
-            flu.clock_filter(n_iqd=3, plot=True)
+            flu.clock_filter(n_iqd=3, plot=False)
             flu.annotate_tree(Tc="skyline", timetree=True, reroot='best', confidence=params.confidence)
             for geo in geo_attributes:
                 flu.tree.geo_inference(geo)
 
             flu.estimate_tree_frequencies()
+            for region in regions:
+                flu.estimate_tree_frequencies(region=region)
             flu.dump()
 
             flu.HI_model()
