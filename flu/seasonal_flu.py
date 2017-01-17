@@ -2,6 +2,7 @@ from __future__ import division, print_function
 from collections import defaultdict
 import sys
 sys.path.insert(0,'.')  # need to import from base
+print(sys.argv, sys.path)
 from base.process import process
 import numpy as np
 from datetime import datetime, timedelta
@@ -326,7 +327,6 @@ def plot_frequencies(flu, gene, mutation=None, plot_regions=None, all_muts=False
 if __name__=="__main__":
     import argparse
     import matplotlib.pyplot as plt
-    plt.ion()
 
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
     parser.add_argument('-y', '--years_back', type = str, default = 3, help='number of years back to sample')

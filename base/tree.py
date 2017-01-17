@@ -1,5 +1,6 @@
 from __future__ import division, print_function
-import os, time
+import os, time, sys
+sys.path.insert(0,'../')
 from io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from sequences import sequence_set
 import numpy as np
@@ -128,6 +129,8 @@ class tree(object):
 
 
     def tt_from_file(self, infile, root='best', nodefile=None):
+        import sys;
+        print(sys.path)
         from treetime_augur import TreeTime
         from treetime_augur import utils
         self.is_timetree=False
