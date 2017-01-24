@@ -230,7 +230,7 @@ class sequence_set(object):
         for seq in seqs_to_subsample:
             seq._priority = priority(seq)
             if seq.id in forced_strains:
-                seq._priority = 1.0
+                seq._priority = 10.0
             self.sequence_categories[category(seq)].append(seq)
 
         # sample and record the degree to which a category is under_sampled
