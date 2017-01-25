@@ -267,13 +267,26 @@ class process(object):
             self.tree.tt_from_file(infile, nodefile=nodefile, root=root)
 
 
-    def clock_filter(self, n_iqd=3, plot=True):
+    def clock_filter(self, n_iqd=3, plot=True, remove_deep_splits=False):
         self.tree.tt.clock_filter(reroot='best', n_iqd=n_iqd, plot=plot)
+
         leaves = [x for x in self.tree.tree.get_terminals()]
         for n in leaves:
             if n.bad_branch:
                 self.tree.tt.tree.prune(n)
                 print('pruning leaf ', n.name)
+        if remove_deep_splits:
+            self.tree.tt.tree.ladderize()
+            current_root = self.tree.tt.tree.root
+            if sum([x.branch_length for x in current_root])>0.1 \
+                and sum([x.count_terminals() for x in current_root.clades[:-1]])<5:
+                new_root = current_root.clades[-1]
+                new_root.up=False
+                self.tree.tt.tree.root = new_root
+                with open(self.store_data_path+"outliers.txt", 'a') as ofile:
+                    for x in current_root.clades[:-1]:
+                        ofile.write("\n".join([leaf.name for leaf in x.get_terminals()])+'\n')
+
         self.tree.tt.prepare_tree()
 
 
@@ -379,7 +392,10 @@ class process(object):
             region_to_lat_long = {}
             regions = self.tree.get_attr_list("region")
             for region in regions:
-                region_to_lat_long[region] = self.location_to_lat_long[region]
+                try:
+                    region_to_lat_long[region] = self.location_to_lat_long[region]
+                except:
+                    print("REGION %s IS MISSING"%region)
             geo_lookup_json["region"] = region_to_lat_long
         if "country" in geo_attributes:
             country_to_lat_long = {}

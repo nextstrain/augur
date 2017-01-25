@@ -48,13 +48,13 @@ panels = ['tree', 'entropy', 'frequencies']
 outliers = {
 'h3n2':["A/Sari/388/2006", "A/SaoPaulo/36178/2015", "A/Pennsylvania/40/2010", "A/Pennsylvania/14/2010",
         "A/Pennsylvania/09/2011", "A/OSAKA/31/2005", "A/Ohio/34/2012", "A/Kenya/170/2011", "A/Kenya/168/2011",
-        "A/Indiana/21/2013", "A/Indiana/13/2012", "A/Indiana/17/2013", "A/Indiana/11/2013", "A/Indiana/08/2012", "A/Indiana/06/2013",
+        "A/Indiana/21/2013", "A/Indiana/13/2012", "A/Indiana/6/2013", "A/Indiana/17/2013", "A/Indiana/11/2013", "A/Indiana/08/2012", "A/Indiana/06/2013",
         "A/India/6352/2012", "A/HuNan/01/2014", "A/Helsinki/942/2013", "A/Guam/AF2771/2011", "A/Chile/8266/2003",
         "A/Busan/15453/2009", "A/Nepal/142/2011", "A/Kenya/155/2011", "A/Guam/AF2771/2011", "A/Michigan/82/2016",
         "A/Ohio/27/2016", "A/Ohio/28/2016", "A/Michigan/83/2016", "A/Michigan/84/2016", "A/Jiangsu-Tianning/1707/2013",
         "A/HuNan/1/2014", "A/Iran/227/2014", "A/Iran/234/2014", "A/Iran/140/2014", "A/Jiangsu-Chongchuan/1830/2014",
         "A/Chile/8266/2003", "A/Louisiana/4/2003", "A/Lousiana/4/2003", "A/OSAKA/31/2005",
-        "A/Sari/388/2006", "A/HongKong/HK1/2008", "A/HongKong/HK1MA21-1/2008", "A/HongKong/HK1MA21-2/2008",
+        "A/Sari/388/2006", "A/HongKong/HK1/2008", "A/HongKong/HK1MA21-1/2008","A/HongKong/HK1MA21-4/2008", "A/HongKong/HK1MA21-2/2008",
         "A/HongKong/HK1MA21-3/2008", "A/HongKong/HK2/2008", "A/HongKong/HK2MA21-1/2008",
         "A/HongKong/HK2MA21-2/2008", "A/HongKong/HK2MA21-3/2008", "A/HongKong/HK4/2008",
         "A/HongKong/HK5/2008", "A/HongKong/HK5MA21-1/2008", "A/HongKong/HK5MA21-3/2008",
@@ -87,7 +87,7 @@ outliers = {
             "A/Brest/1161/2014", "A/Tomsk/273-MA1/2010", "A/Minnesota/46/2015", "A/Poland/16/2013",
             "A/Hungary/02/2013", "A/Hungary/16/2013", "A/California/07/2009NYMC-X18113/198",
             "A/Christchurch/16/2010NIB-74xp13/202", "A/Bari/166/2016", "A/Bari/167/2016", "A/Dakar/3/2014",
-            "A/Arkansas/15/2013", "A/Wisconsin/87/2005"],
+            "A/Arkansas/15/2013", "A/Wisconsin/87/2005", 'A/Norway/1929/2014'],
 'vic':["B/Bangkok/SI17/2012", "B/Bangkok/SI58/2012", "B/Kol/2024/2008", "B/Kolkata/2024/2008"],
 "yam":[]
 }
@@ -420,7 +420,7 @@ if __name__=="__main__":
             flu.subsample(params.viruses_per_month_tree, repeated=True)
             flu.align()
             flu.build_tree()
-            flu.clock_filter(n_iqd=3, plot=False)
+            flu.clock_filter(n_iqd=3, plot=False, remove_deep_splits=True)
             flu.annotate_tree(Tc="skyline", timetree=True, reroot='best', confidence=params.confidence)
             for geo in geo_attributes:
                 flu.tree.geo_inference(geo)
