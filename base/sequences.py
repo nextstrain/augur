@@ -226,6 +226,7 @@ class sequence_set(object):
         else:
             seqs_to_subsample = self.all_seqs.values()
 
+        print("Sampling from %d sequences"%len(seqs_to_subsample))
         # sort sequences into categories and assign priority score
         for seq in seqs_to_subsample:
             seq._priority = priority(seq)
@@ -241,7 +242,6 @@ class sequence_set(object):
             seqs.sort(key=lambda x:x._priority, reverse=True)
             self.seqs.update({seq.id:seq for seq in seqs[:threshold( (cat, seqs) )]})
 
-        print("Subsampled to %d sequences"%len(self.all_seqs))
         print("Subsampled to %d sequences"%len(self.seqs))
 
     def align(self, debug=False):

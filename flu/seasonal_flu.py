@@ -143,12 +143,17 @@ class flu_process(process):
         self.HI_strains_fname = self.input_data_path+'_hi_strains.tsv'
 
 
-    def subsample(self, sampling_threshold, **kwargs):
+    def subsample(self, sampling_threshold, all_regions=False, **kwargs):
 
-        def sampling_category(x):
-            return (x.attributes['region'],
-                    x.attributes['date'].year,
-                    x.attributes['date'].month)
+        if all_regions:
+            def sampling_category(x):
+                return (x.attributes['date'].year,
+                        x.attributes['date'].month)
+        else:
+            def sampling_category(x):
+                return (x.attributes['region'],
+                        x.attributes['date'].year,
+                        x.attributes['date'].month)
 
         # load HI titer count to prioritize sequences
         HI_titer_count = {}
@@ -354,8 +359,8 @@ if __name__=="__main__":
         params.viruses_per_month_seq = 20
         params.years_back = 2
     elif params.resolution == "3y":
-        params.viruses_per_month_tree = 7
-        params.viruses_per_month_seq = 20
+        params.viruses_per_month_tree = 50
+        params.viruses_per_month_seq = 50
         params.years_back = 3
     elif params.resolution == "6y":
         params.viruses_per_month_tree = 3
@@ -408,7 +413,7 @@ if __name__=="__main__":
         flu.seqs.filter(lambda s: len(s.seq)>=900)
         flu.seqs.filter(lambda s: s.name not in outliers[params.lineage])
 
-        flu.subsample(params.viruses_per_month_seq)
+        flu.subsample(params.viruses_per_month_seq, all_regions=False)
         flu.align()
         flu.dump()
         # first estimate frequencies globally, then region specific
@@ -417,7 +422,7 @@ if __name__=="__main__":
         #     flu.estimate_mutation_frequencies(region=region)
 
         if not params.no_tree:
-            flu.subsample(params.viruses_per_month_tree, repeated=True)
+            flu.subsample(params.viruses_per_month_tree, all_regions=True, repeated=True)
             flu.align()
             flu.build_tree()
             flu.clock_filter(n_iqd=3, plot=False, remove_deep_splits=True)
