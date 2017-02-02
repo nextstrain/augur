@@ -98,7 +98,7 @@ division_cmap = [
 
 color_options = {
     "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete", "color_map":country_cmap},
-    "division":{"key":"division", "legendTitle":"District", "menuItem":"District", "type":"discrete", "color_map":division_cmap},
+    "division":{"key":"division", "legendTitle":"Division", "menuItem":"Division", "type":"discrete", "color_map":division_cmap},
     "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
     "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
 }
