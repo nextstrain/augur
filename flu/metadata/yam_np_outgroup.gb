@@ -1,0 +1,88 @@
+LOCUS       CY019710                1809 bp    DNA              VRL 14-FEB-2007
+DEFINITION  Influenza B virus (B/Singapore/11/1994) segment 5, complete
+            sequence.
+ACCESSION   CY019710
+VERSION     CY019710.1
+KEYWORDS    .
+SOURCE      Influenza B virus (B/Singapore/11/1994)
+  ORGANISM  Influenza B virus (B/Singapore/11/1994)
+            Viruses; ssRNA viruses; ssRNA negative-strand viruses;
+            Orthomyxoviridae; Influenzavirus B.
+REFERENCE   1  (bases 1 to 1809)
+  AUTHORS   Spiro,D., Sengamalay,N., Boyne,A., Bera,J., Halpin,R., Wang,S.,
+            Ghedin,E., Zaborsky,J., Subbu,V., Sparenborg,J., Gallagher,T.,
+            Overton,L., Althoff,R., Liu,X., Salzberg,S.L., Sitz,J., Katzel,D.,
+            Neupane,R., Shumway,M., Koo,H., Griesemer,S., St. George,K.,
+            Bennett,R., Taylor,J., Klimov,A., Hall,H., Balish,A., Xu,X.,
+            Shaw,M., Cox,N., Bao,Y., Bolotov,P., Dernovoy,D., Kiryutin,B.,
+            Lipman,D.J. and Tatusova,T.
+  TITLE     The NIAID Influenza Genome Sequencing Project
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 1809)
+  CONSRTM   The NIAID Influenza Genome Sequencing Consortium
+  TITLE     Direct Submission
+  JOURNAL   Submitted (14-FEB-2007) on behalf of TIGR/Wadsworth-NYSDOH and
+            CDC/NCBI, National Center for Biotechnology Information, NIH,
+            Bethesda, MD 20894, USA
+FEATURES             Location/Qualifiers
+     source          1..1809
+                     /collection_date="10-May-1994"
+                     /country="Singapore: Singapore"
+                     /db_xref="taxon:416695"
+                     /host="Homo sapiens"
+                     /isolation_source="gender:M"
+                     /lab_host="MDCK 4 passage(s)"
+                     /mol_type="viral cRNA"
+                     /organism="Influenza B virus (B/Singapore/11/1994)"
+                     /segment="5"
+                     /strain="Influenza B virus (B/Singapore/11/1994)"
+     gene            45..1727
+                     /gene="NP"
+     CDS             45..1727
+                     /codon_start=1
+                     /gene="NP"
+                     /product="nucleoprotein"
+                     /protein_id="ABN50717.1"
+                     /translation="MSNMDIDGINTGTIDKTPEEITSGTSGTTRPIIRPATLAPPSNKR
+                     TRNPSPERATTSSEADVGRKTQKKQTPTEIKKSVYNMVVKLGEFYNQMMVKAGLNDDME
+                     RNLIQNAHAVERILLAATDDKKTEFQKKKNARDVKEGKEEIDHNKTGGTFYKMVRDDKT
+                     IYFSPIRITFLKEEVKTMYKTTMGSDGFSGLNHIMIGHSQMNDVCFQRSKALKRVGLDP
+                     SLISTFAGSTIPRRSGATGVAIKGGGTLVAEAIRFIGRAMADRGLLRDIKAKTAYEKIL
+                     LNLKNKCSAPQQKALVDQVIGSRNPGIADIEDLTLLARSMVVVRPSVASKVVLPISIYA
+                     KIPQLGFNVEEYSMVGYEAMALYNMATPVSILRMGDDAKDKSQLFFMSCFGAAYEDLRV
+                     LSALTGTEFKPRSALKCKGFHVPAKEQVEGMGAALMSIKLQFWAPMTRSGGNEVGGDGG
+                     SGQISCSPVFAVERPIALSKQAVRRMLSMNIEGRDADVKGNLLKMMNDSMAKKTSGNAF
+                     IGKKMFQISDKNKTNPVEIPIKQTIPNFFFGRDTAEDYDDLDY"
+ORIGIN
+        1 tttcttgtga acttcaagta ccaataaaag aactgaaaat caaaatgtcc aacatggata
+       61 ttgacggtat caacactggg acaattgaca aaacaccgga agaaataact tctggaacca
+      121 gtgggacaac cagaccaatc atcagaccag caacccttgc cccaccaagc aacaaacgaa
+      181 cccggaaccc atccccggaa agagcaacca caagcagtga agctgatgtc ggaaggaaaa
+      241 cccaaaagaa acagaccccg acagagataa agaagagcgt ctacaatatg gtagtgaaac
+      301 tgggcgaatt ctataaccag atgatggtca aagctggact caacgatgac atggagagaa
+      361 acctaatcca aaatgcgcat gctgtggaaa gaattctatt ggctgccact gatgacaaga
+      421 aaactgaatt ccagaagaaa aagaatgcca gagatgtcaa agaagggaaa gaagaaatag
+      481 atcacaacaa aacaggaggc accttttaca agatggtaag agatgataaa accatctact
+      541 tcagccctat aagaattacc tttttaaaag aagaggtgaa aacaatgtac aaaaccacca
+      601 tggggagtga tggcttcagt ggactaaatc acataatgat tgggcattca cagatgaatg
+      661 atgtctgttt ccaaagatca aaggcactaa aaagagttgg acttgaccct tcattaatca
+      721 gtacctttgc aggaagcaca atccccagaa gatcaggtgc aactggtgtt gcgatcaaag
+      781 gaggtggaac tttagtggct gaagccattc gatttatagg aagagcaatg gcagacagag
+      841 ggctattgag agacatcaaa gccaagactg cctatgaaaa gattcttctg aatctaaaaa
+      901 acaaatgctc tgcgccccaa caaaaggctc tagttgatca agtgatcgga agtagaaatc
+      961 cagggattgc agacattgaa gatctaaccc tgcttgctcg tagtatggtc gttgttaggc
+     1021 cctctgtggc gagcaaagta gtgcttccca taagcattta cgccaaaata cctcaactag
+     1081 ggttcaatgt tgaagagtac tctatggttg ggtacgaagc catggctctt tacaatatgg
+     1141 caacacctgt ttccatatta agaatgggag atgatgcaaa agataaatcg caattatttt
+     1201 tcatgtcttg cttcggagct gcctatgaag acctgagagt tttgtctgca ttaacaggca
+     1261 cagaattcaa gcctagatca gcattaaaat gcaagggttt ccatgttcca gcaaaggaac
+     1321 aggtggaagg aatgggggca gctctgatgt ccatcaagct ccagttttgg gctccaatga
+     1381 ccagatctgg ggggaacgaa gtaggtggag acggagggtc tggccaaata agctgcagcc
+     1441 cagtgtttgc agtggaaaga cctattgctc taagcaagca agctgtaaga agaatgctgt
+     1501 caatgaatat tgagggacgt gatgcagatg tcaaaggaaa tctactcaag atgatgaatg
+     1561 actcaatggc taagaaaacc agtggaaatg ctttcattgg gaagaaaatg tttcaaatat
+     1621 cagacaaaaa caaaaccaat cccgttgaaa ttccaattaa gcagaccatc cccaatttct
+     1681 tctttgggag ggacacagca gaggattatg atgacctcga ttattaaagc aacaaaatag
+     1741 acactatgac tgtgattgtt tcaatacgtt tggaatgtgg gtgtttattc ttattaaaat
+     1801 aaatataaa
+//

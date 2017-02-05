@@ -1,0 +1,82 @@
+LOCUS       CY019708                1147 bp    DNA              VRL 14-FEB-2007
+DEFINITION  Influenza B virus (B/Singapore/11/1994) segment 7, complete
+            sequence.
+ACCESSION   CY019708
+VERSION     CY019708.1
+KEYWORDS    .
+SOURCE      Influenza B virus (B/Singapore/11/1994)
+  ORGANISM  Influenza B virus (B/Singapore/11/1994)
+            Viruses; ssRNA viruses; ssRNA negative-strand viruses;
+            Orthomyxoviridae; Influenzavirus B.
+REFERENCE   1  (bases 1 to 1147)
+  AUTHORS   Spiro,D., Sengamalay,N., Boyne,A., Bera,J., Halpin,R., Wang,S.,
+            Ghedin,E., Zaborsky,J., Subbu,V., Sparenborg,J., Gallagher,T.,
+            Overton,L., Althoff,R., Liu,X., Salzberg,S.L., Sitz,J., Katzel,D.,
+            Neupane,R., Shumway,M., Koo,H., Griesemer,S., St. George,K.,
+            Bennett,R., Taylor,J., Klimov,A., Hall,H., Balish,A., Xu,X.,
+            Shaw,M., Cox,N., Bao,Y., Bolotov,P., Dernovoy,D., Kiryutin,B.,
+            Lipman,D.J. and Tatusova,T.
+  TITLE     The NIAID Influenza Genome Sequencing Project
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 1147)
+  CONSRTM   The NIAID Influenza Genome Sequencing Consortium
+  TITLE     Direct Submission
+  JOURNAL   Submitted (14-FEB-2007) on behalf of TIGR/Wadsworth-NYSDOH and
+            CDC/NCBI, National Center for Biotechnology Information, NIH,
+            Bethesda, MD 20894, USA
+FEATURES             Location/Qualifiers
+     source          1..1147
+                     /collection_date="10-May-1994"
+                     /country="Singapore: Singapore"
+                     /db_xref="taxon:416695"
+                     /host="Homo sapiens"
+                     /isolation_source="gender:M"
+                     /lab_host="MDCK 4 passage(s)"
+                     /mol_type="viral cRNA"
+                     /organism="Influenza B virus (B/Singapore/11/1994)"
+                     /segment="7"
+                     /strain="Influenza B virus (B/Singapore/11/1994)"
+     gene            5..751
+                     /gene="M1"
+     CDS             5..751
+                     /codon_start=1
+                     /gene="M1"
+                     /product="matrix protein 1"
+                     /protein_id="ABN50713.1"
+                     /translation="MSLFGDTIAYLLSLTEDGEGKAELAEKLHCWFGGKEFDLDSALEW
+                     IKNKRCLTDIQKALIGASICFLKPKDQERKRRFITEPLSGMGTTATKKKGLILAERKMR
+                     RCVSFHEAFEIAEGHESSALLYCLMVMYLNPGNYSMQVKLGTLCALCEKQASHSHRAHS
+                     RAARSSVPGVRREMQMVSAMNTAKTMNGMGKGEDVQKLAEELQSNIGVLRSLGASQKNG
+                     EGIAKDVMEVLKQSSMGNSALVKKYL"
+     gene            751..1080
+                     /gene="BM2"
+     CDS             751..1080
+                     /codon_start=1
+                     /gene="BM2"
+                     /product="BM2 protein"
+                     /protein_id="ABN50714.1"
+                     /translation="MLEPFQILSICSFILSALHFMAWTIGHLNQIKRGVNMKIRIKSPN
+                     KETINREVSILRHSYQKEIQAKETMKEVLSDNMEVLSDHIVIEGLSAEEIIKMGETVLE
+                     VEELH"
+ORIGIN
+        1 taaaatgtcg ctgtttggag acacaattgc ctacctgctt tcattgacag aagatggaga
+       61 aggcaaagca gaactagcag aaaaattaca ctgttggttc ggtgggaaag aatttgacct
+      121 agactctgcc ttggaatgga taaaaaacaa aagatgctta actgatatac aaaaagcact
+      181 aattggtgcc tctatctgct ttttaaaacc caaagaccag gaaagaaaaa gaagattcat
+      241 cacagagccc ctatcaggaa tgggaacaac agcaacaaaa aagaaaggcc tgattctagc
+      301 tgagagaaaa atgagaagat gtgtgagctt tcatgaagca tttgaaatag cagaaggcca
+      361 tgaaagctca gcgctactat attgtctcat ggtcatgtac ctgaatcctg gaaattattc
+      421 aatgcaagta aaactaggaa cgctctgtgc tttgtgcgag aaacaagcat cacattcaca
+      481 cagggctcac agcagagcag cgagatcttc agtgcccgga gtgagacgag aaatgcagat
+      541 ggtctcagct atgaacacag caaaaacaat gaatggaatg ggaaaaggag aagacgtcca
+      601 aaaactggca gaagagctgc aaagcaacat tggagtattg agatctcttg gggcaagtca
+      661 aaagaatggg gaaggaattg caaaggatgt aatggaagtg ctaaagcaga gctctatggg
+      721 aaattcagct cttgtgaaga aatacctata atgctcgaac catttcagat tctttcaatt
+      781 tgttctttta tcttatcagc tctccatttc atggcttgga caatagggca tttgaatcaa
+      841 ataaaaagag gagtaaacat gaaaatacga ataaaaagtc caaataaaga gacaataaac
+      901 agagaggtat caattttgag acacagttac caaaaagaaa tccaggccaa agaaacaatg
+      961 aaggaagtac tctctgacaa catggaggta ttgagtgacc acatagtaat tgaggggctt
+     1021 tctgccgaag agataataaa aatgggtgaa acagttttgg aggtagaaga attgcattaa
+     1081 attcaatttt tactgtattt cttactatgc atttaagcaa attgtaatca atgtcagcaa
+     1141 ataaact
+//

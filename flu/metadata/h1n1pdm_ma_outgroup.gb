@@ -1,0 +1,59 @@
+LOCUS       AF455688                 759 bp    DNA              VRL 14-MAR-2002
+DEFINITION  Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2)) matrix protein
+            1 (M) gene, complete cds.
+ACCESSION   AF455688
+VERSION     AF455688.1
+KEYWORDS    .
+SOURCE      Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2))
+  ORGANISM  Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2))
+            Viruses; ssRNA viruses; ssRNA negative-strand viruses;
+            Orthomyxoviridae; Influenzavirus A.
+REFERENCE   1  (bases 1 to 759)
+  AUTHORS   Karasin,A.I., Landgraf,J., Swenson,S., Erickson,G., Goyal,S.,
+            Woodruff,M., Scherba,G., Anderson,G. and Olsen,C.W.
+  TITLE     Genetic characterization of H1N2 influenza A viruses isolated from
+            pigs throughout the United States
+  JOURNAL   J. Clin. Microbiol. 40 (3), 1073-1079 (2002)
+   PUBMED   11880444
+REFERENCE   2  (bases 1 to 759)
+  AUTHORS   Karasin,A.I., Landgraf,J., Swenson,S., Erickson,G., Goyal,S.,
+            Woodruff,M., Scherba,G., Anderson,G. and Olsen,C.W.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (05-DEC-2001) Department of Pathobiological Sciences,
+            School of Veterinary Medicine, University of Wisconsin-Madison, 2015
+            Linden Drive West, Madison, WI 53706, USA
+FEATURES             Location/Qualifiers
+     source          1..759
+                     /db_xref="taxon:187166"
+                     /mol_type="genomic RNA"
+                     /organism="Influenza A virus (A/Swine/Indiana/P12439/00
+                     (H1N2))"
+                     /strain="A/Swine/Indiana/P12439/00"
+     gene            1..759
+                     /gene="M"
+     CDS             1..759
+                     /codon_start=1
+                     /gene="M"
+                     /note="M1"
+                     /product="matrix protein 1"
+                     /protein_id="AAL87878.1"
+                     /translation="MSLLTEVETYVLSIVPSGPLKAEIAQRLEDVFAGKNTDLEALMEW
+                     LKTRPILSPLTKGILGFVFTLTVPSERGLQRRRFVQNALNGNGDPNNMDKAVKLYRKLK
+                     REITFHGAKEVALSYSAGALASCMGLIYNRMGTVTTEVAFGLVCATCEQIADSQHRSHR
+                     QMVTTTNPLIRHENRMVLASTTAKAMEQMAGSSEQAAEAMEVASQARQMVQAMRTIGTH
+                     PSSSAGLKDDLLENLQAYQKRMGVQMQRFK"
+ORIGIN
+        1 atgagtcttc taaccgaggt cgaaacgtat gttctctcta tcgttccgtc aggccccctc
+       61 aaagccgaga tagcgcagag acttgaagac gtttttgcag ggaaaaacac cgatcttgag
+      121 gcactcatgg aatggctaaa gacaagaccg atcctgtcac ctctgactaa ggggatttta
+      181 ggatttgtgt tcacgctcac cgtgcccagt gagcgaggac tgcagcgtag acgctttgtc
+      241 cagaatgccc tcaatgggaa tggtgaccca aacaacatgg acaaagcggt caaactgtac
+      301 aggaaactta aaagggaaat aacattccat ggggccaaag aagtagcgct cagttactct
+      361 gctggtgcac ttgccagttg catgggcctc atatacaaca ggatggggac ggtcaccact
+      421 gaggttgctt ttggtctagt gtgcgcaacc tgtgaacaga ttgctgattc ccagcatcga
+      481 tctcatagac aaatggtgac aacaaccaat ccactaatca ggcatgagaa cagaatggta
+      541 ctagccagca caacagctaa agccatggaa caaatggctg gatcaagtga acaagcagca
+      601 gaggctatgg aagttgccag tcaggctaga caaatggtac aggcaatgag aacaattggg
+      661 actcacccta gttccagtgc tggtctaaaa gatgatcttc ttgaaaattt acaggcctat
+      721 cagaaacgga tgggagtgca aatgcaacga ttcaagtga
+//
