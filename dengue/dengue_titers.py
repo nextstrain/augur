@@ -91,11 +91,14 @@ class dengue_process(process):
             n.attr['cTiter'] = n.cTiter
             n.attr['dTiter'] = n.dTiter
 
+        self.titer_tree.validate(plot=True, fname='treeModel_%s.png'%lineage)
+
+
         # SUBSTITUTION MODEL
         self.titer_subs = substitution_model(self.tree.tree, titer_fname = self.titer_fname,**kwargs)
         self.titer_subs.prepare(**kwargs)
         self.titer_subs.train(**kwargs)
-
+        self.titer_subs.validate(plot=True, fname='subModel_%s.png'%lineage)
 
     def titer_export(self):
         from base.io_util import write_json
@@ -288,12 +291,13 @@ if __name__=="__main__":
             dengue.align(debug=True)
             dengue.build_tree(debug=True)
             dengue.clock_filter(n_iqd=3, plot=True)
-            dengue.annotate_tree(Tc=0.005, timetree=True, reroot='best')
+            dengue.annotate_tree(Tc=False, timetree=True, reroot='best')
             # dengue.tree.geo_inference('region')
             # dengue.estimate_tree_frequencies()
             dengue.dump()
 
     dengue.titer_model()
+
     # H3N2_scores(dengue.tree.tree)
     dengue.dump()
     # dengue.matchClades(clade_designations[lineage])
