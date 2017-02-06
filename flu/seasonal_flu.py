@@ -451,7 +451,7 @@ if __name__=="__main__":
         #     flu.estimate_mutation_frequencies(region=region)
 
         if not params.no_tree:
-            flu.subsample(params.viruses_per_month_tree, all_regions=True, repeated=True)
+            flu.subsample(params.viruses_per_month_tree, all_regions=False, repeated=True)
             flu.align()
             flu.build_tree()
             flu.clock_filter(n_iqd=3, plot=False, remove_deep_splits=True)
