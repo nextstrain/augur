@@ -144,16 +144,45 @@ class flu_process(process):
 
 
     def subsample(self, sampling_threshold, all_regions=False, **kwargs):
+        sequence_count_total = defaultdict(int)
+        sequence_count_region = defaultdict(int)
+        for seq in self.seqs.all_seqs.values():
+            sequence_count_total[(seq.attributes['date'].year,
+                                  seq.attributes['date'].month)]+=1
+            sequence_count_region[(seq.attributes['region'],
+                                  seq.attributes['date'].year,
+                                  seq.attributes['date'].month)]+=1
 
         if all_regions:
             def sampling_category(x):
                 return (x.attributes['date'].year,
                         x.attributes['date'].month)
+            def threshold_func(x):
+                return sampling_threshold
         else:
+            total_threshold = sampling_threshold*len(regions)
             def sampling_category(x):
                 return (x.attributes['region'],
                         x.attributes['date'].year,
                         x.attributes['date'].month)
+            def threshold_func(x):
+                if sequence_count_total[(x[1], x[2])]<total_threshold:
+                    return total_threshold
+                else:
+                    region_counts = sorted([sequence_count_region[(r, x[1], x[2])] for r in regions])
+                    if region_counts[0]>sampling_threshold:
+                        return sampling_threshold
+                    else:
+                        left_to_fill = total_threshold - len(regions)*region_counts[0]
+                        thres = region_counts[0]
+                        for ri, rc in zip(range(len(regions)-1, 0, -1), region_counts[1:]):
+                            if left_to_fill - ri*(rc-thres)>0:
+                                left_to_fill-=ri*(rc-thres)
+                                thres = rc
+                            else:
+                                thres += left_to_fill/ri
+                                break
+                        return int(thres)
 
         # load HI titer count to prioritize sequences
         HI_titer_count = {}
@@ -171,7 +200,7 @@ class flu_process(process):
             return pr + len(seq.seq)*0.0001 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD'])
 
         self.seqs.subsample(category = sampling_category,
-                            threshold=sampling_threshold,
+                            threshold=threshold_func,
                             priority=sampling_priority, **kwargs)
 
 
@@ -355,12 +384,12 @@ if __name__=="__main__":
 
     # default values for --viruses_per_month and --years_back from resolution
     if params.resolution == "2y":
-        params.viruses_per_month_tree = 15
-        params.viruses_per_month_seq = 20
+        params.viruses_per_month_tree = 8
+        params.viruses_per_month_seq = 15
         params.years_back = 2
     elif params.resolution == "3y":
-        params.viruses_per_month_tree = 50
-        params.viruses_per_month_seq = 50
+        params.viruses_per_month_tree = 5
+        params.viruses_per_month_seq = 10
         params.years_back = 3
     elif params.resolution == "6y":
         params.viruses_per_month_tree = 3

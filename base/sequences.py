@@ -244,7 +244,7 @@ class sequence_set(object):
             under_sampling = min(1.00, 1.0*len(seqs)/threshold(cat))
             for s in seqs: s.under_sampling=under_sampling
             seqs.sort(key=lambda x:x._priority, reverse=True)
-            self.seqs.update({seq.id:seq for seq in seqs[:threshold( (cat, seqs) )]})
+            self.seqs.update({seq.id:seq for seq in seqs[:threshold(cat)]})
 
         print("Subsampled to %d sequences"%len(self.seqs))
 
