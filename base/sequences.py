@@ -30,6 +30,8 @@ def num_date(date):
 def ambiguous_date_to_date_range(mydate, fmt):
     sep = fmt.split('%')[1][-1]
     min_date, max_date = {}, {}
+    today = datetime.today().date()
+
     for val, field  in zip(mydate.split(sep), fmt.split(sep+'%')):
         f = 'year' if 'y' in field.lower() else ('day' if 'd' in field.lower() else 'month')
         if 'XX' in val:
@@ -46,8 +48,9 @@ def ambiguous_date_to_date_range(mydate, fmt):
             max_date[f]=int(val)
     max_date['day'] = min(max_date['day'], 31 if max_date['month'] in [1,3,5,7,8,10,12]
                                            else 28 if max_date['month']==2 else 30)
-    return (datetime(year=min_date['year'], month=min_date['month'], day=min_date['day']).date(),
-            datetime(year=max_date['year'], month=max_date['month'], day=max_date['day']).date())
+    lower_bound = datetime(year=min_date['year'], month=min_date['month'], day=min_date['day']).date()
+    upper_bound = datetime(year=max_date['year'], month=max_date['month'], day=max_date['day']).date()
+    return (lower_bound, upper_bound if upper_bound<today else today)
 
 class sequence_set(object):
     """sequence_set subsamples a set of sequences, aligns them and exports variability statistics"""
