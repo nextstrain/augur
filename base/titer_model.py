@@ -181,7 +181,7 @@ class titers(object):
         self.titer_stats()
 
 
-    def make_training_set(self, training_fraction=1.0, subset_strains=False):
+    def make_training_set(self, training_fraction=0.9, subset_strains=False):
         if training_fraction<1.0: # validation mode, set aside a fraction of measurements to validate the fit
             self.test_titers, self.train_titers = {}, {}
             if subset_strains:    # exclude a fraction of test viruses as opposed to a fraction of the titers
@@ -246,7 +246,7 @@ class titers(object):
         return np.mean( (self.titer_dist - np.dot(self.design_matrix, self.model_params))**2 )
 
 
-    def validate(self, plot=False, cutoff=0.0, validation_set = None):
+    def validate(self, plot=False, cutoff=0.0, validation_set = None, fname='plot.png'):
         '''
         predict titers of the validation set (separate set of test_titers aside previously)
         and compare against known values. If requested by plot=True,
@@ -267,13 +267,14 @@ class titers(object):
         self.slope, self.intercept, tmpa, tmpb, tmpc = linregress(a[:,0], a[:,1])
         print ("error (abs/rms): ",self.abs_error, self.rms_error)
         print ("slope, intercept:", self.slope, self.intercept)
-        print ("pearson correlation:", pearsonr(a[:,0], a[:,1]))
+        self.r2 = pearsonr(a[:,0], a[:,1])[0]**2
+        print ("pearson correlation:", self.r2)
 
         if plot:
             import matplotlib.pyplot as plt
             import seaborn as sns
             fs=16
-            sns.set_style('darkgrid')
+            sns.set_style('whitegrid')
             plt.figure()
             ax = plt.subplot(111)
             plt.plot([-1,6], [-1,6], 'k')
@@ -281,11 +282,12 @@ class titers(object):
             plt.ylabel(r"predicted $\log_2$ distance", fontsize = fs)
             plt.xlabel(r"measured $\log_2$ distance" , fontsize = fs)
             ax.tick_params(axis='both', labelsize=fs)
-            plt.text(-2.5,6,'regularization:\nprediction error:', fontsize = fs-2)
+            plt.text(-2.5,6,'regularization:\nprediction error:\nR^2:', fontsize = fs-2)
             plt.text(1.2,6, str(self.lam_drop)+'/'+str(self.lam_pot)+'/'+str(self.lam_avi)+' (HI/pot/avi)'
-                     +'\n'+str(round(self.abs_error, 2))\
-                     +'/'+str(round(self.rms_error, 2))+' (abs/rms)', fontsize = fs-2)
+                     +'\n'+str(round(self.abs_error, 2))+'/'+str(round(self.rms_error, 2))+' (abs/rms)'
+                     + '\n' + str(self.r2), fontsize = fs-2)
             plt.tight_layout()
+            plt.savefig(fname)
 
     def reference_virus_statistic(self):
         '''
@@ -791,4 +793,3 @@ if __name__=="__main__":
     tsm.prepare(training_fraction=0.8)
     tsm.train(method='nnl1reg')
     tsm.validate(plot=True)
-
