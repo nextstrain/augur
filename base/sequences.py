@@ -58,6 +58,7 @@ class sequence_set(object):
         super(sequence_set, self).__init__()
         self.kwarks = kwarks
         self.nthreads = 2
+        print("attempting to load sequences from %s"%fname)
         if fname is not None and os.path.isfile(fname):
             with myopen(fname) as seq_file:
                 self.all_seqs = {x.name:x for x in SeqIO.parse(seq_file, 'fasta')}

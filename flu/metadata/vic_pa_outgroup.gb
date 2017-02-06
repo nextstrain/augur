@@ -1,0 +1,97 @@
+LOCUS       CY018818                2273 bp    DNA              VRL 29-DEC-2006
+DEFINITION  Influenza B virus (B/Hong Kong/02/1993) segment 3, complete
+            sequence.
+ACCESSION   CY018818
+VERSION     CY018818.1
+KEYWORDS    .
+SOURCE      Influenza B virus (B/Hong Kong/02/1993)
+  ORGANISM  Influenza B virus (B/Hong Kong/02/1993)
+            Viruses; ssRNA viruses; ssRNA negative-strand viruses;
+            Orthomyxoviridae; Influenzavirus B.
+REFERENCE   1  (bases 1 to 2273)
+  AUTHORS   Spiro,D., Sengamalay,N., Boyne,A., Bera,J., Halpin,R., Wang,S.,
+            Ghedin,E., Zaborsky,J., Subbu,V., Sparenborg,J., Gallagher,T.,
+            Overton,L., Althoff,R., Liu,X., Salzberg,S.L., Sitz,J., Katzel,D.,
+            Neupane,R., Shumway,M., Koo,H., Griesemer,S., St. George,K.,
+            Bennett,R., Taylor,J., Klimov,A., Hall,H., Balish,A., Xu,X.,
+            Shaw,M., Cox,N., Bao,Y., Bolotov,P., Dernovoy,D., Kiryutin,B.,
+            Lipman,D.J. and Tatusova,T.
+  TITLE     The NIAID Influenza Genome Sequencing Project
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 2273)
+  CONSRTM   The NIAID Influenza Genome Sequencing Consortium
+  TITLE     Direct Submission
+  JOURNAL   Submitted (29-DEC-2006) on behalf of TIGR/Wadsworth-NYSDOH and
+            CDC/NCBI, National Center for Biotechnology Information, NIH,
+            Bethesda, MD 20894, USA
+FEATURES             Location/Qualifiers
+     source          1..2273
+                     /collection_date="15-Feb-1993"
+                     /country="Hong Kong: Hong Kong"
+                     /db_xref="taxon:416687"
+                     /host="Homo sapiens"
+                     /lab_host="MDCK 4 passage(s)"
+                     /mol_type="viral cRNA"
+                     /organism="Influenza B virus (B/Hong Kong/02/1993)"
+                     /segment="3"
+                     /strain="Influenza B virus (B/Hong Kong/02/1993)"
+     gene            15..2195
+                     /gene="PA"
+     CDS             15..2195
+                     /codon_start=1
+                     /gene="PA"
+                     /product="polymerase PA"
+                     /protein_id="ABL77329.1"
+                     /translation="MDTFITRNFQTTIIQKAKNTMAEFSEDPELQPAMLFNICVHLEVC
+                     YVISDMNFLDEEGKTYTALEGQGKEQNLRPQYEVIEGMPRNIAWMVQRSLAQEHGIETP
+                     RYLADLFDYRTKRFIEVGITKGLADDYFWKKKEKLGNSMELMIFSYNQDYSLSNESSLD
+                     EEGKGRVLSRLTELQAELSLKNLWQVLIGEEDIEKGIDFKLGQTISKLRDISVPAGFSN
+                     FEGMRSYIDNIDPRGAIERNLARMSPLVSVTPKKLKWEDLRPIGPHIYNHELPEVPYNA
+                     FLLMSDELGLANMTEGRSKKPKILAKECLEKYSTLRDQTDPILIMKSEKANENFLWKLW
+                     RDCVNTISNEETSNELQKTNYAKWATGDGLTYQKIMKEVAIDDETMYQEEPKIPNKCRV
+                     AAWVQTEMNLLSTLTSKRALDLPEIGPDVAPVEHVGSERRKYFVNEINYCKASTVMMKY
+                     VLFNTSLLNESNASMGKYKVIPITNKVVNEKGESFDMLYGLAVKGQSHLRGDTDVVTVV
+                     TFEFSSTDPRVDSGKWPKYTVFRIGSLFVSGREKSVYLYCRVNGRNKIQMKWGMEARRC
+                     LLQSMQQMEAIVEQESSIQGYDMTKACFKGDRVNSPKTFSIGTQEGKLVKGSFGKALRV
+                     IFTKCLMHYVFGNAQLEGFSAESRRLLLLIQALKDRKGPWVFDLEGMYSGIEECISNNP
+                     WVIQSAYWFNEWLGFEKEGSKVLESVDEIMDE"
+ORIGIN
+        1 tttgatttgc cataatggat acttttatta caagaaactt ccagactaca ataatacaaa
+       61 aggccaaaaa cacaatggca gaatttagtg aagatcctga attacaacca gcaatgctat
+      121 tcaacatctg cgtccatctg gaggtctgct atgtaataag tgatatgaat tttcttgatg
+      181 aagaaggaaa aacatataca gcattagaag gacaaggaaa agaacaaaac ttgagaccac
+      241 aatatgaagt aattgaggga atgccaagaa acatagcatg gatggttcaa agatccttag
+      301 cccaagagca tggaatagag actccaaggt atctggctga tttattcgat tatagaacca
+      361 aaaggtttat agaagttgga ataacaaaag gattggctga cgattacttt tggaaaaaga
+      421 aagaaaagct gggaaatagc atggaactga tgatattcag ctacaatcaa gactattcgt
+      481 taagtaatga atcctcattg gatgaagaag ggaaagggag agtgctaagc agactaacag
+      541 aacttcaggc tgaattaagt ttgaaaaacc tatggcaagt tctcatagga gaagaagata
+      601 ttgaaaaagg aattgacttt aaacttggac agacaatatc taaactaagg gatatatctg
+      661 ttccagctgg tttctccaat tttgaaggaa tgaggagcta cattgacaat atagatccta
+      721 gaggagcaat agagagaaat ctagcaagga tgtctccctt agtatcagtt actcctaaaa
+      781 agttgaaatg ggaggaccta agaccaatag ggcctcacat ttataaccat gagctaccag
+      841 aagttccata taatgccttt cttcttatgt ctgatgaatt ggggctggcc aatatgactg
+      901 aagggagatc caagaaaccg aagatattag ccaaagaatg tctagaaaag tactcaacac
+      961 tacgggatca aactgaccca atattaataa tgaaaagcga aaaagccaat gaaaacttcc
+     1021 tatggaagct gtggagggac tgtgtaaata caataagtaa tgaggaaaca agtaacgaat
+     1081 tacaaaaaac caattatgcc aagtgggcca caggagatgg attaacatac cagaaaataa
+     1141 tgaaagaagt agcaatagat gatgaaacaa tgtaccaaga agagcccaaa atacctaaca
+     1201 aatgtagagt ggctgcttgg gtccaaacag agatgaatct attgagcact cttacaagta
+     1261 aaagggccct ggatctgcca gaaataggtc cagacgtagc acctgtggaa catgtaggga
+     1321 gtgaaagaag aaaatacttt gttaatgaaa tcaattactg taaggcctct acagttatga
+     1381 tgaagtatgt actctttaac acttcattac tgaatgaaag caatgccagt atgggaaaat
+     1441 ataaagtaat accaataacc aacaaagtag taaatgaaaa aggagagagt tttgacatgc
+     1501 tttatggtct ggcggttaaa ggacaatctc atctgagggg agatacggat gttgtaacag
+     1561 ttgtgacttt tgaatttagt agtacagatc ccagagtgga ctcaggaaag tggccaaaat
+     1621 atactgtatt tagaattggt tccttatttg tgagcgggag ggaaaaatct gtgtacctat
+     1681 attgccgagt gaatggtaga aataagatcc aaatgaaatg gggaatggaa gctagaagat
+     1741 gtctgcttca atcaatgcaa caaatggaag caattgttga acaagaatca tcaatacaag
+     1801 gatatgacat gaccaaagct tgttttaagg gagacagagt gaacagcccc aaaactttca
+     1861 gtattggaac tcaagaagga aaactagtaa aaggatcctt tgggaaagca ctaagagtaa
+     1921 tatttactaa atgtttgatg cattatgtat ttggaaatgc tcaattggag ggttttagtg
+     1981 ccgaatctag gagacttcta ctgttaattc aagcattaaa ggacagaaag ggcccttggg
+     2041 tgttcgactt ggagggaatg tattctggga tagaggaatg tattagtaac aacccttggg
+     2101 taatacagag tgcatactgg tttaatgaat ggttgggctt tgaaaaagag gggagtaagg
+     2161 tattagaatc agtagatgaa ataatggatg aatgaaagaa ggacatagtg ctcaatttgg
+     2221 tactattttg ttcattatgt atctaaacat ccaataaaaa gaattgagaa tta
+//

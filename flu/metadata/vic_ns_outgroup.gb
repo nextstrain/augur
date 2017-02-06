@@ -1,0 +1,80 @@
+LOCUS       CY018817                1058 bp    DNA              VRL 29-DEC-2006
+DEFINITION  Influenza B virus (B/Hong Kong/02/1993) segment 8, complete
+            sequence.
+ACCESSION   CY018817
+VERSION     CY018817.1
+KEYWORDS    .
+SOURCE      Influenza B virus (B/Hong Kong/02/1993)
+  ORGANISM  Influenza B virus (B/Hong Kong/02/1993)
+            Viruses; ssRNA viruses; ssRNA negative-strand viruses;
+            Orthomyxoviridae; Influenzavirus B.
+REFERENCE   1  (bases 1 to 1058)
+  AUTHORS   Spiro,D., Sengamalay,N., Boyne,A., Bera,J., Halpin,R., Wang,S.,
+            Ghedin,E., Zaborsky,J., Subbu,V., Sparenborg,J., Gallagher,T.,
+            Overton,L., Althoff,R., Liu,X., Salzberg,S.L., Sitz,J., Katzel,D.,
+            Neupane,R., Shumway,M., Koo,H., Griesemer,S., St. George,K.,
+            Bennett,R., Taylor,J., Klimov,A., Hall,H., Balish,A., Xu,X.,
+            Shaw,M., Cox,N., Bao,Y., Bolotov,P., Dernovoy,D., Kiryutin,B.,
+            Lipman,D.J. and Tatusova,T.
+  TITLE     The NIAID Influenza Genome Sequencing Project
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 1058)
+  CONSRTM   The NIAID Influenza Genome Sequencing Consortium
+  TITLE     Direct Submission
+  JOURNAL   Submitted (29-DEC-2006) on behalf of TIGR/Wadsworth-NYSDOH and
+            CDC/NCBI, National Center for Biotechnology Information, NIH,
+            Bethesda, MD 20894, USA
+FEATURES             Location/Qualifiers
+     source          1..1058
+                     /collection_date="15-Feb-1993"
+                     /country="Hong Kong: Hong Kong"
+                     /db_xref="taxon:416687"
+                     /host="Homo sapiens"
+                     /lab_host="MDCK 4 passage(s)"
+                     /mol_type="viral cRNA"
+                     /organism="Influenza B virus (B/Hong Kong/02/1993)"
+                     /segment="8"
+                     /strain="Influenza B virus (B/Hong Kong/02/1993)"
+     gene            23..1046
+                     /gene="NS2"
+     CDS             join(23..55,711..1046)
+                     /codon_start=1
+                     /gene="NS2"
+                     /product="nonstructural protein 2"
+                     /protein_id="ABL77328.1"
+                     /translation="MADNMTTTQIEWRMKKMAIGSSTHSSSVLMKDIQSQFEQLKLRWE
+                     SYPNLVKSTDYHQKRETIRLVTEELYLLSKRIDDSILFHKTVIANSSIIADMIVSLSLL
+                     ETLYEMKDVVEVYSRQCL"
+     gene            23..868
+                     /gene="NS1"
+     CDS             23..868
+                     /codon_start=1
+                     /gene="NS1"
+                     /product="nonstructural protein 1"
+                     /protein_id="ABL77327.1"
+                     /translation="MADNMTTTQIEVGPGATNATINFEAGILECYERLSWQRALDYPGQ
+                     DRLNRLKRKLESRIKTHNKSEPESKRMSLEERKAIGVKMMKVLLFMNPSAGIEGFEPYC
+                     MKNSSNSSCPKYNWTDYPSTPGRCLDDIEEEPEDVDGPTEIVLRDMNNKDARQKIKEEV
+                     NTQKEGKFRLTIKRDIRNVLSLRVLVNGTFLKHPNGYKSLSTLHRLNAYDQSGRLVAKL
+                     VATDDLTVEDEEDGHRILNSLFERLNEGHSKPIRAAETAVGVLSQFGQEHRLSPEEGDN
+                     "
+ORIGIN
+        1 tagtcactgg caaacagaaa aaatggcgga caacatgacc acaacacaaa ttgaggtggg
+       61 tccaggagca accaatgcca ccataaactt tgaagcagga attctggagt gctatgaaag
+      121 gctttcatgg caaagagccc ttgactaccc tggtcaagac cgcctaaaca gactaaagag
+      181 aaaattagag tcaagaataa agactcacaa caaaagtgag cctgaaagta aaaggatgtc
+      241 tcttgaagag agaaaagcaa ttggagtaaa aatgatgaaa gtgctcctat ttatgaatcc
+      301 atctgctgga attgaagggt ttgagccata ctgtatgaaa aattcctcaa atagcagctg
+      361 tccgaaatac aattggaccg attacccttc aacaccagga aggtgccttg atgacataga
+      421 agaagaacca gaggatgttg atggcccaac tgaaatagta ttgagggaca tgaacaacaa
+      481 agatgcaagg caaaagataa aggaggaagt aaacactcag aaagaaggga agttccgttt
+      541 gacaataaaa agggatatac gtaatgtgct gtccttgaga gtgttggtaa acggaacatt
+      601 cctcaaacac cccaatggat acaagtcctt atcaactctg catagattga atgcatatga
+      661 ccagagtgga aggcttgttg ctaaacttgt tgctactgat gatcttacag tggaggatga
+      721 agaagatggc catcggatcc tcaactcact cttcgagcgt cttaatgaag gacattcaaa
+      781 gccaattcga gcagctgaaa ctgcggtggg agtcttatcc caatttggtc aagagcaccg
+      841 attatcacca gaagagggag acaattagac tggtcacgga agaactttat cttttaagta
+      901 aaagaattga tgacagcata ttgttccaca aaacagtaat agctaacagc tccataatag
+      961 ctgacatgat tgtatcatta tcattattgg aaacattgta tgaaatgaag gatgtggttg
+     1021 aagtgtacag caggcagtgc ttatgaattt aaaataaa
+//
