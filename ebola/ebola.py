@@ -98,7 +98,7 @@ division_cmap = [
 
 color_options = {
     "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete", "color_map":country_cmap},
-    "division":{"key":"division", "legendTitle":"District", "menuItem":"District", "type":"discrete", "color_map":division_cmap},
+    "division":{"key":"division", "legendTitle":"Division", "menuItem":"Division", "type":"discrete", "color_map":division_cmap},
     "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
     "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
 }
@@ -147,15 +147,15 @@ if __name__=="__main__":
     ebola.export(controls = attribute_nesting, geo_attributes = geo_attributes,
                 color_options=color_options, panels=panels)
 
-
-    # plot an approximate skyline
-    from matplotlib import pyplot as plt
-    T = ebola.tree.tt
-    plt.figure()
-    skyline = T.merger_model.skyline(n_points = 20, gen = 50/T.date2dist.slope,
-                                     to_numdate = T.date2dist.to_numdate)
-    plt.ticklabel_format(useOffset=False)
-    plt.plot(skyline.x, skyline.y)
-    plt.ylabel('effective population size')
-    plt.xlabel('year')
-    plt.savefig('ebola_skyline.png')
+    plot_skyline = False
+    if plot_skyline: # plot an approximate skyline
+        from matplotlib import pyplot as plt
+        T = ebola.tree.tt
+        plt.figure()
+        skyline = T.merger_model.skyline(n_points = 20, gen = 50/T.date2dist.slope,
+                                         to_numdate = T.date2dist.to_numdate)
+        plt.ticklabel_format(useOffset=False)
+        plt.plot(skyline.x, skyline.y)
+        plt.ylabel('effective population size')
+        plt.xlabel('year')
+        plt.savefig('ebola_skyline.png')
