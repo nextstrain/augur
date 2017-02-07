@@ -181,7 +181,7 @@ class titers(object):
         self.titer_stats()
 
 
-    def make_training_set(self, training_fraction=0.9, subset_strains=False, **kwargs):
+    def make_training_set(self, training_fraction=1.0, subset_strains=False, **kwargs):
         if training_fraction<1.0: # validation mode, set aside a fraction of measurements to validate the fit
             self.test_titers, self.train_titers = {}, {}
             if subset_strains:    # exclude a fraction of test viruses as opposed to a fraction of the titers
@@ -246,7 +246,7 @@ class titers(object):
         return np.mean( (self.titer_dist - np.dot(self.design_matrix, self.model_params))**2 )
 
 
-    def validate(self, plot=False, cutoff=0.0, validation_set = None, fname='plot.png'):
+    def validate(self, plot=False, cutoff=0.0, validation_set = None, fname=None):
         '''
         predict titers of the validation set (separate set of test_titers aside previously)
         and compare against known values. If requested by plot=True,
@@ -274,7 +274,7 @@ class titers(object):
             import matplotlib.pyplot as plt
             import seaborn as sns
             fs=16
-            sns.set_style('whitegrid')
+            sns.set_style('darkgrid')
             plt.figure()
             ax = plt.subplot(111)
             plt.plot([-1,6], [-1,6], 'k')
@@ -287,7 +287,9 @@ class titers(object):
                      +'\n'+str(round(self.abs_error, 2))+'/'+str(round(self.rms_error, 2))+' (abs/rms)'
                      + '\n' + str(self.r2), fontsize = fs-2)
             plt.tight_layout()
-            plt.savefig(fname)
+
+            if fname:
+                plt.savefig(fname)
 
     def reference_virus_statistic(self):
         '''
