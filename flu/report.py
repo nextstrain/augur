@@ -12,7 +12,7 @@ import seaborn as sns
 
 mutations = {"h3n2": [('HA1', 170,'K'), ('HA1', 158,'F'), ('HA1', 158, 'S'),
                       ('HA1', 130, 'K'), ('HA1', 141, 'K')],
-              "h1n1pdm": [('HA1', 161, 'N'), ('HA2', 174, 'E')]
+              "h1n1pdm": [('HA1', 161, 'N'), ('HA2', 173, 'E'), ('HA1', 182, 'P'), ('HA1', 214, 'G')]
                       }
 region_colors = {r:col for r, col in zip(sorted(region_groups.keys()),
                                          sns.color_palette(n_colors=len(region_groups)))}
@@ -43,7 +43,7 @@ if __name__ == '__main__':
                    build_data_path = build_data_path, reference='flu/metadata/'+params.lineage+'_outgroup.gb',
                    proteins=['SigPep', 'HA1', 'HA2'],
                    method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=2.*ppy)
-
+    age_dist={}
     for region, group in region_groups.iteritems():
         flu.load_sequences(fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
                              5:'country', 7:"city", 8:"passage",9:'lab', 10:'age', 11:'gender'})
