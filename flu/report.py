@@ -17,6 +17,8 @@ mutations = {"h3n2": [('HA1', 170,'K'), ('HA1', 158,'F'), ('HA1', 158, 'S'),
 region_colors = {r:col for r, col in zip(sorted(region_groups.keys()),
                                          sns.color_palette(n_colors=len(region_groups)))}
 
+formats = ['png', 'svg', 'pdf']
+
 if __name__ == '__main__':
     import argparse
 
@@ -44,7 +46,8 @@ if __name__ == '__main__':
 
     for region, group in region_groups.iteritems():
         flu.load_sequences(fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
-                             5:'country', 7:"city", 12:"subtype",13:'lineage'})
+                             5:'country', 7:"city", 8:"passage",9:'lab', 10:'age', 11:'gender'})
+        flu.parse_age()
         flu.seqs.filter(lambda s:
                                 (s.attributes['date']>=time_interval[0]
                                  and s.attributes['date']<time_interval[1]
@@ -58,6 +61,45 @@ if __name__ == '__main__':
 #        import ipdb; ipdb.set_trace()
         frequencies[region] = (flu.mutation_frequencies, flu.mutation_frequency_confidence, flu.mutation_frequency_counts)
         flu.mutation_frequencies, flu.mutation_frequency_confidence, flu.mutation_frequency_counts = {}, {}, {}
+        age_dist[region]={}
+        plt.figure()
+        for mi, (gene,pos, aa) in enumerate(mutations[params.lineage]):
+            age_dist[region][(gene, pos, aa)] = ([x.attributes['age'] for x in flu.seqs.translations[gene]
+                                                 if not np.isnan(x.attributes['age'])
+                                                 and x.seq[pos]==aa],
+                                                 [x.attributes['age'] for x in flu.seqs.translations[gene]
+                                                 if not np.isnan(x.attributes['age'])
+                                                 and x.seq[pos]!=aa])
+
+            n_points = len(age_dist[region][(gene, pos, aa)][0])
+            y, x = np.histogram(age_dist[region][(gene, pos, aa)][0],
+                                bins=np.linspace(0,100,11), density=True)
+            plt.plot(0.5*(x[1:]+x[:-1]), y, label="%s: %d%s, n=%d"%(gene, pos+1, aa, n_points))
+        plt.title("region: "+region)
+        plt.legend()
+        plt.xlabel('age')
+        plt.ylabel('density')
+        for fmt in formats:
+          plt.savefig(store_data_path+'_age_distribution_%s.%s'%(region,fmt))
+
+
+    age_dist['global'] =  defaultdict(list)
+    for region, group in region_groups.iteritems():
+        for mi, (gene,pos, aa) in enumerate(mutations[params.lineage]):
+            age_dist['global'][(gene, pos, aa)].extend(age_dist[region][(gene, pos, aa)][0])
+    plt.figure()
+    for mi, (gene,pos, aa) in enumerate(mutations[params.lineage]):
+        n_points = len(age_dist["global"][(gene, pos, aa)][0])
+        y, x = np.histogram(age_dist["global"][(gene, pos, aa)][0],
+                            bins=np.linspace(0,100,11), density=True)
+        plt.plot(0.5*(x[1:]+x[:-1]), y, label="%s: %d%s, n=%d"%(gene, pos+1, aa, n_points))
+    plt.title("global")
+    plt.legend()
+    plt.xlabel('age')
+    plt.ylabel('density')
+    for fmt in formats:
+      plt.savefig(store_data_path+'_age_distribution_%s.%s'%("global",fmt))
+
 
     # finally add a global sample
     flu.load_sequences(fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
@@ -98,7 +140,8 @@ if __name__ == '__main__':
                          c='k', label='global')
         if mi==0:
           axs[mi].legend()
-    plt.savefig(store_data_path+'_frequencies.pdf')
+    for fmt in formats:
+      plt.savefig(store_data_path+'_frequencies.'+fmt)
 
     # make plot with total sequence count
     fig = plt.figure()
@@ -111,4 +154,5 @@ if __name__ == '__main__':
     ax.set_ylabel("sequence count")
     ax.set_xlabel("year")
     ax.ticklabel_format(useOffset=False)
-    plt.savefig(store_data_path+'_seq_count.pdf')
+    for fmt in formats:
+      plt.savefig(store_data_path+'_seq_count.'+fmt)

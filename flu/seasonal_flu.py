@@ -203,6 +203,22 @@ class flu_process(process):
                             threshold=threshold_func,
                             priority=sampling_priority, **kwargs)
 
+    def parse_age(self):
+        for seq in self.seqs.all_seqs.values():
+            tmp = seq.attributes['age']
+            if tmp=='?':
+                seq.attributes['age'] = np.nan
+            elif tmp[-1]=='y':
+                seq.attributes['age'] = float(tmp[:-1])
+            elif tmp[-1]=='m':
+                seq.attributes['age'] = float(tmp[:-1])/12.0
+            elif tmp[-1]=='d':
+                seq.attributes['age'] = float(tmp[:-1])/365.0
+            else:
+                try:
+                    seq.attributes['age'] = float(tmp)
+                except:
+                    seq.attributes['age'] = np.nan
 
 
     def HI_model(self, **kwargs):
