@@ -144,12 +144,12 @@ class flu_process(process):
 
 
     def subsample(self, sampling_threshold, all_regions=False, **kwargs):
-        sequence_count_total = defaultdict(int)
-        sequence_count_region = defaultdict(int)
+        self.sequence_count_total = defaultdict(int)
+        self.sequence_count_region = defaultdict(int)
         for seq in self.seqs.all_seqs.values():
-            sequence_count_total[(seq.attributes['date'].year,
+            self.sequence_count_total[(seq.attributes['date'].year,
                                   seq.attributes['date'].month)]+=1
-            sequence_count_region[(seq.attributes['region'],
+            self.sequence_count_region[(seq.attributes['region'],
                                   seq.attributes['date'].year,
                                   seq.attributes['date'].month)]+=1
 
@@ -166,10 +166,10 @@ class flu_process(process):
                         x.attributes['date'].year,
                         x.attributes['date'].month)
             def threshold_func(x):
-                if sequence_count_total[(x[1], x[2])]<total_threshold:
+                if self.sequence_count_total[(x[1], x[2])]<total_threshold:
                     return total_threshold
                 else:
-                    region_counts = sorted([sequence_count_region[(r, x[1], x[2])] for r in regions])
+                    region_counts = sorted([self.sequence_count_region[(r, x[1], x[2])] for r in regions])
                     if region_counts[0]>sampling_threshold:
                         return sampling_threshold
                     else:

@@ -152,13 +152,15 @@ class process(object):
         self.seqs.translate(proteins=self.proteins)
 
 
-    def estimate_mutation_frequencies(self, region="global", pivots=24):
+    def estimate_mutation_frequencies(self, region="global", pivots=24, include_set=None, min_freq=0.01):
         '''
         calculate the frequencies of mutation in a particular region
         currently the global frequencies should be estimated first
         because this defines the set of positions at which frequencies in
         other regions are estimated.
         '''
+        if include_set is None:
+            include_set = {}
         if not hasattr(self.seqs, 'aln'):
             print("Align sequences first")
             return
@@ -202,12 +204,15 @@ class process(object):
             print ("region must be string or tuple")
             return
         for prot, aln in [('nuc',self.seqs.aln)]+ self.seqs.translations.items():
+            if prot in include_set:
+                tmp_include_set = [x for x in include_set[prot]]
+            else:
+                tmp_include_set = []
             if region_match=="global":
                 tmp_aln = filter_alignment(aln, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
-                include_set=[]
             else:
                 tmp_aln = filter_alignment(aln, region=region_match, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
-                include_set = set([pos for (pos, mut) in self.mutation_frequencies[('global', prot)]])
+                tmp_include_set += set([pos for (pos, mut) in self.mutation_frequencies[('global', prot)]])
             time_points = [np.mean(x.attributes['num_date']) for x in tmp_aln]
             if len(time_points)==0:
                 print('no samples in region', region_name, prot)
@@ -217,7 +222,7 @@ class process(object):
             aln_frequencies = alignment_frequencies(tmp_aln, time_points, self.pivots,
                                             ws=max(2,len(time_points)//10),
                                             **self.kwargs)
-            aln_frequencies.mutation_frequencies(min_freq=0.01)
+            aln_frequencies.mutation_frequencies(min_freq=min_freq, include_set=tmp_include_set)
             self.mutation_frequencies[(region_name,prot)] = aln_frequencies.frequencies
             self.mutation_frequency_confidence[(region_name,prot)] = aln_frequencies.calc_confidence()
             self.mutation_frequency_counts[region_name]=aln_frequencies.counts

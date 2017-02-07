@@ -407,7 +407,7 @@ class alignment_frequencies(object):
         else:
             minor_freqs = 1.0 - af.max(axis=0)
         self.frequencies = {}
-        for pos in set.union(set(np.where(minor_freqs>min_freq)[0]), include_set):
+        for pos in sorted(set.union(set(np.where(minor_freqs>min_freq)[0]), include_set)):
             # indices determine the indicies of mutations in descending order by frequency
             nis = np.argsort(af[:,pos])[::-1]
             nis = nis[af[nis,pos]>0]
@@ -423,14 +423,17 @@ class alignment_frequencies(object):
             muts = alphabet[nis]
             obs = {}
             for ni, mut in zip(nis, muts):
-                if (af[ni,pos]>min_freq and af[ni,pos]<1-min_freq) or ni==0:
+                if (af[ni,pos]>min_freq and af[ni,pos]<1-min_freq) or ni==0 or (pos in include_set):
                     obs[(pos, mut)] = column==mut
                 else:
                     break
 
             # if multiple states are below frequency threshold, glob them together as 'other'
-            if len(obs)!=len(nis):
+            if len(obs)==0:
+                obs[(pos, muts[0])] = column==muts[0]
+            elif len(obs)!=len(nis):
                 tmp = ~np.any(obs.values(), axis=0) # pull out sequences not yet assigned
+#                import ipdb; ipdb.set_trace();
                 if any(tmp):
                     if len(obs)==len(nis)-1: # if only category left, assign it
                         obs[(pos, muts[-1])] = tmp
