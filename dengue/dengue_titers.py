@@ -91,16 +91,19 @@ class dengue_process(process):
             n.attr['cTiter'] = n.cTiter
             n.attr['dTiter'] = n.dTiter
 
-        if kwargs['training_fraction'] != 1.0:
-            self.titer_tree.validate(plot=True, fname='treeModel_%s.png'%lineage)
-
-
         # SUBSTITUTION MODEL
         self.titer_subs = substitution_model(self.tree.tree, titer_fname = self.titer_fname,**kwargs)
         self.titer_subs.prepare(**kwargs)
         self.titer_subs.train(**kwargs)
+
         if kwargs['training_fraction'] != 1.0:
-            self.titer_subs.validate(plot=True, fname='subModel_%s.png'%lineage)
+            self.titer_tree.validate() #(plot=True, fname='treeModel_%s.png'%lineage)
+            self.titer_subs.validate() #(plot=True, fname='subModel_%s.png'%lineage)
+            logfile = open('params_log.tsv', 'a')
+            logfile.write('\t'.join(['substitution_model', lineage, '%.3f'%kwargs['lam_pot'], '%.3f'%kwargs['lam_avi'], '%.3f'%kwargs['lam_drop'], '%.3f'%self.titer_subs.abs_error, '%.3f'%self.titer_subs.rms_error, '%.3f'%self.titer_subs.r2])+'\n')
+            logfile.write('\t'.join(['tree_model', lineage, '%.3f'%kwargs['lam_pot'], '%.3f'%kwargs['lam_avi'], '%.3f'%kwargs['lam_drop'], '%.3f'%self.titer_tree.abs_error, '%.3f'%self.titer_tree.rms_error, '%.3f'%self.titer_tree.r2])+'\n')
+            logfile.close()
+
 
     def titer_export(self):
         from base.io_util import write_json
