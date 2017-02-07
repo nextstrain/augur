@@ -4,6 +4,7 @@ temp*
 data/
 build/
 store/
+dengue/utils/
 
 # Compiled source #
 ###################
