@@ -102,7 +102,8 @@ if __name__=="__main__":
         dropped_strains = [
             "THA/PLCal_ZV/2013", "PLCal_ZV", # true strains, too basal for analysis
             "ZF36_36S", # possible contamination
-            "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016" # true strains, but duplicates of other strains in dataset
+            "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", # true strains, but duplicates of other strains in dataset
+            "Bahia04" # excessive terminal branch length
         ]
         zika.seqs.filter(lambda s: s.id not in dropped_strains)
         zika.seqs.subsample(category = lambda x:(x.attributes['date'].year, x.attributes['date'].month),
