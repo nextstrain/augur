@@ -91,14 +91,16 @@ class dengue_process(process):
             n.attr['cTiter'] = n.cTiter
             n.attr['dTiter'] = n.dTiter
 
-        self.titer_tree.validate(plot=True, fname='treeModel_%s.png'%lineage)
+        if kwargs['training_fraction'] != 1.0:
+            self.titer_tree.validate(plot=True, fname='treeModel_%s.png'%lineage)
 
 
         # SUBSTITUTION MODEL
         self.titer_subs = substitution_model(self.tree.tree, titer_fname = self.titer_fname,**kwargs)
         self.titer_subs.prepare(**kwargs)
         self.titer_subs.train(**kwargs)
-        self.titer_subs.validate(plot=True, fname='subModel_%s.png'%lineage)
+        if kwargs['training_fraction'] != 1.0:
+            self.titer_subs.validate(plot=True, fname='subModel_%s.png'%lineage)
 
     def titer_export(self):
         from base.io_util import write_json
@@ -124,52 +126,52 @@ class dengue_process(process):
         else:
             print('Substitution model not yet trained')
 
-def plot_trace(ax, pivots, freq, err, n_std_dev=1, err_smoothing=3, show_errorbars=True, c='r', ls='-', label=None):
-    ax.plot(pivots, freq, c=c, ls=ls, label=label)
-    if show_errorbars:
-        smerr = 1.0/np.convolve(1.0/err, np.ones(err_smoothing, dtype=float)/err_smoothing, mode='same')
-        ax.fill_between(pivots, np.maximum(0,freq-n_std_dev*smerr),
-                np.minimum(1,freq+n_std_dev*smerr),
-                facecolor=c, linewidth=0, alpha=0.1)
-
-def plot_frequencies(dengue, gene, mutation=None, plot_regions=None, all_muts=False, ax=None, **kwargs):
-    import seaborn as sns
-    sns.set_style('whitegrid')
-    cols = sns.color_palette()
-    linestyles = ['-', '--', '-.', ':']
-    if plot_regions is None:
-        plot_regions=regions
-    pivots = dengue.pivots
-    if ax is None:
-        plt.figure()
-        ax=plt.subplot(111)
-    if type(mutation)==int:
-        mutations = [x for x,freq in dengue.mutation_frequencies[('global', gene)].iteritems()
-                     if (x[0]==mutation)&(freq[0]<0.5 or all_muts)]
-    elif mutation is not None:
-        mutations = [mutation]
-    else:
-        mutations=None
-
-    if mutations is None:
-        for ri, region in enumerate(plot_regions):
-            count=dengue.mutation_frequency_counts[region]
-            plt.plot(pivots, count, c=cols[ri%len(cols)], label=region)
-    else:
-        print("plotting mutations", mutations)
-        for ri,region in enumerate(plot_regions):
-            for mi,mut in enumerate(mutations):
-                if mut in dengue.mutation_frequencies[(region, gene)]:
-                    freq = dengue.mutation_frequencies[(region, gene)][mut]
-                    err = dengue.mutation_frequency_confidence[(region, gene)][mut]
-                    c=cols[ri%len(cols)]
-                    label_str = str(mut[0]+1)+mut[1]+', '+region
-                    plot_trace(ax, pivots, freq, err, c=c,
-                        ls=linestyles[mi%len(linestyles)],label=label_str, **kwargs)
-                else:
-                    print(mut, 'not found in region',region)
-    ax.ticklabel_format(useOffset=False)
-    ax.legend(loc=2)
+# def plot_trace(ax, pivots, freq, err, n_std_dev=1, err_smoothing=3, show_errorbars=True, c='r', ls='-', label=None):
+#     ax.plot(pivots, freq, c=c, ls=ls, label=label)
+#     if show_errorbars:
+#         smerr = 1.0/np.convolve(1.0/err, np.ones(err_smoothing, dtype=float)/err_smoothing, mode='same')
+#         ax.fill_between(pivots, np.maximum(0,freq-n_std_dev*smerr),
+#                 np.minimum(1,freq+n_std_dev*smerr),
+#                 facecolor=c, linewidth=0, alpha=0.1)
+#
+# def plot_frequencies(dengue, gene, mutation=None, plot_regions=None, all_muts=False, ax=None, **kwargs):
+#     import seaborn as sns
+#     sns.set_style('whitegrid')
+#     cols = sns.color_palette()
+#     linestyles = ['-', '--', '-.', ':']
+#     if plot_regions is None:
+#         plot_regions=regions
+#     pivots = dengue.pivots
+#     if ax is None:
+#         plt.figure()
+#         ax=plt.subplot(111)
+#     if type(mutation)==int:
+#         mutations = [x for x,freq in dengue.mutation_frequencies[('global', gene)].iteritems()
+#                      if (x[0]==mutation)&(freq[0]<0.5 or all_muts)]
+#     elif mutation is not None:
+#         mutations = [mutation]
+#     else:
+#         mutations=None
+#
+#     if mutations is None:
+#         for ri, region in enumerate(plot_regions):
+#             count=dengue.mutation_frequency_counts[region]
+#             plt.plot(pivots, count, c=cols[ri%len(cols)], label=region)
+#     else:
+#         print("plotting mutations", mutations)
+#         for ri,region in enumerate(plot_regions):
+#             for mi,mut in enumerate(mutations):
+#                 if mut in dengue.mutation_frequencies[(region, gene)]:
+#                     freq = dengue.mutation_frequencies[(region, gene)][mut]
+#                     err = dengue.mutation_frequency_confidence[(region, gene)][mut]
+#                     c=cols[ri%len(cols)]
+#                     label_str = str(mut[0]+1)+mut[1]+', '+region
+#                     plot_trace(ax, pivots, freq, err, c=c,
+#                         ls=linestyles[mi%len(linestyles)],label=label_str, **kwargs)
+#                 else:
+#                     print(mut, 'not found in region',region)
+#     ax.ticklabel_format(useOffset=False)
+#     ax.legend(loc=2)
 
 def select_serotype(infile, path, serotype):
     '''
@@ -184,41 +186,20 @@ def select_serotype(infile, path, serotype):
 
 if __name__=="__main__":
     import argparse
-    import matplotlib.pyplot as plt
-    plt.ion()
 
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
-    parser.add_argument('-v', '--viruses_per_month', type = int, default = 10, help='number of viruses sampled per month')
-    parser.add_argument('-y', '--years_back', type = str, default = 3, help='number of years back to sample')
-    parser.add_argument('--resolution', type = str, help ="outfile suffix, can determine -v and -y")
-    parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
-    parser.add_argument('-d', '--download', action='store_true', default = False, help='load from database')
-    parser.add_argument('-t', '--time_interval', nargs=2, help='specify time interval rather than use --years_back')
+    parser.add_argument('-v', '--viruses_per_month', type = int, default = 3, help='number of viruses sampled per month')
+    parser.add_argument('-t', '--time_interval', nargs=2, default = ('1900-01-01', '2017-01-01'), help='specify time interval rather than use --years_back')
     parser.add_argument('-s', '--serotype', type = str, choices=['1', '2', '3', '4', 'any', 'all'], default='any', help = 'which serotype of dengue to build trees for; any = include all serotypes in one build; all = run all 5 builds')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
-    parser.add_argument('--no_tree', default=False, action='store_true', help = "don't build a tree")
-    parser.add_argument('-tf', '--titer_fname', type = str, default='dengue', help = 'prefix of titer and strain fnames found in fauna/data. E.g., `agm_dengue` --> `agm_dengue_titers.tsv`, `agm_dengue_strains.tsv`')
+    parser.add_argument('--fname', type = str, default=None, help = 'Specify input data filename (instead of inferring from serotype). Should be located in ../fauna/data directory.')
+    parser.add_argument('--path_name', type = str, default=None, help = 'Prefix for output directories')
+    parser.add_argument('--lam_pot', type = float, default=0.5, help = 'Regularization term: serum potency, Pb (L2)')
+    parser.add_argument('--lam_avi', type = float, default=3.0, help = 'Regularization term: virus avidity, Va (L2)')
+    parser.add_argument('--lam_drop', type = float, default=1.0, help = 'Regularization term: distance, Dab (L1)')
+    parser.add_argument('--training_fraction', type = float, default=1.0, help = 'Fraction of titer measurements to use as training set.')
+
     params = parser.parse_args()
-
-    # default values for --viruses_per_month and --years_back from resolution
-    if params.resolution == "2y":
-		params.viruses_per_month = 15
-		params.years_back = 2
-    elif params.resolution == "3y":
-		params.viruses_per_month = 7
-		params.years_back = 3
-    elif params.resolution == "6y":
-		params.viruses_per_month = 3
-		params.years_back = 6
-    elif params.resolution == "12y":
-		params.viruses_per_month = 2
-		params.years_back = 12
-
-    # construct time_interval from years_back
-    if not params.time_interval:
-        today_str = "{:%Y-%m-%d}".format(datetime.today())
-        date_str = "{:%Y-%m-%d}".format(datetime.today() - timedelta(days=365.25 * params.years_back))
-        params.time_interval = [date_str, today_str]
 
     # For any-serotype build, use dengue 4 outgroup and look for files like dengue.fasta
     serotype = params.serotype
@@ -226,80 +207,63 @@ if __name__=="__main__":
     if serotype == 'any':
         lineage = 'dengue'
         reference_fname = './dengue/metadata/dengue_%s_outgroup.gb'%'4'
-        newest_sequence_file = sorted(glob('../fauna/data/%s.fasta'%lineage), key=lambda f: os.path.getmtime(f))[-1]
+        sequence_fname = sorted(glob('../fauna/data/%s.fasta'%lineage), key=lambda f: os.path.getmtime(f))[-1]
 
     # For serotype-specific build, use the corresponding outgroup
     else:
         lineage = 'dengue_%s'%serotype
         reference_fname = './dengue/metadata/dengue_%s_outgroup.gb'%serotype
-
-        try: # Look for a serotype-specific fasta
-            newest_sequence_file = sorted(glob('../fauna/data/%s*.fasta'%lineage), key=lambda f: os.path.getmtime(f))[-1]
+        try:    # Look for a serotype-specific fasta
+            sequence_fname = sorted(glob('../fauna/data/%s*.fasta'%lineage), key=lambda f: os.path.getmtime(f))[-1]
         except: # If it doesn't exist, try to pull serotype-specific sequences out of the any-serotype fasta (warn the user of this behavior)
-            newest_sequence_file = select_serotype('../fauna/data/dengue.fasta', '../fauna/data/', serotype)
+            sequence_fname = select_serotype('../fauna/data/dengue.fasta', '../fauna/data/', serotype)
             print('WARNING: Did not find serotype-specific fasta file.\nPulled sequences with serotype %s from any-serotype fasta file %s\nWrote these to file %s'%(serotype, '../fauna/data/dengue.fasta', newest_sequence_file))
 
-    input_data_path = newest_sequence_file.split('.fasta')[0]
-    sequence_fname = newest_sequence_file
-    titer_fname = '../fauna/data/'+params.titer_fname+'_titers.tsv'
-    strain_fname = '../fauna/data/'+params.titer_fname+'_strains.tsv'
+    if params.fname:
+        sequence_fname = '../fauna/data/'+params.fname
 
-    if params.resolution:
-        store_data_path = 'store/'+lineage + '_' + params.resolution +'_'
-        build_data_path = 'build/'+lineage + '_' + params.resolution +'_'
+    input_data_path = sequence_fname.split('.fasta')[0]
+    titer_fname = '../fauna/data/dengue_titers.tsv'
+    strain_fname = '../fauna/data/dengue_strains.tsv'
+
+    if params.path_name:
+        store_data_path = 'store/'+params.path_name+'_'
+        build_data_path = 'build/'+params.path_name+'_'
     else:
         store_data_path = 'store/'+lineage + '_'
         build_data_path = 'build/'+lineage + '_'
 
-    ppy = 12
-
     dengue = dengue_process(input_data_path = input_data_path, store_data_path = store_data_path,
                    build_data_path = build_data_path, reference=reference_fname,
                    proteins= ['C', 'M', 'E', 'NS1', 'NS2A', 'NS2B', 'NS3', 'NS4A', '2K', 'NS4B', 'NS5'],
-                   method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=2.*ppy, titer_fname = titer_fname, strain_fname = strain_fname)
+                   method='SLSQP', inertia=np.exp(-1.0/12.0), stiffness=2.*12.0, titer_fname = titer_fname, strain_fname = strain_fname)
 
-
-    if params.load:
+    if params.load: # Load sequences and tree from file
         dengue.load()
-        # dengue.export()
     else:
         dengue.load_sequences(fields={0:'strain', 1:'accession', 2:'date', 3:'region', 4:'country',
                         5:'division', 6: 'location'})
 
         time_interval = [datetime.strptime(x, '%Y-%m-%d').date() for x in params.time_interval]
-        # pivots = np.arange(time_interval[0].year+(time_interval[0].month-1)/12.0,
-        #                    time_interval[1].year+time_interval[1].month/12.0, 1.0/ppy)
-
         dropped_strains = ['DENV1/VIETNAM/BIDV992/2006', 'DENV1/FRANCE/00475/2008', 'DENV1/VIETNAM/BIDV3990/2008', 'DENV2/HAITI/DENGUEVIRUS2HOMOSAPIENS1/2016',# probable recombinants
         'DENV2/AUSTRALIA/QML22/2015' # Wrong serotype? Abnormal date.
         ]
+
         dengue.seqs.filter(lambda s: s.id not in dropped_strains)
         dengue.seqs.filter(lambda s:
             s.attributes['date']>=time_interval[0] and s.attributes['date']<time_interval[1])
-        print(len(dengue.seqs.all_seqs))
         dengue.seqs.filter(lambda s: len(s.seq)>=900)
         dengue.subsample(params.viruses_per_month)
-        dengue.align(debug=True)
-
+        dengue.align(debug=False)
         dengue.dump()
-        # first estimate frequencies globally, then region specific
-        # dengue.estimate_mutation_frequencies(region="global", pivots=pivots)
-        # for region in region_groups.iteritems():
-        #     dengue.estimate_mutation_frequencies(region=region)
 
-        if not params.no_tree:
-            dengue.align(debug=True)
-            dengue.build_tree(debug=True)
-            dengue.clock_filter(n_iqd=3, plot=True)
-            dengue.annotate_tree(Tc=False, timetree=True, reroot='best')
-            # dengue.tree.geo_inference('region')
-            # dengue.estimate_tree_frequencies()
-            dengue.dump()
+        dengue.align(debug=True)
+        dengue.build_tree(debug=True)
+        dengue.clock_filter(n_iqd=3, plot=True)
+        dengue.annotate_tree(Tc=False, timetree=True, reroot='best')
+        dengue.dump()
 
-    dengue.titer_model()
-
-    # H3N2_scores(dengue.tree.tree)
+    dengue.titer_model(lam_pot = params.lam_pot, lam_avi = params.lam_avi, lam_drop = params.lam_drop, training_fraction = params.training_fraction)
     dengue.dump()
-    # dengue.matchClades(clade_designations[lineage])
     dengue.titer_export()
     dengue.export(extra_attr=['serum'], controls=attribute_nesting, color_options=color_options, panels=panels )
