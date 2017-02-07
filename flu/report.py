@@ -89,8 +89,8 @@ if __name__ == '__main__':
             age_dist['global'][(gene, pos, aa)].extend(age_dist[region][(gene, pos, aa)][0])
     plt.figure()
     for mi, (gene,pos, aa) in enumerate(mutations[params.lineage]):
-        n_points = len(age_dist["global"][(gene, pos, aa)][0])
-        y, x = np.histogram(age_dist["global"][(gene, pos, aa)][0],
+        n_points = len(age_dist["global"][(gene, pos, aa)])
+        y, x = np.histogram(age_dist["global"][(gene, pos, aa)],
                             bins=np.linspace(0,100,11), density=True)
         plt.plot(0.5*(x[1:]+x[:-1]), y, label="%s: %d%s, n=%d"%(gene, pos+1, aa, n_points))
     plt.title("global")
