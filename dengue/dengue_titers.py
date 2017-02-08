@@ -129,52 +129,6 @@ class dengue_process(process):
         else:
             print('Substitution model not yet trained')
 
-# def plot_trace(ax, pivots, freq, err, n_std_dev=1, err_smoothing=3, show_errorbars=True, c='r', ls='-', label=None):
-#     ax.plot(pivots, freq, c=c, ls=ls, label=label)
-#     if show_errorbars:
-#         smerr = 1.0/np.convolve(1.0/err, np.ones(err_smoothing, dtype=float)/err_smoothing, mode='same')
-#         ax.fill_between(pivots, np.maximum(0,freq-n_std_dev*smerr),
-#                 np.minimum(1,freq+n_std_dev*smerr),
-#                 facecolor=c, linewidth=0, alpha=0.1)
-#
-# def plot_frequencies(dengue, gene, mutation=None, plot_regions=None, all_muts=False, ax=None, **kwargs):
-#     import seaborn as sns
-#     sns.set_style('whitegrid')
-#     cols = sns.color_palette()
-#     linestyles = ['-', '--', '-.', ':']
-#     if plot_regions is None:
-#         plot_regions=regions
-#     pivots = dengue.pivots
-#     if ax is None:
-#         plt.figure()
-#         ax=plt.subplot(111)
-#     if type(mutation)==int:
-#         mutations = [x for x,freq in dengue.mutation_frequencies[('global', gene)].iteritems()
-#                      if (x[0]==mutation)&(freq[0]<0.5 or all_muts)]
-#     elif mutation is not None:
-#         mutations = [mutation]
-#     else:
-#         mutations=None
-#
-#     if mutations is None:
-#         for ri, region in enumerate(plot_regions):
-#             count=dengue.mutation_frequency_counts[region]
-#             plt.plot(pivots, count, c=cols[ri%len(cols)], label=region)
-#     else:
-#         print("plotting mutations", mutations)
-#         for ri,region in enumerate(plot_regions):
-#             for mi,mut in enumerate(mutations):
-#                 if mut in dengue.mutation_frequencies[(region, gene)]:
-#                     freq = dengue.mutation_frequencies[(region, gene)][mut]
-#                     err = dengue.mutation_frequency_confidence[(region, gene)][mut]
-#                     c=cols[ri%len(cols)]
-#                     label_str = str(mut[0]+1)+mut[1]+', '+region
-#                     plot_trace(ax, pivots, freq, err, c=c,
-#                         ls=linestyles[mi%len(linestyles)],label=label_str, **kwargs)
-#                 else:
-#                     print(mut, 'not found in region',region)
-#     ax.ticklabel_format(useOffset=False)
-#     ax.legend(loc=2)
 
 def select_serotype(infile, path, serotype):
     '''
