@@ -68,6 +68,10 @@ class dengue_process(process):
                 pr = titer_count[sname]
             else:
                 pr = 0
+
+            if seq.id in forced_strains:
+                pr += 10.0
+
             return pr + len(seq.seq)*0.00005 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD'])
 
         self.seqs.subsample(category = sampling_category,
