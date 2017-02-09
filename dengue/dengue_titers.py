@@ -68,7 +68,7 @@ class dengue_process(process):
                 pr = titer_count[sname]
             else:
                 pr = 0
-            return pr + len(seq.seq)*0.0001 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD'])
+            return pr + len(seq.seq)*0.00005 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD'])
 
         self.seqs.subsample(category = sampling_category,
                             threshold=sampling_threshold,
