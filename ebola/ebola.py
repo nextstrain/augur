@@ -132,7 +132,7 @@ if __name__=="__main__":
             "EM_076610" # flare-up index case
         ]
         ebola.seqs.subsample(category = lambda x:(x.attributes['region'], x.attributes['date'].year, x.attributes['date'].month),
-            threshold=params.viruses_per_month, forced_strains = forced_strains)
+            threshold=params.viruses_per_month, priority = lambda x:x.id in forced_strains)
 
         ebola.align()
         ebola.build_tree()

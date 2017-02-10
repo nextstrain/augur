@@ -195,7 +195,7 @@ class sequence_set(object):
         print("after clock filter:",len(self.aln))
 
 
-    def subsample(self, category=None, priority=None, threshold=None, repeated=False, forced_strains=[]):
+    def subsample(self, category=None, priority=None, threshold=None, repeated=False):
         '''
         produce a useful set of sequences from the raw input.
         arguments:
@@ -205,7 +205,6 @@ class sequence_set(object):
         threshold -- callable that determines the number of sequences from each category
                      that is included in the final set. takes arguments, cat and seq
                      alternatively can be an int
-        forced_strains -- list of of strain names that should always be included (set to high priorty)
         '''
         # define filter criteria if not specified
         if category is None:
@@ -229,8 +228,6 @@ class sequence_set(object):
         # sort sequences into categories and assign priority score
         for seq in seqs_to_subsample:
             seq._priority = priority(seq)
-            if seq.id in forced_strains:
-                seq._priority = 1.0
             self.sequence_categories[category(seq)].append(seq)
 
         # sample and record the degree to which a category is under_sampled
@@ -241,8 +238,8 @@ class sequence_set(object):
             seqs.sort(key=lambda x:x._priority, reverse=True)
             self.seqs.update({seq.id:seq for seq in seqs[:threshold( (cat, seqs) )]})
 
-        print("Subsampled to %d sequences"%len(self.all_seqs))
         print("Subsampled to %d sequences"%len(self.seqs))
+
 
     def align(self, debug=False):
         '''
