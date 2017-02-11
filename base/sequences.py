@@ -199,7 +199,8 @@ class sequence_set(object):
         print("after clock filter:",len(self.aln))
 
 
-    def subsample(self, category=None, priority=None, threshold=None, repeated=False, forced_strains=[]):
+    def subsample(self, category=None, priority=None, threshold=None, repeated=False,
+                        forced_strains=[], **kwarks):
         '''
         produce a useful set of sequences from the raw input.
         arguments:

@@ -182,7 +182,33 @@ class flu_process(process):
                             else:
                                 thres += left_to_fill/ri
                                 break
-                        return int(thres)
+                        return max(1,int(thres))
+
+            NA_frac = kwargs['fraction_NA']
+            non_NA_frac = 1-NA_frac
+            def threshold_func_america_first(x):
+                if x[0]=='north_america':
+                    return int(sampling_threshold*NA_frac)
+                else:
+                    nregions = len(regions)-1
+                    total_threshold_world = sampling_threshold*non_NA_frac
+                    region_threshold = total_threshold_world//nregions
+                    region_counts = sorted([self.sequence_count_region[(r, x[1], x[2])]
+                                            for r in regions if r!='north_america'])
+                    if region_counts[0]>region_threshold:
+                        return max(int(region_threshold),1)
+                    else:
+                        left_to_fill = total_threshold_world - nregions*region_counts[0]
+                        thres = region_counts[0]
+                        for ri, rc in zip(range(nregions-1, 0, -1), region_counts[1:]):
+                            if left_to_fill - ri*(rc-thres)>0:
+                                left_to_fill-=ri*(rc-thres)
+                                thres = rc
+                            else:
+                                thres += left_to_fill/ri
+                                break
+                        return max(1,int(thres))
+
 
         # load HI titer count to prioritize sequences
         HI_titer_count = {}
@@ -200,7 +226,7 @@ class flu_process(process):
             return pr + len(seq.seq)*0.0001 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD'])
 
         self.seqs.subsample(category = sampling_category,
-                            threshold=threshold_func,
+                            threshold=threshold_func_america_first,
                             priority=sampling_priority, **kwargs)
 
     def parse_age(self):
@@ -400,20 +426,20 @@ if __name__=="__main__":
 
     # default values for --viruses_per_month and --years_back from resolution
     if params.resolution == "2y":
-        params.viruses_per_month_tree = 8
-        params.viruses_per_month_seq = 15
+        params.viruses_per_month_tree = 80
+        params.viruses_per_month_seq = 150
         params.years_back = 2
     elif params.resolution == "3y":
-        params.viruses_per_month_tree = 5
-        params.viruses_per_month_seq = 10
+        params.viruses_per_month_tree = 50
+        params.viruses_per_month_seq = 100
         params.years_back = 3
     elif params.resolution == "6y":
-        params.viruses_per_month_tree = 3
-        params.viruses_per_month_seq = 10
+        params.viruses_per_month_tree = 30
+        params.viruses_per_month_seq = 100
         params.years_back = 6
     elif params.resolution == "12y":
-        params.viruses_per_month_tree = 2
-        params.viruses_per_month_seq = 10
+        params.viruses_per_month_tree = 20
+        params.viruses_per_month_seq = 100
         params.years_back = 12
 
     # construct time_interval from years_back
@@ -458,7 +484,7 @@ if __name__=="__main__":
         flu.seqs.filter(lambda s: len(s.seq)>=900)
         flu.seqs.filter(lambda s: s.name not in outliers[params.lineage])
 
-        flu.subsample(params.viruses_per_month_seq, all_regions=False)
+        flu.subsample(params.viruses_per_month_seq, all_regions=False, fraction_NA=0.5)
         flu.align()
         flu.dump()
         # first estimate frequencies globally, then region specific
@@ -467,7 +493,7 @@ if __name__=="__main__":
         #     flu.estimate_mutation_frequencies(region=region)
 
         if not params.no_tree:
-            flu.subsample(params.viruses_per_month_tree, all_regions=False, repeated=True)
+            flu.subsample(params.viruses_per_month_tree, all_regions=False, repeated=True, fraction_NA=0.5)
             flu.align()
             flu.build_tree()
             flu.clock_filter(n_iqd=3, plot=False, remove_deep_splits=True)
