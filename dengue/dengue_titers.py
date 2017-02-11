@@ -77,7 +77,6 @@ class dengue_process(process):
         self.seqs.subsample(category = sampling_category,
                             threshold=sampling_threshold,
                             priority=sampling_priority,
-                            forced_strains=forced_strains,
                             **kwargs)
 
     def titer_model(self, **kwargs):
