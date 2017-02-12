@@ -501,6 +501,9 @@ if __name__=="__main__":
     if params.sampling!="even":
         fname_prefix+='_'+params.sampling
 
+    if params.HI!="hi":
+        fname_prefix+='_'+params.HI
+
     input_data_path = '../fauna/data/'+params.lineage
     if params.resolution:
         store_data_path = 'store/'+ fname_prefix + '_' + params.resolution +'_'
