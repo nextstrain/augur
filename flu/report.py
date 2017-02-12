@@ -116,8 +116,8 @@ if __name__ == '__main__':
     flu.subsample(30, all_regions=False)
     flu.align()
     flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=0.2,
-                            include_set = {'HA1':[x[1] for x in mutations[params.lineage]] if x[0]=='HA1',
-                                           'HA2':[x[1] for x in mutations[params.lineage]] if x[0]=='HA2'})
+                            include_set = {'HA1':[x[1] for x in mutations[params.lineage] if x[0]=='HA1'],
+                                           'HA2':[x[1] for x in mutations[params.lineage] if x[0]=='HA2']})
     frequencies['global'] = (flu.mutation_frequencies, flu.mutation_frequency_confidence, flu.mutation_frequency_counts)
     flu.mutation_frequencies, flu.mutation_frequency_confidence, flu.mutation_frequency_counts = {}, {}, {}
 
