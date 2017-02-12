@@ -1,4 +1,6 @@
 from __future__ import division, print_function
+import matplotlib as mpl
+mpl.use('Agg')
 from collections import defaultdict
 import sys
 sys.path.insert(0,'.')  # need to import from base
