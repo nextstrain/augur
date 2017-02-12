@@ -144,6 +144,9 @@ class flu_process(process):
 
 
     def subsample(self, sampling_threshold, all_regions=False, **kwargs):
+        nregions = len(regions)
+        if not all_regions:
+            region_threshold = int(np.ceil(1.0*sampling_threshold/nregions))
         self.sequence_count_total = defaultdict(int)
         self.sequence_count_region = defaultdict(int)
         for seq in self.seqs.all_seqs.values():
@@ -160,47 +163,21 @@ class flu_process(process):
             def threshold_func(x):
                 return sampling_threshold
         else:
-            total_threshold = sampling_threshold*len(regions)
             def sampling_category(x):
                 return (x.attributes['region'],
                         x.attributes['date'].year,
                         x.attributes['date'].month)
             def threshold_func(x):
-                if self.sequence_count_total[(x[1], x[2])]<total_threshold:
-                    return total_threshold
+                if self.sequence_count_total[(x[1], x[2])]<sampling_threshold:
+                    return sampling_threshold
                 else:
                     region_counts = sorted([self.sequence_count_region[(r, x[1], x[2])] for r in regions])
-                    if region_counts[0]>sampling_threshold:
-                        return sampling_threshold
+                    if region_counts[0]>region_threshold:
+                        return region_threshold
                     else:
-                        left_to_fill = total_threshold - len(regions)*region_counts[0]
+                        left_to_fill = sampling_threshold - nregions*region_counts[0]
                         thres = region_counts[0]
                         for ri, rc in zip(range(len(regions)-1, 0, -1), region_counts[1:]):
-                            if left_to_fill - ri*(rc-thres)>0:
-                                left_to_fill-=ri*(rc-thres)
-                                thres = rc
-                            else:
-                                thres += left_to_fill/ri
-                                break
-                        return max(1,int(thres))
-
-            NA_frac = kwargs['fraction_NA']
-            non_NA_frac = 1-NA_frac
-            def threshold_func_america_first(x):
-                if x[0]=='north_america':
-                    return int(sampling_threshold*NA_frac)
-                else:
-                    nregions = len(regions)-1
-                    total_threshold_world = sampling_threshold*non_NA_frac
-                    region_threshold = total_threshold_world//nregions
-                    region_counts = sorted([self.sequence_count_region[(r, x[1], x[2])]
-                                            for r in regions if r!='north_america'])
-                    if region_counts[0]>region_threshold:
-                        return max(int(region_threshold),1)
-                    else:
-                        left_to_fill = total_threshold_world - nregions*region_counts[0]
-                        thres = region_counts[0]
-                        for ri, rc in zip(range(nregions-1, 0, -1), region_counts[1:]):
                             if left_to_fill - ri*(rc-thres)>0:
                                 left_to_fill-=ri*(rc-thres)
                                 thres = rc
@@ -226,8 +203,69 @@ class flu_process(process):
             return pr + len(seq.seq)*0.0001 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD'])
 
         self.seqs.subsample(category = sampling_category,
-                            threshold=threshold_func_america_first,
+                            threshold=threshold_func,
                             priority=sampling_priority, **kwargs)
+
+
+    def subsample_priority_region(self, sampling_threshold, priority_region='north_america', fraction=0.5):
+        self.sequence_count_total = defaultdict(int)
+        self.sequence_count_region = defaultdict(int)
+        for seq in self.seqs.all_seqs.values():
+            self.sequence_count_total[(seq.attributes['date'].year,
+                                  seq.attributes['date'].month)]+=1
+            self.sequence_count_region[(seq.attributes['region'],
+                                  seq.attributes['date'].year,
+                                  seq.attributes['date'].month)]+=1
+
+        def sampling_category(x):
+            return (x.attributes['region'],
+                    x.attributes['date'].year,
+                    x.attributes['date'].month)
+
+
+        def threshold_func(x):
+            if x[0]==priority_region:
+                return int(sampling_threshold*fraction)
+            else:
+                nregions = len(regions)-1
+                total_threshold_world = sampling_threshold*(1-fraction)
+                region_threshold = int(np.ceil(1.0*total_threshold_world/nregions))
+                region_counts = sorted([self.sequence_count_region[(r, x[1], x[2])]
+                                        for r in regions if r!=priority_region])
+                if region_counts[0]>region_threshold:
+                    return region_threshold
+                else:
+                    left_to_fill = total_threshold_world - nregions*region_counts[0]
+                    thres = region_counts[0]
+                    for ri, rc in zip(range(nregions-1, 0, -1), region_counts[1:]):
+                        if left_to_fill - ri*(rc-thres)>0:
+                            left_to_fill-=ri*(rc-thres)
+                            thres = rc
+                        else:
+                            thres += left_to_fill/ri
+                            break
+                    return max(1,int(thres))
+
+
+        # load HI titer count to prioritize sequences
+        HI_titer_count = {}
+        with myopen(self.HI_strains_fname,'r') as ifile:
+            for line in ifile:
+                strain, count = line.strip().split()
+                HI_titer_count[strain]=int(count)
+
+        def sampling_priority(seq):
+            sname = seq.attributes['strain']
+            if sname in HI_titer_count:
+                pr = HI_titer_count[sname]
+            else:
+                pr = 0
+            return pr + len(seq.seq)*0.0001 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD'])
+
+        self.seqs.subsample(category = sampling_category,
+                            threshold=threshold_func,
+                            priority=sampling_priority)
+
 
     def parse_age(self):
         for seq in self.seqs.all_seqs.values():
@@ -420,6 +458,8 @@ if __name__=="__main__":
     parser.add_argument('-l', '--lineage', type = str, default = 'h3n2', help='flu lineage to process')
     parser.add_argument('--new_auspice', default = False, action="store_true", help='file name for new augur')
     parser.add_argument('--confidence', default = False, action="store_true", help='evaluate confidence intervals of internal node timing')
+    parser.add_argument('--sampling', default = 'even', type=str,
+                        help='sample evenly (even), or prioritize one region (region), otherwise sample randomly')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
     parser.add_argument('--no_tree', default=False, action='store_true', help = "don't build a tree")
     params = parser.parse_args()
@@ -484,16 +524,30 @@ if __name__=="__main__":
         flu.seqs.filter(lambda s: len(s.seq)>=900)
         flu.seqs.filter(lambda s: s.name not in outliers[params.lineage])
 
-        flu.subsample(params.viruses_per_month_seq, all_regions=False, fraction_NA=0.5)
+        if params.sampling=='even':
+            flu.subsample(params.viruses_per_month_seq, all_regions=False)
+        elif params.sampling in regions:
+            flu.subsample_priority_region(params.viruses_per_month_seq,
+                                          priority_region=params.sampling, fraction=0.5)
+        else:
+            flu.subsample(params.viruses_per_month_seq, all_regions=True)
+
         flu.align()
         flu.dump()
         # first estimate frequencies globally, then region specific
-        flu.estimate_mutation_frequencies(region="global", pivots=pivots)
+        flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.10)
         # for region in region_groups.iteritems():
         #     flu.estimate_mutation_frequencies(region=region)
 
         if not params.no_tree:
-            flu.subsample(params.viruses_per_month_tree, all_regions=False, repeated=True, fraction_NA=0.5)
+            if params.sampling=='even':
+                flu.subsample(params.viruses_per_month_seq, all_regions=False, repeated=True)
+            elif params.sampling in regions:
+                flu.subsample_priority_region(params.viruses_per_month_tree, priority_region=params.sampling,
+                                              fraction=0.5, repeated=True)
+            else:
+                flu.subsample(params.viruses_per_month_seq, all_regions=True, repeated=True)
+
             flu.align()
             flu.build_tree()
             flu.clock_filter(n_iqd=3, plot=False, remove_deep_splits=True)
