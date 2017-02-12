@@ -126,6 +126,7 @@ if __name__ == '__main__':
     npanels = len(mutations[params.lineage])
     fig, axs = plt.subplots(npanels, 1, figsize=(8, 2+3*npanels), sharex=True)
 
+    padding=2
     for mi, (gene,pos, aa) in enumerate(mutations[params.lineage]):
         axs[mi].text(2014, 0.8, '%s: %d%s'%(gene, pos+1, aa))
         axs[mi].set_ylim([0,1])
@@ -133,9 +134,9 @@ if __name__ == '__main__':
         axs[mi].ticklabel_format(useOffset=False)
         for region in sorted(region_groups.keys()):
             try:
-                freq = frequencies[region][0][('global', gene)][(pos, aa)]
-                conf = frequencies[region][1][('global', gene)][(pos, aa)]
-                axs[mi].fill_between(pivots, freq+conf, freq-conf,
+                freq = frequencies[region][0][('global', gene)][(pos, aa)][:-padding]
+                conf = frequencies[region][1][('global', gene)][(pos, aa)][:-padding]
+                axs[mi].fill_between(pivots[:-padding], freq+conf, freq-conf,
                                      facecolor=region_colors[region], alpha=0.3)
                 axs[mi].plot(pivots, freq, c=region_colors[region], label='%s'%(region), lw=3)
                 print("mutation", gene, pos, aa, "in", region)
