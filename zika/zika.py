@@ -13,41 +13,45 @@ import numpy as np
 from datetime import datetime
 
 region_cmap = [
-    ['southeast_asia',     '#462EB9'],
-    ['oceania',            '#3F4FCC'],
-    ['china',              '#4271CE'],
-    ['japan_korea',        '#4B8DC2'],
-    ['south_america',      '#69B091'],
-    ['north_america',      '#E0A33B']
+    ["southeast_asia",     "#462EB9"],
+    ["oceania",            "#3F4FCC"],
+    ["china",              "#4271CE"],
+    ["japan_korea",        "#4B8DC2"],
+    ["europe",             "#58A2AC"],
+    ["south_america",      "#69B091"],
+    ["north_america",      "#E0A33B"]
 ]
 
 country_cmap = [
-    # Asia: "#462EB9", "#403DC5", "#3F4FCC", "#3F60D0", "#4271CE", "#4580CA", "#4B8DC2", "#5199B8", "#58A2AC"
+    # Old World: "#462EB9", "#403DC5", "#3F4FCC", "#3F60D0", "#4271CE", "#4580CA", "#4B8DC2", "#5199B8", "#58A2AC"
     ["thailand",           "#462EB9"],
     ["singapore",          "#403DC5"],
     ["french_polynesia",   "#3F4FCC"],
-    ["american_samoa",     "#3F60D0"],
-    ["tonga",              "#4271CE"],
-    ["china",              "#4580CA"],
-    ["japan",              "#4B8DC2"],
+    ["american_samoa",	   "#3F60D0"],
+    ["tonga",	           "#4271CE"],
+    ["china",			   "#4580CA"],
+    ["japan",			   "#4B8DC2"],
+    ["italy",			   "#5199B8"],
     # South America: "#60AA9F", "#69B091", "#73B584", "#7DB877", "#89BB6B", "#95BD60", "#A2BE57", "#AFBD4F"
-    ["brazil",              "#60AA9F"],
-    ["ecuador",             "#7DB877"],
-    ["colombia",            "#89BB6B"],
-    ["french_guiana",       "#95BD60"],
-    ["suriname",            "#A2BE57"],
-    ["venezuela",           "#AFBD4F"],
-    # Central America: "#BBBC49", "#C6B944", "#D0B440", "#D9AD3D", "#E0A33B", "#E49838", "#E68835", "#E67732", "#E4632E", "#E04E2A", "#DE3926"
-    ["panama",              "#BBBC49"],
-    ["honduras",            "#C6B944"],
-    ["guatemala",           "#D0B440"],
-    ["mexico",              "#D9AD3D"],
-    ["martinique",          "#E0A33B"],
-    ["guadeloupe",          "#E49838"],
-    ["puerto_rico",         "#E68835"],
-    ["dominican_republic",  "#E67732"],
-    ["haiti",               "#E4632E"],
-    ["usa",                 "#E04E2A"]
+    ["brazil",  		   "#60AA9F"],
+    ["ecuador",  		   "#7DB877"],
+    ["colombia",  		   "#89BB6B"],
+    ["french_guiana",  	   "#95BD60"],
+    ["suriname",  		   "#A2BE57"],
+    ["venezuela",  		   "#AFBD4F"],
+    # Central and North America: "#BBBC49", "#C6B944", "#D0B440", "#D9AD3D", "#E0A33B", "#E49838", "#E68835", "#E67732", "#E4632E", "#E04E2A", "#DE3926"
+    ["panama",             "#BBBC49"],
+    ["honduras",           "#C6B944"],
+    ["guatemala",  		   "#D0B440"],
+    ["mexico",             "#D9AD3D"],
+    ["martinique",  	   "#E0A33B"],
+    ["guadeloupe",         "#E49838"],
+    ["usvi",               "#E68835"],
+    ["puerto_rico",  	   "#E67732"],
+    ["jamaica",            "#E4632E"],
+    ["dominican_republic", "#E4632E"],
+    ["haiti",  			   "#E04E2A"],
+    ["usa",                "#DE3926"]
 ]
 
 
@@ -56,7 +60,6 @@ geo_attributes = ['region', 'country']
 panels = ['tree', 'map', 'entropy']
 color_options = {
     "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete", "color_map": country_cmap},
-    "division":{"key":"division", "legendTitle":"District", "menuItem":"District", "type":"discrete"},
     "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete", "color_map": region_cmap},
     "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
     "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
@@ -98,7 +101,8 @@ if __name__=="__main__":
         dropped_strains = [
             "THA/PLCal_ZV/2013", "PLCal_ZV", # true strains, too basal for analysis
             "ZF36_36S", # possible contamination
-            "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016" # true strains, but duplicates of other strains in dataset
+            "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", # true strains, but duplicates of other strains in dataset
+            "Bahia04" # excessive terminal branch length
         ]
         zika.seqs.filter(lambda s: s.id not in dropped_strains)
         zika.seqs.subsample(category = lambda x:(x.attributes['date'].year, x.attributes['date'].month),
@@ -115,16 +119,16 @@ if __name__=="__main__":
     zika.export(controls = attribute_nesting, geo_attributes = geo_attributes,
                 color_options=color_options, panels=panels)
 
-    # plot an approximate skyline
-    from matplotlib import pyplot as plt
-    T = zika.tree.tt
-    plt.figure()
-    T.merger_model.optimize_skyline()
-    skyline, confidence = T.merger_model.skyline_inferred(gen = 50, confidence=2.0)
-    plt.fill_between(skyline.x, confidence[0], confidence[1], color=(0.8, 0.8, 0.8))
-    plt.plot(skyline.x, skyline.y)
-    plt.yscale('log')
-    plt.ylabel('effective population size')
-    plt.xlabel('year')
-    plt.ticklabel_format(axis='x',useOffset=False)
-    plt.savefig('zika_skyline.png')
+    plot_skyline = False
+    if plot_skyline: # plot an approximate skyline
+        from matplotlib import pyplot as plt
+        T = zika.tree.tt
+        plt.figure()
+        skyline, confidence = T.merger_model.skyline_inferred(gen = 50, confidence=2.0)
+        plt.fill_between(skyline.x, confidence[0], confidence[1], color=(0.8, 0.8, 0.8))
+        plt.plot(skyline.x, skyline.y)
+        plt.yscale('log')
+        plt.ylabel('effective population size')
+        plt.xlabel('year')
+        plt.ticklabel_format(axis='x',useOffset=False)
+        plt.savefig('zika_skyline.png')
