@@ -207,7 +207,7 @@ class flu_process(process):
                             priority=sampling_priority, **kwargs)
 
 
-    def subsample_priority_region(self, sampling_threshold, priority_region='north_america', fraction=0.5):
+    def subsample_priority_region(self, sampling_threshold, priority_region='north_america', fraction=0.5, **kwargs):
         self.sequence_count_total = defaultdict(int)
         self.sequence_count_region = defaultdict(int)
         for seq in self.seqs.all_seqs.values():
@@ -264,7 +264,7 @@ class flu_process(process):
 
         self.seqs.subsample(category = sampling_category,
                             threshold=threshold_func,
-                            priority=sampling_priority)
+                            priority=sampling_priority, **kwargs)
 
 
     def parse_age(self):
@@ -492,6 +492,9 @@ if __name__=="__main__":
         fname_prefix = "flu_"+params.lineage
     else:
         fname_prefix = params.lineage
+
+    if params.sampling!="even":
+        fname_prefix+='_'+params.sampling
 
     input_data_path = '../fauna/data/'+params.lineage
     if params.resolution:

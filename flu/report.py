@@ -116,7 +116,8 @@ if __name__ == '__main__':
     flu.subsample(30, all_regions=False)
     flu.align()
     flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=0.2,
-                            include_set = {'HA1':[x[1] for x in mutations[params.lineage]]})
+                            include_set = {'HA1':[x[1] for x in mutations[params.lineage]] if x[0]=='HA1',
+                                           'HA2':[x[1] for x in mutations[params.lineage]] if x[0]=='HA2'})
     frequencies['global'] = (flu.mutation_frequencies, flu.mutation_frequency_confidence, flu.mutation_frequency_counts)
     flu.mutation_frequencies, flu.mutation_frequency_confidence, flu.mutation_frequency_counts = {}, {}, {}
 
@@ -140,8 +141,11 @@ if __name__ == '__main__':
                 print("mutation", gene, pos, aa, "in", region)
             except:
                 print("mutation", gene, pos, aa, "not found  in ", region)
-        axs[mi].plot(pivots, frequencies["global"][0][('global', gene)][(pos, aa)],
+        try:
+            axs[mi].plot(pivots, frequencies["global"][0][('global', gene)][(pos, aa)],
                          c='k', label='global')
+        except:
+            print("mutation", gene, pos, aa, "not found globally")
         if mi==0:
           axs[mi].legend()
     for fmt in formats:
