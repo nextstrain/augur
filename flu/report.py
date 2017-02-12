@@ -83,12 +83,13 @@ if __name__ == '__main__':
         plt.ylabel('density')
         for fmt in formats:
           plt.savefig(store_data_path+'_age_distribution_%s.%s'%(region,fmt))
-
+        plt.close()
 
     age_dist['global'] =  defaultdict(list)
     for region, group in region_groups.iteritems():
         for mi, (gene,pos, aa) in enumerate(mutations[params.lineage]):
             age_dist['global'][(gene, pos, aa)].extend(age_dist[region][(gene, pos, aa)][0])
+
     plt.figure()
     for mi, (gene,pos, aa) in enumerate(mutations[params.lineage]):
         n_points = len(age_dist["global"][(gene, pos, aa)])
@@ -101,6 +102,7 @@ if __name__ == '__main__':
     plt.ylabel('density')
     for fmt in formats:
       plt.savefig(store_data_path+'_age_distribution_%s.%s'%("global",fmt))
+    plt.close()
 
 
     # finally add a global sample
@@ -144,6 +146,7 @@ if __name__ == '__main__':
           axs[mi].legend()
     for fmt in formats:
       plt.savefig(store_data_path+'_frequencies.'+fmt)
+    plt.close()
 
     # make plot with total sequence count
     fig = plt.figure()
@@ -158,3 +161,4 @@ if __name__ == '__main__':
     ax.ticklabel_format(useOffset=False)
     for fmt in formats:
       plt.savefig(store_data_path+'_seq_count.'+fmt)
+    plt.close()
