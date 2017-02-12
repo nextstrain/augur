@@ -139,8 +139,12 @@ class flu_process(process):
     def __init__(self, *args, **kwargs):
         super(flu_process, self).__init__(*args, **kwargs)
         print("Initializing flu_process")
-        self.HI_titer_fname = self.input_data_path+'_hi_titers.tsv'
-        self.HI_strains_fname = self.input_data_path+'_hi_strains.tsv'
+        if 'titer' in kwargs and kwargs['titer']:
+            hi_prefix = '_' + kwargs['titer']
+        else:
+            hi_prefix = '_hi'
+        self.HI_titer_fname = self.input_data_path   +hi_prefix +'_titers.tsv'
+        self.HI_strains_fname = self.input_data_path +hi_prefix +'_strains.tsv'
 
 
     def subsample(self, sampling_threshold, all_regions=False, **kwargs):
@@ -460,6 +464,7 @@ if __name__=="__main__":
     parser.add_argument('--confidence', default = False, action="store_true", help='evaluate confidence intervals of internal node timing')
     parser.add_argument('--sampling', default = 'even', type=str,
                         help='sample evenly (even), or prioritize one region (region), otherwise sample randomly')
+    parser.add_argument('--HI', default = 'hi', type=str, help='specify titer data to use')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
     parser.add_argument('--no_tree', default=False, action='store_true', help = "don't build a tree")
     params = parser.parse_args()
@@ -507,7 +512,7 @@ if __name__=="__main__":
     ppy = 12
     flu = flu_process(input_data_path = input_data_path, store_data_path = store_data_path,
                    build_data_path = build_data_path, reference='flu/metadata/'+params.lineage+'_outgroup.gb',
-                   proteins=['SigPep', 'HA1', 'HA2'],
+                   proteins=['SigPep', 'HA1', 'HA2'], titer=params.HI,
                    method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=2.*ppy)
 
 
