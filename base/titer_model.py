@@ -58,8 +58,13 @@ class titers(object):
         with myopen(fname, 'r') as infile:
             for line in infile:
                 entries = line.strip().split()
-                test, ref_virus, serum, src_id, val = (entries[0], entries[1],entries[2],
-                                                        entries[3], float(entries[4]))
+                try:
+                    val = float(entries[4])
+                except:
+                    continue
+                test, ref_virus, serum, src_id = (entries[0], entries[1],entries[2],
+                                                  entries[3])
+
                 ref = (ref_virus, serum)
                 if src_id not in self.excluded_tables:
                     try:

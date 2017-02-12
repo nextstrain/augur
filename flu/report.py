@@ -134,11 +134,12 @@ if __name__ == '__main__':
         axs[mi].ticklabel_format(useOffset=False)
         for region in sorted(region_groups.keys()):
             try:
-                freq = frequencies[region][0][('global', gene)][(pos, aa)][:-padding]
-                conf = frequencies[region][1][('global', gene)][(pos, aa)][:-padding]
-                axs[mi].fill_between(pivots[:-padding], freq+conf, freq-conf,
+                freq = frequencies[region][0][('global', gene)][(pos, aa)]
+                conf = frequencies[region][1][('global', gene)][(pos, aa)]
+                axs[mi].fill_between(pivots[:-padding], freq[:-padding]+conf[:-padding], freq[:-padding]-conf[:-padding],
                                      facecolor=region_colors[region], alpha=0.3)
-                axs[mi].plot(pivots, freq, c=region_colors[region], label='%s'%(region), lw=3)
+                axs[mi].plot(pivots[:-padding], freq[:-padding], c=region_colors[region], label='%s'%(region), lw=3)
+                axs[mi].plot(pivots[-padding-1:], freq[-padding-1:], c=region_colors[region], lw=3, ls=':')
                 print("mutation", gene, pos, aa, "in", region)
             except:
                 print("mutation", gene, pos, aa, "not found  in ", region)
