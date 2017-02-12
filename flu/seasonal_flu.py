@@ -554,7 +554,7 @@ if __name__=="__main__":
             flu.align()
             flu.build_tree()
             flu.clock_filter(n_iqd=3, plot=False, remove_deep_splits=True)
-            flu.annotate_tree(Tc="skyline", timetree=True, reroot='best', confidence=params.confidence)
+            flu.annotate_tree(Tc=0.03, timetree=True, reroot='best', confidence=params.confidence)
             for geo in geo_attributes:
                 flu.tree.geo_inference(geo)
 
@@ -572,14 +572,14 @@ if __name__=="__main__":
             flu.HI_export()
 
     # plot an approximate skyline
-    from matplotlib import pyplot as plt
-    T = flu.tree.tt
-    plt.figure()
-    skyline, confidence = T.merger_model.skyline_inferred(gen = 50, confidence=2.0)
-    plt.fill_between(skyline.x, confidence[0], confidence[1], color=(0.8, 0.8, 0.8))
-    plt.plot(skyline.x, skyline.y)
-    plt.yscale('log')
-    plt.ylabel('effective population size')
-    plt.xlabel('year')
-    plt.ticklabel_format(axis='x',useOffset=False)
-    plt.savefig('%s_%s_skyline.png'%(params.lineage, params.resolution))
+    # from matplotlib import pyplot as plt
+    # T = flu.tree.tt
+    # plt.figure()
+    # skyline, confidence = T.merger_model.skyline_inferred(gen = 50, confidence=2.0)
+    # plt.fill_between(skyline.x, confidence[0], confidence[1], color=(0.8, 0.8, 0.8))
+    # plt.plot(skyline.x, skyline.y)
+    # plt.yscale('log')
+    # plt.ylabel('effective population size')
+    # plt.xlabel('year')
+    # plt.ticklabel_format(axis='x',useOffset=False)
+    # plt.savefig('%s_%s_skyline.png'%(params.lineage, params.resolution))
