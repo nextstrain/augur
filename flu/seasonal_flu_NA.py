@@ -78,7 +78,7 @@ if __name__ == '__main__':
     ppy = 12
     flu = flu_process(input_data_path = input_data_path, store_data_path = store_data_path,
                    build_data_path = build_data_path, reference='flu/metadata/'+params.lineage+'_na_outgroup.gb',
-                   proteins=['NA'], titer=params.HI,
+                   proteins=['NA'], titer=params.HI, segment='na',
                    method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=2.*ppy)
 
 
@@ -87,7 +87,7 @@ if __name__ == '__main__':
         flu.export()
     else:
         flu.load_sequences(fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
-                             5:'country', 7:"city", 12:"subtype",13:'lineage'})
+                             5:'country', 7:"city", 8:"passage",9:'lab', 10:'age', 11:'gender'})
 
         time_interval = [datetime.strptime(x, '%Y-%m-%d').date() for x in params.time_interval]
 
@@ -135,9 +135,7 @@ if __name__ == '__main__':
             flu.dump()
 
             flu.HI_model()
-            H3N2_scores(flu.tree.tree)
             flu.dump()
-            flu.matchClades(clade_designations[params.lineage])
             flu.export(extra_attr=['serum'], controls=attribute_nesting, geo_attributes=geo_attributes,
                        color_options=color_options, panels=panels)
             flu.HI_export()

@@ -368,8 +368,11 @@ def H3N2_scores(tree, epitope_mask_version='wolf'):
         '''
         the concatenation of signal peptide, HA1, HA1
         '''
-        return np.fromstring(node.translations['SigPep']+node.translations['HA1']
+        if self.segment=='ha':
+            return np.fromstring(node.translations['SigPep']+node.translations['HA1']
                            + node.translations['HA2'], 'S1')
+        else:
+            return np.fromstring(sum([node.translations[x] for x in self.proteins]))
 
     def epitope_distance(aaA, aaB):
         """Return distance of sequences aaA and aaB by comparing epitope sites"""
@@ -377,7 +380,7 @@ def H3N2_scores(tree, epitope_mask_version='wolf'):
         epB = epitope_sites(aaB)
         distance = np.sum(epA!=epB)
         return distance
-20
+
     def nonepitope_distance(aaA, aaB):
         """Return distance of sequences aaA and aaB by comparing non-epitope sites"""
         neA = nonepitope_sites(aaA)
