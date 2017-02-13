@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style('ticks')
 
-mutations = {"h3n2": [('HA1', 170,'K'), ('HA1', 158,'F'), ('HA1', 158, 'S'),
+mutations = {"h3n2": [('HA1', 170,'K'), ('HA1', 158,'Y'), ('HA1', 158, 'S'),
                       ('HA1', 130, 'K'), ('HA1', 141, 'K')],
               "h1n1pdm": [('HA1', 161, 'N'), ('HA2', 173, 'E'), ('HA1', 182, 'P'), ('HA1', 214, 'G')]
                       }
@@ -21,6 +21,8 @@ region_colors = {r:col for r, col in zip(sorted(region_groups.keys()),
                                          sns.color_palette(n_colors=len(region_groups)))}
 
 formats = ['png', 'svg', 'pdf']
+fs=12
+
 
 def smooth_confidence(conf, n=2):
     return 1.0/np.convolve(np.ones(n, dtype=float)/n, 1.0/conf, mode='same')
@@ -129,55 +131,54 @@ if __name__ == '__main__':
 
     # plot frequency trajectories of selected mutations
     npanels = len(mutations[params.lineage])
-    fig, axs = plt.subplots(npanels, 1, figsize=(8, 2+2*npanels), sharex=True)
+    fig, axs = plt.subplots(npanels, 1, figsize=(8, 1+2*npanels), sharex=True)
 
-    padding=2
+    padding=1
     for mi, (gene,pos, aa) in enumerate(mutations[params.lineage]):
         for region in sorted(region_groups.keys()):
             try:
                 freq = frequencies[region][0][('global', gene)][(pos, aa)]
                 conf = frequencies[region][1][('global', gene)][(pos, aa)]
                 conf = smooth_confidence(conf)
-                axs[mi].fill_between(pivots[:-padding], freq[:-padding]+conf[:-padding], freq[:-padding]-conf[:-padding],
+                axs[mi].fill_between(date_bins[:-padding], freq[:-padding]+conf[:-padding], freq[:-padding]-conf[:-padding],
                                      facecolor=region_colors[region], alpha=0.3)
-                axs[mi].plot_date(pivots[:-padding], freq[:-padding], c=region_colors[region], label='%s'%(region), lw=3)
-                axs[mi].plot_date(pivots[-padding-1:], freq[-padding-1:], c=region_colors[region], lw=3, ls=':')
+                axs[mi].plot_date(date_bins[:-padding], freq[:-padding],
+                                  c=region_colors[region], label='%s'%(region), lw=3, ls='-')
+                axs[mi].plot_date(date_bins[-padding-1:], freq[-padding-1:],
+                                  c=region_colors[region], lw=3, ls=':')
                 print("mutation", gene, pos, aa, "in", region)
             except:
                 print("mutation", gene, pos, aa, "not found  in ", region)
         try:
-            axs[mi].plot(pivots, frequencies["global"][0][('global', gene)][(pos, aa)],
-                         c='k', label='global')
+            axs[mi].plot_date(date_bins, frequencies["global"][0][('global', gene)][(pos, aa)],
+                         ls='-', c='k', label='global')
         except:
             print("mutation", gene, pos, aa, "not found globally")
-        if mi==0:
-          axs[mi].legend()
-        axs[mi].text(2014, 0.8, '%s: %d%s'%(gene, pos+1, aa))
+        start_freq = frequencies["global"][0][('global', gene)][(pos, aa)][0]
+        axs[mi].text(date_bins[1], 0.88 if start_freq<0.5 else 0.05, '%s: %d%s'%(gene, pos+1, aa))
         axs[mi].set_ylim([0,1])
-        axs[mi].set_xlim([2015,2017.8])
         axs[mi].set_yticklabels(['{:3.0f}%'.format(x*100) for x in [0, 0.2, 0.4, 0.6, 0.8, 1.0]])
-        axs[mi].tick_params(axis='x', which='major', labelsize=fs, pad=20)
-        axs[mi].tick_params(axis='x', which='minor', pad=7)
-        axs[mi].xaxis.set_major_locator(years)
-        axs[mi].xaxis.set_major_formatter(yearsFmt)
-        axs[mi].xaxis.set_minor_locator(months)
-        axs[mi].xaxis.set_minor_formatter(monthsFmt)
+        make_date_ticks(axs[mi])
     fig.autofmt_xdate(bottom=0.25, rotation=0, ha='center')
+    axs[0].legend(loc=6, ncol=1)
+    bottom_margin = 0.22 - 0.03*len(mutations[params.lineage])
+    plt.subplots_adjust(left=0.12, right=0.82, top=0.97, bottom=bottom_margin)
+    sns.despine()
     for fmt in formats:
       plt.savefig(store_data_path+'_frequencies.'+fmt)
     plt.close()
 
     # make plot with total sequence count
-    fig = plt.figure()
+    fig = plt.figure(figsize=(8,3))
     ax = plt.subplot(111)
     for region in sorted(region_groups.keys()):
-        ax.plot(pivots, frequencies[region][2]['global'],
+        ax.plot_date(date_bins, frequencies[region][2]['global'],'-o',
                 c=region_colors[region], label='%s'%(region))
 
-    ax.legend()
-    ax.set_ylabel("sequence count")
-    ax.set_xlabel("year")
-    ax.ticklabel_format(useOffset=False)
+    ax.legend(loc=9, fontsize=fs, ncol=2)
+    ax.set_ylabel("sequence count", fontsize=fs)
+    make_date_ticks(ax)
+    sns.despine()
     for fmt in formats:
       plt.savefig(store_data_path+'_seq_count.'+fmt)
     plt.close()

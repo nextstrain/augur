@@ -368,11 +368,8 @@ def H3N2_scores(tree, epitope_mask_version='wolf'):
         '''
         the concatenation of signal peptide, HA1, HA1
         '''
-        if self.segment=='ha':
-            return np.fromstring(node.translations['SigPep']+node.translations['HA1']
-                           + node.translations['HA2'], 'S1')
-        else:
-            return np.fromstring(sum([node.translations[x] for x in self.proteins]))
+        return np.fromstring(node.translations['SigPep']+node.translations['HA1']
+                       + node.translations['HA2'], 'S1')
 
     def epitope_distance(aaA, aaB):
         """Return distance of sequences aaA and aaB by comparing epitope sites"""
@@ -411,6 +408,20 @@ def H3N2_scores(tree, epitope_mask_version='wolf'):
         node.attr['rb'] = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
 
 
+def make_date_ticks(ax, fs=12):
+    from matplotlib.dates import YearLocator, MonthLocator, DateFormatter
+    years    = YearLocator()
+    months = MonthLocator(range(1, 13), bymonthday=1, interval=2)
+    yearsFmt = DateFormatter('%Y')
+    monthsFmt = DateFormatter("%b")
+    ax.tick_params(axis='x', which='major', labelsize=fs, pad=20)
+    ax.tick_params(axis='x', which='minor', pad=7)
+    ax.xaxis.set_major_locator(years)
+    ax.xaxis.set_major_formatter(yearsFmt)
+    ax.xaxis.set_minor_locator(months)
+    ax.xaxis.set_minor_formatter(monthsFmt)
+
+
 def plot_trace(ax, pivots, freq, err, n_std_dev=1, err_smoothing=3, show_errorbars=True, c='r', ls='-', label=None):
     ax.plot(pivots, freq, c=c, ls=ls, label=label)
     if show_errorbars:
@@ -418,6 +429,17 @@ def plot_trace(ax, pivots, freq, err, n_std_dev=1, err_smoothing=3, show_errorba
         ax.fill_between(pivots, np.maximum(0,freq-n_std_dev*smerr),
                 np.minimum(1,freq+n_std_dev*smerr),
                 facecolor=c, linewidth=0, alpha=0.1)
+
+def pivots_to_dates(pivots):
+    date_bins = []
+    for b in pivots:
+        year = int(np.floor(b))
+        month = int(round(12*(b%1)))
+        if not month:
+            month=12
+            year-=1
+        date_bins.append(datetime.strptime("%d-%d"%(year, month), "%Y-%m") - timedelta(days=8))
+    return date_bins
 
 def plot_frequencies(flu, gene, mutation=None, plot_regions=None, all_muts=False, ax=None, **kwargs):
     import seaborn as sns
@@ -458,6 +480,34 @@ def plot_frequencies(flu, gene, mutation=None, plot_regions=None, all_muts=False
     ax.ticklabel_format(useOffset=False)
     ax.legend(loc=2)
 
+def plot_sequence_count(flu, fname=None, fs=12):
+    # make figure with region counts
+    import seaborn as sns
+    date_bins = pivots_to_dates(flu.pivots)
+    sns.set_style('ticks')
+    cols = sns.color_palette(n_colors=len(region_groups))
+    region_label = {'global': 'Global', 'NA': 'N America', 'AS': 'Asia', 'EU': 'Europe', 'OC': 'Oceania'}
+    fig, ax = plt.subplots(figsize=(8, 3))
+    count_by_region = flu.mutation_frequency_counts
+    drop = 3
+    tmpcounts = np.zeros(len(flu.pivots[drop:]))
+    plt.bar(date_bins[drop:], count_by_region['global'][drop:], width=18, \
+            linewidth=0, label="Other", color="#bbbbbb", clip_on=False)
+    for c,region in zip(cols, region_groups):
+        if region!='global':
+            plt.bar(date_bins[drop:], count_by_region[region][drop:],
+                    bottom=tmpcounts, width=18, linewidth=0,
+                    label=region_label[region], color=c, clip_on=False)
+            tmpcounts += count_by_region[region][drop:]
+    make_date_ticks(ax, fs=fs)
+    ax.set_ylabel('Sample count')
+    ax.legend(loc=3, ncol=1, bbox_to_anchor=(1.02, 0.53))
+    plt.subplots_adjust(left=0.1, right=0.82, top=0.94, bottom=0.22)
+    sns.despine()
+    if fname is not None:
+        plt.savefig(fname)
+
+
 
 if __name__=="__main__":
     import argparse
@@ -483,12 +533,12 @@ if __name__=="__main__":
 
     # default values for --viruses_per_month and --years_back from resolution
     if params.resolution == "2y":
-        params.viruses_per_month_tree = 80
-        params.viruses_per_month_seq = 150
+        params.viruses_per_month_tree = 9*len(regions)
+        params.viruses_per_month_seq = 10*len(regions)
         params.years_back = 2
     elif params.resolution == "3y":
-        params.viruses_per_month_tree = 50
-        params.viruses_per_month_seq = 100
+        params.viruses_per_month_tree = 8*len(regions)
+        params.viruses_per_month_seq = 10*len(regions)
         params.years_back = 3
     elif params.resolution == "6y":
         params.viruses_per_month_tree = 30
@@ -559,8 +609,8 @@ if __name__=="__main__":
         flu.dump()
         # first estimate frequencies globally, then region specific
         flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.10)
-        # for region in region_groups.iteritems():
-        #     flu.estimate_mutation_frequencies(region=region)
+        for region in region_groups.iteritems():
+            flu.estimate_mutation_frequencies(region=region, min_freq=.10)
 
         if not params.no_tree:
             if params.sampling=='even':
@@ -591,28 +641,7 @@ if __name__=="__main__":
                        color_options=color_options, panels=panels)
             flu.HI_export()
 
-    # make figure with region counts
-    fig, ax = plt.subplots(figsize=(8, 3))
-    counts_by_region = {}
-    counts_by_region['global'] = [y[1] for y in sorted(flu.sequence_count_total.items(), key=lambda x:x[0])]
-    drop = 3
-    tmpcounts = np.zeros(len(date_bins[drop:]))
-    plt.bar(date_bins[drop:], count_by_region['global'][drop:], width=18, linewidth=0, label="Other", color="#bbbbbb", clip_on=False)
-    for c,region in zip(cols, regions):
-        if region!='global':
-            plt.bar(date_bins[drop:], count_by_region[region][drop:], bottom=tmpcounts, width=18, linewidth=0, label=region_label[region], color=c, clip_on=False)
-            tmpcounts += count_by_region[region][drop:]
-    ax.tick_params(axis='x', which='major', labelsize=fs, pad=20)
-    ax.tick_params(axis='x', which='minor', pad=7)
-    ax.xaxis.set_major_locator(years)
-    ax.xaxis.set_major_formatter(yearsFmt)
-    ax.xaxis.set_minor_locator(months)
-    ax.xaxis.set_minor_formatter(monthsFmt)
-    ax.set_ylabel('Sample count')
-    ax.legend(loc=3, ncol=1, bbox_to_anchor=(1.02, 0.53))
-    plt.subplots_adjust(left=0.1, right=0.82, top=0.94, bottom=0.22)
-    sns.despine()
-    plt.savefig('figures/sep-2016/'+virus+'_counts.png')
+    plot_sequence_count(flu, store_data_path+'_tip_count.png')
 
     # plot an approximate skyline
     # from matplotlib import pyplot as plt
