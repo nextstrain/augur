@@ -107,7 +107,7 @@ if __name__ == '__main__':
 
     # finally add a global sample
     flu.load_sequences(fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
-                         5:'country', 7:"city", 12:"subtype",13:'lineage'})
+                         5:'country', 7:"city", 8:"passage",9:'lab', 10:'age', 11:'gender'})
     flu.seqs.filter(lambda s:
                             (s.attributes['date']>=time_interval[0]
                              and s.attributes['date']<time_interval[1]))
