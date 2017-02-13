@@ -591,6 +591,29 @@ if __name__=="__main__":
                        color_options=color_options, panels=panels)
             flu.HI_export()
 
+    # make figure with region counts
+    fig, ax = plt.subplots(figsize=(8, 3))
+    counts_by_region = {}
+    counts_by_region['global'] = [y[1] for y in sorted(flu.sequence_count_total.items(), key=lambda x:x[0])]
+    drop = 3
+    tmpcounts = np.zeros(len(date_bins[drop:]))
+    plt.bar(date_bins[drop:], count_by_region['global'][drop:], width=18, linewidth=0, label="Other", color="#bbbbbb", clip_on=False)
+    for c,region in zip(cols, regions):
+        if region!='global':
+            plt.bar(date_bins[drop:], count_by_region[region][drop:], bottom=tmpcounts, width=18, linewidth=0, label=region_label[region], color=c, clip_on=False)
+            tmpcounts += count_by_region[region][drop:]
+    ax.tick_params(axis='x', which='major', labelsize=fs, pad=20)
+    ax.tick_params(axis='x', which='minor', pad=7)
+    ax.xaxis.set_major_locator(years)
+    ax.xaxis.set_major_formatter(yearsFmt)
+    ax.xaxis.set_minor_locator(months)
+    ax.xaxis.set_minor_formatter(monthsFmt)
+    ax.set_ylabel('Sample count')
+    ax.legend(loc=3, ncol=1, bbox_to_anchor=(1.02, 0.53))
+    plt.subplots_adjust(left=0.1, right=0.82, top=0.94, bottom=0.22)
+    sns.despine()
+    plt.savefig('figures/sep-2016/'+virus+'_counts.png')
+
     # plot an approximate skyline
     # from matplotlib import pyplot as plt
     # T = flu.tree.tt

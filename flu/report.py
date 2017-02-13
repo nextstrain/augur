@@ -11,6 +11,7 @@ from base.io_util import myopen
 from seasonal_flu import *
 import matplotlib.pyplot as plt
 import seaborn as sns
+sns.set_style('ticks')
 
 mutations = {"h3n2": [('HA1', 170,'K'), ('HA1', 158,'F'), ('HA1', 158, 'S'),
                       ('HA1', 130, 'K'), ('HA1', 141, 'K')],
@@ -21,6 +22,10 @@ region_colors = {r:col for r, col in zip(sorted(region_groups.keys()),
 
 formats = ['png', 'svg', 'pdf']
 
+def smooth_confidence(conf, n=2):
+    return 1.0/np.convolve(np.ones(n, dtype=float)/n, 1.0/conf, mode='same')
+
+
 if __name__ == '__main__':
     import argparse
 
@@ -30,7 +35,7 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
     parser.add_argument('-l', '--lineage', type = str, default = 'h3n2', help='flu lineage to process')
     params = parser.parse_args()
-    params.time_interval = ["2014-01-01", "2017-02-01"]
+    params.time_interval = ["2015-01-01", "2017-03-01"]
     time_interval = [datetime.strptime(x, '%Y-%m-%d').date() for x in params.time_interval]
     input_data_path = '../fauna/data/'+params.lineage
     store_data_path = 'store/201702_report_'+ params.lineage
@@ -43,7 +48,7 @@ if __name__ == '__main__':
 
     flu = flu_process(input_data_path = input_data_path, store_data_path = store_data_path,
                    build_data_path = build_data_path, reference='flu/metadata/'+params.lineage+'_outgroup.gb',
-                   proteins=['SigPep', 'HA1', 'HA2'],
+                   proteins=['SigPep', 'HA1', 'HA2'], HI='crick_hi' if params.lineage=='h3n2' else '',
                    method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=2.*ppy)
     age_dist={}
     for region, group in region_groups.iteritems():
@@ -124,22 +129,19 @@ if __name__ == '__main__':
 
     # plot frequency trajectories of selected mutations
     npanels = len(mutations[params.lineage])
-    fig, axs = plt.subplots(npanels, 1, figsize=(8, 2+3*npanels), sharex=True)
+    fig, axs = plt.subplots(npanels, 1, figsize=(8, 2+2*npanels), sharex=True)
 
     padding=2
     for mi, (gene,pos, aa) in enumerate(mutations[params.lineage]):
-        axs[mi].text(2014, 0.8, '%s: %d%s'%(gene, pos+1, aa))
-        axs[mi].set_ylim([0,1])
-        axs[mi].set_xlim([2014,2017.8])
-        axs[mi].ticklabel_format(useOffset=False)
         for region in sorted(region_groups.keys()):
             try:
                 freq = frequencies[region][0][('global', gene)][(pos, aa)]
                 conf = frequencies[region][1][('global', gene)][(pos, aa)]
+                conf = smooth_confidence(conf)
                 axs[mi].fill_between(pivots[:-padding], freq[:-padding]+conf[:-padding], freq[:-padding]-conf[:-padding],
                                      facecolor=region_colors[region], alpha=0.3)
-                axs[mi].plot(pivots[:-padding], freq[:-padding], c=region_colors[region], label='%s'%(region), lw=3)
-                axs[mi].plot(pivots[-padding-1:], freq[-padding-1:], c=region_colors[region], lw=3, ls=':')
+                axs[mi].plot_date(pivots[:-padding], freq[:-padding], c=region_colors[region], label='%s'%(region), lw=3)
+                axs[mi].plot_date(pivots[-padding-1:], freq[-padding-1:], c=region_colors[region], lw=3, ls=':')
                 print("mutation", gene, pos, aa, "in", region)
             except:
                 print("mutation", gene, pos, aa, "not found  in ", region)
@@ -150,6 +152,17 @@ if __name__ == '__main__':
             print("mutation", gene, pos, aa, "not found globally")
         if mi==0:
           axs[mi].legend()
+        axs[mi].text(2014, 0.8, '%s: %d%s'%(gene, pos+1, aa))
+        axs[mi].set_ylim([0,1])
+        axs[mi].set_xlim([2015,2017.8])
+        axs[mi].set_yticklabels(['{:3.0f}%'.format(x*100) for x in [0, 0.2, 0.4, 0.6, 0.8, 1.0]])
+        axs[mi].tick_params(axis='x', which='major', labelsize=fs, pad=20)
+        axs[mi].tick_params(axis='x', which='minor', pad=7)
+        axs[mi].xaxis.set_major_locator(years)
+        axs[mi].xaxis.set_major_formatter(yearsFmt)
+        axs[mi].xaxis.set_minor_locator(months)
+        axs[mi].xaxis.set_minor_formatter(monthsFmt)
+    fig.autofmt_xdate(bottom=0.25, rotation=0, ha='center')
     for fmt in formats:
       plt.savefig(store_data_path+'_frequencies.'+fmt)
     plt.close()
