@@ -143,9 +143,18 @@ class flu_process(process):
             hi_prefix = '_' + kwargs['titer']
         else:
             hi_prefix = '_hi'
-        self.HI_titer_fname = self.input_data_path   +hi_prefix +'_titers.tsv'
-        self.HI_strains_fname = self.input_data_path +hi_prefix +'_strains.tsv'
 
+        if 'segment' in kwargs:
+            self.segment=kwargs['segment']
+        else:
+            self.segment='ha'
+
+        if self.segment=='ha':
+            self.HI_titer_fname = self.input_data_path   +hi_prefix +'_titers.tsv'
+            self.HI_strains_fname = self.input_data_path +hi_prefix +'_strains.tsv'
+        else:
+            self.HI_titer_fname = self.input_data_path[:-3]   +hi_prefix +'_titers.tsv'
+            self.HI_strains_fname = self.input_data_path[:-3] +hi_prefix +'_strains.tsv'
 
     def subsample(self, sampling_threshold, all_regions=False, **kwargs):
         nregions = len(regions)
@@ -368,7 +377,7 @@ def H3N2_scores(tree, epitope_mask_version='wolf'):
         epB = epitope_sites(aaB)
         distance = np.sum(epA!=epB)
         return distance
-
+20
     def nonepitope_distance(aaA, aaB):
         """Return distance of sequences aaA and aaB by comparing non-epitope sites"""
         neA = nonepitope_sites(aaA)
@@ -524,7 +533,7 @@ if __name__=="__main__":
         flu.export()
     else:
         flu.load_sequences(fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
-                             5:'country', 7:"city", 12:"subtype",13:'lineage'})
+                             5:'country', 7:"city", 8:"passage",9:'lab', 10:'age', 11:'gender'})
 
         time_interval = [datetime.strptime(x, '%Y-%m-%d').date() for x in params.time_interval]
 
