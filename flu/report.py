@@ -132,7 +132,7 @@ if __name__ == '__main__':
     # plot frequency trajectories of selected mutations
     npanels = len(mutations[params.lineage])
     fig, axs = plt.subplots(npanels, 1, figsize=(8, 1+2*npanels), sharex=True)
-
+    date_bins = pivots_to_dates(flu.pivots)
     padding=1
     for mi, (gene,pos, aa) in enumerate(mutations[params.lineage]):
         for region in sorted(region_groups.keys()):
