@@ -643,7 +643,7 @@ if __name__=="__main__":
                        color_options=color_options, panels=panels)
             flu.HI_export()
 
-    plot_sequence_count(flu, store_data_path+'_tip_count.png')
+    plot_sequence_count(flu, store_data_path+'tip_count.png')
 
     # plot an approximate skyline
     # from matplotlib import pyplot as plt
