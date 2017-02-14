@@ -15,7 +15,10 @@ sns.set_style('ticks')
 
 mutations = {"h3n2": [('HA1', 170,'K'), ('HA1', 158,'Y'), ('HA1', 158, 'S'),
                       ('HA1', 130, 'K'), ('HA1', 141, 'K')],
-              "h1n1pdm": [('HA1', 161, 'N'), ('HA2', 173, 'E'), ('HA1', 182, 'P'), ('HA1', 214, 'G')]
+              "h1n1pdm": [('HA1', 161, 'N'), ('HA1', 151, 'T'), ('HA1', 182, 'P'),
+                          ('HA1', 260, 'S'), ('HA1', 214, 'G')],
+              "vic": [('HA1', 128, 'D'), ('HA1', 116, 'V')],
+              "yam": [('HA1', 171, 'Q'), ('HA1', 250, 'V'), ('HA1', 210, 'R')]
                       }
 region_colors = {r:col for r, col in zip(sorted(region_groups.keys()),
                                          sns.color_palette(n_colors=len(region_groups)))}
