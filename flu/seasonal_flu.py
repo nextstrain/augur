@@ -539,8 +539,8 @@ if __name__=="__main__":
         params.viruses_per_month_seq = 10*len(regions)
         params.years_back = 2
     elif params.resolution == "3y":
-        params.viruses_per_month_tree = 5*len(regions)
-        params.viruses_per_month_seq = 3*len(regions)
+        params.viruses_per_month_tree = 7*len(regions)
+        params.viruses_per_month_seq = 10*len(regions)
         params.years_back = 3
     elif params.resolution == "6y":
         params.viruses_per_month_tree = 30
