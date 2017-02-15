@@ -539,8 +539,8 @@ if __name__=="__main__":
         params.viruses_per_month_seq = 10*len(regions)
         params.years_back = 2
     elif params.resolution == "3y":
-        params.viruses_per_month_tree = 8*len(regions)
-        params.viruses_per_month_seq = 10*len(regions)
+        params.viruses_per_month_tree = 5*len(regions)
+        params.viruses_per_month_seq = 3*len(regions)
         params.years_back = 3
     elif params.resolution == "6y":
         params.viruses_per_month_tree = 30
@@ -635,7 +635,7 @@ if __name__=="__main__":
                 flu.estimate_tree_frequencies(region=region)
             flu.dump()
 
-            flu.HI_model()
+            flu.HI_model(criterium = lambda x:len(x.aa_mutations['HA1'])>0)
             H3N2_scores(flu.tree.tree)
             flu.dump()
             flu.matchClades(clade_designations[params.lineage])

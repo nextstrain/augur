@@ -186,7 +186,7 @@ class titers(object):
         self.titer_stats()
 
 
-    def make_training_set(self, training_fraction=1.0, subset_strains=False):
+    def make_training_set(self, training_fraction=1.0, subset_strains=False, **kwargs):
         if training_fraction<1.0: # validation mode, set aside a fraction of measurements to validate the fit
             self.test_titers, self.train_titers = {}, {}
             if subset_strains:    # exclude a fraction of test viruses as opposed to a fraction of the titers
@@ -216,7 +216,7 @@ class titers(object):
         self.titer_stats()
 
 
-    def _train(self, method='nnl1reg',  lam_drop=1.0, lam_pot = 0.5, lam_avi = 3.0):
+    def _train(self, method='nnl1reg',  lam_drop=1.0, lam_pot = 0.5, lam_avi = 3.0, **kwargs):
         '''
         determine the model parameters -- lam_drop, lam_pot, lam_avi are
         the regularization parameters.
@@ -465,7 +465,8 @@ class tree_model(titers):
 
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
-        self.find_titer_splits()
+        self.find_titer_splits(criterium= kwargs['criterium']
+                                          if 'criterium' in kwargs else None)
         if len(self.train_titers)>1:
             self.make_treegraph()
         else:
