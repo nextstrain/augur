@@ -134,7 +134,7 @@ if __name__ == '__main__':
                 flu.estimate_tree_frequencies(region=region)
             flu.dump()
 
-            flu.HI_model()
+            flu.HI_model(criterium = lambda x:len(x.aa_mutations['NA'])>0)
             flu.dump()
             flu.export(extra_attr=['serum'], controls=attribute_nesting, geo_attributes=geo_attributes,
                        color_options=color_options, panels=panels)
