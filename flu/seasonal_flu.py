@@ -515,19 +515,21 @@ def plot_sequence_count(flu, fname=None, fs=12):
     import seaborn as sns
     date_bins = pivots_to_dates(flu.pivots)
     sns.set_style('ticks')
-    cols = sns.color_palette(n_colors=len(region_groups))
     region_label = {'global': 'Global', 'NA': 'N America', 'AS': 'Asia', 'EU': 'Europe', 'OC': 'Oceania'}
+    regions_abbr = ['global', 'NA', 'AS', 'EU', 'OC']
+    region_colors = {r:col for r, col in zip(regions_abbr,
+                                             sns.color_palette(n_colors=len(regions_abbr)))}
     fig, ax = plt.subplots(figsize=(8, 3))
     count_by_region = flu.mutation_frequency_counts
     drop = 3
     tmpcounts = np.zeros(len(flu.pivots[drop:]))
     plt.bar(date_bins[drop:], count_by_region['global'][drop:], width=18, \
             linewidth=0, label="Other", color="#bbbbbb", clip_on=False)
-    for c,region in zip(cols, region_groups):
+    for region in region_groups:
         if region!='global':
             plt.bar(date_bins[drop:], count_by_region[region][drop:],
                     bottom=tmpcounts, width=18, linewidth=0,
-                    label=region_label[region], color=c, clip_on=False)
+                    label=region_label[region], color=region_colors[region], clip_on=False)
             tmpcounts += count_by_region[region][drop:]
     make_date_ticks(ax, fs=fs)
     ax.set_ylabel('Sample count')
@@ -608,7 +610,7 @@ if __name__=="__main__":
     flu = flu_process(input_data_path = input_data_path, store_data_path = store_data_path,
                    build_data_path = build_data_path, reference='flu/metadata/'+params.lineage+'_outgroup.gb',
                    proteins=['SigPep', 'HA1', 'HA2'], titer=params.HI,
-                   method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=2.*ppy)
+                   method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=0.8*ppy)
 
 
     if params.load:

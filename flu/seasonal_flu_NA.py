@@ -79,7 +79,7 @@ if __name__ == '__main__':
     flu = flu_process(input_data_path = input_data_path, store_data_path = store_data_path,
                    build_data_path = build_data_path, reference='flu/metadata/'+params.lineage+'_na_outgroup.gb',
                    proteins=['NA'], titer=params.HI, segment='na',
-                   method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=2.*ppy)
+                   method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=0.8*ppy)
 
 
     if params.load:
