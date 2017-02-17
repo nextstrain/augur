@@ -177,15 +177,16 @@ class freq_est_clipped(object):
         self.pivots = pivots
         pivot_dt = self.pivots[1]-self.pivots[0]
         if dtps==None:
-            self.dtps = 3.0*pivot_dt
+            self.dtps = 6.0*pivot_dt
         else:
             self.dtps = np.max(dtps, pivot_dt)
 
         cum_obs = np.diff(self.obs).cumsum()
         first_obs = self.tps[cum_obs.searchsorted(cum_obs[0]+1)]
-        last_obs = max(first_obs,self.tps[min(len(self.tps)-1, 20+cum_obs.searchsorted(cum_obs[-1]-1))])
+        last_obs = max(first_obs,self.tps[min(len(self.tps)-1, 20+cum_obs.searchsorted(cum_obs[-1]))])
         tps_lower_cutoff = first_obs - self.dtps
         tps_upper_cutoff = last_obs + self.dtps
+
 
         self.good_tps = (self.tps>=tps_lower_cutoff)&(self.tps<tps_upper_cutoff)
         if self.good_tps.sum()<5:
@@ -433,12 +434,13 @@ class alignment_frequencies(object):
                 obs[(pos, muts[0])] = column==muts[0]
             elif len(obs)!=len(nis):
                 tmp = ~np.any(obs.values(), axis=0) # pull out sequences not yet assigned
-#                import ipdb; ipdb.set_trace();
+
                 if any(tmp):
                     if len(obs)==len(nis)-1: # if only category left, assign it
                         obs[(pos, muts[-1])] = tmp
                     else: #other wise, call that mutation 'other'
                         obs[(pos, 'other')] = tmp
+
             print("Estimating frequencies of position:", pos)
             print("Variants found at frequency:", [(k,o.mean()) for k,o in obs.iteritems()])
 

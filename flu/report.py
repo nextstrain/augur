@@ -54,7 +54,7 @@ if __name__ == '__main__':
     flu = flu_process(input_data_path = input_data_path, store_data_path = store_data_path,
                    build_data_path = build_data_path, reference='flu/metadata/'+params.lineage+'_outgroup.gb',
                    proteins=['SigPep', 'HA1', 'HA2'], HI='crick_hi' if params.lineage=='h3n2' else '',
-                   method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=2.*ppy)
+                   method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=0.8*ppy)
     age_dist={}
     for region, group in region_groups.iteritems():
         flu.load_sequences(fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         flu.align()
         flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=0.2,
                                 include_set = {'HA1':[x[1] for x in mutations[params.lineage]]})
-#        import ipdb; ipdb.set_trace()
+
         frequencies[region] = (flu.mutation_frequencies, flu.mutation_frequency_confidence, flu.mutation_frequency_counts)
         flu.mutation_frequencies, flu.mutation_frequency_confidence, flu.mutation_frequency_counts = {}, {}, {}
         age_dist[region]={}

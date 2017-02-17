@@ -34,11 +34,11 @@ if __name__ == '__main__':
 
     # default values for --viruses_per_month and --years_back from resolution
     if params.resolution == "2y":
-        params.viruses_per_month_tree = 80
+        params.viruses_per_month_tree = 9*len(regons)
         params.viruses_per_month_seq = 150
         params.years_back = 2
     elif params.resolution == "3y":
-        params.viruses_per_month_tree = 50
+        params.viruses_per_month_tree = 7*len(regions)
         params.viruses_per_month_seq = 100
         params.years_back = 3
     elif params.resolution == "6y":

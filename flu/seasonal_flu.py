@@ -84,7 +84,7 @@ outliers = {
         "A/Michigan/95/2016", "A/Michigan/96/2016", "A/Ohio/27/2016", "A/Ohio/28/2016", "A/Ohio/32/2016",
         "A/Ohio/33/2016", "A/Ohio/35/2016", "A/Zhejiang-Wuxin/1300/2016", "A/Nanjing/1/2010", "A/StPetersburg/5/2009",
         "A/Cambodia/NHRCC00001/2009","A/Cambodia/NHRCC00002/2009", "A/Cambodia/NHRCC00003/2009",
-        "A/Cambodia/NHRCC00006/2009", ],
+        "A/Cambodia/NHRCC00006/2009", "A/Iran/407/2014"],
 'h1n1pdm': ["A/Kenya/264/2012", "A/Iowa/39/2015", "A/Asturias/RR6898/2010", "A/Wisconsin/28/2011",
             "A/Brest/1161/2014", "A/Tomsk/273-MA1/2010", "A/Minnesota/46/2015", "A/Poland/16/2013",
             "A/Hungary/02/2013", "A/Hungary/16/2013", "A/California/07/2009NYMC-X18113/198",
@@ -164,7 +164,12 @@ class flu_process(process):
             region_threshold = int(np.ceil(1.0*sampling_threshold/nregions))
         self.sequence_count_total = defaultdict(int)
         self.sequence_count_region = defaultdict(int)
-        for seq in self.seqs.all_seqs.values():
+        if 'repeated' in kwargs and kwargs['repeated']:
+            seqs_to_count = self.seqs.seqs.values()
+        else:
+            seqs_to_count = self.seqs.all_seqs.values()
+
+        for seq in seqs_to_count:
             self.sequence_count_total[(seq.attributes['date'].year,
                                   seq.attributes['date'].month)]+=1
             self.sequence_count_region[(seq.attributes['region'],
@@ -222,10 +227,33 @@ class flu_process(process):
                             priority=sampling_priority, **kwargs)
 
 
+        # self.sequence_count_total_after = defaultdict(int)
+        # self.sequence_count_region_after = defaultdict(int)
+
+        # for seq in self.seqs.seqs.values():
+        #     self.sequence_count_total_after[(seq.attributes['date'].year,
+        #                           seq.attributes['date'].month)]+=1
+        #     self.sequence_count_region_after[(seq.attributes['region'],
+        #                           seq.attributes['date'].year,
+        #                           seq.attributes['date'].month)]+=1
+        # for cat in self.seqs.sequence_categories:
+        #     print(cat, len(self.seqs.sequence_categories[cat]), self.sequence_count_region[cat])
+        # for cat in self.sequence_count_total_after:
+        #     thres = threshold_func(('europe',cat[0], cat[1]))
+        #     print(cat, thres, self.sequence_count_total_after[cat],
+        #         sum([min(self.sequence_count_region[(region,cat[0], cat[1])], thres) for region in regions]))
+
+
+
     def subsample_priority_region(self, sampling_threshold, priority_region='north_america', fraction=0.5, **kwargs):
         self.sequence_count_total = defaultdict(int)
         self.sequence_count_region = defaultdict(int)
-        for seq in self.seqs.all_seqs.values():
+        if 'repeated' in kwargs and kwargs['repeated']:
+            seqs_to_count = self.seqs.seqs.values()
+        else:
+            seqs_to_count = self.seqs.all_seqs.values()
+
+        for seq in seqs_to_count:
             self.sequence_count_total[(seq.attributes['date'].year,
                                   seq.attributes['date'].month)]+=1
             self.sequence_count_region[(seq.attributes['region'],
@@ -536,11 +564,11 @@ if __name__=="__main__":
     # default values for --viruses_per_month and --years_back from resolution
     if params.resolution == "2y":
         params.viruses_per_month_tree = 9*len(regions)
-        params.viruses_per_month_seq = 10*len(regions)
+        params.viruses_per_month_seq = 15*len(regions)
         params.years_back = 2
     elif params.resolution == "3y":
         params.viruses_per_month_tree = 7*len(regions)
-        params.viruses_per_month_seq = 10*len(regions)
+        params.viruses_per_month_seq = 15*len(regions)
         params.years_back = 3
     elif params.resolution == "6y":
         params.viruses_per_month_tree = 30
@@ -610,9 +638,9 @@ if __name__=="__main__":
         flu.align()
         flu.dump()
         # first estimate frequencies globally, then region specific
-        flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.10)
+        flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.01)
         for region in region_groups.iteritems():
-            flu.estimate_mutation_frequencies(region=region, min_freq=.10)
+            flu.estimate_mutation_frequencies(region=region, min_freq=.01)
 
         if not params.no_tree:
             if params.sampling=='even':
