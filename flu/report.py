@@ -14,10 +14,10 @@ import seaborn as sns
 sns.set_style('ticks')
 
 mutations = {"h3n2": [('HA1', 170,'K'), ('HA1', 158,'Y'), ('HA1', 158, 'S'),
-                      ('HA1', 130, 'K'), ('HA1', 141, 'K')],
+                      ('HA1', 130, 'K'), ('HA1', 141, 'K'), ('HA1', 134, 'K')],
               "h1n1pdm": [('HA1', 161, 'N'), ('HA1', 151, 'T'), ('HA1', 182, 'P'),
                           ('HA1', 260, 'S'), ('HA1', 214, 'G')],
-              "vic": [('HA1', 128, 'D'), ('HA1', 116, 'V')],
+              "vic": [('HA1', 128, 'D'), ('HA1', 116, 'V'), ('HA1', 161, '-')],
               "yam": [('HA1', 171, 'Q'), ('HA1', 250, 'V'), ('HA1', 210, 'R')]
                       }
 regions_abbr = ['global', 'NA', 'AS', 'EU', 'OC']
@@ -69,6 +69,7 @@ if __name__ == '__main__':
         flu.seqs.filter(lambda s: s.name not in outliers[params.lineage])
         flu.subsample(10000, all_regions=False)
         flu.align()
+        print(flu.seqs.translations['HA1'][:,161])
         flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=0.2,
                                 include_set = {'HA1':[x[1] for x in mutations[params.lineage]]})
 
@@ -158,7 +159,10 @@ if __name__ == '__main__':
                          ls='-', c='k', label='global')
         except:
             print("mutation", gene, pos, aa, "not found globally")
-        start_freq = frequencies["global"][0][('global', gene)][(pos, aa)][0]
+        try:
+            start_freq = frequencies["global"][0][('global', gene)][(pos, aa)][0]
+        except:
+          start_freq = 0
         axs[mi].text(date_bins[1], 0.88 if start_freq<0.5 else 0.05, '%s: %d%s'%(gene, pos+1, aa))
         axs[mi].set_ylim([0,1])
         axs[mi].set_yticklabels(['{:3.0f}%'.format(x*100) for x in [0, 0.2, 0.4, 0.6, 0.8, 1.0]])
@@ -170,7 +174,7 @@ if __name__ == '__main__':
     sns.despine()
     for fmt in formats:
       plt.savefig(store_data_path+'_frequencies.'+fmt)
-    plt.close()
+#    plt.close()
 
     # make plot with total sequence count
     fig = plt.figure(figsize=(8,3))
@@ -185,4 +189,4 @@ if __name__ == '__main__':
     sns.despine()
     for fmt in formats:
       plt.savefig(store_data_path+'_seq_count.'+fmt)
-    plt.close()
+#    plt.close()
