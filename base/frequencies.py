@@ -388,7 +388,7 @@ class alignment_frequencies(object):
         return fe.frequency_estimate
 
 
-    def mutation_frequencies(self, min_freq=0.01, include_set=None, ignore_gap=True):
+    def mutation_frequencies(self, min_freq=0.01, include_set=None, ignore_char=''):
         '''
         estimate frequencies of single site mutations for each alignment column
         params
@@ -403,8 +403,8 @@ class alignment_frequencies(object):
             af[ni] = (self.aln==n).mean(axis=0)
 
 
-        if ignore_gap:
-            minor_freqs = af[alphabet!='-'].sum(axis=0) - af[alphabet!='-'].max(axis=0)
+        if ignore_char:
+            minor_freqs = af[alphabet!=ignore_char].sum(axis=0) - af[alphabet!=ignore_char].max(axis=0)
         else:
             minor_freqs = 1.0 - af.max(axis=0)
         self.frequencies = {}
@@ -413,11 +413,11 @@ class alignment_frequencies(object):
             nis = np.argsort(af[:,pos])[::-1]
             nis = nis[af[nis,pos]>0]
             column = self.aln[:,pos]
-            if ignore_gap: # subset sequences, time points and alphabet to non-gapped and non X
-                good_seq = (column!='-')&(column!='X')
+            if ignore_char: # subset sequences, time points and alphabet to non-gapped and non X
+                good_seq = (column!=ignore_char)&(column!='X')
                 tps=self.tps[good_seq]
                 column = column[good_seq]
-                nis = nis[(alphabet[nis]!='-')&(alphabet[nis]!='X')]
+                nis = nis[(alphabet[nis]!=ignore_char)&(alphabet[nis]!='X')]
             else:
                 tps = self.tps
 

@@ -642,7 +642,7 @@ if __name__=="__main__":
         # first estimate frequencies globally, then region specific
         flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.01)
         for region in region_groups.iteritems():
-            flu.estimate_mutation_frequencies(region=region, min_freq=.01)
+            flu.estimate_mutation_frequencies(region=region, min_freq=.05)
 
         if not params.no_tree:
             if params.sampling=='even':

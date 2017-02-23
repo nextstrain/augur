@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style('ticks')
 
-mutations = {"h3n2": [('HA1', 170,'K'), ('HA1', 158,'Y'), ('HA1', 158, 'S'),
+mutations = {"h3n2": [('HA1', 170,'K'), ('HA1', 120, 'K'), ('HA1', 143, 'K'),
                       ('HA1', 130, 'K'), ('HA1', 141, 'K'), ('HA1', 134, 'K')],
               "h1n1pdm": [('HA1', 161, 'N'), ('HA1', 151, 'T'), ('HA1', 182, 'P'),
                           ('HA1', 260, 'S'), ('HA1', 214, 'G')],
@@ -69,7 +69,6 @@ if __name__ == '__main__':
         flu.seqs.filter(lambda s: s.name not in outliers[params.lineage])
         flu.subsample(10000, all_regions=False)
         flu.align()
-        print(flu.seqs.translations['HA1'][:,161])
         flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=0.2,
                                 include_set = {'HA1':[x[1] for x in mutations[params.lineage]]})
 
