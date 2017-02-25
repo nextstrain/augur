@@ -14,13 +14,16 @@ import numpy as np
 from datetime import datetime
 
 region_cmap = [
-    ["southeast_asia",     "#462EB9"],
-    ["oceania",            "#3F4FCC"],
-    ["china",              "#4271CE"],
-    ["japan_korea",        "#4B8DC2"],
-    ["europe",             "#58A2AC"],
-    ["south_america",      "#69B091"],
-    ["north_america",      "#E0A33B"]
+    ["europe",             "#4580CA"],
+    ["china",              "#3F63CF"],
+    ["japan_korea",        "#4272CE"],
+    ["southeast_asia",     "#571EA2"],
+    ["oceania",            "#4B26B1"],
+    ["south_pacific",      "#4433BE"],
+    ["south_america",      "#56A0AE"],
+    ["central_america",    "#BDBB48"],
+    ["caribbean",          "#E67C32"],
+    ["north_america",      "#DC2F24"]
 ]
 
 country_cmap = [
@@ -30,14 +33,14 @@ country_cmap = [
     # "#BDBB48", "#C8B944", "#D1B340", "#D9AD3D", "#DFA43B", "#E49938", "#E68B35", "#E67C32", "#E56A2F", "#E2562B", "#DF4327", "#DC2F24"
 
     # Old World: "#571EA2", "#4B26B1", "#4433BE", "#4042C7", "#3F52CD", "#3F63CF", "#4272CE", "#4580CA", "#4A8CC2", "#5097BA"
+    ["italy",			   "#4580CA"],
+    ["china",			   "#3F63CF"],
+    ["japan",			   "#4272CE"],
     ["thailand",           "#571EA2"],
     ["singapore",          "#4B26B1"],
     ["french_polynesia",   "#4433BE"],
     ["american_samoa",	   "#4042C7"],
     ["tonga",	           "#3F52CD"],
-    ["china",			   "#3F63CF"],
-    ["japan",			   "#4272CE"],
-    ["italy",			   "#4580CA"],
     # South America: "#56A0AE", "#5DA8A3", "#66AE96", "#6EB389", "#79B77D", "#83BA70", "#8EBC66", "#9ABE5C", "#A6BE55", "#B2BD4D"
     ["brazil",  		   "#56A0AE"],
     ["ecuador",  		   "#5DA8A3"],
