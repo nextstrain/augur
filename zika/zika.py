@@ -104,7 +104,7 @@ if __name__=="__main__":
         zika.load()
     else:
         fasta_fields = {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
-                        6:'division', 8:'db', 10:'authors'}
+                        6:'division', 8:'db', 10:'authors', 11:'url'}
         zika.load_sequences(fields=fasta_fields)
         zika.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
                                    s.attributes['date']< datetime(2017,1,1).date())
