@@ -89,7 +89,7 @@ outliers = {
             "A/Brest/1161/2014", "A/Tomsk/273-MA1/2010", "A/Minnesota/46/2015", "A/Poland/16/2013",
             "A/Hungary/02/2013", "A/Hungary/16/2013", "A/California/07/2009NYMC-X18113/198",
             "A/Christchurch/16/2010NIB-74xp13/202", "A/Bari/166/2016", "A/Bari/167/2016", "A/Dakar/3/2014",
-            "A/Arkansas/15/2013", "A/Wisconsin/87/2005", 'A/Norway/1929/2014'],
+            "A/Arkansas/15/2013", "A/Wisconsin/87/2005", 'A/Norway/1929/2014', 'A/Ohio/9/2015'],
 'vic':["B/Bangkok/SI17/2012", "B/Bangkok/SI58/2012", "B/Kol/2024/2008", "B/Kolkata/2024/2008"],
 "yam":[]
 }
