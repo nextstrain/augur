@@ -34,11 +34,11 @@ if __name__ == '__main__':
 
     # default values for --viruses_per_month and --years_back from resolution
     if params.resolution == "2y":
-        params.viruses_per_month_tree = 80
+        params.viruses_per_month_tree = 9*len(regons)
         params.viruses_per_month_seq = 150
         params.years_back = 2
     elif params.resolution == "3y":
-        params.viruses_per_month_tree = 50
+        params.viruses_per_month_tree = 7*len(regions)
         params.viruses_per_month_seq = 100
         params.years_back = 3
     elif params.resolution == "6y":
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     flu = flu_process(input_data_path = input_data_path, store_data_path = store_data_path,
                    build_data_path = build_data_path, reference='flu/metadata/'+params.lineage+'_na_outgroup.gb',
                    proteins=['NA'], titer=params.HI, segment='na',
-                   method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=2.*ppy)
+                   method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=0.8*ppy)
 
 
     if params.load:

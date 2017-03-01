@@ -249,6 +249,7 @@ class sequence_set(object):
 
         print("Subsampled to %d sequences"%len(self.seqs))
 
+
     def align(self, debug=False):
         '''
         align sequences using mafft
@@ -273,6 +274,7 @@ class sequence_set(object):
             self.sequence_lookup[seqid].attributes = seq.attributes
         self.aln = MultipleSeqAlignment([s for s in tmp_aln
                             if s.name!=self.reference_seq.name or ref_in_set])
+
         os.chdir('..')
         if not debug:
             remove_dir(self.run_dir)
@@ -341,6 +343,21 @@ class sequence_set(object):
             seq.seq = Seq("".join(np.array(seq)[ungapped]))
 
 
+    def remove_terminal_gaps(self):
+        from Bio.Seq import Seq
+        for seq in self.aln:
+            seq_array = np.array(seq)
+            seq_string = str(seq.seq)
+            if (seq_array=='-').sum():
+                left_gaps = len(seq_string) - len(seq_string.lstrip('-'))
+                seq_array[:left_gaps] = 'N'
+            if (seq_array=='-').sum():
+                right_gaps = len(seq_string) - len(seq_string.rstrip('-'))
+                if right_gaps:
+                    seq_array[-right_gaps:] = 'N'
+            seq.seq = Seq("".join(seq_array))
+
+
     def diversity_statistics(self):
         ''' calculate alignment entropy of nucleotide and optionally protein alignments '''
         if not hasattr(self, "aln"):
@@ -383,11 +400,13 @@ class sequence_set(object):
                     # soon not needed as future biopython version will translate --- into -
                     tmpseq = self.proteins[prot].extract(seq)
                     tmpseq.attributes = seq.attributes
-                    tmpseq.seq = Seq(str(Seq(str(tmpseq.seq).replace('---', 'NNN'))
-                                         .translate()).replace('X','-'))
+                    internal_gap = np.unique(np.where(np.array(tmpseq)=='-')[0]//3)
+                    aa_seq = np.array(Seq(str(tmpseq.seq).replace('---', 'NNN')).translate())
+                    aa_seq[internal_gap]='-'
+                    tmpseq.seq = Seq("".join(aa_seq))
                 except:
-                    tmpseq.seq = Seq(str(Seq("".join([x if x in 'ACGT' else 'N'
-                        for x in str(tmpseq.seq)])).translate()).replace('X','-'))
+                    tmpseq.seq = Seq("".join([x if x in 'ACGT' else 'N'
+                        for x in str(tmpseq.seq)])).translate()
                     print("Trouble translating",seq.id)
                 aa_seqs.append(tmpseq)
             self.translations[prot] = MultipleSeqAlignment(aa_seqs)

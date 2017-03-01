@@ -13,21 +13,22 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style('ticks')
 
-mutations = {"h3n2": [('HA1', 170,'K'), ('HA1', 158,'Y'), ('HA1', 158, 'S'),
-                      ('HA1', 130, 'K'), ('HA1', 141, 'K')],
+mutations = {"h3n2": [('HA1', 170,'K'), ('HA1', 120, 'K'), ('HA1', 143, 'K'),
+                      ('HA1', 130, 'K'), ('HA1', 141, 'K'), ('HA1', 134, 'K')],
               "h1n1pdm": [('HA1', 161, 'N'), ('HA1', 151, 'T'), ('HA1', 182, 'P'),
                           ('HA1', 260, 'S'), ('HA1', 214, 'G')],
-              "vic": [('HA1', 128, 'D'), ('HA1', 116, 'V')],
+              "vic": [('HA1', 128, 'D'), ('HA1', 116, 'V'), ('HA1', 161, '-')],
               "yam": [('HA1', 171, 'Q'), ('HA1', 250, 'V'), ('HA1', 210, 'R')]
                       }
-region_colors = {r:col for r, col in zip(sorted(region_groups.keys()),
-                                         sns.color_palette(n_colors=len(region_groups)))}
+regions_abbr = ['global', 'NA', 'AS', 'EU', 'OC']
+region_colors = {r:col for r, col in zip(regions_abbr,
+                                         sns.color_palette(n_colors=len(regions_abbr)))}
 
 formats = ['png', 'svg', 'pdf']
 fs=12
 
 
-def smooth_confidence(conf, n=2):
+def smooth_confidence(conf, n=3):
     return 1.0/np.convolve(np.ones(n, dtype=float)/n, 1.0/conf, mode='same')
 
 
@@ -54,7 +55,7 @@ if __name__ == '__main__':
     flu = flu_process(input_data_path = input_data_path, store_data_path = store_data_path,
                    build_data_path = build_data_path, reference='flu/metadata/'+params.lineage+'_outgroup.gb',
                    proteins=['SigPep', 'HA1', 'HA2'], HI='crick_hi' if params.lineage=='h3n2' else '',
-                   method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=2.*ppy)
+                   method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=0.8*ppy)
     age_dist={}
     for region, group in region_groups.iteritems():
         flu.load_sequences(fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
@@ -70,7 +71,7 @@ if __name__ == '__main__':
         flu.align()
         flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=0.2,
                                 include_set = {'HA1':[x[1] for x in mutations[params.lineage]]})
-#        import ipdb; ipdb.set_trace()
+
         frequencies[region] = (flu.mutation_frequencies, flu.mutation_frequency_confidence, flu.mutation_frequency_counts)
         flu.mutation_frequencies, flu.mutation_frequency_confidence, flu.mutation_frequency_counts = {}, {}, {}
         age_dist[region]={}
@@ -144,20 +145,23 @@ if __name__ == '__main__':
                 conf = frequencies[region][1][('global', gene)][(pos, aa)]
                 conf = smooth_confidence(conf)
                 axs[mi].fill_between(date_bins[:-padding], freq[:-padding]+conf[:-padding], freq[:-padding]-conf[:-padding],
-                                     facecolor=region_colors[region], alpha=0.3)
+                                     facecolor=region_colors[region], alpha=0.1, linewidth=0)
                 axs[mi].plot_date(date_bins[:-padding], freq[:-padding],
-                                  c=region_colors[region], label='%s'%(region), lw=3, ls='-')
+                                  c=region_colors[region], label='%s'%(region), lw=1, ls='-')
                 axs[mi].plot_date(date_bins[-padding-1:], freq[-padding-1:],
-                                  c=region_colors[region], lw=3, ls=':')
+                                  c=region_colors[region], lw=1, ls=':')
                 print("mutation", gene, pos, aa, "in", region)
             except:
                 print("mutation", gene, pos, aa, "not found  in ", region)
         try:
-            axs[mi].plot_date(date_bins, frequencies["global"][0][('global', gene)][(pos, aa)],
+            axs[mi].plot_date(date_bins, frequencies["global"][0][('global', gene)][(pos, aa)], lw=1,
                          ls='-', c='k', label='global')
         except:
             print("mutation", gene, pos, aa, "not found globally")
-        start_freq = frequencies["global"][0][('global', gene)][(pos, aa)][0]
+        try:
+            start_freq = frequencies["global"][0][('global', gene)][(pos, aa)][0]
+        except:
+          start_freq = 0
         axs[mi].text(date_bins[1], 0.88 if start_freq<0.5 else 0.05, '%s: %d%s'%(gene, pos+1, aa))
         axs[mi].set_ylim([0,1])
         axs[mi].set_yticklabels(['{:3.0f}%'.format(x*100) for x in [0, 0.2, 0.4, 0.6, 0.8, 1.0]])
@@ -169,7 +173,7 @@ if __name__ == '__main__':
     sns.despine()
     for fmt in formats:
       plt.savefig(store_data_path+'_frequencies.'+fmt)
-    plt.close()
+#    plt.close()
 
     # make plot with total sequence count
     fig = plt.figure(figsize=(8,3))
@@ -184,4 +188,4 @@ if __name__ == '__main__':
     sns.despine()
     for fmt in formats:
       plt.savefig(store_data_path+'_seq_count.'+fmt)
-    plt.close()
+#    plt.close()

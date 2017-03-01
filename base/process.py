@@ -147,6 +147,7 @@ class process(object):
         else:
             self.seqs.align(debug=debug)
         self.seqs.strip_non_reference()
+        self.seqs.remove_terminal_gaps()
         if outgroup is not None:
             self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
         self.seqs.translate(proteins=self.proteins)
@@ -222,7 +223,8 @@ class process(object):
             aln_frequencies = alignment_frequencies(tmp_aln, time_points, self.pivots,
                                             ws=max(2,len(time_points)//10),
                                             **self.kwargs)
-            aln_frequencies.mutation_frequencies(min_freq=min_freq, include_set=tmp_include_set)
+            aln_frequencies.mutation_frequencies(min_freq=min_freq, include_set=tmp_include_set,
+                                                 ignore_char='N' if prot=='nuc' else 'X')
             self.mutation_frequencies[(region_name,prot)] = aln_frequencies.frequencies
             self.mutation_frequency_confidence[(region_name,prot)] = aln_frequencies.calc_confidence()
             self.mutation_frequency_counts[region_name]=aln_frequencies.counts
