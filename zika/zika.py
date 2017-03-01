@@ -13,45 +13,55 @@ import numpy as np
 from datetime import datetime
 
 region_cmap = [
-    ["southeast_asia",     "#462EB9"],
-    ["oceania",            "#3F4FCC"],
-    ["china",              "#4271CE"],
-    ["japan_korea",        "#4B8DC2"],
-    ["europe",             "#58A2AC"],
-    ["south_america",      "#69B091"],
-    ["north_america",      "#E0A33B"]
+    ["europe",             "#4580CA"],
+    ["china",              "#3F63CF"],
+    ["japan_korea",        "#4272CE"],
+    ["southeast_asia",     "#571EA2"],
+    ["oceania",            "#4B26B1"],
+    ["south_pacific",      "#4433BE"],
+    ["south_america",      "#56A0AE"],
+    ["central_america",    "#BDBB48"],
+    ["caribbean",          "#E67C32"],
+    ["north_america",      "#DC2F24"]
 ]
 
 country_cmap = [
-    # Old World: "#462EB9", "#403DC5", "#3F4FCC", "#3F60D0", "#4271CE", "#4580CA", "#4B8DC2", "#5199B8", "#58A2AC"
-    ["thailand",           "#462EB9"],
-    ["singapore",          "#403DC5"],
-    ["french_polynesia",   "#3F4FCC"],
-    ["american_samoa",	   "#3F60D0"],
-    ["tonga",	           "#4271CE"],
-    ["china",			   "#4580CA"],
-    ["japan",			   "#4B8DC2"],
-    ["italy",			   "#5199B8"],
-    # South America: "#60AA9F", "#69B091", "#73B584", "#7DB877", "#89BB6B", "#95BD60", "#A2BE57", "#AFBD4F"
-    ["brazil",  		   "#60AA9F"],
-    ["ecuador",  		   "#7DB877"],
-    ["colombia",  		   "#89BB6B"],
-    ["french_guiana",  	   "#95BD60"],
-    ["suriname",  		   "#A2BE57"],
-    ["venezuela",  		   "#AFBD4F"],
-    # Central and North America: "#BBBC49", "#C6B944", "#D0B440", "#D9AD3D", "#E0A33B", "#E49838", "#E68835", "#E67732", "#E4632E", "#E04E2A", "#DE3926"
-    ["panama",             "#BBBC49"],
-    ["honduras",           "#C6B944"],
-    ["guatemala",  		   "#D0B440"],
-    ["mexico",             "#D9AD3D"],
-    ["martinique",  	   "#E0A33B"],
-    ["guadeloupe",         "#E49838"],
-    ["usvi",               "#E68835"],
+
+    # "#571EA2", "#4B26B1", "#4433BE", "#4042C7", "#3F52CD", "#3F63CF", "#4272CE", "#4580CA", "#4A8CC2", "#5097BA"
+    # "#56A0AE", "#5DA8A3", "#66AE96", "#6EB389", "#79B77D", "#83BA70", "#8EBC66", "#9ABE5C", "#A6BE55", "#B2BD4D"
+    # "#BDBB48", "#C8B944", "#D1B340", "#D9AD3D", "#DFA43B", "#E49938", "#E68B35", "#E67C32", "#E56A2F", "#E2562B", "#DF4327", "#DC2F24"
+
+    # Old World: "#571EA2", "#4B26B1", "#4433BE", "#4042C7", "#3F52CD", "#3F63CF", "#4272CE", "#4580CA", "#4A8CC2", "#5097BA"
+    ["italy",			   "#4580CA"],
+    ["china",			   "#3F63CF"],
+    ["japan",			   "#4272CE"],
+    ["thailand",           "#571EA2"],
+    ["singapore",          "#4B26B1"],
+    ["french_polynesia",   "#4433BE"],
+    ["american_samoa",	   "#4042C7"],
+    ["tonga",	           "#3F52CD"],
+    # South America: "#56A0AE", "#5DA8A3", "#66AE96", "#6EB389", "#79B77D", "#83BA70", "#8EBC66", "#9ABE5C", "#A6BE55", "#B2BD4D"
+    ["brazil",  		   "#56A0AE"],
+    ["ecuador",  		   "#5DA8A3"],
+    ["colombia",  		   "#66AE96"],
+    ["french_guiana",  	   "#6EB389"],
+    ["suriname",  		   "#79B77D"],
+    ["venezuela",  		   "#83BA70"],
+    # Central and North America: "#BDBB48", "#C8B944", "#D1B340", "#D9AD3D", "#DFA43B", "#E49938", "#E68B35", "#E67C32", "#E56A2F",
+    # "#E2562B", "#DF4327", "#DC2F24"
+    ["panama",             "#BDBB48"],
+    ["nicaragua",          "#C8B944"],
+    ["honduras",           "#D1B340"],
+    ["guatemala",  		   "#D9AD3D"],
+    ["mexico",             "#DFA43B"],
+    ["martinique",  	   "#E49938"],
+    ["guadeloupe",         "#E68B35"],
+    ["usvi",               "#E67C32"],
     ["puerto_rico",  	   "#E67732"],
-    ["jamaica",            "#E4632E"],
-    ["dominican_republic", "#E4632E"],
-    ["haiti",  			   "#E04E2A"],
-    ["usa",                "#DE3926"]
+    ["jamaica",            "#E56A2F"],
+    ["dominican_republic", "#E2562B"],
+    ["haiti",  			   "#DF4327"],
+    ["usa",                "#DC2F24"]
 ]
 
 
@@ -93,7 +103,7 @@ if __name__=="__main__":
         zika.load()
     else:
         fasta_fields = {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
-                        6:'division', 8:'db', 10:'authors'}
+                        6:'division', 8:'db', 10:'authors', 11:'url'}
         zika.load_sequences(fields=fasta_fields)
         zika.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
                                    s.attributes['date']< datetime(2017,1,1).date())

@@ -97,7 +97,7 @@ division_cmap = [
 
 color_options = {
     "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete", "color_map":country_cmap},
-    "division":{"key":"division", "legendTitle":"Division", "menuItem":"Division", "type":"discrete", "color_map":division_cmap},
+    "division":{"key":"division", "legendTitle":"Division", "menuItem":"division", "type":"discrete", "color_map":division_cmap},
     "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
     "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
 }
@@ -123,10 +123,14 @@ if __name__=="__main__":
                    method='SLSQP')
 
     if params.load==False:
-        fasta_fields = {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country', 6:'division', 8:'db', 10:'authors'}
+        fasta_fields = {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country', 6:'division', 8:'db', 10:'authors', 11:'url'}
         ebola.load_sequences(fields=fasta_fields)
         ebola.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
                                    s.attributes['date']< datetime(2017,1,1).date())
+        dropped_strains = [
+            "EM_074335", "EM_074462" # lack country metadata
+        ]
+        ebola.seqs.filter(lambda s: s.id not in dropped_strains)
         forced_strains = [
             "EM_076610" # flare-up index case
         ]
