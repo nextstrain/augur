@@ -71,18 +71,23 @@ class process(object):
         # instantiate and population the sequence objects
         self.seqs = sequence_set(self.sequence_fname, reference_seq=self.reference_seq)
         print("Loaded %d sequences"%len(self.seqs.all_seqs))
-        self.seqs.ungap()
-        self.seqs.parse(fields, sep=sep, strip='_')
 
         # make sure the reference is part of the sequence set
         if self.reference_seq is not None:
             if self.reference_seq.name in self.seqs.all_seqs:
                 self.seqs.all_seqs[self.reference_seq.name].seq=self.reference_seq.seq
             else:
-                print('Outgroup is not in data base')
+		print('Outgroup (reference) is not in data base - adding')
+		self.seqs.all_seqs[self.reference_seq.name]=self.reference_seq
+		print("Now %d sequences"%len(self.seqs.all_seqs))
 
-            # throw out sequences without dates
+	self.seqs.ungap()
+	# NB parse will strip spaces etc from names
+	self.seqs.parse(fields, sep=sep, strip='_')
+
+	print('Removing sequences without dates')
         self.seqs.parse_date(["%Y-%m-%d"], prune=prune)
+
 
 
     def data_filenames(self):
