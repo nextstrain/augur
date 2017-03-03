@@ -94,14 +94,14 @@ class sequence_set(object):
             for ii, val in enumerate(words):
                 if ii in fields:
                     if val not in ["", "-"]:
-                        seq.attributes[fields[ii]] = val
+			seq.attributes[fields[ii]] = fix_names(val)
                     else:
                         seq.attributes[fields[ii]] = ""
         if 'strain' in fields.values():
-            self.all_seqs = {seq.attributes['strain']:seq for seq in self.all_seqs.values()}
+	    self.all_seqs = {fix_names(seq.attributes['strain']):seq for seq in self.all_seqs.values()}
             for seq in self.all_seqs.values():
-                seq.id = seq.attributes['strain']
-                seq.name = seq.attributes['strain']
+		seq.id = fix_names(seq.attributes['strain'])
+		seq.name = fix_names(seq.attributes['strain'])
 
 
     def ungap(self):
