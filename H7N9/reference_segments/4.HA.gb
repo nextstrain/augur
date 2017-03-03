@@ -1,0 +1,129 @@
+LOCUS       NC_026425               1708 bp    cRNA    linear   VRL 06-FEB-2015
+DEFINITION  Influenza A virus (A/Shanghai/02/2013(H7N9)) segment 4
+	    hemagglutinin (HA) gene, complete cds.
+ACCESSION   NC_026425
+VERSION     NC_026425.1
+DBLINK      BioProject: PRJNA274585
+KEYWORDS    RefSeq.
+SOURCE      Influenza A virus (A/Shanghai/02/2013(H7N9))
+  ORGANISM  Influenza A virus (A/Shanghai/02/2013(H7N9))
+	    Viruses; ssRNA viruses; ssRNA negative-strand viruses;
+	    Orthomyxoviridae; Influenzavirus A.
+REFERENCE   1  (bases 1 to 1708)
+  AUTHORS   Zhu,H., Wang,D., Kelvin,D.J., Li,L., Zheng,Z., Yoon,S.W.,
+	    Wong,S.S., Farooqui,A., Wang,J., Banner,D., Chen,R., Zheng,R.,
+	    Zhou,J., Zhang,Y., Hong,W., Dong,W., Cai,Q., Roehrl,M.H.,
+	    Huang,S.S., Kelvin,A.A., Yao,T., Zhou,B., Chen,X., Leung,G.M.,
+	    Poon,L.L., Webster,R.G., Webby,R.J., Peiris,J.S., Guan,Y. and
+	    Shu,Y.
+  TITLE     Infectivity, transmission, and pathology of human-isolated H7N9
+	    influenza virus in ferrets and pigs
+  JOURNAL   Science 341 (6142), 183-186 (2013)
+   PUBMED   23704376
+  REMARK    Erratum:[Science. 2013 Aug 30;341(6149):959]
+REFERENCE   2  (bases 1 to 1708)
+  CONSRTM   NCBI Genome Project
+  TITLE     Direct Submission
+  JOURNAL   Submitted (04-FEB-2015) National Center for Biotechnology
+	    Information, NIH, Bethesda, MD 20894, USA
+REFERENCE   3  (bases 1 to 1708)
+  AUTHORS   Zhu,H., Wang,D., Kelvin,D.J., Li,L., Zheng,Z., Yoon,S.W.,
+	    Wong,S.S., Farooqui,A., Wang,J., Banner,D., Chen,R., Zheng,R.,
+	    Zhou,J., Zhang,Y., Hong,W., Dong,W., Cai,Q., Roehrl,M.A.,
+	    Huang,S.H., Calvin,A.A., Yao,T., Zhou,B., Chen,X., Leung,G.M.,
+	    Poon,L.L., Webster,R.G., Webby,R.J., Peiris,J.S., Guan,Y. and
+	    Shu,Y.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (10-MAY-2013) Centre of Influenza Research, School of
+	    Public Health, The University of Hong Kong, 5/F, Laboratory Block,
+	    LKS Faculty of Medicine Building, 21 Sasson Road, Pokfulm, Hong
+	    Kong SAR, China
+COMMENT     REVIEWED REFSEQ: This record has been curated by NCBI staff. The
+	    reference sequence is identical to KF021597.
+	    GenBank Accession Numbers KF021594-KF021601 represent sequences
+	    from the 8 segments of Influenza A virus
+	    (A/Shanghai/02/2013(H7N9)).
+
+	    ##Assembly-Data-START##
+	    Assembly Method       :: Lasergene v. 8.0
+	    Sequencing Technology :: 454
+	    ##Assembly-Data-END##
+	    COMPLETENESS: full length.
+FEATURES             Location/Qualifiers
+     source          1..1708
+		     /organism="Influenza A virus (A/Shanghai/02/2013(H7N9))"
+		     /mol_type="viral cRNA"
+		     /strain="A/Shanghai/02/2013"
+		     /serotype="H7N9"
+		     /host="Homo sapiens"
+		     /db_xref="taxon:1332244"
+		     /segment="4"
+		     /country="China"
+		     /collection_date="05-Mar-2013"
+		     /note="passage details: E1"
+     gene            1..1683
+		     /gene="HA"
+		     /locus_tag="TS66_s4gp1"
+		     /db_xref="GeneID:23104227"
+     CDS             1..1683
+		     /gene="HA"
+		     /locus_tag="TS66_s4gp1"
+		     /function="receptor binding and fusion protein"
+		     /codon_start=1
+		     /product="hemagglutinin"
+		     /protein_id="YP_009118475.1"
+		     /db_xref="GeneID:23104227"
+		     /translation="MNTQILVFALIAIIPTNADKICLGHHAVSNGTKVNTLTERGVEV
+		     VNATETVERTNIPRICSKGKRTVDLGQCGLLGTITGPPQCDQFLEFSADLIIERREGS
+		     DVCYPGKFVNEEALRQILRESGGIDKEAMGFTYSGIRTNGATSACRRSGSSFYAEMKW
+		     LLSNTDNAAFPQMTKSYKNTRKSPALIVWGIHHSVSTAEQTKLYGSGNKLVTVGSSNY
+		     QQSFVPSPGARPQVNGLSGRIDFHWLMLNPNDTVTFSFNGAFIAPDRASFLRGKSMGI
+		     QSGVQVDANCEGDCYHSGGTIISNLPFQNIDSRAVGKCPRYVKQRSLLLATGMKNVPE
+		     IPKGRGLFGAIAGFIENGWEGLIDGWYGFRHQNAQGEGTAADYKSTQSAIDQITGKLN
+		     RLIEKTNQQFELIDNEFNEVEKQIGNVINWTRDSITEVWSYNAELLVAMENQHTIDLA
+		     DSEMDKLYERVKRQLRENAEEDGTGCFEIFHKCDDDCMASIRNNTYDHSKYREEAMQN
+		     RIQIDPVKLSSGYKDVILWFSFGASCFILLAIVMGLVFICVKNGNMRCTICI"
+     sig_peptide     1..54
+		     /gene="HA"
+		     /locus_tag="TS66_s4gp1"
+     mat_peptide     55..1017
+		     /gene="HA"
+		     /locus_tag="TS66_s4gp1"
+		     /product="HA1"
+		     /protein_id="YP_009118482.1"
+     mat_peptide     1018..1680
+		     /gene="HA"
+		     /locus_tag="TS66_s4gp1"
+		     /product="HA2"
+		     /protein_id="YP_009118483.1"
+ORIGIN
+	1 atgaacactc aaatcctggt attcgctctg attgcgatca ttccaacaaa tgcagacaaa
+       61 atctgcctcg gacatcatgc cgtgtcaaac ggaaccaaag taaacacatt aactgaaaga
+      121 ggagtggaag tcgtcaatgc aactgaaaca gtggaacgaa caaacatccc caggatctgc
+      181 tcaaaaggga aaaggacagt tgacctcggt caatgtggac tcctggggac aatcactgga
+      241 ccacctcaat gtgaccaatt cctagaattt tcagccgatt taattattga gaggcgagaa
+      301 ggaagtgatg tctgttatcc tgggaaattc gtgaatgaag aagctctgag gcaaattctc
+      361 agagaatcag gcggaattga caaggaagca atgggattca catacagtgg aataagaact
+      421 aatggagcaa ccagtgcatg taggagatca ggatcttcat tctatgcaga aatgaaatgg
+      481 ctcctgtcaa acacagataa tgctgcattc ccgcagatga ctaagtcata taaaaataca
+      541 agaaaaagcc cagctctaat agtatggggg atccatcatt ccgtatcaac tgcagagcaa
+      601 accaagctat atgggagtgg aaacaaactg gtgacagttg ggagttctaa ttatcaacaa
+      661 tcttttgtac cgagtccagg agcgagacca caagttaatg gtctatctgg aagaattgac
+      721 tttcattggc taatgctaaa tcccaatgat acagtcactt tcagtttcaa tggggctttc
+      781 atagctccag accgtgcaag cttcctgaga ggaaaatcta tgggaatcca gagtggagta
+      841 caggttgatg ccaattgtga aggggactgc tatcatagtg gagggacaat aataagtaac
+      901 ttgccatttc agaacataga tagcagggca gttggaaaat gtccgagata tgttaagcaa
+      961 aggagtctgc tgctagcaac agggatgaag aatgttcctg agattccaaa aggaagaggc
+     1021 ctatttggtg ctatagcggg tttcattgaa aatggatggg aaggcctaat tgatggttgg
+     1081 tatggtttca gacaccagaa tgcacaggga gagggaactg ctgcagatta caaaagcact
+     1141 caatcggcaa ttgatcaaat aacaggaaaa ttaaaccggc ttatagaaaa aaccaaccaa
+     1201 caatttgagt tgatagacaa tgaattcaat gaggtagaga agcaaatcgg taatgtgata
+     1261 aattggacca gagattctat aacagaagtg tggtcataca atgctgaact cttggtagca
+     1321 atggagaacc agcatacaat tgatctggct gattcagaaa tggacaaact gtacgaacga
+     1381 gtgaaaagac agctgagaga gaatgctgaa gaagatggca ctggttgctt tgaaatattt
+     1441 cacaagtgtg atgatgactg tatggccagt attagaaata acacctatga tcacagcaaa
+     1501 tacagggaag aggcaatgca aaatagaata cagattgacc cagtcaaact aagcagcggc
+     1561 tacaaagatg tgatactttg gtttagcttc ggggcatcat gtttcatact tctagccatt
+     1621 gtaatgggcc ttgtcttcat atgtgtaaag aatggaaaca tgcggtgcac tatttgtata
+     1681 taagtttgga aaaaacaccc ttgtttct
+//
