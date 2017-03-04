@@ -203,29 +203,42 @@ class tree(object):
         state and repurposing the GTR inference and ancestral reconstruction
         '''
         from treetime_augur import GTR
-        # Determine alphabet and store reconstructed ancestral sequences
+        # Determine alphabet
         places = set()
+        for node in self.tree.find_clades():
+            if hasattr(node, 'attr'):
+                if attr in node.attr:
+                    places.add(node.attr[attr])
+
+        # construct GTR (flat for now). The missing DATA symbol is a '-' (ord('-')==45)
+        places = sorted(places)
+        nc = len(places)
+        if nc>180:
+            self.logger("geo_inference: can't have more than 180 places!",1)
+            return
+        elif nc==1:
+            self.logger("geo_inference: only one place found -- setting every internal node to %s!"%places[0],1)
+            for node in self.tree.find_clades():
+                node.attr[attr] = places[0]
+                node.__setattr__(attr+'_transitions',[])
+            return
+        elif nc==0:
+            self.logger("geo_inference: list of places is empty!",1)
+            return
+
+        # store previously reconstructed sequences
         nuc_seqs = {}
         nuc_muts = {}
         nuc_seq_LH = None
         if hasattr(self.tt.tree,'sequence_LH'):
             nuc_seq_LH = self.tt.tree.sequence_LH
         for node in self.tree.find_clades():
-            if hasattr(node, 'attr'):
-                if attr in node.attr:
-                    places.add(node.attr[attr])
             if hasattr(node, 'sequence'):
                 nuc_seqs[node] = node.sequence
             if hasattr(node, 'mutations'):
                 nuc_muts[node] = node.mutations
                 node.__delattr__('mutations')
 
-        # construct GTR (flat for now). The missing DATA symbol is a '-' (ord('-')==45)
-        places = sorted(places)
-        nc = len(places)
-        if nc<2 or nc>180:
-            self.logger("geo_inference: can't have less than 2 or more than 180 places!",1)
-            return
 
         alphabet = {chr(65+i):place for i,place in enumerate(places)}
         alphabet_rev = {v:k for k,v in alphabet.iteritems()}
