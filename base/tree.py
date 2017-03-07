@@ -197,7 +197,7 @@ class tree(object):
         self.is_timetree=True
 
 
-    def geo_inference(self, attr):
+    def geo_inference(self, attr, missing='?'):
         '''
         infer a "mugration" model by pretending each region corresponds to a sequence
         state and repurposing the GTR inference and ancestral reconstruction
@@ -207,7 +207,7 @@ class tree(object):
         places = set()
         for node in self.tree.find_clades():
             if hasattr(node, 'attr'):
-                if attr in node.attr:
+                if attr in node.attr and attr!=missing:
                     places.add(node.attr[attr])
 
         # construct GTR (flat for now). The missing DATA symbol is a '-' (ord('-')==45)
@@ -241,11 +241,13 @@ class tree(object):
 
 
         alphabet = {chr(65+i):place for i,place in enumerate(places)}
-        alphabet_rev = {v:k for k,v in alphabet.iteritems()}
         sequence_gtr = self.tt.gtr
         myGeoGTR = GTR.custom(pi = np.ones(nc, dtype=float)/nc, W=np.ones((nc,nc)),
                               alphabet = np.array(sorted(alphabet.keys())))
-        myGeoGTR.profile_map['-'] = np.ones(nc)
+        missing_char = chr(65+nc)
+        alphabet[missing_char]=missing
+        myGeoGTR.profile_map[missing_char] = np.ones(nc)
+        alphabet_rev = {v:k for k,v in alphabet.iteritems()}
 
         # set geo info to nodes as one letter sequence.
         for node in self.tree.get_terminals():
@@ -253,11 +255,12 @@ class tree(object):
                 if attr in node.attr:
                     node.sequence=np.array([alphabet_rev[node.attr[attr]]])
             else:
-                node.sequence=np.array(['-'])
+                node.sequence=np.array([missing_char])
         for node in self.tree.get_nonterminals():
             node.__delattr__('sequence')
         # set custom GTR model, run inference
         self.tt._gtr = myGeoGTR
+        import ipdb; ipdb.set_trace()
         tmp_use_mutation_length = self.tt.use_mutation_length
         self.tt.use_mutation_length=False
         self.tt.infer_ancestral_sequences(method='ml', infer_gtr=True,
