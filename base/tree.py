@@ -244,9 +244,11 @@ class tree(object):
         sequence_gtr = self.tt.gtr
         myGeoGTR = GTR.custom(pi = np.ones(nc, dtype=float)/nc, W=np.ones((nc,nc)),
                               alphabet = np.array(sorted(alphabet.keys())))
-        missing_char = chr(65+nc)
-        alphabet[missing_char]=missing
-        myGeoGTR.profile_map[missing_char] = np.ones(nc)
+        # ammend the profile map with the character for missing data
+        if missing:
+            missing_char = chr(65+nc)
+            alphabet[missing_char]=missing
+            myGeoGTR.profile_map[missing_char] = np.ones(nc)
         alphabet_rev = {v:k for k,v in alphabet.iteritems()}
 
         # set geo info to nodes as one letter sequence.
@@ -260,7 +262,6 @@ class tree(object):
             node.__delattr__('sequence')
         # set custom GTR model, run inference
         self.tt._gtr = myGeoGTR
-        import ipdb; ipdb.set_trace()
         tmp_use_mutation_length = self.tt.use_mutation_length
         self.tt.use_mutation_length=False
         self.tt.infer_ancestral_sequences(method='ml', infer_gtr=True,
