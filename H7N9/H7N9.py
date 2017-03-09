@@ -111,14 +111,15 @@ if __name__=="__main__":
             0:'strain', 2:'accession', 3:'date', 4:'host', 6:'country', 7: 'division'
         },
         "dropped_strains": [
-            "A/chicken/Netherlands/16007311-037041/2016" # not part of epi clade
+            "A/chicken/Netherlands/16007311-037041/2016", # not part of epi clade
+            "A/British_Columbia/1/2015" #travel case. throws off map.
         ],
-        # "viruses_per_month": 500,
-        "viruses_per_month": 10,
+        "viruses_per_month": 500,
+        # "viruses_per_month": 10,
         "geo_inference": ['country', 'division', 'host'],
         "confidence": False,
-        # "earliest_sample": datetime(2013,1,1).date()
-        "earliest_sample": datetime(2016,1,1).date()
+        "earliest_sample": datetime(2013,1,1).date()
+        # "earliest_sample": datetime(2016,1,1).date()
     }
 
 
@@ -176,7 +177,8 @@ if __name__=="__main__":
 
     for idx, segment in enumerate(segments):
         print("SEGMENT: {}".format(segmentNames[idx]))
-        segment.align()
+        # should save un-aligned MFA here
+        segment.align(codon_align=False)
         SeqIO.write(segment.seqs.aln, segment.build_data_path + "aligned.mfa", "fasta")
         segment.build_tree()
         segment.clock_filter(n_iqd=3, plot=True)
