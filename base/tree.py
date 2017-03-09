@@ -260,10 +260,10 @@ class tree(object):
             node.__delattr__('sequence')
         # set custom GTR model, run inference
         self.tt._gtr = myGeoGTR
-        import ipdb; ipdb.set_trace()
+        # import pdb; pdb.set_trace()
         tmp_use_mutation_length = self.tt.use_mutation_length
         self.tt.use_mutation_length=False
-        self.tt.infer_ancestral_sequences(method='ml', infer_gtr=True,
+        self.tt.infer_ancestral_sequences(method='ml', infer_gtr=False,
             store_compressed=False, pc=5.0, marginal=True, normalized_rate=False)
 
         # restore the nucleotide sequence and mutations to maintain expected behavior

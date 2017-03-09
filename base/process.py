@@ -77,15 +77,15 @@ class process(object):
             if self.reference_seq.name in self.seqs.all_seqs:
                 self.seqs.all_seqs[self.reference_seq.name].seq=self.reference_seq.seq
             else:
-		print('Outgroup (reference) is not in data base - adding')
-		self.seqs.all_seqs[self.reference_seq.name]=self.reference_seq
-		print("Now %d sequences"%len(self.seqs.all_seqs))
+                print('Outgroup (reference) is not in data base - adding')
+                self.seqs.all_seqs[self.reference_seq.name]=self.reference_seq
+                print("Now %d sequences"%len(self.seqs.all_seqs))
 
-	self.seqs.ungap()
-	# NB parse will strip spaces etc from names
-	self.seqs.parse(fields, sep=sep, strip='_')
+        self.seqs.ungap()
+        # NB parse will strip spaces etc from names
+        self.seqs.parse(fields, sep=sep, strip='_')
 
-	print('Removing sequences without dates')
+        print('Removing sequences without dates')
         self.seqs.parse_date(["%Y-%m-%d"], prune=prune)
 
 
