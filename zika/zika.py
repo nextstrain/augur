@@ -41,24 +41,25 @@ country_cmap = [
     ["french_polynesia",   "#4433BE"],
     ["american_samoa",	   "#4042C7"],
     ["tonga",	           "#3F52CD"],
-    # South America: "#56A0AE", "#5DA8A3", "#66AE96", "#6EB389", "#79B77D", "#83BA70", "#8EBC66", "#9ABE5C", "#A6BE55", "#B2BD4D"
+    # South America: "#56A0AE", "#5DA8A3", "#66AE96", "#6EB389", "#79B77D", "#83BA70", "#8EBC66", "#9ABE5C"
     ["brazil",  		   "#56A0AE"],
     ["ecuador",  		   "#5DA8A3"],
     ["colombia",  		   "#66AE96"],
     ["french_guiana",  	   "#6EB389"],
     ["suriname",  		   "#79B77D"],
     ["venezuela",  		   "#83BA70"],
-    # Central and North America: "#BDBB48", "#C8B944", "#D1B340", "#D9AD3D", "#DFA43B", "#E49938", "#E68B35", "#E67C32", "#E56A2F",
-    # "#E2562B", "#DF4327", "#DC2F24"
-    ["panama",             "#BDBB48"],
-    ["nicaragua",          "#C8B944"],
-    ["honduras",           "#D1B340"],
-    ["guatemala",  		   "#D9AD3D"],
-    ["mexico",             "#DFA43B"],
-    ["martinique",  	   "#E49938"],
-    ["guadeloupe",         "#E68B35"],
-    ["usvi",               "#E67C32"],
-    ["puerto_rico",  	   "#E67732"],
+    # Central and North America: "#A6BE55", "#B2BD4D", "#BDBB48", "#C8B944", "#D1B340", "#D9AD3D", "#DFA43B",
+    # "#E49938", "#E68B35", "#E67C32", "#E56A2F", "#E2562B", "#DF4327", "#DC2F24"
+    ["panama",             "#A6BE55"],
+    ["nicaragua",          "#B2BD4D"],
+    ["honduras",           "#BDBB48"],
+    ["el_salvador",        "#C8B944"],
+    ["guatemala",  		   "#D1B340"],
+    ["mexico",             "#D9AD3D"],
+    ["martinique",  	   "#DFA43B"],
+    ["guadeloupe",         "#E49938"],
+    ["usvi",               "#E68B35"],
+    ["puerto_rico",  	   "#E67C32"],
     ["jamaica",            "#E56A2F"],
     ["dominican_republic", "#E2562B"],
     ["haiti",  			   "#DF4327"],
@@ -113,7 +114,9 @@ if __name__=="__main__":
             "THA/PLCal_ZV/2013", "PLCal_ZV", # true strains, too basal for analysis
             "ZF36_36S", # possible contamination
             "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", # true strains, but duplicates of other strains in dataset
-            "Bahia04" # excessive terminal branch length
+            "Bahia04", # excessive terminal branch length
+            "HTI_2016_MA-WGS16-022-SER", "JAM_2016_MA-WGS16-041-SER", "DOM_2016_MA-WGS16-040-SER", "JAM_2016_MA-WGS16-039-SER", # unknown dates
+            "Haiti/1225/2014" # temporarily remove
         ]
         zika.seqs.filter(lambda s: s.id not in dropped_strains)
         zika.seqs.subsample(category = lambda x:(x.attributes['date'].year, x.attributes['date'].month),
