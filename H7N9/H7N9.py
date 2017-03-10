@@ -93,14 +93,14 @@ if __name__=="__main__":
         "HA": {
             "lineage": "flu_H7N9_NA",
             "reference_fname": "H7N9/reference_segments/na.gb",
-            "input_data": "../fauna/data/h7n9.na",
+            "input_data": "../fauna/data/h7n9_na",
             "proteins": ['NA'],
             "min_seq_length": 1200,
         },
         "NA": {
             "lineage": "flu_H7N9_HA",
             "reference_fname": "H7N9/reference_segments/ha.gb",
-            "input_data": "../fauna/data/h7n9.ha",
+            "input_data": "../fauna/data/h7n9_ha",
             "proteins": ['HA'],
             "min_seq_length": 1500,
         },
@@ -112,7 +112,7 @@ if __name__=="__main__":
         },
         "dropped_strains": [
             "A/chicken/Netherlands/16007311-037041/2016", # not part of epi clade
-            "A/British_Columbia/1/2015" #travel case. throws off map.
+            "A/BritishColumbia/1/2015" #travel case. throws off map.
         ],
         "viruses_per_month": 500,
         # "viruses_per_month": 10,
@@ -160,7 +160,8 @@ if __name__=="__main__":
         segment.load_sequences(fields=params["fasta_fields"])
         # segment.seqs.filter(lambda s: s.attributes["country"] != "?")
         # segment.seqs.filter(lambda s: s.attributes["division"] != "?")
-        # segment.seqs.filter(lambda s: s.attributes["host"] != "?")
+        segment.seqs.filter(lambda s: s.attributes["host"] != "laboratoryderived")
+        segment.seqs.filter(lambda s: s.attributes["host"] != "watersample")
         for key in segment.seqs.all_seqs:
             if segment.seqs.all_seqs[key].attributes["division"] == "china":
                     segment.seqs.all_seqs[key].attributes["division"] = "?"

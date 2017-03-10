@@ -26,15 +26,12 @@ for metaFile in metaFiles:
             "?": "#FFFFFF"
         },
         "host": {
-            "avian": "#5e4fa2",
-            "gallusgallus": "#3288bd",
-            "passermontanus": "#e6f598",
-            "goose": "#abdda4",
-            "otheravian": "#66c2a5",
-            "human": "#d53e4f",
-            "duck": "#5e4fa2",
-            "chicken": "#3288bd",
-            "laboratoryderived": "#fee08b"
+            "chicken": "#403DC5",
+            "duck": "#4063CF",
+            "goose": "#4785C7",
+            "other_avian": "#559EB1",
+            "environment": "#67AF94",
+            "human": "#CDB642",
         },
         "division": {
             "?": "#FFFFFF",
@@ -49,7 +46,6 @@ for metaFile in metaFiles:
             "jilin": "#c51b7d",
             "anhui": "#fee08b",
             "shanghai": "#ffffbf",
-            "british_columbia": "#4d4d4d",
             "jiangsu": "#fdae61",
             "hubei": "#66c2a5",
             "zhejiang": "#e6f598",
