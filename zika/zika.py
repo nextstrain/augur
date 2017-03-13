@@ -33,21 +33,23 @@ country_cmap = [
     # "#BDBB48", "#C8B944", "#D1B340", "#D9AD3D", "#DFA43B", "#E49938", "#E68B35", "#E67C32", "#E56A2F", "#E2562B", "#DF4327", "#DC2F24"
 
     # Old World: "#571EA2", "#4B26B1", "#4433BE", "#4042C7", "#3F52CD", "#3F63CF", "#4272CE", "#4580CA", "#4A8CC2", "#5097BA"
-    ["italy",			   "#4580CA"],
-    ["china",			   "#3F63CF"],
-    ["japan",			   "#4272CE"],
     ["thailand",           "#571EA2"],
-    ["singapore",          "#4B26B1"],
-    ["french_polynesia",   "#4433BE"],
-    ["american_samoa",	   "#4042C7"],
-    ["tonga",	           "#3F52CD"],
+    ["vietnam",            "#4B26B1"],
+    ["singapore",          "#4433BE"],
+    ["french_polynesia",   "#4042C7"],
+    ["american_samoa",	   "#3F52CD"],
+    ["tonga",	           "#3F63CF"],
+    ["italy",			   "#4272CE"],
+    ["china",			   "#4580CA"],
+    ["japan",			   "#4A8CC2"],
     # South America: "#56A0AE", "#5DA8A3", "#66AE96", "#6EB389", "#79B77D", "#83BA70", "#8EBC66", "#9ABE5C"
     ["brazil",  		   "#56A0AE"],
-    ["ecuador",  		   "#5DA8A3"],
-    ["colombia",  		   "#66AE96"],
-    ["french_guiana",  	   "#6EB389"],
-    ["suriname",  		   "#79B77D"],
-    ["venezuela",  		   "#83BA70"],
+    ["peru",               "#5DA8A3"],
+    ["ecuador",  		   "#66AE96"],
+    ["colombia",  		   "#6EB389"],
+    ["french_guiana",  	   "#79B77D"],
+    ["suriname",  		   "#83BA70"],
+    ["venezuela",  		   "#8EBC66"],
     # Central and North America: "#A6BE55", "#B2BD4D", "#BDBB48", "#C8B944", "#D1B340", "#D9AD3D", "#DFA43B",
     # "#E49938", "#E68B35", "#E67C32", "#E56A2F", "#E2562B", "#DF4327", "#DC2F24"
     ["panama",             "#A6BE55"],
@@ -115,8 +117,7 @@ if __name__=="__main__":
             "ZF36_36S", # possible contamination
             "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", # true strains, but duplicates of other strains in dataset
             "Bahia04", # excessive terminal branch length
-            "HTI_2016_MA-WGS16-022-SER", "JAM_2016_MA-WGS16-041-SER", "DOM_2016_MA-WGS16-040-SER", "JAM_2016_MA-WGS16-039-SER", # unknown dates
-            "Haiti/1225/2014" # temporarily remove
+            "HTI_2016_MA-WGS16-022-SER", "JAM_2016_MA-WGS16-041-SER", "DOM_2016_MA-WGS16-040-SER", "JAM_2016_MA-WGS16-039-SER" # unknown dates
         ]
         zika.seqs.filter(lambda s: s.id not in dropped_strains)
         zika.seqs.subsample(category = lambda x:(x.attributes['date'].year, x.attributes['date'].month),
