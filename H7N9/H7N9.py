@@ -91,18 +91,18 @@ if __name__=="__main__":
     # PARAMETERS:
     params = {
         "HA": {
+            "lineage": "flu_H7N9_HA",
+            "reference_fname": "H7N9/reference_segments/ha.gb",
+            "input_data": "../fauna/data/h7n9_ha",
+            "proteins": ['SigPep', 'HA1', 'HA2'],
+            "min_seq_length": 1500,
+        },
+        "NA": {
             "lineage": "flu_H7N9_NA",
             "reference_fname": "H7N9/reference_segments/na.gb",
             "input_data": "../fauna/data/h7n9_na",
             "proteins": ['NA'],
             "min_seq_length": 1200,
-        },
-        "NA": {
-            "lineage": "flu_H7N9_HA",
-            "reference_fname": "H7N9/reference_segments/ha.gb",
-            "input_data": "../fauna/data/h7n9_ha",
-            "proteins": ['HA'],
-            "min_seq_length": 1500,
         },
         # >A/chicken/Jiangxi/10877/2014|    h7n9|   EPI594171|      2014-02-18|         chicken|    china|      china|      china|      china|          egg|            other_database_import
         #        0                           1         2               3                   4           5           6           7            8          9                   10
@@ -111,8 +111,10 @@ if __name__=="__main__":
             0:'strain', 2:'accession', 3:'date', 4:'host', 6:'country', 7: 'division'
         },
         "dropped_strains": [
-            "A/chicken/Netherlands/16007311-037041/2016", # not part of epi clade
-            "A/BritishColumbia/1/2015" #travel case. throws off map.
+            "A/Chicken/Netherlands/16007311-037041/2016", # not part of epi clade
+            "A/Chicken/Netherlands/1600", # not part of epi clade
+            "A/duck/Zhejiang/LS02/2014", # not of part of epi clade
+            "A/BritishColumbia/1/2015" # travel case. throws off map
         ],
         "viruses_per_month": 500,
         # "viruses_per_month": 10,

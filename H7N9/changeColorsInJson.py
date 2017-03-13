@@ -22,8 +22,7 @@ for metaFile in metaFiles:
             "hong_kong": "#66c2a5",
             "china": "#d53e4f",
             "japan": "#3288bd",
-            "taiwan": "#fdae61",
-            "?": "#FFFFFF"
+            "taiwan": "#fdae61"
         },
         "host": {
             "chicken": "#403DC5",
@@ -34,7 +33,6 @@ for metaFile in metaFiles:
             "human": "#CDB642",
         },
         "division": {
-            "?": "#FFFFFF",
             "beijing": "#d53e4f",
             "shandong": "#f46d43",
             "hunan": "#66c2a5",
