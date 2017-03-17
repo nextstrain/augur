@@ -129,7 +129,8 @@ if __name__=="__main__":
     zika.clock_filter(n_iqd=3, plot=True)
     zika.annotate_tree(Tc=0.02, timetree=True, reroot='best', confidence=params.confidence)
     for geo_attr in geo_attributes:
-        zika.tree.geo_inference(geo_attr)
+        zika.tree.geo_inference(geo_attr, root_state = "thailand"
+                                          if geo_attr=="country" else None)
     zika.export(controls = attribute_nesting, geo_attributes = geo_attributes,
                 color_options=color_options, panels=panels)
 

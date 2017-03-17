@@ -189,7 +189,7 @@ class tree(object):
         self.is_timetree=True
 
 
-    def geo_inference(self, attr):
+    def geo_inference(self, attr, root_state=None):
         '''
         infer a "mugration" model by pretending each region corresponds to a sequence
         state and repurposing the GTR inference and ancestral reconstruction
@@ -211,6 +211,8 @@ class tree(object):
             if hasattr(node, 'mutations'):
                 nuc_muts[node] = node.mutations
                 node.__delattr__('mutations')
+        if root_state is not None:
+            places.add(root_state)
 
         # construct GTR (flat for now). The missing DATA symbol is a '-' (ord('-')==45)
         places = sorted(places)
@@ -235,6 +237,12 @@ class tree(object):
                 node.sequence=np.array(['-'])
         for node in self.tree.get_nonterminals():
             node.__delattr__('sequence')
+        if root_state is not None:
+            self.tree.root.split(n=1, branch_length=0.0)
+            extra_clade = self.tree.root.clades[-1]
+            extra_clade.name = "dummy_root_node"
+            extra_clade.up = self.tree.root
+            extra_clade.sequence = np.array([alphabet_rev[root_state]])
         # set custom GTR model, run inference
         self.tt._gtr = myGeoGTR
         tmp_use_mutation_length = self.tt.use_mutation_length
@@ -242,6 +250,8 @@ class tree(object):
         self.tt.infer_ancestral_sequences(method='ml', infer_gtr=True,
             store_compressed=False, pc=5.0, marginal=True, normalized_rate=False)
 
+        if root_state is not None:
+            self.tree.prune(extra_clade)
         # restore the nucleotide sequence and mutations to maintain expected behavior
         self.tt.geogtr = self.tt.gtr
         self.tt.geogtr.alphabet_to_location = alphabet
