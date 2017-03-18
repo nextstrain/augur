@@ -34,10 +34,11 @@ country_cmap = [
 
     # Old World: "#571EA2", "#4B26B1", "#4433BE", "#4042C7", "#3F52CD", "#3F63CF", "#4272CE", "#4580CA", "#4A8CC2", "#5097BA"
     ["thailand",           "#571EA2"],
-    ["vietnam",            "#4B26B1"],
-    ["singapore",          "#4433BE"],
-    ["french_polynesia",   "#4042C7"],
-    ["american_samoa",	   "#3F52CD"],
+    #["vietnam",            "#"],
+    ["singapore",          "#4B26B1"],
+    ["french_polynesia",   "#4433BE"],
+    ["american_samoa",	   "#4042C7"],
+    ["fiji",	           "#3F52CD"],
     ["tonga",	           "#3F63CF"],
     ["italy",			   "#4272CE"],
     ["china",			   "#4580CA"],
@@ -117,7 +118,8 @@ if __name__=="__main__":
             "ZF36_36S", # possible contamination
             "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", # true strains, but duplicates of other strains in dataset
             "Bahia04", # excessive terminal branch length
-            "HTI_2016_MA-WGS16-022-SER", "JAM_2016_MA-WGS16-041-SER", "DOM_2016_MA-WGS16-040-SER", "JAM_2016_MA-WGS16-039-SER" # unknown dates
+            "HTI_2016_MA-WGS16-022-SER", "JAM_2016_MA-WGS16-041-SER", "DOM_2016_MA-WGS16-040-SER", "JAM_2016_MA-WGS16-039-SER", # unknown dates
+            "NIID123/2016" # temporarily remove while rooting is fixed
         ]
         zika.seqs.filter(lambda s: s.id not in dropped_strains)
         zika.seqs.subsample(category = lambda x:(x.attributes['date'].year, x.attributes['date'].month),
