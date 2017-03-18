@@ -32,32 +32,36 @@ country_cmap = [
     # "#BDBB48", "#C8B944", "#D1B340", "#D9AD3D", "#DFA43B", "#E49938", "#E68B35", "#E67C32", "#E56A2F", "#E2562B", "#DF4327", "#DC2F24"
 
     # Old World: "#571EA2", "#4B26B1", "#4433BE", "#4042C7", "#3F52CD", "#3F63CF", "#4272CE", "#4580CA", "#4A8CC2", "#5097BA"
-    ["italy",			   "#4580CA"],
-    ["china",			   "#3F63CF"],
-    ["japan",			   "#4272CE"],
     ["thailand",           "#571EA2"],
+    #["vietnam",            "#"],
     ["singapore",          "#4B26B1"],
     ["french_polynesia",   "#4433BE"],
     ["american_samoa",	   "#4042C7"],
-    ["tonga",	           "#3F52CD"],
-    # South America: "#56A0AE", "#5DA8A3", "#66AE96", "#6EB389", "#79B77D", "#83BA70", "#8EBC66", "#9ABE5C", "#A6BE55", "#B2BD4D"
+    ["fiji",	           "#3F52CD"],
+    ["tonga",	           "#3F63CF"],
+    ["italy",			   "#4272CE"],
+    ["china",			   "#4580CA"],
+    ["japan",			   "#4A8CC2"],
+    # South America: "#56A0AE", "#5DA8A3", "#66AE96", "#6EB389", "#79B77D", "#83BA70", "#8EBC66", "#9ABE5C"
     ["brazil",  		   "#56A0AE"],
-    ["ecuador",  		   "#5DA8A3"],
-    ["colombia",  		   "#66AE96"],
-    ["french_guiana",  	   "#6EB389"],
-    ["suriname",  		   "#79B77D"],
-    ["venezuela",  		   "#83BA70"],
-    # Central and North America: "#BDBB48", "#C8B944", "#D1B340", "#D9AD3D", "#DFA43B", "#E49938", "#E68B35", "#E67C32", "#E56A2F",
-    # "#E2562B", "#DF4327", "#DC2F24"
-    ["panama",             "#BDBB48"],
-    ["nicaragua",          "#C8B944"],
-    ["honduras",           "#D1B340"],
-    ["guatemala",  		   "#D9AD3D"],
-    ["mexico",             "#DFA43B"],
-    ["martinique",  	   "#E49938"],
-    ["guadeloupe",         "#E68B35"],
-    ["usvi",               "#E67C32"],
-    ["puerto_rico",  	   "#E67732"],
+    ["peru",               "#5DA8A3"],
+    ["ecuador",  		   "#66AE96"],
+    ["colombia",  		   "#6EB389"],
+    ["french_guiana",  	   "#79B77D"],
+    ["suriname",  		   "#83BA70"],
+    ["venezuela",  		   "#8EBC66"],
+    # Central and North America: "#A6BE55", "#B2BD4D", "#BDBB48", "#C8B944", "#D1B340", "#D9AD3D", "#DFA43B",
+    # "#E49938", "#E68B35", "#E67C32", "#E56A2F", "#E2562B", "#DF4327", "#DC2F24"
+    ["panama",             "#A6BE55"],
+    ["nicaragua",          "#B2BD4D"],
+    ["honduras",           "#BDBB48"],
+    ["el_salvador",        "#C8B944"],
+    ["guatemala",  		   "#D1B340"],
+    ["mexico",             "#D9AD3D"],
+    ["martinique",  	   "#DFA43B"],
+    ["guadeloupe",         "#E49938"],
+    ["usvi",               "#E68B35"],
+    ["puerto_rico",  	   "#E67C32"],
     ["jamaica",            "#E56A2F"],
     ["dominican_republic", "#E2562B"],
     ["haiti",  			   "#DF4327"],
@@ -112,7 +116,9 @@ if __name__=="__main__":
             "THA/PLCal_ZV/2013", "PLCal_ZV", # true strains, too basal for analysis
             "ZF36_36S", # possible contamination
             "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", # true strains, but duplicates of other strains in dataset
-            "Bahia04" # excessive terminal branch length
+            "Bahia04", # excessive terminal branch length
+            "HTI_2016_MA-WGS16-022-SER", "JAM_2016_MA-WGS16-041-SER", "DOM_2016_MA-WGS16-040-SER", "JAM_2016_MA-WGS16-039-SER", # unknown dates
+            "NIID123/2016" # temporarily remove while rooting is fixed
         ]
         zika.seqs.filter(lambda s: s.id not in dropped_strains)
         zika.seqs.subsample(category = lambda x:(x.attributes['date'].year, x.attributes['date'].month),
@@ -125,7 +131,8 @@ if __name__=="__main__":
     zika.annotate_tree(Tc=0.0005, timetree=True, reroot='best', confidence=params.confidence,
                        stiffness=10.0 ,n_points = 51, use_marginal=True)
     for geo_attr in geo_attributes:
-        zika.tree.geo_inference(geo_attr)
+        zika.tree.geo_inference(geo_attr, root_state = "thailand"
+                                          if geo_attr=="country" else None)
     zika.export(controls = attribute_nesting, geo_attributes = geo_attributes,
                 color_options=color_options, panels=panels)
 
