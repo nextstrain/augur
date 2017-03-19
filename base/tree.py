@@ -51,6 +51,15 @@ class tree(object):
         else:
             self.logger=logger
 
+    def getDateMin(self):
+        return self.tree.root.date
+
+    def getDateMax(self):
+        dateMax = self.tree.root.date
+        for node in self.tree.find_clades():
+            if node.date > dateMax:
+                dateMax = node.date
+        return dateMax
 
     def dump(self, treefile, nodefile):
         from Bio import Phylo

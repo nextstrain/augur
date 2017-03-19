@@ -396,8 +396,8 @@ class process(object):
         return geo_lookup_json
 
 
-    def export(self, extra_attr = [], controls = {}, geo_attributes = [],
-               color_options = {"num_date":{"key":"num_date", "legendTitle":"Sampling date",
+    def export(self, extra_attr = [], controls = {}, geo_attributes = [], date_range = {},
+                color_options = {"num_date":{"key":"num_date", "legendTitle":"Sampling date",
                                             "menuItem":"date", "type":"continuous"}},
                 panels = ['tree', 'entropy'], indent=None):
         '''
@@ -447,6 +447,7 @@ class process(object):
         print("Writing out metadata")
         meta_json = {}
         meta_json["color_options"] = color_options
+        meta_json["date_range"] = date_range
         meta_json["panels"] = panels
         meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
         try:

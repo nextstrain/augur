@@ -14,6 +14,7 @@ import numpy as np
 from datetime import datetime
 
 attribute_nesting = {'geographic location':['country', 'division'], 'authors':['authors']}
+date_range = {'date_min': '2013-01-01', 'date_max': '2017-01-01'}
 geo_attributes = ['country', 'division']
 
 
@@ -148,7 +149,9 @@ if __name__=="__main__":
     ebola.annotate_tree(Tc=0.002, timetree=True, reroot='best', resolve_polytomies=True)
     for geo_attr in geo_attributes:
         ebola.tree.geo_inference(geo_attr)
-    ebola.export(controls = attribute_nesting, geo_attributes = geo_attributes,
+    date_range['date_min'] = ebola.tree.getDateMin()
+    date_range['date_max'] = ebola.tree.getDateMax()
+    ebola.export(controls = attribute_nesting, date_range = date_range, geo_attributes = geo_attributes,
                 color_options=color_options, panels=panels)
 
     plot_skyline = False
