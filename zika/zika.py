@@ -118,8 +118,7 @@ if __name__=="__main__":
             "THA/PLCal_ZV/2013", "PLCal_ZV", # true strains, too basal for analysis
             "ZF36_36S", # possible contamination
             "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", # true strains, but duplicates of other strains in dataset
-            "Bahia04", # excessive terminal branch length
-            "HTI_2016_MA-WGS16-022-SER", "JAM_2016_MA-WGS16-041-SER", "DOM_2016_MA-WGS16-040-SER", "JAM_2016_MA-WGS16-039-SER", # unknown dates
+            "Bahia04", "JAM/2016/WI_JM6", # excessive terminal branch length
             "THA/2014/SV0127_14", "ZK_YN001", "NIID123/2016" # true strains, too basal analysis
         ]
         zika.seqs.filter(lambda s: s.id not in dropped_strains)
