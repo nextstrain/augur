@@ -14,10 +14,10 @@ from datetime import datetime
 
 region_cmap = [
     ["europe",             "#4580CA"],
-    ["china",              "#3F63CF"],
+    # ["china",              "#3F63CF"],
     ["japan_korea",        "#4272CE"],
     ["southeast_asia",     "#571EA2"],
-    ["oceania",            "#4B26B1"],
+    # ["oceania",            "#4B26B1"],
     ["south_pacific",      "#4433BE"],
     ["south_america",      "#56A0AE"],
     ["central_america",    "#BDBB48"],
@@ -32,7 +32,7 @@ country_cmap = [
     # "#BDBB48", "#C8B944", "#D1B340", "#D9AD3D", "#DFA43B", "#E49938", "#E68B35", "#E67C32", "#E56A2F", "#E2562B", "#DF4327", "#DC2F24"
 
     # Old World: "#571EA2", "#4B26B1", "#4433BE", "#4042C7", "#3F52CD", "#3F63CF", "#4272CE", "#4580CA", "#4A8CC2", "#5097BA"
-    ["thailand",           "#571EA2"],
+    # ["thailand",           "#571EA2"],
     #["vietnam",            "#"],
     ["singapore",          "#4B26B1"],
     ["french_polynesia",   "#4433BE"],
@@ -40,7 +40,7 @@ country_cmap = [
     ["fiji",	           "#3F52CD"],
     ["tonga",	           "#3F63CF"],
     ["italy",			   "#4272CE"],
-    ["china",			   "#4580CA"],
+    # ["china",			   "#4580CA"],
     ["japan",			   "#4A8CC2"],
     # South America: "#56A0AE", "#5DA8A3", "#66AE96", "#6EB389", "#79B77D", "#83BA70", "#8EBC66", "#9ABE5C"
     ["brazil",  		   "#56A0AE"],
@@ -70,6 +70,7 @@ country_cmap = [
 
 
 attribute_nesting = {'geographic location':['region', 'country'], 'authors':['authors']}
+date_range = {'date_min': '2013-06-01', 'date_max': '2017-06-01'}
 geo_attributes = ['region', 'country']
 panels = ['tree', 'map', 'entropy']
 color_options = {
@@ -110,15 +111,14 @@ if __name__=="__main__":
                         6:'division', 8:'db', 10:'authors', 11:'url'}
         zika.load_sequences(fields=fasta_fields)
         zika.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
-                                   s.attributes['date']< datetime(2017,1,1).date())
+                                   s.attributes['date']< datetime(2018,1,1).date())
         zika.seqs.filter(lambda s: len(s.seq)>=2000)
         dropped_strains = [
             "THA/PLCal_ZV/2013", "PLCal_ZV", # true strains, too basal for analysis
             "ZF36_36S", # possible contamination
             "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", # true strains, but duplicates of other strains in dataset
-            "Bahia04", # excessive terminal branch length
-            "HTI_2016_MA-WGS16-022-SER", "JAM_2016_MA-WGS16-041-SER", "DOM_2016_MA-WGS16-040-SER", "JAM_2016_MA-WGS16-039-SER", # unknown dates
-            "NIID123/2016" # temporarily remove while rooting is fixed
+            "Bahia04", "JAM/2016/WI_JM6", # excessive terminal branch length
+            "THA/2014/SV0127_14", "ZK_YN001", "NIID123/2016" # true strains, too basal analysis
         ]
         zika.seqs.filter(lambda s: s.id not in dropped_strains)
         zika.seqs.subsample(category = lambda x:(x.attributes['date'].year, x.attributes['date'].month),
@@ -128,12 +128,12 @@ if __name__=="__main__":
         zika.build_tree()
         zika.dump()
     zika.clock_filter(n_iqd=3, plot=True)
-    zika.annotate_tree(Tc=0.0005, timetree=True, reroot='best', confidence=params.confidence,
-                       stiffness=10.0 ,n_points = 51, use_marginal=True)
-    for geo_attr in geo_attributes:
-        zika.tree.geo_inference(geo_attr, root_state = "thailand"
-                                          if geo_attr=="country" else None)
-    zika.export(controls = attribute_nesting, geo_attributes = geo_attributes,
+    zika.annotate_tree(Tc=0.02, timetree=True, reroot='best', confidence=params.confidence)
+    zika.tree.geo_inference('region', root_state = 'southeast_asia')
+    zika.tree.geo_inference('country', root_state = 'singapore')
+    date_range['date_min'] = zika.tree.getDateMin()
+    date_range['date_max'] = zika.tree.getDateMax()
+    zika.export(controls = attribute_nesting, date_range = date_range, geo_attributes = geo_attributes,
                 color_options=color_options, panels=panels)
 
     plot_skyline = False
