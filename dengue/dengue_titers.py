@@ -217,7 +217,6 @@ if __name__=="__main__":
         dengue.align(debug=False)
         dengue.dump()
 
-        dengue.align(debug=True)
         dengue.build_tree(debug=True)
         dengue.clock_filter(n_iqd=3, plot=True)
         dengue.annotate_tree(Tc=False, timetree=True, reroot='best')
