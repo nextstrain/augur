@@ -6,6 +6,13 @@ build/
 store/
 dengue/utils/
 
+# james' stuff:
+auspice/
+output/
+test_input/
+test_output/
+logs/
+
 # Compiled source #
 ###################
 *.com
