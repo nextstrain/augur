@@ -30,6 +30,8 @@ def num_date(date):
 def ambiguous_date_to_date_range(mydate, fmt):
     sep = fmt.split('%')[1][-1]
     min_date, max_date = {}, {}
+    today = datetime.today().date()
+
     for val, field  in zip(mydate.split(sep), fmt.split(sep+'%')):
         f = 'year' if 'y' in field.lower() else ('day' if 'd' in field.lower() else 'month')
         if 'XX' in val:
@@ -46,8 +48,9 @@ def ambiguous_date_to_date_range(mydate, fmt):
             max_date[f]=int(val)
     max_date['day'] = min(max_date['day'], 31 if max_date['month'] in [1,3,5,7,8,10,12]
                                            else 28 if max_date['month']==2 else 30)
-    return (datetime(year=min_date['year'], month=min_date['month'], day=min_date['day']).date(),
-            datetime(year=max_date['year'], month=max_date['month'], day=max_date['day']).date())
+    lower_bound = datetime(year=min_date['year'], month=min_date['month'], day=min_date['day']).date()
+    upper_bound = datetime(year=max_date['year'], month=max_date['month'], day=max_date['day']).date()
+    return (lower_bound, upper_bound if upper_bound<today else today)
 
 class sequence_set(object):
     """sequence_set subsamples a set of sequences, aligns them and exports variability statistics"""
@@ -55,6 +58,7 @@ class sequence_set(object):
         super(sequence_set, self).__init__()
         self.kwarks = kwarks
         self.nthreads = 2
+        print("attempting to load sequences from %s"%fname)
         if fname is not None and os.path.isfile(fname):
             with myopen(fname) as seq_file:
                 self.all_seqs = {x.name:x for x in SeqIO.parse(seq_file, 'fasta')}
@@ -195,7 +199,8 @@ class sequence_set(object):
         print("after clock filter:",len(self.aln))
 
 
-    def subsample(self, category=None, priority=None, threshold=None, repeated=False, forced_strains=[]):
+    def subsample(self, category=None, priority=None, threshold=None, repeated=False,
+                        forced_strains=[], **kwarks):
         '''
         produce a useful set of sequences from the raw input.
         arguments:
@@ -205,7 +210,6 @@ class sequence_set(object):
         threshold -- callable that determines the number of sequences from each category
                      that is included in the final set. takes arguments, cat and seq
                      alternatively can be an int
-        forced_strains -- list of of strain names that should always be included (set to high priorty)
         '''
         # define filter criteria if not specified
         if category is None:
@@ -226,11 +230,10 @@ class sequence_set(object):
         else:
             seqs_to_subsample = self.all_seqs.values()
 
+        print("Sampling from %d sequences"%len(seqs_to_subsample))
         # sort sequences into categories and assign priority score
         for seq in seqs_to_subsample:
             seq._priority = priority(seq)
-            if seq.id in forced_strains:
-                seq._priority = 1.0
             self.sequence_categories[category(seq)].append(seq)
 
         # sample and record the degree to which a category is under_sampled
@@ -239,10 +242,10 @@ class sequence_set(object):
             under_sampling = min(1.00, 1.0*len(seqs)/threshold(cat))
             for s in seqs: s.under_sampling=under_sampling
             seqs.sort(key=lambda x:x._priority, reverse=True)
-            self.seqs.update({seq.id:seq for seq in seqs[:threshold( (cat, seqs) )]})
+            self.seqs.update({seq.id:seq for seq in seqs[:threshold(cat)]})
 
-        print("Subsampled to %d sequences"%len(self.all_seqs))
         print("Subsampled to %d sequences"%len(self.seqs))
+
 
     def align(self, debug=False):
         '''
@@ -268,6 +271,7 @@ class sequence_set(object):
             self.sequence_lookup[seqid].attributes = seq.attributes
         self.aln = MultipleSeqAlignment([s for s in tmp_aln
                             if s.name!=self.reference_seq.name or ref_in_set])
+
         os.chdir('..')
         if not debug:
             remove_dir(self.run_dir)
@@ -336,6 +340,21 @@ class sequence_set(object):
             seq.seq = Seq("".join(np.array(seq)[ungapped]))
 
 
+    def remove_terminal_gaps(self):
+        from Bio.Seq import Seq
+        for seq in self.aln:
+            seq_array = np.array(seq)
+            seq_string = str(seq.seq)
+            if (seq_array=='-').sum():
+                left_gaps = len(seq_string) - len(seq_string.lstrip('-'))
+                seq_array[:left_gaps] = 'N'
+            if (seq_array=='-').sum():
+                right_gaps = len(seq_string) - len(seq_string.rstrip('-'))
+                if right_gaps:
+                    seq_array[-right_gaps:] = 'N'
+            seq.seq = Seq("".join(seq_array))
+
+
     def diversity_statistics(self):
         ''' calculate alignment entropy of nucleotide and optionally protein alignments '''
         if not hasattr(self, "aln"):
@@ -378,11 +397,13 @@ class sequence_set(object):
                     # soon not needed as future biopython version will translate --- into -
                     tmpseq = self.proteins[prot].extract(seq)
                     tmpseq.attributes = seq.attributes
-                    tmpseq.seq = Seq(str(Seq(str(tmpseq.seq).replace('---', 'NNN'))
-                                         .translate()).replace('X','-'))
+                    internal_gap = np.unique(np.where(np.array(tmpseq)=='-')[0]//3)
+                    aa_seq = np.array(Seq(str(tmpseq.seq).replace('---', 'NNN')).translate())
+                    aa_seq[internal_gap]='-'
+                    tmpseq.seq = Seq("".join(aa_seq))
                 except:
-                    tmpseq.seq = Seq(str(Seq("".join([x if x in 'ACGT' else 'N'
-                        for x in str(tmpseq.seq)])).translate()).replace('X','-'))
+                    tmpseq.seq = Seq("".join([x if x in 'ACGT' else 'N'
+                        for x in str(tmpseq.seq)])).translate()
                     print("Trouble translating",seq.id)
                 aa_seqs.append(tmpseq)
             self.translations[prot] = MultipleSeqAlignment(aa_seqs)

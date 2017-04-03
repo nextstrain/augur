@@ -147,18 +147,21 @@ class process(object):
         else:
             self.seqs.align(debug=debug)
         self.seqs.strip_non_reference()
+        self.seqs.remove_terminal_gaps()
         if outgroup is not None:
             self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
         self.seqs.translate(proteins=self.proteins)
 
 
-    def estimate_mutation_frequencies(self, region="global", pivots=24):
+    def estimate_mutation_frequencies(self, region="global", pivots=24, include_set=None, min_freq=0.01):
         '''
         calculate the frequencies of mutation in a particular region
         currently the global frequencies should be estimated first
         because this defines the set of positions at which frequencies in
         other regions are estimated.
         '''
+        if include_set is None:
+            include_set = {}
         if not hasattr(self.seqs, 'aln'):
             print("Align sequences first")
             return
@@ -202,12 +205,15 @@ class process(object):
             print ("region must be string or tuple")
             return
         for prot, aln in [('nuc',self.seqs.aln)]+ self.seqs.translations.items():
+            if prot in include_set:
+                tmp_include_set = [x for x in include_set[prot]]
+            else:
+                tmp_include_set = []
             if region_match=="global":
                 tmp_aln = filter_alignment(aln, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
-                include_set=[]
             else:
                 tmp_aln = filter_alignment(aln, region=region_match, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
-                include_set = set([pos for (pos, mut) in self.mutation_frequencies[('global', prot)]])
+                tmp_include_set += set([pos for (pos, mut) in self.mutation_frequencies[('global', prot)]])
             time_points = [np.mean(x.attributes['num_date']) for x in tmp_aln]
             if len(time_points)==0:
                 print('no samples in region', region_name, prot)
@@ -217,7 +223,8 @@ class process(object):
             aln_frequencies = alignment_frequencies(tmp_aln, time_points, self.pivots,
                                             ws=max(2,len(time_points)//10),
                                             **self.kwargs)
-            aln_frequencies.mutation_frequencies(min_freq=0.01)
+            aln_frequencies.mutation_frequencies(min_freq=min_freq, include_set=tmp_include_set,
+                                                 ignore_char='N' if prot=='nuc' else 'X')
             self.mutation_frequencies[(region_name,prot)] = aln_frequencies.frequencies
             self.mutation_frequency_confidence[(region_name,prot)] = aln_frequencies.calc_confidence()
             self.mutation_frequency_counts[region_name]=aln_frequencies.counts
@@ -267,13 +274,26 @@ class process(object):
             self.tree.tt_from_file(infile, nodefile=nodefile, root=root)
 
 
-    def clock_filter(self, n_iqd=3, plot=True):
+    def clock_filter(self, n_iqd=3, plot=True, remove_deep_splits=False):
         self.tree.tt.clock_filter(reroot='best', n_iqd=n_iqd, plot=plot)
+
         leaves = [x for x in self.tree.tree.get_terminals()]
         for n in leaves:
             if n.bad_branch:
                 self.tree.tt.tree.prune(n)
                 print('pruning leaf ', n.name)
+        if remove_deep_splits:
+            self.tree.tt.tree.ladderize()
+            current_root = self.tree.tt.tree.root
+            if sum([x.branch_length for x in current_root])>0.1 \
+                and sum([x.count_terminals() for x in current_root.clades[:-1]])<5:
+                new_root = current_root.clades[-1]
+                new_root.up=False
+                self.tree.tt.tree.root = new_root
+                with open(self.store_data_path+"outliers.txt", 'a') as ofile:
+                    for x in current_root.clades[:-1]:
+                        ofile.write("\n".join([leaf.name for leaf in x.get_terminals()])+'\n')
+
         self.tree.tt.prepare_tree()
 
 
@@ -379,7 +399,10 @@ class process(object):
             region_to_lat_long = {}
             regions = self.tree.get_attr_list("region")
             for region in regions:
-                region_to_lat_long[region] = self.location_to_lat_long[region]
+                try:
+                    region_to_lat_long[region] = self.location_to_lat_long[region]
+                except:
+                    print("REGION %s IS MISSING"%region)
             geo_lookup_json["region"] = region_to_lat_long
         if "country" in geo_attributes:
             country_to_lat_long = {}

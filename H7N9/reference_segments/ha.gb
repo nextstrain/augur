@@ -1,0 +1,103 @@
+LOCUS       KJ411975                1710 bp    cRNA    linear   VRL 24-JUN-2014
+DEFINITION  Influenza A virus (A/Shanghai/01/2014(H7N9)) segment 4
+            hemagglutinin (HA) gene, complete cds.
+ACCESSION   KJ411975
+VERSION     KJ411975.1
+KEYWORDS    .
+SOURCE      Influenza A virus (A/Shanghai/01/2014(H7N9))
+  ORGANISM  Influenza A virus (A/Shanghai/01/2014(H7N9))
+            Viruses; ssRNA viruses; ssRNA negative-strand viruses;
+            Orthomyxoviridae; Influenzavirus A.
+REFERENCE   1  (bases 1 to 1710)
+  AUTHORS   Zhang,W., He,Y., Xu,L., Dai,F., Mei,Z., Qian,L., Xie,D., Shen,Y.,
+            Gu,Y., Zhang,Z., Yuan,Z., Jie,Z. and Hu,Y.
+  TITLE     Full-Genome Analysis of Influenza A(H7N9) Virus from Shanghai,
+            China, 2014
+  JOURNAL   Genome Announc 2 (3), e00578-14 (2014)
+   PUBMED   24948761
+  REMARK    Publication Status: Online-Only
+REFERENCE   2  (bases 1 to 1710)
+  AUTHORS   Zhang,W., Xu,L., Tian,D., Liu,Y. and Hu,Y.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (07-FEB-2014) Pathogen Diagnosis and Biosafety
+            Department, Shanghai Public Health Clinical Center, Fudan
+            University, 2901 Caolang Road, Jin Shan District, Shanghai,
+            Shanghai 201508, P.R. China
+COMMENT     GenBank Accession Numbers KJ411975-KJ411982 represent sequences
+            from the 8 segments of Influenza A virus
+            (A/Shanghai/01/2014(H7N9)).
+            
+            ##Assembly-Data-START##
+            Sequencing Technology :: Sanger dideoxy sequencing
+            ##Assembly-Data-END##
+FEATURES             Location/Qualifiers
+     source          1..1710
+                     /organism="Influenza A virus (A/Shanghai/01/2014(H7N9))"
+                     /mol_type="viral cRNA"
+                     /strain="A/Shanghai/01/2014"
+                     /serotype="H7N9"
+                     /isolation_source="sputum"
+                     /host="Homo sapiens"
+                     /db_xref="taxon:1460072"
+                     /segment="4"
+                     /country="China"
+                     /collection_date="03-Jan-2014"
+     gene            1..1683
+                     /gene="HA"
+     CDS             1..1683
+                     /gene="HA"
+                     /function="receptor binding and fusion protein"
+                     /codon_start=1
+                     /product="hemagglutinin"
+                     /protein_id="AHK10800.1"
+                     /translation="MNTQILVFALIAIIPTNADKICLGHHAVSNGTKVNTLTERGVEV
+                     VNATETVERTNIPRICSKGKRTVDLGQCGLLGTITGPPQCDQFLEFSADLIIERREGS
+                     DVCYPGKFVNEEALRQILRESGGIDKEAMGFTYSGIRTNGATSACRRSGSSFYAEMKW
+                     LLSNTDNAAFPQMTKSYKNTRKSPALIVWGIHHSVSTAEQTKLYGSGNKLVTVGSSNY
+                     QQSFVPSPGARPQVNGLSGRIDFHWLMLNPNDTVTFSFNGAFIAPDRASFLRGKSMGI
+                     QSGVQVDANCEGDCYHSGGTIISNLPFQNIDSRAVGKCPRYVKQRSLLLATGMKNVPE
+                     IPKGRGLFGAIAGFIENGWEGLIDGWYGFRHQNAQGEGTAADYKSTQSAIDQITGKLN
+                     RIIEKTNQQFELIDNEFNEVEKQIGNVINWTRDSITEVWSYNAELLVAMENQHTIDLA
+                     DSEMDKLYERVKRQLRENAEEDGTGCFEIFHKCDDDCMASIRNNTYDHSKYREEAMQN
+                     RIQIDPVKLSSGYKDVILWFSFGASCFILLAIVMGLVFICVKNGNMRCTICI"
+     CDS             1..54
+                     /gene="SigPep"       
+                     /product="Signal peptide"                   
+     CDS             55..1017
+                     /gene="HA1"
+                     /product="HA1"
+     CDS             1018..1683
+                     /gene="HA2"
+                     /product="HA2"
+ORIGIN      
+        1 atgaacactc aaatcctggt attcgctctg attgcgatca ttccaacaaa tgcagacaaa
+       61 atctgcctcg gacatcatgc cgtgtcaaac ggaaccaaag taaacacatt aactgaaaga
+      121 ggagtggaag tcgtcaatgc aactgaaaca gtggaacgaa caaacatccc caggatctgc
+      181 tcaaaaggga aaaggacagt tgacctcggt caatgtggac tcctggggac aatcactgga
+      241 ccacctcaat gtgaccaatt cctagaattt tcagccgatt taattattga gaggcgagaa
+      301 ggaagtgatg tctgttatcc tgggaaattc gtgaatgaag aagctctgag gcaaattctc
+      361 agagaatcag gcggaattga caaggaagca atgggattca catacagtgg aataagaact
+      421 aatggagcaa ccagtgcatg taggagatca ggatcttcat tctatgcaga aatgaaatgg
+      481 ctcctgtcaa acacagataa tgctgcattc ccgcagatga ctaagtcata taaaaataca
+      541 agaaaaagcc cagctctaat agtatgggga atccatcatt ccgtgtcaac tgcagagcaa
+      601 accaagctat atgggagtgg aaacaaactg gtgacagtcg ggagttctaa ttatcaacaa
+      661 tcttttgtac cgagtccagg agcgagacca caagttaatg gtctatctgg aagaattgac
+      721 tttcattggc taatgctaaa tcccaatgat acagtcactt tcagtttcaa tggggctttc
+      781 atagctccag accgtgcaag cttcctgaga ggaaaatcta tgggaatcca gagtggagta
+      841 caggttgatg ccaattgtga aggggactgc tatcatagtg gagggacaat aataagtaac
+      901 ttgccatttc agaacataga tagcagagca gttggaaaat gtccgagata tgttaagcaa
+      961 aggagtctgc tgctagcaac agggatgaag aatgttcctg agattccaaa gggaagaggc
+     1021 ctatttggtg ctatagcggg tttcattgaa aatggatggg aaggcctaat tgatggttgg
+     1081 tatggtttca gacaccagaa tgcacaggga gagggaactg ctgcagatta caaaagcact
+     1141 caatcggcaa ttgatcaaat aacaggaaaa ttaaaccgga ttatagaaaa aaccaaccaa
+     1201 caatttgagt tgatagacaa tgaattcaat gaggtagaga agcaaatcgg taatgtgata
+     1261 aattggacca gagattctat aacagaagtg tggtcataca atgctgaact cttggtagca
+     1321 atggagaacc agcatacaat tgatctggct gattcagaaa tggacaaact gtacgaacga
+     1381 gtgaaaagac agctaagaga gaatgctgaa gaagatggca ctggttgctt tgaaatattt
+     1441 cacaagtgtg atgatgactg tatggccagt attagaaata acacctatga tcacagcaaa
+     1501 tacagggaag aggcaatgca aaatagaata cagattgacc cagtcaaact aagcagcggc
+     1561 tacaaagatg tgatactttg gtttagcttc ggggcatcat gtttcatact tctagccatt
+     1621 gtaatgggcc ttgtcttcat atgtgtaaag aatggaaaca tgcggtgcac tatttgtata
+     1681 taagtttgga aaaaacaccc ttgtttctac
+//
+

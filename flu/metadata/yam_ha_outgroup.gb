@@ -1,0 +1,90 @@
+LOCUS       CY019707                1840 bp    DNA              VRL 14-FEB-2007
+DEFINITION  Influenza B virus (B/Singapore/11/1994) segment 4, complete
+            sequence.
+ACCESSION   CY019707
+VERSION     CY019707.1
+KEYWORDS    .
+SOURCE      Influenza B virus (B/Singapore/11/1994)
+  ORGANISM  Influenza B virus (B/Singapore/11/1994)
+            Viruses; ssRNA viruses; ssRNA negative-strand viruses;
+            Orthomyxoviridae; Influenzavirus B.
+REFERENCE   1  (bases 1 to 1840)
+  AUTHORS   Spiro,D., Sengamalay,N., Boyne,A., Bera,J., Halpin,R., Wang,S.,
+            Ghedin,E., Zaborsky,J., Subbu,V., Sparenborg,J., Gallagher,T.,
+            Overton,L., Althoff,R., Liu,X., Salzberg,S.L., Sitz,J., Katzel,D.,
+            Neupane,R., Shumway,M., Koo,H., Griesemer,S., St. George,K.,
+            Bennett,R., Taylor,J., Klimov,A., Hall,H., Balish,A., Xu,X.,
+            Shaw,M., Cox,N., Bao,Y., Bolotov,P., Dernovoy,D., Kiryutin,B.,
+            Lipman,D.J. and Tatusova,T.
+  TITLE     The NIAID Influenza Genome Sequencing Project
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 1840)
+  CONSRTM   The NIAID Influenza Genome Sequencing Consortium
+  TITLE     Direct Submission
+  JOURNAL   Submitted (14-FEB-2007) on behalf of TIGR/Wadsworth-NYSDOH and
+            CDC/NCBI, National Center for Biotechnology Information, NIH,
+            Bethesda, MD 20894, USA
+FEATURES             Location/Qualifiers
+     source          1..1840
+                     /collection_date="10-May-1994"
+                     /country="Singapore: Singapore"
+                     /db_xref="taxon:416695"
+                     /host="Homo sapiens"
+                     /isolation_source="gender:M"
+                     /lab_host="MDCK 4 passage(s)"
+                     /mol_type="viral cRNA"
+                     /organism="Influenza B virus (B/Singapore/11/1994)"
+                     /segment="4"
+                     /strain="Influenza B virus (B/Singapore/11/1994)"
+     gene            12..1766
+                     /gene="HA"
+     CDS             12..1766
+                     /codon_start=1
+                     /function="receptor binding and fusion protein"
+                     /gene="HA"
+                     /product="hemagglutinin"
+                     /protein_id="ABN50712.1"
+                     /translation="MKAIIVLLMVVTSNADRICTGITSSNSPHVVKTATQGEVNVTGVI
+                     PLTTTPTKSHFANLKGTKTRGKLCPNCLNCTDLDVALGRPMCVGTTPSAKASILHEVRP
+                     VTSGCFPIMHDRTKIRQLPNLLRGYENIRLSTQNVINAEKAPGGPYRLGTSGSCPNATS
+                     RSGFFATMAWAVPRDNNKTATNPLTVEVPYVCTEGEDQITVWGFHSDNKTQMKNLYGDS
+                     NPQKFTSSANGVTTHYVSQIGGFPDQTEDGGLPQSGRIVVDYMVQKPGKTGTIVYQRGV
+                     LLPQKVWCASGRSKVIKGSLPLIGEADCLHEKYGGLNKSKPYYTGEHAKAIGNCPIWVK
+                     TPLKLANGTKYRPPAKLLKERGFFGAIAGFLEGGWEGMIAGWHGYTSHGAHGVAVAADL
+                     KSTQEAINKITKNLNSLSELEVKNLQRLSGAMDELHNEILELDEKVDDLRADTISSQIE
+                     LAVLLSNEGIINSEDEHLLALERKLKKMLGPSAVDIGNGCFETKHKCNQTCLDRIAAGT
+                     FNAGEFSLPTFDSLNITAASLNDDGLDNHTILLYYSTAASSLAVTLMIAIFIVYMVSRD
+                     NVSCSICL"
+ORIGIN
+        1 atatccacaa aatgaaggca ataattgtac tactcatggt agtaacatcc aatgcagatc
+       61 gaatctgcac tgggataaca tcttcaaact cacctcatgt ggtcaaaaca gctactcaag
+      121 gggaggtcaa tgtgactggt gtgataccac tgacaacaac accaacaaaa tctcattttg
+      181 caaatctcaa aggaacaaag accagaggga aactatgccc aaactgtctc aactgcacag
+      241 atctggatgt ggccttgggc agaccaatgt gtgtggggac cacaccttcg gcaaaagctt
+      301 caatactcca cgaagtcaga cctgttacat ccgggtgctt tcctataatg cacgacagaa
+      361 caaaaatcag acagctaccc aatcttctca gaggatatga aaatatcaga ttatcaaccc
+      421 aaaacgttat caatgcagaa aaggcaccag gaggacccta cagacttgga acctcaggat
+      481 cttgccctaa cgctaccagt agaagcggat ttttcgcaac aatggcttgg gctgtcccaa
+      541 gggacaacaa caaaacagca acgaatccac taacagtaga agtaccatac gtttgtacag
+      601 aaggagaaga ccaaattact gtttgggggt tccattctga taacaaaacc caaatgaaaa
+      661 acctctatgg agactcaaat cctcaaaagt tcacctcatc tgctaatgga gtaaccacac
+      721 attatgtttc tcagattggc ggcttcccag atcaaacaga agacggaggg ctaccacaaa
+      781 gcggcagaat tgttgttgat tacatggtgc aaaaacctgg gaaaacagga acaattgtct
+      841 atcaaagagg tgttttgttg cctcaaaagg tgtggtgcgc gagtggcagg agcaaagtaa
+      901 taaaagggtc cttgccttta attggtgaag cagattgcct tcacgaaaaa tacggtggat
+      961 taaacaaaag caagccttac tacacaggag aacatgcaaa agccatagga aattgcccaa
+     1021 tatgggtgaa aacacctttg aagcttgcca atggaaccaa atatagacct cctgcaaaac
+     1081 tattaaagga aaggggtttc ttcggagcta ttgctggttt cttagaagga ggatgggaag
+     1141 gaatgattgc aggttggcac ggatacacat ctcacggagc acatggagtg gcagtggcag
+     1201 cagaccttaa gagtacgcaa gaagccataa acaagataac aaaaaatctc aattctttga
+     1261 gtgagctaga agtaaagaat cttcaaagac taagtggtgc catggatgaa ctccacaacg
+     1321 aaatactcga gctggatgag aaagtggatg atctcagagc tgacactata agctcgcaaa
+     1381 tagaacttgc agtcttgctt tccaacgaag gaataataaa cagtgaagat gagcatctat
+     1441 tggcacttga gagaaaacta aagaaaatgc tgggtccctc tgctgtagac atagggaatg
+     1501 gatgcttcga aaccaaacac aagtgcaacc agacctgctt agacaggata gctgctggca
+     1561 cctttaatgc aggagaattt tctctcccca cttttgattc actgaatatt actgctgcat
+     1621 ctttaaatga tgatggattg gataaccata ctatactgct ctactactca actgctgctt
+     1681 ctagtttggc tgtaacattg atgatagcta tttttattgt ttatatggtc tccagagaca
+     1741 atgtttcatg ctccatctgt ctataaggaa aattaagccc tgtattttcc tttattgtag
+     1801 tgcttgtttg tttgttacca ttacaaagaa acgttattga
+//

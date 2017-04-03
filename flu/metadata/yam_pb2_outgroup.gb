@@ -1,0 +1,101 @@
+LOCUS       CY019714                2352 bp    DNA              VRL 14-FEB-2007
+DEFINITION  Influenza B virus (B/Singapore/11/1994) segment 2, complete
+            sequence.
+ACCESSION   CY019714
+VERSION     CY019714.1
+KEYWORDS    .
+SOURCE      Influenza B virus (B/Singapore/11/1994)
+  ORGANISM  Influenza B virus (B/Singapore/11/1994)
+            Viruses; ssRNA viruses; ssRNA negative-strand viruses;
+            Orthomyxoviridae; Influenzavirus B.
+REFERENCE   1  (bases 1 to 2352)
+  AUTHORS   Spiro,D., Sengamalay,N., Boyne,A., Bera,J., Halpin,R., Wang,S.,
+            Ghedin,E., Zaborsky,J., Subbu,V., Sparenborg,J., Gallagher,T.,
+            Overton,L., Althoff,R., Liu,X., Salzberg,S.L., Sitz,J., Katzel,D.,
+            Neupane,R., Shumway,M., Koo,H., Griesemer,S., St. George,K.,
+            Bennett,R., Taylor,J., Klimov,A., Hall,H., Balish,A., Xu,X.,
+            Shaw,M., Cox,N., Bao,Y., Bolotov,P., Dernovoy,D., Kiryutin,B.,
+            Lipman,D.J. and Tatusova,T.
+  TITLE     The NIAID Influenza Genome Sequencing Project
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 2352)
+  CONSRTM   The NIAID Influenza Genome Sequencing Consortium
+  TITLE     Direct Submission
+  JOURNAL   Submitted (14-FEB-2007) on behalf of TIGR/Wadsworth-NYSDOH and
+            CDC/NCBI, National Center for Biotechnology Information, NIH,
+            Bethesda, MD 20894, USA
+FEATURES             Location/Qualifiers
+     source          1..2352
+                     /collection_date="10-May-1994"
+                     /country="Singapore: Singapore"
+                     /db_xref="taxon:416695"
+                     /host="Homo sapiens"
+                     /isolation_source="gender:M"
+                     /lab_host="MDCK 4 passage(s)"
+                     /mol_type="viral cRNA"
+                     /organism="Influenza B virus (B/Singapore/11/1994)"
+                     /segment="2"
+                     /strain="Influenza B virus (B/Singapore/11/1994)"
+     gene            2..2314
+                     /gene="PB2"
+     CDS             2..2314
+                     /codon_start=1
+                     /gene="PB2"
+                     /product="polymerase PB2"
+                     /protein_id="ABN50722.1"
+                     /translation="MTLAKIELLKQLLRDNEAKTVLKQTTIDQYNIIRKFNTSRIEKNP
+                     SLRMKWAMCSNFPLALTKGDMANRIPLEYKGIQLKTNAEDIGTKGQMCSIAAVTWWNTY
+                     GPIGDTEGFEKVYESFFLRKMRLDNATWGRITFGPVERVRKRVLLNPLTKEMPPDEASN
+                     VIMEILFPKEAGIPRESTWIHRELIKEKREKLKGTMITPIVLAYMLERELVARRRFLPV
+                     AGATSAEFIEMLHCLQGENWRQIYHPGGNKLTESRSQSMIVACRKIIRRSIVASNPLEL
+                     AVEIANKTVIDTEPLKSCLTAIDGGDVACDIIRAALGLKIRQRQRFGRLELKRISGRGF
+                     KNDEEILIGNGTIQKIGIWDGEEEFHVRCGECRGILKKSKMRMEKLLINSAKKEDMKDL
+                     IILCMVFSQDTRMFQGVRGEINFLNRAGQLLSPMYQLQRYFLNRSNDLFDQWGYEESPK
+                     ASELHGINELMNASDYTLKGVVVTKNVIDDFSSTETEKVSITKNLSLIKRTGEVIMGAN
+                     DVSELESQAQLMITYDTPKMWEMGTTKELVQNTYQWVLKNLVTLKAQFLLGKEDMFQWD
+                     AFEAFESIIPQKMAGQYSGFARAVLKQMRDQEVMKTDQFIKLLPFCFSPPKLRSNGEPY
+                     QFLRLVLKGGGENFIEVRKGSPLFSYNPQTEVLTICGRMMSLKGKIEDEERNRSMGNAV
+                     LAGFLVSGKYDPDLGDFKTIEELEKLKPGEKANILLYQGKPVKVVKRKRYSALSNDISQ
+                     GIKRQRMTVESMGWALS"
+ORIGIN
+        1 gatgacattg gctaaaattg aattgttaaa acaactttta agggacaatg aagccaaaac
+       61 agtattgaaa caaacaacga tagaccaata taacataata agaaaattca atacatcaag
+      121 aattgaaaag aacccttcat taaggatgaa gtgggcaatg tgttccaatt ttcccttggc
+      181 tctgaccaag ggtgacatgg caaacagaat ccccttggaa tacaagggaa tacaacttaa
+      241 aacaaatgct gaagacatag gaaccaaagg ccaaatgtgc tcaatagcag cagttacctg
+      301 gtggaataca tatggaccaa taggagatac tgaaggtttc gaaaaggtct acgaaagctt
+      361 ttttctcaga aagatgagac ttgacaatgc cacttggggc cgaataactt ttggcccagt
+      421 tgaaagagta agaaaaaggg tactgctaaa tcctctcacc aaggaaatgc ctccagatga
+      481 agcaagtaat gtgataatgg aaatattgtt ccctaaggaa gcaggaatac caagagaatc
+      541 tacttggata catagggaac tgataaaaga aaaaagagaa aaattgaaag gaacgatgat
+      601 aactcccatt gtactggcat acatgcttga gagggaattg gttgccagaa gaaggttcct
+      661 gccggtggca ggagcaacat cagctgagtt catagaaatg ctacactgct tacaaggtga
+      721 aaattggaga caaatatatc acccaggagg gaataaacta actgaatcta ggtctcaatc
+      781 aatgattgtg gcttgtagaa agataatcag aagatcaata gtcgcatcaa acccattgga
+      841 gctagctgta gaaattgcaa acaagactgt gatagatact gaacctttga aatcatgtct
+      901 gacagccata gacggaggtg atgtggcatg tgacataata agagctgcat taggactaaa
+      961 gatcagacaa agacaaagat ttggacgact tgaactaaag agaatatcag gaagaggatt
+     1021 caaaaatgat gaagaaatat taatcggaaa cggaacaata cagaagattg gaatatggga
+     1081 cggagaagag gagttccatg taagatgtgg tgaatgcagg ggaatattaa aaaagagcaa
+     1141 aatgagaatg gaaaaactac taataaattc agctaaaaag gaagacatga aagatttaat
+     1201 aatcttgtgc atggtatttt ctcaagacac taggatgttc caaggagtga ggggagaaat
+     1261 aaattttctt aatagagcag gccaactttt atctccaatg taccaactcc aaagatattt
+     1321 tttgaataga agtaacgatc tctttgatca atgggggtat gaggaatcac ccaaagcaag
+     1381 tgagctacat gggataaatg aattaatgaa tgcatctgac tacactttga aaggggttgt
+     1441 agtaacaaaa aatgtgattg atgattttag ttctactgaa acagaaaaag tatctataac
+     1501 aaaaaatctt agtttaataa aaaggactgg ggaagtcata atgggggcca atgacgtaag
+     1561 tgaattagaa tcacaagctc agctaatgat aacatatgat acacctaaga tgtgggagat
+     1621 gggaacaacc aaagaactgg tgcaaaacac ctatcaatgg gtgctgaaaa atttggtaac
+     1681 actgaaggct cagtttcttc taggaaaaga agacatgttc caatgggatg catttgaagc
+     1741 atttgaaagc ataattcccc agaagatggc tggccagtac agtggatttg caagagcagt
+     1801 gctcaaacaa atgagagacc aagaggtcat gaaaaccgac cagttcataa agttgttgcc
+     1861 cttttgtttc tcaccaccaa aattaaggag caatggggag ccttatcagt tcttgaggct
+     1921 tgtattgaag ggaggaggag aaaatttcat cgaagtaagg aaagggtctc ctctattctc
+     1981 ttacaatcca caaacagaag tcctaactat atgcggcaga atgatgtcat taaaagggaa
+     2041 aattgaagat gaagaaagga atagatcaat ggggaatgca gtactggcgg gctttcttgt
+     2101 tagtggcaag tatgacccgg atcttggaga tttcaaaact attgaagaac ttgaaaagct
+     2161 aaaaccgggg gagaaagcaa acatcttact ttatcaagga aagcccgtta aagtagttaa
+     2221 aaggaaaaga tatagtgctt tatccaatga catttcacaa ggaattaaga gacaaagaat
+     2281 gacagttgag tccatggggt gggccttgag ctaatataaa tttatccatt aattcaataa
+     2341 acacaattga gt
+//

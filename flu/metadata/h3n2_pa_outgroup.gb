@@ -1,0 +1,103 @@
+LOCUS       CY113682                2192 bp    DNA              VRL 04-APR-2012
+DEFINITION  Influenza A virus (A/Beijing/32/1992(H3N2)) polymerase PA (PA) gene,
+            complete cds.
+ACCESSION   CY113682
+VERSION     CY113682.1
+KEYWORDS    .
+SOURCE      Influenza A virus (A/Beijing/32/1992(H3N2))
+  ORGANISM  Influenza A virus (A/Beijing/32/1992(H3N2))
+            Viruses; ssRNA viruses; ssRNA negative-strand viruses;
+            Orthomyxoviridae; Influenzavirus A.
+REFERENCE   1  (bases 1 to 2192)
+  AUTHORS   Wentworth,D.E., Dugan,V., Halpin,R., Lin,X., Bera,J., Ghedin,E.,
+            Fedorova,N., Overton,L., Tsitrin,T., Stockwell,T., Amedeo,P.,
+            Bishop,B., Chen,H., Edworthy,P., Gupta,N., Katzel,D., Li,K.,
+            Schobel,S., Shrivastava,S., Thovarai,V., Wang,S., Westgeest,K.B.,
+            van Beek,R., Bestebroer,T.M., de Jong,J.C., Rimmelzwaan,G.F.,
+            Osterhaus,A.D.M.E., Fouchier,R.A.M., Bao,Y., Sanders,R.,
+            Dernovoy,D., Kiryutin,B., Lipman,D.J. and Tatusova,T.
+  TITLE     The NIAID Influenza Genome Sequencing Project
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 2192)
+  CONSRTM   The NIAID Influenza Genome Sequencing Consortium
+  TITLE     Direct Submission
+  JOURNAL   Submitted (04-APR-2012) on behalf of JCVI/Erasmus Medical
+            College/NCBI, National Center for Biotechnology Information, NIH,
+            Bethesda, MD 20894, USA
+COMMENT     This work was supported by the National Institute of Allergy and
+            Infectious Diseases (NIAID), Genome Sequencing Centers for
+            Infectious Diseases (GSCID) program.
+FEATURES             Location/Qualifiers
+     source          1..2192
+                     /bio_material="CEIRS#CIP047BE3292#"
+                     /collection_date="1992"
+                     /country="China: Beijing"
+                     /db_xref="taxon:380950"
+                     /host="Homo sapiens"
+                     /lab_host="xtMK3 MDCK1 passage(s)"
+                     /mol_type="viral cRNA"
+                     /organism="Influenza A virus (A/Beijing/32/1992(H3N2))"
+                     /segment="3"
+                     /serotype="H3N2"
+                     /strain="A/Beijing/32/1992"
+     misc_feature    1..2192
+                     /db_xref="IRD:NIGSP_CEIRS_CIP047_RFH3_00116.PA"
+     gene            11..2161
+                     /gene="PA"
+     CDS             11..2161
+                     /codon_start=1
+                     /gene="PA"
+                     /product="polymerase PA"
+                     /protein_id="AFG99684.1"
+                     /translation="MEDFVRQCFNPMIVELAEKAMKEYGEDLKIETNKFAAICTHLEVC
+                     FMYSDFHFINEQGESIVVELDDPNALLKHRFEIIEGRDRTMAWTVVNSICNTTGAEKPK
+                     FLPDLYDYKENRFIEIGVTRREVHIYYLEKANKIKSENTHIHIFSFTGEEMATKADYTL
+                     DEESRARIKTRLFTIRQEMANRGLWDSFRQSERGEETIEEKFEISGTMRRLADQSLPPN
+                     FSCLENFRAYVDGFEPNGCIEGKLSQMSKEVNAKIEPFLKTTPRPIKLPNGPPCYQRSK
+                     FLLMDALKLSIEDPSHEGEGIPLYDAIKCIRTFFGWKEPYIVKPHEKGINSNYLLSWKQ
+                     VLAELQDIETEEKIPRTKNMKKTSQLKWALGENMAPEKVDFDNCRDISDLKQYDSDEPE
+                     LRSLSSWIQNEFNKACELTDSIWIELDEIGEDVAPIEYIASMRRNYFTAEVSHCRATEY
+                     IMKGVYINTALLNASCAAMDDFQLIPMISKCRTKEGRRKTNLYGFIIKGRSHLRNDTDV
+                     VNFVSMEFSLTDPRLEPHKWEKYCVLEIGDMLLRSAIGQMSRPMFLYVRTNGTSKIKMK
+                     WGMEMRRCLLQSLQQIESMIEAESSVKEKDMTKEFFENKSEAWPIGESPKGVEEGSIGK
+                     VCRTLLAKSVFNSLYASPQLEGFSAESRKLLLVVQALRDNLEPGTFDLGGLYEAIEECL
+                     INDPWVLLNASWFNSFLTHALK"
+ORIGIN
+        1 ctgattcgaa atggaagatt ttgtgcgaca atgcttcaac ccgatgattg tcgaacttgc
+       61 agaaaaggca atgaaagagt atggagagga tctgaaaatc gaaacaaaca aatttgcagc
+      121 aatatgcact cacttggagg tatgtttcat gtattcagat tttcatttca tcaatgaaca
+      181 aggcgaatca atagtggtag aacttgatga tccaaatgca ctgttaaagc acagatttga
+      241 aataatagag gggagagaca gaacaatggc ctggacagta gtaaacagta tctgcaacac
+      301 tactggagct gagaaaccga agtttctgcc agatttgtat gattacaagg agaacagatt
+      361 catcgaaatt ggagtaacaa ggagagaagt ccacatatat taccttgaaa aggccaataa
+      421 aattaaatct gagaatacac acatccacat tttctcattc actggggagg aaatggccac
+      481 aaaggcagac tacactctcg acgaggaaag cagggctagg attaagacca ggctatttac
+      541 cataagacaa gaaatggcca acagaggcct ctgggattcc tttcgtcagt ccgaaagagg
+      601 cgaagaaaca attgaagaaa aatttgaaat ctcaggaact atgcgcaggc ttgccgacca
+      661 aagtctcccg ccgaacttct cctgccttga gaattttaga gcctatgtgg atggattcga
+      721 accgaacggc tgcattgagg gcaagctttc tcaaatgtcc aaagaagtga atgccaaaat
+      781 tgaacctttt ctgaagacaa caccaagacc aatcaaactt ccgaatggac ctccttgtta
+      841 tcagcggtcc aaattccttc tgatggatgc tttaaaatta agcattgaag acccaagtca
+      901 cgaaggagag gggataccac tatatgatgc gatcaagtgc ataagaacat tctttggatg
+      961 gaaagagccc tatatagtca aaccacacga aaagggaata aattcaaatt acctgctgtc
+     1021 atggaagcaa gtactggcag aattgcagga cattgaaact gaggagaaga ttccaagaac
+     1081 taaaaacatg aagaaaacga gtcaactaaa gtgggctctt ggtgaaaaca tggcaccaga
+     1141 gaaagtagac tttgacaact gcagagacat aagcgatttg aagcaatatg atagtgacga
+     1201 acctgaattg aggtcacttt caagctggat acagaatgaa ttcaacaagg catgcgagct
+     1261 gactgattca atctggatag agctcgatga aattggagaa gacgtggccc caattgagta
+     1321 cattgcaagc atgaggagaa attatttcac agcagaggtg tcccattgca gagccactga
+     1381 atacataatg aagggggtat acattaatac tgccttgctc aatgcatcct gtgcagcaat
+     1441 ggacgatttt caactaattc ccatgataag caagtgcaga actaaagagg gaaggcgaaa
+     1501 aaccaattta tatggattca tcataaaagg aagatctcac ttaaggaatg acacagatgt
+     1561 ggtaaacttt gtgagcatgg agttttctct cactgacccg aggcttgagc cacataaatg
+     1621 ggagaaatac tgtgtccttg agataggaga tatgttacta agaagtgcca taggccaaat
+     1681 gtcaaggcct atgttcttgt atgtgaggac aaatggaaca tcaaagatca aaatgaaatg
+     1741 gggaatggag atgagacgtt gcctccttca gtcactccag cagatcgaga gcatgattga
+     1801 agccgagtcc tcggttaaag agaaagacat gaccaaagag ttttttgaga ataaatcaga
+     1861 agcatggccc attggggagt cccccaaggg agtggaagaa ggttccattg ggaaagtctg
+     1921 taggactttg ttggctaagt cggtgttcaa tagcctgtat gcatctccac aattagaagg
+     1981 attttcagcg gagtcaagaa aactgctcct tgttgttcag gctcttaggg acaaccttga
+     2041 acctgggacc tttgatcttg gggggctata tgaagcaatt gaggagtgcc tgattaatga
+     2101 tccctgggtt ttgctcaatg cgtcttggtt caactccttc ctaacacatg cattaaaata
+     2161 gttatggcag tgctactatt tgttatccat ac
+//

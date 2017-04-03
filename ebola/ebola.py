@@ -1,8 +1,7 @@
 from __future__ import division, print_function
 from collections import defaultdict
 import sys
-sys.path.append('')  # need to import from base
-sys.path.append('/home/richard/Projects')  # need to import from base
+sys.path.insert(0,'.')  # need to import from base
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences import sequence_set, num_date
 from base.tree import tree
@@ -137,7 +136,7 @@ if __name__=="__main__":
             "EM_076610" # flare-up index case
         ]
         ebola.seqs.subsample(category = lambda x:(x.attributes['region'], x.attributes['date'].year, x.attributes['date'].month),
-            threshold=params.viruses_per_month, forced_strains = forced_strains)
+            threshold=params.viruses_per_month, priority = lambda x:x.id in forced_strains)
 
         ebola.align()
         ebola.build_tree()
@@ -146,7 +145,8 @@ if __name__=="__main__":
         ebola.load()
 
     ebola.clock_filter(n_iqd=10, plot=True)
-    ebola.annotate_tree(Tc=0.002, timetree=True, reroot='best', resolve_polytomies=True)
+    ebola.annotate_tree(Tc="skyline", timetree=True, reroot='best', resolve_polytomies=True,
+                        n_points=20, stiffness=3.0)
     for geo_attr in geo_attributes:
         ebola.tree.geo_inference(geo_attr)
     date_range['date_min'] = ebola.tree.getDateMin()
@@ -154,15 +154,17 @@ if __name__=="__main__":
     ebola.export(controls = attribute_nesting, date_range = date_range, geo_attributes = geo_attributes,
                 color_options=color_options, panels=panels)
 
+    # plot an approximate skyline
     plot_skyline = False
     if plot_skyline: # plot an approximate skyline
         from matplotlib import pyplot as plt
         T = ebola.tree.tt
         plt.figure()
-        skyline = T.merger_model.skyline(n_points = 20, gen = 50/T.date2dist.slope,
-                                         to_numdate = T.date2dist.to_numdate)
-        plt.ticklabel_format(useOffset=False)
+        skyline, confidence = T.merger_model.skyline_inferred(gen = 50, confidence=2.0)
+        plt.fill_between(skyline.x, confidence[0], confidence[1], color=(0.8, 0.8, 0.8))
         plt.plot(skyline.x, skyline.y)
+        plt.yscale('log')
         plt.ylabel('effective population size')
         plt.xlabel('year')
+        plt.ticklabel_format(axis='x',useOffset=False)
         plt.savefig('ebola_skyline.png')

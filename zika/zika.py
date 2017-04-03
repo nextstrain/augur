@@ -1,8 +1,7 @@
 from __future__ import division, print_function
 from collections import defaultdict
 import sys
-sys.path.append('')  # need to import from base
-sys.path.append('/home/richard/Projects')  # need to import from base
+sys.path.insert(0,'.')  # need to import from base
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences import sequence_set, num_date
 from base.tree import tree
@@ -119,7 +118,8 @@ if __name__=="__main__":
             "ZF36_36S", # possible contamination
             "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", # true strains, but duplicates of other strains in dataset
             "Bahia04", "JAM/2016/WI_JM6", # excessive terminal branch length
-            "THA/2014/SV0127_14", "ZK_YN001", "NIID123/2016" # true strains, too basal analysis
+            "THA/2014/SV0127_14", "ZK_YN001", "NIID123/2016", # true strains, too basal for analysis
+            "ZKA_16_291", "ZKA_16_097" # singapore, too basal for analysis
         ]
         zika.seqs.filter(lambda s: s.id not in dropped_strains)
         zika.seqs.subsample(category = lambda x:(x.attributes['date'].year, x.attributes['date'].month),
@@ -130,8 +130,8 @@ if __name__=="__main__":
         zika.dump()
     zika.clock_filter(n_iqd=3, plot=True)
     zika.annotate_tree(Tc=0.02, timetree=True, reroot='best', confidence=params.confidence)
-    zika.tree.geo_inference('region', root_state = 'southeast_asia')
-    zika.tree.geo_inference('country', root_state = 'singapore')
+    zika.tree.geo_inference('region')
+    zika.tree.geo_inference('country')
     date_range['date_min'] = zika.tree.getDateMin()
     date_range['date_max'] = zika.tree.getDateMax()
     zika.export(controls = attribute_nesting, date_range = date_range, geo_attributes = geo_attributes,
@@ -142,10 +142,11 @@ if __name__=="__main__":
         from matplotlib import pyplot as plt
         T = zika.tree.tt
         plt.figure()
-        skyline = T.merger_model.skyline(n_points = 20, gen = 50/T.date2dist.slope,
-                                         to_numdate = T.date2dist.to_numdate)
-        plt.ticklabel_format(useOffset=False)
+        skyline, confidence = T.merger_model.skyline_inferred(gen = 50, confidence=2.0)
+        plt.fill_between(skyline.x, confidence[0], confidence[1], color=(0.8, 0.8, 0.8))
         plt.plot(skyline.x, skyline.y)
+        plt.yscale('log')
         plt.ylabel('effective population size')
         plt.xlabel('year')
+        plt.ticklabel_format(axis='x',useOffset=False)
         plt.savefig('zika_skyline.png')

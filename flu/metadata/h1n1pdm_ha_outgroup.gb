@@ -1,0 +1,80 @@
+LOCUS       AF455680                1701 bp    DNA              VRL 14-MAR-2002
+DEFINITION  Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2)) hemagglutinin
+            (HA) gene, complete cds.
+ACCESSION   AF455680
+VERSION     AF455680.1
+KEYWORDS    .
+SOURCE      Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2))
+  ORGANISM  Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2))
+            Viruses; ssRNA viruses; ssRNA negative-strand viruses;
+            Orthomyxoviridae; Influenzavirus A.
+REFERENCE   1  (bases 1 to 1701)
+  AUTHORS   Karasin,A.I., Landgraf,J., Swenson,S., Erickson,G., Goyal,S.,
+            Woodruff,M., Scherba,G., Anderson,G. and Olsen,C.W.
+  TITLE     Genetic characterization of H1N2 influenza A viruses isolated from
+            pigs throughout the United States
+  JOURNAL   J. Clin. Microbiol. 40 (3), 1073-1079 (2002)
+   PUBMED   11880444
+REFERENCE   2  (bases 1 to 1701)
+  AUTHORS   Karasin,A.I., Landgraf,J., Swenson,S., Erickson,G., Goyal,S.,
+            Woodruff,M., Scherba,G., Anderson,G. and Olsen,C.W.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (05-DEC-2001) Department of Pathobiological Sciences,
+            School of Veterinary Medicine, University of Wisconsin-Madison, 2015
+            Linden Drive West, Madison, WI 53706, USA
+FEATURES             Location/Qualifiers
+     source          1..1701
+                     /db_xref="taxon:187166"
+                     /mol_type="genomic RNA"
+                     /organism="Influenza A virus (A/Swine/Indiana/P12439/00
+                     (H1N2))"
+                     /segment="4"
+                     /strain="A/Swine/Indiana/P12439/00"
+     gene            1..1701
+                     /gene="HA"
+     CDS             1..1701
+                     /codon_start=1
+                     /gene="HA"
+                     /product="hemagglutinin"
+                     /protein_id="AAL87870.1"
+                     /translation="MKAILVVLLYTFTTANADTLCIGYHANNSTDTVDTVLEKNVTVTH
+                     SVNLLEDRHNGKLCKLRGVAPLHLGKCNIAGWLLGNPECESLFTASSWSYIVETSSSDN
+                     GTCYPGDFINYEELREQLSSVSSFERFEIFPKTSSWPNHDTNRGVTAACPYAGAKSFYR
+                     NLIWLVKKENSYPKLSKSYINNKGKEVLVLWGIHHPSTSADQQSLYQNADAYVFVGSSR
+                     YSKKFKPEIAARPKVRDQAGRINYYWTLVEPGDKITFEATGNLVVPRYAFAMERNSGSG
+                     IIISDTSVHDCNTTCQTPKGAINTSLPFQNIHPVTIGECPKYVKSTKLRMATGLRNVPS
+                     IQSRGLFGAIAGFIEGGWTGMIDGWYGYHHQNEQGSGYAADLKSTQNAIDGITNKVNSV
+                     IEKMNTQFIAVGKEFNHLEKRIENLNKKVDDGFLDIWTYNAELLILLENERTLDYHDSN
+                     VKNLYEKVRSQLKNNAREIGNGCFEFYHKCDDKCMESVKNGTYDYPKYSEEAKLNREEI
+                     DGVKLESTRIYQILAIYSTVASSLVLVVSLGAISFWMCSNGSLQCRICI"
+ORIGIN
+        1 atgaaggcaa tactagtagt cctgctatat acatttacaa ccgcaaatgc agacacatta
+       61 tgtataggtt atcatgcgaa caattcaact gacactgtag acacagtact agaaaagaat
+      121 gtaacagtaa cacactctgt taaccttcta gaagacaggc ataacgggaa actatgtaaa
+      181 ctaagagggg tagccccatt gcatttgggt aaatgtaaca ttgctggctg gctcctggga
+      241 aatccagagt gtgaatcact cttcacagca agctcatggt cctacattgt ggaaacatct
+      301 agttcagata atgggacgtg ttacccagga gatttcatca attatgaaga gctaagagag
+      361 caattgagct cagtgtcatc atttgaaaga tttgagatat tccccaagac aagttcatgg
+      421 cccaatcatg acacgaacag aggtgtgacg gcagcatgtc cttatgctgg agcaaaaagc
+      481 ttctacagaa atttaatatg gctggtcaaa aaagaaaatt catacccaaa gctcagcaaa
+      541 tcctatatta acaataaggg gaaggaagtc ctcgtgctat ggggcattca ccatccatct
+      601 accagtgccg accaacaaag tctctaccag aatgcagatg catatgtttt tgtggggtca
+      661 tcaagataca gcaagaagtt caagccagaa atagcagcca gacccaaggt gagggaccaa
+      721 gcagggagaa taaactatta ctggacacta gtagagcctg gagacaaaat aacattcgaa
+      781 gcaactggaa atctagtggt accgagatat gccttcgcaa tggaaagaaa ttctggatct
+      841 ggtattatca tttcagatac atcagtccac gattgtaata cgacttgtca gacacccaag
+      901 ggtgctataa acaccagcct cccatttcag aatatacatc cagtcacaat tggagaatgt
+      961 ccaaaatatg taaaaagcac aaaattgaga atggccacag gattaaggaa tgtcccgtct
+     1021 attcaatcta gaggcctgtt tggggccatt gccggcttta ttgagggggg atggacagga
+     1081 atgatagatg gatggtacgg ttatcaccat caaaatgagc agggatcagg atatgcagcc
+     1141 gacctgaaga gcacacagaa tgccattgac gggatcacta acaaagtaaa ttctgttatt
+     1201 gaaaagatga acacacaatt catagcagta ggtaaagagt tcaaccacct ggaaaaaaga
+     1261 atagagaatt taaataaaaa ggttgatgat ggttttctgg atatttggac ttacaatgcc
+     1321 gaactgttga ttctgttgga aaatgaaaga actttggatt accacgattc aaatgtgaag
+     1381 aacttatatg aaaaggtaag aagccagcta aaaaacaatg ccagggaaat tgggaatggc
+     1441 tgctttgaat tttaccacaa atgtgatgac aagtgcatgg aaagcgtcaa aaatgggact
+     1501 tatgattacc caaaatactc agaggaagca aaactaaaca gagaggaaat agatggggta
+     1561 aagctggaat caacaaggat ttaccagatt ttggcgatct attcaactgt cgccagttca
+     1621 ttggtactgg tagtctccct gggggcaatc agtttctgga tgtgctctaa tgggtctcta
+     1681 cagtgtagaa tatgtattta a
+//

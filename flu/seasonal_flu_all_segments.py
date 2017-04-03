@@ -50,7 +50,7 @@ if __name__=="__main__":
                        time_interval[1].year+time_interval[1].month/12.0, 1.0/ppy)
 
     # load data from all segments
-    segment_names = ['pb1', 'pb2', 'pa', 'ha', 'np', 'na', 'm', 'ns']
+    segment_names = ['pb1', 'pb2', 'pa', 'ha', 'np', 'na', 'ma', 'ns']
     segments = {}
     viruses = defaultdict(list)
     for seg in segment_names:

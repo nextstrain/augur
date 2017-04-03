@@ -1,5 +1,6 @@
 from __future__ import division, print_function
-import os, time
+import os, time, sys
+sys.path.insert(0,'../')
 from io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from sequences import sequence_set
 import numpy as np
@@ -73,7 +74,7 @@ class tree(object):
             dump(node_props, nfile)
 
 
-    def build(self, root='midpoint', raxml=True, raxml_time_limit=0.5, raxml_bin='raxml', debug=False):
+    def build(self, root='midpoint', raxml=True, raxml_time_limit=1, raxml_bin='raxml', debug=False):
         from Bio import Phylo, AlignIO
         import subprocess, glob, shutil
         make_dir(self.run_dir)
@@ -121,12 +122,12 @@ class tree(object):
                 shutil.copy("initial_tree.newick", 'raxml_tree.newick')
 
             try:
-                self.logger("RAxML branch length optimization",2)
+                self.logger("RAxML branch length optimization", 2)
                 os.system(raxml_bin + " -f e -T " + str(self.nthreads)
                           + " -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick  > raxml2_stdout")
                 shutil.copy('RAxML_result.branches', out_fname)
             except:
-                self.logger("RAxML branch length optimization failed")
+                self.logger("RAxML branch length optimization failed", 1)
                 shutil.copy('raxml_tree.newick', out_fname)
         else:
             shutil.copy('initial_tree.newick', out_fname)
@@ -137,8 +138,10 @@ class tree(object):
 
 
     def tt_from_file(self, infile, root='best', nodefile=None):
-        from treetime import TreeTime
-        from treetime import utils
+        import sys;
+        print(sys.path)
+        from treetime_augur import TreeTime
+        from treetime_augur import utils
         self.is_timetree=False
         self.logger('Reading tree from file '+infile,2)
         dates  =   {seq.id:seq.attributes['num_date']
@@ -180,10 +183,15 @@ class tree(object):
                 node.attr = {}
 
 
-    def timetree(self, Tc=0.01, infer_gtr=True, reroot='best', resolve_polytomies=True, max_iter=2, confidence=False, **kwarks):
+    def timetree(self, Tc=0.01, infer_gtr=True, reroot='best', resolve_polytomies=True,
+                 max_iter=2, confidence=False, use_marginal=False, **kwarks):
         self.logger('estimating time tree...',2)
-        self.tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, do_marginal=confidence,
-                    resolve_polytomies=resolve_polytomies, max_iter=max_iter)
+        if confidence and use_marginal:
+            marginal = 'assign'
+        else:
+            marginal = confidence
+        self.tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, do_marginal=marginal,
+                    resolve_polytomies=resolve_polytomies, max_iter=max_iter, **kwarks)
         self.logger('estimating time tree...done',3)
         self.dump_attr.extend(['numdate','date','sequence'])
         to_numdate = self.tt.date2dist.to_numdate
@@ -198,44 +206,59 @@ class tree(object):
         self.is_timetree=True
 
 
-    def geo_inference(self, attr, root_state=None):
+    def geo_inference(self, attr, missing='?', root_state=None):
         '''
         infer a "mugration" model by pretending each region corresponds to a sequence
         state and repurposing the GTR inference and ancestral reconstruction
         '''
-        from treetime import GTR
-        # Determine alphabet and store reconstructed ancestral sequences
+        from treetime_augur import GTR
+        # Determine alphabet
         places = set()
-        nuc_seqs = {}
-        nuc_muts = {}
-        nuc_seq_LH = None
-        if hasattr(self.tt.tree,'sequence_LH'):
-            nuc_seq_LH = self.tt.tree.sequence_LH
         for node in self.tree.find_clades():
             if hasattr(node, 'attr'):
-                if attr in node.attr:
+                if attr in node.attr and attr!=missing:
                     places.add(node.attr[attr])
-            if hasattr(node, 'sequence'):
-                nuc_seqs[node] = node.sequence
-            if hasattr(node, 'mutations'):
-                nuc_muts[node] = node.mutations
-                node.__delattr__('mutations')
         if root_state is not None:
             places.add(root_state)
 
         # construct GTR (flat for now). The missing DATA symbol is a '-' (ord('-')==45)
         places = sorted(places)
         nc = len(places)
-        if nc<2 or nc>180:
-            self.logger("geo_inference: can't have less than 2 or more than 180 places!",1)
+        if nc>180:
+            self.logger("geo_inference: can't have more than 180 places!",1)
+            return
+        elif nc==1:
+            self.logger("geo_inference: only one place found -- setting every internal node to %s!"%places[0],1)
+            for node in self.tree.find_clades():
+                node.attr[attr] = places[0]
+                node.__setattr__(attr+'_transitions',[])
+            return
+        elif nc==0:
+            self.logger("geo_inference: list of places is empty!",1)
             return
 
+        # store previously reconstructed sequences
+        nuc_seqs = {}
+        nuc_muts = {}
+        nuc_seq_LH = None
+        if hasattr(self.tt.tree,'sequence_LH'):
+            nuc_seq_LH = self.tt.tree.sequence_LH
+        for node in self.tree.find_clades():
+            if hasattr(node, 'sequence'):
+                nuc_seqs[node] = node.sequence
+            if hasattr(node, 'mutations'):
+                nuc_muts[node] = node.mutations
+                node.__delattr__('mutations')
+
+
         alphabet = {chr(65+i):place for i,place in enumerate(places)}
-        alphabet_rev = {v:k for k,v in alphabet.iteritems()}
         sequence_gtr = self.tt.gtr
         myGeoGTR = GTR.custom(pi = np.ones(nc, dtype=float)/nc, W=np.ones((nc,nc)),
                               alphabet = np.array(sorted(alphabet.keys())))
-        myGeoGTR.profile_map['-'] = np.ones(nc)
+        missing_char = chr(65+nc)
+        alphabet[missing_char]=missing
+        myGeoGTR.profile_map[missing_char] = np.ones(nc)
+        alphabet_rev = {v:k for k,v in alphabet.iteritems()}
 
         # set geo info to nodes as one letter sequence.
         for node in self.tree.get_terminals():
@@ -243,7 +266,7 @@ class tree(object):
                 if attr in node.attr:
                     node.sequence=np.array([alphabet_rev[node.attr[attr]]])
             else:
-                node.sequence=np.array(['-'])
+                node.sequence=np.array([missing_char])
         for node in self.tree.get_nonterminals():
             node.__delattr__('sequence')
         if root_state is not None:
@@ -254,9 +277,10 @@ class tree(object):
             extra_clade.sequence = np.array([alphabet_rev[root_state]])
         # set custom GTR model, run inference
         self.tt._gtr = myGeoGTR
+        # import pdb; pdb.set_trace()
         tmp_use_mutation_length = self.tt.use_mutation_length
         self.tt.use_mutation_length=False
-        self.tt.infer_ancestral_sequences(method='ml', infer_gtr=True,
+        self.tt.infer_ancestral_sequences(method='ml', infer_gtr=False,
             store_compressed=False, pc=5.0, marginal=True, normalized_rate=False)
 
         if root_state is not None:
@@ -279,6 +303,7 @@ class tree(object):
                     node.mutations = nuc_muts[node]
 
         self.tt.use_mutation_length=tmp_use_mutation_length
+
 
     def get_attr_list(self, get_attr):
         states = []

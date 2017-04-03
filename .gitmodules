@@ -1,0 +1,3 @@
+[submodule "treetime_augur"]
+	path = treetime_augur
+	url = https://github.com/neherlab/treetime
