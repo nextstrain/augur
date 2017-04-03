@@ -74,7 +74,7 @@ class tree(object):
             dump(node_props, nfile)
 
 
-    def build(self, root='midpoint', raxml=True, raxml_time_limit=0.5, raxml_bin='raxml', debug=False):
+    def build(self, root='midpoint', raxml=True, raxml_time_limit=1, raxml_bin='raxml', debug=False):
         from Bio import Phylo, AlignIO
         import subprocess, glob, shutil
         make_dir(self.run_dir)
@@ -122,12 +122,12 @@ class tree(object):
                 shutil.copy("initial_tree.newick", 'raxml_tree.newick')
 
             try:
-                self.logger("RAxML branch length optimization",2)
+                self.logger("RAxML branch length optimization", 2)
                 os.system(raxml_bin + " -f e -T " + str(self.nthreads)
                           + " -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick  > raxml2_stdout")
                 shutil.copy('RAxML_result.branches', out_fname)
             except:
-                self.logger("RAxML branch length optimization failed")
+                self.logger("RAxML branch length optimization failed", 1)
                 shutil.copy('raxml_tree.newick', out_fname)
         else:
             shutil.copy('initial_tree.newick', out_fname)
