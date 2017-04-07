@@ -27,16 +27,54 @@ region_cmap = [
     ["south_asia",      "#E67030"],
     ["china",           "#DF4327"]]
 
+regions = [ r[0] for r in region_cmap]
+
+region_groups = {'NA':'north_america',
+                 'AS':['china', 'japan_korea', 'south_asia', 'southeast_asia'],
+                 'OC':'oceania', 'EU':'europe'}
+
 color_options = {
     "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete", "color_map": region_cmap},
     "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
+    "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"},
 }
 
 date_range = {'date_min': '1920-01-01', 'date_max': '2017-06-01'}
 geo_attributes = ['region']
 attribute_nesting = {'geographic location':geo_attributes, 'authors':['authors']}
-panels = ['tree', 'map', 'entropy']
+panels = ['tree', 'map', 'entropy']#, 'frequencies']
 
+pivots = np.arange(1920.,2017.)
+
+genotypes = {
+                        "dengue_1":{
+                        'I': [('', 961, 'G'),('', 965, 'G'),('', 995, 'T'),('', 1001, 'A'),('', 1016, 'A')],
+                        'II': [('', 995, 'A'),('', 1100, 'A'),('', 1103, 'T'),('', 1109, 'T'),('', 1113, 'T')],
+                        "V": [('',974,'T'), ('', 1049,'T'),('',1175,'G'),('',1091,'G')],
+                        "IV": [('', 944,'D'), ('', 992,'T'),('', 1034,'T'),('', 1047,'G'),('', 1181,'G')]},
+
+                        "dengue_2": {
+                        'ASIAN/AMERICAN': [('', 1181, 'T'),('', 974, 'A'),('', 1025, 'T'),('', 1103, 'T')],
+                        'AMERICAN': [('', 965, 'G'),('', 983, 'G'),('', 992, 'G'),('', 995, 'T')],
+                        'ASIAN-I': [('', 974, 'A'),('', 995, 'T'),('', 1067, 'T'),('', 1082, 'G')],
+                        'COSMOPOLITAN': [('', 947, 'T'),('', 1150, 'C'),('', 1253, 'C'),('', 1277, 'C')],
+                        'SYLVATIC': [('', 977, 'G'),('', 1100, 'A'),('', 1103, 'A')]},
+
+                        "dengue_3": {
+                        'I': [('', 980, 'C'),('', 1034, 'T'),('', 1073, 'C'),('', 1118, 'T')],
+                        'II': [('', 983, 'G'),('', 1004, 'T'),('', 1064, 'C'),('', 1113, 'T'),('', 1232, 'T')],
+                        'III': [('', 1022, 'G'),('', 1127, 'G'),('', 1157, 'A')],
+                        'IV': [('', 956, 'G'),('', 980, 'C'),('', 986, 'G'),('', 1001, 'C')]},
+
+                        "dengue_4": {
+                        'I': [('', 974, 'A'),('', 1004, 'T'),('', 1130, 'T'),('', 1181, 'C'),('', 1199, 'T')],
+                        'II': [('', 1075, 'C'),('', 1223, 'T'),('', 1322, 'T'),('', 1433, 'T')],
+                        'SYLVATIC': [('', 956, 'G'),('', 962, 'T'),('', 1019, 'C')]},
+
+                        "any": {}
+                }
+# for i in ['dengue_1', 'dengue_2', 'dengue_3', 'dengue_4']:
+#     genotypes['any'].update(genotypes[i])
 
 def select_serotype(infile, path, serotype):
     '''
@@ -83,11 +121,12 @@ class dengue_process(process):
         if params.load:
             self.dengue.load()
         else:
-            self.fasta_fields = {0:'strain', 1:'accession', 2:'date', 3:'region', 4:'country',
+            self.fasta_fields = {0:'strain', 1:'accession', 2:'date', 3:'region', #4:'country',
                             5:'division', 6: 'location', 7: 'authors', 8: 'url'}
             self.dengue.load_sequences(fields=self.fasta_fields)
             self.dengue.seqs.filter(lambda s: len(s.seq)>=5000)
-            self.dropped_strains = ['DENV1/VIETNAM/BIDV992/2006', 'DENV1/FRANCE/00475/2008', 'DENV1/VIETNAM/BIDV3990/2008', 'DENV2/HAITI/DENGUEVIRUS2HOMOSAPIENS1/2016'] # probable recombinants
+            self.dropped_strains = ['DENV1/VIETNAM/BIDV992/2006', 'DENV1/FRANCE/00475/2008', 'DENV1/VIETNAM/BIDV3990/2008', 'DENV2/HAITI/DENGUEVIRUS2HOMOSAPIENS1/2016', # Probable recombinants
+            'DENV2/AUSTRALIA/QML22/2015'] # Suspiciously far diverged
             self.dengue.seqs.filter(lambda s: s.id not in self.dropped_strains)
             self.dengue.seqs.filter(lambda s: s.attributes['region'] not in ['', '?'])
             self.dengue.seqs.subsample(category = lambda x:(x.attributes['region'],
@@ -99,10 +138,29 @@ class dengue_process(process):
             self.dengue.build_tree()
             self.dengue.dump()
         self.dengue.clock_filter(n_iqd=3, plot=True)
+
+        nodes = [i for i in self.dengue.tree.tree.find_clades() ]
+        print(nodes[110].attr)
+
         self.dengue.annotate_tree(Tc=False, timetree=True, reroot='best')
+        nodes = [i for i in self.dengue.tree.tree.find_clades() ]
+        print(nodes[110].attr)
+
+        # self.dengue.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.01)
+        # for region in region_groups.iteritems():
+        #     self.dengue.estimate_mutation_frequencies(region=region, min_freq=.05)
+
+        # self.dengue.estimate_tree_frequencies()
+        # for region in regions:
+        #     self.dengue.estimate_tree_frequencies(region=region)
+
+        # self.dengue.matchClades(genotypes[self.lineage])
 
         for level in geo_attributes:
             self.dengue.tree.geo_inference(level)
+
+        nodes = [i for i in self.dengue.tree.tree.find_clades() ]
+        print(nodes[110].attr)
 
         self.date_range = {'date_min': self.dengue.tree.getDateMin(), 'date_max': self.dengue.tree.getDateMax()}
         self.dengue.export(controls = attribute_nesting, geo_attributes = geo_attributes, date_range = self.date_range, color_options=color_options, panels=panels)
