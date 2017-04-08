@@ -71,14 +71,14 @@ genotypes = {
                         'II': [('', 1075, 'C'),('', 1223, 'T'),('', 1322, 'T'),('', 1433, 'T')],
                         'SYLVATIC': [('', 956, 'G'),('', 962, 'T'),('', 1019, 'C')]},
 
-                        "any": {}
+                        "all": {}
                 }
 # for i in ['dengue_1', 'dengue_2', 'dengue_3', 'dengue_4']:
-#     genotypes['any'].update(genotypes[i])
+#     genotypes['all'].update(genotypes[i])
 
 def select_serotype(infile, path, serotype):
     '''
-    Takes any-serotype fasta file, path to save output, and desired serotype.
+    Takes all-serotype fasta file, path to save output, and desired serotype.
     Writes appropriate subset of sequences to dengue_serotype.fasta
     Returns path to output file as string.
     '''
@@ -91,18 +91,18 @@ class dengue_process(process):
         super(process, self).__init__()
 
         self.serotype = kwargs['serotype']
-        if self.serotype == 'any': # For any-serotype build, use dengue 4 outgroup and look for files like dengue.fasta
-            self.lineage = 'dengue'
+        if self.serotype == 'all': # For all-serotype build, use dengue 4 outgroup and look for files like dengue.fasta
+            self.lineage = 'dengue_all'
             self.reference_fname = './dengue/metadata/dengue_%s_outgroup.gb'%'4'
-            newest_sequence_file = sorted(glob('../fauna/data/%s.fasta'%self.lineage), key=lambda f: os.path.getmtime(f))[-1]
+            newest_sequence_file = sorted(glob('../fauna/data/dengue.fasta'), key=lambda f: os.path.getmtime(f))[-1]
         else:
-            self.lineage = 'dengue_%s'%self.serotype # For serotype-specific build, use the corresponding outgroup
+            self.lineage = 'dengue_denv%s'%self.serotype # For serotype-specific build, use the corresponding outgroup
             self.reference_fname = './dengue/metadata/dengue_%s_outgroup.gb'%self.serotype
             try: # Look for a serotype-specific fasta
                 newest_sequence_file = sorted(glob('../fauna/data/%s*.fasta'%self.lineage), key=lambda f: os.path.getmtime(f))[-1]
-            except: # If it doesn't exist, try to pull serotype-specific sequences out of the any-serotype fasta (warn the user of this behavior)
+            except: # If it doesn't exist, try to pull serotype-specific sequences out of the all-serotype fasta (warn the user of this behavior)
                 newest_sequence_file = select_serotype('../fauna/data/dengue.fasta', '../fauna/data/', self.serotype)
-                print('WARNING: Did not find serotype-specific fasta file.\nPulled sequences with serotype %s from any-serotype fasta file %s\nWrote these to file %s'%(self.serotype, '../fauna/data/dengue.fasta', newest_sequence_file))
+                print('WARNING: Did not find serotype-specific fasta file.\nPulled sequences with serotype %s from all-serotype fasta file %s\nWrote these to file %s'%(self.serotype, '../fauna/data/dengue.fasta', newest_sequence_file))
 
         self.input_data_path = newest_sequence_file.split('.fasta')[0]
         self.sequence_fname = newest_sequence_file
@@ -172,13 +172,12 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
     parser.add_argument('-v', '--viruses_per_month', type = int, default = 3, help='number of viruses sampled per month')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
+    parser.add_argument('-s', '--serotype', type = str, choices=['1', '2', '3', '4', 'all'], default='all', help = 'which serotype of dengue to build trees for; all = include all serotypes in one build')
     parser.add_argument('--load', action='store_true', help = 'recover from file')
-    parser.add_argument('-s', '--serotype', type = str, choices=['1', '2', '3', '4', 'any', 'all'], default='any', help = 'which serotype of dengue to build trees for; any = include all serotypes in one build; all = run all 5 builds')
+    parser.add_argument('--process_multiple', action='store_true', help = 'run all serotype builds')
     params = parser.parse_args()
 
-    if params.serotype != 'all': # Run single build and quit.
-        output = dengue_process(**params.__dict__)
-    else: # Run all 5 builds. Call explicitly rather than loop to allow for ipython debugging of each build.
+    if params.process_multiple: # Run all 5 builds. Call explicitly rather than loop to allow for ipython debugging of each build.
         setattr(params, 'serotype', '1')
         output1 = dengue_process(**params.__dict__)
         setattr(params, 'serotype', '2')
@@ -187,5 +186,7 @@ if __name__=="__main__":
         output3 = dengue_process(**params.__dict__)
         setattr(params, 'serotype', '4')
         output4 = dengue_process(**params.__dict__)
-        setattr(params, 'serotype', 'any')
-        outputany = dengue_process(**params.__dict__)
+        setattr(params, 'serotype', 'all')
+        outputall = dengue_process(**params.__dict__)
+    else: # Run single build and quit.
+        output = dengue_process(**params.__dict__)
