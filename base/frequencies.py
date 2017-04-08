@@ -94,6 +94,10 @@ class frequency_estimator(object):
 
         self.pivots = make_pivots(pivots, self.tps)
 
+        good_tps = (self.tps>self.pivots[0])&(self.tps<self.pivots[-1])
+        self.tps = self.tps[good_tps]
+        self.obs = self.obs[good_tps]
+
 
     def initial_guess(self, pc=0.01):
         # generate a useful initital case from a running average of the counts
@@ -182,16 +186,16 @@ class freq_est_clipped(object):
             self.dtps = np.max(dtps, pivot_dt)
 
         cum_obs = np.diff(self.obs).cumsum()
-        first_obs = self.tps[cum_obs.searchsorted(cum_obs[0]+1)]
-        last_obs = max(first_obs,self.tps[min(len(self.tps)-1, 20+cum_obs.searchsorted(cum_obs[-1]))])
+        first_obs = max(pivots[0], self.tps[cum_obs.searchsorted(cum_obs[0]+1)])
+        last_obs = min(pivots[-1], max(first_obs,self.tps[min(len(self.tps)-1, 20+cum_obs.searchsorted(cum_obs[-1]))]))
         tps_lower_cutoff = first_obs - self.dtps
         tps_upper_cutoff = last_obs + self.dtps
 
 
         self.good_tps = (self.tps>=tps_lower_cutoff)&(self.tps<tps_upper_cutoff)
-        if self.good_tps.sum()<5:
+        if self.good_tps.sum()<7:
             from scipy.ndimage import binary_dilation
-            self.good_tps = binary_dilation(self.good_tps, iterations=10)
+            self.good_tps = binary_dilation(self.good_tps, iterations=5)
         reduced_obs = self.obs[self.good_tps]
         reduced_tps = self.tps[self.good_tps]
         self.pivot_lower_cutoff = min(reduced_tps[0], tps_lower_cutoff)-pivot_dt
@@ -269,6 +273,7 @@ class tree_frequencies(object):
             self.node_filter = lambda x:True
         else:
             self.node_filter = node_filter
+        print("filter func", self.node_filter)
         self.prepare()
 
 
