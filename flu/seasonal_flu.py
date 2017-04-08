@@ -47,8 +47,12 @@ color_options = {
 }
 panels = ['tree', 'entropy', 'frequencies']
 
-reference_viruses = ['A/Wisconsin/67/2005', 'A/Brisbane/10/2007',  'A/Perth/16/2009', 'A/Victoria/361/2011',
-                    'A/Texas/50/2012', 'A/Switzerland/9715293/2013', 'A/HongKong/4801/2014', 'A/Alaska/232/2015']
+reference_viruses = {'h3n2': ['A/Wisconsin/67/2005', 'A/Brisbane/10/2007',  'A/Perth/16/2009', 'A/Victoria/361/2011',
+                              'A/Texas/50/2012', 'A/Switzerland/9715293/2013', 'A/HongKong/4801/2014', 'A/Alaska/232/2015'],
+                     'h1n1pdm':[],
+                     'vic':[],
+                     'yam':[]
+                    }
 
 
 outliers = {
@@ -573,8 +577,8 @@ if __name__=="__main__":
         params.viruses_per_month_seq = 15*len(regions)
         params.years_back = 2
     elif params.resolution == "3y":
-        params.viruses_per_month_tree = 1*len(regions)
-        params.viruses_per_month_seq = 1*len(regions)
+        params.viruses_per_month_tree = 7*len(regions)
+        params.viruses_per_month_seq = 5*len(regions)
         params.years_back = 3
     elif params.resolution == "6y":
         params.viruses_per_month_tree = 30
@@ -629,7 +633,7 @@ if __name__=="__main__":
         pivots = np.arange(time_interval[0].year+(time_interval[0].month-1)/12.0,
                            time_interval[1].year+time_interval[1].month/12.0, 1.0/ppy)
         flu.seqs.filter(lambda s: (s.attributes['date']>=time_interval[0] and s.attributes['date']<time_interval[1]) or
-                                  (s.name in reference_viruses and s.attributes['date']>reference_cutoff))
+                                  (s.name in reference_viruses[params.lineage] and s.attributes['date']>reference_cutoff))
         flu.seqs.filter(lambda s: len(s.seq)>=900)
         flu.seqs.filter(lambda s: s.name not in outliers[params.lineage])
 
