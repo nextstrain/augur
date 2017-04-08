@@ -572,13 +572,14 @@ if __name__=="__main__":
     params = parser.parse_args()
 
     # default values for --viruses_per_month and --years_back from resolution
+    # those refer to the total number of sequences across all regions
     if params.resolution == "2y":
-        params.viruses_per_month_tree = 9*len(regions)
-        params.viruses_per_month_seq = 15*len(regions)
+        params.viruses_per_month_tree = 90
+        params.viruses_per_month_seq = 150
         params.years_back = 2
     elif params.resolution == "3y":
-        params.viruses_per_month_tree = 7*len(regions)
-        params.viruses_per_month_seq = 5*len(regions)
+        params.viruses_per_month_tree = 70
+        params.viruses_per_month_seq = 50
         params.years_back = 3
     elif params.resolution == "6y":
         params.viruses_per_month_tree = 30
@@ -637,6 +638,8 @@ if __name__=="__main__":
         flu.seqs.filter(lambda s: len(s.seq)>=900)
         flu.seqs.filter(lambda s: s.name not in outliers[params.lineage])
 
+        # the all regions flag allows to switch off regional subsampling.
+        # With all_regions=True, sequences are sampled independent of their region
         if params.sampling=='even':
             flu.subsample(params.viruses_per_month_seq, all_regions=False)
         elif params.sampling in regions:
@@ -648,9 +651,9 @@ if __name__=="__main__":
         flu.align()
         flu.dump()
         # first estimate frequencies globally, then region specific
-        flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.1)
+        flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.02)
         for region in region_groups.iteritems():
-            flu.estimate_mutation_frequencies(region=region, min_freq=.5)
+            flu.estimate_mutation_frequencies(region=region, min_freq=.05)
 
         if not params.no_tree:
             if params.sampling=='even':
