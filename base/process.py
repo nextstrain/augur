@@ -247,7 +247,7 @@ class process(object):
         self.tree_frequency_counts[region] = tree_freqs.counts
 
 
-    def build_tree(self, infile=None, nodefile=None, root='best', debug=False):
+    def build_tree(self, infile=None, nodefile=None, root='best', debug=False, num_distinct_starting_trees=1):
         '''
         instantiate a tree object and make a time tree
         if infiles are None, the tree is build from scratch. Otherwise
@@ -255,7 +255,7 @@ class process(object):
         '''
         self.tree = tree(aln=self.seqs.aln, proteins = self.proteins, verbose=self.verbose)
         if infile is None:
-            self.tree.build(root=root, debug=debug)
+            self.tree.build(root=root, debug=debug, num_distinct_starting_trees=num_distinct_starting_trees)
         else:
             self.tree.tt_from_file(infile, nodefile=nodefile, root=root)
 
