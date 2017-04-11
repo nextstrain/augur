@@ -12,6 +12,9 @@ output/
 test_input/
 test_output/
 logs/
+prepared/
+*log
+*json
 
 # Compiled source #
 ###################
