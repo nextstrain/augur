@@ -2,6 +2,10 @@
 
 This is a more in-depth explanation of how augur works, detailing the functions to run a pipeline (this guide is currently based off the zika pipeline) and the side-effects of each. It is written for people modifying existing pipelines or creating their own. JSON outputs are detailed [here](../README.md).
 
+## REJIG version
+Augur is currently being split into two stages: `Prepare` and `Process`. See [here](rejig.md) for details.
+
+
 ### Steps in the pipeline:
 [This file](pipeline_steps.md) walks through the functions involved in the [zika pipeline](../zika/zika.py). As such, the main object (class `Process`) is called `zika`. Here are the steps in the pipeline:
 
