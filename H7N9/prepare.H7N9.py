@@ -3,8 +3,6 @@ This script takes fauna fasta files and produces filtered and subsetted JSONs
 To be processed by augur
 
 * RUN THIS SCRIPT IN THE H7N9 DIRECTORY!!!!
-* The reference sequence will _never_ be filtered / subsampled e.t.c.
-* However, during processing, you can drop the reference for analysis
 
 """
 from __future__ import print_function
@@ -24,20 +22,20 @@ dropped_strains = [
 config = {
     "dir": "H7N9", # the current directory. You mush be inside this to run the script.
     "file_prefix": "H7N9",
-    "segments": ["HA", "NA"],
-    # "segments": ["PB2", "PB1", "PA", "HA", "NP", "NA", "MP", "NS"], # set to False, or ["something"] if not segmented...
+    # "segments": ["HA", "NA"],
+    "segments": ["PB2", "PB1", "PA", "HA", "NP", "NA", "MP", "NS"], # set to False, or ["something"] if not segmented...
     "input_format": "fasta",
     "input_paths": [
-        # "../../fauna/data/h7n9_pb2.fasta",
-        # "../../fauna/data/h7n9_pb1.fasta",
-        # "../../fauna/data/h7n9_pa.fasta",
-        # "../../fauna/data/h7n9_ha.fasta",
-        # "../../fauna/data/h7n9_np.fasta",
-        # "../../fauna/data/h7n9_na.fasta",
-        # "../../fauna/data/h7n9_mp.fasta",
-        # "../../fauna/data/h7n9_ns.fasta",
-        "test_input/h7n9.ha.fasta",
-        "test_input/h7n9.na.fasta"
+        "../../fauna/data/h7n9_pb2.fasta",
+        "../../fauna/data/h7n9_pb1.fasta",
+        "../../fauna/data/h7n9_pa.fasta",
+        "../../fauna/data/h7n9_ha.fasta",
+        "../../fauna/data/h7n9_np.fasta",
+        "../../fauna/data/h7n9_na.fasta",
+        "../../fauna/data/h7n9_mp.fasta",
+        "../../fauna/data/h7n9_ns.fasta",
+        # "test_input/h7n9.ha.fasta",
+        # "test_input/h7n9.na.fasta"
     ],
     "output_folder": "prepared",
     # note that "strain" is essential and "date" is special
@@ -57,8 +55,14 @@ config = {
         ("Prior to Epidemic", lambda s: s.attributes['date'] >= datetime(2013,1,1).date()),
         ("Exclude bad host", lambda s: s.attributes["host"] not in ["laboratoryderived", "watersample"]),
         ("Sequence Length", {
+            "PB2": lambda s: len(s.seq)>=2200,
+            "PB1": lambda s: len(s.seq)>=2200,
+            "PA": lambda s: len(s.seq)>=2100,
             "HA": lambda s: len(s.seq)>=1500,
-            "NA": lambda s: len(s.seq)>=1200
+            "NP": lambda s: len(s.seq)>=1400,
+            "NA": lambda s: len(s.seq)>=1200,
+            "MP": lambda s: len(s.seq)>=900,
+            "NS": lambda s: len(s.seq)>=800
         })
     ),
     # see the docs for this too! if you don't want to subsample, set it to False
@@ -66,7 +70,7 @@ config = {
     "subsample": {
         "category": None,
         "priority": None,
-        "threshold": None,
+        "threshold": 5,
     },
 
     # see the docs for what's going on with colours (sic) & lat/longs
@@ -76,15 +80,78 @@ config = {
 
     # again, see docs for reference definitions
     "references": {
+        "PB2": {
+            "path": "reference_segments/pb2.gb",
+            "metadata": {
+                'strain': "reference", "accession": "NC_026422", "date": "2013-03-05",
+                'host': "human", 'country': "china", 'division': "Shanghai"
+            },
+            "use": True,
+            "genes": ["PB2"]
+        },
+        "PB1": {
+            "path": "reference_segments/pb1.gb",
+            "metadata": {
+                'strain': "reference", "accession": "NC_026423", "date": "2013-03-05",
+                'host': "human", 'country': "china", 'division': "Shanghai"
+            },
+            "use": True,
+            "genes": ["PB1", "PB1-F2"]
+        },
+        "PA": {
+            "path": "reference_segments/pa.gb",
+            "metadata": {
+                'strain': "reference", "accession": "NC_026424", "date": "2013-03-05",
+                'host': "human", 'country': "china", 'division': "Shanghai"
+            },
+            "use": True,
+            "genes": ["PA", "PA-X"]
+        },
         "HA": {
             "path": "reference_segments/ha.gb",
             "metadata": {
                 'strain': "reference", "accession": "KJ411975", "date": "2014-01-03",
                 'host': "human", 'country': "china", 'division': "Shanghai"
             },
-            "use": False,
+            "use": True,
             "genes": ["SigPep", "HA1", "HA2"]
-        }
+        },
+        "NP": {
+            "path": "reference_segments/np.gb",
+            "metadata": {
+                'strain': "reference", "accession": "NC_026426", "date": "2013-03-05",
+                'host': "human", 'country': "china", 'division': "Shanghai"
+            },
+            "use": True,
+            "genes": ["NP"]
+        },
+        "NA": {
+            "path": "reference_segments/na.gb",
+            "metadata": {
+                'strain': "reference", "accession": "NC_026429", "date": "2013-03-05",
+                'host': "human", 'country': "china", 'division': "Shanghai"
+            },
+            "use": True,
+            "genes": ["NA"]
+        },
+        "NP": {
+            "path": "reference_segments/np.gb",
+            "metadata": {
+                'strain': "reference", "accession": "NC_026426", "date": "2013-03-05",
+                'host': "human", 'country': "china", 'division': "Shanghai"
+            },
+            "use": True,
+            "genes": ["NP"]
+        },
+        "NS": {
+            "path": "reference_segments/ns.gb",
+            "metadata": {
+                'strain': "reference", "accession": "NC_026428", "date": "2013-03-05",
+                'host': "human", 'country': "china", 'division': "Shanghai"
+            },
+            "use": True,
+            "genes": ["NEP", "NS1"]
+        },
     }
 
 }
