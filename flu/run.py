@@ -9,7 +9,7 @@ def live_flu_build(lineage, resolution, path):
     print '\n--------------------\n'
     print 'Processing lineage',lineage,'with resolution',resolution,'for all HI data'
     process = 'flu/seasonal_flu.py'
-    call = map(str, [params.bin, process, '--lineage', lineage, '--resolution', resolution, '--HI all_hi'])
+    call = map(str, [params.bin, process, '--lineage', lineage, '--resolution', resolution, '--HI', 'all_hi'])
     print call
     subprocess.call(call)
 
@@ -106,20 +106,20 @@ def cdc_fra_build(lineage, resolution, path):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description = "download and process")
-	parser.add_argument('--bin', type = str, default = "python")
-	parser.add_argument('--builds', nargs='+', type = str, help = "builds to include")
-	parser.add_argument('--lineages', nargs='+', type = str,  help = "lineages to include")
-	parser.add_argument('--resolutions', nargs='+', type = str,  help = "resolutions to include")
+    parser.add_argument('--bin', type = str, default = "python")
+    parser.add_argument('--builds', nargs='+', type = str, help = "builds to include")
+    parser.add_argument('--lineages', nargs='+', type = str,  help = "lineages to include")
+    parser.add_argument('--resolutions', nargs='+', type = str,  help = "resolutions to include")
     parser.add_argument('--assays', nargs='+', type = str, help = "assays to include")
     parser.add_argument('--live_auspice_path', default = '../../blab/nextflu/auspice/data')
     parser.add_argument('--cdc_auspice_path', default = '../../blab/nextflu-cdc/auspice/data')
-	params = parser.parse_args()
+    params = parser.parse_args()
 
     if params.builds is None:
         params.builds = ['live', 'cdc']
 
     if params.lineages is None:
-        params.lineages = ['H3N2', 'H1N1pdm', 'Vic', 'Yam']
+        params.lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam']
 
     if params.resolutions is None:
         params.resolutions = ['2y', '3y', '6y', '12y']
