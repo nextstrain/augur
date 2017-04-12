@@ -4,13 +4,15 @@ import numpy as np
 from datetime import datetime
 from base.sequences_new import sequence_set
 from base.logger import logger
+from base.utils import generate_cmap, define_latitude_longitude
+# useful for debugging
 from pdb import set_trace
-from base.utils import generate_cmap
+from pprint import pprint
 
 required_config_fields = [
     "dir", "file_prefix", "segments", "input_format", "input_paths",
     "output_folder", "header_fields", "date_format", "ensure_all_segments",
-    "require_dates"
+    "require_dates", "colors", "lat_longs"
 ]
 
 class prepare(object):
@@ -115,7 +117,7 @@ class prepare(object):
         self.colors()
 
     def colors(self):
-        if "colors" in self.config and self.config["colors"]:
+        if self.config["colors"]:
             cols = {}
             for trait in self.config["colors"]:
                 try:
@@ -133,7 +135,29 @@ class prepare(object):
 
 
     def latlongs(self):
-        pass
+        if self.config["lat_longs"]:
+            lat_longs = {}
+            try:
+                assert("lat_long_defs" in self.config)
+            except AssertionError:
+                self.log.fatal("You asked for lat/longs but didn't provide definition files ('lat_long_defs')")
+            lat_long_db = define_latitude_longitude(self.config["lat_long_defs"], self.log)
+            if not len(lat_long_db):
+                self.log.fatal("You asked for lat/longs but the definition files weren't useful")
+            for trait in self.config["colors"]:
+                vals = set.union(*[obj.get_trait_values(trait) for seg, obj in self.segments.iteritems()])
+                lat_longs[trait] = {}
+                # do it the long way to handle missing data
+                for key in vals: # well named
+                    try:
+                        lat_longs[trait][key] = lat_long_db[key]
+                    except KeyError:
+                        lat_longs[trait][key] = "unknown"
+                        self.log.warn("Unknown lat/longs for {} {}. Attempting to continue but this will most likely cause problems in Auspice.".format(trait, key))
+
+            # save to each sequence_set object. It's them that write the JSONs
+            for seg, obj in self.segments.iteritems():
+                obj.extras["lat_longs"] = lat_longs
 
 
     def write_to_json(self):

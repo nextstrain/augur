@@ -70,7 +70,10 @@ config = {
     },
 
     # see the docs for what's going on with colours (sic) & lat/longs
-    "colors": ["country", "division"]
+    "colors": ["country", "division"], # essential. Maybe False.
+    "lat_longs": ["country", "division"], # essential. Maybe False.
+    "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
+
 }
 
 
