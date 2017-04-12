@@ -73,24 +73,32 @@ class prepare(object):
         for (fName, fFunc) in self.config["filters"]:
             if callable(fFunc):
                 for seg, obj in self.segments.iteritems():
-                    self.log.notify("Applying filter '{}' to segment '{}'".format(fName, seg))
+                    tmp = len(obj.seqs)
                     obj.filterSeqs(fName, fFunc)
+                    self.log.notify("Applied filter '{}' to segment '{}'. n: {} -> {}".format(fName, seg, tmp, len(obj.seqs)))
             else: # wasn't callable
                 if isinstance(fFunc, dict):
                     for seg, segFunc in fFunc.iteritems():
                         if callable(segFunc) and seg in self.segments.keys():
-                            self.log.notify("Applying filter '{}' to segment '{}'".format(fName, seg))
+                            tmp = len(self.segments[seg].seqs)
                             self.segments[seg].filterSeqs(fName, segFunc)
+                            self.log.notify("Applied filter '{}' to segment '{}'. n: {} -> {}".format(fName, seg, tmp, len(self.segments[seg].seqs)))
                         else:
                             self.log.warn("Filter {} not applied to segment {} (not callable or segment not found)".format(fName, seg))
                 else:
                     self.log.warn("Filter {} not applied - neither callable or dict of callables".format(fName))
 
     def subsample(self):
+        """ subsample only the first one, then filter the rest such that the names match """
         if "subsample" not in self.config or self.config["subsample"] == False:
             return
-        for seg, obj in self.segments.iteritems():
-            obj.subsample(self.config)
+        # subsample the first (may be the only one)
+        self.segments[self.config["segments"][0]].subsample(self.config)
+        subsampled_taxa = self.segments[self.config["segments"][0]].seqs.keys()
+        for idx in range(1, len(self.config["segments"])):
+            self.segments[self.config["segments"][idx]].filterSeqs("subsampled", lambda s: s.id in subsampled_taxa)
+            self.log.notify("Matched segment {} to subsampled taxa. n: {}".format(self.config["segments"][idx], len(self.segments[self.config["segments"][idx]].seqs)))
+
 
     def ensure_all_segments(self):
         if "ensure_all_segments" in self.config and self.config["ensure_all_segments"] == True:

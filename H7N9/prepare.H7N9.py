@@ -60,13 +60,12 @@ config = {
         "priority": None,
         "threshold": None,
     }
-
 }
 
 
 if __name__=="__main__":
     runner = prepare(config)
     runner.applyFilters()
-    runner.subsample()
     runner.ensure_all_segments()
+    runner.subsample()
     runner.write_to_json()
