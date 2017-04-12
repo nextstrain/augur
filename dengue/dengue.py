@@ -117,6 +117,7 @@ class dengue_process(process):
         self.build_data_path = 'build/'+self.lineage + '_'
         self.proteins = ['C', 'M', 'E', 'NS1', 'NS2A', 'NS2B', 'NS3', 'NS4A', '2K', 'NS4B', 'NS5']
 
+        ##### Initialize process object #####
         self.dengue = process(input_data_path = self.input_data_path,
                        store_data_path = self.store_data_path,
                        build_data_path = self.build_data_path,
@@ -125,46 +126,53 @@ class dengue_process(process):
                        method='SLSQP',
                        lat_long_fname='../fauna/source-data/geo_lat_long.tsv')
 
-        def run_build(self, steps):
+    def run_build(self, steps):
             '''
             Process then also gets the alignment, tree, and entropy objects.
             '''
 
             if 'load' in steps: ### Load checkpoint from file to bypass subsampling/alignments/tree building for time.
+                print('\nLoading from file.....\n\n')
                 self.dengue.load()
 
             if 'align' in steps: ### Read in data, align sequences, deal with metadata.
+                print('\nSubsampling, filtering, and aligning sequences.....\n\n')
+
                 self.fasta_fields = {0:'strain', 1:'accession', 2:'date', 3:'region', #4:'country',
                                 5:'division', 6: 'location', 7: 'authors', 8: 'url'}
                 self.dengue.load_sequences(fields=self.fasta_fields)
                 assert self.dengue.seqs != None, 'ERROR: No sequences'
                 self.dropped_strains = ['DENV1/VIETNAM/BIDV992/2006', 'DENV1/FRANCE/00475/2008', 'DENV1/VIETNAM/BIDV3990/2008', 'DENV2/HAITI/DENGUEVIRUS2HOMOSAPIENS1/2016', # Probable recombinants
                                         'DENV2/AUSTRALIA/QML22/2015'] # Suspiciously far diverged
-                self.dengue.seqs.filter(lambda s: len(s.seq)>=5000) # Toss sequences shorter than 5000 bases
-                self.dengue.seqs.filter(lambda s: s.id not in self.dropped_strains) # Toss sequences in dropped_strains
-                self.dengue.seqs.filter(lambda s: s.attributes['region'] not in ['', '?']) # Toss sequences without location data
+                self.dengue.seqs.filter(lambda s: len(s.seq)>=5000, leave_ref=True) # Toss sequences shorter than 5000 bases
+                self.dengue.seqs.filter(lambda s: s.id not in self.dropped_strains, leave_ref=True) # Toss sequences in dropped_strains
+                self.dengue.seqs.filter(lambda s: s.attributes['region'] not in ['', '?'], leave_ref=True) # Toss sequences without location data
                 self.dengue.seqs.subsample(category = lambda x:(x.attributes['region'], # Subsample per region per month
                                                          x.attributes['date'].year,
                                                          x.attributes['date'].month), threshold=params.viruses_per_month)
                 for s in self.dengue.seqs.seqs.values():
                     s.attributes['url'] = 'https://www.ncbi.nlm.nih.gov/nuccore/%s'%s.attributes['accession'] # Add genbank URL to each sequence
-                self.dengue.align() # Align with mafft
+                self.dengue.align(debug=True) # Align with mafft; save the .fasta alignment
                 self.dengue.dump() # Save a checkpoint
 
             if 'tree' in steps: ### Build a tree (fast tree --> raxml)
+                print('\nBuilding a tree.....\n\n')
                 assert self.dengue.seqs != None, 'ERROR: No sequences, cannot build tree.'
-                self.dengue.build_tree()
+                self.dengue.build_tree(debug=True) # Save the newick from raxml
                 self.dengue.dump() # Save a checkpoint
 
+
             if 'treetime' in steps:
+                print('\nStarting treetime clock filtering, rerooting, and tree annotation.....\n\n')
                 assert self.dengue.seqs != None, 'ERROR: No sequences, cannot run treetime.'
                 assert self.dengue.tree, 'ERROR: No tree, cannot run treetime.'
                 self.dengue.clock_filter(n_iqd=3, plot=True) # Toss sequences that don't show a linear relationship between sampling time and root-to-tip divergence.
                 self.dengue.annotate_tree(Tc=False, timetree=True, reroot='best') # Map attributes from the `fasta_headers` to the tree
 
             if 'geo' in steps: # Use a "mugration model" to trace how viruses have moved between regions
+                print('\nRunning geo inference.....\n\n')
                 assert 'treetime' in steps, 'ERROR: Must run step "treetime" to do geo inference.'
-                self.dengue.tree.geo_inference(region)
+                self.dengue.tree.geo_inference('region')
 
         # self.dengue.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.01)
         # for region in region_groups.iteritems():
@@ -176,18 +184,21 @@ class dengue_process(process):
 
         # self.dengue.matchClades(genotypes[self.lineage])
             if 'export' in steps:
+                print('\nExporting.....\n\n')
                 assert self.dengue.tree, 'ERROR: No tree object to export'
                 self.date_range = {'date_min': self.dengue.tree.getDateMin(), 'date_max': self.dengue.tree.getDateMax()} # Set default date range according to the tree height
-                self.dengue.export(controls = attribute_nesting, geo_attributes = geo_attributes, date_range = self.date_range, color_options=color_options, panels=panels) # Export to JSON
+                self.dengue.export(controls = attribute_nesting, geo_attributes = 'region', date_range = self.date_range, color_options=color_options, panels=panels) # Export to JSON
 
 
 if __name__=="__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
-    parser.add_argument('-v', '--viruses_per_month', type = int, default = 3, help='number of viruses sampled per month')
-    parser.add_argument('-s', '--serotype', type = str, choices=['DENV1', 'DENV2', 'DENV3', 'DENV4', 'all', 'process_multiple'], default='all', help = 'Which serotype of dengue to build trees for; all = include all serotypes in one build. Process_multiple = run all 5 builds.')
-    parser.add_argument('--load', action='store_true', help = 'recover from file')
+    parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare web visualization',
+    epilog="Which build steps to run can be configured in __main__; valid options are: ['load', 'align', 'tree', 'treetime', 'geo', 'export']")
+    parser.add_argument('-v', '--viruses_per_month', type = int, default = 3, help='Number of viruses sampled per region per month')
+    parser.add_argument('-s', '--serotype', type = str.lower, choices=['denv1', 'denv2', 'denv3', 'denv4', 'all'], default='all', help = 'Which serotype of dengue to build trees for; all = include all serotypes in one build.')
+    parser.add_argument('--load', action='store_true', help = 'Recover alignment and tree from file, then run treetime, geo, and export steps.')
+    parser.add_argument('--run_multiple', action='store_true', help = 'Run all 5 builds (4 serotype-specific + 1 all-serotype)')
     params = parser.parse_args()
 
     if params.load:
@@ -195,11 +206,14 @@ if __name__=="__main__":
     else:
         steps = ['align', 'tree', 'treetime', 'geo', 'export']
 
-    if params.serotype = 'process_multiple': # Run all 5 builds.
-        for s in ['DENV1', 'DENV2', 'DENV3', 'DENV4', 'all']:
-            setattr(params, s)
+    if params.run_multiple or not params.serotype: # Run all 5 builds.
+        print('\n\nRunning all 5 builds.\n\n')
+        for s in ['denv1', 'denv2', 'denv3', 'denv4', 'all']:
+            params.serotype=s
             output = dengue_process(**params.__dict__)
+            print('\nInitializing these steps for serotype %s:\n'%s, steps, '\n\n')
             output.run_build(steps)
     else: # Run single build and quit.
         output = dengue_process(**params.__dict__)
+        print('\nInitializing these steps for serotype %s:\n'%params.serotype, steps, '\n\n')
         output.run_build(steps)
