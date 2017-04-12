@@ -1,23 +1,23 @@
 LOCUS       NC_026423               2297 bp    cRNA    linear   VRL 06-FEB-2015
 DEFINITION  Influenza A virus (A/Shanghai/02/2013(H7N9)) segment 2 polymerase
-	    PB1 (PB1) and PB1-F2 protein (PB1-F2) genes, complete cds.
+      PB1 (PB1) and PB1-F2 protein (PB1-F2) genes, complete cds.
 ACCESSION   NC_026423
 VERSION     NC_026423.1
 DBLINK      BioProject: PRJNA274585
 KEYWORDS    RefSeq.
 SOURCE      Influenza A virus (A/Shanghai/02/2013(H7N9))
   ORGANISM  Influenza A virus (A/Shanghai/02/2013(H7N9))
-	    Viruses; ssRNA viruses; ssRNA negative-strand viruses;
-	    Orthomyxoviridae; Influenzavirus A.
+            Viruses; ssRNA viruses; ssRNA negative-strand viruses;
+            Orthomyxoviridae; Influenzavirus A.
 REFERENCE   1  (bases 1 to 2297)
   AUTHORS   Zhu,H., Wang,D., Kelvin,D.J., Li,L., Zheng,Z., Yoon,S.W.,
-	    Wong,S.S., Farooqui,A., Wang,J., Banner,D., Chen,R., Zheng,R.,
-	    Zhou,J., Zhang,Y., Hong,W., Dong,W., Cai,Q., Roehrl,M.H.,
-	    Huang,S.S., Kelvin,A.A., Yao,T., Zhou,B., Chen,X., Leung,G.M.,
-	    Poon,L.L., Webster,R.G., Webby,R.J., Peiris,J.S., Guan,Y. and
-	    Shu,Y.
+            Wong,S.S., Farooqui,A., Wang,J., Banner,D., Chen,R., Zheng,R.,
+            Zhou,J., Zhang,Y., Hong,W., Dong,W., Cai,Q., Roehrl,M.H.,
+            Huang,S.S., Kelvin,A.A., Yao,T., Zhou,B., Chen,X., Leung,G.M.,
+            Poon,L.L., Webster,R.G., Webby,R.J., Peiris,J.S., Guan,Y. and
+            Shu,Y.
   TITLE     Infectivity, transmission, and pathology of human-isolated H7N9
-	    influenza virus in ferrets and pigs
+            influenza virus in ferrets and pigs
   JOURNAL   Science 341 (6142), 183-186 (2013)
    PUBMED   23704376
   REMARK    Erratum:[Science. 2013 Aug 30;341(6149):959]
@@ -25,82 +25,82 @@ REFERENCE   2  (bases 1 to 2297)
   CONSRTM   NCBI Genome Project
   TITLE     Direct Submission
   JOURNAL   Submitted (04-FEB-2015) National Center for Biotechnology
-	    Information, NIH, Bethesda, MD 20894, USA
+            Information, NIH, Bethesda, MD 20894, USA
 REFERENCE   3  (bases 1 to 2297)
   AUTHORS   Zhu,H., Wang,D., Kelvin,D.J., Li,L., Zheng,Z., Yoon,S.W.,
-	    Wong,S.S., Farooqui,A., Wang,J., Banner,D., Chen,R., Zheng,R.,
-	    Zhou,J., Zhang,Y., Hong,W., Dong,W., Cai,Q., Roehrl,M.A.,
-	    Huang,S.H., Calvin,A.A., Yao,T., Zhou,B., Chen,X., Leung,G.M.,
-	    Poon,L.L., Webster,R.G., Webby,R.J., Peiris,J.S., Guan,Y. and
-	    Shu,Y.
+            Wong,S.S., Farooqui,A., Wang,J., Banner,D., Chen,R., Zheng,R.,
+            Zhou,J., Zhang,Y., Hong,W., Dong,W., Cai,Q., Roehrl,M.A.,
+            Huang,S.H., Calvin,A.A., Yao,T., Zhou,B., Chen,X., Leung,G.M.,
+            Poon,L.L., Webster,R.G., Webby,R.J., Peiris,J.S., Guan,Y. and
+            Shu,Y.
   TITLE     Direct Submission
   JOURNAL   Submitted (10-MAY-2013) Centre of Influenza Research, School of
-	    Public Health, The University of Hong Kong, 5/F, Laboratory Block,
-	    LKS Faculty of Medicine Building, 21 Sasson Road, Pokfulm, Hong
-	    Kong SAR, China
+            Public Health, The University of Hong Kong, 5/F, Laboratory Block,
+            LKS Faculty of Medicine Building, 21 Sasson Road, Pokfulm, Hong
+            Kong SAR, China
 COMMENT     REVIEWED REFSEQ: This record has been curated by NCBI staff. The
-	    reference sequence is identical to KF021595.
-	    GenBank Accession Numbers KF021594-KF021601 represent sequences
-	    from the 8 segments of Influenza A virus
-	    (A/Shanghai/02/2013(H7N9)).
+            reference sequence is identical to KF021595.
+            GenBank Accession Numbers KF021594-KF021601 represent sequences
+            from the 8 segments of Influenza A virus
+            (A/Shanghai/02/2013(H7N9)).
 
-	    ##Assembly-Data-START##
-	    Assembly Method       :: Lasergene v. 8.0
-	    Sequencing Technology :: 454
-	    ##Assembly-Data-END##
-	    COMPLETENESS: full length.
+            ##Assembly-Data-START##
+            Assembly Method       :: Lasergene v. 8.0
+            Sequencing Technology :: 454
+            ##Assembly-Data-END##
+            COMPLETENESS: full length.
 FEATURES             Location/Qualifiers
      source          1..2297
-		     /organism="Influenza A virus (A/Shanghai/02/2013(H7N9))"
-		     /mol_type="viral cRNA"
-		     /strain="A/Shanghai/02/2013"
-		     /serotype="H7N9"
-		     /host="Homo sapiens"
-		     /db_xref="taxon:1332244"
-		     /segment="2"
-		     /country="China"
-		     /collection_date="05-Mar-2013"
-		     /note="passage details: E1"
+                     /organism="Influenza A virus (A/Shanghai/02/2013(H7N9))"
+                     /mol_type="viral cRNA"
+                     /strain="A/Shanghai/02/2013"
+                     /serotype="H7N9"
+                     /host="Homo sapiens"
+                     /db_xref="taxon:1332244"
+                     /segment="2"
+                     /country="China"
+                     /collection_date="05-Mar-2013"
+                     /note="passage details: E1"
      gene            1..2274
-		     /gene="PB1"
-		     /locus_tag="TS66_s2gp1"
-		     /db_xref="GeneID:23104222"
+                     /gene="PB1"
+                     /locus_tag="TS66_s2gp1"
+                     /db_xref="GeneID:23104222"
      CDS             1..2274
-		     /gene="PB1"
-		     /locus_tag="TS66_s2gp1"
-		     /codon_start=1
-		     /product="polymerase PB1"
-		     /protein_id="YP_009118471.1"
-		     /db_xref="GeneID:23104222"
-		     /translation="MDVNPTLLFLKVPVQNAISTTFPYTGDPPYSHGTGTGYTMDTVN
-		     RTHKYSEKGKWTTNTETGAPQLNPIDGPLPEDNEPSGYAQTDCVLEAMAFLEESHPGI
-		     FENSCLETMEIVQQTRVDKLTQGRQTYDWTLNRNQPAATALANTIEVFRSNGLTANES
-		     GRLIDFLKDVMDSMDKEEMEITTHFQRKRRVRDNMTKKMVTQRTIGKKKQRLNKRSYL
-		     IRALTLNTMTKDAERGKLKRRAIATPGMQIRGFVYFVEALARSICEKLEQSGLPVGGN
-		     EKKAKLANVVRKMMTNSQDTELSFTITGDNTKWNENQNPRMFLAMITYITRNQPEWFR
-		     NVLSIAPIMFSNKMARLGKGYMFESKSMKLRTQVPAEMLANIDLKYFNKSTREKIEKI
-		     RPLLIDGTASLSPGMMMGMFNMLSTVLGVSILNLGQKKYTKTTYWWDGLQSSDDFALI
-		     VNAPNHEGIQAGVDRFYRTCKLVGINMSKKKSYINRTGTFEFTSFFYRYGFVANFSME
-		     LPSFGVSGINESADMSVGVTVIKNNMINNDLGPATAQMALQLFIKDYRYTYRCHRGDT
-		     QIQTRRAFELKKLWEQTRSKAGLLVSDGGPNLYNIRNLHIPEVCLKWELMDEDYQGRL
-		     CNPMNPFVSHKEIDSVNNAVVMPAHGPAKSMEYDAVATTHSWIPKRNRSILNTSQRGI
-		     LEDEQMYQKCCNLFEKFFPSSSYRRPVGISSMVEAMVSRARIDARIDFESGRIKKEEF
-		     AEIMKICSTIEELRRQK"
+                     /gene="PB1"
+                     /locus_tag="TS66_s2gp1"
+                     /codon_start=1
+                     /product="polymerase PB1"
+                     /protein_id="YP_009118471.1"
+                     /db_xref="GeneID:23104222"
+                     /translation="MDVNPTLLFLKVPVQNAISTTFPYTGDPPYSHGTGTGYTMDTVN
+                     RTHKYSEKGKWTTNTETGAPQLNPIDGPLPEDNEPSGYAQTDCVLEAMAFLEESHPGI
+                     FENSCLETMEIVQQTRVDKLTQGRQTYDWTLNRNQPAATALANTIEVFRSNGLTANES
+                     GRLIDFLKDVMDSMDKEEMEITTHFQRKRRVRDNMTKKMVTQRTIGKKKQRLNKRSYL
+                     IRALTLNTMTKDAERGKLKRRAIATPGMQIRGFVYFVEALARSICEKLEQSGLPVGGN
+                     EKKAKLANVVRKMMTNSQDTELSFTITGDNTKWNENQNPRMFLAMITYITRNQPEWFR
+                     NVLSIAPIMFSNKMARLGKGYMFESKSMKLRTQVPAEMLANIDLKYFNKSTREKIEKI
+                     RPLLIDGTASLSPGMMMGMFNMLSTVLGVSILNLGQKKYTKTTYWWDGLQSSDDFALI
+                     VNAPNHEGIQAGVDRFYRTCKLVGINMSKKKSYINRTGTFEFTSFFYRYGFVANFSME
+                     LPSFGVSGINESADMSVGVTVIKNNMINNDLGPATAQMALQLFIKDYRYTYRCHRGDT
+                     QIQTRRAFELKKLWEQTRSKAGLLVSDGGPNLYNIRNLHIPEVCLKWELMDEDYQGRL
+                     CNPMNPFVSHKEIDSVNNAVVMPAHGPAKSMEYDAVATTHSWIPKRNRSILNTSQRGI
+                     LEDEQMYQKCCNLFEKFFPSSSYRRPVGISSMVEAMVSRARIDARIDFESGRIKKEEF
+                     AEIMKICSTIEELRRQK"
      gene            95..367
-		     /gene="PB1-F2"
-		     /locus_tag="TS66_s2gp2"
-		     /db_xref="GeneID:23104221"
+                     /gene="PB1-F2"
+                     /locus_tag="TS66_s2gp2"
+                     /db_xref="GeneID:23104221"
      CDS             95..367
-		     /gene="PB1-F2"
-		     /locus_tag="TS66_s2gp2"
-		     /codon_start=1
-		     /product="PB1-F2 protein"
-		     /protein_id="YP_009118472.1"
-		     /db_xref="GeneID:23104221"
-		     /translation="MEQEQDTPWTQSTEHINTQKKESGQRTQRLEHPNSIQLMDHYLR
-		     TTSRVGMHKRIVYWKQWLSLKNLTQGSLKTRVSKRWKLFSKQEWIN"
+                     /gene="PB1-F2"
+                     /locus_tag="TS66_s2gp2"
+                     /codon_start=1
+                     /product="PB1-F2 protein"
+                     /protein_id="YP_009118472.1"
+                     /db_xref="GeneID:23104221"
+                     /translation="MEQEQDTPWTQSTEHINTQKKESGQRTQRLEHPNSIQLMDHYLR
+                     TTSRVGMHKRIVYWKQWLSLKNLTQGSLKTRVSKRWKLFSKQEWIN"
 ORIGIN
-	1 atggatgtca atccgacttt acttttcttg aaagtgccag tgcaaaatgc tataagtacc
+        1 atggatgtca atccgacttt acttttcttg aaagtgccag tgcaaaatgc tataagtacc
        61 actttccctt atactggaga ccctccatac agccatggaa caggaacagg atacaccatg
       121 gacacagtca acagaacaca taaatactca gaaaaaggaa agtggacaac gaacacagag
       181 actggagcac cccaactcaa tccaattgat ggaccattac ctgaggacaa cgagccgagt

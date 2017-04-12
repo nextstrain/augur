@@ -18,18 +18,24 @@ dropped_strains = []
 config = {
     "dir": "H7N9", # the current directory. You mush be inside this to run the script.
     "file_prefix": "H7N9",
-    "segments": ["HA", "NA"], # set to False if not segmented...
+    "segments": ["PB2", "PB1", "PA", "HA", "NP", "NA", "MP", "NS"], # set to False, or a single entry if not segmented...
     "input_format": "fasta",
     "input_paths": [
-        # "../../fauna/data/h7n9.ha.fasta",
-        # "../../fauna/data/h7n9.na.fasta"
-        "test_input/h7n9.ha.fasta",
-        "test_input/h7n9.na.fasta"
+        "../../fauna/data/h7n9_pb2.fasta",
+        "../../fauna/data/h7n9_pb1.fasta",
+        "../../fauna/data/h7n9_pa.fasta",
+        "../../fauna/data/h7n9_ha.fasta",
+        "../../fauna/data/h7n9_np.fasta",
+        "../../fauna/data/h7n9_na.fasta",
+        "../../fauna/data/h7n9_mp.fasta",
+        "../../fauna/data/h7n9_ns.fasta",
+        # "test_input/h7n9.ha.fasta",
+        # "test_input/h7n9.na.fasta"
     ],
     "output_folder": "prepared",
     # note that "strain" is essential and "date" is special
     "header_fields": {
-        0:'strain', 2:'accession', 3:'date', 4:'host', 6:'country', 7: 'division'
+        0:'strain', 2:'accession', 3:'date', 4:'host', 6:'country', 7: 'division', 11: 'fauna_date'
     },
     # can provide multiple date formats here - FIFO
     "date_format": ["%Y-%m-%d"],
