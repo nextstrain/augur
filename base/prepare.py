@@ -11,7 +11,7 @@ from pprint import pprint
 
 required_config_fields = [
     "dir", "file_prefix", "segments", "input_format", "input_paths",
-    "output_folder", "header_fields", "date_format", "ensure_all_segments",
+    "output_folder", "header_fields", "date_format",
     "require_dates", "colors", "lat_longs"
 ]
 
@@ -19,46 +19,46 @@ class prepare(object):
     def __init__(self, config):
         """ check config file, make necessary directories, set up logger """
         super(prepare, self).__init__()
+        self.config = config
 
         try:
             for x in required_config_fields:
-                assert(x in config)
+                assert(x in self.config)
         except AssertionError:
             print("Fatal Error: Config file is missing field '{}'".format(x))
             sys.exit(2)
 
         try:
-            assert(os.path.basename(os.getcwd()) == config["dir"])
+            assert(os.path.basename(os.getcwd()) == self.config["dir"])
         except AssertionError:
-            print("Run this script from within the {} directory".format(config["dir"]))
+            print("Run this script from within the {} directory".format(self.config["dir"]))
             sys.exit(2)
 
-        for p in [config["output_folder"]]:
+        for p in [self.config["output_folder"]]:
             if not os.path.isdir(p):
                 os.makedirs(p)
 
-        self.log = logger(config["output_folder"], False)
-        self.config = config
+        self.log = logger(self.config["output_folder"], False)
 
         try:
-            if config["segments"] == False:
-                assert(len(config["input_paths"]) == 1)
-                config["segments"] = ["genome"]
+            if self.config["segments"] == False:
+                assert(len(self.config["input_paths"]) == 1)
+                self.config["segments"] = ["genome"]
             else:
-                assert(len(config["segments"]) == len(config["input_paths"]))
+                assert(len(self.config["segments"]) == len(self.config["input_paths"]))
         except AssertionError:
             self.log.fatal("Config file: # segments don't match # input paths")
         try:
-            for p in config["input_paths"]:
+            for p in self.config["input_paths"]:
                 assert(os.path.exists(p))
         except AssertionError:
             self.log.fatal("Config file: input path '{}' doesn't exist".format(p))
 
         # this block initialses this.segments
-        if config["input_format"] == "fasta":
+        if self.config["input_format"] == "fasta":
             self.load_fasta()
         else:
-            self.log.fatal("Currently only FASTA sequences can be loaded".format(config["dir"]))
+            self.log.fatal("Currently only FASTA sequences can be loaded".format(self.config["dir"]))
 
     def load_fasta(self):
         self.segments = {}
@@ -160,9 +160,9 @@ class prepare(object):
 
     def load_references(self):
         if "reference" in self.config:
-            if len(self.config.segments) > 1:
+            if len(self.config["segments"]) > 1:
                 self.log.fatal("Config must define references (not reference) for segemented virus")
-            self.segments[self.config.segments[0]].load_reference(**self.config.reference)
+            self.segments[self.config["segments"][0]].load_reference(**self.config["reference"])
         elif "references" in self.config:
             for k, v in self.config["references"].iteritems():
                 if k not in self.segments.keys():
