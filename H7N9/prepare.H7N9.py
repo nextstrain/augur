@@ -74,11 +74,25 @@ config = {
     "lat_longs": ["country", "division"], # essential. Maybe False.
     "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
 
+    # again, see docs for reference definitions
+    "references": {
+        "HA": {
+            "path": "reference_segments/ha.gb",
+            "metadata": {
+                'strain': "reference", "accession": "KJ411975", "date": "2014-01-03",
+                'host': "human", 'country': "china", 'division': "Shanghai"
+            },
+            "use": False,
+            "genes": ["SigPep", "HA1", "HA2"]
+        }
+    }
+
 }
 
 
 if __name__=="__main__":
     runner = prepare(config)
+    runner.load_references()
     runner.applyFilters()
     runner.ensure_all_segments()
     runner.subsample()

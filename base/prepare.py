@@ -60,7 +60,6 @@ class prepare(object):
         else:
             self.log.fatal("Currently only FASTA sequences can be loaded".format(config["dir"]))
 
-
     def load_fasta(self):
         self.segments = {}
         for idx in range(0, len(self.config["segments"])):
@@ -158,6 +157,19 @@ class prepare(object):
             # save to each sequence_set object. It's them that write the JSONs
             for seg, obj in self.segments.iteritems():
                 obj.extras["lat_longs"] = lat_longs
+
+    def load_references(self):
+        if "reference" in self.config:
+            if len(self.config.segments) > 1:
+                self.log.fatal("Config must define references (not reference) for segemented virus")
+            self.segments[self.config.segments[0]].load_reference(**self.config.reference)
+        elif "references" in self.config:
+            for k, v in self.config["references"].iteritems():
+                if k not in self.segments.keys():
+                    self.log.warn("Reference segment {} not found in segments".format(k))
+                else:
+                    self.segments[k].load_reference(**v)
+
 
 
     def write_to_json(self):

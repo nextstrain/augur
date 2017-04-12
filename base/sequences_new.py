@@ -7,10 +7,12 @@ from io_util import myopen
 # from io_util import myopen, make_dir, remove_dir, tree_to_json, write_json
 from collections import defaultdict
 from Bio import SeqIO
+from Bio.SeqFeature import FeatureLocation
 import numpy as np
 from seq_util import pad_nucleotide_sequences, nuc_alpha, aa_alpha
 from datetime import datetime
 import json
+from pdb import set_trace
 
 TINY = 1e-10
 
@@ -63,6 +65,7 @@ class sequence_set(object):
         self.log = logger
         self.segmentName = segmentName
         self.extras = {}
+        self.reference = False
 
     def load_mfa(self, path):
         try:
@@ -225,8 +228,11 @@ class sequence_set(object):
             if trait in obj.attributes:
                 vals.add(obj.attributes[trait])
         # don't forget the reference here
-
-
+        try:
+            if self.reference.use:
+                vals.add(self.reference.attributes[trait])
+        except:
+            pass # perhaps not set, no refrence, whatever
         return vals
 
     def write_json(self, fh, config):
@@ -256,9 +262,46 @@ class sequence_set(object):
                 "seq": str(seq.seq)
             }
 
+        if not self.reference:
+            data["reference"] = None
+        else:
+            data["reference"] = {
+                "attributes": self.reference.attributes,
+                "seq": str(self.reference.seq),
+                "genes": self.reference.genes
+            }
+
+
         json.dump(data, fh, indent=2)
 
+    def load_reference(self, path, metadata, use=True, genes=False):
+        """Assume it's genbank."""
+        try:
+            self.reference = SeqIO.read(path, 'genbank')
+        except Exception as e:
+            self.log.fatal("Problem reading reference {}. Error: {}".format(path, e))
 
+        ## some checks
+        try:
+            assert("strain" in metadata)
+        except AssertionError as e:
+            self.log.fatal("Poorly defined reference. Error:".format(e))
+
+        # use the metadata to define things!
+        seq_attr_keys = self.seqs.values()[0].attributes.keys()
+        self.reference.attributes = {k:fix_names(v) for k,v in metadata.items() if k in seq_attr_keys}
+        # date gets changed to raw_date for sequences. be consistent.
+        if 'date' in self.reference.attributes.keys():
+            self.reference.attributes["raw_date"] = self.reference.attributes["date"]
+            del self.reference.attributes["date"]
+
+        if genes:
+            # we used to make these FeatureLocation objects here, but that won't go to JSON
+            # so just do it in the Process part instead. For reference:
+            # FeatureLocation(start=f.location.start, end=f.location.end, strand=1)
+            self.reference.genes = {f.qualifiers['gene'][0]:{"start": int(f.location.start), "end": int(f.location.end), "strand": 1} for f in self.reference.features if 'gene' in f.qualifiers and f.qualifiers['gene'][0] in genes}
+        else:
+            self.reference.genes = {}
 
 if __name__=="__main__":
     pass

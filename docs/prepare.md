@@ -5,13 +5,16 @@ The output is a single JSON (per segment) containing all the information `Proces
 The hope is that just modifying the `config` dictionary (in, e.g., `H7N9.prepare.py`) is all that is needed for any analysis.
 If you need something a bit more bespoke that can't be done through the config, the idea would be to create a new class which inherits from `Prepare` and use that instead.
 
+### Status:
+
 | Input        | Status           |
 | ------------- | ------------- |
 | fauna FASTA      | DONE |
-| references      | to do      |
+| references    | DONE      |
 | CSV metadata | to do      |
 | lat/longs | DONE      |
-| colours | half done      |
+| colours (auto) | DONE      |
+| colours (user defined) | to do      |
 
 ### `Config` dictionary
 As mentioned above, all options are defined in the `config` dict, which is passed to the `Prepare` class.
@@ -69,8 +72,14 @@ Perhaps one day it'll be possible to define genes here as well.
 It's not essential to have a reference for each segment, but it's highly recommended.
   * `references`: Dictionary with keys corresponding to `segments`. Each value is a dictionary with:
     * `path`: path to genbank file
-    * `fields`: dictionary of `country`->`XXX` etc. Corresponds to the values in `header_fields`. Missing data is given "unknown"
-    * `use`: bool. The reference is used in the alignment stage to define coding regions. But it's not required to be used for the phylogeny etc, and in some cases it's useful not to use it here (e.g. it's older than the samples in question, too divergent e.t.c)
+    * `metadata`: dictionary of `country`->`XXX` etc. Corresponds to the values in `header_fields`. Missing data is given "unknown"
+    * `use`: bool. The reference is used in the alignment stage to define coding regions. But it's not required to be used for the phylogeny etc, and in some cases it's useful not to use it here (e.g. it's older than the samples in question, too divergent e.t.c). Default: False
+    * `genes`: False or array of strings. Genes matching these will be taken forward for analysis. Default: False
+
+If it's a non-segmented virus, use a single dictionary at `reference` (not `references`)
+
+The reference file must be genbank and only entries with `gene` defined are taken. This is never as trivial as it should be. See the references in `H7N9` for working examples.
+
 
 #### colours
 Colours (sic) are defined for certain fields / traits - usually `country` and `region`
