@@ -62,6 +62,7 @@ class sequence_set(object):
         super(sequence_set, self).__init__()
         self.log = logger
         self.segmentName = segmentName
+        self.extras = {}
 
     def load_mfa(self, path):
         try:
@@ -218,6 +219,16 @@ class sequence_set(object):
     #     for seq in self.aln:
     #         seq.seq = Seq("".join(np.array(seq)[ungapped]))
 
+    def get_trait_values(self, trait):
+        vals = set()
+        for seq, obj in self.seqs.iteritems():
+            if trait in obj.attributes:
+                vals.add(obj.attributes[trait])
+        # don't forget the reference here
+
+
+        return vals
+
     def write_json(self, fh, config):
         # datetime() objects and [arrays] don't go to JSONs
         # not a problem - we still have raw_date to get them back
@@ -227,19 +238,18 @@ class sequence_set(object):
             if 'num_date' in seq.attributes:
                 del seq.attributes['num_date']
 
-        data = {
-            "info": {
-                "segment": self.segmentName,
-                "n(starting)": self.nstart,
-                "n(final)": len(self.seqs)
-            },
-            "sequences": {}
+        data = self.extras
+        data["info"] = {
+            "segment": self.segmentName,
+            "n(starting)": self.nstart,
+            "n(final)": len(self.seqs)
         }
         if self.segmentName == "genome":
             data["info"]["input_file"] = config["input_paths"][0]
         else:
             data["info"]["input_file"] = config["input_paths"][config["segments"].index(self.segmentName)]
 
+        data["sequences"] = {}
         for seqName, seq in self.seqs.iteritems():
             data["sequences"][seqName] = {
                 "attributes": seq.attributes,

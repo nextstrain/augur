@@ -18,19 +18,20 @@ dropped_strains = []
 config = {
     "dir": "H7N9", # the current directory. You mush be inside this to run the script.
     "file_prefix": "H7N9",
-    "segments": ["PB2", "PB1", "PA", "HA", "NP", "NA", "MP", "NS"], # set to False, or a single entry if not segmented...
+    "segments": ["HA", "NA"],
+    # "segments": ["PB2", "PB1", "PA", "HA", "NP", "NA", "MP", "NS"], # set to False, or ["something"] if not segmented...
     "input_format": "fasta",
     "input_paths": [
-        "../../fauna/data/h7n9_pb2.fasta",
-        "../../fauna/data/h7n9_pb1.fasta",
-        "../../fauna/data/h7n9_pa.fasta",
-        "../../fauna/data/h7n9_ha.fasta",
-        "../../fauna/data/h7n9_np.fasta",
-        "../../fauna/data/h7n9_na.fasta",
-        "../../fauna/data/h7n9_mp.fasta",
-        "../../fauna/data/h7n9_ns.fasta",
-        # "test_input/h7n9.ha.fasta",
-        # "test_input/h7n9.na.fasta"
+        # "../../fauna/data/h7n9_pb2.fasta",
+        # "../../fauna/data/h7n9_pb1.fasta",
+        # "../../fauna/data/h7n9_pa.fasta",
+        # "../../fauna/data/h7n9_ha.fasta",
+        # "../../fauna/data/h7n9_np.fasta",
+        # "../../fauna/data/h7n9_na.fasta",
+        # "../../fauna/data/h7n9_mp.fasta",
+        # "../../fauna/data/h7n9_ns.fasta",
+        "test_input/h7n9.ha.fasta",
+        "test_input/h7n9.na.fasta"
     ],
     "output_folder": "prepared",
     # note that "strain" is essential and "date" is special
@@ -65,7 +66,10 @@ config = {
         "category": None,
         "priority": None,
         "threshold": None,
-    }
+    },
+
+    # see the docs for what's going on with colours (sic) & lat/longs
+    "colors": ["country", "division"]
 }
 
 
@@ -74,4 +78,6 @@ if __name__=="__main__":
     runner.applyFilters()
     runner.ensure_all_segments()
     runner.subsample()
+    runner.colors()
+    runner.latlongs()
     runner.write_to_json()

@@ -5,6 +5,7 @@ from datetime import datetime
 from base.sequences_new import sequence_set
 from base.logger import logger
 from pdb import set_trace
+from base.utils import generate_cmap
 
 required_config_fields = [
     "dir", "file_prefix", "segments", "input_format", "input_paths",
@@ -108,6 +109,31 @@ class prepare(object):
             for seg, obj in self.segments.iteritems():
                 obj.filterSeqs("ensure_all_segments", lambda s: s.name in  in_all)
             self.log.notify("n(seqs): "+ ", ".join([a+"="+str(len(b.seqs)) for a,b in self.segments.items()]))
+
+    """for the proper english speakers"""
+    def colours(self):
+        self.colors()
+
+    def colors(self):
+        if "colors" in self.config and self.config["colors"]:
+            cols = {}
+            for trait in self.config["colors"]:
+                try:
+                    assert(trait in self.config["header_fields"].values())
+                except AssertionError:
+                    self.log.warn("Colour trait {} not in header_fields. Skipping".format(trait))
+                    continue
+                self.log.notify("Generating colour maps for '{}'".format(trait))
+                vals = set.union(*[obj.get_trait_values(trait) for seg, obj in self.segments.iteritems()])
+                cols[trait] = generate_cmap(vals, False)
+
+            # save to each sequence_set object. It's them that write the JSONs
+            for seg, obj in self.segments.iteritems():
+                obj.extras["colors"] = cols
+
+
+    def latlongs(self):
+        pass
 
 
     def write_to_json(self):
