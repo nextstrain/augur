@@ -12,6 +12,7 @@ import os, sys
 sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
 from base.prepare import prepare
 from datetime import datetime
+from base.sequences_new import fix_names
 
 dropped_strains = []
 
@@ -48,10 +49,10 @@ config = {
     # see docs for help with filters - nested tuples abound
     "filters": (
         ("Dropped Strains", lambda s: s.id not in [
-            "A/Chicken/Netherlands/16007311-037041/2016", # not part of epi clade
-            "A/Chicken/Netherlands/1600", # not part of epi clade
-            "A/duck/Zhejiang/LS02/2014", # not of part of epi clade
-            "A/BritishColumbia/1/2015" # travel case. throws off map
+            fix_names("A/Chicken/Netherlands/16007311-037041/2016"), # not part of epi clade
+            fix_names("A/Chicken/Netherlands/1600"), # not part of epi clade
+            fix_names("A/duck/Zhejiang/LS02/2014"), # not of part of epi clade
+            fix_names("A/British Columbia/1/2015"), # travel case. throws off map
         ]),
         ("Prior to Epidemic", lambda s: s.attributes['date'] >= datetime(2013,1,1).date()),
         ("Exclude bad host", lambda s: s.attributes["host"] not in ["laboratoryderived", "watersample"]),

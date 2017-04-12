@@ -39,17 +39,27 @@ Eventually there will be a "default" config file, so you only have to modify thi
 #### filtering settings
 * `filters`: Tuple. Of Tuples. With potentially dictionaries inside. `((a, b), (a, b), ...)`
   * `a`: name of filter (string)
-  * `b`: lambda function _or_ dictionary. If the filter should be applied to each segment identically, just use a lambda. some examples:
+  * `b`: lambda function _or_ dictionary.
+
+If the filter should be applied to each segment identically, just use a lambda (represented by `b` above).
+Some examples:
     * `lambda s: s.attributes['date'] >= datetime(2013,1,1).date()`
     * `s.attributes["host"] not in ["laboratoryderived", "watersample"]`
     * `lambda s: s.id not in [...]`
-  * If the function should be specific to the segment, provide a dictionary instead, e.g.
-  ```
-  {
-      "HA": lambda s: len(s.seq)>=1500,
-      "NA": lambda s: len(s.seq)>=1200
-  }
-  ```
+If the filter is specific to the segment, provide a dictionary of lambdas instead, where the key matches those set in `segments` e.g.
+```
+{
+    "HA": lambda s: len(s.seq)>=1500,
+    "NA": lambda s: len(s.seq)>=1200
+}
+```
+Some potential pitfalls:
+* By the time filters are applied, the header `strain` has been sanitised, such that the names may have changed.
+This is done by the function `fix_names` available in the config file.
+Thus, if filters use a name it's recommended to use `fix_names("A/British Columbia/1/2015")` (in this example the space is removed)
+
+
+#### Complete Genomes & Subsampling
 * `ensure_all_segments`: bool. Should only samples with sequences in each segement be included?
 * `subsample`: `False` or a dict. Dict has keys (each is optional or can have the value `None`)
   * `category`  -- callable that assigns each sequence to a category for subsampling
@@ -77,7 +87,12 @@ But for now...
 Similar to colours, these are needed if the data is to be pushed into auspice.
 Unlike colours, a file must be provided.
   * `lat_longs`: _False_ or list of traits (appearing in `header_fields`)
-  * `lat_longs_defs`: _file path_ or [_array_, _of_, _file_, _paths_]
-
+  * `lat_long_defs`: _file path_ or [_array_, _of_, _file_, _paths_]
+  ```
+  location	country_code	latitude	longitude
+  africa	XX	4.070194	21.824559
+  north_africa	XX	27.3989987	12.8575109
+  subsaharan_africa	XX	0.7603296	25.0743129
+  ```
 
 ## Process
