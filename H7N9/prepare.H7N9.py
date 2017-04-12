@@ -14,7 +14,12 @@ from base.prepare import prepare
 from datetime import datetime
 from base.sequences_new import fix_names
 
-dropped_strains = []
+dropped_strains = [
+    "A/Chicken/Netherlands/16007311-037041/2016", # not part of epi clade
+    "A/Chicken/Netherlands/1600", # not part of epi clade
+    "A/duck/Zhejiang/LS02/2014", # not of part of epi clade
+    "A/British Columbia/1/2015", # travel case. throws off map
+]
 
 config = {
     "dir": "H7N9", # the current directory. You mush be inside this to run the script.
@@ -48,12 +53,7 @@ config = {
 
     # see docs for help with filters - nested tuples abound
     "filters": (
-        ("Dropped Strains", lambda s: s.id not in [
-            fix_names("A/Chicken/Netherlands/16007311-037041/2016"), # not part of epi clade
-            fix_names("A/Chicken/Netherlands/1600"), # not part of epi clade
-            fix_names("A/duck/Zhejiang/LS02/2014"), # not of part of epi clade
-            fix_names("A/British Columbia/1/2015"), # travel case. throws off map
-        ]),
+        ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
         ("Prior to Epidemic", lambda s: s.attributes['date'] >= datetime(2013,1,1).date()),
         ("Exclude bad host", lambda s: s.attributes["host"] not in ["laboratoryderived", "watersample"]),
         ("Sequence Length", {

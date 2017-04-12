@@ -1,8 +1,4 @@
-## Prepare vs Process
-`Prepare` is designed to take inputs and produce a coherent JSON for analysis by `Process`.
-
-
-## Prepare
+# Prepare
 Prepare handles pretty much all the input data from fauna / other sources.
 The idea being that all data wrangling is done here, leaving `Process` free to do proper science.
 The output is a single JSON (per segment) containing all the information `Process` needs.
@@ -11,11 +7,11 @@ If you need something a bit more bespoke that can't be done through the config, 
 
 | Input        | Status           |
 | ------------- | ------------- |
-| fauna FASTA      | done |
+| fauna FASTA      | DONE |
 | references      | to do      |
 | CSV metadata | to do      |
-| lat/longs | to do      |
-| colours | to do      |
+| lat/longs | DONE      |
+| colours | half done      |
 
 ### `Config` dictionary
 As mentioned above, all options are defined in the `config` dict, which is passed to the `Prepare` class.
@@ -45,7 +41,6 @@ If the filter should be applied to each segment identically, just use a lambda (
 Some examples:
     * `lambda s: s.attributes['date'] >= datetime(2013,1,1).date()`
     * `s.attributes["host"] not in ["laboratoryderived", "watersample"]`
-    * `lambda s: s.id not in [...]`
 If the filter is specific to the segment, provide a dictionary of lambdas instead, where the key matches those set in `segments` e.g.
 ```
 {
@@ -55,8 +50,9 @@ If the filter is specific to the segment, provide a dictionary of lambdas instea
 ```
 Some potential pitfalls:
 * By the time filters are applied, the header `strain` has been sanitised, such that the names may have changed.
-This is done by the function `fix_names` available in the config file.
-Thus, if filters use a name it's recommended to use `fix_names("A/British Columbia/1/2015")` (in this example the space is removed)
+To avoid problems here, it's easiest to follow the example in `H7N9`:
+  * define an array `dropped_strains` before `config`
+  * use the filter `("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains])`
 
 
 #### Complete Genomes & Subsampling
@@ -74,6 +70,7 @@ It's not essential to have a reference for each segment, but it's highly recomme
   * `references`: Dictionary with keys corresponding to `segments`. Each value is a dictionary with:
     * `path`: path to genbank file
     * `fields`: dictionary of `country`->`XXX` etc. Corresponds to the values in `header_fields`. Missing data is given "unknown"
+    * `use`: bool. The reference is used in the alignment stage to define coding regions. But it's not required to be used for the phylogeny etc, and in some cases it's useful not to use it here (e.g. it's older than the samples in question, too divergent e.t.c)
 
 #### colours
 Colours (sic) are defined for certain fields / traits - usually `country` and `region`
@@ -94,5 +91,3 @@ Unlike colours, a file must be provided.
   north_africa	XX	27.3989987	12.8575109
   subsaharan_africa	XX	0.7603296	25.0743129
   ```
-
-## Process
