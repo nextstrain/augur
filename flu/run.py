@@ -13,59 +13,30 @@ def live_flu_build(lineage, resolution, path):
     print call
     subprocess.call(call)
 
-    call = "cp build/%s_all_hi_%s_entropy.json %s/%s_%s_entropy.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_all_hi_%s_frequencies.json %s/%s_%s_frequencies.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_all_hi_%s_meta.json %s/%s_%s_meta.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_all_hi_%s_sequences.json %s/%s_%s_sequences.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_all_hi_%s_tree.json %s/%s_%s_tree.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
+    json_types = ['entropy', 'frequencies', 'meta', 'sequences', 'tree']
+    for jtype in json_types:
+        f = "build/%s_all_hi_%s_%s.json"%(lineage, resolution, jtype)
+        t = "%s/%s_%s_%s.json"%(path, lineage, resolution, jtype)
+        os.rename(f,t)
 
 
-def cdc_hi_build(lineage, resolution, path):
+def cdc_build(lineage, resolution, assay, passage, path):
     '''
     run build for a single Virus x Resolution combination for deployment to cdc nextflu: HI
     '''
 
     print '\n--------------------\n'
-    print 'Processing lineage',lineage,'with resolution',resolution,'for CDC HI assays.'
+    print 'Processing lineage',lineage,'with resolution',resolution,'for CDC %s assays passaged in %s.'%(assay, passage)
     process = 'flu/seasonal_flu.py'
-    call = map(str, [params.bin, process, '--lineage', lineage, '--resolution', resolution, '--HI cdc_hi'])
+    call = map(str, [params.bin, process, '--lineage', lineage, '--resolution', resolution, '--HI cdc_%s_%s'%(assay, passage)])
     print call
     subprocess.call(call)
 
-    call = "cp build/%s_cdc_hi_%s_entropy.json %s/%s_%s_entropy.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_cdc_hi_%s_frequencies.json %s/%s_%s_frequencies.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_cdc_hi_%s_meta.json %s/%s_%s_meta.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_cdc_hi_%s_sequences.json %s/%s_%s_sequences.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_cdc_hi_%s_tree.json %s/%s_%s_tree.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_cdc_hi_%s_titer_subs_model.json %s/%s_%s_titer_subs_model.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_cdc_hi_%s_titer_tree_model.json %s/%s_%s_titer_tree_model.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_cdc_hi_%s_titers.json %s/%s_%s_titers.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
+    json_types = ['entropy', 'frequencies', 'meta', 'sequences', 'tree', 'titer_subs_model', 'titer_tree_model', 'titers']
+    for jtype in json_types:
+        f = "build/%s_cdc_hi_%s_%s.json"%(lineage, resolution, jtype)
+        t = "%s/%s_%s_%s.json"%(path, lineage, resolution, jtype)
+        os.rename(f,t)
 
 def cdc_fra_build(lineage, resolution, path):
     '''
@@ -79,30 +50,11 @@ def cdc_fra_build(lineage, resolution, path):
     print call
     subprocess.call(call)
 
-    call = "cp build/%s_cdc_fra_%s_entropy.json %s/%s_%s_entropy.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_cdc_fra_%s_frequencies.json %s/%s_%s_frequencies.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_cdc_fra_%s_meta.json %s/%s_%s_meta.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_cdc_fra_%s_sequences.json %s/%s_%s_sequences.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_cdc_fra_%s_tree.json %s/%s_%s_tree.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_cdc_fra_%s_titer_subs_model.json %s/%s_%s_titer_subs_model.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_cdc_fra_%s_titer_tree_model.json %s/%s_%s_titer_tree_model.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
-    call = "cp build/%s_cdc_fra_%s_titers.json %s/%s_%s_titers.json"%(lineage, resolution, path, lineage, resolution)
-    print call
-    subprocess.call([call])
+    json_types = ['entropy', 'frequencies', 'meta', 'sequences', 'tree', 'titer_subs_model', 'titer_tree_model', 'titers']
+    for jtype in json_types:
+        f = "build/%s_cdc_fra_%s_%s.json"%(lineage, resolution, jtype)
+        t = "%s/%s_%s_%s.json"%(path, lineage, resolution, jtype)
+        os.rename(f,t)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description = "download and process")
@@ -111,6 +63,7 @@ if __name__=="__main__":
     parser.add_argument('--lineages', nargs='+', type = str,  help = "lineages to include")
     parser.add_argument('--resolutions', nargs='+', type = str,  help = "resolutions to include")
     parser.add_argument('--assays', nargs='+', type = str, help = "assays to include")
+    parser.add_argument('--passages', nargs='+', type = str, help = "passages to include")
     parser.add_argument('--live_auspice_path', default = '../../blab/nextflu/auspice/data')
     parser.add_argument('--cdc_auspice_path', default = '../../blab/nextflu-cdc/auspice/data')
     params = parser.parse_args()
@@ -127,14 +80,17 @@ if __name__=="__main__":
     if params.assays is None:
         params.assays = ['hi', 'fra']
 
+    if params.passages is None:
+        params.passages = ['egg', 'cell']
+
     if 'live' in params.builds:
         for lineage in params.lineages:
             for resolution in params.resolutions:
                 live_flu_build(lineage, resolution, params.live_auspice_path)
 
-    # TODO: add egg vs cell builds
-    # if 'cdc' in params.builds:
-    #     for lineage in params.lineages:
-    #         for resolutiion in params.resolutiions:
-    #             cdc_hi_build(lineage, resolution, params.cdc_auspice_path)
-    #             cdc_fra_build(lineage, resolution, params.cdc_auspice_path)
+    if 'cdc' in params.builds:
+        for lineage in params.lineages:
+            for resolutiion in params.resolutions:
+                for assay in assays:
+                    for passage in passages:
+                        cdc_build(lineage, resolution, assay, passage, params.cdc_auspice_path)
