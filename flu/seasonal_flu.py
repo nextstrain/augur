@@ -574,20 +574,20 @@ if __name__=="__main__":
     # default values for --viruses_per_month and --years_back from resolution
     # those refer to the total number of sequences across all regions
     if params.resolution == "2y":
-        params.viruses_per_month_tree = 90
-        params.viruses_per_month_seq = 150
+        params.viruses_per_month_tree = 100
+        params.viruses_per_month_seq = 200
         params.years_back = 2
     elif params.resolution == "3y":
-        params.viruses_per_month_tree = 70
-        params.viruses_per_month_seq = 50
+        params.viruses_per_month_tree = 60
+        params.viruses_per_month_seq = 120
         params.years_back = 3
     elif params.resolution == "6y":
-        params.viruses_per_month_tree = 30
-        params.viruses_per_month_seq = 100
+        params.viruses_per_month_tree = 24
+        params.viruses_per_month_seq = 48
         params.years_back = 6
     elif params.resolution == "12y":
-        params.viruses_per_month_tree = 20
-        params.viruses_per_month_seq = 100
+        params.viruses_per_month_tree = 12
+        params.viruses_per_month_seq = 24
         params.years_back = 12
 
     # construct time_interval from years_back
@@ -648,21 +648,21 @@ if __name__=="__main__":
         else:
             flu.subsample(params.viruses_per_month_seq, all_regions=True)
 
-        flu.align()
-        flu.dump()
-        # first estimate frequencies globally, then region specific
-        flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.02)
-        for region in region_groups.iteritems():
-            flu.estimate_mutation_frequencies(region=region, min_freq=.05)
+        # flu.align()
+        # flu.dump()
+        # # first estimate frequencies globally, then region specific
+        # flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.02)
+        # for region in region_groups.iteritems():
+        #     flu.estimate_mutation_frequencies(region=region, min_freq=.05)
 
         if not params.no_tree:
             if params.sampling=='even':
-                flu.subsample(params.viruses_per_month_seq, all_regions=False, repeated=True)
+                flu.subsample(params.viruses_per_month_tree, all_regions=False, repeated=True)
             elif params.sampling in regions:
                 flu.subsample_priority_region(params.viruses_per_month_tree, priority_region=params.sampling,
                                               fraction=0.5, repeated=True)
             else:
-                flu.subsample(params.viruses_per_month_seq, all_regions=True, repeated=True)
+                flu.subsample(params.viruses_per_month_tree, all_regions=True, repeated=True)
 
             flu.align()
             flu.build_tree()
