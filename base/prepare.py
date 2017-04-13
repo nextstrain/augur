@@ -2,7 +2,7 @@ from __future__ import division, print_function
 import sys, os
 import numpy as np
 from datetime import datetime
-from base.sequences_new import sequence_set
+from base.sequences_prepare import sequence_set
 from base.logger import logger
 from base.utils import generate_cmap, define_latitude_longitude
 # useful for debugging

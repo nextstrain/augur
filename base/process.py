@@ -2,11 +2,15 @@ from __future__ import division, print_function
 import sys, os, time, gzip, glob
 from collections import defaultdict
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
-from base.sequences import sequence_set, num_date
+from base.sequences_process import sequence_set
+from base.utils import num_date
 from base.tree import tree
 from base.frequencies import alignment_frequencies, tree_frequencies, make_pivots
 import numpy as np
 from datetime import datetime
+import json
+from pdb import set_trace
+from base.logger import logger
 
 class process(object):
     """process influenza virus sequences in mutliple steps to allow visualization in browser
@@ -17,89 +21,63 @@ class process(object):
         * export as json
     """
 
-    def __init__(self, input_data_path = 'data/test',
-                 store_data_path = 'store/test',
-                 build_data_path = 'build/test', verbose=2, **kwargs):
+    def __init__(self, config):
+        """ check config file, make necessary directories, set up logger """
         super(process, self).__init__()
-        print("Initializing process")
-        for p in [input_data_path, store_data_path, build_data_path]:
-            if not os.path.isdir(os.path.dirname(p)):
-                os.makedirs(os.path.dirname(p))
-        self.input_data_path = input_data_path
-        self.store_data_path = store_data_path
-        self.build_data_path = build_data_path
-        self.verbose=verbose
-        self.kwargs = kwargs
-        self.data_filenames()
+        self.config = config
 
-        self.seqs=None
+        try:
+            assert(os.path.basename(os.getcwd()) == self.config["dir"])
+        except AssertionError:
+            print("Run this script from within the {} directory".format(self.config["dir"]))
+            sys.exit(2)
 
-        # parse the outgroup information
-        if 'reference' in kwargs:
-            reference_file = kwargs['reference']
-            self.load_reference(reference_file)
+        for p in self.config["output"].values():
+            if not os.path.isdir(p):
+                os.makedirs(p)
+
+        self.log = logger(self.config["output"]["data"], False)
+
+        # parse the JSON into different data bits
+        try:
+            with open(self.config["in"], 'r') as fh:
+                data = json.load(fh)
+        except Exception as e:
+            self.log.fatal("Error loading JSON. Error: {}".format(e))
+
+        self.info = data["info"]
+        try:
+            self.colors = data["colors"]
+        except KeyError:
+            self.log.notify("* colours have not been set")
+            self.colors = False
+        try:
+            self.lat_longs = data["lat_longs"]
+        except KeyError:
+            self.log.notify("* latitude & longitudes have not been set")
+            self.lat_longs = False
+
+        if "reference" in data:
+            self.seqs = sequence_set(self.log, data["sequences"], data["reference"], self.info["date_format"])
         else:
-            self.reference_seq = None
+            self.seqs = sequence_set(self.log, data["sequences"], False, self.info["date_format"])
+        # backward compatability
+        self.reference_seq = self.seqs.reference_seq
+        self.proteins = self.seqs.proteins
 
-        # lat/long mapping information
-        if 'lat_long_fname' in kwargs:
-            self.lat_long_fname = kwargs['lat_long_fname']
-        else:
-            self.lat_long_fname = '../fauna/source-data/geo_lat_long.tsv'
-
-
-    def load_reference(self, reference_file):
-        from Bio import SeqIO
-        from Bio.SeqFeature import FeatureLocation
-        self.reference_seq = SeqIO.read(reference_file, 'genbank')
-        self.reference_seq.id = self.reference_seq.name
-        self.genome_annotation = self.reference_seq.features
-        if "proteins" in self.kwargs:
-            # grap annotation from genbank
-            protein_list = self.kwargs['proteins']
-            self.proteins = {f.qualifiers['gene'][0]:FeatureLocation(start=f.location.start, end=f.location.end, strand=1)
-                            for f in self.genome_annotation
-                                if 'gene' in f.qualifiers
-                                    and f.qualifiers['gene'][0] in protein_list}
-        else:
-            self.proteins = {}
-
-
-    def load_sequences(self, fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
-                                     5:'country', 7:"city", 12:"subtype",13:'lineage'},
-                             prune=True, sep='|'):
-        # instantiate and population the sequence objects
-        self.seqs = sequence_set(self.sequence_fname, reference_seq=self.reference_seq)
-        print("Loaded %d sequences"%len(self.seqs.all_seqs))
-        self.seqs.ungap()
-        self.seqs.parse(fields, sep=sep, strip='_')
-
-        # make sure the reference is part of the sequence set
-        if self.reference_seq is not None:
-            if self.reference_seq.name in self.seqs.all_seqs:
-                self.seqs.all_seqs[self.reference_seq.name].seq=self.reference_seq.seq
-            else:
-                print('Outgroup is not in data base')
-
-            # throw out sequences without dates
-        self.seqs.parse_date(["%Y-%m-%d"], prune=prune)
-
-
-    def data_filenames(self):
-        '''
-        define filenames of input files and intermediates outputs
-        '''
-        self.sequence_fname = self.input_data_path+'.fasta'
+        # backwards compatability - set up file_dumps (need to rewrite sometime)
+        # self.sequence_fname = self.input_data_path+'.fasta'
         self.file_dumps = {}
-        self.file_dumps['seqs'] = self.store_data_path+'sequences.pkl.gz'
-        self.file_dumps['tree'] = self.store_data_path+'tree.newick'
-        self.file_dumps['nodes'] = self.store_data_path+'nodes.pkl.gz'
+        self.file_dumps['seqs'] = os.path.join(self.config["output"]["data"], self.info["prefix"] + '_sequences.pkl.gz')
+        self.file_dumps['tree'] = os.path.join(self.config["output"]["data"], self.info["prefix"] + '_tree.newick')
+        self.file_dumps['nodes'] = os.path.join(self.config["output"]["data"], self.info["prefix"] + '_nodes.pkl.gz')
 
 
     def dump(self):
         '''
         write the current state to file
         '''
+        self.log.warn("unsure if dump() works")
         from cPickle import dump
         from Bio import Phylo
         for attr_name, fname in self.file_dumps.iteritems():
@@ -119,6 +97,7 @@ class process(object):
         '''
         reconstruct instance from files
         '''
+        self.log.warn("unsure if load() works")
         from cPickle import load
         for attr_name, fname in self.file_dumps.iteritems():
             if attr_name=='tree':

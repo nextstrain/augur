@@ -10,7 +10,7 @@ import os, sys
 sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
 from base.prepare import prepare
 from datetime import datetime
-from base.sequences_new import fix_names
+from base.utils import fix_names
 
 dropped_strains = [
     "A/Chicken/Netherlands/16007311-037041/2016", # not part of epi clade

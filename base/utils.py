@@ -1,5 +1,6 @@
 import matplotlib as mpl
 from matplotlib import pyplot as plt
+from datetime import datetime
 
 def generate_cmap(data, discrete):
     '''
@@ -47,3 +48,44 @@ def define_latitude_longitude(lat_long_defs, log):
                 continue
         file.close()
     return lat_long_db
+
+
+def fix_names(n):
+    return n.replace(" ","_").replace("(",'_').replace(")",'_').replace("'",'_').replace(":",'_')
+#
+# def calc_af(aln, alpha):
+#     aln_array = np.array(aln)
+#     af = np.zeros((len(alpha), aln_array.shape[1]))
+#     for ai, state in enumerate(alpha):
+#         af[ai] += (aln_array==state).mean(axis=0)
+#     af[-1] = 1.0 - af[:-1].sum(axis=0)
+#     return af
+
+def num_date(date):
+    days_in_year = date.toordinal()- datetime(year=date.year, month=1, day=1).date().toordinal()
+    return date.year + days_in_year/365.25
+
+def ambiguous_date_to_date_range(mydate, fmt):
+    sep = fmt.split('%')[1][-1]
+    min_date, max_date = {}, {}
+    today = datetime.today().date()
+
+    for val, field  in zip(mydate.split(sep), fmt.split(sep+'%')):
+        f = 'year' if 'y' in field.lower() else ('day' if 'd' in field.lower() else 'month')
+        if 'XX' in val:
+            if f=='year':
+                return None, None
+            elif f=='month':
+                min_date[f]=1
+                max_date[f]=12
+            elif f=='day':
+                min_date[f]=1
+                max_date[f]=31
+        else:
+            min_date[f]=int(val)
+            max_date[f]=int(val)
+    max_date['day'] = min(max_date['day'], 31 if max_date['month'] in [1,3,5,7,8,10,12]
+                                           else 28 if max_date['month']==2 else 30)
+    lower_bound = datetime(year=min_date['year'], month=min_date['month'], day=min_date['day']).date()
+    upper_bound = datetime(year=max_date['year'], month=max_date['month'], day=max_date['day']).date()
+    return (lower_bound, upper_bound if upper_bound<today else today)

@@ -13,6 +13,7 @@ test_input/
 test_output/
 logs/
 prepared/
+processed/
 *log
 *json
 
