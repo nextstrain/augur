@@ -3,7 +3,7 @@ import sys, os, time, gzip, glob
 from collections import defaultdict
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences_process import sequence_set
-from base.utils import num_date
+from base.utils import num_date, save_as_nexus
 from base.tree import tree
 from base.frequencies import alignment_frequencies, tree_frequencies, make_pivots
 import numpy as np
@@ -120,7 +120,7 @@ class process(object):
             self.build_tree(tree_name, node_file, root='none', debug=debug)
 
 
-    def align(self, outgroup=None, codon_align=False, debug=False):
+    def align(self, codon_align=False, debug=False):
         '''
         align sequences, remove non-reference insertions, outlier sequences, and translate
         '''
@@ -130,8 +130,8 @@ class process(object):
             self.seqs.align(debug=debug)
         self.seqs.strip_non_reference()
         self.seqs.remove_terminal_gaps()
-        if outgroup is not None:
-            self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
+        # if outgroup is not None:
+        #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
         self.seqs.translate() # creates self.seqs.translations
         # save the final alignment!
         SeqIO.write(self.seqs.aln, self.output_path + "_aligned.mfa", "fasta")
@@ -475,6 +475,17 @@ class process(object):
             meta_json["geo"] = self.make_geo_lookup_json(geo_attributes)
         write_json(meta_json, prefix+'meta.json')
 
+    def run_geo_inference(self):
+        # run geo inference for all the things we have lat longs for
+        if not self.lat_longs or len(self.lat_longs)==0:
+            self.log.notify("no geo inference - no specified lat/longs")
+            return
+        for geo_attr in self.lat_longs.keys():
+            self.log.notify("running geo inference for {}".format(geo_attr))
+            self.tree.geo_inference(geo_attr)
+
+    def save_as_nexus(self):
+        save_as_nexus(self.tree.tree, self.output_path + "_timeTree.nex")
 
 if __name__=="__main__":
     print("This shouldn't be called as a script.")

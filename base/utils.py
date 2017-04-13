@@ -1,6 +1,7 @@
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 from datetime import datetime
+from base.io_util import tree_to_json
 
 def generate_cmap(data, discrete):
     '''
@@ -89,3 +90,41 @@ def ambiguous_date_to_date_range(mydate, fmt):
     lower_bound = datetime(year=min_date['year'], month=min_date['month'], day=min_date['day']).date()
     upper_bound = datetime(year=max_date['year'], month=max_date['month'], day=max_date['day']).date()
     return (lower_bound, upper_bound if upper_bound<today else today)
+
+def save_as_nexus(tree, fname):
+    def format_string_attr(node, key):
+        return "{}=\"{}\"".format(key, node["attr"][key])
+
+    def stringify_node(node, prev_div, terminal):
+        if terminal:
+            taxa.append(node["strain"])
+        extra = [format_string_attr(node, x) for x in attrs_to_write]
+        return "{}[&{}]:{}".format(len(taxa) if terminal else "", ",".join(extra), float(node["attr"]["div"]) - float(prev_div))
+
+    def tree_walk(node, prev_div):
+        if "children" in node:
+            subtrees = ",".join([tree_walk(child, node["attr"]["div"]) for child in node["children"]])
+            return "({}){}".format(subtrees,stringify_node(node, prev_div, False))
+        else:
+            return stringify_node(node, prev_div, True)
+
+    def nexus(tree):
+        nex = []
+        nex += ["#NEXUS", ""]
+        nex += ["Begin taxa;", "\tDimensions ntax={};".format(len(taxa)), "\tTaxlabels"]
+        nex += ["\t\t"+name for name in taxa]
+        nex += ["\t\t;", "End;", ""]
+        nex += ["Begin trees;", "\tTranslate"]
+        nex += ["\t\t{} {},".format(idx+1, name) for idx, name in enumerate(taxa)]
+        nex[-1] = nex[-1][:-1] # remove the final comma
+        nex += ["\t\t;", "tree TREE1 = [&R] "+tree+";"]
+        nex += ["End;"]
+        return nex
+
+    print("Saving to nexus tree {}".format(fname))
+    attrs_to_write = tree.root.attr.keys()
+    taxa = [] # the id of a name is its (0 based) idx + 1, populated by tree_walk()
+    json = tree_to_json(tree.root , ['clade', 'attr']);
+    nex = nexus(tree_walk(json, 0))
+    with open(fname, 'w') as f:
+        f.write("\n".join(nex))

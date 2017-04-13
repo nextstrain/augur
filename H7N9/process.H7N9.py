@@ -16,3 +16,7 @@ if __name__=="__main__":
     runner = process(config)
     runner.align()
     runner.build_tree()
+    runner.clock_filter()
+    runner.annotate_tree(Tc=0.02, timetree=True, reroot='best', confidence=False)
+    runner.run_geo_inference()
+    runner.save_as_nexus()
