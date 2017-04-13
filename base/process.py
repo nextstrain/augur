@@ -253,7 +253,8 @@ class process(object):
         if infiles are None, the tree is build from scratch. Otherwise
         the tree is loaded from file
         '''
-        self.tree = tree(aln=self.seqs.aln, proteins = self.proteins, verbose=self.verbose)
+        self.log.warn("self.verbose not set")
+        self.tree = tree(aln=self.seqs.aln, proteins=self.proteins, verbose=2)
         if infile is None:
             self.tree.build(root=root, debug=debug, num_distinct_starting_trees=num_distinct_starting_trees)
         else:

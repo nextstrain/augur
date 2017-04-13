@@ -15,3 +15,4 @@ config = {
 if __name__=="__main__":
     runner = process(config)
     runner.align()
+    runner.build_tree()
