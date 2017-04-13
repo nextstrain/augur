@@ -125,8 +125,8 @@ class frequency_estimator(object):
         self.dt = np.diff(self.pivots)
         def logLH(x):
             self.pivot_freq = logit_inv(x, self.pc)
-            freq = interp1d(self.pivots, x, kind=self.interpolation_type,
-                            assume_sorted=True, bounds_error = False)
+            freq = interp1d(self.pivots, x, kind=self.interpolation_type,bounds_error = False)
+                            # assume_sorted=True,
             estfreq = freq(self.tps)
             bernoulli_LH = np.sum(estfreq[self.obs]) - np.sum(np.log(1+np.exp(estfreq)))
 
@@ -204,10 +204,10 @@ class freq_est_clipped(object):
                                   self.pivots[self.good_pivots], **kwargs)
 
     def learn(self):
-        try:
-            self.fe.learn()
-        except:
-            import ipdb; ipdb.set_trace()
+        # try:
+        self.fe.learn()
+        # except:
+        #     import ipdb; ipdb.set_trace()
 
         self.pivot_freq = np.zeros_like(self.pivots)
         self.pivot_freq[self.good_pivots] = self.fe.pivot_freq
@@ -518,6 +518,3 @@ if __name__=="__main__":
     plot=True
     fe = test_nested_estimator()
     #fe = test_simple_estimator()
-
-
-

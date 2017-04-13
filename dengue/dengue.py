@@ -5,15 +5,15 @@ from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences import sequence_set, num_date
 from base.tree import tree
 from base.process import process
-# from base.frequencies import alignment_frequencies, tree_frequencies
-# from Bio.SeqFeature import FeatureLocation
-# import numpy as np
+from base.frequencies import alignment_frequencies, tree_frequencies
+from Bio.SeqFeature import FeatureLocation
+import numpy as np
 from datetime import datetime
 import os
 from glob import glob
 
 
-#### Provide metadata ####
+#### Provide geographic metadata ####
 region_cmap = [
     ["europe",             "#4580CA"],
     ["china",              "#3F63CF"],
@@ -26,58 +26,60 @@ region_cmap = [
     ["caribbean",          "#E67C32"],
     ["north_america",      "#DC2F24"]
 ]
-# regions = [ r[0] for r in region_cmap]
+regions = [ r[0] for r in region_cmap]
 
-# region_groups = {'NA':'north_america',
-#                  'AS':['china', 'japan_korea'],
-#                  'WA': 'west_asia'
-#                  'SEA': ['south_asia', 'southeast_asia'],
-#                  'OC':'oceania',
-#                  'EU':'europe',
-#                  'SA': 'south_america',
-#                  'AF': 'africa'}
+## These need to be adjusted...
+region_groups = {'NA':'north_america',
+                 'AS':['china', 'japan_korea'],
+                 'WA': 'west_asia',
+                'SEA': ['south_asia', 'southeast_asia'],
+                 'OC':'oceania',
+                 'EU':'europe',
+                 'SA': 'south_america',
+                 'AF': 'africa'}
 
+##### Specify visualization parameters #####
 color_options = {
     "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete", "color_map": region_cmap},
     "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
-    # "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"},
+    "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"},
 }
 
 attribute_nesting = {'geographic location':'region', 'authors':['authors']}
-panels = ['tree', 'map', 'entropy']#, 'frequencies']
+panels = ['tree', 'map', 'entropy', 'frequencies']
 
-# pivots = np.arange(1920.,2017.)
+##### Define clades #####
+genotypes = {
+                        "denv1":{
+                        'I': [('', 961, 'G'),('', 965, 'G'),('', 995, 'T'),('', 1001, 'A'),('', 1016, 'A')],
+                        'II': [('', 995, 'A'),('', 1100, 'A'),('', 1103, 'T'),('', 1109, 'T'),('', 1113, 'T')],
+                        "V": [('',974,'T'), ('', 1049,'T'),('',1175,'G'),('',1091,'G')],
+                        "IV": [('', 944,'D'), ('', 992,'T'),('', 1034,'T'),('', 1047,'G'),('', 1181,'G')]},
 
-# genotypes = {
-#                         "dengue_1":{
-#                         'I': [('', 961, 'G'),('', 965, 'G'),('', 995, 'T'),('', 1001, 'A'),('', 1016, 'A')],
-#                         'II': [('', 995, 'A'),('', 1100, 'A'),('', 1103, 'T'),('', 1109, 'T'),('', 1113, 'T')],
-#                         "V": [('',974,'T'), ('', 1049,'T'),('',1175,'G'),('',1091,'G')],
-#                         "IV": [('', 944,'D'), ('', 992,'T'),('', 1034,'T'),('', 1047,'G'),('', 1181,'G')]},
-#
-#                         "dengue_2": {
-#                         'ASIAN/AMERICAN': [('', 1181, 'T'),('', 974, 'A'),('', 1025, 'T'),('', 1103, 'T')],
-#                         'AMERICAN': [('', 965, 'G'),('', 983, 'G'),('', 992, 'G'),('', 995, 'T')],
-#                         'ASIAN-I': [('', 974, 'A'),('', 995, 'T'),('', 1067, 'T'),('', 1082, 'G')],
-#                         'COSMOPOLITAN': [('', 947, 'T'),('', 1150, 'C'),('', 1253, 'C'),('', 1277, 'C')],
-#                         'SYLVATIC': [('', 977, 'G'),('', 1100, 'A'),('', 1103, 'A')]},
-#
-#                         "dengue_3": {
-#                         'I': [('', 980, 'C'),('', 1034, 'T'),('', 1073, 'C'),('', 1118, 'T')],
-#                         'II': [('', 983, 'G'),('', 1004, 'T'),('', 1064, 'C'),('', 1113, 'T'),('', 1232, 'T')],
-#                         'III': [('', 1022, 'G'),('', 1127, 'G'),('', 1157, 'A')],
-#                         'IV': [('', 956, 'G'),('', 980, 'C'),('', 986, 'G'),('', 1001, 'C')]},
-#
-#                         "dengue_4": {
-#                         'I': [('', 974, 'A'),('', 1004, 'T'),('', 1130, 'T'),('', 1181, 'C'),('', 1199, 'T')],
-#                         'II': [('', 1075, 'C'),('', 1223, 'T'),('', 1322, 'T'),('', 1433, 'T')],
-#                         'SYLVATIC': [('', 956, 'G'),('', 962, 'T'),('', 1019, 'C')]},
-#
-#                         "all": {}
-#                 }
-# for i in ['dengue_1', 'dengue_2', 'dengue_3', 'dengue_4']:
-#     genotypes['all'].update(genotypes[i])
+                        "denv2": {
+                        'ASIAN/AMERICAN': [('', 1181, 'T'),('', 974, 'A'),('', 1025, 'T'),('', 1103, 'T')],
+                        'AMERICAN': [('', 965, 'G'),('', 983, 'G'),('', 992, 'G'),('', 995, 'T')],
+                        'ASIAN-I': [('', 974, 'A'),('', 995, 'T'),('', 1067, 'T'),('', 1082, 'G')],
+                        'COSMOPOLITAN': [('', 947, 'T'),('', 1150, 'C'),('', 1253, 'C'),('', 1277, 'C')],
+                        'SYLVATIC': [('', 977, 'G'),('', 1100, 'A'),('', 1103, 'A')]},
 
+                        "denv3": {
+                        'I': [('', 980, 'C'),('', 1034, 'T'),('', 1073, 'C'),('', 1118, 'T')],
+                        'II': [('', 983, 'G'),('', 1004, 'T'),('', 1064, 'C'),('', 1113, 'T'),('', 1232, 'T')],
+                        'III': [('', 1022, 'G'),('', 1127, 'G'),('', 1157, 'A')],
+                        'IV': [('', 956, 'G'),('', 980, 'C'),('', 986, 'G'),('', 1001, 'C')]},
+
+                        "denv4": {
+                        'I': [('', 974, 'A'),('', 1004, 'T'),('', 1130, 'T'),('', 1181, 'C'),('', 1199, 'T')],
+                        'II': [('', 1075, 'C'),('', 1223, 'T'),('', 1322, 'T'),('', 1433, 'T')],
+                        'SYLVATIC': [('', 956, 'G'),('', 962, 'T'),('', 1019, 'C')]},
+
+                        "all": {}
+                }
+for i in ['denv1', 'denv2', 'denv3', 'denv4']:
+    genotypes['all'].update(genotypes[i])
+
+##### Utils #####
 def select_serotype(infile, path, serotype):
     '''
     Takes all-serotype fasta file, path to save output, and desired serotype.
@@ -89,6 +91,7 @@ def select_serotype(infile, path, serotype):
     SeqIO.write(sequences, path+'dengue_%s.fasta'%serotype, 'fasta')
     return path+'dengue_%s.fasta'%serotype
 
+##### The 'heavy lifting' #####
 class dengue_process(process):
     def __init__(self, **kwargs):
         '''
@@ -168,33 +171,40 @@ class dengue_process(process):
                 assert self.dengue.tree, 'ERROR: No tree, cannot run treetime.'
                 self.dengue.clock_filter(n_iqd=3, plot=True) # Toss sequences that don't show a linear relationship between sampling time and root-to-tip divergence.
                 self.dengue.annotate_tree(Tc=False, timetree=True, reroot='best') # Map attributes from the `fasta_headers` to the tree
+                self.date_range = {'date_min': self.dengue.tree.getDateMin(), 'date_max': self.dengue.tree.getDateMax()} # Set default date range according to the tree height
 
             if 'geo' in steps: # Use a "mugration model" to trace how viruses have moved between regions
                 print('\nRunning geo inference.....\n\n')
                 assert 'treetime' in steps, 'ERROR: Must run step "treetime" to do geo inference.'
                 self.dengue.tree.geo_inference('region')
 
-        # self.dengue.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.01)
-        # for region in region_groups.iteritems():
-        #     self.dengue.estimate_mutation_frequencies(region=region, min_freq=.05)
+            if 'frequencies' in steps: # Estimate mutation frequencies
+                from numpy import arange
+                min_pivot = float(self.date_range['date_min'].split('-')[0])
+                max_pivot = float(self.date_range['date_max'].split('-')[0])+(364/365)
+                pivots = arange(min_pivot, max_pivot)
+                self.dengue.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.01)
+                # for region in region_groups.iteritems():
+                #     self.dengue.estimate_mutation_frequencies(region=region, min_freq=.05)
 
-        # self.dengue.estimate_tree_frequencies()
-        # for region in regions:
-        #     self.dengue.estimate_tree_frequencies(region=region)
+                # self.dengue.estimate_tree_frequencies()
+                # for region in regions:
+                #     self.dengue.estimate_tree_frequencies(region=region)
 
-        # self.dengue.matchClades(genotypes[self.lineage])
+                # self.dengue.matchClades(genotypes[self.lineage])
+
             if 'export' in steps:
                 print('\nExporting.....\n\n')
                 assert self.dengue.tree, 'ERROR: No tree object to export'
-                self.date_range = {'date_min': self.dengue.tree.getDateMin(), 'date_max': self.dengue.tree.getDateMax()} # Set default date range according to the tree height
-                self.dengue.export(controls = attribute_nesting, geo_attributes = 'region', date_range = self.date_range, color_options=color_options, panels=panels) # Export to JSON
+                self.dengue.export(controls = attribute_nesting, geo_attributes = 'region',
+                date_range = self.date_range, color_options=color_options, panels=panels, indent=1) # Export to JSON
 
-
+##### Run config #####
 if __name__=="__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare web visualization',
-    epilog="Which build steps to run can be configured in __main__; valid options are: ['load', 'align', 'tree', 'treetime', 'geo', 'export']")
+    epilog="Which build steps to run can be configured in __main__; valid options are: ['load', 'align', 'tree', 'treetime', 'geo', 'frequencies', 'export']")
     parser.add_argument('-v', '--viruses_per_month', type = int, default = 3, help='Number of viruses sampled per region per month')
     parser.add_argument('-s', '--serotype', type = str.lower, choices=['denv1', 'denv2', 'denv3', 'denv4', 'all'], default='all', help = 'Which serotype of dengue to build trees for; all = include all serotypes in one build.')
     parser.add_argument('--load', action='store_true', help = 'Recover alignment and tree from file, then run treetime, geo, and export steps.')
@@ -202,9 +212,9 @@ if __name__=="__main__":
     params = parser.parse_args()
 
     if params.load:
-        steps = ['load', 'treetime', 'geo', 'export']
+        steps = ['load', 'treetime', 'geo', 'frequencies', 'export']
     else:
-        steps = ['align', 'tree', 'treetime', 'geo', 'export']
+        steps = ['align', 'tree', 'treetime', 'geo', 'frequencies', 'export']
 
     if params.run_multiple or not params.serotype: # Run all 5 builds.
         print('\n\nRunning all 5 builds.\n\n')
