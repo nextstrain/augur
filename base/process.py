@@ -466,6 +466,11 @@ class process(object):
         if hasattr(self, 'tree_frequencies') or hasattr(self, 'mutation_frequencies'):
             write_json(freq_json, prefix+'frequencies.json', indent=indent)
 
+        # count number of tip nodes
+        virus_count = 0
+        for node in self.tree.get_terminals():
+            virus_count += 1
+
         # write out metadata json# Write out metadata
         print("Writing out metadata")
         meta_json = {}
@@ -473,6 +478,7 @@ class process(object):
         meta_json["date_range"] = date_range
         meta_json["panels"] = panels
         meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
+        meta_jsjon["virus_count"] = virus_count
         try:
             from pygit2 import Repository, discover_repository
             current_working_directory = os.getcwd()
