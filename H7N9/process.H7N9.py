@@ -9,8 +9,9 @@ config = {
         "data": "processed",
         "auspice": "auspice",
     },
-    "in": "prepared/H7N9_HA.json", # can specify from command line
+    "in": "prepared/H7N9_HA.json", # should be able to specify from command line
 }
 
 if __name__=="__main__":
     runner = process(config)
+    runner.align()

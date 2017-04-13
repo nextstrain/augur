@@ -11,6 +11,7 @@ from datetime import datetime
 import json
 from pdb import set_trace
 from base.logger import logger
+from Bio import SeqIO
 
 class process(object):
     """process influenza virus sequences in mutliple steps to allow visualization in browser
@@ -57,6 +58,14 @@ class process(object):
             self.log.notify("* latitude & longitudes have not been set")
             self.lat_longs = False
 
+        # backwards compatability - set up file_dumps (need to rewrite sometime)
+        # self.sequence_fname = self.input_data_path+'.fasta'
+        self.file_dumps = {}
+        self.output_path = os.path.join(self.config["output"]["data"], self.info["prefix"])
+        self.file_dumps['seqs'] = self.output_path + '_sequences.pkl.gz'
+        self.file_dumps['tree'] = self.output_path + '_tree.newick'
+        self.file_dumps['nodes'] = self.output_path + '_nodes.pkl.gz'
+
         if "reference" in data:
             self.seqs = sequence_set(self.log, data["sequences"], data["reference"], self.info["date_format"])
         else:
@@ -65,12 +74,6 @@ class process(object):
         self.reference_seq = self.seqs.reference_seq
         self.proteins = self.seqs.proteins
 
-        # backwards compatability - set up file_dumps (need to rewrite sometime)
-        # self.sequence_fname = self.input_data_path+'.fasta'
-        self.file_dumps = {}
-        self.file_dumps['seqs'] = os.path.join(self.config["output"]["data"], self.info["prefix"] + '_sequences.pkl.gz')
-        self.file_dumps['tree'] = os.path.join(self.config["output"]["data"], self.info["prefix"] + '_tree.newick')
-        self.file_dumps['nodes'] = os.path.join(self.config["output"]["data"], self.info["prefix"] + '_nodes.pkl.gz')
 
 
     def dump(self):
@@ -129,7 +132,11 @@ class process(object):
         self.seqs.remove_terminal_gaps()
         if outgroup is not None:
             self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
-        self.seqs.translate(proteins=self.proteins)
+        self.seqs.translate() # creates self.seqs.translations
+        # save the final alignment!
+        SeqIO.write(self.seqs.aln, self.output_path + "_aligned.mfa", "fasta")
+        for name, msa in self.seqs.translations.iteritems():
+            SeqIO.write(msa, self.output_path + "_aligned_" + name + ".mfa", "fasta")
 
 
     def estimate_mutation_frequencies(self, region="global", pivots=24, include_set=None, min_freq=0.01):
@@ -469,25 +476,4 @@ class process(object):
 
 
 if __name__=="__main__":
-    lineage = 'h3n2'
-    input_data_path = '../nextstrain-db/data/'+lineage
-    store_data_path = 'store/'+lineage + '_'
-    build_data_path = 'build/'+lineage + '_'
-
-    proc = process(input_data_path = input_data_path, store_data_path = store_data_path, build_data_path = build_data_path,
-                   reference='flu/metadata/h3n2_outgroup.gb', proteins=['HA1', 'HA2'],method='SLSQP')
-    proc.load_sequences()
-    proc.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
-                               s.attributes['date']< datetime(2016,1,1).date())
-    proc.seqs.subsample(category = lambda x:(x.attributes['region'],
-                                             x.attributes['date'].year,
-                                             x.attributes['date'].month), threshold=1)
-
-    proc.align()
-    proc.estimate_mutation_frequencies(region='global')
-    proc.build_tree()
-    proc.annotate_tree(Tc=0.005, timetree=True)
-    proc.estimate_tree_frequencies(region='global')
-    proc.estimate_tree_frequencies(region='north_america')
-    proc.tree.geo_inference('region')
-    proc.export()
+    print("This shouldn't be called as a script.")
