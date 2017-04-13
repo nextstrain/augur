@@ -413,8 +413,8 @@ class tree(object):
         '''
         from Bio import Seq
         from itertools import izip
-        timetree_fname = path+'tree.json'
-        sequence_fname = path+'sequences.json'
+        timetree_fname = path+'_tree.json'
+        sequence_fname = path+'_sequences.json'
         tree_json = tree_to_json(self.tree.root, extra_attr=extra_attr)
         write_json(tree_json, timetree_fname, indent=indent)
 

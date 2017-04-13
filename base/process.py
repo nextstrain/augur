@@ -355,71 +355,72 @@ class process(object):
                 raise Exception("Failed to read ", file, "please check the line that failed")
         file.close()
 
-    def make_geo_lookup_json(self, geo_attributes = []):
-        '''
-        Take existing geo attributes (region, country, division) for viruses and
-        produces a lookup JSON to go from geo string to lat/long.
-        Example:
-        "geo_lookup": {
-            "country": {
-                "brazil": {
-                    "latitude": -10.3333332,
-                    "longitude": -53.1999999,
-                },
-                "colombia": {
-                    "latitude": 2.893108,
-                    "longitude": -73.7845142,
-                }
-            },
-            "region": {
-                "north_america": {
-                    "latitude": -10.3333332,
-                    "longitude": -53.1999999,
-                }
-            }
-        }
-        Note: geo reconstruction can cause disagreements between region and country attrs on internal nodes
-        '''
-        geo_lookup_json = {}
-        self.define_latitude_longitude()
-        if "region" in geo_attributes:
-            region_to_lat_long = {}
-            regions = self.tree.get_attr_list("region")
-            for region in regions:
-                try:
-                    region_to_lat_long[region] = self.location_to_lat_long[region]
-                except:
-                    print("REGION %s IS MISSING"%region)
-            geo_lookup_json["region"] = region_to_lat_long
-        if "country" in geo_attributes:
-            country_to_lat_long = {}
-            countries = self.tree.get_attr_list("country")
-            for country in countries:
-                country_to_lat_long[country] = self.location_to_lat_long[country]
-                geo_lookup_json["country"] = country_to_lat_long
-        if "division" in geo_attributes:
-            division_to_lat_long = {}
-            divisions = self.tree.get_attr_list("division")
-            for division in divisions:
-                division_to_lat_long[division] = self.location_to_lat_long[division]
-            geo_lookup_json["division"] = division_to_lat_long
-        return geo_lookup_json
+    # def make_geo_lookup_json(self, geo_attributes = []):
+    #     '''
+    #     Take existing geo attributes (region, country, division) for viruses and
+    #     produces a lookup JSON to go from geo string to lat/long.
+    #     Example:
+    #     "geo_lookup": {
+    #         "country": {
+    #             "brazil": {
+    #                 "latitude": -10.3333332,
+    #                 "longitude": -53.1999999,
+    #             },
+    #             "colombia": {
+    #                 "latitude": 2.893108,
+    #                 "longitude": -73.7845142,
+    #             }
+    #         },
+    #         "region": {
+    #             "north_america": {
+    #                 "latitude": -10.3333332,
+    #                 "longitude": -53.1999999,
+    #             }
+    #         }
+    #     }
+    #     Note: geo reconstruction can cause disagreements between region and country attrs on internal nodes
+    #     '''
+    #     geo_lookup_json = {}
+    #
+    #
+    #
+    #     self.define_latitude_longitude()
+    #     if "region" in geo_attributes:
+    #         region_to_lat_long = {}
+    #         regions = self.tree.get_attr_list("region")
+    #         for region in regions:
+    #             try:
+    #                 region_to_lat_long[region] = self.location_to_lat_long[region]
+    #             except:
+    #                 print("REGION %s IS MISSING"%region)
+    #         geo_lookup_json["region"] = region_to_lat_long
+    #     if "country" in geo_attributes:
+    #         country_to_lat_long = {}
+    #         countries = self.tree.get_attr_list("country")
+    #         for country in countries:
+    #             country_to_lat_long[country] = self.location_to_lat_long[country]
+    #             geo_lookup_json["country"] = country_to_lat_long
+    #     if "division" in geo_attributes:
+    #         division_to_lat_long = {}
+    #         divisions = self.tree.get_attr_list("division")
+    #         for division in divisions:
+    #             division_to_lat_long[division] = self.location_to_lat_long[division]
+    #         geo_lookup_json["division"] = division_to_lat_long
+    #     return geo_lookup_json
 
 
-    def export(self, extra_attr = [], controls = {}, geo_attributes = [], date_range = {},
-                color_options = {"num_date":{"key":"num_date", "legendTitle":"Sampling date",
-                                            "menuItem":"date", "type":"continuous"}},
-                panels = ['tree', 'entropy'], indent=None):
+
+    def auspice_export(self):
         '''
-        export the tree, sequences, frequencies to json files for visualization
-        in the browser
+        export the tree, sequences, frequencies to json files for auspice visualization
         '''
-        prefix = self.build_data_path
+        prefix = os.path.join(self.config["output"]["auspice"], self.info["prefix"])
+        indent = 2
         # export json file that contains alignment diversity column by column
-        self.seqs.export_diversity(prefix+'entropy.json')
+        self.seqs.export_diversity(fname=prefix+'_entropy.json', indent=2)
         # exports the tree and the sequences inferred for all clades in the tree
         if hasattr(self, 'tree') and self.tree is not None:
-            self.tree.export(path=prefix, extra_attr = extra_attr
+            self.tree.export(path=prefix, extra_attr = self.config["auspice"]["extra_attr"]
                          + ["muts", "aa_muts","attr", "clade"], indent = indent)
 
 
@@ -451,14 +452,24 @@ class process(object):
                     freq_json[label_str] = process_freqs(self.tree_frequencies[region][node.clade])
         # write to one frequency json
         if hasattr(self, 'tree_frequencies') or hasattr(self, 'mutation_frequencies'):
-            write_json(freq_json, prefix+'frequencies.json', indent=indent)
+            write_json(freq_json, prefix+'_frequencies.json', indent=indent)
 
         # write out metadata json# Write out metadata
         print("Writing out metadata")
         meta_json = {}
-        meta_json["color_options"] = color_options
-        meta_json["date_range"] = date_range
-        meta_json["panels"] = panels
+
+        # join up config color options with those in the input JSONs.
+        col_opts = self.config["auspice"]["color_options"]
+        if self.colors:
+            for trait, data in self.colors.iteritems():
+                if trait in col_opts:
+                    col_opts[trait]["color_map"] = [[k, v] for k, v in data.iteritems()]
+                else:
+                    self.log.warn("{} in colors (input JSON) but not auspice/color_options. Ignoring".format(trait))
+
+        meta_json["color_options"] = col_opts
+        meta_json["date_range"] = self.config["auspice"]["date_range"]
+        meta_json["panels"] = self.config["auspice"]["panels"]
         meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
         try:
             from pygit2 import Repository, discover_repository
@@ -469,18 +480,17 @@ class process(object):
             meta_json["commit"] = str(commit_id)
         except ImportError:
             meta_json["commit"] = "unknown"
-        if len(controls):
-            meta_json["controls"] = self.make_control_json(controls)
-        if len(geo_attributes):
-            meta_json["geo"] = self.make_geo_lookup_json(geo_attributes)
-        write_json(meta_json, prefix+'meta.json')
+        if len(self.config["auspice"]["controls"]):
+            meta_json["controls"] = self.make_control_json(self.config["auspice"]["controls"])
+        meta_json["geo"] = self.lat_longs
+        write_json(meta_json, prefix+'_meta.json')
 
     def run_geo_inference(self):
         # run geo inference for all the things we have lat longs for
         if not self.lat_longs or len(self.lat_longs)==0:
             self.log.notify("no geo inference - no specified lat/longs")
             return
-        for geo_attr in self.lat_longs.keys():
+        for geo_attr in self.config["geo_inference"]:
             self.log.notify("running geo inference for {}".format(geo_attr))
             self.tree.geo_inference(geo_attr)
 

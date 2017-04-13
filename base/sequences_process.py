@@ -1,6 +1,6 @@
 from __future__ import division, print_function
 import os, re, time, csv, sys
-from io_util import make_dir, remove_dir
+from io_util import make_dir, remove_dir, write_json
 # from io_util import myopen, make_dir, remove_dir, tree_to_json, write_json
 # from collections import defaultdict
 from Bio import SeqIO
@@ -9,7 +9,7 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import generic_dna
 from Bio.SeqFeature import FeatureLocation
 import numpy as np
-# from seq_util import pad_nucleotide_sequences, nuc_alpha, aa_alpha
+from seq_util import pad_nucleotide_sequences, nuc_alpha, aa_alpha
 from datetime import datetime
 import json
 from pdb import set_trace
@@ -18,6 +18,16 @@ from pprint import pprint
 from Bio import AlignIO
 from Bio.Align import MultipleSeqAlignment
 import random
+
+TINY = 1e-10
+
+def calc_af(aln, alpha):
+    aln_array = np.array(aln)
+    af = np.zeros((len(alpha), aln_array.shape[1]))
+    for ai, state in enumerate(alpha):
+        af[ai] += (aln_array==state).mean(axis=0)
+    af[-1] = 1.0 - af[:-1].sum(axis=0)
+    return af
 
 class sequence_set(object):
 
@@ -169,7 +179,7 @@ class sequence_set(object):
         this can skew the evolutionary rates.
         '''
         if root_seq is None: # use consensus
-            af = calc_af(self.aln, nuc_alpha)   
+            af = calc_af(self.aln, nuc_alpha)
             root_seq = np.fromstring(nuc_alpha, 'S1')[af.argmax(axis=0)]
         if type(root_seq)==str and root_seq in self.sequence_lookup:
             root_seq = np.array(self.sequence_lookup[root_seq])
@@ -207,3 +217,36 @@ class sequence_set(object):
             tmp[self.reference.id] = self.reference_aln
         self.aln = MultipleSeqAlignment(tmp.values())
         print("after clock filter:",len(self.aln))
+
+    def diversity_statistics(self):
+        ''' calculate alignment entropy of nucleotide and optionally protein alignments '''
+        if not hasattr(self, "aln"):
+            self.log.fatal("Diversity statistics calculated before alignment generated.")
+            return
+        aln_array = np.array(self.aln)
+        self.af = {'nuc': calc_af(self.aln, nuc_alpha)}
+        tmp_af = self.af['nuc'][:-2]/self.af['nuc'][:-2].sum(axis=0)
+        self.entropy ={'nuc': -(tmp_af*np.log(tmp_af+TINY)).sum(axis=0)}
+
+        if hasattr(self, "translations"):
+            for prot, aln in self.translations.iteritems():
+                self.af[prot] = calc_af(aln, aa_alpha)
+                tmp_af = self.af[prot][:-2]/self.af[prot][:-2].sum(axis=0)
+                self.entropy[prot] = -(tmp_af*np.log(tmp_af+TINY)).sum(axis=0)
+
+    def export_diversity(self, fname = 'entropy.json', indent=None):
+        '''
+        write the alignment entropy of each alignment (nucleotide and translations) to file
+        '''
+        if not hasattr(self, "entropy"):
+            self.diversity_statistics()
+        entropy_json = {}
+        for feat in self.entropy:
+            S = [max(0,round(x,4)) for x in self.entropy[feat]]
+            n = len(S)
+            if feat=='nuc':
+                entropy_json[feat] = {'pos':range(0,n), 'codon':[x//3 for x in range(0,n)], 'val':S}
+            else:
+                entropy_json[feat] = {'pos':[x for x in self.proteins[feat]][::3],
+                                      'codon':[(x-self.proteins[feat].start)//3 for x in self.proteins[feat]][::3], 'val':S}
+        write_json(entropy_json, fname, indent=indent)
