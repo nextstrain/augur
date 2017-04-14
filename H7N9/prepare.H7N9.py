@@ -21,7 +21,7 @@ dropped_strains = [
 
 config = {
     "dir": "H7N9", # the current directory. You mush be inside this to run the script.
-    "file_prefix": "H7N9",
+    "file_prefix": "flu_H7N9",
     # "segments": ["HA", "NA"],
     "segments": ["PB2", "PB1", "PA", "HA", "NP", "NA", "MP", "NS"], # set to False, or ["something"] if not segmented...
     "input_format": "fasta",
@@ -70,11 +70,11 @@ config = {
     "subsample": {
         "category": None,
         "priority": None,
-        "threshold": 5,
+        "threshold": 1,
     },
 
     # see the docs for what's going on with colours (sic) & lat/longs
-    "colors": ["country", "division"], # essential. Maybe False.
+    "colors": ["country", "division", "host"], # essential. Maybe False.
     "lat_longs": ["country", "division"], # essential. Maybe False.
     "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
 
