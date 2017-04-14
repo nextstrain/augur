@@ -115,9 +115,25 @@ class prepare(object):
     def colours(self):
         self.colors()
 
+    def parse_colors_file(self):
+        db = {}
+        try:
+            for fname in self.config["color_defs"]:
+                with open(fname) as fh:
+                    for line in fh:
+                        if line.startswith('#'): continue
+                        fields = line.strip().split()
+                        db[fields[0]] = fields[1]
+        except IOError:
+            self.log.warn("Couldn't open color definitions file {}.".format(self.config["color_defs"]))
+        except KeyError:
+            pass # wasn't set in config. that's ok.
+        return db
+
     def colors(self):
         if self.config["colors"]:
             cols = {}
+            user_defs = self.parse_colors_file()
             for trait in self.config["colors"]:
                 try:
                     assert(trait in self.config["header_fields"].values())
@@ -127,6 +143,10 @@ class prepare(object):
                 self.log.notify("Generating colour maps for '{}'".format(trait))
                 vals = set.union(*[obj.get_trait_values(trait) for seg, obj in self.segments.iteritems()])
                 cols[trait] = generate_cmap(vals, False)
+                # overwrite if user defined!
+                for name in cols[trait].keys():
+                    if name in user_defs:
+                        cols[trait][name] = user_defs[name]
 
             # save to each sequence_set object. It's them that write the JSONs
             for seg, obj in self.segments.iteritems():
@@ -143,7 +163,7 @@ class prepare(object):
             lat_long_db = define_latitude_longitude(self.config["lat_long_defs"], self.log)
             if not len(lat_long_db):
                 self.log.fatal("You asked for lat/longs but the definition files weren't useful")
-            for trait in self.config["colors"]:
+            for trait in self.config["lat_longs"]:
                 vals = set.union(*[obj.get_trait_values(trait) for seg, obj in self.segments.iteritems()])
                 lat_longs[trait] = {}
                 # do it the long way to handle missing data
@@ -151,8 +171,8 @@ class prepare(object):
                     try:
                         lat_longs[trait][key] = lat_long_db[key]
                     except KeyError:
-                        lat_longs[trait][key] = "unknown"
-                        self.log.warn("Unknown lat/longs for {} {}. Attempting to continue but this will most likely cause problems in Auspice.".format(trait, key))
+                        lat_longs[trait][key] = {'latitude': 0,'longitude': 0}
+                        self.log.warn("Unknown lat/longs for {} {}. Setting to 0,0 in order to appease auspice but you should fix this.".format(trait, key))
 
             # save to each sequence_set object. It's them that write the JSONs
             for seg, obj in self.segments.iteritems():

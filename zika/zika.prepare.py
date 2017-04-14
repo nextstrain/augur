@@ -33,10 +33,11 @@ config = {
     ),
     "subsample": {
         "category": lambda x:(x.attributes['date'].year, x.attributes['date'].month),
-        "threshold": 100,
+        "threshold": 5,
     },
-    "colors": ["country", "division"], # essential. Maybe False.
-    "lat_longs": ["country", "division"], # essential. Maybe False.
+    "colors": ["country", "region"], # essential. Maybe False.
+    "color_defs": ["./colors.tsv"],
+    "lat_longs": ["country", "region"], # essential. Maybe False.
     "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
     "reference": {
         "path": "metadata/zika_outgroup.gb",

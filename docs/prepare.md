@@ -14,7 +14,7 @@ If you need something a bit more bespoke that can't be done through the config, 
 | CSV metadata | to do      |
 | lat/longs | DONE      |
 | colours (auto) | DONE      |
-| colours (user defined) | to do      |
+| colours (user defined) | DONE      |
 
 ### `Config` dictionary
 As mentioned above, all options are defined in the `config` dict, which is passed to the `Prepare` class.
@@ -87,7 +87,7 @@ These are crucial if you want to push your data into auspice.
 Eventually i'll write a script to change these after the JSONs have been created.
 But for now...
   * `colors`: False or list of traits (appearing in `header_fields`). If traits are selected, then a section in the JSON will be created with traits -> hex values. By default they will be created using the viridis scale.
-  * **to do** `color_defs`: _file path_ or [_array_, _of_, _file_, _paths_] - tab separated file(s) joining trait -> color (hex), or dictionary linking trait values to hexes
+  * `color_defs`: _file path_ or [_array_, _of_, _file_, _paths_] - tab separated file(s) joining trait -> color (hex), or dictionary linking trait values to hexes
 
 #### latitude & longitude
 Similar to colours, these are needed if the data is to be pushed into auspice.
