@@ -2,6 +2,7 @@ import matplotlib as mpl
 from matplotlib import pyplot as plt
 from datetime import datetime
 from base.io_util import tree_to_json
+import numpy as np
 
 def generate_cmap(data, discrete):
     '''
@@ -128,3 +129,33 @@ def save_as_nexus(tree, fname):
     nex = nexus(tree_walk(json, 0))
     with open(fname, 'w') as f:
         f.write("\n".join(nex))
+
+
+"""
+given a date string and a (list of) possible formats, return a list of length three consisting of:
+(1) the original string passed in (normally saved as raw_date)
+(2) the numerical date - either a float or an array of 2 floats (normally saved as num_date)
+(3) the date in a datetime object (normally saved as date)
+"""
+def parse_date(datein, fmts):
+    ret = [datein, None, None]
+    for fmt in fmts:
+        try:
+            if 'XX' in datein:
+                min_date, max_date = ambiguous_date_to_date_range(datein, fmt)
+                ret[1] = np.array((num_date(min_date), num_date(max_date)))
+                ret[2] = min_date
+            else:
+                if callable(fmt):
+                    tmp = fmt(datein)
+                else:
+                    try:
+                        tmp = datetime.strptime(datein, fmt).date()
+                    except:
+                        tmp = datein
+                ret[1] = num_date(tmp)
+                ret[2] = tmp
+                break
+        except:
+            continue
+    return ret

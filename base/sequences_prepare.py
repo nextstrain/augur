@@ -211,8 +211,11 @@ class sequence_set(object):
             "n(final)": len(self.seqs),
             "commit": git.Repo(search_parent_directories=True).head.object.hexsha,
             "date_format": config["date_format"],
-            "subsampled": bool(config["subsample"])
+            "subsampled": bool(config["subsample"]),
+            "traits_are_dates": []
         }
+        if "traits_are_dates" in config and isinstance(config["traits_are_dates"], (list, tuple)):
+            data["info"]["traits_are_dates"] = [trait for trait in config["traits_are_dates"] if trait in config["header_fields"].values()]
         if self.segmentName == "genome":
             data["info"]["input_file"] = config["input_paths"][0]
             data["info"]["prefix"] = config["file_prefix"]

@@ -20,7 +20,8 @@ config = {
             "division":{"key":"division", "legendTitle":"Division", "menuItem":"division", "type":"discrete", "color_map": []},
             "host":{"key":"host", "legendTitle":"Host", "menuItem":"host", "type":"discrete", "color_map": []},
             "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
-            "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
+            "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"},
+            # "fauna_date":{"key":"fauna_date", "legendTitle":"Analysis date", "menuItem":"analysisdate", "type":"continuous"},
         },
         "controls": {'geographic location':['country'], 'authors':['authors']}
     }
