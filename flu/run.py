@@ -10,13 +10,15 @@ def live_flu_build(lineage, resolution, path):
     print 'Processing lineage',lineage,'with resolution',resolution,'for all HI data'
     process = 'flu/seasonal_flu.py'
     call = map(str, [params.bin, process, '--lineage', lineage, '--resolution', resolution, '--HI', 'all_hi'])
-    print call
+    print " ".join(call)
     subprocess.call(call)
 
-    json_types = ['entropy', 'frequencies', 'meta', 'sequences', 'tree']
+    json_types = ['entropy', 'frequencies', 'sequences', 'tree', 'meta']
     for jtype in json_types:
         f = "build/%s_all_hi_%s_%s.json"%(lineage, resolution, jtype)
-        t = "%s/%s_%s_%s.json"%(path, lineage, resolution, jtype)
+        t = "%s%s_%s_%s.json"%(path, lineage, resolution, jtype)
+        print "from: ", f
+        print "to: ", t
         os.rename(f,t)
 
 
@@ -35,7 +37,7 @@ def cdc_build(lineage, resolution, assay, passage, path):
     json_types = ['entropy', 'frequencies', 'meta', 'sequences', 'tree', 'titer_subs_model', 'titer_tree_model', 'titers']
     for jtype in json_types:
         f = "build/%s_cdc_hi_%s_%s.json"%(lineage, resolution, jtype)
-        t = "%s/%s_%s_%s.json"%(path, lineage, resolution, jtype)
+        t = "%s%s_%s_%s.json"%(path, lineage, resolution, jtype)
         os.rename(f,t)
 
 def cdc_fra_build(lineage, resolution, path):
@@ -53,7 +55,7 @@ def cdc_fra_build(lineage, resolution, path):
     json_types = ['entropy', 'frequencies', 'meta', 'sequences', 'tree', 'titer_subs_model', 'titer_tree_model', 'titers']
     for jtype in json_types:
         f = "build/%s_cdc_fra_%s_%s.json"%(lineage, resolution, jtype)
-        t = "%s/%s_%s_%s.json"%(path, lineage, resolution, jtype)
+        t = "%s%s_%s_%s.json"%(path, lineage, resolution, jtype)
         os.rename(f,t)
 
 if __name__=="__main__":
@@ -64,8 +66,8 @@ if __name__=="__main__":
     parser.add_argument('--resolutions', nargs='+', type = str,  help = "resolutions to include")
     parser.add_argument('--assays', nargs='+', type = str, help = "assays to include")
     parser.add_argument('--passages', nargs='+', type = str, help = "passages to include")
-    parser.add_argument('--live_auspice_path', default = '../../blab/nextflu/auspice/data')
-    parser.add_argument('--cdc_auspice_path', default = '../../blab/nextflu-cdc/auspice/data')
+    parser.add_argument('--live_auspice_path', default = '../../blab/nextflu/auspice/data/')
+    parser.add_argument('--cdc_auspice_path', default = '../../blab/nextflu-cdc/auspice/data/')
     params = parser.parse_args()
 
     if params.builds is None:

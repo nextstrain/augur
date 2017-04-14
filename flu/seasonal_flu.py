@@ -648,12 +648,12 @@ if __name__=="__main__":
         else:
             flu.subsample(params.viruses_per_month_seq, all_regions=True)
 
-        # flu.align()
-        # flu.dump()
-        # # first estimate frequencies globally, then region specific
-        # flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.02)
-        # for region in region_groups.iteritems():
-        #     flu.estimate_mutation_frequencies(region=region, min_freq=.05)
+        flu.align()
+        flu.dump()
+        # first estimate frequencies globally, then region specific
+        flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.02)
+        for region in region_groups.iteritems():
+            flu.estimate_mutation_frequencies(region=region, min_freq=.05)
 
         if not params.no_tree:
             if params.sampling=='even':

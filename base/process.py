@@ -468,7 +468,7 @@ class process(object):
 
         # count number of tip nodes
         virus_count = 0
-        for node in self.tree.get_terminals():
+        for node in self.tree.tree.get_terminals():
             virus_count += 1
 
         # write out metadata json# Write out metadata
@@ -478,7 +478,7 @@ class process(object):
         meta_json["date_range"] = date_range
         meta_json["panels"] = panels
         meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
-        meta_jsjon["virus_count"] = virus_count
+        meta_json["virus_count"] = virus_count
         try:
             from pygit2 import Repository, discover_repository
             current_working_directory = os.getcwd()
