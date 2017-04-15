@@ -45,6 +45,7 @@ config = {
     # can provide multiple date formats here - FIFO
     "date_format": ["%Y-%m-%d"],
     "require_dates": True,
+    "traits_are_dates": ["fauna_date"],
 
     # require that all selected isolates have all the genomes
     "ensure_all_segments": True,

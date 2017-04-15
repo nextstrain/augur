@@ -3,7 +3,7 @@ import sys, os, time, gzip, glob
 from collections import defaultdict
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences_process import sequence_set
-from base.utils import num_date, save_as_nexus
+from base.utils import num_date, save_as_nexus, parse_date
 from base.tree import tree
 from base.frequencies import alignment_frequencies, tree_frequencies, make_pivots
 import numpy as np
@@ -74,7 +74,8 @@ class process(object):
         self.reference_seq = self.seqs.reference_seq
         self.proteins = self.seqs.proteins
 
-
+        for trait in self.info["traits_are_dates"]:
+            self.seqs.convert_trait_to_numerical_date(trait, self.info["date_format"])
 
     def dump(self):
         '''
