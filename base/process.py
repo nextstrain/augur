@@ -307,7 +307,7 @@ class process(object):
                       to conform with counting starting at 0 as opposed to 1
         '''
         def match(node, genotype):
-            return all([node.translations[gene][pos+offset]==state if gene in node.translations else node.sequences[pos+offset]==state
+            return all([node.translations[gene][pos+offset]==state if gene in node.translations else node.sequence[pos+offset]==state
                         for gene, pos, state in genotype])
 
         self.clades_to_nodes = {}
