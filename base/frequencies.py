@@ -125,8 +125,10 @@ class frequency_estimator(object):
         self.dt = np.diff(self.pivots)
         def logLH(x):
             self.pivot_freq = logit_inv(x, self.pc)
-            freq = interp1d(self.pivots, x, kind=self.interpolation_type,bounds_error = False)
-                            # assume_sorted=True,
+            try:
+                freq = interp1d(self.pivots, x, kind=self.interpolation_type,bounds_error = False, assume_sorted=True) # Throws a bug with some numpy installations, isn't necessary other than for speed.
+            except:
+                freq = interp1d(self.pivots, x, kind=self.interpolation_type,bounds_error = False)
             estfreq = freq(self.tps)
             bernoulli_LH = np.sum(estfreq[self.obs]) - np.sum(np.log(1+np.exp(estfreq)))
 
