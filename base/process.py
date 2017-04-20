@@ -319,7 +319,9 @@ class process(object):
                 self.clades_to_nodes[clade_name].attr['clade_name']=clade_name
             else:
                 print('matchClades: no match found for ', clade_name, genotype)
-
+                for allele in genotype:
+                    partial_matches = filter(lambda x:match(x,[allele]), self.tree.tree.get_nonterminals())
+                    print('Found %d partial matches for allele '%len(partial_matches), allele)
 
     def annotate_tree(self, Tc=0.01, timetree=False, **kwargs):
         if timetree:
