@@ -45,39 +45,40 @@ color_options = {
     "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"},
 }
 
-attribute_nesting = {'geographic location':'region', 'authors':['authors']}
+attribute_nesting = {'geographic location':['region'], 'authors':['authors']}
 panels = ['tree', 'map', 'entropy', 'frequencies']
 
 ##### Define clades #####
 genotypes = {
                         "denv1":{
-                        'I': [('', 961, 'G'),('', 965, 'G'),('', 995, 'T'),('', 1001, 'A'),('', 1016, 'A')],
-                        'II': [('', 995, 'A'),('', 1100, 'A'),('', 1103, 'T'),('', 1109, 'T'),('', 1113, 'T')],
-                        "V": [('',974,'T'), ('', 1049,'T'),('',1175,'G'),('',1091,'G')],
-                        "IV": [('', 944,'D'), ('', 992,'T'),('', 1034,'T'),('', 1047,'G'),('', 1181,'G')]},
+                        'I': [('E', 8, 'S'),('E', 37, 'D'),('E', 155, 'S')],
+                        'II': [('E', 180, 'T'),('E', 345, 'A')],
+                        "V": [('E', 114, 'L'),('E', 161, 'I'),('E', 297, 'T')],
+                        "IV": [('E', 37, 'D'),('E', 88, 'T'),]},
 
                         "denv2": {
-                        'ASIAN/AMERICAN': [('', 1181, 'T'),('', 974, 'A'),('', 1025, 'T'),('', 1103, 'T')],
-                        'AMERICAN': [('', 965, 'G'),('', 983, 'G'),('', 992, 'G'),('', 995, 'T')],
-                        'ASIAN-I': [('', 974, 'A'),('', 995, 'T'),('', 1067, 'T'),('', 1082, 'G')],
-                        'COSMOPOLITAN': [('', 947, 'T'),('', 1150, 'C'),('', 1253, 'C'),('', 1277, 'C')],
-                        'SYLVATIC': [('', 977, 'G'),('', 1100, 'A'),('', 1103, 'A')]},
+                        'ASIAN/AMERICAN': [('E', 203, 'D'), ('E', 491, 'A')],
+                        'AMERICAN': [('E', 71, 'D'), ('E', 81, 'T'), ('E', 203, 'D')],
+                        'ASIAN-I': [('E', 83, 'K'), ('E', 141, 'V'), ('E', 226, 'K')],
+                        'COSMOPOLITAN': [('E', 71, 'A'), ('E', 149, 'N'), ('E', 390, 'S')],
+                        'SYLVATIC': [('E', 59, 'F'), ('E', 83, 'V'), ('E', 129, 'V')]},
 
                         "denv3": {
-                        'I': [('', 980, 'C'),('', 1034, 'T'),('', 1073, 'C'),('', 1118, 'T')],
-                        'II': [('', 983, 'G'),('', 1004, 'T'),('', 1064, 'C'),('', 1113, 'T'),('', 1232, 'T')],
-                        'III': [('', 1022, 'G'),('', 1127, 'G'),('', 1157, 'A')],
-                        'IV': [('', 956, 'G'),('', 980, 'C'),('', 986, 'G'),('', 1001, 'C')]},
+                        'I': [('E', 68, 'V'),('E', 124, 'S'),('E', 233, 'K')],
+                        'II': [('E', 154, 'D')],
+                        'III': [('E', 81, 'V'),('E', 132, 'Y'),('E', 171, 'T'),],
+                        'IV': [('E', 22, 'E'),('E', 50, 'V'),('E', 62, 'G')]},
 
                         "denv4": {
-                        'I': [('', 974, 'A'),('', 1004, 'T'),('', 1130, 'T'),('', 1181, 'C'),('', 1199, 'T')],
-                        'II': [('', 1075, 'C'),('', 1223, 'T'),('', 1322, 'T'),('', 1433, 'T')],
-                        'SYLVATIC': [('', 956, 'G'),('', 962, 'T'),('', 1019, 'C')]},
+                        'I': [('E', 233, 'H'),('E', 329, 'T'),('E', 429, 'L')],
+                        'II': [('E', 46, 'T'), ('E', 478, 'T')],
+                        'SYLVATIC': [('E', 132, 'V'), ('E', 154, 'S')]},
 
                         "all": {}
                 }
 for i in ['denv1', 'denv2', 'denv3', 'denv4']:
-    genotypes['all'].update(genotypes[i])
+    for k,v in genotypes[i].iteritems():
+        genotypes['all'][i.upper()+' '+k] = v
 
 ##### Utils #####
 def select_serotype(infile, path, serotype):
@@ -179,19 +180,18 @@ class dengue_process(process):
                 self.dengue.tree.geo_inference('region')
 
             if 'frequencies' in steps: # Estimate mutation frequencies
+                print('\nEstimating frequencies....\n\n')
                 from numpy import arange
                 min_pivot = float(self.date_range['date_min'].split('-')[0])
                 max_pivot = float(self.date_range['date_max'].split('-')[0])+(364/365)
-                pivots = arange(min_pivot, max_pivot)
-                self.dengue.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.01)
+                self.dengue.pivots = arange(min_pivot, max_pivot)
+                self.dengue.estimate_mutation_frequencies(region="global", pivots=self.dengue.pivots, min_freq=.01)
                 # for region in region_groups.iteritems():
                 #     self.dengue.estimate_mutation_frequencies(region=region, min_freq=.05)
-
-                # self.dengue.estimate_tree_frequencies()
+                self.dengue.matchClades(genotypes[self.serotype])
+                self.dengue.estimate_tree_frequencies()
                 # for region in regions:
                 #     self.dengue.estimate_tree_frequencies(region=region)
-
-                # self.dengue.matchClades(genotypes[self.lineage])
 
             if 'export' in steps:
                 print('\nExporting.....\n\n')
