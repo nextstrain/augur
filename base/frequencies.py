@@ -263,7 +263,7 @@ class tree_frequencies(object):
         min_clades  -- smallest clades for which frequencies are estimated.
         '''
         self.tree = tree
-        self.min_clades = min_clades
+        self.min_clades = 10 #min_clades
         self.pivots = pivots
         self.kwargs = kwargs
         self.verbose=verbose
