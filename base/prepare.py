@@ -169,7 +169,7 @@ class prepare(object):
                 # do it the long way to handle missing data
                 for key in vals: # well named
                     try:
-                        lat_longs[trait][key] = lat_long_db[key]
+                        lat_longs[trait][key] = lat_long_db[key.lower()]
                     except KeyError:
                         lat_longs[trait][key] = {'latitude': 0,'longitude': 0}
                         self.log.warn("Unknown lat/longs for {} {}. Setting to 0,0 in order to appease auspice but you should fix this.".format(trait, key))
