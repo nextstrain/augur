@@ -574,8 +574,8 @@ if __name__=="__main__":
     # default values for --viruses_per_month and --years_back from resolution
     # those refer to the total number of sequences across all regions
     if params.resolution == "2y":
-        params.viruses_per_month_tree = 100
-        params.viruses_per_month_seq = 200
+        params.viruses_per_month_tree = 90
+        params.viruses_per_month_seq = 180
         params.years_back = 2
     elif params.resolution == "3y":
         params.viruses_per_month_tree = 60
