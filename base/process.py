@@ -230,7 +230,7 @@ class process(object):
             tps = np.array([x.attributes['num_date'] for x in self.seqs.seqs.values()])
             self.pivots=make_pivots(pivots, tps)
         else:
-            print('estimate_tree_frequencies: using self.pivots',3)
+            print('estimate_tree_frequencies: using self.pivots', self.pivots)
         if not hasattr(self, 'tree_frequencies'):
             self.tree_frequencies = {}
             self.tree_frequency_confidence = {}
@@ -455,6 +455,11 @@ class process(object):
         if hasattr(self, 'tree_frequencies') or hasattr(self, 'mutation_frequencies'):
             write_json(freq_json, prefix+'_frequencies.json', indent=indent)
 
+        # count number of tip nodes
+        virus_count = 0
+        for node in self.tree.tree.get_terminals():
+            virus_count += 1
+
         # write out metadata json# Write out metadata
         print("Writing out metadata")
         meta_json = {}
@@ -472,6 +477,7 @@ class process(object):
         meta_json["date_range"] = self.config["auspice"]["date_range"]
         meta_json["panels"] = self.config["auspice"]["panels"]
         meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
+        meta_json["virus_count"] = virus_count
         try:
             from pygit2 import Repository, discover_repository
             current_working_directory = os.getcwd()
