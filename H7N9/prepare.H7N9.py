@@ -71,7 +71,7 @@ config = {
     "subsample": {
         "category": None,
         "priority": None,
-        "threshold": 1,
+        "threshold": 5,
     },
 
     # see the docs for what's going on with colours (sic) & lat/longs
@@ -135,14 +135,14 @@ config = {
             "use": True,
             "genes": ["NA"]
         },
-        "NP": {
-            "path": "reference_segments/np.gb",
+        "MP": {
+            "path": "reference_segments/m2.gb",
             "metadata": {
-                'strain': "reference", "accession": "NC_026426", "date": "2013-03-05",
+                'strain': "reference", "accession": "NC_026427", "date": "2013-03-05",
                 'host': "human", 'country': "china", 'division': "Shanghai"
             },
             "use": True,
-            "genes": ["NP"]
+            "genes": ["M1", "M2"]
         },
         "NS": {
             "path": "reference_segments/ns.gb",

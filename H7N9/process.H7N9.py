@@ -2,6 +2,7 @@ from __future__ import print_function
 import os, sys
 sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
 from base.process import process
+import argparse
 
 config = {
     "dir": "H7N9",
@@ -9,7 +10,7 @@ config = {
         "data": "processed",
         "auspice": "auspice",
     },
-    "in": "prepared/flu_H7N9_HA.json", # should be able to specify from command line
+    # "in": "prepared/flu_H7N9_HA.json", # should be able to specify from command line
     "geo_inference": ['country', 'division', 'host'], # what traits to perform this on
     "auspice": { ## settings for auspice JSON export
         "panels": ['tree', 'map', 'entropy'],
@@ -28,6 +29,12 @@ config = {
 }
 
 if __name__=="__main__":
+    # for H7N9 currently things are kinda easy - everything needed is defined in the JSON!
+    parser = argparse.ArgumentParser(description = "Process a given JSONs")
+    parser.add_argument('-j', '--json', required=True, type=str, help="prepared JSON")
+    params = parser.parse_args()
+
+    config["in"] = params.json
     runner = process(config)
     runner.align()
     runner.build_tree()
