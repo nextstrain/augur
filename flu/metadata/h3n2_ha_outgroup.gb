@@ -63,11 +63,9 @@ FEATURES             Location/Qualifiers
      sig_peptide     15..62
                      /gene="HA"
      mat_peptide     63..1049
-                     /gene="HA"
-                     /product="HA1"
+                     /gene="HA1"
      mat_peptide     1050..1712
-                     /gene="HA"
-                     /product="HA2"
+                     /gene="HA2"
 ORIGIN
         1 taattctatt aaccatgaag actatcattg ctttgagcta cattttatgt ctggttttcg
        61 ctcaaaaact tcccggaaat gacaacagca cagcaacgct gtgcctggga catcatgcag
