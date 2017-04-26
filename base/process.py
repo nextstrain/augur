@@ -475,6 +475,8 @@ class process(object):
 
         meta_json["color_options"] = col_opts
         meta_json["date_range"] = self.config["auspice"]["date_range"]
+        if "analysisSlider" in self.config["auspice"]:
+            meta_json["analysisSlider"] = self.config["auspice"]["analysisSlider"]
         meta_json["panels"] = self.config["auspice"]["panels"]
         meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
         meta_json["virus_count"] = virus_count
