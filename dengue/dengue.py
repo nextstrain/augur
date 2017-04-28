@@ -29,7 +29,7 @@ color_options = {
     "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
 }
 
-attribute_nesting = {'geographic location':'region', 'authors':['authors']}
+attribute_nesting = {'geographic location':['region'], 'authors':['authors']}
 panels = ['tree', 'map', 'entropy']#, 'frequencies']
 
 ##### Utils #####
@@ -134,7 +134,7 @@ class dengue_process(process):
                 print('\nExporting.....\n\n')
                 assert self.dengue.tree, 'ERROR: No tree object to export'
                 self.date_range = {'date_min': self.dengue.tree.getDateMin(), 'date_max': self.dengue.tree.getDateMax()} # Set default date range according to the tree height
-                self.dengue.export(controls = attribute_nesting, geo_attributes = 'region', date_range = self.date_range, color_options=color_options, panels=panels) # Export to JSON
+                self.dengue.export(controls = attribute_nesting, geo_attributes = 'region', date_range = self.date_range, color_options=color_options, panels=panels, defaults={'geoResolution': 'region'}) # Export to JSON
 
 ##### Config #####
 if __name__=="__main__":
