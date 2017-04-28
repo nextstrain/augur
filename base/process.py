@@ -422,7 +422,7 @@ class process(object):
     def export(self, extra_attr = [], controls = {}, geo_attributes = [], date_range = {},
                 color_options = {"num_date":{"key":"num_date", "legendTitle":"Sampling date",
                                             "menuItem":"date", "type":"continuous"}},
-                panels = ['tree', 'entropy'], indent=None):
+                panels = ['tree', 'entropy'], defaults = {}, indent=None):
         '''
         export the tree, sequences, frequencies to json files for visualization
         in the browser
@@ -479,6 +479,7 @@ class process(object):
         meta_json["panels"] = panels
         meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
         meta_json["virus_count"] = virus_count
+        meta_json["defaults"] = defaults
         try:
             from pygit2 import Repository, discover_repository
             current_working_directory = os.getcwd()
