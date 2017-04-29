@@ -425,7 +425,7 @@ class process(object):
                 panels = ['tree', 'entropy'], defaults = {}, indent=None):
         '''
         export the tree, sequences, frequencies to json files for visualization
-        in the browser
+        in the browser.
         '''
         prefix = self.build_data_path
         # export json file that contains alignment diversity column by column
@@ -479,7 +479,20 @@ class process(object):
         meta_json["panels"] = panels
         meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
         meta_json["virus_count"] = virus_count
+
+        valid_defaults = {'colorBy': ['region', 'country', 'num_date', 'ep', 'ne', 'rb', 'genotype', 'cHI'],
+                          'layout': ['radial', 'rectangular', 'unrooted'],
+                          'geoResolution': ['region', 'country', 'division'],
+                          'distanceMeasure': ['num_date', 'div']}
+        for param, value in defaults.items():
+            try:
+                assert param in valid_defaults and value in valid_defaults[param]
+            except:
+                 print('ERROR: invalid default options provided. Try one of the following instead:', valid_defaults)
+                 print('Export will continue; default display options can be corrected in the meta.JSON file.')
+                 continue
         meta_json["defaults"] = defaults
+
         try:
             from pygit2 import Repository, discover_repository
             current_working_directory = os.getcwd()
