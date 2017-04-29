@@ -85,7 +85,7 @@ class dengue_process(process):
             if 'align' in steps: ### Read in data, align sequences, deal with metadata.
                 print('\nSubsampling, filtering, and aligning sequences.....\n\n')
 
-                self.fasta_fields = {0:'strain', 1:'accession', 2:'date', 3:'region', #4:'country',
+                self.fasta_fields = {0:'strain', 1:'accession', 2:'date', 3:'region', 4:'country',
                                 5:'division', 6: 'location', 7: 'authors', 8: 'url'}
                 self.dengue.load_sequences(fields=self.fasta_fields)
                 assert self.dengue.seqs != None, 'ERROR: No sequences'
