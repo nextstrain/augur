@@ -12,7 +12,7 @@ from glob import glob
 
 #### Provide metadata ####
 regions = ["japan_korea","china","south_asia","southeast_asia", "south_pacific","oceania","subsaharan_africa","west_asia","caribbean","south_america","central_america","north_america","europe"]
-colors =  ["#4B26B1", "#3F4ACA", "#4272CE", "#4D92BF", "#5DA8A3", "#74B583", "#8EBC66", "#ACBD51", "#C8B944", "#DDA93C", "#E68B35", "#E3602D", "#DC2F24"],
+colors =  ["#4B26B1", "#3F4ACA", "#4272CE", "#4D92BF", "#5DA8A3", "#74B583", "#8EBC66", "#ACBD51", "#C8B944", "#DDA93C", "#E68B35", "#E3602D", "#DC2F24"]
 region_cmap = zip(regions, colors)
 
 color_options = {
