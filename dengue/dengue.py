@@ -11,25 +11,16 @@ from glob import glob
 
 
 #### Provide metadata ####
-region_cmap = [
-    ["europe",             "#4580CA"],
-    ["china",              "#3F63CF"],
-    ["japan_korea",        "#4272CE"],
-    ["southeast_asia",     "#571EA2"],
-    ["oceania",            "#4B26B1"],
-    ["south_pacific",      "#4433BE"],
-    ["south_america",      "#56A0AE"],
-    ["central_america",    "#BDBB48"],
-    ["caribbean",          "#E67C32"],
-    ["north_america",      "#DC2F24"]
-]
+regions = ["japan_korea","china","south_asia","southeast_asia", "south_pacific","oceania","subsaharan_africa","west_asia","caribbean","south_america","central_america","north_america","europe"]
+colors =  ["#4B26B1", "#3F4ACA", "#4272CE", "#4D92BF", "#5DA8A3", "#74B583", "#8EBC66", "#ACBD51", "#C8B944", "#DDA93C", "#E68B35", "#E3602D", "#DC2F24"]
+region_cmap = zip(regions, colors)
 
 color_options = {
     "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete", "color_map": region_cmap},
     "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
 }
 
-attribute_nesting = {'geographic location':'region', 'authors':['authors']}
+attribute_nesting = {'geographic location':['region'], 'authors':['authors']}
 panels = ['tree', 'map', 'entropy']#, 'frequencies']
 
 ##### Utils #####
@@ -94,7 +85,7 @@ class dengue_process(process):
             if 'align' in steps: ### Read in data, align sequences, deal with metadata.
                 print('\nSubsampling, filtering, and aligning sequences.....\n\n')
 
-                self.fasta_fields = {0:'strain', 1:'accession', 2:'date', 3:'region', #4:'country',
+                self.fasta_fields = {0:'strain', 1:'accession', 2:'date', 3:'region', 4:'country',
                                 5:'division', 6: 'location', 7: 'authors', 8: 'url'}
                 self.dengue.load_sequences(fields=self.fasta_fields)
                 assert self.dengue.seqs != None, 'ERROR: No sequences'
@@ -134,7 +125,7 @@ class dengue_process(process):
                 print('\nExporting.....\n\n')
                 assert self.dengue.tree, 'ERROR: No tree object to export'
                 self.date_range = {'date_min': self.dengue.tree.getDateMin(), 'date_max': self.dengue.tree.getDateMax()} # Set default date range according to the tree height
-                self.dengue.export(controls = attribute_nesting, geo_attributes = 'region', date_range = self.date_range, color_options=color_options, panels=panels) # Export to JSON
+                self.dengue.export(controls = attribute_nesting, geo_attributes = 'region', date_range = self.date_range, color_options=color_options, panels=panels, defaults={'geoResolution': 'region'}) # Export to JSON
 
 ##### Config #####
 if __name__=="__main__":

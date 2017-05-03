@@ -480,6 +480,7 @@ class process(object):
         meta_json["panels"] = self.config["auspice"]["panels"]
         meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
         meta_json["virus_count"] = virus_count
+        meta_json["defaults"] = defaults
         try:
             from pygit2 import Repository, discover_repository
             current_working_directory = os.getcwd()
