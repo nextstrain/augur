@@ -319,6 +319,8 @@ class tree(object):
                 node.__setattr__(attr+'_transitions', node.mutations)
                 if node in nuc_muts:
                     node.mutations = nuc_muts[node]
+            # save marginal likelihoods if desired
+            node.attr[attr + "_marginal"] = {alphabet[self.tt.geogtr.alphabet[i]]:node.marginal_profile[0][i] for i in range(0, len(self.tt.geogtr.alphabet))}
 
         self.tt.use_mutation_length=tmp_use_mutation_length
 
