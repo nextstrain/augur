@@ -325,8 +325,11 @@ class tree(object):
                 node.attr[attr + "_entropy"] = sum([v * math.log(v+1E-20) for v in node.marginal_profile[0]]) * -1 / math.log(len(node.marginal_profile[0]))
                 # javascript: vals.map((v) => v * Math.log(v + 1E-10)).reduce((a, b) => a + b, 0) * -1 / Math.log(vals.length);
                 self.dump_attr.append(attr + "_entropy")
-                node.attr[attr + "_marginal"] = {alphabet[self.tt.geogtr.alphabet[i]]:node.marginal_profile[0][i] for i in range(0, len(self.tt.geogtr.alphabet))}
-                self.dump_attr.append(attr + "_marginal")
+                marginal = [(alphabet[self.tt.geogtr.alphabet[i]], node.marginal_profile[0][i]) for i in range(0, len(self.tt.geogtr.alphabet))]
+                marginal.sort(key=lambda x: x[1], reverse=True) # sort on likelihoods
+                marginal = [(a, b) for a, b in marginal if b > 0.01][:4] #only take stuff over 1% and the top 4 elements
+                self.dump_attr.append(attr + "_likelihoods")
+                node.attr[attr + "_likelihoods"] = {a:b for a,b in marginal}
         self.tt.use_mutation_length=tmp_use_mutation_length
 
 
