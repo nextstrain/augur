@@ -498,12 +498,15 @@ class process(object):
 
     def run_geo_inference(self):
         # run geo inference for all the things we have lat longs for
+        report_likelihoods = False
+        if "geo_inference_likelihoods" in self.config and self.config["geo_inference_likelihoods"] == True:
+            report_likelihoods = True
         if not self.lat_longs or len(self.lat_longs)==0:
             self.log.notify("no geo inference - no specified lat/longs")
             return
         for geo_attr in self.config["geo_inference"]:
             self.log.notify("running geo inference for {}".format(geo_attr))
-            self.tree.geo_inference(geo_attr)
+            self.tree.geo_inference(geo_attr, report_likelihoods=report_likelihoods)
 
     def save_as_nexus(self):
         save_as_nexus(self.tree.tree, self.output_path + "_timeTree.nex")
