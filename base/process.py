@@ -311,7 +311,10 @@ class process(object):
 
     def annotate_tree(self, Tc=0.01, timetree=False, **kwargs):
         if timetree:
-            self.tree.timetree(Tc=Tc, infer_gtr=True, **kwargs)
+            confidence = False
+            if "temporal_confidence" in self.config:
+                confidence = self.config["temporal_confidence"]
+            self.tree.timetree(Tc=Tc, infer_gtr=True, confidence=confidence, **kwargs)
         else:
             self.tree.ancestral(**kwargs)
         self.tree.add_translations()

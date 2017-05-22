@@ -18,6 +18,7 @@ config = {
     "in": "prepared/zika.json", # should be able to specify from command line
     "geo_inference": ['country', 'region'], # what traits to perform this on
     "geo_inference_likelihoods": True,
+    "temporal_confidence": True,
     "auspice": { ## settings for auspice JSON export
         "panels": ['tree', 'map', 'entropy'],
         "extra_attr": [],
@@ -42,7 +43,7 @@ if __name__=="__main__":
         runner.load()
     runner.build_tree()
     runner.clock_filter()
-    runner.annotate_tree(Tc=0.02, timetree=True, reroot='best', confidence=False)
+    runner.annotate_tree(Tc=0.02, timetree=True, reroot='best')
     runner.run_geo_inference()
     runner.save_as_nexus()
     runner.auspice_export()
