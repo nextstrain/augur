@@ -57,7 +57,7 @@ config = {
         ("Prior to Epidemic", lambda s: s.attributes['date'] >= datetime(2013,1,1).date()),
         ("Missing Month Data", lambda s: "-XX-XX" not in s.attributes['raw_date']),
         ("Exclude bad host", lambda s: s.attributes["host"] not in ["laboratoryderived", "watersample"]),
-        ("Restrict to Humans", lambda s: s.attributes["host"] in ["human"]),
+        # ("Restrict to Humans", lambda s: s.attributes["host"] in ["human"]),
         ("Sequence Length", {
             "PB2": lambda s: len(s.seq)>=2200,
             "PB1": lambda s: len(s.seq)>=2200,
