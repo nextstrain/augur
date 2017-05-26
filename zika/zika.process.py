@@ -36,11 +36,12 @@ config = {
 if __name__=="__main__":
     params = parser.parse_args()
     runner = process(config)
-    if not params.restore:
-        runner.align()
-        runner.dump()
-    else:
-        runner.load()
+    runner.align()
+    # if not params.restore:
+    #     runner.align()
+    #     runner.dump()
+    # else:
+    #     runner.load()
     runner.build_tree()
     runner.clock_filter()
     runner.annotate_tree(Tc=0.02, timetree=True, reroot='best')

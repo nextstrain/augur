@@ -121,21 +121,27 @@ class process(object):
             self.build_tree(tree_name, node_file, root='none', debug=debug)
 
 
+
+
     def align(self, codon_align=False, debug=False):
         '''
         align sequences, remove non-reference insertions, outlier sequences, and translate
         '''
-        if codon_align:
-            self.seqs.codon_align(debug=debug)
-        else:
-            self.seqs.align(debug=debug)
-        self.seqs.strip_non_reference()
-        self.seqs.remove_terminal_gaps()
-        # if outgroup is not None:
-        #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
+        fname = self.output_path + "_aligned.mfa"
+        already_done = self.seqs.potentially_restore_align_from_disk(fname)
+        if not already_done:
+            if codon_align:
+                self.seqs.codon_align(debug=debug)
+            else:
+                self.seqs.align(debug=debug)
+            self.seqs.strip_non_reference()
+            self.seqs.remove_terminal_gaps()
+            # if outgroup is not None:
+            #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
         self.seqs.translate() # creates self.seqs.translations
         # save the final alignment!
-        SeqIO.write(self.seqs.aln, self.output_path + "_aligned.mfa", "fasta")
+        SeqIO.write(self.seqs.aln, fname, "fasta")
+        # save additional translations,
         for name, msa in self.seqs.translations.iteritems():
             SeqIO.write(msa, self.output_path + "_aligned_" + name + ".mfa", "fasta")
 
