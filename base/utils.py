@@ -41,7 +41,7 @@ def define_latitude_longitude(lat_long_defs, log):
         reader = csv.DictReader(filter(lambda row: row[0]!='#', file), delimiter='\t')		# list of dicts
         for line in reader:
             try:
-                lat_long_db[line['location']] = {
+                lat_long_db[line['location'].lower()] = {
                     'latitude': float(line['latitude']),
                     'longitude': float(line['longitude'])
                     }

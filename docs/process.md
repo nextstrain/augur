@@ -29,12 +29,13 @@ Note that this is similar in design but different to the config dict used to pre
   * `panels`
   * `extra_attr`
   * `date_range`
+  * `analysisSlider`: optional. If specified, this should be a key present in `color_options`, with `type`: continuous
   * `color_options`
     * `<trait name>`
       * `key`
-      *  `legendTitle`
-      * `menuItem`
-      * `type`
+      *  `legendTitle`: String appearing in Auspice legend
+      * `menuItem`: String appearing in Auspice colorBy drop down menu
+      * `type`: continuous / integer / discrete
   * `controls`
     * `geographic_location`
     * `authors`

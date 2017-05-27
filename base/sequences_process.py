@@ -80,8 +80,11 @@ class sequence_set(object):
     def align(self, debug=False):
         '''
         align sequences using mafft
-        '''
 
+        side-effects:
+            self.aln {MultipleSeqAlignment}
+            self.sequence_lookup {dict} map linking seq.id to the alignment
+        '''
         make_dir(self.run_dir)
         os.chdir(self.run_dir)
         ref_in_set = self.reference_seq.name in self.seqs
@@ -94,6 +97,12 @@ class sequence_set(object):
         os.system("mafft --anysymbol --thread " + str(self.nthreads) + " temp_in.fasta 1> temp_out.fasta 2>mafft_stderr")
 
         tmp_aln = AlignIO.read('temp_out.fasta', 'fasta')
+        self.add_attributes_to_aln(tmp_aln, ref_in_set)
+        os.chdir('..')
+        if not debug:
+            remove_dir(self.run_dir)
+
+    def add_attributes_to_aln(self, tmp_aln, ref_in_set):
         self.sequence_lookup = {seq.id:seq for seq in tmp_aln}
         # add attributes to alignment
         for seqid, seq in self.seqs.iteritems():
@@ -101,12 +110,22 @@ class sequence_set(object):
         self.aln = MultipleSeqAlignment([s for s in tmp_aln
                             if s.name!=self.reference_seq.name or ref_in_set])
 
-        os.chdir('..')
-        if not debug:
-            remove_dir(self.run_dir)
-
-        # # save the alignment!
-        # SeqIO.write(self.seqs.aln, self.output_path + "aligned.mfa", "fasta")
+    def potentially_restore_align_from_disk(self, fname):
+        if not os.path.isfile(fname):
+            return False
+        try:
+            aln = AlignIO.read(fname, "fasta")
+        except:
+            print("Aignment was there, but failed to load. Re-doing.")
+            return False
+        diff = {x.id for x in aln} ^ set(self.seqs.keys())
+        if len(diff) != 0:
+            print("Alignment on disk had a different number of sequnces... re-doing")
+            print("(this may be due to the reference - this needs to be worked out)")
+            return False
+        print("Alignment restored from disk")
+        self.add_attributes_to_aln(aln, self.reference_seq.name in self.seqs)
+        return True
 
     def strip_non_reference(self):
         ungapped = np.array(self.sequence_lookup[self.reference_seq.name])!='-'

@@ -7,7 +7,7 @@ sys.path.insert(0,'.')  # need to import from base
 print(sys.argv, sys.path)
 from base.process import process
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from base.io_util import myopen
 
 regions = ['africa', 'south_asia', 'europe', 'china', 'north_america',
@@ -46,6 +46,14 @@ color_options = {
     "cHI":{"key":"cHI", "legendTitle":"Antigenic advance", "menuItem":"Antigenic", "type":"continuous"}
 }
 panels = ['tree', 'entropy', 'frequencies']
+
+reference_viruses = {'h3n2': ['A/Wisconsin/67/2005', 'A/Brisbane/10/2007',  'A/Perth/16/2009', 'A/Victoria/361/2011',
+                              'A/Texas/50/2012', 'A/Switzerland/9715293/2013', 'A/HongKong/4801/2014', 'A/Alaska/232/2015'],
+                     'h1n1pdm':[],
+                     'vic':[],
+                     'yam':[]
+                    }
+
 
 outliers = {
 'h3n2':["A/Sari/388/2006", "A/SaoPaulo/36178/2015", "A/Pennsylvania/40/2010", "A/Pennsylvania/14/2010",
@@ -98,9 +106,9 @@ outliers = {
 clade_designations = {"h3n2":{
                            "3c3.a":[('HA1',128,'A'), ('HA1',142,'G'), ('HA1',159,'S')],
                            "3c3":   [('HA1',128,'A'), ('HA1',142,'G'), ('HA1',159,'F')],
-                           "3c2.a": [('HA1',144,'S'), ('HA1',159,'Y'), ('HA1',225,'D'), ('HA1',311,'H'), ('HA2',160,'N')],
+                           "3c2.a": [('HA1',144,'S'), ('HA1',159,'Y'), ('HA1',225,'D'), ('HA1',311,'H'), ('HA1',160,'T')],
                            "171K": [('HA1',144,'S'), ('HA1',159,'Y'), ('HA1',171,'K'), ('HA1',225,'D'), ('HA1',311,'H'), ('HA2',77,'V'), ('HA2',155,'E'), ('HA2',160,'N')],
-                           "3c2":   [('HA1',144,'N'), ('HA1',159,'F'), ('HA1',225,'N'), ('HA2',160,'N'), ('HA1',142,'R')],
+                           "3c2":   [('HA1',144,'N'), ('HA1',159,'F'), ('HA1',225,'N'), ('HA1',160,'T'), ('HA1',142,'R')],
                            "3c3.b": [('HA1',83,'R'), ('HA1',261,'Q'), ('HA1',62,'K'),  ('HA1',122,'D')]
                         },
                        "h1n1pdm":{
@@ -564,21 +572,22 @@ if __name__=="__main__":
     params = parser.parse_args()
 
     # default values for --viruses_per_month and --years_back from resolution
+    # those refer to the total number of sequences across all regions
     if params.resolution == "2y":
-        params.viruses_per_month_tree = 9*len(regions)
-        params.viruses_per_month_seq = 15*len(regions)
+        params.viruses_per_month_tree = 90
+        params.viruses_per_month_seq = 180
         params.years_back = 2
     elif params.resolution == "3y":
-        params.viruses_per_month_tree = 7*len(regions)
-        params.viruses_per_month_seq = 15*len(regions)
+        params.viruses_per_month_tree = 60
+        params.viruses_per_month_seq = 120
         params.years_back = 3
     elif params.resolution == "6y":
-        params.viruses_per_month_tree = 30
-        params.viruses_per_month_seq = 100
+        params.viruses_per_month_tree = 24
+        params.viruses_per_month_seq = 48
         params.years_back = 6
     elif params.resolution == "12y":
-        params.viruses_per_month_tree = 20
-        params.viruses_per_month_seq = 100
+        params.viruses_per_month_tree = 12
+        params.viruses_per_month_seq = 24
         params.years_back = 12
 
     # construct time_interval from years_back
@@ -612,7 +621,6 @@ if __name__=="__main__":
                    proteins=['SigPep', 'HA1', 'HA2'], titer=params.HI,
                    method='SLSQP', inertia=np.exp(-1.0/ppy), stiffness=0.8*ppy)
 
-
     if params.load:
         flu.load()
         flu.export()
@@ -621,14 +629,17 @@ if __name__=="__main__":
                              5:'country', 7:"city", 8:"passage",9:'lab', 10:'age', 11:'gender'})
 
         time_interval = [datetime.strptime(x, '%Y-%m-%d').date() for x in params.time_interval]
+        reference_cutoff = date(year = time_interval[0].year - 3, month=1, day=1)
 
         pivots = np.arange(time_interval[0].year+(time_interval[0].month-1)/12.0,
                            time_interval[1].year+time_interval[1].month/12.0, 1.0/ppy)
-        flu.seqs.filter(lambda s:
-            s.attributes['date']>=time_interval[0] and s.attributes['date']<time_interval[1])
+        flu.seqs.filter(lambda s: (s.attributes['date']>=time_interval[0] and s.attributes['date']<time_interval[1]) or
+                                  (s.name in reference_viruses[params.lineage] and s.attributes['date']>reference_cutoff))
         flu.seqs.filter(lambda s: len(s.seq)>=900)
         flu.seqs.filter(lambda s: s.name not in outliers[params.lineage])
 
+        # the all regions flag allows to switch off regional subsampling.
+        # With all_regions=True, sequences are sampled independent of their region
         if params.sampling=='even':
             flu.subsample(params.viruses_per_month_seq, all_regions=False)
         elif params.sampling in regions:
@@ -640,18 +651,18 @@ if __name__=="__main__":
         flu.align()
         flu.dump()
         # first estimate frequencies globally, then region specific
-        flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.01)
+        flu.estimate_mutation_frequencies(region="global", pivots=pivots, min_freq=.02)
         for region in region_groups.iteritems():
             flu.estimate_mutation_frequencies(region=region, min_freq=.05)
 
         if not params.no_tree:
             if params.sampling=='even':
-                flu.subsample(params.viruses_per_month_seq, all_regions=False, repeated=True)
+                flu.subsample(params.viruses_per_month_tree, all_regions=False, repeated=True)
             elif params.sampling in regions:
                 flu.subsample_priority_region(params.viruses_per_month_tree, priority_region=params.sampling,
                                               fraction=0.5, repeated=True)
             else:
-                flu.subsample(params.viruses_per_month_seq, all_regions=True, repeated=True)
+                flu.subsample(params.viruses_per_month_tree, all_regions=True, repeated=True)
 
             flu.align()
             flu.build_tree()
@@ -660,7 +671,7 @@ if __name__=="__main__":
             for geo in geo_attributes:
                 flu.tree.geo_inference(geo)
 
-            flu.estimate_tree_frequencies()
+            flu.estimate_tree_frequencies(pivots=pivots)
             for region in regions:
                 flu.estimate_tree_frequencies(region=region)
             flu.dump()

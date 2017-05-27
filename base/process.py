@@ -121,21 +121,27 @@ class process(object):
             self.build_tree(tree_name, node_file, root='none', debug=debug)
 
 
+
+
     def align(self, codon_align=False, debug=False):
         '''
         align sequences, remove non-reference insertions, outlier sequences, and translate
         '''
-        if codon_align:
-            self.seqs.codon_align(debug=debug)
-        else:
-            self.seqs.align(debug=debug)
-        self.seqs.strip_non_reference()
-        self.seqs.remove_terminal_gaps()
-        # if outgroup is not None:
-        #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
+        fname = self.output_path + "_aligned.mfa"
+        already_done = self.seqs.potentially_restore_align_from_disk(fname)
+        if not already_done:
+            if codon_align:
+                self.seqs.codon_align(debug=debug)
+            else:
+                self.seqs.align(debug=debug)
+            self.seqs.strip_non_reference()
+            self.seqs.remove_terminal_gaps()
+            # if outgroup is not None:
+            #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
         self.seqs.translate() # creates self.seqs.translations
         # save the final alignment!
-        SeqIO.write(self.seqs.aln, self.output_path + "_aligned.mfa", "fasta")
+        SeqIO.write(self.seqs.aln, fname, "fasta")
+        # save additional translations,
         for name, msa in self.seqs.translations.iteritems():
             SeqIO.write(msa, self.output_path + "_aligned_" + name + ".mfa", "fasta")
 
@@ -230,7 +236,7 @@ class process(object):
             tps = np.array([x.attributes['num_date'] for x in self.seqs.seqs.values()])
             self.pivots=make_pivots(pivots, tps)
         else:
-            print('estimate_tree_frequencies: using self.pivots',3)
+            print('estimate_tree_frequencies: using self.pivots', self.pivots)
         if not hasattr(self, 'tree_frequencies'):
             self.tree_frequencies = {}
             self.tree_frequency_confidence = {}
@@ -311,7 +317,10 @@ class process(object):
 
     def annotate_tree(self, Tc=0.01, timetree=False, **kwargs):
         if timetree:
-            self.tree.timetree(Tc=Tc, infer_gtr=True, **kwargs)
+            confidence = False
+            if "temporal_confidence" in self.config:
+                confidence = self.config["temporal_confidence"]
+            self.tree.timetree(Tc=Tc, infer_gtr=True, confidence=confidence, **kwargs)
         else:
             self.tree.ancestral(**kwargs)
         self.tree.add_translations()
@@ -455,6 +464,11 @@ class process(object):
         if hasattr(self, 'tree_frequencies') or hasattr(self, 'mutation_frequencies'):
             write_json(freq_json, prefix+'_frequencies.json', indent=indent)
 
+        # count number of tip nodes
+        virus_count = 0
+        for node in self.tree.tree.get_terminals():
+            virus_count += 1
+
         # write out metadata json# Write out metadata
         print("Writing out metadata")
         meta_json = {}
@@ -470,8 +484,13 @@ class process(object):
 
         meta_json["color_options"] = col_opts
         meta_json["date_range"] = self.config["auspice"]["date_range"]
+        if "analysisSlider" in self.config["auspice"]:
+            meta_json["analysisSlider"] = self.config["auspice"]["analysisSlider"]
         meta_json["panels"] = self.config["auspice"]["panels"]
         meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
+        meta_json["virus_count"] = virus_count
+        if "defaults" in self.config["auspice"]:
+            meta_json["defaults"] = self.config["auspice"]["defaults"]
         try:
             from pygit2 import Repository, discover_repository
             current_working_directory = os.getcwd()
@@ -488,12 +507,15 @@ class process(object):
 
     def run_geo_inference(self):
         # run geo inference for all the things we have lat longs for
+        report_likelihoods = False
+        if "geo_inference_likelihoods" in self.config and self.config["geo_inference_likelihoods"] == True:
+            report_likelihoods = True
         if not self.lat_longs or len(self.lat_longs)==0:
             self.log.notify("no geo inference - no specified lat/longs")
             return
         for geo_attr in self.config["geo_inference"]:
             self.log.notify("running geo inference for {}".format(geo_attr))
-            self.tree.geo_inference(geo_attr)
+            self.tree.geo_inference(geo_attr, report_likelihoods=report_likelihoods)
 
     def save_as_nexus(self):
         save_as_nexus(self.tree.tree, self.output_path + "_timeTree.nex")

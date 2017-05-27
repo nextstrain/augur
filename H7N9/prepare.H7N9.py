@@ -17,6 +17,7 @@ dropped_strains = [
     "A/Chicken/Netherlands/1600", # not part of epi clade
     "A/duck/Zhejiang/LS02/2014", # not of part of epi clade
     "A/British Columbia/1/2015", # travel case. throws off map
+    "A/BritishColumbia/1/2015", # travel case. throws off map
 ]
 
 config = {
@@ -54,7 +55,9 @@ config = {
     "filters": (
         ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
         ("Prior to Epidemic", lambda s: s.attributes['date'] >= datetime(2013,1,1).date()),
+        ("Missing Month Data", lambda s: "-XX-XX" not in s.attributes['raw_date']),
         ("Exclude bad host", lambda s: s.attributes["host"] not in ["laboratoryderived", "watersample"]),
+        # ("Restrict to Humans", lambda s: s.attributes["host"] in ["human"]),
         ("Sequence Length", {
             "PB2": lambda s: len(s.seq)>=2200,
             "PB1": lambda s: len(s.seq)>=2200,
@@ -67,12 +70,12 @@ config = {
         })
     ),
     # see the docs for this too! if you don't want to subsample, set it to False
-    # "subsample": False,
-    "subsample": {
-        "category": None,
-        "priority": None,
-        "threshold": 1,
-    },
+    "subsample": False,
+    # "subsample": {
+    #     "category": None,
+    #     "priority": None,
+    #     "threshold": 5,
+    # },
 
     # see the docs for what's going on with colours (sic) & lat/longs
     "colors": ["country", "division", "host"], # essential. Maybe False.
@@ -135,14 +138,14 @@ config = {
             "use": True,
             "genes": ["NA"]
         },
-        "NP": {
-            "path": "reference_segments/np.gb",
+        "MP": {
+            "path": "reference_segments/m2.gb",
             "metadata": {
-                'strain': "reference", "accession": "NC_026426", "date": "2013-03-05",
+                'strain': "reference", "accession": "NC_026427", "date": "2013-03-05",
                 'host': "human", 'country': "china", 'division': "Shanghai"
             },
             "use": True,
-            "genes": ["NP"]
+            "genes": ["M1", "M2"]
         },
         "NS": {
             "path": "reference_segments/ns.gb",

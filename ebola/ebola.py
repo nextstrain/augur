@@ -152,7 +152,7 @@ if __name__=="__main__":
     date_range['date_min'] = ebola.tree.getDateMin()
     date_range['date_max'] = ebola.tree.getDateMax()
     ebola.export(controls = attribute_nesting, date_range = date_range, geo_attributes = geo_attributes,
-                color_options=color_options, panels=panels)
+                color_options=color_options, panels=panels, defaults = {'mapTriplicate': False})
 
     # plot an approximate skyline
     plot_skyline = False

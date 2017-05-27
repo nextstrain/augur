@@ -4,6 +4,7 @@ sys.path.insert(0,'../') # path.abspath(path.join(__file__ ,".."))
 from io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from sequences import sequence_set
 import numpy as np
+import math
 from subprocess import CalledProcessError, check_call, STDOUT
 from pprint import pprint
 from pdb import set_trace
@@ -224,7 +225,7 @@ class tree(object):
         self.is_timetree=True
 
 
-    def geo_inference(self, attr, missing='?', root_state=None):
+    def geo_inference(self, attr, missing='?', root_state=None, report_likelihoods=False):
         '''
         infer a "mugration" model by pretending each region corresponds to a sequence
         state and repurposing the GTR inference and ancestral reconstruction
@@ -319,7 +320,16 @@ class tree(object):
                 node.__setattr__(attr+'_transitions', node.mutations)
                 if node in nuc_muts:
                     node.mutations = nuc_muts[node]
-
+            # save marginal likelihoods if desired
+            if report_likelihoods:
+                node.attr[attr + "_entropy"] = sum([v * math.log(v+1E-20) for v in node.marginal_profile[0]]) * -1 / math.log(len(node.marginal_profile[0]))
+                # javascript: vals.map((v) => v * Math.log(v + 1E-10)).reduce((a, b) => a + b, 0) * -1 / Math.log(vals.length);
+                self.dump_attr.append(attr + "_entropy")
+                marginal = [(alphabet[self.tt.geogtr.alphabet[i]], node.marginal_profile[0][i]) for i in range(0, len(self.tt.geogtr.alphabet))]
+                marginal.sort(key=lambda x: x[1], reverse=True) # sort on likelihoods
+                marginal = [(a, b) for a, b in marginal if b > 0.01][:4] #only take stuff over 1% and the top 4 elements
+                self.dump_attr.append(attr + "_likelihoods")
+                node.attr[attr + "_likelihoods"] = {a:b for a,b in marginal}
         self.tt.use_mutation_length=tmp_use_mutation_length
 
 
