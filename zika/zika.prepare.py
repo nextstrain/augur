@@ -33,7 +33,7 @@ config = {
     ),
     "subsample": {
         "category": lambda x:(x.attributes['date'].year, x.attributes['date'].month),
-        "threshold": 2,
+        "threshold": 5,
     },
     "colors": ["country", "region"], # essential. Maybe False.
     "color_defs": ["./colors.tsv"],
