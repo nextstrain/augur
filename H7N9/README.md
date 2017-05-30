@@ -1,18 +1,25 @@
 ### instructions
 
 * First download the data from fauna (instructions in that repo)
+* Second, run augur
 ```
+cd augur/H7N9
+rm prepared/* processed/* auspice/*
 python prepare.H7N9.py
 # in one terminal window:
-for i in "PB1" "PB2" "PA" "NS"; do python process.H7N9.py -j prepared/flu_H7N9_${i}.json; done
+for i in "pb1" "pb2" "pa" "ns"; do python process.H7N9.py -j prepared/flu_h7n9_${i}.json; done
 # in another:
-for i in "NA" "NP" "MP" "HA"; do python process.H7N9.py -j prepared/flu_H7N9_${i}.json; done
+for i in "na" "np" "mp" "ha"; do python process.H7N9.py -j prepared/flu_h7n9_${i}.json; done
 ```
 
+* to visualise locally in auspice
 ```
+cd augur/H7N9
 cp auspice/*json ../../auspice/data/
+# local build needs to be running...
 cd ../../auspice
 node dev-server.js local
+# visit localhost:4000/flu
 ```
 
 * to move to S3 bucket:
@@ -20,7 +27,5 @@ node dev-server.js local
 cd augur/build
 rm *
 cd augur/H7N9/auspice
-# make everything lower case
-for i in *json; do j=$( echo "$i" | tr '[:upper:]' '[:lower:]' ); cp $i ../../build/$j
 bundle exec s3_website push --site build
 ```

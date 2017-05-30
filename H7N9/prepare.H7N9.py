@@ -22,9 +22,9 @@ dropped_strains = [
 
 config = {
     "dir": "H7N9", # the current directory. You mush be inside this to run the script.
-    "file_prefix": "flu_H7N9",
+    "file_prefix": "flu_h7n9",
     # "segments": ["HA", "NA"],
-    "segments": ["PB2", "PB1", "PA", "HA", "NP", "NA", "MP", "NS"], # set to False, or ["something"] if not segmented...
+    "segments": ["pb2", "pb1", "pa", "ha", "np", "na", "mp", "ns"], # set to False, or ["something"] if not segmented...
     "input_format": "fasta",
     "input_paths": [
         "../../fauna/data/h7n9_pb2.fasta",
@@ -59,14 +59,14 @@ config = {
         ("Exclude bad host", lambda s: s.attributes["host"] not in ["laboratoryderived", "watersample"]),
         # ("Restrict to Humans", lambda s: s.attributes["host"] in ["human"]),
         ("Sequence Length", {
-            "PB2": lambda s: len(s.seq)>=2200,
-            "PB1": lambda s: len(s.seq)>=2200,
-            "PA": lambda s: len(s.seq)>=2100,
-            "HA": lambda s: len(s.seq)>=1500,
-            "NP": lambda s: len(s.seq)>=1400,
-            "NA": lambda s: len(s.seq)>=1200,
-            "MP": lambda s: len(s.seq)>=900,
-            "NS": lambda s: len(s.seq)>=800
+            "pb2": lambda s: len(s.seq)>=2200,
+            "pb1": lambda s: len(s.seq)>=2200,
+            "pa": lambda s: len(s.seq)>=2100,
+            "ha": lambda s: len(s.seq)>=1500,
+            "np": lambda s: len(s.seq)>=1400,
+            "na": lambda s: len(s.seq)>=1200,
+            "mp": lambda s: len(s.seq)>=900,
+            "ns": lambda s: len(s.seq)>=800
         })
     ),
     # see the docs for this too! if you don't want to subsample, set it to False
@@ -74,7 +74,7 @@ config = {
     # "subsample": {
     #     "category": None,
     #     "priority": None,
-    #     "threshold": 5,
+    #     "threshold": 2,
     # },
 
     # see the docs for what's going on with colours (sic) & lat/longs
@@ -84,7 +84,7 @@ config = {
 
     # again, see docs for reference definitions
     "references": {
-        "PB2": {
+        "pb2": {
             "path": "reference_segments/pb2.gb",
             "metadata": {
                 'strain': "reference", "accession": "NC_026422", "date": "2013-03-05",
@@ -93,7 +93,7 @@ config = {
             "use": True,
             "genes": ["PB2"]
         },
-        "PB1": {
+        "pb1": {
             "path": "reference_segments/pb1.gb",
             "metadata": {
                 'strain': "reference", "accession": "NC_026423", "date": "2013-03-05",
@@ -102,7 +102,7 @@ config = {
             "use": True,
             "genes": ["PB1", "PB1-F2"]
         },
-        "PA": {
+        "pa": {
             "path": "reference_segments/pa.gb",
             "metadata": {
                 'strain': "reference", "accession": "NC_026424", "date": "2013-03-05",
@@ -111,7 +111,7 @@ config = {
             "use": True,
             "genes": ["PA", "PA-X"]
         },
-        "HA": {
+        "ha": {
             "path": "reference_segments/ha.gb",
             "metadata": {
                 'strain': "reference", "accession": "KJ411975", "date": "2014-01-03",
@@ -120,7 +120,7 @@ config = {
             "use": True,
             "genes": ["SigPep", "HA1", "HA2"]
         },
-        "NP": {
+        "np": {
             "path": "reference_segments/np.gb",
             "metadata": {
                 'strain': "reference", "accession": "NC_026426", "date": "2013-03-05",
@@ -129,7 +129,7 @@ config = {
             "use": True,
             "genes": ["NP"]
         },
-        "NA": {
+        "na": {
             "path": "reference_segments/na.gb",
             "metadata": {
                 'strain': "reference", "accession": "NC_026429", "date": "2013-03-05",
@@ -138,7 +138,7 @@ config = {
             "use": True,
             "genes": ["NA"]
         },
-        "MP": {
+        "mp": {
             "path": "reference_segments/m2.gb",
             "metadata": {
                 'strain': "reference", "accession": "NC_026427", "date": "2013-03-05",
@@ -147,7 +147,7 @@ config = {
             "use": True,
             "genes": ["M1", "M2"]
         },
-        "NS": {
+        "ns": {
             "path": "reference_segments/ns.gb",
             "metadata": {
                 'strain': "reference", "accession": "NC_026428", "date": "2013-03-05",
