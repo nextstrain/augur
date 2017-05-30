@@ -2,6 +2,7 @@ from __future__ import division, print_function
 import sys, os
 import numpy as np
 from datetime import datetime
+from base.config import combine_configs
 from base.sequences_prepare import sequence_set
 from base.logger import logger
 from base.utils import generate_cmap, define_latitude_longitude
@@ -19,7 +20,7 @@ class prepare(object):
     def __init__(self, config):
         """ check config file, make necessary directories, set up logger """
         super(prepare, self).__init__()
-        self.config = config
+        self.config = combine_configs("prepare", config)
 
         try:
             for x in required_config_fields:

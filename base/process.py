@@ -1,6 +1,7 @@
 from __future__ import division, print_function
 import sys, os, time, gzip, glob
 from collections import defaultdict
+from base.config import combine_configs
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences_process import sequence_set
 from base.utils import num_date, save_as_nexus, parse_date
@@ -25,7 +26,7 @@ class process(object):
     def __init__(self, config):
         """ check config file, make necessary directories, set up logger """
         super(process, self).__init__()
-        self.config = config
+        self.config = combine_configs("process", config)
 
         try:
             assert(os.path.basename(os.getcwd()) == self.config["dir"])
@@ -487,7 +488,8 @@ class process(object):
                     self.log.warn("{} in colors (input JSON) but not auspice/color_options. Ignoring".format(trait))
 
         meta_json["color_options"] = col_opts
-        meta_json["date_range"] = self.config["auspice"]["date_range"]
+        if "date_range" in self.config["auspice"]:
+            meta_json["date_range"] = self.config["auspice"]["date_range"]
         if "analysisSlider" in self.config["auspice"]:
             meta_json["analysisSlider"] = self.config["auspice"]["analysisSlider"]
         meta_json["panels"] = self.config["auspice"]["panels"]
