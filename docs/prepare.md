@@ -18,25 +18,24 @@ If you need something a bit more bespoke that can't be done through the config, 
 
 ### `Config` dictionary
 As mentioned above, all options are defined in the `config` dict, which is passed to the `Prepare` class.
-These options are described here in sections, but they form one big dictionary - see `H7N9/H7N9.prepare.py` for a working example.
-Eventually there will be a "default" config file, so you only have to modify things as necessary.
+Many options have defaults provided, and if so are not required to be in the config file.
 
 #### general settings
 * `dir`: the current directory - not _augur_ but the virus itself
 * `file_prefix`: string used to name the JSONs
-* `output_folder`: will be created inside the current directory
+* `output_folder`: (default: "prepared") will be created inside the current directory and contgain logs + JSONs.
 * `segments`: array of strings, or `False` if not segmented...
-* `input_format`: must be "fasta" currently
-* `input_paths`: array of paths (strings). Must be the same number as segments (or 1 if not segmented)
+* `input_format`: (default: fasta) (to do: allow other input formats)
+* `input_paths`: {array of strings}. Must be the same number as segments (or 1 if not segmented)
 * `header_fields`: dictionary instructing how the fasta header information is encoded. "strain" is essential and "date" is special (see `date_format`). An example:
 ```
 {0:'strain', 2:'accession', 3:'date', 4:'host', 6:'country', 7: 'division'}
 ```
-* `date_format`: encoding format for date - typically `["%Y-%m-%d"]`. Can provide multiple formats and they will be tried in order.
-"require_dates": True,
+* `date_format`: (default: `["%Y-%m-%d"]`). Encoding format for date. Can provide multiple formats and they will be tried in order.
+* `require_dates` {bool} (default: True) Should sequences without dates be discarded?
 
 #### filtering settings
-* `filters`: Tuple. Of Tuples. With potentially dictionaries inside. `((a, b), (a, b), ...)`
+* `filters`: {Tuple. Of Tuples. With potentially dictionaries inside. `((a, b), (a, b), ...)`}
   * `a`: name of filter (string)
   * `b`: lambda function _or_ dictionary.
 
@@ -59,8 +58,8 @@ To avoid problems here, it's easiest to follow the example in `H7N9`:
 
 
 #### Complete Genomes & Subsampling
-* `ensure_all_segments`: bool. Should only samples with sequences in each segement be included?
-* `subsample`: `False` or a dict. Dict has keys (each is optional or can have the value `None`)
+* `ensure_all_segments`: bool. Should only samples with sequences in each segment be included?
+* `subsample`: {`False` || dict} (default: `False`). Dict has keys (each is optional or can have the value `None`)
   * `category`  -- callable that assigns each sequence to a category for subsampling
   * `priority`  -- callable that assigns each sequence a priority to be included in the final sample. this is applied independently in each category
   * `threshold` -- integer (number per category) or callable that determines the number of sequences from each category that is included in the final set. takes arguments, cat and seq.
@@ -69,6 +68,7 @@ To avoid problems here, it's easiest to follow the example in `H7N9`:
 References are set here, and stored in the same format as the other sequences, but in `JSON.reference.refName`.
 Due to the inconsistencies in genbank / reference formats, you must specify the values for the `header_fields` here.
 Perhaps one day it'll be possible to define genes here as well.
+Ideally these will be provided in the database so this will be unnecessary.
 It's not essential to have a reference for each segment, but it's highly recommended.
   * `references`: Dictionary with keys corresponding to `segments`. Each value is a dictionary with:
     * `path`: path to genbank file
