@@ -5,6 +5,9 @@ from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences import sequence_set, num_date
 from base.tree import tree
 from base.process import process
+from base.frequencies import alignment_frequencies, tree_frequencies
+from Bio.SeqFeature import FeatureLocation
+import numpy as np
 from datetime import datetime
 import os
 from glob import glob
@@ -15,13 +18,57 @@ regions = ["japan_korea","china","south_asia","southeast_asia", "south_pacific",
 colors =  ["#4B26B1", "#3F4ACA", "#4272CE", "#4D92BF", "#5DA8A3", "#74B583", "#8EBC66", "#ACBD51", "#C8B944", "#DDA93C", "#E68B35", "#E3602D", "#DC2F24"]
 region_cmap = zip(regions, colors)
 
+## These need to be adjusted...
+region_groups = {'NA':'north_america',
+                 'AS':['china', 'japan_korea'],
+                 'WA': 'west_asia',
+                'SEA': ['south_asia', 'southeast_asia'],
+                 'OC':'oceania',
+                 'EU':'europe',
+                 'SA': 'south_america',
+                 'AF': 'africa'}
+
+##### Specify visualization parameters #####
 color_options = {
     "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete", "color_map": region_cmap},
     "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
+    "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"},
 }
 
 attribute_nesting = {'geographic location':['region'], 'authors':['authors']}
-panels = ['tree', 'map', 'entropy']#, 'frequencies']
+panels = ['tree', 'map', 'entropy', 'frequencies']
+
+##### Define clades #####
+genotypes = {
+                        "denv1":{
+                        'I': [('E', 8, 'S'),('E', 37, 'D'),('E', 155, 'S')],
+                        'II': [('E', 180, 'T'),('E', 345, 'A')],
+                        "V": [('E', 114, 'L'),('E', 161, 'I'),('E', 297, 'T')],
+                        "IV": [('E', 37, 'D'),('E', 88, 'T'),]},
+
+                        "denv2": {
+                        'ASIAN/AMERICAN': [('E', 203, 'D'), ('E', 491, 'A')],
+                        'AMERICAN': [('E', 71, 'D'), ('E', 81, 'T'), ('E', 203, 'D')],
+                        'ASIAN-I': [('E', 83, 'K'), ('E', 141, 'V'), ('E', 226, 'K')],
+                        'COSMOPOLITAN': [('E', 71, 'A'), ('E', 149, 'N'), ('E', 390, 'S')],
+                        'SYLVATIC': [('E', 59, 'F'), ('E', 83, 'V'), ('E', 129, 'V')]},
+
+                        "denv3": {
+                        'I': [('E', 68, 'V'),('E', 124, 'S'),('E', 233, 'K')],
+                        'II': [('E', 154, 'D')],
+                        'III': [('E', 81, 'V'),('E', 132, 'Y'),('E', 171, 'T'),],
+                        'IV': [('E', 22, 'E'),('E', 50, 'V'),('E', 62, 'G')]},
+
+                        "denv4": {
+                        'I': [('E', 233, 'H'),('E', 329, 'T'),('E', 429, 'L')],
+                        'II': [('E', 46, 'T'), ('E', 478, 'T')],
+                        'SYLVATIC': [('E', 132, 'V'), ('E', 154, 'S')]},
+
+                        "all": {}
+                }
+for i in ['denv1', 'denv2', 'denv3', 'denv4']:
+    for k,v in genotypes[i].iteritems():
+        genotypes['all'][i.upper()+' '+k] = v
 
 ##### Utils #####
 def select_serotype(infile, path, serotype):
@@ -115,11 +162,26 @@ class dengue_process(process):
                 assert self.dengue.tree, 'ERROR: No tree, cannot run treetime.'
                 self.dengue.clock_filter(n_iqd=3, plot=True) # Toss sequences that don't show a linear relationship between sampling time and root-to-tip divergence.
                 self.dengue.annotate_tree(Tc=False, timetree=True, reroot='best') # Map attributes from the `fasta_headers` to the tree
+                self.date_range = {'date_min': self.dengue.tree.getDateMin(), 'date_max': self.dengue.tree.getDateMax()} # Set default date range according to the tree height
 
             if 'geo' in steps: # Use a "mugration model" to trace how viruses have moved between regions
                 print('\nRunning geo inference.....\n\n')
                 assert 'treetime' in steps, 'ERROR: Must run step "treetime" to do geo inference.'
                 self.dengue.tree.geo_inference('region')
+
+            if 'frequencies' in steps: # Estimate mutation frequencies
+                print('\nEstimating frequencies....\n\n')
+                from numpy import arange
+                min_pivot = float(self.date_range['date_min'].split('-')[0])
+                max_pivot = float(self.date_range['date_max'].split('-')[0])+(364/365)
+                self.dengue.pivots = arange(min_pivot, max_pivot)
+                self.dengue.estimate_mutation_frequencies(region="global", pivots=self.dengue.pivots, min_freq=.01)
+                # for region in region_groups.iteritems():
+                #     self.dengue.estimate_mutation_frequencies(region=region, min_freq=.05)
+                self.dengue.matchClades(genotypes[self.serotype])
+                self.dengue.estimate_tree_frequencies()
+                # for region in regions:
+                #     self.dengue.estimate_tree_frequencies(region=region)
 
             if 'export' in steps:
                 print('\nExporting.....\n\n')
@@ -132,7 +194,7 @@ if __name__=="__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare web visualization',
-    epilog="Which build steps to run can be configured in __main__; valid options are: ['load', 'align', 'tree', 'treetime', 'geo', 'export']")
+    epilog="Which build steps to run can be configured in __main__; valid options are: ['load', 'align', 'tree', 'treetime', 'geo', 'frequencies', 'export']")
     parser.add_argument('-v', '--viruses_per_month', type = int, default = 3, help='Number of viruses sampled per region per month')
     parser.add_argument('-s', '--serotype', type = str.lower, choices=['denv1', 'denv2', 'denv3', 'denv4', 'all'], default='all', help = 'Which serotype of dengue to build trees for; all = include all serotypes in one build.')
     parser.add_argument('--load', action='store_true', help = 'Recover alignment and tree from file, then run treetime, geo, and export steps.')
@@ -140,9 +202,9 @@ if __name__=="__main__":
     params = parser.parse_args()
 
     if params.load:
-        steps = ['load', 'treetime', 'geo', 'export']
+        steps = ['load', 'treetime', 'geo', 'frequencies', 'export']
     else:
-        steps = ['align', 'tree', 'treetime', 'geo', 'export']
+        steps = ['align', 'tree', 'treetime', 'geo', 'frequencies', 'export']
 
     if params.run_multiple or not params.serotype: # Run all 5 builds.
         print('\n\nRunning all 5 builds.\n\n')

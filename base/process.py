@@ -302,7 +302,7 @@ class process(object):
                       to conform with counting starting at 0 as opposed to 1
         '''
         def match(node, genotype):
-            return all([node.translations[gene][pos+offset]==state if gene in node.translations else node.sequences[pos+offset]==state
+            return all([node.translations[gene][pos+offset]==state if gene in node.translations else node.sequence[pos+offset]==state
                         for gene, pos, state in genotype])
 
         self.clades_to_nodes = {}
@@ -314,7 +314,9 @@ class process(object):
                 self.clades_to_nodes[clade_name].attr['clade_name']=clade_name
             else:
                 print('matchClades: no match found for ', clade_name, genotype)
-
+                for allele in genotype:
+                    partial_matches = filter(lambda x:match(x,[allele]), self.tree.tree.get_nonterminals())
+                    print('Found %d partial matches for allele '%len(partial_matches), allele)
 
     def annotate_tree(self, Tc=0.01, timetree=False, **kwargs):
         if timetree:
@@ -497,6 +499,20 @@ class process(object):
         meta_json["virus_count"] = virus_count
         if "defaults" in self.config["auspice"]:
             meta_json["defaults"] = self.config["auspice"]["defaults"]
+        # TODO: move these to base/config
+        # valid_defaults = {'colorBy': ['region', 'country', 'num_date', 'ep', 'ne', 'rb', 'genotype', 'cHI'],
+        #                   'layout': ['radial', 'rectangular', 'unrooted'],
+        #                   'geoResolution': ['region', 'country', 'division'],
+        #                   'distanceMeasure': ['num_date', 'div']}
+        # for param, value in defaults.items():
+        #     try:
+        #         assert param in valid_defaults and value in valid_defaults[param]
+        #     except:
+        #          print('ERROR: invalid default options provided. Try one of the following instead:', valid_defaults)
+        #          print('Export will continue; default display options can be corrected in the meta.JSON file.')
+        #          continue
+        # meta_json["defaults"] = defaults
+
         try:
             from pygit2 import Repository, discover_repository
             current_working_directory = os.getcwd()
