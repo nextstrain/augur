@@ -10,24 +10,11 @@ from base.utils import generate_cmap, define_latitude_longitude
 from pdb import set_trace
 from pprint import pprint
 
-required_config_fields = [
-    "dir", "file_prefix", "segments", "input_format", "input_paths",
-    "output_folder", "header_fields", "date_format",
-    "require_dates", "colors", "lat_longs"
-]
-
 class prepare(object):
     def __init__(self, config):
         """ check config file, make necessary directories, set up logger """
         super(prepare, self).__init__()
         self.config = combine_configs("prepare", config)
-
-        try:
-            for x in required_config_fields:
-                assert(x in self.config)
-        except AssertionError:
-            print("Fatal Error: Config file is missing field '{}'".format(x))
-            sys.exit(2)
 
         try:
             assert(os.path.basename(os.getcwd()) == self.config["dir"])

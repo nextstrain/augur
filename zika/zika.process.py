@@ -18,7 +18,7 @@ config = {
             "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
             "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
         },
-        "controls": {'geographic location':['region', 'country'], 'authors':['authors']}
+        "controls": {'authors':['authors']}
     }
 }
 
