@@ -18,7 +18,7 @@ cd ../../auspice
 node dev-server.js local # (or npm run start:local)
 ```
 
-### zika
+### zika / ebola
 
 ```
 # ensure zika fasta files in fauna folder (see config in zika.prepare.py for paths)
