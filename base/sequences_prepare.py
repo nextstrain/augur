@@ -196,7 +196,7 @@ class sequence_set(object):
             pass # perhaps not set, no refrence, whatever
         return vals
 
-    def write_json(self, fh, config):
+    def write_json(self, fh, config, prefix):
         # datetime() objects and [arrays] don't go to JSONs
         # not a problem - we still have raw_date to get them back
         for seq in self.seqs.values():
@@ -216,12 +216,11 @@ class sequence_set(object):
         }
         if "traits_are_dates" in config and isinstance(config["traits_are_dates"], (list, tuple)):
             data["info"]["traits_are_dates"] = [trait for trait in config["traits_are_dates"] if trait in config["header_fields"].values()]
+        data["info"]["prefix"] = prefix
         if self.segmentName == "genome":
             data["info"]["input_file"] = config["input_paths"][0]
-            data["info"]["prefix"] = config["file_prefix"]
         else:
             data["info"]["input_file"] = config["input_paths"][config["segments"].index(self.segmentName)]
-            data["info"]["prefix"] = config["file_prefix"] + "_" + self.segmentName
         data["sequences"] = {}
         for seqName, seq in self.seqs.iteritems():
             data["sequences"][seqName] = {
