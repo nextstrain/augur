@@ -166,7 +166,7 @@ class tree(object):
         dates  =   {seq.id:seq.attributes['num_date']
                     for seq in self.aln if 'date' in seq.attributes}
         self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor',
-                            aln = self.aln, verbose=self.verbose)
+                            aln = self.aln, verbose=self.verbose, fill_overhangs=True)
         if root:
             self.tt.reroot(root=root)
         self.tree = self.tt.tree
@@ -289,6 +289,7 @@ class tree(object):
                 node.sequence=np.array([missing_char])
         for node in self.tree.get_nonterminals():
             node.__delattr__('sequence')
+        self.tt.make_reduced_alignment()
         if root_state is not None:
             self.tree.root.split(n=1, branch_length=0.0)
             extra_clade = self.tree.root.clades[-1]
