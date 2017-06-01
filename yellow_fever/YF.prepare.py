@@ -5,27 +5,18 @@ from base.prepare import prepare
 from datetime import datetime
 from base.utils import fix_names
 
-dropped_strains = [
-
-]
+dropped_strains = []
 
 config = {
     "dir": "yellow_fever",
     "file_prefix": "yellow-fever",
-    "segments": False,
-    "input_format": "fasta",
     "input_paths": ["../../fauna/data/yellow_fever.fasta"],
-    "output_folder": "prepared",
     # ArD114972|JX898872|1995-XX-XX|senegal|mosquito
     "header_fields": {0:'strain', 1:'accession', 2:'date', 3:'country', 4:'host'},
-    "date_format": ["%Y-%m-%d"],
-    "require_dates": True,
     "filters": (
         ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
     ),
-    "subsample": False,
     "colors": ["country"], # essential. Maybe False.
-    # "color_defs": ["./colors.tsv"],
     "lat_longs": ["country"], # essential. Maybe False.
     "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
     "reference": {
