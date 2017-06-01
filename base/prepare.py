@@ -92,6 +92,9 @@ class prepare(object):
 
     def ensure_all_segments(self):
         if "ensure_all_segments" in self.config and self.config["ensure_all_segments"] == True:
+            if len(self.segments) == 1:
+                self.log.notify("Ignoring \"ensure_all_segments\" as there's only 1 segment...")
+                return
             in_all = set.intersection(*[set(obj.seqs.keys()) for seg, obj in self.segments.iteritems()])
             # to_drop = {n for segment in self.segments.keys() for n in self.segments[segment].seqs.keys()} - in_all
             self.log.notify("Removing sequences without the full complement of segments")

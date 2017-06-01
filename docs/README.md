@@ -11,7 +11,7 @@ Augur consists of 2 stages: prepare & process. You prepare the data (from fauna,
 
 | Virus         | Status           |
 | ------------- | ------------- |
-| Seasonal flu      | broken |
+| Seasonal flu      | partially working - see flu/README.md |
 | Zika    | working      |
 | Ebola | working      |
 | Dengue | partially working (no freqs, no titers)      |
