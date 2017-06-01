@@ -74,8 +74,73 @@ reference_maps = {
             "use": True,
             "genes": ["HA1", "HA2"]
         }
+    },
+    "yam": {
+        "ha": {
+            "path": "metadata/yam_ha_outgroup.gb",
+            "metadata": {
+                'strain': "B/Singapore/11/1994",
+                'isolate_id': "CY019707",
+                'date': "1994-05-10",
+                'region': "southeast_asia",
+                'country': "Singapore",
+                "city": "Singapore",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "M"
+            },
+            "use": True,
+            "genes": ["HA"]
+        },
+        "na": {
+            "path": "metadata/yam_na_outgroup.gb",
+            "use": True,
+            "genes": ["NA", "NB"]
+        }
+    },
+    "vic": {
+        "ha": {
+            "path": "metadata/vic_ha_outgroup.gb",
+            "metadata": {
+                'strain': "B/Hong Kong/02/1993",
+                'isolate_id': "CY018813",
+                'date': "1993-02-15",
+                'region': "china",
+                'country': "Hong Kong",
+                "city": "Hong Kong",
+                "passage": "4",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "use": True,
+            "genes": ["HA"]
+        }
+    },
+    "h1n1pdm": {
+        "ha": {
+            "path": "metadata/h1n1pdm_ha_outgroup.gb",
+            "metadata": {
+                'strain': "A/Swine/Indiana/P12439/00",
+                'isolate_id': "AF455680",
+                'date': "unknown",
+                'region': "north america",
+                'country': "USA",
+                "city": "unknown",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "use": False,
+            "genes": ["HA"]
+        }
     }
 }
+
+## lots of the references share data
+reference_maps["yam"]["na"]["metadata"] = reference_maps["yam"]["ha"]["metadata"]
 
 reference_viruses = {
     'h3n2': ['A/Wisconsin/67/2005', 'A/Brisbane/10/2007',  'A/Perth/16/2009', 'A/Victoria/361/2011','A/Texas/50/2012', 'A/Switzerland/9715293/2013', 'A/HongKong/4801/2014', 'A/Alaska/232/2015'],
