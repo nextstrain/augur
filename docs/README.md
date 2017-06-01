@@ -1,32 +1,27 @@
+## AUGUR
+Augur consists of 2 stages: prepare & process. You prepare the data (from fauna, most commonly) into a series of JSONs - one per segment. Each of those can then be processed independently.
+
+
 ## Docs:
 * [Prepare](prepare.md)
 * [Process](process.md)
 * [Format of (auspice) output JSONs](auspice_output.md)
 
-## How to run:
+### Status of branch `rejig`:
 
-### H7N9
+| Virus         | Status           |
+| ------------- | ------------- |
+| Seasonal flu      | broken |
+| Zika    | working      |
+| Ebola | working      |
+| Dengue | partially working (no freqs, no titers)      |
+| H7N9 | working      |
 
-```
-# ensure H7N9 fasta files in fauna folder (see config in prepare.H7N9.py for paths)
-cd H7N9
-rm auspice/* prepared/* processed/* #makes it cleaner
-python prepare.H7N9.py # creates JSONs in the folder prepared
-python process.H7N9.py -j prepared/<JSON> # creates files in processed/ and auspice/
-cp auspice/flu_H7N9_HA_* ../../auspice/data/ #assuming your directory structure is like mine!
-cd ../../auspice
-node dev-server.js local # (or npm run start:local)
-```
+Functionality missing everywhere:
+* Reference sequences are not included in the analysis
+* Restore ability limited
+* No frequencies
+* No titers
 
-### zika / ebola
-
-```
-# ensure zika fasta files in fauna folder (see config in zika.prepare.py for paths)
-cd zika
-rm auspice/* prepared/* processed/* #makes it cleaner
-python zika.prepare.py # creates JSONs in the folder prepared
-python zika.process.py # creates files in processed/ and auspice/
-cp auspice/* ../../auspice/data/ #assuming your directory structure is like mine!
-cd ../../auspice
-node dev-server.js local #or npm run start:local
-```
+## How to run
+* see the README.md files in the respective pathgen's folder
