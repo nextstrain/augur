@@ -14,16 +14,20 @@ import argparse
 from pprint import pprint
 from pdb import set_trace
 from flu_info import regions, outliers, reference_maps, reference_viruses, segments
+from flu_subsampling import flu_subsampling
 
 def collect_args():
     parser = argparse.ArgumentParser(description = "Prepare fauna FASTA for analysis")
     parser.add_argument('-l', '--lineages', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default=['h3n2', 'h1n1pdm', 'vic', 'yam'], nargs='+', type=str, help="serotype (default: 'h3n2', 'h1n1pdm', 'vic' & 'yam')")
     parser.add_argument('-r', '--resolutions', default=['2y', '3y', '6y', '12y'], nargs='+', type = str,  help = "resolutions (default: 2y, 3y, 6y & 12y)")
     parser.add_argument('-s', '--segments', choices=segments, default=['ha'], nargs='+', type = str,  help = "segments (default: ha)")
+    parser.add_argument('-v', '--viruses_per_month_seq', type = int, default = 0, help='number of viruses sampled per month (optional)')
+    parser.add_argument('--sampling', default = 'even', type=str,
+                        help='sample evenly (even), or prioritize one region (region), otherwise sample randomly')
     return parser.parse_args()
 
 # for flu, config is a function so it is applicable for multiple lineages
-def make_config(lineage, segments, resolution):
+def make_config(lineage, resolution, params):
     years_back = int(re.search("(\d+)", resolution).groups()[0])
     time_interval = [datetime.strptime(x, '%Y-%m-%d').date() for x in ["{:%Y-%m-%d}".format(datetime.today()), "{:%Y-%m-%d}".format(datetime.today()  - timedelta(days=365.25 * years_back))]]
     reference_cutoff = date(year = time_interval[0].year - 3, month=1, day=1)
@@ -31,9 +35,9 @@ def make_config(lineage, segments, resolution):
     return {
         "dir": "flu",
         "file_prefix": "flu_{}".format(lineage),
-        "segments": segments,
+        "segments": params.segments,
         "resolution": resolution,
-        "input_paths": ["../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in segments],
+        "input_paths": ["../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segments],
         "header_fields": {
             0:'strain', 2:'isolate_id', 3:'date',
             4:'region', 5:'country',    7:"city",
@@ -49,17 +53,12 @@ def make_config(lineage, segments, resolution):
             # what's the order of evaluation here I wonder?
             ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in outliers[lineage]]),
         ),
-        "subsample": {
-            "category": None,
-            "priority": None,
-            "threshold": 1,
-            # TODO: subsampling with regions
-        },
+        "subsample": flu_subsampling(params, years_back),
         "colors": ["country", "region", "city"],
         "color_defs": ["colors.flu.tsv"],
         "lat_longs": ["country", "division"],
         "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
-        "references": {seg:reference_maps[lineage][seg] for seg in segments},
+        "references": {seg:reference_maps[lineage][seg] for seg in params.segments},
     }
 
 if __name__=="__main__":
@@ -71,7 +70,7 @@ if __name__=="__main__":
         for resolution in params.resolutions:
             pprint("Preparing lineage {}, segments: {}, resolution: {}".format(lineage, params.segments, resolution))
 
-            config = make_config(lineage, params.segments, resolution)
+            config = make_config(lineage, resolution, params)
             runner = prepare(config)
             runner.load_references()
             runner.applyFilters()
