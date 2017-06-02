@@ -3,6 +3,7 @@ from flu_info import regions
 import numpy as np
 from collections import defaultdict
 from pprint import pprint
+from base.io_util import myopen
 
 vpm_dict = {
     2: 90,
@@ -14,8 +15,7 @@ vpm_dict = {
 def populate_counts(obj):
     sequence_count_total = defaultdict(int)
     sequence_count_region = defaultdict(int)
-    print("TODO: repeated subsampling")
-    seqs_to_count = obj.seqs.values() #TODO: repeated changes this
+    seqs_to_count = obj.seqs.values()
     for seq in seqs_to_count:
         sequence_count_total[(seq.attributes['date'].year,
                               seq.attributes['date'].month)]+=1
@@ -24,8 +24,15 @@ def populate_counts(obj):
                               seq.attributes['date'].month)]+=1
     return (sequence_count_total, sequence_count_region)
 
+def load_titers(titer_prefix):
+    HI_titer_count = {}
+    with myopen(titer_prefix + "_strains.tsv", 'r') as ifile:
+        for line in ifile:
+            strain, count = line.strip().split()
+            HI_titer_count[strain]=int(count)
+    return HI_titer_count
 
-def flu_subsampling(params, years_back):
+def flu_subsampling(params, years_back, titer_prefix):
     if params.sampling == "even":
         type_of_subsampling = "even"
     elif params.sampling in regions:
@@ -43,22 +50,21 @@ def flu_subsampling(params, years_back):
                               x.attributes['date'].month)
 
     #### DEFINE THE PRIORITY
-    # # load HI titer count to prioritize sequences
-    # HI_titer_count = {}
-    # with myopen(self.HI_strains_fname,'r') as ifile:
-    #     for line in ifile:
-    #         strain, count = line.strip().split()
-    #         HI_titer_count[strain]=int(count)
-    print("sampling priority not yet enabled - need to have titers!!!!")
-    def priority(seq):
-        return np.random.random()
-        # sname = seq.attributes['strain']
-        # if sname in HI_titer_count:
-        #     pr = HI_titer_count[sname]
-        # else:
-        #     pr = 0
-        # return pr + len(seq.seq)*0.0001 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD'])
-
+    try:
+        HI_titer_count = load_titers(titer_prefix)
+    except IOError:
+        print("Couldn't load titer information - using random priorities")
+        HI_titer_count = False
+        def priority(seq):
+            return np.random.random()
+    if HI_titer_count:
+        def priority(seq):
+            sname = seq.attributes['strain']
+            if sname in HI_titer_count:
+                pr = HI_titer_count[sname]
+            else:
+                pr = 0
+            return pr + len(seq.seq)*0.0001 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD'])
 
     ##### DEFINE THE THRESHOLD
     sampling_threshold = vpm_dict[years_back]

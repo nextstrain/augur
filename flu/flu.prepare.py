@@ -53,7 +53,7 @@ def make_config(lineage, resolution, params):
             # what's the order of evaluation here I wonder?
             ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in outliers[lineage]]),
         ),
-        "subsample": flu_subsampling(params, years_back),
+        "subsample": flu_subsampling(params, years_back, "../../fauna/data/vic_2017_06_02"),
         "colors": ["country", "region", "city"],
         "color_defs": ["colors.flu.tsv"],
         "lat_longs": ["country", "division"],

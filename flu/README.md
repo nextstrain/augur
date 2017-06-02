@@ -2,8 +2,8 @@
 
 ### status
 * basic prepare + process working for h3n2 / ha only.
+* single pass (no repeated) subsampling including titer information
 * no titers
-* no regional subsampling
 * no frequencies
 
 
@@ -36,4 +36,25 @@ python flu.prepare.py [options]
 ```
 python flu.process.py [options]
 cp auspice/* ../../auspice/data/
+```
+
+
+### To Do:
+
+* process script needs these calls after the geo inference:
+```
+flu.estimate_tree_frequencies(pivots=pivots)
+for region in regions:
+    flu.estimate_tree_frequencies(region=region)
+flu.dump()
+
+flu.HI_model(criterium = lambda x:len(x.aa_mutations['HA1'])>0)
+H3N2_scores(flu.tree.tree)
+flu.dump()
+flu.matchClades(clade_designations[params.lineage])
+flu.export(extra_attr=['serum'], ...)
+flu.HI_export()
+
+# fn defined in seasonal_flu.py
+plot_sequence_count(flu, store_data_path+'tip_count.png')
 ```
