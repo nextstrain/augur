@@ -58,11 +58,25 @@ To avoid problems here, it's easiest to follow the example in `H7N9`:
 
 
 #### Complete Genomes & Subsampling
-* `ensure_all_segments`: bool. Should only samples with sequences in each segment be included?
-* `subsample`: {`False` || dict} (default: `False`). Dict has keys (each is optional or can have the value `None`)
-  * `category`  -- callable that assigns each sequence to a category for subsampling
-  * `priority`  -- callable that assigns each sequence a priority to be included in the final sample. this is applied independently in each category
-  * `threshold` -- integer (number per category) or callable that determines the number of sequences from each category that is included in the final set. takes arguments, cat and seq.
+* `ensure_all_segments`: {bool} (Default: `True`). Should only samples with sequences in each segment be included? (If there's only one segment this doesn't have any effect)
+
+#### subsampling
+Subsampling is rather complicated in order that most conceivable methods may be employed.
+In essence, there are three components:
+* categorize the sequences, for instance into year-month groupings (the default)
+* assign priorities to each sequence (within each category) - by default this is random
+* threshold the sequences (within each category). By default, the 5 sequences with the highest priority in each category are taken.
+
+The `subsample` dict (setting it to `False`, the default, bypasses subsampling) defines three functions to achieve the above three tasks.
+These functions can either be lambdas, which are applied to each sequence, or they can be higher order functions which are run when subsampling is started and return a lambda function.
+
+The following keys are searched in the `subsample` dict of the `config` file:
+* `category`: can either be a function (usually a lambda) which takes a sequence object and returns a category (anything that can be used as a key in a dict) _OR_ a higher order function that takes `self` (of sequence_set) and returns such a lambda.
+
+* `priority`: similar to above, a lambda with 1 argument (`seq`) _OR_ a higher order function which returns such a lambda. The lambda's return value should be numeric as this is used for sorting.
+
+* `threshold`: an integer (e.g. take _n_ sequences from each category), _OR_ a lambda with 1 argument: they category (see above) of the given sequence, _OR_ a higher order function which returns such a lambda. Lambda's should return an integer.
+
 
 #### References
 References are set here, and stored in the same format as the other sequences, but in `JSON.reference.refName`.

@@ -121,39 +121,49 @@ class sequence_set(object):
     #         self.all_seqs = {key:seq for key, seq in self.all_seqs.iteritems() if func(seq)}
     #     print("Filtered to %d sequences"%len(self.all_seqs))
 
+    def getSubsamplingFunc(self, config, name):
+        defaults = {
+            "category": lambda x: (x.attributes['date'].year, x.attributes['date'].month),
+            "priority": lambda x: np.random.random(),
+            "threshold": lambda x: 5
+        }
+        print("subsampling fn for ", name)
+        try:
+            fnIn = config["subsample"][name]
+        except KeyError:
+            print("not found - using defaults")
+            return defaults[name]
+
+        # first - catch the case of INT threshold
+        if name == "threshold" and type(fnIn) is int:
+            print("thresholding to INT", fnIn)
+            return lambda x: fnIn
+
+        # fnIn may be a higher order function
+        try:
+            fn = fnIn(self)
+            assert(callable(fn))
+            print("HIGHER ORDER :)")
+            return fn
+        except Exception as e:
+            pass
+        try:
+            assert(callable(fnIn))
+            print("CALLABLE :)")
+            return fnIn
+        except AssertionError:
+            pass
+        print("not higher order or callable - falling back to defaults")
+        return defaults[name]
+
+
     def subsample(self, config):
         '''
-        produce a useful set of sequences from the raw input.
-        arguments:
-        category  -- callable that assigns each sequence to a category for subsampling
-        priority  -- callable that assigns each sequence a priority to be included in
-                     the final sample. this is applied independently in each category
-        threshold -- callable that determines the number of sequences from each category
-                     that is included in the final set. takes arguments, cat and seq
-                     alternatively can be an int
+        see docs/prepare.md for explination
         '''
-        # default filters:
-        category = lambda x: (x.attributes['date'].year, x.attributes['date'].month)
-        priority = lambda x: np.random.random()
-        threshold = lambda x: 5
-        # try load them from config
-        try:
-            if callable(config["subsample"]["category"]):
-                category = config["subsample"]["category"]
-        except KeyError:
-            pass
-        try:
-            if callable(config["subsample"]["priority"]):
-                priority = config["subsample"]["priority"]
-        except KeyError:
-            pass
-        try:
-            if callable(config["subsample"]["threshold"]):
-                threshold = config["subsample"]["threshold"]
-            elif type(config["subsample"]["threshold"]) is int:
-                threshold = lambda x: config["subsample"]["threshold"]
-        except KeyError:
-            pass
+        category = self.getSubsamplingFunc(config, "category")
+        priority = self.getSubsamplingFunc(config, "priority")
+        threshold = self.getSubsamplingFunc(config, "threshold")
 
         self.sequence_categories = defaultdict(list)
         names_prior = set(self.seqs.keys())

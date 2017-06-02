@@ -26,6 +26,7 @@ prepare = {
     "date_format": ["%Y-%m-%d"],
     "require_dates": True,
     "subsample": False,
+    "ensure_all_segments": True, #this is ignored if only 1 segment
 }
 
 process = {

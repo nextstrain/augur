@@ -40,7 +40,6 @@ def make_config(lineage, segments, resolution):
             8:"passage",9:'lab',        10:'age',
             11:'gender'
         },
-        "ensure_all_segments": True, #this is ignored if only 1 segment
         "filters": (
             ("Time Interval", lambda s:
                 (s.attributes['date']<=time_interval[0] and s.attributes['date']>=time_interval[1]) or
