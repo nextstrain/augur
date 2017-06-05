@@ -23,7 +23,7 @@ def collect_args():
     parser.add_argument('-s', '--segments', choices=segments, default=['ha'], nargs='+', type = str,  help = "segments (default: ha)")
     parser.add_argument('-v', '--viruses_per_month_seq', type = int, default = 0, help='number of viruses sampled per month (optional)')
     parser.add_argument('--sampling', default = 'even', type=str,
-                        help='sample evenly (even), or prioritize one region (region), otherwise sample randomly')
+                        help='sample evenly over regions (even), or prioritize one region (region name), otherwise sample randomly')
     return parser.parse_args()
 
 # for flu, config is a function so it is applicable for multiple lineages
@@ -59,6 +59,8 @@ def make_config(lineage, resolution, params):
         "lat_longs": ["country", "division"],
         "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
         "references": {seg:reference_maps[lineage][seg] for seg in params.segments},
+        "regions": regions,
+        "time_interval": time_interval,
     }
 
 if __name__=="__main__":

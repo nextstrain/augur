@@ -35,7 +35,7 @@ def load_titers(titer_prefix):
 def flu_subsampling(params, years_back, titer_prefix):
     if params.sampling == "even":
         type_of_subsampling = "even"
-    elif params.sampling in regions:
+    elif params.sampling in [x[0] for x in regions]:
         type_of_subsampling = "priority"
     else:
         type_of_subsampling = "flat"
@@ -71,7 +71,7 @@ def flu_subsampling(params, years_back, titer_prefix):
     if params.viruses_per_month_seq != 0:
         sampling_threshold = params.viruses_per_month_seq
     region_threshold = int(np.ceil(1.0*sampling_threshold/len(regions)))
-    if params.sampling in regions:
+    if type_of_subsampling == "priority":
         priority_region = params.sampling
     if type_of_subsampling == "even":
         def threshold(obj):
@@ -84,7 +84,7 @@ def flu_subsampling(params, years_back, titer_prefix):
                 #x is the collection key, in this case a tuple of (region, year, month)
                 if sequence_count_total[(x[1], x[2])] < sampling_threshold:
                     return sampling_threshold
-                region_counts = sorted([sequence_count_region[(r, x[1], x[2])] for r in regions])
+                region_counts = sorted([sequence_count_region[(r[0], x[1], x[2])] for r in regions])
                 if region_counts[0] > region_threshold:
                     return region_threshold
                 left_to_fill = sampling_threshold - len(regions)*region_counts[0]
@@ -114,7 +114,7 @@ def flu_subsampling(params, years_back, titer_prefix):
                 nregions = len(regions)-1
                 total_threshold_world = sampling_threshold*(1-fraction)
                 region_threshold = int(np.ceil(1.0*total_threshold_world/nregions))
-                region_counts = sorted([sequence_count_region[(r, x[1], x[2])]
+                region_counts = sorted([sequence_count_region[(r[0], x[1], x[2])]
                                         for r in regions if r!=priority_region])
                 if region_counts[0]>region_threshold:
                     return region_threshold

@@ -5,8 +5,19 @@ It lives in a seperate file simply to make flu.prepare.py less cluttered
 
 segments = ["pb2", "pb1", "pa", "ha", "np", "na", "mp", "ns"]
 
-regions = ['africa', 'south_asia', 'europe', 'china', 'north_america',
-           'china', 'south_america', 'japan_korea', 'oceania', 'southeast_asia']
+# regions is list of tuples (region, acronym)
+# acronym = "" means ignore for frequency calcs
+regions = [
+    ('africa',          ""),
+    ('south_asia',      "AS"),
+    ('europe',          "EU"),
+    ('china',           "AS"),
+    ('north_america',   "NA"),
+    ('south_america',   ""),
+    ('japan_korea',     "AS"),
+    ('oceania',         "OC"),
+    ('southeast_asia',  "AS"),
+]
 
 outliers = {
     'h3n2':["A/Sari/388/2006", "A/SaoPaulo/36178/2015", "A/Pennsylvania/40/2010", "A/Pennsylvania/14/2010",

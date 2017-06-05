@@ -231,6 +231,12 @@ class sequence_set(object):
             data["info"]["input_file"] = config["input_paths"][0]
         else:
             data["info"]["input_file"] = config["input_paths"][config["segments"].index(self.segmentName)]
+        if config["time_interval"]:
+            data["info"]["time_interval"] = [str(x) for x in config["time_interval"]]
+        if config["regions"]:
+            data["info"]["regions"] = config["regions"]
+
+
         data["sequences"] = {}
         for seqName, seq in self.seqs.iteritems():
             data["sequences"][seqName] = {
