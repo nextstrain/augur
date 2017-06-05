@@ -4,6 +4,7 @@ sys.path.append('..') # we assume (and assert) that this script is running from 
 from base.process import process
 from base.utils import fix_names
 import argparse
+import numpy as np
 from pprint import pprint
 from pdb import set_trace
 
@@ -23,7 +24,11 @@ def make_config (prepared_json):
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
             },
             "controls": {'geographic location':['country'], 'authors':['authors']}
-        }
+        },
+        "estimate_mutation_frequencies": [
+            {"region": "global", "min_freq": 0.02, "pivot_spacing": 1.0/12, "inertia":np.exp(-1.0/12), "stiffness":0.8*12},
+            {"region": "groups", "min_freq": 0.05, "inertia":np.exp(-1.0/12), "stiffness":0.8*12},
+        ]
     }
 
 if __name__=="__main__":
@@ -37,6 +42,7 @@ if __name__=="__main__":
 
         runner = process(config)
         runner.align()
+        runner.estimate_mutation_frequencies_wrapper()
         runner.build_tree()
         runner.clock_filter()
         runner.annotate_tree(Tc=0.02, timetree=True, reroot='best')

@@ -45,7 +45,8 @@ process = {
             "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
         },
         "controls": {}
-    }
+    },
+    "estimate_mutation_frequencies": False,
 }
 
 def merge(a, b):

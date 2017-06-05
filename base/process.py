@@ -48,6 +48,9 @@ class process(object):
             self.log.fatal("Error loading JSON. Error: {}".format(e))
 
         self.info = data["info"]
+        if "time_interval" in data["info"]:
+            self.info["time_interval"] = [datetime.strptime(x, '%Y-%m-%d').date() for x in data["info"]["time_interval"]]
+
         try:
             self.colors = data["colors"]
         except KeyError:
@@ -147,17 +150,59 @@ class process(object):
             SeqIO.write(msa, self.output_path + "_aligned_" + name + ".mfa", "fasta")
 
 
-    def estimate_mutation_frequencies(self, region="global", pivots=24, include_set=None, min_freq=0.01):
+    def estimate_mutation_frequencies_wrapper(self):
+        if not self.config["estimate_mutation_frequencies"]:
+            return
+        user_params = self.config["estimate_mutation_frequencies"]
+        if isinstance(user_params, dict):
+            user_params = [self.config["estimate_mutation_frequencies"]]
+
+        default_params = {
+            "inertia": 0.0,
+            "min_freq": 0.01,
+            "stiffness": 20.0,
+            "pivots": 24,
+            "region": "global",
+            "include_set": None
+        }
+
+        for user_param_set in user_params:
+            if not isinstance(user_param_set, dict):
+                self.log.warn("Unknown mutation frequencies parameters - skipping")
+                continue
+            params = default_params.copy()
+            params.update(user_param_set)
+
+            if "pivot_spacing" in params:
+                time_interval = self.info["time_interval"]
+                params["pivots"] = np.arange(time_interval[1].year+(time_interval[1].month-1)/12.0,
+                                             time_interval[0].year+time_interval[0].month/12.0,
+                                             params["pivot_spacing"])
+
+            if params["region"] == "groups":
+                acronyms = set([x[1] for x in self.info["regions"] if x[1]!=""])
+                region_groups = {str(x):[str(y[0]) for y in self.info["regions"] if y[1] == x] for x in acronyms}
+                for region in region_groups.iteritems():
+                    params["region"] = region
+                    self.estimate_mutation_frequencies(**params)
+            else:
+                self.estimate_mutation_frequencies(**params)
+
+
+
+
+    def estimate_mutation_frequencies(self, **kwargs):
         '''
         calculate the frequencies of mutation in a particular region
         currently the global frequencies should be estimated first
         because this defines the set of positions at which frequencies in
         other regions are estimated.
         '''
+        include_set = kwargs["include_set"]
         if include_set is None:
             include_set = {}
         if not hasattr(self.seqs, 'aln'):
-            print("Align sequences first")
+            self.log.warn("Align sequences first")
             return
         def filter_alignment(aln, region=None, lower_tp=None, upper_tp=None):
             from Bio.Align import MultipleSeqAlignment
@@ -168,7 +213,7 @@ class process(object):
                 elif type(region)==list:
                     tmp = [s for s in tmp if s.attributes['region'] in region]
                 else:
-                    print("region must be string or list")
+                    self.log.warn("region must be string or list")
                     return
             if lower_tp is not None:
                 tmp = [s for s in tmp if np.mean(s.attributes['num_date'])>=lower_tp]
@@ -178,9 +223,9 @@ class process(object):
 
         if not hasattr(self, 'pivots'):
             tps = np.array([np.mean(x.attributes['num_date']) for x in self.seqs.seqs.values()])
-            self.pivots=make_pivots(pivots, tps)
+            self.pivots=make_pivots(kwargs["pivots"], tps)
         else:
-            print('estimate_mutation_frequencies: using self.pivots')
+            self.log.notify('estimate_mutation_frequencies: using self.pivots')
 
         if not hasattr(self, 'mutation_frequencies'):
             self.mutation_frequencies = {}
@@ -189,6 +234,7 @@ class process(object):
 
         # loop over nucleotide sequences and translations and calcuate
         # region specific frequencies of mutations above a certain threshold
+        region = kwargs["region"]
         if type(region)==str:
             region_name = region
             region_match = region
@@ -196,7 +242,7 @@ class process(object):
             region_name=region[0]
             region_match=region[1]
         else:
-            print ("region must be string or tuple")
+            self.log.warn("region must be string or tuple")
             return
         for prot, aln in [('nuc',self.seqs.aln)]+ self.seqs.translations.items():
             if prot in include_set:
@@ -210,14 +256,15 @@ class process(object):
                 tmp_include_set += set([pos for (pos, mut) in self.mutation_frequencies[('global', prot)]])
             time_points = [np.mean(x.attributes['num_date']) for x in tmp_aln]
             if len(time_points)==0:
-                print('no samples in region', region_name, prot)
+                self.log.notify('no samples in region', region_name, prot)
                 self.mutation_frequency_counts[region_name]=np.zeros_like(self.pivots)
                 continue
 
             aln_frequencies = alignment_frequencies(tmp_aln, time_points, self.pivots,
                                             ws=max(2,len(time_points)//10),
-                                            **self.kwargs)
-            aln_frequencies.mutation_frequencies(min_freq=min_freq, include_set=tmp_include_set,
+                                            inertia = kwargs["inertia"],
+                                            stiffness = kwargs["stiffness"])
+            aln_frequencies.mutation_frequencies(min_freq=kwargs["min_freq"], include_set=tmp_include_set,
                                                  ignore_char='N' if prot=='nuc' else 'X')
             self.mutation_frequencies[(region_name,prot)] = aln_frequencies.frequencies
             self.mutation_frequency_confidence[(region_name,prot)] = aln_frequencies.calc_confidence()
