@@ -3,6 +3,7 @@ from __future__ import division, print_function
 from scipy.interpolate import interp1d
 import time
 import numpy as np
+import sys
 
 debug = False
 log_thres = 10.0
@@ -125,7 +126,7 @@ class frequency_estimator(object):
 
 
     def learn(self, initial_guess=None):
-        print('optimizing with', len(self.pivots), 'pivots')
+        # print('optimizing with', len(self.pivots), 'pivots')
         self.dt = np.diff(self.pivots)
         def logLH(x):
             self.pivot_freq = logit_inv(x, self.pc)
@@ -240,10 +241,10 @@ class nested_frequencies(object):
         self.frequencies = {}
         valid_tps = np.ones_like(self.tps, dtype=bool)
         for mut, obs in sorted_obs[:-1]:
-            print(mut,'...')
+            # print(mut,'...')
             fe = freq_est_clipped(self.tps[valid_tps], obs[valid_tps], self.pivots, **self.kwargs)
             fe.learn()
-            print('done')
+            # print('done')
             self.frequencies[mut] = self.remaining_freq * fe.pivot_freq
             self.remaining_freq *= (1.0-fe.pivot_freq)
             valid_tps = valid_tps&(~obs)
@@ -448,8 +449,9 @@ class alignment_frequencies(object):
                     else: #other wise, call that mutation 'other'
                         obs[(pos, 'other')] = tmp
 
-            print("Estimating frequencies of position:", pos)
-            print("Variants found at frequency:", [(k,o.mean()) for k,o in obs.iteritems()])
+            print("Estimating frequencies of position: {}".format(pos), end="\r")
+            sys.stdout.flush()
+            # print("Variants found at frequency:", [(k,o.mean()) for k,o in obs.iteritems()])
 
             # calculate frequencies, which will be added to the frequencies dict with (pos, mut) as key
             ne = nested_frequencies(tps, obs, self.pivots, **self.kwargs)

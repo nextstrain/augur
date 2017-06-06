@@ -184,8 +184,10 @@ class process(object):
                 region_groups = {str(x):[str(y[0]) for y in self.info["regions"] if y[1] == x] for x in acronyms}
                 for region in region_groups.iteritems():
                     params["region"] = region
+                    self.log.notify("Starting Frequency Estimation for region {}".format(region))
                     self.estimate_mutation_frequencies(**params)
             else:
+                self.log.notify("Starting Frequency Estimation for region {}".format(params["region"]))
                 self.estimate_mutation_frequencies(**params)
 
 
@@ -256,7 +258,7 @@ class process(object):
                 tmp_include_set += set([pos for (pos, mut) in self.mutation_frequencies[('global', prot)]])
             time_points = [np.mean(x.attributes['num_date']) for x in tmp_aln]
             if len(time_points)==0:
-                self.log.notify('no samples in region', region_name, prot)
+                self.log.notify('no samples in region {} (protein: {})'.format(region_name, prot))
                 self.mutation_frequency_counts[region_name]=np.zeros_like(self.pivots)
                 continue
 
