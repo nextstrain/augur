@@ -133,7 +133,7 @@ class process(object):
         '''
         fname = self.output_path + "_aligned.mfa"
         already_done = self.seqs.potentially_restore_align_from_disk(fname)
-        if not already_done:
+        if not already_done or self.config["restore"] == False:
             if codon_align:
                 self.seqs.codon_align(debug=debug)
             else:

@@ -11,6 +11,7 @@ from pdb import set_trace
 def collect_args():
     parser = argparse.ArgumentParser(description = "Process (prepared) JSON(s)")
     parser.add_argument('-j', '--jsons', default="all", nargs='+', type=str, help="prepared JSON(s). \"all\" will do them all. Default = all")
+    parser.add_argument('-f', '--force', default=False, action='store_true', help="overwrite any intermediate files (don't restore)")
     return parser.parse_args()
 
 def make_config (prepared_json):
@@ -32,14 +33,15 @@ def make_config (prepared_json):
     }
 
 if __name__=="__main__":
-    jsons = collect_args().jsons
-    if "all" in jsons:
+    args = collect_args()
+    if "all" in args.jsons:
         jsons = glob.glob("prepared/*.json")
 
-    for prepared_json in jsons:
+    for prepared_json in args.jsons:
         pprint("Processing {}".format(prepared_json))
         config = make_config(prepared_json)
-
+        if args.force:
+            config["restore"] = False
         runner = process(config)
         runner.align()
         runner.estimate_mutation_frequencies_wrapper()
