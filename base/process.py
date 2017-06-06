@@ -294,8 +294,9 @@ class process(object):
 
         tree_freqs = tree_frequencies(self.tree.tree, self.pivots,
                                       node_filter = node_filter_func,
-                                      ws = max(2,self.tree.tree.count_terminals()//10),
-                                      **self.kwargs)
+                                      ws = max(2,self.tree.tree.count_terminals()//10))
+                                    # who knows what kwargs are needed here
+                                    #   **self.kwargs)
 
         tree_freqs.estimate_clade_frequencies()
         conf = tree_freqs.calc_confidence()

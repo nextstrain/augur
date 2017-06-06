@@ -29,7 +29,8 @@ def make_config (prepared_json):
         "estimate_mutation_frequencies": [
             {"region": "global", "min_freq": 0.02, "pivot_spacing": 1.0/12, "inertia":np.exp(-1.0/12), "stiffness":0.8*12},
             {"region": "groups", "min_freq": 0.05, "inertia":np.exp(-1.0/12), "stiffness":0.8*12},
-        ]
+        ],
+        "estimate_tree_frequencies": True,
     }
 
 if __name__=="__main__":
@@ -49,5 +50,16 @@ if __name__=="__main__":
         runner.clock_filter()
         runner.annotate_tree(Tc=0.02, timetree=True, reroot='best')
         runner.run_geo_inference()
+
+        # tree freqs could be in config like mut freqs - which is preferred?
+        if config["estimate_tree_frequencies"]:
+            time_interval = runner.info["time_interval"]
+            pivots = np.arange(time_interval[1].year+(time_interval[1].month-1)/12.0,
+                               time_interval[0].year+time_interval[0].month/12.0,
+                               1.0/12.0)
+            runner.estimate_tree_frequencies(pivots=pivots)
+            for regionTuple in runner.info["regions"]:
+                runner.estimate_tree_frequencies(region=str(regionTuple[0]))
+
         runner.save_as_nexus()
         runner.auspice_export()
