@@ -4,6 +4,7 @@ sys.path.append('..') # we assume (and assert) that this script is running from 
 from base.process import process
 from base.utils import fix_names
 from flu_titers import HI_model, HI_export, H3N2_scores
+from flu_info import clade_designations
 import argparse
 import numpy as np
 from pprint import pprint
@@ -73,6 +74,8 @@ if __name__=="__main__":
             HI_model(runner, )
             # H3N2_scores(runner.tree.tree, runner.config["titers"]["epitope_mask"])
             HI_export(runner)
+
+        runner.matchClades(clade_designations[runner.info["lineage"]])
 
         runner.save_as_nexus()
         runner.auspice_export()
