@@ -49,6 +49,7 @@ process = {
     "estimate_mutation_frequencies": False,
     "estimate_tree_frequencies": False,
     "restore": True,
+    "titers": False,
 }
 
 def merge(a, b):

@@ -235,7 +235,11 @@ class sequence_set(object):
             data["info"]["time_interval"] = [str(x) for x in config["time_interval"]]
         if config["regions"]:
             data["info"]["regions"] = config["regions"]
-
+        try:
+            data["info"]["lineage"] = config["lineage"]
+        except:
+            data["info"]["lineage"] = False
+        data["info"]["segment"] = self.segmentName
 
         data["sequences"] = {}
         for seqName, seq in self.seqs.iteritems():

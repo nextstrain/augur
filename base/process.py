@@ -50,6 +50,8 @@ class process(object):
         self.info = data["info"]
         if "time_interval" in data["info"]:
             self.info["time_interval"] = [datetime.strptime(x, '%Y-%m-%d').date() for x in data["info"]["time_interval"]]
+        self.info["segment"] = data["info"]["segment"]
+        self.info["lineage"] = data["info"]["lineage"]
 
         try:
             self.colors = data["colors"]

@@ -37,6 +37,7 @@ def make_config(lineage, resolution, params):
         "file_prefix": "flu_{}".format(lineage),
         "segments": params.segments,
         "resolution": resolution,
+        "lineage": lineage,
         "input_paths": ["../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segments],
         "header_fields": {
             0:'strain', 2:'isolate_id', 3:'date',
