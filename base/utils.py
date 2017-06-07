@@ -159,3 +159,10 @@ def parse_date(datein, fmts):
         except:
             continue
     return ret
+
+def potentially_combine(source, dest, key, missing=None):
+    try:
+        dest[key] = source[key]
+    except KeyError:
+        if missing != None:
+            dest[key] = missing

@@ -50,7 +50,6 @@ class process(object):
         self.info = data["info"]
         if "time_interval" in data["info"]:
             self.info["time_interval"] = [datetime.strptime(x, '%Y-%m-%d').date() for x in data["info"]["time_interval"]]
-        self.info["segment"] = data["info"]["segment"]
         self.info["lineage"] = data["info"]["lineage"]
 
         try:
@@ -581,15 +580,15 @@ class process(object):
 
     def run_geo_inference(self):
         # run geo inference for all the things we have lat longs for
-        report_likelihoods = False
-        if "geo_inference_likelihoods" in self.config and self.config["geo_inference_likelihoods"] == True:
-            report_likelihoods = True
+        report_confidence = False
+        if "geo_inference_confidence" in self.config and self.config["geo_inference_confidence"] == True:
+            report_confidence = True
         if not self.lat_longs or len(self.lat_longs)==0:
             self.log.notify("no geo inference - no specified lat/longs")
             return
         for geo_attr in self.config["geo_inference"]:
             self.log.notify("running geo inference for {}".format(geo_attr))
-            self.tree.geo_inference(geo_attr, report_likelihoods=report_likelihoods)
+            self.tree.geo_inference(geo_attr, report_confidence=report_confidence)
 
     def save_as_nexus(self):
         save_as_nexus(self.tree.tree, self.output_path + "_timeTree.nex")

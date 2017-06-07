@@ -12,8 +12,6 @@ config = {
     },
     # "in": "prepared/flu_H7N9_HA.json", # should be able to specify from command line
     "geo_inference": ['country', 'division', 'host'], # what traits to perform this on
-    "geo_inference_likelihoods": True,
-    "temporal_confidence": True,
     "auspice": { ## settings for auspice JSON export
         "panels": ['tree', 'map', 'entropy'],
         "extra_attr": [],

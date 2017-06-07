@@ -12,7 +12,7 @@ from datetime import datetime
 import json
 from pdb import set_trace
 import git
-from utils import fix_names, num_date, ambiguous_date_to_date_range
+from utils import fix_names, num_date, ambiguous_date_to_date_range, potentially_combine
 from pprint import pprint
 
 TINY = 1e-10
@@ -231,23 +231,16 @@ class sequence_set(object):
             data["info"]["input_file"] = config["input_paths"][0]
         else:
             data["info"]["input_file"] = config["input_paths"][config["segments"].index(self.segmentName)]
-        if config["time_interval"]:
+        if "time_interval" in config:
             data["info"]["time_interval"] = [str(x) for x in config["time_interval"]]
-        if config["regions"]:
-            data["info"]["regions"] = config["regions"]
-        try:
-            data["info"]["lineage"] = config["lineage"]
-        except:
-            data["info"]["lineage"] = False
-        data["info"]["segment"] = self.segmentName
-
+        potentially_combine(config, data["info"], "regions")
+        potentially_combine(config, data["info"], "lineage", False)
         data["sequences"] = {}
         for seqName, seq in self.seqs.iteritems():
             data["sequences"][seqName] = {
                 "attributes": seq.attributes,
                 "seq": str(seq.seq)
             }
-
         if not self.reference:
             data["reference"] = None
         else:
