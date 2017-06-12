@@ -57,7 +57,7 @@ def make_config(lineage, resolution, params):
         "subsample": flu_subsampling(params, years_back, "../../fauna/data/vic_2017_06_02"),
         "colors": ["country", "region", "city"],
         "color_defs": ["colors.flu.tsv"],
-        "lat_longs": ["country", "division"],
+        "lat_longs": ["country", "region"],
         "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
         "references": {seg:reference_maps[lineage][seg] for seg in params.segments},
         "regions": regions,

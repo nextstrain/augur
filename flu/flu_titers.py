@@ -23,6 +23,10 @@ def HI_model(self):
     for n in self.tree.tree.find_clades():
         n.attr['cTiter'] = n.cTiter
         n.attr['dTiter'] = n.dTiter
+        # print("cumulative: {} delta: {}".format(n.cTiter, n.dTiter))
+    self.config["auspice"]["color_options"]["cTiter"] = {
+        "menuItem": "antigenic advance", "type": "continuous", "legendTitle": "Antigenic Advance", "key": "cTiter"
+    }
 
     # SUBSTITUTION MODEL
     ## currently broken TODO
