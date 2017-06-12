@@ -16,10 +16,11 @@ def collect_args():
     parser.add_argument('-f', '--force', default=False, action='store_true', help="overwrite any intermediate files (don't restore)")
     return parser.parse_args()
 
-def make_config (prepared_json):
+def make_config (prepared_json, args):
     return {
         "dir": "flu",
         "in": prepared_json,
+        "restore": args.force,
         "geo_inference": ['country', 'region'], # what traits to perform this on
         "auspice": { ## settings for auspice JSON export
             "extra_attr": ['serum'],
@@ -39,6 +40,8 @@ def make_config (prepared_json):
             "criterium": lambda x: len(x.aa_mutations['HA'])>0,
             "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
         },
+        "estimate_mutation_frequencies": True,
+        "pivot_spacing": 1.0/12,
     }
 
 if __name__=="__main__":
@@ -48,23 +51,27 @@ if __name__=="__main__":
 
     for prepared_json in args.jsons:
         pprint("Processing {}".format(prepared_json))
-        config = make_config(prepared_json)
-        if args.force:
-            config["restore"] = False
-        runner = process(config)
+        runner = process(make_config(prepared_json, args))
         runner.align()
-        runner.estimate_mutation_frequencies_wrapper()
+
+        # estimate mutation frequencies here.
+        # While this could be in a wrapper, it is hopefully more readable this way!
+        if runner.config["estimate_mutation_frequencies"]:
+            pivots = runner.get_pivots_via_spacing()
+            runner.estimate_mutation_frequencies(pivots=pivots, min_freq=0.02, inertia=np.exp(-1.0/12), stiffness=0.8*12)
+            acronyms = set([x[1] for x in runner.info["regions"] if x[1]!=""])
+            region_groups = {str(x):[str(y[0]) for y in runner.info["regions"] if y[1] == x] for x in acronyms}
+            for region in region_groups.iteritems():
+                runner.estimate_mutation_frequencies(region=region, min_freq=0.02, inertia=np.exp(-1.0/12), stiffness=0.8*12)
+
         runner.build_tree()
         runner.clock_filter()
         runner.annotate_tree(Tc=0.02, timetree=True, reroot='best')
         runner.run_geo_inference()
 
-        # tree freqs could be in config like mut freqs - which is preferred?
-        if "estimate_tree_frequencies" in config and config["estimate_tree_frequencies"]:
-            time_interval = runner.info["time_interval"]
-            pivots = np.arange(time_interval[1].year+(time_interval[1].month-1)/12.0,
-                               time_interval[0].year+time_interval[0].month/12.0,
-                               1.0/12.0)
+        # estimate tree frequencies here.
+        if runner.config["estimate_tree_frequencies"]:
+            pivots = runner.get_pivots_via_spacing()
             runner.estimate_tree_frequencies(pivots=pivots)
             for regionTuple in runner.info["regions"]:
                 runner.estimate_tree_frequencies(region=str(regionTuple[0]))

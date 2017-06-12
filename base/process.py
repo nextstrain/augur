@@ -151,62 +151,36 @@ class process(object):
             SeqIO.write(msa, self.output_path + "_aligned_" + name + ".mfa", "fasta")
 
 
-    def estimate_mutation_frequencies_wrapper(self):
-        if not self.config["estimate_mutation_frequencies"]:
-            return
-        user_params = self.config["estimate_mutation_frequencies"]
-        if isinstance(user_params, dict):
-            user_params = [self.config["estimate_mutation_frequencies"]]
+    def get_pivots_via_spacing(self):
+        try:
+            time_interval = self.info["time_interval"]
+            assert("pivot_spacing" in self.config)
+        except AssertionError:
+            self.log.fatal("Cannot space pivots without prividing \"pivot_spacing\" in the config")
+        except KeyError:
+            self.log.fatal("Cannot space pivots without a time interval in the prepared JSON")
+        return np.arange(time_interval[1].year+(time_interval[1].month-1)/12.0,
+                         time_interval[0].year+time_interval[0].month/12.0,
+                         self.config["pivot_spacing"])
 
-        default_params = {
-            "inertia": 0.0,
-            "min_freq": 0.01,
-            "stiffness": 20.0,
-            "pivots": 24,
-            "region": "global",
-            "include_set": None
-        }
-
-        for user_param_set in user_params:
-            if not isinstance(user_param_set, dict):
-                self.log.warn("Unknown mutation frequencies parameters - skipping")
-                continue
-            params = default_params.copy()
-            params.update(user_param_set)
-
-            if "pivot_spacing" in params:
-                time_interval = self.info["time_interval"]
-                params["pivots"] = np.arange(time_interval[1].year+(time_interval[1].month-1)/12.0,
-                                             time_interval[0].year+time_interval[0].month/12.0,
-                                             params["pivot_spacing"])
-
-            if params["region"] == "groups":
-                acronyms = set([x[1] for x in self.info["regions"] if x[1]!=""])
-                region_groups = {str(x):[str(y[0]) for y in self.info["regions"] if y[1] == x] for x in acronyms}
-                for region in region_groups.iteritems():
-                    params["region"] = region
-                    self.log.notify("Starting Frequency Estimation for region {}".format(region))
-                    self.estimate_mutation_frequencies(**params)
-            else:
-                self.log.notify("Starting Frequency Estimation for region {}".format(params["region"]))
-                self.estimate_mutation_frequencies(**params)
-
-
-
-
-    def estimate_mutation_frequencies(self, **kwargs):
+    def estimate_mutation_frequencies(self,
+                                      inertia=0.0,
+                                      min_freq=0.01,
+                                      stiffness=20.0,
+                                      pivots=24,
+                                      region="global",
+                                      include_set={}):
         '''
         calculate the frequencies of mutation in a particular region
         currently the global frequencies should be estimated first
         because this defines the set of positions at which frequencies in
         other regions are estimated.
         '''
-        include_set = kwargs["include_set"]
-        if include_set is None:
-            include_set = {}
         if not hasattr(self.seqs, 'aln'):
             self.log.warn("Align sequences first")
             return
+        self.log.notify("Starting Frequency Estimation for region {}".format(region))
+
         def filter_alignment(aln, region=None, lower_tp=None, upper_tp=None):
             from Bio.Align import MultipleSeqAlignment
             tmp = aln
@@ -226,7 +200,7 @@ class process(object):
 
         if not hasattr(self, 'pivots'):
             tps = np.array([np.mean(x.attributes['num_date']) for x in self.seqs.seqs.values()])
-            self.pivots=make_pivots(kwargs["pivots"], tps)
+            self.pivots=make_pivots(pivots, tps)
         else:
             self.log.notify('estimate_mutation_frequencies: using self.pivots')
 
@@ -237,7 +211,6 @@ class process(object):
 
         # loop over nucleotide sequences and translations and calcuate
         # region specific frequencies of mutations above a certain threshold
-        region = kwargs["region"]
         if type(region)==str:
             region_name = region
             region_match = region
@@ -248,6 +221,8 @@ class process(object):
             self.log.warn("region must be string or tuple")
             return
         for prot, aln in [('nuc',self.seqs.aln)]+ self.seqs.translations.items():
+            ## try to restore here
+
             if prot in include_set:
                 tmp_include_set = [x for x in include_set[prot]]
             else:
@@ -265,14 +240,15 @@ class process(object):
 
             aln_frequencies = alignment_frequencies(tmp_aln, time_points, self.pivots,
                                             ws=max(2,len(time_points)//10),
-                                            inertia = kwargs["inertia"],
-                                            stiffness = kwargs["stiffness"])
-            aln_frequencies.mutation_frequencies(min_freq=kwargs["min_freq"], include_set=tmp_include_set,
+                                            inertia=inertia,
+                                            stiffness=stiffness)
+            aln_frequencies.mutation_frequencies(min_freq=min_freq, include_set=tmp_include_set,
                                                  ignore_char='N' if prot=='nuc' else 'X')
             self.mutation_frequencies[(region_name,prot)] = aln_frequencies.frequencies
             self.mutation_frequency_confidence[(region_name,prot)] = aln_frequencies.calc_confidence()
             self.mutation_frequency_counts[region_name]=aln_frequencies.counts
 
+        ## save progress here.
 
     def estimate_tree_frequencies(self, region='global', pivots=24):
         '''
