@@ -13,6 +13,7 @@ import json
 from pdb import set_trace
 from base.logger import logger
 from Bio import SeqIO
+import cPickle as pickle
 
 class process(object):
     """process influenza virus sequences in mutliple steps to allow visualization in browser
@@ -146,7 +147,7 @@ class process(object):
         self.seqs.translate() # creates self.seqs.translations
         # save the final alignment!
         SeqIO.write(self.seqs.aln, fname, "fasta")
-        # save additional translations,
+        # save additional translations
         for name, msa in self.seqs.translations.iteritems():
             SeqIO.write(msa, self.output_path + "_aligned_" + name + ".mfa", "fasta")
 
@@ -162,6 +163,27 @@ class process(object):
         return np.arange(time_interval[1].year+(time_interval[1].month-1)/12.0,
                          time_interval[0].year+time_interval[0].month/12.0,
                          self.config["pivot_spacing"])
+
+    def restore_mutation_frequencies(self):
+        try:
+            with open(self.output_path + "_mut_freqs.pickle", 'rb') as fh:
+                pickle_seqs = pickle.load(fh)
+                assert(pickle_seqs == set(self.seqs.seqs.keys()))
+                pickled = pickle.load(fh)
+                assert(len(pickled) == 3)
+                self.mutation_frequencies = pickled[0]
+                self.mutation_frequency_confidence = pickled[1]
+                self.mutation_frequency_counts = pickled[2]
+                self.log.notify("Successfully restored mutation frequencies")
+                return
+        except IOError:
+            pass
+        except AssertionError as err:
+            self.log.notify("Tried to restore mutation frequencies but failed: {}", err)
+            #no need to remove - we'll overwrite it shortly
+        self.mutation_frequencies = {}
+        self.mutation_frequency_confidence = {}
+        self.mutation_frequency_counts = {}
 
     def estimate_mutation_frequencies(self,
                                       inertia=0.0,
@@ -179,7 +201,6 @@ class process(object):
         if not hasattr(self.seqs, 'aln'):
             self.log.warn("Align sequences first")
             return
-        self.log.notify("Starting Frequency Estimation for region {}".format(region))
 
         def filter_alignment(aln, region=None, lower_tp=None, upper_tp=None):
             from Bio.Align import MultipleSeqAlignment
@@ -201,13 +222,11 @@ class process(object):
         if not hasattr(self, 'pivots'):
             tps = np.array([np.mean(x.attributes['num_date']) for x in self.seqs.seqs.values()])
             self.pivots=make_pivots(pivots, tps)
-        else:
-            self.log.notify('estimate_mutation_frequencies: using self.pivots')
+        # else:
+        #     self.log.notify('estimate_mutation_frequencies: using self.pivots')
 
         if not hasattr(self, 'mutation_frequencies'):
-            self.mutation_frequencies = {}
-            self.mutation_frequency_confidence = {}
-            self.mutation_frequency_counts = {}
+            self.restore_mutation_frequencies()
 
         # loop over nucleotide sequences and translations and calcuate
         # region specific frequencies of mutations above a certain threshold
@@ -221,7 +240,10 @@ class process(object):
             self.log.warn("region must be string or tuple")
             return
         for prot, aln in [('nuc',self.seqs.aln)]+ self.seqs.translations.items():
-            ## try to restore here
+            if (region_name,prot) in self.mutation_frequencies:
+                self.log.notify("Skipping Frequency Estimation for region \"{}\", protein \"{}\"".format(region_name, prot))
+                continue
+            self.log.notify("Starting Frequency Estimation for region \"{}\", protein \"{}\"".format(region_name, prot))
 
             if prot in include_set:
                 tmp_include_set = [x for x in include_set[prot]]
@@ -248,7 +270,14 @@ class process(object):
             self.mutation_frequency_confidence[(region_name,prot)] = aln_frequencies.calc_confidence()
             self.mutation_frequency_counts[region_name]=aln_frequencies.counts
 
-        ## save progress here.
+        self.log.notify("Saving mutation frequencies (pickle)")
+        with open(self.output_path + "_mut_freqs.pickle", 'wb') as fh:
+            pickle.dump(set(self.seqs.seqs.keys()), fh, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump((self.mutation_frequencies,
+                         self.mutation_frequency_confidence,
+                         self.mutation_frequency_counts), fh, protocol=pickle.HIGHEST_PROTOCOL)
+
+
 
     def estimate_tree_frequencies(self, region='global', pivots=24):
         '''

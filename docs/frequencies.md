@@ -50,3 +50,11 @@ If region is `None` or `"global"` then all regions are analysed.
   * Keys: {str} region name
   * Values: {numpy.ndarray, same shape as `pivots`}
   To check: is this not overwritten by each protein?!?
+
+#### Saving / Restoring
+**Saving:**
+After each call to `estimate_mutation_frequencies` progress is saved to a pickle in the `processed` directory.
+
+
+**Restoring:** During the first call to `estimate_mutation_frequencies`, this pickle is loaded (if it exists) and subsequent calculations are skipped where possible (i.e. when the key exists).
+The pickle is deemed valid if the names of the sequences are identical.
