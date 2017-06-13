@@ -30,17 +30,13 @@ def make_config (prepared_json, args):
             },
             "controls": {'geographic location':['country'], 'authors':['authors']}
         },
-        # "estimate_mutation_frequencies": [
-        #     {"region": "global", "min_freq": 0.02, "pivot_spacing": 1.0/12, "inertia":np.exp(-1.0/12), "stiffness":0.8*12},
-        #     {"region": "groups", "min_freq": 0.05, "inertia":np.exp(-1.0/12), "stiffness":0.8*12},
-        # ],
-        # "estimate_tree_frequencies": True,
         "titers": {
             "fname": "../../fauna/data/<LINEAGE>_2017_06_02_titers.tsv",
             "criterium": lambda x: len(x.aa_mutations['HA'])>0,
             "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
         },
         "estimate_mutation_frequencies": True,
+        # "estimate_tree_frequencies": True,
         "pivot_spacing": 1.0/12,
     }
 
