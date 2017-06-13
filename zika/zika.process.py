@@ -25,6 +25,7 @@ config = {
 if __name__=="__main__":
     params = parser.parse_args()
     runner = process(config)
+    from pdb import set_trace; set_trace()
     runner.align()
     # if not params.restore:
     #     runner.align()

@@ -34,7 +34,7 @@ class sequence_set(object):
     def __init__(self, logger, sequences, reference, dateFormat):
         super(sequence_set, self).__init__()
         self.log = logger
-        self.reference = None
+        # self.reference = None
         self.proteins = None
 
         # load sequences from the (parsed) JSON - don't forget to sort out dates
@@ -60,6 +60,9 @@ class sequence_set(object):
             self.reference_seq.attributes["date"] = date_struc[2]
 
             # is reference already in self.seqs?
+            
+
+
 
             #sort out the proteins:
             if "genes" in reference and len(reference["genes"]):

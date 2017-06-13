@@ -5,17 +5,6 @@ The output is a single JSON (per segment) containing all the information `Proces
 The hope is that just modifying the `config` dictionary (in, e.g., `H7N9.prepare.py`) is all that is needed for any analysis.
 If you need something a bit more bespoke that can't be done through the config, the idea would be to create a new class which inherits from `Prepare` and use that instead.
 
-### Status:
-
-| Input        | Status           |
-| ------------- | ------------- |
-| fauna FASTA      | DONE |
-| references    | DONE      |
-| CSV metadata | to do      |
-| lat/longs | DONE      |
-| colours (auto) | DONE      |
-| colours (user defined) | DONE      |
-
 ### `Config` dictionary
 As mentioned above, all options are defined in the `config` dict, which is passed to the `Prepare` class.
 Many options have defaults provided, and if so are not required to be in the config file.
@@ -78,25 +67,35 @@ The following keys are searched in the `subsample` dict of the `config` file:
 * `threshold`: an integer (e.g. take _n_ sequences from each category), _OR_ a lambda with 1 argument: they category (see above) of the given sequence, _OR_ a higher order function which returns such a lambda. Lambda's should return an integer.
 
 
-#### References
-References are set here, and stored in the same format as the other sequences, but in `JSON.reference.refName`.
-Due to the inconsistencies in genbank / reference formats, you must specify the values for the `header_fields` here.
-Perhaps one day it'll be possible to define genes here as well.
-Ideally these will be provided in the database so this will be unnecessary.
-It's not essential to have a reference for each segment, but it's highly recommended.
-  * `references`: Dictionary with keys corresponding to `segments`. Each value is a dictionary with:
-    * `path`: path to genbank file
-    * `metadata`: dictionary of `country`->`XXX` etc. Corresponds to the values in `header_fields`. Missing data is given "unknown"
-    * `use`: bool. The reference is used in the alignment stage to define coding regions. But it's not required to be used for the phylogeny etc, and in some cases it's useful not to use it here (e.g. it's older than the samples in question, too divergent e.t.c). Default: False
-    * `genes`: False or array of strings. Genes matching these will be taken forward for analysis. Default: False
+#### Reference(s)
+The Reference sequences is needed for alignment and identification of genes etc, but it doesn't have to be included in the analysis.
+The format by which they are defined is rather verbose and hopefully will become part of the database in the future.
 
-If it's a non-segmented virus, use a single dictionary at `reference` (not `references`)
+**For segmented viruses**:
+  * `references`: {dict} with keys corresponding to `segments`. Each value is a {dict} with keys:
+    * `path` {string} path to genbank file
+    * `include` {int}
+    `0`: the reference will be excluded
+    `1`: the reference will be added to the pool of sequences, but may be subsampled etc
+    `2`: the reference (of that segment) will be included regardless of subsampling.
+    Note that currently it may be filtered later on by TreeTime (TODO).
+    * `metadata` {dict} of _attribute_ -> _value_, where the attributes are those of `header_fields`.
+    `strain` is the only essential attribute, but if you want to add the reference to the dataset then everything should be specified.
+    This data (apart from `strain`) is only used if `include > 0` and the strain is not already in the input fasta file.
+    * `genes` {`False` | arrray of {str}} (Default: `False`)
+    Genes matching these will be taken forward for analysis.
 
-The reference file must be genbank and only entries with `gene` defined are taken. This is never as trivial as it should be. See the references in `H7N9` for working examples.
+**For non-segmented viruses:**
+  * `reference`: {dict} with keys `path`, `metadata` etc
+
+**Reference Genbank File:**
+The reference file must be genbank and only entries with `gene` defined are taken.
+This is never as trivial as it should be.
+See the references in `H7N9` or `zika` for working examples.
 
 
 #### colours
-Colours (sic) are defined for certain fields / traits - usually `country` and `region`
+Colours are defined for certain fields / traits - usually `country` and `region`
 These are crucial if you want to push your data into auspice.
 Eventually i'll write a script to change these after the JSONs have been created.
 But for now...

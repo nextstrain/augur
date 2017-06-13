@@ -26,7 +26,6 @@ class sequence_set(object):
         self.log = logger
         self.segmentName = segmentName
         self.extras = {}
-        self.reference = False
 
     def load_mfa(self, path):
         try:
@@ -70,47 +69,50 @@ class sequence_set(object):
     def load_json(self, path):
         pass
 
+    def _parse_date_per_seq(self, seq, fmts):
+        if 'date' in seq.attributes and seq.attributes['date']!='':
+            for fmt in fmts:
+                try:
+                    if 'XX' in seq.attributes['date']:
+                        min_date, max_date = ambiguous_date_to_date_range(seq.attributes['date'], fmt)
+                        seq.attributes['raw_date'] = seq.attributes['date']
+                        seq.attributes['num_date'] = np.array((num_date(min_date), num_date(max_date)))
+                        seq.attributes['date'] = min_date
+                    else:
+                        if callable(fmt):
+                            tmp = fmt(seq.attributes['date'])
+                        else:
+                            try:
+                                tmp = datetime.strptime(seq.attributes['date'], fmt).date()
+                            except:
+                                tmp = seq.attributes['date']
+                        seq.attributes['raw_date'] = seq.attributes['date']
+                        seq.attributes['num_date'] = num_date(tmp)
+                        seq.attributes['date']=tmp
+                        break
+                except:
+                    continue
+        # ## helpful debugging statements:
+        # try:
+        #     self.log.debug("{} date: {}, raw_date: {}, num_date: {}".format(seq.name, seq.attributes['date'], seq.attributes['raw_date'], seq.attributes['num_date']))
+        # except KeyError:
+        #     self.log.debug("{} missing date(s)".format(seq.name))
+
     def parse_date(self, fmts, prune):
         if not hasattr(self.seqs.values()[0], "attributes"):
             self.log.fatal("parse meta info first")
         from datetime import datetime
         for seq in self.seqs.values():
-            if 'date' in seq.attributes and seq.attributes['date']!='':
-                for fmt in fmts:
-                    try:
-                        if 'XX' in seq.attributes['date']:
-                            min_date, max_date = ambiguous_date_to_date_range(seq.attributes['date'], fmt)
-                            seq.attributes['raw_date'] = seq.attributes['date']
-                            seq.attributes['num_date'] = np.array((num_date(min_date), num_date(max_date)))
-                            seq.attributes['date'] = min_date
-                        else:
-                            if callable(fmt):
-                                tmp = fmt(seq.attributes['date'])
-                            else:
-                                try:
-                                    tmp = datetime.strptime(seq.attributes['date'], fmt).date()
-                                except:
-                                    tmp = seq.attributes['date']
-                            seq.attributes['raw_date'] = seq.attributes['date']
-                            seq.attributes['num_date'] = num_date(tmp)
-                            seq.attributes['date']=tmp
-                            break
-                    except:
-                        continue
-
-        # helpful debugging statements:
-        # for seq in self.seqs.values():
-        #     try:
-        #         self.log.debug("{} date: {}, raw_date: {}, num_date: {}".format(seq.name, seq.attributes['date'], seq.attributes['raw_date'], seq.attributes['num_date']))
-        #     except KeyError:
-        #         self.log.debug("{} missing date(s)".format(seq.name))
-
+            self._parse_date_per_seq(seq, fmts)
         if prune:
             self.filterSeqs("Missing Date", lambda x:'date' in x.attributes and type(x.attributes['date'])!=str)
 
     def filterSeqs(self, funcName, func):
         names = set(self.seqs.keys())
-        self.seqs = {key:seq for key, seq in self.seqs.iteritems() if func(seq)} #or key==self.reference_seq.name
+        if hasattr(self, "reference") and self.reference.include == 2:
+            self.seqs = {key:seq for key, seq in self.seqs.iteritems() if func(seq) or key==self.reference.name}
+        else:
+            self.seqs = {key:seq for key, seq in self.seqs.iteritems() if func(seq)}
         for name in names - set(self.seqs.keys()):
             self.log.drop(name, self.segmentName, funcName)
 
@@ -127,37 +129,37 @@ class sequence_set(object):
             "priority": lambda x: np.random.random(),
             "threshold": lambda x: 5
         }
-        print("subsampling fn for ", name)
+        # print("subsampling fn for ", name)
         try:
             fnIn = config["subsample"][name]
         except KeyError:
-            print("not found - using defaults")
+            # print("not found - using defaults")
             return defaults[name]
 
         # first - catch the case of INT threshold
         if name == "threshold" and type(fnIn) is int:
-            print("thresholding to INT", fnIn)
+            # print("thresholding to INT", fnIn)
             return lambda x: fnIn
 
         # fnIn may be a higher order function
         try:
             fn = fnIn(self)
             assert(callable(fn))
-            print("HIGHER ORDER :)")
+            # print("HIGHER ORDER :)")
             return fn
         except Exception as e:
             pass
         try:
             assert(callable(fnIn))
-            print("CALLABLE :)")
+            # print("CALLABLE :)")
             return fnIn
         except AssertionError:
             pass
-        print("not higher order or callable - falling back to defaults")
+        # print("not higher order or callable - falling back to defaults")
         return defaults[name]
 
 
-    def subsample(self, config):
+    def get_subsampled_names(self, config):
         '''
         see docs/prepare.md for explination
         '''
@@ -174,24 +176,16 @@ class sequence_set(object):
             seq._priority = priority(seq)
             self.sequence_categories[category(seq)].append(seq)
 
-        # sample and record the degree to which a category is under_sampled
-        self.seqs = {}
+        # collect taxa to include
+        include = set([])
         for cat, seqs in self.sequence_categories.iteritems():
             under_sampling = min(1.00, 1.0*len(seqs)/threshold(cat))
             for s in seqs: s.under_sampling=under_sampling
             seqs.sort(key=lambda x:x._priority, reverse=True)
-            self.seqs.update({seq.id:seq for seq in seqs[:threshold(cat)]})
+            include.update([seq.id for seq in seqs[:threshold(cat)]])
 
-        self.log.notify("Subsampling segment {}. n={} -> {}".format(self.segmentName, len(seqs_to_subsample), len(self.seqs)))
-        for name in names_prior - set(self.seqs.keys()):
-            self.log.drop(name, self.segmentName, "subsampled")
-
-
-    # def strip_non_reference(self):
-    #     ungapped = np.array(self.sequence_lookup[self.reference_seq.name])!='-'
-    #     from Bio.Seq import Seq
-    #     for seq in self.aln:
-    #         seq.seq = Seq("".join(np.array(seq)[ungapped]))
+        self.log.notify("Subsampling will take {}/{} strains".format(len(include), len(seqs_to_subsample)))
+        return include
 
     def get_trait_values(self, trait):
         vals = set()
@@ -245,15 +239,16 @@ class sequence_set(object):
             data["reference"] = None
         else:
             data["reference"] = {
-                "attributes": self.reference.attributes,
+                # "attributes": self.reference.attributes,
+                "strain": self.reference.attributes["strain"],
                 "seq": str(self.reference.seq),
-                "genes": self.reference.genes
+                "genes": self.reference.genes,
+                "included": self.reference.name in self.seqs
             }
-
 
         json.dump(data, fh, indent=2)
 
-    def load_reference(self, path, metadata, use=True, genes=False):
+    def load_reference(self, path, fmts, metadata, include=2, genes=False):
         """Assume it's genbank."""
         try:
             self.reference = SeqIO.read(path, 'genbank')
@@ -263,16 +258,10 @@ class sequence_set(object):
         ## some checks
         try:
             assert("strain" in metadata)
+            if include > 0:
+                assert("date" in metadata)
         except AssertionError as e:
             self.log.fatal("Poorly defined reference. Error:".format(e))
-
-        # use the metadata to define things!
-        seq_attr_keys = self.seqs.values()[0].attributes.keys()
-        self.reference.attributes = {k:fix_names(v) for k,v in metadata.items() if k in seq_attr_keys}
-        # date gets changed to raw_date for sequences. be consistent.
-        if 'date' in self.reference.attributes.keys():
-            self.reference.attributes["raw_date"] = self.reference.attributes["date"]
-            del self.reference.attributes["date"]
 
         if genes:
             # we used to make these FeatureLocation objects here, but that won't go to JSON
@@ -281,6 +270,27 @@ class sequence_set(object):
             self.reference.genes = {f.qualifiers['gene'][0]:{"start": int(f.location.start), "end": int(f.location.end), "strand": 1} for f in self.reference.features if 'gene' in f.qualifiers and f.qualifiers['gene'][0] in genes}
         else:
             self.reference.genes = {}
+
+        # use the supplied metadata dict to define attributes
+        seq_attr_keys = self.seqs.values()[0].attributes.keys()
+        self.reference.attributes = {k:fix_names(v) for k,v in metadata.items() if k in seq_attr_keys}
+        self.reference.name = self.reference.attributes["strain"]
+        self.reference.id = self.reference.attributes["strain"]
+
+        # is there any possibility that the reference will be added to the sequences?
+        self.reference.include = include; # flag {0,1,2}
+        if self.reference.name in self.seqs:
+            self.log.notify("Segment {} reference already in dataset".format(self.segmentName))
+            if include == 0:
+                self.log.notify("Removing reference from pool of sequences to analyse")
+                del self.seqs[self.reference.name]
+        elif include > 0:
+            ## add to sequences (tidy up attributes first)
+            self._parse_date_per_seq(self.reference, fmts)
+            missing_attrs = set(seq_attr_keys) - set(self.reference.attributes.keys()) - set(["date", "num_date"])
+            if len(missing_attrs) > 0:
+                self.log.notify("Including reference in segment {} but the following attributes are missing: {}".format(self.segmentName, " & ".join(missing_attrs)))
+                self.seqs[self.reference.name] = self.reference
 
 if __name__=="__main__":
     pass

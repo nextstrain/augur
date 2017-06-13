@@ -37,10 +37,10 @@ config = {
     "reference": {
         "path": "metadata/zika_outgroup.gb",
         "metadata": {
-            'strain': "reference", "accession": "KX369547", "date": "2013-10-25",
+            'strain': "PF13/251013_18", "accession": "KX369547", "date": "2013-10-25",
             'host': "human", 'country': "French Polynesia"
         },
-        "use": False,
+        "include": 2,
         "genes": ['CA', 'PRO', 'MP', 'ENV', 'NS1', 'NS2A',
                   'NS2B', 'NS3', 'NS4A', 'NS4B', 'NS5']
     }

@@ -82,7 +82,7 @@ reference_maps = {
                 'age': "unknown",
                 'gender': "unknown"
             },
-            "use": True,
+            "include": 0,
             "genes": ["HA1", "HA2"]
         }
     },
@@ -106,7 +106,7 @@ reference_maps = {
         },
         "na": {
             "path": "metadata/yam_na_outgroup.gb",
-            "use": True,
+            "include": 0,
             "genes": ["NA", "NB"]
         }
     },
@@ -125,7 +125,7 @@ reference_maps = {
                 'age': "unknown",
                 'gender': "unknown"
             },
-            "use": True,
+            "include": 0,
             "genes": ["HA"]
         }
     },
@@ -144,7 +144,7 @@ reference_maps = {
                 'age': "unknown",
                 'gender': "unknown"
             },
-            "use": False,
+            "include": 0,
             "genes": ["HA"]
         }
     }

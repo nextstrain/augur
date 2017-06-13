@@ -79,16 +79,15 @@ class prepare(object):
                     self.log.warn("Filter {} not applied - neither callable or dict of callables".format(fName))
 
     def subsample(self):
-        """ subsample only the first one, then filter the rest such that the names match """
+        """ subsample only the first segment, then filter the rest such that the names match
+        note that if reference.include == 2 (per segment) there may be different seqs per segment
+        """
         if "subsample" not in self.config or self.config["subsample"] == False:
             return
-        # subsample the first (may be the only one)
-        self.segments[self.config["segments"][0]].subsample(self.config)
-        subsampled_taxa = self.segments[self.config["segments"][0]].seqs.keys()
-        for idx in range(1, len(self.config["segments"])):
-            self.segments[self.config["segments"][idx]].filterSeqs("subsampled", lambda s: s.id in subsampled_taxa)
-            self.log.notify("Matched segment {} to subsampled taxa. n: {}".format(self.config["segments"][idx], len(self.segments[self.config["segments"][idx]].seqs)))
-
+        taxa_to_include = self.segments[self.config["segments"][0]].get_subsampled_names(self.config)
+        for name in self.config["segments"]:
+            self.segments[name].filterSeqs("subsampled", lambda s: s.id in taxa_to_include)
+            self.log.notify("Subsampled segment {}. n={}".format(name, len(self.segments[name].seqs)))
 
     def ensure_all_segments(self):
         if "ensure_all_segments" in self.config and self.config["ensure_all_segments"] == True:
@@ -100,6 +99,7 @@ class prepare(object):
             self.log.notify("Removing sequences without the full complement of segments")
             for seg, obj in self.segments.iteritems():
                 obj.filterSeqs("ensure_all_segments", lambda s: s.name in  in_all)
+                # NB if reference.include == 2 the refs will be kept (per segment)
             self.log.notify("n(seqs): "+ ", ".join([a+"="+str(len(b.seqs)) for a,b in self.segments.items()]))
 
     """for the proper english speakers"""
@@ -173,14 +173,13 @@ class prepare(object):
         if "reference" in self.config:
             if len(self.config["segments"]) > 1:
                 self.log.fatal("Config must define references (not reference) for segemented virus")
-            self.segments[self.config["segments"][0]].load_reference(**self.config["reference"])
+            self.segments[self.config["segments"][0]].load_reference(fmts=self.config["date_format"], **self.config["reference"])
         elif "references" in self.config:
             for k, v in self.config["references"].iteritems():
                 if k not in self.segments.keys():
                     self.log.warn("Reference segment {} not found in segments".format(k))
                 else:
-                    self.segments[k].load_reference(**v)
-
+                    self.segments[k].load_reference(fmts=self.config["date_format"], **v)
 
 
     def write_to_json(self):

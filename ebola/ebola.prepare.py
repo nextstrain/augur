@@ -36,7 +36,7 @@ config = {
             'strain': "reference", "accession": "KR075003", "date": "2014-XX-XX",
             'host': "human", 'country': "Liberia"
         },
-        "use": False,
+        "include": 0,
         "genes": ['NP', 'VP35', 'VP40', 'GP', 'sGP', 'VP30', 'VP24', 'L']
     }
 }

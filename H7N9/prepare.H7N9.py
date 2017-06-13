@@ -8,6 +8,8 @@ To be processed by augur
 from __future__ import print_function
 import os, sys
 sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+sys.path.append('reference_segments')
+from reference_info import references
 from base.prepare import prepare
 from datetime import datetime
 from base.utils import fix_names
@@ -23,8 +25,7 @@ dropped_strains = [
 config = {
     "dir": "H7N9", # the current directory. You mush be inside this to run the script.
     "file_prefix": "flu_h7n9",
-    # "segments": ["HA", "NA"],
-    "segments": ["pb2", "pb1", "pa", "ha", "np", "na", "mp", "ns"], # set to False, or ["something"] if not segmented...
+    "segments": ["pb2", "pb1", "pa", "ha", "np", "na", "mp", "ns"],
     "input_format": "fasta",
     "input_paths": [
         "../../fauna/data/h7n9_pb2.fasta",
@@ -34,9 +35,7 @@ config = {
         "../../fauna/data/h7n9_np.fasta",
         "../../fauna/data/h7n9_na.fasta",
         "../../fauna/data/h7n9_mp.fasta",
-        "../../fauna/data/h7n9_ns.fasta",
-        # "test_input/h7n9.ha.fasta",
-        # "test_input/h7n9.na.fasta"
+        "../../fauna/data/h7n9_ns.fasta"
     ],
     "output_folder": "prepared",
     # note that "strain" is essential and "date" is special
@@ -70,94 +69,18 @@ config = {
         })
     ),
     # see the docs for this too! if you don't want to subsample, set it to False
-    "subsample": False,
-    # "subsample": {
-    #     "category": None,
-    #     "priority": None,
-    #     "threshold": 2,
-    # },
+    # "subsample": False,
+    "subsample": {
+        "category": None,
+        "priority": None,
+        "threshold": 2,
+    },
 
     # see the docs for what's going on with colours (sic) & lat/longs
     "colors": ["country", "division", "host"], # essential. Maybe False.
     "lat_longs": ["country", "division"], # essential. Maybe False.
     "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
-
-    # again, see docs for reference definitions
-    "references": {
-        "pb2": {
-            "path": "reference_segments/pb2.gb",
-            "metadata": {
-                'strain': "reference", "accession": "NC_026422", "date": "2013-03-05",
-                'host': "human", 'country': "china", 'division': "Shanghai"
-            },
-            "use": True,
-            "genes": ["PB2"]
-        },
-        "pb1": {
-            "path": "reference_segments/pb1.gb",
-            "metadata": {
-                'strain': "reference", "accession": "NC_026423", "date": "2013-03-05",
-                'host': "human", 'country': "china", 'division': "Shanghai"
-            },
-            "use": True,
-            "genes": ["PB1", "PB1-F2"]
-        },
-        "pa": {
-            "path": "reference_segments/pa.gb",
-            "metadata": {
-                'strain': "reference", "accession": "NC_026424", "date": "2013-03-05",
-                'host': "human", 'country': "china", 'division': "Shanghai"
-            },
-            "use": True,
-            "genes": ["PA", "PA-X"]
-        },
-        "ha": {
-            "path": "reference_segments/ha.gb",
-            "metadata": {
-                'strain': "reference", "accession": "KJ411975", "date": "2014-01-03",
-                'host': "human", 'country': "china", 'division': "Shanghai"
-            },
-            "use": True,
-            "genes": ["SigPep", "HA1", "HA2"]
-        },
-        "np": {
-            "path": "reference_segments/np.gb",
-            "metadata": {
-                'strain': "reference", "accession": "NC_026426", "date": "2013-03-05",
-                'host': "human", 'country': "china", 'division': "Shanghai"
-            },
-            "use": True,
-            "genes": ["NP"]
-        },
-        "na": {
-            "path": "reference_segments/na.gb",
-            "metadata": {
-                'strain': "reference", "accession": "NC_026429", "date": "2013-03-05",
-                'host': "human", 'country': "china", 'division': "Shanghai"
-            },
-            "use": True,
-            "genes": ["NA"]
-        },
-        "mp": {
-            "path": "reference_segments/m2.gb",
-            "metadata": {
-                'strain': "reference", "accession": "NC_026427", "date": "2013-03-05",
-                'host': "human", 'country': "china", 'division': "Shanghai"
-            },
-            "use": True,
-            "genes": ["M1", "M2"]
-        },
-        "ns": {
-            "path": "reference_segments/ns.gb",
-            "metadata": {
-                'strain': "reference", "accession": "NC_026428", "date": "2013-03-05",
-                'host': "human", 'country': "china", 'division': "Shanghai"
-            },
-            "use": True,
-            "genes": ["NEP", "NS1"]
-        },
-    }
-
+    "references": references, # imported
 }
 
 
