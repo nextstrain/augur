@@ -13,3 +13,16 @@ To run corresponding augur builds:
 
 **N.B.:** By default, serotype-specific builds use the respective reference genomes specified by [LANL](https://hfv.lanl.gov/content/sequence/HFV/GenomeMapper/GenomeMapper.html).
 The all-serotype build uses the reference genome from serotype 4.
+
+
+# rejig status
+* basic prepare / process working
+* titers: NO
+* frequencies: NO
+
+```
+cd dengue
+rm prepared/* auspice/* processed/*
+python dengue.prepare.py -s <SEROTYPE>
+python dengue.process.py -j <prepared/JSON>
+```

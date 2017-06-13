@@ -1,23 +1,23 @@
 LOCUS       NC_026424               2176 bp    cRNA    linear   VRL 06-FEB-2015
 DEFINITION  Influenza A virus (A/Shanghai/02/2013(H7N9)) segment 3 polymerase
-	    PA (PA) and PA-X protein (PA-X) genes, complete cds.
+      PA (PA) and PA-X protein (PA-X) genes, complete cds.
 ACCESSION   NC_026424
 VERSION     NC_026424.1
 DBLINK      BioProject: PRJNA274585
 KEYWORDS    RefSeq.
 SOURCE      Influenza A virus (A/Shanghai/02/2013(H7N9))
   ORGANISM  Influenza A virus (A/Shanghai/02/2013(H7N9))
-	    Viruses; ssRNA viruses; ssRNA negative-strand viruses;
-	    Orthomyxoviridae; Influenzavirus A.
+            Viruses; ssRNA viruses; ssRNA negative-strand viruses;
+            Orthomyxoviridae; Influenzavirus A.
 REFERENCE   1  (bases 1 to 2176)
   AUTHORS   Zhu,H., Wang,D., Kelvin,D.J., Li,L., Zheng,Z., Yoon,S.W.,
-	    Wong,S.S., Farooqui,A., Wang,J., Banner,D., Chen,R., Zheng,R.,
-	    Zhou,J., Zhang,Y., Hong,W., Dong,W., Cai,Q., Roehrl,M.H.,
-	    Huang,S.S., Kelvin,A.A., Yao,T., Zhou,B., Chen,X., Leung,G.M.,
-	    Poon,L.L., Webster,R.G., Webby,R.J., Peiris,J.S., Guan,Y. and
-	    Shu,Y.
+            Wong,S.S., Farooqui,A., Wang,J., Banner,D., Chen,R., Zheng,R.,
+            Zhou,J., Zhang,Y., Hong,W., Dong,W., Cai,Q., Roehrl,M.H.,
+            Huang,S.S., Kelvin,A.A., Yao,T., Zhou,B., Chen,X., Leung,G.M.,
+            Poon,L.L., Webster,R.G., Webby,R.J., Peiris,J.S., Guan,Y. and
+            Shu,Y.
   TITLE     Infectivity, transmission, and pathology of human-isolated H7N9
-	    influenza virus in ferrets and pigs
+            influenza virus in ferrets and pigs
   JOURNAL   Science 341 (6142), 183-186 (2013)
    PUBMED   23704376
   REMARK    Erratum:[Science. 2013 Aug 30;341(6149):959]
@@ -25,85 +25,85 @@ REFERENCE   2  (bases 1 to 2176)
   CONSRTM   NCBI Genome Project
   TITLE     Direct Submission
   JOURNAL   Submitted (04-FEB-2015) National Center for Biotechnology
-	    Information, NIH, Bethesda, MD 20894, USA
+            Information, NIH, Bethesda, MD 20894, USA
 REFERENCE   3  (bases 1 to 2176)
   AUTHORS   Zhu,H., Wang,D., Kelvin,D.J., Li,L., Zheng,Z., Yoon,S.W.,
-	    Wong,S.S., Farooqui,A., Wang,J., Banner,D., Chen,R., Zheng,R.,
-	    Zhou,J., Zhang,Y., Hong,W., Dong,W., Cai,Q., Roehrl,M.A.,
-	    Huang,S.H., Calvin,A.A., Yao,T., Zhou,B., Chen,X., Leung,G.M.,
-	    Poon,L.L., Webster,R.G., Webby,R.J., Peiris,J.S., Guan,Y. and
-	    Shu,Y.
+            Wong,S.S., Farooqui,A., Wang,J., Banner,D., Chen,R., Zheng,R.,
+            Zhou,J., Zhang,Y., Hong,W., Dong,W., Cai,Q., Roehrl,M.A.,
+            Huang,S.H., Calvin,A.A., Yao,T., Zhou,B., Chen,X., Leung,G.M.,
+            Poon,L.L., Webster,R.G., Webby,R.J., Peiris,J.S., Guan,Y. and
+            Shu,Y.
   TITLE     Direct Submission
   JOURNAL   Submitted (10-MAY-2013) Centre of Influenza Research, School of
-	    Public Health, The University of Hong Kong, 5/F, Laboratory Block,
-	    LKS Faculty of Medicine Building, 21 Sasson Road, Pokfulm, Hong
-	    Kong SAR, China
+            Public Health, The University of Hong Kong, 5/F, Laboratory Block,
+            LKS Faculty of Medicine Building, 21 Sasson Road, Pokfulm, Hong
+            Kong SAR, China
 COMMENT     REVIEWED REFSEQ: This record has been curated by NCBI staff. The
-	    reference sequence is identical to KF021596.
-	    GenBank Accession Numbers KF021594-KF021601 represent sequences
-	    from the 8 segments of Influenza A virus
-	    (A/Shanghai/02/2013(H7N9)).
+            reference sequence is identical to KF021596.
+            GenBank Accession Numbers KF021594-KF021601 represent sequences
+            from the 8 segments of Influenza A virus
+            (A/Shanghai/02/2013(H7N9)).
 
-	    ##Assembly-Data-START##
-	    Assembly Method       :: Lasergene v. 8.0
-	    Sequencing Technology :: 454
-	    ##Assembly-Data-END##
-	    COMPLETENESS: full length.
+            ##Assembly-Data-START##
+            Assembly Method       :: Lasergene v. 8.0
+            Sequencing Technology :: 454
+            ##Assembly-Data-END##
+            COMPLETENESS: full length.
 FEATURES             Location/Qualifiers
      source          1..2176
-		     /organism="Influenza A virus (A/Shanghai/02/2013(H7N9))"
-		     /mol_type="viral cRNA"
-		     /strain="A/Shanghai/02/2013"
-		     /serotype="H7N9"
-		     /host="Homo sapiens"
-		     /db_xref="taxon:1332244"
-		     /segment="3"
-		     /country="China"
-		     /collection_date="05-Mar-2013"
-		     /note="passage details: E1"
+                     /organism="Influenza A virus (A/Shanghai/02/2013(H7N9))"
+                     /mol_type="viral cRNA"
+                     /strain="A/Shanghai/02/2013"
+                     /serotype="H7N9"
+                     /host="Homo sapiens"
+                     /db_xref="taxon:1332244"
+                     /segment="3"
+                     /country="China"
+                     /collection_date="05-Mar-2013"
+                     /note="passage details: E1"
      gene            1..2151
-		     /gene="PA"
-		     /locus_tag="TS66_s3gp1"
-		     /db_xref="GeneID:23104225"
+                     /gene="PA"
+                     /locus_tag="TS66_s3gp1"
+                     /db_xref="GeneID:23104225"
      CDS             1..2151
-		     /gene="PA"
-		     /locus_tag="TS66_s3gp1"
-		     /codon_start=1
-		     /product="polymerase PA"
-		     /protein_id="YP_009118473.1"
-		     /db_xref="GeneID:23104225"
-		     /translation="MEDFVRQCFNPMIVELAEKAMKEYGEDPKIETNKFASICTHLEV
-		     CFMYSDFHFIDERGESTIIESGDPNALLKHRFEIIEGRDRTMAWTVVNSICNTTGAEK
-		     PKFLPDLYDYKENRFIEIGVTRREVHIYYLEKANKIKSEKTHIHIFSFTGEEMATKAD
-		     YTLDEESRARIKTRLFTIRQEMASRGLWDSFRQSERGEETIEERFEITGTMRRLADQS
-		     LPPNFSSLENFRAYVDGFEPNGCIEGKLSQMSKEVNARIEPFLRTTPRPLRLPNGPPC
-		     SQRSKFLLMDALKLSIEDPSHEGEGIPLYDAIKCMKTFFGWKEPNIIKPHEKGINPNY
-		     LLTWKQVLAELQDIENEEKIPRTKNMKKTSQLKWALGENMAPEKVDFEDCKDVNDLKQ
-		     YNSDEPEPRSLACWIQNEFNKACELTDSSWVELDEIGEDVAPIEHIASMRRNYFTAEV
-		     SHCRATEYIMKGVYINTALLNASCAAMDDFQLIPMISKCRTKEGRRKTNLYGFIIKGR
-		     SHLRNDTDVVNFVSMEFSLTDPRLEPHKWEKYCVLEIGDMLLRTAVGQVSRPMFLYVR
-		     TNGTSKIKMKWGMEMRRCLLQSLQQIESMIEAESSVKEKDLTKEFFENKSETWPIGES
-		     PKGVEEGSIGKVCRTLLAKSVFNSLYASPQLEGFSAESRKLLLIVQALRDNLEPGTFD
-		     LEGLYEAIEECLINDPWVLLNASWFNSFLTHALR"
+                     /gene="PA"
+                     /locus_tag="TS66_s3gp1"
+                     /codon_start=1
+                     /product="polymerase PA"
+                     /protein_id="YP_009118473.1"
+                     /db_xref="GeneID:23104225"
+                     /translation="MEDFVRQCFNPMIVELAEKAMKEYGEDPKIETNKFASICTHLEV
+                     CFMYSDFHFIDERGESTIIESGDPNALLKHRFEIIEGRDRTMAWTVVNSICNTTGAEK
+                     PKFLPDLYDYKENRFIEIGVTRREVHIYYLEKANKIKSEKTHIHIFSFTGEEMATKAD
+                     YTLDEESRARIKTRLFTIRQEMASRGLWDSFRQSERGEETIEERFEITGTMRRLADQS
+                     LPPNFSSLENFRAYVDGFEPNGCIEGKLSQMSKEVNARIEPFLRTTPRPLRLPNGPPC
+                     SQRSKFLLMDALKLSIEDPSHEGEGIPLYDAIKCMKTFFGWKEPNIIKPHEKGINPNY
+                     LLTWKQVLAELQDIENEEKIPRTKNMKKTSQLKWALGENMAPEKVDFEDCKDVNDLKQ
+                     YNSDEPEPRSLACWIQNEFNKACELTDSSWVELDEIGEDVAPIEHIASMRRNYFTAEV
+                     SHCRATEYIMKGVYINTALLNASCAAMDDFQLIPMISKCRTKEGRRKTNLYGFIIKGR
+                     SHLRNDTDVVNFVSMEFSLTDPRLEPHKWEKYCVLEIGDMLLRTAVGQVSRPMFLYVR
+                     TNGTSKIKMKWGMEMRRCLLQSLQQIESMIEAESSVKEKDLTKEFFENKSETWPIGES
+                     PKGVEEGSIGKVCRTLLAKSVFNSLYASPQLEGFSAESRKLLLIVQALRDNLEPGTFD
+                     LEGLYEAIEECLINDPWVLLNASWFNSFLTHALR"
      gene            1..760
-		     /gene="PA-X"
-		     /locus_tag="TS66_s3gp2"
-		     /db_xref="GeneID:23104224"
+                     /gene="PA-X"
+                     /locus_tag="TS66_s3gp2"
+                     /db_xref="GeneID:23104224"
      CDS             join(1..570,572..760)
-		     /gene="PA-X"
-		     /locus_tag="TS66_s3gp2"
-		     /ribosomal_slippage
-		     /codon_start=1
-		     /product="PA-X protein"
-		     /protein_id="YP_009118474.1"
-		     /db_xref="GeneID:23104224"
-		     /translation="MEDFVRQCFNPMIVELAEKAMKEYGEDPKIETNKFASICTHLEV
-		     CFMYSDFHFIDERGESTIIESGDPNALLKHRFEIIEGRDRTMAWTVVNSICNTTGAEK
-		     PKFLPDLYDYKENRFIEIGVTRREVHIYYLEKANKIKSEKTHIHIFSFTGEEMATKAD
-		     YTLDEESRARIKTRLFTIRQEMASRGLWDSFVSLKEAKKQLKKDLKSQEPCAGLPTKV
-		     SHRTSPALKTLEPMWMDSNRTAALRASFLRCQKK"
+                     /gene="PA-X"
+                     /locus_tag="TS66_s3gp2"
+                     /ribosomal_slippage
+                     /codon_start=1
+                     /product="PA-X protein"
+                     /protein_id="YP_009118474.1"
+                     /db_xref="GeneID:23104224"
+                     /translation="MEDFVRQCFNPMIVELAEKAMKEYGEDPKIETNKFASICTHLEV
+                     CFMYSDFHFIDERGESTIIESGDPNALLKHRFEIIEGRDRTMAWTVVNSICNTTGAEK
+                     PKFLPDLYDYKENRFIEIGVTRREVHIYYLEKANKIKSEKTHIHIFSFTGEEMATKAD
+                     YTLDEESRARIKTRLFTIRQEMASRGLWDSFVSLKEAKKQLKKDLKSQEPCAGLPTKV
+                     SHRTSPALKTLEPMWMDSNRTAALRASFLRCQKK"
 ORIGIN
-	1 atggaagact ttgtgcgaca gtgcttcaat ccaatgatcg tcgagcttgc ggaaaaggca
+        1 atggaagact ttgtgcgaca gtgcttcaat ccaatgatcg tcgagcttgc ggaaaaggca
        61 atgaaagaat atggggaaga tccgaaaatc gaaacaaaca aattcgcatc aatatgcaca
       121 cacttagaag tctgcttcat gtactctgat ttccacttca tcgacgaacg aggcgaatca
       181 actataatag aatctggcga tccaaatgcg ctgctgaaac accgatttga aataatcgaa

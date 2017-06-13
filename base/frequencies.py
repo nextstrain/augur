@@ -129,8 +129,10 @@ class frequency_estimator(object):
         self.dt = np.diff(self.pivots)
         def logLH(x):
             self.pivot_freq = logit_inv(x, self.pc)
-            freq = interp1d(self.pivots, x, kind=self.interpolation_type,
-                            assume_sorted=True, bounds_error = False)
+            try:
+                freq = interp1d(self.pivots, x, kind=self.interpolation_type,bounds_error = False, assume_sorted=True) # Throws a bug with some numpy installations, isn't necessary other than for speed.
+            except:
+                freq = interp1d(self.pivots, x, kind=self.interpolation_type,bounds_error = False)
             estfreq = freq(self.tps)
             bernoulli_LH = np.sum(estfreq[self.obs]) - np.sum(np.log(1+np.exp(estfreq)))
 
@@ -208,10 +210,10 @@ class freq_est_clipped(object):
                                   self.pivots[self.good_pivots], **kwargs)
 
     def learn(self):
-        try:
-            self.fe.learn()
-        except:
-            import ipdb; ipdb.set_trace()
+        # try:
+        self.fe.learn()
+        # except:
+        #     import ipdb; ipdb.set_trace()
 
         self.pivot_freq = np.zeros_like(self.pivots)
         self.pivot_freq[self.good_pivots] = self.fe.pivot_freq
@@ -265,7 +267,7 @@ class tree_frequencies(object):
         min_clades  -- smallest clades for which frequencies are estimated.
         '''
         self.tree = tree
-        self.min_clades = min_clades
+        self.min_clades = 10 #min_clades
         self.pivots = pivots
         self.kwargs = kwargs
         self.verbose=verbose
@@ -523,6 +525,3 @@ if __name__=="__main__":
     plot=True
     fe = test_nested_estimator()
     #fe = test_simple_estimator()
-
-
-
