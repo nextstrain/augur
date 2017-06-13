@@ -83,6 +83,9 @@ class process(object):
         for trait in self.info["traits_are_dates"]:
             self.seqs.convert_trait_to_numerical_date(trait, self.info["date_format"])
 
+        ## flag used for debugging
+        self.try_to_restore = True
+
     def dump(self):
         '''
         write the current state to file
@@ -131,11 +134,14 @@ class process(object):
 
     def align(self, codon_align=False, debug=False):
         '''
-        align sequences, remove non-reference insertions, outlier sequences, and translate
+        (1) Align sequences, remove non-reference insertions
+        NB step 1 is skipped if a valid aln file is found
+        (2) Translate
+        (3) Write to multi-fasta
         '''
         fname = self.output_path + "_aligned.mfa"
         already_done = self.seqs.potentially_restore_align_from_disk(fname)
-        if not already_done or self.config["restore"] == False:
+        if not already_done or self.try_to_restore != True:
             if codon_align:
                 self.seqs.codon_align(debug=debug)
             else:
@@ -166,6 +172,7 @@ class process(object):
 
     def restore_mutation_frequencies(self):
         try:
+            assert(self.try_to_restore == True)
             with open(self.output_path + "_mut_freqs.pickle", 'rb') as fh:
                 pickle_seqs = pickle.load(fh)
                 assert(pickle_seqs == set(self.seqs.seqs.keys()))
@@ -321,6 +328,7 @@ class process(object):
         self.tree = tree(aln=self.seqs.aln, proteins=self.proteins, verbose=0)
         newick_file = self.output_path + ".newick"
         try:
+            assert(self.try_to_restore == True)
             assert(os.path.isfile(newick_file))
             self.tree.check_newick(newick_file)
             self.log.notify("Newick file restored from \"{}\"".format(newick_file))
