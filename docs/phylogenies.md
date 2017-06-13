@@ -11,3 +11,14 @@ By default **RAxML** is run using the GTRCAT model with a single starting tree.
 The newick file is saved to `processed/<prefix>.newick`. If this file exists, and the taxa match, then this step is skipped to save time.
 
 ### step 2: TimeTree
+Options here are configurable via the `timetree_options` dictionary in config.
+
+Available parameters:
+* `Tc` (default `0.02`)
+* `confidence` (see below)
+* `use marginal` (see below)
+* `reroot` (default `"best"`)
+* `resolve_polytomies`
+* others related to skyline (todo)
+
+Note that setting `config["temporal confidence"]` turns on `confidence` and `use_marginal`

@@ -163,7 +163,7 @@ class tree(object):
             if not hasattr(node,'attr'):
                 node.attr = {}
 
-
+    ## TODO REMOVE KWARKS - MAKE EXPLICIT
     def timetree(self, Tc=0.01, infer_gtr=True, reroot='best', resolve_polytomies=True,
                  max_iter=2, confidence=False, use_marginal=False, **kwarks):
         self.logger('estimating time tree...',2)

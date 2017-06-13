@@ -20,7 +20,7 @@ if __name__=="__main__":
     runner.align()
     runner.build_tree()
     runner.clock_filter()
-    runner.annotate_tree(Tc=0.02, timetree=True, reroot='best')
+    runner.annotate_tree()
     runner.run_geo_inference()
     runner.save_as_nexus()
     runner.auspice_export()

@@ -66,7 +66,7 @@ if __name__=="__main__":
 
         runner.build_tree()
         runner.clock_filter()
-        runner.annotate_tree(Tc=0.02, timetree=True, reroot='best')
+        runner.annotate_tree()
         runner.run_geo_inference()
 
         # estimate tree frequencies here.

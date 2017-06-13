@@ -386,18 +386,13 @@ class process(object):
                     partial_matches = filter(lambda x:match(x,[allele]), self.tree.tree.get_nonterminals())
                     print('Found %d partial matches for allele '%len(partial_matches), allele)
 
-    def annotate_tree(self, Tc=0.01, timetree=False, **kwargs):
-        if timetree:
-            confidence = False
-            use_marginal = False
-            if "temporal_confidence" in self.config:
-                confidence = self.config["temporal_confidence"]
-                use_marginal = True
-
-            self.tree.timetree(Tc=Tc, infer_gtr=True, confidence=confidence,
-                               use_marginal=use_marginal, **kwargs)
-        else:
-            self.tree.ancestral(**kwargs)
+    def annotate_tree(self):
+        if "temporal_confidence" in self.config:
+            self.config["timetree_options"]["confidence"] = True
+            self.config["timetree_options"]["use_marginal"] = True
+        self.tree.timetree(**self.config["timetree_options"])
+        # do we ever not want to use timetree?? If so:
+        # self.tree.ancestral(**kwargs) instead of self.tree.timetree
         self.tree.add_translations()
         self.tree.refine()
         self.tree.layout()
