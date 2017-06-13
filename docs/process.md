@@ -37,7 +37,8 @@ Normally, everything is done off a JSON via [prepare](./prepare.md)
 * `geo_inference_confidence` {bool} (Default: `True`) Include (normalized) likelihoods from any geographic inference analysis.
 * `temporal_confidence` {bool} (Default: `True`) Include 90% (normalized marginal likelihood) confidence intervals from TreeTime dating analysis.
 * `estimate_mutation_frequencies` {bool} (default: `False`)
-* `pivot_spacing` {float} (default: not present) necessary if you want to calculate pivots through `get_pivots_via_spacing`
+* `pivot_spacing` {float} (default: not present) necessary if you want to calculate pivots through `get_pivots_via_spacing`. See [Frequencies](./frequencies.md)
+* `newick_tree_options` {dict} (default: `{}`) See [Phylogenies](./phylogenies.md)
 
 ##### Auspice output settings
 * `auspice`

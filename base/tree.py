@@ -8,6 +8,7 @@ import math
 from subprocess import CalledProcessError, check_call, STDOUT
 from pprint import pprint
 from pdb import set_trace
+from Bio import Phylo
 try:
     from treetime_augur import TreeTime, utils
 except ImportError:
@@ -33,7 +34,6 @@ def resolve_polytomies(tree):
                 node.clades[1].clades = children[1:]
                 node.clades[1].confidence = None
                 node.clades[1].name = None
-
 
 class tree(object):
     """tree builds a phylgenetic tree from an alignment and exports it for web visualization"""
@@ -82,15 +82,18 @@ class tree(object):
             from cPickle import dump
             dump(node_props, nfile)
 
+    def check_newick(self, newick_file):
+        tree = Phylo.parse(newick_file, 'newick').next()
+        assert(set([x.name for x in tree.get_terminals()]) == set(self.sequence_lookup.keys()))
 
-    def build(self, root='midpoint', raxml=True, raxml_time_limit=1, raxml_bin='raxml', debug=False, num_distinct_starting_trees=1):
+    def build_newick(self, newick_file, root='midpoint', raxml=True, raxml_bin='raxml', debug=False, num_distinct_starting_trees=1):
         from Bio import Phylo, AlignIO
         import subprocess, glob, shutil
         make_dir(self.run_dir)
         os.chdir(self.run_dir)
         for seq in self.aln: seq.name=seq.id
         AlignIO.write(self.aln, 'temp.fasta', 'fasta')
-        out_fname = "tree_infer.newick"
+        out_fname = os.path.join("..", newick_file)
         if raxml:
             self.logger("modified RAxML script - no branch length optimisation or time limit", 1)
             AlignIO.write(self.aln,"temp.phyx", "phylip-relaxed")
@@ -107,54 +110,12 @@ class tree(object):
                 self.logger("RAXML TREE FAILED - check {}/raxml.log".format(self.run_dir), 1)
                 sys.exit(2)
             shutil.copy('RAxML_bestTree.tre', out_fname)
-
-            # if raxml_time_limit>0:
-            #     tmp_tree = Phylo.read('initial_tree.newick','newick')
-            #     resolve_iter = 0
-            #     resolve_polytomies(tmp_tree)
-            #     while (not tmp_tree.is_bifurcating()) and (resolve_iter<10):
-            #         resolve_iter+=1
-            #         resolve_polytomies(tmp_tree)
-            #     Phylo.write(tmp_tree,'initial_tree.newick', 'newick')
-            #     AlignIO.write(self.aln,"temp.phyx", "phylip-relaxed")
-            #     self.logger( "RAxML tree optimization with time limit %d hours"%raxml_time_limit,2)
-            #     # using exec to be able to kill process
-            #     end_time = time.time() + int(raxml_time_limit*3600)
-            #     process = subprocess.Popen("exec " + raxml_bin + " -f d -T " + str(self.nthreads) +
-            #                                 " -j -s temp.phyx -n topology -c 25 -m GTRCAT -p 344312987"
-            #                                 " -t initial_tree.newick > raxml1_stdout", shell=True)
-            #     while (time.time() < end_time):
-            #         if os.path.isfile('RAxML_result.topology'):
-            #             break
-            #         time.sleep(10)
-            #     process.terminate()
-            #
-            #     checkpoint_files = glob.glob("RAxML_checkpoint*")
-            #     if os.path.isfile('RAxML_result.topology'):
-            #         checkpoint_files.append('RAxML_result.topology')
-            #     if len(checkpoint_files) > 0:
-            #         last_tree_file = checkpoint_files[-1]
-            #         shutil.copy(last_tree_file, 'raxml_tree.newick')
-            #     else:
-            #         shutil.copy("initial_tree.newick", 'raxml_tree.newick')
-            # else:
-            #     shutil.copy("initial_tree.newick", 'raxml_tree.newick')
-            #
-            # try:
-            #     self.logger("RAxML branch length optimization", 2)
-            #     os.system(raxml_bin + " -f e -T " + str(self.nthreads)
-            #               + " -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick  > raxml2_stdout")
-            #     shutil.copy('RAxML_result.branches', out_fname)
-            # except:
-            #     self.logger("RAxML branch length optimization failed", 1)
-            #     shutil.copy('raxml_tree.newick', out_fname)
         else:
             tree_cmd = ["fasttree"]
             if self.nuc: tree_cmd.append("-nt")
             tree_cmd.extend(["temp.fasta","1>","initial_tree.newick", "2>", "fasttree_stderr"])
             os.system(" ".join(tree_cmd))
             shutil.copy('initial_tree.newick', out_fname)
-        self.tt_from_file(out_fname, root)
         os.chdir('..')
         if not debug:
             remove_dir(self.run_dir)

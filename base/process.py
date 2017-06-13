@@ -311,19 +311,23 @@ class process(object):
         self.tree_frequency_counts[region] = tree_freqs.counts
 
 
-    def build_tree(self, infile=None, nodefile=None, root='best', debug=False, num_distinct_starting_trees=1):
+    def build_tree(self):
         '''
-        instantiate a tree object and make a time tree
-        if infiles are None, the tree is build from scratch. Otherwise
-        the tree is loaded from file
+        (1) instantiate a tree object (process.tree)
+        (2) If newick file doesn't exist or isn't valid: build a newick tree (normally RAxML)
+        (3) Make a TimeTree
         '''
-        self.log.warn("self.verbose not set")
-        self.tree = tree(aln=self.seqs.aln, proteins=self.proteins, verbose=2)
-        if infile is None:
-            self.tree.build(root=root, debug=debug, num_distinct_starting_trees=num_distinct_starting_trees)
-        else:
-            self.tree.tt_from_file(infile, nodefile=nodefile, root=root)
-
+        # self.log.warn("self.verbose not set")
+        self.tree = tree(aln=self.seqs.aln, proteins=self.proteins, verbose=0)
+        newick_file = self.output_path + ".newick"
+        try:
+            assert(os.path.isfile(newick_file))
+            self.tree.check_newick(newick_file)
+            self.log.notify("Newick file restored from \"{}\"".format(newick_file))
+        except AssertionError:
+            self.tree.build_newick(newick_file, **self.config["newick_tree_options"])
+        self.log.notify("Setting up TimeTree")
+        self.tree.tt_from_file(newick_file, nodefile=None, root="best")
 
     def clock_filter(self, n_iqd=3, plot=True, remove_deep_splits=False):
         self.tree.tt.clock_filter(reroot='best', n_iqd=n_iqd, plot=plot)

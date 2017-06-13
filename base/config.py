@@ -50,6 +50,7 @@ process = {
     "estimate_tree_frequencies": False,
     "restore": True,
     "titers": False,
+    "newick_tree_options": {}
 }
 
 def merge(a, b):
