@@ -49,13 +49,13 @@ process = {
     },
     "estimate_mutation_frequencies": False,
     "estimate_tree_frequencies": False,
-    "restore": True,
     "titers": False,
     "newick_tree_options": {},
     "timetree_options": {
         "Tc": 0.02,
         "reroot": 'best',
-    }
+    },
+    "clean": False,
 }
 
 def merge(a, b):

@@ -31,6 +31,7 @@ Normally, everything is done off a JSON via [prepare](./prepare.md)
   * `data`: progress files intermediate FASTAs, nexus trees etc
   * `auspice`: the finished JSONs for display in auspice
 * `in` {string}: The prepared JSON file. Sometimes defined by command line arguments
+* `clean` {bool} (default `False`) Run a clean build by removing any (previously created) files
 
 ##### Analysis settings
 * `geo_inference` {`False` || array of strings} (Default: `False`) what traits to perform geographic inference (mugration model) upon

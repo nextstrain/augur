@@ -15,7 +15,7 @@ def collect_args():
     parser.add_argument('-j', '--jsons', default=["all"], nargs='+', type=str, help="prepared JSON(s). \"all\" will do them all. Default = all")
     parser.add_argument('--no_mut_freqs', default=False, action='store_true', help="skip mutation frequencies")
     parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
-    parser.add_argument('-f', '--force', default=False, action='store_true', help="overwrite any intermediate files (don't restore)")
+    parser.add_argument('--clean', default=False, action='store_true', help="clean build (remove previous checkpoints)")
     return parser.parse_args()
 
 def make_config (prepared_json, args):
@@ -39,6 +39,7 @@ def make_config (prepared_json, args):
         },
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
+        "clean": args.clean,
         "pivot_spacing": 1.0/12,
     }
 

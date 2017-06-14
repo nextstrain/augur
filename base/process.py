@@ -72,6 +72,11 @@ class process(object):
         self.file_dumps['tree'] = self.output_path + '_tree.newick'
         self.file_dumps['nodes'] = self.output_path + '_nodes.pkl.gz'
 
+        if self.config["clean"] == True:
+            self.log.notify("Removing intermediate files for a clean build")
+            for f in glob.glob(self.output_path+"*"):
+                os.remove(f)
+
         if "reference" in data:
             self.seqs = sequence_set(self.log, data["sequences"], data["reference"], self.info["date_format"])
         else:
@@ -84,7 +89,7 @@ class process(object):
         for trait in self.info["traits_are_dates"]:
             self.seqs.convert_trait_to_numerical_date(trait, self.info["date_format"])
 
-        ## flag used for debugging
+        ## usefull flag to set (from pathogen run file) to disable restoring
         self.try_to_restore = True
 
     def dump(self):
