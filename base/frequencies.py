@@ -406,11 +406,12 @@ class alignment_frequencies(object):
         if include_set is None:
             include_set=[]
         alphabet = np.unique(self.aln)
+        # af: rows correspoind to letters of the alphabet, columns positions in the alignemtn, values: frequencies
         af = np.zeros((len(alphabet), self.aln.shape[1]))
         for ni, n in enumerate(alphabet):
             af[ni] = (self.aln==n).mean(axis=0)
 
-
+        # minor_freqs: frequencies of all alleles not the major one! ignore_char is excluded
         if ignore_char:
             minor_freqs = af[alphabet!=ignore_char].sum(axis=0) - af[alphabet!=ignore_char].max(axis=0)
         else:
@@ -422,12 +423,16 @@ class alignment_frequencies(object):
             nis = nis[af[nis,pos]>0]
             column = self.aln[:,pos]
             if ignore_char: # subset sequences, time points and alphabet to non-gapped and non X
-                good_seq = (column!=ignore_char)&(column!='X')
+                good_seq = (column!=ignore_char)&(column!='X') #array of bools, length = # seqs in aln
                 tps=self.tps[good_seq]
                 column = column[good_seq]
                 nis = nis[(alphabet[nis]!=ignore_char)&(alphabet[nis]!='X')]
             else:
                 tps = self.tps
+
+            if len(nis)==0:
+                # no characters with any frequencies (column of ignore chars)
+                continue
 
             muts = alphabet[nis]
             obs = {}
