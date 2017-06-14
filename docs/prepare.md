@@ -64,7 +64,7 @@ The following keys are searched in the `subsample` dict of the `config` file:
 
 * `priority`: similar to above, a lambda with 1 argument (`seq`) _OR_ a higher order function which returns such a lambda. The lambda's return value should be numeric as this is used for sorting.
 
-* `threshold`: an integer (e.g. take _n_ sequences from each category), _OR_ a lambda with 1 argument: they category (see above) of the given sequence, _OR_ a higher order function which returns such a lambda. Lambda's should return an integer.
+* `threshold`: an integer (e.g. take _n_ sequences from each category), _OR_ a lambda with 1 argument: the category (see above) of the given sequence, _OR_ a higher order function which returns such a lambda. Lambda's should return an integer.
 
 
 #### Reference(s)
@@ -106,7 +106,7 @@ But for now...
 Similar to colours, these are needed if the data is to be pushed into auspice.
 Unlike colours, a file must be provided.
   * `lat_longs`: _False_ or list of traits (appearing in `header_fields`)
-  * `lat_long_defs`: _file path_ or [_array_, _of_, _file_, _paths_]
+  * `lat_long_defs` _file path_ or [_array_, _of_, _file_, _paths_] (default: `'../../fauna/source-data/geo_lat_long.tsv'`)
   ```
   location	country_code	latitude	longitude
   africa	XX	4.070194	21.824559

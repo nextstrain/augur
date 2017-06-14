@@ -21,7 +21,7 @@ Normally, everything is done off a JSON via [prepare](./prepare.md)
 * [estimate tree frequencies](./frequencies.md)
 * Titer models
 * Identify predetermined clades
-* Export for auspice
+* [Export for auspice](./auspice_output.md)
 
 ### Config dict
 
@@ -56,22 +56,3 @@ Normally, everything is done off a JSON via [prepare](./prepare.md)
   * `controls` {dict} (default: `{}`)
     * `geographic_location`
     * `authors`
-
-
-### Current status:
-| Input        | Status           |
-| ------------- | ------------- |
-| basic analysis      | DONE |
-| restarting    | alignment done, tree to do  |
-| command line args | to do      |
-| titers | to do      |
-| clade frequencies | to do      |
-| docs | ongoing |
-
-| Input        | Status           |
-| ------------- | ------------- |
-| H7N9      | working |
-| zika    | working      |
-| seasonal flu | to do      |
-| ebola | to do      |
-| dengue | to do      |
