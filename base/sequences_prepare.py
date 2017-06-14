@@ -105,7 +105,9 @@ class sequence_set(object):
         for seq in self.seqs.values():
             self._parse_date_per_seq(seq, fmts)
         if prune:
+            count = len(self.seqs)
             self.filterSeqs("Missing Date", lambda x:'date' in x.attributes and type(x.attributes['date'])!=str)
+            self.log.notify("Removed sequences with missing dates (segment {}). n: {} -> {}".format(self.segmentName, count, len(self.seqs)))
 
     def filterSeqs(self, funcName, func):
         names = set(self.seqs.keys())
@@ -287,10 +289,10 @@ class sequence_set(object):
         elif include > 0:
             ## add to sequences (tidy up attributes first)
             self._parse_date_per_seq(self.reference, fmts)
+            self.seqs[self.reference.name] = self.reference
             missing_attrs = set(seq_attr_keys) - set(self.reference.attributes.keys()) - set(["date", "num_date"])
             if len(missing_attrs) > 0:
                 self.log.notify("Including reference in segment {} but the following attributes are missing: {}".format(self.segmentName, " & ".join(missing_attrs)))
-                self.seqs[self.reference.name] = self.reference
 
 if __name__=="__main__":
     pass

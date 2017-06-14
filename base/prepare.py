@@ -87,7 +87,8 @@ class prepare(object):
         taxa_to_include = self.segments[self.config["segments"][0]].get_subsampled_names(self.config)
         for name in self.config["segments"]:
             self.segments[name].filterSeqs("subsampled", lambda s: s.id in taxa_to_include)
-            self.log.notify("Subsampled segment {}. n={}".format(name, len(self.segments[name].seqs)))
+            refStr = "(incl. ref)" if self.segments[name].reference.name in self.segments[name].seqs.keys() else "(no Ref)"
+            self.log.notify("Subsampled segment {}. n={} {}".format(name, len(self.segments[name].seqs), refStr))
 
     def ensure_all_segments(self):
         if "ensure_all_segments" in self.config and self.config["ensure_all_segments"] == True:

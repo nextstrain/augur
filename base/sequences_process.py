@@ -64,8 +64,11 @@ class sequence_set(object):
 
     def convert_trait_to_numerical_date(self, trait, dateFormat):
         for name, seq in self.seqs.iteritems():
-            date_struc = parse_date(seq.attributes[trait], dateFormat)
-            seq.attributes[trait] = date_struc[1]
+            try:
+                date_struc = parse_date(seq.attributes[trait], dateFormat)
+                seq.attributes[trait] = date_struc[1]
+            except KeyError:
+                self.log.warn("Attribute {} not found for sequence {}. Ignoring".format(trait, seq.name))
 
     def codon_align(self):
         self.log.fatal("Codon align not yet implemented")

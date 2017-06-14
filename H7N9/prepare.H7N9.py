@@ -26,7 +26,6 @@ config = {
     "dir": "H7N9", # the current directory. You mush be inside this to run the script.
     "file_prefix": "flu_h7n9",
     "segments": ["pb2", "pb1", "pa", "ha", "np", "na", "mp", "ns"],
-    "input_format": "fasta",
     "input_paths": [
         "../../fauna/data/h7n9_pb2.fasta",
         "../../fauna/data/h7n9_pb1.fasta",
@@ -37,20 +36,10 @@ config = {
         "../../fauna/data/h7n9_mp.fasta",
         "../../fauna/data/h7n9_ns.fasta"
     ],
-    "output_folder": "prepared",
-    # note that "strain" is essential and "date" is special
     "header_fields": {
         0:'strain', 2:'accession', 3:'date', 4:'host', 6:'country', 7: 'division', 11: 'fauna_date'
     },
-    # can provide multiple date formats here - FIFO
-    "date_format": ["%Y-%m-%d"],
-    "require_dates": True,
     "traits_are_dates": ["fauna_date"],
-
-    # require that all selected isolates have all the genomes
-    "ensure_all_segments": True,
-
-    # see docs for help with filters - nested tuples abound
     "filters": (
         ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
         ("Prior to Epidemic", lambda s: s.attributes['date'] >= datetime(2013,1,1).date()),
@@ -68,18 +57,15 @@ config = {
             "ns": lambda s: len(s.seq)>=800
         })
     ),
-    # see the docs for this too! if you don't want to subsample, set it to False
     # "subsample": False,
     "subsample": {
         "category": None,
         "priority": None,
         "threshold": 2,
     },
-
     # see the docs for what's going on with colours (sic) & lat/longs
     "colors": ["country", "division", "host"], # essential. Maybe False.
     "lat_longs": ["country", "division"], # essential. Maybe False.
-    "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
     "references": references, # imported
 }
 

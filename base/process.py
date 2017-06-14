@@ -182,7 +182,7 @@ class process(object):
         except IOError:
             pass
         except AssertionError as err:
-            self.log.notify("Tried to restore mutation frequencies but failed: {}", err)
+            self.log.notify("Tried to restore mutation frequencies but failed: {}".format(err))
             #no need to remove - we'll overwrite it shortly
         self.mutation_frequencies = {}
         self.mutation_frequency_confidence = {}

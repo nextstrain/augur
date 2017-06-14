@@ -16,16 +16,12 @@ config = {
     "filters": (
         ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
     ),
-    "colors": ["country"], # essential. Maybe False.
-    "lat_longs": ["country"], # essential. Maybe False.
-    "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
+    "colors": ["country"],
+    "lat_longs": ["country"],
     "reference": {
         "path": "YF.reference.gb",
-        "metadata": {
-            'strain': "reference", "accession": "NC_002031", "date": "XXXX-XX-XX",
-            'host': "?", 'country': "?"
-        },
-        "use": False,
+        "metadata": {'strain': "reference"},
+        "include": 0,
         "genes": ['poly']
     }
 }
