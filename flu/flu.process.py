@@ -12,7 +12,9 @@ from pdb import set_trace
 
 def collect_args():
     parser = argparse.ArgumentParser(description = "Process (prepared) JSON(s)")
-    parser.add_argument('-j', '--jsons', default="all", nargs='+', type=str, help="prepared JSON(s). \"all\" will do them all. Default = all")
+    parser.add_argument('-j', '--jsons', default=["all"], nargs='+', type=str, help="prepared JSON(s). \"all\" will do them all. Default = all")
+    parser.add_argument('--no_mut_freqs', default=False, action='store_true', help="skip mutation frequencies")
+    parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
     parser.add_argument('-f', '--force', default=False, action='store_true', help="overwrite any intermediate files (don't restore)")
     return parser.parse_args()
 
@@ -35,17 +37,16 @@ def make_config (prepared_json, args):
             "criterium": lambda x: len(x.aa_mutations['HA'])>0,
             "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
         },
-        "estimate_mutation_frequencies": True,
-        # "estimate_tree_frequencies": True,
+        "estimate_mutation_frequencies": not args.no_mut_freqs,
+        "estimate_tree_frequencies": not args.no_tree_freqs,
         "pivot_spacing": 1.0/12,
     }
 
 if __name__=="__main__":
     args = collect_args()
-    if "all" in args.jsons:
-        jsons = glob.glob("prepared/*.json")
+    jsons = glob.glob("prepared/*.json") if "all" in args.jsons else args.jsons
 
-    for prepared_json in args.jsons:
+    for prepared_json in jsons:
         pprint("Processing {}".format(prepared_json))
         runner = process(make_config(prepared_json, args))
         runner.align()
