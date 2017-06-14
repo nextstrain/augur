@@ -75,7 +75,8 @@ class process(object):
         if "reference" in data:
             self.seqs = sequence_set(self.log, data["sequences"], data["reference"], self.info["date_format"])
         else:
-            self.seqs = sequence_set(self.log, data["sequences"], False, self.info["date_format"])
+            self.log.fatal("No reference provided. Cannot continue.")
+            # self.seqs = sequence_set(self.log, data["sequences"], False, self.info["date_format"])
         # backward compatability
         self.reference_seq = self.seqs.reference_seq
         self.proteins = self.seqs.proteins
@@ -130,32 +131,27 @@ class process(object):
             self.build_tree(tree_name, node_file, root='none', debug=debug)
 
 
-
-
     def align(self, codon_align=False, debug=False):
         '''
         (1) Align sequences, remove non-reference insertions
         NB step 1 is skipped if a valid aln file is found
         (2) Translate
         (3) Write to multi-fasta
+        CODON ALIGNMENT IS NOT IMPLEMENTED
         '''
         fname = self.output_path + "_aligned.mfa"
-        already_done = self.seqs.potentially_restore_align_from_disk(fname)
-        if not already_done or self.try_to_restore != True:
-            if codon_align:
-                self.seqs.codon_align(debug=debug)
-            else:
-                self.seqs.align(debug=debug)
-            self.seqs.strip_non_reference()
-            self.seqs.remove_terminal_gaps()
-            # if outgroup is not None:
-            #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
+        if self.try_to_restore:
+            self.seqs.try_restore_align_from_disk(fname)
+        if not hasattr(self.seqs, "aln"):
+            self.seqs.align(fname, debug=debug)
+        self.seqs.strip_non_reference()
+        self.seqs.remove_terminal_gaps()
+        # if outgroup is not None:
+        #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
         self.seqs.translate() # creates self.seqs.translations
-        # save the final alignment!
-        SeqIO.write(self.seqs.aln, fname, "fasta")
-        # save additional translations
-        for name, msa in self.seqs.translations.iteritems():
-            SeqIO.write(msa, self.output_path + "_aligned_" + name + ".mfa", "fasta")
+        # save additional translations - disabled for now
+        # for name, msa in self.seqs.translations.iteritems():
+        #     SeqIO.write(msa, self.output_path + "_aligned_" + name + ".mfa", "fasta")
 
 
     def get_pivots_via_spacing(self):

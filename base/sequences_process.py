@@ -34,8 +34,6 @@ class sequence_set(object):
     def __init__(self, logger, sequences, reference, dateFormat):
         super(sequence_set, self).__init__()
         self.log = logger
-        # self.reference = None
-        self.proteins = None
 
         # load sequences from the (parsed) JSON - don't forget to sort out dates
         self.seqs = {}
@@ -48,25 +46,17 @@ class sequence_set(object):
             self.seqs[name].attributes["num_date"] = date_struc[1]
             self.seqs[name].attributes["date"] = date_struc[2]
 
-        # load reference from (parsed) JSON & clean up dates
-        if reference and len(reference):
-            name = reference["attributes"]["strain"]
-            self.reference_seq = SeqRecord(Seq(reference["seq"], generic_dna),
-                   id=name, name=name, description=name)
-            self.reference_seq.attributes = reference["attributes"]
-            # tidy up dates
-            date_struc = parse_date(self.reference_seq.attributes["raw_date"], dateFormat)
-            self.reference_seq.attributes["num_date"] = date_struc[1]
-            self.reference_seq.attributes["date"] = date_struc[2]
-
-            # is reference already in self.seqs?
-            
-
-
-
-            #sort out the proteins:
-            if "genes" in reference and len(reference["genes"]):
-                self.proteins = {k:FeatureLocation(start=v["start"], end=v["end"], strand=v["strand"]) for k, v in reference["genes"].iteritems()}
+        # if the reference is to be analysed it'll already be in the (filtered & subsampled)
+        # sequences, so no need to add it here, and no need to care about attributes etc
+        # we do, however, need it for alignment
+        self.reference_in_dataset = reference["included"]
+        name = reference["strain"]
+        self.reference_seq = SeqRecord(Seq(reference["seq"], generic_dna),
+               id=name, name=name, description=name)
+        if "genes" in reference and len(reference["genes"]):
+            self.proteins = {k:FeatureLocation(start=v["start"], end=v["end"], strand=v["strand"]) for k, v in reference["genes"].iteritems()}
+        else:
+            self.proteins = None
 
         # other things:
         self.run_dir = '_'.join(['temp', time.strftime('%Y%m%d-%H%M%S',time.gmtime()), str(random.randint(0,1000000))])
@@ -80,58 +70,86 @@ class sequence_set(object):
     def codon_align(self):
         self.log.fatal("Codon align not yet implemented")
 
-    def align(self, debug=False):
+    def align(self, fname, debug=False):
         '''
         align sequences using mafft
 
         side-effects:
-            self.aln {MultipleSeqAlignment}
-            self.sequence_lookup {dict} map linking seq.id to the alignment
+            self.aln {MultipleSeqAlignment} reference not present if not in self.seqs
+            self.reference_aln {SeqRecord} always set, even if the reference is subsequently discarded
+            self.sequence_lookup {dict} map linking seq.id to the alignment, potentialy without the reference
+            saves the alignment (always including reference) to fname
         '''
         make_dir(self.run_dir)
         os.chdir(self.run_dir)
-        ref_in_set = self.reference_seq.name in self.seqs
-        if ref_in_set:
+        if self.reference_in_dataset:
             out_seqs = self.seqs.values()
         else:
+            self.log.notify("Adding reference for alignment step")
             out_seqs = self.seqs.values() + [self.reference_seq]
-        print("align: reference in set",ref_in_set)
+
         SeqIO.write(out_seqs, "temp_in.fasta", "fasta")
+        self.log.notify("Running alignment")
         os.system("mafft --anysymbol --thread " + str(self.nthreads) + " temp_in.fasta 1> temp_out.fasta 2>mafft_stderr")
+        self.aln = AlignIO.read('temp_out.fasta', 'fasta')
+        os.chdir("..")
+        os.rename(os.path.join(self.run_dir, "temp_out.fasta"), fname)
+        if not debug: remove_dir(self.run_dir)
 
-        tmp_aln = AlignIO.read('temp_out.fasta', 'fasta')
-        self.add_attributes_to_aln(tmp_aln, ref_in_set)
-        os.chdir('..')
-        if not debug:
-            remove_dir(self.run_dir)
+        self.set_reference_alignment()
+        if not self.reference_in_dataset:
+            self.remove_reference_from_alignment()
+        self.set_sequence_lookup()
+        self.add_attributes_to_aln()
 
-    def add_attributes_to_aln(self, tmp_aln, ref_in_set):
-        self.sequence_lookup = {seq.id:seq for seq in tmp_aln}
-        # add attributes to alignment
+    def remove_reference_from_alignment(self):
+        count = len(self.aln)
+        self.aln = MultipleSeqAlignment([s for s in self.aln if s.name!=self.reference_seq.name])
+        assert(count == (len(self.aln)+1))
+
+    def set_reference_alignment(self):
+        self.reference_aln = [x for x in list(self.aln) if x.name==self.reference_seq.name][0]
+
+    def set_sequence_lookup(self):
+        self.sequence_lookup = {seq.id:seq for seq in self.aln}
+
+    def add_attributes_to_aln(self):
         for seqid, seq in self.seqs.iteritems():
             self.sequence_lookup[seqid].attributes = seq.attributes
-        self.aln = MultipleSeqAlignment([s for s in tmp_aln
-                            if s.name!=self.reference_seq.name or ref_in_set])
 
-    def potentially_restore_align_from_disk(self, fname):
-        if not os.path.isfile(fname):
-            return False
+    def try_restore_align_from_disk(self, fname):
         try:
-            aln = AlignIO.read(fname, "fasta")
-        except:
-            print("Aignment was there, but failed to load. Re-doing.")
-            return False
-        diff = {x.id for x in aln} ^ set(self.seqs.keys())
-        if len(diff) != 0:
-            print("Alignment on disk had a different number of sequnces... re-doing")
-            print("(this may be due to the reference - this needs to be worked out)")
-            return False
-        print("Alignment restored from disk")
-        self.add_attributes_to_aln(aln, self.reference_seq.name in self.seqs)
-        return True
+            self.aln = AlignIO.read(fname, "fasta")
+        except IOError:
+            return
+        except Exception as e:
+            self.log.notify("Error restoring from alignment... re-doing")
+            print(e)
+            return
+
+        try:
+            self.set_reference_alignment()
+        except IndexError:
+            self.log.notify("Reference not found in alignment... re-doing")
+            del self.aln
+            return
+
+        if not self.reference_in_dataset:
+            self.remove_reference_from_alignment()
+
+        if len({x.id for x in self.aln} ^ set(self.seqs.keys())) != 0:
+            self.log.notify("Alignment on disk had different sequnces... re-doing")
+            del self.aln
+            del self.reference_aln
+            return
+
+        # at this stage we are happy with the alignment
+        self.set_sequence_lookup()
+        self.add_attributes_to_aln()
+        self.log.notify("Alignment restored from disk")
 
     def strip_non_reference(self):
-        ungapped = np.array(self.sequence_lookup[self.reference_seq.name])!='-'
+        ungapped = np.array(self.reference_aln)!='-'
         for seq in self.aln:
             seq.seq = Seq("".join(np.array(seq)[ungapped]))
 
@@ -196,12 +214,12 @@ class sequence_set(object):
         else:
             good_pos = np.ones(self.aln.get_alignment_length(), dtype=bool)
         date_vs_distance = {}
-        self.reference_aln = None
+        # self.reference_aln = None already set at alignment step
         for seq in self.aln:
             date_vs_distance[seq.id] = (seq.attributes['num_date'],
                 np.mean((np.array(seq)!=root_seq)[(np.array(seq)!='-')&(root_seq!='-')&good_pos]))
-            if seq.id==self.reference.id:
-                self.reference_aln = seq
+            # if seq.id==self.reference.id:
+            #     self.reference_aln = seq
         date_vs_distance_array=np.array(date_vs_distance.values())
         from scipy.stats import linregress, scoreatpercentile
         slope, intercept, rval, pval, stderr = linregress(date_vs_distance_array[:,0], date_vs_distance_array[:,1])
@@ -219,8 +237,8 @@ class sequence_set(object):
         print("before clock filter:",len(self.aln))
         tmp = {seq.id:seq for seq in self.aln
                 if abs(intercept+slope*date_vs_distance[seq.id][0] - date_vs_distance[seq.id][1])<n_iqd*IQD}
-        if self.reference.id not in tmp and self.reference_aln is not None:
-            print('adding reference again after clock filter')
+        if self.reference.id not in tmp and self.reference.reference_in_dataset:
+            self.log.notify('adding reference again after clock filter')
             tmp[self.reference.id] = self.reference_aln
         self.aln = MultipleSeqAlignment(tmp.values())
         print("after clock filter:",len(self.aln))
