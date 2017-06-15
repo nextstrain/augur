@@ -44,7 +44,7 @@ class tree(object):
         self.nthreads = 2
         self.sequence_lookup = {seq.id:seq for seq in aln}
         self.nuc = kwarks['nuc'] if 'nuc' in kwarks else True
-        self.dump_attr = []
+        self.dump_attr = [] # depreciated
         self.verbose = verbose
         if proteins!=None:
             self.proteins = proteins
@@ -295,7 +295,6 @@ class tree(object):
         self.tt.geogtr = self.tt.gtr
         self.tt.geogtr.alphabet_to_location = alphabet
         self.tt._gtr = sequence_gtr
-        self.dump_attr.append(attr)
         if hasattr(self.tt.tree,'sequence_LH'):
             self.tt.tree.geo_LH = self.tt.tree.sequence_LH
             self.tt.tree.sequence_LH = nuc_seq_LH
@@ -311,13 +310,33 @@ class tree(object):
             if report_confidence:
                 node.attr[attr + "_entropy"] = sum([v * math.log(v+1E-20) for v in node.marginal_profile[0]]) * -1 / math.log(len(node.marginal_profile[0]))
                 # javascript: vals.map((v) => v * Math.log(v + 1E-10)).reduce((a, b) => a + b, 0) * -1 / Math.log(vals.length);
-                self.dump_attr.append(attr + "_entropy")
                 marginal = [(alphabet[self.tt.geogtr.alphabet[i]], node.marginal_profile[0][i]) for i in range(0, len(self.tt.geogtr.alphabet))]
                 marginal.sort(key=lambda x: x[1], reverse=True) # sort on likelihoods
                 marginal = [(a, b) for a, b in marginal if b > 0.01][:4] #only take stuff over 1% and the top 4 elements
-                self.dump_attr.append(attr + "_confidence")
                 node.attr[attr + "_confidence"] = {a:b for a,b in marginal}
         self.tt.use_mutation_length=tmp_use_mutation_length
+
+        # store saved attrs for save/restore functionality
+        if not hasattr(self, "mugration_attrs"):
+            self.mugration_attrs = []
+        self.mugration_attrs.append(attr)
+        if report_confidence:
+            self.mugration_attrs.extend([attr + "_entropy", attr + "_confidence"])
+
+    def restore_geo_inference(self, data, attr, confidence):
+        if data == False:
+            raise KeyError #yeah, not great
+        for node in self.tree.find_clades():
+            node.attr[attr] = data[node.name][attr]
+            if confidence:
+                node.attr[attr+"_confidence"] = data[node.name][attr+"_confidence"]
+                node.attr[attr+"_entropy"] = data[node.name][attr+"_entropy"]
+        if not hasattr(self, "mugration_attrs"):
+            self.mugration_attrs = []
+        self.mugration_attrs.append(attr)
+        if confidence:
+            self.mugration_attrs.extend([attr + "_entropy", attr + "_confidence"])
+
 
 
     def get_attr_list(self, get_attr):

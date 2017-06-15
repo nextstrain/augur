@@ -564,16 +564,46 @@ class process(object):
         write_json(meta_json, prefix+'_meta.json')
 
     def run_geo_inference(self):
-        # run geo inference for all the things we have lat longs for
         report_confidence = False
         if "geo_inference_confidence" in self.config and self.config["geo_inference_confidence"] == True:
             report_confidence = True
+
+        try:
+            assert(self.try_to_restore == True)
+            with open(self.output_path + "_mugration.pickle", 'rb') as fh:
+                restored_data = pickle.load(fh)
+            assert(set(restored_data.keys()) == set([x.name for x in self.tree.tree.find_clades()]))
+        except IOError:
+            restored_data = False
+        except AssertionError as err:
+            restored_data = False
+            self.log.notify("Tried to restore mutation frequencies but failed: {}".format(err))
+
+        # only run geo inference if lat + longs are defined.
         if not self.lat_longs or len(self.lat_longs)==0:
             self.log.notify("no geo inference - no specified lat/longs")
             return
         for geo_attr in self.config["geo_inference"]:
-            self.log.notify("running geo inference for {}".format(geo_attr))
-            self.tree.geo_inference(geo_attr, report_confidence=report_confidence)
+            try:
+                self.tree.restore_geo_inference(restored_data, geo_attr, report_confidence)
+                self.log.notify("Restored geo inference for {}".format(geo_attr))
+            except KeyError:
+                self.log.notify("running geo inference for {}".format(geo_attr))
+                self.tree.geo_inference(geo_attr, report_confidence=report_confidence)
+
+        # SAVE MUGRATION RESULTS:
+        attrs = set(self.tree.mugration_attrs)
+        try:
+            data = {}
+            for node in self.tree.tree.find_clades():
+                assert(len(attrs - set(node.attr.keys()))==0)
+                data[node.name] = {x:node.attr[x] for x in attrs}
+        except AssertionError:
+            self.log.warn("Error saving mugration data - will not be able to restore")
+            return
+        with open(self.output_path + "_mugration.pickle", 'wb') as fh:
+            pickle.dump(data, fh, protocol=pickle.HIGHEST_PROTOCOL)
+        self.log.notify("Saved mugration data (pickle)")
 
     def save_as_nexus(self):
         save_as_nexus(self.tree.tree, self.output_path + "_timeTree.nex")
