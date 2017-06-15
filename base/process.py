@@ -335,18 +335,19 @@ class process(object):
             self.log.notify("Newick file restored from \"{}\"".format(newick_file))
         except AssertionError:
             self.tree.build_newick(newick_file, **self.config["newick_tree_options"])
-        self.log.notify("Setting up TimeTree")
-        self.tree.tt_from_file(newick_file, nodefile=None, root="best")
 
-    def clock_filter(self, n_iqd=3, plot=True, remove_deep_splits=False):
-        self.tree.tt.clock_filter(reroot='best', n_iqd=n_iqd, plot=plot)
+
+    def clock_filter(self):
+        if self.config["clock_filter"] == False:
+            return
+        self.tree.tt.clock_filter(reroot='best', n_iqd=self.config["clock_filter"]["n_iqd"], plot=self.config["clock_filter"]["plot"])
 
         leaves = [x for x in self.tree.tree.get_terminals()]
         for n in leaves:
             if n.bad_branch:
                 self.tree.tt.tree.prune(n)
                 print('pruning leaf ', n.name)
-        if remove_deep_splits:
+        if self.config["clock_filter"]["remove_deep_splits"]:
             self.tree.tt.tree.ladderize()
             current_root = self.tree.tt.tree.root
             if sum([x.branch_length for x in current_root])>0.1 \
@@ -354,11 +355,66 @@ class process(object):
                 new_root = current_root.clades[-1]
                 new_root.up=False
                 self.tree.tt.tree.root = new_root
-                with open(self.store_data_path+"outliers.txt", 'a') as ofile:
+                with open(self.output_path+"_outliers.txt", 'a') as ofile:
                     for x in current_root.clades[:-1]:
                         ofile.write("\n".join([leaf.name for leaf in x.get_terminals()])+'\n')
 
         self.tree.tt.prepare_tree()
+
+
+    def timetree_setup_filter_run(self):
+        def try_restore():
+            try:
+                assert(os.path.isfile(self.output_path + "_timetree.new"))
+                assert(os.path.isfile(self.output_path + "_timetree.pickle"))
+            except AssertionError:
+                return False
+
+            self.log.notify("Attempting to restore timetree")
+            with open(self.output_path+"_timetree.pickle", 'rb') as fh:
+                pickled = pickle.load(fh)
+
+            try:
+                assert(self.config["timetree_options"] == pickled["timetree_options"])
+                assert(self.config["clock_filter"] == pickled["clock_filter_options"])
+                assert(set(self.seqs.sequence_lookup.keys()) == set(pickled["original_seqs"]))
+            except AssertionError as e:
+                print(e)
+                self.log.warn("treetime is out of date - rerunning")
+                return False
+
+            self.tree.tt_from_file(self.output_path + "_timetree.new", nodefile=None, root=None)
+            # clock filter doesn't need to be run - it's effects have been saved into the int. files
+            # might want to check that the clock filter options were the same tho - pickle these as well
+
+            try:
+                self.tree.restore_timetree_node_info(pickled["nodes"])
+            except KeyError:
+                self.log.warn("treetime node info missing - rerunning")
+                return False
+            self.log.notify("TreeTime successfully restored.")
+            return True
+
+        if "temporal_confidence" in self.config:
+            self.config["timetree_options"]["confidence"] = True
+            self.config["timetree_options"]["use_marginal"] = True
+
+        success = try_restore()
+        if not success:
+            self.log.notify("Setting up TimeTree")
+            self.tree.tt_from_file(self.output_path + ".newick", nodefile=None, root="best")
+            self.log.notify("Running Clock Filter")
+            self.clock_filter()
+
+            self.log.notify("Reconstructing Ancestral Sequences, branch lengths & dating nodes")
+            self.tree.timetree(**self.config["timetree_options"])
+            # do we ever not want to use timetree?? If so:
+            # self.tree.ancestral(**kwargs) instead of self.tree.timetree
+            self.tree.save_timetree(fprefix=self.output_path, ttopts=self.config["timetree_options"], cfopts=self.config["clock_filter"])
+
+        self.tree.add_translations()
+        self.tree.refine()
+        self.tree.layout()
 
 
     def matchClades(self, clades, offset=-1):
@@ -386,18 +442,6 @@ class process(object):
                 for allele in genotype:
                     partial_matches = filter(lambda x:match(x,[allele]), self.tree.tree.get_nonterminals())
                     print('Found %d partial matches for allele '%len(partial_matches), allele)
-
-    def annotate_tree(self):
-        if "temporal_confidence" in self.config:
-            self.config["timetree_options"]["confidence"] = True
-            self.config["timetree_options"]["use_marginal"] = True
-        self.tree.timetree(**self.config["timetree_options"])
-        # do we ever not want to use timetree?? If so:
-        # self.tree.ancestral(**kwargs) instead of self.tree.timetree
-        self.tree.add_translations()
-        self.tree.refine()
-        self.tree.layout()
-
 
     def make_control_json(self, controls):
         controls_json = {}

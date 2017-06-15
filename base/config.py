@@ -47,6 +47,11 @@ process = {
         },
         "controls": {}
     },
+    "clock_filter": {
+        "n_iqd": 3,
+        "plot": True,
+        "remove_deep_splits": False,
+    },
     "estimate_mutation_frequencies": False,
     "estimate_tree_frequencies": False,
     "titers": False,

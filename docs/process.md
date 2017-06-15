@@ -40,6 +40,8 @@ Normally, everything is done off a JSON via [prepare](./prepare.md)
 * `estimate_mutation_frequencies` {bool} (default: `False`)
 * `pivot_spacing` {float} (default: not present) necessary if you want to calculate pivots through `get_pivots_via_spacing`. See [Frequencies](./frequencies.md)
 * `newick_tree_options` {dict} (default: `{}`) See [Phylogenies](./phylogenies.md)
+* `clock_filter` {`False` | dict} See [clock filter](./clock_filter.md)
+* `timetree_options` {dict} See [Phylogenies](./phylogenies.md)
 
 ##### Auspice output settings
 * `auspice`
