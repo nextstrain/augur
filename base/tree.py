@@ -187,7 +187,7 @@ class tree(object):
 
         self.is_timetree=True
 
-    def save_timetree(self, fprefix, opts):
+    def save_timetree(self, fprefix, ttopts, cfopts):
         Phylo.write(self.tt.tree, fprefix+"_timetree.new", "newick")
         n = {}
         attrs = ["branch_length", "mutation_length", "clock_length", "dist2root", "name", "mutations", "attr", "cseq", "sequence", "numdate"]
@@ -197,7 +197,8 @@ class tree(object):
                 n[node.name][x] = getattr(node, x)
         with open(fprefix+"_timetree.pickle", 'wb') as fh:
             pickle.dump({
-                "options": opts,
+                "timetree_options": ttopts,
+                "clock_filter_options": cfopts,
                 "nodes": n,
                 "original_seqs": self.sequence_lookup.keys(),
             }, fh, protocol=pickle.HIGHEST_PROTOCOL)
