@@ -22,7 +22,6 @@ def make_config (prepared_json, args):
     return {
         "dir": "flu",
         "in": prepared_json,
-        "restore": args.force,
         "geo_inference": ['country', 'region'], # what traits to perform this on
         "auspice": { ## settings for auspice JSON export
             "extra_attr": ['serum'],
@@ -63,8 +62,7 @@ if __name__=="__main__":
                 runner.estimate_mutation_frequencies(region=region, min_freq=0.02, inertia=np.exp(-1.0/12), stiffness=0.8*12)
 
         runner.build_tree()
-        runner.clock_filter()
-        runner.annotate_tree()
+        runner.timetree_setup_filter_run()
         runner.run_geo_inference()
 
         # estimate tree frequencies here.
