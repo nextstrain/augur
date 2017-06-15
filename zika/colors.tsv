@@ -1,38 +1,42 @@
-europe  #4580CA
-china #3F63CF
-japan_korea #4272CE
-southeast_asia  #571EA2
-oceania #4B26B1
-south_pacific #4433BE
-south_america #56A0AE
-central_america #BDBB48
-caribbean #E67C32
-north_america #DC2F24
-singapore #4B26B1
-french_polynesia  #4433BE
-american_samoa  #4042C7
-fiji  #3F52CD
-tonga #3F63CF
-italy #4272CE
-japan #4A8CC2
-brazil  #56A0AE
-peru  #5DA8A3
-ecuador #66AE96
-colombia  #6EB389
-french_guiana #79B77D
-suriname  #83BA70
-venezuela #8EBC66
-panama  #A6BE55
-nicaragua #B2BD4D
-honduras  #BDBB48
-el_salvador #C8B944
-guatemala #D1B340
-mexico  #D9AD3D
-martinique  #DFA43B
-guadeloupe  #E49938
-usvi  #E68B35
-puerto_rico #E67C32
-jamaica #E56A2F
-dominican_republic  #E2562B
-haiti #DF4327
-usa #DC2F24
+region	europe  #4580CA
+region	china #3F63CF
+region	japan_korea #4272CE
+region	southeast_asia  #571EA2
+region	oceania #4B26B1
+region	south_pacific #4433BE
+region	south_america #56A0AE
+region	central_america #BDBB48
+region	caribbean #E67C32
+region	north_america #DC2F24
+
+country	thailand  #571EA2
+country	vietnam #4B26B1
+country	singapore #4433BE
+country	french_polynesia  #4042C7
+country	american_samoa  #3F52CD
+country	fiji  #3F63CF
+country	tonga #4272CE
+country	italy #4580CA
+country	china #4A8CC2
+country	japan #5097BA
+country	brazil  #56A0AE
+country	peru  #5DA8A3
+country	ecuador #66AE96
+country	colombia  #6EB389
+country	french_guiana #79B77D
+country	suriname  #83BA70
+country	venezuela #8EBC66
+country	panama  #A6BE55
+country	nicaragua #B2BD4D
+country	honduras  #BDBB48
+country	el_salvador #C8B944
+country	guatemala #D1B340
+country	mexico  #D9AD3D
+country	martinique  #DFA43B
+country	guadeloupe  #E49938
+country	usvi  #E68B35
+country	puerto_rico #E67C32
+country	jamaica #E56A2F
+country	dominican_republic  #E2562B
+country	haiti #DF4327
+country	usa #DC2F24

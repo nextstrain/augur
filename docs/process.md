@@ -35,7 +35,9 @@ Titer information is loaded here, although this is a work in progress.
 
 ##### Analysis settings
 * `geo_inference` {`False` || array of strings} (Default: `False`) what traits to perform geographic inference (mugration model) upon
-* `geo_inference_confidence` {bool} (Default: `True`) Include (normalized) likelihoods from any geographic inference analysis.
+* `geo_inference_options`: {dict}. Keys:
+  * `confidence` {bool} (default: `True`) Include (normalized) likelihoods from any geographic inference analysis.
+  * `root_state` {dict} (see zika)
 * `temporal_confidence` {bool} (Default: `True`) Include 90% (normalized marginal likelihood) confidence intervals from TreeTime dating analysis.
 * `estimate_mutation_frequencies` {bool} (default: `False`)
 * `pivot_spacing` {float} (default: not present) necessary if you want to calculate pivots through `get_pivots_via_spacing`. See [Frequencies](./frequencies.md)

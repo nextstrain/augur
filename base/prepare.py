@@ -109,17 +109,21 @@ class prepare(object):
 
     def parse_colors_file(self):
         db = {}
+        if "color_defs" not in self.config: return db
         try:
             for fname in self.config["color_defs"]:
                 with open(fname) as fh:
                     for line in fh:
+                        # line: trait   trait_value     hex_code
                         if line.startswith('#'): continue
                         fields = line.strip().split()
-                        db[fields[0]] = fields[1]
+                        if len(fields)!=3: continue
+                        try:
+                            db[fields[0]][fields[1]] = fields[2]
+                        except KeyError:
+                            db[fields[0]] = {fields[1]: fields[2]}
         except IOError:
             self.log.warn("Couldn't open color definitions file {}.".format(self.config["color_defs"]))
-        except KeyError:
-            pass # wasn't set in config. that's ok.
         return db
 
     def colors(self):
@@ -134,11 +138,12 @@ class prepare(object):
                     continue
                 self.log.notify("Generating colour maps for '{}'".format(trait))
                 vals = set.union(*[obj.get_trait_values(trait) for seg, obj in self.segments.iteritems()])
+                # generate a default map then overwrite with user defined values
                 cols[trait] = generate_cmap(vals, False)
-                # overwrite if user defined!
-                for name in cols[trait].keys():
-                    if name in user_defs:
-                        cols[trait][name] = user_defs[name]
+                if trait in user_defs:
+                    for name in cols[trait].keys():
+                        if name in user_defs[trait]:
+                            cols[trait][name] = user_defs[trait][name]
 
             # save to each sequence_set object. It's them that write the JSONs
             for seg, obj in self.segments.iteritems():

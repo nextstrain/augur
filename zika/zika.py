@@ -14,7 +14,7 @@ from datetime import datetime
 
 region_cmap = [
     ["europe",             "#4580CA"],
-    # ["china",              "#3F63CF"],
+    ["china",              "#3F63CF"],
     ["japan_korea",        "#4272CE"],
     ["southeast_asia",     "#571EA2"],
     # ["oceania",            "#4B26B1"],
@@ -32,16 +32,16 @@ country_cmap = [
     # "#BDBB48", "#C8B944", "#D1B340", "#D9AD3D", "#DFA43B", "#E49938", "#E68B35", "#E67C32", "#E56A2F", "#E2562B", "#DF4327", "#DC2F24"
 
     # Old World: "#571EA2", "#4B26B1", "#4433BE", "#4042C7", "#3F52CD", "#3F63CF", "#4272CE", "#4580CA", "#4A8CC2", "#5097BA"
-    # ["thailand",           "#571EA2"],
-    #["vietnam",            "#"],
-    ["singapore",          "#4B26B1"],
-    ["french_polynesia",   "#4433BE"],
-    ["american_samoa",	   "#4042C7"],
-    ["fiji",	           "#3F52CD"],
-    ["tonga",	           "#3F63CF"],
-    ["italy",			   "#4272CE"],
-    # ["china",			   "#4580CA"],
-    ["japan",			   "#4A8CC2"],
+    ["thailand",           "#571EA2"],
+    ["vietnam",            "#4B26B1"],
+    ["singapore",          "#4433BE"],
+    ["french_polynesia",   "#4042C7"],
+    ["american_samoa",	   "#3F52CD"],
+    ["fiji",	           "#3F63CF"],
+    ["tonga",	           "#4272CE"],
+    ["italy",			   "#4580CA"],
+    ["china",			   "#4A8CC2"],
+    ["japan",			   "#5097BA"],
     # South America: "#56A0AE", "#5DA8A3", "#66AE96", "#6EB389", "#79B77D", "#83BA70", "#8EBC66", "#9ABE5C"
     ["brazil",  		   "#56A0AE"],
     ["peru",               "#5DA8A3"],
@@ -84,7 +84,7 @@ if __name__=="__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description='Process virus sequences, build tree, and prepare of web visualization')
-    parser.add_argument('-v', '--viruses_per_month', type = int, default = 100, help='number of viruses sampled per month')
+    parser.add_argument('-v', '--viruses_per_month', type = int, default = 15, help='number of viruses sampled per month')
     parser.add_argument('-r', '--raxml_time_limit', type = float, default = 1.0, help='number of hours raxml is run')
     parser.add_argument('--verbose', type = int, default = 2, help='throttle treetime output')
     parser.add_argument('--confidence', default = False, action="store_true", help='evaluate confidence intervals of internal node timing')
@@ -114,24 +114,23 @@ if __name__=="__main__":
                                    s.attributes['date']< datetime(2018,1,1).date())
         zika.seqs.filter(lambda s: len(s.seq)>=2000)
         dropped_strains = [
-            "THA/PLCal_ZV/2013", "PLCal_ZV", # true strains, too basal for analysis
             "ZF36_36S", # possible contamination
             "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", # true strains, but duplicates of other strains in dataset
-            "Bahia04", "JAM/2016/WI_JM6", # excessive terminal branch length
-            "THA/2014/SV0127_14", "ZK_YN001", "NIID123/2016", # true strains, too basal for analysis
-            "ZKA_16_291", "ZKA_16_097" # singapore, too basal for analysis
+            "Bahia04", "JAM/2016/WI_JM6", "Bahia11", "Bahia12", "DOM/2016/MA_WGS16_009", "VE_Ganxian", # excessive terminal branch length
+            "VR10599/Pavia/2016", "34997/Pavia/2016", # exports
+            "THA/PLCal_ZV/2013", "SK403/13AS", "SV0010/15", "SK364/13AS" # clock is off
         ]
         zika.seqs.filter(lambda s: s.id not in dropped_strains)
-        zika.seqs.subsample(category = lambda x:(x.attributes['date'].year, x.attributes['date'].month),
+        zika.seqs.subsample(category = lambda x:(x.attributes['date'].year, x.attributes['date'].month, x.attributes['country']),
             threshold=params.viruses_per_month)
 
         zika.align()
         zika.build_tree()
         zika.dump()
-    zika.clock_filter(n_iqd=3, plot=True)
+    zika.clock_filter(n_iqd=4, plot=True)
     zika.annotate_tree(Tc=0.02, timetree=True, reroot='best', confidence=params.confidence)
-    zika.tree.geo_inference('region')
-    zika.tree.geo_inference('country')
+    zika.tree.geo_inference('region', root_state = 'southeast_asia')
+    zika.tree.geo_inference('country', root_state = 'vietnam')
     date_range['date_min'] = zika.tree.getDateMin()
     date_range['date_max'] = zika.tree.getDateMax()
     zika.export(controls = attribute_nesting, date_range = date_range, geo_attributes = geo_attributes,

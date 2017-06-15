@@ -4,14 +4,19 @@ sys.path.append('..') # we assume (and assert) that this script is running from 
 from base.prepare import prepare
 from datetime import datetime
 from base.utils import fix_names
+import argparse
+
+def collect_args():
+    parser = argparse.ArgumentParser(description = "Prepare fauna FASTA for analysis")
+    parser.add_argument('-v', '--viruses_per_month', type = int, default = 15, help='Subsample x viruses per country per month. Set to 0 to disable subsampling. (default: 15)')
+    return parser.parse_args()
 
 dropped_strains = [
-    "THA/PLCal_ZV/2013", "PLCal_ZV", # true strains, too basal for analysis
     "ZF36_36S", # possible contamination
     "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", # true strains, but duplicates of other strains in dataset
-    "Bahia04", "JAM/2016/WI_JM6", # excessive terminal branch length
-    "THA/2014/SV0127_14", "ZK_YN001", "NIID123/2016", # true strains, too basal for analysis
-    "ZKA_16_291", "ZKA_16_097" # singapore, too basal for analysis
+    "Bahia04", "JAM/2016/WI_JM6", "Bahia11", "Bahia12", "DOM/2016/MA_WGS16_009", "VE_Ganxian", # excessive terminal branch length
+    "VR10599/Pavia/2016", "34997/Pavia/2016", # exports
+    "THA/PLCal_ZV/2013", "SK403/13AS", "SV0010/15", "SK364/13AS" # clock is off
 ]
 
 config = {
@@ -27,13 +32,11 @@ config = {
         ("Sequence Length", lambda s: len(s.seq)>=2000),
     ),
     "subsample": {
-        "category": lambda x:(x.attributes['date'].year, x.attributes['date'].month),
-        "threshold": 1,
+        "category": lambda x:(x.attributes['date'].year, x.attributes['date'].month, x.attributes['country']),
     },
-    "colors": ["country", "region"], # essential. Maybe False.
+    "colors": ["country", "region"],
     "color_defs": ["./colors.tsv"],
-    "lat_longs": ["country", "region"], # essential. Maybe False.
-    "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
+    "lat_longs": ["country", "region"],
     "reference": {
         "path": "metadata/zika_outgroup.gb",
         "metadata": {
@@ -46,8 +49,12 @@ config = {
     }
 }
 
-
 if __name__=="__main__":
+    params = collect_args()
+    if params.viruses_per_month == 0:
+        config["subsample"] = False
+    else:
+        config["subsample"]["threshold"] = params.viruses_per_month
     runner = prepare(config)
     runner.load_references()
     runner.applyFilters()

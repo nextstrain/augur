@@ -95,12 +95,13 @@ See the references in `H7N9` or `zika` for working examples.
 
 
 #### colours
-Colours are defined for certain fields / traits - usually `country` and `region`
-These are crucial if you want to push your data into auspice.
-Eventually i'll write a script to change these after the JSONs have been created.
-But for now...
+Colours are defined for certain fields / traits - normally the same traits that are inferred for nodes in the tree such as `country`, `region`, `host` e.t.c.
+Default colour maps will be created for any attributes set here, however you can also supply a file containing custom HEX values.
   * `colors`: False or list of traits (appearing in `header_fields`). If traits are selected, then a section in the JSON will be created with traits -> hex values. By default they will be created using the viridis scale.
-  * `color_defs`: _file path_ or [_array_, _of_, _file_, _paths_] - tab separated file(s) joining trait -> color (hex), or dictionary linking trait values to hexes
+  * `color_defs`: _file path_ or [_array_, _of_, _file_, _paths_] - tab separated file(s) joining `trait -> name -> color (hex)`.
+  Comment lines start with `#`. See `zika/colors.tsv` for an example.
+
+**To do:** Write a script to change these after auspice JSON creation.
 
 #### latitude & longitude
 Similar to colours, these are needed if the data is to be pushed into auspice.

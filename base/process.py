@@ -564,14 +564,19 @@ class process(object):
         write_json(meta_json, prefix+'_meta.json')
 
     def run_geo_inference(self):
-        report_confidence = False
-        if "geo_inference_confidence" in self.config and self.config["geo_inference_confidence"] == True:
-            report_confidence = True
+        try:
+            kwargs = {"report_confidence": self.config["geo_inference_options"]["confidence"]}
+        except KeyError:
+            kwargs = {}
 
+        ## try load pickle...
         try:
             assert(self.try_to_restore == True)
             with open(self.output_path + "_mugration.pickle", 'rb') as fh:
+                options = pickle.load(fh)
                 restored_data = pickle.load(fh)
+            set_trace()
+            assert(options == self.config["geo_inference_options"])
             assert(set(restored_data.keys()) == set([x.name for x in self.tree.tree.find_clades()]))
         except IOError:
             restored_data = False
@@ -585,11 +590,15 @@ class process(object):
             return
         for geo_attr in self.config["geo_inference"]:
             try:
-                self.tree.restore_geo_inference(restored_data, geo_attr, report_confidence)
+                self.tree.restore_geo_inference(restored_data, geo_attr, self.config["geo_inference_options"]["confidence"])
                 self.log.notify("Restored geo inference for {}".format(geo_attr))
             except KeyError:
-                self.log.notify("running geo inference for {}".format(geo_attr))
-                self.tree.geo_inference(geo_attr, report_confidence=report_confidence)
+                try:
+                    kwargs["root_state"] = self.config["geo_inference_options"]["root_state"][geo_attr]
+                except KeyError:
+                    pass
+                self.log.notify("running geo inference for {} with parameters {}".format(geo_attr, kwargs))
+                self.tree.geo_inference(geo_attr, **kwargs)
 
         # SAVE MUGRATION RESULTS:
         attrs = set(self.tree.mugration_attrs)
@@ -602,6 +611,7 @@ class process(object):
             self.log.warn("Error saving mugration data - will not be able to restore")
             return
         with open(self.output_path + "_mugration.pickle", 'wb') as fh:
+            pickle.dump(self.config["geo_inference_options"], fh, protocol=pickle.HIGHEST_PROTOCOL)
             pickle.dump(data, fh, protocol=pickle.HIGHEST_PROTOCOL)
         self.log.notify("Saved mugration data (pickle)")
 

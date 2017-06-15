@@ -36,7 +36,9 @@ process = {
         "auspice": "auspice",
     },
     "geo_inference": False,
-    "geo_inference_confidence": True,
+    "geo_inference_options": {
+        "confidence": True
+    },
     "temporal_confidence": True,
     "auspice": { ## settings for auspice JSON export
         "panels": ['tree', 'map', 'entropy'],
