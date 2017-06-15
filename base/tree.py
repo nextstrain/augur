@@ -9,6 +9,7 @@ from subprocess import CalledProcessError, check_call, STDOUT
 from pprint import pprint
 from pdb import set_trace
 from Bio import Phylo
+import cPickle as pickle
 try:
     from treetime_augur import TreeTime, utils
 except ImportError:
@@ -186,6 +187,28 @@ class tree(object):
 
         self.is_timetree=True
 
+    def save_timetree(self, fprefix, opts):
+        Phylo.write(self.tt.tree, fprefix+"_timetree.new", "newick")
+        n = {}
+        attrs = ["branch_length", "mutation_length", "clock_length", "dist2root", "name", "mutations", "attr", "cseq", "sequence", "numdate"]
+        for node in self.tt.tree.find_clades():
+            n[node.name] = {}
+            for x in attrs:
+                n[node.name][x] = getattr(node, x)
+        with open(fprefix+"_timetree.pickle", 'wb') as fh:
+            pickle.dump({
+                "options": opts,
+                "nodes": n,
+                "original_seqs": self.sequence_lookup.keys(),
+            }, fh, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def restore_timetree_node_info(self, nodes):
+        for node in self.tt.tree.find_clades():
+            info = nodes[node.name]
+            # print("restoring node info for node ", node.name)
+            for k, v in info.iteritems():
+                setattr(node, k, v)
+        self.is_timetree=True
 
     def geo_inference(self, attr, missing='?', root_state=None, report_confidence=False):
         '''
