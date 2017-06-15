@@ -5,18 +5,18 @@
 The process scripts (and the Process class) is designed to analyse one single dataset (i.e. not multiple segments), coming from one single JSON.
 Similar to _Prepare_, it is designed off a `config` dict that should be all that is needed to run the analysis.
 For bespoke analysis, a new class may be created which inherits from `Process`.
-Since the config files across segments may be identical but for the filenames, these can be added as command line arguments (TO DO).
-The analysis is designed to be restarted at various checkpoints (TO DO)
+Since the config files across segments may be identical but for the filenames, these can be added as command line arguments on a dataset-by-dataset basis (e.g. see flu).
+Most stages will save their output which will be restored (if valid) for subsequent analysis.
 
 ### input
-Normally, everything is done off a JSON via [prepare](./prepare.md)
+Normally, everything is done off a JSON via [prepare](./prepare.md).
+Titer information is loaded here, although this is a work in progress.
 
 ### analysis components
 * align
 * [estimate mutation frequencies](./frequencies.md)
-* build tree (RAxML)
-* temporal filtering
-* TimeTree
+* [build tree (RAxML)](./phylogenies.md)
+* [TimeTree](./phylogenies.md) - temporal filtering, ancestral reconstruction + node dating.
 * geographical inference
 * [estimate tree frequencies](./frequencies.md)
 * Titer models
@@ -40,7 +40,7 @@ Normally, everything is done off a JSON via [prepare](./prepare.md)
 * `estimate_mutation_frequencies` {bool} (default: `False`)
 * `pivot_spacing` {float} (default: not present) necessary if you want to calculate pivots through `get_pivots_via_spacing`. See [Frequencies](./frequencies.md)
 * `newick_tree_options` {dict} (default: `{}`) See [Phylogenies](./phylogenies.md)
-* `clock_filter` {`False` | dict} See [clock filter](./clock_filter.md)
+* `clock_filter` {`False` | dict} See [Phylogenies](./phylogenies.md)
 * `timetree_options` {dict} See [Phylogenies](./phylogenies.md)
 
 ##### Auspice output settings

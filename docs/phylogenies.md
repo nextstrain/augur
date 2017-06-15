@@ -11,8 +11,21 @@ By default **RAxML** is run using the GTRCAT model with a single starting tree.
 The newick file is saved to `processed/<prefix>.newick`. If this file exists, and the taxa match, then this step is skipped to save time.
 
 ### step 2: TimeTree
-Options here are configurable via the `timetree_options` dictionary in config.
+TimeTree involves three steps:
+* set up
+* clock filtering (configurable via `config -> clock_filter`)
+* reconstruct ancestral sequences, date nodes & optimise branch lengths (configurable via `config -> timetree_options`)
 
+**clock_filter:**
+
+`clock_filter` is a {dict} with keys:
+* `n_iqd` {int} (default `3`)
+* `plot` {bool} (default `True`)
+* `remove_deep_splits` {bool} (default `False`)
+
+Note that setting `clock_filter` to `False` skips this step.
+
+**timetree_options:**
 Available parameters:
 * `Tc` (default `0.02`)
 * `confidence` (see below)
