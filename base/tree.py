@@ -274,13 +274,13 @@ class tree(object):
                 node.sequence=np.array([missing_char])
         for node in self.tree.get_nonterminals():
             node.__delattr__('sequence')
-        self.tt.make_reduced_alignment()
         if root_state is not None:
             self.tree.root.split(n=1, branch_length=0.0)
             extra_clade = self.tree.root.clades[-1]
             extra_clade.name = "dummy_root_node"
             extra_clade.up = self.tree.root
             extra_clade.sequence = np.array([alphabet_rev[root_state]])
+        self.tt.make_reduced_alignment()
         # set custom GTR model, run inference
         self.tt._gtr = myGeoGTR
         # import pdb; pdb.set_trace()
