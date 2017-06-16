@@ -81,5 +81,5 @@ if __name__=="__main__":
 
         runner.matchClades(clade_designations[runner.info["lineage"]])
 
-        runner.save_as_nexus()
+        # runner.save_as_nexus()
         runner.auspice_export()
