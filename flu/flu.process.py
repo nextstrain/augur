@@ -22,20 +22,21 @@ def make_config (prepared_json, args):
     return {
         "dir": "flu",
         "in": prepared_json,
-        "geo_inference": ['country', 'region'], # what traits to perform this on
+        "geo_inference": ['region'], # what traits to perform this on
         "auspice": { ## settings for auspice JSON export
             "extra_attr": ['serum'],
             "color_options": {
                 "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
             },
-            "controls": {'geographic location':['country'], 'authors':['authors']}
+            "controls": {'authors':['authors']},
+            "defaults": {'geoResolution': ['region']}
         },
-        "titers": {
-            "fname": "../../fauna/data/<LINEAGE>_2017_06_02_titers.tsv",
-            "criterium": lambda x: len(x.aa_mutations['HA'])>0,
-            "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
-        },
+        # "titers": {
+        #     "fname": "../../fauna/data/<LINEAGE>_2017_06_02_titers.tsv",
+        #     "criterium": lambda x: len(x.aa_mutations['HA'])>0,
+        #     "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
+        # },
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
         "clean": args.clean,

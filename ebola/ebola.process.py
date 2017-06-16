@@ -32,3 +32,19 @@ if __name__=="__main__":
     runner.run_geo_inference()
     runner.save_as_nexus()
     runner.auspice_export()
+
+    # plot an approximate skyline - needs testing
+    plot_skyline = False
+    if plot_skyline: # plot an approximate skyline
+        from matplotlib import pyplot as plt
+        T = runner.tree.tt
+        plt.figure()
+        skyline, confidence = T.merger_model.skyline_inferred(gen = 50, confidence=2.0)
+        plt.fill_between(skyline.x, confidence[0], confidence[1], color=(0.8, 0.8, 0.8))
+        plt.plot(skyline.x, skyline.y)
+        plt.yscale('log')
+        plt.ylabel('effective population size')
+        plt.xlabel('year')
+        plt.ticklabel_format(axis='x',useOffset=False)
+        plt.savefig('ebola_skyline.png')
+        plt.show()

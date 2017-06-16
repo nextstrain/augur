@@ -575,7 +575,6 @@ class process(object):
             with open(self.output_path + "_mugration.pickle", 'rb') as fh:
                 options = pickle.load(fh)
                 restored_data = pickle.load(fh)
-            set_trace()
             assert(options == self.config["geo_inference_options"])
             assert(set(restored_data.keys()) == set([x.name for x in self.tree.tree.find_clades()]))
         except IOError:

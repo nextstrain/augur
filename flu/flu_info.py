@@ -101,7 +101,7 @@ reference_maps = {
                 'age': "unknown",
                 'gender': "M"
             },
-            "use": True,
+            "include": 0,
             "genes": ["HA"]
         },
         "na": {

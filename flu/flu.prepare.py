@@ -21,9 +21,9 @@ def collect_args():
     parser.add_argument('-l', '--lineages', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default=['h3n2', 'h1n1pdm', 'vic', 'yam'], nargs='+', type=str, help="serotype (default: 'h3n2', 'h1n1pdm', 'vic' & 'yam')")
     parser.add_argument('-r', '--resolutions', default=['2y', '3y', '6y', '12y'], nargs='+', type = str,  help = "resolutions (default: 2y, 3y, 6y & 12y)")
     parser.add_argument('-s', '--segments', choices=segments, default=['ha'], nargs='+', type = str,  help = "segments (default: ha)")
-    parser.add_argument('-v', '--viruses_per_month_seq', type = int, default = 0, help='number of viruses sampled per month (optional)')
+    parser.add_argument('-v', '--viruses_per_month_seq', type = int, default = 0, help='number of viruses sampled per month (optional) (defaults: 90 (2y), 60 (3y), 24 (6y) or 12 (12y))')
     parser.add_argument('--sampling', default = 'even', type=str,
-                        help='sample evenly over regions (even), or prioritize one region (region name), otherwise sample randomly')
+                        help='sample evenly over regions (even) (default), or prioritize one region (region name), otherwise sample randomly')
     return parser.parse_args()
 
 # for flu, config is a function so it is applicable for multiple lineages
@@ -53,6 +53,7 @@ def make_config(lineage, resolution, params):
             ("Sequence Length", lambda s: len(s.seq)>=900),
             # what's the order of evaluation here I wonder?
             ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in outliers[lineage]]),
+            ("Bad geo info", lambda s: s.attributes["country"]!= "?" and s.attributes["region"]!= "?" ),
         ),
         "subsample": flu_subsampling(params, years_back, "../../fauna/data/vic_2017_06_02"),
         "colors": ["country", "region", "city"],

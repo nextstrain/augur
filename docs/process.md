@@ -51,7 +51,7 @@ Titer information is loaded here, although this is a work in progress.
   * `extra_attr` {array} (default: `[]`)
   * `date_range`
   * `analysisSlider`: optional. If specified, this should be a key present in `color_options`, with `type`: continuous
-  * `color_options`
+  * `color_options` (default: `"num_date": {...}, "gt": {...}`)
     * `<trait name>`
       * `key`
       *  `legendTitle`: String appearing in Auspice legend
