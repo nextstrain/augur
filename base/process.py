@@ -564,6 +564,9 @@ class process(object):
         write_json(meta_json, prefix+'_meta.json')
 
     def run_geo_inference(self):
+        if self.config["geo_inference"] == False:
+            self.log.notify("Not running geo inference")
+            return
         try:
             kwargs = {"report_confidence": self.config["geo_inference_options"]["confidence"]}
         except KeyError:

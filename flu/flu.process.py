@@ -22,7 +22,7 @@ def make_config (prepared_json, args):
     return {
         "dir": "flu",
         "in": prepared_json,
-        "geo_inference": ['region'], # what traits to perform this on
+        "geo_inference": False,
         "auspice": { ## settings for auspice JSON export
             "extra_attr": ['serum'],
             "color_options": {

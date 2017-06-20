@@ -88,7 +88,7 @@ def combine_configs(config_type, user_config):
     # they can be merged together... (recursively)
     config = merge(config, user_config)
 
-    if "geo_inference" in user_config and "geographic location" not in config["auspice"]["controls"]:
+    if config["geo_inference"] != False and "geographic location" not in config["auspice"]["controls"]:
         config["auspice"]["controls"]["geographic location"] = config["geo_inference"]
 
 
