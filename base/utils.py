@@ -18,9 +18,9 @@ def generate_cmap(data, discrete):
         elif len(data) <= 20:
             cmap = mpl.cm.get_cmap("Vega20")
 
-    ret = {}
+    ret = []
     for idx, val in enumerate(list(data)):
-        ret[val] = mpl.colors.to_hex(cmap(norm(idx)))
+        ret.append((val, mpl.colors.to_hex(cmap(norm(idx)))))
     return ret
 
 def define_latitude_longitude(lat_long_defs, log):

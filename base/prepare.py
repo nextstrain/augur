@@ -9,6 +9,7 @@ from base.utils import generate_cmap, define_latitude_longitude
 # useful for debugging
 from pdb import set_trace
 from pprint import pprint
+from collections import defaultdict
 
 class prepare(object):
     def __init__(self, config):
@@ -108,7 +109,7 @@ class prepare(object):
         self.colors()
 
     def parse_colors_file(self):
-        db = {}
+        db = defaultdict(list)
         if "color_defs" not in self.config: return db
         try:
             for fname in self.config["color_defs"]:
@@ -118,18 +119,14 @@ class prepare(object):
                         if line.startswith('#'): continue
                         fields = line.strip().split()
                         if len(fields)!=3: continue
-                        try:
-                            db[fields[0]][fields[1]] = fields[2]
-                        except KeyError:
-                            db[fields[0]] = {fields[1]: fields[2]}
+                        db[fields[0]].append((fields[1], fields[2]))
         except IOError:
             self.log.warn("Couldn't open color definitions file {}.".format(self.config["color_defs"]))
         return db
 
     def colors(self):
         if self.config["colors"]:
-            cols = {}
-            user_defs = self.parse_colors_file()
+            cols = self.parse_colors_file() #defaultdict type <list>
             for trait in self.config["colors"]:
                 try:
                     assert(trait in self.config["header_fields"].values())
@@ -138,17 +135,15 @@ class prepare(object):
                     continue
                 self.log.notify("Generating colour maps for '{}'".format(trait))
                 vals = set.union(*[obj.get_trait_values(trait) for seg, obj in self.segments.iteritems()])
-                # generate a default map then overwrite with user defined values
-                cols[trait] = generate_cmap(vals, False)
-                if trait in user_defs:
-                    for name in cols[trait].keys():
-                        if name in user_defs[trait]:
-                            cols[trait][name] = user_defs[trait][name]
-
+                missing_vals = vals - set([x[0] for x in cols[trait]])
+                if len(missing_vals):
+                    cols[trait].extend(generate_cmap(missing_vals, False))
+                # remove colours for values that have no sequences
+                for idx in [i for i, v in enumerate(cols[trait]) if v[0] not in vals][::-1]:
+                    del cols[trait][idx]
             # save to each sequence_set object. It's them that write the JSONs
             for seg, obj in self.segments.iteritems():
                 obj.extras["colors"] = cols
-
 
     def latlongs(self):
         if self.config["lat_longs"]:

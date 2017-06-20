@@ -521,7 +521,7 @@ class process(object):
         if self.colors:
             for trait, data in self.colors.iteritems():
                 if trait in col_opts:
-                    col_opts[trait]["color_map"] = [[k, v] for k, v in data.iteritems()]
+                    col_opts[trait]["color_map"] = data
                 else:
                     self.log.warn("{} in colors (input JSON) but not auspice/color_options. Ignoring".format(trait))
 
