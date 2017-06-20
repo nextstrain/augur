@@ -10,6 +10,7 @@ parser.add_argument('--clean', action='store_true', help="clean build (remove pr
 config = {
     "dir": "zika",
     "in": "prepared/zika.json",
+    "newick_tree_options": {"nthreads": 4},
     "clock_filter": {
         "n_iqd": 4,
     },
