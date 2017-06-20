@@ -211,6 +211,31 @@ class tree(object):
                 setattr(node, k, v)
         self.is_timetree=True
 
+
+    def remove_outlier_clades(max_nodes=3, min_length=0.03):
+        '''
+        check whether one child clade of the root is small and the connecting branch
+        is long. if so, move the root up and reset a few tree props
+        Args:
+            max_nodes   number of nodes beyond which the outliers are note removed
+            min_length  minimal length of the branch connecting the outlier clade
+                        to the rest of the tree to allow cutting.
+        Returns:
+            list of names of strains that have been removed
+        '''
+        R = self.tt.tree.root
+        if len(R.clades)>2:
+            return
+
+        child_nodes = np.array([c.count_terminals() for c in R])
+        putative_outlier = child_nodes.argmin()
+        bl = np.sum([c.branch_length for c in R])
+        if (bl>min_length and child_nodes[putative_outlier]<max_nodes):
+            self.tt.tree.root = R.clades[(1+putative_outlier)%2]
+        self.tt.prepare_tree()
+        return [c.name for c in R.clades[putative_outlier].get_terminals()]
+
+
     def geo_inference(self, attr, missing='?', root_state=None, report_confidence=False):
         '''
         infer a "mugration" model by pretending each region corresponds to a sequence
