@@ -3,6 +3,7 @@ from __future__ import division, print_function
 from scipy.interpolate import interp1d
 import time
 import numpy as np
+import sys
 
 debug = False
 log_thres = 10.0
@@ -125,12 +126,14 @@ class frequency_estimator(object):
 
 
     def learn(self, initial_guess=None):
-        print('optimizing with', len(self.pivots), 'pivots')
+        # print('optimizing with', len(self.pivots), 'pivots')
         self.dt = np.diff(self.pivots)
         def logLH(x):
             self.pivot_freq = logit_inv(x, self.pc)
-            freq = interp1d(self.pivots, x, kind=self.interpolation_type,
-                            assume_sorted=True, bounds_error = False)
+            try:
+                freq = interp1d(self.pivots, x, kind=self.interpolation_type,bounds_error = False, assume_sorted=True) # Throws a bug with some numpy installations, isn't necessary other than for speed.
+            except:
+                freq = interp1d(self.pivots, x, kind=self.interpolation_type,bounds_error = False)
             estfreq = freq(self.tps)
             bernoulli_LH = np.sum(estfreq[self.obs]) - np.sum(np.log(1+np.exp(estfreq)))
 
@@ -208,10 +211,10 @@ class freq_est_clipped(object):
                                   self.pivots[self.good_pivots], **kwargs)
 
     def learn(self):
-        try:
-            self.fe.learn()
-        except:
-            import ipdb; ipdb.set_trace()
+        # try:
+        self.fe.learn()
+        # except:
+        #     import ipdb; ipdb.set_trace()
 
         self.pivot_freq = np.zeros_like(self.pivots)
         self.pivot_freq[self.good_pivots] = self.fe.pivot_freq
@@ -238,10 +241,10 @@ class nested_frequencies(object):
         self.frequencies = {}
         valid_tps = np.ones_like(self.tps, dtype=bool)
         for mut, obs in sorted_obs[:-1]:
-            print(mut,'...')
+            # print(mut,'...')
             fe = freq_est_clipped(self.tps[valid_tps], obs[valid_tps], self.pivots, **self.kwargs)
             fe.learn()
-            print('done')
+            # print('done')
             self.frequencies[mut] = self.remaining_freq * fe.pivot_freq
             self.remaining_freq *= (1.0-fe.pivot_freq)
             valid_tps = valid_tps&(~obs)
@@ -265,7 +268,7 @@ class tree_frequencies(object):
         min_clades  -- smallest clades for which frequencies are estimated.
         '''
         self.tree = tree
-        self.min_clades = min_clades
+        self.min_clades = 10 #min_clades
         self.pivots = pivots
         self.kwargs = kwargs
         self.verbose=verbose
@@ -403,11 +406,12 @@ class alignment_frequencies(object):
         if include_set is None:
             include_set=[]
         alphabet = np.unique(self.aln)
+        # af: rows correspoind to letters of the alphabet, columns positions in the alignemtn, values: frequencies
         af = np.zeros((len(alphabet), self.aln.shape[1]))
         for ni, n in enumerate(alphabet):
             af[ni] = (self.aln==n).mean(axis=0)
 
-
+        # minor_freqs: frequencies of all alleles not the major one! ignore_char is excluded
         if ignore_char:
             minor_freqs = af[alphabet!=ignore_char].sum(axis=0) - af[alphabet!=ignore_char].max(axis=0)
         else:
@@ -419,12 +423,16 @@ class alignment_frequencies(object):
             nis = nis[af[nis,pos]>0]
             column = self.aln[:,pos]
             if ignore_char: # subset sequences, time points and alphabet to non-gapped and non X
-                good_seq = (column!=ignore_char)&(column!='X')
+                good_seq = (column!=ignore_char)&(column!='X') #array of bools, length = # seqs in aln
                 tps=self.tps[good_seq]
                 column = column[good_seq]
                 nis = nis[(alphabet[nis]!=ignore_char)&(alphabet[nis]!='X')]
             else:
                 tps = self.tps
+
+            if len(nis)==0:
+                # no characters with any frequencies (column of ignore chars)
+                continue
 
             muts = alphabet[nis]
             obs = {}
@@ -446,8 +454,9 @@ class alignment_frequencies(object):
                     else: #other wise, call that mutation 'other'
                         obs[(pos, 'other')] = tmp
 
-            print("Estimating frequencies of position:", pos)
-            print("Variants found at frequency:", [(k,o.mean()) for k,o in obs.iteritems()])
+            print("Estimating frequencies of position: {}".format(pos), end="\r")
+            sys.stdout.flush()
+            # print("Variants found at frequency:", [(k,o.mean()) for k,o in obs.iteritems()])
 
             # calculate frequencies, which will be added to the frequencies dict with (pos, mut) as key
             ne = nested_frequencies(tps, obs, self.pivots, **self.kwargs)
@@ -523,6 +532,3 @@ if __name__=="__main__":
     plot=True
     fe = test_nested_estimator()
     #fe = test_simple_estimator()
-
-
-

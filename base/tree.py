@@ -1,9 +1,20 @@
 from __future__ import division, print_function
 import os, time, sys
-sys.path.insert(0,'../')
+sys.path.insert(0,'../') # path.abspath(path.join(__file__ ,".."))
 from io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from sequences import sequence_set
 import numpy as np
+import math
+from subprocess import CalledProcessError, check_call, STDOUT
+from pprint import pprint
+from pdb import set_trace
+from Bio import Phylo
+import cPickle as pickle
+try:
+    from treetime_augur import TreeTime, utils
+except ImportError:
+    print("Couldn't import treetime_augur. Here's the searched paths:")
+    pprint(sys.path)
 
 def resolve_polytomies(tree):
     for node in tree.get_nonterminals('preorder'):
@@ -25,16 +36,15 @@ def resolve_polytomies(tree):
                 node.clades[1].confidence = None
                 node.clades[1].name = None
 
-
 class tree(object):
     """tree builds a phylgenetic tree from an alignment and exports it for web visualization"""
     def __init__(self, aln, proteins=None, verbose=2, logger=None, **kwarks):
         super(tree, self).__init__()
         self.aln = aln
-        self.nthreads = 2
+        # self.nthreads = 2
         self.sequence_lookup = {seq.id:seq for seq in aln}
         self.nuc = kwarks['nuc'] if 'nuc' in kwarks else True
-        self.dump_attr = []
+        self.dump_attr = [] # depreciated
         self.verbose = verbose
         if proteins!=None:
             self.proteins = proteins
@@ -73,80 +83,52 @@ class tree(object):
             from cPickle import dump
             dump(node_props, nfile)
 
+    def check_newick(self, newick_file):
+        tree = Phylo.parse(newick_file, 'newick').next()
+        assert(set([x.name for x in tree.get_terminals()]) == set(self.sequence_lookup.keys()))
 
-    def build(self, root='midpoint', raxml=True, raxml_time_limit=1, raxml_bin='raxml', debug=False):
+    def build_newick(self, newick_file, nthreads=2, root='midpoint', raxml=True, raxml_bin='raxml', debug=False, num_distinct_starting_trees=1):
         from Bio import Phylo, AlignIO
         import subprocess, glob, shutil
         make_dir(self.run_dir)
         os.chdir(self.run_dir)
         for seq in self.aln: seq.name=seq.id
         AlignIO.write(self.aln, 'temp.fasta', 'fasta')
-
-        tree_cmd = ["fasttree"]
-        if self.nuc: tree_cmd.append("-nt")
-        tree_cmd.extend(["temp.fasta","1>","initial_tree.newick", "2>", "fasttree_stderr"])
-        os.system(" ".join(tree_cmd))
-
-        out_fname = "tree_infer.newick"
+        out_fname = os.path.join("..", newick_file)
         if raxml:
-            if raxml_time_limit>0:
-                tmp_tree = Phylo.read('initial_tree.newick','newick')
-                resolve_iter = 0
-                resolve_polytomies(tmp_tree)
-                while (not tmp_tree.is_bifurcating()) and (resolve_iter<10):
-                    resolve_iter+=1
-                    resolve_polytomies(tmp_tree)
-                Phylo.write(tmp_tree,'initial_tree.newick', 'newick')
-                AlignIO.write(self.aln,"temp.phyx", "phylip-relaxed")
-                self.logger( "RAxML tree optimization with time limit %d hours"%raxml_time_limit,2)
-                # using exec to be able to kill process
-                end_time = time.time() + int(raxml_time_limit*3600)
-                process = subprocess.Popen("exec " + raxml_bin + " -f d -T " + str(self.nthreads) +
-                                            " -j -s temp.phyx -n topology -c 25 -m GTRCAT -p 344312987"
-                                            " -t initial_tree.newick > raxml1_stdout", shell=True)
-                while (time.time() < end_time):
-                    if os.path.isfile('RAxML_result.topology'):
-                        break
-                    time.sleep(10)
-                process.terminate()
-
-                checkpoint_files = glob.glob("RAxML_checkpoint*")
-                if os.path.isfile('RAxML_result.topology'):
-                    checkpoint_files.append('RAxML_result.topology')
-                if len(checkpoint_files) > 0:
-                    last_tree_file = checkpoint_files[-1]
-                    shutil.copy(last_tree_file, 'raxml_tree.newick')
-                else:
-                    shutil.copy("initial_tree.newick", 'raxml_tree.newick')
+            self.logger("modified RAxML script - no branch length optimisation or time limit", 1)
+            AlignIO.write(self.aln,"temp.phyx", "phylip-relaxed")
+            if num_distinct_starting_trees == 1:
+                cmd = raxml_bin + " -f d -T " + str(nthreads) + " -m GTRCAT -c 25 -p 235813 -n tre -s temp.phyx"
             else:
-                shutil.copy("initial_tree.newick", 'raxml_tree.newick')
-
+                self.logger("RAxML running with {} starting trees (longer but better...)".format(num_distinct_starting_trees), 1)
+                cmd = raxml_bin + " -f d -T " + str(nthreads) + " -N " + str(num_distinct_starting_trees) + " -m GTRCAT -c 25 -p 235813 -n tre -s temp.phyx"
+            fh = open("raxml.log", 'w')
             try:
-                self.logger("RAxML branch length optimization", 2)
-                os.system(raxml_bin + " -f e -T " + str(self.nthreads)
-                          + " -s temp.phyx -n branches -c 25 -m GTRGAMMA -p 344312987 -t raxml_tree.newick  > raxml2_stdout")
-                shutil.copy('RAxML_result.branches', out_fname)
-            except:
-                self.logger("RAxML branch length optimization failed", 1)
-                shutil.copy('raxml_tree.newick', out_fname)
+                check_call(cmd, stdout=fh, stderr=STDOUT, shell=True)
+                self.logger("RAXML COMPLETED.", 1)
+            except CalledProcessError:
+                self.logger("RAXML TREE FAILED - check {}/raxml.log".format(self.run_dir), 1)
+                sys.exit(2)
+            shutil.copy('RAxML_bestTree.tre', out_fname)
         else:
+            tree_cmd = ["fasttree"]
+            if self.nuc: tree_cmd.append("-nt")
+            tree_cmd.extend(["temp.fasta","1>","initial_tree.newick", "2>", "fasttree_stderr"])
+            os.system(" ".join(tree_cmd))
             shutil.copy('initial_tree.newick', out_fname)
-        self.tt_from_file(out_fname, root)
         os.chdir('..')
         if not debug:
             remove_dir(self.run_dir)
 
 
     def tt_from_file(self, infile, root='best', nodefile=None):
-        import sys;
-        print(sys.path)
-        from treetime_augur import TreeTime
-        from treetime_augur import utils
         self.is_timetree=False
         self.logger('Reading tree from file '+infile,2)
         dates  =   {seq.id:seq.attributes['num_date']
                     for seq in self.aln if 'date' in seq.attributes}
-        self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor', aln = self.aln, verbose=self.verbose)
+        self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor',
+                            aln = self.aln, verbose=self.verbose, fill_overhangs=True)
         if root:
             self.tt.reroot(root=root)
         self.tree = self.tt.tree
@@ -182,7 +164,7 @@ class tree(object):
             if not hasattr(node,'attr'):
                 node.attr = {}
 
-
+    ## TODO REMOVE KWARKS - MAKE EXPLICIT
     def timetree(self, Tc=0.01, infer_gtr=True, reroot='best', resolve_polytomies=True,
                  max_iter=2, confidence=False, use_marginal=False, **kwarks):
         self.logger('estimating time tree...',2)
@@ -205,8 +187,56 @@ class tree(object):
 
         self.is_timetree=True
 
+    def save_timetree(self, fprefix, ttopts, cfopts):
+        Phylo.write(self.tt.tree, fprefix+"_timetree.new", "newick")
+        n = {}
+        attrs = ["branch_length", "mutation_length", "clock_length", "dist2root", "name", "mutations", "attr", "cseq", "sequence", "numdate"]
+        for node in self.tt.tree.find_clades():
+            n[node.name] = {}
+            for x in attrs:
+                n[node.name][x] = getattr(node, x)
+        with open(fprefix+"_timetree.pickle", 'wb') as fh:
+            pickle.dump({
+                "timetree_options": ttopts,
+                "clock_filter_options": cfopts,
+                "nodes": n,
+                "original_seqs": self.sequence_lookup.keys(),
+            }, fh, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def geo_inference(self, attr, missing='?', root_state=None):
+    def restore_timetree_node_info(self, nodes):
+        for node in self.tt.tree.find_clades():
+            info = nodes[node.name]
+            # print("restoring node info for node ", node.name)
+            for k, v in info.iteritems():
+                setattr(node, k, v)
+        self.is_timetree=True
+
+
+    def remove_outlier_clades(max_nodes=3, min_length=0.03):
+        '''
+        check whether one child clade of the root is small and the connecting branch
+        is long. if so, move the root up and reset a few tree props
+        Args:
+            max_nodes   number of nodes beyond which the outliers are note removed
+            min_length  minimal length of the branch connecting the outlier clade
+                        to the rest of the tree to allow cutting.
+        Returns:
+            list of names of strains that have been removed
+        '''
+        R = self.tt.tree.root
+        if len(R.clades)>2:
+            return
+
+        child_nodes = np.array([c.count_terminals() for c in R])
+        putative_outlier = child_nodes.argmin()
+        bl = np.sum([c.branch_length for c in R])
+        if (bl>min_length and child_nodes[putative_outlier]<max_nodes):
+            self.tt.tree.root = R.clades[(1+putative_outlier)%2]
+        self.tt.prepare_tree()
+        return [c.name for c in R.clades[putative_outlier].get_terminals()]
+
+
+    def geo_inference(self, attr, missing='?', root_state=None, report_confidence=False):
         '''
         infer a "mugration" model by pretending each region corresponds to a sequence
         state and repurposing the GTR inference and ancestral reconstruction
@@ -275,6 +305,7 @@ class tree(object):
             extra_clade.name = "dummy_root_node"
             extra_clade.up = self.tree.root
             extra_clade.sequence = np.array([alphabet_rev[root_state]])
+        self.tt.make_reduced_alignment()
         # set custom GTR model, run inference
         self.tt._gtr = myGeoGTR
         # import pdb; pdb.set_trace()
@@ -289,7 +320,6 @@ class tree(object):
         self.tt.geogtr = self.tt.gtr
         self.tt.geogtr.alphabet_to_location = alphabet
         self.tt._gtr = sequence_gtr
-        self.dump_attr.append(attr)
         if hasattr(self.tt.tree,'sequence_LH'):
             self.tt.tree.geo_LH = self.tt.tree.sequence_LH
             self.tt.tree.sequence_LH = nuc_seq_LH
@@ -301,8 +331,37 @@ class tree(object):
                 node.__setattr__(attr+'_transitions', node.mutations)
                 if node in nuc_muts:
                     node.mutations = nuc_muts[node]
-
+            # save marginal likelihoods if desired
+            if report_confidence:
+                node.attr[attr + "_entropy"] = sum([v * math.log(v+1E-20) for v in node.marginal_profile[0]]) * -1 / math.log(len(node.marginal_profile[0]))
+                # javascript: vals.map((v) => v * Math.log(v + 1E-10)).reduce((a, b) => a + b, 0) * -1 / Math.log(vals.length);
+                marginal = [(alphabet[self.tt.geogtr.alphabet[i]], node.marginal_profile[0][i]) for i in range(0, len(self.tt.geogtr.alphabet))]
+                marginal.sort(key=lambda x: x[1], reverse=True) # sort on likelihoods
+                marginal = [(a, b) for a, b in marginal if b > 0.01][:4] #only take stuff over 1% and the top 4 elements
+                node.attr[attr + "_confidence"] = {a:b for a,b in marginal}
         self.tt.use_mutation_length=tmp_use_mutation_length
+
+        # store saved attrs for save/restore functionality
+        if not hasattr(self, "mugration_attrs"):
+            self.mugration_attrs = []
+        self.mugration_attrs.append(attr)
+        if report_confidence:
+            self.mugration_attrs.extend([attr + "_entropy", attr + "_confidence"])
+
+    def restore_geo_inference(self, data, attr, confidence):
+        if data == False:
+            raise KeyError #yeah, not great
+        for node in self.tree.find_clades():
+            node.attr[attr] = data[node.name][attr]
+            if confidence:
+                node.attr[attr+"_confidence"] = data[node.name][attr+"_confidence"]
+                node.attr[attr+"_entropy"] = data[node.name][attr+"_entropy"]
+        if not hasattr(self, "mugration_attrs"):
+            self.mugration_attrs = []
+        self.mugration_attrs.append(attr)
+        if confidence:
+            self.mugration_attrs.extend([attr + "_entropy", attr + "_confidence"])
+
 
 
     def get_attr_list(self, get_attr):
@@ -395,8 +454,8 @@ class tree(object):
         '''
         from Bio import Seq
         from itertools import izip
-        timetree_fname = path+'tree.json'
-        sequence_fname = path+'sequences.json'
+        timetree_fname = path+'_tree.json'
+        sequence_fname = path+'_sequences.json'
         tree_json = tree_to_json(self.tree.root, extra_attr=extra_attr)
         write_json(tree_json, timetree_fname, indent=indent)
 

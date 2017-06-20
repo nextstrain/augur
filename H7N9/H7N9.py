@@ -183,7 +183,7 @@ if __name__=="__main__":
         # should save un-aligned MFA here
         segment.align(codon_align=False)
         SeqIO.write(segment.seqs.aln, segment.build_data_path + "aligned.mfa", "fasta")
-        segment.build_tree()
+        segment.build_tree(num_distinct_starting_trees=1)
         segment.clock_filter(n_iqd=3, plot=True)
         segment.annotate_tree(Tc=0.02, timetree=True, reroot='best', confidence=params["confidence"])
         for geo_attr in params["geo_inference"]:

@@ -1,12 +1,19 @@
 from __future__ import division, print_function
 import sys, os, time, gzip, glob
 from collections import defaultdict
+from base.config import combine_configs
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
-from base.sequences import sequence_set, num_date
+from base.sequences_process import sequence_set
+from base.utils import num_date, save_as_nexus, parse_date
 from base.tree import tree
 from base.frequencies import alignment_frequencies, tree_frequencies, make_pivots
 import numpy as np
 from datetime import datetime
+import json
+from pdb import set_trace
+from base.logger import logger
+from Bio import SeqIO
+import cPickle as pickle
 
 class process(object):
     """process influenza virus sequences in mutliple steps to allow visualization in browser
@@ -17,89 +24,79 @@ class process(object):
         * export as json
     """
 
-    def __init__(self, input_data_path = 'data/test',
-                 store_data_path = 'store/test',
-                 build_data_path = 'build/test', verbose=2, **kwargs):
+    def __init__(self, config):
+        """ check config file, make necessary directories, set up logger """
         super(process, self).__init__()
-        print("Initializing process")
-        for p in [input_data_path, store_data_path, build_data_path]:
-            if not os.path.isdir(os.path.dirname(p)):
-                os.makedirs(os.path.dirname(p))
-        self.input_data_path = input_data_path
-        self.store_data_path = store_data_path
-        self.build_data_path = build_data_path
-        self.verbose=verbose
-        self.kwargs = kwargs
-        self.data_filenames()
+        self.config = combine_configs("process", config)
 
-        self.seqs=None
+        try:
+            assert(os.path.basename(os.getcwd()) == self.config["dir"])
+        except AssertionError:
+            print("Run this script from within the {} directory".format(self.config["dir"]))
+            sys.exit(2)
 
-        # parse the outgroup information
-        if 'reference' in kwargs:
-            reference_file = kwargs['reference']
-            self.load_reference(reference_file)
-        else:
-            self.reference_seq = None
+        for p in self.config["output"].values():
+            if not os.path.isdir(p):
+                os.makedirs(p)
 
-        # lat/long mapping information
-        if 'lat_long_fname' in kwargs:
-            self.lat_long_fname = kwargs['lat_long_fname']
-        else:
-            self.lat_long_fname = '../fauna/source-data/geo_lat_long.tsv'
+        self.log = logger(self.config["output"]["data"], False)
 
+        # parse the JSON into different data bits
+        try:
+            with open(self.config["in"], 'r') as fh:
+                data = json.load(fh)
+        except Exception as e:
+            self.log.fatal("Error loading JSON. Error: {}".format(e))
 
-    def load_reference(self, reference_file):
-        from Bio import SeqIO
-        from Bio.SeqFeature import FeatureLocation
-        self.reference_seq = SeqIO.read(reference_file, 'genbank')
-        self.reference_seq.id = self.reference_seq.name
-        self.genome_annotation = self.reference_seq.features
-        if "proteins" in self.kwargs:
-            # grap annotation from genbank
-            protein_list = self.kwargs['proteins']
-            self.proteins = {f.qualifiers['gene'][0]:FeatureLocation(start=f.location.start, end=f.location.end, strand=1)
-                            for f in self.genome_annotation
-                                if 'gene' in f.qualifiers
-                                    and f.qualifiers['gene'][0] in protein_list}
-        else:
-            self.proteins = {}
+        self.info = data["info"]
+        if "time_interval" in data["info"]:
+            self.info["time_interval"] = [datetime.strptime(x, '%Y-%m-%d').date() for x in data["info"]["time_interval"]]
+        self.info["lineage"] = data["info"]["lineage"]
 
+        try:
+            self.colors = data["colors"]
+        except KeyError:
+            self.log.notify("* colours have not been set")
+            self.colors = False
+        try:
+            self.lat_longs = data["lat_longs"]
+        except KeyError:
+            self.log.notify("* latitude & longitudes have not been set")
+            self.lat_longs = False
 
-    def load_sequences(self, fields={0:'strain', 2:'isolate_id', 3:'date', 4:'region',
-                                     5:'country', 7:"city", 12:"subtype",13:'lineage'},
-                             prune=True, sep='|'):
-        # instantiate and population the sequence objects
-        self.seqs = sequence_set(self.sequence_fname, reference_seq=self.reference_seq)
-        print("Loaded %d sequences"%len(self.seqs.all_seqs))
-        self.seqs.ungap()
-        self.seqs.parse(fields, sep=sep, strip='_')
-
-        # make sure the reference is part of the sequence set
-        if self.reference_seq is not None:
-            if self.reference_seq.name in self.seqs.all_seqs:
-                self.seqs.all_seqs[self.reference_seq.name].seq=self.reference_seq.seq
-            else:
-                print('Outgroup is not in data base')
-
-            # throw out sequences without dates
-        self.seqs.parse_date(["%Y-%m-%d"], prune=prune)
-
-
-    def data_filenames(self):
-        '''
-        define filenames of input files and intermediates outputs
-        '''
-        self.sequence_fname = self.input_data_path+'.fasta'
+        # backwards compatability - set up file_dumps (need to rewrite sometime)
+        # self.sequence_fname = self.input_data_path+'.fasta'
         self.file_dumps = {}
-        self.file_dumps['seqs'] = self.store_data_path+'sequences.pkl.gz'
-        self.file_dumps['tree'] = self.store_data_path+'tree.newick'
-        self.file_dumps['nodes'] = self.store_data_path+'nodes.pkl.gz'
+        self.output_path = os.path.join(self.config["output"]["data"], self.info["prefix"])
+        self.file_dumps['seqs'] = self.output_path + '_sequences.pkl.gz'
+        self.file_dumps['tree'] = self.output_path + '_tree.newick'
+        self.file_dumps['nodes'] = self.output_path + '_nodes.pkl.gz'
 
+        if self.config["clean"] == True:
+            self.log.notify("Removing intermediate files for a clean build")
+            for f in glob.glob(self.output_path+"*"):
+                os.remove(f)
+
+        if "reference" in data:
+            self.seqs = sequence_set(self.log, data["sequences"], data["reference"], self.info["date_format"])
+        else:
+            self.log.fatal("No reference provided. Cannot continue.")
+            # self.seqs = sequence_set(self.log, data["sequences"], False, self.info["date_format"])
+        # backward compatability
+        self.reference_seq = self.seqs.reference_seq
+        self.proteins = self.seqs.proteins
+
+        for trait in self.info["traits_are_dates"]:
+            self.seqs.convert_trait_to_numerical_date(trait, self.info["date_format"])
+
+        ## usefull flag to set (from pathogen run file) to disable restoring
+        self.try_to_restore = True
 
     def dump(self):
         '''
         write the current state to file
         '''
+        self.log.warn("unsure if dump() works")
         from cPickle import dump
         from Bio import Phylo
         for attr_name, fname in self.file_dumps.iteritems():
@@ -119,6 +116,7 @@ class process(object):
         '''
         reconstruct instance from files
         '''
+        self.log.warn("unsure if load() works")
         from cPickle import load
         for attr_name, fname in self.file_dumps.iteritems():
             if attr_name=='tree':
@@ -138,33 +136,80 @@ class process(object):
             self.build_tree(tree_name, node_file, root='none', debug=debug)
 
 
-    def align(self, outgroup=None, codon_align=False, debug=False):
+    def align(self, codon_align=False, debug=False):
         '''
-        align sequences, remove non-reference insertions, outlier sequences, and translate
+        (1) Align sequences, remove non-reference insertions
+        NB step 1 is skipped if a valid aln file is found
+        (2) Translate
+        (3) Write to multi-fasta
+        CODON ALIGNMENT IS NOT IMPLEMENTED
         '''
-        if codon_align:
-            self.seqs.codon_align(debug=debug)
-        else:
-            self.seqs.align(debug=debug)
+        fname = self.output_path + "_aligned.mfa"
+        if self.try_to_restore:
+            self.seqs.try_restore_align_from_disk(fname)
+        if not hasattr(self.seqs, "aln"):
+            self.seqs.align(fname, debug=debug)
         self.seqs.strip_non_reference()
         self.seqs.remove_terminal_gaps()
-        if outgroup is not None:
-            self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
-        self.seqs.translate(proteins=self.proteins)
+        # if outgroup is not None:
+        #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
+        self.seqs.translate() # creates self.seqs.translations
+        # save additional translations - disabled for now
+        # for name, msa in self.seqs.translations.iteritems():
+        #     SeqIO.write(msa, self.output_path + "_aligned_" + name + ".mfa", "fasta")
 
 
-    def estimate_mutation_frequencies(self, region="global", pivots=24, include_set=None, min_freq=0.01):
+    def get_pivots_via_spacing(self):
+        try:
+            time_interval = self.info["time_interval"]
+            assert("pivot_spacing" in self.config)
+        except AssertionError:
+            self.log.fatal("Cannot space pivots without prividing \"pivot_spacing\" in the config")
+        except KeyError:
+            self.log.fatal("Cannot space pivots without a time interval in the prepared JSON")
+        return np.arange(time_interval[1].year+(time_interval[1].month-1)/12.0,
+                         time_interval[0].year+time_interval[0].month/12.0,
+                         self.config["pivot_spacing"])
+
+    def restore_mutation_frequencies(self):
+        try:
+            assert(self.try_to_restore == True)
+            with open(self.output_path + "_mut_freqs.pickle", 'rb') as fh:
+                pickle_seqs = pickle.load(fh)
+                assert(pickle_seqs == set(self.seqs.seqs.keys()))
+                pickled = pickle.load(fh)
+                assert(len(pickled) == 3)
+                self.mutation_frequencies = pickled[0]
+                self.mutation_frequency_confidence = pickled[1]
+                self.mutation_frequency_counts = pickled[2]
+                self.log.notify("Successfully restored mutation frequencies")
+                return
+        except IOError:
+            pass
+        except AssertionError as err:
+            self.log.notify("Tried to restore mutation frequencies but failed: {}".format(err))
+            #no need to remove - we'll overwrite it shortly
+        self.mutation_frequencies = {}
+        self.mutation_frequency_confidence = {}
+        self.mutation_frequency_counts = {}
+
+    def estimate_mutation_frequencies(self,
+                                      inertia=0.0,
+                                      min_freq=0.01,
+                                      stiffness=20.0,
+                                      pivots=24,
+                                      region="global",
+                                      include_set={}):
         '''
         calculate the frequencies of mutation in a particular region
         currently the global frequencies should be estimated first
         because this defines the set of positions at which frequencies in
         other regions are estimated.
         '''
-        if include_set is None:
-            include_set = {}
         if not hasattr(self.seqs, 'aln'):
-            print("Align sequences first")
+            self.log.warn("Align sequences first")
             return
+
         def filter_alignment(aln, region=None, lower_tp=None, upper_tp=None):
             from Bio.Align import MultipleSeqAlignment
             tmp = aln
@@ -174,7 +219,7 @@ class process(object):
                 elif type(region)==list:
                     tmp = [s for s in tmp if s.attributes['region'] in region]
                 else:
-                    print("region must be string or list")
+                    self.log.warn("region must be string or list")
                     return
             if lower_tp is not None:
                 tmp = [s for s in tmp if np.mean(s.attributes['num_date'])>=lower_tp]
@@ -185,13 +230,11 @@ class process(object):
         if not hasattr(self, 'pivots'):
             tps = np.array([np.mean(x.attributes['num_date']) for x in self.seqs.seqs.values()])
             self.pivots=make_pivots(pivots, tps)
-        else:
-            print('estimate_mutation_frequencies: using self.pivots')
+        # else:
+        #     self.log.notify('estimate_mutation_frequencies: using self.pivots')
 
         if not hasattr(self, 'mutation_frequencies'):
-            self.mutation_frequencies = {}
-            self.mutation_frequency_confidence = {}
-            self.mutation_frequency_counts = {}
+            self.restore_mutation_frequencies()
 
         # loop over nucleotide sequences and translations and calcuate
         # region specific frequencies of mutations above a certain threshold
@@ -202,9 +245,14 @@ class process(object):
             region_name=region[0]
             region_match=region[1]
         else:
-            print ("region must be string or tuple")
+            self.log.warn("region must be string or tuple")
             return
         for prot, aln in [('nuc',self.seqs.aln)]+ self.seqs.translations.items():
+            if (region_name,prot) in self.mutation_frequencies:
+                self.log.notify("Skipping Frequency Estimation for region \"{}\", protein \"{}\"".format(region_name, prot))
+                continue
+            self.log.notify("Starting Frequency Estimation for region \"{}\", protein \"{}\"".format(region_name, prot))
+
             if prot in include_set:
                 tmp_include_set = [x for x in include_set[prot]]
             else:
@@ -216,18 +264,27 @@ class process(object):
                 tmp_include_set += set([pos for (pos, mut) in self.mutation_frequencies[('global', prot)]])
             time_points = [np.mean(x.attributes['num_date']) for x in tmp_aln]
             if len(time_points)==0:
-                print('no samples in region', region_name, prot)
+                self.log.notify('no samples in region {} (protein: {})'.format(region_name, prot))
                 self.mutation_frequency_counts[region_name]=np.zeros_like(self.pivots)
                 continue
 
             aln_frequencies = alignment_frequencies(tmp_aln, time_points, self.pivots,
                                             ws=max(2,len(time_points)//10),
-                                            **self.kwargs)
+                                            inertia=inertia,
+                                            stiffness=stiffness)
             aln_frequencies.mutation_frequencies(min_freq=min_freq, include_set=tmp_include_set,
                                                  ignore_char='N' if prot=='nuc' else 'X')
             self.mutation_frequencies[(region_name,prot)] = aln_frequencies.frequencies
             self.mutation_frequency_confidence[(region_name,prot)] = aln_frequencies.calc_confidence()
             self.mutation_frequency_counts[region_name]=aln_frequencies.counts
+
+        self.log.notify("Saving mutation frequencies (pickle)")
+        with open(self.output_path + "_mut_freqs.pickle", 'wb') as fh:
+            pickle.dump(set(self.seqs.seqs.keys()), fh, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump((self.mutation_frequencies,
+                         self.mutation_frequency_confidence,
+                         self.mutation_frequency_counts), fh, protocol=pickle.HIGHEST_PROTOCOL)
+
 
 
     def estimate_tree_frequencies(self, region='global', pivots=24):
@@ -251,8 +308,9 @@ class process(object):
 
         tree_freqs = tree_frequencies(self.tree.tree, self.pivots,
                                       node_filter = node_filter_func,
-                                      ws = max(2,self.tree.tree.count_terminals()//10),
-                                      **self.kwargs)
+                                      ws = max(2,self.tree.tree.count_terminals()//10))
+                                    # who knows what kwargs are needed here
+                                    #   **self.kwargs)
 
         tree_freqs.estimate_clade_frequencies()
         conf = tree_freqs.calc_confidence()
@@ -261,28 +319,35 @@ class process(object):
         self.tree_frequency_counts[region] = tree_freqs.counts
 
 
-    def build_tree(self, infile=None, nodefile=None, root='best', debug=False):
+    def build_tree(self):
         '''
-        instantiate a tree object and make a time tree
-        if infiles are None, the tree is build from scratch. Otherwise
-        the tree is loaded from file
+        (1) instantiate a tree object (process.tree)
+        (2) If newick file doesn't exist or isn't valid: build a newick tree (normally RAxML)
+        (3) Make a TimeTree
         '''
-        self.tree = tree(aln=self.seqs.aln, proteins = self.proteins, verbose=self.verbose)
-        if infile is None:
-            self.tree.build(root=root, debug=debug)
-        else:
-            self.tree.tt_from_file(infile, nodefile=nodefile, root=root)
+        # self.log.warn("self.verbose not set")
+        self.tree = tree(aln=self.seqs.aln, proteins=self.proteins, verbose=0)
+        newick_file = self.output_path + ".newick"
+        try:
+            assert(self.try_to_restore == True)
+            assert(os.path.isfile(newick_file))
+            self.tree.check_newick(newick_file)
+            self.log.notify("Newick file restored from \"{}\"".format(newick_file))
+        except AssertionError:
+            self.tree.build_newick(newick_file, **self.config["newick_tree_options"])
 
 
-    def clock_filter(self, n_iqd=3, plot=True, remove_deep_splits=False):
-        self.tree.tt.clock_filter(reroot='best', n_iqd=n_iqd, plot=plot)
+    def clock_filter(self):
+        if self.config["clock_filter"] == False:
+            return
+        self.tree.tt.clock_filter(reroot='best', n_iqd=self.config["clock_filter"]["n_iqd"], plot=self.config["clock_filter"]["plot"])
 
         leaves = [x for x in self.tree.tree.get_terminals()]
         for n in leaves:
             if n.bad_branch:
                 self.tree.tt.tree.prune(n)
                 print('pruning leaf ', n.name)
-        if remove_deep_splits:
+        if self.config["clock_filter"]["remove_deep_splits"]:
             self.tree.tt.tree.ladderize()
             current_root = self.tree.tt.tree.root
             if sum([x.branch_length for x in current_root])>0.1 \
@@ -290,11 +355,66 @@ class process(object):
                 new_root = current_root.clades[-1]
                 new_root.up=False
                 self.tree.tt.tree.root = new_root
-                with open(self.store_data_path+"outliers.txt", 'a') as ofile:
+                with open(self.output_path+"_outliers.txt", 'a') as ofile:
                     for x in current_root.clades[:-1]:
                         ofile.write("\n".join([leaf.name for leaf in x.get_terminals()])+'\n')
 
         self.tree.tt.prepare_tree()
+
+
+    def timetree_setup_filter_run(self):
+        def try_restore():
+            try:
+                assert(os.path.isfile(self.output_path + "_timetree.new"))
+                assert(os.path.isfile(self.output_path + "_timetree.pickle"))
+            except AssertionError:
+                return False
+
+            self.log.notify("Attempting to restore timetree")
+            with open(self.output_path+"_timetree.pickle", 'rb') as fh:
+                pickled = pickle.load(fh)
+
+            try:
+                assert(self.config["timetree_options"] == pickled["timetree_options"])
+                assert(self.config["clock_filter"] == pickled["clock_filter_options"])
+                assert(set(self.seqs.sequence_lookup.keys()) == set(pickled["original_seqs"]))
+            except AssertionError as e:
+                print(e)
+                self.log.warn("treetime is out of date - rerunning")
+                return False
+
+            self.tree.tt_from_file(self.output_path + "_timetree.new", nodefile=None, root=None)
+            # clock filter doesn't need to be run - it's effects have been saved into the int. files
+            # might want to check that the clock filter options were the same tho - pickle these as well
+
+            try:
+                self.tree.restore_timetree_node_info(pickled["nodes"])
+            except KeyError:
+                self.log.warn("treetime node info missing - rerunning")
+                return False
+            self.log.notify("TreeTime successfully restored.")
+            return True
+
+        if "temporal_confidence" in self.config:
+            self.config["timetree_options"]["confidence"] = True
+            self.config["timetree_options"]["use_marginal"] = True
+
+        success = try_restore()
+        if not success:
+            self.log.notify("Setting up TimeTree")
+            self.tree.tt_from_file(self.output_path + ".newick", nodefile=None, root="best")
+            self.log.notify("Running Clock Filter")
+            self.clock_filter()
+
+            self.log.notify("Reconstructing Ancestral Sequences, branch lengths & dating nodes")
+            self.tree.timetree(**self.config["timetree_options"])
+            # do we ever not want to use timetree?? If so:
+            # self.tree.ancestral(**kwargs) instead of self.tree.timetree
+            self.tree.save_timetree(fprefix=self.output_path, ttopts=self.config["timetree_options"], cfopts=self.config["clock_filter"])
+
+        self.tree.add_translations()
+        self.tree.refine()
+        self.tree.layout()
 
 
     def matchClades(self, clades, offset=-1):
@@ -307,7 +427,7 @@ class process(object):
                       to conform with counting starting at 0 as opposed to 1
         '''
         def match(node, genotype):
-            return all([node.translations[gene][pos+offset]==state if gene in node.translations else node.sequences[pos+offset]==state
+            return all([node.translations[gene][pos+offset]==state if gene in node.translations else node.sequence[pos+offset]==state
                         for gene, pos, state in genotype])
 
         self.clades_to_nodes = {}
@@ -319,17 +439,9 @@ class process(object):
                 self.clades_to_nodes[clade_name].attr['clade_name']=clade_name
             else:
                 print('matchClades: no match found for ', clade_name, genotype)
-
-
-    def annotate_tree(self, Tc=0.01, timetree=False, **kwargs):
-        if timetree:
-            self.tree.timetree(Tc=Tc, infer_gtr=True, **kwargs)
-        else:
-            self.tree.ancestral(**kwargs)
-        self.tree.add_translations()
-        self.tree.refine()
-        self.tree.layout()
-
+                for allele in genotype:
+                    partial_matches = filter(lambda x:match(x,[allele]), self.tree.tree.get_nonterminals())
+                    print('Found %d partial matches for allele '%len(partial_matches), allele)
 
     def make_control_json(self, controls):
         controls_json = {}
@@ -351,88 +463,17 @@ class process(object):
             controls_json[super_cat] = cat_count
         return controls_json
 
-    def define_latitude_longitude(self):
-        import csv
-        # get the latitude and longitudes that were already determined
-        file = open(self.lat_long_fname, 'r')
-        reader = csv.DictReader(filter(lambda row: row[0]!='#', file), delimiter='\t')		# list of dicts
-        self.location_to_lat_long = {}
-        for line in reader:
-            try:
-                self.location_to_lat_long[line['location']] = {
-                    'latitude': float(line['latitude']),
-                    'longitude': float(line['longitude'])
-                    }
-            except:
-                print("Line failed ", line)
-                raise Exception("Failed to read ", file, "please check the line that failed")
-        file.close()
-
-    def make_geo_lookup_json(self, geo_attributes = []):
+    def auspice_export(self):
         '''
-        Take existing geo attributes (region, country, division) for viruses and
-        produces a lookup JSON to go from geo string to lat/long.
-        Example:
-        "geo_lookup": {
-            "country": {
-                "brazil": {
-                    "latitude": -10.3333332,
-                    "longitude": -53.1999999,
-                },
-                "colombia": {
-                    "latitude": 2.893108,
-                    "longitude": -73.7845142,
-                }
-            },
-            "region": {
-                "north_america": {
-                    "latitude": -10.3333332,
-                    "longitude": -53.1999999,
-                }
-            }
-        }
-        Note: geo reconstruction can cause disagreements between region and country attrs on internal nodes
+        export the tree, sequences, frequencies to json files for auspice visualization
         '''
-        geo_lookup_json = {}
-        self.define_latitude_longitude()
-        if "region" in geo_attributes:
-            region_to_lat_long = {}
-            regions = self.tree.get_attr_list("region")
-            for region in regions:
-                try:
-                    region_to_lat_long[region] = self.location_to_lat_long[region]
-                except:
-                    print("REGION %s IS MISSING"%region)
-            geo_lookup_json["region"] = region_to_lat_long
-        if "country" in geo_attributes:
-            country_to_lat_long = {}
-            countries = self.tree.get_attr_list("country")
-            for country in countries:
-                country_to_lat_long[country] = self.location_to_lat_long[country]
-                geo_lookup_json["country"] = country_to_lat_long
-        if "division" in geo_attributes:
-            division_to_lat_long = {}
-            divisions = self.tree.get_attr_list("division")
-            for division in divisions:
-                division_to_lat_long[division] = self.location_to_lat_long[division]
-            geo_lookup_json["division"] = division_to_lat_long
-        return geo_lookup_json
-
-
-    def export(self, extra_attr = [], controls = {}, geo_attributes = [], date_range = {},
-                color_options = {"num_date":{"key":"num_date", "legendTitle":"Sampling date",
-                                            "menuItem":"date", "type":"continuous"}},
-                panels = ['tree', 'entropy'], defaults = {}, indent=None):
-        '''
-        export the tree, sequences, frequencies to json files for visualization
-        in the browser.
-        '''
-        prefix = self.build_data_path
+        prefix = os.path.join(self.config["output"]["auspice"], self.info["prefix"])
+        indent = 2
         # export json file that contains alignment diversity column by column
-        self.seqs.export_diversity(prefix+'entropy.json')
+        self.seqs.export_diversity(fname=prefix+'_entropy.json', indent=2)
         # exports the tree and the sequences inferred for all clades in the tree
         if hasattr(self, 'tree') and self.tree is not None:
-            self.tree.export(path=prefix, extra_attr = extra_attr
+            self.tree.export(path=prefix, extra_attr = self.config["auspice"]["extra_attr"]
                          + ["muts", "aa_muts","attr", "clade"], indent = indent)
 
 
@@ -464,7 +505,7 @@ class process(object):
                     freq_json[label_str] = process_freqs(self.tree_frequencies[region][node.clade])
         # write to one frequency json
         if hasattr(self, 'tree_frequencies') or hasattr(self, 'mutation_frequencies'):
-            write_json(freq_json, prefix+'frequencies.json', indent=indent)
+            write_json(freq_json, prefix+'_frequencies.json', indent=indent)
 
         # count number of tip nodes
         virus_count = 0
@@ -474,24 +515,39 @@ class process(object):
         # write out metadata json# Write out metadata
         print("Writing out metadata")
         meta_json = {}
-        meta_json["color_options"] = color_options
-        meta_json["date_range"] = date_range
-        meta_json["panels"] = panels
+
+        # join up config color options with those in the input JSONs.
+        col_opts = self.config["auspice"]["color_options"]
+        if self.colors:
+            for trait, data in self.colors.iteritems():
+                if trait in col_opts:
+                    col_opts[trait]["color_map"] = data
+                else:
+                    self.log.warn("{} in colors (input JSON) but not auspice/color_options. Ignoring".format(trait))
+
+        meta_json["color_options"] = col_opts
+        if "date_range" in self.config["auspice"]:
+            meta_json["date_range"] = self.config["auspice"]["date_range"]
+        if "analysisSlider" in self.config["auspice"]:
+            meta_json["analysisSlider"] = self.config["auspice"]["analysisSlider"]
+        meta_json["panels"] = self.config["auspice"]["panels"]
         meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
         meta_json["virus_count"] = virus_count
-
-        valid_defaults = {'colorBy': ['region', 'country', 'num_date', 'ep', 'ne', 'rb', 'genotype', 'cHI'],
-                          'layout': ['radial', 'rectangular', 'unrooted'],
-                          'geoResolution': ['region', 'country', 'division'],
-                          'distanceMeasure': ['num_date', 'div']}
-        for param, value in defaults.items():
-            try:
-                assert param in valid_defaults and value in valid_defaults[param]
-            except:
-                 print('ERROR: invalid default options provided. Try one of the following instead:', valid_defaults)
-                 print('Export will continue; default display options can be corrected in the meta.JSON file.')
-                 continue
-        meta_json["defaults"] = defaults
+        if "defaults" in self.config["auspice"]:
+            meta_json["defaults"] = self.config["auspice"]["defaults"]
+        # TODO: move these to base/config
+        # valid_defaults = {'colorBy': ['region', 'country', 'num_date', 'ep', 'ne', 'rb', 'genotype', 'cHI'],
+        #                   'layout': ['radial', 'rectangular', 'unrooted'],
+        #                   'geoResolution': ['region', 'country', 'division'],
+        #                   'distanceMeasure': ['num_date', 'div']}
+        # for param, value in defaults.items():
+        #     try:
+        #         assert param in valid_defaults and value in valid_defaults[param]
+        #     except:
+        #          print('ERROR: invalid default options provided. Try one of the following instead:', valid_defaults)
+        #          print('Export will continue; default display options can be corrected in the meta.JSON file.')
+        #          continue
+        # meta_json["defaults"] = defaults
 
         try:
             from pygit2 import Repository, discover_repository
@@ -502,33 +558,67 @@ class process(object):
             meta_json["commit"] = str(commit_id)
         except ImportError:
             meta_json["commit"] = "unknown"
-        if len(controls):
-            meta_json["controls"] = self.make_control_json(controls)
-        if len(geo_attributes):
-            meta_json["geo"] = self.make_geo_lookup_json(geo_attributes)
-        write_json(meta_json, prefix+'meta.json')
+        if len(self.config["auspice"]["controls"]):
+            meta_json["controls"] = self.make_control_json(self.config["auspice"]["controls"])
+        meta_json["geo"] = self.lat_longs
+        write_json(meta_json, prefix+'_meta.json')
 
+    def run_geo_inference(self):
+        if self.config["geo_inference"] == False:
+            self.log.notify("Not running geo inference")
+            return
+        try:
+            kwargs = {"report_confidence": self.config["geo_inference_options"]["confidence"]}
+        except KeyError:
+            kwargs = {}
+
+        ## try load pickle...
+        try:
+            assert(self.try_to_restore == True)
+            with open(self.output_path + "_mugration.pickle", 'rb') as fh:
+                options = pickle.load(fh)
+                restored_data = pickle.load(fh)
+            assert(options == self.config["geo_inference_options"])
+            assert(set(restored_data.keys()) == set([x.name for x in self.tree.tree.find_clades()]))
+        except IOError:
+            restored_data = False
+        except AssertionError as err:
+            restored_data = False
+            self.log.notify("Tried to restore mutation frequencies but failed: {}".format(err))
+
+        # only run geo inference if lat + longs are defined.
+        if not self.lat_longs or len(self.lat_longs)==0:
+            self.log.notify("no geo inference - no specified lat/longs")
+            return
+        for geo_attr in self.config["geo_inference"]:
+            try:
+                self.tree.restore_geo_inference(restored_data, geo_attr, self.config["geo_inference_options"]["confidence"])
+                self.log.notify("Restored geo inference for {}".format(geo_attr))
+            except KeyError:
+                try:
+                    kwargs["root_state"] = self.config["geo_inference_options"]["root_state"][geo_attr]
+                except KeyError:
+                    pass
+                self.log.notify("running geo inference for {} with parameters {}".format(geo_attr, kwargs))
+                self.tree.geo_inference(geo_attr, **kwargs)
+
+        # SAVE MUGRATION RESULTS:
+        attrs = set(self.tree.mugration_attrs)
+        try:
+            data = {}
+            for node in self.tree.tree.find_clades():
+                assert(len(attrs - set(node.attr.keys()))==0)
+                data[node.name] = {x:node.attr[x] for x in attrs}
+        except AssertionError:
+            self.log.warn("Error saving mugration data - will not be able to restore")
+            return
+        with open(self.output_path + "_mugration.pickle", 'wb') as fh:
+            pickle.dump(self.config["geo_inference_options"], fh, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(data, fh, protocol=pickle.HIGHEST_PROTOCOL)
+        self.log.notify("Saved mugration data (pickle)")
+
+    def save_as_nexus(self):
+        save_as_nexus(self.tree.tree, self.output_path + "_timeTree.nex")
 
 if __name__=="__main__":
-    lineage = 'h3n2'
-    input_data_path = '../nextstrain-db/data/'+lineage
-    store_data_path = 'store/'+lineage + '_'
-    build_data_path = 'build/'+lineage + '_'
-
-    proc = process(input_data_path = input_data_path, store_data_path = store_data_path, build_data_path = build_data_path,
-                   reference='flu/metadata/h3n2_outgroup.gb', proteins=['HA1', 'HA2'],method='SLSQP')
-    proc.load_sequences()
-    proc.seqs.filter(lambda s: s.attributes['date']>=datetime(2012,1,1).date() and
-                               s.attributes['date']< datetime(2016,1,1).date())
-    proc.seqs.subsample(category = lambda x:(x.attributes['region'],
-                                             x.attributes['date'].year,
-                                             x.attributes['date'].month), threshold=1)
-
-    proc.align()
-    proc.estimate_mutation_frequencies(region='global')
-    proc.build_tree()
-    proc.annotate_tree(Tc=0.005, timetree=True)
-    proc.estimate_tree_frequencies(region='global')
-    proc.estimate_tree_frequencies(region='north_america')
-    proc.tree.geo_inference('region')
-    proc.export()
+    print("This shouldn't be called as a script.")
