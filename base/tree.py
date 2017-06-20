@@ -41,7 +41,7 @@ class tree(object):
     def __init__(self, aln, proteins=None, verbose=2, logger=None, **kwarks):
         super(tree, self).__init__()
         self.aln = aln
-        self.nthreads = 2
+        # self.nthreads = 2
         self.sequence_lookup = {seq.id:seq for seq in aln}
         self.nuc = kwarks['nuc'] if 'nuc' in kwarks else True
         self.dump_attr = [] # depreciated
@@ -87,7 +87,7 @@ class tree(object):
         tree = Phylo.parse(newick_file, 'newick').next()
         assert(set([x.name for x in tree.get_terminals()]) == set(self.sequence_lookup.keys()))
 
-    def build_newick(self, newick_file, root='midpoint', raxml=True, raxml_bin='raxml', debug=False, num_distinct_starting_trees=1):
+    def build_newick(self, newick_file, nthreads=2, root='midpoint', raxml=True, raxml_bin='raxml', debug=False, num_distinct_starting_trees=1):
         from Bio import Phylo, AlignIO
         import subprocess, glob, shutil
         make_dir(self.run_dir)
@@ -99,10 +99,10 @@ class tree(object):
             self.logger("modified RAxML script - no branch length optimisation or time limit", 1)
             AlignIO.write(self.aln,"temp.phyx", "phylip-relaxed")
             if num_distinct_starting_trees == 1:
-                cmd = raxml_bin + " -f d -T " + str(self.nthreads) + " -m GTRCAT -c 25 -p 235813 -n tre -s temp.phyx"
+                cmd = raxml_bin + " -f d -T " + str(nthreads) + " -m GTRCAT -c 25 -p 235813 -n tre -s temp.phyx"
             else:
                 self.logger("RAxML running with {} starting trees (longer but better...)".format(num_distinct_starting_trees), 1)
-                cmd = raxml_bin + " -f d -T " + str(self.nthreads) + " -N " + str(num_distinct_starting_trees) + " -m GTRCAT -c 25 -p 235813 -n tre -s temp.phyx"
+                cmd = raxml_bin + " -f d -T " + str(nthreads) + " -N " + str(num_distinct_starting_trees) + " -m GTRCAT -c 25 -p 235813 -n tre -s temp.phyx"
             fh = open("raxml.log", 'w')
             try:
                 check_call(cmd, stdout=fh, stderr=STDOUT, shell=True)
