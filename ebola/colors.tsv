@@ -4,6 +4,12 @@ country	sierra_leone	#4041C7
 country	liberia	#E4682F
 
 ## divisions
+
+## replicate the countries here
+division	guinea	#86BB6D
+division	sierra_leone	#4041C7
+division	liberia	#E4682F
+
 # Guinean prefectures
 division	boffa	#58A2AB
 division	boke	#56A0AE
