@@ -32,11 +32,11 @@ def make_config (prepared_json, args):
             "controls": {'authors':['authors']},
             "defaults": {'geoResolution': ['region']}
         },
-        # "titers": {
-        #     "fname": "../../fauna/data/<LINEAGE>_2017_06_02_titers.tsv",
-        #     "criterium": lambda x: len(x.aa_mutations['HA'])>0,
-        #     "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
-        # },
+        "titers": {
+            "fname": "../../fauna/data/<LINEAGE>_hi_titers.tsv",
+            "criterium": lambda x: any([len(value) > 0 for key, value in x.aa_mutations.iteritems() if key.startswith("HA")]),
+            "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
+        },
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
         "clean": args.clean,
