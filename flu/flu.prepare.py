@@ -32,6 +32,13 @@ def make_config(lineage, resolution, params):
     time_interval = [datetime.strptime(x, '%Y-%m-%d').date() for x in ["{:%Y-%m-%d}".format(datetime.today()), "{:%Y-%m-%d}".format(datetime.today()  - timedelta(days=365.25 * years_back))]]
     reference_cutoff = date(year = time_interval[0].year - 3, month=1, day=1)
 
+    titer_files = { # empty string or invalid file names get assigned random priorities
+        'h3n2': "",
+        'h1n1pdm': "",
+        'vic': "../../fauna/data/vic_2017_06_02",
+        'yam': "",
+    }
+
     return {
         "dir": "flu",
         "file_prefix": "flu_{}".format(lineage),
@@ -55,7 +62,7 @@ def make_config(lineage, resolution, params):
             ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in outliers[lineage]]),
             ("Bad geo info", lambda s: s.attributes["country"]!= "?" and s.attributes["region"]!= "?" ),
         ),
-        "subsample": flu_subsampling(params, years_back, "../../fauna/data/vic_2017_06_02"),
+        "subsample": flu_subsampling(params, years_back, titer_files[lineage]),
         "colors": ["country", "region", "city"],
         "color_defs": ["colors.flu.tsv"],
         "lat_longs": ["country", "region"],
