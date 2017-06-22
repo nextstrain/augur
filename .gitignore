@@ -1,21 +1,17 @@
-# For augur repo #
-environment*
-temp*
+# deprecated - can be removed at some point #
 data/
 build/
 store/
-dengue/utils/
 
-# james' stuff:
-auspice/
-output/
-test_input/
-test_output/
-logs/
+# For augur repo #
+environment*
+temp*
+dengue/utils/
 prepared/
 processed/
-*log
-*json
+auspice/
+test_input/
+test_output/
 
 # Compiled source #
 ###################
