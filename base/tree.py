@@ -2,7 +2,6 @@ from __future__ import division, print_function
 import os, time, sys
 sys.path.insert(0,'../') # path.abspath(path.join(__file__ ,".."))
 from io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
-from sequences import sequence_set
 import numpy as np
 import math
 from subprocess import CalledProcessError, check_call, STDOUT
@@ -485,52 +484,53 @@ class tree(object):
         write_json(elems, sequence_fname, indent=indent)
 
 
-if __name__=="__main__":
-    from Bio import SeqIO
-    from Bio.SeqFeature import FeatureLocation
-    ref_seq = SeqIO.read('NL4-3.gb', 'genbank')
-    gene='pol'
-    if gene=='gag':
-        gag_start = [f.location.start for f in ref_seq.features if f.qualifiers['note'][0]=='gag'][0]
-        proteins = {
-        'p17': [FeatureLocation(start=f.location.start-gag_start, end=f.location.end-gag_start, strand=1)
-                for f in ref_seq.features if f.qualifiers['note'][0]=='p17'][0],
-        'p24': [FeatureLocation(start=f.location.start-gag_start, end=f.location.end-gag_start, strand=1)
-                for f in ref_seq.features if f.qualifiers['note'][0]=='p24'][0],
-        'p6': [FeatureLocation(start=f.location.start-gag_start, end=f.location.end-gag_start, strand=1)
-                for f in ref_seq.features if f.qualifiers['note'][0]=='p6'][0],
-        'p7': [FeatureLocation(start=f.location.start-gag_start, end=f.location.end-gag_start, strand=1)
-                for f in ref_seq.features if f.qualifiers['note'][0]=='p7'][0]}
-
-        myseqs = sequence_set('data/gag.fasta.gz', reference='B|FR|1985|NL4_3_LAI_NY5_pNL43_NL43|244167|NL43|325|U26942')
-    elif gene=='pol':
-        start = [f.location.start for f in ref_seq.features if f.qualifiers['note'][0]=='pol'][0]
-        proteins = {
-        'PR': [FeatureLocation(start=f.location.start-start, end=f.location.end-start, strand=1)
-              for f in ref_seq.features if f.qualifiers['note'][0]=='PR'][0],
-        'RT': [FeatureLocation(start=f.location.start-start, end=f.location.end-start, strand=1)
-                for f in ref_seq.features if f.qualifiers['note'][0]=='RT'][0],
-        'p15': [FeatureLocation(start=f.location.start-start, end=f.location.end-start, strand=1)
-                for f in ref_seq.features if f.qualifiers['note'][0]=='p15'][0],
-        'IN': [FeatureLocation(start=f.location.start-start, end=f.location.end-start, strand=1)
-                for f in ref_seq.features if f.qualifiers['note'][0]=='IN'][0]}
-
-        myseqs = sequence_set('data/pol.fasta.gz', reference='B|FR|1985|NL4_3_LAI_NY5_pNL43_NL43|244167|NL43|325|U26942')
-
-
-    myseqs.ungap()
-    myseqs.parse({0:"subtype", 1:"country", 2:"date", 4:"name", 5:"id", 6:"patient", 7:"accession"})
-    myseqs.parse_date(["%Y-%m-%d", "%Y"])
-    myseqs.filter(lambda x:x.attributes['subtype']=='C')
-    myseqs.subsample(category = lambda x:x.attributes['date'].year, threshold=10)
-    myseqs.codon_align(prune=True)
-    myseqs.translate(proteins=proteins)
-    myseqs.export_diversity()
-
-    myTree = tree(aln=myseqs.aln, proteins = myseqs.proteins)
-    myTree.build()
-    myTree.ancestral()
-    myTree.timetree()
-    myTree.refine()
-    myTree.layout()
-    myTree.export()
+# if __name__=="__main__":
+#     from Bio import SeqIO
+#     from sequences import sequence_set
+#     from Bio.SeqFeature import FeatureLocation
+#     ref_seq = SeqIO.read('NL4-3.gb', 'genbank')
+#     gene='pol'
+#     if gene=='gag':
+#         gag_start = [f.location.start for f in ref_seq.features if f.qualifiers['note'][0]=='gag'][0]
+#         proteins = {
+#         'p17': [FeatureLocation(start=f.location.start-gag_start, end=f.location.end-gag_start, strand=1)
+#                 for f in ref_seq.features if f.qualifiers['note'][0]=='p17'][0],
+#         'p24': [FeatureLocation(start=f.location.start-gag_start, end=f.location.end-gag_start, strand=1)
+#                 for f in ref_seq.features if f.qualifiers['note'][0]=='p24'][0],
+#         'p6': [FeatureLocation(start=f.location.start-gag_start, end=f.location.end-gag_start, strand=1)
+#                 for f in ref_seq.features if f.qualifiers['note'][0]=='p6'][0],
+#         'p7': [FeatureLocation(start=f.location.start-gag_start, end=f.location.end-gag_start, strand=1)
+#                 for f in ref_seq.features if f.qualifiers['note'][0]=='p7'][0]}
+#
+#         myseqs = sequence_set('data/gag.fasta.gz', reference='B|FR|1985|NL4_3_LAI_NY5_pNL43_NL43|244167|NL43|325|U26942')
+#     elif gene=='pol':
+#         start = [f.location.start for f in ref_seq.features if f.qualifiers['note'][0]=='pol'][0]
+#         proteins = {
+#         'PR': [FeatureLocation(start=f.location.start-start, end=f.location.end-start, strand=1)
+#               for f in ref_seq.features if f.qualifiers['note'][0]=='PR'][0],
+#         'RT': [FeatureLocation(start=f.location.start-start, end=f.location.end-start, strand=1)
+#                 for f in ref_seq.features if f.qualifiers['note'][0]=='RT'][0],
+#         'p15': [FeatureLocation(start=f.location.start-start, end=f.location.end-start, strand=1)
+#                 for f in ref_seq.features if f.qualifiers['note'][0]=='p15'][0],
+#         'IN': [FeatureLocation(start=f.location.start-start, end=f.location.end-start, strand=1)
+#                 for f in ref_seq.features if f.qualifiers['note'][0]=='IN'][0]}
+#
+#         myseqs = sequence_set('data/pol.fasta.gz', reference='B|FR|1985|NL4_3_LAI_NY5_pNL43_NL43|244167|NL43|325|U26942')
+#
+#
+#     myseqs.ungap()
+#     myseqs.parse({0:"subtype", 1:"country", 2:"date", 4:"name", 5:"id", 6:"patient", 7:"accession"})
+#     myseqs.parse_date(["%Y-%m-%d", "%Y"])
+#     myseqs.filter(lambda x:x.attributes['subtype']=='C')
+#     myseqs.subsample(category = lambda x:x.attributes['date'].year, threshold=10)
+#     myseqs.codon_align(prune=True)
+#     myseqs.translate(proteins=proteins)
+#     myseqs.export_diversity()
+#
+#     myTree = tree(aln=myseqs.aln, proteins = myseqs.proteins)
+#     myTree.build()
+#     myTree.ancestral()
+#     myTree.timetree()
+#     myTree.refine()
+#     myTree.layout()
+#     myTree.export()
