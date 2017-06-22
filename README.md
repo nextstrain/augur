@@ -12,31 +12,13 @@ nextstrain is comprised of three components:
 
 *Definition: One held to foretell events by omens.*
 
-Augur is the informatic processing pipeline to track evolution from sequence and serological data.  It is broken into two parts, termed _prepare_ and _process_
+Augur is the informatic processing pipeline to track evolution from sequence and serological data.  It is broken into two parts, termed [_prepare_](docs/prepare.md) and [_process_](docs/process.md), which result in [output JSONs for Auspice](docs/auspice_output.md) (click for documentation).
 
-#### Prepare:
-* loads (and checks) sequence data (from fauna), additional metadata and reference sequences
-* Handles segmented viruses
-* Filters the data according to user-defined parameters
-* subsamples the data if desired
-* outputs data (per segment) as JSONs
+![flowchart](docs/assets/flow.png)
 
-#### Process:
-* Runs independently for each segment / set of inputs
-* Takes JSONs (from Prepare)
-* aligns sequences
-* translates genes
-* builds a phylogenetic tree (using RAxML)
-* infers timings of internal nodes (using TreeTime)
-* infers ancestral states
-* infer mutation and clade frequency trajectories through time
-* exports intermediate files (alignments, trees) and a JSON bundle for visualization in auspice
-
-## Docs:
-* [Prepare](docs/prepare.md)
-* [Process](docs/process.md)
-* [Format of (auspice) output JSONs](docs/auspice_output.md)
-
+## How to run:
+* see the `README.md` files in the respective pathogen's folder (`flu`, `zika` e.t.c.)
+* documentation: [prepare](docs/prepare.md), [process](docs/process.md) and [Auspice JSON format](docs/auspice_output.md)
 
 ## License and copyright
 

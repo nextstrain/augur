@@ -13,6 +13,12 @@ from reference_info import references
 from base.prepare import prepare
 from datetime import datetime
 from base.utils import fix_names
+import argparse
+
+def collect_args():
+    parser = argparse.ArgumentParser(description = "Prepare fauna FASTA for analysis")
+    parser.add_argument('-v', '--viruses_per_month', type = int, default = 0, help='Subsample x viruses per division per month. Set to 0 to disable subsampling. (default: 0)')
+    return parser.parse_args()
 
 dropped_strains = [
     "A/Chicken/Netherlands/16007311-037041/2016", # not part of epi clade
@@ -24,7 +30,7 @@ dropped_strains = [
 
 config = {
     "dir": "H7N9", # the current directory. You mush be inside this to run the script.
-    "file_prefix": "flu_h7n9",
+    "file_prefix": "avian_h7n9",
     "segments": ["pb2", "pb1", "pa", "ha", "np", "na", "mp", "ns"],
     "input_paths": [
         "../../fauna/data/h7n9_pb2.fasta",
@@ -57,11 +63,9 @@ config = {
             "ns": lambda s: len(s.seq)>=800
         })
     ),
-    # "subsample": False,
     "subsample": {
-        "category": None,
+        "category": lambda x:(x.attributes['date'].year, x.attributes['date'].month, x.attributes['division']),
         "priority": None,
-        "threshold": 2,
     },
     # see the docs for what's going on with colours (sic) & lat/longs
     "colors": ["country", "division", "host"], # essential. Maybe False.
@@ -71,6 +75,11 @@ config = {
 
 
 if __name__=="__main__":
+    params = collect_args()
+    if params.viruses_per_month == 0:
+        config["subsample"] = False
+    else:
+        config["subsample"]["threshold"] = params.viruses_per_month
     runner = prepare(config)
     runner.load_references()
     runner.applyFilters()

@@ -22,12 +22,10 @@
 
 
 ### how to run
-* download fauna files something like this:
+* download fauna files like this with subtype `h3n2`, `h1n1pdm`, `vic` or `yam` and segment `ha`, `na`, etc...:
 ```
 cd fauna
-SERO="h3n2"
-SEG="ha"
-python vdb/flu_download.py -db vdb -v flu --select locus:${SEG} lineage:seasonal_${SERO} --fstem ${SERO}_${SEG}
+python vdb/flu_download.py -db vdb -v flu --select lineage:seasonal_h3n2 locus:ha --fstem h3n2_ha
 ```
 
 * prepare fauna fasta -> JSON ready to be analysed

@@ -1,16 +1,12 @@
 # Process
 
-
-### how to run
-The process scripts (and the Process class) is designed to analyse one single dataset (i.e. not multiple segments), coming from one single JSON.
-Similar to _Prepare_, it is designed off a `config` dict that should be all that is needed to run the analysis.
+The process scripts (and the Process class) are designed to analyse data one prepared JSON at a time.
+This allows segmented viruses, or multiple lineages to be analysed independently.
+Similar to [_prepare_](prepare.md), it is designed off a `config` dict that should be all that is needed to run the analysis.
 For bespoke analysis, a new class may be created which inherits from `Process`.
-Since the config files across segments may be identical but for the filenames, these can be added as command line arguments on a dataset-by-dataset basis (e.g. see flu).
-Most stages will save their output which will be restored (if valid) for subsequent analysis.
-
-### input
-Normally, everything is done off a JSON via [prepare](./prepare.md).
-Titer information is loaded here, although this is a work in progress.
+Most scripts (see [zika](../zika/zika.process.py) and [flu](../flu/flu.process.py)) use command line arguments to dynamically change the `config` dictionary.
+A number of intermediate files (e.g. trees, alignments) are created as well as JSONs to be visualized in Auspice.
+While _process_ can be computationally expensive, as long as the underlying _prepared JSON_ is unchanged the script should be able to restore itself when you rerun it.
 
 ### analysis components
 * align
@@ -19,7 +15,7 @@ Titer information is loaded here, although this is a work in progress.
 * [TimeTree](./phylogenies.md) - temporal filtering, ancestral reconstruction + node dating.
 * geographical inference
 * [estimate tree frequencies](./frequencies.md)
-* Titer models
+* Titer models (See [Neher et al, PNAS, 2016](http://www.pnas.org/content/113/12/E1701.abstract) )
 * Identify predetermined clades
 * [Export for auspice](./auspice_output.md)
 

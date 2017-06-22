@@ -6,12 +6,8 @@ import argparse
 
 config = {
     "dir": "H7N9",
-    "output": { # will move to the default config file
-        "data": "processed",
-        "auspice": "auspice",
-    },
     # "in": "prepared/flu_H7N9_HA.json", # should be able to specify from command line
-    "geo_inference": ['country', 'division', 'host'], # what traits to perform this on
+    "geo_inference": ['country'], # what traits to perform this on
     "auspice": { ## settings for auspice JSON export
         "panels": ['tree', 'map', 'entropy'],
         "extra_attr": [],
@@ -33,9 +29,11 @@ if __name__=="__main__":
     # for H7N9 currently things are kinda easy - everything needed is defined in the JSON!
     parser = argparse.ArgumentParser(description = "Process a given JSONs")
     parser.add_argument('-j', '--json', required=True, type=str, help="prepared JSON")
+    parser.add_argument('--clean', action='store_true', help="clean build (remove previous checkpoints)")
     params = parser.parse_args()
-
     config["in"] = params.json
+    if params.clean: config["clean"] = True
+
     runner = process(config)
     runner.align()
     runner.build_tree()
