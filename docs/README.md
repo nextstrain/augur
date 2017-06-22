@@ -1,9 +1,5 @@
-## AUGUR
-
-![flowchart](assets/flow.png)
-
-## How to run
-* see the `README.md` files in the respective pathogen's folder
+## How to run augur:
+* see the `README.md` files in the respective pathogen's folder (`flu`, `ebola`, e.t.c.)
 
 ## Docs:
 * [Fauna](https://github.com/nextstrain/fauna)

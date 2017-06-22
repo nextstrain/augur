@@ -1,12 +1,13 @@
 # Prepare
-Prepare handles pretty much all the input data from fauna / other sources.
-The idea being that all data wrangling is done here, leaving `Process` free to do proper science.
-The output is a single JSON (per segment) containing all the information `Process` needs.
-The hope is that just modifying the `config` dictionary (in, e.g., `H7N9.prepare.py`) is all that is needed for any analysis.
+
+Prepare takes fauna data as input and applies filtering, subsampling and checking of metadata to produce a single JSON (per segment) which can be analysed by [_process_](process.md).
+Prepare scripts define a config dictionary which typically contains all the information needed.
 If you need something a bit more bespoke that can't be done through the config, the idea would be to create a new class which inherits from `Prepare` and use that instead.
 
+For examples see: [zika](../zika/zika.prepare.md) (simple) and [flu](../flu/flu.prepare.md) (more complicated).
+
 ### `Config` dictionary
-As mentioned above, all options are defined in the `config` dict, which is passed to the `Prepare` class.
+The `config` dict is passed to the `Prepare` class.
 Many options have defaults provided, and if so are not required to be in the config file.
 
 #### general settings
