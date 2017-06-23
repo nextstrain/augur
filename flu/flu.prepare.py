@@ -57,7 +57,7 @@ def make_config(lineage, resolution, params):
             ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in outliers[lineage]]),
             ("Bad geo info", lambda s: s.attributes["country"]!= "?" and s.attributes["region"]!= "?" ),
         ),
-        "subsample": flu_subsampling(params, years_back, "../../fauna/data/{}_crick_hi".format(lineage))),
+        "subsample": flu_subsampling(params, years_back, "../../fauna/data/{}_crick_hi".format(lineage)),
         "colors": ["region"],
         "color_defs": ["colors.flu.tsv"],
         "lat_longs": ["country", "region"],
