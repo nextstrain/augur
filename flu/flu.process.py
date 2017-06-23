@@ -22,11 +22,10 @@ def make_config (prepared_json, args):
     return {
         "dir": "flu",
         "in": prepared_json,
-        "geo_inference": False,
+        "geo_inference": ['region'],
         "auspice": { ## settings for auspice JSON export
             "extra_attr": ['serum'],
             "color_options": {
-                "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
             },
             "controls": {'authors':['authors']},

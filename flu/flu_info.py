@@ -8,15 +8,17 @@ segments = ["pb2", "pb1", "pa", "ha", "np", "na", "mp", "ns"]
 # regions is list of tuples (region, acronym)
 # acronym = "" means ignore for frequency calcs
 regions = [
-    ('africa',          ""),
-    ('south_asia',      "AS"),
-    ('europe',          "EU"),
-    ('china',           "AS"),
-    ('north_america',   "NA"),
-    ('south_america',   ""),
-    ('japan_korea',     "AS"),
-    ('oceania',         "OC"),
-    ('southeast_asia',  "AS"),
+    ('africa',            ""),
+    ('europe',            "EU"),
+    ('north_america',     "NA"),
+    ('china',             "AS"),
+    ('south_asia',        "AS"),
+    ('japan_korea',       "AS"),
+    ('south_pacific',     "OC"),
+    ('oceania',           "OC"),
+    ('south_america',     ""),
+    ('southeast_asia',    "AS"),
+    ('west_asia',         "AS")
 ]
 
 outliers = {
