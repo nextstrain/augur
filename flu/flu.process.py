@@ -34,7 +34,7 @@ def make_config (prepared_json, args):
         },
         "titers": {
             "fname": "../../fauna/data/<LINEAGE>_hi_titers.tsv",
-            "criterium": lambda x: any([len(value) > 0 for key, value in x.aa_mutations.iteritems() if key.startswith("HA")]),
+            #"criterium": lambda x: any([len(value) > 0 for key, value in x.aa_mutations.iteritems() if key.startswith("HA")]),
             "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
         },
         "estimate_mutation_frequencies": not args.no_mut_freqs,
