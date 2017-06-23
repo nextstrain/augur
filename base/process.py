@@ -383,13 +383,9 @@ class process(object):
                 self.log.warn("treetime is out of date - rerunning")
                 return False
 
+            # this (treetime) newick is _after_ clock filtering and remove_outliers_clades
+            # so these methods should not be rerun here
             self.tree.tt_from_file(self.output_path + "_timetree.new", nodefile=None, root=None)
-
-            # shouldn't we have to run the clock filter here as well?
-            # self.log.notify("Running Clock Filter")
-            # self.clock_filter()
-            self.tree.remove_outlier_clades() # this is deterministic
-
             try:
                 self.tree.restore_timetree_node_info(pickled["nodes"])
             except KeyError:
