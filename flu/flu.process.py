@@ -40,6 +40,9 @@ def make_config (prepared_json, args):
         "estimate_tree_frequencies": not args.no_tree_freqs,
         "clean": args.clean,
         "pivot_spacing": 1.0/12,
+        "timetree_options": {
+            "Tc": 0.03
+        }
     }
 
 if __name__=="__main__":
