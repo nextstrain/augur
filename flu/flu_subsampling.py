@@ -6,8 +6,8 @@ from pprint import pprint
 from base.io_util import myopen
 
 vpm_dict = {
-    2: 90,
-    3: 60,
+    2: 68,
+    3: 46,
     6: 24,
     12: 12,
 }

@@ -29,7 +29,7 @@ def make_config (prepared_json, args):
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
             },
             "controls": {'authors':['authors']},
-            "defaults": {'geoResolution': ['region']}
+            "defaults": {'geoResolution': ['region'], 'mapTriplicate': True}
         },
         # "titers": {
         #     "fname": "../../fauna/data/<LINEAGE>_2017_06_02_titers.tsv",
