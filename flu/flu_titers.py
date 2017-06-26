@@ -29,7 +29,6 @@ def HI_model(self):
     }
 
     # SUBSTITUTION MODEL
-    ## currently broken TODO
     self.HI_subs = substitution_model(self.tree.tree, titer_fname = fname,**kwargs)
     self.HI_subs.prepare(**kwargs)
     self.HI_subs.train(**kwargs)
