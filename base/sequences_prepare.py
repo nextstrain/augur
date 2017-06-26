@@ -165,26 +165,30 @@ class sequence_set(object):
         '''
         see docs/prepare.md for explination
         '''
-        category = self.getSubsamplingFunc(config, "category")
-        priority = self.getSubsamplingFunc(config, "priority")
-        threshold = self.getSubsamplingFunc(config, "threshold")
-
         self.sequence_categories = defaultdict(list)
         names_prior = set(self.seqs.keys())
         seqs_to_subsample = self.seqs.values()
 
-        # sort sequences into categories and assign priority score
-        for seq in seqs_to_subsample:
-            seq._priority = priority(seq)
-            self.sequence_categories[category(seq)].append(seq)
+        if config.get("strains") is not None:
+            with open(config["strains"], "r") as fh:
+                include = set([line.strip() for line in fh])
+        else:
+            category = self.getSubsamplingFunc(config, "category")
+            priority = self.getSubsamplingFunc(config, "priority")
+            threshold = self.getSubsamplingFunc(config, "threshold")
 
-        # collect taxa to include
-        include = set([])
-        for cat, seqs in self.sequence_categories.iteritems():
-            under_sampling = min(1.00, 1.0*len(seqs)/threshold(cat))
-            for s in seqs: s.under_sampling=under_sampling
-            seqs.sort(key=lambda x:x._priority, reverse=True)
-            include.update([seq.id for seq in seqs[:threshold(cat)]])
+            # sort sequences into categories and assign priority score
+            for seq in seqs_to_subsample:
+                seq._priority = priority(seq)
+                self.sequence_categories[category(seq)].append(seq)
+
+            # collect taxa to include
+            include = set([])
+            for cat, seqs in self.sequence_categories.iteritems():
+                under_sampling = min(1.00, 1.0*len(seqs)/threshold(cat))
+                for s in seqs: s.under_sampling=under_sampling
+                seqs.sort(key=lambda x:x._priority, reverse=True)
+                include.update([seq.id for seq in seqs[:threshold(cat)]])
 
         self.log.notify("Subsampling will take {}/{} strains".format(len(include), len(seqs_to_subsample)))
         return include

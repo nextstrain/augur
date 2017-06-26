@@ -24,6 +24,7 @@ def collect_args():
     parser.add_argument('-v', '--viruses_per_month_seq', type = int, default = 0, help='number of viruses sampled per month (optional) (defaults: 90 (2y), 60 (3y), 24 (6y) or 12 (12y))')
     parser.add_argument('--sampling', default = 'even', type=str,
                         help='sample evenly over regions (even) (default), or prioritize one region (region name), otherwise sample randomly')
+    parser.add_argument('--strains', help="a list of specific strains to prepare without filtering or subsampling")
     return parser.parse_args()
 
 # for flu, config is a function so it is applicable for multiple lineages
@@ -63,6 +64,7 @@ def make_config(lineage, resolution, params):
         "references": {seg:reference_maps[lineage][seg] for seg in params.segments},
         "regions": regions,
         "time_interval": time_interval,
+        "strains": params.strains
     }
 
 if __name__=="__main__":
@@ -77,7 +79,8 @@ if __name__=="__main__":
             config = make_config(lineage, resolution, params)
             runner = prepare(config)
             runner.load_references()
-            runner.applyFilters()
+            if params.strains is None:
+                runner.applyFilters()
             runner.ensure_all_segments()
             runner.subsample()
             runner.colors()
