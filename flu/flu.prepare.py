@@ -40,10 +40,12 @@ def make_config(lineage, resolution, params):
         "resolution": resolution,
         "lineage": lineage,
         "input_paths": ["../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segments],
+        #  0                     1   2         3          4      5     6       7       8          9                             10  11
+        # >A/Galicia/RR9542/2012|flu|EPI376225|2012-02-23|europe|spain|galicia|galicia|unpassaged|instituto_de_salud_carlos_iii|47y|female
         "header_fields": {
-            0:'strain', 2:'isolate_id', 3:'date',
-            4:'region', 5:'country',    7:"city",
-            8:"passage",9:'lab',        10:'age',
+            0:'strain',  2:'isolate_id', 3:'date',
+            4:'region',  5:'country',    6:'division',
+            8:'passage', 9:'lab',        10:'age',
             11:'gender'
         },
         "filters": (
@@ -56,8 +58,8 @@ def make_config(lineage, resolution, params):
             ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in outliers[lineage]]),
             ("Bad geo info", lambda s: s.attributes["country"]!= "?" and s.attributes["region"]!= "?" ),
         ),
-        "subsample": flu_subsampling(params, years_back, "../../fauna/data/h3n2_hi"),
-        "colors": ["country", "region", "city"],
+        "subsample": flu_subsampling(params, years_back, "../../fauna/data/{}_crick_hi".format(lineage)),
+        "colors": ["region"],
         "color_defs": ["colors.flu.tsv"],
         "lat_longs": ["country", "region"],
         "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',

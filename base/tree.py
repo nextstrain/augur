@@ -211,7 +211,7 @@ class tree(object):
         self.is_timetree=True
 
 
-    def remove_outlier_clades(max_nodes=3, min_length=0.03):
+    def remove_outlier_clades(self, max_nodes=3, min_length=0.03):
         '''
         check whether one child clade of the root is small and the connecting branch
         is long. if so, move the root up and reset a few tree props
@@ -226,10 +226,14 @@ class tree(object):
         if len(R.clades)>2:
             return
 
-        child_nodes = np.array([c.count_terminals() for c in R])
-        putative_outlier = child_nodes.argmin()
+        num_child_nodes = np.array([c.count_terminals() for c in R])
+        putative_outlier = num_child_nodes.argmin()
         bl = np.sum([c.branch_length for c in R])
-        if (bl>min_length and child_nodes[putative_outlier]<max_nodes):
+        if (bl>min_length and num_child_nodes[putative_outlier]<max_nodes):
+            if num_child_nodes[putative_outlier]==1:
+                print("removing \"{}\" which is an outlier clade".format(R.clades[putative_outlier].name))
+            else:
+                print("removing {} isolates which formed an outlier clade".format(num_child_nodes[putative_outlier]))
             self.tt.tree.root = R.clades[(1+putative_outlier)%2]
         self.tt.prepare_tree()
         return [c.name for c in R.clades[putative_outlier].get_terminals()]

@@ -22,15 +22,14 @@ def make_config (prepared_json, args):
     return {
         "dir": "flu",
         "in": prepared_json,
-        "geo_inference": False,
+        "geo_inference": ['region'],
         "auspice": { ## settings for auspice JSON export
             "extra_attr": ['serum'],
             "color_options": {
-                "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
             },
             "controls": {'authors':['authors']},
-            "defaults": {'geoResolution': ['region']}
+            "defaults": {'geoResolution': ['region'], 'mapTriplicate': True}
         },
         "titers": {
             "fname": "../../fauna/data/<LINEAGE>_hi_titers.tsv",
@@ -41,6 +40,9 @@ def make_config (prepared_json, args):
         "estimate_tree_frequencies": not args.no_tree_freqs,
         "clean": args.clean,
         "pivot_spacing": 1.0/12,
+        "timetree_options": {
+            "Tc": 0.03
+        }
     }
 
 if __name__=="__main__":
