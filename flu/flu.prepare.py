@@ -81,8 +81,7 @@ if __name__=="__main__":
             config = make_config(lineage, resolution, params)
             runner = prepare(config)
             runner.load_references()
-            if params.strains is None:
-                runner.applyFilters()
+            runner.applyFilters()
             runner.ensure_all_segments()
             runner.subsample()
             runner.colors()

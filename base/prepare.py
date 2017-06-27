@@ -61,6 +61,10 @@ class prepare(object):
             self.segments[segmentName] = segmentObj
 
     def applyFilters(self):
+        if self.config.get("strains") is not None:
+            self.log.notify("Specific strains requested, skipping filters")
+            return
+
         for (fName, fFunc) in self.config["filters"]:
             if callable(fFunc):
                 for seg, obj in self.segments.iteritems():
