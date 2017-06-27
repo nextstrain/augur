@@ -24,7 +24,7 @@ def collect_args():
     parser.add_argument('-v', '--viruses_per_month_seq', type = int, default = 0, help='number of viruses sampled per month (optional) (defaults: 90 (2y), 60 (3y), 24 (6y) or 12 (12y))')
     parser.add_argument('--sampling', default = 'even', type=str,
                         help='sample evenly over regions (even) (default), or prioritize one region (region name), otherwise sample randomly')
-    parser.add_argument('--strains', help="a list of specific strains to prepare without filtering or subsampling")
+    parser.add_argument('--strains', help="a text file containing a list of strains (one per line) to prepare without filtering or subsampling")
     return parser.parse_args()
 
 # for flu, config is a function so it is applicable for multiple lineages
