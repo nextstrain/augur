@@ -38,7 +38,7 @@ def select_serotype(infile, path, serotype):
     Returns path to output file as string.
     '''
     from Bio import SeqIO
-    sequences = [ i for i in SeqIO.parse(infile, 'fasta') if i.description.split('/')[0] == 'DENV%s'%serotype ]
+    sequences = [ i for i in SeqIO.parse(infile, 'fasta') if i.description.split('/')[0] == serotype.upper() ]
     SeqIO.write(sequences, path+'dengue_%s.fasta'%serotype, 'fasta')
     return path+'dengue_%s.fasta'%serotype
 
