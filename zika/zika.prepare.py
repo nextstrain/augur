@@ -44,8 +44,7 @@ config = {
             'host': "human", 'country': "French Polynesia"
         },
         "include": 2,
-        "genes": ['CA', 'PRO', 'MP', 'ENV', 'NS1', 'NS2A',
-                  'NS2B', 'NS3', 'NS4A', 'NS4B', 'NS5']
+        "genes": ['CA', 'PRO', 'MP', 'ENV', 'NS1', 'NS2A', 'NS2B', 'NS3', 'NS4A', '2K', 'NS4B', 'NS5']
     }
 }
 
