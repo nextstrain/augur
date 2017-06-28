@@ -19,6 +19,7 @@ country	tonga #4272CE
 country	italy #4580CA
 country	china #4A8CC2
 country	japan #5097BA
+
 country	brazil  #56A0AE
 country	peru  #5DA8A3
 country	ecuador #66AE96
@@ -26,18 +27,20 @@ country	colombia  #6EB389
 country	french_guiana #79B77D
 country	suriname  #83BA70
 country	venezuela #8EBC66
-country	panama  #A6BE55
-country	nicaragua #B2BD4D
-country	honduras  #BDBB48
-country	el_salvador #C8B944
-country	guatemala #D1B340
-country	mexico  #D9AD3D
-country	martinique  #DFA43B
-country	guadeloupe  #E49938
-country	saint_barthelemy  #E59237
-country	usvi  #E68B35
-country	puerto_rico #E67C32
-country	jamaica #E56A2F
-country	dominican_republic  #E2562B
-country	haiti #DF4327
+
+country	panama  #A4BE56
+country	nicaragua #AFBD4F
+country	honduras  #B9BC4A
+country	el_salvador #C2BA46
+country	guatemala #CCB742
+country	mexico  #D3B240
+country	martinique  #DAAC3D
+country	guadeloupe  #DFA43B
+country	saint_barthelemy  #E39B39
+country	usvi  #E68F36
+country	puerto_rico #E68234
+country	jamaica #E67431
+country	dominican_republic  #E4632E
+country	haiti #E1512A
+country cuba	#DF4027
 country	usa #DC2F24
