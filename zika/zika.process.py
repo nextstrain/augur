@@ -26,7 +26,8 @@ config = {
             "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
             "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
         },
-        "controls": {'authors':['authors']}
+        "controls": {'authors':['authors']},
+        "defaults": {'mapTriplicate': True},
     }
 }
 
