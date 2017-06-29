@@ -2,31 +2,31 @@ from __future__ import print_function
 import os, sys
 sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
 from base.process import process
+import argparse
+
+parser = argparse.ArgumentParser(description = "Process a prepared zika JSON")
+parser.add_argument('--clean', action='store_true', help="clean build (remove previous checkpoints)")
 
 config = {
     "dir": "mumps",
-    "output": { # will move to the default config file
-        "data": "processed",
-        "auspice": "auspice",
+    "in": "prepared/mumps.json",
+    "newick_tree_options": {"nthreads": 4},
+    "clock_filter": {
+        "n_iqd": 4,
     },
-    "in": "prepared/mumps_SH.json", # should be able to specify from command line
-    "geo_inference": ['country', 'region'], # what traits to perform this on
+    "geo_inference": False,
     "auspice": { ## settings for auspice JSON export
-        "panels": ['tree', 'map', 'entropy'],
-        "extra_attr": [],
-        "date_range": {'date_min': '1995-01-01', 'date_max': '2017-06-01'},
         "color_options": {
             "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
             "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
-            "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
-            "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"},
-            # "fauna_date":{"key":"fauna_date", "legendTitle":"Analysis date", "menuItem":"analysisdate", "type":"continuous"},
         },
-        "controls": {'geographic location':['country'], 'authors':['authors']}
+        "controls": {'authors':['authors']}
     }
 }
 
 if __name__=="__main__":
+    params = parser.parse_args()
+    if params.clean: config["clean"] = True
     runner = process(config)
     runner.align()
     runner.build_tree()

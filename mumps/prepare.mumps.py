@@ -1,47 +1,50 @@
-"""
-This script takes fauna fasta files and produces filtered and subsetted JSONs
-To be processed by augur
-
-* RUN THIS SCRIPT IN THE MUMPS DIRECTORY!!!!
-"""
 from __future__ import print_function
 import os, sys
 sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
 from base.prepare import prepare
 from datetime import datetime
 from base.utils import fix_names
+import argparse
 
-dropped_strains = ["Jeryl_Lynn_Vaccine_Strain_X63707"]
+def collect_args():
+    parser = argparse.ArgumentParser(description = "Prepare fauna FASTA for analysis")
+    parser.add_argument('-v', '--viruses_per_month', type = int, default = 15, help='Subsample x viruses per country per month. Set to 0 to disable subsampling. (default: 15)')
+    return parser.parse_args()
+
+dropped_strains = []
 
 config = {
-    "dir": "mumps", # the current directory. You mush be inside this to run the script.
+    "dir": "mumps",
     "file_prefix": "mumps",
-    "segments": ["SH"],
-    "input_paths": ["test_input/284_SH_Jenn.mfa"],
-    "header_fields": {0:'strain', 1:'region', 2:'country', 3:'date'},
-    "date_format": ["%Y-%W"],
+    "input_paths": ["../../fauna/data/mumps.fasta"],
+    "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
+                    6:'division', 8:'db', 10:'authors', 11:'url'},
     "filters": (
         ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
     ),
-    "subsample": False,
+    "subsample": {
+        "category": lambda x:(x.attributes['date'].year, x.attributes['date'].month),
+    },
     "colors": ["country", "region"],
+    "color_defs": ["./colors.tsv"],
     "lat_longs": ["country", "region"],
-    "lat_long_defs": ['../../fauna/source-data/geo_lat_long.tsv', "geo_lat_long.tsv"],
-    "references": {
-        "SH": {
-            "path": "reference.gb",
-            "metadata": {
-                'strain': "MuVs_KF840226", "date": "2012-21",
-                'region': "Goteborg", 'country': "SWE"
-            },
-            "include": 2,
-            "genes": ["SH"]
-        }
+    "reference": {
+        "path": "mumps-reference.gb",
+        "metadata": {
+            'strain': "MuV/Gabon/13/2", "accession": "KM597072.1", "date": "2013-03-01",
+            'host': "human", 'country': "Gabon"
+        },
+        "include": 0,
+        "genes": ['NC', 'P', 'V', 'I', 'M', 'F', 'SH', 'HN', 'L']
     }
 }
 
-
 if __name__=="__main__":
+    params = collect_args()
+    if params.viruses_per_month == 0:
+        config["subsample"] = False
+    else:
+        config["subsample"]["threshold"] = params.viruses_per_month
     runner = prepare(config)
     runner.load_references()
     runner.applyFilters()
