@@ -169,7 +169,9 @@ reference_maps = {
 reference_maps["yam"]["na"]["metadata"] = reference_maps["yam"]["ha"]["metadata"]
 
 reference_viruses = {
-    'h3n2': ['A/Wisconsin/67/2005', 'A/Brisbane/10/2007',  'A/Perth/16/2009', 'A/Victoria/361/2011','A/Texas/50/2012', 'A/Switzerland/9715293/2013', 'A/HongKong/4801/2014', 'A/Alaska/232/2015'],
+    'h3n2': ['A/Wisconsin/67/2005', 'A/Brisbane/10/2007',  'A/Perth/16/2009',
+             'A/Victoria/361/2011','A/Texas/50/2012', 'A/Switzerland/9715293/2013',
+             'A/HongKong/4801/2014', 'A/Alaska/232/2015'],
     'h1n1pdm':[],
     'vic':[],
     'yam':[]

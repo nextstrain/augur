@@ -149,6 +149,9 @@ class process(object):
             self.seqs.try_restore_align_from_disk(fname)
         if not hasattr(self.seqs, "aln"):
             self.seqs.align(fname, debug=debug)
+            # need to redo everything
+            self.try_to_restore = False
+
         self.seqs.strip_non_reference()
         self.seqs.remove_terminal_gaps()
         # if outgroup is not None:
@@ -398,7 +401,10 @@ class process(object):
             self.config["timetree_options"]["confidence"] = True
             self.config["timetree_options"]["use_marginal"] = True
 
-        success = try_restore()
+        if self.try_to_restore:
+            success = try_restore()
+        else:
+            success = False
         if not success:
             self.log.notify("Setting up TimeTree")
             self.tree.tt_from_file(self.output_path + ".newick", nodefile=None, root="best")
@@ -441,6 +447,7 @@ class process(object):
                 for allele in genotype:
                     partial_matches = filter(lambda x:match(x,[allele]), self.tree.tree.get_nonterminals())
                     print('Found %d partial matches for allele '%len(partial_matches), allele)
+
 
     def make_control_json(self, controls):
         controls_json = {}

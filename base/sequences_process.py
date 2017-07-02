@@ -141,7 +141,7 @@ class sequence_set(object):
             self.remove_reference_from_alignment()
 
         if len({x.id for x in self.aln} ^ set(self.seqs.keys())) != 0:
-            self.log.notify("Alignment on disk had different sequnces... re-doing")
+            self.log.notify("Alignment on disk had different sequences... re-doing")
             del self.aln
             del self.reference_aln
             return
@@ -150,6 +150,7 @@ class sequence_set(object):
         self.set_sequence_lookup()
         self.add_attributes_to_aln()
         self.log.notify("Alignment restored from disk")
+
 
     def strip_non_reference(self):
         ungapped = np.array(self.reference_aln)!='-'

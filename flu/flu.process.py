@@ -41,7 +41,13 @@ def make_config (prepared_json, args):
         "clean": args.clean,
         "pivot_spacing": 1.0/12,
         "timetree_options": {
-            "Tc": 0.03
+            "Tc": 0.03,
+            # "use_input_branch_length":True,
+            # "confidence":True,
+            # "use_marginal":True
+        },
+        "newick_tree_options":{
+            #"raxml":False
         }
     }
 
