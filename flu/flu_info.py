@@ -57,6 +57,7 @@ outliers = {
         "A/Kenya/170/2011", "A/Nepal/142/2011", "A/Pennsylvania/09/2011", "A/Pennsylvania/9/2011",
         "A/Quebec/167936/2011", "A/Quebec/170658/2011", "A/Kenya/168/2011", "A/Nepal/142/2011",
         "A/Guam/AF2771/2011", "A/Indiana/8/2011", "A/India/6352/2012", "A/Indiana/8/2012",
+        "A/Indiana/4/2013", "A/Indiana/8/2013", "A/Ohio/18/2012", "A/Indiana/7/2012",
         "A/Indiana/13/2012", "A/Ohio/34/2012", "A/Ohio/34/2012", "A/Helsinki/942/2013", "A/Indiana/11/2013",
         "A/Indiana/21/2013", "A/Jiangsu-Tianning/1707/2013", "A/Indiana/21/2013", "A/Indiana/5/2013",
         "A/Indiana/6/2013", "A/Indiana/17/2013", "A/Indiana/06/2013", "A/Jiangsu-Tianning/1707/2013",
