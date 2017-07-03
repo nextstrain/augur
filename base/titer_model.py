@@ -100,7 +100,7 @@ class titers(object):
         for serum in all_titers_per_serum:
             if serum in autologous:
                 self.autologous_titers[serum] = {'val':autologous[serum], 'autologous':True}
-                print("autologous titer found for",serum)
+                #print("autologous titer found for",serum)
             else:
                 if len(all_titers_per_serum[serum])>10:
                     self.autologous_titers[serum] = {'val':np.max(all_titers_per_serum[serum]),
@@ -108,8 +108,9 @@ class titers(object):
                     print(serum,": using max titer instead of autologous,",
                           np.max(all_titers_per_serum[serum]))
                 else:
-                    print("discarding",serum,"since there are only ",
-                           len(all_titers_per_serum[serum]),'measurements')
+                    pass
+                    # print("discarding",serum,"since there are only ",
+                    #        len(all_titers_per_serum[serum]),'measurements')
 
 
     def normalize_titers(self):
@@ -538,8 +539,8 @@ class tree_model(titers):
                 node.titer_branch_index=None
 
         self.genetic_params = self.titer_split_count
-        print ("# of reference strains:",len(self.sera),
-               "# of branches with titer constraint", self.titer_split_count)
+        print ("# of reference strains:",len(self.sera))
+        print ("# of eligible branches with titer constraints", self.titer_split_count)
 
 
     def make_treegraph(self):
