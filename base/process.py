@@ -357,6 +357,7 @@ class process(object):
         self.tree_frequency_confidence[region] = conf
         self.tree_frequency_counts[region] = tree_freqs.counts
 
+        self.save_tree_frequencies()
 
     def build_tree(self):
         '''

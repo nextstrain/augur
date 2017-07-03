@@ -75,8 +75,6 @@ if __name__=="__main__":
             for regionTuple in runner.info["regions"]:
                 runner.estimate_tree_frequencies(region=str(regionTuple[0]))
 
-            runner.save_tree_frequencies()
-
         # titers
         if runner.config["titers"]:
             HI_model(runner, )
