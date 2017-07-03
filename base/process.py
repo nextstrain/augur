@@ -342,8 +342,8 @@ class process(object):
         if not hasattr(self, 'pivots'):
             tps = np.array([x.attributes['num_date'] for x in self.seqs.seqs.values()])
             self.pivots=make_pivots(pivots, tps)
-        else:
-            print('estimate_tree_frequencies: using self.pivots', self.pivots)
+
+        self.log.notify('Estimate tree frequencies for %s: using self.pivots\n%s' % (region, self.pivots))
 
         tree_freqs = tree_frequencies(self.tree.tree, self.pivots,
                                       node_filter = node_filter_func,
