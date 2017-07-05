@@ -21,6 +21,36 @@ class sequence_set(object):
     """ sequence set deals with loading sequences (stored in self.seqs)
     and various basic tasks including filtering, output etc """
 
+    @classmethod
+    def get_gene_name(cls, gene, genes):
+        """Return a gene name for the given gene identifier and gene config.
+
+        Args:
+            cls (Python class): class for this method
+            gene (str): gene identifier from a GenBank record
+            genes (list or dict): a list of GenBank gene identifiers or a
+                                  dictionary indexed by identified to a
+                                  preferred gene name
+
+        Returns:
+            str: a gene name for the given gene identifier
+
+        >>> genes = ["HA1", "HA2"]
+        >>> sequence_set.get_gene_name("HA1", genes)
+        'HA1'
+        >>> genes = {"HA1": "HA1", "HA": "SigPep"}
+        >>> sequence_set.get_gene_name("HA1", genes)
+        'HA1'
+        >>> sequence_set.get_gene_name("HA", genes)
+        'SigPep'
+        >>> sequence_set.get_gene_name("HA2", genes)
+        'HA2'
+        """
+        try:
+            return genes.get(gene, gene)
+        except AttributeError:
+            return gene
+
     def __init__(self, logger, segmentName):
         super(sequence_set, self).__init__()
         self.log = logger
@@ -273,7 +303,11 @@ class sequence_set(object):
             # we used to make these FeatureLocation objects here, but that won't go to JSON
             # so just do it in the Process part instead. For reference:
             # FeatureLocation(start=f.location.start, end=f.location.end, strand=1)
-            self.reference.genes = {f.qualifiers['gene'][0]:{"start": int(f.location.start), "end": int(f.location.end), "strand": 1} for f in self.reference.features if 'gene' in f.qualifiers and f.qualifiers['gene'][0] in genes}
+            self.reference.genes = {
+                sequence_set.get_gene_name(f.qualifiers['gene'][0], genes): {"start": int(f.location.start), "end": int(f.location.end), "strand": 1}
+                for f in self.reference.features
+                if 'gene' in f.qualifiers and f.qualifiers['gene'][0] in genes
+            }
         else:
             self.reference.genes = {}
 
