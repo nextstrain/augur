@@ -29,8 +29,10 @@ def collect_args():
 # for flu, config is a function so it is applicable for multiple lineages
 def make_config(lineage, resolution, params):
     years_back = int(re.search("(\d+)", resolution).groups()[0])
-    time_interval = [datetime.strptime(x, '%Y-%m-%d').date() for x in ["{:%Y-%m-%d}".format(datetime.today()), "{:%Y-%m-%d}".format(datetime.today()  - timedelta(days=365.25 * years_back))]]
-    reference_cutoff = date(year = time_interval[0].year - 3, month=1, day=1)
+    time_interval = [datetime.today().date(), (datetime.today()  - timedelta(days=365.25 * years_back)).date()]
+    reference_cutoff = date(year = time_interval[1].year - 3, month=1, day=1)
+    fixed_outliers = [fix_names(x) for x in outliers[lineage]]
+    fixed_references = [fix_names(x) for x in reference_viruses[lineage]]
 
     return {
         "dir": "flu",
@@ -50,14 +52,14 @@ def make_config(lineage, resolution, params):
         "filters": (
             ("Time Interval", lambda s:
                 (s.attributes['date']<=time_interval[0] and s.attributes['date']>=time_interval[1]) or
-                (s.name in reference_viruses[lineage] and s.attributes['date']>reference_cutoff)
+                (s.name in fixed_references and s.attributes['date']>reference_cutoff)
             ),
             ("Sequence Length", lambda s: len(s.seq)>=900),
             # what's the order of evaluation here I wonder?
-            ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in outliers[lineage]]),
+            ("Dropped Strains", lambda s: s.id not in fixed_outliers),
             ("Bad geo info", lambda s: s.attributes["country"]!= "?" and s.attributes["region"]!= "?" ),
         ),
-        "subsample": flu_subsampling(params, years_back, "../../fauna/data/{}_crick_hi".format(lineage)),
+        "subsample": flu_subsampling(params, years_back, "../../fauna/data/{}_crick_hi_cell".format(lineage)),
         "colors": ["region"],
         "color_defs": ["colors.flu.tsv"],
         "lat_longs": ["country", "region"],

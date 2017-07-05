@@ -111,12 +111,14 @@ class tree(object):
                 sys.exit(2)
             shutil.copy('RAxML_bestTree.tre', out_fname)
         else:
+            self.logger("Building tree with fasttree instead of raxml", 1)
             tree_cmd = ["fasttree"]
             if self.nuc: tree_cmd.append("-nt")
             tree_cmd.extend(["temp.fasta","1>","initial_tree.newick", "2>", "fasttree_stderr"])
             os.system(" ".join(tree_cmd))
             shutil.copy('initial_tree.newick', out_fname)
         os.chdir('..')
+        self.logger("Saved new tree to %s"%out_fname, 1)
         if not debug:
             remove_dir(self.run_dir)
 
@@ -182,14 +184,16 @@ class tree(object):
             else:
                 node.attr = {'num_date':node.numdate}
             if confidence:
-                node.attr["num_date_confidence"] = sorted(to_numdate(node.marginal_inverse_cdf([0.05,0.95])))
+                node.attr["num_date_confidence"] = sorted(self.tt.get_max_posterior_region(node, fraction=0.9))
 
         self.is_timetree=True
+
 
     def save_timetree(self, fprefix, ttopts, cfopts):
         Phylo.write(self.tt.tree, fprefix+"_timetree.new", "newick")
         n = {}
-        attrs = ["branch_length", "mutation_length", "clock_length", "dist2root", "name", "mutations", "attr", "cseq", "sequence", "numdate"]
+        attrs = ["branch_length", "mutation_length", "clock_length", "dist2root",
+                 "name", "mutations", "attr", "cseq", "sequence", "numdate"]
         for node in self.tt.tree.find_clades():
             n[node.name] = {}
             for x in attrs:

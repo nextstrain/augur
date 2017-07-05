@@ -31,17 +31,25 @@ def make_config (prepared_json, args):
             "controls": {'authors':['authors']},
             "defaults": {'geoResolution': ['region'], 'mapTriplicate': True}
         },
-        # "titers": {
-        #     "fname": "../../fauna/data/<LINEAGE>_2017_06_02_titers.tsv",
-        #     "criterium": lambda x: len(x.aa_mutations['HA'])>0,
-        #     "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
-        # },
+        "titers": {
+            "fname": "../../fauna/data/<LINEAGE>_crick_hi_cell_titers.tsv",
+            "criterium": lambda x: len(x.aa_mutations['HA1']+x.aa_mutations['HA2'])>0,
+            "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
+            "lam_avi":2.0,
+            "lam_pot":0.3,
+            "lam_drop":2.0
+        },
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
         "clean": args.clean,
         "pivot_spacing": 1.0/12,
         "timetree_options": {
-            "Tc": 0.03
+            "Tc": 0.03,
+            # "confidence":True,
+            # "use_marginal":True
+        },
+        "newick_tree_options":{
+            "raxml": True
         }
     }
 
