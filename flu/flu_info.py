@@ -57,6 +57,7 @@ outliers = {
         "A/Kenya/170/2011", "A/Nepal/142/2011", "A/Pennsylvania/09/2011", "A/Pennsylvania/9/2011",
         "A/Quebec/167936/2011", "A/Quebec/170658/2011", "A/Kenya/168/2011", "A/Nepal/142/2011",
         "A/Guam/AF2771/2011", "A/Indiana/8/2011", "A/India/6352/2012", "A/Indiana/8/2012",
+        "A/Indiana/4/2013", "A/Indiana/8/2013", "A/Ohio/18/2012", "A/Indiana/7/2012",
         "A/Indiana/13/2012", "A/Ohio/34/2012", "A/Ohio/34/2012", "A/Helsinki/942/2013", "A/Indiana/11/2013",
         "A/Indiana/21/2013", "A/Jiangsu-Tianning/1707/2013", "A/Indiana/21/2013", "A/Indiana/5/2013",
         "A/Indiana/6/2013", "A/Indiana/17/2013", "A/Indiana/06/2013", "A/Jiangsu-Tianning/1707/2013",
@@ -169,7 +170,9 @@ reference_maps = {
 reference_maps["yam"]["na"]["metadata"] = reference_maps["yam"]["ha"]["metadata"]
 
 reference_viruses = {
-    'h3n2': ['A/Wisconsin/67/2005', 'A/Brisbane/10/2007',  'A/Perth/16/2009', 'A/Victoria/361/2011','A/Texas/50/2012', 'A/Switzerland/9715293/2013', 'A/HongKong/4801/2014', 'A/Alaska/232/2015'],
+    'h3n2': ['A/Wisconsin/67/2005', 'A/Brisbane/10/2007',  'A/Perth/16/2009',
+             'A/Victoria/361/2011','A/Texas/50/2012', 'A/Switzerland/9715293/2013',
+             'A/HongKong/4801/2014', 'A/Alaska/232/2015'],
     'h1n1pdm':[],
     'vic':[],
     'yam':[]

@@ -97,40 +97,43 @@ FEATURES             Location/Qualifiers
                      RRDLRLMANAICSSVPVDWVPTGRTTWSIHGKGEWMTTEDMLVVWNRVWIEENDHMEDK
                      TPVTKWTDIPYLGKREDLWCGSLIGHRPRTTWAENIKNTVNMVRRIIGDEEKYMDYLST
                      QVRYLGEEGSTPGVL"
-     CDS             91..465
+     CDS             91..456
                      /product="capsid protein"
                      /gene="CA"
-     CDS             466..735
+     CDS             457..735
                      /product="propeptide"
                      /gene="PRO"
      CDS             736..960
                      /product="membrane protein"
                      /gene="MP"
-     CDS             961..2475
+     CDS             961..2472
                      /product="envelope protein"
                      /gene="ENV"
-     CDS             2476..3561
+     CDS             2473..3528
                      /product="NS1"
                      /gene="NS1"
-     CDS             3562..4215
+     CDS             3529..4206
                      /product="NS2A"
                      /gene="NS2A"
-     CDS             4216..4647
+     CDS             4207..4596
                      /product="NS2B"
                      /gene="NS2B"
-     CDS             4648..6456
+     CDS             4597..6447
                      /product="NS3"
                      /gene="NS3"
-     CDS             6457..6897
+     CDS             6448..6828
                      /product="NS4A"
                      /gene="NS4A"
-     CDS             6898..8403
+     CDS             6829..6897
+                     /product="2K"
+                     /gene="2K"                     
+     CDS             6898..7650
                      /product="NS4B"
                      /gene="NS4B"
-     CDS             8404..10359
+     CDS             7651..10359
                      /product="NS5"
                      /gene="NS5"
-     3'UTR           10363..10661
+     3'UTR           10360..10769
 ORIGIN
         1 gaatcagact gcgacagttc gagtttgaag cgaaagctag caacagtatc aacaggtttt
        61 atttggattt ggaaacgaga gtttctggtc atgaaaaacc caaaaaagaa atccggagga

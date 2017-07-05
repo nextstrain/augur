@@ -17,16 +17,16 @@ dropped_strains = [
 ]
 
 references = {
-    "denv1": {"metadata": {'strain': "DENV1/NAURUISLAND/REFERENCE/1997", "accession": "NC_001477", "date": "1997-XX-XX", 'host': "NA", 'country': "Nauru"}},
-    "denv2": {"metadata": {'strain': "DENV2/THAILAND/REFERENCE/1964", "accession": "NC_001474", "date": "1964-XX-XX", 'host': "NA", 'country': "Thailand"}},
-    "denv3": {"metadata": {'strain': "DENV3/SRI_LANKA/REFERENCE/2000", "accession": "NC_001475", "date": "2000-XX-XX", 'host': "NA", 'country': "Sri Lanka"}},
+    "denv1": {"metadata": {'strain': "DENV1/NAURUISLAND/REFERENCE/1997", "accession": "NC_001477", "date": "1997-XX-XX", 'host': "NA", 'country': "Nauru", 'region': "oceania"}},
+    "denv2": {"metadata": {'strain': "DENV2/THAILAND/REFERENCE/1964", "accession": "NC_001474", "date": "1964-XX-XX", 'host': "NA", 'country': "Thailand", "region": "southeast_asia"}},
+    "denv3": {"metadata": {'strain': "DENV3/SRI_LANKA/REFERENCE/2000", "accession": "NC_001475", "date": "2000-XX-XX", 'host': "NA", 'country': "Sri Lanka", "region": "south_asia"}},
     "denv4": {"metadata": {'strain': "DENV4/NA/REFERENCE/2003", "accession": "NC_002640", "date": "2003-XX-XX", 'host': "NA", 'country': "NA"}},
 }
 
 for key in references:
     references[key]["genes"] = ['C', 'M', 'E', 'NS1', 'NS2A', 'NS2B', 'NS3', 'NS4A', '2K', 'NS4B', 'NS5']
     references[key]["path"] = "metadata/dengue_{}_outgroup.gb".format(key)
-    references[key]["include"] = 2 # force inclusion of the reference sequence
+    references[key]["include"] = 1 # include ref seq in subsampling pool
 references["all"] = references["denv4"]
 
 
@@ -38,7 +38,7 @@ def select_serotype(infile, path, serotype):
     Returns path to output file as string.
     '''
     from Bio import SeqIO
-    sequences = [ i for i in SeqIO.parse(infile, 'fasta') if i.description.split('/')[0] == 'DENV%s'%serotype ]
+    sequences = [ i for i in SeqIO.parse(infile, 'fasta') if i.description.split('/')[0] == serotype.upper() ]
     SeqIO.write(sequences, path+'dengue_%s.fasta'%serotype, 'fasta')
     return path+'dengue_%s.fasta'%serotype
 

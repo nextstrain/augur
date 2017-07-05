@@ -2,58 +2,65 @@ import numpy as np
 from pdb import set_trace
 import os
 
-def HI_model(self):
+def HI_model(process):
     '''
     estimate a tree and substitution model using titers titer_fname.
     '''
     from base.titer_model import tree_model, substitution_model
     ## define the filenames here
-    fname = str(self.config["titers"]["fname"].replace("<LINEAGE>", self.info["lineage"]))
+    fname = str(process.config["titers"]["fname"].replace("<LINEAGE>", process.info["lineage"]))
 
     ## define the kwargs explicitly
-    kwargs = {}
-    if "criterium" in self.config["titers"]:
-        kwargs["criterium"] = self.config["titers"]["criterium"]
+    kwargs = process.config["titers"]
+    # if "criterium" in process.config["titers"]:
+    #     kwargs["criterium"] = process.config["titers"]["criterium"]
 
     ## TREE MODEL
-    self.HI_tree = tree_model(self.tree.tree, titer_fname = fname, **kwargs)
-    self.HI_tree.prepare(**kwargs)
-    self.HI_tree.train(**kwargs)
+    process.HI_tree = tree_model(process.tree.tree, titer_fname = fname, **kwargs)
+    process.HI_tree.prepare(**kwargs)
+    process.HI_tree.train(**kwargs)
     # add tree attributes to the list of attributes that are saved in intermediate files
-    for n in self.tree.tree.find_clades():
+    for n in process.tree.tree.find_clades():
         n.attr['cTiter'] = n.cTiter
         n.attr['dTiter'] = n.dTiter
         # print("cumulative: {} delta: {}".format(n.cTiter, n.dTiter))
-    self.config["auspice"]["color_options"]["cTiter"] = {
+    process.config["auspice"]["color_options"]["cTiter"] = {
         "menuItem": "antigenic advance", "type": "continuous", "legendTitle": "Antigenic Advance", "key": "cTiter"
     }
 
     # SUBSTITUTION MODEL
+<<<<<<< HEAD
     self.HI_subs = substitution_model(self.tree.tree, titer_fname = fname,**kwargs)
     self.HI_subs.prepare(**kwargs)
     self.HI_subs.train(**kwargs)
+=======
+    ## currently broken TODO
+    process.HI_subs = substitution_model(process.tree.tree, titer_fname = fname,**kwargs)
+    process.HI_subs.prepare(**kwargs)
+    process.HI_subs.train(**kwargs)
+>>>>>>> master
 
 
-def HI_export(self):
+def HI_export(process):
     from base.io_util import write_json
-    prefix = os.path.join(self.config["output"]["auspice"], self.info["prefix"])
-    if hasattr(self, 'HI_tree'):
+    prefix = os.path.join(process.config["output"]["auspice"], process.info["prefix"])
+    if hasattr(process, 'HI_tree'):
         # export the raw titers
-        hi_data = self.HI_tree.compile_titers()
+        hi_data = process.HI_tree.compile_titers()
         write_json(hi_data, prefix+'_titers.json')
         # export the tree model (avidities and potencies only)
-        tree_model = {'potency':self.HI_tree.compile_potencies(),
-                      'avidity':self.HI_tree.compile_virus_effects(),
-                      'dTiter':{n.clade:n.dTiter for n in self.tree.tree.find_clades() if n.dTiter>1e-6}}
+        tree_model = {'potency':process.HI_tree.compile_potencies(),
+                      'avidity':process.HI_tree.compile_virus_effects(),
+                      'dTiter':{n.clade:n.dTiter for n in process.tree.tree.find_clades() if n.dTiter>1e-6}}
         write_json(tree_model, prefix+'_titer_tree_model.json')
     else:
         print('Tree model not yet trained')
 
-    if hasattr(self, 'HI_subs'):
+    if hasattr(process, 'HI_subs'):
         # export the substitution model
-        subs_model = {'potency':self.HI_subs.compile_potencies(),
-                      'avidity':self.HI_subs.compile_virus_effects(),
-                      'substitution':self.HI_subs.compile_substitution_effects()}
+        subs_model = {'potency':process.HI_subs.compile_potencies(),
+                      'avidity':process.HI_subs.compile_virus_effects(),
+                      'substitution':process.HI_subs.compile_substitution_effects()}
         write_json(subs_model, prefix+'_titer_subs_model.json')
     else:
         print('Substitution model not yet trained')

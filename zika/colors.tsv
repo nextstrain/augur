@@ -1,13 +1,13 @@
-region	europe  #4580CA
-region	china #3F63CF
-region	japan_korea #4272CE
-region	southeast_asia  #571EA2
-region	oceania #4B26B1
-region	south_pacific #4433BE
-region	south_america #56A0AE
-region	central_america #BDBB48
-region	caribbean #E67C32
-region	north_america #DC2F24
+region  china  #4042C7
+region  southeast_asia  #4274CE
+region  south_asia  #5199B7
+region  japan_korea #69B091
+region  oceania #88BB6C
+region  west_asia #ADBD51
+region  africa #CEB541
+region  europe  #E39B39
+region  south_america #E56C2F
+region  north_america #DC2F24
 
 country	thailand  #571EA2
 country	vietnam #4B26B1
@@ -19,6 +19,7 @@ country	tonga #4272CE
 country	italy #4580CA
 country	china #4A8CC2
 country	japan #5097BA
+
 country	brazil  #56A0AE
 country	peru  #5DA8A3
 country	ecuador #66AE96
@@ -26,18 +27,20 @@ country	colombia  #6EB389
 country	french_guiana #79B77D
 country	suriname  #83BA70
 country	venezuela #8EBC66
-country	panama  #A6BE55
-country	nicaragua #B2BD4D
-country	honduras  #BDBB48
-country	el_salvador #C8B944
-country	guatemala #D1B340
-country	mexico  #D9AD3D
-country	martinique  #DFA43B
-country	guadeloupe  #E49938
-country	saint_barthelemy  #E59237
-country	usvi  #E68B35
-country	puerto_rico #E67C32
-country	jamaica #E56A2F
-country	dominican_republic  #E2562B
-country	haiti #DF4327
+
+country	panama  #A4BE56
+country	nicaragua #AFBD4F
+country	honduras  #B9BC4A
+country	el_salvador #C2BA46
+country	guatemala #CCB742
+country	mexico  #D3B240
+country	martinique  #DAAC3D
+country	guadeloupe  #DFA43B
+country	saint_barthelemy  #E39B39
+country	usvi  #E68F36
+country	puerto_rico #E68234
+country	jamaica #E67431
+country	dominican_republic  #E4632E
+country	haiti #E1512A
+country cuba	#DF4027
 country	usa #DC2F24

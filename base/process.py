@@ -50,7 +50,8 @@ class process(object):
 
         self.info = data["info"]
         if "time_interval" in data["info"]:
-            self.info["time_interval"] = [datetime.strptime(x, '%Y-%m-%d').date() for x in data["info"]["time_interval"]]
+            self.info["time_interval"] = [datetime.strptime(x, '%Y-%m-%d').date()
+                                          for x in data["info"]["time_interval"]]
         self.info["lineage"] = data["info"]["lineage"]
 
         try:
@@ -149,6 +150,9 @@ class process(object):
             self.seqs.try_restore_align_from_disk(fname)
         if not hasattr(self.seqs, "aln"):
             self.seqs.align(fname, debug=debug)
+            # need to redo everything
+            self.try_to_restore = False
+
         self.seqs.strip_non_reference()
         self.seqs.remove_terminal_gaps()
         # if outgroup is not None:
@@ -286,6 +290,42 @@ class process(object):
                          self.mutation_frequency_counts), fh, protocol=pickle.HIGHEST_PROTOCOL)
 
 
+    def save_tree_frequencies(self):
+        """
+        Save tree frequencies to a pickle on disk.
+        """
+        self.log.notify("Saving tree frequencies (pickle)")
+        with open(self.output_path + "_tree_freqs.pickle", 'wb') as fh:
+            pickle.dump(set(self.seqs.seqs.keys()), fh, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump((self.tree_frequencies,
+                         self.tree_frequency_confidence,
+                         self.tree_frequency_counts,
+                         self.pivots), fh, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+    def restore_tree_frequencies(self):
+        try:
+            assert(self.try_to_restore == True)
+            with open(self.output_path + "_tree_freqs.pickle", 'rb') as fh:
+                pickle_seqs = pickle.load(fh)
+                assert(pickle_seqs == set(self.seqs.seqs.keys()))
+                pickled = pickle.load(fh)
+                assert(len(pickled) == 4)
+                self.tree_frequencies = pickled[0]
+                self.tree_frequency_confidence = pickled[1]
+                self.tree_frequency_counts = pickled[2]
+                self.pivots = pickled[3]
+                self.log.notify("Successfully restored tree frequencies")
+                return
+        except IOError:
+            pass
+        except AssertionError as err:
+            self.log.notify("Tried to restore tree frequencies but failed: {}".format(err))
+            #no need to remove - we'll overwrite it shortly
+        self.tree_frequencies = {}
+        self.tree_frequency_confidence = {}
+        self.tree_frequency_counts = {}
+
 
     def estimate_tree_frequencies(self, region='global', pivots=24):
         '''
@@ -296,15 +336,18 @@ class process(object):
         else:
             node_filter_func = lambda x:x.attr['region']==region
 
+        if not hasattr(self, 'tree_frequencies'):
+            self.restore_tree_frequencies()
+
+        if region in self.tree_frequencies:
+            self.log.notify("Skipping tree frequency estimation for region: %s" % region)
+            return
+
         if not hasattr(self, 'pivots'):
             tps = np.array([x.attributes['num_date'] for x in self.seqs.seqs.values()])
             self.pivots=make_pivots(pivots, tps)
-        else:
-            print('estimate_tree_frequencies: using self.pivots', self.pivots)
-        if not hasattr(self, 'tree_frequencies'):
-            self.tree_frequencies = {}
-            self.tree_frequency_confidence = {}
-            self.tree_frequency_counts = {}
+
+        self.log.notify('Estimate tree frequencies for %s: using self.pivots\n%s' % (region, self.pivots))
 
         tree_freqs = tree_frequencies(self.tree.tree, self.pivots,
                                       node_filter = node_filter_func,
@@ -318,6 +361,7 @@ class process(object):
         self.tree_frequency_confidence[region] = conf
         self.tree_frequency_counts[region] = tree_freqs.counts
 
+        self.save_tree_frequencies()
 
     def build_tree(self):
         '''
@@ -398,7 +442,10 @@ class process(object):
             self.config["timetree_options"]["confidence"] = True
             self.config["timetree_options"]["use_marginal"] = True
 
-        success = try_restore()
+        if self.try_to_restore:
+            success = try_restore()
+        else:
+            success = False
         if not success:
             self.log.notify("Setting up TimeTree")
             self.tree.tt_from_file(self.output_path + ".newick", nodefile=None, root="best")
@@ -441,6 +488,7 @@ class process(object):
                 for allele in genotype:
                     partial_matches = filter(lambda x:match(x,[allele]), self.tree.tree.get_nonterminals())
                     print('Found %d partial matches for allele '%len(partial_matches), allele)
+
 
     def make_control_json(self, controls):
         controls_json = {}
