@@ -78,7 +78,7 @@ if __name__=="__main__":
         # titers
         if runner.config["titers"]:
             HI_model(runner)
-            H3N2_scores(runner.tree.tree, runner.config["titers"]["epitope_mask"])
+            H3N2_scores(runner, runner.tree.tree, runner.config["titers"]["epitope_mask"])
             HI_export(runner)
 
         runner.matchClades(clade_designations[runner.info["lineage"]])
