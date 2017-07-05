@@ -14,7 +14,7 @@ config = {
     "clock_filter": {
         "n_iqd": 4,
     },
-    "geo_inference": False,
+    "geo_inference": ["country", "region"],
     "auspice": { ## settings for auspice JSON export
         "color_options": {
             "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
