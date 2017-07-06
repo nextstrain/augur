@@ -11,6 +11,13 @@ from pdb import set_trace
 from pprint import pprint
 from collections import defaultdict
 
+import logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO,
+    stream=sys.stderr
+)
+
 class prepare(object):
     def __init__(self, config):
         """ check config file, make necessary directories, set up logger """
@@ -185,7 +192,6 @@ class prepare(object):
                     self.log.warn("Reference segment {} not found in segments".format(k))
                 else:
                     self.segments[k].load_reference(fmts=self.config["date_format"], **v)
-
 
     def write_to_json(self):
         for seg, obj in self.segments.iteritems():
