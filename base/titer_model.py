@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+import logging
 import numpy as np
 import time
 from collections import defaultdict
@@ -7,6 +8,8 @@ from itertools import izip
 import pandas as pd
 
 TITER_ROUND=4
+logger = logging.getLogger(__name__)
+
 
 class titers(object):
     '''
@@ -18,6 +21,97 @@ class titers(object):
     acid mutations. More details on the methods can be found in
     Neher et al, PNAS, 2016
     '''
+    @staticmethod
+    def load_from_file(filename, excluded_sources=None):
+        """Load titers from a tab-delimited file.
+
+        Args:
+            filename (str): tab-delimited file containing titer strains, serum,
+                            and values
+            excluded_sources (list of str): sources in the titers file to exclude
+
+        Returns:
+            defaultdict: titer measurements indexed by test strain, reference
+                         strain, and serum with a list of raw floating point
+                         values per index
+
+        >>> measurements, strains, sources = titers.load_from_file("tests/data/h3n2_titers_subset.tsv")
+        >>> type(measurements)
+        <type 'dict'>
+        >>> len(measurements)
+        10
+        >>> measurements[("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10"))]
+        [80.0]
+        >>> len(strains)
+        12
+        >>> len(sources)
+        3
+        >>> measurements, strains, sources = titers.load_from_file("tests/data/h3n2_titers_subset.tsv", ["NIMR_Sep2013_7-11.csv"])
+        >>> len(measurements)
+        4
+        >>> measurements.get(("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10")))
+        >>>
+        """
+        if excluded_sources is None:
+            excluded_sources = []
+
+        measurements = defaultdict(list)
+        strains = set()
+        sources = set()
+
+        with myopen(filename, 'r') as infile:
+            for line in infile:
+                entries = line.strip().split()
+                try:
+                    val = float(entries[4])
+                except:
+                    continue
+                test, ref_virus, serum, src_id = (entries[0], entries[1],entries[2],
+                                                  entries[3])
+
+                ref = (ref_virus, serum)
+                if src_id not in excluded_sources:
+                    try:
+                        measurements[(test, (ref_virus, serum))].append(val)
+                        strains.update([test, ref_virus])
+                        sources.add(src_id)
+                    except:
+                        print(line.strip())
+
+        logger.info("Read titers from %s, found:" % filename)
+        logger.info(" --- %i strains" % len(strains))
+        logger.info(" --- %i data sources" % len(sources))
+        logger.info(" --- %i total measurements" % sum([len(x) for x in measurements.values()]))
+
+        return dict(measurements), list(strains), list(sources)
+
+
+    @staticmethod
+    def count_strains(titers):
+        """Count test and reference virus strains in the given titers.
+
+        Args:
+            titers (defaultdict): titer measurements indexed by test, reference,
+                                  and serum
+
+        Returns:
+            dict: counts of virus strains that appear as either tests or
+                  references in the given titers
+
+        >>> measurements, strains, sources = titers.load_from_file("tests/data/h3n2_titers_subset.tsv")
+        >>> titer_counts = titers.count_strains(measurements)
+        >>> titer_counts["A/Acores/11/2013"]
+        6
+        >>> titer_counts["A/Acores/SU43/2012"]
+        3
+        """
+        counts = defaultdict(int)
+        for key in titers.iterkeys():
+            counts[key[0]] += 1
+            counts[key[1][0]] += 1
+
+        return counts
+
 
     def __init__(self, tree, titer_fname = 'data/HI_titers.txt', serum_Kc=0, **kwargs):
         self.kwargs = kwargs
@@ -55,31 +149,11 @@ class titers(object):
         strains = set()
         measurements = defaultdict(list)
         sources = set()
-        with myopen(fname, 'r') as infile:
-            for line in infile:
-                entries = line.strip().split()
-                try:
-                    val = float(entries[4])
-                except:
-                    continue
-                test, ref_virus, serum, src_id = (entries[0], entries[1],entries[2],
-                                                  entries[3])
 
-                ref = (ref_virus, serum)
-                if src_id not in self.excluded_tables:
-                    try:
-                        measurements[(test, (ref_virus, serum))].append(val)
-                        strains.update([test, ref_virus])
-                        sources.add(src_id)
-                    except:
-                        print(line.strip())
-        self.titers = measurements
-        self.strains = list(strains)
-        self.sources = list(sources)
-        print("Read titers from",self.titer_fname, 'found:')
-        print(' ---', len(self.strains), "strains")
-        print(' ---', len(self.sources), "data sources")
-        print(' ---', sum([len(x) for x in measurements.values()]), " total measurements")
+        self.titers, self.strains, self.sources = titers.load_from_file(
+            fname,
+            self.excluded_tables
+        )
 
 
     def normalize(self, ref, val):
