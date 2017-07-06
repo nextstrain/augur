@@ -19,7 +19,7 @@ from flu_subsampling import flu_subsampling
 
 def collect_args():
     parser = argparse.ArgumentParser(description = "Prepare fauna FASTA for analysis")
-    parser.add_argument('-l', '--lineages', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default=['h3n2', 'h1n1pdm', 'vic', 'yam'], nargs='+', type=str, help="serotype (default: 'h3n2', 'h1n1pdm', 'vic' & 'yam')")
+    parser.add_argument('-l', '--lineage', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default='h3n2', type=str, help="serotype (default: 'h3n2')")
     parser.add_argument('-r', '--resolutions', default=['3y', '6y', '12y'], nargs='+', type = str,  help = "resolutions (default: 3y, 6y & 12y)")
     parser.add_argument('-s', '--segments', choices=segments, default=['ha'], nargs='+', type = str,  help = "segments (default: ha)")
     parser.add_argument('-v', '--viruses_per_month_seq', type = int, default = 0, help='number of viruses sampled per month (optional) (defaults: 90 (2y), 60 (3y), 24 (6y) or 12 (12y))')
@@ -84,16 +84,15 @@ if __name__=="__main__":
     # set_trace()
 
     ## lots of loops to allow multiple downstream analysis
-    for lineage in params.lineages:
-        for resolution in params.resolutions:
-            pprint("Preparing lineage {}, segments: {}, resolution: {}".format(lineage, params.segments, resolution))
+    for resolution in params.resolutions:
+        pprint("Preparing lineage {}, segments: {}, resolution: {}".format(params.lineage, params.segments, resolution))
 
-            config = make_config(lineage, resolution, params)
-            runner = prepare(config)
-            runner.load_references()
-            runner.applyFilters()
-            runner.ensure_all_segments()
-            runner.subsample()
-            runner.colors()
-            runner.latlongs()
-            runner.write_to_json()
+        config = make_config(params.lineage, resolution, params)
+        runner = prepare(config)
+        runner.load_references()
+        runner.applyFilters()
+        runner.ensure_all_segments()
+        runner.subsample()
+        runner.colors()
+        runner.latlongs()
+        runner.write_to_json()
