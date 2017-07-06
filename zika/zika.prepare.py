@@ -24,7 +24,7 @@ config = {
     "file_prefix": "zika",
     "input_paths": ["../../fauna/data/zika.fasta"],
     "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
-                    6:'division', 8:'db', 10:'authors', 11:'url'},
+                    6:'division', 8:'db', 10:'authors', 11:'url', 12:'title'},
     "filters": (
         ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
         ("Restrict Date Range", lambda s: s.attributes['date'] >= datetime(2012,01,1).date()),
