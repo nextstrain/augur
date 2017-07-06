@@ -33,16 +33,11 @@ def make_config (prepared_json, args):
         },
         "titers": {
             "fname": "../../fauna/data/<LINEAGE>_crick_hi_cell_titers.tsv",
-<<<<<<< HEAD
-            "criterium": lambda x: any([len(value) > 0 for key, value in x.aa_mutations.iteritems() if key.startswith("HA")]),
-            "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
-=======
             "criterium": lambda x: len(x.aa_mutations['HA1']+x.aa_mutations['HA2'])>0,
             "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
             "lam_avi":2.0,
             "lam_pot":0.3,
             "lam_drop":2.0
->>>>>>> master
         },
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,

@@ -29,16 +29,9 @@ def HI_model(process):
     }
 
     # SUBSTITUTION MODEL
-<<<<<<< HEAD
-    self.HI_subs = substitution_model(self.tree.tree, titer_fname = fname,**kwargs)
-    self.HI_subs.prepare(**kwargs)
-    self.HI_subs.train(**kwargs)
-=======
-    ## currently broken TODO
     process.HI_subs = substitution_model(process.tree.tree, titer_fname = fname,**kwargs)
     process.HI_subs.prepare(**kwargs)
     process.HI_subs.train(**kwargs)
->>>>>>> master
 
 
 def HI_export(process):
