@@ -57,6 +57,7 @@ process = {
     "estimate_mutation_frequencies": False,
     "estimate_tree_frequencies": False,
     "titers": False,
+    "subprocess_verbosity_level": 0,
     "newick_tree_options": {},
     "timetree_options": {
         "Tc": 0.02,
