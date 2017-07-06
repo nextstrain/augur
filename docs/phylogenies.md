@@ -2,6 +2,8 @@
 
 Building the tree is a 2 step process: A newick file is created (e.g. with RAxML) and then this is converted into a TimeTree.
 
+* `tree_verbosity_level` {int} (default `0`). Control the amount of information displayed. Higher numbers -> more output.
+
 ### step 1: initial phylogeny
 This is normally created via RAxML however FastTree may also be used. A number of options are available however for the most part the defaults are fine.
 All the keyword arguments in the `build_newick` method of the `Tree` class may be set via the `newick_tree_options` config dictionary. The most common ones are:

@@ -369,8 +369,7 @@ class process(object):
         (2) If newick file doesn't exist or isn't valid: build a newick tree (normally RAxML)
         (3) Make a TimeTree
         '''
-        # self.log.warn("self.verbose not set")
-        self.tree = tree(aln=self.seqs.aln, proteins=self.proteins, verbose=0)
+        self.tree = tree(aln=self.seqs.aln, proteins=self.proteins, verbose=self.config["tree_verbosity_level"])
         newick_file = self.output_path + ".newick"
         try:
             assert(self.try_to_restore == True)
@@ -378,6 +377,7 @@ class process(object):
             self.tree.check_newick(newick_file)
             self.log.notify("Newick file restored from \"{}\"".format(newick_file))
         except AssertionError:
+            self.log.notify("Building newick tree.")
             self.tree.build_newick(newick_file, **self.config["newick_tree_options"])
 
 
