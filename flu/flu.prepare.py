@@ -17,6 +17,8 @@ from pdb import set_trace
 from flu_info import regions, outliers, reference_maps, reference_viruses, segments
 from flu_subsampling import flu_subsampling
 
+import logging
+
 def collect_args():
     parser = argparse.ArgumentParser(description = "Prepare fauna FASTA for analysis")
     parser.add_argument('-l', '--lineage', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default='h3n2', type=str, help="serotype (default: 'h3n2')")
@@ -27,6 +29,7 @@ def collect_args():
                         help='sample evenly over regions (even) (default), or prioritize one region (region name), otherwise sample randomly')
     parser.add_argument('--strains', help="a text file containing a list of strains (one per line) to prepare without filtering or subsampling")
     parser.add_argument('--titers', help="tab-delimited file of titer strains and values from fauna (e.g., h3n2_hi_titers.tsv)")
+    parser.add_argument('--verbose', action="store_true", help="turn on verbose reporting")
     return parser.parse_args()
 
 # for flu, config is a function so it is applicable for multiple lineages
@@ -82,6 +85,19 @@ def make_config(lineage, resolution, params):
 if __name__=="__main__":
     params = collect_args()
     # set_trace()
+    if params.verbose:
+        # Remove existing loggers.
+        for handler in logging.root.handlers:
+            logging.root.removeHandler(handler)
+
+        # Set the new default logging handler configuration.
+        logging.basicConfig(
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            level=logging.DEBUG,
+            stream=sys.stderr
+        )
+        logger = logging.getLogger(__name__)
+        logger.debug("Verbose reporting enabled")
 
     ## lots of loops to allow multiple downstream analysis
     for resolution in params.resolutions:
