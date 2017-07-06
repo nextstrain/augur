@@ -8,6 +8,7 @@ from __future__ import print_function
 import os, sys, re
 sys.path.append('..') # we assume (and assert) that this script is running from inside the flu folder
 from base.prepare import prepare
+from base.titer_model import titers
 from datetime import datetime, timedelta, date
 from base.utils import fix_names
 import argparse
@@ -25,6 +26,7 @@ def collect_args():
     parser.add_argument('--sampling', default = 'even', type=str,
                         help='sample evenly over regions (even) (default), or prioritize one region (region name), otherwise sample randomly')
     parser.add_argument('--strains', help="a text file containing a list of strains (one per line) to prepare without filtering or subsampling")
+    parser.add_argument('--titers', help="tab-delimited file of titer strains and values from fauna (e.g., h3n2_hi_titers.tsv)")
     return parser.parse_args()
 
 # for flu, config is a function so it is applicable for multiple lineages
@@ -34,6 +36,11 @@ def make_config(lineage, resolution, params):
     reference_cutoff = date(year = time_interval[1].year - 3, month=1, day=1)
     fixed_outliers = [fix_names(x) for x in outliers[lineage]]
     fixed_references = [fix_names(x) for x in reference_viruses[lineage]]
+
+    if params.titers is not None:
+        titer_values, strains, sources = titers.load_from_file(params.titers)
+    else:
+        titer_values = None
 
     return {
         "dir": "flu",
@@ -60,7 +67,7 @@ def make_config(lineage, resolution, params):
             ("Dropped Strains", lambda s: s.id not in fixed_outliers),
             ("Bad geo info", lambda s: s.attributes["country"]!= "?" and s.attributes["region"]!= "?" ),
         ),
-        "subsample": flu_subsampling(params, years_back, "../../fauna/data/{}_crick_hi_cell".format(lineage)),
+        "subsample": flu_subsampling(params, years_back, titer_values),
         "colors": ["region"],
         "color_defs": ["colors.flu.tsv"],
         "lat_longs": ["country", "region"],
@@ -68,7 +75,8 @@ def make_config(lineage, resolution, params):
         "references": {seg:reference_maps[lineage][seg] for seg in params.segments},
         "regions": regions,
         "time_interval": time_interval,
-        "strains": params.strains
+        "strains": params.strains,
+        "titers": titer_values
     }
 
 if __name__=="__main__":
