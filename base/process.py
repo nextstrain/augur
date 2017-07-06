@@ -149,7 +149,7 @@ class process(object):
         if self.try_to_restore:
             self.seqs.try_restore_align_from_disk(fname)
         if not hasattr(self.seqs, "aln"):
-            self.seqs.align(fname, debug=debug)
+            self.seqs.align(fname, self.config["subprocess_verbosity_level"], debug=debug)
             # need to redo everything
             self.try_to_restore = False
 
@@ -369,7 +369,7 @@ class process(object):
         (2) If newick file doesn't exist or isn't valid: build a newick tree (normally RAxML)
         (3) Make a TimeTree
         '''
-        self.tree = tree(aln=self.seqs.aln, proteins=self.proteins, verbose=self.config["tree_verbosity_level"])
+        self.tree = tree(aln=self.seqs.aln, proteins=self.proteins, verbose=self.config["subprocess_verbosity_level"])
         newick_file = self.output_path + ".newick"
         try:
             assert(self.try_to_restore == True)

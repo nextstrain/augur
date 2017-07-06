@@ -28,6 +28,8 @@ While _process_ can be computationally expensive, as long as the underlying _pre
   * `auspice`: the finished JSONs for display in auspice
 * `in` {string}: The prepared JSON file. Sometimes defined by command line arguments
 * `clean` {bool} (default `False`) Run a clean build by removing any (previously created) files
+* `subprocess_verbosity_level` {int} (default `0`). Control the amount of information displayed during alignment and tree building. Higher numbers -> more output.
+
 
 ##### Analysis settings
 * `geo_inference` {`False` || array of strings} (Default: `False`) what traits to perform geographic inference (mugration model) upon
