@@ -4,6 +4,7 @@ import numpy as np
 from collections import defaultdict
 from pprint import pprint
 from base.io_util import myopen
+from base.titer_model import titers
 
 vpm_dict = {
     2: 68,
@@ -24,15 +25,7 @@ def populate_counts(obj):
                               seq.attributes['date'].month)]+=1
     return (sequence_count_total, sequence_count_region)
 
-def load_titers(titer_prefix):
-    HI_titer_count = {}
-    with myopen(titer_prefix + "_strains.tsv", 'r') as ifile:
-        for line in ifile:
-            strain, count = line.strip().split()
-            HI_titer_count[strain]=int(count)
-    return HI_titer_count
-
-def flu_subsampling(params, years_back, titer_prefix):
+def flu_subsampling(params, years_back, titer_values):
     if params.sampling == "even":
         type_of_subsampling = "even"
     elif params.sampling in [x[0] for x in regions]:
@@ -50,9 +43,9 @@ def flu_subsampling(params, years_back, titer_prefix):
                               x.attributes['date'].month)
 
     #### DEFINE THE PRIORITY
-    try:
-        HI_titer_count = load_titers(titer_prefix)
-    except IOError:
+    if titer_values is not None:
+        HI_titer_count = titers.count_strains(titer_values)
+    else:
         print("Couldn't load titer information - using random priorities")
         HI_titer_count = False
         def priority(seq):
