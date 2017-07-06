@@ -56,7 +56,7 @@ class tree(object):
             self.run_dir = kwarks['run_dir']
         if logger is None:
             def f(x,y):
-                if y>self.verbose: print(x)
+                if y<self.verbose: print(x)
             self.logger = f
         else:
             self.logger=logger
