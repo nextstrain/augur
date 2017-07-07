@@ -142,17 +142,18 @@ class titers(object):
                 if key[0] in strains or key[1][0] in strains}
 
 
-    def __init__(self, tree, titer_fname = 'data/HI_titers.txt', serum_Kc=0, **kwargs):
+    def __init__(self, tree, titers, serum_Kc=0, **kwargs):
         self.kwargs = kwargs
         # set self.tree and dress tree with a number of extra attributes
         self.prepare_tree(tree)
 
-        # read the titers and assign to self.titers, in addition
-        # self.strains and self.sources are assigned
-        self.read_titers(titer_fname)
-        self.normalize_titers()
-        self.serum_Kc=serum_Kc
+        # Assign titers and prepare list of strains.
+        self.titers = titers
+        strain_counts = type(self).count_strains(titers)
+        self.strains = strain_counts.keys()
+        self.serum_Kc = serum_Kc
 
+        self.normalize_titers()
 
     def prepare_tree(self, tree):
         self.tree = tree # not copied, just linked

@@ -16,7 +16,7 @@ def HI_model(process):
     #     kwargs["criterium"] = process.config["titers"]["criterium"]
 
     ## TREE MODEL
-    process.HI_tree = tree_model(process.tree.tree, titer_fname = fname, **kwargs)
+    process.HI_tree = tree_model(process.tree.tree, process.titers, **kwargs)
     process.HI_tree.prepare(**kwargs)
     process.HI_tree.train(**kwargs)
     # add tree attributes to the list of attributes that are saved in intermediate files
@@ -29,7 +29,7 @@ def HI_model(process):
     }
 
     # SUBSTITUTION MODEL
-    process.HI_subs = substitution_model(process.tree.tree, titer_fname = fname,**kwargs)
+    process.HI_subs = substitution_model(process.tree.tree, process.titers, **kwargs)
     process.HI_subs.prepare(**kwargs)
     process.HI_subs.train(**kwargs)
 
