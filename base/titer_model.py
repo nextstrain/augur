@@ -113,6 +113,35 @@ class titers(object):
         return counts
 
 
+    @staticmethod
+    def filter_strains(titers, strains):
+        """Filter the given titers to only include values from the given strains
+        (test or reference).
+
+        Args:
+            titers (dict): titer values indexed by test and reference strain and
+                           serum
+            strains (list): names of strains to keep titers for
+
+        Returns:
+            dict: titer values filtered to include only given strains
+
+        >>> measurements, strains, sources = titers.load_from_file("tests/data/h3n2_titers_subset.tsv")
+        >>> len(measurements)
+        10
+        >>> len(titers.filter_strains(measurements, ["A/Acores/11/2013"]))
+        6
+        >>> len(titers.filter_strains(measurements, ["A/Acores/11/2013", "A/Acores/SU43/2012"]))
+        9
+        >>> len(titers.filter_strains(measurements, ["A/Alabama/5/2010"]))
+        2
+        >>> len(titers.filter_strains(measurements, []))
+        0
+        """
+        return {key: value for key, value in titers.iteritems()
+                if key[0] in strains or key[1][0] in strains}
+
+
     def __init__(self, tree, titer_fname = 'data/HI_titers.txt', serum_Kc=0, **kwargs):
         self.kwargs = kwargs
         # set self.tree and dress tree with a number of extra attributes
