@@ -90,6 +90,14 @@ class process(object):
         for trait in self.info["traits_are_dates"]:
             self.seqs.convert_trait_to_numerical_date(trait, self.info["date_format"])
 
+        # Prepare titers if they are available.
+        if "titers" in data:
+            self.log.debug("Loaded %i titer measurements" % len(data["titers"]))
+            # Convert titer dictionary indices from JSON-compatible strings back
+            # to tuples.
+            self.titers = {eval(key): value
+                           for key, value in data["titers"].iteritems()}
+
         ## usefull flag to set (from pathogen run file) to disable restoring
         self.try_to_restore = True
 
