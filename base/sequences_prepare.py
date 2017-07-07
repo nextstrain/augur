@@ -3,6 +3,7 @@ parse, filter, subsample and save as JSON
 '''
 from __future__ import division, print_function
 import os, re, time, csv, sys
+from base.titer_model import titers
 from io_util import myopen
 from collections import defaultdict
 from Bio import SeqIO
@@ -14,7 +15,9 @@ from pdb import set_trace
 import git
 from utils import fix_names, num_date, ambiguous_date_to_date_range, potentially_combine
 from pprint import pprint
+import logging
 
+logger = logging.getLogger(__name__)
 TINY = 1e-10
 
 class sequence_set(object):
@@ -281,6 +284,14 @@ class sequence_set(object):
                 "genes": self.reference.genes,
                 "included": self.reference.name in self.seqs
             }
+
+        # Subset titer data to match the strains selected for export.
+        filtered_titers = titers.filter_strains(config["titers"], self.seqs.keys())
+
+        # Convert tuple dictionary keys to strings for JSON compatability.
+        data["titers"] = {str(key): value
+                          for key, value in filtered_titers.iteritems()}
+        logger.debug("Filtered titers from %i to %i measures" % (len(config["titers"]), len(data["titers"])))
 
         json.dump(data, fh, indent=2)
 
