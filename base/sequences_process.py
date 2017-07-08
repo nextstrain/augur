@@ -46,6 +46,11 @@ class sequence_set(object):
             self.seqs[name].attributes["num_date"] = date_struc[1]
             self.seqs[name].attributes["date"] = date_struc[2]
 
+        # remove "N" and "-" characters
+        for name, data in self.seqs.iteritems():
+            data.seq = data.seq.ungap("-")
+            data.seq = data.seq.ungap("N")
+
         # if the reference is to be analysed it'll already be in the (filtered & subsampled)
         # sequences, so no need to add it here, and no need to care about attributes etc
         # we do, however, need it for alignment
@@ -186,21 +191,21 @@ class sequence_set(object):
             self.proteins.update({'cds':FeatureLocation(start=0,
                 end=self.aln.get_alignment_length(), strand=1)})
 
+        # need to account for BioPython's finicky behavior with codons like AA- or T-G
         for prot in self.proteins:
             aa_seqs = []
             for seq in self.aln:
-                try:
-                    # soon not needed as future biopython version will translate --- into -
-                    tmpseq = self.proteins[prot].extract(seq)
-                    tmpseq.attributes = seq.attributes
-                    internal_gap = np.unique(np.where(np.array(tmpseq)=='-')[0]//3)
-                    aa_seq = np.array(Seq(str(tmpseq.seq).replace('---', 'NNN')).translate())
-                    aa_seq[internal_gap]='-'
-                    tmpseq.seq = Seq("".join(aa_seq))
-                except:
-                    tmpseq.seq = Seq("".join([x if x in 'ACGT' else 'N'
-                        for x in str(tmpseq.seq)])).translate()
-                    print("Trouble translating",seq.id)
+                tmpseq = self.proteins[prot].extract(seq)
+                tmpseq.attributes = seq.attributes
+                origString = str(tmpseq.seq)
+                gappedString = ""
+                for i in range(int(len(origString)/3)):
+                    codon = origString[i*3 : (i*3)+3]
+                    if "-" in codon:
+                        codon = "---"
+                    gappedString += codon
+                aa_seq = Seq(gappedString).translate(gap="-")
+                tmpseq.seq = Seq("".join(aa_seq))
                 aa_seqs.append(tmpseq)
             self.translations[prot] = MultipleSeqAlignment(aa_seqs)
 
