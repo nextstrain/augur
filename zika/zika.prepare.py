@@ -12,6 +12,7 @@ def collect_args():
     return parser.parse_args()
 
 dropped_strains = [
+    "CX17", # large indels in alignment
     "ZF36_36S", # possible contamination
     "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", # true strains, but duplicates of other strains in dataset
     "Bahia04", "JAM/2016/WI_JM6", "Bahia11", "Bahia12", "DOM/2016/MA_WGS16_009", "VE_Ganxian", "BRA/2016/FC_DQ60D1", # excessive terminal branch length
