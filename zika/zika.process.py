@@ -30,11 +30,11 @@ config = {
         "defaults": {'mapTriplicate': True},
     },
     "timetree_options": {
-        "Tc": 0.003,
+        "Tc": 'opt',
         "confidence":True,
     },
     "newick_tree_options":{
-        "raxml": False
+        "raxml": True
     }
 }
 
