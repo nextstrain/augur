@@ -28,6 +28,13 @@ config = {
         },
         "controls": {'authors':['authors']},
         "defaults": {'mapTriplicate': True},
+    },
+    "timetree_options": {
+        "Tc": 0.003,
+        "confidence":True,
+    },
+    "newick_tree_options":{
+        "raxml": False
     }
 }
 
@@ -35,7 +42,7 @@ if __name__=="__main__":
     params = parser.parse_args()
     if params.clean: config["clean"] = True
     runner = process(config)
-    runner.align()
+    runner.align(fill_gaps=True)
     runner.build_tree()
     runner.timetree_setup_filter_run()
     runner.run_geo_inference()

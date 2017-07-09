@@ -173,7 +173,7 @@ class tree(object):
             marginal = 'assign'
         else:
             marginal = confidence
-        self.tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, do_marginal=marginal,
+        self.tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
                     resolve_polytomies=resolve_polytomies, max_iter=max_iter, **kwarks)
         self.logger('estimating time tree...done',3)
         self.dump_attr.extend(['numdate','date','sequence'])
@@ -408,7 +408,29 @@ class tree(object):
         self.tree.ladderize()
         for node in self.tree.find_clades():
             if node.up is not None:
-                node.muts = ["".join(map(str, [a, pos+1, d])) for a,pos,d in node.mutations]
+                node.muts = ["".join(map(str, [a, pos+1, d])) for a,pos,d in node.mutations if '-' not in [a,d]]
+                deletions = sorted([(a,pos,d) for a,pos, d in node.mutations if '-' in [a,d]])
+                if len(deletions):
+                    length = 0
+                    for pi, (a,pos,d) in enumerate(deletions[:-1]):
+                        if pos!=deletions[pi+1]:
+                            if length==1:
+                                node.muts.append(a+str(pos+1)+d)
+                            elif d=='-':
+                                node.muts.append("deletion %d-%d"%(pos-length, pos+1))
+                            else:
+                                node.muts.append("insertion %d-%d"%(pos-length, pos+1))
+                        else:
+                            length+=1
+                    (a,pos,d) = deletions[-1]
+                    if length==1:
+                        node.muts.append(a+str(pos+1)+d)
+                    elif d=='-':
+                        node.muts.append("deletion %d-%d"%(pos-length, pos+1))
+                    else:
+                        node.muts.append("insertion %d-%d"%(pos-length, pos+1))
+
+
                 node.aa_muts = {}
                 if hasattr(node, 'translations'):
                     for prot in node.translations:
