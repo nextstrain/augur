@@ -39,16 +39,16 @@ class titers(object):
         >>> type(measurements)
         <type 'dict'>
         >>> len(measurements)
-        10
+        11
         >>> measurements[("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10"))]
         [80.0]
         >>> len(strains)
-        12
+        13
         >>> len(sources)
-        3
-        >>> measurements, strains, sources = titers.load_from_file("tests/data/h3n2_titers_subset.tsv", ["NIMR_Sep2013_7-11.csv"])
+        5
+        >>> measurements, strains, sources = titers.load_from_file("tests/data/h3n2_titers_subset.tsv", excluded_sources=["NIMR_Sep2013_7-11.csv"])
         >>> len(measurements)
-        4
+        5
         >>> measurements.get(("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10")))
         >>>
         """
@@ -128,7 +128,7 @@ class titers(object):
 
         >>> measurements, strains, sources = titers.load_from_file("tests/data/h3n2_titers_subset.tsv")
         >>> len(measurements)
-        10
+        11
         >>> len(titers.filter_strains(measurements, ["A/Acores/11/2013"]))
         6
         >>> len(titers.filter_strains(measurements, ["A/Acores/11/2013", "A/Acores/SU43/2012"]))
