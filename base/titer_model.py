@@ -104,11 +104,14 @@ class titers(object):
         6
         >>> titer_counts["A/Acores/SU43/2012"]
         3
+        >>> titer_counts["A/Cairo/63/2012"]
+        2
         """
         counts = defaultdict(int)
         for key in titers.iterkeys():
-            counts[key[0]] += 1
-            counts[key[1][0]] += 1
+            measurements = len(titers[key])
+            counts[key[0]] += measurements
+            counts[key[1][0]] += measurements
 
         return counts
 
