@@ -900,12 +900,12 @@ class substitution_model(titers):
 
 if __name__=="__main__":
     # test tree model (assumes there is a tree called flu in memory...)
-    ttm = tree_model(flu.tree.tree, titer_fname = '../../nextflu2/data/H3N2_HI_titers.txt')
+    ttm = tree_model(flu.tree.tree, flu.titers)
     ttm.prepare(training_fraction=0.8)
     ttm.train(method='nnl1reg')
     ttm.validate(plot=True)
 
-    tsm = substitution_model(flu.tree.tree, titer_fname = '../../nextflu2/data/H3N2_HI_titers.txt')
+    tsm = substitution_model(flu.tree.tree, flu.titers)
     tsm.prepare(training_fraction=0.8)
     tsm.train(method='nnl1reg')
     tsm.validate(plot=True)

@@ -4,11 +4,9 @@ import os
 
 def HI_model(process):
     '''
-    estimate a tree and substitution model using titers titer_fname.
+    estimate a tree and substitution model using titers.
     '''
     from base.titer_model import tree_model, substitution_model
-    ## define the filenames here
-    fname = str(process.config["titers"]["fname"].replace("<LINEAGE>", process.info["lineage"]))
 
     ## define the kwargs explicitly
     kwargs = process.config["titers"]

@@ -32,7 +32,6 @@ def make_config (prepared_json, args):
             "defaults": {'geoResolution': ['region'], 'mapTriplicate': True}
         },
         "titers": {
-            "fname": "../../fauna/data/<LINEAGE>_crick_hi_cell_titers.tsv",
             "criterium": lambda x: len(x.aa_mutations['HA1']+x.aa_mutations['HA2'])>0,
             "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
             "lam_avi":2.0,
