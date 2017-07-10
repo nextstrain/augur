@@ -28,6 +28,7 @@ def collect_args():
     parser.add_argument('--sampling', default = 'even', type=str,
                         help='sample evenly over regions (even) (default), or prioritize one region (region name), otherwise sample randomly')
     parser.add_argument('--strains', help="a text file containing a list of strains (one per line) to prepare without filtering or subsampling")
+    parser.add_argument('--sequences', nargs='+', help="FASTA file of virus sequences from fauna (e.g., flu_h3n2_ha.fasta)")
     parser.add_argument('--titers', help="tab-delimited file of titer strains and values from fauna (e.g., h3n2_hi_titers.tsv)")
     parser.add_argument('--verbose', action="store_true", help="turn on verbose reporting")
     return parser.parse_args()
@@ -45,13 +46,18 @@ def make_config(lineage, resolution, params):
     else:
         titer_values = None
 
+    if params.sequences is not None:
+        input_paths = params.sequences
+    else:
+        input_paths = ["../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segments]
+
     return {
         "dir": "flu",
         "file_prefix": "flu_{}".format(lineage),
         "segments": params.segments,
         "resolution": resolution,
         "lineage": lineage,
-        "input_paths": ["../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segments],
+        "input_paths": input_paths,
         #  0                     1   2         3          4      5     6       7       8          9                             10  11
         # >A/Galicia/RR9542/2012|flu|EPI376225|2012-02-23|europe|spain|galicia|galicia|unpassaged|instituto_de_salud_carlos_iii|47y|female
         "header_fields": {
