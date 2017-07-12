@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+import os
 import logging
 import numpy as np
 import time
@@ -150,21 +151,27 @@ class TiterModel(object):
         titer measurements as second positional argument. This dictionary has composite keys consisting
         of the (test_virus_strain_name, (reference_virus_strain_name, serum_id))
         Arguments:
-            - tree -- Bio,Phylo tree
-            - titers -- dictionary with titer measurements.
-
+            - tree      -- Bio,Phylo tree
+            - titers    -- dictionary with titer measurements or name of titer file.
+            - serum_Kc  -- optional argument that can be used to even out contribution of sera.
+                           should be roughly the inverse of the number of measurements beyond which
+                           the contribution of a serum should saturate
         '''
         self.kwargs = kwargs
         # set self.tree and dress tree with a number of extra attributes
         self.prepare_tree(tree)
 
         # Assign titers and prepare list of strains.
-        self.titers = titers
-        strain_counts = type(self).count_strains(titers)
-        self.strains = strain_counts.keys()
-        self.serum_Kc = serum_Kc
+        if isinstance(titers, str) and os.path.isfile(titers):
+            self.read_titers(titers)
+        else:
+            self.titers = titers
+            strain_counts = type(self).count_strains(titers)
+            self.strains = strain_counts.keys()
 
+        self.serum_Kc = serum_Kc
         self.normalize_titers()
+
 
     def prepare_tree(self, tree):
         self.tree = tree # not copied, just linked
