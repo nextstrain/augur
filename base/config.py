@@ -51,7 +51,7 @@ process = {
     },
     "clock_filter": {
         "n_iqd": 3,
-        "plot": True,
+        "plot": False,
         "remove_deep_splits": False,
     },
     "estimate_mutation_frequencies": False,
