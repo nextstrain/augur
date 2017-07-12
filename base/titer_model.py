@@ -174,6 +174,7 @@ class TiterModel(object):
         self.node_lookup.update({n.name.lower():n for n in tree.get_terminals()})
 
         # have each node link to its parent. this will be needed for walking up and down the tree
+        # but should be already in place if treetime is used.
         self.tree.root.up=None
         for node in self.tree.get_nonterminals():
             for c in node.clades:
@@ -188,18 +189,28 @@ class TiterModel(object):
             self.excluded_tables = []
 
         self.titers, self.strains, self.sources = TiterModel.load_from_file(
-            fname,
-            self.excluded_tables
-        )
+                                                            fname,
+                                                            self.excluded_tables
+                                                        )
 
 
     def normalize(self, ref, val):
+        '''
+        take the log2 difference of test titers and autologous titers
+        '''
         consensus_func = np.mean
         return consensus_func(np.log2(self.autologous_titers[ref]['val'])) \
                 - consensus_func(np.log2(val))
 
 
     def determine_autologous_titers(self):
+        '''
+        scan the titer measurements for autologous (self) titers and make a dictionary
+        stored in self to look them up later. If no autologous titer is found, use the
+        maximum titer. This follows the rationale that test titers are generally lower
+        than autologous titers and the highest test titer is often a reasonably
+        approximation of the autologous titer.
+        '''
         autologous = defaultdict(list)
         all_titers_per_serum = defaultdict(list)
         for (test, ref), val in self.titers.iteritems():
@@ -214,6 +225,7 @@ class TiterModel(object):
                 self.autologous_titers[serum] = {'val':autologous[serum], 'autologous':True}
                 #print("autologous titer found for",serum)
             else:
+                # use max tier if there are at least 10 measurements, don't bother otherwuise
                 if len(all_titers_per_serum[serum])>10:
                     self.autologous_titers[serum] = {'val':np.max(all_titers_per_serum[serum]),
                                                      'autologous':False}
@@ -254,7 +266,8 @@ class TiterModel(object):
 
     def strain_census(self):
         '''
-        make lists of reference viruses, test viruses and
+        make lists of reference viruses, test viruses and sera
+        (there are often multiple sera oer reference virus)
         '''
         sera = set()
         ref_strains = set()
