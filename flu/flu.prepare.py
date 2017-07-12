@@ -8,7 +8,7 @@ from __future__ import print_function
 import os, sys, re
 sys.path.append('..') # we assume (and assert) that this script is running from inside the flu folder
 from base.prepare import prepare
-from base.titer_model import titers
+from base.titer_model import TiterModel
 from datetime import datetime, timedelta, date
 from base.utils import fix_names
 import argparse
@@ -42,7 +42,7 @@ def make_config(lineage, resolution, params):
     fixed_references = [fix_names(x) for x in reference_viruses[lineage]]
 
     if params.titers is not None:
-        titer_values, strains, sources = titers.load_from_file(params.titers)
+        titer_values, strains, sources = TiterModel.load_from_file(params.titers)
     else:
         titer_values = None
 
