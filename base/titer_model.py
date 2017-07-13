@@ -36,7 +36,7 @@ class TiterModel(object):
                          strain, and serum with a list of raw floating point
                          values per index
 
-        >>> measurements, strains, sources = titers.load_from_file("tests/data/h3n2_titers_subset.tsv")
+        >>> measurements, strains, sources = TiterModel.load_from_file("tests/data/h3n2_titers_subset.tsv")
         >>> type(measurements)
         <type 'dict'>
         >>> len(measurements)
@@ -47,7 +47,7 @@ class TiterModel(object):
         13
         >>> len(sources)
         5
-        >>> measurements, strains, sources = titers.load_from_file("tests/data/h3n2_titers_subset.tsv", excluded_sources=["NIMR_Sep2013_7-11.csv"])
+        >>> measurements, strains, sources = TiterModel.load_from_file("tests/data/h3n2_titers_subset.tsv", excluded_sources=["NIMR_Sep2013_7-11.csv"])
         >>> len(measurements)
         5
         >>> measurements.get(("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10")))
@@ -129,17 +129,25 @@ class TiterModel(object):
         Returns:
             dict: titer values filtered to include only given strains
 
-        >>> measurements, strains, sources = titers.load_from_file("tests/data/h3n2_titers_subset.tsv")
+        >>> measurements, strains, sources = TiterModel.load_from_file("tests/data/h3n2_titers_subset.tsv")
         >>> len(measurements)
         11
-        >>> len(titers.filter_strains(measurements, ["A/Acores/11/2013"]))
-        6
-        >>> len(titers.filter_strains(measurements, ["A/Acores/11/2013", "A/Acores/SU43/2012"]))
-        9
-        >>> len(titers.filter_strains(measurements, ["A/Alabama/5/2010"]))
-        2
-        >>> len(titers.filter_strains(measurements, []))
+
+        Test the case when a test strain exists in the subset but the none of
+        its corresponding reference strains do.
+
+        >>> len(TiterModel.filter_strains(measurements, ["A/Acores/11/2013"]))
         0
+
+        Test when both the test and reference strains exist in the subset.
+
+        >>> len(TiterModel.filter_strains(measurements, ["A/Acores/11/2013", "A/Alabama/5/2010", "A/Athens/112/2012"]))
+        2
+        >>> len(TiterModel.filter_strains(measurements, ["A/Acores/11/2013", "A/Acores/SU43/2012", "A/Alabama/5/2010", "A/Athens/112/2012"]))
+        3
+        >>> len(TiterModel.filter_strains(measurements, []))
+        0
+
         """
         return {key: value for key, value in titers.iteritems()
                 if key[0] in strains and key[1][0] in strains}
