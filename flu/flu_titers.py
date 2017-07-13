@@ -6,7 +6,7 @@ def HI_model(process):
     '''
     estimate a tree and substitution model using titers.
     '''
-    from base.titer_model import tree_model, substitution_model
+    from base.titer_model import TreeModel, SubstitutionModel
 
     ## define the kwargs explicitly
     kwargs = process.config["titers"]
@@ -14,7 +14,7 @@ def HI_model(process):
     #     kwargs["criterium"] = process.config["titers"]["criterium"]
 
     ## TREE MODEL
-    process.HI_tree = tree_model(process.tree.tree, process.titers, **kwargs)
+    process.HI_tree = TreeModel(process.tree.tree, process.titers, **kwargs)
     process.HI_tree.prepare(**kwargs)
     process.HI_tree.train(**kwargs)
     # add tree attributes to the list of attributes that are saved in intermediate files
@@ -27,7 +27,7 @@ def HI_model(process):
     }
 
     # SUBSTITUTION MODEL
-    process.HI_subs = substitution_model(process.tree.tree, process.titers, **kwargs)
+    process.HI_subs = SubstitutionModel(process.tree.tree, process.titers, **kwargs)
     process.HI_subs.prepare(**kwargs)
     process.HI_subs.train(**kwargs)
 

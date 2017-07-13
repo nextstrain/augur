@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+import os
 import logging
 import numpy as np
 import time
@@ -11,7 +12,7 @@ TITER_ROUND=4
 logger = logging.getLogger(__name__)
 
 
-class titers(object):
+class TiterModel(object):
     '''
     this class decorates as phylogenetic tree with titer measurements and infers
     different models that describe titer differences in a parsimonious way.
@@ -98,8 +99,8 @@ class titers(object):
             dict: counts of virus strains that appear as either tests or
                   references in the given titers
 
-        >>> measurements, strains, sources = titers.load_from_file("tests/data/h3n2_titers_subset.tsv")
-        >>> titer_counts = titers.count_strains(measurements)
+        >>> measurements, strains, sources = TiterModel.load_from_file("tests/data/h3n2_titers_subset.tsv")
+        >>> titer_counts = TiterModel.count_strains(measurements)
         >>> titer_counts["A/Acores/11/2013"]
         6
         >>> titer_counts["A/Acores/SU43/2012"]
@@ -111,7 +112,6 @@ class titers(object):
         for key in titers.iterkeys():
             measurements = len(titers[key])
             counts[key[0]] += measurements
-            counts[key[1][0]] += measurements
 
         return counts
 
@@ -142,21 +142,36 @@ class titers(object):
         0
         """
         return {key: value for key, value in titers.iteritems()
-                if key[0] in strains or key[1][0] in strains}
+                if key[0] in strains and key[1][0] in strains}
 
 
     def __init__(self, tree, titers, serum_Kc=0, **kwargs):
+        '''
+        default constructor assumes a Bio.Phylo tree as first positional argument and a dictionay of
+        titer measurements as second positional argument. This dictionary has composite keys consisting
+        of the (test_virus_strain_name, (reference_virus_strain_name, serum_id))
+        Arguments:
+            - tree      -- Bio,Phylo tree
+            - titers    -- dictionary with titer measurements or name of titer file.
+            - serum_Kc  -- optional argument that can be used to even out contribution of sera.
+                           should be roughly the inverse of the number of measurements beyond which
+                           the contribution of a serum should saturate
+        '''
         self.kwargs = kwargs
         # set self.tree and dress tree with a number of extra attributes
         self.prepare_tree(tree)
 
         # Assign titers and prepare list of strains.
-        self.titers = titers
-        strain_counts = type(self).count_strains(titers)
-        self.strains = strain_counts.keys()
-        self.serum_Kc = serum_Kc
+        if isinstance(titers, str) and os.path.isfile(titers):
+            self.read_titers(titers)
+        else:
+            self.titers = titers
+            strain_counts = type(self).count_strains(titers)
+            self.strains = strain_counts.keys()
 
+        self.serum_Kc = serum_Kc
         self.normalize_titers()
+
 
     def prepare_tree(self, tree):
         self.tree = tree # not copied, just linked
@@ -166,6 +181,7 @@ class titers(object):
         self.node_lookup.update({n.name.lower():n for n in tree.get_terminals()})
 
         # have each node link to its parent. this will be needed for walking up and down the tree
+        # but should be already in place if treetime is used.
         self.tree.root.up=None
         for node in self.tree.get_nonterminals():
             for c in node.clades:
@@ -179,22 +195,29 @@ class titers(object):
         else:
             self.excluded_tables = []
 
-        strains = set()
-        measurements = defaultdict(list)
-        sources = set()
-
-        self.titers, self.strains, self.sources = titers.load_from_file(
-            fname,
-            self.excluded_tables
-        )
+        self.titers, self.strains, self.sources = TiterModel.load_from_file(
+                                                            fname,
+                                                            self.excluded_tables
+                                                        )
 
 
     def normalize(self, ref, val):
+        '''
+        take the log2 difference of test titers and autologous titers
+        '''
         consensus_func = np.mean
         return consensus_func(np.log2(self.autologous_titers[ref]['val'])) \
                 - consensus_func(np.log2(val))
 
+
     def determine_autologous_titers(self):
+        '''
+        scan the titer measurements for autologous (self) titers and make a dictionary
+        stored in self to look them up later. If no autologous titer is found, use the
+        maximum titer. This follows the rationale that test titers are generally lower
+        than autologous titers and the highest test titer is often a reasonably
+        approximation of the autologous titer.
+        '''
         autologous = defaultdict(list)
         all_titers_per_serum = defaultdict(list)
         for (test, ref), val in self.titers.iteritems():
@@ -209,6 +232,7 @@ class titers(object):
                 self.autologous_titers[serum] = {'val':autologous[serum], 'autologous':True}
                 #print("autologous titer found for",serum)
             else:
+                # use max tier if there are at least 10 measurements, don't bother otherwuise
                 if len(all_titers_per_serum[serum])>10:
                     self.autologous_titers[serum] = {'val':np.max(all_titers_per_serum[serum]),
                                                      'autologous':False}
@@ -249,7 +273,8 @@ class titers(object):
 
     def strain_census(self):
         '''
-        make lists of reference viruses, test viruses and
+        make lists of reference viruses, test viruses and sera
+        (there are often multiple sera oer reference virus)
         '''
         sera = set()
         ref_strains = set()
@@ -565,7 +590,7 @@ class titers(object):
 ##########################################################################################
 # TREE MODEL
 ##########################################################################################
-class tree_model(titers):
+class TreeModel(TiterModel):
     """
     tree_model extends titers and fits the antigenic differences
     in terms of contributions on the branches of the phylogenetic tree.
@@ -573,7 +598,7 @@ class tree_model(titers):
     the estimated titer drops across the branch
     """
     def __init__(self,*args, **kwargs):
-        super(tree_model, self).__init__(*args, **kwargs)
+        super(TreeModel, self).__init__(*args, **kwargs)
 
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
@@ -724,7 +749,7 @@ class tree_model(titers):
 ##########################################################################################
 # SUBSTITUTION MODEL
 ##########################################################################################
-class substitution_model(titers):
+class SubstitutionModel(TiterModel):
     """
     substitution_model extends titers and implements a model that
     seeks to describe titer differences by sums of contributions of
@@ -732,8 +757,8 @@ class substitution_model(titers):
     are assumed to be attached to each terminal node in the tree as
     node.translations
     """
-    def __init__(self,*args, **kwargs):
-        super(substitution_model, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(SubstitutionModel, self).__init__(*args, **kwargs)
         self.proteins = self.tree.root.translations.keys()
 
     def prepare(self, **kwargs):
@@ -900,12 +925,12 @@ class substitution_model(titers):
 
 if __name__=="__main__":
     # test tree model (assumes there is a tree called flu in memory...)
-    ttm = tree_model(flu.tree.tree, flu.titers)
+    ttm = TreeModel(flu.tree.tree, flu.titers)
     ttm.prepare(training_fraction=0.8)
     ttm.train(method='nnl1reg')
     ttm.validate(plot=True)
 
-    tsm = substitution_model(flu.tree.tree, flu.titers)
+    tsm = TreeModel(flu.tree.tree, flu.titers)
     tsm.prepare(training_fraction=0.8)
     tsm.train(method='nnl1reg')
     tsm.validate(plot=True)
