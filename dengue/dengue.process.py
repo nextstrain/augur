@@ -37,6 +37,10 @@ for i in ['denv1', 'denv2', 'denv3', 'denv4']:
     for k,v in genotypes[i].iteritems():
         genotypes['all'][i.upper()+' '+k] = v
 
+regions = ['africa', 'europe', 'north_america', 'china', 'south_asia',
+            'japan_korea', 'south_pacific', 'oceania', 'south_america',
+            'southeast_asia', 'west_asia']
+
 def collect_args():
     parser = argparse.ArgumentParser(description = "Process (prepared) JSON(s)")
     parser.add_argument('-j', '--jsons', '--json', default=None, nargs='+', type=str, help="Accepts path to prepared JSON(s); overrides -s argument")
@@ -103,11 +107,13 @@ if __name__=="__main__":
         # estimate tree frequencies here.
         if runner.config["estimate_tree_frequencies"]:
             pivots = runner.get_pivots_via_spacing()
-            print('pivots', pivots)
             runner.estimate_tree_frequencies(pivots=pivots)
-            for regionTuple in runner.info["regions"]:
-                runner.estimate_tree_frequencies(region=str(regionTuple[0]))
 
+            for region in regions:
+                try:
+                    runner.estimate_tree_frequencies(region=region)
+                except:
+                    continue
         # # titers
         # if runner.config["titers"]:
         #     HI_model(runner, )
