@@ -1,7 +1,15 @@
 import subprocess
+import sys
+
+clean_build = 'clean' in sys.argv[1]
 
 serotypes = ['denv1', 'denv2', 'denv3', 'denv4', 'all']
-cmds = ["python ./dengue.process.py -s %s --clean"%s for s in serotypes]
+
+if clean_build:
+	cmds = ["python ./dengue.process.py -s %s --clean"%s for s in serotypes]
+else:
+	cmds = ["python ./dengue.process.py -s %s"%s for s in serotypes]
+
 running = []
 job_id = 0
 
