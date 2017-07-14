@@ -148,7 +148,6 @@ class TiterModel(object):
         3
         >>> len(TiterModel.filter_strains(measurements, []))
         0
-
         """
         return {key: value for key, value in titers.iteritems()
                 if key[0] in strains and key[1][0] in strains}
