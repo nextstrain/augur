@@ -32,9 +32,10 @@ class TiterModel(object):
             excluded_sources (list of str): sources in the titers file to exclude
 
         Returns:
-            defaultdict: titer measurements indexed by test strain, reference
-                         strain, and serum with a list of raw floating point
-                         values per index
+            dict: titer measurements indexed by test strain, reference strain,
+                  and serum with a list of raw floating point values per index
+            list: distinct strains present as either test or reference viruses
+            list: distinct sources of titers
 
         >>> measurements, strains, sources = TiterModel.load_from_file("tests/data/h3n2_titers_subset.tsv")
         >>> type(measurements)
