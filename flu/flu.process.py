@@ -77,18 +77,32 @@ if __name__=="__main__":
             region_groups = {str(x):[str(y[0]) for y in runner.info["regions"] if y[1] == x] for x in acronyms}
             pop_sizes = {str(x):np.sum([y[-1] for y in runner.info["regions"] if y[1] == x]) for x in acronyms}
             for region in region_groups.iteritems():
-                runner.estimate_mutation_frequencies(region=region, min_freq=0.02, include_set=include_set,
+                runner.estimate_mutation_frequencies(pivots=pivots, region=region, min_freq=0.02, include_set=include_set,
                                                      inertia=np.exp(-1.0/12), stiffness=0.8*12)
             total_popsize = np.sum(pop_sizes.values())
             for prot in ['nuc'] + runner.seqs.translations.keys():
-                gl_freqs = {}
+                weights = {region: np.array(runner.mutation_frequency_counts[region], dtype = float)
+                           for region in acronyms}
+                for region in weights:
+                    weights[region] = np.maximum(0.1, weights[region]/weights[region].max())
+                    weights[region]*=pop_sizes[region]
+
+                total_weight = np.sum([weights[region] for region in acronyms],axis=0)
+                gl_freqs, gl_counts, gl_confidence = {}, {}, {}
                 all_muts = set()
                 for region in acronyms:
                     all_muts.update(runner.mutation_frequencies[(region, prot)].keys())
                 for mut in all_muts:
-                    gl_freqs[mut] = np.sum([runner.mutation_frequencies[(region, prot)][mut]*pop_sizes[region] for region in acronyms
-                                            if mut in runner.mutation_frequencies[(region, prot)]], axis=0)/total_popsize
+                    gl_freqs[mut] = np.sum([runner.mutation_frequencies[(region, prot)][mut]*weights[region] for region in acronyms
+                                            if mut in runner.mutation_frequencies[(region, prot)]], axis=0)/total_weight
+                    gl_confidence[mut] = np.sqrt(np.sum([runner.mutation_frequency_confidence[(region, prot)][mut]**2*weights[region]
+                                                         for region in acronyms
+                                                if mut in runner.mutation_frequencies[(region, prot)]], axis=0)/total_weight)
+                gl_counts = np.sum([runner.mutation_frequency_counts[region] for region in acronyms
+                                            if mut in runner.mutation_frequencies[(region, prot)]], axis=0)
                 runner.mutation_frequencies[("global", prot)] = gl_freqs
+                runner.mutation_frequency_counts[("global", prot)] = gl_counts
+                runner.mutation_frequency_confidence[("global", prot)] = gl_confidence
 
         if runner.config["build_tree"]:
             runner.build_tree()

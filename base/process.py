@@ -574,7 +574,7 @@ class process(object):
 
         # count number of tip nodes
         if hasattr(self, 'tree') and self.tree is not None:
-            virus_count = self.tree.tree.count_terminals():
+            virus_count = self.tree.tree.count_terminals()
         else:
             virus_count = len(self.seqs.aln)
 
