@@ -259,31 +259,41 @@ class process(object):
         else:
             self.log.warn("region must be string or tuple")
             return
-        for prot, aln in [('nuc',self.seqs.aln)]+ self.seqs.translations.items():
+
+        # loop over different alignment types
+        for prot, aln in [('nuc',self.seqs.aln)] + self.seqs.translations.items():
             if (region_name,prot) in self.mutation_frequencies:
                 self.log.notify("Skipping Frequency Estimation for region \"{}\", protein \"{}\"".format(region_name, prot))
                 continue
             self.log.notify("Starting Frequency Estimation for region \"{}\", protein \"{}\"".format(region_name, prot))
 
+            # determine set of positions that have to have a frequency calculated
             if prot in include_set:
                 tmp_include_set = [x for x in include_set[prot]]
             else:
                 tmp_include_set = []
-            if region_match=="global":
-                tmp_aln = filter_alignment(aln, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
-            else:
-                tmp_aln = filter_alignment(aln, region=region_match, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
+
+            tmp_aln = filter_alignment(aln, region = None if region=='global' else region_match,
+                                      lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
+
+            if ('global', prot) in self.mutation_frequencies:
                 tmp_include_set += set([pos for (pos, mut) in self.mutation_frequencies[('global', prot)]])
+
             time_points = [np.mean(x.attributes['num_date']) for x in tmp_aln]
             if len(time_points)==0:
                 self.log.notify('no samples in region {} (protein: {})'.format(region_name, prot))
                 self.mutation_frequency_counts[region_name]=np.zeros_like(self.pivots)
                 continue
 
+            # instantiate alignment frequency
             aln_frequencies = alignment_frequencies(tmp_aln, time_points, self.pivots,
                                             ws=max(2,len(time_points)//10),
                                             inertia=inertia,
                                             stiffness=stiffness)
+            if prot=='nuc': # if this is a nucleotide alignment, set all non-canonical states to N
+                A = aln_frequencies.aln
+                A[~((A=='A')|(A=='C')|(A=='G')|(A=='T')|('A'=='-'))] = 'N'
+
             aln_frequencies.mutation_frequencies(min_freq=min_freq, include_set=tmp_include_set,
                                                  ignore_char='N' if prot=='nuc' else 'X')
             self.mutation_frequencies[(region_name,prot)] = aln_frequencies.frequencies
@@ -563,9 +573,10 @@ class process(object):
             write_json(freq_json, prefix+'_frequencies.json', indent=indent)
 
         # count number of tip nodes
-        virus_count = 0
-        for node in self.tree.tree.get_terminals():
-            virus_count += 1
+        if hasattr(self, 'tree') and self.tree is not None:
+            virus_count = self.tree.tree.count_terminals():
+        else:
+            virus_count = len(self.seqs.aln)
 
         # write out metadata json# Write out metadata
         print("Writing out metadata")

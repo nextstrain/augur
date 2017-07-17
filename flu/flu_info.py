@@ -5,20 +5,20 @@ It lives in a seperate file simply to make flu.prepare.py less cluttered
 
 segments = ["pb2", "pb1", "pa", "ha", "np", "na", "mp", "ns"]
 
-# regions is list of tuples (region, acronym)
+# regions is list of tuples (region, acronym, popsize)
 # acronym = "" means ignore for frequency calcs
 regions = [
-    ('africa',            ""),
-    ('europe',            "EU"),
-    ('north_america',     "NA"),
-    ('china',             "AS"),
-    ('south_asia',        "AS"),
-    ('japan_korea',       "AS"),
-    ('south_pacific',     "OC"),
-    ('oceania',           "OC"),
-    ('south_america',     ""),
-    ('southeast_asia',    "AS"),
-    ('west_asia',         "AS")
+    ('africa',            "", 1.216e9),
+    ('europe',            "EU", 0.739e9),
+    ('north_america',     "NA", 0.58e9),
+    ('china',             "AS", 1.4e9),
+    ('south_asia',        "AS", 1.75e9),
+    ('japan_korea',       "AS", 0.2e9),
+    ('south_pacific',     "OC", 0.002e9),
+    ('oceania',           "OC", 0.038e9),
+    ('south_america',     "", 0.422e9),
+    ('southeast_asia',    "AS", 0.618e9),
+    ('west_asia',         "AS", 0.245e9)
 ]
 
 outliers = {

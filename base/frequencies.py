@@ -406,7 +406,7 @@ class alignment_frequencies(object):
         if include_set is None:
             include_set=[]
         alphabet = np.unique(self.aln)
-        # af: rows correspoind to letters of the alphabet, columns positions in the alignemtn, values: frequencies
+        # af: rows correspond to letters of the alphabet, columns positions in the alignemtn, values: frequencies
         af = np.zeros((len(alphabet), self.aln.shape[1]))
         for ni, n in enumerate(alphabet):
             af[ni] = (self.aln==n).mean(axis=0)
