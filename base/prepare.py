@@ -11,6 +11,13 @@ from pdb import set_trace
 from pprint import pprint
 from collections import defaultdict
 
+import logging
+logging.basicConfig(
+    format='[%(levelname)s] %(asctime)s - %(name)s - %(message)s',
+    level=logging.INFO,
+    stream=sys.stderr
+)
+
 class prepare(object):
     def __init__(self, config):
         """ check config file, make necessary directories, set up logger """
@@ -61,6 +68,10 @@ class prepare(object):
             self.segments[segmentName] = segmentObj
 
     def applyFilters(self):
+        if self.config.get("strains") is not None:
+            self.log.notify("Specific strains requested, skipping filters")
+            return
+
         for (fName, fFunc) in self.config["filters"]:
             if callable(fFunc):
                 for seg, obj in self.segments.iteritems():
@@ -181,7 +192,6 @@ class prepare(object):
                     self.log.warn("Reference segment {} not found in segments".format(k))
                 else:
                     self.segments[k].load_reference(fmts=self.config["date_format"], **v)
-
 
     def write_to_json(self):
         for seg, obj in self.segments.iteritems():

@@ -3,6 +3,7 @@ parse, filter, subsample and save as JSON
 '''
 from __future__ import division, print_function
 import os, re, time, csv, sys
+from base.titer_model import TiterModel
 from io_util import myopen
 from collections import defaultdict
 from Bio import SeqIO
@@ -14,12 +15,44 @@ from pdb import set_trace
 import git
 from utils import fix_names, num_date, ambiguous_date_to_date_range, potentially_combine
 from pprint import pprint
+import logging
 
+logger = logging.getLogger(__name__)
 TINY = 1e-10
 
 class sequence_set(object):
     """ sequence set deals with loading sequences (stored in self.seqs)
     and various basic tasks including filtering, output etc """
+
+    @classmethod
+    def get_gene_name(cls, gene, genes):
+        """Return a gene name for the given gene identifier and gene config.
+
+        Args:
+            cls (Python class): class for this method
+            gene (str): gene identifier from a GenBank record
+            genes (list or dict): a list of GenBank gene identifiers or a
+                                  dictionary indexed by identified to a
+                                  preferred gene name
+
+        Returns:
+            str: a gene name for the given gene identifier
+
+        >>> genes = ["HA1", "HA2"]
+        >>> sequence_set.get_gene_name("HA1", genes)
+        'HA1'
+        >>> genes = {"HA1": "HA1", "HA": "SigPep"}
+        >>> sequence_set.get_gene_name("HA1", genes)
+        'HA1'
+        >>> sequence_set.get_gene_name("HA", genes)
+        'SigPep'
+        >>> sequence_set.get_gene_name("HA2", genes)
+        'HA2'
+        """
+        try:
+            return genes.get(gene, gene)
+        except AttributeError:
+            return gene
 
     def __init__(self, logger, segmentName):
         super(sequence_set, self).__init__()
@@ -165,26 +198,30 @@ class sequence_set(object):
         '''
         see docs/prepare.md for explination
         '''
-        category = self.getSubsamplingFunc(config, "category")
-        priority = self.getSubsamplingFunc(config, "priority")
-        threshold = self.getSubsamplingFunc(config, "threshold")
-
         self.sequence_categories = defaultdict(list)
         names_prior = set(self.seqs.keys())
         seqs_to_subsample = self.seqs.values()
 
-        # sort sequences into categories and assign priority score
-        for seq in seqs_to_subsample:
-            seq._priority = priority(seq)
-            self.sequence_categories[category(seq)].append(seq)
+        if config.get("strains") is not None:
+            with open(config["strains"], "r") as fh:
+                include = set([line.strip() for line in fh])
+        else:
+            category = self.getSubsamplingFunc(config, "category")
+            priority = self.getSubsamplingFunc(config, "priority")
+            threshold = self.getSubsamplingFunc(config, "threshold")
 
-        # collect taxa to include
-        include = set([])
-        for cat, seqs in self.sequence_categories.iteritems():
-            under_sampling = min(1.00, 1.0*len(seqs)/threshold(cat))
-            for s in seqs: s.under_sampling=under_sampling
-            seqs.sort(key=lambda x:x._priority, reverse=True)
-            include.update([seq.id for seq in seqs[:threshold(cat)]])
+            # sort sequences into categories and assign priority score
+            for seq in seqs_to_subsample:
+                seq._priority = priority(seq)
+                self.sequence_categories[category(seq)].append(seq)
+
+            # collect taxa to include
+            include = set([])
+            for cat, seqs in self.sequence_categories.iteritems():
+                under_sampling = min(1.00, 1.0*len(seqs)/threshold(cat))
+                for s in seqs: s.under_sampling=under_sampling
+                seqs.sort(key=lambda x:x._priority, reverse=True)
+                include.update([seq.id for seq in seqs[:threshold(cat)]])
 
         self.log.notify("Subsampling will take {}/{} strains".format(len(include), len(seqs_to_subsample)))
         return include
@@ -248,6 +285,15 @@ class sequence_set(object):
                 "included": self.reference.name in self.seqs
             }
 
+        if config["titers"] is not None:
+            # Subset titer data to match the strains selected for export.
+            filtered_titers = TiterModel.filter_strains(config["titers"], self.seqs.keys())
+
+            # Convert tuple dictionary keys to strings for JSON compatability.
+            data["titers"] = {str(key): value
+                              for key, value in filtered_titers.iteritems()}
+            logger.debug("Filtered titers from %i to %i measures" % (len(config["titers"]), len(data["titers"])))
+
         json.dump(data, fh, indent=2)
 
     def load_reference(self, path, fmts, metadata, include=2, genes=False):
@@ -269,7 +315,11 @@ class sequence_set(object):
             # we used to make these FeatureLocation objects here, but that won't go to JSON
             # so just do it in the Process part instead. For reference:
             # FeatureLocation(start=f.location.start, end=f.location.end, strand=1)
-            self.reference.genes = {f.qualifiers['gene'][0]:{"start": int(f.location.start), "end": int(f.location.end), "strand": 1} for f in self.reference.features if 'gene' in f.qualifiers and f.qualifiers['gene'][0] in genes}
+            self.reference.genes = {
+                sequence_set.get_gene_name(f.qualifiers['gene'][0], genes): {"start": int(f.location.start), "end": int(f.location.end), "strand": 1}
+                for f in self.reference.features
+                if 'gene' in f.qualifiers and f.qualifiers['gene'][0] in genes
+            }
         else:
             self.reference.genes = {}
 

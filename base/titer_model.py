@@ -1,4 +1,6 @@
 from __future__ import division, print_function
+import os
+import logging
 import numpy as np
 import time
 from collections import defaultdict
@@ -7,8 +9,10 @@ from itertools import izip
 import pandas as pd
 
 TITER_ROUND=4
+logger = logging.getLogger(__name__)
 
-class titers(object):
+
+class TiterModel(object):
     '''
     this class decorates as phylogenetic tree with titer measurements and infers
     different models that describe titer differences in a parsimonious way.
@@ -18,17 +22,163 @@ class titers(object):
     acid mutations. More details on the methods can be found in
     Neher et al, PNAS, 2016
     '''
+    @staticmethod
+    def load_from_file(filename, excluded_sources=None):
+        """Load titers from a tab-delimited file.
 
-    def __init__(self, tree, titer_fname = 'data/HI_titers.txt', serum_Kc=0, **kwargs):
+        Args:
+            filename (str): tab-delimited file containing titer strains, serum,
+                            and values
+            excluded_sources (list of str): sources in the titers file to exclude
+
+        Returns:
+            dict: titer measurements indexed by test strain, reference strain,
+                  and serum with a list of raw floating point values per index
+            list: distinct strains present as either test or reference viruses
+            list: distinct sources of titers
+
+        >>> measurements, strains, sources = TiterModel.load_from_file("tests/data/h3n2_titers_subset.tsv")
+        >>> type(measurements)
+        <type 'dict'>
+        >>> len(measurements)
+        11
+        >>> measurements[("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10"))]
+        [80.0]
+        >>> len(strains)
+        13
+        >>> len(sources)
+        5
+        >>> measurements, strains, sources = TiterModel.load_from_file("tests/data/h3n2_titers_subset.tsv", excluded_sources=["NIMR_Sep2013_7-11.csv"])
+        >>> len(measurements)
+        5
+        >>> measurements.get(("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10")))
+        >>>
+        """
+        if excluded_sources is None:
+            excluded_sources = []
+
+        measurements = defaultdict(list)
+        strains = set()
+        sources = set()
+
+        with myopen(filename, 'r') as infile:
+            for line in infile:
+                entries = line.strip().split()
+                try:
+                    val = float(entries[4])
+                except:
+                    continue
+                test, ref_virus, serum, src_id = (entries[0], entries[1],entries[2],
+                                                  entries[3])
+
+                ref = (ref_virus, serum)
+                if src_id not in excluded_sources:
+                    try:
+                        measurements[(test, (ref_virus, serum))].append(val)
+                        strains.update([test, ref_virus])
+                        sources.add(src_id)
+                    except:
+                        print(line.strip())
+
+        logger.info("Read titers from %s, found:" % filename)
+        logger.info(" --- %i strains" % len(strains))
+        logger.info(" --- %i data sources" % len(sources))
+        logger.info(" --- %i total measurements" % sum([len(x) for x in measurements.values()]))
+
+        return dict(measurements), list(strains), list(sources)
+
+
+    @staticmethod
+    def count_strains(titers):
+        """Count test and reference virus strains in the given titers.
+
+        Args:
+            titers (defaultdict): titer measurements indexed by test, reference,
+                                  and serum
+
+        Returns:
+            dict: counts of virus strains that appear as either tests or
+                  references in the given titers
+
+        >>> measurements, strains, sources = TiterModel.load_from_file("tests/data/h3n2_titers_subset.tsv")
+        >>> titer_counts = TiterModel.count_strains(measurements)
+        >>> titer_counts["A/Acores/11/2013"]
+        6
+        >>> titer_counts["A/Acores/SU43/2012"]
+        3
+        >>> titer_counts["A/Cairo/63/2012"]
+        2
+        """
+        counts = defaultdict(int)
+        for key in titers.iterkeys():
+            measurements = len(titers[key])
+            counts[key[0]] += measurements
+
+        return counts
+
+
+    @staticmethod
+    def filter_strains(titers, strains):
+        """Filter the given titers to only include values from the given strains
+        (test or reference).
+
+        Args:
+            titers (dict): titer values indexed by test and reference strain and
+                           serum
+            strains (list): names of strains to keep titers for
+
+        Returns:
+            dict: titer values filtered to include only given strains
+
+        >>> measurements, strains, sources = TiterModel.load_from_file("tests/data/h3n2_titers_subset.tsv")
+        >>> len(measurements)
+        11
+
+        Test the case when a test strain exists in the subset but the none of
+        its corresponding reference strains do.
+
+        >>> len(TiterModel.filter_strains(measurements, ["A/Acores/11/2013"]))
+        0
+
+        Test when both the test and reference strains exist in the subset.
+
+        >>> len(TiterModel.filter_strains(measurements, ["A/Acores/11/2013", "A/Alabama/5/2010", "A/Athens/112/2012"]))
+        2
+        >>> len(TiterModel.filter_strains(measurements, ["A/Acores/11/2013", "A/Acores/SU43/2012", "A/Alabama/5/2010", "A/Athens/112/2012"]))
+        3
+        >>> len(TiterModel.filter_strains(measurements, []))
+        0
+        """
+        return {key: value for key, value in titers.iteritems()
+                if key[0] in strains and key[1][0] in strains}
+
+
+    def __init__(self, tree, titers, serum_Kc=0, **kwargs):
+        '''
+        default constructor assumes a Bio.Phylo tree as first positional argument and a dictionay of
+        titer measurements as second positional argument. This dictionary has composite keys consisting
+        of the (test_virus_strain_name, (reference_virus_strain_name, serum_id))
+        Arguments:
+            - tree      -- Bio,Phylo tree
+            - titers    -- dictionary with titer measurements or name of titer file.
+            - serum_Kc  -- optional argument that can be used to even out contribution of sera.
+                           should be roughly the inverse of the number of measurements beyond which
+                           the contribution of a serum should saturate
+        '''
         self.kwargs = kwargs
         # set self.tree and dress tree with a number of extra attributes
         self.prepare_tree(tree)
 
-        # read the titers and assign to self.titers, in addition
-        # self.strains and self.sources are assigned
-        self.read_titers(titer_fname)
+        # Assign titers and prepare list of strains.
+        if isinstance(titers, str) and os.path.isfile(titers):
+            self.read_titers(titers)
+        else:
+            self.titers = titers
+            strain_counts = type(self).count_strains(titers)
+            self.strains = strain_counts.keys()
+
+        self.serum_Kc = serum_Kc
         self.normalize_titers()
-        self.serum_Kc=serum_Kc
 
 
     def prepare_tree(self, tree):
@@ -39,6 +189,7 @@ class titers(object):
         self.node_lookup.update({n.name.lower():n for n in tree.get_terminals()})
 
         # have each node link to its parent. this will be needed for walking up and down the tree
+        # but should be already in place if treetime is used.
         self.tree.root.up=None
         for node in self.tree.get_nonterminals():
             for c in node.clades:
@@ -52,42 +203,29 @@ class titers(object):
         else:
             self.excluded_tables = []
 
-        strains = set()
-        measurements = defaultdict(list)
-        sources = set()
-        with myopen(fname, 'r') as infile:
-            for line in infile:
-                entries = line.strip().split()
-                try:
-                    val = float(entries[4])
-                except:
-                    continue
-                test, ref_virus, serum, src_id = (entries[0], entries[1],entries[2],
-                                                  entries[3])
-
-                ref = (ref_virus, serum)
-                if src_id not in self.excluded_tables:
-                    try:
-                        measurements[(test, (ref_virus, serum))].append(val)
-                        strains.update([test, ref_virus])
-                        sources.add(src_id)
-                    except:
-                        print(line.strip())
-        self.titers = measurements
-        self.strains = list(strains)
-        self.sources = list(sources)
-        print("Read titers from",self.titer_fname, 'found:')
-        print(' ---', len(self.strains), "strains")
-        print(' ---', len(self.sources), "data sources")
-        print(' ---', sum([len(x) for x in measurements.values()]), " total measurements")
+        self.titers, self.strains, self.sources = TiterModel.load_from_file(
+                                                            fname,
+                                                            self.excluded_tables
+                                                        )
 
 
     def normalize(self, ref, val):
+        '''
+        take the log2 difference of test titers and autologous titers
+        '''
         consensus_func = np.mean
         return consensus_func(np.log2(self.autologous_titers[ref]['val'])) \
                 - consensus_func(np.log2(val))
 
+
     def determine_autologous_titers(self):
+        '''
+        scan the titer measurements for autologous (self) titers and make a dictionary
+        stored in self to look them up later. If no autologous titer is found, use the
+        maximum titer. This follows the rationale that test titers are generally lower
+        than autologous titers and the highest test titer is often a reasonably
+        approximation of the autologous titer.
+        '''
         autologous = defaultdict(list)
         all_titers_per_serum = defaultdict(list)
         for (test, ref), val in self.titers.iteritems():
@@ -102,6 +240,7 @@ class titers(object):
                 self.autologous_titers[serum] = {'val':autologous[serum], 'autologous':True}
                 #print("autologous titer found for",serum)
             else:
+                # use max tier if there are at least 10 measurements, don't bother otherwuise
                 if len(all_titers_per_serum[serum])>10:
                     self.autologous_titers[serum] = {'val':np.max(all_titers_per_serum[serum]),
                                                      'autologous':False}
@@ -142,7 +281,8 @@ class titers(object):
 
     def strain_census(self):
         '''
-        make lists of reference viruses, test viruses and
+        make lists of reference viruses, test viruses and sera
+        (there are often multiple sera oer reference virus)
         '''
         sera = set()
         ref_strains = set()
@@ -458,7 +598,7 @@ class titers(object):
 ##########################################################################################
 # TREE MODEL
 ##########################################################################################
-class tree_model(titers):
+class TreeModel(TiterModel):
     """
     tree_model extends titers and fits the antigenic differences
     in terms of contributions on the branches of the phylogenetic tree.
@@ -466,7 +606,7 @@ class tree_model(titers):
     the estimated titer drops across the branch
     """
     def __init__(self,*args, **kwargs):
-        super(tree_model, self).__init__(*args, **kwargs)
+        super(TreeModel, self).__init__(*args, **kwargs)
 
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
@@ -617,7 +757,7 @@ class tree_model(titers):
 ##########################################################################################
 # SUBSTITUTION MODEL
 ##########################################################################################
-class substitution_model(titers):
+class SubstitutionModel(TiterModel):
     """
     substitution_model extends titers and implements a model that
     seeks to describe titer differences by sums of contributions of
@@ -625,8 +765,8 @@ class substitution_model(titers):
     are assumed to be attached to each terminal node in the tree as
     node.translations
     """
-    def __init__(self,*args, **kwargs):
-        super(substitution_model, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(SubstitutionModel, self).__init__(*args, **kwargs)
         self.proteins = self.tree.root.translations.keys()
 
     def prepare(self, **kwargs):
@@ -793,12 +933,12 @@ class substitution_model(titers):
 
 if __name__=="__main__":
     # test tree model (assumes there is a tree called flu in memory...)
-    ttm = tree_model(flu.tree.tree, titer_fname = '../../nextflu2/data/H3N2_HI_titers.txt')
+    ttm = TreeModel(flu.tree.tree, flu.titers)
     ttm.prepare(training_fraction=0.8)
     ttm.train(method='nnl1reg')
     ttm.validate(plot=True)
 
-    tsm = substitution_model(flu.tree.tree, titer_fname = '../../nextflu2/data/H3N2_HI_titers.txt')
+    tsm = TreeModel(flu.tree.tree, flu.titers)
     tsm.prepare(training_fraction=0.8)
     tsm.train(method='nnl1reg')
     tsm.validate(plot=True)

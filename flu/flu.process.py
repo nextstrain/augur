@@ -32,7 +32,6 @@ def make_config (prepared_json, args):
             "defaults": {'geoResolution': ['region'], 'mapTriplicate': True}
         },
         "titers": {
-            "fname": "../../fauna/data/<LINEAGE>_crick_hi_cell_titers.tsv",
             "criterium": lambda x: len(x.aa_mutations['HA1']+x.aa_mutations['HA2'])>0,
             "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
             "lam_avi":2.0,
@@ -49,7 +48,7 @@ def make_config (prepared_json, args):
             # "use_marginal":True
         },
         "newick_tree_options":{
-            "raxml": True
+            "raxml": False
         }
     }
 
@@ -85,8 +84,8 @@ if __name__=="__main__":
 
         # titers
         if runner.config["titers"]:
-            HI_model(runner, )
-            # H3N2_scores(runner.tree.tree, runner.config["titers"]["epitope_mask"])
+            HI_model(runner)
+            H3N2_scores(runner, runner.tree.tree, runner.config["titers"]["epitope_mask"])
             HI_export(runner)
 
         runner.matchClades(clade_designations[runner.info["lineage"]])

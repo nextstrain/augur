@@ -4,11 +4,9 @@ import os
 
 def HI_model(process):
     '''
-    estimate a tree and substitution model using titers titer_fname.
+    estimate a tree and substitution model using titers.
     '''
-    from base.titer_model import tree_model, substitution_model
-    ## define the filenames here
-    fname = str(process.config["titers"]["fname"].replace("<LINEAGE>", process.info["lineage"]))
+    from base.titer_model import TreeModel, SubstitutionModel
 
     ## define the kwargs explicitly
     kwargs = process.config["titers"]
@@ -16,7 +14,7 @@ def HI_model(process):
     #     kwargs["criterium"] = process.config["titers"]["criterium"]
 
     ## TREE MODEL
-    process.HI_tree = tree_model(process.tree.tree, titer_fname = fname, **kwargs)
+    process.HI_tree = TreeModel(process.tree.tree, process.titers, **kwargs)
     process.HI_tree.prepare(**kwargs)
     process.HI_tree.train(**kwargs)
     # add tree attributes to the list of attributes that are saved in intermediate files
@@ -29,8 +27,7 @@ def HI_model(process):
     }
 
     # SUBSTITUTION MODEL
-    ## currently broken TODO
-    process.HI_subs = substitution_model(process.tree.tree, titer_fname = fname,**kwargs)
+    process.HI_subs = SubstitutionModel(process.tree.tree, process.titers, **kwargs)
     process.HI_subs.prepare(**kwargs)
     process.HI_subs.train(**kwargs)
 
@@ -59,7 +56,7 @@ def HI_export(process):
     else:
         print('Substitution model not yet trained')
 
-def H3N2_scores(tree, epitope_mask_file, epitope_mask_version='wolf'):
+def H3N2_scores(self, tree, epitope_mask_file, epitope_mask_version='wolf'):
     '''
     takes a H3N2 HA tree and assigns H3 specific characteristics to
     internal and external nodes
@@ -122,3 +119,22 @@ def H3N2_scores(tree, epitope_mask_file, epitope_mask_version='wolf'):
         node.attr['ep'] = epitope_distance(total_aa_seq, root_total_aa_seq)
         node.attr['ne'] = nonepitope_distance(total_aa_seq, root_total_aa_seq)
         node.attr['rb'] = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
+
+    self.config["auspice"]["color_options"]["ep"] = {
+        "menuItem": "epitope mutations",
+        "type": "continuous",
+        "legendTitle": "Epitope mutations",
+        "key": "ep"
+    }
+    self.config["auspice"]["color_options"]["ne"] = {
+        "menuItem": "non-epitope mutations",
+        "type": "continuous",
+        "legendTitle": "Non-epitope mutations",
+        "key": "ne"
+    }
+    self.config["auspice"]["color_options"]["rb"] = {
+        "menuItem": "receptor binding mutations",
+        "type": "continuous",
+        "legendTitle": "Receptor binding mutations",
+        "key": "rb"
+    }

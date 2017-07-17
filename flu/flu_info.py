@@ -99,7 +99,7 @@ reference_maps = {
                 'gender': "unknown"
             },
             "include": 0,
-            "genes": ["HA1", "HA2"]
+            "genes": {"HA": "SigPep", "HA1": "HA1", "HA2": "HA2"}
         }
     },
     "yam": {

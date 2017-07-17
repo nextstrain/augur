@@ -83,8 +83,11 @@ The format by which they are defined is rather verbose and hopefully will become
     * `metadata` {dict} of _attribute_ -> _value_, where the attributes are those of `header_fields`.
     `strain` is the only essential attribute, but if you want to add the reference to the dataset then everything should be specified.
     This data (apart from `strain`) is only used if `include > 0` and the strain is not already in the input fasta file.
-    * `genes` {`False` | arrray of {str}} (Default: `False`)
-    Genes matching these will be taken forward for analysis.
+    * `genes` {`False` | array of {str} | dictionary of {str} key/value pairs} (Default: `False`)
+    Genes matching these GenBank annotations will be taken forward for analysis.
+    If an array is given, genes will be stored by their GenBank names. If a
+    dictionary is given, genes will be mapped from the GenBank names in the keys
+    to preferred names in the values.
 
 **For non-segmented viruses:**
   * `reference`: {dict} with keys `path`, `metadata` etc

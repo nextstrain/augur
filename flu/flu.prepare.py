@@ -8,6 +8,7 @@ from __future__ import print_function
 import os, sys, re
 sys.path.append('..') # we assume (and assert) that this script is running from inside the flu folder
 from base.prepare import prepare
+from base.titer_model import TiterModel
 from datetime import datetime, timedelta, date
 from base.utils import fix_names
 import argparse
@@ -16,14 +17,20 @@ from pdb import set_trace
 from flu_info import regions, outliers, reference_maps, reference_viruses, segments
 from flu_subsampling import flu_subsampling
 
+import logging
+
 def collect_args():
     parser = argparse.ArgumentParser(description = "Prepare fauna FASTA for analysis")
-    parser.add_argument('-l', '--lineages', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default=['h3n2', 'h1n1pdm', 'vic', 'yam'], nargs='+', type=str, help="serotype (default: 'h3n2', 'h1n1pdm', 'vic' & 'yam')")
+    parser.add_argument('-l', '--lineage', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default='h3n2', type=str, help="serotype (default: 'h3n2')")
     parser.add_argument('-r', '--resolutions', default=['3y', '6y', '12y'], nargs='+', type = str,  help = "resolutions (default: 3y, 6y & 12y)")
     parser.add_argument('-s', '--segments', choices=segments, default=['ha'], nargs='+', type = str,  help = "segments (default: ha)")
     parser.add_argument('-v', '--viruses_per_month_seq', type = int, default = 0, help='number of viruses sampled per month (optional) (defaults: 90 (2y), 60 (3y), 24 (6y) or 12 (12y))')
     parser.add_argument('--sampling', default = 'even', type=str,
                         help='sample evenly over regions (even) (default), or prioritize one region (region name), otherwise sample randomly')
+    parser.add_argument('--strains', help="a text file containing a list of strains (one per line) to prepare without filtering or subsampling")
+    parser.add_argument('--sequences', nargs='+', help="FASTA file of virus sequences from fauna (e.g., flu_h3n2_ha.fasta)")
+    parser.add_argument('--titers', help="tab-delimited file of titer strains and values from fauna (e.g., h3n2_hi_titers.tsv)")
+    parser.add_argument('--verbose', action="store_true", help="turn on verbose reporting")
     return parser.parse_args()
 
 # for flu, config is a function so it is applicable for multiple lineages
@@ -34,13 +41,23 @@ def make_config(lineage, resolution, params):
     fixed_outliers = [fix_names(x) for x in outliers[lineage]]
     fixed_references = [fix_names(x) for x in reference_viruses[lineage]]
 
+    if params.titers is not None:
+        titer_values, strains, sources = TiterModel.load_from_file(params.titers)
+    else:
+        titer_values = None
+
+    if params.sequences is not None:
+        input_paths = params.sequences
+    else:
+        input_paths = ["../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segments]
+
     return {
         "dir": "flu",
         "file_prefix": "flu_{}".format(lineage),
         "segments": params.segments,
         "resolution": resolution,
         "lineage": lineage,
-        "input_paths": ["../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segments],
+        "input_paths": input_paths,
         #  0                     1   2         3          4      5     6       7       8          9                             10  11
         # >A/Galicia/RR9542/2012|flu|EPI376225|2012-02-23|europe|spain|galicia|galicia|unpassaged|instituto_de_salud_carlos_iii|47y|female
         "header_fields": {
@@ -59,7 +76,7 @@ def make_config(lineage, resolution, params):
             ("Dropped Strains", lambda s: s.id not in fixed_outliers),
             ("Bad geo info", lambda s: s.attributes["country"]!= "?" and s.attributes["region"]!= "?" ),
         ),
-        "subsample": flu_subsampling(params, years_back, "../../fauna/data/{}_crick_hi_cell".format(lineage)),
+        "subsample": flu_subsampling(params, years_back, titer_values),
         "colors": ["region"],
         "color_defs": ["colors.flu.tsv"],
         "lat_longs": ["country", "region"],
@@ -67,23 +84,37 @@ def make_config(lineage, resolution, params):
         "references": {seg:reference_maps[lineage][seg] for seg in params.segments},
         "regions": regions,
         "time_interval": time_interval,
+        "strains": params.strains,
+        "titers": titer_values
     }
 
 if __name__=="__main__":
     params = collect_args()
     # set_trace()
+    if params.verbose:
+        # Remove existing loggers.
+        for handler in logging.root.handlers:
+            logging.root.removeHandler(handler)
+
+        # Set the new default logging handler configuration.
+        logging.basicConfig(
+            format='[%(levelname)s] %(asctime)s - %(name)s - %(message)s',
+            level=logging.DEBUG,
+            stream=sys.stderr
+        )
+        logger = logging.getLogger(__name__)
+        logger.debug("Verbose reporting enabled")
 
     ## lots of loops to allow multiple downstream analysis
-    for lineage in params.lineages:
-        for resolution in params.resolutions:
-            pprint("Preparing lineage {}, segments: {}, resolution: {}".format(lineage, params.segments, resolution))
+    for resolution in params.resolutions:
+        pprint("Preparing lineage {}, segments: {}, resolution: {}".format(params.lineage, params.segments, resolution))
 
-            config = make_config(lineage, resolution, params)
-            runner = prepare(config)
-            runner.load_references()
-            runner.applyFilters()
-            runner.ensure_all_segments()
-            runner.subsample()
-            runner.colors()
-            runner.latlongs()
-            runner.write_to_json()
+        config = make_config(params.lineage, resolution, params)
+        runner = prepare(config)
+        runner.load_references()
+        runner.applyFilters()
+        runner.ensure_all_segments()
+        runner.subsample()
+        runner.colors()
+        runner.latlongs()
+        runner.write_to_json()
