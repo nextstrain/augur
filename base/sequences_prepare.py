@@ -285,7 +285,8 @@ class sequence_set(object):
                 "included": self.reference.name in self.seqs
             }
 
-        if "titers" in config:
+        # Titers must be present in the config and not None to be used.
+        if config.get("titers") is not None:
             # Subset titer data to match the strains selected for export.
             filtered_titers = TiterModel.filter_strains(config["titers"], self.seqs.keys())
 
