@@ -15,10 +15,20 @@ def make_dir(dname):
         except OSError as e:
             print("Cannot create run_dir",e)
 
-def remove_dir(dname):
+def remove_dir(dname, max_attempts=5):
     import os, shutil
     if os.path.isdir(dname):
-        import shutil
+        # Try to remove the given directory repeatedly to compensate for NFS
+        # latency that can result in OSError exceptions when a directory appears
+        # not to be empty when shutil attempts to remove it.
+        for i in xrange(max_attempts):
+            try:
+                shutil.rmtree(dname)
+                return
+            except OSError, e:
+                time.sleep(i)
+
+        # Try one last time and let OS exception propagate up.
         shutil.rmtree(dname)
 
 def write_json(data, file_name, indent=1):
