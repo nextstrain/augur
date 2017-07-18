@@ -4,11 +4,13 @@ sys.path.append('..')
 from base.prepare import prepare
 from datetime import datetime
 from base.utils import fix_names
+from datetime import datetime, timedelta, date
 import argparse
 
 def collect_args():
     parser = argparse.ArgumentParser(description = "Prepare fauna FASTA for analysis")
     parser.add_argument('-s', '--serotypes', choices=["all", "denv1", "denv2", "denv3", "denv4", "multiple"], default="multiple", type=str, nargs='+', help="Serotype(s) to prepare. \"multiple\" will run them all. Default: multiple")
+    parser.add_argument('-y', '--years_back', type=int, default=100, help="Years back in time to sample from")
     return parser.parse_args()
 
 dropped_strains = [
@@ -47,6 +49,7 @@ def select_serotype(infile, path, serotype):
 def make_config(serotype, params):
     config = {
         "dir": "dengue",
+        "lineage": serotype,
         "file_prefix": "dengue_%s"%serotype,
         "input_paths": None,
 
@@ -69,14 +72,17 @@ def make_config(serotype, params):
         "color_defs": ["./colors.tsv"],
         "lat_longs": ["region"],
         "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
-        "reference": references[serotype]
+        "reference": references[serotype],
     }
 
-    if os.path.isfile("../../fauna/data/dengue_%s.fasta"%serotype): #is file: # Look for a serotype-specific fasta
+    if os.path.isfile("../../fauna/data/dengue_%s.fasta"%serotype): # Look for a serotype-specific fasta
         config["input_paths"] = ["../../fauna/data/dengue_%s.fasta"%serotype]
     else: # If it doesn't exist, try to pull serotype-specific sequences out of the all-serotype fasta (warn the user of this behavior)
         config["input_paths"] = select_serotype('../fauna/data/dengue_all.fasta', '../fauna/data/', serotype)
         print('WARNING: Did not find serotype-specific fasta file.\nPulled sequences with serotype %s from all-serotype fasta file %s\nWrote these to file %s'%(serotype, '../fauna/data/dengue.fasta', config["input_paths"]))
+
+    years_back = params.years_back
+    config['time_interval'] = [datetime.today().date(), (datetime.today()  - timedelta(days=365.25 * years_back)).date()]
 
     return config
 

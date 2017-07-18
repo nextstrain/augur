@@ -145,7 +145,7 @@ class process(object):
             self.build_tree(tree_name, node_file, root='none', debug=debug)
 
 
-    def align(self, codon_align=False, debug=False):
+    def align(self, codon_align=False, debug=False, fill_gaps=False):
         '''
         (1) Align sequences, remove non-reference insertions
         NB step 1 is skipped if a valid aln file is found
@@ -157,12 +157,16 @@ class process(object):
         if self.try_to_restore:
             self.seqs.try_restore_align_from_disk(fname)
         if not hasattr(self.seqs, "aln"):
-            self.seqs.align(fname, debug=debug)
+            if codon_align:
+                self.seqs.codon_align()
+            else:
+                self.seqs.align(fname, self.config["subprocess_verbosity_level"], debug=debug)
             # need to redo everything
             self.try_to_restore = False
 
         self.seqs.strip_non_reference()
-        self.seqs.remove_terminal_gaps()
+        if fill_gaps:
+            self.seqs.make_gaps_ambiguous()
         # if outgroup is not None:
         #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
         self.seqs.translate() # creates self.seqs.translations
@@ -387,8 +391,7 @@ class process(object):
         (2) If newick file doesn't exist or isn't valid: build a newick tree (normally RAxML)
         (3) Make a TimeTree
         '''
-        # self.log.warn("self.verbose not set")
-        self.tree = tree(aln=self.seqs.aln, proteins=self.proteins, verbose=0)
+        self.tree = tree(aln=self.seqs.aln, proteins=self.proteins, verbose=self.config["subprocess_verbosity_level"])
         newick_file = self.output_path + ".newick"
         try:
             assert(self.try_to_restore == True)
@@ -396,6 +399,7 @@ class process(object):
             self.tree.check_newick(newick_file)
             self.log.notify("Newick file restored from \"{}\"".format(newick_file))
         except AssertionError:
+            self.log.notify("Building newick tree.")
             self.tree.build_newick(newick_file, **self.config["newick_tree_options"])
 
 

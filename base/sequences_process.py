@@ -73,7 +73,7 @@ class sequence_set(object):
     def codon_align(self):
         self.log.fatal("Codon align not yet implemented")
 
-    def align(self, fname, debug=False):
+    def align(self, fname, verbose, debug=False):
         '''
         align sequences using mafft
 
@@ -93,7 +93,10 @@ class sequence_set(object):
 
         SeqIO.write(out_seqs, "temp_in.fasta", "fasta")
         self.log.notify("Running alignment")
-        os.system("mafft --anysymbol --thread " + str(self.nthreads) + " temp_in.fasta 1> temp_out.fasta 2>mafft_stderr")
+        if verbose == 0:
+            os.system("mafft --anysymbol --thread " + str(self.nthreads) + " temp_in.fasta 1> temp_out.fasta 2>mafft_stderr")
+        else:
+            os.system("mafft --anysymbol --thread " + str(self.nthreads) + " temp_in.fasta 1> temp_out.fasta")
         self.aln = AlignIO.read('temp_out.fasta', 'fasta')
         os.chdir("..")
         os.rename(os.path.join(self.run_dir, "temp_out.fasta"), fname)
@@ -153,27 +156,32 @@ class sequence_set(object):
 
 
     def strip_non_reference(self):
+        '''
+        remove insertions relative to the reference from the alignment
+        '''
         ungapped = np.array(self.reference_aln)!='-'
         for seq in self.aln:
             seq.seq = Seq("".join(np.array(seq)[ungapped]))
 
-    def remove_terminal_gaps(self):
+
+    def make_gaps_ambiguous(self):
+        '''
+        replace all gaps by 'N' in all sequences in the alignment. TreeTime will treat them
+        as fully ambiguous and replace then with the most likely state
+        '''
         for seq in self.aln:
             seq_array = np.array(seq)
-            seq_string = str(seq.seq)
-            if (seq_array=='-').sum():
-                left_gaps = len(seq_string) - len(seq_string.lstrip('-'))
-                seq_array[:left_gaps] = 'N'
-            if (seq_array=='-').sum():
-                right_gaps = len(seq_string) - len(seq_string.rstrip('-'))
-                if right_gaps:
-                    seq_array[-right_gaps:] = 'N'
+            gaps = seq_array=='-'
+            seq_array[gaps]='N'
             seq.seq = Seq("".join(seq_array))
+
 
     def translate(self):
         '''
-        make alignment of translations
+        make alignments of translations.
         '''
+        from Bio.Seq import CodonTable
+        codon_table  = CodonTable.ambiguous_dna_by_name['Standard'].forward_table
         self.translations={}
         if not hasattr(self, "proteins"): # ensure dictionary to hold annotation
             self.proteins={}
@@ -183,21 +191,38 @@ class sequence_set(object):
             self.proteins.update({'cds':FeatureLocation(start=0,
                 end=self.aln.get_alignment_length(), strand=1)})
 
+        # loop over all proteins and create one MSA for each
         for prot in self.proteins:
             aa_seqs = []
             for seq in self.aln:
+                tmpseq = self.proteins[prot].extract(seq)
                 try:
-                    # soon not needed as future biopython version will translate --- into -
-                    tmpseq = self.proteins[prot].extract(seq)
-                    tmpseq.attributes = seq.attributes
-                    internal_gap = np.unique(np.where(np.array(tmpseq)=='-')[0]//3)
-                    aa_seq = np.array(Seq(str(tmpseq.seq).replace('---', 'NNN')).translate())
-                    aa_seq[internal_gap]='-'
-                    tmpseq.seq = Seq("".join(aa_seq))
+                    # attempt translation by extracting the sequence according to the BioPhython SeqFeature
+                    # in frame gaps of three will translate as '-'
+                    tmpseq.seq = tmpseq.seq.translate(gap='-')
                 except:
-                    tmpseq.seq = Seq("".join([x if x in 'ACGT' else 'N'
-                        for x in str(tmpseq.seq)])).translate()
-                    print("Trouble translating",seq.id)
+                    # any other codon like '-AA' or 'NNT' etc will fail. translate codons one by one
+                    str_seq = str(tmpseq.seq)
+                    codons = np.fromstring(str_seq[:len(str_seq)-len(str_seq)%3], dtype='S3')
+                    aas = []
+                    for c in codons:
+                        try: #parse result of single codon translation, add amino acids as appropriate
+                            aa = codon_table.get(c)
+                            if aa is None:
+                                if c=='---':
+                                    aas.append('-')
+                                else:
+                                    aa.append('X')
+                            else:
+                                aas.append(aa)
+                        except:
+                            aas.append('X')
+
+                    tmpseq.seq = Seq("".join(aas))
+                    self.log.notify("Trouble translating because of invalid codons %s"%seq.id)
+
+                # copy attributes
+                tmpseq.attributes = seq.attributes
                 aa_seqs.append(tmpseq)
             self.translations[prot] = MultipleSeqAlignment(aa_seqs)
 

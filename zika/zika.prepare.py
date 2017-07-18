@@ -12,9 +12,10 @@ def collect_args():
     return parser.parse_args()
 
 dropped_strains = [
+    "CX17", # large indels in alignment
     "ZF36_36S", # possible contamination
     "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", # true strains, but duplicates of other strains in dataset
-    "Bahia04", "JAM/2016/WI_JM6", "Bahia11", "Bahia12", "DOM/2016/MA_WGS16_009", "VE_Ganxian", "BRA/2016/FC_DQ60D1", # excessive terminal branch length
+    "Bahia04", "JAM/2016/WI_JM6", "Bahia11", "Bahia12", "DOM/2016/MA_WGS16_009", "VE_Ganxian", "BRA/2016/FC_DQ60D1", "CX5", # excessive terminal branch length
     "VR10599/Pavia/2016", "34997/Pavia/2016", # exports
     "THA/PLCal_ZV/2013", "SK403/13AS", "SV0010/15", "SK364/13AS" # clock is off
 ]
@@ -24,7 +25,7 @@ config = {
     "file_prefix": "zika",
     "input_paths": ["../../fauna/data/zika.fasta"],
     "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
-                    6:'division', 8:'db', 10:'authors', 11:'url'},
+                    6:'division', 8:'db', 10:'authors', 11:'url', 12:'title'},
     "filters": (
         ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
         ("Restrict Date Range", lambda s: s.attributes['date'] >= datetime(2012,01,1).date()),

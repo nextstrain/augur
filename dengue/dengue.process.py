@@ -4,14 +4,51 @@ sys.path.append('..') # we assume (and assert) that this script is running from 
 from base.process import process
 import argparse
 
+##### Define clades #####
+genotypes = {
+                        "denv1":{
+                        'I': [('E', 8, 'S'),('E', 37, 'D'),('E', 155, 'S')],
+                        'II': [('E', 180, 'T'),('E', 345, 'A')],
+                        "V": [('E', 114, 'L'),('E', 161, 'I'),('E', 297, 'T')],
+                        "IV": [('E', 37, 'D'),('E', 88, 'T'),]},
+
+                        "denv2": {
+                        'ASIAN/AMERICAN': [('E', 203, 'D'), ('E', 491, 'A')],
+                        'AMERICAN': [('E', 71, 'D'), ('E', 81, 'T'), ('E', 203, 'D')],
+                        'ASIAN-I': [('E', 83, 'K'), ('E', 141, 'V'), ('E', 226, 'K')],
+                        'COSMOPOLITAN': [('E', 71, 'A'), ('E', 149, 'N'), ('E', 390, 'S')],
+                        'SYLVATIC': [('E', 59, 'F'), ('E', 83, 'V'), ('E', 129, 'V')]},
+
+                        "denv3": {
+                        'I': [('E', 68, 'V'),('E', 124, 'S'),('E', 233, 'K')],
+                        'II': [('E', 154, 'D')],
+                        'III': [('E', 81, 'V'),('E', 132, 'Y'),('E', 171, 'T'),],
+                        'IV': [('E', 22, 'E'),('E', 50, 'V'),('E', 62, 'G')]},
+
+                        "denv4": {
+                        'I': [('E', 233, 'H'),('E', 329, 'T'),('E', 429, 'L')],
+                        'II': [('E', 46, 'T'), ('E', 478, 'T')],
+                        'SYLVATIC': [('E', 132, 'V'), ('E', 154, 'S')]},
+
+                        "all": {}
+                }
+
+for i in ['denv1', 'denv2', 'denv3', 'denv4']:
+    for k,v in genotypes[i].iteritems():
+        genotypes['all'][i.upper()+' '+k] = v
+
+regions = ['africa', 'europe', 'north_america', 'china', 'south_asia',
+            'japan_korea', 'south_pacific', 'oceania', 'south_america',
+            'southeast_asia', 'west_asia']
+
 def collect_args():
     parser = argparse.ArgumentParser(description = "Process (prepared) JSON(s)")
-    parser.add_argument('-j', '--jsons', '--json', '-s', '--serotypes', default=["multiple"], nargs='+', type=str, help="Accepts path to prepared JSON(s) or names of serotypes.\n If handed serotype(s) [\"denv1\", \"denv2\", \"denv3\", \"denv4\", or \"all\"], will look for ./prepared/dengue_SEROTYPE.json; \n \"multiple\" will run all five builds. Default = multiple")
+    parser.add_argument('-j', '--jsons', '--json', default=None, nargs='+', type=str, help="Accepts path to prepared JSON(s); overrides -s argument")
+    parser.add_argument('-s', '--serotypes', default=["multiple"], nargs='+', type=str, choices=['denv1', 'denv2', 'denv3', 'denv4', 'all', 'multiple'],
+    help="Look for prepared JSON(s) like ./prepared/dengue_SEROTYPE.json; 'multiple' will run all five builds. Default='multiple'")
     parser.add_argument('--clean', default=False, action='store_true', help="clean build (remove previous checkpoints)")
-
-    ## Not yet working for dengue; turn off by default for now.
-    parser.add_argument('--no_mut_freqs', default=True, action='store_true', help="skip mutation frequencies")
-    parser.add_argument('--no_tree_freqs', default=True, action='store_true', help="skip tree (clade) frequencies")
+    parser.add_argument('--no_mut_freqs', default=False, action='store_true', help="skip mutation frequencies")
+    parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
     return parser.parse_args()
 
 def make_config (prepared_json, args):
@@ -40,15 +77,13 @@ def make_config (prepared_json, args):
 if __name__=="__main__":
     args = collect_args()
 
-    serotypes = ['denv1', 'denv2', 'denv3', 'denv4', 'all']
-    if "multiple" in args.jsons: # run all 5 builds from the JSONs in ./prepared/
-        args.jsons = serotypes
-    for i, j in enumerate(args.jsons): # if passed serotypes instead of paths, validate the corresponding JSONs exist in ./prepared/
-        if not os.path.isfile(j):
-            assert j in serotypes, "ERROR: %s is not a valid JSON or serotype.\nPass either a valid JSON path name or, to automatically look for ./prepared/dengue_SEROTYPE.json, provide a valid serotype: ['denv1', 'denv2', 'denv3', 'denv4', 'all']"%j
+    if not args.jsons:
+        if 'multiple' in args.serotypes: # "multiple" = run all 5 builds
+            args.serotypes = ['denv1', 'denv2', 'denv3', 'denv4', 'all']
+        args.jsons = ['./prepared/dengue_%s.json'%s for s in args.serotypes] # Look for ./prepared/dengue_SEROTYPE.json if no file paths given
 
-            assert os.path.isfile('./prepared/dengue_%s.json'%j), 'ERROR: no JSON found for serotype %s'%j
-            args.jsons[i] = './prepared/dengue_%s.json'%j
+    for j in args.jsons:            # validate input JSONs exist
+        assert os.path.isfile(j)
 
     for prepared_json in args.jsons:
         print("Processing %s"%prepared_json)
@@ -69,24 +104,25 @@ if __name__=="__main__":
             # for region in region_groups.iteritems():
             #     runner.estimate_mutation_frequencies(region=region, min_freq=0.02, inertia=np.exp(-1.0/12), stiffness=0.8*12)
 
-        # # estimate tree frequencies here.
-        # if runner.config["estimate_tree_frequencies"]:
-        #     pivots = runner.get_pivots_via_spacing()
-        #     runner.estimate_tree_frequencies(pivots=pivots)
-        #     for regionTuple in runner.info["regions"]:
-        #         runner.estimate_tree_frequencies(region=str(regionTuple[0]))
+        # estimate tree frequencies here.
+        if runner.config["estimate_tree_frequencies"]:
+            pivots = runner.get_pivots_via_spacing()
+            runner.estimate_tree_frequencies(pivots=pivots)
 
+            for region in regions:
+                try:
+                    runner.estimate_tree_frequencies(region=region)
+                except:
+                    continue
         # # titers
         # if runner.config["titers"]:
         #     HI_model(runner, )
         #     # H3N2_scores(runner.tree.tree, runner.config["titers"]["epitope_mask"])
         #     HI_export(runner)
 
-        # runner.matchClades(clade_designations[runner.info["lineage"]])
+        runner.matchClades(genotypes[runner.info['lineage']])
 
-        # runner.save_as_nexus()
-
-
+        runner.save_as_nexus()
         runner.auspice_export()
 
 
