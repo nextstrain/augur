@@ -54,6 +54,9 @@ class process(object):
                                           for x in data["info"]["time_interval"]]
         self.info["lineage"] = data["info"]["lineage"]
 
+        if 'leaves' in data:
+            self.tree_leaves = data['leaves']
+
         try:
             self.colors = data["colors"]
         except KeyError:
@@ -188,22 +191,22 @@ class process(object):
                          self.config["pivot_spacing"])
 
     def restore_mutation_frequencies(self):
-        try:
-            assert(self.try_to_restore == True)
-            with open(self.output_path + "_mut_freqs.pickle", 'rb') as fh:
-                pickle_seqs = pickle.load(fh)
-                assert(pickle_seqs == set(self.seqs.seqs.keys()))
-                pickled = pickle.load(fh)
-                assert(len(pickled) == 3)
-                self.mutation_frequencies = pickled[0]
-                self.mutation_frequency_confidence = pickled[1]
-                self.mutation_frequency_counts = pickled[2]
-                self.log.notify("Successfully restored mutation frequencies")
-                return
-        except IOError:
-            pass
-        except AssertionError as err:
-            self.log.notify("Tried to restore mutation frequencies but failed: {}".format(err))
+        if self.try_to_restore:
+            try:
+                with open(self.output_path + "_mut_freqs.pickle", 'rb') as fh:
+                    pickle_seqs = pickle.load(fh)
+                    assert(pickle_seqs == set(self.seqs.seqs.keys()))
+                    pickled = pickle.load(fh)
+                    assert(len(pickled) == 3)
+                    self.mutation_frequencies = pickled[0]
+                    self.mutation_frequency_confidence = pickled[1]
+                    self.mutation_frequency_counts = pickled[2]
+                    self.log.notify("Successfully restored mutation frequencies")
+                    return
+            except IOError:
+                pass
+            except AssertionError as err:
+                self.log.notify("Tried to restore mutation frequencies but failed: {}".format(err))
             #no need to remove - we'll overwrite it shortly
         self.mutation_frequencies = {}
         self.mutation_frequency_confidence = {}
@@ -293,7 +296,7 @@ class process(object):
             aln_frequencies = alignment_frequencies(tmp_aln, time_points, self.pivots,
                                             ws=max(2,len(time_points)//10),
                                             inertia=inertia,
-                                            stiffness=stiffness)
+                                            stiffness=stiffness, method='SLSQP')
             if prot=='nuc': # if this is a nucleotide alignment, set all non-canonical states to N
                 A = aln_frequencies.aln
                 A[~((A=='A')|(A=='C')|(A=='G')|(A=='T')|('A'=='-'))] = 'N'
@@ -369,9 +372,9 @@ class process(object):
             tps = np.array([x.attributes['num_date'] for x in self.seqs.seqs.values()])
             self.pivots=make_pivots(pivots, tps)
 
-        self.log.notify('Estimate tree frequencies for %s: using self.pivots\n%s' % (region, self.pivots))
+        self.log.notify('Estimate tree frequencies for %s: using self.pivots' % (region))
 
-        tree_freqs = tree_frequencies(self.tree.tree, self.pivots,
+        tree_freqs = tree_frequencies(self.tree.tree, self.pivots, method='SLSQP',
                                       node_filter = node_filter_func,
                                       ws = max(2,self.tree.tree.count_terminals()//10))
                                     # who knows what kwargs are needed here
@@ -393,12 +396,9 @@ class process(object):
         '''
         self.tree = tree(aln=self.seqs.aln, proteins=self.proteins, verbose=self.config["subprocess_verbosity_level"])
         newick_file = self.output_path + ".newick"
-        try:
-            assert(self.try_to_restore == True)
-            assert(os.path.isfile(newick_file))
-            self.tree.check_newick(newick_file)
-            self.log.notify("Newick file restored from \"{}\"".format(newick_file))
-        except AssertionError:
+        if self.try_to_restore and os.path.isfile(newick_file) and self.tree.check_newick(newick_file):
+            self.log.notify("Newick file \"{}\" can be used to restore".format(newick_file))
+        else:
             self.log.notify("Building newick tree.")
             self.tree.build_newick(newick_file, **self.config["newick_tree_options"])
 
@@ -537,7 +537,7 @@ class process(object):
         export the tree, sequences, frequencies to json files for auspice visualization
         '''
         prefix = os.path.join(self.config["output"]["auspice"], self.info["prefix"])
-        indent = 2
+        indent = None
         # export json file that contains alignment diversity column by column
         self.seqs.export_diversity(fname=prefix+'_entropy.json', indent=2)
         # exports the tree and the sequences inferred for all clades in the tree

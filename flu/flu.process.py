@@ -9,6 +9,7 @@ import argparse
 import numpy as np
 from pprint import pprint
 from pdb import set_trace
+from Bio.Align import MultipleSeqAlignment
 
 def collect_args():
     parser = argparse.ArgumentParser(description = "Process (prepared) JSON(s)")
@@ -101,10 +102,14 @@ if __name__=="__main__":
                 gl_counts = np.sum([runner.mutation_frequency_counts[region] for region in acronyms
                                             if mut in runner.mutation_frequencies[(region, prot)]], axis=0)
                 runner.mutation_frequencies[("global", prot)] = gl_freqs
-                runner.mutation_frequency_counts[("global", prot)] = gl_counts
+                runner.mutation_frequency_counts["global"] = gl_counts
                 runner.mutation_frequency_confidence[("global", prot)] = gl_confidence
 
         if runner.config["build_tree"]:
+            if hasattr(runner, 'tree_leaves'): # subsample alignment
+                runner.seqs.aln = MultipleSeqAlignment([v for v in runner.seqs.aln
+                                                        if v.name in runner.tree_leaves])
+                print("subsampled alignment to %d sequences"%len(runner.seqs.aln))
             runner.build_tree()
             runner.timetree_setup_filter_run()
             runner.run_geo_inference()
