@@ -30,7 +30,7 @@ def collect_args():
     parser.add_argument('--strains', help="a text file containing a list of strains (one per line) to prepare without filtering or subsampling")
     parser.add_argument('--sequences', nargs='+', help="FASTA file of virus sequences from fauna (e.g., flu_h3n2_ha.fasta)")
     parser.add_argument('--titers', help="tab-delimited file of titer strains and values from fauna (e.g., h3n2_hi_titers.tsv)")
-    parser.add_argument('--prefix', help="build specifier")
+    parser.add_argument('--dataset', help="dataset specifier")
     parser.add_argument('--verbose', action="store_true", help="turn on verbose reporting")
     return parser.parse_args()
 
@@ -54,7 +54,8 @@ def make_config(lineage, resolution, params):
 
     return {
         "dir": "flu",
-        "file_prefix": "flu_%s_%s"%(lineage, params.prefix),
+        "file_prefix": "flu_%s"%lineage,
+        "dataset":params.dataset,
         "segments": params.segments,
         "resolution": resolution,
         "lineage": lineage,
