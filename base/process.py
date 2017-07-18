@@ -443,7 +443,7 @@ class process(object):
             try:
                 assert(self.config["timetree_options"] == pickled["timetree_options"])
                 assert(self.config["clock_filter"] == pickled["clock_filter_options"])
-                assert(set(self.seqs.sequence_lookup.keys()) == set(pickled["original_seqs"]))
+                #assert(set(self.seqs.sequence_lookup.keys()) == set(pickled["original_seqs"]))
             except AssertionError as e:
                 print(e)
                 self.log.warn("treetime is out of date - rerunning")

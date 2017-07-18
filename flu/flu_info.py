@@ -85,7 +85,7 @@ outliers = {
 reference_maps = {
     "h3n2": {
         "ha": {
-            "path": "metadata/h3n2_ha_outgroup.gb",
+            "path": "metadata/h3n2_outgroup.gb",
             "metadata": {
                 'strain': "A/Beijing/32/1992",
                 'isolate_id': "CY113677",
@@ -104,7 +104,7 @@ reference_maps = {
     },
     "yam": {
         "ha": {
-            "path": "metadata/yam_ha_outgroup.gb",
+            "path": "metadata/yam_outgroup.gb",
             "metadata": {
                 'strain': "B/Singapore/11/1994",
                 'isolate_id': "CY019707",
@@ -128,7 +128,7 @@ reference_maps = {
     },
     "vic": {
         "ha": {
-            "path": "metadata/vic_ha_outgroup.gb",
+            "path": "metadata/vic_outgroup.gb",
             "metadata": {
                 'strain': "B/Hong Kong/02/1993",
                 'isolate_id': "CY018813",
@@ -147,7 +147,7 @@ reference_maps = {
     },
     "h1n1pdm": {
         "ha": {
-            "path": "metadata/h1n1pdm_ha_outgroup.gb",
+            "path": "metadata/h1n1pdm_outgroup.gb",
             "metadata": {
                 'strain': "A/Swine/Indiana/P12439/00",
                 'isolate_id': "AF455680",
