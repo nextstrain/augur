@@ -201,7 +201,7 @@ class prepare(object):
             if "resolution" in self.config:
                 prefix = prefix + "_" + self.config["resolution"]
             if "dataset" in self.config and self.config['dataset']:
-                prefix = prefix + "_" + self.config["resolution"] + "_" + self.config["dataset"]
+                prefix = prefix + "_" + self.config["dataset"]
             fname = os.path.join(self.config["output_folder"], prefix + ".json")
             with open(fname, 'w') as fh:
                 obj.write_json(fh, self.config, prefix)
