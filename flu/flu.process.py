@@ -55,6 +55,19 @@ def make_config (prepared_json, args):
         }
     }
 
+def rising_mutations(freqs, genes, region='NA', dn=5, baseline = 0.01):
+    dx = {}
+    for gene in genes:
+        for mut,f  in freqs[(region, gene)].iteritems():
+            tmp_x = f[-dn:].mean()
+            tmp_dx = f[-1] - f[-dn]
+            dx[(region, gene, mut[0], mut[1])] = (tmp_x, tmp_dx, tmp_dx/(tmp_x+baseline))
+
+    print("#Frequency change over the last %d month in region %s"%(dn, region))
+    for k,v in sorted(dx.items(), key=lambda x:x[1][2])[-10:]:
+        print("%s:%d%s: x=%1.3f, dx=%1.3f, dx/x=%1.3f"%(k[1], k[2]+1, k[3], v[0], v[1], v[2]))
+    return dx
+
 if __name__=="__main__":
     args = collect_args()
     jsons = glob.glob("prepared/*.json") if "all" in args.jsons else args.jsons
@@ -105,6 +118,9 @@ if __name__=="__main__":
                 runner.mutation_frequency_counts["global"] = gl_counts
                 runner.mutation_frequency_confidence[("global", prot)] = gl_confidence
 
+                for region in ['AS', 'NA']:
+                    mlist = rising_mutations(runner.mutation_frequencies, ['HA1', 'HA2'], region=region)
+
         if runner.config["build_tree"]:
             if hasattr(runner, 'tree_leaves'): # subsample alignment
                 runner.seqs.aln = MultipleSeqAlignment([v for v in runner.seqs.aln
@@ -131,3 +147,4 @@ if __name__=="__main__":
 
             # runner.save_as_nexus()
         runner.auspice_export()
+
