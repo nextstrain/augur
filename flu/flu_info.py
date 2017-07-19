@@ -99,7 +99,7 @@ reference_maps = {
                 'gender': "unknown"
             },
             "include": 0,
-            "genes": {"HA": "SigPep", "HA1": "HA1", "HA2": "HA2"}
+            "genes": ["SigPep", "HA1", "HA2"]
         }
     },
     "yam": {
@@ -118,7 +118,7 @@ reference_maps = {
                 'gender': "M"
             },
             "include": 0,
-            "genes": ["HA"]
+            "genes": ["SigPep", "HA1", "HA2"]
         },
         "na": {
             "path": "metadata/yam_na_outgroup.gb",
@@ -142,7 +142,7 @@ reference_maps = {
                 'gender': "unknown"
             },
             "include": 0,
-            "genes": ["HA"]
+            "genes": ["SigPep", "HA1", "HA2"]
         }
     },
     "h1n1pdm": {
@@ -161,7 +161,7 @@ reference_maps = {
                 'gender': "unknown"
             },
             "include": 0,
-            "genes": ["HA"]
+            "genes": ["SigPep", "HA1", "HA2"]
         }
     }
 }
