@@ -16,7 +16,7 @@ def make_dir(dname):
             print("Cannot create run_dir",e)
 
 def remove_dir(dname, max_attempts=5):
-    import os, shutil
+    import os, shutil, time
     if os.path.isdir(dname):
         # Try to remove the given directory repeatedly to compensate for NFS
         # latency that can result in OSError exceptions when a directory appears
