@@ -2,23 +2,35 @@
 This script takes fauna fasta files and produces filtered and subsetted JSONs
 To be processed by augur
 
-* RUN THIS SCRIPT IN THE H7N9 DIRECTORY!!!!
+* RUN THIS SCRIPT IN THE avian DIRECTORY!!!!
 
 """
 from __future__ import print_function
 import os, sys
-sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside avian or zika
 sys.path.append('reference_segments')
 from reference_info import references
+import base.prepare
 from base.prepare import prepare
 from datetime import datetime
 from base.utils import fix_names
 import argparse
 
+
 def collect_args():
-    parser = argparse.ArgumentParser(description = "Prepare fauna FASTA for analysis")
-    parser.add_argument('-v', '--viruses_per_month', type = int, default = 0, help='Subsample x viruses per division per month. Set to 0 to disable subsampling. (default: 0)')
-    return parser.parse_args()
+    """Returns an avian flu-specific argument parser.
+    """
+    parser = base.prepare.collect_args()
+
+    segments = ["pb2", "pb1", "pa", "ha", "np", "na", "mp", "ns"]
+    parser.add_argument('-l', '--lineage', choices=['h7n9'], default='h7n9', type=str, help="serotype")
+    parser.add_argument('-s', '--segments', choices=segments, default=segments, nargs='+', type = str,  help = "segments to prepare")
+    parser.set_defaults(
+        viruses_per_month=0,
+        file_prefix="avian_h7n9"
+    )
+
+    return parser
 
 dropped_strains = [
     "A/Chicken/Netherlands/16007311-037041/2016", # not part of epi clade
@@ -29,9 +41,8 @@ dropped_strains = [
 ]
 
 config = {
-    "dir": "H7N9", # the current directory. You mush be inside this to run the script.
+    "dir": "avian", # the current directory. You must be inside this to run the script.
     "file_prefix": "avian_h7n9",
-    "segments": ["pb2", "pb1", "pa", "ha", "np", "na", "mp", "ns"],
     "input_paths": [
         "../../fauna/data/h7n9_pb2.fasta",
         "../../fauna/data/h7n9_pb1.fasta",
@@ -75,11 +86,22 @@ config = {
 
 
 if __name__=="__main__":
-    params = collect_args()
+    parser = collect_args()
+    params = parser.parse_args()
+
     if params.viruses_per_month == 0:
         config["subsample"] = False
     else:
         config["subsample"]["threshold"] = params.viruses_per_month
+
+    if params.sequences is not None:
+        config["input_paths"] = params.sequences
+
+    if params.file_prefix is not None:
+        config["file_prefix"] = params.file_prefix
+
+    config["segments"] = params.segments
+
     runner = prepare(config)
     runner.load_references()
     runner.applyFilters()
