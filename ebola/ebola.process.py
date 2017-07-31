@@ -30,6 +30,8 @@ config = {
         "resolve_polytomies": True,
         "n_points": 20,
         "stiffness": 3.0,
+    },
+    "newick_tree_options":{
     }
 }
 
@@ -42,6 +44,8 @@ if __name__=="__main__":
 
     if params.json:
         config["in"] = params.json
+
+    config["newick_tree_options"]["raxml"] = not params.no_raxml
 
     runner = process(config)
     runner.align()
