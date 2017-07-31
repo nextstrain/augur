@@ -6,6 +6,8 @@ from base.process import process
 
 
 def collect_args():
+    """Returns a Zika-specific argument parser.
+    """
     parser = base.process.collect_args()
     parser.set_defaults(
         json="prepared/zika.json"
