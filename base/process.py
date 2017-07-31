@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+import argparse
 import sys, os, time, gzip, glob
 from collections import defaultdict
 from base.config import combine_configs
@@ -14,6 +15,19 @@ from pdb import set_trace
 from base.logger import logger
 from Bio import SeqIO
 import cPickle as pickle
+
+
+def collect_args():
+    parser = argparse.ArgumentParser(
+        description = "Process (prepared) JSON(s)",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+
+    parser.add_argument('-j', '--json', help="prepared JSON to process")
+    parser.add_argument('--clean', default=False, action='store_true', help="clean build (remove previous checkpoints)")
+
+    return parser
+
 
 class process(object):
     """process influenza virus sequences in mutliple steps to allow visualization in browser
