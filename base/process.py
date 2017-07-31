@@ -25,6 +25,7 @@ def collect_args():
 
     parser.add_argument('-j', '--json', help="prepared JSON to process")
     parser.add_argument('--clean', default=False, action='store_true', help="clean build (remove previous checkpoints)")
+    parser.add_argument('--no_raxml', action='store_true', help="do not run RAxML to build the tree")
 
     return parser
 
