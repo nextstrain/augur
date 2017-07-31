@@ -3,7 +3,6 @@ import os, sys
 sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
 import base.process
 from base.process import process
-import argparse
 
 
 def collect_args():

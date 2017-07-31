@@ -11,7 +11,6 @@ from base.prepare import prepare
 from base.titer_model import TiterModel
 from datetime import datetime, timedelta, date
 from base.utils import fix_names
-import argparse
 from pprint import pprint
 from pdb import set_trace
 from flu_info import regions, outliers, reference_maps, reference_viruses, segments
