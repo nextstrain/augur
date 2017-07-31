@@ -1,11 +1,18 @@
 from __future__ import print_function
 import os, sys
 sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+import base.process
 from base.process import process
 import argparse
 
-parser = argparse.ArgumentParser(description = "Process a prepared zika JSON")
-parser.add_argument('--clean', action='store_true', help="clean build (remove previous checkpoints)")
+
+def collect_args():
+    parser = base.process.collect_args()
+    parser.set_defaults(
+        json="prepared/zika.json"
+    )
+    return parser
+
 
 config = {
     "dir": "zika",
@@ -39,8 +46,15 @@ config = {
 }
 
 if __name__=="__main__":
+    parser = collect_args()
     params = parser.parse_args()
-    if params.clean: config["clean"] = True
+
+    if params.clean:
+        config["clean"] = True
+
+    if params.json:
+        config["in"] = params.json
+
     runner = process(config)
     runner.align(fill_gaps=True)
     runner.build_tree()
