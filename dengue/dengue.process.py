@@ -59,13 +59,13 @@ def titer_model(process, **kwargs):
         process.titer_subs.validate() #(plot=True, fname='subModel_%s.png'%lineage)
 
     process.config["auspice"]["color_options"]["cTiter"] = {
-        "menuItem": "antigenic advance", "type": "continuous", "legendTitle": "Antigenic Advance", "key": "cTiter"
+    "menuItem": "antigenic advance", "type": "continuous", "legendTitle": "log2 titer distance from root", "key": "cTiter", "vmin": "0.0", "vmax": "2.0"
         }
 
 
 def titer_export(process):
     from base.io_util import write_json
-    prefix = os.path.join(process.config["output"]["auspice"], process.info["prefix"])
+    prefix = process.config["output"]["auspice"]+'/'+process.info["prefix"]+'_'
     if hasattr(process, 'titer_tree'):
         # export the raw titers
         data = process.titer_tree.compile_titers()
@@ -107,7 +107,7 @@ def make_config (prepared_json, args):
         "auspice": { ## settings for auspice JSON export
             "extra_attr": ['serum'],
             "color_options": {
-                "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
+                # "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
                 "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"},
             },
