@@ -31,7 +31,7 @@ references = {
 for key in references:
     references[key]["genes"] = ['C', 'M', 'E', 'NS1', 'NS2A', 'NS2B', 'NS3', 'NS4A', '2K', 'NS4B', 'NS5']
     references[key]["path"] = "metadata/dengue_{}_outgroup.gb".format(key)
-    references[key]["include"] = 1 # include ref seq in subsampling pool
+    references[key]["include"] = 0
 references["all"] = references["denv4"]
 
 
