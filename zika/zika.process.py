@@ -46,5 +46,4 @@ if __name__=="__main__":
     runner.build_tree()
     runner.timetree_setup_filter_run()
     runner.run_geo_inference()
-    runner.save_as_nexus()
     runner.auspice_export()
