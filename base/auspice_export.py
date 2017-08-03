@@ -2,7 +2,7 @@ from __future__ import division, print_function
 import sys, os, time, gzip, glob
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 import json
-# from pdb import set_trace
+from pdb import set_trace
 from collections import defaultdict
 
 def export_frequency_json(self, prefix, indent):
@@ -42,12 +42,16 @@ def export_frequency_json(self, prefix, indent):
 
 def summise_publications_from_tree(tree):
     info = defaultdict(lambda: {"n": 0, "title": "?"})
+    mapping = {}
     for clade in tree.find_clades():
         if "authors" in clade.attr:
+            mapping[clade.name] = clade.attr["authors"]
             info[clade.attr["authors"]]["n"] += 1
             if "title" in clade.attr:
                 info[clade.attr["authors"]]["title"] = clade.attr["title"]
-    return info
+        elif clade.is_terminal():
+            mapping[clade.name] = None
+    return (info, mapping)
 
 def export_metadata_json(self, prefix, indent):
     self.log.notify("Writing out metadata")
@@ -59,8 +63,10 @@ def export_metadata_json(self, prefix, indent):
         virus_count += 1
     meta_json["virus_count"] = virus_count
 
+    (author_info, seq_to_author) = summise_publications_from_tree(self.tree.tree)
+    meta_json["author_info"] = author_info
+    meta_json["seq_author_map"] = seq_to_author
 
-    meta_json["author_info"] = summise_publications_from_tree(self.tree.tree)
 
     # join up config color options with those in the input JSONs.
     col_opts = self.config["auspice"]["color_options"]
