@@ -2,6 +2,8 @@ from __future__ import division, print_function
 import sys, os, time, gzip, glob
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 import json
+# from pdb import set_trace
+from collections import defaultdict
 
 def export_frequency_json(self, prefix, indent):
 
@@ -38,15 +40,27 @@ def export_frequency_json(self, prefix, indent):
         self.log.notify("Cannot export frequencies - pivots do not exist")
 
 
+def summise_publications_from_tree(tree):
+    info = defaultdict(lambda: {"n": 0, "title": "?"})
+    for clade in tree.find_clades():
+        if "authors" in clade.attr:
+            info[clade.attr["authors"]]["n"] += 1
+            if "title" in clade.attr:
+                info[clade.attr["authors"]]["title"] = clade.attr["title"]
+    return info
+
 def export_metadata_json(self, prefix, indent):
+    self.log.notify("Writing out metadata")
+    meta_json = {}
+
     # count number of tip nodes
     virus_count = 0
     for node in self.tree.tree.get_terminals():
         virus_count += 1
+    meta_json["virus_count"] = virus_count
 
-    # write out metadata json# Write out metadata
-    self.log.notify("Writing out metadata")
-    meta_json = {}
+
+    meta_json["author_info"] = summise_publications_from_tree(self.tree.tree)
 
     # join up config color options with those in the input JSONs.
     col_opts = self.config["auspice"]["color_options"]
@@ -64,7 +78,7 @@ def export_metadata_json(self, prefix, indent):
         meta_json["analysisSlider"] = self.config["auspice"]["analysisSlider"]
     meta_json["panels"] = self.config["auspice"]["panels"]
     meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
-    meta_json["virus_count"] = virus_count
+
     if "defaults" in self.config["auspice"]:
         meta_json["defaults"] = self.config["auspice"]["defaults"]
 
