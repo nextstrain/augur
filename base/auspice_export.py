@@ -84,6 +84,8 @@ def export_metadata_json(self, prefix, indent):
         meta_json["analysisSlider"] = self.config["auspice"]["analysisSlider"]
     meta_json["panels"] = self.config["auspice"]["panels"]
     meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
+    meta_json["title"] = self.info["title"]
+
 
     if "defaults" in self.config["auspice"]:
         meta_json["defaults"] = self.config["auspice"]["defaults"]

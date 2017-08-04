@@ -255,7 +255,8 @@ class sequence_set(object):
             "commit": git.Repo(search_parent_directories=True).head.object.hexsha,
             "date_format": config["date_format"],
             "subsampled": bool(config["subsample"]),
-            "traits_are_dates": []
+            "traits_are_dates": [],
+            "title": config["title"],
         }
         if "traits_are_dates" in config and isinstance(config["traits_are_dates"], (list, tuple)):
             data["info"]["traits_are_dates"] = [trait for trait in config["traits_are_dates"] if trait in config["header_fields"].values()]

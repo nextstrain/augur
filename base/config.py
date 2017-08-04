@@ -92,6 +92,9 @@ def combine_configs(config_type, user_config):
         config["auspice"]["controls"]["geographic location"] = config["geo_inference"]
 
 
+    if config_type == "prepare" and "title" not in config:
+        config["title"] = config["file_prefix"]
+
     # pprint(config)
     # pprint(config["auspice"])
 
