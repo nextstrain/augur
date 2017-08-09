@@ -13,6 +13,7 @@ import json
 from pdb import set_trace
 from base.logger import logger
 from Bio import SeqIO
+from Bio import AlignIO
 import cPickle as pickle
 
 class process(object):
@@ -167,6 +168,7 @@ class process(object):
         self.seqs.strip_non_reference()
         if fill_gaps:
             self.seqs.make_gaps_ambiguous()
+        AlignIO.write(self.seqs.aln, self.output_path + "_aligned_stripped.mfa", 'fasta')
         # if outgroup is not None:
         #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
         self.seqs.translate() # creates self.seqs.translations
