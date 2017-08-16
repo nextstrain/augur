@@ -17,7 +17,7 @@ def collect_args():
 
     parser.add_argument('-s', '--serotypes', '--lineage', choices=["all", "denv1", "denv2", "denv3", "denv4", "multiple"], default="multiple", type=str, nargs='+', help="Serotype(s) to prepare. \"multiple\" will run them all.")
     parser.add_argument('-y', '--years_back', type=int, default=100, help="Years back in time to sample from")
-    parser.add_argument('--titers', default='../../fauna/data/dengue_titers.tsv', help="tab-delimited file of titer strains and values from fauna (e.g., dengue_titers.tsv)")
+    parser.add_argument('--titers', help="tab-delimited file of titer strains and values from fauna (e.g., dengue_titers.tsv)")
     parser.set_defaults(
         viruses_per_month=3,
         file_prefix="dengue"
