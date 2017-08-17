@@ -68,6 +68,21 @@ def rising_mutations(freqs, genes, region='NA', dn=5, baseline = 0.01):
         print("%s:%d%s: x=%1.3f, dx=%1.3f, dx/x=%1.3f"%(k[1], k[2]+1, k[3], v[0], v[1], v[2]))
     return dx
 
+def freq_auto_corr(freq1, freq2, min_dfreq=0.2):
+    dt = 5
+    corr = np.zeros(2*dt+1)
+    for mut in freq1:
+        if mut in freq2:
+            f1 = freq1[mut]
+            if f1.max() - f1.min()>min_dfreq and f1[-1]>0.8 and f1[0]<0.2:
+                f2 = freq2[mut]
+                corr[dt]+= np.mean((f1-f1.mean())*(f2-f2.mean()))
+                for i in range(1,dt+1):
+                    corr[dt-i]+= np.mean((f1[i:]-f1[i:].mean())*(f2[:-i]-f2[:-i].mean()))
+                    corr[dt+i]+= np.mean((f1[:-i]-f1[:-i].mean())*(f2[i:]-f2[i:].mean()))
+
+    return corr
+
 if __name__=="__main__":
     args = collect_args()
     jsons = glob.glob("prepared/*.json") if "all" in args.jsons else args.jsons
