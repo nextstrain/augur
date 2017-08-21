@@ -315,7 +315,7 @@ class process(object):
                          self.mutation_frequency_counts), fh, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-    def global_frequencies(region_groups, pop_sizes, min_freq):
+    def global_frequencies(min_freq):
         # determine sites whose frequencies need to be computed in all regions
         self.seqs.diversity_statistics()
         include_set = {}
@@ -330,6 +330,7 @@ class process(object):
         total_popsize = np.sum(pop_sizes.values())
 
         # estimate frequencies in individual regions
+        # TODO: move inertia and stiffness parameters to config
         for region in region_groups.iteritems():
             self.estimate_mutation_frequencies(pivots=pivots, region=region, min_freq=0.02, include_set=include_set,
                                                  inertia=np.exp(-2.0/12), stiffness=2.0*12)

@@ -101,7 +101,7 @@ if __name__=="__main__":
         # estimate mutation frequencies here.
         # While this could be in a wrapper, it is hopefully more readable this way!
         if runner.config["estimate_mutation_frequencies"]:
-            runner.global_frequencies()
+            runner.global_frequencies(min_freq)
 
             for region in ['AS', 'NA']:
                 mlist = rising_mutations(runner.mutation_frequencies, ['HA1', 'HA2'], region=region, fname = "rising_mutations/%s_%s_rising_mutations.txt"%(runner.info["prefix"], region))
