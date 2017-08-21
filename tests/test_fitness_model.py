@@ -76,19 +76,21 @@ def real_tree(multiple_sequence_alignment):
 @pytest.fixture
 def simple_fitness_model(simple_tree):
     return fitness_model(
+        tree=simple_tree,
+        frequencies={},
         predictor_input=["ep"],
         pivots_per_year=12,
-        time_interval=(2012.0, 2015.0),
-        tree=simple_tree
+        time_interval=(2012.0, 2015.0)
     )
 
 @pytest.fixture
 def real_fitness_model(real_tree, multiple_sequence_alignment):
     model = fitness_model(
+        tree=real_tree,
+        frequencies={},
         predictor_input=["ep"],
         pivots_per_year=12,
-        time_interval=(2014.5, 2017.5),
-        tree=real_tree
+        time_interval=(2014.5, 2017.5)
     )
     model.nuc_aln = multiple_sequence_alignment
     model.nuc_alphabet = 'ACGT-N'
