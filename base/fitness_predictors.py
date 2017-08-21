@@ -3,12 +3,7 @@ import numpy as np
 from itertools import izip
 from scipy.stats import linregress
 import sys
-from seq_util import translate
-from io_util import read_json
-from io_util import write_json
-from tree_util import json_to_dendropy
-from tree_util import dendropy_to_json
-from fitness_tolerance import assign_fitness_tolerance
+#from fitness_tolerance import assign_fitness_tolerance
 
 # all fitness predictors should be designed to give a positive sign, ie.
 # number of epitope mutations
@@ -124,7 +119,7 @@ class fitness_predictors(object):
 		for node in tree.postorder_node_iter():
 			if not hasattr(node, 'np_ep'):
 				if not hasattr(node, 'aa'):
-					node.aa = translate(node.seq)
+					node.aa = node.seq.translate()
 				node.np_ep = np.array(list(self.epitope_sites(node.aa)))
 		if ref == None:
 			ref = tree.seed_node
@@ -147,7 +142,7 @@ class fitness_predictors(object):
 					comparison_nodes.append(node)
 			if not hasattr(node, 'np_ep'):
 				if not hasattr(node, 'aa'):
-					node.aa = translate(node.seq)
+					node.aa = node.seq.translate()
 				node.np_ep = np.array(list(self.epitope_sites(node.aa)))
 		print "calculating cross-immunity to " + str(len(comparison_nodes)) + " comparison nodes"
 		for node in tree.postorder_node_iter():
@@ -167,10 +162,10 @@ class fitness_predictors(object):
 		attr   --   the attribute name used to save the result
 		'''
 		if ref == None:
-			ref = translate(tree.seed_node.seq)
+			ref = tree.seed_node.seq.translate()
 		for node in tree.postorder_node_iter():
 			if not hasattr(node, 'aa'):
-				node.aa = translate(node.seq)
+				node.aa = node.seq.translate()
 			node.__setattr__(attr, self.rbs_distance(node.aa, ref))
 
 	def calc_tolerance(self, tree, epitope_mask=None, attr='tol'):
@@ -188,10 +183,10 @@ class fitness_predictors(object):
 		attr   --   the attribute name used to save the result
 		'''
 		if ref == None:
-			ref = translate(tree.seed_node.seq)
+			ref = tree.seed_node.seq.translate()
 		for node in tree.postorder_node_iter():
 			if not hasattr(node, 'aa'):
-				node.aa = translate(node.seq)
+				node.aa = node.seq.translate()
 			distance = self.nonepitope_distance(node.aa, ref)
 			node.__setattr__(attr, -1 * distance)
 
@@ -204,7 +199,7 @@ class fitness_predictors(object):
 		for node in tree.postorder_node_iter():
 			if len(node.season_tips) and node!=tree.seed_node:
 				if not hasattr(node, 'aa'):
-					node.aa = translate(node.seq)
+					node.aa = node.seq.translate()
 				tmp_node = node.parent_node
 				cur_season = min(node.season_tips.keys())
 				prev_season = seasons[max(0,seasons.index(cur_season)-1)]
@@ -217,7 +212,7 @@ class fitness_predictors(object):
 					else:
 						break
 				if not hasattr(tmp_node, 'aa'):
-					tmp_node.aa = translate(tmp_node.seq)
+					tmp_node.aa = tmp_node.seq.translate()
 				node.__setattr__(attr, self.nonepitope_distance(node.aa, tmp_node.aa))
 			else:
 				node.__setattr__(attr, np.nan)
@@ -259,27 +254,3 @@ class fitness_predictors(object):
 			for child in node.child_nodes():
 				tmp_LBI += child.up_polarizer
 			node.__setattr__(attr, transform(tmp_LBI))
-
-def main(tree_fname = 'data/tree_refine.json'):
-
-	print "--- Testing predictor evaluations ---"
-	tree =  json_to_dendropy(read_json(tree_fname))
-
-	fp = fitness_predictors()
-
-	print "Calculating epitope distances"
-	fp.calc_epitope_distance(tree)
-
-	print "Calculating nonepitope distances"
-	fp.calc_nonepitope_distance(tree)
-
-#	print "Calculating LBI"
-#	fp.calc_LBI(tree)
-
-	print "Writing decorated tree"
-	out_fname = "data/tree_predictors.json"
-	write_json(dendropy_to_json(tree.seed_node), out_fname)
-	return out_fname
-
-if __name__=='__main__':
-	main()
