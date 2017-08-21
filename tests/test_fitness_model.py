@@ -74,7 +74,7 @@ def real_tree(multiple_sequence_alignment):
     return tree
 
 @pytest.fixture
-def fitness_model(simple_tree):
+def simple_fitness_model(simple_tree):
     return fitness_model(
         predictor_input=["ep"],
         pivots_per_year=12,
@@ -129,45 +129,45 @@ def modify_sequence_at_site(sequence, site):
 #
 
 class TestFitnessModel(object):
-    def test_prep_nodes(self, fitness_model):
-        assert not hasattr(fitness_model, "nodes")
-        fitness_model.prep_nodes()
-        assert hasattr(fitness_model, "nodes")
-        assert hasattr(fitness_model, "rootnode")
-        assert hasattr(fitness_model.rootnode, "pivots")
+    def test_prep_nodes(self, simple_fitness_model):
+        assert not hasattr(simple_fitness_model, "nodes")
+        simple_fitness_model.prep_nodes()
+        assert hasattr(simple_fitness_model, "nodes")
+        assert hasattr(simple_fitness_model, "rootnode")
+        assert hasattr(simple_fitness_model.rootnode, "pivots")
 
-    def test_calc_node_frequencies(self, fitness_model):
-        fitness_model.prep_nodes()
-        assert not hasattr(fitness_model, "freq_arrays")
-        fitness_model.calc_node_frequencies()
-        assert hasattr(fitness_model, "freq_arrays")
-        assert len(fitness_model.freq_arrays) > 0
+    def test_calc_node_frequencies(self, simple_fitness_model):
+        simple_fitness_model.prep_nodes()
+        assert not hasattr(simple_fitness_model, "freq_arrays")
+        simple_fitness_model.calc_node_frequencies()
+        assert hasattr(simple_fitness_model, "freq_arrays")
+        assert len(simple_fitness_model.freq_arrays) > 0
 
-    def test_calc_all_predictors(self, fitness_model):
-        fitness_model.prep_nodes()
-        fitness_model.calc_node_frequencies()
-        assert not hasattr(fitness_model, "predictor_arrays")
-        fitness_model.calc_all_predictors()
-        assert hasattr(fitness_model, "predictor_arrays")
-        assert len(fitness_model.predictor_arrays) > 0
+    def test_calc_all_predictors(self, simple_fitness_model):
+        simple_fitness_model.prep_nodes()
+        simple_fitness_model.calc_node_frequencies()
+        assert not hasattr(simple_fitness_model, "predictor_arrays")
+        simple_fitness_model.calc_all_predictors()
+        assert hasattr(simple_fitness_model, "predictor_arrays")
+        assert len(simple_fitness_model.predictor_arrays) > 0
 
-    def test_standardize_predictors(self, fitness_model):
-        fitness_model.prep_nodes()
-        fitness_model.calc_node_frequencies()
-        fitness_model.calc_all_predictors()
-        assert not hasattr(fitness_model, "predictor_means")
-        fitness_model.standardize_predictors()
-        assert hasattr(fitness_model, "predictor_means")
+    def test_standardize_predictors(self, simple_fitness_model):
+        simple_fitness_model.prep_nodes()
+        simple_fitness_model.calc_node_frequencies()
+        simple_fitness_model.calc_all_predictors()
+        assert not hasattr(simple_fitness_model, "predictor_means")
+        simple_fitness_model.standardize_predictors()
+        assert hasattr(simple_fitness_model, "predictor_means")
 
-    def test_select_clades_for_fitting(self, fitness_model):
-        fitness_model.prep_nodes()
-        fitness_model.calc_node_frequencies()
-        fitness_model.calc_all_predictors()
-        fitness_model.standardize_predictors()
-        assert not hasattr(fitness_model, "fit_clades")
-        fitness_model.select_clades_for_fitting()
-        assert hasattr(fitness_model, "fit_clades")
-        assert len(fitness_model.fit_clades) > 0
+    def test_select_clades_for_fitting(self, simple_fitness_model):
+        simple_fitness_model.prep_nodes()
+        simple_fitness_model.calc_node_frequencies()
+        simple_fitness_model.calc_all_predictors()
+        simple_fitness_model.standardize_predictors()
+        assert not hasattr(simple_fitness_model, "fit_clades")
+        simple_fitness_model.select_clades_for_fitting()
+        assert hasattr(simple_fitness_model, "fit_clades")
+        assert len(simple_fitness_model.fit_clades) > 0
 
     def test_prep_af(self, real_fitness_model):
         real_fitness_model.prep_nodes()
