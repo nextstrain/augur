@@ -4,7 +4,6 @@ Tests for the `fitness_model` module.
 import Bio.Align.AlignInfo
 import Bio.Phylo
 import Bio.SeqIO
-import dendropy
 import pytest
 
 try:
@@ -22,7 +21,7 @@ def simple_tree():
 	one modification each.
 	"""
 	# Build simple tree.
-	tree = dendropy.Tree(stream=StringIO("(A,B);"), schema="newick")
+        tree = Bio.Phylo.read(StringIO("(A,B);"), "newick")
 
 	# Build sequences for tree nodes. One leaf has a Koel and epitope site
 	# mutation. The other leaf has a signal peptide mutation.
@@ -47,21 +46,21 @@ def real_tree(multiple_sequence_alignment):
 	for H3N2.
 	"""
 	# Load the tree.
-	tree = dendropy.Tree.get_from_path("tests/data/H3N2_tree.newick", "newick")
+	tree = Bio.Phylo.read("tests/data/H3N2_tree.newick", "newick")
 
 	# Make a lookup table of name to sequence.
 	sequences_by_name = dict([(alignment.name, str(alignment.seq))
 				  for alignment in multiple_sequence_alignment])
 
 	# Assign sequences to the tree.
-	for node in tree.nodes():
-		if node.taxon is not None:
-			node.seq = sequences_by_name[node.taxon.label]
+	for node in tree.find_clades():
+		if node.name is not None:
+			node.seq = sequences_by_name[node.name]
 
 			# Since sequence names look like "A/Singapore/TT0495/2017",
 			# convert the last element to a floating point value for
 			# simplicity.
-			node.num_date = float(node.taxon.label.split("/")[-1])
+			node.num_date = float(node.name.split("/")[-1])
 		else:
 			# Build a "dumb" consensus from the alignment for the
 			# ancestral node and assign an arbitrary date in the
@@ -200,6 +199,6 @@ class TestFitnessModel(object):
 		real_fitness_model.select_clades_for_fitting()
 		real_fitness_model.prep_af()
 		real_fitness_model.learn_parameters(niter=1, fit_func="clade")
-		assert not any([hasattr(node, "fitness") for node in real_fitness_model.tree.nodes()])
+		assert not any([hasattr(node, "fitness") for node in real_fitness_model.tree.find_clades()])
 		real_fitness_model.assign_fitness()
-		assert all([hasattr(node, "fitness") for node in real_fitness_model.tree.nodes()])
+		assert all([hasattr(node, "fitness") for node in real_fitness_model.tree.find_clades()])
