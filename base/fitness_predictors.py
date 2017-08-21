@@ -116,14 +116,14 @@ class fitness_predictors(object):
 		tree   --   dendropy tree
 		attr   --   the attribute name used to save the result
 		'''
-		for node in tree.postorder_node_iter():
+		for node in tree.find_clades(order="postorder"):
 			if not hasattr(node, 'np_ep'):
 				if not hasattr(node, 'aa'):
 					node.aa = node.seq.translate()
 				node.np_ep = np.array(list(self.epitope_sites(node.aa)))
 		if ref == None:
-			ref = tree.seed_node
-		for node in tree.postorder_node_iter():
+			ref = tree.root
+		for node in tree.find_clades(order="postorder"):
 			node.__setattr__(attr, self.fast_epitope_distance(node.np_ep, ref.np_ep))
 
 	def calc_epitope_cross_immunity(self, tree, timepoint, window = 2.0, attr='ep_x'):
@@ -136,7 +136,7 @@ class fitness_predictors(object):
 		attr   --   the attribute name used to save the result
 		'''
 		comparison_nodes = []
-		for node in tree.postorder_node_iter():
+		for node in tree.find_clades(order="postorder"):
 			if node.is_leaf():
 				if node.num_date < timepoint and node.num_date > timepoint - window:
 					comparison_nodes.append(node)
@@ -145,7 +145,7 @@ class fitness_predictors(object):
 					node.aa = node.seq.translate()
 				node.np_ep = np.array(list(self.epitope_sites(node.aa)))
 		print "calculating cross-immunity to " + str(len(comparison_nodes)) + " comparison nodes"
-		for node in tree.postorder_node_iter():
+		for node in tree.find_clades(order="postorder"):
 			mean_distance = 0
 			count = 0
 			for comp_node in comparison_nodes:
@@ -162,8 +162,8 @@ class fitness_predictors(object):
 		attr   --   the attribute name used to save the result
 		'''
 		if ref == None:
-			ref = tree.seed_node.seq.translate()
-		for node in tree.postorder_node_iter():
+			ref = tree.root.seq.translate()
+		for node in tree.find_clades(order="postorder"):
 			if not hasattr(node, 'aa'):
 				node.aa = node.seq.translate()
 			node.__setattr__(attr, self.rbs_distance(node.aa, ref))
@@ -183,8 +183,8 @@ class fitness_predictors(object):
 		attr   --   the attribute name used to save the result
 		'''
 		if ref == None:
-			ref = tree.seed_node.seq.translate()
-		for node in tree.postorder_node_iter():
+			ref = tree.root.seq.translate()
+		for node in tree.find_clades(order="postorder"):
 			if not hasattr(node, 'aa'):
 				node.aa = node.seq.translate()
 			distance = self.nonepitope_distance(node.aa, ref)
@@ -196,15 +196,15 @@ class fitness_predictors(object):
 		tree   --   dendropy tree
 		attr   --   the attribute name used to save the result
 		'''
-		for node in tree.postorder_node_iter():
-			if len(node.season_tips) and node!=tree.seed_node:
+		for node in tree.find_clades(order="postorder"):
+			if len(node.season_tips) and node!=tree.root:
 				if not hasattr(node, 'aa'):
 					node.aa = node.seq.translate()
 				tmp_node = node.parent_node
 				cur_season = min(node.season_tips.keys())
 				prev_season = seasons[max(0,seasons.index(cur_season)-1)]
 				while True:
-					if tmp_node!=tree.seed_node:
+					if tmp_node!=tree.root:
 						if prev_season in tmp_node.season_tips and len(tmp_node.season_tips[prev_season])>0:
 							break
 						else:
@@ -227,7 +227,7 @@ class fitness_predictors(object):
 		attr	 -- the attribute name used to store the result
 		'''
 		# traverse the tree in postorder (children first) to calculate msg to parents
-		for node in tree.postorder_node_iter():
+		for node in tree.find_clades(order="postorder"):
 			node.down_polarizer = 0
 			node.up_polarizer = 0
 			for child in node.child_nodes():
@@ -249,7 +249,7 @@ class fitness_predictors(object):
 				if child1.alive: child1.down_polarizer += tau*(1-np.exp(-bl))
 
 		# go over all nodes and calculate the LBI (can be done in any order)
-		for node in tree.postorder_node_iter():
+		for node in tree.find_clades(order="postorder"):
 			tmp_LBI = node.down_polarizer
 			for child in node.child_nodes():
 				tmp_LBI += child.up_polarizer
