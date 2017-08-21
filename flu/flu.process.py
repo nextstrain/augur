@@ -55,7 +55,7 @@ def make_config (prepared_json, args):
         }
     }
 
-def rising_mutations(freqs, genes, region='NA', dn=5, baseline = 0.01):
+def rising_mutations(freqs, genes, region='NA', dn=5, baseline = 0.01, fname='tmp.txt'):
     dx = {}
     for gene in genes:
         for mut,f  in freqs[(region, gene)].iteritems():
@@ -63,9 +63,13 @@ def rising_mutations(freqs, genes, region='NA', dn=5, baseline = 0.01):
             tmp_dx = f[-1] - f[-dn]
             dx[(region, gene, mut[0], mut[1])] = (tmp_x, tmp_dx, tmp_dx/(tmp_x+baseline))
 
-    print("#Frequency change over the last %d month in region %s"%(dn, region))
-    for k,v in sorted(dx.items(), key=lambda x:x[1][2])[-10:]:
-        print("%s:%d%s: x=%1.3f, dx=%1.3f, dx/x=%1.3f"%(k[1], k[2]+1, k[3], v[0], v[1], v[2]))
+    with open(fname, 'w') as ofile:
+        ofile.write("#Frequency change over the last %d month in region %s\n"%(dn, region))
+        print("#Frequency change over the last %d month in region %s"%(dn, region))
+        for k,v in sorted(dx.items(), key=lambda x:x[1][2])[-10:]:
+            ofile.write("%s:%d%s: x=%1.3f, dx=%1.3f, dx/x=%1.3f\n"%(k[1], k[2]+1, k[3], v[0], v[1], v[2]))
+            print("%s:%d%s: x=%1.3f, dx=%1.3f, dx/x=%1.3f"%(k[1], k[2]+1, k[3], v[0], v[1], v[2]))
+        ofile.write('\n')
     return dx
 
 if __name__=="__main__":
@@ -92,7 +96,7 @@ if __name__=="__main__":
             pop_sizes = {str(x):np.sum([y[-1] for y in runner.info["regions"] if y[1] == x]) for x in acronyms}
             for region in region_groups.iteritems():
                 runner.estimate_mutation_frequencies(pivots=pivots, region=region, min_freq=0.02, include_set=include_set,
-                                                     inertia=np.exp(-1.0/12), stiffness=0.8*12)
+                                                     inertia=np.exp(-2.0/12), stiffness=2.0*12)
             total_popsize = np.sum(pop_sizes.values())
             for prot in ['nuc'] + runner.seqs.translations.keys():
                 weights = {region: np.array(runner.mutation_frequency_counts[region], dtype = float)
@@ -118,8 +122,8 @@ if __name__=="__main__":
                 runner.mutation_frequency_counts["global"] = gl_counts
                 runner.mutation_frequency_confidence[("global", prot)] = gl_confidence
 
-                for region in ['AS', 'NA']:
-                    mlist = rising_mutations(runner.mutation_frequencies, ['HA1', 'HA2'], region=region)
+            for region in ['AS', 'NA']:
+                mlist = rising_mutations(runner.mutation_frequencies, ['HA1', 'HA2'], region=region, fname = "rising_mutations/%s_%s_rising_mutations.txt"%(runner.info["prefix"], region))
 
         if runner.config["build_tree"]:
             if hasattr(runner, 'tree_leaves'): # subsample alignment
