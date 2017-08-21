@@ -35,7 +35,7 @@ def simple_tree():
     sequences = (root, leaf_a, leaf_b)
     dates = (2012.5, 2013.25, 2014.8)
     index = 0
-    for node in tree.preorder_node_iter():
+    for node in tree.find_clades(order="preorder"):
         node.aa = sequences[index]
         node.num_date = dates[index]
         index += 1
