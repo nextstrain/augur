@@ -2,12 +2,10 @@ import argparse
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.stats import linregress
-import dendropy
 from collections import defaultdict
-from datetime import date
-from date_util import calendar_date
 from itertools import izip
-from bernoulli_frequency import get_pivots, virus_frequencies
+
+from frequencies import make_pivots
 from fitness_predictors import fitness_predictors
 
 min_freq = 0.1
@@ -17,7 +15,7 @@ pc=1e-2
 regularization = 1e-3
 default_predictors = ['lb', 'ep', 'ne_star']
 
-class fitness_model(virus_frequencies):
+class fitness_model(object):
 
     def __init__(self, predictor_input = ['ep', 'lb', 'dfreq'], verbose = 0, enforce_positive_predictors = True, **kwargs):
         '''
@@ -53,7 +51,7 @@ class fitness_model(virus_frequencies):
         if (not hasattr(self, "pivots") and
             hasattr(self, "time_interval") and
             hasattr(self, "pivots_per_year")):
-            self.pivots = get_pivots(self.time_interval[0], self.time_interval[1], self.pivots_per_year)
+            self.pivots = make_pivots(self.pivots_per_year, self.time_interval)
 
         if "tree" in kwargs:
             self.tree = kwargs["tree"]
