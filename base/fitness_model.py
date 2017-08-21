@@ -81,9 +81,9 @@ class fitness_model(object):
         TODO: consider moving this code directly into the `predict`
         method since it is only ever called there.
         """
-        self.nodes = [node for node in self.tree.postorder_node_iter()]
-        self.tips = [node for node in self.nodes if node.is_leaf()]
-        self.rootnode = self.tree.seed_node
+        self.nodes = [node for node in self.tree.find_clades(order="postorder")]
+        self.tips = [node for node in self.nodes if node.is_terminal()]
+        self.rootnode = self.tree.root
         self.rootnode.pivots = self.pivots
         # each node has list of tip indices under node.tips that map to self.tips list
 
@@ -129,10 +129,10 @@ class fitness_model(object):
 #                   node.alive=True
 #               else:
 #                   node.alive=False
-        for node in self.tree.postorder_node_iter():
+        for node in self.tree.find_clades(order="postorder"):
             #if season in node.season_tips and len(node.season_tips[season])>0:
-            if node.is_internal():
-                node.alive = any(ch.alive for ch in node.child_nodes())
+            if not node.is_terminal():
+                node.alive = any(ch.alive for ch in node.clades)
             else:
                 if node.num_date <= timepoint and node.num_date > timepoint - 6.0/12.0:
                     node.alive=True
@@ -272,7 +272,7 @@ class fitness_model(object):
         seasonal_errors = []
         self.pred_vs_true = []
         for s,t in self.fit_test_season_pairs:
-            weights = np.exp(self.fitness(params, self.predictor_arrays[s][self.tree.seed_node.season_tips[s],:]))
+            weights = np.exp(self.fitness(params, self.predictor_arrays[s][self.tree.root.season_tips[s],:]))
             pred_af = self.weighted_af(self.seqs[s],weights)
             #seasonal_errors.append(np.mean(np.sum((pred_af-self.af[t])**2, axis=0), axis=0))
             future_diameter = 0.5*np.sum(np.sum(self.af[t]*(1-self.af[t]), axis=0), axis=0)
@@ -527,7 +527,7 @@ def main(params):
     fm = fitness_model(tree, predictors = params['predictors'], verbose=1)
     fm.predict(niter = params['niter'])
     out_fname = "data/tree_fitness.json"
-    write_json(dendropy_to_json(tree.seed_node), out_fname)
+    write_json(dendropy_to_json(tree.root), out_fname)
     return out_fname
 
 if __name__=="__main__":
