@@ -315,6 +315,57 @@ class process(object):
                          self.mutation_frequency_counts), fh, protocol=pickle.HIGHEST_PROTOCOL)
 
 
+    def global_frequencies(region_groups, pop_sizes, min_freq):
+        # determine sites whose frequencies need to be computed in all regions
+        self.seqs.diversity_statistics()
+        include_set = {}
+        for prot in ['nuc'] + self.seqs.translations.keys():
+            include_set[prot] = np.where(np.sum(self.seqs.af[prot][:-2]**2, axis=0)<np.sum(self.seqs.af[prot][:-2], axis=0)**2-min_freq)[0]
+
+        # set pivots and define groups of larger regions for frequency display
+        pivots = self.get_pivots_via_spacing()
+        acronyms = set([x[1] for x in self.info["regions"] if x[1]!=""])
+        region_groups = {str(x):[str(y[0]) for y in self.info["regions"] if y[1] == x] for x in acronyms}
+        pop_sizes = {str(x):np.sum([y[-1] for y in self.info["regions"] if y[1] == x]) for x in acronyms}
+        total_popsize = np.sum(pop_sizes.values())
+
+        # estimate frequencies in individual regions
+        for region in region_groups.iteritems():
+            self.estimate_mutation_frequencies(pivots=pivots, region=region, min_freq=0.02, include_set=include_set,
+                                                 inertia=np.exp(-2.0/12), stiffness=2.0*12)
+
+        # perform a weighted average of frequencies across the regions to determine
+        # global frequencies.
+        # First: compute the weights accounting for seasonal variation and populations size
+        weights = {region: np.array(self.mutation_frequency_counts[region], dtype = float)
+                   for region in acronyms}
+
+        for region in weights: # map maximal count across time to 1.0, weigh by pop size
+            weights[region] = np.maximum(0.1, weights[region]/weights[region].max())
+            weights[region]*=pop_sizes[region]
+
+        # compute the normalizer
+        total_weight = np.sum([weights[region] for region in acronyms],axis=0)
+
+        for prot in ['nuc'] + self.seqs.translations.keys():
+            gl_freqs, gl_counts, gl_confidence = {}, {}, {}
+            all_muts = set()
+            for region in acronyms: # list all unique mutations
+                all_muts.update(self.mutation_frequencies[(region, prot)].keys())
+            for mut in all_muts: # compute the weighted average
+                gl_freqs[mut] = np.sum([self.mutation_frequencies[(region, prot)][mut]*weights[region] for region in acronyms
+                                        if mut in self.mutation_frequencies[(region, prot)]], axis=0)/total_weight
+                gl_confidence[mut] = np.sqrt(np.sum([self.mutation_frequency_confidence[(region, prot)][mut]**2*weights[region]
+                                                     for region in acronyms
+                                            if mut in self.mutation_frequencies[(region, prot)]], axis=0)/total_weight)
+            gl_counts = np.sum([self.mutation_frequency_counts[region] for region in acronyms
+                                        if mut in self.mutation_frequencies[(region, prot)]], axis=0)
+            # save in mutation_frequency data structure
+            self.mutation_frequencies[("global", prot)] = gl_freqs
+            self.mutation_frequency_counts["global"] = gl_counts
+            self.mutation_frequency_confidence[("global", prot)] = gl_confidence
+
+
     def save_tree_frequencies(self):
         """
         Save tree frequencies to a pickle on disk.

@@ -55,6 +55,7 @@ def make_config (prepared_json, args):
         }
     }
 
+
 def rising_mutations(freqs, genes, region='NA', dn=5, baseline = 0.01, fname='tmp.txt'):
     dx = {}
     for gene in genes:
@@ -71,6 +72,7 @@ def rising_mutations(freqs, genes, region='NA', dn=5, baseline = 0.01, fname='tm
             print("%s:%d%s: x=%1.3f, dx=%1.3f, dx/x=%1.3f"%(k[1], k[2]+1, k[3], v[0], v[1], v[2]))
         ofile.write('\n')
     return dx
+
 
 def freq_auto_corr(freq1, freq2, min_dfreq=0.2):
     dt = 5
@@ -99,43 +101,7 @@ if __name__=="__main__":
         # estimate mutation frequencies here.
         # While this could be in a wrapper, it is hopefully more readable this way!
         if runner.config["estimate_mutation_frequencies"]:
-            runner.seqs.diversity_statistics()
-            include_set = {}
-            for prot in ['nuc'] + runner.seqs.translations.keys():
-                include_set[prot] = np.where(np.sum(runner.seqs.af[prot][:-2]**2, axis=0)<np.sum(runner.seqs.af[prot][:-2], axis=0)**2-min_freq)[0]
-
-            pivots = runner.get_pivots_via_spacing()
-            # runner.estimate_mutation_frequencies(pivots=pivots, min_freq=0.02, inertia=np.exp(-1.0/12), stiffness=0.8*12)
-            acronyms = set([x[1] for x in runner.info["regions"] if x[1]!=""])
-            region_groups = {str(x):[str(y[0]) for y in runner.info["regions"] if y[1] == x] for x in acronyms}
-            pop_sizes = {str(x):np.sum([y[-1] for y in runner.info["regions"] if y[1] == x]) for x in acronyms}
-            for region in region_groups.iteritems():
-                runner.estimate_mutation_frequencies(pivots=pivots, region=region, min_freq=0.02, include_set=include_set,
-                                                     inertia=np.exp(-2.0/12), stiffness=2.0*12)
-            total_popsize = np.sum(pop_sizes.values())
-            for prot in ['nuc'] + runner.seqs.translations.keys():
-                weights = {region: np.array(runner.mutation_frequency_counts[region], dtype = float)
-                           for region in acronyms}
-                for region in weights:
-                    weights[region] = np.maximum(0.1, weights[region]/weights[region].max())
-                    weights[region]*=pop_sizes[region]
-
-                total_weight = np.sum([weights[region] for region in acronyms],axis=0)
-                gl_freqs, gl_counts, gl_confidence = {}, {}, {}
-                all_muts = set()
-                for region in acronyms:
-                    all_muts.update(runner.mutation_frequencies[(region, prot)].keys())
-                for mut in all_muts:
-                    gl_freqs[mut] = np.sum([runner.mutation_frequencies[(region, prot)][mut]*weights[region] for region in acronyms
-                                            if mut in runner.mutation_frequencies[(region, prot)]], axis=0)/total_weight
-                    gl_confidence[mut] = np.sqrt(np.sum([runner.mutation_frequency_confidence[(region, prot)][mut]**2*weights[region]
-                                                         for region in acronyms
-                                                if mut in runner.mutation_frequencies[(region, prot)]], axis=0)/total_weight)
-                gl_counts = np.sum([runner.mutation_frequency_counts[region] for region in acronyms
-                                            if mut in runner.mutation_frequencies[(region, prot)]], axis=0)
-                runner.mutation_frequencies[("global", prot)] = gl_freqs
-                runner.mutation_frequency_counts["global"] = gl_counts
-                runner.mutation_frequency_confidence[("global", prot)] = gl_confidence
+            runner.global_frequencies()
 
             for region in ['AS', 'NA']:
                 mlist = rising_mutations(runner.mutation_frequencies, ['HA1', 'HA2'], region=region, fname = "rising_mutations/%s_%s_rising_mutations.txt"%(runner.info["prefix"], region))
