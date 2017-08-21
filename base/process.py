@@ -315,7 +315,7 @@ class process(object):
                          self.mutation_frequency_counts), fh, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-    def global_frequencies(min_freq):
+    def global_frequencies(self, min_freq):
         # determine sites whose frequencies need to be computed in all regions
         self.seqs.diversity_statistics()
         include_set = {}
