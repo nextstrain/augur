@@ -432,26 +432,12 @@ class fitness_model(object):
             else:
                 node.fitness = 0.0
 
-        proj = self.projection(self.model_params, self.predictor_arrays[final_timepoint], self.freq_arrays[final_timepoint], self.delta_time)
-        total_pred_freq = np.sum(proj)
-        proj /= total_pred_freq
-        pred_af = self.weighted_af(self.seqs, proj)
-
-        for node in self.nodes:
-            if node.predictors[final_timepoint] is not None:
-                seq = np.fromstring(node.seq, 'S1')[self.variable_nuc]
-                seq_indicators = self.weighted_af(np.array([seq]), np.ones(1))
-                node.pred_distance = np.sum(np.sum(pred_af*(1-seq_indicators), axis=0), axis=0)
-            else:
-                node.pred_distance = 0.0
-
     def predict(self, niter = 10, estimate_frequencies = True):
         self.prep_nodes()
         self.calc_node_frequencies()
         self.calc_all_predictors(estimate_frequencies = estimate_frequencies)
         self.standardize_predictors()
         self.select_clades_for_fitting()
-        self.prep_af()
         if self.estimate_coefficients:
             self.learn_parameters(niter = niter, fit_func = "clade")
         self.assign_fitness()
