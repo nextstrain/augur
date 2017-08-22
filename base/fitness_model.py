@@ -148,7 +148,7 @@ class fitness_model(object):
             if not node.is_terminal():
                 node.alive = any(ch.alive for ch in node.clades)
             else:
-                if node.num_date <= timepoint and node.num_date > timepoint - 6.0/12.0:
+                if node.numdate <= timepoint and node.numdate > timepoint - 6.0/12.0:
                     node.alive=True
                 else:
                     node.alive=False
@@ -167,7 +167,7 @@ class fitness_model(object):
         for time in self.timepoints:
             time_interval = [time - freq_window, time]
             pivots = make_pivots(total_pivots, time_interval)
-            node_filter_func = lambda node: node.num_date >= time_interval[0] and node.num_date < time_interval[1]
+            node_filter_func = lambda node: node.numdate >= time_interval[0] and node.numdate < time_interval[1]
 
             # Recalculate tree frequencies for the given time interval and its
             # corresponding pivots.
