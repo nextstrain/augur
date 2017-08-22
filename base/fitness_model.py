@@ -75,6 +75,12 @@ class fitness_model(object):
 
         self.fp = fitness_predictors(predictor_names = predictor_names, **kwargs)
 
+        # Map node names to parents.
+        self.node_parents = {}
+        for clade in self.tree.find_clades(order='level'):
+            for child in clade:
+                self.node_parents[child] = clade
+
     def prep_nodes(self):
         """Assigns data from the tree to top-level fitness model attributes.
 
@@ -189,7 +195,7 @@ class fitness_model(object):
                 if node.logit_freq[region] is not None:
                     node.fit_frequencies[time] = np.minimum(freq_cutoff, np.maximum(-freq_cutoff,node.logit_freq[region]))
                 else:
-                    node.fit_frequencies[time] = node.parent_node.fit_frequencies[time]
+                    node.fit_frequencies[time] = self.node_parents[node].fit_frequencies[time]
                 try:
                     slope, intercept, rval, pval, stderr = linregress(pivots[pivots_fit:-1], node.fit_frequencies[time][pivots_fit:-1])
                     node.freq_slope[time] = slope
@@ -251,7 +257,7 @@ class fitness_model(object):
             for node in self.nodes:
                 if  node.timepoint_freqs[time] >= min_freq and \
                     node.timepoint_freqs[time] <= max_freq and \
-                    node.timepoint_freqs[time] < node.parent_node.timepoint_freqs[time]:
+                    node.timepoint_freqs[time] < self.node_parents[node].timepoint_freqs[time]:
                     self.fit_clades[time].append(node)
 
 
