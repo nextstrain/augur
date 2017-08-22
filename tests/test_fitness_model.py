@@ -4,6 +4,7 @@ Tests for the `fitness_model` module.
 import Bio.Align.AlignInfo
 import Bio.Phylo
 import Bio.SeqIO
+import numpy as np
 import pytest
 
 try:
