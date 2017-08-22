@@ -17,7 +17,7 @@ default_predictors = ['lb', 'ep', 'ne_star']
 
 class fitness_model(object):
 
-    def __init__(self, tree, frequencies, predictor_input = ['ep', 'lb', 'dfreq'], verbose = 0, enforce_positive_predictors = True, **kwargs):
+    def __init__(self, tree, frequencies, time_interval, predictor_input = ['ep', 'lb', 'dfreq'], pivots_per_year = 12, verbose = 0, enforce_positive_predictors = True, **kwargs):
         '''
         parameters:
         tree -- tree of sequences for which a fitness model is to be determined
@@ -26,6 +26,8 @@ class fitness_model(object):
         '''
         self.tree = tree
         self.frequencies = frequencies
+        self.time_interval = time_interval
+        self.pivots_per_year = pivots_per_year
         self.verbose = verbose
         self.enforce_positive_predictors = enforce_positive_predictors
         self.estimate_coefficients = True
@@ -38,17 +40,6 @@ class fitness_model(object):
         if "estimate_fitness_model" in kwargs:
             if kwargs["estimate_fitness_model"]:
                 self.estimate_coefficients = True
-
-        # If a time interval is provided in the kwargs, set it as an
-        # attribute. Otherwise, assume it is set by a parent or mix-in
-        # class.
-        if not hasattr(self, "time_interval") and "time_interval" in kwargs:
-            self.time_interval = kwargs["time_interval"]
-
-        # Similarly, if pivots per year are given in kwargs, assign them
-        # here.
-        if not hasattr(self, "pivots_per_year") and "pivots_per_year" in kwargs:
-            self.pivots_per_year = kwargs["pivots_per_year"]
 
         # If pivots have not been calculated yet, calculate them here.
         if (not hasattr(self, "pivots") and
