@@ -28,6 +28,7 @@ prepare = {
     "subsample": False,
     "ensure_all_segments": True, #this is ignored if only 1 segment
     "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
+    "maintainer": "unknown"
 }
 
 process = {

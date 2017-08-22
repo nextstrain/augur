@@ -24,6 +24,7 @@ config = {
     "dir": "zika",
     "file_prefix": "zika",
     "title": "Genomic analysis of the worldwide spread of Zika virus (ZIKV)",
+    "maintainer": ["@trvrb", "https://twitter.com/trvrb"],
     "input_paths": ["../../fauna/data/zika.fasta"],
     "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
                     6:'division', 8:'db', 10:'authors', 11:'url', 12:'title'},
