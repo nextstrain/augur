@@ -134,10 +134,12 @@ def modify_sequence_at_site(sequence, site):
 class TestFitnessModel(object):
     def test_prep_nodes(self, simple_fitness_model):
         assert not hasattr(simple_fitness_model, "nodes")
+        assert not any([hasattr(node, "tips") for node in simple_fitness_model.tree.find_clades()])
         simple_fitness_model.prep_nodes()
         assert hasattr(simple_fitness_model, "nodes")
         assert hasattr(simple_fitness_model, "rootnode")
         assert hasattr(simple_fitness_model.rootnode, "pivots")
+        assert all([hasattr(node, "tips") for node in simple_fitness_model.tree.find_clades()])
 
     def test_calc_node_frequencies(self, simple_fitness_model):
         simple_fitness_model.prep_nodes()

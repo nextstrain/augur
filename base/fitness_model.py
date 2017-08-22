@@ -91,7 +91,30 @@ class fitness_model(object):
         self.tips = [node for node in self.nodes if node.is_terminal()]
         self.rootnode = self.tree.root
         self.rootnode.pivots = self.pivots
-        # each node has list of tip indices under node.tips that map to self.tips list
+
+        # Create a list of tip indices under node.tips that map to self.tips
+        # list.
+        tip_index_region_specific = 0
+        for node in self.nodes:
+            tmp_tips = []
+            if node.is_terminal():
+                tmp_tips.append((tip_index_region_specific, node.numdate))
+                tip_index_region_specific += 1
+
+            for child in node.clades:
+                tmp_tips.extend(child.tips)
+
+            # Sort tips by corresponding date.
+            node.tips = np.array([x for x in sorted(tmp_tips, key = lambda x: x[1])])
+
+        # Erase the dates from the tip lists and cast to int such that they can
+        # be used for indexing. These operations must happen after all nodes
+        # have been processed and sorted.
+        for node in self.nodes:
+            if len(node.tips.shape) == 2:
+                node.tips = np.array(node.tips[:, 0], dtype=int)
+            else:
+                node.tips = np.array([], dtype=int)
 
     def calc_node_frequencies(self):
         '''
