@@ -44,13 +44,18 @@ def summise_publications_from_tree(tree):
     info = defaultdict(lambda: {"n": 0, "title": "?"})
     mapping = {}
     for clade in tree.find_clades():
-        if "authors" in clade.attr:
-            mapping[clade.name] = clade.attr["authors"]
-            info[clade.attr["authors"]]["n"] += 1
-            if "title" in clade.attr:
-                info[clade.attr["authors"]]["title"] = clade.attr["title"]
-        elif clade.is_terminal():
+        if not clade.is_terminal():
+            continue
+        if "authors" not in clade.attr:
             mapping[clade.name] = None
+            print("Error - {} had no authors".format(clade.name))
+            continue
+        authors = clade.attr["authors"]
+        mapping[clade.name] = authors
+        info[authors]["n"] += 1
+        for attr in ["title", "journal", "paper_url"]:
+            if attr in clade.attr:
+                info[authors][attr] = clade.attr[attr]
     return (info, mapping)
 
 def export_metadata_json(self, prefix, indent):
