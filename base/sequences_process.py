@@ -73,7 +73,7 @@ class sequence_set(object):
     def codon_align(self):
         self.log.fatal("Codon align not yet implemented")
 
-    def align(self, fname, verbose, debug=False):
+    def align(self, verbose, debug=False):
         '''
         align sequences using mafft
 
@@ -99,11 +99,9 @@ class sequence_set(object):
             os.system("mafft --anysymbol --thread " + str(self.nthreads) + " temp_in.fasta 1> temp_out.fasta")
         self.aln = AlignIO.read('temp_out.fasta', 'fasta')
         os.chdir("..")
-        os.rename(os.path.join(self.run_dir, "temp_out.fasta"), fname)
         if not debug: remove_dir(self.run_dir)
 
         self.set_reference_alignment() #make reference_aln object while reference still in alignment
-
         self.set_sequence_lookup()
         self.add_attributes_to_aln()
 
