@@ -102,9 +102,8 @@ class sequence_set(object):
         os.rename(os.path.join(self.run_dir, "temp_out.fasta"), fname)
         if not debug: remove_dir(self.run_dir)
 
-        self.set_reference_alignment()
-        if not self.reference_in_dataset:
-            self.remove_reference_from_alignment()
+        self.set_reference_alignment() #make reference_aln object while reference still in alignment
+
         self.set_sequence_lookup()
         self.add_attributes_to_aln()
 

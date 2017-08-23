@@ -154,7 +154,7 @@ class process(object):
         (3) Write to multi-fasta
         CODON ALIGNMENT IS NOT IMPLEMENTED
         '''
-        fname = self.output_path + "_aligned.mfa"
+        fname = self.output_path + "_aligned_stripped.mfa"
         if self.try_to_restore:
             self.seqs.try_restore_align_from_disk(fname)
         if not hasattr(self.seqs, "aln"):
@@ -168,9 +168,14 @@ class process(object):
         self.seqs.strip_non_reference()
         if fill_gaps:
             self.seqs.make_gaps_ambiguous()
-        AlignIO.write(self.seqs.aln, self.output_path + "_aligned_stripped.mfa", 'fasta')
+
+        if not self.seqs.reference_in_dataset:
+            self.seqs.remove_reference_from_alignment()
         # if outgroup is not None:
         #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
+
+        #overwrite direct mafft output (gappy alignment) with stripped alignment
+        AlignIO.write(self.seqs.aln, self.output_path + "_aligned_stripped.mfa", 'fasta')
         self.seqs.translate() # creates self.seqs.translations
         # save additional translations - disabled for now
         # for name, msa in self.seqs.translations.iteritems():
