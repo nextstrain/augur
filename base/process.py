@@ -13,6 +13,7 @@ import json
 from pdb import set_trace
 from base.logger import logger
 from Bio import SeqIO
+from Bio import AlignIO
 import cPickle as pickle
 
 class process(object):
@@ -153,22 +154,28 @@ class process(object):
         (3) Write to multi-fasta
         CODON ALIGNMENT IS NOT IMPLEMENTED
         '''
-        fname = self.output_path + "_aligned.mfa"
+        fnameStripped = self.output_path + "_aligned_stripped.mfa"
         if self.try_to_restore:
-            self.seqs.try_restore_align_from_disk(fname)
+            self.seqs.try_restore_align_from_disk(fnameStripped)
         if not hasattr(self.seqs, "aln"):
             if codon_align:
                 self.seqs.codon_align()
             else:
-                self.seqs.align(fname, self.config["subprocess_verbosity_level"], debug=debug)
+                self.seqs.align(self.config["subprocess_verbosity_level"], debug=debug)
             # need to redo everything
             self.try_to_restore = False
 
-        self.seqs.strip_non_reference()
-        if fill_gaps:
-            self.seqs.make_gaps_ambiguous()
-        # if outgroup is not None:
-        #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
+            self.seqs.strip_non_reference()
+            if fill_gaps:
+                self.seqs.make_gaps_ambiguous()
+
+            if not self.seqs.reference_in_dataset:
+                self.seqs.remove_reference_from_alignment()
+            # if outgroup is not None:
+            #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
+
+            AlignIO.write(self.seqs.aln, fnameStripped, 'fasta')
+
         self.seqs.translate() # creates self.seqs.translations
         # save additional translations - disabled for now
         # for name, msa in self.seqs.translations.iteritems():
