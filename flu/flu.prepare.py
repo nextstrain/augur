@@ -27,6 +27,8 @@ def collect_args():
     parser.add_argument('-v', '--viruses_per_month_seq', type = int, default = 0, help='number of viruses sampled per month (optional) (defaults: 90 (2y), 60 (3y), 24 (6y) or 12 (12y))')
     parser.add_argument('--sampling', default = 'even', type=str,
                         help='sample evenly over regions (even) (default), or prioritize one region (region name), otherwise sample randomly')
+    parser.add_argument('--time_interval', nargs=2, help="explicit time interval to use -- overrides resolutions"
+                                                                     " expects YYYY-MM-DD YYYY-MM-DD")
     parser.add_argument('--strains', help="a text file containing a list of strains (one per line) to prepare without filtering or subsampling")
     parser.add_argument('--sequences', nargs='+', help="FASTA file of virus sequences from fauna (e.g., flu_h3n2_ha.fasta)")
     parser.add_argument('--titers', help="tab-delimited file of titer strains and values from fauna (e.g., h3n2_hi_titers.tsv)")
@@ -37,7 +39,12 @@ def collect_args():
 # for flu, config is a function so it is applicable for multiple lineages
 def make_config(lineage, resolution, params):
     years_back = int(re.search("(\d+)", resolution).groups()[0])
-    time_interval = [datetime.today().date(), (datetime.today()  - timedelta(days=365.25 * years_back)).date()]
+    if params.time_interval:
+        time_interval = sorted([datetime.strptime(x, '%Y-%m-%d').date() for x in params.time_interval], reverse=True)
+        time_id = '_'.join(params.time_interval)
+    else:
+        time_interval = [datetime.today().date(), (datetime.today()  - timedelta(days=365.25 * years_back)).date()]
+        time_id = resolution
     reference_cutoff = date(year = time_interval[1].year - 3, month=1, day=1)
     fixed_outliers = [fix_names(x) for x in outliers[lineage]]
     fixed_references = [fix_names(x) for x in reference_viruses[lineage]]
@@ -57,7 +64,7 @@ def make_config(lineage, resolution, params):
         "file_prefix": "flu_%s"%lineage,
         "dataset":params.dataset,
         "segments": params.segments,
-        "resolution": resolution,
+        "resolution": time_id,
         "lineage": lineage,
         "input_paths": input_paths,
         #  0                     1   2         3          4      5     6       7       8          9                             10  11
@@ -122,3 +129,5 @@ if __name__=="__main__":
         runner.colors()
         runner.latlongs()
         runner.write_to_json()
+        if params.time_interval:
+            break
