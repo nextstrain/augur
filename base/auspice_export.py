@@ -40,7 +40,7 @@ def export_frequency_json(self, prefix, indent):
         self.log.notify("Cannot export frequencies - pivots do not exist")
 
 
-def summise_publications_from_tree(tree):
+def summarise_publications_from_tree(tree):
     info = defaultdict(lambda: {"n": 0, "title": "?"})
     mapping = {}
     for clade in tree.find_clades():
@@ -68,7 +68,7 @@ def export_metadata_json(self, prefix, indent):
         virus_count += 1
     meta_json["virus_count"] = virus_count
 
-    (author_info, seq_to_author) = summise_publications_from_tree(self.tree.tree)
+    (author_info, seq_to_author) = summarise_publications_from_tree(self.tree.tree)
     meta_json["author_info"] = author_info
     meta_json["seq_author_map"] = seq_to_author
 
