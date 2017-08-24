@@ -7,11 +7,11 @@ common for different analyses
 from __future__ import print_function
 import os, sys, re
 sys.path.append('..') # we assume (and assert) that this script is running from inside the flu folder
+import base.prepare
 from base.prepare import prepare
 from base.titer_model import TiterModel
 from datetime import datetime, timedelta, date
 from base.utils import fix_names
-import argparse
 from pprint import pprint
 from pdb import set_trace
 from flu_info import regions, outliers, reference_maps, reference_viruses, segments
@@ -19,19 +19,27 @@ from flu_subsampling import flu_subsampling
 
 import logging
 
+
 def collect_args():
-    parser = argparse.ArgumentParser(description = "Prepare fauna FASTA for analysis")
+    """Returns a seasonal flu-specific argument parser.
+    """
+    parser = base.prepare.collect_args()
+
     parser.add_argument('-l', '--lineage', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default='h3n2', type=str, help="serotype (default: 'h3n2')")
     parser.add_argument('-r', '--resolutions', default=['3y', '6y', '12y'], nargs='+', type = str,  help = "resolutions (default: 3y, 6y & 12y)")
     parser.add_argument('-s', '--segments', choices=segments, default=['ha'], nargs='+', type = str,  help = "segments (default: ha)")
-    parser.add_argument('-v', '--viruses_per_month_seq', type = int, default = 0, help='number of viruses sampled per month (optional) (defaults: 90 (2y), 60 (3y), 24 (6y) or 12 (12y))')
     parser.add_argument('--sampling', default = 'even', type=str,
                         help='sample evenly over regions (even) (default), or prioritize one region (region name), otherwise sample randomly')
     parser.add_argument('--strains', help="a text file containing a list of strains (one per line) to prepare without filtering or subsampling")
-    parser.add_argument('--sequences', nargs='+', help="FASTA file of virus sequences from fauna (e.g., flu_h3n2_ha.fasta)")
     parser.add_argument('--titers', help="tab-delimited file of titer strains and values from fauna (e.g., h3n2_hi_titers.tsv)")
-    parser.add_argument('--verbose', action="store_true", help="turn on verbose reporting")
-    return parser.parse_args()
+
+    parser.set_defaults(
+        viruses_per_month=0,
+        file_prefix="flu"
+    )
+
+    return parser
+
 
 # for flu, config is a function so it is applicable for multiple lineages
 def make_config(lineage, resolution, params):
@@ -51,9 +59,14 @@ def make_config(lineage, resolution, params):
     else:
         input_paths = ["../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segments]
 
+    if params.file_prefix is not None:
+        file_prefix = params.file_prefix
+    else:
+        file_prefix = "flu_{}".format(lineage)
+
     return {
         "dir": "flu",
-        "file_prefix": "flu_{}".format(lineage),
+        "file_prefix": file_prefix,
         "segments": params.segments,
         "resolution": resolution,
         "lineage": lineage,
@@ -89,7 +102,8 @@ def make_config(lineage, resolution, params):
     }
 
 if __name__=="__main__":
-    params = collect_args()
+    parser = collect_args()
+    params = parser.parse_args()
     # set_trace()
     if params.verbose:
         # Remove existing loggers.

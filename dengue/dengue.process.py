@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os, sys
 sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+import base.process
 from base.process import process
 import argparse
 
@@ -89,15 +90,23 @@ def titer_export(process):
 
 
 def collect_args():
-    parser = argparse.ArgumentParser(description = "Process (prepared) JSON(s)")
-    parser.add_argument('-j', '--jsons', '--json', default=None, nargs='+', type=str, help="Accepts path to prepared JSON(s); overrides -s argument")
+    """Returns a dengue-specific argument parser.
+    """
+    parser = base.process.collect_args()
+
+    parser.add_argument('--jsons', default=None, nargs='+', type=str, help="Accepts path to prepared JSON(s); overrides -s argument")
     parser.add_argument('-s', '--serotypes', default=["multiple"], nargs='+', type=str, choices=['denv1', 'denv2', 'denv3', 'denv4', 'all', 'multiple'],
     help="Look for prepared JSON(s) like ./prepared/dengue_SEROTYPE.json; 'multiple' will run all five builds. Default='multiple'")
-    parser.add_argument('--clean', default=False, action='store_true', help="clean build (remove previous checkpoints)")
     parser.add_argument('--no_mut_freqs', default=False, action='store_true', help="skip mutation frequencies")
     parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
     parser.add_argument('--no_titers', default=False, action='store_true', help="skip titer models")
-    return parser.parse_args()
+
+    parser.set_defaults(
+        json="prepared/dengue.json"
+    )
+
+    return parser
+
 
 def make_config (prepared_json, args):
     return {
@@ -126,16 +135,24 @@ def make_config (prepared_json, args):
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
         "clean": args.clean,
-        "pivot_spacing": 1.0/12, # is this n timepoints per year?
+        "pivot_spacing": 1.0/12, # is this n timepoints per year?,
+        "newick_tree_options":{
+            "raxml": not args.no_raxml
+        }
     }
 
 if __name__=="__main__":
-    args = collect_args()
+    parser = collect_args()
+    args = parser.parse_args()
 
     if not args.jsons:
         if 'multiple' in args.serotypes: # "multiple" = run all 5 builds
             args.serotypes = ['denv1', 'denv2', 'denv3', 'denv4', 'all']
-        args.jsons = ['./prepared/dengue_%s.json'%s for s in args.serotypes] # Look for ./prepared/dengue_SEROTYPE.json if no file paths given
+
+        if args.json:
+            args.jsons = [args.json]
+        else:
+            args.jsons = ['./prepared/dengue_%s.json'%s for s in args.serotypes] # Look for ./prepared/dengue_SEROTYPE.json if no file paths given
 
     for j in args.jsons:            # validate input JSONs exist
         assert os.path.isfile(j)
