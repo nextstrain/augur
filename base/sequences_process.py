@@ -209,7 +209,7 @@ class sequence_set(object):
                                 if c=='---':
                                     aas.append('-')
                                 else:
-                                    aa.append('X')
+                                    aas.append('X')
                             else:
                                 aas.append(aa)
                         except:
