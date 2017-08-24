@@ -15,6 +15,7 @@ def collect_args():
     parser.add_argument('-j', '--jsons', default=["all"], nargs='+', type=str, help="prepared JSON(s). \"all\" will do them all. Default = all")
     parser.add_argument('--no_mut_freqs', default=False, action='store_true', help="skip mutation frequencies")
     parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
+    parser.add_argument('--annotate_fitness', default=False, action='store_true', help="run fitness prediction model and annotate fitnesses on tree nodes")
     parser.add_argument('--clean', default=False, action='store_true', help="clean build (remove previous checkpoints)")
     return parser.parse_args()
 
@@ -34,12 +35,15 @@ def make_config (prepared_json, args):
         "titers": {
             "criterium": lambda x: len(x.aa_mutations['HA1']+x.aa_mutations['HA2'])>0,
             "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
+            "epitope_mask_version": "wolf",,
             "lam_avi":2.0,
             "lam_pot":0.3,
             "lam_drop":2.0
         },
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
+        "annotate_fitness": args.annotate_fitness,
+        "predictors": ["ep"],
         "clean": args.clean,
         "pivot_spacing": 1.0/12,
         "timetree_options": {
@@ -89,6 +93,10 @@ if __name__=="__main__":
             HI_export(runner)
 
         runner.matchClades(clade_designations[runner.info["lineage"]])
+
+        # Predict fitness.
+        if runner.config["annotate_fitness"]:
+            runner.fitness_model = runner.annotate_fitness()
 
         # runner.save_as_nexus()
         runner.auspice_export()
