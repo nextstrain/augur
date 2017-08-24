@@ -25,6 +25,8 @@ def make_config(context):
     config = {
         "dir": "mumps",
         "file_prefix": "mumps_%s"%context,
+        "title": "Mumps virus (context: {}).format(context)",
+        "maintainer": ["@LouiseHMoncla", "https://twitter.com/louisehmoncla"],
         "input_paths": ["../../fauna/data/mumps.fasta"],
         "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
                         6:'division', 8:'db', 10:'authors', 11:'url'},

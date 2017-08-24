@@ -40,6 +40,11 @@ def collect_args():
 
     return parser
 
+def make_title(lineage, resolution):
+    AB = "B" if lineage in ["vic", "yam"] else "A"
+    time = re.sub(r"y$", " years", resolution)
+    return "Genomic Epidemiology of Influenza {}/{} over {}".format(AB, lineage, time)
+
 
 # for flu, config is a function so it is applicable for multiple lineages
 def make_config(lineage, resolution, params):
@@ -67,6 +72,8 @@ def make_config(lineage, resolution, params):
     return {
         "dir": "flu",
         "file_prefix": file_prefix,
+        "title": make_title(lineage, resolution),
+        "maintainer": ["@trvrb", "https://twitter.com/trvrb"],
         "segments": params.segments,
         "resolution": resolution,
         "lineage": lineage,

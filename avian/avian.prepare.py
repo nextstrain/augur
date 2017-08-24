@@ -43,6 +43,8 @@ dropped_strains = [
 config = {
     "dir": "avian", # the current directory. You must be inside this to run the script.
     "file_prefix": "avian_h7n9",
+    "title": "Genomic analysis of the 5 Epidemics Influenza A/H7N9",
+    "maintainer": ["@jh_viz", "https://twitter.com/jh_viz"],
     "input_paths": [
         "../../fauna/data/h7n9_pb2.fasta",
         "../../fauna/data/h7n9_pb1.fasta",

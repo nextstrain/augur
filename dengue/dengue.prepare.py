@@ -85,6 +85,8 @@ def make_config(serotype, params):
     config = {
         "dir": "dengue",
         "lineage": serotype,
+        "title": "Genomic Epidemiology of Dengue Virus",
+        "maintainer": ["@sidneymbell", "https://twitter.com/sidneymbell"],
         "file_prefix": file_prefix,
         "input_paths": input_paths,
         "header_fields": {0:'strain', 1:'accession', 2:'date', 3:'region', 4:'country',
