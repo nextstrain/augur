@@ -17,6 +17,7 @@ def collect_args():
     parser.add_argument('--no_mut_freqs', default=False, action='store_true', help="skip mutation frequencies")
     parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
     parser.add_argument('--no_tree', default=False, action='store_true', help="skip tree building")
+    parser.add_argument('--pivot_spacing', type=float, default=1.0, help="month per pivot")
     parser.add_argument('--clean', default=False, action='store_true', help="clean build (remove previous checkpoints)")
     return parser.parse_args()
 
@@ -44,7 +45,7 @@ def make_config (prepared_json, args):
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
         "clean": args.clean,
-        "pivot_spacing": 1.0/12,
+        "pivot_spacing": args.pivot_spacing/12.0,
         "timetree_options": {
             "Tc": 0.03,
             # "confidence":True,

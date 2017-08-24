@@ -94,7 +94,8 @@ def make_config(lineage, resolution, params):
         "regions": regions,
         "time_interval": time_interval,
         "strains": params.strains,
-        "titers": titer_values
+        "titers": titer_values,
+        "pivot_spacing": params.pivot_spacing,
     }
 
 if __name__=="__main__":
