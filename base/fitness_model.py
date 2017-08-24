@@ -5,7 +5,7 @@ from scipy.stats import linregress
 from collections import defaultdict
 from itertools import izip
 
-from frequencies import logit_transform, make_pivots, tree_frequencies
+from frequencies import logit_transform, tree_frequencies
 from fitness_predictors import fitness_predictors
 
 min_freq = 0.1
@@ -17,7 +17,7 @@ default_predictors = ['lb', 'ep', 'ne_star']
 
 class fitness_model(object):
 
-    def __init__(self, tree, frequencies, time_interval, predictor_input = ['ep', 'lb', 'dfreq'], pivots_per_year = 12, verbose = 0, enforce_positive_predictors = True, **kwargs):
+    def __init__(self, tree, frequencies, time_interval, predictor_input = ['ep', 'lb', 'dfreq'], pivot_spacing = 1.0 / 12, verbose = 0, enforce_positive_predictors = True, **kwargs):
         '''
         parameters:
         tree -- tree of sequences for which a fitness model is to be determined
@@ -26,11 +26,17 @@ class fitness_model(object):
         '''
         self.tree = tree
         self.frequencies = frequencies
-        self.time_interval = time_interval
-        self.pivots_per_year = pivots_per_year
+        self.pivot_spacing = pivot_spacing
         self.verbose = verbose
         self.enforce_positive_predictors = enforce_positive_predictors
         self.estimate_coefficients = True
+
+        # Convert datetime date interval to floating point interval from
+        # earliest to latest.
+        self.time_interval = (
+            time_interval[1].year + (time_interval[1].month - 1) / 12.0,
+            time_interval[0].year + time_interval[0].month / 12.0
+        )
 
         if isinstance(predictor_input, dict):
             predictor_names = predictor_input.keys()
@@ -44,8 +50,12 @@ class fitness_model(object):
         # If pivots have not been calculated yet, calculate them here.
         if (not hasattr(self, "pivots") and
             hasattr(self, "time_interval") and
-            hasattr(self, "pivots_per_year")):
-            self.pivots = make_pivots(self.pivots_per_year, self.time_interval)
+            hasattr(self, "pivot_spacing")):
+            self.pivots = np.arange(
+                self.time_interval[0],
+                self.time_interval[1],
+                self.pivot_spacing
+            )
 
         # final timepoint is end of interval and is only projected forward, not tested
         self.timepoint_step_size = 0.5      # amount of time between timepoints chosen for fitting
@@ -178,7 +188,6 @@ class fitness_model(object):
         # this doesn't interfere with the previous freq estimates via difference in region: global_censored vs global
         region = "global_censored"
         freq_cutoff = 25.0
-        total_pivots = 12
         pivots_fit = 6
         freq_window = 1.0
         for node in self.nodes:
@@ -186,7 +195,11 @@ class fitness_model(object):
             node.freq_slope = {}
         for time in self.timepoints:
             time_interval = [time - freq_window, time]
-            pivots = make_pivots(total_pivots, time_interval)
+            pivots = np.arange(
+                time_interval[0],
+                time_interval[1],
+                self.pivot_spacing
+            )
             node_filter_func = lambda node: node.numdate >= time_interval[0] and node.numdate < time_interval[1]
 
             # Recalculate tree frequencies for the given time interval and its
