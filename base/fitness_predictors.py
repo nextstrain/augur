@@ -21,7 +21,7 @@ class fitness_predictors(object):
             self.setup_epitope_mask()
         self.predictor_names = predictor_names
 
-    def _translate(self, sequence):
+    def _translate(self, node):
         """Returns an amino acid sequence corresponding to the given numpy array of
         nucleotide characters.
 
@@ -30,7 +30,7 @@ class fitness_predictors(object):
         >>> fp._translate(np.array(["A", "T", "G"]))
         'M'
         """
-        return Bio.Seq.Seq("".join(sequence)).translate(gap="-")
+        return "".join(node.translations.values())
 
     def setup_predictor(self, tree, pred, timepoint):
         if pred == 'lb':
@@ -131,7 +131,7 @@ class fitness_predictors(object):
         for node in tree.find_clades(order="postorder"):
             if not hasattr(node, 'np_ep'):
                 if not hasattr(node, 'aa'):
-                    node.aa = self._translate(node.sequence)
+                    node.aa = self._translate(node)
                 node.np_ep = np.array(list(self.epitope_sites(node.aa)))
         if ref == None:
             ref = tree.root
@@ -154,7 +154,7 @@ class fitness_predictors(object):
                     comparison_nodes.append(node)
             if not hasattr(node, 'np_ep'):
                 if not hasattr(node, 'aa'):
-                    node.aa = self._translate(node.sequence)
+                    node.aa = self._translate(node)
                 node.np_ep = np.array(list(self.epitope_sites(node.aa)))
         print "calculating cross-immunity to " + str(len(comparison_nodes)) + " comparison nodes"
         for node in tree.find_clades(order="postorder"):
@@ -174,10 +174,10 @@ class fitness_predictors(object):
         attr   --   the attribute name used to save the result
         '''
         if ref == None:
-            ref = self._translate(tree.root.sequence)
+            ref = self._translate(tree.root)
         for node in tree.find_clades(order="postorder"):
             if not hasattr(node, 'aa'):
-                node.aa = self._translate(node.sequence)
+                node.aa = self._translate(node)
             node.__setattr__(attr, self.rbs_distance(node.aa, ref))
 
     def calc_tolerance(self, tree, epitope_mask=None, attr='tol'):
@@ -195,10 +195,10 @@ class fitness_predictors(object):
         attr   --   the attribute name used to save the result
         '''
         if ref == None:
-            ref = self._translate(tree.root.sequence)
+            ref = self._translate(tree.root)
         for node in tree.find_clades(order="postorder"):
             if not hasattr(node, 'aa'):
-                node.aa = self._translate(node.sequence)
+                node.aa = self._translate(node)
             distance = self.nonepitope_distance(node.aa, ref)
             node.__setattr__(attr, -1 * distance)
 
@@ -211,7 +211,7 @@ class fitness_predictors(object):
         for node in tree.find_clades(order="postorder"):
             if len(node.season_tips) and node!=tree.root:
                 if not hasattr(node, 'aa'):
-                    node.aa = self._translate(node.sequence)
+                    node.aa = self._translate(node)
                 tmp_node = node.parent_node
                 cur_season = min(node.season_tips.keys())
                 prev_season = seasons[max(0,seasons.index(cur_season)-1)]
@@ -224,7 +224,7 @@ class fitness_predictors(object):
                     else:
                         break
                 if not hasattr(tmp_node, 'aa'):
-                    tmp_node.aa = self._translate(tmp_node.sequence)
+                    tmp_node.aa = self._translate(tmp_node)
                 node.__setattr__(attr, self.nonepitope_distance(node.aa, tmp_node.aa))
             else:
                 node.__setattr__(attr, np.nan)
