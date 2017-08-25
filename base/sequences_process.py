@@ -8,6 +8,8 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import generic_dna
 from Bio.SeqFeature import FeatureLocation
+from Bio.Data.CodonTable import TranslationError
+from Bio.Seq import CodonTable
 import numpy as np
 from seq_util import pad_nucleotide_sequences, nuc_alpha, aa_alpha
 from datetime import datetime
@@ -28,6 +30,56 @@ def calc_af(aln, alpha):
         af[ai] += (aln_array==state).mean(axis=0)
     af[-1] = 1.0 - af[:-1].sum(axis=0)
     return af
+
+def safe_translate(sequence):
+    """Returns an amino acid translation of the given nucleotide sequence accounting
+    for gaps in the given sequence.
+
+    >>> safe_translate("ATG")
+    'M'
+    >>> safe_translate("ATGGT-")
+    'MX'
+    >>> safe_translate("ATG---")
+    'M-'
+    >>> safe_translate("ATGTAG")
+    'M*'
+    >>> safe_translate("")
+    ''
+    >>> safe_translate("ATGT")
+    'M'
+    """
+    try:
+        # Attempt translation by extracting the sequence according to the
+        # BioPhython SeqFeature in frame gaps of three will translate as '-'
+        translated_sequence = str(Seq(sequence).translate(gap='-'))
+    except TranslationError:
+        # Any other codon like '-AA' or 'NNT' etc will fail. Translate codons
+        # one by one.
+        codon_table  = CodonTable.ambiguous_dna_by_name['Standard'].forward_table
+        str_seq = str(sequence)
+        codons = np.fromstring(str_seq[:len(str_seq) - len(str_seq) % 3], dtype='S3')
+        assert len(codons) > 0
+        aas = []
+
+        for c in codons:
+            # Parse result of single codon translation, add amino acids as
+            # appropriate.
+            try:
+                aa = codon_table.get(c)
+                if aa is None:
+                    if c == '---':
+                        aas.append('-')
+                    else:
+                        aas.append('X')
+                else:
+                    aas.append(aa)
+            except (TranslationError, ValueError):
+                aas.append('X')
+
+        translated_sequence = "".join(aas)
+
+    return translated_sequence
+
 
 class sequence_set(object):
 
@@ -196,30 +248,11 @@ class sequence_set(object):
             aa_seqs = []
             for seq in self.aln:
                 tmpseq = self.proteins[prot].extract(seq)
-                try:
-                    # attempt translation by extracting the sequence according to the BioPhython SeqFeature
-                    # in frame gaps of three will translate as '-'
-                    tmpseq.seq = tmpseq.seq.translate(gap='-')
-                except:
-                    # any other codon like '-AA' or 'NNT' etc will fail. translate codons one by one
-                    str_seq = str(tmpseq.seq)
-                    codons = np.fromstring(str_seq[:len(str_seq)-len(str_seq)%3], dtype='S3')
-                    aas = []
-                    for c in codons:
-                        try: #parse result of single codon translation, add amino acids as appropriate
-                            aa = codon_table.get(c)
-                            if aa is None:
-                                if c=='---':
-                                    aas.append('-')
-                                else:
-                                    aa.append('X')
-                            else:
-                                aas.append(aa)
-                        except:
-                            aas.append('X')
+                translated_seq = safe_translate(str(tmpseq.seq))
+                tmpseq.seq = Seq(translated_seq)
 
-                    tmpseq.seq = Seq("".join(aas))
-                    self.log.notify("Trouble translating because of invalid codons %s"%seq.id)
+                if "-" in translated_seq or "X" in translated_seq:
+                    self.log.notify("Trouble translating because of invalid codons %s" % seq.id)
 
                 # copy attributes
                 tmpseq.attributes = seq.attributes
