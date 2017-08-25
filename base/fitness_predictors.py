@@ -4,7 +4,6 @@ import numpy as np
 from itertools import izip
 from scipy.stats import linregress
 import sys
-#from fitness_tolerance import assign_fitness_tolerance
 
 # all fitness predictors should be designed to give a positive sign, ie.
 # number of epitope mutations
