@@ -35,7 +35,7 @@ def make_config (prepared_json, args):
         "titers": {
             "criterium": lambda x: len(x.aa_mutations['HA1']+x.aa_mutations['HA2'])>0,
             "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
-            "epitope_mask_version": "wolf",,
+            "epitope_mask_version": "wolf",
             "lam_avi":2.0,
             "lam_pot":0.3,
             "lam_drop":2.0
