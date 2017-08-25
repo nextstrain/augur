@@ -23,7 +23,8 @@ dropped_strains = [
     "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", # true strains, but duplicates of other strains in dataset
     "Bahia04", "JAM/2016/WI_JM6", "Bahia11", "Bahia12", "DOM/2016/MA_WGS16_009", "VE_Ganxian", "BRA/2016/FC_DQ60D1", "CX5", # excessive terminal branch length
     "VR10599/Pavia/2016", "34997/Pavia/2016", # exports
-    "THA/PLCal_ZV/2013", "SK403/13AS", "SV0010/15", "SK364/13AS" # clock is off
+    "THA/PLCal_ZV/2013", "SK403/13AS", "SV0010/15", "SK364/13AS", # clock is off
+    "AFMC_U", "AFMC_S" # too basal 
 ]
 
 config = {
