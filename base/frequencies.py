@@ -195,9 +195,11 @@ class freq_est_clipped(object):
         tps_upper_cutoff = last_obs + self.dtps
 
 
-        self.good_tps = (self.tps>=tps_lower_cutoff)&(self.tps<tps_upper_cutoff)
-        if self.good_tps.sum()==0:
-            if self.verbose: print("no valid time points")
+        self.good_tps = (self.tps>=tps_lower_cutoff)&(self.tps<tps_upper_cutoff)&(self.tps<self.pivots[-1])&(self.tps>=self.pivots[0])
+        self.valid = True
+        if self.good_tps.sum()<3:
+            print("too few valid time points:", self.good_tps.sum())
+            self.valid=False
             return None
         if self.good_tps.sum()<7:
             from scipy.ndimage import binary_dilation
@@ -209,9 +211,13 @@ class freq_est_clipped(object):
 
         self.good_pivots = (self.pivots>=self.pivot_lower_cutoff)\
                              &(self.pivots<self.pivot_upper_cutoff)
-
+        if self.good_pivots.sum()<2:
+            from scipy.ndimage import binary_dilation
+            self.good_pivots = binary_dilation(self.good_pivots, iterations=2)
+            
         self.fe = frequency_estimator(reduced_tps, reduced_obs,
                                   self.pivots[self.good_pivots], **kwargs)
+
 
     def learn(self):
         # try:
@@ -246,10 +252,11 @@ class nested_frequencies(object):
         for mut, obs in sorted_obs[:-1]:
             # print(mut,'...')
             fe = freq_est_clipped(self.tps[valid_tps], obs[valid_tps], self.pivots, **self.kwargs)
-            if fe is None:
+            if fe.valid==False:
+                self.frequencies[mut] = np.zeros_like(self.remaining_freq)
                 break
+
             fe.learn()
-            # print('done')
             self.frequencies[mut] = self.remaining_freq * fe.pivot_freq
             self.remaining_freq *= (1.0-fe.pivot_freq)
             valid_tps = valid_tps&(~obs)
