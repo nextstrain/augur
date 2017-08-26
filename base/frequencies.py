@@ -196,6 +196,9 @@ class freq_est_clipped(object):
 
 
         self.good_tps = (self.tps>=tps_lower_cutoff)&(self.tps<tps_upper_cutoff)
+        if self.good_tps.sum()==0:
+            if self.verbose: print("no valid time points")
+            return None
         if self.good_tps.sum()<7:
             from scipy.ndimage import binary_dilation
             self.good_tps = binary_dilation(self.good_tps, iterations=5)
@@ -243,6 +246,8 @@ class nested_frequencies(object):
         for mut, obs in sorted_obs[:-1]:
             # print(mut,'...')
             fe = freq_est_clipped(self.tps[valid_tps], obs[valid_tps], self.pivots, **self.kwargs)
+            if fe is None:
+                break
             fe.learn()
             # print('done')
             self.frequencies[mut] = self.remaining_freq * fe.pivot_freq
