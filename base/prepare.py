@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+import argparse
 import sys, os
 import numpy as np
 from datetime import datetime
@@ -17,6 +18,24 @@ logging.basicConfig(
     level=logging.INFO,
     stream=sys.stderr
 )
+
+
+def collect_args():
+    """Returns a minimal default argument parser instance for all prepare scripts.
+    """
+    parser = argparse.ArgumentParser(
+        description="Prepare fauna FASTA for analysis",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+
+    parser.add_argument('-v', '--viruses_per_month', type = int, help='Subsample x viruses per country per month. Set to 0 to disable subsampling.')
+    parser.add_argument('--sequences', nargs='+', help="FASTA file of virus sequences from fauna (e.g., zika.fasta)")
+    parser.add_argument('--file_prefix', help="Prefix for output files (e.g., 'zika' for output like 'auspice/zika_meta.json')")
+    parser.add_argument('--verbose', action="store_true", help="turn on verbose reporting")
+
+    parser.set_defaults(viruses_per_month=15)
+
+    return parser
 
 class prepare(object):
     def __init__(self, config):
@@ -196,7 +215,7 @@ class prepare(object):
     def write_to_json(self):
         for seg, obj in self.segments.iteritems():
             prefix = self.config["file_prefix"]
-            if seg != "genome":
+            if seg != "genome" and seg not in prefix:
                 prefix = prefix + "_" + seg
             if "identifier" in self.config and self.config['identifier']:
                 prefix = prefix + "_" + self.config["identifier"]

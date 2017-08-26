@@ -1,7 +1,7 @@
 import subprocess
 import sys
 
-clean_build = 'clean' in sys.argv[1]
+clean_build = (len(sys.argv) == 2 and 'clean' in sys.argv[1])
 
 serotypes = ['denv1', 'denv2', 'denv3', 'denv4', 'all']
 

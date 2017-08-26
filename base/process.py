@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+import argparse
 import sys, os, time, gzip, glob
 from collections import defaultdict
 from base.config import combine_configs
@@ -7,13 +8,30 @@ from base.sequences_process import sequence_set
 from base.utils import num_date, save_as_nexus, parse_date
 from base.tree import tree
 from base.frequencies import alignment_frequencies, tree_frequencies, make_pivots
+from base.auspice_export import export_metadata_json, export_frequency_json
 import numpy as np
 from datetime import datetime
 import json
 from pdb import set_trace
 from base.logger import logger
 from Bio import SeqIO
+from Bio import AlignIO
 import cPickle as pickle
+
+
+def collect_args():
+    parser = argparse.ArgumentParser(
+        description = "Process (prepared) JSON(s)",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+
+    parser.add_argument('-j', '--json', help="prepared JSON to process")
+    parser.add_argument('--clean', default=False, action='store_true', help="clean build (remove previous checkpoints)")
+    parser.add_argument('--no_raxml', action='store_true', help="do not run RAxML to build the tree")
+    parser.add_argument('--no_tree', action='store_true', help="do not build a tree")
+
+    return parser
+
 
 class process(object):
     """process influenza virus sequences in mutliple steps to allow visualization in browser
@@ -104,6 +122,7 @@ class process(object):
         ## usefull flag to set (from pathogen run file) to disable restoring
         self.try_to_restore = True
 
+
     def dump(self):
         '''
         write the current state to file
@@ -156,22 +175,28 @@ class process(object):
         (3) Write to multi-fasta
         CODON ALIGNMENT IS NOT IMPLEMENTED
         '''
-        fname = self.output_path + "_aligned.mfa"
+        fnameStripped = self.output_path + "_aligned_stripped.mfa"
         if self.try_to_restore:
-            self.seqs.try_restore_align_from_disk(fname)
+            self.seqs.try_restore_align_from_disk(fnameStripped)
         if not hasattr(self.seqs, "aln"):
             if codon_align:
                 self.seqs.codon_align()
             else:
-                self.seqs.align(fname, self.config["subprocess_verbosity_level"], debug=debug)
+                self.seqs.align(self.config["subprocess_verbosity_level"], debug=debug)
             # need to redo everything
             self.try_to_restore = False
 
-        self.seqs.strip_non_reference()
-        if fill_gaps:
-            self.seqs.make_gaps_ambiguous()
-        # if outgroup is not None:
-        #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
+            self.seqs.strip_non_reference()
+            if fill_gaps:
+                self.seqs.make_gaps_ambiguous()
+
+            if not self.seqs.reference_in_dataset:
+                self.seqs.remove_reference_from_alignment()
+            # if outgroup is not None:
+            #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
+
+            AlignIO.write(self.seqs.aln, fnameStripped, 'fasta')
+
         self.seqs.translate() # creates self.seqs.translations
         # save additional translations - disabled for now
         # for name, msa in self.seqs.translations.iteritems():
@@ -421,7 +446,7 @@ class process(object):
             return
 
         if not hasattr(self, 'pivots'):
-            tps = np.array([x.attributes['num_date'] for x in self.seqs.seqs.values()])
+            tps = np.array([np.mean(x.attributes['num_date']) for x in self.seqs.seqs.values()])
             self.pivots=make_pivots(pivots, tps)
 
         self.log.notify('Estimate tree frequencies for %s: using self.pivots' % (region))
@@ -589,101 +614,22 @@ class process(object):
         export the tree, sequences, frequencies to json files for auspice visualization
         '''
         prefix = os.path.join(self.config["output"]["auspice"], self.info["prefix"])
-        indent = None
-        # export json file that contains alignment diversity column by column
-        self.seqs.export_diversity(fname=prefix+'_entropy.json', indent=2)
-        # exports the tree and the sequences inferred for all clades in the tree
+        indent = 2
+
+        ## ENTROPY (alignment diversity) ##
+        self.seqs.export_diversity(fname=prefix+'_entropy.json', indent=indent)
+
+        ## TREE (includes inferred states, mutations etc) ##
         if hasattr(self, 'tree') and self.tree is not None:
             self.tree.export(path=prefix, extra_attr = self.config["auspice"]["extra_attr"]
                          + ["muts", "aa_muts","attr", "clade"], indent = indent)
 
+        ## FREQUENCIES ##
+        export_frequency_json(self, prefix=prefix, indent=indent)
 
-        # local function or round frequency estimates to useful precision (reduces file size)
-        def process_freqs(freq):
-            return [round(x,4) for x in freq]
+        ## METADATA ##
+        export_metadata_json(self, prefix=prefix, indent=indent)
 
-        # construct a json file containing all frequency estimate
-        # the format is region_protein:159F for mutations and region_clade:123 for clades
-        if hasattr(self, 'pivots'):
-            freq_json = {'pivots':process_freqs(self.pivots)}
-        if hasattr(self, 'mutation_frequencies'):
-            freq_json['counts'] = {x:list(counts) for x, counts in self.mutation_frequency_counts.iteritems()}
-            for (region, gene), tmp_freqs in self.mutation_frequencies.iteritems():
-                for mut, freq in tmp_freqs.iteritems():
-                    label_str =  region+"_"+ gene + ':' + str(mut[0]+1)+mut[1]
-                    freq_json[label_str] = process_freqs(freq)
-        # repeat for clade frequencies in trees
-        if hasattr(self, 'tree_frequencies'):
-            for region in self.tree_frequencies:
-                for clade, freq in self.tree_frequencies[region].iteritems():
-                    label_str = region+'_clade:'+str(clade)
-                    freq_json[label_str] = process_freqs(freq)
-        # repeat for named clades
-        if hasattr(self, 'clades_to_nodes') and hasattr(self, 'tree_frequencies'):
-            for region in self.tree_frequencies:
-                for clade, node in self.clades_to_nodes.iteritems():
-                    label_str = region+'_'+str(clade)
-                    freq_json[label_str] = process_freqs(self.tree_frequencies[region][node.clade])
-        # write to one frequency json
-        if hasattr(self, 'tree_frequencies') or hasattr(self, 'mutation_frequencies'):
-            write_json(freq_json, prefix+'_frequencies.json', indent=indent)
-
-        # count number of tip nodes
-        if hasattr(self, 'tree') and self.tree is not None:
-            virus_count = self.tree.tree.count_terminals()
-        else:
-            virus_count = len(self.seqs.aln)
-
-        # write out metadata json# Write out metadata
-        print("Writing out metadata")
-        meta_json = {}
-
-        # join up config color options with those in the input JSONs.
-        col_opts = self.config["auspice"]["color_options"]
-        if self.colors:
-            for trait, data in self.colors.iteritems():
-                if trait in col_opts:
-                    col_opts[trait]["color_map"] = data
-                else:
-                    self.log.warn("{} in colors (input JSON) but not auspice/color_options. Ignoring".format(trait))
-
-        meta_json["color_options"] = col_opts
-        if "date_range" in self.config["auspice"]:
-            meta_json["date_range"] = self.config["auspice"]["date_range"]
-        if "analysisSlider" in self.config["auspice"]:
-            meta_json["analysisSlider"] = self.config["auspice"]["analysisSlider"]
-        meta_json["panels"] = self.config["auspice"]["panels"]
-        meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
-        meta_json["virus_count"] = virus_count
-        if "defaults" in self.config["auspice"]:
-            meta_json["defaults"] = self.config["auspice"]["defaults"]
-        # TODO: move these to base/config
-        # valid_defaults = {'colorBy': ['region', 'country', 'num_date', 'ep', 'ne', 'rb', 'genotype', 'cHI'],
-        #                   'layout': ['radial', 'rectangular', 'unrooted'],
-        #                   'geoResolution': ['region', 'country', 'division'],
-        #                   'distanceMeasure': ['num_date', 'div']}
-        # for param, value in defaults.items():
-        #     try:
-        #         assert param in valid_defaults and value in valid_defaults[param]
-        #     except:
-        #          print('ERROR: invalid default options provided. Try one of the following instead:', valid_defaults)
-        #          print('Export will continue; default display options can be corrected in the meta.JSON file.')
-        #          continue
-        # meta_json["defaults"] = defaults
-
-        try:
-            from pygit2 import Repository, discover_repository
-            current_working_directory = os.getcwd()
-            repository_path = discover_repository(current_working_directory)
-            repo = Repository(repository_path)
-            commit_id = repo[repo.head.target].id
-            meta_json["commit"] = str(commit_id)
-        except ImportError:
-            meta_json["commit"] = "unknown"
-        if len(self.config["auspice"]["controls"]):
-            meta_json["controls"] = self.make_control_json(self.config["auspice"]["controls"])
-        meta_json["geo"] = self.lat_longs
-        write_json(meta_json, prefix+'_meta.json')
 
     def run_geo_inference(self):
         if self.config["geo_inference"] == False:

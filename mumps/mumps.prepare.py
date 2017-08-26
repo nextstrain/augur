@@ -16,12 +16,17 @@ filters = {
     "dropped_strains": ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
     "canada_only": ("Canada only", lambda s: s.attributes['country'] == "canada"),
     "exclude_BC": ("Exclude BC outbreak", lambda s: not s.attributes['accession'].startswith("BC_outbreak")),
+    "Mass_only": ("Massachusetts only", lambda s: s.attributes['accession'].startswith("Massachusetts_outbreak")),
+    "exclude_Mass": ("Exclude Massachusetts outbreak", lambda s: not s.attributes['accession'].startswith("Massachusetts_outbreak")),
+    "unknown_country": ("Exclude unknown countries", lambda s: not s.attributes['country'].startswith("unknown"))
 }
 
 def make_config(context):
     config = {
         "dir": "mumps",
         "file_prefix": "mumps_%s"%context,
+        "title": "Mumps virus (context: {}).format(context)",
+        "maintainer": ["@LouiseHMoncla", "https://twitter.com/louisehmoncla"],
         "input_paths": ["../../fauna/data/mumps.fasta"],
         "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
                         6:'division', 8:'db', 10:'authors', 11:'url'},
@@ -40,9 +45,11 @@ def make_config(context):
         }
     }
     if context == "global":
-        config["filters"] = (filters["dropped_strains"], filters["exclude_BC"])
+        config["filters"] = (filters["dropped_strains"], filters["exclude_BC"], filters["exclude_Mass"], filters["unknown_country"])
     elif context == "bc":
-        config["filters"] = (filters["dropped_strains"], filters["canada_only"])
+        config["filters"] = (filters["dropped_strains"], filters["canada_only"], filters["unknown_country"])
+    elif context == "mass":
+        config["filters"] = (filters["dropped_strains"], filters["Mass_only"],filters["unknown_country"])
     else:
         print("Unknown context. FATAL")
         sys.exit(2)
@@ -53,7 +60,7 @@ def make_config(context):
 
 if __name__=="__main__":
     params = collect_args()
-    for context in ["global", "bc"]:
+    for context in ["global", "bc", "mass"]:
         runner = prepare(make_config(context))
         runner.load_references()
         runner.applyFilters()

@@ -214,16 +214,13 @@ class freq_est_clipped(object):
         if self.good_pivots.sum()<2:
             from scipy.ndimage import binary_dilation
             self.good_pivots = binary_dilation(self.good_pivots, iterations=2)
-            
+
         self.fe = frequency_estimator(reduced_tps, reduced_obs,
                                   self.pivots[self.good_pivots], **kwargs)
 
 
     def learn(self):
-        # try:
         self.fe.learn()
-        # except:
-        #     import ipdb; ipdb.set_trace()
 
         self.pivot_freq = np.zeros_like(self.pivots)
         self.pivot_freq[self.good_pivots] = self.fe.pivot_freq

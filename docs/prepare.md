@@ -13,6 +13,8 @@ Many options have defaults provided, and if so are not required to be in the con
 #### general settings
 * `dir`: the current directory - not _augur_ but the virus itself
 * `file_prefix`: string used to name the JSONs
+* `title`: string used for display in auspice (optional - `file_prefix` used if not specified)
+* `maintainer`: array containing two strings - the name of the maintainer (or twitter handle) and a URL (used in auspice)
 * `output_folder`: (default: "prepared") will be created inside the current directory and contgain logs + JSONs.
 * `segments`: array of strings, or `False` if not segmented...
 * `input_format`: (default: fasta) (to do: allow other input formats)
