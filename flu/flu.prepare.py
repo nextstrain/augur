@@ -22,7 +22,7 @@ import logging
 def collect_args():
     parser = argparse.ArgumentParser(description = "Prepare fauna FASTA for analysis")
     parser.add_argument('-l', '--lineage', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default='h3n2', type=str, help="serotype (default: 'h3n2')")
-    parser.add_argument('-r', '--resolutions', default=['3y', '6y', '12y'], nargs='+', type = str,  help = "resolutions (default: 3y, 6y & 12y)")
+    parser.add_argument('-r', '--resolution', default=['3y', '6y', '12y'], nargs='+', type = str,  help = "resolutions (default: 3y, 6y & 12y)")
     parser.add_argument('-s', '--segments', choices=segments, default=['ha'], nargs='+', type = str,  help = "segments (default: ha)")
     parser.add_argument('-v', '--viruses_per_month_seq', type = int, default = 0, help='number of viruses sampled per month (optional) (defaults: 90 (2y), 60 (3y), 24 (6y) or 12 (12y))')
     parser.add_argument('--sampling', default = 'even', type=str,
@@ -32,7 +32,7 @@ def collect_args():
     parser.add_argument('--strains', help="a text file containing a list of strains (one per line) to prepare without filtering or subsampling")
     parser.add_argument('--sequences', nargs='+', help="FASTA file of virus sequences from fauna (e.g., flu_h3n2_ha.fasta)")
     parser.add_argument('--titers', help="tab-delimited file of titer strains and values from fauna (e.g., h3n2_hi_titers.tsv)")
-    parser.add_argument('--dataset', help="dataset specifier")
+    parser.add_argument('--identifier', default='', type=str, help="flag to disambiguate builds, optional")
     parser.add_argument('--verbose', action="store_true", help="turn on verbose reporting")
     return parser.parse_args()
 
@@ -41,10 +41,10 @@ def make_config(lineage, resolution, params):
     years_back = int(re.search("(\d+)", resolution).groups()[0])
     if params.time_interval:
         time_interval = sorted([datetime.strptime(x, '%Y-%m-%d').date() for x in params.time_interval], reverse=True)
-        time_id = '_'.join(params.time_interval)
+        tmp_identifier = '_'.join(params.time_interval) + '_' + params.identifier
     else:
         time_interval = [datetime.today().date(), (datetime.today()  - timedelta(days=365.25 * years_back)).date()]
-        time_id = resolution
+        tmp_identifier = resolution + '_' + params.identifier
     reference_cutoff = date(year = time_interval[1].year - 3, month=1, day=1)
     fixed_outliers = [fix_names(x) for x in outliers[lineage]]
     fixed_references = [fix_names(x) for x in reference_viruses[lineage]]
@@ -62,11 +62,9 @@ def make_config(lineage, resolution, params):
     return {
         "dir": "flu",
         "file_prefix": "flu_%s"%lineage,
-        "dataset":params.dataset,
         "segments": params.segments,
-        "resolution": time_id,
-        "lineage": lineage,
         "input_paths": input_paths,
+        "identifier": tmp_identifier,
         #  0                     1   2         3          4      5     6       7       8          9                             10  11
         # >A/Galicia/RR9542/2012|flu|EPI376225|2012-02-23|europe|spain|galicia|galicia|unpassaged|instituto_de_salud_carlos_iii|47y|female
         "header_fields": {
@@ -115,7 +113,7 @@ if __name__=="__main__":
         logger.debug("Verbose reporting enabled")
 
     ## lots of loops to allow multiple downstream analysis
-    for resolution in params.resolutions:
+    for resolution in params.resolution:
         pprint("Preparing lineage {}, segments: {}, resolution: {}".format(params.lineage, params.segments, resolution))
 
         config = make_config(params.lineage, resolution, params)
