@@ -15,6 +15,16 @@ pc=1e-2
 regularization = 1e-3
 default_predictors = ['lb', 'ep', 'ne_star']
 
+def make_pivots(start, stop, step, precision=2):
+    """Makes an array of pivots (i.e., timepoints) between the given start and stop
+    by the given step. The generated pivots are floating point values that are
+    then rounded to the requested decimal precision.
+    """
+    return np.around(
+        np.arange(start, stop, step),
+        precision
+    )
+
 class fitness_model(object):
 
     def __init__(self, tree, frequencies, time_interval, predictor_input = ['ep', 'lb', 'dfreq'], pivot_spacing = 1.0 / 12, verbose = 0, enforce_positive_predictors = True, **kwargs):
@@ -51,7 +61,7 @@ class fitness_model(object):
         if (not hasattr(self, "pivots") and
             hasattr(self, "time_interval") and
             hasattr(self, "pivot_spacing")):
-            self.pivots = np.arange(
+            self.pivots = make_pivots(
                 self.time_interval[0],
                 self.time_interval[1],
                 self.pivot_spacing
@@ -60,7 +70,7 @@ class fitness_model(object):
         # final timepoint is end of interval and is only projected forward, not tested
         self.timepoint_step_size = 0.5      # amount of time between timepoints chosen for fitting
         self.delta_time = 1.0               # amount of time projected forward to do fitting
-        self.timepoints = np.append(np.arange(self.time_interval[0], self.time_interval[1]-self.delta_time+0.0001, self.timepoint_step_size), self.time_interval[1])
+        self.timepoints = np.append(make_pivots(self.time_interval[0], self.time_interval[1]-self.delta_time+0.0001, self.timepoint_step_size), self.time_interval[1])
 
         self.predictors = predictor_names
 
@@ -195,7 +205,7 @@ class fitness_model(object):
             node.freq_slope = {}
         for time in self.timepoints:
             time_interval = [time - freq_window, time]
-            pivots = np.arange(
+            pivots = make_pivots(
                 time_interval[0],
                 time_interval[1],
                 self.pivot_spacing
