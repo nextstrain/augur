@@ -1,10 +1,10 @@
 import argparse
+from collections import defaultdict
+from itertools import izip
 import numpy as np
 import os
 from scipy.interpolate import interp1d
 from scipy.stats import linregress
-from collections import defaultdict
-from itertools import izip
 
 from frequencies import logit_transform, tree_frequencies
 from fitness_predictors import fitness_predictors
