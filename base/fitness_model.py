@@ -1,5 +1,6 @@
 import argparse
 import numpy as np
+import os
 from scipy.interpolate import interp1d
 from scipy.stats import linregress
 from collections import defaultdict
@@ -509,7 +510,11 @@ class fitness_model(object):
             for entry in pred_vs_true:
                 pred_data.append(np.append(entry, time))
         self.pred_vs_true_df = pd.DataFrame(pred_data, columns=['initial', 'obs', 'pred', 'time'])
-        self.pred_vs_true_df.to_csv("data/prediction_pairs.tsv", sep="\t", index=False)
+
+        output_dir = "data"
+        if not os.path.isdir(output_dir):
+            os.mkdir(output_dir)
+        self.pred_vs_true_df.to_csv(os.path.join(output_dir, "prediction_pairs.tsv"), sep="\t", index=False)
 
     def validate_trajectories(self):
         '''
