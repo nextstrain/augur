@@ -34,8 +34,7 @@ def collect_args():
     parser.add_argument('--titers', help="tab-delimited file of titer strains and values from fauna (e.g., h3n2_hi_titers.tsv)")
 
     parser.set_defaults(
-        viruses_per_month=0,
-        file_prefix="flu"
+        viruses_per_month=0
     )
 
     return parser
