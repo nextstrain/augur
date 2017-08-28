@@ -151,7 +151,7 @@ class fitness_model(object):
             }
 
         for node in self.nodes:
-            interpolation = interp1d(self.rootnode.pivots, node.freq[region], kind='linear', bounds_error=False)
+            interpolation = interp1d(self.rootnode.pivots, node.freq[region], kind='linear', bounds_error=True)
             node.timepoint_freqs = defaultdict(float)
             node.delta_freqs = defaultdict(float)
             for time in self.timepoints:
@@ -524,7 +524,7 @@ class fitness_model(object):
                 initial_freq = clade.timepoint_freqs[time]
                 pred = all_pred[clade.tips]
                 freqs = all_freqs[clade.tips]
-                interpolation = interp1d(self.rootnode.pivots, clade.freq['global'], kind='linear', bounds_error=False)
+                interpolation = interp1d(self.rootnode.pivots, clade.freq['global'], kind='linear', bounds_error=True)
                 for delta in np.arange(-0.5, 1.1, 0.1):
                     if time + delta >= self.rootnode.pivots[0] and time + delta <= self.rootnode.pivots[-1]:
                         obs_freq = np.asscalar(interpolation(time+delta))
