@@ -523,6 +523,9 @@ class process(object):
             if "epitope_mask_version" in self.config["titers"]:
                 kwargs["epitope_mask_version"] = self.config["titers"]["epitope_mask_version"]
 
+        if self.config["subprocess_verbosity_level"] > 0:
+            kwargs["verbose"] = 1
+
         model = fitness_model(**kwargs)
         model.predict()
         #model.nuc_aln = multiple_sequence_alignment

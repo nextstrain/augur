@@ -53,7 +53,8 @@ def make_config (prepared_json, args):
         },
         "newick_tree_options":{
             "raxml": False
-        }
+        },
+        "subprocess_verbosity_level": 1
     }
 
 if __name__=="__main__":
