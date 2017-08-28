@@ -5,6 +5,11 @@ import json
 from pdb import set_trace
 from collections import defaultdict
 
+"""
+These functions are used as methods on the Process class
+They are defined here simply for readability.
+"""
+
 def export_frequency_json(self, prefix, indent):
 
     # local function or round frequency estimates to useful precision (reduces file size)
@@ -40,25 +45,26 @@ def export_frequency_json(self, prefix, indent):
         self.log.notify("Cannot export frequencies - pivots do not exist")
 
 
-def summarise_publications_from_tree(tree):
-    info = defaultdict(lambda: {"n": 0, "title": "?"})
-    mapping = {}
-    for clade in tree.find_clades():
-        if not clade.is_terminal():
-            continue
-        if "authors" not in clade.attr:
-            mapping[clade.name] = None
-            print("Error - {} had no authors".format(clade.name))
-            continue
-        authors = clade.attr["authors"]
-        mapping[clade.name] = authors
-        info[authors]["n"] += 1
-        for attr in ["title", "journal", "paper_url"]:
-            if attr in clade.attr:
-                info[authors][attr] = clade.attr[attr]
-    return (info, mapping)
-
 def export_metadata_json(self, prefix, indent):
+
+    def summarise_publications_from_tree(tree):
+        info = defaultdict(lambda: {"n": 0, "title": "?"})
+        mapping = {}
+        for clade in tree.find_clades():
+            if not clade.is_terminal():
+                continue
+            if "authors" not in clade.attr:
+                mapping[clade.name] = None
+                print("Error - {} had no authors".format(clade.name))
+                continue
+            authors = clade.attr["authors"]
+            mapping[clade.name] = authors
+            info[authors]["n"] += 1
+            for attr in ["title", "journal", "paper_url"]:
+                if attr in clade.attr:
+                    info[authors][attr] = clade.attr[attr]
+        return (info, mapping)
+
     self.log.notify("Writing out metadata")
     meta_json = {}
 

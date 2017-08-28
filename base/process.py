@@ -118,9 +118,11 @@ class process(object):
         ## usefull flag to set (from pathogen run file) to disable restoring
         self.try_to_restore = True
 
-        ## load in additional methods defined in helper files
-        self.export_frequency_json = export_frequency_json
-        self.export_metadata_json = export_metadata_json
+    '''
+    load in additional methods defined in helper files
+    '''
+    export_frequency_json = export_frequency_json
+    export_metadata_json = export_metadata_json
 
     def dump(self):
         '''
@@ -565,10 +567,10 @@ class process(object):
                          + ["muts", "aa_muts","attr", "clade"], indent = indent)
 
         ## FREQUENCIES ##
-        self.export_frequency_json(self, prefix=prefix, indent=indent)
+        self.export_frequency_json(prefix=prefix, indent=indent)
 
         ## METADATA ##
-        self.export_metadata_json(self, prefix=prefix, indent=indent)
+        self.export_metadata_json(prefix=prefix, indent=indent)
 
     def run_geo_inference(self):
         if self.config["geo_inference"] == False:
