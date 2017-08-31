@@ -5,20 +5,20 @@ It lives in a seperate file simply to make flu.prepare.py less cluttered
 
 segments = ["pb2", "pb1", "pa", "ha", "np", "na", "mp", "ns"]
 
-# regions is list of tuples (region, acronym)
+# regions is list of tuples (region, acronym, popsize)
 # acronym = "" means ignore for frequency calcs
 regions = [
-    ('africa',            ""),
-    ('europe',            "EU"),
-    ('north_america',     "NA"),
-    ('china',             "AS"),
-    ('south_asia',        "AS"),
-    ('japan_korea',       "AS"),
-    ('south_pacific',     "OC"),
-    ('oceania',           "OC"),
-    ('south_america',     ""),
-    ('southeast_asia',    "AS"),
-    ('west_asia',         "AS")
+    ('africa',            "", 1.216e9),
+    ('europe',            "EU", 0.739e9),
+    ('north_america',     "NA", 0.58e9),
+    ('china',             "AS", 1.4e9),
+    ('south_asia',        "AS", 1.75e9),
+    ('japan_korea',       "AS", 0.2e9),
+    ('south_pacific',     "OC", 0.002e9),
+    ('oceania',           "OC", 0.038e9),
+    ('south_america',     "", 0.422e9),
+    ('southeast_asia',    "AS", 0.618e9),
+    ('west_asia',         "AS", 0.245e9)
 ]
 
 outliers = {
@@ -86,7 +86,7 @@ outliers = {
 reference_maps = {
     "h3n2": {
         "ha": {
-            "path": "metadata/h3n2_ha_outgroup.gb",
+            "path": "metadata/h3n2_outgroup.gb",
             "metadata": {
                 'strain': "A/Beijing/32/1992",
                 'isolate_id': "CY113677",
@@ -100,12 +100,12 @@ reference_maps = {
                 'gender': "unknown"
             },
             "include": 0,
-            "genes": {"HA": "SigPep", "HA1": "HA1", "HA2": "HA2"}
+            "genes": ["SigPep", "HA1", "HA2"]
         }
     },
     "yam": {
         "ha": {
-            "path": "metadata/yam_ha_outgroup.gb",
+            "path": "metadata/yam_outgroup.gb",
             "metadata": {
                 'strain': "B/Singapore/11/1994",
                 'isolate_id': "CY019707",
@@ -119,7 +119,7 @@ reference_maps = {
                 'gender': "M"
             },
             "include": 0,
-            "genes": ["HA"]
+            "genes": ["SigPep", "HA1", "HA2"]
         },
         "na": {
             "path": "metadata/yam_na_outgroup.gb",
@@ -129,7 +129,7 @@ reference_maps = {
     },
     "vic": {
         "ha": {
-            "path": "metadata/vic_ha_outgroup.gb",
+            "path": "metadata/vic_outgroup.gb",
             "metadata": {
                 'strain': "B/Hong Kong/02/1993",
                 'isolate_id': "CY018813",
@@ -143,12 +143,12 @@ reference_maps = {
                 'gender': "unknown"
             },
             "include": 0,
-            "genes": ["HA"]
+            "genes": ["SigPep", "HA1", "HA2"]
         }
     },
     "h1n1pdm": {
         "ha": {
-            "path": "metadata/h1n1pdm_ha_outgroup.gb",
+            "path": "metadata/h1n1pdm_outgroup.gb",
             "metadata": {
                 'strain': "A/Swine/Indiana/P12439/00",
                 'isolate_id': "AF455680",
@@ -162,7 +162,7 @@ reference_maps = {
                 'gender': "unknown"
             },
             "include": 0,
-            "genes": ["HA"]
+            "genes": ["SigPep", "HA1", "HA2"]
         }
     }
 }

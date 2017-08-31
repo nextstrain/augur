@@ -83,8 +83,12 @@ class tree(object):
             dump(node_props, nfile)
 
     def check_newick(self, newick_file):
-        tree = Phylo.parse(newick_file, 'newick').next()
-        assert(set([x.name for x in tree.get_terminals()]) == set(self.sequence_lookup.keys()))
+        try:
+            tree = Phylo.parse(newick_file, 'newick').next()
+            assert(set([x.name for x in tree.get_terminals()]) == set(self.sequence_lookup.keys()))
+            return True
+        except:
+            return False
 
     def build_newick(self, newick_file, nthreads=2, root='midpoint', raxml=True, raxml_bin='raxml', debug=False, num_distinct_starting_trees=1):
         from Bio import Phylo, AlignIO

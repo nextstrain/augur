@@ -28,6 +28,7 @@ def collect_args():
     parser.add_argument('-j', '--json', help="prepared JSON to process")
     parser.add_argument('--clean', default=False, action='store_true', help="clean build (remove previous checkpoints)")
     parser.add_argument('--no_raxml', action='store_true', help="do not run RAxML to build the tree")
+    parser.add_argument('--no_tree', action='store_true', help="do not build a tree")
 
     return parser
 
@@ -70,6 +71,9 @@ class process(object):
             self.info["time_interval"] = [datetime.strptime(x, '%Y-%m-%d').date()
                                           for x in data["info"]["time_interval"]]
         self.info["lineage"] = data["info"]["lineage"]
+
+        if 'leaves' in data:
+            self.tree_leaves = data['leaves']
 
         try:
             self.colors = data["colors"]
@@ -118,9 +122,6 @@ class process(object):
         ## usefull flag to set (from pathogen run file) to disable restoring
         self.try_to_restore = True
 
-        ## load in additional methods defined in helper files
-        self.export_frequency_json = export_frequency_json
-        self.export_metadata_json = export_metadata_json
 
     def dump(self):
         '''
@@ -215,22 +216,22 @@ class process(object):
                          self.config["pivot_spacing"])
 
     def restore_mutation_frequencies(self):
-        try:
-            assert(self.try_to_restore == True)
-            with open(self.output_path + "_mut_freqs.pickle", 'rb') as fh:
-                pickle_seqs = pickle.load(fh)
-                assert(pickle_seqs == set(self.seqs.seqs.keys()))
-                pickled = pickle.load(fh)
-                assert(len(pickled) == 3)
-                self.mutation_frequencies = pickled[0]
-                self.mutation_frequency_confidence = pickled[1]
-                self.mutation_frequency_counts = pickled[2]
-                self.log.notify("Successfully restored mutation frequencies")
-                return
-        except IOError:
-            pass
-        except AssertionError as err:
-            self.log.notify("Tried to restore mutation frequencies but failed: {}".format(err))
+        if self.try_to_restore:
+            try:
+                with open(self.output_path + "_mut_freqs.pickle", 'rb') as fh:
+                    pickle_seqs = pickle.load(fh)
+                    assert(pickle_seqs == set(self.seqs.seqs.keys()))
+                    pickled = pickle.load(fh)
+                    assert(len(pickled) == 3)
+                    self.mutation_frequencies = pickled[0]
+                    self.mutation_frequency_confidence = pickled[1]
+                    self.mutation_frequency_counts = pickled[2]
+                    self.log.notify("Successfully restored mutation frequencies")
+                    return
+            except IOError:
+                pass
+            except AssertionError as err:
+                self.log.notify("Tried to restore mutation frequencies but failed: {}".format(err))
             #no need to remove - we'll overwrite it shortly
         self.mutation_frequencies = {}
         self.mutation_frequency_confidence = {}
@@ -290,31 +291,41 @@ class process(object):
         else:
             self.log.warn("region must be string or tuple")
             return
-        for prot, aln in [('nuc',self.seqs.aln)]+ self.seqs.translations.items():
+
+        # loop over different alignment types
+        for prot, aln in [('nuc',self.seqs.aln)] + self.seqs.translations.items():
             if (region_name,prot) in self.mutation_frequencies:
                 self.log.notify("Skipping Frequency Estimation for region \"{}\", protein \"{}\"".format(region_name, prot))
                 continue
             self.log.notify("Starting Frequency Estimation for region \"{}\", protein \"{}\"".format(region_name, prot))
 
+            # determine set of positions that have to have a frequency calculated
             if prot in include_set:
                 tmp_include_set = [x for x in include_set[prot]]
             else:
                 tmp_include_set = []
-            if region_match=="global":
-                tmp_aln = filter_alignment(aln, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
-            else:
-                tmp_aln = filter_alignment(aln, region=region_match, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
+
+            tmp_aln = filter_alignment(aln, region = None if region=='global' else region_match,
+                                      lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
+
+            if ('global', prot) in self.mutation_frequencies:
                 tmp_include_set += set([pos for (pos, mut) in self.mutation_frequencies[('global', prot)]])
+
             time_points = [np.mean(x.attributes['num_date']) for x in tmp_aln]
             if len(time_points)==0:
                 self.log.notify('no samples in region {} (protein: {})'.format(region_name, prot))
                 self.mutation_frequency_counts[region_name]=np.zeros_like(self.pivots)
                 continue
 
+            # instantiate alignment frequency
             aln_frequencies = alignment_frequencies(tmp_aln, time_points, self.pivots,
                                             ws=max(2,len(time_points)//10),
                                             inertia=inertia,
-                                            stiffness=stiffness)
+                                            stiffness=stiffness, method='SLSQP')
+            if prot=='nuc': # if this is a nucleotide alignment, set all non-canonical states to N
+                A = aln_frequencies.aln
+                A[~((A=='A')|(A=='C')|(A=='G')|(A=='T')|('A'=='-'))] = 'N'
+
             aln_frequencies.mutation_frequencies(min_freq=min_freq, include_set=tmp_include_set,
                                                  ignore_char='N' if prot=='nuc' else 'X')
             self.mutation_frequencies[(region_name,prot)] = aln_frequencies.frequencies
@@ -327,6 +338,58 @@ class process(object):
             pickle.dump((self.mutation_frequencies,
                          self.mutation_frequency_confidence,
                          self.mutation_frequency_counts), fh, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+    def global_frequencies(self, min_freq):
+        # determine sites whose frequencies need to be computed in all regions
+        self.seqs.diversity_statistics()
+        include_set = {}
+        for prot in ['nuc'] + self.seqs.translations.keys():
+            include_set[prot] = np.where(np.sum(self.seqs.af[prot][:-2]**2, axis=0)<np.sum(self.seqs.af[prot][:-2], axis=0)**2-min_freq)[0]
+
+        # set pivots and define groups of larger regions for frequency display
+        pivots = self.get_pivots_via_spacing()
+        acronyms = set([x[1] for x in self.info["regions"] if x[1]!=""])
+        region_groups = {str(x):[str(y[0]) for y in self.info["regions"] if y[1] == x] for x in acronyms}
+        pop_sizes = {str(x):np.sum([y[-1] for y in self.info["regions"] if y[1] == x]) for x in acronyms}
+        total_popsize = np.sum(pop_sizes.values())
+
+        # estimate frequencies in individual regions
+        # TODO: move inertia and stiffness parameters to config
+        for region in region_groups.iteritems():
+            self.estimate_mutation_frequencies(pivots=pivots, region=region, min_freq=0.02, include_set=include_set,
+                                                 inertia=np.exp(-2.0/12), stiffness=2.0*12)
+
+        # perform a weighted average of frequencies across the regions to determine
+        # global frequencies.
+        # First: compute the weights accounting for seasonal variation and populations size
+        weights = {region: np.array(self.mutation_frequency_counts[region], dtype = float)
+                   for region in acronyms}
+
+        for region in weights: # map maximal count across time to 1.0, weigh by pop size
+            weights[region] = np.maximum(0.1, weights[region]/weights[region].max())
+            weights[region]*=pop_sizes[region]
+
+        # compute the normalizer
+        total_weight = np.sum([weights[region] for region in acronyms],axis=0)
+
+        for prot in ['nuc'] + self.seqs.translations.keys():
+            gl_freqs, gl_counts, gl_confidence = {}, {}, {}
+            all_muts = set()
+            for region in acronyms: # list all unique mutations
+                all_muts.update(self.mutation_frequencies[(region, prot)].keys())
+            for mut in all_muts: # compute the weighted average
+                gl_freqs[mut] = np.sum([self.mutation_frequencies[(region, prot)][mut]*weights[region] for region in acronyms
+                                        if mut in self.mutation_frequencies[(region, prot)]], axis=0)/total_weight
+                gl_confidence[mut] = np.sqrt(np.sum([self.mutation_frequency_confidence[(region, prot)][mut]**2*weights[region]
+                                                     for region in acronyms
+                                            if mut in self.mutation_frequencies[(region, prot)]], axis=0)/total_weight)
+            gl_counts = np.sum([self.mutation_frequency_counts[region] for region in acronyms
+                                        if mut in self.mutation_frequencies[(region, prot)]], axis=0)
+            # save in mutation_frequency data structure
+            self.mutation_frequencies[("global", prot)] = gl_freqs
+            self.mutation_frequency_counts["global"] = gl_counts
+            self.mutation_frequency_confidence[("global", prot)] = gl_confidence
 
 
     def save_tree_frequencies(self):
@@ -383,12 +446,12 @@ class process(object):
             return
 
         if not hasattr(self, 'pivots'):
-            tps = np.array([x.attributes['num_date'] for x in self.seqs.seqs.values()])
+            tps = np.array([np.mean(x.attributes['num_date']) for x in self.seqs.seqs.values()])
             self.pivots=make_pivots(pivots, tps)
 
-        self.log.notify('Estimate tree frequencies for %s: using self.pivots\n%s' % (region, self.pivots))
+        self.log.notify('Estimate tree frequencies for %s: using self.pivots' % (region))
 
-        tree_freqs = tree_frequencies(self.tree.tree, self.pivots,
+        tree_freqs = tree_frequencies(self.tree.tree, self.pivots, method='SLSQP',
                                       node_filter = node_filter_func,
                                       ws = max(2,self.tree.tree.count_terminals()//10))
                                     # who knows what kwargs are needed here
@@ -410,12 +473,9 @@ class process(object):
         '''
         self.tree = tree(aln=self.seqs.aln, proteins=self.proteins, verbose=self.config["subprocess_verbosity_level"])
         newick_file = self.output_path + ".newick"
-        try:
-            assert(self.try_to_restore == True)
-            assert(os.path.isfile(newick_file))
-            self.tree.check_newick(newick_file)
-            self.log.notify("Newick file restored from \"{}\"".format(newick_file))
-        except AssertionError:
+        if self.try_to_restore and os.path.isfile(newick_file) and self.tree.check_newick(newick_file):
+            self.log.notify("Newick file \"{}\" can be used to restore".format(newick_file))
+        else:
             self.log.notify("Building newick tree.")
             self.tree.build_newick(newick_file, **self.config["newick_tree_options"])
 
@@ -460,7 +520,7 @@ class process(object):
             try:
                 assert(self.config["timetree_options"] == pickled["timetree_options"])
                 assert(self.config["clock_filter"] == pickled["clock_filter_options"])
-                assert(set(self.seqs.sequence_lookup.keys()) == set(pickled["original_seqs"]))
+                #assert(set(self.seqs.sequence_lookup.keys()) == set(pickled["original_seqs"]))
             except AssertionError as e:
                 print(e)
                 self.log.warn("treetime is out of date - rerunning")
@@ -565,10 +625,11 @@ class process(object):
                          + ["muts", "aa_muts","attr", "clade"], indent = indent)
 
         ## FREQUENCIES ##
-        self.export_frequency_json(self, prefix=prefix, indent=indent)
+        export_frequency_json(self, prefix=prefix, indent=indent)
 
         ## METADATA ##
-        self.export_metadata_json(self, prefix=prefix, indent=indent)
+        export_metadata_json(self, prefix=prefix, indent=indent)
+
 
     def run_geo_inference(self):
         if self.config["geo_inference"] == False:

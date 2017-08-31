@@ -5,7 +5,7 @@ import json
 from pdb import set_trace
 from collections import defaultdict
 
-def export_frequency_json(self, prefix, indent):
+def export_frequency_json(process, prefix, indent):
 
     # local function or round frequency estimates to useful precision (reduces file size)
     def process_freqs(freq):
@@ -13,31 +13,31 @@ def export_frequency_json(self, prefix, indent):
 
     # construct a json file containing all frequency estimate
     # the format is region_protein:159F for mutations and region_clade:123 for clades
-    if hasattr(self, 'pivots'):
-        freq_json = {'pivots':process_freqs(self.pivots)}
-        if hasattr(self, 'mutation_frequencies'):
-            freq_json['counts'] = {x:list(counts) for x, counts in self.mutation_frequency_counts.iteritems()}
-            for (region, gene), tmp_freqs in self.mutation_frequencies.iteritems():
+    if hasattr(process, 'pivots'):
+        freq_json = {'pivots':process_freqs(process.pivots)}
+        if hasattr(process, 'mutation_frequencies'):
+            freq_json['counts'] = {x:list(counts) for x, counts in process.mutation_frequency_counts.iteritems()}
+            for (region, gene), tmp_freqs in process.mutation_frequencies.iteritems():
                 for mut, freq in tmp_freqs.iteritems():
                     label_str =  region+"_"+ gene + ':' + str(mut[0]+1)+mut[1]
                     freq_json[label_str] = process_freqs(freq)
         # repeat for clade frequencies in trees
-        if hasattr(self, 'tree_frequencies'):
-            for region in self.tree_frequencies:
-                for clade, freq in self.tree_frequencies[region].iteritems():
+        if hasattr(process, 'tree_frequencies'):
+            for region in process.tree_frequencies:
+                for clade, freq in process.tree_frequencies[region].iteritems():
                     label_str = region+'_clade:'+str(clade)
                     freq_json[label_str] = process_freqs(freq)
         # repeat for named clades
-        if hasattr(self, 'clades_to_nodes') and hasattr(self, 'tree_frequencies'):
-            for region in self.tree_frequencies:
-                for clade, node in self.clades_to_nodes.iteritems():
+        if hasattr(process, 'clades_to_nodes') and hasattr(process, 'tree_frequencies'):
+            for region in process.tree_frequencies:
+                for clade, node in process.clades_to_nodes.iteritems():
                     label_str = region+'_'+str(clade)
-                    freq_json[label_str] = process_freqs(self.tree_frequencies[region][node.clade])
+                    freq_json[label_str] = process_freqs(process.tree_frequencies[region][node.clade])
         # write to one frequency json
-        if hasattr(self, 'tree_frequencies') or hasattr(self, 'mutation_frequencies'):
+        if hasattr(process, 'tree_frequencies') or hasattr(process, 'mutation_frequencies'):
             write_json(freq_json, prefix+'_frequencies.json', indent=indent)
     else:
-        self.log.notify("Cannot export frequencies - pivots do not exist")
+        process.log.notify("Cannot export frequencies - pivots do not exist")
 
 
 def summarise_publications_from_tree(tree):
@@ -58,42 +58,42 @@ def summarise_publications_from_tree(tree):
                 info[authors][attr] = clade.attr[attr]
     return (info, mapping)
 
-def export_metadata_json(self, prefix, indent):
-    self.log.notify("Writing out metadata")
+def export_metadata_json(process, prefix, indent):
+    process.log.notify("Writing out metaprocess")
     meta_json = {}
 
     # count number of tip nodes
     virus_count = 0
-    for node in self.tree.tree.get_terminals():
+    for node in process.tree.tree.get_terminals():
         virus_count += 1
     meta_json["virus_count"] = virus_count
 
-    (author_info, seq_to_author) = summarise_publications_from_tree(self.tree.tree)
+    (author_info, seq_to_author) = summarise_publications_from_tree(process.tree.tree)
     meta_json["author_info"] = author_info
     meta_json["seq_author_map"] = seq_to_author
 
 
     # join up config color options with those in the input JSONs.
-    col_opts = self.config["auspice"]["color_options"]
-    if self.colors:
-        for trait, data in self.colors.iteritems():
+    col_opts = process.config["auspice"]["color_options"]
+    if process.colors:
+        for trait, col in process.colors.iteritems():
             if trait in col_opts:
-                col_opts[trait]["color_map"] = data
+                col_opts[trait]["color_map"] = col
             else:
-                self.log.warn("{} in colors (input JSON) but not auspice/color_options. Ignoring".format(trait))
+                process.log.warn("{} in colors (input JSON) but not auspice/color_options. Ignoring".format(trait))
 
     meta_json["color_options"] = col_opts
-    if "date_range" in self.config["auspice"]:
-        meta_json["date_range"] = self.config["auspice"]["date_range"]
-    if "analysisSlider" in self.config["auspice"]:
-        meta_json["analysisSlider"] = self.config["auspice"]["analysisSlider"]
-    meta_json["panels"] = self.config["auspice"]["panels"]
+    if "date_range" in process.config["auspice"]:
+        meta_json["date_range"] = process.config["auspice"]["date_range"]
+    if "analysisSlider" in process.config["auspice"]:
+        meta_json["analysisSlider"] = process.config["auspice"]["analysisSlider"]
+    meta_json["panels"] = process.config["auspice"]["panels"]
     meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
-    meta_json["title"] = self.info["title"]
-    meta_json["maintainer"] = self.info["maintainer"]
+    meta_json["title"] = process.info["title"]
+    meta_json["maintainer"] = process.info["maintainer"]
 
-    if "defaults" in self.config["auspice"]:
-        meta_json["defaults"] = self.config["auspice"]["defaults"]
+    if "defaults" in process.config["auspice"]:
+        meta_json["defaults"] = process.config["auspice"]["defaults"]
 
     try:
         from pygit2 import Repository, discover_repository
@@ -104,7 +104,7 @@ def export_metadata_json(self, prefix, indent):
         meta_json["commit"] = str(commit_id)
     except ImportError:
         meta_json["commit"] = "unknown"
-    if len(self.config["auspice"]["controls"]):
-        meta_json["controls"] = self.make_control_json(self.config["auspice"]["controls"])
-    meta_json["geo"] = self.lat_longs
+    if len(process.config["auspice"]["controls"]):
+        meta_json["controls"] = process.make_control_json(process.config["auspice"]["controls"])
+    meta_json["geo"] = process.lat_longs
     write_json(meta_json, prefix+'_meta.json')
