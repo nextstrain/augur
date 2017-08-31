@@ -35,6 +35,7 @@ def parse_args():
     parser.add_argument('--strains', help="a text file containing a list of strains (one per line) to prepare without filtering or subsampling")
     parser.add_argument('--titers', help="tab-delimited file of titer strains and values from fauna (e.g., h3n2_hi_titers.tsv)")
     parser.add_argument('--identifier', default='', type=str, help="flag to disambiguate builds, optional")
+    parser.add_argument('--complete_frequencies', action='store_true', help="compute mutation frequences from entire dataset")
 
     parser.set_defaults(
         viruses_per_month=0
@@ -141,7 +142,8 @@ if __name__=="__main__":
         runner.load_references()
         runner.applyFilters()
         runner.ensure_all_segments()
-        #runner.subsample()
+        if not params.complete_frequencies: # if complete_frequencies, do subsampling later on in flu.process
+            runner.subsample()
         taxa_to_include = list(runner.segments[params.segment[0]].get_subsampled_names(config))
         runner.segments[params.segment[0]].extras['leaves'] = taxa_to_include
         runner.colors()
