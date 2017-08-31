@@ -37,8 +37,7 @@ def parse_args():
     parser.add_argument('--identifier', default='', type=str, help="flag to disambiguate builds, optional")
 
     parser.set_defaults(
-        viruses_per_month=0,
-        file_prefix="flu"
+        viruses_per_month=0
     )
 
     return parser.parse_args()
