@@ -130,21 +130,21 @@ class sequence_set(object):
             print(e)
             return
 
+        if len({x.id for x in self.aln} ^ set(self.seqs.keys())) != 0:
+            self.log.notify("Alignment on disk had different sequences... re-doing")
+            del self.aln
+            return
+
         try:
             self.set_reference_alignment()
         except IndexError:
-            self.log.notify("Reference not found in alignment... re-doing")
-            del self.aln
-            return
+            self.log.notify("Reference not found in alignment... ok on reload")
+            # del self.aln
+            # return
 
         if not self.reference_in_dataset:
             self.remove_reference_from_alignment()
 
-        if len({x.id for x in self.aln} ^ set(self.seqs.keys())) != 0:
-            self.log.notify("Alignment on disk had different sequences... re-doing")
-            del self.aln
-            del self.reference_aln
-            return
 
         # at this stage we are happy with the alignment
         self.set_sequence_lookup()
@@ -171,6 +171,19 @@ class sequence_set(object):
             gaps = seq_array=='-'
             seq_array[gaps]='N'
             seq.seq = Seq("".join(seq_array))
+
+
+    def make_terminal_gaps_ambiguous(self):
+        '''
+        replace all gaps at the end of sequences by 'N' in the alignment. TreeTime will treat them
+        as fully ambiguous and replace then with the most likely state
+        '''
+        for seq in self.aln:
+            str_seq = str(seq.seq)
+            lgaps = len(str_seq) - len(str_seq.lstrip('-'))
+            rgaps = len(str_seq) - len(str_seq.rstrip('-'))
+            str_seq = 'N'*lgaps + str_seq.strip('-') + 'N'*rgaps
+            seq.seq = Seq(str_seq)
 
 
     def translate(self):

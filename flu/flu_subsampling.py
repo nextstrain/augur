@@ -7,10 +7,10 @@ from base.io_util import myopen
 from base.titer_model import TiterModel
 
 vpm_dict = {
-    2: 68,
-    3: 46,
-    6: 24,
-    12: 12,
+    2: 98,
+    3: 66,
+    6: 34,
+    12: 18,
 }
 
 def populate_counts(obj):

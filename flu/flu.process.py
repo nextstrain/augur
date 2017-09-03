@@ -74,11 +74,33 @@ def rising_mutations(freqs, genes, region='NA', dn=5, baseline = 0.01, fname='tm
     with open(fname, 'w') as ofile:
         ofile.write("#Frequency change over the last %d month in region %s\n"%(dn, region))
         print("#Frequency change over the last %d month in region %s"%(dn, region))
-        for k,v in sorted(dx.items(), key=lambda x:x[1][2])[-10:]:
-            ofile.write("%s:%d%s: x=%1.3f, dx=%1.3f, dx/x=%1.3f\n"%(k[1], k[2]+1, k[3], v[0], v[1], v[2]))
+        for k,v in sorted(dx.items(), key=lambda x:x[1][2], reverse=True):
+            ofile.write("%s:%d%s\t%1.3f\t%1.3f\t%1.3f\n"%(k[1], k[2]+1, k[3], v[0], v[1], v[2]))
             print("%s:%d%s: x=%1.3f, dx=%1.3f, dx/x=%1.3f"%(k[1], k[2]+1, k[3], v[0], v[1], v[2]))
         ofile.write('\n')
     return dx
+
+def recurring_mutations(tree, fname_by_position='tmp.txt', fname_by_mutation='tmp.txt'):
+    from collections import defaultdict
+    by_mutation = defaultdict(int)
+    by_position = defaultdict(int)
+    for n in tree.find_clades():
+        for gene in n.aa_mutations:
+            for mut in n.aa_mutations[gene]:
+                by_position[(gene, mut[1])]+=1
+                by_mutation[(gene, mut)]+=1
+
+    with open(fname_by_position, 'w') as ofile:
+        ofile.write("#Number of independent mutation events in the tree observed at a specific position\n")
+        for mut,val in sorted(by_position.items(), key=lambda x:x[1], reverse=True):
+            ofile.write("%s:%d\t%d\n"%(mut[0], mut[1]+1, val))
+
+    with open(fname_by_mutation, 'w') as ofile:
+        ofile.write("#Number of sepcific independent mutation events in the tree observed\n")
+        for mut,val in sorted(by_mutation.items(), key=lambda x:x[1], reverse=True):
+            ofile.write("%s:%s%d%s\t%d\n"%(mut[0], mut[1][0], mut[1][1]+1, mut[1][2], val))
+
+    return by_mutation, by_position
 
 
 def freq_auto_corr(freq1, freq2, min_dfreq=0.2):
@@ -109,9 +131,9 @@ if __name__=="__main__":
     if runner.config["estimate_mutation_frequencies"]:
         runner.global_frequencies(min_freq)
 
-        for region in ['AS', 'NA']:
+        for region in ['AS', 'NA', 'EU']:
             mlist = rising_mutations(runner.mutation_frequencies, ['HA1', 'HA2'], region=region,
-                    fname = "rising_mutations/%s_%s_rising_mutations.txt"%(runner.info["prefix"], region))
+                    fname = "rising_mutations/%s_%s_rising_mutations.txt"%("_".join(runner.info["prefix"].split('_')[:-3]), region))
 
     if runner.config["build_tree"]:
         if hasattr(runner, 'tree_leaves'): # subsample alignment
@@ -136,7 +158,9 @@ if __name__=="__main__":
             HI_export(runner)
 
         runner.matchClades(clade_designations[runner.info["lineage"]])
-
+        recurring_mutations(runner.tree.tree,
+                            fname_by_position = "recurring_mutations/%s_recurring_positions.txt"%(runner.info["prefix"]),
+                            fname_by_mutation = "recurring_mutations/%s_recurring_mutations.txt"%(runner.info["prefix"]))
         # runner.save_as_nexus()
     runner.auspice_export()
 
