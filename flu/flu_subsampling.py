@@ -60,9 +60,11 @@ def flu_subsampling(params, years_back, titer_values):
             return pr + len(seq.seq)*0.0001 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD'])
 
     ##### DEFINE THE THRESHOLD
-    sampling_threshold = vpm_dict[years_back]
     if params.viruses_per_month_seq != 0:
         sampling_threshold = params.viruses_per_month_seq
+    else:
+        sampling_threshold = vpm_dict[years_back]
+
     region_threshold = int(np.ceil(1.0*sampling_threshold/len(regions)))
     if type_of_subsampling == "priority":
         priority_region = params.sampling
