@@ -158,9 +158,11 @@ class frequency_estimator(object):
             #self.covariance = self.sol['hess_inv'].todense()
             #self.conf95 = 1.96*np.sqrt(np.diag(self.covariance))
         else:
-            print("Optimization failed, trying with powell")
             if debug: import ipdb; ipdb.set_trace()
-            self.sol = minimize(logLH, logit_transform(self.pivot_freq,self.pc), method='powell')
+            if self.method != "powell":
+                print("Optimization failed, trying with powell")
+                self.sol = minimize(logLH, logit_transform(self.pivot_freq,self.pc), method='powell')
+
             self.pivot_freq = logit_inv(self.sol['x'], self.pc)
         self.pivot_freq = fix_freq(self.pivot_freq, 0.0001)
 
