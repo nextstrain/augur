@@ -17,6 +17,8 @@ def collect_args():
     parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
     parser.add_argument('--annotate_fitness', default=False, action='store_true', help="run fitness prediction model and annotate fitnesses on tree nodes")
     parser.add_argument('--clean', default=False, action='store_true', help="clean build (remove previous checkpoints)")
+    parser.add_argument('--predictors', default=['cTiter'], nargs='+', help="attributes to use as fitness model predictors")
+    parser.add_argument('--epitope_mask_version', default="wolf", help="name of the epitope mask that defines epitope mutations")
     return parser.parse_args()
 
 def make_config (prepared_json, args):
@@ -35,7 +37,7 @@ def make_config (prepared_json, args):
         "titers": {
             "criterium": lambda x: len(x.aa_mutations['HA1']+x.aa_mutations['HA2'])>0,
             "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
-            "epitope_mask_version": "wolf",
+            "epitope_mask_version": args.epitope_mask_version,
             "lam_avi":2.0,
             "lam_pot":0.3,
             "lam_drop":2.0
@@ -43,7 +45,7 @@ def make_config (prepared_json, args):
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
         "annotate_fitness": args.annotate_fitness,
-        "predictors": ["ep"],
+        "predictors": args.predictors,
         "clean": args.clean,
         "pivot_spacing": 1.0/12,
         "timetree_options": {
