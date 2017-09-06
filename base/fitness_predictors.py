@@ -46,6 +46,10 @@ class fitness_predictors(object):
             self.calc_tolerance(tree, attr = 'tol')
         if pred == 'tol_ne':
             self.calc_tolerance(tree, epitope_mask = self.tolerance_mask, attr = 'tol_ne')
+        if pred == 'null':
+            self.calc_null_predictor(tree)
+        if pred == 'random':
+            self.calc_random_predictor(tree)
         #if pred == 'dfreq':
             # do nothing
         #if pred == 'cHI':
@@ -264,3 +268,15 @@ class fitness_predictors(object):
             for child in node.child_nodes():
                 tmp_LBI += child.up_polarizer
             node.__setattr__(attr, transform(tmp_LBI))
+
+    def calc_null_predictor(self, tree, attr="null"):
+        """Assign a zero value to each node as a control representing a null predictor.
+        """
+        for node in tree.find_clades():
+            setattr(node, attr, 0)
+
+    def calc_random_predictor(self, tree, attr="random"):
+        """Assign a random value between 0 and 1 to each node as a control predictor.
+        """
+        for node in tree.find_clades():
+            setattr(node, attr, np.random.random())

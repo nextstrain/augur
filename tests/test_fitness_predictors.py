@@ -163,3 +163,27 @@ class TestFitnessPredictors(object):
         assert getattr(nodes[0], attr) == 0
         assert getattr(nodes[1], attr) == 1
         assert getattr(nodes[2], attr) == 0
+
+    def test_calc_null_predictor(self, fitness_predictor, tree):
+        attr = "null"
+        nodes = [node for node in tree.find_clades(order="preorder")]
+        for node in nodes:
+            assert not hasattr(node, attr)
+
+        fitness_predictor.calc_null_predictor(tree, attr=attr)
+
+        # All nodes should have a zero-valued predictor.
+        for node in nodes:
+            assert getattr(node, attr) == 0
+
+    def test_calc_random_predictor(self, fitness_predictor, tree):
+        attr = "random"
+        nodes = [node for node in tree.find_clades(order="preorder")]
+        for node in nodes:
+            assert not hasattr(node, attr)
+
+        fitness_predictor.calc_random_predictor(tree, attr=attr)
+
+        # All nodes should have a random value between 0 and 1.
+        for node in nodes:
+            assert getattr(node, attr) >= 0 and getattr(node, attr) < 1
