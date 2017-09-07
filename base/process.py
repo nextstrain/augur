@@ -189,6 +189,9 @@ class process(object):
             self.seqs.strip_non_reference()
             if fill_gaps:
                 self.seqs.make_gaps_ambiguous()
+            else:
+                self.seqs.make_terminal_gaps_ambiguous()
+
 
             AlignIO.write(self.seqs.aln, fnameStripped, 'fasta')
 
