@@ -190,12 +190,12 @@ class process(object):
             if fill_gaps:
                 self.seqs.make_gaps_ambiguous()
 
+            AlignIO.write(self.seqs.aln, fnameStripped, 'fasta')
+
             if not self.seqs.reference_in_dataset:
                 self.seqs.remove_reference_from_alignment()
             # if outgroup is not None:
             #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
-
-            AlignIO.write(self.seqs.aln, fnameStripped, 'fasta')
 
         self.seqs.translate() # creates self.seqs.translations
         # save additional translations - disabled for now
