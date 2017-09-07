@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+import Bio.Phylo
 
 def myopen(fname, mode='r'):
     if fname[-2:] == 'gz':
@@ -72,3 +73,37 @@ def tree_to_json(node, extra_attr = []):
         for ch in node.clades:
             tree_json["children"].append(tree_to_json(ch, extra_attr))
     return tree_json
+
+
+def json_to_tree(json_dict):
+    """Returns a Bio.Phylo tree corresponding to the given JSON dictionary exported
+    by `tree_to_json`.
+
+    >>> import json
+    >>> json_fh = open("tests/data/flu_h3n2_ha_3y_tree.json", "r")
+    >>> json_dict = json.load(json_fh)
+    >>> tree = json_to_tree(json_dict)
+    >>> tree.name
+    u'NODE_0002020'
+    >>> len(tree.clades)
+    2
+    >>> tree.clades[0].name
+    u'NODE_0001489'
+    >>> hasattr(tree, "attr")
+    True
+    >>> "dTiter" in tree.attr
+    True
+    """
+    node = Bio.Phylo.Newick.Clade()
+    node.name = json_dict["strain"]
+
+    if "children" in json_dict:
+        # Recursively add children to the current node.
+        node.clades = [json_to_tree(child) for child in json_dict["children"]]
+
+    # Assign all non-children attributes.
+    for attr, value in json_dict.iteritems():
+        if attr != "children":
+            setattr(node, attr, value)
+
+    return node

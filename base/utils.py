@@ -92,7 +92,7 @@ def ambiguous_date_to_date_range(mydate, fmt):
     upper_bound = datetime(year=max_date['year'], month=max_date['month'], day=max_date['day']).date()
     return (lower_bound, upper_bound if upper_bound<today else today)
 
-def save_as_nexus(tree, fname):
+def save_as_nexus(tree, fname, metric="div"):
     def format_string_attr(node, key):
         return "{}=\"{}\"".format(key, node["attr"][key])
 
@@ -100,11 +100,11 @@ def save_as_nexus(tree, fname):
         if terminal:
             taxa.append(node["strain"])
         extra = [format_string_attr(node, x) for x in attrs_to_write]
-        return "{}[&{}]:{}".format(len(taxa) if terminal else "", ",".join(extra), float(node["attr"]["div"]) - float(prev_div))
+        return "{}[&{}]:{}".format(len(taxa) if terminal else "", ",".join(extra), float(node["attr"][metric]) - float(prev_div))
 
     def tree_walk(node, prev_div):
         if "children" in node:
-            subtrees = ",".join([tree_walk(child, node["attr"]["div"]) for child in node["children"]])
+            subtrees = ",".join([tree_walk(child, node["attr"][metric]) for child in node["children"]])
             return "({}){}".format(subtrees,stringify_node(node, prev_div, False))
         else:
             return stringify_node(node, prev_div, True)

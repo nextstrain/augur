@@ -12,6 +12,7 @@ processed/
 auspice/
 test_input/
 test_output/
+scratch/
 
 # Compiled source #
 ###################

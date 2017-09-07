@@ -1,0 +1,17 @@
+#NEXUS
+
+Begin taxa;
+	Dimensions ntax=2;
+	Taxlabels
+		NODE_0001489
+		NODE_0001488
+		;
+End;
+
+Begin trees;
+	Translate
+		1 NODE_0001489,
+		2 NODE_0001488
+		;
+tree TREE1 = [&R] (1[&num_date="2011.46203786",num_date_confidence="[2010.9816794174155, 2011.601249575312]",region_confidence="{u'china': 0.06719971535813674, u'north_america': 0.9222123667187458}",region="north_america",region_entropy="0.115927457174",ne="0",dTiter="0",rb="0",cTiter="0",div="6.55519550877e-09",ep="0"]:6.55519550877e-09,2[&num_date="2012.95684259",num_date_confidence="[2012.2476936602595, 2013.6105467885995]",region_confidence="{u'china': 0.06846146328541534, u'north_america': 0.9231177488469717}",region="north_america",region_entropy="0.112184170627",ne="1",dTiter="0.334678542062",rb="0",cTiter="0.334678542062",div="0.00231849321223",ep="0"]:0.00231849321223)[&num_date="2011.43574044",num_date_confidence="[2010.861842426969, 2011.5707023407906]",region_confidence="{u'china': 0.06722111214517357, u'north_america': 0.9222276551894675}",region="north_america",region_entropy="0.115870179796",ne="0",dTiter="0",rb="0",cTiter="0",div="0",ep="0"]:0.0;
+End;
