@@ -131,9 +131,11 @@ if __name__=="__main__":
     if runner.config["estimate_mutation_frequencies"]:
         runner.global_frequencies(min_freq)
 
+        if not os.path.exists("processed/rising_mutations/"):
+            os.makedirs("processed/rising_mutations/")
         for region in ['AS', 'NA', 'EU']:
             mlist = rising_mutations(runner.mutation_frequencies, ['HA1', 'HA2'], region=region,
-                    fname = "rising_mutations/%s_%s_rising_mutations.txt"%("_".join(runner.info["prefix"].split('_')[:-3]), region))
+                    fname = "processed/rising_mutations/%s_%s_rising_mutations.txt"%("_".join(runner.info["prefix"].split('_')[:-3]), region))
 
     if runner.config["build_tree"]:
         if hasattr(runner, 'tree_leaves'): # subsample alignment
@@ -163,4 +165,3 @@ if __name__=="__main__":
                             fname_by_mutation = "recurring_mutations/%s_recurring_mutations.txt"%(runner.info["prefix"]))
         # runner.save_as_nexus()
     runner.auspice_export()
-
