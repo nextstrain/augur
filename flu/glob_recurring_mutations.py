@@ -21,7 +21,7 @@ for l in lineages:
         for p in passage:
             for a in assay:
                 try:
-                    fname = 'recurring_mutations/flu_%s_ha_%s_%s_%s_recurring_positions.txt'%(l.lower(), r, p, a)
+                    fname = 'processed/recurring_mutations/flu_%s_ha_%s_%s_%s_recurring_positions.txt'%(l.lower(), r, p, a)
                     with open(fname, 'r') as ifile:
                         tmp =[]
                         for line in ifile:
@@ -30,7 +30,7 @@ for l in lineages:
                             tmp.append(line.strip().split())
                     recurring_positions[l][r][p][a] = tmp
 
-                    fname = 'recurring_mutations/flu_%s_ha_%s_%s_%s_recurring_mutations.txt'%(l.lower(), r, p, a)
+                    fname = 'processed/recurring_mutations/flu_%s_ha_%s_%s_%s_recurring_mutations.txt'%(l.lower(), r, p, a)
                     with open(fname, 'r') as ifile:
                         tmp =[]
                         for line in ifile:
@@ -41,9 +41,9 @@ for l in lineages:
                 except:
                     pass
 
-with open('recurring_mutations.json', 'w') as ofile:
+with open('auspice/recurring_mutations.json', 'w') as ofile:
     json.dump(recurring_mutations, ofile)
 
-with open('recurring_positions.json', 'w') as ofile:
+with open('auspice/recurring_positions.json', 'w') as ofile:
     json.dump(recurring_positions, ofile)
 

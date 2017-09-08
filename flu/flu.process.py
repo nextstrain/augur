@@ -64,6 +64,10 @@ def make_config (prepared_json, args):
 
 
 def rising_mutations(freqs, genes, region='NA', dn=5, baseline = 0.01, fname='tmp.txt'):
+    '''
+    safe a file containing all mutations and summary of their recent frequency trajectories.
+    mutations are sorted by their log derivative over the past dn month
+    '''
     dx = {}
     for gene in genes:
         for mut,f  in freqs[(region, gene)].iteritems():
@@ -80,7 +84,12 @@ def rising_mutations(freqs, genes, region='NA', dn=5, baseline = 0.01, fname='tm
         ofile.write('\n')
     return dx
 
+
 def recurring_mutations(tree, fname_by_position='tmp.txt', fname_by_mutation='tmp.txt'):
+    '''
+    count the number of times that each position has mutated on the tree and save to file.
+    in additition, count the number of mutations that resulted in a specific substitution
+    '''
     from collections import defaultdict
     by_mutation = defaultdict(int)
     by_position = defaultdict(int)
@@ -104,6 +113,10 @@ def recurring_mutations(tree, fname_by_position='tmp.txt', fname_by_mutation='tm
 
 
 def freq_auto_corr(freq1, freq2, min_dfreq=0.2):
+    '''
+    calculate the autocorrelation function of two sets of frequencies, say in Asia and Oceania,
+    to see whether one precedes the other on average. EXPERIMENTAL
+    '''
     dt = 5
     corr = np.zeros(2*dt+1)
     for mut in freq1:
@@ -118,6 +131,7 @@ def freq_auto_corr(freq1, freq2, min_dfreq=0.2):
 
     return corr
 
+
 if __name__=="__main__":
     args = parse_args()
     prepared_json = args.json
@@ -125,11 +139,12 @@ if __name__=="__main__":
     pprint("Processing {}".format(prepared_json))
     runner = process(make_config(prepared_json, args))
     runner.align()
-    min_freq = 0.01
-    # estimate mutation frequencies here.
+    min_freq = 0.003
+    weighted_global_average = hasattr(runner, 'tree_leaves')
+
     # While this could be in a wrapper, it is hopefully more readable this way!
     if runner.config["estimate_mutation_frequencies"]:
-        runner.global_frequencies(min_freq)
+        runner.global_frequencies(min_freq, average_global=weighted_global_average)
 
         if not os.path.exists("processed/rising_mutations/"):
             os.makedirs("processed/rising_mutations/")
@@ -137,11 +152,15 @@ if __name__=="__main__":
             mlist = rising_mutations(runner.mutation_frequencies, ['HA1', 'HA2'], region=region,
                     fname = "processed/rising_mutations/%s_%s_rising_mutations.txt"%("_".join(runner.info["prefix"].split('_')[:-3]), region))
 
+
     if runner.config["build_tree"]:
-        if hasattr(runner, 'tree_leaves'): # subsample alignment
+        if weighted_global_average: # subsample alignment
             runner.seqs.aln = MultipleSeqAlignment([v for v in runner.seqs.aln
                                                     if v.name in runner.tree_leaves])
             print("subsampled alignment to %d sequences"%len(runner.seqs.aln))
+        else:
+            print("using alignment as is, no further subsampling for tree building")
+
         runner.build_tree()
         runner.timetree_setup_filter_run()
         runner.run_geo_inference()

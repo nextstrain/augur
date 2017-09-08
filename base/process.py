@@ -343,13 +343,7 @@ class process(object):
                          self.mutation_frequency_counts), fh, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-    def global_frequencies(self, min_freq):
-        # determine sites whose frequencies need to be computed in all regions
-        self.seqs.diversity_statistics()
-        include_set = {}
-        for prot in ['nuc'] + self.seqs.translations.keys():
-            include_set[prot] = np.where(np.sum(self.seqs.af[prot][:-2]**2, axis=0)<np.sum(self.seqs.af[prot][:-2], axis=0)**2-min_freq)[0]
-
+    def global_frequencies(self, min_freq, average_global=False, inertia=2.0/12, stiffness=2.0*12):
         # set pivots and define groups of larger regions for frequency display
         pivots = self.get_pivots_via_spacing()
         acronyms = set([x[1] for x in self.info["regions"] if x[1]!=""])
@@ -357,11 +351,30 @@ class process(object):
         pop_sizes = {str(x):np.sum([y[-1] for y in self.info["regions"] if y[1] == x]) for x in acronyms}
         total_popsize = np.sum(pop_sizes.values())
 
+        # if global frequencies are to be calculated from the set of sequences, do the following
+        if average_global==False:
+            runner.estimate_mutation_frequencies(pivots=pivots, min_freq=min_freq,
+                                                 inertia=np.exp(-inertia), stiffness=stiffness)
+            for region in region_groups.iteritems():
+                runner.estimate_mutation_frequencies(region=region, min_freq=min_freq,
+                                                     inertia=np.exp(-inertia), stiffness=stiffness)
+                return
+        # ELSE:
+        # if global frequences are to be calculated from a weighted average of regional ones
+        # the following applies:
+
+        # determine sites whose frequencies need to be computed in all regions
+        self.seqs.diversity_statistics()
+        include_set = {}
+        for prot in ['nuc'] + self.seqs.translations.keys():
+            include_set[prot] = np.where(np.sum(self.seqs.af[prot][:-2]**2, axis=0)
+                                                <np.sum(self.seqs.af[prot][:-2], axis=0)**2-min_freq)[0]
+
         # estimate frequencies in individual regions
         # TODO: move inertia and stiffness parameters to config
         for region in region_groups.iteritems():
-            self.estimate_mutation_frequencies(pivots=pivots, region=region, min_freq=0.02, include_set=include_set,
-                                                 inertia=np.exp(-2.0/12), stiffness=2.0*12)
+            self.estimate_mutation_frequencies(pivots=pivots, region=region, min_freq=min_freq, include_set=include_set,
+                                                 inertia=np.exp(-inertia), stiffness=stiffness)
 
         # perform a weighted average of frequencies across the regions to determine
         # global frequencies.
@@ -376,6 +389,7 @@ class process(object):
         # compute the normalizer
         total_weight = np.sum([weights[region] for region in acronyms],axis=0)
 
+        # average regional frequencies to calculate global
         for prot in ['nuc'] + self.seqs.translations.keys():
             gl_freqs, gl_counts, gl_confidence = {}, {}, {}
             all_muts = set()

@@ -17,7 +17,7 @@ rising_mutations = {'H3N2':return_struct(), 'H1N1pdm':return_struct(),
 for l in lineages:
     for r in res:
         for reg in region:
-            fname = 'rising_mutations/flu_%s_ha_%s_rising_mutations.txt'%(l.lower(), reg)
+            fname = 'processed/rising_mutations/flu_%s_ha_%s_rising_mutations.txt'%(l.lower(), reg)
             with open(fname, 'r') as ifile:
                 tmp =[]
                 for line in ifile:
@@ -26,6 +26,6 @@ for l in lineages:
                     tmp.append(line.strip().split())
             rising_mutations[l][r][reg] = tmp
 
-with open('rising_mutations.json', 'w') as ofile:
+with open('auspice/rising_mutations.json', 'w') as ofile:
     json.dump(rising_mutations, ofile)
 
