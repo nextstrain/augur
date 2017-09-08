@@ -160,8 +160,11 @@ if __name__=="__main__":
             HI_export(runner)
 
         runner.matchClades(clade_designations[runner.info["lineage"]])
+
+        if not os.path.exists("processed/recurring_mutations/"):
+            os.makedirs("processed/recurring_mutations/")
         recurring_mutations(runner.tree.tree,
-                            fname_by_position = "recurring_mutations/%s_recurring_positions.txt"%(runner.info["prefix"]),
-                            fname_by_mutation = "recurring_mutations/%s_recurring_mutations.txt"%(runner.info["prefix"]))
+                            fname_by_position = "processed/recurring_mutations/%s_recurring_positions.txt"%(runner.info["prefix"]),
+                            fname_by_mutation = "processed/recurring_mutations/%s_recurring_mutations.txt"%(runner.info["prefix"]))
         # runner.save_as_nexus()
     runner.auspice_export()
