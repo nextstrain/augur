@@ -25,16 +25,15 @@ def parse_args():
     """
     parser = base.prepare.collect_args()
 
-    parser.add_argument('-l', '--lineage', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default='h3n2', type=str, help="serotype (default: 'h3n2')")
-    parser.add_argument('-r', '--resolution', default=['3y', '6y', '12y'], nargs='+', type = str,  help = "resolutions (default: 3y, 6y & 12y)")
-    parser.add_argument('-s', '--segment', choices=segments, default=['ha'], nargs='+', type = str,  help = "segments (default: ha)")
+    parser.add_argument('-l', '--lineage', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default='h3n2', type=str, help="lineage (default: h3n2)")
+    parser.add_argument('-r', '--resolution', default=['3y'], nargs='+', type = str,  help = "resolutions (default: 3y)")
+    parser.add_argument('-s', '--segment', choices=segments, default=['ha'], nargs='+', type = str,  help = "segment (default: ha)")
     parser.add_argument('--sampling', default = 'even', type=str,
                         help='sample evenly over regions (even) (default), or prioritize one region (region name), otherwise sample randomly')
     parser.add_argument('--time_interval', nargs=2, help="explicit time interval to use -- overrides resolutions"
                                                                      " expects YYYY-MM-DD YYYY-MM-DD")
     parser.add_argument('--strains', help="a text file containing a list of strains (one per line) to prepare without filtering or subsampling")
     parser.add_argument('--titers', help="tab-delimited file of titer strains and values from fauna (e.g., h3n2_hi_titers.tsv)")
-    parser.add_argument('--identifier', default='', type=str, help="flag to disambiguate builds, optional")
     parser.add_argument('--complete_frequencies', action='store_true', help="compute mutation frequences from entire dataset")
 
     parser.set_defaults(
@@ -54,10 +53,8 @@ def make_config(lineage, resolution, params):
     years_back = int(re.search("(\d+)", resolution).groups()[0])
     if params.time_interval:
         time_interval = sorted([datetime.strptime(x, '%Y-%m-%d').date() for x in params.time_interval], reverse=True)
-        tmp_identifier = '_'.join(params.time_interval) + '_' + params.identifier
     else:
         time_interval = [datetime.today().date(), (datetime.today()  - timedelta(days=365.25 * years_back)).date()]
-        tmp_identifier = resolution + '_' + params.identifier
     reference_cutoff = date(year = time_interval[1].year - 3, month=1, day=1)
     fixed_outliers = [fix_names(x) for x in outliers[lineage]]
     fixed_references = [fix_names(x) for x in reference_viruses[lineage]]
@@ -72,10 +69,10 @@ def make_config(lineage, resolution, params):
     else:
         input_paths = ["../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segment]
 
-    if lineage:
-        file_prefix = "flu_{}".format(lineage)
-    else:
+    if params.file_prefix:
         file_prefix = params.file_prefix
+    else:
+        file_prefix = "flu_{}_{}_{}".format(lineage, segment, resolution)
 
     return {
         "dir": "flu",
@@ -85,7 +82,6 @@ def make_config(lineage, resolution, params):
         "segments": params.segment,
         "lineage":lineage,
         "input_paths": input_paths,
-        "identifier": tmp_identifier,
         #  0                     1   2         3          4      5     6       7       8          9                             10  11
         # >A/Galicia/RR9542/2012|flu|EPI376225|2012-02-23|europe|spain|galicia|galicia|unpassaged|instituto_de_salud_carlos_iii|47y|female
         "header_fields": {

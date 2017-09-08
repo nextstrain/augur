@@ -215,10 +215,6 @@ class prepare(object):
     def write_to_json(self):
         for seg, obj in self.segments.iteritems():
             prefix = self.config["file_prefix"]
-            if seg != "genome" and seg not in prefix:
-                prefix = prefix + "_" + seg
-            if "identifier" in self.config and self.config['identifier']:
-                prefix = prefix + "_" + self.config["identifier"]
             fname = os.path.join(self.config["output_folder"], prefix + ".json")
             with open(fname, 'w') as fh:
                 obj.write_json(fh, self.config, prefix)
