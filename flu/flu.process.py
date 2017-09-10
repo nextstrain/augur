@@ -126,6 +126,7 @@ if __name__=="__main__":
 
     pprint("Processing {}".format(prepared_json))
     runner = process(make_config(prepared_json, args))
+
     runner.align()
     min_freq = 0.01
     # estimate mutation frequencies here.
@@ -159,7 +160,7 @@ if __name__=="__main__":
         if hasattr(runner, "titers"):
             HI_model(runner)
             H3N2_scores(runner, runner.tree.tree, runner.config["titers"]["epitope_mask"])
-            if not runner.config["auspice"]["titers_export"]:
+            if runner.config["auspice"]["titers_export"]:
                 HI_export(runner)
 
         runner.matchClades(clade_designations[runner.info["lineage"]])
