@@ -48,7 +48,8 @@ def build_cdc(system="local", frequencies="complete"):
 
                     call = [
                         'flu.process.py',
-                        '--json', 'prepared/flu_%s_ha_%s_%s_%s.json'%(lineage, resolution, passage, assay)]
+                        '--json', 'prepared/flu_%s_ha_%s_%s_%s.json'%(lineage, resolution, passage, assay),
+                        '--titers_export']
                     if (system == "cluster"):
                         call = ['qsub', 'submit_script.sh'] + call
                     elif (system == "local"):
