@@ -65,24 +65,27 @@ def make_config (prepared_json, args):
     }
 
 
-def rising_mutations(freqs, genes, region='NA', dn=5, baseline = 0.01, fname='tmp.txt'):
+def rising_mutations(freqs, counts, genes, region='NA', dn=5, offset=0, baseline = 0.01, fname='tmp.txt'):
     '''
     safe a file containing all mutations and summary of their recent frequency trajectories.
     mutations are sorted by their log derivative over the past dn month
     '''
     dx = {}
+    npoints = counts[region].shape[0]
+    ind = np.arange(npoints)[-(dn+offset):npoints-offset]
     for gene in genes:
         for mut,f  in freqs[(region, gene)].iteritems():
-            tmp_x = f[-dn:].mean()
-            tmp_dx = f[-1] - f[-dn]
-            dx[(region, gene, mut[0], mut[1])] = (tmp_x, tmp_dx, tmp_dx/(tmp_x+baseline))
+            c = np.sum(counts[region][ind]*f[ind])
+            tmp_x = f[ind].mean()
+            tmp_dx = f[npoints-1-offset] - f[-dn-offset]
+            dx[(region, gene, mut[0], mut[1])] = (tmp_x, tmp_dx, tmp_dx/(tmp_x+baseline), c)
 
     with open(fname, 'w') as ofile:
         ofile.write("#Frequency change over the last %d month in region %s\n"%(dn, region))
         print("#Frequency change over the last %d month in region %s"%(dn, region))
         for k,v in sorted(dx.items(), key=lambda x:x[1][2], reverse=True):
-            ofile.write("%s:%d%s\t%1.3f\t%1.3f\t%1.3f\n"%(k[1], k[2]+1, k[3], v[0], v[1], v[2]))
-            print("%s:%d%s: x=%1.3f, dx=%1.3f, dx/x=%1.3f"%(k[1], k[2]+1, k[3], v[0], v[1], v[2]))
+            ofile.write("%s:%d%s\t%1.3f\t%1.3f\t%1.3f\t%1.1f\n"%(k[1], k[2]+1, k[3], v[0], v[1], v[2], v[3]))
+            print("%s:%d%s: x=%1.3f, dx=%1.3f, dx/x=%1.3f, c=%1.1f"%(k[1], k[2]+1, k[3], v[0], v[1], v[2], v[3]))
         ofile.write('\n')
     return dx
 
@@ -152,8 +155,10 @@ if __name__=="__main__":
         if not os.path.exists("processed/rising_mutations/"):
             os.makedirs("processed/rising_mutations/")
         for region in ['AS', 'NA', 'EU']:
-            mlist = rising_mutations(runner.mutation_frequencies, ['HA1', 'HA2'], region=region,
-                    fname = "processed/rising_mutations/%s_%s_rising_mutations.txt"%("_".join(runner.info["prefix"].split('_')[:-3]), region))
+           mlist = rising_mutations(runner.mutation_frequencies,
+                        runner.mutation_frequency_counts,
+                     ['HA1', 'HA2'], region=region, dn=4, offset=2,
+                     fname = "processed/rising_mutations/%s_%s_rising_mutations.txt"%("_".join(runner.info["prefix"].split('_')[:-2]), region))
 
 
     if runner.config["build_tree"]:

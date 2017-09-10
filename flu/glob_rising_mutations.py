@@ -17,7 +17,7 @@ rising_mutations = {'H3N2':return_struct(), 'H1N1pdm':return_struct(),
 for l in lineages:
     for r in res:
         for reg in region:
-            fname = 'processed/rising_mutations/flu_%s_ha_%s_rising_mutations.txt'%(l.lower(), reg)
+            fname = 'processed/rising_mutations/flu_%s_ha_2y_%s_rising_mutations.txt'%(l.lower(), reg)
             with open(fname, 'r') as ifile:
                 tmp =[]
                 for line in ifile:
