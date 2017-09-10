@@ -7,9 +7,9 @@ from base.io_util import myopen
 from base.titer_model import TiterModel
 
 vpm_dict = {
-    2: 98,
-    3: 66,
-    6: 34,
+    2: 92,
+    3: 62,
+    6: 32,
     12: 18,
 }
 

@@ -21,6 +21,7 @@ def parse_args():
     parser.add_argument('--no_mut_freqs', default=False, action='store_true', help="skip mutation frequencies")
     parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
     parser.add_argument('--pivot_spacing', type=float, default=1.0, help="month per pivot")
+    parser.add_argument('--titers_export', default=False, action='store_true', help="export titers.json file")
     parser.set_defaults(
         json="prepared/flu.json"
     )
@@ -38,7 +39,8 @@ def make_config (prepared_json, args):
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
             },
             "controls": {'authors':['authors']},
-            "defaults": {'geoResolution': ['region'], 'mapTriplicate': True}
+            "defaults": {'geoResolution': ['region'], 'mapTriplicate': True},
+            "titers_export": args.titers_export
         },
         "titers": {
             "criterium": lambda x: len(x.aa_mutations['HA1']+x.aa_mutations['HA2'])>0,
@@ -138,6 +140,7 @@ if __name__=="__main__":
 
     pprint("Processing {}".format(prepared_json))
     runner = process(make_config(prepared_json, args))
+
     runner.align()
     min_freq = 0.003
     weighted_global_average = hasattr(runner, 'tree_leaves')
@@ -176,7 +179,8 @@ if __name__=="__main__":
         if hasattr(runner, "titers"):
             HI_model(runner)
             H3N2_scores(runner, runner.tree.tree, runner.config["titers"]["epitope_mask"])
-            HI_export(runner)
+            if runner.config["auspice"]["titers_export"]:
+                HI_export(runner)
 
         runner.matchClades(clade_designations[runner.info["lineage"]])
 
