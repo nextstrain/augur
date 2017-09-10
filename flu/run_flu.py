@@ -22,6 +22,7 @@ def build_live(system="local", frequencies="complete"):
             if (system == "qsub"):
                 call = ['qsub', 'submit_script.sh'] + call
             elif (system == "sbatch"):
+                call = ['python'] + call                
                 concat = '"' + ' '.join(call) + '"'
                 call = ['sbatch', '-n', '1', '-c', '2', '--mem', '8096', '--time', '12:00:00', '--wrap', concat]
             elif (system == "local"):
@@ -56,6 +57,7 @@ def build_cdc(system="local", frequencies="complete"):
                     if (system == "qsub"):
                         call = ['qsub', 'submit_script.sh'] + call
                     elif (system == "sbatch"):
+                        call = ['python'] + call
                         concat = '"' + ' '.join(call) + '"'
                         call = ['sbatch', '-n', '1', '-c', '2', '--mem', '8096', '--time', '12:00:00', '--wrap', concat]
                     elif (system == "local"):
