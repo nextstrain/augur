@@ -45,7 +45,7 @@ def build_cdc(system="local", frequencies="complete"):
                         '--sequences', '../../fauna/data/%s.fasta'%lineage,
                         '--titers', '../../fauna/data/%s_cdc_%s_%s_titers.tsv'%(lineage, assay, passage),
                         '--file_prefix', 'flu_%s_ha_%s_%s_%s'%(lineage, resolution, passage, assay)]
-                    if frequencies == "complete" (and passage=='cell' and (titer=='hi' or lineage!='h3n2')):
+                    if frequencies == "complete": # (and passage=='cell' and (titer=='hi' or lineage!='h3n2')):
                         call = call + ['--complete_frequencies']
                     print(' '.join(call))
                     os.system(' '.join(call))
@@ -56,8 +56,8 @@ def build_cdc(system="local", frequencies="complete"):
                         '--titers_export']
 
                     # if frequencies are estimated on all available sequences, no need to recalculate them
-                    if frequencies == "complete" and (not (passage=='cell' and (titer=='hi' or lineage!='h3n2'))):
-                        call.append('--no_mut_freqs')
+                    # if frequencies == "complete" and (not (passage=='cell' and (titer=='hi' or lineage!='h3n2'))):
+                    #     call.append('--no_mut_freqs')
 
                     if (system == "qsub"):
                         call = ['qsub', 'submit_script.sh'] + call
