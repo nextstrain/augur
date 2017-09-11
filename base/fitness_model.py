@@ -16,13 +16,18 @@ pc=1e-2
 regularization = 1e-3
 default_predictors = ['lb', 'ep', 'ne_star']
 
-def make_pivots(start, stop, step, precision=2):
+def make_pivots(start, stop, pivots_per_year=12, precision=2):
     """Makes an array of pivots (i.e., timepoints) between the given start and stop
-    by the given step. The generated pivots are floating point values that are
-    then rounded to the requested decimal precision.
+    by the given pivots per year. The generated pivots are floating point values
+    that are then rounded to the requested decimal precision.
     """
+    # Calculate number of pivots (i.e., months) in the requested interval.
+    number_of_pivots = np.ceil((stop - start) * pivots_per_year)
+
+    # Build an evenly-spaced closed interval (including the start and stop
+    # points) based on the calculated number of pivots.
     return np.around(
-        np.arange(start, stop, step),
+        np.linspace(start, stop, number_of_pivots),
         precision
     )
 
@@ -65,13 +70,13 @@ class fitness_model(object):
             self.pivots = make_pivots(
                 self.time_interval[0],
                 self.time_interval[1],
-                self.pivot_spacing
+                1 / self.pivot_spacing
             )
 
         # final timepoint is end of interval and is only projected forward, not tested
         self.timepoint_step_size = 0.5      # amount of time between timepoints chosen for fitting
         self.delta_time = 1.0               # amount of time projected forward to do fitting
-        self.timepoints = np.append(make_pivots(self.time_interval[0], self.time_interval[1]-self.delta_time+0.0001, self.timepoint_step_size), self.time_interval[1])
+        self.timepoints = np.append(make_pivots(self.time_interval[0], self.time_interval[1]-self.delta_time+0.0001, 1 / self.timepoint_step_size), self.time_interval[1])
 
         self.predictors = predictor_names
 
@@ -209,7 +214,7 @@ class fitness_model(object):
             pivots = make_pivots(
                 time_interval[0],
                 time_interval[1],
-                self.pivot_spacing
+                1 / self.pivot_spacing
             )
             node_filter_func = lambda node: node.numdate >= time_interval[0] and node.numdate < time_interval[1]
 
