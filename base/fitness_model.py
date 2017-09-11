@@ -584,19 +584,6 @@ class fitness_model(object):
 #                   ax.plot(tmp['time'], tmp['obs'], ls='-', c=cols[ci%6])
 #                   ax.plot(tmp['time'], tmp['pred'], ls='--', c=cols[ci%6])
 
-def test(params):
-    from io_util import read_json
-    from tree_util import json_to_dendropy, to_Biopython, color_BioTree_by_attribute
-    from Bio import Phylo
-    tree_fname='data/tree_refine_10y_50v.json'
-    tree =  json_to_dendropy(read_json(tree_fname))
-    fm = fitness_model(tree, predictors = params['predictors'], verbose=2)
-    fm.predict(niter = params['niter'])
-    #btree = to_Biopython(tree)
-    #color_BioTree_by_attribute(btree, 'fitness')
-    #Phylo.draw(btree, label_func=lambda x:'')
-    return fm
-
 def main(params):
     import time
     from io_util import read_json
