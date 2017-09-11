@@ -72,7 +72,7 @@ def make_config(lineage, resolution, params):
     if params.file_prefix:
         file_prefix = params.file_prefix
     else:
-        file_prefix = "flu_{}_{}_{}".format(lineage, segment, resolution)
+        file_prefix = "flu_{}_{}_{}".format(lineage, params.segment[0], resolution)
 
     return {
         "dir": "flu",
