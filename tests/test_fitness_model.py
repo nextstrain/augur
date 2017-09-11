@@ -4,6 +4,7 @@ Tests for the `fitness_model` module.
 import Bio.Align.AlignInfo
 import Bio.Phylo
 import Bio.SeqIO
+import datetime
 import numpy as np
 import pytest
 
@@ -80,8 +81,11 @@ def simple_fitness_model(simple_tree):
         tree=simple_tree,
         frequencies={},
         predictor_input=["ep"],
-        pivots_per_year=12,
-        time_interval=(2012.0, 2015.0)
+        pivot_spacing=1.0 / 12,
+        time_interval=(
+            datetime.date(2015, 1, 1),
+            datetime.date(2012, 1, 1)
+        )
     )
 
 @pytest.fixture
@@ -90,8 +94,11 @@ def real_fitness_model(real_tree, multiple_sequence_alignment):
         tree=real_tree,
         frequencies={},
         predictor_input=["ep"],
-        pivots_per_year=12,
-        time_interval=(2014.5, 2017.5)
+        pivot_spacing=1.0 / 12,
+        time_interval=(
+            datetime.date(2017, 6, 1),
+            datetime.date(2014, 6, 1)
+        )
     )
     model.nuc_aln = multiple_sequence_alignment
     model.nuc_alphabet = 'ACGT-N'
