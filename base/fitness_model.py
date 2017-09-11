@@ -20,6 +20,9 @@ def make_pivots(start, stop, pivots_per_year=12, precision=2):
     """Makes an array of pivots (i.e., timepoints) between the given start and stop
     by the given pivots per year. The generated pivots are floating point values
     that are then rounded to the requested decimal precision.
+
+    >>> list(make_pivots(2000.0, 2001.0, 5))
+    [2000.0, 2000.25, 2000.5, 2000.75, 2001.0]
     """
     # Calculate number of pivots (i.e., months) in the requested interval.
     number_of_pivots = np.ceil((stop - start) * pivots_per_year)
