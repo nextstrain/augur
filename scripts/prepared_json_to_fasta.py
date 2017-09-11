@@ -13,9 +13,8 @@ from base.sequences_process import sequence_set
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Convert a prepared JSON file from augur into a FASTA file.")
     parser.add_argument("json", help="prepared JSON from augur")
-    parser.add_argument("fasta", help="FASTA output for sequences in JSON file")
 
     args = parser.parse_args()
 
@@ -39,5 +38,5 @@ if __name__ == "__main__":
     if not sequences.reference_in_dataset:
         output_sequences.append(sequences.reference_seq)
 
-    # Write sequences to disk.
-    Bio.SeqIO.write(output_sequences, args.fasta, "fasta")
+    # Write sequences to standard out.
+    Bio.SeqIO.write(output_sequences, sys.stdout, "fasta")
