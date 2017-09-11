@@ -137,14 +137,16 @@ class fitness_model(object):
         '''
         goes over all nodes and calculates frequencies at timepoints based on previously calculated frequency trajectories
         '''
-        print("calculating global node frequencies")
         region = "global"
 
         # Calculate global tree/clade frequencies if they have not been calculated already.
         if region not in self.frequencies or self.rootnode.clade not in self.frequencies["global"]:
+            print("calculating global node frequencies")
             tree_freqs = tree_frequencies(self.tree, self.pivots)
             tree_freqs.estimate_clade_frequencies()
             self.frequencies[region] = tree_freqs.frequencies
+        else:
+            print("found existing global node frequencies")
 
         # Annotate frequencies on nodes.
         # TODO: replace node-based annotation with dicts indexed by node name.
