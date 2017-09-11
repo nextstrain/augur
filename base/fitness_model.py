@@ -166,6 +166,7 @@ class fitness_model(object):
                 node.timepoint_freqs[time] = np.asscalar(interpolation(time))
             for time in self.timepoints[:-1]:
                 node.delta_freqs[time] = np.asscalar(interpolation(time + self.delta_time))
+
         # freq_arrays list *all* tips for each initial timepoint
         self.freq_arrays={}
         for time in self.timepoints:
@@ -191,6 +192,8 @@ class fitness_model(object):
 #                   node.alive=True
 #               else:
 #                   node.alive=False
+
+        # TODO: loop through nodes from self.nodes instead of self.tree.
         for node in self.tree.find_clades(order="postorder"):
             #if season in node.season_tips and len(node.season_tips[season])>0:
             if not node.is_terminal():
