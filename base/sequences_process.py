@@ -130,11 +130,6 @@ class sequence_set(object):
             print(e)
             return
 
-        if len({x.id for x in self.aln} ^ set(self.seqs.keys())) != 0:
-            self.log.notify("Alignment on disk had different sequences... re-doing")
-            del self.aln
-            return
-
         try:
             self.set_reference_alignment()
         except IndexError:
@@ -145,6 +140,11 @@ class sequence_set(object):
         if not self.reference_in_dataset:
             self.remove_reference_from_alignment()
 
+        if len({x.id for x in self.aln} ^ set(self.seqs.keys())) != 0:
+            self.log.notify("Alignment on disk had different sequences... re-doing")
+            del self.aln
+            del self.reference_aln
+            return
 
         # at this stage we are happy with the alignment
         self.set_sequence_lookup()
