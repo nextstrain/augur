@@ -7,11 +7,11 @@ common for different analyses
 from __future__ import print_function
 import os, sys, re
 sys.path.append('..') # we assume (and assert) that this script is running from inside the flu folder
+import base.prepare
 from base.prepare import prepare
 from base.titer_model import TiterModel
 from datetime import datetime, timedelta, date
 from base.utils import fix_names
-import argparse
 from pprint import pprint
 from pdb import set_trace
 from flu_info import regions, outliers, reference_maps, reference_viruses, segments
@@ -19,24 +19,42 @@ from flu_subsampling import flu_subsampling
 
 import logging
 
-def collect_args():
-    parser = argparse.ArgumentParser(description = "Prepare fauna FASTA for analysis")
-    parser.add_argument('-l', '--lineage', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default='h3n2', type=str, help="serotype (default: 'h3n2')")
-    parser.add_argument('-r', '--resolutions', default=['3y', '6y', '12y'], nargs='+', type = str,  help = "resolutions (default: 3y, 6y & 12y)")
-    parser.add_argument('-s', '--segments', choices=segments, default=['ha'], nargs='+', type = str,  help = "segments (default: ha)")
-    parser.add_argument('-v', '--viruses_per_month_seq', type = int, default = 0, help='number of viruses sampled per month (optional) (defaults: 90 (2y), 60 (3y), 24 (6y) or 12 (12y))')
+
+def parse_args():
+    """Returns a seasonal flu-specific argument parser.
+    """
+    parser = base.prepare.collect_args()
+
+    parser.add_argument('-l', '--lineage', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default='h3n2', type=str, help="lineage (default: h3n2)")
+    parser.add_argument('-r', '--resolution', default=['3y'], nargs='+', type = str,  help = "resolutions (default: 3y)")
+    parser.add_argument('-s', '--segment', choices=segments, default=['ha'], nargs='+', type = str,  help = "segment (default: ha)")
     parser.add_argument('--sampling', default = 'even', type=str,
                         help='sample evenly over regions (even) (default), or prioritize one region (region name), otherwise sample randomly')
+    parser.add_argument('--time_interval', nargs=2, help="explicit time interval to use -- overrides resolutions"
+                                                                     " expects YYYY-MM-DD YYYY-MM-DD")
     parser.add_argument('--strains', help="a text file containing a list of strains (one per line) to prepare without filtering or subsampling")
-    parser.add_argument('--sequences', nargs='+', help="FASTA file of virus sequences from fauna (e.g., flu_h3n2_ha.fasta)")
     parser.add_argument('--titers', help="tab-delimited file of titer strains and values from fauna (e.g., h3n2_hi_titers.tsv)")
-    parser.add_argument('--verbose', action="store_true", help="turn on verbose reporting")
+    parser.add_argument('--complete_frequencies', action='store_true', help="compute mutation frequences from entire dataset")
+
+    parser.set_defaults(
+        viruses_per_month=0
+    )
+
     return parser.parse_args()
+
+def make_title(lineage, resolution):
+    AB = "B" if lineage in ["vic", "yam"] else "A"
+    time = re.sub(r"y$", " years", resolution)
+    return "Genomic Epidemiology of Influenza {}/{} over {}".format(AB, lineage, time)
+
 
 # for flu, config is a function so it is applicable for multiple lineages
 def make_config(lineage, resolution, params):
     years_back = int(re.search("(\d+)", resolution).groups()[0])
-    time_interval = [datetime.today().date(), (datetime.today()  - timedelta(days=365.25 * years_back)).date()]
+    if params.time_interval:
+        time_interval = sorted([datetime.strptime(x, '%Y-%m-%d').date() for x in params.time_interval], reverse=True)
+    else:
+        time_interval = [datetime.today().date(), (datetime.today()  - timedelta(days=365.25 * years_back)).date()]
     reference_cutoff = date(year = time_interval[1].year - 3, month=1, day=1)
     fixed_outliers = [fix_names(x) for x in outliers[lineage]]
     fixed_references = [fix_names(x) for x in reference_viruses[lineage]]
@@ -49,14 +67,20 @@ def make_config(lineage, resolution, params):
     if params.sequences is not None:
         input_paths = params.sequences
     else:
-        input_paths = ["../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segments]
+        input_paths = ["../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segment]
+
+    if params.file_prefix:
+        file_prefix = params.file_prefix
+    else:
+        file_prefix = "flu_{}_{}_{}".format(lineage, params.segment[0], resolution)
 
     return {
         "dir": "flu",
-        "file_prefix": "flu_{}".format(lineage),
-        "segments": params.segments,
-        "resolution": resolution,
-        "lineage": lineage,
+        "file_prefix": file_prefix,
+        "title": make_title(lineage, resolution),
+        "maintainer": ["@trvrb", "https://twitter.com/trvrb"],
+        "segments": params.segment,
+        "lineage":lineage,
         "input_paths": input_paths,
         #  0                     1   2         3          4      5     6       7       8          9                             10  11
         # >A/Galicia/RR9542/2012|flu|EPI376225|2012-02-23|europe|spain|galicia|galicia|unpassaged|instituto_de_salud_carlos_iii|47y|female
@@ -81,7 +105,7 @@ def make_config(lineage, resolution, params):
         "color_defs": ["colors.flu.tsv"],
         "lat_longs": ["country", "region"],
         "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
-        "references": {seg:reference_maps[lineage][seg] for seg in params.segments},
+        "references": {seg:reference_maps[lineage][seg] for seg in params.segment},
         "regions": regions,
         "time_interval": time_interval,
         "strains": params.strains,
@@ -89,7 +113,7 @@ def make_config(lineage, resolution, params):
     }
 
 if __name__=="__main__":
-    params = collect_args()
+    params = parse_args()
     # set_trace()
     if params.verbose:
         # Remove existing loggers.
@@ -106,15 +130,20 @@ if __name__=="__main__":
         logger.debug("Verbose reporting enabled")
 
     ## lots of loops to allow multiple downstream analysis
-    for resolution in params.resolutions:
-        pprint("Preparing lineage {}, segments: {}, resolution: {}".format(params.lineage, params.segments, resolution))
+    for resolution in params.resolution:
+        pprint("Preparing lineage {}, segments: {}, resolution: {}".format(params.lineage, params.segment, resolution))
 
         config = make_config(params.lineage, resolution, params)
         runner = prepare(config)
         runner.load_references()
         runner.applyFilters()
         runner.ensure_all_segments()
-        runner.subsample()
+        if not params.complete_frequencies: # if complete_frequencies, do subsampling later on in flu.process
+            runner.subsample()
+        taxa_to_include = list(runner.segments[params.segment[0]].get_subsampled_names(config))
+        runner.segments[params.segment[0]].extras['leaves'] = taxa_to_include
         runner.colors()
         runner.latlongs()
         runner.write_to_json()
+        if params.time_interval:
+            break

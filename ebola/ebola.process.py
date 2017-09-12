@@ -1,8 +1,17 @@
 from __future__ import print_function
 import os, sys
 sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+import base.process
 from base.process import process
-import argparse
+
+
+def collect_args():
+    parser = base.process.collect_args()
+    parser.set_defaults(
+        json="prepared/ebola.json"
+    )
+    return parser
+
 
 config = {
     "dir": "ebola",
@@ -21,10 +30,23 @@ config = {
         "resolve_polytomies": True,
         "n_points": 20,
         "stiffness": 3.0,
+    },
+    "newick_tree_options":{
     }
 }
 
 if __name__=="__main__":
+    parser = collect_args()
+    params = parser.parse_args()
+
+    if params.clean:
+        config["clean"] = True
+
+    if params.json:
+        config["in"] = params.json
+
+    config["newick_tree_options"]["raxml"] = not params.no_raxml
+
     runner = process(config)
     runner.align()
     runner.build_tree()

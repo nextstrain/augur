@@ -84,8 +84,12 @@ class tree(object):
             dump(node_props, nfile)
 
     def check_newick(self, newick_file):
-        tree = Phylo.parse(newick_file, 'newick').next()
-        assert(set([x.name for x in tree.get_terminals()]) == set(self.sequence_lookup.keys()))
+        try:
+            tree = Phylo.parse(newick_file, 'newick').next()
+            assert(set([x.name for x in tree.get_terminals()]) == set(self.sequence_lookup.keys()))
+            return True
+        except:
+            return False
 
     def build_newick(self, newick_file, nthreads=2, root='midpoint', raxml=True, raxml_bin='raxml', debug=False, num_distinct_starting_trees=1):
         from Bio import Phylo, AlignIO
@@ -103,13 +107,14 @@ class tree(object):
             else:
                 self.logger("RAxML running with {} starting trees (longer but better...)".format(num_distinct_starting_trees), 1)
                 cmd = raxml_bin + " -f d -T " + str(nthreads) + " -N " + str(num_distinct_starting_trees) + " -m GTRCAT -c 25 -p 235813 -n tre -s temp.phyx"
-            fh = open("raxml.log", 'w')
+
             try:
-                check_call(cmd, stdout=fh, stderr=STDOUT, shell=True)
-                self.logger("RAXML COMPLETED.", 1)
+                with open("raxml.log", 'w') as fh:
+                    check_call(cmd, stdout=fh, stderr=STDOUT, shell=True)
+                    self.logger("RAXML COMPLETED.", 1)
             except CalledProcessError:
                 self.logger("RAXML TREE FAILED - check {}/raxml.log".format(self.run_dir), 1)
-                sys.exit(2)
+                raise
             shutil.copy('RAxML_bestTree.tre', out_fname)
         else:
             self.logger("Building tree with fasttree instead of raxml", 1)

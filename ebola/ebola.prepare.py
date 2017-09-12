@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os, sys
 sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+import base.prepare
 from base.prepare import prepare
 from datetime import datetime
 from base.utils import fix_names
@@ -12,15 +13,23 @@ dropped_strains = [
 forced_strains = [
     "EM_076610" # flare-up index case
 ]
+
 def collect_args():
-    parser = argparse.ArgumentParser(description = "Prepare ebola sequences for analysis")
-    parser.add_argument('-v', '--viruses_per_month', type = int, default = 100, help='number of viruses sampled per month (default: 100)')
-    return parser.parse_args()
+    """Returns an Ebola-specific argument parser.
+    """
+    parser = base.prepare.collect_args()
+    parser.set_defaults(
+        viruses_per_month=100,
+        file_prefix="ebola"
+    )
+    return parser
 
 def make_config(params):
     return {
         "dir": "ebola",
         "file_prefix": "ebola",
+        "title": "West African Ebola Epidemic (2013-2016)",
+        "maintainer": ["@trvrb", "https://twitter.com/trvrb"],
         "input_paths": ["../../fauna/data/ebola.fasta"],
         "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country', 6:'division', 8:'db', 10:'authors', 11:'url'},
         "filters": (
@@ -49,8 +58,20 @@ def make_config(params):
 
 
 if __name__=="__main__":
-    params = collect_args()
-    runner = prepare(make_config(params))
+    parser = collect_args()
+    params = parser.parse_args()
+    config = make_config(params)
+
+    if params.viruses_per_month == 0:
+        config["subsample"] = False
+
+    if params.sequences is not None:
+        config["input_paths"] = params.sequences
+
+    if params.file_prefix is not None:
+        config["file_prefix"] = params.file_prefix
+
+    runner = prepare(config)
     runner.load_references()
     runner.applyFilters()
     runner.ensure_all_segments()

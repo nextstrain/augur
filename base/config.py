@@ -28,6 +28,7 @@ prepare = {
     "subsample": False,
     "ensure_all_segments": True, #this is ignored if only 1 segment
     "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
+    "maintainer": "unknown"
 }
 
 process = {
@@ -91,6 +92,9 @@ def combine_configs(config_type, user_config):
     if "geo_inference" in config and config["geo_inference"] != False and "geographic location" not in config["auspice"]["controls"]:
         config["auspice"]["controls"]["geographic location"] = config["geo_inference"]
 
+
+    if config_type == "prepare" and "title" not in config:
+        config["title"] = config["file_prefix"]
 
     # pprint(config)
     # pprint(config["auspice"])

@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os, sys
 sys.path.append('..')
+import base.prepare
 from base.prepare import prepare
 from base.utils import fix_names
 from base.titer_model import TiterModel
@@ -10,11 +11,19 @@ from dengue_subsampling import dengue_subsampling
 import numpy as np
 
 def collect_args():
-      parser = argparse.ArgumentParser(description = "Prepare fauna FASTA for analysis")
-      parser.add_argument('-s', '--serotypes', choices=["all", "denv1", "denv2", "denv3", "denv4", "multiple"], default="multiple", type=str, nargs='+', help="Serotype(s) to prepare. \"multiple\" will run them all. Default: multiple")
-      parser.add_argument('-y', '--years_back', type=int, default=100, help="Years back in time to sample from")
-      parser.add_argument('--titers', default='../../fauna/data/dengue_titers.tsv', help="tab-delimited file of titer strains and values from fauna (e.g., dengue_titers.tsv)")
-      return parser.parse_args()
+    """Returns a dengue-specific argument parser.
+    """
+    parser = base.prepare.collect_args()
+
+    parser.add_argument('-s', '--serotypes', '--lineage', choices=["all", "denv1", "denv2", "denv3", "denv4", "multiple"], default="multiple", type=str, nargs='+', help="Serotype(s) to prepare. \"multiple\" will run them all.")
+    parser.add_argument('-y', '--years_back', type=int, default=100, help="Years back in time to sample from")
+    parser.add_argument('--titers', help="tab-delimited file of titer strains and values from fauna (e.g., dengue_titers.tsv)")
+    parser.set_defaults(
+        viruses_per_month=3,
+        file_prefix="dengue"
+    )
+
+    return parser
 
 dropped_strains = [
     'DENV1/VIETNAM/BIDV992/2006', 'DENV1/FRANCE/00475/2008', 'DENV1/VIETNAM/BIDV3990/2008', 'DENV2/HAITI/DENGUEVIRUS2HOMOSAPIENS1/2016', # Probable recombinants
@@ -50,7 +59,14 @@ def select_serotype(infile, path, serotype):
 ##### Set up config #####
 # For dengue, config is a function so it is applicable for multiple lineages
 def make_config(serotype, params):
-    if os.path.isfile("../../fauna/data/dengue_%s.fasta"%serotype): #is file: # Look for a serotype-specific fasta
+    if params.file_prefix is not None:
+        file_prefix = params.file_prefix
+    else:
+        file_prefix = "dengue_%s" % serotype
+
+    if params.sequences is not None:
+        input_paths = params.sequences
+    elif os.path.isfile("../../fauna/data/dengue_%s.fasta"%serotype): #is file: # Look for a serotype-specific fasta
         input_paths = ["../../fauna/data/dengue_%s.fasta"%serotype]
     else: # If it doesn't exist, try to pull serotype-specific sequences out of the all-serotype fasta (warn the user of this behavior)
         input_paths = select_serotype('../fauna/data/dengue_all.fasta', '../fauna/data/', serotype)
@@ -69,10 +85,10 @@ def make_config(serotype, params):
     config = {
         "dir": "dengue",
         "lineage": serotype,
-
-        "file_prefix": "dengue_%s"%serotype,
+        "title": "Genomic Epidemiology of Dengue Virus",
+        "maintainer": ["@sidneymbell", "https://twitter.com/sidneymbell"],
+        "file_prefix": file_prefix,
         "input_paths": input_paths,
-
         "header_fields": {0:'strain', 1:'accession', 2:'date', 3:'region', 4:'country',
                         5:'division', 6: 'location', 7: 'authors', 8: 'url'},
         "filters": (("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
@@ -97,7 +113,6 @@ def make_config(serotype, params):
         "lat_longs": ["region"],
         "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
         "reference": references[serotype],
-
         "time_interval": time_interval,
         "titers": titer_values,
         "sources": sources
@@ -106,15 +121,22 @@ def make_config(serotype, params):
 
 
 if __name__=="__main__":
-    params = collect_args()
+    parser = collect_args()
+    params = parser.parse_args()
 
     if 'multiple' in params.serotypes:
         params.serotypes = ['denv1', 'denv2', 'denv3', 'denv4', 'all']
+
     # modify config file according to serotype
     for serotype in params.serotypes:
         print("Preparing serotype %s"%serotype)
 
         config = make_config(serotype, params)
+
+        if params.viruses_per_month == 0:
+            config["subsample"] = False
+        else:
+            config["subsample"]["threshold"] = params.viruses_per_month
 
         runner = prepare(config)
         runner.load_references()

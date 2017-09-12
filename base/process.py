@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+import argparse
 import sys, os, time, gzip, glob
 from collections import defaultdict
 from base.config import combine_configs
@@ -8,13 +9,30 @@ from base.utils import num_date, save_as_nexus, parse_date
 from base.tree import tree
 from base.fitness_model import fitness_model
 from base.frequencies import alignment_frequencies, tree_frequencies, make_pivots
+from base.auspice_export import export_metadata_json, export_frequency_json
 import numpy as np
 from datetime import datetime
 import json
 from pdb import set_trace
 from base.logger import logger
 from Bio import SeqIO
+from Bio import AlignIO
 import cPickle as pickle
+
+
+def collect_args():
+    parser = argparse.ArgumentParser(
+        description = "Process (prepared) JSON(s)",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+
+    parser.add_argument('-j', '--json', help="prepared JSON to process")
+    parser.add_argument('--clean', default=False, action='store_true', help="clean build (remove previous checkpoints)")
+    parser.add_argument('--no_raxml', action='store_true', help="do not run RAxML to build the tree")
+    parser.add_argument('--no_tree', action='store_true', help="do not build a tree")
+
+    return parser
+
 
 class process(object):
     """process influenza virus sequences in mutliple steps to allow visualization in browser
@@ -54,6 +72,9 @@ class process(object):
             self.info["time_interval"] = [datetime.strptime(x, '%Y-%m-%d').date()
                                           for x in data["info"]["time_interval"]]
         self.info["lineage"] = data["info"]["lineage"]
+
+        if 'leaves' in data:
+            self.tree_leaves = data['leaves']
 
         try:
             self.colors = data["colors"]
@@ -101,6 +122,7 @@ class process(object):
 
         ## usefull flag to set (from pathogen run file) to disable restoring
         self.try_to_restore = True
+
 
     def dump(self):
         '''
@@ -154,22 +176,31 @@ class process(object):
         (3) Write to multi-fasta
         CODON ALIGNMENT IS NOT IMPLEMENTED
         '''
-        fname = self.output_path + "_aligned.mfa"
+        fnameStripped = self.output_path + "_aligned_stripped.mfa"
         if self.try_to_restore:
-            self.seqs.try_restore_align_from_disk(fname)
+            self.seqs.try_restore_align_from_disk(fnameStripped)
         if not hasattr(self.seqs, "aln"):
             if codon_align:
                 self.seqs.codon_align()
             else:
-                self.seqs.align(fname, self.config["subprocess_verbosity_level"], debug=debug)
+                self.seqs.align(self.config["subprocess_verbosity_level"], debug=debug)
             # need to redo everything
             self.try_to_restore = False
 
-        self.seqs.strip_non_reference()
-        if fill_gaps:
-            self.seqs.make_gaps_ambiguous()
-        # if outgroup is not None:
-        #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
+            self.seqs.strip_non_reference()
+            if fill_gaps:
+                self.seqs.make_gaps_ambiguous()
+            else:
+                self.seqs.make_terminal_gaps_ambiguous()
+
+
+            AlignIO.write(self.seqs.aln, fnameStripped, 'fasta')
+
+            if not self.seqs.reference_in_dataset:
+                self.seqs.remove_reference_from_alignment()
+            # if outgroup is not None:
+            #     self.seqs.clock_filter(n_iqd=3, plot=False, max_gaps=0.05, root_seq=outgroup)
+
         self.seqs.translate() # creates self.seqs.translations
         # save additional translations - disabled for now
         # for name, msa in self.seqs.translations.iteritems():
@@ -189,22 +220,22 @@ class process(object):
                          self.config["pivot_spacing"])
 
     def restore_mutation_frequencies(self):
-        try:
-            assert(self.try_to_restore == True)
-            with open(self.output_path + "_mut_freqs.pickle", 'rb') as fh:
-                pickle_seqs = pickle.load(fh)
-                assert(pickle_seqs == set(self.seqs.seqs.keys()))
-                pickled = pickle.load(fh)
-                assert(len(pickled) == 3)
-                self.mutation_frequencies = pickled[0]
-                self.mutation_frequency_confidence = pickled[1]
-                self.mutation_frequency_counts = pickled[2]
-                self.log.notify("Successfully restored mutation frequencies")
-                return
-        except IOError:
-            pass
-        except AssertionError as err:
-            self.log.notify("Tried to restore mutation frequencies but failed: {}".format(err))
+        if self.try_to_restore:
+            try:
+                with open(self.output_path + "_mut_freqs.pickle", 'rb') as fh:
+                    pickle_seqs = pickle.load(fh)
+                    assert(pickle_seqs == set(self.seqs.seqs.keys()))
+                    pickled = pickle.load(fh)
+                    assert(len(pickled) == 3)
+                    self.mutation_frequencies = pickled[0]
+                    self.mutation_frequency_confidence = pickled[1]
+                    self.mutation_frequency_counts = pickled[2]
+                    self.log.notify("Successfully restored mutation frequencies")
+                    return
+            except IOError:
+                pass
+            except AssertionError as err:
+                self.log.notify("Tried to restore mutation frequencies but failed: {}".format(err))
             #no need to remove - we'll overwrite it shortly
         self.mutation_frequencies = {}
         self.mutation_frequency_confidence = {}
@@ -264,31 +295,41 @@ class process(object):
         else:
             self.log.warn("region must be string or tuple")
             return
-        for prot, aln in [('nuc',self.seqs.aln)]+ self.seqs.translations.items():
+
+        # loop over different alignment types
+        for prot, aln in [('nuc',self.seqs.aln)] + self.seqs.translations.items():
             if (region_name,prot) in self.mutation_frequencies:
                 self.log.notify("Skipping Frequency Estimation for region \"{}\", protein \"{}\"".format(region_name, prot))
                 continue
             self.log.notify("Starting Frequency Estimation for region \"{}\", protein \"{}\"".format(region_name, prot))
 
+            # determine set of positions that have to have a frequency calculated
             if prot in include_set:
                 tmp_include_set = [x for x in include_set[prot]]
             else:
                 tmp_include_set = []
-            if region_match=="global":
-                tmp_aln = filter_alignment(aln, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
-            else:
-                tmp_aln = filter_alignment(aln, region=region_match, lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
+
+            tmp_aln = filter_alignment(aln, region = None if region=='global' else region_match,
+                                      lower_tp=self.pivots[0], upper_tp=self.pivots[-1])
+
+            if ('global', prot) in self.mutation_frequencies:
                 tmp_include_set += set([pos for (pos, mut) in self.mutation_frequencies[('global', prot)]])
+
             time_points = [np.mean(x.attributes['num_date']) for x in tmp_aln]
             if len(time_points)==0:
                 self.log.notify('no samples in region {} (protein: {})'.format(region_name, prot))
                 self.mutation_frequency_counts[region_name]=np.zeros_like(self.pivots)
                 continue
 
+            # instantiate alignment frequency
             aln_frequencies = alignment_frequencies(tmp_aln, time_points, self.pivots,
                                             ws=max(2,len(time_points)//10),
                                             inertia=inertia,
-                                            stiffness=stiffness)
+                                            stiffness=stiffness, method='SLSQP')
+            if prot=='nuc': # if this is a nucleotide alignment, set all non-canonical states to N
+                A = aln_frequencies.aln
+                A[~((A=='A')|(A=='C')|(A=='G')|(A=='T')|('A'=='-'))] = 'N'
+
             aln_frequencies.mutation_frequencies(min_freq=min_freq, include_set=tmp_include_set,
                                                  ignore_char='N' if prot=='nuc' else 'X')
             self.mutation_frequencies[(region_name,prot)] = aln_frequencies.frequencies
@@ -301,6 +342,58 @@ class process(object):
             pickle.dump((self.mutation_frequencies,
                          self.mutation_frequency_confidence,
                          self.mutation_frequency_counts), fh, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+    def global_frequencies(self, min_freq):
+        # determine sites whose frequencies need to be computed in all regions
+        self.seqs.diversity_statistics()
+        include_set = {}
+        for prot in ['nuc'] + self.seqs.translations.keys():
+            include_set[prot] = np.where(np.sum(self.seqs.af[prot][:-2]**2, axis=0)<np.sum(self.seqs.af[prot][:-2], axis=0)**2-min_freq)[0]
+
+        # set pivots and define groups of larger regions for frequency display
+        pivots = self.get_pivots_via_spacing()
+        acronyms = set([x[1] for x in self.info["regions"] if x[1]!=""])
+        region_groups = {str(x):[str(y[0]) for y in self.info["regions"] if y[1] == x] for x in acronyms}
+        pop_sizes = {str(x):np.sum([y[-1] for y in self.info["regions"] if y[1] == x]) for x in acronyms}
+        total_popsize = np.sum(pop_sizes.values())
+
+        # estimate frequencies in individual regions
+        # TODO: move inertia and stiffness parameters to config
+        for region in region_groups.iteritems():
+            self.estimate_mutation_frequencies(pivots=pivots, region=region, min_freq=0.02, include_set=include_set,
+                                                 inertia=np.exp(-2.0/12), stiffness=2.0*12)
+
+        # perform a weighted average of frequencies across the regions to determine
+        # global frequencies.
+        # First: compute the weights accounting for seasonal variation and populations size
+        weights = {region: np.array(self.mutation_frequency_counts[region], dtype = float)
+                   for region in acronyms}
+
+        for region in weights: # map maximal count across time to 1.0, weigh by pop size
+            weights[region] = np.maximum(0.1, weights[region]/weights[region].max())
+            weights[region]*=pop_sizes[region]
+
+        # compute the normalizer
+        total_weight = np.sum([weights[region] for region in acronyms],axis=0)
+
+        for prot in ['nuc'] + self.seqs.translations.keys():
+            gl_freqs, gl_counts, gl_confidence = {}, {}, {}
+            all_muts = set()
+            for region in acronyms: # list all unique mutations
+                all_muts.update(self.mutation_frequencies[(region, prot)].keys())
+            for mut in all_muts: # compute the weighted average
+                gl_freqs[mut] = np.sum([self.mutation_frequencies[(region, prot)][mut]*weights[region] for region in acronyms
+                                        if mut in self.mutation_frequencies[(region, prot)]], axis=0)/total_weight
+                gl_confidence[mut] = np.sqrt(np.sum([self.mutation_frequency_confidence[(region, prot)][mut]**2*weights[region]
+                                                     for region in acronyms
+                                            if mut in self.mutation_frequencies[(region, prot)]], axis=0)/total_weight)
+            gl_counts = np.sum([self.mutation_frequency_counts[region] for region in acronyms
+                                        if mut in self.mutation_frequencies[(region, prot)]], axis=0)
+            # save in mutation_frequency data structure
+            self.mutation_frequencies[("global", prot)] = gl_freqs
+            self.mutation_frequency_counts["global"] = gl_counts
+            self.mutation_frequency_confidence[("global", prot)] = gl_confidence
 
 
     def save_tree_frequencies(self):
@@ -357,12 +450,12 @@ class process(object):
             return
 
         if not hasattr(self, 'pivots'):
-            tps = np.array([x.attributes['num_date'] for x in self.seqs.seqs.values()])
+            tps = np.array([np.mean(x.attributes['num_date']) for x in self.seqs.seqs.values()])
             self.pivots=make_pivots(pivots, tps)
 
-        self.log.notify('Estimate tree frequencies for %s: using self.pivots\n%s' % (region, self.pivots))
+        self.log.notify('Estimate tree frequencies for %s: using self.pivots' % (region))
 
-        tree_freqs = tree_frequencies(self.tree.tree, self.pivots,
+        tree_freqs = tree_frequencies(self.tree.tree, self.pivots, method='SLSQP',
                                       node_filter = node_filter_func,
                                       ws = max(2,self.tree.tree.count_terminals()//10))
                                     # who knows what kwargs are needed here
@@ -384,12 +477,9 @@ class process(object):
         '''
         self.tree = tree(aln=self.seqs.aln, proteins=self.proteins, verbose=self.config["subprocess_verbosity_level"])
         newick_file = self.output_path + ".newick"
-        try:
-            assert(self.try_to_restore == True)
-            assert(os.path.isfile(newick_file))
-            self.tree.check_newick(newick_file)
-            self.log.notify("Newick file restored from \"{}\"".format(newick_file))
-        except AssertionError:
+        if self.try_to_restore and os.path.isfile(newick_file) and self.tree.check_newick(newick_file):
+            self.log.notify("Newick file \"{}\" can be used to restore".format(newick_file))
+        else:
             self.log.notify("Building newick tree.")
             self.tree.build_newick(newick_file, **self.config["newick_tree_options"])
 
@@ -434,7 +524,7 @@ class process(object):
             try:
                 assert(self.config["timetree_options"] == pickled["timetree_options"])
                 assert(self.config["clock_filter"] == pickled["clock_filter_options"])
-                assert(set(self.seqs.sequence_lookup.keys()) == set(pickled["original_seqs"]))
+                #assert(set(self.seqs.sequence_lookup.keys()) == set(pickled["original_seqs"]))
             except AssertionError as e:
                 print(e)
                 self.log.warn("treetime is out of date - rerunning")
@@ -560,99 +650,21 @@ class process(object):
         '''
         prefix = os.path.join(self.config["output"]["auspice"], self.info["prefix"])
         indent = 2
-        # export json file that contains alignment diversity column by column
-        self.seqs.export_diversity(fname=prefix+'_entropy.json', indent=2)
-        # exports the tree and the sequences inferred for all clades in the tree
+
+        ## ENTROPY (alignment diversity) ##
+        self.seqs.export_diversity(fname=prefix+'_entropy.json', indent=indent)
+
+        ## TREE (includes inferred states, mutations etc) ##
         if hasattr(self, 'tree') and self.tree is not None:
             self.tree.export(path=prefix, extra_attr = self.config["auspice"]["extra_attr"]
                          + ["muts", "aa_muts","attr", "clade"], indent = indent)
 
+        ## FREQUENCIES ##
+        export_frequency_json(self, prefix=prefix, indent=indent)
 
-        # local function or round frequency estimates to useful precision (reduces file size)
-        def process_freqs(freq):
-            return [round(x,4) for x in freq]
+        ## METADATA ##
+        export_metadata_json(self, prefix=prefix, indent=indent)
 
-        # construct a json file containing all frequency estimate
-        # the format is region_protein:159F for mutations and region_clade:123 for clades
-        if hasattr(self, 'pivots'):
-            freq_json = {'pivots':process_freqs(self.pivots)}
-        if hasattr(self, 'mutation_frequencies'):
-            freq_json['counts'] = {x:list(counts) for x, counts in self.mutation_frequency_counts.iteritems()}
-            for (region, gene), tmp_freqs in self.mutation_frequencies.iteritems():
-                for mut, freq in tmp_freqs.iteritems():
-                    label_str =  region+"_"+ gene + ':' + str(mut[0]+1)+mut[1]
-                    freq_json[label_str] = process_freqs(freq)
-        # repeat for clade frequencies in trees
-        if hasattr(self, 'tree_frequencies'):
-            for region in self.tree_frequencies:
-                for clade, freq in self.tree_frequencies[region].iteritems():
-                    label_str = region+'_clade:'+str(clade)
-                    freq_json[label_str] = process_freqs(freq)
-        # repeat for named clades
-        if hasattr(self, 'clades_to_nodes') and hasattr(self, 'tree_frequencies'):
-            for region in self.tree_frequencies:
-                for clade, node in self.clades_to_nodes.iteritems():
-                    label_str = region+'_'+str(clade)
-                    freq_json[label_str] = process_freqs(self.tree_frequencies[region][node.clade])
-        # write to one frequency json
-        if hasattr(self, 'tree_frequencies') or hasattr(self, 'mutation_frequencies'):
-            write_json(freq_json, prefix+'_frequencies.json', indent=indent)
-
-        # count number of tip nodes
-        virus_count = 0
-        for node in self.tree.tree.get_terminals():
-            virus_count += 1
-
-        # write out metadata json# Write out metadata
-        print("Writing out metadata")
-        meta_json = {}
-
-        # join up config color options with those in the input JSONs.
-        col_opts = self.config["auspice"]["color_options"]
-        if self.colors:
-            for trait, data in self.colors.iteritems():
-                if trait in col_opts:
-                    col_opts[trait]["color_map"] = data
-                else:
-                    self.log.warn("{} in colors (input JSON) but not auspice/color_options. Ignoring".format(trait))
-
-        meta_json["color_options"] = col_opts
-        if "date_range" in self.config["auspice"]:
-            meta_json["date_range"] = self.config["auspice"]["date_range"]
-        if "analysisSlider" in self.config["auspice"]:
-            meta_json["analysisSlider"] = self.config["auspice"]["analysisSlider"]
-        meta_json["panels"] = self.config["auspice"]["panels"]
-        meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
-        meta_json["virus_count"] = virus_count
-        if "defaults" in self.config["auspice"]:
-            meta_json["defaults"] = self.config["auspice"]["defaults"]
-        # TODO: move these to base/config
-        # valid_defaults = {'colorBy': ['region', 'country', 'num_date', 'ep', 'ne', 'rb', 'genotype', 'cHI'],
-        #                   'layout': ['radial', 'rectangular', 'unrooted'],
-        #                   'geoResolution': ['region', 'country', 'division'],
-        #                   'distanceMeasure': ['num_date', 'div']}
-        # for param, value in defaults.items():
-        #     try:
-        #         assert param in valid_defaults and value in valid_defaults[param]
-        #     except:
-        #          print('ERROR: invalid default options provided. Try one of the following instead:', valid_defaults)
-        #          print('Export will continue; default display options can be corrected in the meta.JSON file.')
-        #          continue
-        # meta_json["defaults"] = defaults
-
-        try:
-            from pygit2 import Repository, discover_repository
-            current_working_directory = os.getcwd()
-            repository_path = discover_repository(current_working_directory)
-            repo = Repository(repository_path)
-            commit_id = repo[repo.head.target].id
-            meta_json["commit"] = str(commit_id)
-        except ImportError:
-            meta_json["commit"] = "unknown"
-        if len(self.config["auspice"]["controls"]):
-            meta_json["controls"] = self.make_control_json(self.config["auspice"]["controls"])
-        meta_json["geo"] = self.lat_longs
-        write_json(meta_json, prefix+'_meta.json')
 
     def run_geo_inference(self):
         if self.config["geo_inference"] == False:

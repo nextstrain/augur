@@ -1,11 +1,23 @@
 from __future__ import print_function
 import os, sys
-sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside avian or zika
+import base.process
 from base.process import process
 import argparse
 
+
+def collect_args():
+    """Returns an avian flu-specific argument parser.
+    """
+    parser = base.process.collect_args()
+    parser.set_defaults(
+        json="prepared/avian_h7n9.json"
+    )
+    return parser
+
+
 config = {
-    "dir": "H7N9",
+    "dir": "avian",
     # "in": "prepared/flu_H7N9_HA.json", # should be able to specify from command line
     "geo_inference": ['country'], # what traits to perform this on
     "auspice": { ## settings for auspice JSON export
@@ -22,17 +34,17 @@ config = {
             "fauna_date":{"key":"fauna_date", "legendTitle":"Analysis date", "menuItem":"Analysis date", "type":"continuous"},
         },
         "controls": {'geographic location':['country'], 'authors':['authors']}
-    }
+    },
+    "newick_tree_options": {}
 }
 
 if __name__=="__main__":
-    # for H7N9 currently things are kinda easy - everything needed is defined in the JSON!
-    parser = argparse.ArgumentParser(description = "Process a given JSONs")
-    parser.add_argument('-j', '--json', required=True, type=str, help="prepared JSON")
-    parser.add_argument('--clean', action='store_true', help="clean build (remove previous checkpoints)")
+    parser = collect_args()
     params = parser.parse_args()
+
     config["in"] = params.json
-    if params.clean: config["clean"] = True
+    config["clean"] = params.clean
+    config["newick_tree_options"]["raxml"] = not params.no_raxml
 
     runner = process(config)
     runner.align()

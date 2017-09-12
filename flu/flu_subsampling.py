@@ -7,10 +7,10 @@ from base.io_util import myopen
 from base.titer_model import TiterModel
 
 vpm_dict = {
-    2: 68,
-    3: 46,
-    6: 24,
-    12: 12,
+    2: 92,
+    3: 62,
+    6: 32,
+    12: 18,
 }
 
 def populate_counts(obj):
@@ -60,8 +60,8 @@ def flu_subsampling(params, years_back, titer_values):
             return pr + len(seq.seq)*0.0001 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD'])
 
     ##### DEFINE THE THRESHOLD
-    if params.viruses_per_month_seq != 0:
-        sampling_threshold = params.viruses_per_month_seq
+    if params.viruses_per_month != 0:
+        sampling_threshold = params.viruses_per_month
     else:
         sampling_threshold = vpm_dict[years_back]
 

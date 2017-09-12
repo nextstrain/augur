@@ -125,7 +125,7 @@ class sequence_set(object):
     def codon_align(self):
         self.log.fatal("Codon align not yet implemented")
 
-    def align(self, fname, verbose, debug=False):
+    def align(self, verbose, debug=False):
         '''
         align sequences using mafft
 
@@ -151,12 +151,9 @@ class sequence_set(object):
             os.system("mafft --anysymbol --thread " + str(self.nthreads) + " temp_in.fasta 1> temp_out.fasta")
         self.aln = AlignIO.read('temp_out.fasta', 'fasta')
         os.chdir("..")
-        os.rename(os.path.join(self.run_dir, "temp_out.fasta"), fname)
         if not debug: remove_dir(self.run_dir)
 
-        self.set_reference_alignment()
-        if not self.reference_in_dataset:
-            self.remove_reference_from_alignment()
+        self.set_reference_alignment() #make reference_aln object while reference still in alignment
         self.set_sequence_lookup()
         self.add_attributes_to_aln()
 
@@ -188,9 +185,9 @@ class sequence_set(object):
         try:
             self.set_reference_alignment()
         except IndexError:
-            self.log.notify("Reference not found in alignment... re-doing")
-            del self.aln
-            return
+            self.log.notify("Reference not found in alignment... ok on reload")
+            # del self.aln
+            # return
 
         if not self.reference_in_dataset:
             self.remove_reference_from_alignment()
@@ -226,6 +223,19 @@ class sequence_set(object):
             gaps = seq_array=='-'
             seq_array[gaps]='N'
             seq.seq = Seq("".join(seq_array))
+
+
+    def make_terminal_gaps_ambiguous(self):
+        '''
+        replace all gaps at the end of sequences by 'N' in the alignment. TreeTime will treat them
+        as fully ambiguous and replace then with the most likely state
+        '''
+        for seq in self.aln:
+            str_seq = str(seq.seq)
+            lgaps = len(str_seq) - len(str_seq.lstrip('-'))
+            rgaps = len(str_seq) - len(str_seq.rstrip('-'))
+            str_seq = 'N'*lgaps + str_seq.strip('-') + 'N'*rgaps
+            seq.seq = Seq(str_seq)
 
 
     def translate(self):
