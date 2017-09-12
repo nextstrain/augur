@@ -80,7 +80,7 @@ def simple_fitness_model(simple_tree):
     return fitness_model(
         tree=simple_tree,
         frequencies={},
-        predictor_input=["ep"],
+        predictor_input=["random"],
         pivot_spacing=1.0 / 12,
         time_interval=(
             datetime.date(2015, 1, 1),
@@ -93,7 +93,7 @@ def real_fitness_model(real_tree, multiple_sequence_alignment):
     model = fitness_model(
         tree=real_tree,
         frequencies={},
-        predictor_input=["ep"],
+        predictor_input=["random"],
         pivot_spacing=1.0 / 12,
         time_interval=(
             datetime.date(2017, 6, 1),
