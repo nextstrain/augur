@@ -21,13 +21,9 @@ class fitness_predictors(object):
         self.predictor_names = predictor_names
 
     def _translate(self, node):
-        """Returns an amino acid sequence corresponding to the given numpy array of
-        nucleotide characters.
-
-        >>> import numpy as np
-        >>> fp = fitness_predictors()
-        >>> fp._translate(np.array(["A", "T", "G"]))
-        'M'
+        """Returns a single amino acid sequence corresponding to the given node's
+        protein translations concatenated in genomic order (e.g., SigPep, HA1,
+        and HA2 for flu's HA protein).
         """
         return "".join(node.translations.values())
 
