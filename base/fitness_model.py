@@ -462,9 +462,9 @@ class fitness_model(object):
 
         for node in self.nodes:
             if node.predictors[final_timepoint] is not None:
-                node.attr["fitness"] = self.fitness(self.model_params, node.predictors[final_timepoint])
+                node.fitness = self.fitness(self.model_params, node.predictors[final_timepoint])
             else:
-                node.attr["fitness"] = 0.0
+                node.fitness = 0.0
 
     def predict(self, niter = 10, estimate_frequencies = True):
         self.prep_nodes()
