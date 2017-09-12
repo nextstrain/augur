@@ -183,7 +183,8 @@ if __name__=="__main__":
         # titers
         if hasattr(runner, "titers"):
             HI_model(runner)
-            H3N2_scores(runner, runner.tree.tree, runner.config["titers"]["epitope_mask"])
+            if runner.info["lineage"] == "h3n2":
+                H3N2_scores(runner, runner.tree.tree, runner.config["titers"]["epitope_mask"])
             if runner.config["auspice"]["titers_export"]:
                 HI_export(runner)
 
