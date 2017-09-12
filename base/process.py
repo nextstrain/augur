@@ -618,9 +618,6 @@ class process(object):
 
         model = fitness_model(**kwargs)
         model.predict()
-        #model.nuc_aln = multiple_sequence_alignment
-        #model.nuc_alphabet = 'ACGT-N'
-        #model.min_mutation_frequency = 0.01
 
         return model
 
