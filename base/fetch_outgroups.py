@@ -46,8 +46,8 @@ outgroups = {#'H3N2':'U26830',
              'h3n2_ns': 'CY113681',
              }
 
-for virus, genbank_id in outgroups.iteritems():
-    handle = Entrez.efetch(db="nucleotide", id=genbank_id, rettype="gb")
-    seq= SeqIO.read(StringIO(handle.read()), format = 'genbank')
-    SeqIO.write(seq, 'flu/metadata/'+virus+'_outgroup.gb', format='genbank')
-
+if __name__ == "__main__":
+    for virus, genbank_id in outgroups.iteritems():
+        handle = Entrez.efetch(db="nucleotide", id=genbank_id, rettype="gb")
+        seq= SeqIO.read(StringIO(handle.read()), format = 'genbank')
+        SeqIO.write(seq, 'flu/metadata/'+virus+'_outgroup.gb', format='genbank')
