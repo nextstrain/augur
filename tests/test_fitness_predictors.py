@@ -26,7 +26,7 @@ def fitness_predictor():
 def sequence():
     """Returns an amino acid sequence for an ancestral H3N2 virus (Hong Kong 1968).
     """
-    with open("tests/data/AAK51718.fasta", "r") as handle:
+    with open("tests/fitness_model/AAK51718.fasta", "r") as handle:
         record = list(Bio.SeqIO.parse(handle, "fasta"))[0]
 
     aa = str(record.seq)

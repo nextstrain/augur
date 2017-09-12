@@ -50,7 +50,7 @@ def real_tree(multiple_sequence_alignment):
     for H3N2.
     """
     # Load the tree.
-    tree = Bio.Phylo.read("tests/data/H3N2_tree.newick", "newick")
+    tree = Bio.Phylo.read("tests/fitness_model/H3N2_tree.newick", "newick")
 
     # Make a lookup table of name to sequence.
     sequences_by_name = dict([(alignment.name, str(alignment.seq))
@@ -109,7 +109,7 @@ def real_fitness_model(real_tree, multiple_sequence_alignment):
 def sequence():
     """Returns an amino acid sequence for an ancestral H3N2 virus (Hong Kong 1968).
     """
-    with open("tests/data/AAK51718.fasta", "r") as handle:
+    with open("tests/fitness_model/AAK51718.fasta", "r") as handle:
         record = list(Bio.SeqIO.parse(handle, "fasta"))[0]
 
     aa = str(record.seq)
@@ -120,7 +120,7 @@ def multiple_sequence_alignment():
     """Returns a multiple sequence alignment containing a small test set of H3N2
     sequences.
     """
-    msa = Bio.AlignIO.read("tests/data/H3N2_alignment.cleaned.fasta", "fasta")
+    msa = Bio.AlignIO.read("tests/fitness_model/H3N2_alignment.cleaned.fasta", "fasta")
     return msa
 
 #
