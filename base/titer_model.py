@@ -37,7 +37,7 @@ class TiterModel(object):
             list: distinct strains present as either test or reference viruses
             list: distinct sources of titers
 
-        >>> measurements, strains, sources = TiterModel.load_from_file("tests/data/h3n2_titers_subset.tsv")
+        >>> measurements, strains, sources = TiterModel.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
         >>> type(measurements)
         <type 'dict'>
         >>> len(measurements)
@@ -48,7 +48,7 @@ class TiterModel(object):
         13
         >>> len(sources)
         5
-        >>> measurements, strains, sources = TiterModel.load_from_file("tests/data/h3n2_titers_subset.tsv", excluded_sources=["NIMR_Sep2013_7-11.csv"])
+        >>> measurements, strains, sources = TiterModel.load_from_file("tests/titer_model/h3n2_titers_subset.tsv", excluded_sources=["NIMR_Sep2013_7-11.csv"])
         >>> len(measurements)
         5
         >>> measurements.get(("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10")))
@@ -100,7 +100,7 @@ class TiterModel(object):
             dict: counts of virus strains that appear as either tests or
                   references in the given titers
 
-        >>> measurements, strains, sources = TiterModel.load_from_file("tests/data/h3n2_titers_subset.tsv")
+        >>> measurements, strains, sources = TiterModel.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
         >>> titer_counts = TiterModel.count_strains(measurements)
         >>> titer_counts["A/Acores/11/2013"]
         6
@@ -130,7 +130,7 @@ class TiterModel(object):
         Returns:
             dict: titer values filtered to include only given strains
 
-        >>> measurements, strains, sources = TiterModel.load_from_file("tests/data/h3n2_titers_subset.tsv")
+        >>> measurements, strains, sources = TiterModel.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
         >>> len(measurements)
         11
 

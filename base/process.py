@@ -7,6 +7,7 @@ from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences_process import sequence_set
 from base.utils import num_date, save_as_nexus, parse_date
 from base.tree import tree
+from base.fitness_model import fitness_model
 from base.frequencies import alignment_frequencies, tree_frequencies, make_pivots
 from base.auspice_export import export_metadata_json, export_frequency_json
 import numpy as np
@@ -591,6 +592,34 @@ class process(object):
                     partial_matches = filter(lambda x:match(x,[allele]), self.tree.tree.get_nonterminals())
                     print('Found %d partial matches for allele '%len(partial_matches), allele)
 
+    def annotate_fitness(self):
+        """Run the fitness prediction model and annotate the tree's nodes with fitness
+        values. Returns the resulting fitness model instance.
+        """
+        kwargs = {
+            "tree": self.tree.tree,
+            "frequencies": self.tree_frequencies,
+            "time_interval": self.info["time_interval"],
+            "pivot_spacing": self.config["pivot_spacing"]
+        }
+
+        if "predictors" in self.config:
+            kwargs["predictor_input"] = self.config["predictors"]
+
+        if "titers" in self.config:
+            if "epitope_mask" in self.config["titers"]:
+                kwargs["epitope_masks_fname"] = self.config["titers"]["epitope_mask"]
+
+            if "epitope_mask_version" in self.config["titers"]:
+                kwargs["epitope_mask_version"] = self.config["titers"]["epitope_mask_version"]
+
+        if self.config["subprocess_verbosity_level"] > 0:
+            kwargs["verbose"] = 1
+
+        model = fitness_model(**kwargs)
+        model.predict()
+
+        return model
 
     def make_control_json(self, controls):
         controls_json = {}

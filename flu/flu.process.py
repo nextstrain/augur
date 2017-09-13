@@ -22,6 +22,10 @@ def parse_args():
     parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
     parser.add_argument('--pivot_spacing', type=float, default=1.0, help="month per pivot")
     parser.add_argument('--titers_export', default=False, action='store_true', help="export titers.json file")
+    parser.add_argument('--annotate_fitness', default=False, action='store_true', help="run fitness prediction model and annotate fitnesses on tree nodes")
+    parser.add_argument('--predictors', default=['cTiter'], nargs='+', help="attributes to use as fitness model predictors")
+    parser.add_argument('--epitope_mask_version', default="wolf", help="name of the epitope mask that defines epitope mutations")
+
     parser.set_defaults(
         json="prepared/flu.json"
     )
@@ -45,6 +49,7 @@ def make_config (prepared_json, args):
         "titers": {
             "criterium": lambda x: len(x.aa_mutations['HA1']+x.aa_mutations['HA2'])>0,
             "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
+            "epitope_mask_version": args.epitope_mask_version,
             "lam_avi":2.0,
             "lam_pot":0.3,
             "lam_drop":2.0
@@ -52,6 +57,8 @@ def make_config (prepared_json, args):
         "build_tree": not args.no_tree,
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
+        "annotate_fitness": args.annotate_fitness,
+        "predictors": args.predictors,
         "clean": args.clean,
         "pivot_spacing": args.pivot_spacing/12.0,
         "timetree_options": {
@@ -166,10 +173,15 @@ if __name__=="__main__":
 
         runner.matchClades(clade_designations[runner.info["lineage"]])
 
+        # Predict fitness.
+        if runner.config["annotate_fitness"]:
+            runner.fitness_model = runner.annotate_fitness()
+
         if not os.path.exists("processed/recurring_mutations/"):
             os.makedirs("processed/recurring_mutations/")
         recurring_mutations(runner.tree.tree,
                             fname_by_position = "processed/recurring_mutations/%s_recurring_positions.txt"%(runner.info["prefix"]),
                             fname_by_mutation = "processed/recurring_mutations/%s_recurring_mutations.txt"%(runner.info["prefix"]))
+
         # runner.save_as_nexus()
     runner.auspice_export()
