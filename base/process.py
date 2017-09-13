@@ -606,12 +606,11 @@ class process(object):
         if "predictors" in self.config:
             kwargs["predictor_input"] = self.config["predictors"]
 
-        if "titers" in self.config:
-            if "epitope_mask" in self.config["titers"]:
-                kwargs["epitope_masks_fname"] = self.config["titers"]["epitope_mask"]
+        if "epitope_mask" in self.config:
+            kwargs["epitope_masks_fname"] = self.config["epitope_mask"]
 
-            if "epitope_mask_version" in self.config["titers"]:
-                kwargs["epitope_mask_version"] = self.config["titers"]["epitope_mask_version"]
+        if "epitope_mask_version" in self.config:
+            kwargs["epitope_mask_version"] = self.config["epitope_mask_version"]
 
         if self.config["subprocess_verbosity_level"] > 0:
             kwargs["verbose"] = 1

@@ -48,8 +48,6 @@ def make_config (prepared_json, args):
         },
         "titers": {
             "criterium": lambda x: len(x.aa_mutations['HA1']+x.aa_mutations['HA2'])>0,
-            "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
-            "epitope_mask_version": args.epitope_mask_version,
             "lam_avi":2.0,
             "lam_pot":0.3,
             "lam_drop":2.0
@@ -57,6 +55,8 @@ def make_config (prepared_json, args):
         "build_tree": not args.no_tree,
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
+        "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
+        "epitope_mask_version": args.epitope_mask_version,
         "annotate_fitness": args.annotate_fitness,
         "predictors": args.predictors,
         "clean": args.clean,
@@ -167,7 +167,7 @@ if __name__=="__main__":
         if hasattr(runner, "titers"):
             HI_model(runner)
             if runner.info["lineage"] == "h3n2":
-                H3N2_scores(runner, runner.tree.tree, runner.config["titers"]["epitope_mask"])
+                H3N2_scores(runner, runner.tree.tree, runner.config["epitope_mask"])
             if runner.config["auspice"]["titers_export"]:
                 HI_export(runner)
 
