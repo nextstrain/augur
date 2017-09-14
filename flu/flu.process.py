@@ -2,6 +2,7 @@ from __future__ import print_function
 import os, sys, glob
 sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
 import base.process
+from base.fitness_model import process_predictor_args
 from base.process import process
 from base.utils import fix_names
 from flu_titers import HI_model, HI_export, H3N2_scores
@@ -24,6 +25,8 @@ def parse_args():
     parser.add_argument('--titers_export', default=False, action='store_true', help="export titers.json file")
     parser.add_argument('--annotate_fitness', default=False, action='store_true', help="run fitness prediction model and annotate fitnesses on tree nodes")
     parser.add_argument('--predictors', default=['cTiter'], nargs='+', help="attributes to use as fitness model predictors")
+    parser.add_argument('--predictors_params', type=float, nargs='+', help="precalculated fitness model parameters for each of the given predictors")
+    parser.add_argument('--predictors_sds', type=float, nargs='+', help="precalculated global standard deviations for each of the given predictors")
     parser.add_argument('--epitope_mask_version', default="wolf", help="name of the epitope mask that defines epitope mutations")
 
     parser.set_defaults(
@@ -33,6 +36,13 @@ def parse_args():
     return parser.parse_args()
 
 def make_config (prepared_json, args):
+    # Create a fitness model parameters data structure for the given arguments.
+    predictors = process_predictor_args(
+        args.predictors,
+        args.predictors_params,
+        args.predictors_sds
+    )
+
     return {
         "dir": "flu",
         "in": prepared_json,
@@ -58,7 +68,7 @@ def make_config (prepared_json, args):
         "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
         "epitope_mask_version": args.epitope_mask_version,
         "annotate_fitness": args.annotate_fitness,
-        "predictors": args.predictors,
+        "predictors": predictors,
         "clean": args.clean,
         "pivot_spacing": args.pivot_spacing/12.0,
         "timetree_options": {
