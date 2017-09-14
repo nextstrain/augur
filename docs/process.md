@@ -44,7 +44,7 @@ While _process_ can be computationally expensive, as long as the underlying _pre
 * `timetree_options` {dict} See [Phylogenies](./phylogenies.md)
 * `epitope_mask` {string} a tab-delimited file containing epitope mask names in the first column and a bitmask of sites in the protein coding sequence of a virus segment associated with epitopes
 * `epitope_mask_version` {string} the name of an epitope mask defined in the `epitope_mask` file to use for analyses
-* `predictors` {array of strings} a list of attributes annotated to each tree node to use for the fitness model (e.g., `"['ep']"` or `"['cTiter', 'ep']"`)
+* `predictors` {array of strings or dict} a list of attributes annotated to each tree node to use for the fitness model (e.g., `"['ep']"` or `"['cTiter', 'ep']"`) or a dictionary of predictors and their corresponding precalculated model parameters and global standard deviations (e.g., `{'ep': [0.33, 1.31]}`)
 
 ##### Auspice output settings
 * `auspice`
