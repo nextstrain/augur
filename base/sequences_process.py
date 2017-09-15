@@ -1,6 +1,5 @@
 from __future__ import division, print_function
 import os, re, time, csv, sys
-import warnings
 from io_util import make_dir, remove_dir, write_json
 # from io_util import myopen, make_dir, remove_dir, tree_to_json, write_json
 # from collections import defaultdict
@@ -51,11 +50,8 @@ def safe_translate(sequence):
     """
     try:
         # Attempt translation by extracting the sequence according to the
-        # BioPython SeqFeature. In frame gaps of three will translate as
-        # '-'. Ignore BioPython warnings about codon lengths.
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            translated_sequence = str(Seq(sequence).translate(gap='-'))
+        # BioPhython SeqFeature in frame gaps of three will translate as '-'
+        translated_sequence = str(Seq(sequence).translate(gap='-'))
     except TranslationError:
         # Any other codon like '-AA' or 'NNT' etc will fail. Translate codons
         # one by one.
