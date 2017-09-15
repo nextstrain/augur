@@ -16,6 +16,35 @@ pc=1e-2
 regularization = 1e-3
 default_predictors = ['lb', 'ep', 'ne_star']
 
+
+def process_predictor_args(predictors, params=None, sds=None):
+    """Returns a predictor data structure for the given lists of predictors, params,
+    and standard deviations.
+
+    When no parameters or deviations are provided, the predictors are a simple
+    list. When parameters and deviations are provided, the predictor are a
+    dictionary indexed by predictor name with values corresponding to each
+    predictor's param and global standard deviation.
+
+    >>> process_predictor_args(None, None, None)
+    >>> process_predictor_args(['ep'])
+    ['ep']
+    >>> process_predictor_args(['ep'], None, None)
+    ['ep']
+    >>> process_predictor_args(['ep'], [1], [5])
+    {'ep': [1, 5]}
+    """
+    if predictors is None:
+        processed_predictors = None
+    elif params is None or sds is None:
+        processed_predictors = predictors
+    else:
+        merged_params = map(list, zip(params, sds))
+        processed_predictors = dict(zip(predictors, merged_params))
+
+    return processed_predictors
+
+
 def make_pivots(start, stop, pivots_per_year=12, precision=2):
     """Makes an array of pivots (i.e., timepoints) between the given start and stop
     by the given pivots per year. The generated pivots are floating point values

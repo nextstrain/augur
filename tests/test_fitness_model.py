@@ -19,6 +19,10 @@ from ..base.fitness_model import fitness_model
 # Fixtures
 #
 
+# Set precalculated fitness model parameters which are the mean and standard
+# deviation for the model.
+MODEL_PARAMS = [1.0, 0.05]
+
 @pytest.fixture
 def simple_tree():
     """Returns a tree with three sequences: a root and two direct descendents with
@@ -104,6 +108,22 @@ def real_fitness_model(real_tree, multiple_sequence_alignment):
     model.nuc_alphabet = 'ACGT-N'
     model.min_mutation_frequency = 0.01
     return model
+
+@pytest.fixture
+def precalculated_fitness_model(simple_tree):
+    """Provides a simple fitness model with precalculated model parameters such that
+    the model skips learning new parameters.
+    """
+    return fitness_model(
+        tree=simple_tree,
+        frequencies={},
+        predictor_input={"random": MODEL_PARAMS},
+        pivot_spacing=1.0 / 12,
+        time_interval=(
+            datetime.date(2015, 1, 1),
+            datetime.date(2012, 1, 1)
+        )
+    )
 
 @pytest.fixture
 def sequence():
@@ -201,3 +221,16 @@ class TestFitnessModel(object):
         assert not any([hasattr(node, "fitness") for node in real_fitness_model.tree.find_clades()])
         real_fitness_model.assign_fitness()
         assert all([hasattr(node, "fitness") for node in real_fitness_model.tree.find_clades()])
+
+    def test_assign_fitness_with_precalculated_params(self, precalculated_fitness_model):
+        # The fitness model should have model parameters assigned by the user.
+        assert np.array_equal(precalculated_fitness_model.model_params, np.array([MODEL_PARAMS[0]]))
+        precalculated_fitness_model.predict()
+
+        # After prediction, the model parameters should be unchanged as the
+        # learning step should be skipped.
+        assert np.array_equal(precalculated_fitness_model.model_params, np.array([MODEL_PARAMS[0]]))
+
+        # Recalculate fitness model parameters which should be different from those given.
+        precalculated_fitness_model.learn_parameters(niter=1, fit_func="clade")
+        assert not np.array_equal(precalculated_fitness_model.model_params, np.array([MODEL_PARAMS[0]]))

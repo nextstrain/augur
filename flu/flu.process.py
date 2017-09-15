@@ -2,6 +2,7 @@ from __future__ import print_function
 import os, sys, glob
 sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
 import base.process
+from base.fitness_model import process_predictor_args
 from base.process import process
 from base.utils import fix_names
 from flu_titers import HI_model, HI_export, H3N2_scores
@@ -24,6 +25,8 @@ def parse_args():
     parser.add_argument('--titers_export', default=False, action='store_true', help="export titers.json file")
     parser.add_argument('--annotate_fitness', default=False, action='store_true', help="run fitness prediction model and annotate fitnesses on tree nodes")
     parser.add_argument('--predictors', default=['cTiter'], nargs='+', help="attributes to use as fitness model predictors")
+    parser.add_argument('--predictors_params', type=float, nargs='+', help="precalculated fitness model parameters for each of the given predictors")
+    parser.add_argument('--predictors_sds', type=float, nargs='+', help="precalculated global standard deviations for each of the given predictors")
     parser.add_argument('--epitope_mask_version', default="wolf", help="name of the epitope mask that defines epitope mutations")
 
     parser.set_defaults(
@@ -33,6 +36,13 @@ def parse_args():
     return parser.parse_args()
 
 def make_config (prepared_json, args):
+    # Create a fitness model parameters data structure for the given arguments.
+    predictors = process_predictor_args(
+        args.predictors,
+        args.predictors_params,
+        args.predictors_sds
+    )
+
     return {
         "dir": "flu",
         "in": prepared_json,
@@ -48,8 +58,6 @@ def make_config (prepared_json, args):
         },
         "titers": {
             "criterium": lambda x: len(x.aa_mutations['HA1']+x.aa_mutations['HA2'])>0,
-            "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
-            "epitope_mask_version": args.epitope_mask_version,
             "lam_avi":2.0,
             "lam_pot":0.3,
             "lam_drop":2.0
@@ -57,8 +65,10 @@ def make_config (prepared_json, args):
         "build_tree": not args.no_tree,
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
+        "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
+        "epitope_mask_version": args.epitope_mask_version,
         "annotate_fitness": args.annotate_fitness,
-        "predictors": args.predictors,
+        "predictors": predictors,
         "clean": args.clean,
         "pivot_spacing": args.pivot_spacing/12.0,
         "timetree_options": {
@@ -167,7 +177,7 @@ if __name__=="__main__":
         if hasattr(runner, "titers"):
             HI_model(runner)
             if runner.info["lineage"] == "h3n2":
-                H3N2_scores(runner, runner.tree.tree, runner.config["titers"]["epitope_mask"])
+                H3N2_scores(runner, runner.tree.tree, runner.config["epitope_mask"])
             if runner.config["auspice"]["titers_export"]:
                 HI_export(runner)
 
@@ -175,7 +185,11 @@ if __name__=="__main__":
 
         # Predict fitness.
         if runner.config["annotate_fitness"]:
-            runner.fitness_model = runner.annotate_fitness()
+            fitness_model = runner.annotate_fitness()
+            print("Fitness model parameters: %s" % str(zip(fitness_model.predictors, fitness_model.model_params)))
+            print("Fitness model deviations: %s" % str(zip(fitness_model.predictors, fitness_model.global_sds)))
+            print("Abs clade error: %s" % fitness_model.clade_fit(fitness_model.model_params))
+            runner.fitness_model = fitness_model
 
         if not os.path.exists("processed/recurring_mutations/"):
             os.makedirs("processed/recurring_mutations/")
