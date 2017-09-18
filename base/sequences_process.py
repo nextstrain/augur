@@ -31,7 +31,7 @@ def calc_af(aln, alpha):
     af[-1] = 1.0 - af[:-1].sum(axis=0)
     return af
 
-def safe_translate(sequence):
+def safe_translate(sequence, log=None):
     """Returns an amino acid translation of the given nucleotide sequence accounting
     for gaps in the given sequence.
 
@@ -53,6 +53,8 @@ def safe_translate(sequence):
         # BioPhython SeqFeature in frame gaps of three will translate as '-'
         translated_sequence = str(Seq(sequence).translate(gap='-'))
     except TranslationError:
+        log.notify("Trouble translating because of invalid codons %s" % seq.id)
+
         # Any other codon like '-AA' or 'NNT' etc will fail. Translate codons
         # one by one.
         codon_table  = CodonTable.ambiguous_dna_by_name['Standard'].forward_table
@@ -258,11 +260,8 @@ class sequence_set(object):
             aa_seqs = []
             for seq in self.aln:
                 tmpseq = self.proteins[prot].extract(seq)
-                translated_seq = safe_translate(str(tmpseq.seq))
+                translated_seq = safe_translate(str(tmpseq.seq), self.log)
                 tmpseq.seq = Seq(translated_seq)
-
-                if "-" in translated_seq or "X" in translated_seq:
-                    self.log.notify("Trouble translating because of invalid codons %s" % seq.id)
 
                 # copy attributes
                 tmpseq.attributes = seq.attributes
