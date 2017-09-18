@@ -31,9 +31,12 @@ def calc_af(aln, alpha):
     af[-1] = 1.0 - af[:-1].sum(axis=0)
     return af
 
-def safe_translate(sequence):
+def safe_translate(sequence, report_exceptions=False):
     """Returns an amino acid translation of the given nucleotide sequence accounting
     for gaps in the given sequence.
+
+    Optionally, returns a tuple of the translated sequence and whether an
+    exception was raised during initial translation.
 
     >>> safe_translate("ATG")
     'M'
@@ -47,12 +50,20 @@ def safe_translate(sequence):
     ''
     >>> safe_translate("ATGT")
     'M'
+    >>> safe_translate("ATG", report_exceptions=True)
+    ('M', False)
+    >>> safe_translate("ATGA-G", report_exceptions=True)
+    ('MX', True)
     """
+    translation_exception = False
+
     try:
         # Attempt translation by extracting the sequence according to the
         # BioPhython SeqFeature in frame gaps of three will translate as '-'
         translated_sequence = str(Seq(sequence).translate(gap='-'))
     except TranslationError:
+        translation_exception = True
+
         # Any other codon like '-AA' or 'NNT' etc will fail. Translate codons
         # one by one.
         codon_table  = CodonTable.ambiguous_dna_by_name['Standard'].forward_table
@@ -78,7 +89,10 @@ def safe_translate(sequence):
 
         translated_sequence = "".join(aas)
 
-    return translated_sequence
+    if report_exceptions:
+        return translated_sequence, translation_exception
+    else:
+        return translated_sequence
 
 
 class sequence_set(object):
@@ -258,11 +272,11 @@ class sequence_set(object):
             aa_seqs = []
             for seq in self.aln:
                 tmpseq = self.proteins[prot].extract(seq)
-                translated_seq = safe_translate(str(tmpseq.seq))
-                tmpseq.seq = Seq(translated_seq)
-
-                if "-" in translated_seq or "X" in translated_seq:
+                translated_seq, translation_exception = safe_translate(str(tmpseq.seq), report_exceptions=True)
+                if translation_exception:
                     self.log.notify("Trouble translating because of invalid codons %s" % seq.id)
+
+                tmpseq.seq = Seq(translated_seq)
 
                 # copy attributes
                 tmpseq.attributes = seq.attributes
