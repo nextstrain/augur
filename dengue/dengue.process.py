@@ -94,16 +94,13 @@ def collect_args():
     """
     parser = base.process.collect_args()
 
-    parser.add_argument('--jsons', default=None, nargs='+', type=str, help="Accepts path to prepared JSON(s); overrides -s argument")
+    # parser.add_argument('-j', '--json', default=None, nargs='+', type=str, help="Accepts path to prepared JSON(s); overrides -s argument")
     parser.add_argument('-s', '--serotypes', default=["multiple"], nargs='+', type=str, choices=['denv1', 'denv2', 'denv3', 'denv4', 'all', 'multiple'],
     help="Look for prepared JSON(s) like ./prepared/dengue_SEROTYPE.json; 'multiple' will run all five builds. Default='multiple'")
     parser.add_argument('--no_mut_freqs', default=False, action='store_true', help="skip mutation frequencies")
     parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
     parser.add_argument('--no_titers', default=False, action='store_true', help="skip titer models")
-
-    parser.set_defaults(
-        json="prepared/dengue.json"
-    )
+    parser.set_defaults(json = None)
 
     return parser
 
@@ -145,19 +142,19 @@ if __name__=="__main__":
     parser = collect_args()
     args = parser.parse_args()
 
-    if not args.jsons:
+    if args.json: # Specified JSON path overrides serotype argument
+        args.json = [args.json]
+    else: # Look for serotype-specific JSONs in the ./prepared/ directory
         if 'multiple' in args.serotypes: # "multiple" = run all 5 builds
             args.serotypes = ['denv1', 'denv2', 'denv3', 'denv4', 'all']
-
-        if args.json:
-            args.jsons = [args.json]
         else:
-            args.jsons = ['./prepared/dengue_%s.json'%s for s in args.serotypes] # Look for ./prepared/dengue_SEROTYPE.json if no file paths given
+            args.serotypes = [args.serotypes]
+        args.json = ['./prepared/dengue_%s.json'%s for s in args.serotypes] # Look for ./prepared/dengue_SEROTYPE.json if no file paths given
 
-    for j in args.jsons:            # validate input JSONs exist
+    for j in args.json:            # validate input JSONs exist
         assert os.path.isfile(j)
 
-    for prepared_json in args.jsons:
+    for prepared_json in args.json:
         print("Processing %s"%prepared_json)
         runner = process(make_config(prepared_json, args))
         runner.align()
@@ -166,9 +163,9 @@ if __name__=="__main__":
         runner.run_geo_inference()
 
         # estimate mutation frequencies here.
-        # if runner.config["estimate_mutation_frequencies"]:
-        #     pivots = runner.get_pivots_via_spacing()
-        #     runner.estimate_mutation_frequencies(pivots=pivots, min_freq=0.02, inertia=np.exp(-1.0/12), stiffness=0.8*12)
+        if runner.config["estimate_mutation_frequencies"]:
+            pivots = runner.get_pivots_via_spacing()
+            runner.estimate_mutation_frequencies(pivots=pivots, min_freq=0.02, inertia=np.exp(-1.0/12), stiffness=0.8*12)
 
         # estimate tree frequencies here.
         if runner.config["estimate_tree_frequencies"]:
@@ -189,7 +186,6 @@ if __name__=="__main__":
                         training_fraction = runner.config['titers']['training_fraction'])
             titer_export(runner)
 
-        runner.matchClades(genotypes[runner.info['lineage']])
+        # runner.matchClades(genotypes[runner.info['lineage']])
 
-        # runner.save_as_nexus()
         runner.auspice_export()
