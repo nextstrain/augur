@@ -148,7 +148,7 @@ if __name__=="__main__":
         if 'multiple' in args.serotypes: # "multiple" = run all 5 builds
             args.serotypes = ['denv1', 'denv2', 'denv3', 'denv4', 'all']
         else:
-            args.serotypes = [args.serotypes]
+            args.serotypes = args.serotypes
         args.json = ['./prepared/dengue_%s.json'%s for s in args.serotypes] # Look for ./prepared/dengue_SEROTYPE.json if no file paths given
 
     for j in args.json:            # validate input JSONs exist
