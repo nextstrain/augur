@@ -39,7 +39,7 @@ config = {
     },
     "timetree_options": {
         "Tc": 'opt',
-        "confidence":True,
+        "confidence":True
     }
 }
 
