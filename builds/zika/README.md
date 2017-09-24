@@ -1,13 +1,32 @@
-### how to run
+## Zika build
 
-* Download FASTA file via fauna and ensure the path set in `zika.prepare.py` is correct
+### How to run
 
+#### 1. Run all commands from this directory
+
+#### 2. Download FASTA file via fauna and prepare analysis
 ```
-cd zika
-rm auspice/* prepared/* processed/* #makes it cleaner
-python zika.prepare.py # creates JSONs in the folder prepared
-python zika.process.py # creates files in processed/ and auspice/
-cp auspice/* ../../auspice/data/ #assuming your directory structure is like mine!
-cd ../../auspice
-node dev-server.js local #or npm run start:local
+python zika.prepare.py
+```
+Alternatively, supply a FASTA file with conforming headings and pass in this file with `--sequences`.
+```
+python zika.prepare.py --sequences example_data/zika.fasta
+```
+Running `zika.prepare.py` creates the file `prepared/zika.json`.
+
+#### 3. Run build
+```
+python zika.process.py
+```
+This creates intermediary files in `processed/` and auspice-ready JSONs in `auspice/`.
+
+#### 4. Copy JSONs to auspice
+```
+cp auspice/zika_* ../../../auspice/data/
+```
+
+#### 5. Run auspice to visualize
+```
+cd ../../../auspice
+npm run start:local
 ```

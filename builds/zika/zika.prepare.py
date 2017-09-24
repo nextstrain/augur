@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os, sys
-sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+# we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import base.prepare
 from base.prepare import prepare
 from datetime import datetime
@@ -36,7 +37,7 @@ config = {
     "file_prefix": "zika",
     "title": "Genomic analysis of the worldwide spread of Zika virus (ZIKV)",
     "maintainer": ["@trvrb", "https://twitter.com/trvrb"],
-    "input_paths": ["../../fauna/data/zika.fasta"],
+    "input_paths": ["../../../fauna/data/zika.fasta"],
     "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
                     6:'division', 8:'db', 10:'authors', 11:'url', 12:'title',
                     13: 'journal', 14: 'paper_url'},
