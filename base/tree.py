@@ -308,6 +308,8 @@ class tree(object):
             if hasattr(node, 'attr'):
                 if attr in node.attr:
                     node.sequence=np.array([alphabet_rev[node.attr[attr]]])
+                else:
+                    node.sequence=np.array([missing_char])
             else:
                 node.sequence=np.array([missing_char])
         for node in self.tree.get_nonterminals():
