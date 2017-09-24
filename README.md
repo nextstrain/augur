@@ -18,6 +18,10 @@ Augur is the informatic processing pipeline to track evolution from sequence and
 
 ![flowchart](docs/assets/flow.png)
 
+## Install
+
+_Add install instructions._
+
 ## Documentation
 
 [Docs](docs/) are available for [prepare](docs/prepare.md), [process](docs/process.md) and [Auspice JSON format](docs/auspice_output.md).
