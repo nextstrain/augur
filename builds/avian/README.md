@@ -23,12 +23,12 @@ python avian.process.py --json prepared/avian_h7n9_pa.json
 ```
 This creates intermediary files in `processed/` and auspice-ready JSONs in `auspice/`.
 
-#### 4. Copy JSONs to auspice for visualization
+#### 4. Copy JSONs to auspice
 ```
 cp auspice/avian_* ../../../auspice/data/
 ```
 
-#### 5. Run auspice to visualize build_tree
+#### 5. Run auspice to visualize
 ```
 cd ../../../auspice
 npm run start:local
