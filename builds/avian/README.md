@@ -1,39 +1,35 @@
-### instructions
+## H7N9 build
 
-* First download the data from fauna (instructions in that repo)
-* Second, run augur
+### How to run
 
-```
-# ensure H7N9 fasta files in fauna folder (see config in prepare.H7N9.py for paths)
-cd H7N9
-rm auspice/* prepared/* processed/* #makes it cleaner
-python prepare.H7N9.py # creates JSONs in the folder prepared
-python process.H7N9.py -j prepared/<JSON> # creates files in processed/ and auspice/
-```
+#### 1. Run all commands from this directory
 
-* As there are 8 scripts, and therefore 8 independent process scripts to run, if you have 2 cores this speeds things up:
+#### 2. Download FASTA files for all segments via fauna and prepare analysis
 ```
-# in one terminal window:
-for i in "pb1" "pb2" "pa" "ns"; do python process.H7N9.py -j prepared/flu_h7n9_${i}.json; done
-# in another:
-for i in "na" "np" "mp" "ha"; do python process.H7N9.py -j prepared/flu_h7n9_${i}.json; done
+python avian.prepare.py
 ```
+Running `avian.prepare.py` creates the files `prepared/avian_ha.json`, `prepared/avian_na.json`, etc...
 
-
-* to visualise locally in auspice
+#### 3. Run builds
 ```
-cd augur/H7N9
-cp auspice/*json ../../auspice/data/
-# local build needs to be running...
-cd ../../auspice
-node dev-server.js local
-# visit localhost:4000/flu
+python avian.process.py --json prepared/avian_h7n9_ha.json
+python avian.process.py --json prepared/avian_h7n9_na.json
+python avian.process.py --json prepared/avian_h7n9_ns.json
+python avian.process.py --json prepared/avian_h7n9_pb1.json
+python avian.process.py --json prepared/avian_h7n9_pb2.json
+python avian.process.py --json prepared/avian_h7n9_mp.json
+python avian.process.py --json prepared/avian_h7n9_np.json
+python avian.process.py --json prepared/avian_h7n9_pa.json
+```
+This creates intermediary files in `processed/` and auspice-ready JSONs in `auspice/`.
+
+#### 4. Copy JSONs to auspice for visualization
+```
+cp auspice/avian_* ../../../auspice/data/
 ```
 
-* to move to S3 bucket:
+#### 5. Run auspice to visualize build_tree
 ```
-cd augur/build
-rm *
-cd augur/H7N9/auspice
-bundle exec s3_website push --site build
+cd ../../../auspice
+npm run start:local
 ```
