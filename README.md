@@ -28,14 +28,7 @@ _Add install instructions._
 
 ## Virus builds
 
-Each virus build consists of a `prepare.py` and `process.py` file. Current builds provided are:
-
-* [dengue virus](dengue/)
-* [Ebola virus](ebola/)
-* [seasonal influenza virus](flu/)
-* [avian influenza H7N9](avian/)
-* [mumps virus](mumps/)
-* [Zika virus](zika/)
+Each virus build consists of a `prepare.py` and `process.py` file. Currently supported builds are listed in the [builds directory](builds/).
 
 ## License and copyright
 
