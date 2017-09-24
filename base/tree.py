@@ -11,7 +11,7 @@ from Bio import Phylo
 import cPickle as pickle
 from collections import OrderedDict
 try:
-    from treetime_augur import TreeTime, utils
+    from treetime_augur import TreeTime
 except ImportError:
     print("Couldn't import treetime_augur. Here's the searched paths:")
     pprint(sys.path)
