@@ -1,14 +1,11 @@
-# seasonal flu (h3n2 // h1n1pdm // vic // yam)
+# Seasonal flu (H3N2, H1N1pdm, B/Vic, B/Yam) build
 
-### status
+### Status
 * all lineages working
 * references only defined for HA (so far)
 * subsampling is always a single pass and cannot be repeated
-* titer models are broken
-* H3N2_scores is not implemented
 * tree frequencies have not been tested properly
 * matchClades has not been properly tested
-
 
 ### summary of the necessary files
 
@@ -21,20 +18,36 @@
 | `colors.flu.tsv` | color maps      |
 
 
-### how to run
-* download fauna files like this with subtype `h3n2`, `h1n1pdm`, `vic` or `yam` and segment `ha`, `na`, etc...:
+### How to run
+
+#### 1. Run all commands from this directory
+
+#### 2. Download FASTA file via fauna and prepare analysis
 ```
-cd fauna
-python vdb/flu_download.py -db vdb -v flu --select lineage:seasonal_h3n2 locus:ha --fstem h3n2_ha
+python flu.prepare.py --lineage h3n2 --resolution 3y
+```
+Running this creates the file `prepared/flu_h3n2_ha_3y.json`.
+
+#### 3. Run build
+```
+python flu.process.py --json prepared/flu_h3n2_ha_3y.json
+```
+This creates intermediary files in `processed/` and auspice-ready JSONs in `auspice/`.
+
+#### 4. Copy JSONs to auspice
+```
+cp auspice/flu_* ../../../auspice/data/
 ```
 
-* prepare fauna fasta -> JSON ready to be analysed
+#### 5. Run auspice to visualize
 ```
-python flu.prepare.py [options]
+cd ../../../auspice
+npm run start:local
 ```
 
-* process (prepared) JSON -> intermediate files + auspice JSONs
+### How to run (batch)
+
+The script `run_flu.py` will batch calls to `flu.prepare.py` and `flu.process.py` to run all combinations of lineage (`h3n2`, `h1n1pdm`, `vic`, `yam`) and resolution (`2y`, `3y`, `6y`, `12y`).
 ```
-python flu.process.py [options]
-cp auspice/* ../../auspice/data/
+python run_flu.py
 ```
