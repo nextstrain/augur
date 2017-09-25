@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os, sys
-sys.path.append('..')
+# we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import base.prepare
 from base.prepare import prepare
 from base.utils import fix_names
@@ -17,7 +18,7 @@ def collect_args():
 
     parser.add_argument('-s', '--serotypes', '--lineage', choices=["all", "denv1", "denv2", "denv3", "denv4", "multiple"], default="multiple", type=str, nargs='+', help="Serotype(s) to prepare. \"multiple\" will run them all.")
     parser.add_argument('-y', '--years_back', type=int, default=100, help="Years back in time to sample from")
-    parser.add_argument('--titers', default='../../fauna/data/dengue_titers.tsv', help="tab-delimited file of titer strains and values from fauna (e.g., dengue_titers.tsv)")
+    parser.add_argument('--titers', default='../../../fauna/data/dengue_titers.tsv', help="tab-delimited file of titer strains and values from fauna (e.g., dengue_titers.tsv)")
     parser.set_defaults(
         viruses_per_month=3,
         file_prefix=None
@@ -66,10 +67,10 @@ def make_config(serotype, params):
 
     if params.sequences is not None:
         input_paths = [params.sequences]
-    elif os.path.isfile("../../fauna/data/dengue_%s.fasta"%serotype): #is file: # Look for a serotype-specific fasta
-        input_paths = ["../../fauna/data/dengue_%s.fasta"%serotype]
+    elif os.path.isfile("../../../fauna/data/dengue_%s.fasta"%serotype): #is file: # Look for a serotype-specific fasta
+        input_paths = ["../../../fauna/data/dengue_%s.fasta"%serotype]
     else: # If it doesn't exist, try to pull serotype-specific sequences out of the all-serotype fasta (warn the user of this behavior)
-        input_paths = [select_serotype('../fauna/data/dengue_all.fasta', '../fauna/data/', serotype)]
+        input_paths = [select_serotype('../../../fauna/data/dengue_all.fasta', '../fauna/data/', serotype)]
         print('WARNING: Did not find serotype-specific fasta file.\nPulled sequences with serotype %s from all-serotype fasta file %s\nWrote these to file %s'%(serotype, '../fauna/data/dengue.fasta', input_paths))
 
     years_back = params.years_back
@@ -104,7 +105,7 @@ def make_config(serotype, params):
         "colors": ["region"],
         "color_defs": "./colors.tsv",
         "lat_longs": ["region"],
-        "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
+        "lat_long_defs": '../../../fauna/source-data/geo_lat_long.tsv',
         "reference": references[serotype],
         "time_interval": time_interval,
         "titers": titer_values,

@@ -1,11 +1,7 @@
-# deprecated - can be removed at some point #
-data/
-build/
-store/
-
 # For augur repo #
 environment*
 temp*
+data/
 dengue/utils/
 prepared/
 processed/

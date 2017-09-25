@@ -13,8 +13,8 @@ def build_live(
                 'flu.prepare.py',
                 '--lineage', lineage,
                 '--resolution', resolution,
-                '--sequences', '../../fauna/data/%s.fasta'%lineage,
-                '--titers', '../../fauna/data/%s_hi_titers.tsv'%(lineage),
+                '--sequences', '../../../fauna/data/%s.fasta'%lineage,
+                '--titers', '../../../fauna/data/%s_hi_titers.tsv'%(lineage),
                 '--file_prefix', 'flu_%s_ha_%s'%(lineage, resolution)]
             if frequencies == "complete":
                 call = call + ['--complete_frequencies']
@@ -52,8 +52,8 @@ def build_cdc(
                         'flu.prepare.py',
                         '--lineage', lineage,
                         '--resolution', resolution,
-                        '--sequences', '../../fauna/data/%s.fasta'%lineage,
-                        '--titers', '../../fauna/data/%s_cdc_%s_%s_titers.tsv'%(lineage, assay, passage),
+                        '--sequences', '../../../fauna/data/%s.fasta'%lineage,
+                        '--titers', '../../../fauna/data/%s_cdc_%s_%s_titers.tsv'%(lineage, assay, passage),
                         '--file_prefix', 'flu_%s_ha_%s_%s_%s'%(lineage, resolution, passage, assay)]
                     if frequencies == "complete":
                         call = call + ['--complete_frequencies']

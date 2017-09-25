@@ -18,20 +18,17 @@ Augur is the informatic processing pipeline to track evolution from sequence and
 
 ![flowchart](docs/assets/flow.png)
 
+## Install
+
+_Add install instructions._
+
 ## Documentation
 
 [Docs](docs/) are available for [prepare](docs/prepare.md), [process](docs/process.md) and [Auspice JSON format](docs/auspice_output.md).
 
 ## Virus builds
 
-Each virus build consists of a `prepare.py` and `process.py` file. Current builds provided are:
-
-* [dengue virus](dengue/)
-* [Ebola virus](ebola/)
-* [seasonal influenza virus](flu/)
-* [avian influenza H7N9](avian/)
-* [mumps virus](mumps/)
-* [Zika virus](zika/)
+Each virus build consists of a `prepare.py` and `process.py` file. Currently supported builds are listed in the [builds directory](builds/).
 
 ## License and copyright
 

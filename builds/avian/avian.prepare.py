@@ -1,13 +1,7 @@
-"""
-This script takes fauna fasta files and produces filtered and subsetted JSONs
-To be processed by augur
-
-* RUN THIS SCRIPT IN THE avian DIRECTORY!!!!
-
-"""
 from __future__ import print_function
 import os, sys
-sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside avian or zika
+# we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 sys.path.append('reference_segments')
 from reference_info import references
 import base.prepare
@@ -22,8 +16,8 @@ def collect_args():
     """
     parser = base.prepare.collect_args()
 
-    segments = ["pb2", "pb1", "pa", "ha", "np", "na", "mp", "ns"]
-    parser.add_argument('-l', '--lineage', choices=['h7n9'], default='h7n9', type=str, help="serotype")
+    segments = ['pb2', 'pb1', 'pa', 'ha', 'np', 'na', 'mp', 'ns']
+    parser.add_argument('-l', '--lineage', choices=['h7n9'], default='h7n9', type=str, help="subtype")
     parser.add_argument('-s', '--segments', choices=segments, default=segments, nargs='+', type = str,  help = "segments to prepare")
     parser.set_defaults(
         viruses_per_month=0,
@@ -46,14 +40,14 @@ config = {
     "title": "Genomic analysis of the 5 Epidemics Influenza A/H7N9",
     "maintainer": ["@jh_viz", "https://twitter.com/jh_viz"],
     "input_paths": [
-        "../../fauna/data/h7n9_pb2.fasta",
-        "../../fauna/data/h7n9_pb1.fasta",
-        "../../fauna/data/h7n9_pa.fasta",
-        "../../fauna/data/h7n9_ha.fasta",
-        "../../fauna/data/h7n9_np.fasta",
-        "../../fauna/data/h7n9_na.fasta",
-        "../../fauna/data/h7n9_mp.fasta",
-        "../../fauna/data/h7n9_ns.fasta"
+        "../../../fauna/data/h7n9_pb2.fasta",
+        "../../../fauna/data/h7n9_pb1.fasta",
+        "../../../fauna/data/h7n9_pa.fasta",
+        "../../../fauna/data/h7n9_ha.fasta",
+        "../../../fauna/data/h7n9_np.fasta",
+        "../../../fauna/data/h7n9_na.fasta",
+        "../../../fauna/data/h7n9_mp.fasta",
+        "../../../fauna/data/h7n9_ns.fasta"
     ],
     "header_fields": {
         0:'strain', 2:'accession', 3:'date', 4:'host', 6:'country', 7: 'division', 11: 'fauna_date'
@@ -111,4 +105,4 @@ if __name__=="__main__":
     runner.subsample()
     runner.colors()
     runner.latlongs()
-    runner.write_to_json()
+    runner.write_to_json(segment_addendum=True)

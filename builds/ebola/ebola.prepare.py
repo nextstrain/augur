@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os, sys
-sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+# we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import base.prepare
 from base.prepare import prepare
 from datetime import datetime
@@ -30,7 +31,7 @@ def make_config(params):
         "file_prefix": "ebola",
         "title": "West African Ebola Epidemic (2013-2016)",
         "maintainer": ["@trvrb", "https://twitter.com/trvrb"],
-        "input_paths": ["../../fauna/data/ebola.fasta"],
+        "input_paths": ["../../../fauna/data/ebola.fasta"],
         "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country', 6:'division', 8:'db', 10:'authors', 11:'url'},
         "filters": (
             ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),

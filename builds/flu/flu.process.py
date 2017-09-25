@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os, sys, glob
-sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+# we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import base.process
 from base.fitness_model import process_predictor_args
 from base.process import process

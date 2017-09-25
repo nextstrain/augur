@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os, sys
-sys.path.append('..') # we assume (and assert) that this script is running from the virus directory, i.e. inside avian or zika
+# we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import base.process
 from base.process import process
 import argparse
@@ -11,7 +12,7 @@ def collect_args():
     """
     parser = base.process.collect_args()
     parser.set_defaults(
-        json="prepared/avian_h7n9.json"
+        json="prepared/avian_h7n9_ha.json"
     )
     return parser
 

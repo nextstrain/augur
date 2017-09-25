@@ -1,12 +1,7 @@
-"""
-This script takes fauna fasta files and produces filtered and subsetted JSONs
-To be processed by augur
-There are some custom command-line arguments - I envisage this will be somewhat
-common for different analyses
-"""
 from __future__ import print_function
 import os, sys, re
-sys.path.append('..') # we assume (and assert) that this script is running from inside the flu folder
+# we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import base.prepare
 from base.prepare import prepare
 from base.titer_model import TiterModel
@@ -18,7 +13,6 @@ from flu_info import regions, outliers, reference_maps, reference_viruses, segme
 from flu_subsampling import flu_subsampling
 
 import logging
-
 
 def parse_args():
     """Returns a seasonal flu-specific argument parser.
@@ -67,7 +61,7 @@ def make_config(lineage, resolution, params):
     if params.sequences is not None:
         input_paths = params.sequences
     else:
-        input_paths = ["../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segment]
+        input_paths = ["../../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segment]
 
     if params.file_prefix:
         file_prefix = params.file_prefix
@@ -104,7 +98,7 @@ def make_config(lineage, resolution, params):
         "colors": ["region"],
         "color_defs": ["colors.flu.tsv"],
         "lat_longs": ["country", "region"],
-        "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
+        "lat_long_defs": '../../../fauna/source-data/geo_lat_long.tsv',
         "references": {seg:reference_maps[lineage][seg] for seg in params.segment},
         "regions": regions,
         "time_interval": time_interval,
