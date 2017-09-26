@@ -11,10 +11,6 @@ parser.add_argument('--clean', action='store_true', help="clean build (remove pr
 parser.add_argument('-j', '--jsons', default=["all"], nargs='+', type=str, help="prepared JSON(s). \"all\" will do them all. Default = all")
 
 def make_config(prepared_json, clean):
-    # Augur currently broken for geo inference if only one trait (i.e. all canada)
-    geo = ["country", "region"]
-    if "bc" in prepared_json:
-        geo = False
     return {
         "dir": "mumps",
         "in": prepared_json,
@@ -22,13 +18,12 @@ def make_config(prepared_json, clean):
         "clock_filter": {
             "n_iqd": 4,
         },
-        "geo_inference": geo,
+        "geo_inference": False,
         "auspice": { ## settings for auspice JSON export
             "color_options": {
-                "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
+                "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
             },
-            "controls": {'authors':['authors']}
         },
         "clean": clean,
     }

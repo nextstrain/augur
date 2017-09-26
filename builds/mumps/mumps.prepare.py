@@ -27,41 +27,48 @@ def make_config(context):
         "dir": "mumps",
         "file_prefix": "mumps_%s"%context,
         "title": "Mumps virus (context: {}).format(context)",
-        "maintainer": ["@LouiseHMoncla", "https://twitter.com/louisehmoncla"],
+        "maintainer": ["@jh_viz", "https://twitter.com/jh_viz"],
         "input_paths": ["../../../fauna/data/mumps.fasta"],
-        "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
-                        6:'division', 8:'db', 10:'authors', 11:'url'},
+
+        "header_fields": {
+            0: 'strain',
+            2: 'accession',
+            3: 'date',
+            4: 'country',
+            5: 'region',
+            6: 'muv_genotype',
+            7: 'host',
+            8: 'authors',
+            9: 'title',
+            10: 'journal',
+            11: 'puburl',
+            12: 'url'
+        },
         "subsample": False,
         "colors": ["country", "region"],
-        "color_defs": ["./colors.tsv"],
         "lat_longs": ["country", "region"],
+        "lat_long_defs": './geo_lat_long.tsv',
+        "filters": (
+            ("Sequence Length", lambda s: len(s.seq)>=13000),
+            ("number Ns", lambda s: s.seq.count('N')<=3000)
+        ),
         "reference": {
             "path": "mumps-reference.gb",
             "metadata": {
                 'strain': "MuV/Gabon/13/2", "accession": "KM597072.1", "date": "2013-03-01",
-                'host': "human", 'country': "Gabon"
+                'host': "human", 'country': "Gabon", 'region': "Gabon"
             },
             "include": 0,
             "genes": ['NC', 'P', 'V', 'I', 'M', 'F', 'SH', 'HN', 'L']
         }
     }
-    if context == "global":
-        config["filters"] = (filters["dropped_strains"], filters["exclude_BC"], filters["exclude_Mass"], filters["unknown_country"])
-    elif context == "bc":
-        config["filters"] = (filters["dropped_strains"], filters["canada_only"], filters["unknown_country"])
-    elif context == "mass":
-        config["filters"] = (filters["dropped_strains"], filters["Mass_only"],filters["unknown_country"])
-    else:
-        print("Unknown context. FATAL")
-        sys.exit(2)
-
 
 
     return config
 
 if __name__=="__main__":
     params = collect_args()
-    for context in ["global", "bc", "mass"]:
+    for context in ["global"]:
         runner = prepare(make_config(context))
         runner.load_references()
         runner.applyFilters()
