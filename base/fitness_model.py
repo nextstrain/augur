@@ -63,6 +63,21 @@ def make_pivots(start, stop, pivots_per_year=12, precision=2):
         precision
     )
 
+
+def matthews_correlation_coefficient(tp, tn, fp, fn):
+    """Return Matthews correlation coefficient for values from a confusion matrix.
+    Implementation is based on the definition from wikipedia:
+
+    https://en.wikipedia.org/wiki/Matthews_correlation_coefficient
+    """
+    numerator = (tp * tn) - (fp * fn)
+    denominator = np.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
+    if denominator == 0:
+            denominator = 1
+
+    return float(numerator) / denominator
+
+
 class fitness_model(object):
 
     def __init__(self, tree, frequencies, time_interval, predictor_input = ['ep', 'lb', 'dfreq'], pivot_spacing = 1.0 / 12, verbose = 0, enforce_positive_predictors = True, **kwargs):
@@ -541,9 +556,17 @@ class fitness_model(object):
         correct_decline = decline_list.count(True)
         total_decline = float(len(decline_list))
 
-        print ("Correct at predicting growth:", correct_growth / total_growth)
-        print ("Correct at predicting decline:",  correct_decline / total_decline)
-        print ("Correct classification:",  (correct_growth+correct_decline) / (total_growth+total_decline))
+        trajectory_mcc = matthews_correlation_coefficient(
+            correct_growth,
+            total_growth - correct_growth,
+            correct_decline,
+            total_decline - correct_decline
+        )
+
+        print("Correct at predicting growth: %s (%s / %s)" % ((correct_growth / total_growth), correct_growth, total_growth))
+        print("Correct at predicting decline: %s (%s / %s)" % ((correct_decline / total_decline), correct_decline, total_decline))
+        print("Correct classification:",  (correct_growth+correct_decline) / (total_growth+total_decline))
+        print("Matthew's correlation coefficient: %s" % trajectory_mcc)
 
         axs[0].set_ylabel('predicted')
         axs[0].set_xlabel('observed')
