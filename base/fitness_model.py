@@ -246,6 +246,9 @@ class fitness_model(object):
         print("fitting time censored tree frequencies")
         # this doesn't interfere with the previous freq estimates via difference in region: global_censored vs global
         region = "global_censored"
+        if not region in self.frequencies:
+            self.frequencies[region] = {}
+
         freq_cutoff = 25.0
         pivots_fit = 6
         freq_window = 1.0
@@ -265,16 +268,16 @@ class fitness_model(object):
             # corresponding pivots.
             tree_freqs = tree_frequencies(self.tree, pivots, node_filter=node_filter_func)
             tree_freqs.estimate_clade_frequencies()
-            self.frequencies[time] = tree_freqs.frequencies
+            self.frequencies[region][time] = tree_freqs.frequencies
 
             # Annotate censored frequencies on nodes.
             # TODO: replace node-based annotation with dicts indexed by node name.
             for node in self.nodes:
                 node.freq = {
-                    region: self.frequencies[time][node.clade]
+                    region: self.frequencies[region][time][node.clade]
                 }
                 node.logit_freq = {
-                    region: logit_transform(self.frequencies[time][node.clade], 1e-4)
+                    region: logit_transform(self.frequencies[region][time][node.clade], 1e-4)
                 }
 
             for node in self.nodes:
