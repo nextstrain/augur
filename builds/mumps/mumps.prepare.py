@@ -26,7 +26,7 @@ def make_config(context):
     config = {
         "dir": "mumps",
         "file_prefix": "mumps_%s"%context,
-        "title": "Mumps virus (context: {}).format(context)",
+        "title": "Mumps virus in the {} context".format(context),
         "maintainer": ["@jh_viz", "https://twitter.com/jh_viz"],
         "input_paths": ["../../../fauna/data/mumps.fasta"],
 
@@ -52,6 +52,7 @@ def make_config(context):
             ("Sequence Length", lambda s: len(s.seq)>=13000),
             ("number Ns", lambda s: s.seq.count('N')<=3000)
         ),
+        "auspice_filters": ["country", "region"],
         "reference": {
             "path": "mumps-reference.gb",
             "metadata": {

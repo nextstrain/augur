@@ -91,6 +91,7 @@ def export_metadata_json(process, prefix, indent):
     meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
     meta_json["title"] = process.info["title"]
     meta_json["maintainer"] = process.info["maintainer"]
+    meta_json["filters"] = process.info["auspice_filters"]
 
     if "defaults" in process.config["auspice"]:
         meta_json["defaults"] = process.config["auspice"]["defaults"]

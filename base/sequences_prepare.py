@@ -257,7 +257,8 @@ class sequence_set(object):
             "subsampled": bool(config["subsample"]),
             "traits_are_dates": [],
             "title": config["title"],
-            "maintainer": config["maintainer"]
+            "maintainer": config["maintainer"],
+            "auspice_filters": config["auspice_filters"]
         }
         if "traits_are_dates" in config and isinstance(config["traits_are_dates"], (list, tuple)):
             data["info"]["traits_are_dates"] = [trait for trait in config["traits_are_dates"] if trait in config["header_fields"].values()]

@@ -28,7 +28,8 @@ prepare = {
     "subsample": False,
     "ensure_all_segments": True, #this is ignored if only 1 segment
     "lat_long_defs": '../../../fauna/source-data/geo_lat_long.tsv',
-    "maintainer": "unknown"
+    "maintainer": "unknown",
+    "auspice_filters": [],
 }
 
 process = {
@@ -95,6 +96,17 @@ def combine_configs(config_type, user_config):
 
     if config_type == "prepare" and "title" not in config:
         config["title"] = config["file_prefix"]
+
+    if config_type == "prepare" and "auspice_filters" in config:
+        try:
+            assert(type(config["auspice_filters"]) is list)
+        except AssertionError:
+            print("Fatal Error: Auspice filters in config file must be a list")
+            sys.exit(2)
+        for filterName in config["auspice_filters"]:
+            if filterName not in config["colors"]:
+                print("Fatal Error: Auspice filter {} not a colorBy".format(filterName))
+                sys.exit(2)
 
     # pprint(config)
     # pprint(config["auspice"])
