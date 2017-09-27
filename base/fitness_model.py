@@ -290,6 +290,10 @@ class fitness_model(object):
                     node.freq_slope[time] = slope
                 except:
                     import ipdb; ipdb.set_trace()
+
+        # Clean up frequencies.
+        del self.frequencies[region]
+
         # reset pivots in tree to global pivots
         self.rootnode.pivots = self.pivots
 
