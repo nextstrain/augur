@@ -29,6 +29,7 @@ def parse_args():
     parser.add_argument('--predictors_params', type=float, nargs='+', help="precalculated fitness model parameters for each of the given predictors")
     parser.add_argument('--predictors_sds', type=float, nargs='+', help="precalculated global standard deviations for each of the given predictors")
     parser.add_argument('--epitope_mask_version', default="wolf", help="name of the epitope mask that defines epitope mutations")
+    parser.add_argument('--tolerance_mask_version', help="name of the tolerance mask that defines non-epitope mutations")
 
     parser.set_defaults(
         json="prepared/flu.json"
@@ -68,6 +69,7 @@ def make_config (prepared_json, args):
         "estimate_tree_frequencies": not args.no_tree_freqs,
         "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
         "epitope_mask_version": args.epitope_mask_version,
+        "tolerance_mask_version": args.tolerance_mask_version,
         "annotate_fitness": args.annotate_fitness,
         "predictors": predictors,
         "clean": args.clean,
