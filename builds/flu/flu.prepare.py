@@ -82,7 +82,7 @@ def make_config(lineage, resolution, params):
         "header_fields": {
             0:'strain',  2:'isolate_id', 3:'date',
             4:'region',  5:'country',    6:'division',
-            8:'passage', 9:'lab',        10:'age',
+            8:'passage', 9:'authors',   10:'age',
             11:'gender'
         },
         "filters": (
