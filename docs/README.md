@@ -11,16 +11,17 @@
 
 Tests run using [tox](http://tox.readthedocs.io/en/latest/)
 and [pytest](https://docs.pytest.org/en/latest/). If you didn't install augur
-with the pip `requirements.txt` or with
+with `pip -r requirements.txt` or with
 the
 [janus conda environment](https://github.com/nextstrain/janus/#installation),
 install them as follows.
 
 ```bash
 # Install with pip.
-pip install pytest tox
+pip install --user pytest tox
 
 # Or install inside a conda environment.
+source activate janus_python2
 conda install pytest virtualenv
 pip install tox
 ```
