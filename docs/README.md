@@ -9,32 +9,34 @@
 
 ## Tests
 
-Install [pytest](https://docs.pytest.org/en/latest/).
+Tests run using [tox](http://tox.readthedocs.io/en/latest/)
+and [pytest](https://docs.pytest.org/en/latest/). If you didn't install augur
+with the pip `requirements.txt` or with
+the
+[janus conda environment](https://github.com/nextstrain/janus/#installation),
+install them as follows.
 
 ```bash
 # Install with pip.
-pip install pytest
+pip install pytest tox
 
-# Or install with conda.
-conda install pytest
+# Or install inside a conda environment.
+conda install pytest virtualenv
+pip install tox
 ```
 
-Checkout augur and temporarily install it as a package.
+Run tests from the augur root directory.
 
 ```bash
-git clone --recursive https://github.com/nextstrain/augur
-cd augur
-pip install -e .
+tox
 ```
 
-Run tests.
+Tox builds an empty virtual environment, installs augur's requirements and a
+package of augur built from the local directory, and runs tests with pytest. The
+`tox.ini` file defines the test environment and the `pytest.ini` file defines
+which tests to run. Tox reuses the virtual environment with subsequent runs. Use
+the `-r` flag to force it to rebuild its environment.
 
 ```bash
-pytest
-```
-
-Uninstall the augur package.
-
-```bash
-pip uninstall augur
+tox -r
 ```
