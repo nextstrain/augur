@@ -106,6 +106,7 @@ def make_config(serotype, params):
         "color_defs": "./colors.tsv",
         "lat_longs": ["region"],
         "lat_long_defs": '../../../fauna/source-data/geo_lat_long.tsv',
+        "auspice_filters": ["region"],
         "reference": references[serotype],
         "time_interval": time_interval,
         "titers": titer_values,

@@ -119,7 +119,7 @@ def make_config (prepared_json, args):
                 "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"},
             },
             "controls": {'authors':['authors']},
-            "defaults": {'geoResolution': ['region'], 'colorBy': ['region'], 'distanceMeasure': ['div'], 'mapTriplicate': True}
+            "defaults": {'geoResolution': 'region', 'colorBy': 'region', 'distanceMeasure': 'div', 'mapTriplicate': True}
             },
 
         "timetree_options": {"Tc": False},
