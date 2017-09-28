@@ -73,6 +73,7 @@ def make_config(lineage, resolution, params):
         "file_prefix": file_prefix,
         "title": make_title(lineage, resolution),
         "maintainer": ["@trvrb", "https://twitter.com/trvrb"],
+        "auspice_filters": ["region"],
         "segments": params.segment,
         "lineage":lineage,
         "input_paths": input_paths,

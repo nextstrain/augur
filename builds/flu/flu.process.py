@@ -54,7 +54,7 @@ def make_config (prepared_json, args):
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
             },
             "controls": {'authors':['authors']},
-            "defaults": {'geoResolution': ['region'], 'mapTriplicate': True},
+            "defaults": {'geoResolution': 'region', 'mapTriplicate': True},
             "titers_export": args.titers_export
         },
         "titers": {
