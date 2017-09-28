@@ -58,6 +58,8 @@ While _process_ can be computationally expensive, as long as the underlying _pre
       *  `legendTitle`: String appearing in Auspice legend
       * `menuItem`: String appearing in Auspice colorBy drop down menu
       * `type`: continuous / integer / discrete
-  * `controls` {dict} (default: `{}`)
+  * `controls` {dict} (default: `{}`) **THIS IS DEPRECATED AND WILL BE REMOVED SOON**
     * `geographic_location`
     * `authors`
+  * `defaults`: {dict} Auspice defaults (exported as-is to the `meta.json` file)
+    * Keys (and the types of their values) may include `colorBy` (string), `geoResolution` (string), `distanceMeasure` (string), `mapTriplicate` (bool)
