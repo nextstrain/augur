@@ -1,12 +1,10 @@
 import subprocess
 import sys
 
-clean_build = (len(sys.argv) == 2 and 'clean' in sys.argv[1])
-
 serotypes = ['denv1', 'denv2', 'denv3', 'denv4', 'all']
 
-if clean_build:
-	cmds = ["python ./dengue.process.py -s %s --clean"%s for s in serotypes]
+if len(sys.argv) > 1:
+	cmds = ["python ./dengue.process.py -s %s %s"%(s, ' '.join(sys.argv[1:])) for s in serotypes]
 else:
 	cmds = ["python ./dengue.process.py -s %s"%s for s in serotypes]
 
