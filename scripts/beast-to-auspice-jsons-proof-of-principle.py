@@ -66,9 +66,7 @@ def mock_meta_json(n):
     meta["filters"] = ["type"]
     meta["commit"] = "unknown"
     meta["panels"] = [
-        "tree",
-        "map",
-        "entropy"
+        "tree"
        ],
     meta["geo"] = {}
     return meta;
@@ -80,7 +78,7 @@ if __name__=="__main__":
     # set_trace()
     bt_tree=bt.loadNexus('./scratch/MERS_274_sCoal.combinedTyped.mcc.tree',tip_regex='\|([0-9\-]+)$') ## loads a BEAST nexus file
     mostRecentTip=max([k.absoluteTime for k in bt_tree.Objects])
-
+    
     simplified_tree=bt_tree.toString() ## returns a newick string without beast annotations
     xml_tree=Phylo.read(StringIO(simplified_tree),'newick') ## load simplified newick as a biopython XML tree
 
@@ -109,11 +107,16 @@ for pairs in [[xml_nodes,bt_nodes],[xml_leaves,bt_leaves]]:
 
         if b.traits.has_key('height_95%_HPD'):
             attrs['num_date_confidence']=[mostRecentTip-t for t in b.traits['height_95%_HPD']]
-
+        
         if b.branchType=='node':
             setattr(x,'name',b.index)
 
-        for trait in b.traits:
+        for trait in b.traits: ## iterate over MCC traits, transfer into attrs dict
+            if 'set.prob' in trait: ## all posterior sets converted to confidences
+                tr=trait.split('.')[0]
+                confidence={t:p for t,p in zip(b.traits['%s.set'%(tr)],b.traits['%s.set.prob'%(tr)])}
+                attrs['%s_confidence'%(tr)]=confidence
+                
             attrs[trait]=b.traits[trait]
 
         setattr(x,'attr',attrs)
