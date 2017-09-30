@@ -41,56 +41,20 @@ def mock_meta_json(n):
     meta = {}
     meta["updated"] = "today"
     meta["virus_count"] = n
-    meta["title"] = "BEAST proof of principle (fluB)"
+    meta["title"] = "BEAST proof of principle (MERS-CoV)"
 
     meta["color_options"] = {
-      "PB1": {
-        "menuItem": "PB1",
+      "type": {
+        "menuItem": "host",
         "type": "discrete",
-        "legendTitle": "PB1",
-        "key": "PB1"
+        "legendTitle": "host",
+        "key": "type"
       },
-      "HA": {
-        "menuItem": "HA",
-        "type": "discrete",
-        "legendTitle": "HA",
-        "key": "HA"
-      },
-      "NP": {
-        "menuItem": "NP",
-        "type": "discrete",
-        "legendTitle": "NP",
-        "key": "NP"
-      },
-      "NA": {
-        "menuItem": "NA",
-        "type": "discrete",
-        "legendTitle": "NA",
-        "key": "NA"
-      },
-      "PB1.prob": {
-        "menuItem": "PB1.prob",
+      "type.prob": {
+        "menuItem": "host.prob",
         "type": "continuous",
-        "legendTitle": "PB1.prob",
-        "key": "PB1.prob"
-      },
-      "HA.prob": {
-        "menuItem": "HA.prob",
-        "type": "continuous",
-        "legendTitle": "HA.prob",
-        "key": "HA.prob"
-      },
-      "NP.prob": {
-        "menuItem": "NP.prob",
-        "type": "continuous",
-        "legendTitle": "NP.prob",
-        "key": "NP.prob"
-      },
-      "NA.prob": {
-        "menuItem": "NA.prob",
-        "type": "continuous",
-        "legendTitle": "NA.prob",
-        "key": "NA.prob"
+        "legendTitle": "host.prob",
+        "key": "type.prob"
       },
         "posterior": {
           "menuItem": "posterior",
@@ -99,7 +63,7 @@ def mock_meta_json(n):
           "key": "posterior"
         },
     }
-    meta["filters"] = ["PB1", "HA", "NP", "NA"]
+    meta["filters"] = ["type"]
     meta["commit"] = "unknown"
     meta["panels"] = [
         "tree",
@@ -112,9 +76,9 @@ def mock_meta_json(n):
 
 if __name__=="__main__":
     print("This is a proof of principle script - it should not be relied upon for analysis.")
-    bt = imp.load_source('baltic', '/Users/james/blab/baltic/baltic.py')
+    bt = imp.load_source('baltic', '/Users/evogytis/Documents/BLAB_baltic/baltic.py')
     # set_trace()
-    bt_tree=bt.loadNexus('./scratch/InfB_PB2t_ALLs1.mcc.tre',tip_regex='\_([0-9\-]+)$') ## loads a BEAST nexus file
+    bt_tree=bt.loadNexus('./scratch/MERS_274_sCoal.combinedTyped.mcc.tree',tip_regex='\|([0-9\-]+)$') ## loads a BEAST nexus file
     mostRecentTip=max([k.absoluteTime for k in bt_tree.Objects])
 
     simplified_tree=bt_tree.toString() ## returns a newick string without beast annotations
