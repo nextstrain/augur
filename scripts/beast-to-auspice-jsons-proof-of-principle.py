@@ -44,11 +44,11 @@ def mock_meta_json(n):
     meta["title"] = "BEAST proof of principle (MERS-CoV)"
 
     meta["color_options"] = {
-      "type": {
+      "host": {
         "menuItem": "host",
         "type": "discrete",
         "legendTitle": "host",
-        "key": "type"
+        "key": "host"
       },
       "type.prob": {
         "menuItem": "host.prob",
@@ -65,20 +65,22 @@ def mock_meta_json(n):
     }
     meta["filters"] = ["type"]
     meta["commit"] = "unknown"
-    meta["panels"] = [
-        "tree"
-       ],
+    meta["panels"] = ["tree"]
     meta["geo"] = {}
     return meta;
 
 
 if __name__=="__main__":
     print("This is a proof of principle script - it should not be relied upon for analysis.")
-    bt = imp.load_source('baltic', '/Users/evogytis/Documents/BLAB_baltic/baltic.py')
+    try:
+        bt = imp.load_source('baltic', '/Users/james/blab/baltic/baltic.py')
+    except IOError:
+        bt = imp.load_source('baltic', '/Users/evogytis/Documents/BLAB_baltic/baltic.py')
+
     # set_trace()
     bt_tree=bt.loadNexus('./scratch/MERS_274_sCoal.combinedTyped.mcc.tree',tip_regex='\|([0-9\-]+)$') ## loads a BEAST nexus file
     mostRecentTip=max([k.absoluteTime for k in bt_tree.Objects])
-    
+
     simplified_tree=bt_tree.toString() ## returns a newick string without beast annotations
     xml_tree=Phylo.read(StringIO(simplified_tree),'newick') ## load simplified newick as a biopython XML tree
 
@@ -107,26 +109,29 @@ for pairs in [[xml_nodes,bt_nodes],[xml_leaves,bt_leaves]]:
 
         if b.traits.has_key('height_95%_HPD'):
             attrs['num_date_confidence']=[mostRecentTip-t for t in b.traits['height_95%_HPD']]
-        
+
         if b.branchType=='node':
             setattr(x,'name',b.index)
+
+        if b.traits.has_key('type'):
+            attrs['host'] = b.traits['type']
 
         for trait in b.traits: ## iterate over MCC traits, transfer into attrs dict
             if 'set.prob' in trait: ## all posterior sets converted to confidences
                 tr=trait.split('.')[0]
                 confidence={t:p for t,p in zip(b.traits['%s.set'%(tr)],b.traits['%s.set.prob'%(tr)])}
                 attrs['%s_confidence'%(tr)]=confidence
-                
+
             attrs[trait]=b.traits[trait]
 
         setattr(x,'attr',attrs)
 
     tree_json = modified_tree_to_json(xml_tree.clade)
     tree_json = tree_json["children"][0]
-    json.dump(tree_json, open("scratch/beast_tree.json", 'w'), indent=2)
+    json.dump(tree_json, open("scratch/mers_tree.json", 'w'), indent=2)
     meta_json = mock_meta_json(len(bt_leaves))
-    json.dump(meta_json, open("scratch/beast_meta.json", 'w'), indent=2)
-    json.dump({}, open("scratch/beast_sequences.json", 'w'), indent=2)
+    json.dump(meta_json, open("scratch/mers_meta.json", 'w'), indent=2)
+    json.dump({}, open("scratch/mers_sequences.json", 'w'), indent=2)
 
     # set_trace()
 
