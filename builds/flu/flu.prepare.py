@@ -37,10 +37,13 @@ def parse_args():
     return parser.parse_args()
 
 def make_title(lineage, resolution):
-    AB = "B" if lineage in ["vic", "yam"] else "A"
-    time = re.sub(r"y$", " years", resolution)
-    return "Genomic Epidemiology of Influenza {}/{} over {}".format(AB, lineage, time)
-
+    flu_type = "B" if lineage in ["vic", "yam"] else "A"
+    prettyLineage = ""
+    if flu_type == "A":
+        prettyLineage = lineage.upper()
+    if flu_type == "B":
+        prettyLineage = lineage.capitalize()
+    return "Real-time tracking of influenza {}/{} evolution".format(flu_type, prettyLineage)
 
 # for flu, config is a function so it is applicable for multiple lineages
 def make_config(lineage, resolution, params):
@@ -72,17 +75,17 @@ def make_config(lineage, resolution, params):
         "dir": "flu",
         "file_prefix": file_prefix,
         "title": make_title(lineage, resolution),
-        "maintainer": ["@trvrb", "https://twitter.com/trvrb"],
-        "auspice_filters": ["region"],
+        "maintainer": ["Trevor Bedford", "http://bedford.io/team/trevor-bedford/"],
+        "auspice_filters": ["submitting_lab", "region", "country"],
         "segments": params.segment,
-        "lineage":lineage,
+        "lineage": lineage,
         "input_paths": input_paths,
         #  0                     1   2         3          4      5     6       7       8          9                             10  11
         # >A/Galicia/RR9542/2012|flu|EPI376225|2012-02-23|europe|spain|galicia|galicia|unpassaged|instituto_de_salud_carlos_iii|47y|female
         "header_fields": {
             0:'strain',  2:'isolate_id', 3:'date',
             4:'region',  5:'country',    6:'division',
-            8:'passage', 9:'authors',   10:'age',
+            8:'passage', 9:'submitting_lab', 10:'age',
             11:'gender'
         },
         "filters": (

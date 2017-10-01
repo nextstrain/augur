@@ -49,12 +49,16 @@ def make_config (prepared_json, args):
         "in": prepared_json,
         "geo_inference": ['region'],
         "auspice": { ## settings for auspice JSON export
+            "panels": ['tree', 'entropy'],
             "extra_attr": ['serum'],
             "color_options": {
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
             },
             "controls": {'authors':['authors']},
-            "defaults": {'geoResolution': 'region', 'mapTriplicate': True},
+            "defaults": {'colorBy': 'cTiter',
+                'geoResolution': 'region',
+                'distanceMeasure': 'div',
+                'mapTriplicate': True},
             "titers_export": args.titers_export
         },
         "titers": {
