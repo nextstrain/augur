@@ -76,7 +76,7 @@ def make_config(lineage, resolution, params):
         "file_prefix": file_prefix,
         "title": make_title(lineage, resolution),
         "maintainer": ["Trevor Bedford", "http://bedford.io/team/trevor-bedford/"],
-        "auspice_filters": ["submitting_lab", "region", "country"],
+        "auspice_filters": ["region", "country"],
         "segments": params.segment,
         "lineage": lineage,
         "input_paths": input_paths,
@@ -85,7 +85,7 @@ def make_config(lineage, resolution, params):
         "header_fields": {
             0:'strain',  2:'isolate_id', 3:'date',
             4:'region',  5:'country',    6:'division',
-            8:'passage', 9:'submitting_lab', 10:'age',
+            8:'passage', 9:'authors', 10:'age',
             11:'gender'
         },
         "filters": (
