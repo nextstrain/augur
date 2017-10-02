@@ -29,8 +29,8 @@ def make_config(params):
     return {
         "dir": "ebola",
         "file_prefix": "ebola",
-        "title": "West African Ebola Epidemic (2013-2016)",
-        "maintainer": ["@trvrb", "https://twitter.com/trvrb"],
+        "title": "Genomic epidemiology of the 2013-2016 West African Ebola epidemic",
+        "maintainer": ["Trevor Bedford", "http://bedford.io/team/trevor-bedford/"],
         "input_paths": ["../../../fauna/data/ebola.fasta"],
         "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country', 6:'division', 8:'db', 10:'authors', 11:'url'},
         "filters": (
@@ -46,6 +46,7 @@ def make_config(params):
         "colors": ["country", "division"], # essential. Maybe False.
         "color_defs": ["./colors.tsv"],
         "lat_longs": ["country", "division"], # essential. Maybe False.
+        "auspice_filters": ["country", "division"],   
         "reference": {
             "path": "metadata/ebola_outgroup.gb",
             "metadata": {
