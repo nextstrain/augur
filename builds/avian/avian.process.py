@@ -23,6 +23,10 @@ config = {
     "geo_inference": [], # what traits to perform this on
     "auspice": { ## settings for auspice JSON export
         "panels": ['tree', 'map', 'entropy'],
+        "defaults": {
+            "colorBy": "division",
+            "geoResolution": "division"
+        },
         "extra_attr": [],
         "date_range": {},
         "color_options": {
