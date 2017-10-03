@@ -27,18 +27,26 @@ def collect_args():
     return parser
 
 dropped_strains = [
-    "A/Chicken/Netherlands/16007311-037041/2016", # not part of epi clade
-    "A/Chicken/Netherlands/1600", # not part of epi clade
-    "A/duck/Zhejiang/LS02/2014", # not of part of epi clade
-    "A/British Columbia/1/2015", # travel case. throws off map
-    "A/BritishColumbia/1/2015", # travel case. throws off map
+    "A/Chicken/Netherlands/16007311-037041/2016", "A/Chicken/Netherlands/1600",
+    "A/duck/Zhejiang/LS02/2014", "A/northernshoveler/California/AH0076755/2016",
+    "A/chicken/Tennessee/17-008279-6/2017", "A/duck/Alabama/17-008643-2/2017",
+    "A/Americangreen-wingedteal/Idaho/AH0006121/2015",
+    "A/cinnamonteal/California/AH0079011/2016", "A/chicken/Tennessee/17-007147-7/2017",
+    "A/chicken/Alabama/17-008899-11/2017", "A/chicken/Alabama/17-008899-10/2017",
+    "A/Duck/Bangladesh/2698", "A/guineafowl/Alabama/17-008646-1/2017",
+    "A/chicken/Tennessee/17-007429-7/2017", "A/Duck/Bangladesh/2699",
+    "A/nothernshoveler/California/AH0079371/2016",
+        # not part of epi clade
+    "A/British Columbia/1/2015", "A/BritishColumbia/1/2015",
+        # travel case. throws off map
+    "A/Duck/Bangladesh/2704" # clock is off
 ]
 
 config = {
     "dir": "avian", # the current directory. You must be inside this to run the script.
     "file_prefix": "avian_h7n9",
-    "title": "Genomic analysis of the 5 Epidemics Influenza A/H7N9",
-    "maintainer": ["@jh_viz", "https://twitter.com/jh_viz"],
+    "title": "Real-time tracking of influenza A/H7N9 evolution",
+    "maintainer": ["James Hadfield", "http://bedford.io/team/james-hadfield/"],
     "input_paths": [
         "../../../fauna/data/h7n9_pb2.fasta",
         "../../../fauna/data/h7n9_pb1.fasta",
@@ -50,7 +58,10 @@ config = {
         "../../../fauna/data/h7n9_ns.fasta"
     ],
     "header_fields": {
-        0:'strain', 2:'accession', 3:'date', 4:'host', 6:'country', 7: 'division', 11: 'fauna_date'
+        #  0                   1    2         3          4     5     6     7       8       9   10                                    11
+        # >A/Jiangsu/9389/2014|h7n9|EPI628192|2014-01-07|human|china|china|jiangsu|jiangsu|egg|who_chinese_national_influenza_center|2017-03-10
+        0:'strain', 2:'accession', 3:'date', 4:'host', 6:'country',
+        7: 'division', 10: 'authors', 11: 'fauna_date'
     },
     "traits_are_dates": ["fauna_date"],
     "filters": (
@@ -58,7 +69,7 @@ config = {
         ("Prior to Epidemic", lambda s: s.attributes['date'] >= datetime(2013,1,1).date()),
         ("Missing Month Data", lambda s: "-XX-XX" not in s.attributes['raw_date']),
         ("Exclude bad host", lambda s: s.attributes["host"] not in ["laboratoryderived", "watersample"]),
-        # ("Restrict to Humans", lambda s: s.attributes["host"] in ["human"]),
+        ("Not part of epi clade", lambda s: s.attributes["division"] not in ["alabama", "tennessee"]),
         ("Sequence Length", {
             "pb2": lambda s: len(s.seq)>=2200,
             "pb1": lambda s: len(s.seq)>=2200,
@@ -75,8 +86,10 @@ config = {
         "priority": None,
     },
     # see the docs for what's going on with colours (sic) & lat/longs
-    "colors": ["country", "division", "host"], # essential. Maybe False.
-    "lat_longs": ["country", "division"], # essential. Maybe False.
+    "colors": ["division", "host"], # essential. Maybe False.
+    "color_defs": ["./colors.avian.tsv"],
+    "auspice_filters": ["division", "host"],
+    "lat_longs": ["division"], # essential. Maybe False.
     "references": references, # imported
 }
 
@@ -101,7 +114,7 @@ if __name__=="__main__":
     runner = prepare(config)
     runner.load_references()
     runner.applyFilters()
-    runner.ensure_all_segments()
+    #runner.ensure_all_segments()
     runner.subsample()
     runner.colors()
     runner.latlongs()
