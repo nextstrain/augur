@@ -24,7 +24,10 @@ config = {
             "division":{"key":"division", "legendTitle":"Division", "menuItem":"division", "type":"discrete"},
         },
         "controls": {'geographic location':['country', 'division'], 'authors':['authors']},
-        "defaults": {'mapTriplicate': False}
+        "defaults": {
+            "colorBy": "division",
+            "geoResolution": "division"
+        }
     },
     "timetree_options": {
         "Tc": "skyline",
