@@ -39,7 +39,8 @@ dropped_strains = [
         # not part of epi clade
     "A/British Columbia/1/2015", "A/BritishColumbia/1/2015",
         # travel case. throws off map
-    "A/Duck/Bangladesh/2704" # clock is off
+    "A/Duck/Bangladesh/2704", # clock is off
+    "_A/Malaysia/228/2014_H7N9__", # travel case
 ]
 
 config = {
