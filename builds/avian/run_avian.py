@@ -1,8 +1,8 @@
 import os
 
 def build(
-    segments = ['pb2', 'pb1', 'pa', 'ha', 'np', 'na', 'mp', 'ns'],
-    system="local"
+    system = "local",
+    segments = ['pb2', 'pb1', 'pa', 'ha', 'np', 'na', 'mp', 'ns']
     ):
     call = ['python',
         'avian.prepare.py',
@@ -36,4 +36,4 @@ if __name__ == '__main__':
     if params.segments is None:
         params.segments = ['pb2', 'pb1', 'pa', 'ha', 'np', 'na', 'mp', 'ns']
 
-    build(segments = params.segments)
+    build(system = params.system, segments = params.segments)
