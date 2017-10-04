@@ -20,8 +20,7 @@ def collect_args():
     parser.add_argument('-l', '--lineage', choices=['h7n9'], default='h7n9', type=str, help="subtype")
     parser.add_argument('-s', '--segments', choices=segments, default=segments, nargs='+', type = str,  help = "segments to prepare")
     parser.set_defaults(
-        viruses_per_month=0,
-        file_prefix="avian_h7n9"
+        viruses_per_month=0
     )
 
     return parser
@@ -45,7 +44,6 @@ dropped_strains = [
 
 config = {
     "dir": "avian", # the current directory. You must be inside this to run the script.
-    "file_prefix": "avian_h7n9",
     "title": "Real-time tracking of influenza A/H7N9 evolution",
     "maintainer": ["James Hadfield", "http://bedford.io/team/james-hadfield/"],
     "input_paths": [
@@ -109,6 +107,10 @@ if __name__=="__main__":
 
     if params.file_prefix is not None:
         config["file_prefix"] = params.file_prefix
+        segment_addendum = False
+    else:
+        config["file_prefix"] = "avian_h7n9"
+        segment_addendum = True
 
     config["segments"] = params.segments
 
@@ -119,4 +121,4 @@ if __name__=="__main__":
     runner.subsample()
     runner.colors()
     runner.latlongs()
-    runner.write_to_json(segment_addendum=True)
+    runner.write_to_json(segment_addendum=segment_addendum)
