@@ -1,23 +1,16 @@
 """
-Script to sync local files to S3 and between S3 buckets.
+Script to sync files between local disk and S3 buckets.
 
 # Go to flu build.
 cd augur/builds/flu
 
 # Download flu H3N2 data into auspice directory.
-python ../../scripts/s3.py pull nextstrain-dev-data \
+python ../../scripts/s3.py pull dev-data \
     --prefixes flu_h3n2 --to auspice
 
 # Upload flu H3N2 data to S3 dev bucket.
-python ../../scripts/s3.py push nextstrain-dev-data \
+python ../../scripts/s3.py push dev-data \
     auspice/flu_h3n2_*
-
-# Upload the same data to the production bucket.
-python ../../scripts/s3.py push nextstrain-data \
-    auspice/flu_h3n2_*
-
-# Download all production data into the working directory.
-python ../../scripts/s3.py pull nextstrain-data
 """
 import argparse
 import boto3
