@@ -4,6 +4,7 @@ Script to sync local files to S3 and between S3 buckets.
 import argparse
 import boto3
 import logging
+import os
 
 # Setup logger and handlers.
 logger = logging.getLogger(__name__)
@@ -22,11 +23,17 @@ def push(bucket_name, files, cloudfront_id=None):
     # Create a distinct list of files to push.
     files = list(set(files))
 
-    logger.info("Pushing %i files to S3 bucket '%s'" % (len(files), bucket))
-    logger.debug("Pushing files: %s" % (files,))
-
     # Connect to S3.
-    s3 = boto3.client("s3")
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket(bucket_name)
+
+    # Upload local files, stripping directory names from the given file paths
+    # for the S3 keys.
+    logger.info("Uploading %i files to bucket '%s'" % (len(files), bucket_name))
+    for file_name in files:
+        s3_key = os.path.split(file_name)[-1]
+        logger.debug("Uploading '%s' as '%s'" % (file_name, s3_key))
+        bucket.upload_file(file_name, s3_key)
 
     if cloudfront_id is not None:
         logger.debug("Invalidating cache for CloudFront id '%s'" % cloudfront_id)
