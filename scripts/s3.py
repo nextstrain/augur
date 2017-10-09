@@ -21,8 +21,11 @@ python ../../scripts/s3.py pull nextstrain-data
 """
 import argparse
 import boto3
+import gzip
+import io
 import logging
 import os
+import shutil
 import time
 
 
@@ -60,7 +63,21 @@ def push(bucket_name, files, cloudfront_id=None, dryrun=False):
         logger.debug("Uploading '%s' as '%s'" % (file_name, s3_key))
 
         if not dryrun:
-            bucket.upload_file(file_name, s3_key)
+            # Open uncompressed file to be uploaded.
+            with open(file_name, "rb") as fh:
+                # Compress the file in memory.
+                compressed_fh = io.BytesIO()
+                with gzip.GzipFile(fileobj=compressed_fh, mode="wb") as gz:
+                    shutil.copyfileobj(fh, gz)
+
+                compressed_fh.seek(0)
+
+                # Upload the compressed file with associated metadata.
+                bucket.upload_fileobj(
+                    compressed_fh,
+                    s3_key,
+                    {"ContentType": "gzip", "ContentEncoding": "application/json"}
+                )
 
     # Create a cache invalidation for the given files if a CloudFront id is
     # given.
@@ -125,7 +142,15 @@ def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
 
         logger.debug("Downloading '%s' as '%s'" % (key, local_key))
         if not dryrun:
-            bucket.download_file(key, local_key)
+            with open(local_key, "wb") as fh:
+                # Download the compressed file into memory.
+                compressed_fh = io.BytesIO()
+                bucket.download_fileobj(key, compressed_fh)
+                compressed_fh.seek(0)
+
+                # Write the uncompressed data from the file to disk.
+                with gzip.GzipFile(fileobj=compressed_fh, mode="rb") as gz:
+                    shutil.copyfileobj(gz, fh)
 
 
 if __name__ == "__main__":
