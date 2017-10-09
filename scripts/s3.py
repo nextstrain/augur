@@ -65,7 +65,7 @@ def push(bucket_name, files, cloudfront_id=None, dryrun=False):
         logger.debug("Invalidating cache for CloudFront id '%s'" % cloudfront_id)
 
 
-def pull(bucket_name, prefixes=None, dryrun=False):
+def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
     """Pull files from the given S3 bucket. Optionally, only pull files that match
     the given list of filename prefixes.
 
@@ -96,16 +96,15 @@ def pull(bucket_name, prefixes=None, dryrun=False):
     # Download objects.
     logger.info("Downloading %i files from bucket '%s'" % (len(object_keys), bucket_name))
     for key in object_keys:
-        logger.debug("Downloading %s" % (key,))
+        # Download into a local directory if requested.
+        if local_dir is not None:
+            local_key = os.path.join(local_dir, key)
+        else:
+            local_key = key
+
+        logger.debug("Downloading '%s' as '%s'" % (key, local_key))
         if not dryrun:
-            bucket.download_file(key, key)
-
-
-def sync(source_bucket, destination_bucket, files, cloudfront_id=None):
-    """Sync the given files from the given source S3 bucket to the given destination
-    bucket and optionally invalidate the cache for a given CloudFront id.
-    """
-    pass
+            bucket.download_file(key, local_key)
 
 
 if __name__ == "__main__":
@@ -123,7 +122,8 @@ if __name__ == "__main__":
 
     parser_pull = subparsers.add_parser("pull")
     parser_pull.add_argument("bucket", help="S3 bucket to pull files from")
-    parser_pull.add_argument("--prefixes", nargs="+", help="One or more file prefixes to match in the given bucket")
+    parser_pull.add_argument("--prefixes", "-p", nargs="+", help="One or more file prefixes to match in the given bucket")
+    parser_pull.add_argument("--local_dir", "--to", "-t", help="Local directory to download files into")
     parser_pull.set_defaults(func=pull)
 
     parser_sync = subparsers.add_parser("sync")
@@ -142,8 +142,4 @@ if __name__ == "__main__":
     if args.command_name == "push":
         args.func(args.bucket, args.files, args.cloudfront_id, args.dryrun)
     elif args.command_name == "pull":
-        args.func(args.bucket, args.prefixes, args.dryrun)
-    elif args.command_name == "sync":
-        args.func(args.source_bucket, args.destination_bucket, args.files, args.cloudfront_id)
-    else:
-        args.func(args)
+        args.func(args.bucket, args.prefixes, args.local_dir, args.dryrun)
