@@ -126,13 +126,6 @@ if __name__ == "__main__":
     parser_pull.add_argument("--local_dir", "--to", "-t", help="Local directory to download files into")
     parser_pull.set_defaults(func=pull)
 
-    parser_sync = subparsers.add_parser("sync")
-    parser_sync.add_argument("--cloudfront_id", "-c", help="CloudFront id to use to create a cache invalidation")
-    parser_sync.add_argument("source_bucket", help="S3 bucket to sync files from")
-    parser_sync.add_argument("destination_bucket", help="S3 bucket to sync files to")
-    parser_sync.add_argument("files", nargs="+", help="One or more sets of files to sync between the given buckets")
-    parser_sync.set_defaults(func=sync)
-
     args = parser.parse_args()
 
     if args.verbose:
