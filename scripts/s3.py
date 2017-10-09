@@ -14,6 +14,7 @@ python ../../scripts/s3.py push dev-data \
 """
 import argparse
 import boto3
+import botocore
 import gzip
 import io
 import logging
@@ -176,3 +177,5 @@ if __name__ == "__main__":
             args.func(args.bucket, args.prefixes, args.local_dir, args.dryrun)
     except AssertionError, e:
         parser.error(e.message)
+    except botocore.exceptions.NoCredentialsError, e:
+        parser.error("Unable to locate AWS credentials. Set environment variables for AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID.")
