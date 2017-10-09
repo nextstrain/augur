@@ -37,6 +37,12 @@ logger.addHandler(logger_handler)
 def push(bucket_name, files, cloudfront_id=None, dryrun=False):
     """Push the given files to the given S3 bucket and optionally invalidate the
     cache for a given CloudFront id.
+
+    Args:
+        bucket_name: S3 bucket to pull from
+        files: a list of local files to upload to the given bucket
+        cloudfront_id: a CloudFront id to use for a cache invalidation
+        dryrun: boolean indicating whether files should be downloaded or not
     """
     # Create a distinct list of files to push.
     files = list(set(files))
@@ -62,6 +68,12 @@ def push(bucket_name, files, cloudfront_id=None, dryrun=False):
 def pull(bucket_name, prefixes=None, dryrun=False):
     """Pull files from the given S3 bucket. Optionally, only pull files that match
     the given list of filename prefixes.
+
+    Args:
+        bucket_name: S3 bucket to pull from
+        prefixes: a list of key prefixes to filter objects in the bucket by
+        local_dir: a local directory to download files into
+        dryrun: boolean indicating whether files should be downloaded or not
     """
     # Connect to S3.
     s3 = boto3.resource("s3")
