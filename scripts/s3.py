@@ -22,16 +22,8 @@ python ../../scripts/s3.py pull nextstrain-data
 import argparse
 import boto3
 import logging
+import logging.config
 import os
-
-# Setup logger and handlers.
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-logger_handler = logging.StreamHandler()
-logger_handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger_handler.setFormatter(formatter)
-logger.addHandler(logger_handler)
 
 
 def push(bucket_name, files, cloudfront_id=None, dryrun=False):
@@ -44,6 +36,9 @@ def push(bucket_name, files, cloudfront_id=None, dryrun=False):
         cloudfront_id: a CloudFront id to use for a cache invalidation
         dryrun: boolean indicating whether files should be downloaded or not
     """
+    # Setup logging.
+    logger = logging.getLogger(__name__)
+
     # Create a distinct list of files to push.
     files = list(set(files))
 
@@ -79,6 +74,9 @@ def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
         local_dir: a local directory to download files into
         dryrun: boolean indicating whether files should be downloaded or not
     """
+    # Setup logging.
+    logger = logging.getLogger(__name__)
+
     # Confirm that the given local directory is a real directory.
     if local_dir is not None:
         assert os.path.isdir(local_dir), "The requested output directory '%s' is not a proper directory." % local_dir
@@ -117,7 +115,8 @@ def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
+    parser.add_argument("--verbose", "-v", action="store_const", dest="loglevel", const=logging.INFO, help="Enable verbose logging")
+    parser.add_argument("--debug", "-d", action="store_const", dest="loglevel", const=logging.DEBUG, help="Enable debugging logging")
     parser.add_argument("--dryrun", "-n", action="store_true", help="Perform a dryrun without uploading or downloading any files")
 
     subparsers = parser.add_subparsers(dest="command_name")
@@ -135,10 +134,7 @@ if __name__ == "__main__":
     parser_pull.set_defaults(func=pull)
 
     args = parser.parse_args()
-
-    if args.verbose:
-        logger.setLevel(logging.DEBUG)
-        logger_handler.setLevel(logging.DEBUG)
+    logging.basicConfig(level=args.loglevel)
 
     try:
         if args.command_name == "push":
