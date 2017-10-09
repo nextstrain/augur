@@ -16,7 +16,7 @@ logger_handler.setFormatter(formatter)
 logger.addHandler(logger_handler)
 
 
-def push(bucket_name, files, cloudfront_id=None):
+def push(bucket_name, files, cloudfront_id=None, dryrun=False):
     """Push the given files to the given S3 bucket and optionally invalidate the
     cache for a given CloudFront id.
     """
@@ -33,13 +33,15 @@ def push(bucket_name, files, cloudfront_id=None):
     for file_name in files:
         s3_key = os.path.split(file_name)[-1]
         logger.debug("Uploading '%s' as '%s'" % (file_name, s3_key))
-        bucket.upload_file(file_name, s3_key)
+
+        if not dryrun:
+            bucket.upload_file(file_name, s3_key)
 
     if cloudfront_id is not None:
         logger.debug("Invalidating cache for CloudFront id '%s'" % cloudfront_id)
 
 
-def pull(bucket_name, prefixes=None):
+def pull(bucket_name, prefixes=None, dryrun=False):
     """Pull files from the given S3 bucket. Optionally, only pull files that match
     the given list of filename prefixes.
     """
@@ -65,7 +67,8 @@ def pull(bucket_name, prefixes=None):
     logger.info("Downloading %i files from bucket '%s'" % (len(object_keys), bucket_name))
     for key in object_keys:
         logger.debug("Downloading %s" % (key,))
-        bucket.download_file(key, key)
+        if not dryrun:
+            bucket.download_file(key, key)
 
 
 def sync(source_bucket, destination_bucket, files, cloudfront_id=None):
@@ -78,6 +81,7 @@ def sync(source_bucket, destination_bucket, files, cloudfront_id=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
+    parser.add_argument("--dryrun", "-n", action="store_true", help="Perform a dryrun without uploading or downloading any files")
 
     subparsers = parser.add_subparsers(dest="command_name")
 
@@ -106,9 +110,9 @@ if __name__ == "__main__":
         logger_handler.setLevel(logging.DEBUG)
 
     if args.command_name == "push":
-        args.func(args.bucket, args.files, args.cloudfront_id)
+        args.func(args.bucket, args.files, args.cloudfront_id, args.dryrun)
     elif args.command_name == "pull":
-        args.func(args.bucket, args.prefixes)
+        args.func(args.bucket, args.prefixes, args.dryrun)
     elif args.command_name == "sync":
         args.func(args.source_bucket, args.destination_bucket, args.files, args.cloudfront_id)
     else:
