@@ -47,6 +47,10 @@ def push(bucket_name, files, cloudfront_id=None, dryrun=False):
     # Create a distinct list of files to push.
     files = list(set(files))
 
+    # Confirm that all given file paths are proper files.
+    for file_name in files:
+        assert os.path.isfile(file_name), "The requested input '%s' is not a proper file" % file_name
+
     # Connect to S3.
     s3 = boto3.resource("s3")
     bucket = s3.Bucket(bucket_name)
@@ -75,6 +79,10 @@ def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
         local_dir: a local directory to download files into
         dryrun: boolean indicating whether files should be downloaded or not
     """
+    # Confirm that the given local directory is a real directory.
+    if local_dir is not None:
+        assert os.path.isdir(local_dir), "The requested output directory '%s' is not a proper directory." % local_dir
+
     # Connect to S3.
     s3 = boto3.resource("s3")
 
@@ -132,7 +140,10 @@ if __name__ == "__main__":
         logger.setLevel(logging.DEBUG)
         logger_handler.setLevel(logging.DEBUG)
 
-    if args.command_name == "push":
-        args.func(args.bucket, args.files, args.cloudfront_id, args.dryrun)
-    elif args.command_name == "pull":
-        args.func(args.bucket, args.prefixes, args.local_dir, args.dryrun)
+    try:
+        if args.command_name == "push":
+            args.func(args.bucket, args.files, args.cloudfront_id, args.dryrun)
+        elif args.command_name == "pull":
+            args.func(args.bucket, args.prefixes, args.local_dir, args.dryrun)
+    except AssertionError, e:
+        parser.error(e.message)
