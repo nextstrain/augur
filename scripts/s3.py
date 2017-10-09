@@ -62,7 +62,7 @@ def pull(bucket_name, prefixes=None):
         object_keys = sorted([obj.key for obj in bucket.objects.all()])
 
     # Download objects.
-    logger.info("Downloading %i objects" % (len(object_keys),))
+    logger.info("Downloading %i files from bucket '%s'" % (len(object_keys), bucket_name))
     for key in object_keys:
         logger.debug("Downloading %s" % (key,))
         bucket.download_file(key, key)
