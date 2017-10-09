@@ -22,8 +22,8 @@ python ../../scripts/s3.py pull nextstrain-data
 import argparse
 import boto3
 import logging
-import logging.config
 import os
+import time
 
 
 def push(bucket_name, files, cloudfront_id=None, dryrun=False):
@@ -53,15 +53,30 @@ def push(bucket_name, files, cloudfront_id=None, dryrun=False):
     # Upload local files, stripping directory names from the given file paths
     # for the S3 keys.
     logger.info("Uploading %i files to bucket '%s'" % (len(files), bucket_name))
+    s3_keys = []
     for file_name in files:
         s3_key = os.path.split(file_name)[-1]
+        s3_keys.append(s3_key)
         logger.debug("Uploading '%s' as '%s'" % (file_name, s3_key))
 
         if not dryrun:
             bucket.upload_file(file_name, s3_key)
 
+    # Create a cache invalidation for the given files if a CloudFront id is
+    # given.
     if cloudfront_id is not None:
-        logger.debug("Invalidating cache for CloudFront id '%s'" % cloudfront_id)
+        logger.info("Invalidating cache for CloudFront id '%s'" % cloudfront_id)
+        cloudfront = boto3.client("cloudfront")
+        cloudfront.create_invalidation(
+            DistributionId=cloudfront_id,
+            InvalidationBatch={
+                "Paths": {
+                    "Quantity": len(s3_keys),
+                    "Items": s3_keys
+                },
+                "CallerReference": str(time.time())
+            }
+        )
 
 
 def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
