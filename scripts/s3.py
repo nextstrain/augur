@@ -11,6 +11,11 @@ python ../../scripts/s3.py pull dev-data \
 # Upload flu H3N2 data to S3 dev bucket.
 python ../../scripts/s3.py push dev-data \
     auspice/flu_h3n2_*
+
+# Sync H3N2 data from one bucket to another and create CloudFront invalidation.
+python ../../scripts/s3.py sync dev-data production-data \
+    --prefixes flu_h3n2 \
+    --cloudfront_id ABCDEFG
 """
 import argparse
 import boto3
