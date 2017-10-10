@@ -23,6 +23,30 @@ import shutil
 import time
 
 
+def get_bucket_keys_by_prefixes(bucket, prefixes):
+    """Get objects from the given bucket instance that match the given list of
+    prefixes. If no prefixes are given, get all objects.
+
+    Args:
+        bucket: S3 Bucket instance
+        prefixes: NoneType or list of key prefixes to filter objects in the bucket by
+
+    Returns:
+        a sorted list of object keys matching the given prefixes
+    """
+    if prefixes is not None:
+        object_keys = []
+        for prefix in prefixes:
+            keys = [obj.key for obj in bucket.objects.filter(Prefix=prefix)]
+            object_keys.extend(keys)
+
+        object_keys = sorted(set(object_keys))
+    else:
+        object_keys = sorted([obj.key for obj in bucket.objects.all()])
+
+    return object_keys
+
+
 def push(bucket_name, files, cloudfront_id=None, dryrun=False):
     """Push the given files to the given S3 bucket and optionally invalidate the
     cache for a given CloudFront id.
@@ -113,17 +137,8 @@ def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
     # Get a list of all objects in the requested bucket.
     bucket = s3.Bucket(bucket_name)
 
-    # Get objects that match the given list of prefixes. If no prefixes are
-    # given, get all objects.
-    if prefixes is not None:
-        object_keys = []
-        for prefix in prefixes:
-            keys = [obj.key for obj in bucket.objects.filter(Prefix=prefix)]
-            object_keys.extend(keys)
-
-        object_keys = sorted(set(object_keys))
-    else:
-        object_keys = sorted([obj.key for obj in bucket.objects.all()])
+    # Get keys by prefixes.
+    object_keys = get_bucket_keys_by_prefixes(bucket, prefixes)
 
     # Download objects.
     logger.info("Downloading %i files from bucket '%s'" % (len(object_keys), bucket_name))
@@ -147,6 +162,42 @@ def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
                     shutil.copyfileobj(gz, fh)
 
 
+def sync(source_bucket_name, destination_bucket_name, prefixes=None, dryrun=False):
+    """Sync files from a given source bucket to a given destination bucket. An
+    optional list of prefixes will restrict the files being synced between
+    buckets.
+
+    Args:
+        source_bucket_name: name of bucket to copy files from
+        destination_bucket_name: name of bucket to copy files to
+        prefixes: a list of key prefixes to filter objects in the bucket by
+        dryrun: boolean indicating whether files should be downloaded or not
+    """
+    # Setup logging.
+    logger = logging.getLogger(__name__)
+
+    # Connect to S3.
+    s3 = boto3.resource("s3")
+
+    # Get source bucket.
+    source_bucket = s3.Bucket(source_bucket_name)
+
+    # Get source bucket keys by prefixes.
+    object_keys = get_bucket_keys_by_prefixes(source_bucket, prefixes)
+    logger.info("Syncing %i files from '%s' to '%s'" % (len(object_keys), source_bucket_name, destination_bucket_name))
+
+    # Copy objects from source to destination by key.
+    for key in object_keys:
+        logger.debug("Copying '%s'" % key)
+
+        if not dryrun:
+            copy_source = {
+                'Bucket': source_bucket_name,
+                'Key': key
+            }
+            s3.meta.client.copy(copy_source, destination_bucket_name, key)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--verbose", "-v", action="store_const", dest="loglevel", const=logging.INFO, help="Enable verbose logging")
@@ -167,6 +218,12 @@ if __name__ == "__main__":
     parser_pull.add_argument("--local_dir", "--to", "-t", help="Local directory to download files into")
     parser_pull.set_defaults(func=pull)
 
+    parser_sync = subparsers.add_parser("sync")
+    parser_sync.add_argument("source_bucket", help="Source S3 bucket")
+    parser_sync.add_argument("destination_bucket", help="Destination S3 bucket")
+    parser_sync.add_argument("--prefixes", "-p", nargs="+", help="One or more prefixes for files to sync between buckets")
+    parser_sync.set_defaults(func=sync)
+
     args = parser.parse_args()
     logging.basicConfig(level=args.loglevel)
 
@@ -175,7 +232,9 @@ if __name__ == "__main__":
             args.func(args.bucket, args.files, args.cloudfront_id, args.dryrun)
         elif args.command_name == "pull":
             args.func(args.bucket, args.prefixes, args.local_dir, args.dryrun)
-    except AssertionError, e:
-        parser.error(e.message)
+        elif args.command_name == "sync":
+            args.func(args.source_bucket, args.destination_bucket, args.prefixes, args.dryrun)
     except botocore.exceptions.NoCredentialsError, e:
         parser.error("Unable to locate AWS credentials. Set environment variables for AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID.")
+    except Exception, e:
+        parser.error(e.message)
