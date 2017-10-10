@@ -32,7 +32,7 @@ def get_bucket_keys_by_prefixes(bucket, prefixes):
         prefixes: NoneType or list of key prefixes to filter objects in the bucket by
 
     Returns:
-        a sorted list of object keys matching the given prefixes
+        list: sorted list of object keys matching the given prefixes
     """
     if prefixes is not None:
         object_keys = []
