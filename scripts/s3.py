@@ -136,7 +136,7 @@ def push(bucket_name, files, cloudfront_id=None, dryrun=False):
                 )
 
     # Create a CloudFront invalidation if it has been requested.
-    if cloudfront_id is not None and not args.dryrun:
+    if cloudfront_id is not None and not dryrun:
         response = create_cloudfront_invalidation(cloudfront_id, s3_keys)
 
 
@@ -221,10 +221,10 @@ def sync(source_bucket_name, destination_bucket_name, prefixes=None, cloudfront_
                 'Bucket': source_bucket_name,
                 'Key': key
             }
-            s3.meta.client.copy(copy_source, destination_bucket_name, key)
+            #s3.meta.client.copy(copy_source, destination_bucket_name, key)
 
     # Create a CloudFront invalidation if it has been requested.
-    if cloudfront_id is not None and not args.dryrun:
+    if cloudfront_id is not None and not dryrun:
         response = create_cloudfront_invalidation(cloudfront_id, object_keys)
 
 
@@ -264,7 +264,7 @@ if __name__ == "__main__":
         elif args.command_name == "pull":
             args.func(args.bucket, args.prefixes, args.local_dir, args.dryrun)
         elif args.command_name == "sync":
-            args.func(args.source_bucket, args.destination_bucket, args.prefixes, args.dryrun)
+            args.func(args.source_bucket, args.destination_bucket, args.prefixes, args.cloudfront_id, args.dryrun)
     except botocore.exceptions.NoCredentialsError, e:
         parser.error("Unable to locate AWS credentials. Set environment variables for AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID.")
     except Exception, e:
