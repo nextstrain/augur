@@ -47,6 +47,44 @@ def get_bucket_keys_by_prefixes(bucket, prefixes):
     return object_keys
 
 
+def create_cloudfront_invalidation(cloudfront_id, keys):
+    """Create a cache invalidation for the given files if a CloudFront id is given.
+
+    Args:
+        cloudfront_id: a CloudFront id to use for a cache invalidation
+        keys: a list of keys to invalidate cache for
+
+    Returns:
+        dict: CloudFront API response
+    """
+    # Setup logging.
+    logger = logging.getLogger(__name__)
+    logger.info("Creating invalidation for %i keys in the CloudFront distribution '%s'" % (len(keys), cloudfront_id))
+
+    # Connect to CloudFront.
+    cloudfront = boto3.client("cloudfront")
+
+    # Create the invalidation batch. Top-level keys require a "/" prefix for
+    # proper invalidation.
+    invalidation_batch = {
+        "Paths": {
+            "Quantity": len(keys),
+            "Items": ["/%s" % key for key in keys]
+        },
+        "CallerReference": str(time.time())
+    }
+    logger.debug("Invalidation batch: %s" % str(invalidation_batch))
+
+    # Create the invalidation.
+    response = cloudfront.create_invalidation(
+        DistributionId=cloudfront_id,
+        InvalidationBatch=invalidation_batch
+    )
+    logger.debug("CloudFront response: %s" % str(response))
+
+    return response
+
+
 def push(bucket_name, files, cloudfront_id=None, dryrun=False):
     """Push the given files to the given S3 bucket and optionally invalidate the
     cache for a given CloudFront id.
@@ -97,21 +135,9 @@ def push(bucket_name, files, cloudfront_id=None, dryrun=False):
                     {"ContentType": "gzip", "ContentEncoding": "application/json"}
                 )
 
-    # Create a cache invalidation for the given files if a CloudFront id is
-    # given.
-    if cloudfront_id is not None:
-        logger.info("Invalidating cache for CloudFront id '%s'" % cloudfront_id)
-        cloudfront = boto3.client("cloudfront")
-        cloudfront.create_invalidation(
-            DistributionId=cloudfront_id,
-            InvalidationBatch={
-                "Paths": {
-                    "Quantity": len(s3_keys),
-                    "Items": s3_keys
-                },
-                "CallerReference": str(time.time())
-            }
-        )
+    # Create a CloudFront invalidation if it has been requested.
+    if cloudfront_id is not None and not args.dryrun:
+        response = create_cloudfront_invalidation(cloudfront_id, s3_keys)
 
 
 def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
@@ -162,7 +188,7 @@ def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
                     shutil.copyfileobj(gz, fh)
 
 
-def sync(source_bucket_name, destination_bucket_name, prefixes=None, dryrun=False):
+def sync(source_bucket_name, destination_bucket_name, prefixes=None, cloudfront_id=None, dryrun=False):
     """Sync files from a given source bucket to a given destination bucket. An
     optional list of prefixes will restrict the files being synced between
     buckets.
@@ -197,6 +223,10 @@ def sync(source_bucket_name, destination_bucket_name, prefixes=None, dryrun=Fals
             }
             s3.meta.client.copy(copy_source, destination_bucket_name, key)
 
+    # Create a CloudFront invalidation if it has been requested.
+    if cloudfront_id is not None and not args.dryrun:
+        response = create_cloudfront_invalidation(cloudfront_id, object_keys)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -219,6 +249,7 @@ if __name__ == "__main__":
     parser_pull.set_defaults(func=pull)
 
     parser_sync = subparsers.add_parser("sync")
+    parser_sync.add_argument("--cloudfront_id", "-c", help="CloudFront id to use to create a cache invalidation")
     parser_sync.add_argument("source_bucket", help="Source S3 bucket")
     parser_sync.add_argument("destination_bucket", help="Destination S3 bucket")
     parser_sync.add_argument("--prefixes", "-p", nargs="+", help="One or more prefixes for files to sync between buckets")
