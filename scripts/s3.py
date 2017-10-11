@@ -27,6 +27,12 @@ import os
 import shutil
 import time
 
+# Map S3 buckets to their corresponding CloudFront ids.
+CLOUDFRONT_ID_BY_BUCKET = {
+    "nextstrain-staging": "E3L83FTHWUN0BV",
+    "nextstrain-data": "E3LB0EWZKCCV"
+}
+
 
 def get_bucket_keys_by_prefixes(bucket, prefixes):
     """Get objects from the given bucket instance that match the given list of
@@ -52,18 +58,25 @@ def get_bucket_keys_by_prefixes(bucket, prefixes):
     return object_keys
 
 
-def create_cloudfront_invalidation(cloudfront_id, keys):
+def create_cloudfront_invalidation(bucket_name, keys):
     """Create a cache invalidation for the given files if a CloudFront id is given.
 
     Args:
-        cloudfront_id: a CloudFront id to use for a cache invalidation
+        bucket_name: an S3 bucket name that may or may not have a CloudFront id
         keys: a list of keys to invalidate cache for
 
     Returns:
-        dict: CloudFront API response
+        dict or NoneType: CloudFront API response or None if no CloudFront is defined for the given bucket
     """
     # Setup logging.
     logger = logging.getLogger(__name__)
+
+    # Find CloudFront id for the given bucket name.
+    cloudfront_id = CLOUDFRONT_ID_BY_BUCKET.get(bucket_name)
+    if cloudfront_id is None:
+        logger.warning("Could not find a CloudFront id for the S3 bucket '%s'" % bucket_name)
+        return
+
     logger.info("Creating invalidation for %i keys in the CloudFront distribution '%s'" % (len(keys), cloudfront_id))
 
     # Connect to CloudFront.
@@ -90,14 +103,13 @@ def create_cloudfront_invalidation(cloudfront_id, keys):
     return response
 
 
-def push(bucket_name, files, cloudfront_id=None, dryrun=False):
+def push(bucket_name, files, dryrun=False):
     """Push the given files to the given S3 bucket and optionally invalidate the
     cache for a given CloudFront id.
 
     Args:
         bucket_name: S3 bucket to pull from
         files: a list of local files to upload to the given bucket
-        cloudfront_id: a CloudFront id to use for a cache invalidation
         dryrun: boolean indicating whether files should be downloaded or not
     """
     # Setup logging.
@@ -140,9 +152,9 @@ def push(bucket_name, files, cloudfront_id=None, dryrun=False):
                     {"ContentType": "gzip", "ContentEncoding": "application/json"}
                 )
 
-    # Create a CloudFront invalidation if it has been requested.
-    if cloudfront_id is not None and not dryrun:
-        response = create_cloudfront_invalidation(cloudfront_id, s3_keys)
+    # Create a CloudFront invalidation for the destination bucket.
+    if not dryrun:
+        response = create_cloudfront_invalidation(bucket_name, s3_keys)
 
 
 def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
@@ -193,7 +205,7 @@ def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
                     shutil.copyfileobj(gz, fh)
 
 
-def sync(source_bucket_name, destination_bucket_name, prefixes=None, cloudfront_id=None, dryrun=False):
+def sync(source_bucket_name, destination_bucket_name, prefixes=None, dryrun=False):
     """Sync files from a given source bucket to a given destination bucket. An
     optional list of prefixes will restrict the files being synced between
     buckets.
@@ -228,9 +240,9 @@ def sync(source_bucket_name, destination_bucket_name, prefixes=None, cloudfront_
             }
             s3.meta.client.copy(copy_source, destination_bucket_name, key)
 
-    # Create a CloudFront invalidation if it has been requested.
-    if cloudfront_id is not None and not dryrun:
-        response = create_cloudfront_invalidation(cloudfront_id, object_keys)
+    # Create a CloudFront invalidation for the destination bucket.
+    if not dryrun:
+        response = create_cloudfront_invalidation(destination_bucket_name, object_keys)
 
 
 if __name__ == "__main__":
@@ -242,7 +254,6 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(dest="command_name")
 
     parser_push = subparsers.add_parser("push")
-    parser_push.add_argument("--cloudfront_id", "-c", help="CloudFront id to use to create a cache invalidation")
     parser_push.add_argument("bucket", help="S3 bucket to push files to")
     parser_push.add_argument("files", nargs="+", help="One or more sets of files to push to the given bucket")
     parser_push.set_defaults(func=push)
@@ -254,7 +265,6 @@ if __name__ == "__main__":
     parser_pull.set_defaults(func=pull)
 
     parser_sync = subparsers.add_parser("sync")
-    parser_sync.add_argument("--cloudfront_id", "-c", help="CloudFront id to use to create a cache invalidation")
     parser_sync.add_argument("source_bucket", help="Source S3 bucket")
     parser_sync.add_argument("destination_bucket", help="Destination S3 bucket")
     parser_sync.add_argument("--prefixes", "-p", nargs="+", help="One or more prefixes for files to sync between buckets")
@@ -265,11 +275,11 @@ if __name__ == "__main__":
 
     try:
         if args.command_name == "push":
-            args.func(args.bucket, args.files, args.cloudfront_id, args.dryrun)
+            args.func(args.bucket, args.files, args.dryrun)
         elif args.command_name == "pull":
             args.func(args.bucket, args.prefixes, args.local_dir, args.dryrun)
         elif args.command_name == "sync":
-            args.func(args.source_bucket, args.destination_bucket, args.prefixes, args.cloudfront_id, args.dryrun)
+            args.func(args.source_bucket, args.destination_bucket, args.prefixes, args.dryrun)
     except botocore.exceptions.NoCredentialsError, e:
         parser.error("Unable to locate AWS credentials. Set environment variables for AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID.")
     except Exception, e:
