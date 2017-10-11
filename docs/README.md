@@ -41,3 +41,18 @@ the `-r` flag to force it to rebuild its environment.
 ```bash
 tox -r
 ```
+
+Note that on OS X, matplotlib may throw errors during testing stating
+
+```bash
+from matplotlib.backends import _macosx
+E   RuntimeError: Python is not installed as a framework.
+```
+
+This can be resolved by switching matplotlib backends. Create a file in the home directory `~/.matplotlib/matplotlibrc` and include the following:
+
+```python
+backend: TkAgg
+```
+
+This should fix the error.
