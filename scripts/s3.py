@@ -226,7 +226,7 @@ def sync(source_bucket_name, destination_bucket_name, prefixes=None, cloudfront_
                 'Bucket': source_bucket_name,
                 'Key': key
             }
-            #s3.meta.client.copy(copy_source, destination_bucket_name, key)
+            s3.meta.client.copy(copy_source, destination_bucket_name, key)
 
     # Create a CloudFront invalidation if it has been requested.
     if cloudfront_id is not None and not dryrun:
