@@ -5,6 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import base.process
 from base.process import process
 import argparse
+from dengue_titers import titer_model, titer_export
 
 ##### Define clades #####
 genotypes = {
@@ -34,60 +35,6 @@ for i in ['denv1', 'denv2', 'denv3', 'denv4']:
 regions = ['africa', 'europe', 'north_america', 'china', 'south_asia',
             'japan_korea', 'south_pacific', 'oceania', 'south_america',
             'southeast_asia', 'west_asia']
-
-
-def titer_model(process, **kwargs):
-    '''
-    estimate a titer tree and substitution model using titers in titer_fname.
-    '''
-    from base.titer_model import TreeModel, SubstitutionModel
-    ## TREE MODEL
-    process.titer_tree = TreeModel(process.tree.tree, process.titers, **kwargs)
-    process.titer_tree.prepare(**kwargs) # make training set, find subtree with titer measurements, and make_treegraph
-    process.titer_tree.train(**kwargs) # pick longest branch on path between each (test, ref) pair, assign titer drops to this branch
-                             # then calculate a cumulative antigenic evolution score for each node
-    # add tree attributes to the list of attributes that are saved in intermediate files
-    for n in process.tree.tree.find_clades():
-        n.attr['cTiter'] = n.cTiter
-        n.attr['dTiter'] = n.dTiter
-
-    # SUBSTITUTION MODEL
-    process.titer_subs = SubstitutionModel(process.tree.tree, process.titers, **kwargs)
-    process.titer_subs.prepare(**kwargs)
-    process.titer_subs.train(**kwargs)
-
-    if kwargs['training_fraction'] != 1.0:
-        process.titer_tree.validate() #(plot=True, fname='treeModel_%s.png'%lineage)
-        process.titer_subs.validate() #(plot=True, fname='subModel_%s.png'%lineage)
-
-    process.config["auspice"]["color_options"]["cTiter"] = {
-    "menuItem": "antigenic advance", "type": "continuous", "legendTitle": "log2 titer distance from root", "key": "cTiter", "vmin": "0.0", "vmax": "2.0"
-        }
-
-
-def titer_export(process):
-    from base.io_util import write_json
-    prefix = process.config["output"]["auspice"]+'/'+process.info["prefix"]+'_'
-    if hasattr(process, 'titer_tree'):
-        # export the raw titers
-        data = process.titer_tree.compile_titers()
-        write_json(data, prefix+'titers.json', indent=1)
-        # export the tree model (avidities and potencies only)
-        tree_model = {'potency':process.titer_tree.compile_potencies(),
-                      'avidity':process.titer_tree.compile_virus_effects(),
-                      'dTiter':{n.clade:n.dTiter for n in process.tree.tree.find_clades() if n.dTiter>1e-6}}
-        write_json(tree_model, prefix+'tree_model.json')
-    else:
-        print('Tree model not yet trained')
-
-    if hasattr(process, 'titer_tree'):
-        # export the substitution model
-        titer_subs_model = {'potency':process.titer_subs.compile_potencies(),
-                      'avidity':process.titer_subs.compile_virus_effects(),
-                      'substitution':process.titer_subs.compile_substitution_effects()}
-        write_json(titer_subs_model, prefix+'titer_subs_model.json')
-    else:
-        print('Substitution model not yet trained')
 
 
 def collect_args():
