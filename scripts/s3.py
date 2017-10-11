@@ -185,6 +185,10 @@ def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
     # Download objects.
     logger.info("Downloading %i files from bucket '%s'" % (len(object_keys), bucket_name))
     for key in object_keys:
+        if not key.endswith("json"):
+            logger.warning("Skipping unsupported file type for file '%s'" % key)
+            continue
+
         # Download into a local directory if requested.
         if local_dir is not None:
             local_key = os.path.join(local_dir, key)
