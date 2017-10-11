@@ -14,8 +14,7 @@ python ../../scripts/s3.py push dev-data \
 
 # Sync H3N2 data from one bucket to another and create CloudFront invalidation.
 python ../../scripts/s3.py sync dev-data production-data \
-    --prefixes flu_h3n2 \
-    --cloudfront_id ABCDEFG
+    --prefixes flu_h3n2
 """
 import argparse
 import boto3
