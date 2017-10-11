@@ -10,6 +10,13 @@ test_input/
 test_output/
 scratch/
 
+# For Python #
+##############
+*.pyc
+.tox/
+.cache/
+augur.egg-info/
+
 # Compiled source #
 ###################
 *.com
@@ -18,7 +25,6 @@ scratch/
 *.exe
 *.o
 *.so
-*.pyc
 
 # OS generated files #
 ######################
