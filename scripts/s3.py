@@ -226,6 +226,9 @@ def sync(source_bucket_name, destination_bucket_name, prefixes=None, dryrun=Fals
 
     # Get source bucket keys by prefixes.
     object_keys = get_bucket_keys_by_prefixes(source_bucket, prefixes)
+    if len(object_keys) == 0:
+        raise Exception("No files in the source bucket '%s' matched the given prefixes: %s" % (source_bucket_name, str(prefixes)))
+
     logger.info("Syncing %i files from '%s' to '%s'" % (len(object_keys), source_bucket_name, destination_bucket_name))
 
     # Copy objects from source to destination by key.
