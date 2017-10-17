@@ -148,7 +148,7 @@ def push(bucket_name, files, dryrun=False):
                 bucket.upload_fileobj(
                     compressed_fh,
                     s3_key,
-                    {"ContentType": "gzip", "ContentEncoding": "application/json"}
+                    {"ContentEncoding": "gzip", "ContentType": "application/json"}
                 )
 
     # Create a CloudFront invalidation for the destination bucket.
