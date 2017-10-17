@@ -204,9 +204,12 @@ def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
                 compressed_fh.seek(0)
 
                 # Write the uncompressed data from the file to disk.
-                with gzip.GzipFile(fileobj=compressed_fh, mode="rb") as gz:
-                    shutil.copyfileobj(gz, fh)
-
+                try:
+                    with gzip.GzipFile(fileobj=compressed_fh, mode="rb") as gz:
+                        shutil.copyfileobj(gz, fh)
+                except IOError:
+                    logger.warning("File %s does not appear to be compressed, trying to pull as an uncompressed file" % key)
+                    shutil.copyfileobj(compressed_fh, fh)
 
 def sync(source_bucket_name, destination_bucket_name, prefixes=None, dryrun=False):
     """Sync files from a given source bucket to a given destination bucket. An
