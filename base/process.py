@@ -433,7 +433,7 @@ class process(object):
         self.tree_frequency_counts = {}
 
 
-    def estimate_tree_frequencies(self, region='global', pivots=24):
+    def estimate_tree_frequencies(self, region='global', pivots=24, stiffness=20.0):
         '''
         estimate frequencies of clades in the tree, possibly region specific
         '''
@@ -457,9 +457,8 @@ class process(object):
 
         tree_freqs = tree_frequencies(self.tree.tree, self.pivots, method='SLSQP',
                                       node_filter = node_filter_func,
-                                      ws = max(2,self.tree.tree.count_terminals()//10))
-                                    # who knows what kwargs are needed here
-                                    #   **self.kwargs)
+                                      ws = max(2,self.tree.tree.count_terminals()//10),
+                                      stiffness = stiffness)
 
         tree_freqs.estimate_clade_frequencies()
         conf = tree_freqs.calc_confidence()
