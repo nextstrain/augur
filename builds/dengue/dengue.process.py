@@ -5,6 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import base.process
 from base.process import process
 import argparse
+import numpy as np
 from dengue_titers import titer_model, titer_export
 
 ##### Define clades #####
