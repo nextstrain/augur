@@ -25,7 +25,7 @@ outliers = {
     'h3n2':[
         "A/Chile/8266/2003", "A/Louisiana/4/2003", "A/Lousiana/4/2003", "A/India/D0512577/2005",
         "A/Kunming/1-Va10/2005", "A/Ontario/RV1273/2005", "A/OSAKA/31/2005", "A/Sari/388/2006",
-        "A/Ontario/1252/2007", "A/HongKong/HK1/2008", "A/HongKong/HK1MA21-1/2008",
+        "A/Santiago/6764/2006", "A/Ontario/1252/2007", "A/HongKong/HK1/2008", "A/HongKong/HK1MA21-1/2008",
         "A/HongKong/HK1MA21-2/2008", "A/HongKong/HK1MA21-3/2008", "A/HongKong/HK1MA21-4/2008",
         "A/HongKong/HK2/2008", "A/HongKong/HK2MA21-1/2008", "A/HongKong/HK2MA21-2/2008",
         "A/HongKong/HK2MA21-3/2008", "A/HongKong/HK4/2008", "A/HongKong/HK4MA21-3/2008",
