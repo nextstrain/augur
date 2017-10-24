@@ -1,6 +1,7 @@
 import Bio
 import time
 import numpy as np
+import pandas as pd
 from itertools import izip
 from scipy.stats import linregress
 import sys
@@ -39,7 +40,7 @@ class fitness_predictors(object):
         if pred == 'ne_star':
             self.calc_nonepitope_star_distance(tree)
         if pred == 'tol':
-            self.calc_tolerance(tree, attr = 'tol')
+            self.calc_tolerance(tree, preferences_file='metadata/H3N2_HA_rescaled_DMS_preferences.csv', attr = 'tol')
         if pred == 'tol_ne':
             self.calc_tolerance(tree, epitope_mask = self.tolerance_mask, attr = 'tol_ne')
         if pred == 'null':
@@ -179,13 +180,38 @@ class fitness_predictors(object):
                 node.aa = self._translate(node)
             node.__setattr__(attr, self.rbs_distance(node.aa, ref))
 
-    def calc_tolerance(self, tree, epitope_mask=None, attr='tol'):
-        '''
-        calculates log odds of a node's AA sequence relative to a set of site-specific AA preferences
-        tree   --   dendropy tree
-        attr   --   the attribute name used to save the result
-        '''
-        assign_fitness_tolerance(tree, epitope_mask=epitope_mask, attr=attr)
+    def calc_tolerance(self, tree, preferences_file, attr="tol"):
+        """Calculates log odds of a node's AA sequence relative to a set of
+        site-specific AA preferences.
+
+        Takes a tree and a path to a DMS preferences file with one row per site
+        and labeled columns per amino acid.
+        """
+        preferences = pd.read_csv(preferences_file, sep="\t", index_col=0)
+        stacked_preferences = preferences.stack()
+
+        positions = None
+        for node in tree.find_clades():
+            if not hasattr(node, "aa"):
+                node.aa = self._translate(node)
+
+            if positions is None:
+                length = len(node.aa)
+                positions = range(length)
+
+            aa_array = zip(positions, node.aa)
+            node_preferences = stacked_preferences[aa_array]
+
+            # Replace missing values with a very small probability. This
+            # primarily accounts for stop codons ("X") that do not have an
+            # associated DMS preference.
+            node_preferences = node_preferences.fillna(1e-10)
+
+            # Calculate sum of the log of the preferences the node's amino acid sequence.
+            tolerance = np.log(node_preferences).sum()
+
+            setattr(node, attr, tolerance)
+            node.attr[attr] = tolerance
 
     def calc_nonepitope_distance(self, tree, attr='ne', ref = None):
         '''
