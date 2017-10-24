@@ -621,27 +621,18 @@ class fitness_model(object):
         import pandas as pd
         self.trajectory_data_df = pd.DataFrame(self.trajectory_data, columns=['series', 'clade', 'initial_time', 'time', 'obs', 'pred'])
         self.trajectory_data_df.to_csv("data/prediction_trajectories.tsv", sep="\t", index=False)
-        import bokeh.charts as bk
-        bk.defaults.height = 250
-        bk.output_file("lines.html", title="line plot example")
-        lines = []
-        for time in self.timepoints[:-1]:
-            line = bk.Line(self.trajectory_data_df[self.trajectory_data_df.initial_time == time],
-                    x='time', y=['obs', 'pred'], dash=['obs', 'pred'], color='clade',
-                    xlabel='Date', ylabel='Frequency', tools=False)
-            lines.append(line)
-        bk.show(bk.vplot(*lines))
-#           import seaborn as sns
-#           import matplotlib.pyplot as plt
-#           cols = sns.color_palette(n_colors=6)
-#           fig, axs = plt.subplots(6,4, sharey=True)
-#           for tp, ax in zip(self.timepoints[:-1], axs.flatten()):
-#               traj = self.trajectory_data_df[self.trajectory_data_df.initial_time == tp]
-#               clades = np.unique(traj['series'])
-#               for ci in clades:
-#                   tmp = traj[traj['series']==ci]
-#                   ax.plot(tmp['time'], tmp['obs'], ls='-', c=cols[ci%6])
-#                   ax.plot(tmp['time'], tmp['pred'], ls='--', c=cols[ci%6])
+
+        import seaborn as sns
+        import matplotlib.pyplot as plt
+        cols = sns.color_palette(n_colors=6)
+        fig, axs = plt.subplots(6,4, sharey=True)
+        for tp, ax in zip(self.timepoints[:-1], axs.flatten()):
+            traj = self.trajectory_data_df[self.trajectory_data_df.initial_time == tp]
+            clades = np.unique(traj['series'])
+            for ci in clades:
+                tmp = traj[traj['series']==ci]
+                ax.plot(tmp['time'], tmp['obs'], ls='-', c=cols[ci%6])
+                ax.plot(tmp['time'], tmp['pred'], ls='--', c=cols[ci%6])
 
 def main(params):
     import time
