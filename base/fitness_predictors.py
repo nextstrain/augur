@@ -52,8 +52,8 @@ class fitness_predictors(object):
         #if pred == 'cHI':
             # do nothing
 
-    def setup_epitope_mask(self, epitope_masks_fname = 'flu/metadata/h3n2_epitope_masks.tsv', epitope_mask_version = 'wolf', tolerance_mask_version = 'ha1'):
-        sys.stderr.write("setup " + epitope_mask_version + " epitope mask and " + tolerance_mask_version + " tolerance mask\n")
+    def setup_epitope_mask(self, epitope_masks_fname = 'builds/flu/metadata/h3n2_epitope_masks.tsv', epitope_mask_version = 'wolf', tolerance_mask_version = 'ha1'):
+        sys.stderr.write("setup " + str(epitope_mask_version) + " epitope mask and " + str(tolerance_mask_version) + " tolerance mask\n")
         self.epitope_mask = ""
         self.tolerance_mask = ""
         epitope_map = {}
