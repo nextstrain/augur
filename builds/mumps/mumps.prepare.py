@@ -2,13 +2,16 @@ from __future__ import print_function
 import os, sys
 # we assume (and assert) that this script is running from the virus directory, i.e. inside H7N9 or zika
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+import base.prepare
 from base.prepare import prepare
 from datetime import datetime
 from base.utils import fix_names
 import argparse
 
 def collect_args():
-    parser = argparse.ArgumentParser(description = "Prepare fauna FASTA for analysis")
+    """Returns a Zika-specific argument parser.
+    """
+    parser = base.prepare.collect_args()
     return parser.parse_args()
 
 dropped_strains = []
@@ -22,11 +25,11 @@ filters = {
     "unknown_country": ("Exclude unknown countries", lambda s: not s.attributes['country'].startswith("unknown"))
 }
 
-def make_config(context):
+def make_config():
     config = {
         "dir": "mumps",
-        "file_prefix": "mumps_%s"%context,
-        "title": "Mumps virus in the {} context".format(context),
+        "file_prefix": "mumps",
+        "title": "Mumps virus",
         "maintainer": ["@jh_viz", "https://twitter.com/jh_viz"],
         "input_paths": ["../../../fauna/data/mumps.fasta"],
 
@@ -69,12 +72,11 @@ def make_config(context):
 
 if __name__=="__main__":
     params = collect_args()
-    for context in ["global"]:
-        runner = prepare(make_config(context))
-        runner.load_references()
-        runner.applyFilters()
-        runner.ensure_all_segments()
-        runner.subsample()
-        runner.colors()
-        runner.latlongs()
-        runner.write_to_json()
+    runner = prepare(make_config())
+    runner.load_references()
+    runner.applyFilters()
+    runner.ensure_all_segments()
+    runner.subsample()
+    runner.colors()
+    runner.latlongs()
+    runner.write_to_json()
