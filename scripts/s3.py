@@ -76,7 +76,7 @@ def create_cloudfront_invalidation(bucket_name, keys):
         logger.warning("Could not find a CloudFront id for the S3 bucket '%s'" % bucket_name)
         return
 
-    logger.info("Creating invalidation for %i keys in the CloudFront distribution '%s'" % (len(keys), cloudfront_id))
+    print("Creating invalidation for %i keys in the CloudFront distribution '%s'" % (len(keys), cloudfront_id))
 
     # Connect to CloudFront.
     cloudfront = boto3.client("cloudfront")
@@ -127,12 +127,12 @@ def push(bucket_name, files, dryrun=False):
 
     # Upload local files, stripping directory names from the given file paths
     # for the S3 keys.
-    logger.info("Uploading %i files to bucket '%s'" % (len(files), bucket_name))
+    print("Uploading %i files to bucket '%s'" % (len(files), bucket_name))
     s3_keys = []
     for file_name in files:
         s3_key = os.path.split(file_name)[-1]
         s3_keys.append(s3_key)
-        logger.debug("Uploading '%s' as '%s'" % (file_name, s3_key))
+        logger.info("Uploading '%s' as '%s'" % (file_name, s3_key))
 
         if not dryrun:
             # Open uncompressed file to be uploaded.
@@ -183,7 +183,7 @@ def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
     object_keys = get_bucket_keys_by_prefixes(bucket, prefixes)
 
     # Download objects.
-    logger.info("Downloading %i files from bucket '%s'" % (len(object_keys), bucket_name))
+    print("Downloading %i files from bucket '%s'" % (len(object_keys), bucket_name))
     for key in object_keys:
         if not key.endswith("json"):
             logger.warning("Skipping unsupported file type for file '%s'" % key)
@@ -195,7 +195,7 @@ def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
         else:
             local_key = key
 
-        logger.debug("Downloading '%s' as '%s'" % (key, local_key))
+        logger.info("Downloading '%s' as '%s'" % (key, local_key))
         if not dryrun:
             with open(local_key, "wb") as fh:
                 # Download the compressed file into memory.
@@ -210,6 +210,7 @@ def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
                 except IOError:
                     logger.warning("File %s does not appear to be compressed, trying to pull as an uncompressed file" % key)
                     shutil.copyfileobj(compressed_fh, fh)
+
 
 def sync(source_bucket_name, destination_bucket_name, prefixes=None, dryrun=False):
     """Sync files from a given source bucket to a given destination bucket. An
@@ -236,11 +237,11 @@ def sync(source_bucket_name, destination_bucket_name, prefixes=None, dryrun=Fals
     if len(object_keys) == 0:
         raise Exception("No files in the source bucket '%s' matched the given prefixes: %s" % (source_bucket_name, str(prefixes)))
 
-    logger.info("Syncing %i files from '%s' to '%s'" % (len(object_keys), source_bucket_name, destination_bucket_name))
+    print("Syncing %i files from '%s' to '%s'" % (len(object_keys), source_bucket_name, destination_bucket_name))
 
     # Copy objects from source to destination by key.
     for key in object_keys:
-        logger.debug("Copying '%s'" % key)
+        logger.info("Copying '%s'" % key)
 
         if not dryrun:
             copy_source = {
