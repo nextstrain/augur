@@ -12,49 +12,47 @@ def collect_args():
     """Returns a Zika-specific argument parser.
     """
     parser = base.prepare.collect_args()
+    parser.set_defaults(
+        viruses_per_month=15,
+        file_prefix="mumps"
+    )
     return parser.parse_args()
 
-dropped_strains = []
+# filters = {
+#     "dropped_strains": ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
+#     "canada_only": ("Canada only", lambda s: s.attributes['country'] == "canada"),
+#     "exclude_BC": ("Exclude BC outbreak", lambda s: not s.attributes['accession'].startswith("BC_outbreak")),
+#     "Mass_only": ("Massachusetts only", lambda s: s.attributes['accession'].startswith("Massachusetts_outbreak")),
+#     "exclude_Mass": ("Exclude Massachusetts outbreak", lambda s: not s.attributes['accession'].startswith("Massachusetts_outbreak")),
+#     "unknown_country": ("Exclude unknown countries", lambda s: not s.attributes['country'].startswith("unknown"))
+# }
 
-filters = {
-    "dropped_strains": ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
-    "canada_only": ("Canada only", lambda s: s.attributes['country'] == "canada"),
-    "exclude_BC": ("Exclude BC outbreak", lambda s: not s.attributes['accession'].startswith("BC_outbreak")),
-    "Mass_only": ("Massachusetts only", lambda s: s.attributes['accession'].startswith("Massachusetts_outbreak")),
-    "exclude_Mass": ("Exclude Massachusetts outbreak", lambda s: not s.attributes['accession'].startswith("Massachusetts_outbreak")),
-    "unknown_country": ("Exclude unknown countries", lambda s: not s.attributes['country'].startswith("unknown"))
-}
+dropped_strains = [
+]
 
 def make_config():
     config = {
         "dir": "mumps",
         "file_prefix": "mumps",
-        "title": "Mumps virus",
-        "maintainer": ["@jh_viz", "https://twitter.com/jh_viz"],
+        "title": "Real-time tracking of mumps virus evolution",
+        "maintainer": ["James Hadfield", "http://bedford.io/team/james-hadfield/"],
         "input_paths": ["../../../fauna/data/mumps.fasta"],
-
-        "header_fields": {
-            0: 'strain',
-            2: 'accession',
-            3: 'date',
-            4: 'country',
-            5: 'region',
-            6: 'muv_genotype',
-            7: 'host',
-            8: 'authors',
-            9: 'title',
-            10: 'journal',
-            11: 'puburl',
-            12: 'url'
-        },
-        "subsample": False,
-        "colors": ["country", "region"],
-        "lat_longs": ["country", "region"],
-        "lat_long_defs": './geo_lat_long.tsv',
+        "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
+            6:'division', 8:'db', 10:'authors', 11:'url', 12:'title',
+            13: 'journal', 14: 'paper_url'},
         "filters": (
-            ("Sequence Length", lambda s: len(s.seq)>=13000),
-            ("number Ns", lambda s: s.seq.count('N')<=3000)
+            ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
+            ("Restrict Date Range", lambda s: s.attributes['date'] >= datetime(1950,01,1).date()),
+            ("Restrict Date Range", lambda s: s.attributes['date'] <= datetime(2020,01,1).date()),
+            ("Sequence Length", lambda s: len(s.seq)>=5000),
+            ("Number Ns", lambda s: s.seq.count('N')<=3000)
         ),
+        "subsample": {
+            "category": lambda x:(x.attributes['date'].year, x.attributes['date'].month, x.attributes['country']),
+        },
+        "colors": ["country", "region"],
+        "color_defs": ["./colors.tsv"],
+        "lat_longs": ["country", "region"],
         "auspice_filters": ["country", "region"],
         "reference": {
             "path": "mumps-reference.gb",
