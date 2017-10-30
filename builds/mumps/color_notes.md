@@ -23,3 +23,7 @@ north_america
 # country ordering
 #462EB9, #3E58CF, #4580CA, #549DB2, #69B091, #83BA70, #A2BE57, #C1BA47, #D9AD3D, #E69136, #E4632E, #DC2F24
 
+# division ordering
+#3E58CF, #4B8EC1, #65AE96, #8CBB69, #B8BC4A, #DCAB3C, #E67932, #DC2F24
+
+

@@ -12,9 +12,9 @@ def collect_args():
     """Returns a Zika-specific argument parser.
     """
     parser = base.prepare.collect_args()
+    parser.add_argument('-g', '--geo', default='global', type = str, help = "geo resolution, global or na")
     parser.set_defaults(
-        viruses_per_month=15,
-        file_prefix="mumps"
+        viruses_per_month=0
     )
     return parser.parse_args()
 
@@ -27,33 +27,63 @@ def collect_args():
 #     "unknown_country": ("Exclude unknown countries", lambda s: not s.attributes['country'].startswith("unknown"))
 # }
 
-dropped_strains = [
-]
-
-def make_config():
+def make_config(params):
+    if params.geo == "global":
+        file_prefix = "mumps_global"
+        if params.viruses_per_month == 0:
+            viruses_per_month = 15
+        else:
+            viruses_per_month = params.viruses_per_month
+        dropped_strains = [
+        ]
+        colors = ["country", "region"]
+        lat_longs = ["country", "region"]
+        auspice_filters = ["country", "region"]
+        filters = (
+            ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
+            ("Restrict Date Range", lambda s: s.attributes['date'] >= datetime(1950,01,1).date()),
+            ("Restrict Date Range", lambda s: s.attributes['date'] <= datetime(2020,01,1).date()),
+            ("Sequence Length", lambda s: len(s.seq)>=5000),
+            ("Number Ns", lambda s: s.seq.count('N')<=3000)
+        )
+    elif params.geo == "na":
+        file_prefix = "mumps_na"
+        if params.viruses_per_month == 0:
+            viruses_per_month = 100
+        else:
+            viruses_per_month = params.viruses_per_month
+        dropped_strains = [
+            "Ontario.CAN/13.10/G", "Ontario.CAN/04.10/G", "Massachusetts.USA/37.16/1/G"
+        ]
+        colors = ["country", "division"]
+        lat_longs = ["country", "division"]
+        auspice_filters = ["country", "division"]
+        filters = (
+            ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
+            ("Restrict Date Range", lambda s: s.attributes['date'] >= datetime(2009,01,1).date()),
+            ("Restrict Date Range", lambda s: s.attributes['date'] <= datetime(2020,01,1).date()),
+            ("Sequence Length", lambda s: len(s.seq) >= 5000),
+            ("Number Ns", lambda s: s.seq.count('N') <= 3000),
+            ("Restrict Region", lambda s: s.attributes['region'] == 'north_america')
+        )
     config = {
         "dir": "mumps",
-        "file_prefix": "mumps",
+        "file_prefix": file_prefix,
         "title": "Real-time tracking of mumps virus evolution",
         "maintainer": ["James Hadfield", "http://bedford.io/team/james-hadfield/"],
         "input_paths": ["../../../fauna/data/mumps.fasta"],
         "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
             6:'division', 8:'db', 10:'authors', 11:'url', 12:'title',
             13: 'journal', 14: 'paper_url'},
-        "filters": (
-            ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
-            ("Restrict Date Range", lambda s: s.attributes['date'] >= datetime(1950,01,1).date()),
-            ("Restrict Date Range", lambda s: s.attributes['date'] <= datetime(2020,01,1).date()),
-            ("Sequence Length", lambda s: len(s.seq)>=5000),
-            ("Number Ns", lambda s: s.seq.count('N')<=3000)
-        ),
+        "filters": filters,
         "subsample": {
-            "category": lambda x:(x.attributes['date'].year, x.attributes['date'].month, x.attributes['country']),
+            "threshold": viruses_per_month,
+            "category": lambda x:(x.attributes['date'].year, x.attributes['date'].month, x.attributes['country'])
         },
-        "colors": ["country", "region"],
+        "colors": colors,
         "color_defs": ["./colors.tsv"],
-        "lat_longs": ["country", "region"],
-        "auspice_filters": ["country", "region"],
+        "lat_longs": lat_longs,
+        "auspice_filters": auspice_filters,
         "reference": {
             "path": "mumps-reference.gb",
             "metadata": {
@@ -65,12 +95,11 @@ def make_config():
         }
     }
 
-
     return config
 
 if __name__=="__main__":
     params = collect_args()
-    runner = prepare(make_config())
+    runner = prepare(make_config(params))
     runner.load_references()
     runner.applyFilters()
     runner.ensure_all_segments()
