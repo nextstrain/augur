@@ -80,7 +80,7 @@ def make_config (prepared_json, args):
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
         "clean": args.clean,
-        "pivot_spacing": 1.0/12, # is this n timepoints per year?,
+        "pivot_spacing": 1.0/4, # is this n timepoints per year?,
         "newick_tree_options":{
             "raxml": not args.no_raxml
         }
@@ -118,11 +118,11 @@ if __name__=="__main__":
         # estimate tree frequencies here.
         if runner.config["estimate_tree_frequencies"]:
             pivots = runner.get_pivots_via_spacing()
-            runner.estimate_tree_frequencies(pivots=pivots)
+            runner.estimate_tree_frequencies(pivots=pivots, stiffness=2)
 
             for region in ['southeast_asia', 'south_america']: #regions:
                 try:
-                    runner.estimate_tree_frequencies(region=region)
+                    runner.estimate_tree_frequencies(region=region, stiffness=2)
                 except:
                     continue
         # titers
