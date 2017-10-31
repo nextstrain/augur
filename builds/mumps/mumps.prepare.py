@@ -37,7 +37,7 @@ def make_config(params):
         dropped_strains = [
             "BritishColumbia.CAN/23.08/1/G", "BritishColumbia.CAN/28.08/5/G", "BritishColumbia.CAN/14.11/2/G",
             # off the clock and nest within 2016 outbreak, suspect misdated
-            "MuVs/WA0268502_buccal/Washington.USA/16" # not yet released
+            "WA0268502_buccal/Washington.USA/16" # not yet released
         ]
         colors = ["country", "region"]
         lat_longs = ["country", "region"]
@@ -60,7 +60,7 @@ def make_config(params):
             "BritishColumbia.CAN/22.16/1/G", "Mass.USA/4.10", # true strains, but group outside NA outbreak clade
             "BritishColumbia.CAN/23.08/1/G", "BritishColumbia.CAN/28.08/5/G", "BritishColumbia.CAN/14.11/2/G",
             # off the clock and nest within 2016 outbreak, suspect misdated
-            "MuVs/WA0268502_buccal/Washington.USA/16" # not yet released
+            "WA0268502_buccal/Washington.USA/16" # not yet released
         ]
         colors = ["country", "division"]
         lat_longs = ["country", "division"]
