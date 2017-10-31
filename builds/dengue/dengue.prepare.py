@@ -80,7 +80,7 @@ def make_config(serotype, params):
 
     if params.titers is not None:
         if not os.path.isfile(params.titers):
-            params.titers = '../../fauna/data/%s'%params.titers
+            params.titers = '../../../fauna/data/%s'%params.titers
         titer_values, strains, sources = TiterModel.load_from_file(params.titers)
     else:
         titer_values, strains, sources = None, None, None
