@@ -31,10 +31,13 @@ def make_config(params):
     if params.geo == "global":
         file_prefix = "mumps_global"
         if params.viruses_per_month == 0:
-            viruses_per_month = 15
+            viruses_per_month = 3
         else:
             viruses_per_month = params.viruses_per_month
         dropped_strains = [
+            "BritishColumbia.CAN/23.08/1/G", "BritishColumbia.CAN/28.08/5/G", "BritishColumbia.CAN/14.11/2/G",
+            # off the clock and nest within 2016 outbreak, suspect misdated
+            "MuVs/WA0268502_buccal/Washington.USA/16" # not yet released
         ]
         colors = ["country", "region"]
         lat_longs = ["country", "region"]
@@ -53,7 +56,11 @@ def make_config(params):
         else:
             viruses_per_month = params.viruses_per_month
         dropped_strains = [
-            "Ontario.CAN/13.10/G", "Ontario.CAN/04.10/G", "Massachusetts.USA/37.16/1/G"
+            "Ontario.CAN/13.10/G", "Ontario.CAN/04.10/G", "Massachusetts.USA/37.16/1/G", "BritishColumbia.CAN/50.16/H",
+            "BritishColumbia.CAN/22.16/1/G", "Mass.USA/4.10", # true strains, but group outside NA outbreak clade
+            "BritishColumbia.CAN/23.08/1/G", "BritishColumbia.CAN/28.08/5/G", "BritishColumbia.CAN/14.11/2/G",
+            # off the clock and nest within 2016 outbreak, suspect misdated
+            "MuVs/WA0268502_buccal/Washington.USA/16" # not yet released
         ]
         colors = ["country", "division"]
         lat_longs = ["country", "division"]

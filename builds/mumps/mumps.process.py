@@ -44,7 +44,7 @@ def make_config(prepared_json, clean, params):
             "color_options": color_options,
             "defaults": defaults
         },
-        "clean": clean,
+        "clean": clean
     }
 
 if __name__=="__main__":
