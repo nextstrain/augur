@@ -57,7 +57,8 @@ def make_config(params):
             viruses_per_month = params.viruses_per_month
         dropped_strains = [
             "Ontario.CAN/13.10/G", "Ontario.CAN/04.10/G", "Massachusetts.USA/37.16/1/G", "BritishColumbia.CAN/50.16/H",
-            "BritishColumbia.CAN/22.16/1/G", "Mass.USA/4.10", # true strains, but group outside NA outbreak clade
+            "BritishColumbia.CAN/22.16/1/G", "Mass.USA/4.10",
+            "Virginia.USA/10.12/H", "BritishColumbia.CAN/33.16/3/G", # true strains, but group outside NA outbreak clade
             "BritishColumbia.CAN/23.08/1/G", "BritishColumbia.CAN/28.08/5/G", "BritishColumbia.CAN/14.11/2/G",
             # off the clock and nest within 2016 outbreak, suspect misdated
             "WA0268502_buccal/Washington.USA/16" # not yet released

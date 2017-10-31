@@ -31,7 +31,7 @@ def make_config(prepared_json, clean, params):
             "colorBy": "division",
             "geoResolution": "division"
         }
-        geo_inference = ['division', 'country']
+        geo_inference = False
     return {
         "dir": "mumps",
         "in": prepared_json,
