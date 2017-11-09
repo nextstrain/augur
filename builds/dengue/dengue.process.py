@@ -60,7 +60,7 @@ def make_config (prepared_json, args):
         "auspice": { ## settings for auspice JSON export
             "extra_attr": ['serum'],
             "color_options": {
-                # "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
+                "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
                 "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"},
             },
