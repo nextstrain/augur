@@ -46,11 +46,10 @@ def collect_args():
     # parser.add_argument('-j', '--json', default=None, nargs='+', type=str, help="Accepts path to prepared JSON(s); overrides -s argument")
     parser.add_argument('-s', '--serotypes', default=["multiple"], nargs='+', type=str, choices=['denv1', 'denv2', 'denv3', 'denv4', 'all', 'multiple'],
     help="Look for prepared JSON(s) like ./prepared/dengue_SEROTYPE.json; 'multiple' will run all five builds. Default='multiple'")
-    parser.add_argument('--no_mut_freqs', default=False, action='store_true', help="skip mutation frequencies")
+    parser.add_argument('--no_mut_freqs', default=True, action='store_true', help="skip mutation frequencies")
     parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
     parser.add_argument('--no_titers', default=False, action='store_true', help="skip titer models")
     parser.set_defaults(json = None)
-
     return parser
 
 
@@ -62,7 +61,7 @@ def make_config (prepared_json, args):
         "auspice": { ## settings for auspice JSON export
             "extra_attr": ['serum'],
             "color_options": {
-                # "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
+                "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
                 "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"},
             },
@@ -73,7 +72,7 @@ def make_config (prepared_json, args):
         "timetree_options": {"Tc": False},
         "fit_titer_model": not args.no_titers,
         "titers": {
-            "lam_avi":3.0,
+            "lam_avi":0.0,#3.0
             "lam_pot":0.5,
             "lam_drop":1.0,
             "training_fraction":0.9
@@ -81,7 +80,7 @@ def make_config (prepared_json, args):
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
         "clean": args.clean,
-        "pivot_spacing": 1.0/12, # is this n timepoints per year?,
+        "pivot_spacing": 1.0/4, # is this n timepoints per year?,
         "newick_tree_options":{
             "raxml": not args.no_raxml
         }
@@ -119,11 +118,11 @@ if __name__=="__main__":
         # estimate tree frequencies here.
         if runner.config["estimate_tree_frequencies"]:
             pivots = runner.get_pivots_via_spacing()
-            runner.estimate_tree_frequencies(pivots=pivots)
+            runner.estimate_tree_frequencies(pivots=pivots, stiffness=2)
 
             for region in ['southeast_asia', 'south_america']: #regions:
                 try:
-                    runner.estimate_tree_frequencies(region=region)
+                    runner.estimate_tree_frequencies(region=region, stiffness=2)
                 except:
                     continue
         # titers
@@ -132,9 +131,39 @@ if __name__=="__main__":
                         lam_pot = runner.config['titers']['lam_pot'],
                         lam_avi = runner.config['titers']['lam_avi'],
                         lam_drop = runner.config['titers']['lam_drop'],
-                        training_fraction = runner.config['titers']['training_fraction'])
+                        training_fraction = runner.config['titers']['training_fraction'],
+                        plot=False,
+                        criterium = lambda node: True,
+                        csv_fname='~/Users/Sidney/Dropbox/dengue/data/titer-model/all-branch-effects/model_predictions.csv')
+
+        ### Force dTiter values to be non-zero only on interserotype brances
+        #     def is_interserotype(node):
+        #         descendents = node.get_terminals()
+        #         serotypes = [k.name.split('/')[0] for k in descendents if 'DENV' in k.name]
+        #         serotypes = [s for s in serotypes if s != 'DENV']
+        #         return len(set(serotypes)) > 1
+        #
+        #     interserotype_branches = []
+        #     for node in runner.tree.tree.find_clades():
+        #         if is_interserotype(node):
+        #             interserotype_branches.append(node)
+        #             for child in node.clades:
+        #                 interserotype_branches.append(child)
+        #     for node in runner.tree.tree.find_clades():
+        #         if node in interserotype_branches:
+        #             node.interserotype = True
+        #         else:
+        #             node.interserotype = False
+        #
+        #     titer_model(runner,
+        #                 lam_pot = runner.config['titers']['lam_pot'],
+        #                 lam_avi = runner.config['titers']['lam_avi'],
+        #                 lam_drop = runner.config['titers']['lam_drop'],
+        #                 training_fraction = runner.config['titers']['training_fraction'],
+        #                 plot=False,
+        #                 criterium = lambda node: node.interserotype == True,
+        #                 csv_fname='~/Users/Sidney/Dropbox/dengue/data/titer-model/interserotype-branch-effects/model_predictions.csv')
             titer_export(runner)
 
-        # runner.matchClades(genotypes[runner.info['lineage']])
-
+        runner.matchClades(genotypes[runner.info['lineage']])
         runner.auspice_export()
