@@ -110,16 +110,16 @@ def titer_model(process, **kwargs):
         tree_additivity_symmetry(process.titer_tree)
 
     # SUBSTITUTION MODEL
-    process.titer_subs = SubstitutionModel(process.tree.tree, process.titers, **kwargs)
-    process.titer_subs.prepare(**kwargs)
-    process.titer_subs.train(**kwargs)
+    # process.titer_subs = SubstitutionModel(process.tree.tree, process.titers, **kwargs)
+    # process.titer_subs.prepare(**kwargs)
+    # process.titer_subs.train(**kwargs)
 
     if kwargs['training_fraction'] != 1.0:
-        process.titer_tree.validate() #(plot=True, fname='treeModel_%s.png'%lineage)
-        process.titer_subs.validate() #(plot=True, fname='subModel_%s.png'%lineage)
+        process.titer_tree.validate(kwargs) #(plot=True, fname='treeModel_%s.png'%lineage)
+        # process.titer_subs.validate() #(plot=True, fname='subModel_%s.png'%lineage)
 
     process.config["auspice"]["color_options"]["cTiter"] = {
-    "menuItem": "antigenic advance", "type": "continuous", "legendTitle": "log2 titer distance from root", "key": "cTiter", "vmin": "0.0", "vmax": "2.0"
+    "menuItem": "antigenic advance", "type": "continuous", "legendTitle": "log2 titer distance from root", "key": "cTiter", "vmin": "0.0", "vmax": "3.5"
         }
 
 
@@ -138,11 +138,11 @@ def titer_export(process):
     else:
         print('Tree model not yet trained')
 
-    if hasattr(process, 'titer_tree'):
-        # export the substitution model
-        titer_subs_model = {'potency':process.titer_subs.compile_potencies(),
-                      'avidity':process.titer_subs.compile_virus_effects(),
-                      'substitution':process.titer_subs.compile_substitution_effects()}
-        write_json(titer_subs_model, prefix+'titer_subs_model.json')
-    else:
-        print('Substitution model not yet trained')
+    # if hasattr(process, 'titer_tree'):
+    #     # export the substitution model
+    #     titer_subs_model = {'potency':process.titer_subs.compile_potencies(),
+    #                   'avidity':process.titer_subs.compile_virus_effects(),
+    #                   'substitution':process.titer_subs.compile_substitution_effects()}
+    #     write_json(titer_subs_model, prefix+'titer_subs_model.json')
+    # else:
+    #     print('Substitution model not yet trained')
