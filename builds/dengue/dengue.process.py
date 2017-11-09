@@ -71,7 +71,7 @@ def make_config (prepared_json, args):
         "timetree_options": {"Tc": False},
         "fit_titer_model": not args.no_titers,
         "titers": {
-            "lam_avi":3.0,
+            "lam_avi":0.0,#3.0
             "lam_pot":0.5,
             "lam_drop":1.0,
             "training_fraction":0.9
@@ -130,9 +130,39 @@ if __name__=="__main__":
                         lam_pot = runner.config['titers']['lam_pot'],
                         lam_avi = runner.config['titers']['lam_avi'],
                         lam_drop = runner.config['titers']['lam_drop'],
-                        training_fraction = runner.config['titers']['training_fraction'])
+                        training_fraction = runner.config['titers']['training_fraction'],
+                        plot=False,
+                        criterium = lambda node: True,
+                        csv_fname='~/Users/Sidney/Dropbox/dengue/data/titer-model/all-branch-effects/model_predictions.csv')
+
+        ### Force dTiter values to be non-zero only on interserotype brances
+        #     def is_interserotype(node):
+        #         descendents = node.get_terminals()
+        #         serotypes = [k.name.split('/')[0] for k in descendents if 'DENV' in k.name]
+        #         serotypes = [s for s in serotypes if s != 'DENV']
+        #         return len(set(serotypes)) > 1
+        #
+        #     interserotype_branches = []
+        #     for node in runner.tree.tree.find_clades():
+        #         if is_interserotype(node):
+        #             interserotype_branches.append(node)
+        #             for child in node.clades:
+        #                 interserotype_branches.append(child)
+        #     for node in runner.tree.tree.find_clades():
+        #         if node in interserotype_branches:
+        #             node.interserotype = True
+        #         else:
+        #             node.interserotype = False
+        #
+        #     titer_model(runner,
+        #                 lam_pot = runner.config['titers']['lam_pot'],
+        #                 lam_avi = runner.config['titers']['lam_avi'],
+        #                 lam_drop = runner.config['titers']['lam_drop'],
+        #                 training_fraction = runner.config['titers']['training_fraction'],
+        #                 plot=False,
+        #                 criterium = lambda node: node.interserotype == True,
+        #                 csv_fname='~/Users/Sidney/Dropbox/dengue/data/titer-model/interserotype-branch-effects/model_predictions.csv')
             titer_export(runner)
 
-        # runner.matchClades(genotypes[runner.info['lineage']])
-
+        runner.matchClades(genotypes[runner.info['lineage']])
         runner.auspice_export()
