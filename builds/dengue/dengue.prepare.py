@@ -72,7 +72,7 @@ def make_config(serotype, params):
     elif os.path.isfile("../../../fauna/data/dengue_%s.fasta"%serotype): #is file: # Look for a serotype-specific fasta
         input_paths = ["../../../fauna/data/dengue_%s.fasta"%serotype]
     else: # If it doesn't exist, try to pull serotype-specific sequences out of the all-serotype fasta (warn the user of this behavior)
-        input_paths = [select_serotype('../../../fauna/data/dengue_all.fasta', '../fauna/data/', serotype)]
+        input_paths = [select_serotype('../../../fauna/data/dengue_all.fasta', '../../../fauna/data/', serotype)]
         print('WARNING: Did not find serotype-specific fasta file.\nPulled sequences with serotype %s from all-serotype fasta file %s\nWrote these to file %s'%(serotype, '../fauna/data/dengue.fasta', input_paths))
 
     years_back = params.years_back
