@@ -1,13 +1,22 @@
-def tree_additivity_symmetry(mytitermodel, mtype='tree'):
-    ''' Adapted from https://github.com/blab/nextflu/blob/pnas-hi-titers/augur/src/diagnostic_figures.py#L314 '''
+def tree_additivity_symmetry(mytitermodel):
+    '''
+    The titer model makes two major assumptions:
+    1 - Once we correct for virus avidity and serum potency, titers are roughly symmetric
+    2 - Antigenic relationships evolve in a tree-like fashion
+
+    We can check the validity of these assumptions by plotting:
+    1 - titer symmetry (T(serum i,virus j) - vice versa)
+    2 - For random quartets of antigenic distances, how do the relative distances between the tips relate to one another?
+        If they're tree-like, we expect the largest - second largest distance to be roughly exponentially distributed.
+        How does this compare to quartets of values pulled randomly from a normal distribution?
+
+    Code adapted from https://github.com/blab/nextflu/blob/pnas-hi-titers/augur/src/diagnostic_figures.py#L314
+    '''
     import numpy as np
     from matplotlib import pyplot as plt
 
-    figheight=8
-    fs = 12
     reciprocal_measurements = []
     reciprocal_measurements_titers = []
-    print(mytitermodel.__dict__.keys())
     for (testvir, serum) in mytitermodel.titers_normalized:
         tmp_recip = [v for v in mytitermodel.titers_normalized if serum[0]==v[0] and testvir==v[1][0]]
         for v in tmp_recip:
@@ -24,21 +33,18 @@ def tree_additivity_symmetry(mytitermodel, mtype='tree'):
                                                   (val_fwd - mytitermodel.serum_potency[serum] - mytitermodel.virus_effect[testvir]),
                                                   (val_bwd - mytitermodel.serum_potency[v[1]] - mytitermodel.virus_effect[serum[0]]),
                                                   ])
-    plt.figure(figsize=(1.6*figheight, figheight))
+    plt.figure(figsize=(9,6))
     ax = plt.subplot(121)
-    plt.text(0.05, 0.93,  ('tree model' if mtype=='tree' else 'mutation model'),
-             weight='bold', fontsize=fs, transform=plt.gca().transAxes)
     # multiple the difference by the +/- one to polarize all comparisons by date
     vals= [x[2]*x[-1] for x in reciprocal_measurements]
-    plt.hist(vals, alpha=0.7, label=r"$H_{a\beta}-H_{b\alpha}$", normed=True)
+    plt.hist(vals, alpha=0.7, label=r"Raw $T_{ij}-T_{ji}$", normed=True)
     print("raw reciprocal titers: ", str(np.round(np.mean(vals),3))+'+/-'+str(np.round(np.std(vals),3)))
     vals= [x[3]*x[-1] for x in reciprocal_measurements]
-    plt.hist(vals, alpha=0.7, label=r"sym. part", normed=True)
-    print("symmetric component: ", str(np.round(np.mean(vals),3))+'+/-'+str(np.round(np.std(vals),3)))
-    plt.xlabel('titer asymmetry', fontsize=fs)
-    ax.tick_params(axis='both', labelsize=fs)
-    # add_panel_label(ax, 'A', x_offset=-0.2)
-    plt.legend(fontsize=fs, handlelength=0.8)
+    plt.hist(vals, alpha=0.7, label=r"Normalized $T_{ij}-T_{ji}$", normed=True)
+    print("normalized reciprocal titers: ", str(np.round(np.mean(vals),3))+'+/-'+str(np.round(np.std(vals),3)))
+    plt.xlabel('Titer asymmetry', fontsize=12)
+    ax.tick_params(axis='both', labelsize=12)
+    plt.legend(fontsize=12, handlelength=0.8)
     plt.tight_layout()
 
     ####  Analyze all cliques #######################################################
@@ -52,9 +58,7 @@ def tree_additivity_symmetry(mytitermodel, mtype='tree'):
         for w in all_reciprocal[:vi]:
             if ((v[0], w) in mytitermodel.titers_normalized) and ((w[0], v) in mytitermodel.titers_normalized):
                 G.add_edge(v,w)
-    # print "generated graph of all cliques"
     C = nx.find_cliques(G)
-    # print "found cliques"
     def symm_distance(v,w):
         res =  mytitermodel.titers_normalized[(v[0], w)] - mytitermodel.virus_effect[v[0]] - mytitermodel.serum_potency[w]
         res += mytitermodel.titers_normalized[(w[0], v)] - mytitermodel.virus_effect[w[0]] - mytitermodel.serum_potency[v]
@@ -81,13 +85,12 @@ def tree_additivity_symmetry(mytitermodel, mtype='tree'):
 
     ax=plt.subplot(122)
     plt.hist(additivity_test['control'], alpha=0.7,normed=True, bins = np.linspace(0,3,18),
-             label = 'control, mean='+str(np.round(np.mean(additivity_test['control']),2)))
+             label = 'Control, mean='+str(np.round(np.mean(additivity_test['control']),2)))
     plt.hist(additivity_test['test'], alpha=0.7,normed=True, bins = np.linspace(0,3,18),
-             label = 'quartet, mean='+str(np.round(np.mean(additivity_test['test']),2)))
-    ax.tick_params(axis='both', labelsize=fs)
-    plt.xlabel(r'$\Delta$ top two distance sums', fontsize = fs)
-    plt.legend(fontsize=fs, handlelength=0.8)
-    # add_panel_label(ax, 'B', x_offset=-0.2)
+             label = 'Quartet, mean='+str(np.round(np.mean(additivity_test['test']),2)))
+    ax.tick_params(axis='both', labelsize=12)
+    plt.xlabel(r'$\Delta$ top two distance sums', fontsize = 12)
+    plt.legend(fontsize=12, handlelength=0.8)
     plt.tight_layout()
     plt.savefig('./processed/titer_asymmetry.png')
 
