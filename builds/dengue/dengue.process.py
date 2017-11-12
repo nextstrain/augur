@@ -9,6 +9,12 @@ import numpy as np
 from dengue_titers import titer_model, titer_export ## Set up and parameterize the titer model separately for tidiness
 
 ##### Define references and metadata #####
+sanofi_vaccine_strains = {
+    'denv1': 'DENV1/THAILAND/PUO359/1980',
+    'denv2': 'DENV2/THAILAND/PUO218/1980',
+    'denv3': 'DENV3/THAILAND/PAH88188/1988',
+    'denv4': 'DENV4/INDONESIA/S1228/1978',
+    'all': None}
 
 regions = ['africa', 'europe', 'north_america', 'china', 'south_asia',
             'japan_korea', 'south_pacific', 'oceania', 'south_america',
@@ -39,7 +45,7 @@ def make_config (prepared_json, args):
         "in": prepared_json,
         "geo_inference": ['region'], # what traits to perform this on; don't run country (too many demes, too few sequences per deme to be reliable)
         "auspice": { ## settings for auspice JSON export
-            "extra_attr": ['serum'],
+            "extra_attr": ['serum', 'clade', 'dTiter_sanofi'], # keys from tree.tree.clade['attr'] to include in export
             "color_options": { # which traits to color the tree by in auspice; titer colorbys are added in dengue_titers
                 "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
@@ -107,7 +113,7 @@ if __name__=="__main__":
 
                 for region in ['southeast_asia', 'south_america']: #regions:
                     try:
-                    runner.estimate_tree_frequencies(region=region, stiffness=2)
+                        runner.estimate_tree_frequencies(region=region, stiffness=2)
                     except:
                         continue
             # titers
@@ -117,6 +123,7 @@ if __name__=="__main__":
                             lam_avi = runner.config['titers']['lam_avi'],
                             lam_drop = runner.config['titers']['lam_drop'],
                             training_fraction = runner.config['titers']['training_fraction'],
+                            sanofi_strain = sanofi_vaccine_strains[runner.info['lineage']], # vaccine strain for each serotype-specific build
                             plot=False,
                             criterium = lambda node: True) # calculate dTiter for all branches
                 titer_export(runner)
