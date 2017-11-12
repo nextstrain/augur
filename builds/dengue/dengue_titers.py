@@ -94,37 +94,49 @@ def tree_additivity_symmetry(mytitermodel):
     plt.tight_layout()
     plt.savefig('./processed/titer_asymmetry.png')
 
-def titer_model(process, **kwargs):
+def titer_model(process, sanofi_strain = None, plot_symmetry=False, **kwargs):
     '''
-    estimate a titer tree and substitution model using titers in titer_fname.
+    estimate a titer tree model using titers in titer_fname.
     '''
     from base.titer_model import TreeModel, SubstitutionModel
     ## TREE MODEL
     process.titer_tree = TreeModel(process.tree.tree, process.titers, **kwargs)
     process.titer_tree.prepare(**kwargs) # make training set, find subtree with titer measurements, and make_treegraph
-    process.titer_tree.train(**kwargs) # pick longest branch on path between each (test, ref) pair, assign titer drops to this branch
-                             # then calculate a cumulative antigenic evolution score for each node
-    # add tree attributes to the list of attributes that are saved in intermediate files
+    process.titer_tree.train(**kwargs)   # pick longest branch on path between each (test, ref) pair, assign titer drops to this branch
+                                         # then calculate a cumulative antigenic evolution score for each node
+
+    # add attributes for the estimated branch-specific titer drop values (dTiter)
+    # and cumulative (from root) titer drop values (cTiter) to each branch
     for n in process.tree.tree.find_clades():
         n.attr['cTiter'] = n.cTiter
         n.attr['dTiter'] = n.dTiter
 
-    if 'plot_symmetry' in kwargs:
-        tree_additivity_symmetry(process.titer_tree)
-
-    # SUBSTITUTION MODEL
-    # process.titer_subs = SubstitutionModel(process.tree.tree, process.titers, **kwargs)
-    # process.titer_subs.prepare(**kwargs)
-    # process.titer_subs.train(**kwargs)
-
     if kwargs['training_fraction'] != 1.0:
-        process.titer_tree.validate(kwargs) #(plot=True, fname='treeModel_%s.png'%lineage)
-        # process.titer_subs.validate() #(plot=True, fname='subModel_%s.png'%lineage)
+        process.titer_tree.validate(kwargs)
 
-    process.config["auspice"]["color_options"]["cTiter"] = {
-    "menuItem": "antigenic advance", "type": "continuous", "legendTitle": "log2 titer distance from root", "key": "cTiter", "vmin": "0.0", "vmax": "3.5"
-        }
+    if sanofi_strain: # calculate antigenic distance from vaccine strain for each serotype-specific build
+        # find the vaccine strain in the tree
+        sanofi_tip = [i for i in process.tree.tree.find_clades() if i.name==sanofi_strain][0]
+        # sum up dTiter on all the branches on the path between the vaccine strain and each other strain
+        for tip in process.tree.tree.get_terminals():
+            if tip == sanofi_tip:
+                tip.attr['dTiter_sanofi']=0.00
+            else:
+                trace = process.tree.tree.trace(tip, sanofi_tip)
+                trace_dTiter = sum([i.dTiter for i in trace])
+                tip.attr['dTiter_sanofi']= round(trace_dTiter, 2)
+        # export for auspice visualization
+        process.config["auspice"]["color_options"]["dTiter_sanofi"] = {
+        "menuItem": "antigenic dist. from vaccine", "type": "continuous", "legendTitle": "log2 titer distance from sanofi vaccine strain",
+        "key": "vaccine_dTiter", "vmin": "0.0", "vmax": "2.0"}
 
+    else: # export cumulative distance for auspice vis. of the all-serotype build
+        process.config["auspice"]["color_options"]["cTiter"] = {
+        "menuItem": "antigenic dist. from root", "type": "continuous", "legendTitle": "log2 titer distance from root",
+        "key": "cTiter", "vmin": "0.0", "vmax": "2.0"}
+
+    if 'plot_symmetry' == True:
+        tree_additivity_symmetry(process.titer_tree)
 
 def titer_export(process):
     from base.io_util import write_json
@@ -138,14 +150,18 @@ def titer_export(process):
                       'avidity':process.titer_tree.compile_virus_effects(),
                       'dTiter':{n.clade:n.dTiter for n in process.tree.tree.find_clades() if n.dTiter>1e-6}}
         write_json(tree_model, prefix+'tree_model.json')
+
+        validation_values = {'actual': [v[0] for v in process.titer_tree.validation.values()],
+                             'predicted': [v[1] for v in process.titer_tree.validation.values()]}
+        print(validation_values)
+        import pandas as pd
+        validation_values = pd.DataFrame(validation_values)
+        validation_values.to_csv(prefix+'tree_model_validation.csv')
+
+        ### In case we want to also log the regularization params used and resulting performance
+        # outfile = open('./processed/titer_model_error.csv', 'a')
+        # outfile.write('%f,%f,%f,%f,%f,%f\n'%(self.lam_drop, self.lam_avi, self.lam_pot, self.abs_error, self.rms_error, self.r2))
+        # outfile.close()
+
     else:
         print('Tree model not yet trained')
-
-    # if hasattr(process, 'titer_tree'):
-    #     # export the substitution model
-    #     titer_subs_model = {'potency':process.titer_subs.compile_potencies(),
-    #                   'avidity':process.titer_subs.compile_virus_effects(),
-    #                   'substitution':process.titer_subs.compile_substitution_effects()}
-    #     write_json(titer_subs_model, prefix+'titer_subs_model.json')
-    # else:
-    #     print('Substitution model not yet trained')
