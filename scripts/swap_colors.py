@@ -23,6 +23,9 @@ if args['custom_colors']:
     custom_colors = [l.strip() for l in open(custom_colors, 'r').readlines()] # [categorycolor1, categorycolor2,...]
     custom_colors = [split('[\s,\\t]', c, maxsplit=1) for c in custom_colors] # [ [category, color], ...]
     custom_colors = { l[0] : l[1] for l in custom_colors} # { category: color }
+else:
+    custom_colors = None
+
 
 default_colors = [
   [],
@@ -58,6 +61,8 @@ default_colors = [
   ["#511EA8", "#482BB6", "#4039C3", "#3F4ACA", "#3E5CD0", "#416CCE", "#447CCD", "#4989C4", "#4E96BC", "#559FB0", "#5DA8A4", "#66AE96", "#6FB388", "#7AB77C", "#85BA6F", "#91BC64", "#9DBE5A", "#AABD53", "#B6BD4B", "#C2BA46", "#CDB642", "#D6B03F", "#DDA83C", "#E29D39", "#E69036", "#E67F33", "#E56D30", "#E2592C", "#DF4428", "#DC2F24"]
 ]
 
+
+
 def swap_colors(json_file_path):
     '''
     Switches out color ramp in meta.json files.
@@ -70,10 +75,22 @@ def swap_colors(json_file_path):
     for k,v in color_options.items():
         if 'color_map' in v:
             categories, colors = zip(*v['color_map'])
-            try: ## Uses custom colors if provided AND present for all categories in the dataset
+
+            ## Use custom colors if provided AND present for all categories in the dataset
+            if custom_colors and all([category in custom_colors for category in categories]):
                 colors = [ custom_colors[category] for category in categories ]
-            except: ## Falls back to default nextstrain colors
+
+            ## Expand the color palette if we have too many categories
+            elif len(categories) > len(default_colors):
+                from matplotlib.colors import LinearSegmentedColormap, to_hex
+                from numpy import linspace
+                expanded_cmap = LinearSegmentedColormap.from_list('expanded_cmap', default_colors[-1], N=len(categories))
+                discrete_colors = [expanded_cmap(i) for i in linspace(0,1,len(categories))]
+                colors = [to_hex(c).upper() for c in discrete_colors]
+
+            else: ## Falls back to default nextstrain colors
                 colors = default_colors[len(categories)] # based on how many categories are present; keeps original ordering
+
             j['color_options'][k]['color_map'] = map(list, zip(categories, colors))
 
     json.dump(j, open(json_file_path, 'w'), indent=1)
