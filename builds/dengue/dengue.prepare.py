@@ -96,7 +96,7 @@ def make_config(serotype, params):
     config = {
         "dir": "dengue",
         "lineage": serotype,
-        "title": "Genomic epidemiology of dengue virus",
+        "title": "Real-time tracking of dengue evolution",
         "maintainer": ["Sidney Bell", "http://bedford.io/team/sidney-bell/"],
         "file_prefix": file_prefix,
         "input_paths": input_paths,
