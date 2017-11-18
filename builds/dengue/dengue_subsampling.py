@@ -5,7 +5,6 @@ from pprint import pprint
 from base.io_util import myopen
 from base.titer_model import TiterModel
 
-
 def populate_counts(obj):
     sequence_count_total = defaultdict(int)
     sequence_count_region = defaultdict(int)
@@ -18,7 +17,7 @@ def populate_counts(obj):
                               seq.attributes['date'].month)]+=1
     return (sequence_count_total, sequence_count_region)
 
-def dengue_subsampling(params, years_back, titer_values):
+def dengue_subsampling(params, years_back, titer_values, force_include = []):
     ### Category: bin on region, year, month
     category = lambda x: (x.attributes['region'],
                           x.attributes['date'].year,
@@ -27,10 +26,16 @@ def dengue_subsampling(params, years_back, titer_values):
     ### Priority: # titer measurements, # unambiguous sites
     if titer_values is not None:
         titer_count = TiterModel.count_strains(titer_values)
+
         def priority(seq):
-            sname = seq.attributes['strain']
-            if sname in titer_count:
-                pr = titer_count[sname]
+            strain = seq.attributes['strain']
+            accession = seq.attributes['accession']
+
+            if strain in force_include or accession in force_include:
+                return 10000
+
+            if strain in titer_count:
+                pr = titer_count[strain]
             else:
                 pr = 0
             return pr + len(seq.seq)*0.00005 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD'])
@@ -38,7 +43,19 @@ def dengue_subsampling(params, years_back, titer_values):
     else:
         print("Couldn't load titer information - using random priorities")
         def priority(seq):
-            return np.random.random()
+            strain = seq.attributes['strain']
+            accession = seq.attributes['accession']
+            if strain in force_include or accession in force_include:
+                return 10000
+            else:
+                return np.random.random()
+
+    return {
+        "category": category,
+        "priority": priority,
+        "threshold": 3
+    }
+
 
     ### Per-region threshold
     # sampling_threshold = 3
@@ -68,10 +85,3 @@ def dengue_subsampling(params, years_back, titer_values):
     #                     break
     #             return max(1, int(thres))
     #         return threshold_fn
-
-    threshold = 3
-    return {
-        "category": category,
-        "priority": priority,
-        "threshold": threshold
-    }

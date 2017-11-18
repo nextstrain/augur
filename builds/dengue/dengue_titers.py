@@ -1,13 +1,22 @@
-def tree_additivity_symmetry(mytitermodel, mtype='tree'):
-    ''' Adapted from https://github.com/blab/nextflu/blob/pnas-hi-titers/augur/src/diagnostic_figures.py#L314 '''
+def tree_additivity_symmetry(mytitermodel):
+    '''
+    The titer model makes two major assumptions:
+    1 - Once we correct for virus avidity and serum potency, titers are roughly symmetric
+    2 - Antigenic relationships evolve in a tree-like fashion
+
+    We can check the validity of these assumptions by plotting:
+    1 - titer symmetry (T(serum i,virus j) - vice versa)
+    2 - For random quartets of antigenic distances, how do the relative distances between the tips relate to one another?
+        If they're tree-like, we expect the largest - second largest distance to be roughly exponentially distributed.
+        How does this compare to quartets of values pulled randomly from a normal distribution?
+
+    Code adapted from https://github.com/blab/nextflu/blob/pnas-hi-titers/augur/src/diagnostic_figures.py#L314
+    '''
     import numpy as np
     from matplotlib import pyplot as plt
 
-    figheight=8
-    fs = 12
     reciprocal_measurements = []
     reciprocal_measurements_titers = []
-    print(mytitermodel.__dict__.keys())
     for (testvir, serum) in mytitermodel.titers_normalized:
         tmp_recip = [v for v in mytitermodel.titers_normalized if serum[0]==v[0] and testvir==v[1][0]]
         for v in tmp_recip:
@@ -24,21 +33,18 @@ def tree_additivity_symmetry(mytitermodel, mtype='tree'):
                                                   (val_fwd - mytitermodel.serum_potency[serum] - mytitermodel.virus_effect[testvir]),
                                                   (val_bwd - mytitermodel.serum_potency[v[1]] - mytitermodel.virus_effect[serum[0]]),
                                                   ])
-    plt.figure(figsize=(1.6*figheight, figheight))
+    plt.figure(figsize=(9,6))
     ax = plt.subplot(121)
-    plt.text(0.05, 0.93,  ('tree model' if mtype=='tree' else 'mutation model'),
-             weight='bold', fontsize=fs, transform=plt.gca().transAxes)
     # multiple the difference by the +/- one to polarize all comparisons by date
     vals= [x[2]*x[-1] for x in reciprocal_measurements]
-    plt.hist(vals, alpha=0.7, label=r"$H_{a\beta}-H_{b\alpha}$", normed=True)
+    plt.hist(vals, alpha=0.7, label=r"Raw $T_{ij}-T_{ji}$", normed=True)
     print("raw reciprocal titers: ", str(np.round(np.mean(vals),3))+'+/-'+str(np.round(np.std(vals),3)))
     vals= [x[3]*x[-1] for x in reciprocal_measurements]
-    plt.hist(vals, alpha=0.7, label=r"sym. part", normed=True)
-    print("symmetric component: ", str(np.round(np.mean(vals),3))+'+/-'+str(np.round(np.std(vals),3)))
-    plt.xlabel('titer asymmetry', fontsize=fs)
-    ax.tick_params(axis='both', labelsize=fs)
-    # add_panel_label(ax, 'A', x_offset=-0.2)
-    plt.legend(fontsize=fs, handlelength=0.8)
+    plt.hist(vals, alpha=0.7, label=r"Normalized $T_{ij}-T_{ji}$", normed=True)
+    print("normalized reciprocal titers: ", str(np.round(np.mean(vals),3))+'+/-'+str(np.round(np.std(vals),3)))
+    plt.xlabel('Titer asymmetry', fontsize=12)
+    ax.tick_params(axis='both', labelsize=12)
+    plt.legend(fontsize=12, handlelength=0.8)
     plt.tight_layout()
 
     ####  Analyze all cliques #######################################################
@@ -52,9 +58,7 @@ def tree_additivity_symmetry(mytitermodel, mtype='tree'):
         for w in all_reciprocal[:vi]:
             if ((v[0], w) in mytitermodel.titers_normalized) and ((w[0], v) in mytitermodel.titers_normalized):
                 G.add_edge(v,w)
-    # print "generated graph of all cliques"
     C = nx.find_cliques(G)
-    # print "found cliques"
     def symm_distance(v,w):
         res =  mytitermodel.titers_normalized[(v[0], w)] - mytitermodel.virus_effect[v[0]] - mytitermodel.serum_potency[w]
         res += mytitermodel.titers_normalized[(w[0], v)] - mytitermodel.virus_effect[w[0]] - mytitermodel.serum_potency[v]
@@ -81,47 +85,59 @@ def tree_additivity_symmetry(mytitermodel, mtype='tree'):
 
     ax=plt.subplot(122)
     plt.hist(additivity_test['control'], alpha=0.7,normed=True, bins = np.linspace(0,3,18),
-             label = 'control, mean='+str(np.round(np.mean(additivity_test['control']),2)))
+             label = 'Control, mean='+str(np.round(np.mean(additivity_test['control']),2)))
     plt.hist(additivity_test['test'], alpha=0.7,normed=True, bins = np.linspace(0,3,18),
-             label = 'quartet, mean='+str(np.round(np.mean(additivity_test['test']),2)))
-    ax.tick_params(axis='both', labelsize=fs)
-    plt.xlabel(r'$\Delta$ top two distance sums', fontsize = fs)
-    plt.legend(fontsize=fs, handlelength=0.8)
-    # add_panel_label(ax, 'B', x_offset=-0.2)
+             label = 'Quartet, mean='+str(np.round(np.mean(additivity_test['test']),2)))
+    ax.tick_params(axis='both', labelsize=12)
+    plt.xlabel(r'$\Delta$ top two distance sums', fontsize = 12)
+    plt.legend(fontsize=12, handlelength=0.8)
     plt.tight_layout()
     plt.savefig('./processed/titer_asymmetry.png')
 
-def titer_model(process, **kwargs):
+def titer_model(process, sanofi_strain = None, plot_symmetry=False, **kwargs):
     '''
-    estimate a titer tree and substitution model using titers in titer_fname.
+    estimate a titer tree model using titers in titer_fname.
     '''
     from base.titer_model import TreeModel, SubstitutionModel
     ## TREE MODEL
     process.titer_tree = TreeModel(process.tree.tree, process.titers, **kwargs)
     process.titer_tree.prepare(**kwargs) # make training set, find subtree with titer measurements, and make_treegraph
-    process.titer_tree.train(**kwargs) # pick longest branch on path between each (test, ref) pair, assign titer drops to this branch
-                             # then calculate a cumulative antigenic evolution score for each node
-    # add tree attributes to the list of attributes that are saved in intermediate files
+    process.titer_tree.train(**kwargs)   # pick longest branch on path between each (test, ref) pair, assign titer drops to this branch
+                                         # then calculate a cumulative antigenic evolution score for each node
+
+    # add attributes for the estimated branch-specific titer drop values (dTiter)
+    # and cumulative (from root) titer drop values (cTiter) to each branch
     for n in process.tree.tree.find_clades():
         n.attr['cTiter'] = n.cTiter
         n.attr['dTiter'] = n.dTiter
 
-    if 'plot_symmetry' in kwargs:
-        tree_additivity_symmetry(process.titer_tree)
-
-    # SUBSTITUTION MODEL
-    # process.titer_subs = SubstitutionModel(process.tree.tree, process.titers, **kwargs)
-    # process.titer_subs.prepare(**kwargs)
-    # process.titer_subs.train(**kwargs)
-
     if kwargs['training_fraction'] != 1.0:
-        process.titer_tree.validate(kwargs) #(plot=True, fname='treeModel_%s.png'%lineage)
-        # process.titer_subs.validate() #(plot=True, fname='subModel_%s.png'%lineage)
+        process.titer_tree.validate(kwargs)
 
-    process.config["auspice"]["color_options"]["cTiter"] = {
-    "menuItem": "antigenic advance", "type": "continuous", "legendTitle": "log2 titer distance from root", "key": "cTiter", "vmin": "0.0", "vmax": "3.5"
-        }
+    if sanofi_strain: # calculate antigenic distance from vaccine strain for each serotype-specific build
+        # find the vaccine strain in the tree
+        sanofi_tip = [i for i in process.tree.tree.find_clades() if i.name==sanofi_strain][0]
+        # sum up dTiter on all the branches on the path between the vaccine strain and each other strain
+        for tip in process.tree.tree.find_clades():
+            if tip == sanofi_tip:
+                tip.attr['dTiter_sanofi']=0.00
+            else:
+                trace = process.tree.tree.trace(tip, sanofi_tip)
+                trace_dTiter = sum([i.dTiter for i in trace])
+                tip.attr['dTiter_sanofi']= round(trace_dTiter, 2)
+                
+        # export for auspice visualization
+        process.config["auspice"]["color_options"]["dTiter_sanofi"] = {
+        "menuItem": "antigenic dist. from vaccine", "type": "continuous", "legendTitle": "log2 titer distance from sanofi vaccine strain",
+        "key": "vaccine_dTiter", "vmin": "0.0", "vmax": "2.0"}
 
+    else: # export cumulative distance for auspice vis. of the all-serotype build
+        process.config["auspice"]["color_options"]["cTiter"] = {
+        "menuItem": "antigenic dist. from root", "type": "continuous", "legendTitle": "log2 titer distance from root",
+        "key": "cTiter", "vmin": "0.0", "vmax": "2.0"}
+
+    if 'plot_symmetry' == True:
+        tree_additivity_symmetry(process.titer_tree)
 
 def titer_export(process):
     from base.io_util import write_json
@@ -135,14 +151,18 @@ def titer_export(process):
                       'avidity':process.titer_tree.compile_virus_effects(),
                       'dTiter':{n.clade:n.dTiter for n in process.tree.tree.find_clades() if n.dTiter>1e-6}}
         write_json(tree_model, prefix+'tree_model.json')
+
+        validation_values = {'actual': [v[0] for v in process.titer_tree.validation.values()],
+                             'predicted': [v[1] for v in process.titer_tree.validation.values()]}
+        print(validation_values)
+        import pandas as pd
+        validation_values = pd.DataFrame(validation_values)
+        validation_values.to_csv(prefix+'tree_model_validation.csv')
+
+        ### In case we want to also log the regularization params used and resulting performance
+        # outfile = open('./processed/titer_model_error.csv', 'a')
+        # outfile.write('%f,%f,%f,%f,%f,%f\n'%(self.lam_drop, self.lam_avi, self.lam_pot, self.abs_error, self.rms_error, self.r2))
+        # outfile.close()
+
     else:
         print('Tree model not yet trained')
-
-    # if hasattr(process, 'titer_tree'):
-    #     # export the substitution model
-    #     titer_subs_model = {'potency':process.titer_subs.compile_potencies(),
-    #                   'avidity':process.titer_subs.compile_virus_effects(),
-    #                   'substitution':process.titer_subs.compile_substitution_effects()}
-    #     write_json(titer_subs_model, prefix+'titer_subs_model.json')
-    # else:
-    #     print('Substitution model not yet trained')
