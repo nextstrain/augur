@@ -118,13 +118,14 @@ def titer_model(process, sanofi_strain = None, plot_symmetry=False, **kwargs):
         # find the vaccine strain in the tree
         sanofi_tip = [i for i in process.tree.tree.find_clades() if i.name==sanofi_strain][0]
         # sum up dTiter on all the branches on the path between the vaccine strain and each other strain
-        for tip in process.tree.tree.get_terminals():
+        for tip in process.tree.tree.find_clades():
             if tip == sanofi_tip:
                 tip.attr['dTiter_sanofi']=0.00
             else:
                 trace = process.tree.tree.trace(tip, sanofi_tip)
                 trace_dTiter = sum([i.dTiter for i in trace])
                 tip.attr['dTiter_sanofi']= round(trace_dTiter, 2)
+                
         # export for auspice visualization
         process.config["auspice"]["color_options"]["dTiter_sanofi"] = {
         "menuItem": "antigenic dist. from vaccine", "type": "continuous", "legendTitle": "log2 titer distance from sanofi vaccine strain",
