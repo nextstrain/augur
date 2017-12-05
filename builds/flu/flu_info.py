@@ -183,7 +183,7 @@ reference_viruses = {
     'h3n2':[
         'A/Wisconsin/67/2005', 'A/Brisbane/10/2007', 'A/Perth/16/2009', 'A/Victoria/361/2011',
         'A/Texas/50/2012', 'A/Switzerland/9715293/2013', 'A/HongKong/4801/2014', 'A/Hawaii/47/2014',
-        'A/Michigan/14/2014', 'A/NewJersey/26/2014', 'A/HongKong/7127/2014',
+        'A/Michigan/15/2014', 'A/NewJersey/26/2014', 'A/HongKong/7127/2014',
         'A/SouthAustralia/55/2014', 'A/NewCaledonia/71/2014', 'A/Stockholm/6/2014',
         'A/Wisconsin/20/2015', 'A/Wisconsin/66/2015', 'A/Ontario/RV2414/2015',
         'A/Singapore/Infimh-16-0019/2016', 'A/Texas/88/2016', 'A/Idaho/33/2016', 'A/Texas/88/2016',
