@@ -82,7 +82,7 @@ outliers = {
         "B/Cambodia/30/2011", "B/Cambodia/62/2011", "B/Cambodia/89/2011", "B/Cambodia/V1005378/2011",
         "B/Stockholm/7/2011", "B/Bangkok/SI17/2012", "B/Bangkok/SI58/2012", "B/SouthAustralia/81/2012",
         "B/Netherlands/76/2014", "B/NewCaledonia/119/2015", "B/Thailand/CU-B11637/2015",
-        "B/Brisbane/14/2016", "B/Sydney/6/2016"
+        "B/Brisbane/14/2016", "B/Sydney/6/2016", "B/Netherlands/883/2016"
     ],
     "yam":[
         "B/Kisumu/7/2005", "B/Nairobi/351/2005", "B/Kolkata/2546/2009", "B/Kolkata/N-1272/2009",
