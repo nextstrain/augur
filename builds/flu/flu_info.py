@@ -178,23 +178,32 @@ reference_maps = {
 ## lots of the references share data
 reference_maps["yam"]["na"]["metadata"] = reference_maps["yam"]["ha"]["metadata"]
 
+# these will be included in narrower builds, for example 'A/Michigan/15/2014' will appear in a 2015-2017
 reference_viruses = {
     'h3n2':[
-        'A/Wisconsin/67/2005', 'A/Brisbane/10/2007', 'A/Perth/16/2009',
-        'A/Victoria/361/2011','A/Texas/50/2012', 'A/Switzerland/9715293/2013',
-        'A/Michigan/15/2014', 'A/HongKong/4801/2014', 'A/Singapore/Infimh-16-0019/2016'
+        'A/Wisconsin/67/2005', 'A/Brisbane/10/2007', 'A/Perth/16/2009', 'A/Victoria/361/2011',
+        'A/Texas/50/2012', 'A/Switzerland/9715293/2013', 'A/HongKong/4801/2014', 'A/Hawaii/47/2014',
+        'A/Michigan/14/2014', 'A/NewJersey/26/2014', 'A/HongKong/7127/2014',
+        'A/SouthAustralia/55/2014', 'A/NewCaledonia/71/2014', 'A/Stockholm/6/2014',
+        'A/Wisconsin/20/2015', 'A/Wisconsin/66/2015', 'A/Ontario/RV2414/2015',
+        'A/Singapore/Infimh-16-0019/2016', 'A/Texas/88/2016', 'A/Idaho/33/2016', 'A/Texas/88/2016',
+        'A/NorthCarolina/4/2016', 'A/Delaware/32/2016', 'A/Florida/23/2017', 'A/Washington/16/2017'
     ],
     'h1n1pdm':[
-        'A/California/7/2009', 'A/Michigan/45/2015'
+        'A/California/7/2009', 'A/Bangladesh/2021/2012', 'A/SouthAfrica/3626/2013',
+        'A/Florida/62/2014', 'A/Michigan/45/2015', 'A/Iowa/53/2015', 'A/StPetersburg/61/2015',
+        'A/Minnesota/32/2015', 'A/Bangladesh/3002/2015', 'A/Indiana/21/2016'
     ],
     'vic':[
-        'B/Shangdong/7/1997', 'B/HongKong/330/2001', 'B/Malaysia/2506/2004',
-        'B/Brisbane/60/2008'
+        'B/Shangdong/7/1997', 'B/HongKong/330/2001', 'B/Malaysia/2506/2004', 'B/Ohio/1/2005',
+        'B/Brisbane/60/2008', 'B/Utah/8/2012', 'B/Texas/2/2013', 'B/Florida/33/2014',
+        'B/Indiana/25/2015', 'B/Florida/78/2015'
     ],
     'yam':[
-        'B/Beijing/184/1993', 'B/Sichuan/379/1999', 'B/Shanghai/361/2002',
-        'B/Florida/4/2006', 'B/Wisconsin/1/2010', 'B/Massachusetts/2/2012',
-        'B/Phuket/3073/2013'
+        'B/Beijing/184/1993', 'B/Sichuan/379/1999', 'B/Shanghai/361/2002', 'B/Florida/4/2006',
+        'B/Wisconsin/1/2010', 'B/Phuket/3073/2013', 'B/Utah/9/2014', 'B/Brisbane/9/2014',
+        'B/Guangdong-Liwan/1133/2014', 'B/California/12/2015', 'B/Arizona/10/2015',
+        'B/NewHampshire/1/2016'
     ]
 }
 
