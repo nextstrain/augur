@@ -50,7 +50,8 @@ process = {
             "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
             "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
         },
-        "controls": {}
+        "controls": {},
+        "extra_jsons": ["frequencies", "sequences", "entropy"]
     },
     "clock_filter": {
         "n_iqd": 3,

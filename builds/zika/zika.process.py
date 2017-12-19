@@ -37,6 +37,7 @@ config = {
         },
         "controls": {'authors':['authors']},
         "defaults": {'mapTriplicate': True},
+        "extra_jsons": []
     },
     "timetree_options": {
         "Tc": 'opt',

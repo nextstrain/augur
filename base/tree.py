@@ -484,7 +484,7 @@ class tree(object):
             self.dump_attr.extend(['tvalue'])
 
 
-    def export(self, path = '', extra_attr = ['aa_muts', 'clade'], plain_export = 10, indent=None):
+    def export(self, path = '', extra_attr = ['aa_muts', 'clade'], plain_export = 10, indent=None, write_seqs_json=True):
         '''
         export the tree data structure along with the sequence information as
         json files for display in web browsers.
@@ -525,8 +525,8 @@ class tree(object):
                         elems[node.clade][prot] = differences
                     else:
                         elems[node.clade][prot] = seq
-
-        write_json(elems, sequence_fname, indent=indent)
+        if write_seqs_json:
+            write_json(elems, sequence_fname, indent=indent)
 
 
 # if __name__=="__main__":

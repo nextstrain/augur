@@ -647,15 +647,21 @@ class process(object):
         indent = 2
 
         ## ENTROPY (alignment diversity) ##
-        self.seqs.export_diversity(fname=prefix+'_entropy.json', indent=indent)
+        if "entropy" in self.config["auspice"]["extra_jsons"]:
+            self.seqs.export_diversity(fname=prefix+'_entropy.json', indent=indent)
 
-        ## TREE (includes inferred states, mutations etc) ##
+        ## TREE & SEQUENCES ##
         if hasattr(self, 'tree') and self.tree is not None:
-            self.tree.export(path=prefix, extra_attr = self.config["auspice"]["extra_attr"]
-                         + ["muts", "aa_muts","attr", "clade"], indent = indent)
+            self.tree.export(
+                path = prefix,
+                extra_attr = self.config["auspice"]["extra_attr"] + ["muts", "aa_muts","attr", "clade"],
+                indent = indent,
+                write_seqs_json = "sequences" in self.config["auspice"]["extra_jsons"]
+            )
 
         ## FREQUENCIES ##
-        export_frequency_json(self, prefix=prefix, indent=indent)
+        if "frequencies" in self.config["auspice"]["extra_jsons"]:
+            export_frequency_json(self, prefix=prefix, indent=indent)
 
         ## METADATA ##
         export_metadata_json(self, prefix=prefix, indent=indent)
