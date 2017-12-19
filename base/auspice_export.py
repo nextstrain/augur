@@ -58,6 +58,21 @@ def summarise_publications_from_tree(tree):
                 info[authors][attr] = clade.attr[attr]
     return (info, mapping)
 
+def extract_annotations(runner):
+    annotations = {}
+    for name, prot in runner.proteins.iteritems():
+        annotations[name] = {
+            "start": int(prot.start),
+            "end": int(prot.end),
+            "strand": prot.strand
+        }
+    # nucleotides:
+    annotations["nuc"] = {
+        "start": 1,
+        "end": len(str(runner.reference_seq.seq)) + 1
+    }
+    return annotations;
+
 def export_metadata_json(process, prefix, indent):
     process.log.notify("Writing out metaprocess")
     meta_json = {}
@@ -92,6 +107,7 @@ def export_metadata_json(process, prefix, indent):
     meta_json["title"] = process.info["title"]
     meta_json["maintainer"] = process.info["maintainer"]
     meta_json["filters"] = process.info["auspice_filters"]
+    meta_json["annotations"] = extract_annotations(process)
 
     if "defaults" in process.config["auspice"]:
         meta_json["defaults"] = process.config["auspice"]["defaults"]
