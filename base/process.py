@@ -7,6 +7,7 @@ from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 from base.sequences_process import sequence_set
 from base.utils import num_date, save_as_nexus, parse_date
 from base.tree import tree
+from base.fitness_model import fitness_model
 from base.frequencies import alignment_frequencies, tree_frequencies, make_pivots
 from base.auspice_export import export_metadata_json, export_frequency_json
 import numpy as np
@@ -446,7 +447,7 @@ class process(object):
         self.tree_frequency_counts = {}
 
 
-    def estimate_tree_frequencies(self, region='global', pivots=24):
+    def estimate_tree_frequencies(self, region='global', pivots=24, stiffness=20.0):
         '''
         estimate frequencies of clades in the tree, possibly region specific
         '''
@@ -470,9 +471,8 @@ class process(object):
 
         tree_freqs = tree_frequencies(self.tree.tree, self.pivots, method='SLSQP',
                                       node_filter = node_filter_func,
-                                      ws = max(2,self.tree.tree.count_terminals()//10))
-                                    # who knows what kwargs are needed here
-                                    #   **self.kwargs)
+                                      ws = max(2,self.tree.tree.count_terminals()//10),
+                                      stiffness = stiffness)
 
         tree_freqs.estimate_clade_frequencies()
         conf = tree_freqs.calc_confidence()
@@ -605,6 +605,33 @@ class process(object):
                     partial_matches = filter(lambda x:match(x,[allele]), self.tree.tree.get_nonterminals())
                     print('Found %d partial matches for allele '%len(partial_matches), allele)
 
+    def annotate_fitness(self):
+        """Run the fitness prediction model and annotate the tree's nodes with fitness
+        values. Returns the resulting fitness model instance.
+        """
+        kwargs = {
+            "tree": self.tree.tree,
+            "frequencies": self.tree_frequencies,
+            "time_interval": self.info["time_interval"],
+            "pivot_spacing": self.config["pivot_spacing"]
+        }
+
+        if "predictors" in self.config:
+            kwargs["predictor_input"] = self.config["predictors"]
+
+        if "epitope_mask" in self.config:
+            kwargs["epitope_masks_fname"] = self.config["epitope_mask"]
+
+        if "epitope_mask_version" in self.config:
+            kwargs["epitope_mask_version"] = self.config["epitope_mask_version"]
+
+        if self.config["subprocess_verbosity_level"] > 0:
+            kwargs["verbose"] = 1
+
+        model = fitness_model(**kwargs)
+        model.predict()
+
+        return model
 
     def make_control_json(self, controls):
         controls_json = {}
@@ -634,15 +661,21 @@ class process(object):
         indent = 2
 
         ## ENTROPY (alignment diversity) ##
-        self.seqs.export_diversity(fname=prefix+'_entropy.json', indent=indent)
+        if "entropy" in self.config["auspice"]["extra_jsons"]:
+            self.seqs.export_diversity(fname=prefix+'_entropy.json', indent=indent)
 
-        ## TREE (includes inferred states, mutations etc) ##
+        ## TREE & SEQUENCES ##
         if hasattr(self, 'tree') and self.tree is not None:
-            self.tree.export(path=prefix, extra_attr = self.config["auspice"]["extra_attr"]
-                         + ["muts", "aa_muts","attr", "clade"], indent = indent)
+            self.tree.export(
+                path = prefix,
+                extra_attr = self.config["auspice"]["extra_attr"] + ["muts", "aa_muts","attr", "clade"],
+                indent = indent,
+                write_seqs_json = "sequences" in self.config["auspice"]["extra_jsons"]
+            )
 
         ## FREQUENCIES ##
-        export_frequency_json(self, prefix=prefix, indent=indent)
+        if "frequencies" in self.config["auspice"]["extra_jsons"]:
+            export_frequency_json(self, prefix=prefix, indent=indent)
 
         ## METADATA ##
         export_metadata_json(self, prefix=prefix, indent=indent)

@@ -1,11 +1,7 @@
-# deprecated - can be removed at some point #
-data/
-build/
-store/
-
 # For augur repo #
 environment*
 temp*
+data/
 dengue/utils/
 prepared/
 processed/
@@ -13,6 +9,13 @@ auspice/
 test_input/
 test_output/
 scratch/
+
+# For Python #
+##############
+*.pyc
+.tox/
+.cache/
+augur.egg-info/
 
 # Compiled source #
 ###################
@@ -22,7 +25,6 @@ scratch/
 *.exe
 *.o
 *.so
-*.pyc
 
 # OS generated files #
 ######################

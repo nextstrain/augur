@@ -10,11 +10,11 @@ For examples see: [zika](../zika/zika.prepare.md) (simple) and [flu](../flu/flu.
 The `config` dict is passed to the `Prepare` class.
 Many options have defaults provided, and if so are not required to be in the config file.
 
-#### general settings
+#### general settings (including some auspice-specific settings)
 * `dir`: the current directory - not _augur_ but the virus itself
 * `file_prefix`: string used to name the JSONs
 * `title`: string used for display in auspice (optional - `file_prefix` used if not specified)
-* `maintainer`: array containing two strings - the name of the maintainer (or twitter handle) and a URL (used in auspice)
+* `maintainer`: array containing two strings - the name of the maintainer (or twitter handle) and a URL (shown in auspice footer)
 * `output_folder`: (default: "prepared") will be created inside the current directory and contgain logs + JSONs.
 * `segments`: array of strings, or `False` if not segmented...
 * `input_format`: (default: fasta) (to do: allow other input formats)
@@ -25,6 +25,7 @@ Many options have defaults provided, and if so are not required to be in the con
 ```
 * `date_format`: (default: `["%Y-%m-%d"]`). Encoding format for date. Can provide multiple formats and they will be tried in order.
 * `require_dates` {bool} (default: True) Should sequences without dates be discarded?
+* `auspice_filters` {list} (default: []) Those ColorBys which auspice should enable as filters. E.g. "region", "country" etc. Authors are handled separately so don't need to be specified here. These values must also be set as `colors` (see below).
 
 #### filtering settings
 * `filters`: {Tuple. Of Tuples. With potentially dictionaries inside. `((a, b), (a, b), ...)`}

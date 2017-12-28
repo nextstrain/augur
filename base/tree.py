@@ -9,8 +9,9 @@ from pprint import pprint
 from pdb import set_trace
 from Bio import Phylo
 import cPickle as pickle
+from collections import OrderedDict
 try:
-    from treetime_augur import TreeTime, utils
+    from treetime_augur import TreeTime
 except ImportError:
     print("Couldn't import treetime_augur. Here's the searched paths:")
     pprint(sys.path)
@@ -307,6 +308,8 @@ class tree(object):
             if hasattr(node, 'attr'):
                 if attr in node.attr:
                     node.sequence=np.array([alphabet_rev[node.attr[attr]]])
+                else:
+                    node.sequence=np.array([missing_char])
             else:
                 node.sequence=np.array([missing_char])
         for node in self.tree.get_nonterminals():
@@ -389,20 +392,27 @@ class tree(object):
         in self.proteins. these are expected to be SeqFeatures
         '''
         from Bio import Seq
+
+        # Sort proteins by start position of the corresponding SeqFeature entry.
+        sorted_proteins = sorted(self.proteins.items(), key=lambda protein_pair: protein_pair[1].start)
+
         for node in self.tree.find_clades(order='preorder'):
             if not hasattr(node, "translations"):
-                node.translations={}
+                # Maintain genomic order of protein translations for easy
+                # assembly by downstream functions.
+                node.translations=OrderedDict()
                 node.aa_mutations = {}
-            if node.up is None:
-                for prot in self.proteins:
-                    node.translations[prot] = Seq.translate(str(self.proteins[prot].extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
+
+            for prot, feature in sorted_proteins:
+                node.translations[prot] = Seq.translate(str(feature.extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
+
+                if node.up is None:
                     node.aa_mutations[prot] = []
-            else:
-                for prot in self.proteins:
-                    node.translations[prot] = Seq.translate(str(self.proteins[prot].extract(Seq.Seq("".join(node.sequence)))).replace('-', 'N'))
+                else:
                     node.aa_mutations[prot] = [(a,pos,d) for pos, (a,d) in
-                                    enumerate(zip(node.up.translations[prot],
-                                                  node.translations[prot])) if a!=d]
+                                               enumerate(zip(node.up.translations[prot],
+                                                             node.translations[prot])) if a!=d]
+
         self.dump_attr.append('translations')
 
 
@@ -474,7 +484,7 @@ class tree(object):
             self.dump_attr.extend(['tvalue'])
 
 
-    def export(self, path = '', extra_attr = ['aa_muts', 'clade'], plain_export = 10, indent=None):
+    def export(self, path = '', extra_attr = ['aa_muts', 'clade'], plain_export = 10, indent=None, write_seqs_json=True):
         '''
         export the tree data structure along with the sequence information as
         json files for display in web browsers.
@@ -515,8 +525,8 @@ class tree(object):
                         elems[node.clade][prot] = differences
                     else:
                         elems[node.clade][prot] = seq
-
-        write_json(elems, sequence_fname, indent=indent)
+        if write_seqs_json:
+            write_json(elems, sequence_fname, indent=indent)
 
 
 # if __name__=="__main__":

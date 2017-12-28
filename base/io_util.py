@@ -80,7 +80,7 @@ def json_to_tree(json_dict):
     by `tree_to_json`.
 
     >>> import json
-    >>> json_fh = open("tests/data/flu_h3n2_ha_3y_tree.json", "r")
+    >>> json_fh = open("tests/json_tree_to_nexus/flu_h3n2_ha_3y_tree.json", "r")
     >>> json_dict = json.load(json_fh)
     >>> tree = json_to_tree(json_dict)
     >>> tree.name

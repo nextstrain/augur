@@ -1,5 +1,6 @@
 from __future__ import division, print_function
 from pprint import pprint
+import sys
 
 """
 Here are the default config dictionaries.
@@ -27,8 +28,9 @@ prepare = {
     "require_dates": True,
     "subsample": False,
     "ensure_all_segments": True, #this is ignored if only 1 segment
-    "lat_long_defs": '../../fauna/source-data/geo_lat_long.tsv',
-    "maintainer": "unknown"
+    "lat_long_defs": '../../../fauna/source-data/geo_lat_long.tsv',
+    "maintainer": "unknown",
+    "auspice_filters": [],
 }
 
 process = {
@@ -48,7 +50,8 @@ process = {
             "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
             "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
         },
-        "controls": {}
+        "controls": {},
+        "extra_jsons": ["frequencies", "sequences", "entropy"]
     },
     "clock_filter": {
         "n_iqd": 3,
@@ -95,6 +98,17 @@ def combine_configs(config_type, user_config):
 
     if config_type == "prepare" and "title" not in config:
         config["title"] = config["file_prefix"]
+
+    if config_type == "prepare" and "auspice_filters" in config:
+        try:
+            assert(type(config["auspice_filters"]) is list)
+        except AssertionError:
+            print("Fatal Error: Auspice filters in config file must be a list")
+            sys.exit(2)
+        for filterName in config["auspice_filters"]:
+            if filterName not in config["colors"]:
+                print("Fatal Error: Auspice filter {} not a colorBy".format(filterName))
+                sys.exit(2)
 
     # pprint(config)
     # pprint(config["auspice"])
