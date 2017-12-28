@@ -64,6 +64,12 @@ def H3N2_scores(self, tree, epitope_mask_file, epitope_mask_version='wolf'):
     def epitope_sites(aa):
         return aa[epitope_mask[:len(aa)]]
 
+
+    def glycosylation_count(aa):
+        # need to restrict to surface residues.
+        return len(re.findall('N[^P][ST][^P]', aa))
+
+
     def nonepitope_sites(aa):
         return aa[~epitope_mask[:len(aa)]]
 
@@ -119,6 +125,7 @@ def H3N2_scores(self, tree, epitope_mask_file, epitope_mask_version='wolf'):
         node.attr['ep'] = epitope_distance(total_aa_seq, root_total_aa_seq)
         node.attr['ne'] = nonepitope_distance(total_aa_seq, root_total_aa_seq)
         node.attr['rb'] = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
+        node.attr['glyc'] = glycosylation_count(total_aa_seq)
 
     self.config["auspice"]["color_options"]["ep"] = {
         "menuItem": "epitope mutations",
@@ -137,4 +144,10 @@ def H3N2_scores(self, tree, epitope_mask_file, epitope_mask_version='wolf'):
         "type": "continuous",
         "legendTitle": "Receptor binding mutations",
         "key": "rb"
+    }
+    self.config["auspice"]["color_options"]["glyc"] = {
+        "menuItem": "potential glycosylation sites",
+        "type": "continuous",
+        "legendTitle": "Pot. glycosylation count",
+        "key": "glyc"
     }
