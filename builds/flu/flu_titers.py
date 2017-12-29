@@ -127,6 +127,44 @@ def H3N2_scores(self, tree, epitope_mask_file, epitope_mask_version='wolf'):
         node.attr['rb'] = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
         node.attr['glyc'] = glycosylation_count(total_aa_seq)
 
+    for node in tree.get_terminals():
+        node.tip_count=1.0
+        if ('age' in node.attr) and type(node.attr['age']) in [str, unicode]:
+            tmp_age = node.attr['age']
+            if tmp_age[-1] in ['y', 'm']:
+                node.attr['age'] = int(tmp_age[:-1])
+                if tmp_age[-1]=='m':
+                    node.attr['age']/=12.0
+                elif node.attr['age']>120:
+                    node.attr['age'] = 'unknown'
+            else:
+                node.attr['age'] = 'unknown'
+        else:
+            node.attr['age'] = 'unknown'
+
+
+    for node in tree.get_nonterminals(order='postorder'):
+        valid_ages = [c.attr['age'] for c in node if c.attr['age'] is not "unknown"]
+        valid_tipcounts = [c.tip_count for c in node if c.attr['age'] is not "unknown"]
+        if len(valid_ages):
+            node.attr['age'] = np.sum([a*t for a,t in zip(valid_ages, valid_tipcounts)])/np.sum(valid_tipcounts)
+            node.tip_count = np.sum(valid_tipcounts)
+        else:
+            node.attr['age'] = "unknown"
+
+    for node in tree.get_terminals():
+        node.tip_count=1.0
+        if ('gender' in node.attr) and type(node.attr['gender']) in [str, unicode]:
+            g = node.attr["gender"]
+            node.attr["num_gender"] = -1 if g=='male' else (1 if g=='female' else 0)
+        else:
+            node.attr["num_gender"] = 0
+
+    for node in tree.get_nonterminals(order='postorder'):
+        node.tip_count = np.sum([c.tip_count for c in node])
+        node.attr['num_gender'] = np.sum([c.attr['num_gender']*c.tip_count for c in node])/node.tip_count
+
+
     self.config["auspice"]["color_options"]["ep"] = {
         "menuItem": "epitope mutations",
         "type": "continuous",
@@ -150,4 +188,16 @@ def H3N2_scores(self, tree, epitope_mask_file, epitope_mask_version='wolf'):
         "type": "continuous",
         "legendTitle": "Pot. glycosylation count",
         "key": "glyc"
+    }
+    self.config["auspice"]["color_options"]["age"] = {
+        "menuItem": "average host age in clade",
+        "type": "continuous",
+        "legendTitle": "Avg host age in clade",
+        "key": "age"
+    }
+    self.config["auspice"]["color_options"]["gender"] = {
+        "menuItem": "average host gender in clade",
+        "type": "continuous",
+        "legendTitle": "Avg host gender in clade",
+        "key": "num_gender"
     }
