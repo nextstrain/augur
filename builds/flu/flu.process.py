@@ -159,8 +159,11 @@ def freq_auto_corr(freq1, freq2, min_dfreq=0.2):
     return corr
 
 def age_distribution(runner):
-    fs=16
+    import matplotlib
+    matplotlib.use('PNG')
     import matplotlib.pyplot as plt
+
+    fs=16
     bins = np.arange(0,100,10)
     bc = 0.5*(bins[1:]+bins[:-1])
     plt.figure()
