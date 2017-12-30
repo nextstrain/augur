@@ -6,7 +6,7 @@ import base.process
 from base.fitness_model import process_predictor_args
 from base.process import process
 from base.utils import fix_names
-from flu_titers import HI_model, HI_export, H3N2_scores
+from flu_titers import HI_model, HI_export, H3N2_scores, seasonal_flu_scores
 from flu_info import clade_designations
 import argparse
 import numpy as np
@@ -203,6 +203,7 @@ if __name__=="__main__":
                 runner.estimate_tree_frequencies(region=str(regionTuple[0]))
 
         # titers
+        seasonal_flu_scores(runner, runner.tree.tree)
         if hasattr(runner, "titers"):
             HI_model(runner)
             if runner.info["lineage"] == "h3n2":
