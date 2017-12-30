@@ -178,6 +178,7 @@ def age_distribution(runner):
     plt.ylabel('age distribution', fontsize=fs)
     plt.xlabel('age', fontsize=fs)
     plt.savefig('processed/%s_age_distributions.png'%runner.info["prefix"])
+    plt.close()
 
 if __name__=="__main__":
     args = parse_args()
