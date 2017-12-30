@@ -91,16 +91,33 @@ def seasonal_flu_scores(runner, tree):
                 node.attr['age'] = 'unknown'
         else:
             node.attr['age'] = 'unknown'
+        node.tip_ages = [] if node.attr['age']=="unknown" else [node.attr['age']]
 
 
     for node in tree.get_nonterminals(order='postorder'):
         valid_ages = [c.attr['age'] for c in node if c.attr['age'] is not "unknown"]
+        node.tip_ages = sum( [c.tip_ages for c in node] , [])
         valid_tipcounts = [c.tip_count for c in node if c.attr['age'] is not "unknown"]
         if len(valid_ages):
             node.attr['age'] = np.sum([a*t for a,t in zip(valid_ages, valid_tipcounts)])/np.sum(valid_tipcounts)
             node.tip_count = np.sum(valid_tipcounts)
         else:
             node.attr['age'] = "unknown"
+    root.outgroup_ages = []
+    for node in tree.get_nonterminals(order='preorder'):
+        for c1 in node:
+            c1.outgroup_ages = node.outgroup_ages + sum([c2.tip_ages for c2 in node if c1!=c2], [])
+
+    from scipy import stats
+    for node in tree.get_nonterminals(order='preorder'):
+        if node==root:
+            node.attr['age_score'] = 0
+            continue
+        if len(node.tip_ages)>20:
+            ks = stats.ks_2samp(node.outgroup_ages, node.tip_ages)
+            node.attr['age_score'] = -np.log10(ks.pvalue)
+        else:
+            node.attr['age_score'] = node.up.attr['age_score']
 
     for node in tree.get_terminals():
         node.tip_count=1.0
