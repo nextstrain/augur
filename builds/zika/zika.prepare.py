@@ -13,7 +13,7 @@ def collect_args():
     """
     parser = base.prepare.collect_args()
     parser.set_defaults(
-        viruses_per_month=15,
+        viruses_per_month=20,
         file_prefix="zika"
     )
     return parser
