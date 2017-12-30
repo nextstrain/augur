@@ -109,7 +109,7 @@ def seasonal_flu_scores(runner, tree):
             c1.outgroup_ages = node.outgroup_ages + sum([c2.tip_ages for c2 in node if c1!=c2], [])
 
     from scipy import stats
-    for node in tree.get_nonterminals(order='preorder'):
+    for node in tree.find_clades(order='preorder'):
         if node==root:
             node.attr['age_score'] = 0
             continue
