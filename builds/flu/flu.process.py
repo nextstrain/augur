@@ -158,6 +158,26 @@ def freq_auto_corr(freq1, freq2, min_dfreq=0.2):
 
     return corr
 
+def age_distribution(runner):
+    fs=16
+    import matplotlib.pyplot as plt
+    bins = np.arange(0,100,10)
+    bc = 0.5*(bins[1:]+bins[:-1])
+    plt.figure()
+    with open('processed/%s_age_distributions.txt'%runner.info["prefix"], 'w') as ofile:
+        ofile.write("\t".join(map(str, ['region', 'total'] + ["%d-%d"%(bins[i], bins[i+1]) for i in range(len(bins)-1)]))+'\n')
+        for region in ['total', 'africa','china','europe','japan_korea','north_america','oceania','south_america','south_asia','southeast_asia','west_asia']:
+            y,x = np.histogram([n.attr['age'] for n in runner.tree.tree.get_terminals()
+                                if n.attr['age']!='unknown' and (n.attr['region']==region or region=='total')], bins=bins)
+            total = np.sum(y)
+            y = np.array(y, dtype=float)/total
+            ofile.write("\t".join(map(str, [region, np.sum(y)]+list(y)))+'\n')
+            plt.plot(bc, y, label=region, lw=3 if region=='total' else 2)
+
+    plt.legend(fontsize=fs*0.8, ncol=2)
+    plt.ylabel('age distribution', fontsize=fs)
+    plt.xlabel('age', fontsize=fs)
+    plt.savefig('processed/%s_age_distributions.png'%runner.info["prefix"])
 
 if __name__=="__main__":
     args = parse_args()
@@ -211,7 +231,9 @@ if __name__=="__main__":
             if runner.config["auspice"]["titers_export"]:
                 HI_export(runner)
 
+
         runner.matchClades(clade_designations[runner.info["lineage"]])
+        age_distribution(runner)
 
         # Predict fitness.
         if runner.config["annotate_fitness"]:
