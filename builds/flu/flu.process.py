@@ -158,15 +158,17 @@ def freq_auto_corr(freq1, freq2, min_dfreq=0.2):
 
     return corr
 
+
 def age_distribution(runner):
     import matplotlib
-    matplotlib.use('PNG')
+    matplotlib.use('PDF')
     import matplotlib.pyplot as plt
 
     fs=16
     bins = np.arange(0,100,10)
     bc = 0.5*(bins[1:]+bins[:-1])
     plt.figure()
+    plt.title(runner.info["prefix"])
     with open('processed/%s_age_distributions.txt'%runner.info["prefix"], 'w') as ofile:
         ofile.write("\t".join(map(str, ['region', 'total'] + ["%d-%d"%(bins[i], bins[i+1]) for i in range(len(bins)-1)]))+'\n')
         for region in ['total', 'africa','china','europe','japan_korea','north_america','oceania','south_america','south_asia','southeast_asia','west_asia']:
@@ -180,8 +182,10 @@ def age_distribution(runner):
     plt.legend(fontsize=fs*0.8, ncol=2)
     plt.ylabel('age distribution', fontsize=fs)
     plt.xlabel('age', fontsize=fs)
+    plt.ylim([0,0.7])
     plt.savefig('processed/%s_age_distributions.png'%runner.info["prefix"])
     plt.close()
+
 
 if __name__=="__main__":
     args = parse_args()
