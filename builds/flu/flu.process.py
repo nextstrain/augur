@@ -62,7 +62,7 @@ def make_config (prepared_json, args):
             "titers_export": args.titers_export
         },
         "titers": {
-            "criterium": lambda x: len(x.aa_mutations['HA1']+x.aa_mutations['HA2'])>0,
+            "criterium": lambda x: sum([len(x.aa_mutations[k]) for k in x.aa_mutations])>0,
             "lam_avi":2.0,
             "lam_pot":0.3,
             "lam_drop":2.0
@@ -161,6 +161,7 @@ def freq_auto_corr(freq1, freq2, min_dfreq=0.2):
 
 def age_distribution(runner):
     import matplotlib
+    # important to use a non-interactive backend, otherwise will crash on cluster
     matplotlib.use('PDF')
     import matplotlib.pyplot as plt
 
@@ -176,7 +177,7 @@ def age_distribution(runner):
                                 if n.attr['age']!='unknown' and (n.attr['region']==region or region=='total')], bins=bins)
             total = np.sum(y)
             y = np.array(y, dtype=float)/total
-            ofile.write("\t".join(map(str, [region, np.sum(y)]+list(y)))+'\n')
+            ofile.write("\t".join(map(str, [region, total]+list(y)))+'\n')
             plt.plot(bc, y, label=region, lw=3 if region=='total' else 2)
 
     plt.legend(fontsize=fs*0.8, ncol=2)
@@ -194,6 +195,10 @@ if __name__=="__main__":
     pprint("Processing {}".format(prepared_json))
     runner = process(make_config(prepared_json, args))
 
+    # this should be in the json...
+    segment = "ha" if "_ha." in prepared_json else "na"
+    runner.segment = segment
+
     runner.align()
     min_freq = 0.003
     weighted_global_average = hasattr(runner, 'tree_leaves')
@@ -202,13 +207,15 @@ if __name__=="__main__":
     if runner.config["estimate_mutation_frequencies"]:
         runner.global_frequencies(min_freq, average_global=weighted_global_average)
 
-        if not os.path.exists("processed/rising_mutations/"):
-            os.makedirs("processed/rising_mutations/")
-        for region in ['AS', 'NA', 'EU']:
-           mlist = rising_mutations(runner.mutation_frequencies,
-                        runner.mutation_frequency_counts,
-                     ['HA1', 'HA2'], region=region, dn=4, offset=2,
-                     fname = "processed/rising_mutations/%s_%s_rising_mutations.txt"%("_".join(runner.info["prefix"].split('_')[:-2]), region))
+        # so far do this only for HA
+        if segment=='ha':
+            if not os.path.exists("processed/rising_mutations/"):
+                os.makedirs("processed/rising_mutations/")
+            for region in ['AS', 'NA', 'EU']:
+               mlist = rising_mutations(runner.mutation_frequencies,
+                            runner.mutation_frequency_counts,
+                         ['HA1', 'HA2'], region=region, dn=4, offset=2,
+                         fname = "processed/rising_mutations/%s_%s_rising_mutations.txt"%("_".join(runner.info["prefix"].split('_')[:-2]), region))
 
 
     if runner.config["build_tree"]:
@@ -240,22 +247,25 @@ if __name__=="__main__":
                 HI_export(runner)
 
 
-        runner.matchClades(clade_designations[runner.info["lineage"]])
+        # outputs figures and tables of age distributions
         age_distribution(runner)
+        # ignore fitness for NA.
+        if segment=='ha':
+            runner.matchClades(clade_designations[runner.info["lineage"]])
 
-        # Predict fitness.
-        if runner.config["annotate_fitness"]:
-            fitness_model = runner.annotate_fitness()
-            print("Fitness model parameters: %s" % str(zip(fitness_model.predictors, fitness_model.model_params)))
-            print("Fitness model deviations: %s" % str(zip(fitness_model.predictors, fitness_model.global_sds)))
-            print("Abs clade error: %s" % fitness_model.clade_fit(fitness_model.model_params))
-            runner.fitness_model = fitness_model
+            # Predict fitness.
+            if runner.config["annotate_fitness"]:
+                fitness_model = runner.annotate_fitness()
+                print("Fitness model parameters: %s" % str(zip(fitness_model.predictors, fitness_model.model_params)))
+                print("Fitness model deviations: %s" % str(zip(fitness_model.predictors, fitness_model.global_sds)))
+                print("Abs clade error: %s" % fitness_model.clade_fit(fitness_model.model_params))
+                runner.fitness_model = fitness_model
 
-        if not os.path.exists("processed/recurring_mutations/"):
-            os.makedirs("processed/recurring_mutations/")
-        recurring_mutations(runner.tree.tree,
-                            fname_by_position = "processed/recurring_mutations/%s_recurring_positions.txt"%(runner.info["prefix"]),
-                            fname_by_mutation = "processed/recurring_mutations/%s_recurring_mutations.txt"%(runner.info["prefix"]))
+            if not os.path.exists("processed/recurring_mutations/"):
+                os.makedirs("processed/recurring_mutations/")
+            recurring_mutations(runner.tree.tree,
+                                fname_by_position = "processed/recurring_mutations/%s_recurring_positions.txt"%(runner.info["prefix"]),
+                                fname_by_mutation = "processed/recurring_mutations/%s_recurring_mutations.txt"%(runner.info["prefix"]))
 
         # runner.save_as_nexus()
     runner.auspice_export()

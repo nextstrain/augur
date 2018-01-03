@@ -354,10 +354,10 @@ class process(object):
 
         # if global frequencies are to be calculated from the set of sequences, do the following
         if average_global==False:
-            runner.estimate_mutation_frequencies(pivots=pivots, min_freq=min_freq,
+            self.estimate_mutation_frequencies(pivots=pivots, min_freq=min_freq,
                                                  inertia=np.exp(-inertia), stiffness=stiffness)
             for region in region_groups.iteritems():
-                runner.estimate_mutation_frequencies(region=region, min_freq=min_freq,
+                self.estimate_mutation_frequencies(region=region, min_freq=min_freq,
                                                      inertia=np.exp(-inertia), stiffness=stiffness)
                 return
         # ELSE:
