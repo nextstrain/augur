@@ -109,6 +109,23 @@ reference_maps = {
             },
             "include": 0,
             "genes": ["SigPep", "HA1", "HA2"]
+        },
+        "na": {
+            "path": "metadata/h3n2_na_outgroup.gb",
+            "metadata": {
+                'strain': "A/Beijing/32/1992",
+                'isolate_id': "CY113677",
+                'date': "1992-XX-XX",
+                'region': "china",
+                'country': "China",
+                "city": "Beijing",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["NA"]
         }
     },
     "yam": {
@@ -131,6 +148,18 @@ reference_maps = {
         },
         "na": {
             "path": "metadata/yam_na_outgroup.gb",
+            "metadata": {
+                'strain': "B/Singapore/11/1994",
+                'isolate_id': "CY019707",
+                'date': "1994-05-10",
+                'region': "southeast_asia",
+                'country': "Singapore",
+                "city": "Singapore",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "M"
+            },
             "include": 0,
             "genes": ["NA", "NB"]
         }
@@ -152,6 +181,23 @@ reference_maps = {
             },
             "include": 0,
             "genes": ["SigPep", "HA1", "HA2"]
+        },
+        "na": {
+            "path": "metadata/vic_na_outgroup.gb",
+            "metadata": {
+                'strain': "B/Hong Kong/02/1993",
+                'isolate_id': "CY018813",
+                'date': "1993-02-15",
+                'region': "china",
+                'country': "Hong Kong",
+                "city": "Hong Kong",
+                "passage": "4",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["NB", "NA"]
         }
     },
     "h1n1pdm": {
@@ -171,6 +217,23 @@ reference_maps = {
             },
             "include": 0,
             "genes": ["SigPep", "HA1", "HA2"]
+        },
+        "na": {
+            "path": "metadata/h1n1pdm_na_outgroup.gb",
+            "metadata": {
+                'strain': "A/Swine/Indiana/P12439/00",
+                'isolate_id': "AF455680",
+                'date': "unknown",
+                'region': "north america",
+                'country': "USA",
+                "city": "unknown",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["NA"]
         }
     }
 }

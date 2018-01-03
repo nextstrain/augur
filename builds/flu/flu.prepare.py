@@ -93,6 +93,7 @@ def make_config(lineage, resolution, params):
                 (s.attributes['date']<=time_interval[0] and s.attributes['date']>=time_interval[1]) or
                 (s.name in fixed_references and s.attributes['date']>reference_cutoff)
             ),
+            ("invalid chars", lambda s: sum([s.seq.count(c) for c in "EFIJKLOPQXYZ"])==0),
             ("Sequence Length", lambda s: len(s.seq)>=900),
             # what's the order of evaluation here I wonder?
             ("Dropped Strains", lambda s: s.id not in fixed_outliers),
@@ -139,9 +140,10 @@ if __name__=="__main__":
         if not params.complete_frequencies: # if complete_frequencies, do subsampling later on in flu.process
             runner.subsample()
         taxa_to_include = list(runner.segments[params.segment[0]].get_subsampled_names(config))
-        runner.segments[params.segment[0]].extras['leaves'] = taxa_to_include
+        for seg in params.segment:
+            runner.segments[seg].extras['leaves'] = taxa_to_include
         runner.colors()
         runner.latlongs()
-        runner.write_to_json()
+        runner.write_to_json(segment_addendum=len(params.segment)>1)
         if params.time_interval:
             break
