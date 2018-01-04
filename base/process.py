@@ -231,7 +231,7 @@ class process(object):
                     self.mutation_frequency_confidence = pickled[1]
                     self.mutation_frequency_counts = pickled[2]
                     self.log.notify("Successfully restored mutation frequencies")
-                    return
+                return
             except IOError:
                 pass
             except AssertionError as err:
@@ -359,7 +359,7 @@ class process(object):
             for region in region_groups.iteritems():
                 self.estimate_mutation_frequencies(region=region, min_freq=min_freq,
                                                      inertia=np.exp(-inertia), stiffness=stiffness)
-                return
+            return
         # ELSE:
         # if global frequences are to be calculated from a weighted average of regional ones
         # the following applies:
@@ -372,7 +372,6 @@ class process(object):
                                                 <np.sum(self.seqs.af[prot][:-2], axis=0)**2-min_freq)[0]
 
         # estimate frequencies in individual regions
-        # TODO: move inertia and stiffness parameters to config
         for region in region_groups.iteritems():
             self.estimate_mutation_frequencies(pivots=pivots, region=region, min_freq=min_freq, include_set=include_set,
                                                  inertia=np.exp(-inertia), stiffness=stiffness)
