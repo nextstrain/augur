@@ -10,21 +10,24 @@ def build_live(
     segments = ["ha"] if segments is None else segments
 
     for lineage in lineages:
+        seq_files = " ".join(['../../../fauna/data/%s_%s.fasta'%(lineage, segment)
+                              for segment in segments])
         for resolution in resolutions:
+            call = ['python',
+                'flu.prepare.py',
+                '--lineage', lineage,
+                '--segment', " ".join(segments),
+                '--resolution', resolution,
+                #'--ensure_all_segments',
+                '--sequences', seq_files,
+                '--titers', '../../../fauna/data/%s_hi_titers.tsv'%(lineage),
+                '--file_prefix', 'flu_%s_%s'%(lineage, resolution)]
+            if frequencies == "complete":
+                call = call + ['--complete_frequencies']
+            print(' '.join(call))
+            os.system(' '.join(call))
+
             for segment in segments:
-
-                call = ['python',
-                    'flu.prepare.py',
-                    '--lineage', lineage,
-                    '--resolution', resolution,
-                    '--sequences', '../../../fauna/data/%s_%s.fasta'%(lineage, segment),
-                    '--titers', '../../../fauna/data/%s_hi_titers.tsv'%(lineage),
-                    '--file_prefix', 'flu_%s_ha_%s'%(lineage, resolution)]
-                if frequencies == "complete":
-                    call = call + ['--complete_frequencies']
-                print(' '.join(call))
-                os.system(' '.join(call))
-
                 call = [
                     'flu.process.py',
                     '--json', 'prepared/flu_%s_%s_%s.json'%(lineage, segment, resolution)]
@@ -38,7 +41,7 @@ def build_live(
                 elif (system == "local"):
                     call = ['python'] + call
                 print(' '.join(call))
-                os.system(' '.join(call))
+                #os.system(' '.join(call))
 
 def build_cdc(
     lineages = None, resolutions = None, segments=None,
@@ -50,31 +53,34 @@ def build_cdc(
     segments = ["ha"] if segments is None else segments
 
     for lineage in lineages:
-        # seq_files = " ".join(['../../../fauna/data/%s_%s.fasta'%(lineage, segment) for segment in segments])
+        seq_files = " ".join(['../../../fauna/data/%s_%s.fasta'%(lineage, segment)
+                              for segment in segments])
         for resolution in resolutions:
-            for segment in segments:
-                for passage in ['cell', 'egg']:
-                    for assay in ['hi', 'fra']:
-                        if lineage!='h3n2' and assay=='fra':
-                            continue
+            for passage in ['cell', 'egg']:
+                for assay in ['hi', 'fra']:
+                    if lineage!='h3n2' and assay=='fra':
+                        continue
 
-                        call = ['python',
-                            'flu.prepare.py',
-                            '--lineage', lineage,
-                            '--segment', " ".join(segments),
-                            '--resolution', resolution,
-                            '--sequences', '../../../fauna/data/%s_%s.fasta'%(lineage, segment),
-                            '--titers', '../../../fauna/data/%s_cdc_%s_%s_titers.tsv'%(lineage, assay, passage),
-                            '--file_prefix', 'flu_%s_%s_%s_%s'%(lineage, resolution, passage, assay)]
-                        if frequencies == "complete": # (and passage=='cell' and (titer=='hi' or lineage!='h3n2')):
-                            call = call + ['--complete_frequencies']
-                        print(' '.join(call))
-                        os.system(' '.join(call))
+                    call = ['python',
+                        'flu.prepare.py',
+                        '--lineage', lineage,
+                        '--segment', " ".join(segments),
+                        '--resolution', resolution,
+                        #'--ensure_all_segments',
+                        '--sequences', seq_files,
+                        '--titers', '../../../fauna/data/%s_cdc_%s_%s_titers.tsv'%(lineage, assay, passage),
+                        '--file_prefix', 'flu_%s_%s_%s_%s'%(lineage, resolution, passage, assay)]
+                    if frequencies == "complete": # (and passage=='cell' and (titer=='hi' or lineage!='h3n2')):
+                        call = call + ['--complete_frequencies']
+                    print(' '.join(call))
+                    os.system(' '.join(call))
 
+                    for segment in segments:
                         call = [
                             'flu.process.py',
                             '--json', 'prepared/flu_%s_%s_%s_%s_%s.json'%(lineage, resolution, passage, assay, segment),
                             '--titers_export']
+
                         if (system == "qsub"):
                             call = ['qsub', 'submit_script.sh'] + call
                         elif (system == "sbatch"):
@@ -85,7 +91,7 @@ def build_cdc(
                         elif (system == "local"):
                             call = ['python'] + call
                         print(' '.join(call))
-                        os.system(' '.join(call))
+                        #os.system(' '.join(call))
 
 if __name__ == '__main__':
     import argparse

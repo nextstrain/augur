@@ -21,6 +21,7 @@ def parse_args():
 
     parser.add_argument('-l', '--lineage', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default='h3n2', type=str, help="lineage (default: h3n2)")
     parser.add_argument('-r', '--resolution', default=['3y'], nargs='+', type = str,  help = "resolutions (default: 3y)")
+    parser.add_argument('--ensure_all_segments', action="store_true", default=False,  help = "exclude all strains that don't have the full set of segments")
     parser.add_argument('-s', '--segment', choices=segments, default=['ha'], nargs='+', type = str,  help = "segment (default: ha)")
     parser.add_argument('--sampling', default = 'even', type=str,
                         help='sample evenly over regions (even) (default), or prioritize one region (region name), otherwise sample randomly')
@@ -78,6 +79,7 @@ def make_config(lineage, resolution, params):
         "maintainer": ["Trevor Bedford", "http://bedford.io/team/trevor-bedford/"],
         "auspice_filters": ["region"],
         "segments": params.segment,
+        "ensure_all_segments": params.ensure_all_segments,
         "lineage": lineage,
         "input_paths": input_paths,
         #  0                     1   2         3          4      5     6       7       8          9                             10  11
