@@ -1,12 +1,14 @@
 import os
 
 def build_live(
-    lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'],
-    resolutions = ['2y', '3y', '6y', '12y'],
-    segments=['ha'],
+    lineages = None, resolutions = None, segments=None,
     system="local",
     frequencies="complete",
     ):
+    lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
+    resolutions = ['2y', '3y', '6y'] if resolutions is None else resolutions
+    segments = ["ha"] if segments is None else segments
+
     for lineage in lineages:
         for resolution in resolutions:
             for segment in segments:
@@ -39,12 +41,14 @@ def build_live(
                 os.system(' '.join(call))
 
 def build_cdc(
-    lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'],
-    resolutions = ['2y', '3y', '6y'],
-    segments=['ha'],
+    lineages = None, resolutions = None, segments=None,
     system="local",
     frequencies="complete",
     ):
+    lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
+    resolutions = ['2y', '3y', '6y'] if resolutions is None else resolutions
+    segments = ["ha"] if segments is None else segments
+
     for lineage in lineages:
         # seq_files = " ".join(['../../../fauna/data/%s_%s.fasta'%(lineage, segment) for segment in segments])
         for resolution in resolutions:
