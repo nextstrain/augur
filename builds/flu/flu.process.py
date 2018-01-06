@@ -138,6 +138,14 @@ def recurring_mutations(tree, fname_by_position='tmp.txt', fname_by_mutation='tm
 
     return by_mutation, by_position
 
+def flatten_json(j):
+    nodes = {}
+    if "children" in j:
+        for c in j["children"]:
+            nodes.update(flatten_json(c))
+    nodes[j["strain"]] = j
+    return nodes
+
 
 def freq_auto_corr(freq1, freq2, min_dfreq=0.2):
     '''
@@ -268,4 +276,16 @@ if __name__=="__main__":
                                 fname_by_mutation = "processed/recurring_mutations/%s_recurring_mutations.txt"%(runner.info["prefix"]))
 
         # runner.save_as_nexus()
+    if segment=="na":
+        import json
+        ha_tree_json_fname = os.path.join(runner.config["output"]["auspice"], runner.info["prefix"]) + "_tree.json"
+        ha_tree_json_fname.replace("_na", "_ha")
+        with open(ha_tree_json_fname) as jfile:
+            ha_tree_json = json.load(jfile)
+        ha_tree_flat = flatten_json(ha_tree_json)
+
+        for n in runner.tree.tree.get_terminals():
+            if n.name in ha_tree_flat:
+                n.attr["named_clades"]=ha_tree_flat[n.name].attr["named_clades"]
+
     runner.auspice_export()

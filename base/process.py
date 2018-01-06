@@ -592,12 +592,16 @@ class process(object):
                         for gene, pos, state in genotype])
 
         self.clades_to_nodes = {}
+        for n in self.tree.tree.get_nonterminals():
+            n.attr.named_clades=[]
         for clade_name, genotype in clades.iteritems():
             matching_nodes = filter(lambda x:match(x,genotype), self.tree.tree.get_nonterminals())
             matching_nodes.sort(key=lambda x:x.numdate if hasattr(x,'numdate') else x.dist2root)
             if len(matching_nodes):
                 self.clades_to_nodes[clade_name] = matching_nodes[0]
                 self.clades_to_nodes[clade_name].attr['clade_name']=clade_name
+                for n in matching_nodes:
+                    n.named_clades.append(clade_name)
             else:
                 print('matchClades: no match found for ', clade_name, genotype)
                 for allele in genotype:
@@ -651,6 +655,7 @@ class process(object):
                     tmp = tmp[cat]['subcats']
             controls_json[super_cat] = cat_count
         return controls_json
+
 
     def auspice_export(self):
         '''
