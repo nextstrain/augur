@@ -279,13 +279,15 @@ if __name__=="__main__":
     if segment=="na":
         import json
         ha_tree_json_fname = os.path.join(runner.config["output"]["auspice"], runner.info["prefix"]) + "_tree.json"
-        ha_tree_json_fname.replace("_na", "_ha")
+        ha_tree_json_fname = ha_tree_json_fname.replace("_na", "_ha")
         with open(ha_tree_json_fname) as jfile:
             ha_tree_json = json.load(jfile)
         ha_tree_flat = flatten_json(ha_tree_json)
 
         for n in runner.tree.tree.get_terminals():
             if n.name in ha_tree_flat:
-                n.attr["named_clades"]=ha_tree_flat[n.name].attr["named_clades"]
+                n.attr["named_clades"]=ha_tree_flat[n.name]["attr"]["named_clades"]
+            else:
+                n.attr["named_clades"]=["unassigned"]
 
     runner.auspice_export()

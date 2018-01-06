@@ -592,21 +592,26 @@ class process(object):
                         for gene, pos, state in genotype])
 
         self.clades_to_nodes = {}
-        for n in self.tree.tree.get_nonterminals():
-            n.attr.named_clades=[]
+        for n in self.tree.tree.find_clades():
+            n.attr["named_clades"]=[]
         for clade_name, genotype in clades.iteritems():
             matching_nodes = filter(lambda x:match(x,genotype), self.tree.tree.get_nonterminals())
             matching_nodes.sort(key=lambda x:x.numdate if hasattr(x,'numdate') else x.dist2root)
             if len(matching_nodes):
                 self.clades_to_nodes[clade_name] = matching_nodes[0]
                 self.clades_to_nodes[clade_name].attr['clade_name']=clade_name
-                for n in matching_nodes:
-                    n.named_clades.append(clade_name)
+                for n in filter(lambda x:match(x,genotype), self.tree.tree.find_clades()):
+                    n.attr["named_clades"].append(clade_name)
             else:
                 print('matchClades: no match found for ', clade_name, genotype)
                 for allele in genotype:
                     partial_matches = filter(lambda x:match(x,[allele]), self.tree.tree.get_nonterminals())
                     print('Found %d partial matches for allele '%len(partial_matches), allele)
+
+            for n in filter(lambda x:match(x,genotype), self.tree.tree.find_clades()):
+                n.attr["named_clades"].sort(key=lambda x:self.clades_to_nodes[x].numdate, reverse=True)
+                n.attr["named_clades"] = n.attr["named_clades"][:1]
+
 
     def annotate_fitness(self):
         """Run the fitness prediction model and annotate the tree's nodes with fitness
