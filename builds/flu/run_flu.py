@@ -91,7 +91,7 @@ def build_cdc(
                         elif (system == "local"):
                             call = ['python'] + call
                         print(' '.join(call))
-                        #os.system(' '.join(call))
+                        os.system(' '.join(call))
 
 if __name__ == '__main__':
     import argparse
