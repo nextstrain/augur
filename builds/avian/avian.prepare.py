@@ -43,6 +43,7 @@ dropped_strains = [
         # travel case. throws off map
     "A/Duck/Bangladesh/2704", # clock is off
     "_A/Malaysia/228/2014_H7N9__", # travel case
+    "A/Environment/Guangdong/GZ636/2017", # bad bases
 ]
 
 config = {
