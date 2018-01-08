@@ -35,8 +35,11 @@ dropped_strains = [
     "A/Duck/Bangladesh/2698", "A/guineafowl/Alabama/17-008646-1/2017",
     "A/chicken/Tennessee/17-007429-7/2017", "A/Duck/Bangladesh/2699",
     "A/nothernshoveler/California/AH0079371/2016", "A/duck/Shanghai/SD016/2015",
+    "A/duck/Zhejiang/S4488/2014", "A/duck/Shanghai/SD015/2015",
         # not part of epi clade
     "A/British Columbia/1/2015", "A/BritishColumbia/1/2015",
+    "A/blue-wingedteal/Louisiana/UGAI15-1692/2015",
+    "A/blue-wingedteal/Louisiana/UGAI15-1367/2015",
         # travel case. throws off map
     "A/Duck/Bangladesh/2704", # clock is off
     "_A/Malaysia/228/2014_H7N9__", # travel case
