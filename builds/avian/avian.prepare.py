@@ -34,7 +34,7 @@ dropped_strains = [
     "A/chicken/Alabama/17-008899-11/2017", "A/chicken/Alabama/17-008899-10/2017",
     "A/Duck/Bangladesh/2698", "A/guineafowl/Alabama/17-008646-1/2017",
     "A/chicken/Tennessee/17-007429-7/2017", "A/Duck/Bangladesh/2699",
-    "A/nothernshoveler/California/AH0079371/2016",
+    "A/nothernshoveler/California/AH0079371/2016", "A/duck/Shanghai/SD016/2015",
         # not part of epi clade
     "A/British Columbia/1/2015", "A/BritishColumbia/1/2015",
         # travel case. throws off map
