@@ -37,13 +37,16 @@ def parse_args():
     return parser.parse_args()
 
 def make_title(lineage, resolution):
-    flu_type = "B" if lineage in ["vic", "yam"] else "A"
     prettyLineage = ""
-    if flu_type == "A":
-        prettyLineage = lineage.upper()
-    if flu_type == "B":
-        prettyLineage = lineage.capitalize()
-    return "Real-time tracking of influenza {}/{} evolution".format(flu_type, prettyLineage)
+    if lineage == "h3n2":
+        prettyLineage = "A/H3N2"
+    elif lineage == "h1n1pdm":
+        prettyLineage = "A/H1N1pdm"
+    elif lineage == "vic":
+        prettyLineage = "B/Vic"
+    elif lineage == "yam":
+        prettyLineage = "B/Yam"
+    return "Real-time tracking of influenza {} evolution".format(prettyLineage)
 
 # for flu, config is a function so it is applicable for multiple lineages
 def make_config(lineage, resolution, params):
