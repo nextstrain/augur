@@ -13,19 +13,20 @@ def build_live(
         seq_files = " ".join(['../../../fauna/data/%s_%s.fasta'%(lineage, segment)
                               for segment in segments])
         for resolution in resolutions:
-            call = ['python',
-                'flu.prepare.py',
-                '--lineage', lineage,
-                '--segment', " ".join(segments),
-                '--resolution', resolution,
-                #'--ensure_all_segments',
-                '--sequences', seq_files,
-                '--titers', '../../../fauna/data/%s_hi_titers.tsv'%(lineage),
-                '--file_prefix', 'flu_%s_%s'%(lineage, resolution)]
-            if frequencies == "complete":
-                call = call + ['--complete_frequencies']
-            print(' '.join(call))
-            os.system(' '.join(call))
+            for segment in segments:
+                call = ['python',
+                    'flu.prepare.py',
+                    '--lineage', lineage,
+                    '--segment', segment,
+                    '--resolution', resolution,
+                    #'--ensure_all_segments',
+                    '--sequences', seq_files,
+                    '--titers', '../../../fauna/data/%s_hi_titers.tsv'%(lineage),
+                    '--file_prefix', 'flu_%s_%s_%s'%(lineage, segment, resolution)]
+                if frequencies == "complete":
+                    call = call + ['--complete_frequencies']
+                print(' '.join(call))
+                os.system(' '.join(call))
 
             for segment in segments:
                 call = [
