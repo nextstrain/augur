@@ -29,7 +29,7 @@ def collect_args():
     parser.add_argument('-s', '--serotypes', default=["multiple"], nargs='+', type=str, choices=['denv1', 'denv2', 'denv3', 'denv4', 'all', 'multiple'],
     help="Look for prepared JSON(s) like ./prepared/dengue_SEROTYPE.json; 'multiple' will run all five builds. Default='multiple'")
     parser.add_argument('--no_mut_freqs', default=True, action='store_true', help="skip mutation frequencies")
-    parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
+    parser.add_argument('--no_tree_freqs', default=True, action='store_true', help="skip tree (clade) frequencies")
     parser.add_argument('--no_titers', default=False, action='store_true', help="skip titer models")
     parser.set_defaults(json = None)
     return parser
