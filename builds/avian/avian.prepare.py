@@ -36,6 +36,8 @@ dropped_strains = [
     "A/chicken/Tennessee/17-007429-7/2017", "A/Duck/Bangladesh/2699",
     "A/nothernshoveler/California/AH0079371/2016", "A/duck/Shanghai/SD016/2015",
     "A/duck/Zhejiang/S4488/2014", "A/duck/Shanghai/SD015/2015",
+    "A/duck/Guangxi/SDY129/2014", "A/duck/Fujian/S4170/2014",
+    "A/duck/Hunan/S11682/2015", "A/environment/Hunan/SD009/2015",
         # not part of epi clade
     "A/British Columbia/1/2015", "A/BritishColumbia/1/2015",
     "A/blue-wingedteal/Louisiana/UGAI15-1692/2015",
