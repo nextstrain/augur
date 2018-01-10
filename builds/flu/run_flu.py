@@ -7,7 +7,7 @@ def build_live(
     ):
     lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
     resolutions = ['2y', '3y', '6y'] if resolutions is None else resolutions
-    segments = ["ha"] if segments is None else segments
+    segments = ['ha', 'na'] if segments is None else segments
 
     for lineage in lineages:
         seq_files = " ".join(['../../../fauna/data/%s_%s.fasta'%(lineage, segment)
@@ -16,9 +16,8 @@ def build_live(
             call = ['python',
                 'flu.prepare.py',
                 '--lineage', lineage,
-                '--segment', " ".join(segments),
                 '--resolution', resolution,
-                #'--ensure_all_segments',
+                '--segments', " ".join(segments),
                 '--sequences', seq_files,
                 '--titers', '../../../fauna/data/%s_hi_titers.tsv'%(lineage),
                 '--file_prefix', 'flu_%s_%s'%(lineage, resolution)]
@@ -30,12 +29,11 @@ def build_live(
             for segment in segments:
                 call = [
                     'flu.process.py',
-                    '--json', 'prepared/flu_%s_%s.json'%(lineage, resolution)]
+                    '--json', 'prepared/flu_%s_%s_%s.json'%(lineage, resolution, segment)]
                 if (system == "qsub"):
                     call = ['qsub', 'submit_script.sh'] + call
                 elif (system == "rhino"):
-                    call = ['python'] + call
-                    concat = '"' + ' '.join(call) + '"'
+                    concat = '"' + ' '.join( ['python'] + call ) + '"'
                     call = ['sbatch', '-n', '1', '-c', '2', '--mem', '16192', '--time', '12:00:00', '--wrap', concat]
                 elif (system == "sbatch"):
                     call = ['sbatch', 'submit_flu.sh'] + call
@@ -51,7 +49,7 @@ def build_cdc(
     ):
     lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
     resolutions = ['2y', '3y', '6y'] if resolutions is None else resolutions
-    segments = ["ha"] if segments is None else segments
+    segments = ['ha', 'na'] if segments is None else segments
 
     for lineage in lineages:
         seq_files = " ".join(['../../../fauna/data/%s_%s.fasta'%(lineage, segment)
@@ -65,13 +63,12 @@ def build_cdc(
                     call = ['python',
                         'flu.prepare.py',
                         '--lineage', lineage,
-                        '--segment', " ".join(segments),
                         '--resolution', resolution,
-                        #'--ensure_all_segments',
+                        '--segments', " ".join(segments),
                         '--sequences', seq_files,
                         '--titers', '../../../fauna/data/%s_cdc_%s_%s_titers.tsv'%(lineage, assay, passage),
                         '--file_prefix', 'flu_%s_%s_%s_%s'%(lineage, resolution, passage, assay)]
-                    if frequencies == "complete": # (and passage=='cell' and (titer=='hi' or lineage!='h3n2')):
+                    if frequencies == "complete":
                         call = call + ['--complete_frequencies']
                     print(' '.join(call))
                     os.system(' '.join(call))
@@ -79,14 +76,13 @@ def build_cdc(
                     for segment in segments:
                         call = [
                             'flu.process.py',
-                            '--json', 'prepared/flu_%s_%s_%s_%s.json'%(lineage, resolution, passage, assay),
+                            '--json', 'prepared/flu_%s_%s_%s_%s_%s.json'%(lineage, resolution, passage, assay, segment),
                             '--titers_export']
 
                         if (system == "qsub"):
                             call = ['qsub', 'submit_script.sh'] + call
                         elif (system == "rhino"):
-                            call = ['python'] + call
-                            concat = '"' + ' '.join(call) + '"'
+                            concat = '"' + ' '.join( ['python'] + call ) + '"'
                             call = ['sbatch', '-n', '1', '-c', '2', '--mem', '16192', '--time', '12:00:00', '--wrap', concat]
                         elif (system == "sbatch"):
                             call = ['sbatch', 'submit_flu.sh'] + call
