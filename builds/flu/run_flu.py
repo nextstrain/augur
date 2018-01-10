@@ -33,7 +33,7 @@ def build_live(
                     '--json', 'prepared/flu_%s_%s.json'%(lineage, resolution)]
                 if (system == "qsub"):
                     call = ['qsub', 'submit_script.sh'] + call
-                elif (system == "rhino")
+                elif (system == "rhino"):
                     call = ['python'] + call
                     concat = '"' + ' '.join(call) + '"'
                     call = ['sbatch', '-n', '1', '-c', '2', '--mem', '16192', '--time', '12:00:00', '--wrap', concat]
@@ -88,7 +88,7 @@ def build_cdc(
                             call = ['python'] + call
                             concat = '"' + ' '.join(call) + '"'
                             call = ['sbatch', '-n', '1', '-c', '2', '--mem', '16192', '--time', '12:00:00', '--wrap', concat]
-                        elif (system == "sbatch")
+                        elif (system == "sbatch"):
                             call = ['sbatch', 'submit_flu.sh'] + call
                         elif (system == "local"):
                             call = ['python'] + call
