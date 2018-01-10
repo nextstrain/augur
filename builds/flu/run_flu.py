@@ -30,7 +30,7 @@ def build_live(
             for segment in segments:
                 call = [
                     'flu.process.py',
-                    '--json', 'prepared/flu_%s_%s_%s.json'%(lineage, segment, resolution)]
+                    '--json', 'prepared/flu_%s_%s.json'%(lineage, resolution)]
                 if (system == "qsub"):
                     call = ['qsub', 'submit_script.sh'] + call
                 elif (system == "sbatch"):
@@ -41,7 +41,7 @@ def build_live(
                 elif (system == "local"):
                     call = ['python'] + call
                 print(' '.join(call))
-                #os.system(' '.join(call))
+                os.system(' '.join(call))
 
 def build_cdc(
     lineages = None, resolutions = None, segments=None,
@@ -78,7 +78,7 @@ def build_cdc(
                     for segment in segments:
                         call = [
                             'flu.process.py',
-                            '--json', 'prepared/flu_%s_%s_%s_%s_%s.json'%(lineage, resolution, passage, assay, segment),
+                            '--json', 'prepared/flu_%s_%s_%s_%s.json'%(lineage, resolution, passage, assay),
                             '--titers_export']
 
                         if (system == "qsub"):
