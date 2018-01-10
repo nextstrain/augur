@@ -20,7 +20,7 @@ def build_live(
                 '--segments', " ".join(segments),
                 '--sequences', seq_files,
                 '--titers', '../../../fauna/data/%s_hi_titers.tsv'%(lineage),
-                '--file_prefix', 'flu_%s_%s'%(lineage, resolution)]
+                '--file_prefix', 'flu_%s_*segment*_%s'%(lineage, resolution)]
             if frequencies == "complete":
                 call = call + ['--complete_frequencies']
             print(' '.join(call))
@@ -29,7 +29,7 @@ def build_live(
             for segment in segments:
                 call = [
                     'flu.process.py',
-                    '--json', 'prepared/flu_%s_%s_%s.json'%(lineage, resolution, segment)]
+                    '--json', 'prepared/flu_%s_%s_%s.json'%(lineage, segment, resolution)]
                 if (system == "qsub"):
                     call = ['qsub', 'submit_script.sh'] + call
                 elif (system == "rhino"):
@@ -67,7 +67,7 @@ def build_cdc(
                         '--segments', " ".join(segments),
                         '--sequences', seq_files,
                         '--titers', '../../../fauna/data/%s_cdc_%s_%s_titers.tsv'%(lineage, assay, passage),
-                        '--file_prefix', 'flu_%s_%s_%s_%s'%(lineage, resolution, passage, assay)]
+                        '--file_prefix', 'flu_%s_*segment*_%s_%s_%s'%(lineage, resolution, passage, assay)]
                     if frequencies == "complete":
                         call = call + ['--complete_frequencies']
                     print(' '.join(call))
@@ -76,7 +76,7 @@ def build_cdc(
                     for segment in segments:
                         call = [
                             'flu.process.py',
-                            '--json', 'prepared/flu_%s_%s_%s_%s_%s.json'%(lineage, resolution, passage, assay, segment),
+                            '--json', 'prepared/flu_%s_%s_%s_%s_%s.json'%(lineage, segment, resolution, passage, assay),
                             '--titers_export']
 
                         if (system == "qsub"):
@@ -113,7 +113,7 @@ if __name__ == '__main__':
             params.resolutions = ['2y', '3y', '6y']
 
     if params.segments is None:
-        params.segments = ['ha']
+        params.segments = ['ha', 'na']
 
     if params.build == "live":
         build_live(
