@@ -6,7 +6,7 @@ import base.process
 from base.fitness_model import process_predictor_args
 from base.process import process
 from base.utils import fix_names
-from flu_titers import HI_model, HI_export, H3N2_scores
+from flu_titers import HI_model, HI_export, H3N2_scores, seasonal_flu_scores
 from flu_info import clade_designations
 import argparse
 import numpy as np
@@ -62,7 +62,7 @@ def make_config (prepared_json, args):
             "titers_export": args.titers_export
         },
         "titers": {
-            "criterium": lambda x: len(x.aa_mutations['HA1']+x.aa_mutations['HA2'])>0,
+            "criterium": lambda x: sum([len(x.aa_mutations[k]) for k in x.aa_mutations])>0,
             "lam_avi":2.0,
             "lam_pot":0.3,
             "lam_drop":2.0
@@ -87,24 +87,36 @@ def make_config (prepared_json, args):
     }
 
 
-def rising_mutations(freqs, genes, region='NA', dn=5, baseline = 0.01, fname='tmp.txt'):
+def rising_mutations(freqs, counts, genes, region='NA', dn=5, offset=0, baseline = 0.01, fname='tmp.txt'):
+    '''
+    safe a file containing all mutations and summary of their recent frequency trajectories.
+    mutations are sorted by their log derivative over the past dn month
+    '''
     dx = {}
+    npoints = counts[region].shape[0]
+    ind = np.arange(npoints)[-(dn+offset):npoints-offset]
     for gene in genes:
         for mut,f  in freqs[(region, gene)].iteritems():
-            tmp_x = f[-dn:].mean()
-            tmp_dx = f[-1] - f[-dn]
-            dx[(region, gene, mut[0], mut[1])] = (tmp_x, tmp_dx, tmp_dx/(tmp_x+baseline))
+            c = np.sum(counts[region][ind]*f[ind])
+            tmp_x = f[ind].mean()
+            tmp_dx = f[npoints-1-offset] - f[-dn-offset]
+            dx[(region, gene, mut[0], mut[1])] = (tmp_x, tmp_dx, tmp_dx/(tmp_x+baseline), c)
 
     with open(fname, 'w') as ofile:
         ofile.write("#Frequency change over the last %d month in region %s\n"%(dn, region))
         print("#Frequency change over the last %d month in region %s"%(dn, region))
         for k,v in sorted(dx.items(), key=lambda x:x[1][2], reverse=True):
-            ofile.write("%s:%d%s\t%1.3f\t%1.3f\t%1.3f\n"%(k[1], k[2]+1, k[3], v[0], v[1], v[2]))
-            print("%s:%d%s: x=%1.3f, dx=%1.3f, dx/x=%1.3f"%(k[1], k[2]+1, k[3], v[0], v[1], v[2]))
+            ofile.write("%s:%d%s\t%1.3f\t%1.3f\t%1.3f\t%1.1f\n"%(k[1], k[2]+1, k[3], v[0], v[1], v[2], v[3]))
+            print("%s:%d%s: x=%1.3f, dx=%1.3f, dx/x=%1.3f, c=%1.1f"%(k[1], k[2]+1, k[3], v[0], v[1], v[2], v[3]))
         ofile.write('\n')
     return dx
 
+
 def recurring_mutations(tree, fname_by_position='tmp.txt', fname_by_mutation='tmp.txt'):
+    '''
+    count the number of times that each position has mutated on the tree and save to file.
+    in additition, count the number of mutations that resulted in a specific substitution
+    '''
     from collections import defaultdict
     by_mutation = defaultdict(int)
     by_position = defaultdict(int)
@@ -126,8 +138,20 @@ def recurring_mutations(tree, fname_by_position='tmp.txt', fname_by_mutation='tm
 
     return by_mutation, by_position
 
+def flatten_json(j):
+    nodes = {}
+    if "children" in j:
+        for c in j["children"]:
+            nodes.update(flatten_json(c))
+    nodes[j["strain"]] = j
+    return nodes
+
 
 def freq_auto_corr(freq1, freq2, min_dfreq=0.2):
+    '''
+    calculate the autocorrelation function of two sets of frequencies, say in Asia and Oceania,
+    to see whether one precedes the other on average. EXPERIMENTAL
+    '''
     dt = 5
     corr = np.zeros(2*dt+1)
     for mut in freq1:
@@ -142,6 +166,36 @@ def freq_auto_corr(freq1, freq2, min_dfreq=0.2):
 
     return corr
 
+
+def age_distribution(runner):
+    import matplotlib
+    # important to use a non-interactive backend, otherwise will crash on cluster
+    matplotlib.use('PDF')
+    import matplotlib.pyplot as plt
+
+    fs=16
+    bins = np.arange(0,100,10)
+    bc = 0.5*(bins[1:]+bins[:-1])
+    plt.figure()
+    plt.title(runner.info["prefix"])
+    with open('processed/%s_age_distributions.txt'%runner.info["prefix"], 'w') as ofile:
+        ofile.write("\t".join(map(str, ['region', 'total'] + ["%d-%d"%(bins[i], bins[i+1]) for i in range(len(bins)-1)]))+'\n')
+        for region in ['total', 'africa','china','europe','japan_korea','north_america','oceania','south_america','south_asia','southeast_asia','west_asia']:
+            y,x = np.histogram([n.attr['age'] for n in runner.tree.tree.get_terminals()
+                                if n.attr['age']!='unknown' and (n.attr['region']==region or region=='total')], bins=bins)
+            total = np.sum(y)
+            y = np.array(y, dtype=float)/total
+            ofile.write("\t".join(map(str, [region, total]+list(y)))+'\n')
+            plt.plot(bc, y, label=region, lw=3 if region=='total' else 2)
+
+    plt.legend(fontsize=fs*0.8, ncol=2)
+    plt.ylabel('age distribution', fontsize=fs)
+    plt.xlabel('age', fontsize=fs)
+    plt.ylim([0,0.7])
+    plt.savefig('processed/%s_age_distributions.png'%runner.info["prefix"])
+    plt.close()
+
+
 if __name__=="__main__":
     args = parse_args()
     prepared_json = args.json
@@ -149,24 +203,39 @@ if __name__=="__main__":
     pprint("Processing {}".format(prepared_json))
     runner = process(make_config(prepared_json, args))
 
+    # this should be in the json...
+    segment = "ha"
+    if "_na_" in prepared_json:
+        segment = "na"
+    runner.segment = segment
+
     runner.align()
-    min_freq = 0.01
-    # estimate mutation frequencies here.
+    min_freq = 0.003
+    weighted_global_average = hasattr(runner, 'tree_leaves')
+
     # While this could be in a wrapper, it is hopefully more readable this way!
     if runner.config["estimate_mutation_frequencies"]:
-        runner.global_frequencies(min_freq)
+        runner.global_frequencies(min_freq, average_global=weighted_global_average)
 
-        if not os.path.exists("processed/rising_mutations/"):
-            os.makedirs("processed/rising_mutations/")
-        for region in ['AS', 'NA', 'EU']:
-            mlist = rising_mutations(runner.mutation_frequencies, ['HA1', 'HA2'], region=region,
-                    fname = "processed/rising_mutations/%s_%s_rising_mutations.txt"%("_".join(runner.info["prefix"].split('_')[:-3]), region))
+        # so far do this only for HA
+        if segment=='ha':
+            if not os.path.exists("processed/rising_mutations/"):
+                os.makedirs("processed/rising_mutations/")
+            for region in ['AS', 'NA', 'EU']:
+               mlist = rising_mutations(runner.mutation_frequencies,
+                            runner.mutation_frequency_counts,
+                         ['HA1', 'HA2'], region=region, dn=4, offset=2,
+                         fname = "processed/rising_mutations/%s_%s_rising_mutations.txt"%("_".join(runner.info["prefix"].split('_')[:-2]), region))
+
 
     if runner.config["build_tree"]:
-        if hasattr(runner, 'tree_leaves'): # subsample alignment
+        if weighted_global_average: # subsample alignment
             runner.seqs.aln = MultipleSeqAlignment([v for v in runner.seqs.aln
                                                     if v.name in runner.tree_leaves])
             print("subsampled alignment to %d sequences"%len(runner.seqs.aln))
+        else:
+            print("using alignment as is, no further subsampling for tree building")
+
         runner.build_tree()
         runner.timetree_setup_filter_run()
         runner.run_geo_inference()
@@ -179,6 +248,7 @@ if __name__=="__main__":
                 runner.estimate_tree_frequencies(region=str(regionTuple[0]))
 
         # titers
+        seasonal_flu_scores(runner, runner.tree.tree)
         if hasattr(runner, "titers"):
             HI_model(runner)
             if runner.info["lineage"] == "h3n2":
@@ -186,21 +256,42 @@ if __name__=="__main__":
             if runner.config["auspice"]["titers_export"]:
                 HI_export(runner)
 
-        runner.matchClades(clade_designations[runner.info["lineage"]])
 
-        # Predict fitness.
-        if runner.config["annotate_fitness"]:
-            fitness_model = runner.annotate_fitness()
-            print("Fitness model parameters: %s" % str(zip(fitness_model.predictors, fitness_model.model_params)))
-            print("Fitness model deviations: %s" % str(zip(fitness_model.predictors, fitness_model.global_sds)))
-            print("Abs clade error: %s" % fitness_model.clade_fit(fitness_model.model_params))
-            runner.fitness_model = fitness_model
+        # outputs figures and tables of age distributions
+        age_distribution(runner)
+        # ignore fitness for NA.
+        if segment=='ha':
+            runner.matchClades(clade_designations[runner.info["lineage"]])
 
-        if not os.path.exists("processed/recurring_mutations/"):
-            os.makedirs("processed/recurring_mutations/")
-        recurring_mutations(runner.tree.tree,
-                            fname_by_position = "processed/recurring_mutations/%s_recurring_positions.txt"%(runner.info["prefix"]),
-                            fname_by_mutation = "processed/recurring_mutations/%s_recurring_mutations.txt"%(runner.info["prefix"]))
+            # Predict fitness.
+            if runner.config["annotate_fitness"]:
+                fitness_model = runner.annotate_fitness()
+                print("Fitness model parameters: %s" % str(zip(fitness_model.predictors, fitness_model.model_params)))
+                print("Fitness model deviations: %s" % str(zip(fitness_model.predictors, fitness_model.global_sds)))
+                print("Abs clade error: %s" % fitness_model.clade_fit(fitness_model.model_params))
+                runner.fitness_model = fitness_model
+
+            if not os.path.exists("processed/recurring_mutations/"):
+                os.makedirs("processed/recurring_mutations/")
+            recurring_mutations(runner.tree.tree,
+                                fname_by_position = "processed/recurring_mutations/%s_recurring_positions.txt"%(runner.info["prefix"]),
+                                fname_by_mutation = "processed/recurring_mutations/%s_recurring_mutations.txt"%(runner.info["prefix"]))
 
         # runner.save_as_nexus()
+    if segment=="na":
+        import json
+        ha_tree_json_fname = os.path.join(runner.config["output"]["auspice"], runner.info["prefix"]) + "_tree.json"
+        ha_tree_json_fname = ha_tree_json_fname.replace("_na", "_ha")
+        if os.path.isfile(ha_tree_json_fname):      # confirm file exists
+            with open(ha_tree_json_fname) as jfile:
+                ha_tree_json = json.load(jfile)
+            ha_tree_flat = flatten_json(ha_tree_json)
+
+            for n in runner.tree.tree.get_terminals():
+                if n.name in ha_tree_flat:
+                    if "named_clades" in ha_tree_flat[n.name]["attr"]:
+                        n.attr["named_clades"] = ha_tree_flat[n.name]["attr"]["named_clades"]
+                else:
+                    n.attr["named_clades"] = ["unassigned"]
+
     runner.auspice_export()

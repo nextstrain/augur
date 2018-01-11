@@ -19,9 +19,10 @@ def parse_args():
     """
     parser = base.prepare.collect_args()
 
-    parser.add_argument('-l', '--lineage', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default='h3n2', type=str, help="lineage (default: h3n2)")
-    parser.add_argument('-r', '--resolution', default=['3y'], nargs='+', type = str,  help = "resolutions (default: 3y)")
-    parser.add_argument('-s', '--segment', choices=segments, default=['ha'], nargs='+', type = str,  help = "segment (default: ha)")
+    parser.add_argument('-l', '--lineage', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default='h3n2', type=str, help="single lineage to include (default: h3n2)")
+    parser.add_argument('-r', '--resolutions', default=['3y'], nargs='+', type = str,  help = "list of resolutions to include (default: 3y)")
+    parser.add_argument('--ensure_all_segments', action="store_true", default=False,  help = "exclude all strains that don't have the full set of segments")
+    parser.add_argument('-s', '--segments', default=['ha'], nargs='+', type = str,  help = "list of segments to include (default: ha)")
     parser.add_argument('--sampling', default = 'even', type=str,
                         help='sample evenly over regions (even) (default), or prioritize one region (region name), otherwise sample randomly')
     parser.add_argument('--time_interval', nargs=2, help="explicit time interval to use -- overrides resolutions"
@@ -67,12 +68,12 @@ def make_config(lineage, resolution, params):
     if params.sequences is not None:
         input_paths = params.sequences
     else:
-        input_paths = ["../../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segment]
+        input_paths = ["../../../fauna/data/{}_{}.fasta".format(lineage, segment) for segment in params.segments]
 
     if params.file_prefix:
         file_prefix = params.file_prefix
     else:
-        file_prefix = "flu_{}_{}_{}".format(lineage, params.segment[0], resolution)
+        file_prefix = "flu_{}_{}_{}".format(lineage, resolution, params.segment[0])
 
     return {
         "dir": "flu",
@@ -80,7 +81,8 @@ def make_config(lineage, resolution, params):
         "title": make_title(lineage, resolution),
         "maintainer": ["Trevor Bedford", "http://bedford.io/team/trevor-bedford/"],
         "auspice_filters": ["region"],
-        "segments": params.segment,
+        "segments": params.segments,
+        "ensure_all_segments": params.ensure_all_segments,
         "lineage": lineage,
         "input_paths": input_paths,
         #  0                     1   2         3          4      5     6       7       8          9                             10  11
@@ -96,6 +98,7 @@ def make_config(lineage, resolution, params):
                 (s.attributes['date']<=time_interval[0] and s.attributes['date']>=time_interval[1]) or
                 (s.name in fixed_references and s.attributes['date']>reference_cutoff)
             ),
+            ("invalid chars", lambda s: sum([s.seq.count(c) for c in "EFIJKLOPQXYZ"])==0),
             ("Sequence Length", lambda s: len(s.seq)>=900),
             # what's the order of evaluation here I wonder?
             ("Dropped Strains", lambda s: s.id not in fixed_outliers),
@@ -106,7 +109,7 @@ def make_config(lineage, resolution, params):
         "color_defs": ["colors.flu.tsv"],
         "lat_longs": ["country", "region"],
         "lat_long_defs": '../../../fauna/source-data/geo_lat_long.tsv',
-        "references": {seg:reference_maps[lineage][seg] for seg in params.segment},
+        "references": {seg:reference_maps[lineage][seg] for seg in params.segments},
         "regions": regions,
         "time_interval": time_interval,
         "strains": params.strains,
@@ -131,8 +134,8 @@ if __name__=="__main__":
         logger.debug("Verbose reporting enabled")
 
     ## lots of loops to allow multiple downstream analysis
-    for resolution in params.resolution:
-        pprint("Preparing lineage {}, segments: {}, resolution: {}".format(params.lineage, params.segment, resolution))
+    for resolution in params.resolutions:
+        pprint("Preparing lineage {}, segments: {}, resolutions: {}".format(params.lineage, params.segments, resolution))
 
         config = make_config(params.lineage, resolution, params)
         runner = prepare(config)
@@ -141,10 +144,11 @@ if __name__=="__main__":
         runner.ensure_all_segments()
         if not params.complete_frequencies: # if complete_frequencies, do subsampling later on in flu.process
             runner.subsample()
-        taxa_to_include = list(runner.segments[params.segment[0]].get_subsampled_names(config))
-        runner.segments[params.segment[0]].extras['leaves'] = taxa_to_include
+        taxa_to_include = list(runner.segments[params.segments[0]].get_subsampled_names(config))
+        for seg in params.segments:
+            runner.segments[seg].extras['leaves'] = taxa_to_include
         runner.colors()
         runner.latlongs()
-        runner.write_to_json()
+        runner.write_to_json(segment_addendum=len(params.segments)>1)
         if params.time_interval:
             break
