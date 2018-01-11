@@ -1,13 +1,14 @@
 import os
 
 def build_live(
-    lineages = None, resolutions = None, segments=None,
+    lineages = None, resolutions = None,
     system="local",
     frequencies="complete",
+    process_na=False
     ):
     lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
     resolutions = ['2y', '3y', '6y'] if resolutions is None else resolutions
-    segments = ['ha', 'na'] if segments is None else segments
+    segments = ['ha', 'na']
 
     for lineage in lineages:
         seq_files = " ".join(['../../../fauna/data/%s_%s.fasta'%(lineage, segment)
@@ -26,30 +27,34 @@ def build_live(
             print(' '.join(call))
             os.system(' '.join(call))
 
-            for segment in segments:
+            call = [
+                'flu.process.py',
+                '--json', 'prepared/flu_%s_ha_%s.json'%(lineage, resolution)]
+            if process_na:
                 call = [
                     'flu.process.py',
-                    '--json', 'prepared/flu_%s_%s_%s.json'%(lineage, segment, resolution)]
-                if (system == "qsub"):
-                    call = ['qsub', 'submit_script.sh'] + call
-                elif (system == "rhino"):
-                    concat = '"' + ' '.join( ['python'] + call ) + '"'
-                    call = ['sbatch', '-n', '1', '-c', '2', '--mem', '16192', '--time', '12:00:00', '--wrap', concat]
-                elif (system == "sbatch"):
-                    call = ['sbatch', 'submit_flu.sh'] + call
-                elif (system == "local"):
-                    call = ['python'] + call
-                print(' '.join(call))
-                os.system(' '.join(call))
+                    '--json', 'prepared/flu_%s_na_%s.json'%(lineage, resolution)]
+            if (system == "qsub"):
+                call = ['qsub', 'submit_script.sh'] + call
+            elif (system == "rhino"):
+                concat = '"' + ' '.join( ['python'] + call ) + '"'
+                call = ['sbatch', '-n', '1', '-c', '2', '--mem', '16192', '--time', '12:00:00', '--wrap', concat]
+            elif (system == "sbatch"):
+                call = ['sbatch', 'submit_flu.sh'] + call
+            elif (system == "local"):
+                call = ['python'] + call
+            print(' '.join(call))
+            os.system(' '.join(call))
 
 def build_cdc(
-    lineages = None, resolutions = None, segments=None,
+    lineages = None, resolutions = None,
     system="local",
     frequencies="complete",
+    process_na=False    
     ):
     lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
     resolutions = ['2y', '3y', '6y'] if resolutions is None else resolutions
-    segments = ['ha', 'na'] if segments is None else segments
+    segments = ['ha', 'na']
 
     for lineage in lineages:
         seq_files = " ".join(['../../../fauna/data/%s_%s.fasta'%(lineage, segment)
@@ -73,23 +78,27 @@ def build_cdc(
                     print(' '.join(call))
                     os.system(' '.join(call))
 
-                    for segment in segments:
+                    call = [
+                        'flu.process.py',
+                        '--json', 'prepared/flu_%s_ha_%s_%s_%s.json'%(lineage, resolution, passage, assay),
+                        '--titers_export']
+                    if process_na:
                         call = [
                             'flu.process.py',
-                            '--json', 'prepared/flu_%s_%s_%s_%s_%s.json'%(lineage, segment, resolution, passage, assay),
+                            '--json', 'prepared/flu_%s_na_%s_%s_%s.json'%(lineage, resolution, passage, assay),
                             '--titers_export']
 
-                        if (system == "qsub"):
-                            call = ['qsub', 'submit_script.sh'] + call
-                        elif (system == "rhino"):
-                            concat = '"' + ' '.join( ['python'] + call ) + '"'
-                            call = ['sbatch', '-n', '1', '-c', '2', '--mem', '16192', '--time', '12:00:00', '--wrap', concat]
-                        elif (system == "sbatch"):
-                            call = ['sbatch', 'submit_flu.sh'] + call
-                        elif (system == "local"):
-                            call = ['python'] + call
-                        print(' '.join(call))
-                        os.system(' '.join(call))
+                    if (system == "qsub"):
+                        call = ['qsub', 'submit_script.sh'] + call
+                    elif (system == "rhino"):
+                        concat = '"' + ' '.join( ['python'] + call ) + '"'
+                        call = ['sbatch', '-n', '1', '-c', '2', '--mem', '16192', '--time', '12:00:00', '--wrap', concat]
+                    elif (system == "sbatch"):
+                        call = ['sbatch', 'submit_flu.sh'] + call
+                    elif (system == "local"):
+                        call = ['python'] + call
+                    print(' '.join(call))
+                    os.system(' '.join(call))
 
 if __name__ == '__main__':
     import argparse
@@ -99,8 +108,8 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--system', type = str, default = 'local', help='where to run, local, qsub or sbatch')
     parser.add_argument('-l', '--lineages', nargs='+', type = str,  help ="flu lineages to include")
     parser.add_argument('-r', '--resolutions', nargs='+', type = str,  help ="flu resolutions to include")
-    parser.add_argument('--segments', nargs='+', type = str,  help ="flu segment to include")
     parser.add_argument('--frequencies', type = str, default = 'complete', help='frequencies to complete, complete or subsampled')
+    parser.add_argument('--process_na', action="store_true", default=False,  help = "supplemental run of na")
     params = parser.parse_args()
 
     if params.lineages is None:
@@ -112,20 +121,17 @@ if __name__ == '__main__':
         elif params.build == "cdc":
             params.resolutions = ['2y', '3y', '6y']
 
-    if params.segments is None:
-        params.segments = ['ha', 'na']
-
     if params.build == "live":
         build_live(
             lineages = params.lineages,
             resolutions = params.resolutions,
-            segments = params.segments,
             system = params.system,
-            frequencies = params.frequencies)
+            frequencies = params.frequencies,
+            process_na = params.process_na)
     elif params.build == "cdc":
         build_cdc(
             lineages = params.lineages,
             resolutions = params.resolutions,
-            segments = params.segments,
             system = params.system,
-            frequencies = params.frequencies)
+            frequencies = params.frequencies,
+            process_na = params.process_na)
