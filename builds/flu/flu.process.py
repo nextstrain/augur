@@ -204,7 +204,9 @@ if __name__=="__main__":
     runner = process(make_config(prepared_json, args))
 
     # this should be in the json...
-    segment = "ha" if "_ha." in prepared_json else "na"
+    segment = "ha"
+    if "_na_" in prepared_json:
+        segment = "na"
     runner.segment = segment
 
     runner.align()
@@ -280,14 +282,16 @@ if __name__=="__main__":
         import json
         ha_tree_json_fname = os.path.join(runner.config["output"]["auspice"], runner.info["prefix"]) + "_tree.json"
         ha_tree_json_fname = ha_tree_json_fname.replace("_na", "_ha")
-        with open(ha_tree_json_fname) as jfile:
-            ha_tree_json = json.load(jfile)
-        ha_tree_flat = flatten_json(ha_tree_json)
+        if os.path.isfile(ha_tree_json_fname):      # confirm file exists
+            with open(ha_tree_json_fname) as jfile:
+                ha_tree_json = json.load(jfile)
+            ha_tree_flat = flatten_json(ha_tree_json)
 
-        for n in runner.tree.tree.get_terminals():
-            if n.name in ha_tree_flat:
-                n.attr["named_clades"]=ha_tree_flat[n.name]["attr"]["named_clades"]
-            else:
-                n.attr["named_clades"]=["unassigned"]
+            for n in runner.tree.tree.get_terminals():
+                if n.name in ha_tree_flat:
+                    if "named_clades" in ha_tree_flat[n.name]["attr"]:
+                        n.attr["named_clades"] = ha_tree_flat[n.name]["attr"]["named_clades"]
+                else:
+                    n.attr["named_clades"] = ["unassigned"]
 
     runner.auspice_export()

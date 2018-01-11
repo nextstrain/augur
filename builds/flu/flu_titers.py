@@ -62,8 +62,7 @@ def get_total_peptide(node, segment='ha'):
     the concatenation of signal peptide, HA1, HA1
     '''
     if segment=='ha':
-        return np.fromstring(node.translations['SigPep']+node.translations['HA1']
-                   + node.translations['HA2'], 'S1')
+        return np.fromstring(node.translations['SigPep'] + node.translations['HA1'] + node.translations['HA2'], 'S1')
     elif segment=='na':
         return np.fromstring(node.translations['NA'], 'S1')
 
