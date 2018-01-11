@@ -14,18 +14,20 @@ def build_live(
         seq_files = " ".join(['../../../fauna/data/%s_%s.fasta'%(lineage, segment)
                               for segment in segments])
         for resolution in resolutions:
-            call = ['python',
-                'flu.prepare.py',
-                '--lineage', lineage,
-                '--resolution', resolution,
-                '--segments', " ".join(segments),
-                '--sequences', seq_files,
-                '--titers', '../../../fauna/data/%s_hi_titers.tsv'%(lineage),
-                '--file_prefix', 'flu_%s_*segment*_%s'%(lineage, resolution)]
-            if frequencies == "complete":
-                call = call + ['--complete_frequencies']
-            print(' '.join(call))
-            os.system(' '.join(call))
+
+            if not process_na:
+                call = ['python',
+                    'flu.prepare.py',
+                    '--lineage', lineage,
+                    '--resolution', resolution,
+                    '--segments', " ".join(segments),
+                    '--sequences', seq_files,
+                    '--titers', '../../../fauna/data/%s_hi_titers.tsv'%(lineage),
+                    '--file_prefix', 'flu_%s_*segment*_%s'%(lineage, resolution)]
+                if frequencies == "complete":
+                    call = call + ['--complete_frequencies']
+                print(' '.join(call))
+                os.system(' '.join(call))
 
             call = [
                 'flu.process.py',
@@ -50,7 +52,7 @@ def build_cdc(
     lineages = None, resolutions = None,
     system="local",
     frequencies="complete",
-    process_na=False    
+    process_na=False
     ):
     lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
     resolutions = ['2y', '3y', '6y'] if resolutions is None else resolutions
@@ -65,18 +67,19 @@ def build_cdc(
                     if lineage!='h3n2' and assay=='fra':
                         continue
 
-                    call = ['python',
-                        'flu.prepare.py',
-                        '--lineage', lineage,
-                        '--resolution', resolution,
-                        '--segments', " ".join(segments),
-                        '--sequences', seq_files,
-                        '--titers', '../../../fauna/data/%s_cdc_%s_%s_titers.tsv'%(lineage, assay, passage),
-                        '--file_prefix', 'flu_%s_*segment*_%s_%s_%s'%(lineage, resolution, passage, assay)]
-                    if frequencies == "complete":
-                        call = call + ['--complete_frequencies']
-                    print(' '.join(call))
-                    os.system(' '.join(call))
+                    if not process_na:
+                        call = ['python',
+                            'flu.prepare.py',
+                            '--lineage', lineage,
+                            '--resolution', resolution,
+                            '--segments', " ".join(segments),
+                            '--sequences', seq_files,
+                            '--titers', '../../../fauna/data/%s_cdc_%s_%s_titers.tsv'%(lineage, assay, passage),
+                            '--file_prefix', 'flu_%s_*segment*_%s_%s_%s'%(lineage, resolution, passage, assay)]
+                        if frequencies == "complete":
+                            call = call + ['--complete_frequencies']
+                        print(' '.join(call))
+                        os.system(' '.join(call))
 
                     call = [
                         'flu.process.py',
