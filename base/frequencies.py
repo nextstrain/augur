@@ -349,13 +349,15 @@ class tree_frequencies(object):
                 for clade, tmp_freq in freq_est.iteritems():
                     if clade!="other":
                         self.frequencies[clade] = self.frequencies[node.clade]*tmp_freq
-                if len(small_clades)>1:
+
+                if len(small_clades) > 1:
+                    total_leaves_in_small_clades = 0
                     for clade in small_clades:
-                        if len(node.leafs):
-                            frac = 1.0*len(clade.leafs)/len(node.leafs)
-                        else:
-                            frac = 0.0
-                        self.frequencies[clade.clade] = frac*freq_est["other"]
+                        total_leaves_in_small_clades += len(clade.leafs)
+
+                    for clade in small_clades:
+                        frac = len(clade.leafs) / total_leaves_in_small_clades
+                        self.frequencies[clade.clade] = frac * freq_est["other"] * self.frequencies[node.clade]
             else:
                 for clade in small_clades:
                     if len(node.leafs):
