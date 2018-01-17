@@ -4,7 +4,7 @@ import numpy as np
 from collections import defaultdict
 from pprint import pprint
 from base.io_util import myopen
-from base.titer_model import TiterModel
+from base.titer_model import TiterCollection
 
 vpm_dict = {
     2: 92,
@@ -44,7 +44,7 @@ def flu_subsampling(params, years_back, titer_values):
 
     #### DEFINE THE PRIORITY
     if titer_values is not None:
-        HI_titer_count = TiterModel.count_strains(titer_values)
+        HI_titer_count = TiterCollection.count_strains(titer_values)
     else:
         print("Couldn't load titer information - using random priorities")
         HI_titer_count = False

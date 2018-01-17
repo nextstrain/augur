@@ -4,7 +4,7 @@ import os, sys, re
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import base.prepare
 from base.prepare import prepare
-from base.titer_model import TiterModel
+from base.titer_model import TiterCollection
 from datetime import datetime, timedelta, date
 from base.utils import fix_names
 from pprint import pprint
@@ -57,7 +57,7 @@ def make_config(lineage, resolution, params):
     fixed_references = [fix_names(x) for x in reference_viruses[lineage]]
 
     if params.titers is not None:
-        titer_values, strains, sources = TiterModel.load_from_file(params.titers)
+        titer_values, strains, sources = TiterCollection.load_from_file(params.titers)
     else:
         titer_values = None
 
