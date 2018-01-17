@@ -256,15 +256,6 @@ class TiterCollection(object):
 
         return list(sera), list(ref_strains), list(test_strains)
 
-    def titer_stats(self):
-        print(" - remaining data set")
-        print(' ---', len(self.ref_strains), " reference virues")
-        print(' ---', len(self.sera), " sera")
-        print(' ---', len(self.test_strains), " test_viruses")
-        print(' ---', len(self.titers_normalized), " non-redundant test virus/serum pairs")
-        if hasattr(self, 'train_titers'):
-            print(' ---', len(self.train_titers), " measurements in training set")
-
 
 class TiterModel(object):
     '''
@@ -315,7 +306,17 @@ class TiterModel(object):
         # Determine distinct sera, reference strains, and test strains.
         self.sera, self.ref_strains, self.test_strains = self.titers.strain_census(self.titers.titers_normalized)
         print("Normalized titers and restricted to measurements in tree:")
-        self.titers.titer_stats()
+        self.titer_stats()
+
+
+    def titer_stats(self):
+        print(" - remaining data set")
+        print(' ---', len(self.ref_strains), " reference virues")
+        print(' ---', len(self.sera), " sera")
+        print(' ---', len(self.test_strains), " test_viruses")
+        print(' ---', len(self.titers.titers_normalized), " non-redundant test virus/serum pairs")
+        if hasattr(self, 'train_titers'):
+            print(' ---', len(self.train_titers), " measurements in training set")
 
 
     def prepare_tree(self, tree):
