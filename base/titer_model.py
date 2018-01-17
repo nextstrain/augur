@@ -229,32 +229,36 @@ class TiterCollection(object):
                 pass
                 #print "no homologous titer found:", ref
 
-        self.strain_census()
+        self.sera, self.ref_strains, self.test_strains = self.strain_census(self.titers_normalized)
         print("Normalized titers and restricted to measurements in tree:")
         self.titer_stats()
 
-    def strain_census(self):
-        '''
+    def strain_census(self, titers):
+        """
         make lists of reference viruses, test viruses and sera
-        (there are often multiple sera oer reference virus)
-        '''
+        (there are often multiple sera per reference virus)
+
+        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
+        >>> titers = TiterCollection(measurements)
+        >>> sera, ref_strains, test_strains = titers.strain_census(measurements)
+        >>> len(sera)
+        9
+        >>> len(ref_strains)
+        9
+        >>> len(test_strains)
+        13
+        """
         sera = set()
         ref_strains = set()
         test_strains = set()
-        if hasattr(self, 'train_titers'):
-            tt = self.train_titers
-        else:
-            tt = self.titers_normalized
 
-        for test,ref in tt:
+        for test, ref in titers:
             test_strains.add(test)
             test_strains.add(ref[0])
             sera.add(ref)
             ref_strains.add(ref[0])
 
-        self.sera = list(sera)
-        self.ref_strains = list(ref_strains)
-        self.test_strains = list(test_strains)
+        return list(sera), list(ref_strains), list(test_strains)
 
     def titer_stats(self):
         print(" - remaining data set")
@@ -322,7 +326,9 @@ class TiterModel(TiterCollection):
                                self.node_lookup[key[1][0]].num_date>=date_range[0] and
                                self.node_lookup[key[0]].num_date<date_range[1] and
                                self.node_lookup[key[1][0]].num_date<date_range[1]}
-        self.strain_census()
+
+        self.sera, self.ref_strains, self.test_strains = self.strain_census(self.train_titers)
+
         print("Reduced training data to date range", date_range)
         self.titer_stats()
 
@@ -352,7 +358,7 @@ class TiterModel(TiterCollection):
         else: # without the need for a test data set, use the entire data set for training
             self.train_titers = self.titers_normalized
 
-        self.strain_census()
+        self.sera, self.ref_strains, self.test_strains = self.strain_census(self.train_titers)
         print("Made training data as fraction",training_fraction, "of all measurements")
         self.titer_stats()
 
