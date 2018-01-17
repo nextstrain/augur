@@ -60,7 +60,9 @@ def make_config(params):
             "BritishColumbia.CAN/33.16/1/G", "BritishColumbia.CAN/9.17/A",
             "BritishColumbia.CAN/28.16/3/G",
             # true strains, but group outside NA outbreak clade
-            "WA0268502_buccal/Washington.USA/16" # not yet released
+            "WA0268502_buccal/Washington.USA/16", # not yet released
+            "Washington.USA/2017217/8.17/3/G", # outlier. MRCA with other NA strains of 1990
+            "BritishColumbia.CAN/34.16/2/F" #MuV genotype F. MRCA of 1943 (!)
         ]
         colors = ["country", "division"]
         lat_longs = ["country", "division"]
@@ -81,7 +83,7 @@ def make_config(params):
         "input_paths": ["../../../fauna/data/mumps.fasta"],
         "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
             6:'division', 8:'db', 10:'authors', 11:'url', 12:'title',
-            13: 'journal', 14: 'paper_url'},
+            13: 'journal', 14: 'paper_url', 15: 'MuV_genotype'},
         "filters": filters,
         "subsample": {
             "threshold": viruses_per_month,
@@ -95,7 +97,7 @@ def make_config(params):
             "path": "mumps-reference.gb",
             "metadata": {
                 'strain': "MuV/Gabon/13/2", "accession": "KM597072.1", "date": "2013-03-01",
-                'host': "human", 'country': "Gabon", 'region': "Gabon"
+                'host': "human", 'country': "Gabon", 'region': "Gabon", 'MuV_genotype': "G"
             },
             "include": 0,
             "genes": ['NC', 'P', 'V', 'I', 'M', 'F', 'SH', 'HN', 'L']

@@ -16,6 +16,7 @@ def make_config(prepared_json, clean, params):
         color_options = {
             "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
             "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
+            "MuV_genotype":{"key":"muvgeno", "legendTitle":"MuV genotype", "menuItem":"MuV genotype", "type":"discrete"},
         }
         defaults = {
             "colorBy": "country",
@@ -26,6 +27,7 @@ def make_config(prepared_json, clean, params):
         color_options = {
             "division":{"key":"division", "legendTitle":"Division", "menuItem":"division", "type":"discrete"},
             "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
+            "MuV_genotype":{"key":"muvgeno", "legendTitle":"MuV genotype", "menuItem":"MuV genotype", "type":"discrete"}
         }
         defaults = {
             "colorBy": "division",

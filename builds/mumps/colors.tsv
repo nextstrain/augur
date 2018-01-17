@@ -31,3 +31,13 @@ division	manitoba	#C5B945
 division	california	#E0A23A
 division	washington	#E67231
 division	british_columbia	#DC2F24
+
+MuV_genotype	A	#462EB9
+MuV_genotype	B	#3E58CF
+MuV_genotype	C	#4580CA
+MuV_genotype	D	#69B091
+MuV_genotype	E	#A2BE57
+MuV_genotype	F	#C1BA47
+MuV_genotype	G	#E69136
+MuV_genotype	H	#DC2F24
+MuV_genotype	?	#bebebe
