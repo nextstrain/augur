@@ -176,7 +176,7 @@ class TiterCollection(object):
         return consensus_func(np.log2(self.autologous_titers[ref]['val'])) \
                 - consensus_func(np.log2(val))
 
-    def determine_autologous_titers(self, node_lookup=None):
+    def determine_autologous_titers(self):
         '''
         scan the titer measurements for autologous (self) titers and make a dictionary
         stored in self to look them up later. If no autologous titer is found, use the
@@ -184,16 +184,12 @@ class TiterCollection(object):
         than autologous titers and the highest test titer is often a reasonably
         approximation of the autologous titer.
         '''
-        if node_lookup is None:
-            node_lookup = {}
-
         autologous = defaultdict(list)
         all_titers_per_serum = defaultdict(list)
         for (test, ref), val in self.titers.iteritems():
-            if len(node_lookup) == 0 or ref[0].upper() in node_lookup:
-                all_titers_per_serum[ref].append(val)
-                if ref[0]==test:
-                    autologous[ref].append(val)
+            all_titers_per_serum[ref].append(val)
+            if ref[0]==test:
+                autologous[ref].append(val)
 
         self.autologous_titers = {}
         for serum in all_titers_per_serum:
@@ -212,43 +208,36 @@ class TiterCollection(object):
                     # print("discarding",serum,"since there are only ",
                     #        len(all_titers_per_serum[serum]),'measurements')
 
-    def normalize_titers(self, node_lookup=None):
+    def normalize_titers(self):
         '''
         convert the titer measurements into the log2 difference between the average
         titer measured between test virus and reference serum and the average
         homologous titer. all measurements relative to sera without homologous titer
         are excluded
         '''
-        if node_lookup is None:
-            node_lookup = {}
-
-        self.determine_autologous_titers(node_lookup)
+        self.determine_autologous_titers()
 
         self.titers_normalized = {}
         self.consensus_titers_raw = {}
         self.measurements_per_serum = defaultdict(int)
         for (test, ref), val in self.titers.iteritems():
-            if len(node_lookup) == 0 or (test.upper() in node_lookup and ref[0].upper() in node_lookup):
-                if ref in self.autologous_titers: # use only titers for which estimates of the autologous titer exists
-                    self.titers_normalized[(test, ref)] = self.normalize(ref, val)
-                    self.consensus_titers_raw[(test, ref)] = np.median(val)
-                    self.measurements_per_serum[ref]+=1
-                else:
-                    pass
-                    #print "no homologous titer found:", ref
+            if ref in self.autologous_titers: # use only titers for which estimates of the autologous titer exists
+                self.titers_normalized[(test, ref)] = self.normalize(ref, val)
+                self.consensus_titers_raw[(test, ref)] = np.median(val)
+                self.measurements_per_serum[ref]+=1
+            else:
+                pass
+                #print "no homologous titer found:", ref
 
-        self.strain_census(node_lookup)
+        self.strain_census()
         print("Normalized titers and restricted to measurements in tree:")
         self.titer_stats()
 
-    def strain_census(self, node_lookup=None):
+    def strain_census(self):
         '''
         make lists of reference viruses, test viruses and sera
         (there are often multiple sera oer reference virus)
         '''
-        if node_lookup is None:
-            node_lookup = {}
-
         sera = set()
         ref_strains = set()
         test_strains = set()
@@ -258,11 +247,10 @@ class TiterCollection(object):
             tt = self.titers_normalized
 
         for test,ref in tt:
-            if len(node_lookup) == 0 or (test.upper() in node_lookup and ref[0].upper() in node_lookup):
-                test_strains.add(test)
-                test_strains.add(ref[0])
-                sera.add(ref)
-                ref_strains.add(ref[0])
+            test_strains.add(test)
+            test_strains.add(ref[0])
+            sera.add(ref)
+            ref_strains.add(ref[0])
 
         self.sera = list(sera)
         self.ref_strains = list(ref_strains)
@@ -334,7 +322,7 @@ class TiterModel(TiterCollection):
                                self.node_lookup[key[1][0]].num_date>=date_range[0] and
                                self.node_lookup[key[0]].num_date<date_range[1] and
                                self.node_lookup[key[1][0]].num_date<date_range[1]}
-        self.strain_census(self.node_lookup)
+        self.strain_census()
         print("Reduced training data to date range", date_range)
         self.titer_stats()
 
@@ -364,7 +352,7 @@ class TiterModel(TiterCollection):
         else: # without the need for a test data set, use the entire data set for training
             self.train_titers = self.titers_normalized
 
-        self.strain_census(self.node_lookup)
+        self.strain_census()
         print("Made training data as fraction",training_fraction, "of all measurements")
         self.titer_stats()
 
