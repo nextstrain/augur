@@ -229,10 +229,6 @@ class TiterCollection(object):
                 pass
                 #print "no homologous titer found:", ref
 
-        self.sera, self.ref_strains, self.test_strains = self.strain_census(self.titers_normalized)
-        print("Normalized titers and restricted to measurements in tree:")
-        self.titer_stats()
-
     def strain_census(self, titers):
         """
         make lists of reference viruses, test viruses and sera
@@ -270,7 +266,7 @@ class TiterCollection(object):
             print(' ---', len(self.train_titers), " measurements in training set")
 
 
-class TiterModel(TiterCollection):
+class TiterModel(object):
     '''
     this class decorates as phylogenetic tree with titer measurements and infers
     different models that describe titer differences in a parsimonious way.
@@ -292,15 +288,34 @@ class TiterModel(TiterCollection):
                            should be roughly the inverse of the number of measurements beyond which
                            the contribution of a serum should saturate
         '''
-        super(TiterModel, self).__init__(titers, **kwargs)
-
         self.kwargs = kwargs
         # set self.tree and dress tree with a number of extra attributes
         self.prepare_tree(tree)
         self.serum_Kc = serum_Kc
 
-        # Normalize titers using only those corresponding to nodes in the tree.
-        self.normalize_titers(self.node_lookup)
+        # Load titer measurements from a file or from a given dictionary of
+        # measurements.
+        if isinstance(titers, str) and os.path.isfile(titers):
+            titer_measurements = TiterCollection.load_from_file(titers)
+        else:
+            titer_measurements = titers
+
+        # Filter titer measurements to those from strains in the given tree.
+        filtered_titer_measurements = TiterCollection.filter_strains(
+            titer_measurements,
+            self.node_lookup.keys()
+        )
+
+        # Create a titer collection for the filtered titer measurements.
+        self.titers = TiterCollection(filtered_titer_measurements, **kwargs)
+
+        # Normalize titers.
+        self.titers.normalize_titers()
+
+        # Determine distinct sera, reference strains, and test strains.
+        self.sera, self.ref_strains, self.test_strains = self.titers.strain_census(self.titers.titers_normalized)
+        print("Normalized titers and restricted to measurements in tree:")
+        self.titers.titer_stats()
 
 
     def prepare_tree(self, tree):
@@ -327,7 +342,7 @@ class TiterModel(TiterCollection):
                                self.node_lookup[key[0]].num_date<date_range[1] and
                                self.node_lookup[key[1][0]].num_date<date_range[1]}
 
-        self.sera, self.ref_strains, self.test_strains = self.strain_census(self.train_titers)
+        self.sera, self.ref_strains, self.test_strains = self.titers.strain_census(self.train_titers)
 
         print("Reduced training data to date range", date_range)
         self.titer_stats()
@@ -344,21 +359,21 @@ class TiterModel(TiterCollection):
                 for tmpstrain in self.ref_strains:      # add all reference viruses to the training set
                     if tmpstrain not in training_strains:
                         training_strains.append(tmpstrain)
-                for key, val in self.titers_normalized.iteritems():
+                for key, val in self.titers.titers_normalized.iteritems():
                     if key[0] in training_strains:
                         self.train_titers[key]=val
                     else:
                         self.test_titers[key]=val
             else: # simply use a fraction of all measurements for testing
-                for key, val in self.titers_normalized.iteritems():
+                for key, val in self.titers.titers_normalized.iteritems():
                     if np.random.uniform()>training_fraction:
                         self.test_titers[key]=val
                     else:
                         self.train_titers[key]=val
         else: # without the need for a test data set, use the entire data set for training
-            self.train_titers = self.titers_normalized
+            self.train_titers = self.titers.titers_normalized
 
-        self.sera, self.ref_strains, self.test_strains = self.strain_census(self.train_titers)
+        self.sera, self.ref_strains, self.test_strains = self.titers.strain_census(self.train_titers)
         print("Made training data as fraction",training_fraction, "of all measurements")
         self.titer_stats()
 
@@ -450,7 +465,7 @@ class TiterModel(TiterCollection):
         def dstruct():
             return defaultdict(int)
         self.titer_counts = defaultdict(dstruct)
-        for test_vir, (ref_vir, serum) in self.titers_normalized:
+        for test_vir, (ref_vir, serum) in self.titers.titers_normalized:
             self.titer_counts[ref_vir][serum]+=1
 
 
@@ -465,11 +480,11 @@ class TiterModel(TiterCollection):
             return defaultdict(dict)
         titer_json = defaultdict(dstruct)
 
-        for key, val in self.titers_normalized.iteritems():
+        for key, val in self.titers.titers_normalized.iteritems():
             test_vir, (ref_vir, serum) = key
             test_clade = self.node_lookup[test_vir.upper()].clade
             ref_clade = self.node_lookup[ref_vir.upper()].clade
-            titer_json[ref_clade][test_clade][serum] = [np.round(val,TITER_ROUND), np.median(self.titers[key])]
+            titer_json[ref_clade][test_clade][serum] = [np.round(val,TITER_ROUND), np.median(self.titers.titers[key])]
 
         return titer_json
 
@@ -720,7 +735,7 @@ class TreeModel(TiterModel):
                         # append model and fit value to lists tree_graph and titer_dist
                         tree_graph.append(tmp)
                         titer_dist.append(val)
-                        weights.append(1.0/(1.0 + self.serum_Kc*self.measurements_per_serum[ref]))
+                        weights.append(1.0/(1.0 + self.serum_Kc*self.titers.measurements_per_serum[ref]))
                 except:
                     import ipdb; ipdb.set_trace()
                     print(test, ref, "ERROR")
@@ -863,7 +878,7 @@ class SubstitutionModel(TiterModel):
                     seq_graph.append(tmp)
                     titer_dist.append(val)
                     # for each measurment (row in the big matrix), attach weight that accounts for representation of serum
-                    weights.append(1.0/(1.0 + self.serum_Kc*self.measurements_per_serum[ref]))
+                    weights.append(1.0/(1.0 + self.serum_Kc*self.titers.measurements_per_serum[ref]))
                 except:
                     import pdb; pdb.set_trace()
                     print(test, ref, "ERROR")
