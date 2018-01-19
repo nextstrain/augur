@@ -76,7 +76,7 @@ outliers = {
         "A/Hungary/02/2013", "A/Hungary/16/2013", "A/Poland/16/2013", "A/Brest/1161/2014", "A/Dakar/3/2014",
         "A/India/Pun1418633/2014", "A/Minnesota/33/2014", "A/Norway/1929/2014", "A/Iowa/39/2015",
         "A/India/4101/2015", "A/Minnesota/46/2015", "A/Ohio/9/2015", "A/Bari/166/2016", "A/Bari/167/2016",
-        "A/Belgium/G0027/2016", "A/Ohio/1/2007"
+        "A/Belgium/G0027/2016", "A/Ohio/1/2007", "A/Iowa/1/2006", "A/Minnesota/3/2008", "A/Texas/14/2008"
     ],
     'vic':[
         "A/Malaysia/438/2016", "B/Togo/LNG/419/2013", "B/Brisbine/33/2008", "B/Kol/2024/2008",
