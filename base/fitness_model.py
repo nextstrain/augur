@@ -558,8 +558,8 @@ class fitness_model(object):
 
         trajectory_mcc = matthews_correlation_coefficient(
             correct_growth,
-            total_growth - correct_growth,
             correct_decline,
+            total_growth - correct_growth,
             total_decline - correct_decline
         )
 
