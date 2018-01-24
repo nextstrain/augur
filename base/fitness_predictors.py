@@ -201,7 +201,7 @@ class fitness_predictors(object):
         positions = list(range(len(tree.root.aa)))
 
         # Calculate a default value for missing preferences.
-        missing_preference = np.log(1e-10)
+        missing_preference = 1e-10
 
         for node in tree.root.find_clades():
             # Determine amino acid sequence if it is not defined.
