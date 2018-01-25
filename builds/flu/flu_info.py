@@ -252,7 +252,8 @@ reference_viruses = {
         'A/SouthAustralia/55/2014', 'A/NewCaledonia/71/2014', 'A/Stockholm/6/2014',
         'A/Wisconsin/20/2015', 'A/Wisconsin/66/2015', 'A/Ontario/RV2414/2015',
         'A/Singapore/Infimh-16-0019/2016', 'A/Texas/88/2016', 'A/Idaho/33/2016', 'A/Texas/88/2016',
-        'A/NorthCarolina/4/2016', 'A/Delaware/32/2016', 'A/Florida/23/2017', 'A/Washington/16/2017'
+        'A/NorthCarolina/4/2016', 'A/Delaware/32/2016', 'A/Florida/23/2017', 'A/Washington/16/2017',
+        'A/NorthCarolina/4/2017','A/SouthCarolina/4/2016'
     ],
     'h1n1pdm':[
         'A/California/7/2009', 'A/Bangladesh/2021/2012', 'A/SouthAfrica/3626/2013',
