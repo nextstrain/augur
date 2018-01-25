@@ -49,7 +49,7 @@ def flu_subsampling(params, years_back, titer_values):
         print("Couldn't load titer information - using random priorities")
         HI_titer_count = False
         def priority(seq):
-            return np.random.random() + int([seq.name in reference_viruses[params.lineage]])
+            return np.random.random() + int(seq.name in reference_viruses[params.lineage])
     if HI_titer_count:
         def priority(seq):
             sname = seq.attributes['strain']
@@ -57,9 +57,8 @@ def flu_subsampling(params, years_back, titer_values):
                 pr = HI_titer_count[sname]
             else:
                 pr = 0
-            return (pr + len(seq.seq)*0.0001 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD'] +
-                    1e6*int([seq.name in reference_viruses[params.lineage]]))
-    if HI_titer_count:)
+            return (pr + len(seq.seq)*0.0001 - 0.01*np.sum([seq.seq.count(nuc) for nuc in 'NRWYMKSHBVD']) +
+                    1e6*int(seq.name in reference_viruses[params.lineage]))
 
     ##### DEFINE THE THRESHOLD
     if params.viruses_per_month != 0:
