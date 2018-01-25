@@ -26,7 +26,7 @@ def remove_dir(dname, max_attempts=5):
             try:
                 shutil.rmtree(dname)
                 return
-            except OSError, e:
+            except OSError as e:
                 time.sleep(i)
 
         # Try one last time and let OS exception propagate up.
