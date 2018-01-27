@@ -76,7 +76,7 @@ outliers = {
         "A/Hungary/02/2013", "A/Hungary/16/2013", "A/Poland/16/2013", "A/Brest/1161/2014", "A/Dakar/3/2014",
         "A/India/Pun1418633/2014", "A/Minnesota/33/2014", "A/Norway/1929/2014", "A/Iowa/39/2015",
         "A/India/4101/2015", "A/Minnesota/46/2015", "A/Ohio/9/2015", "A/Bari/166/2016", "A/Bari/167/2016",
-        "A/Belgium/G0027/2016"
+        "A/Belgium/G0027/2016", "A/Ohio/1/2007", "A/Iowa/1/2006", "A/Minnesota/3/2008", "A/Texas/14/2008"
     ],
     'vic':[
         "A/Malaysia/438/2016", "B/Togo/LNG/419/2013", "B/Brisbine/33/2008", "B/Kol/2024/2008",
@@ -111,6 +111,23 @@ reference_maps = {
             },
             "include": 0,
             "genes": ["SigPep", "HA1", "HA2"]
+        },
+        "na": {
+            "path": "metadata/h3n2_na_outgroup.gb",
+            "metadata": {
+                'strain': "A/Beijing/32/1992",
+                'isolate_id': "CY113677",
+                'date': "1992-XX-XX",
+                'region': "china",
+                'country': "China",
+                "city": "Beijing",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["NA"]
         }
     },
     "yam": {
@@ -133,6 +150,18 @@ reference_maps = {
         },
         "na": {
             "path": "metadata/yam_na_outgroup.gb",
+            "metadata": {
+                'strain': "B/Singapore/11/1994",
+                'isolate_id': "CY019707",
+                'date': "1994-05-10",
+                'region': "southeast_asia",
+                'country': "Singapore",
+                "city": "Singapore",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "M"
+            },
             "include": 0,
             "genes": ["NA", "NB"]
         }
@@ -154,6 +183,23 @@ reference_maps = {
             },
             "include": 0,
             "genes": ["SigPep", "HA1", "HA2"]
+        },
+        "na": {
+            "path": "metadata/vic_na_outgroup.gb",
+            "metadata": {
+                'strain': "B/Hong Kong/02/1993",
+                'isolate_id': "CY018813",
+                'date': "1993-02-15",
+                'region': "china",
+                'country': "Hong Kong",
+                "city": "Hong Kong",
+                "passage": "4",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["NB", "NA"]
         }
     },
     "h1n1pdm": {
@@ -173,6 +219,23 @@ reference_maps = {
             },
             "include": 0,
             "genes": ["SigPep", "HA1", "HA2"]
+        },
+        "na": {
+            "path": "metadata/h1n1pdm_na_outgroup.gb",
+            "metadata": {
+                'strain': "A/Swine/Indiana/P12439/00",
+                'isolate_id': "AF455680",
+                'date': "unknown",
+                'region': "north america",
+                'country': "USA",
+                "city": "unknown",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["NA"]
         }
     }
 }
@@ -189,7 +252,8 @@ reference_viruses = {
         'A/SouthAustralia/55/2014', 'A/NewCaledonia/71/2014', 'A/Stockholm/6/2014',
         'A/Wisconsin/20/2015', 'A/Wisconsin/66/2015', 'A/Ontario/RV2414/2015',
         'A/Singapore/Infimh-16-0019/2016', 'A/Texas/88/2016', 'A/Idaho/33/2016', 'A/Texas/88/2016',
-        'A/NorthCarolina/4/2016', 'A/Delaware/32/2016', 'A/Florida/23/2017', 'A/Washington/16/2017'
+        'A/NorthCarolina/4/2016', 'A/Delaware/32/2016', 'A/Florida/23/2017', 'A/Washington/16/2017',
+        'A/NorthCarolina/4/2017','A/SouthCarolina/4/2017'
     ],
     'h1n1pdm':[
         'A/California/7/2009', 'A/Bangladesh/2021/2012', 'A/SouthAfrica/3626/2013',

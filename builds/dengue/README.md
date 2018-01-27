@@ -13,7 +13,7 @@ The all-serotype build uses the reference genome from serotype 4.
 
 Requires 5 FASTAs (`dengue_all.fasta`, `dengue_denv1.fasta`, `dengue_denv2.fasta`, `dengue_denv3.fasta` and `dengue_denv4.fasta`).
 
-#### 3. Download titer tsv file via fauna
+#### 3. Use custom titer tsv file from Sidney:
 
 Requires `dengue_titers.tsv`.
 

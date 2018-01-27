@@ -36,8 +36,7 @@ config = {
             "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
         },
         "controls": {'authors':['authors']},
-        "defaults": {'mapTriplicate': True},
-        "extra_jsons": []
+        "defaults": {'mapTriplicate': True}
     },
     "timetree_options": {
         "Tc": 'opt',
