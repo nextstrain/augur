@@ -196,11 +196,67 @@ def age_distribution(runner):
     plt.close()
 
 
+def plot_titers(titer_model, titers, fname=None, title=None):
+    from collections import defaultdict
+    import matplotlib
+    # important to use a non-interactive backend, otherwise will crash on cluster
+    matplotlib.use('PDF')
+    import matplotlib.pyplot as plt
+
+    symb = ['o', 's', 'd', 'v', '<', '>', '+']
+    cols = ['C'+str(i) for i in range(10)]
+    fs =16
+    grouped_titers = defaultdict(list)
+    for (test, (ref, serum)), val in titers.items():
+        if test not in titer_model.node_lookup:
+            continue
+        date = titer_model.node_lookup[test].attr["num_date"]
+        date = int(date*2)/2.
+        if ref!=test:
+            if np.isscalar(val):
+                grouped_titers[(ref, serum, date)].append(val)
+            else:
+                grouped_titers[(ref, serum, date)].append(np.exp(np.mean(np.log(val))))
+
+
+    titer_means = defaultdict(list)
+    for (ref, serum, date), val in grouped_titers.items():
+        d = [date, np.mean(val), np.std(val), len(val)]
+        titer_means[(ref, serum)].append(d)
+
+    for k in titer_means:
+        titer_means[k] = np.array(sorted(titer_means[k], key=lambda x:x[0]))
+
+    plt.figure(figsize=(16,12))
+    if title is not None:
+        plt.title(title)
+    ii = 0
+    curves =  [k for k, val in titer_means.items() if np.sum(val[-3:,-1])>100]
+    n_curves = len(curves)
+    virus = list(set([k[0] for k in curves]))
+
+    for k in sorted(titer_means.keys()):
+        val = titer_means[k]
+        if np.sum(val[-3:,-1])>100:
+            sub_val = val[val[:,-1]>10]
+            c= cols[virus.index(k[0])%len(cols)]
+            plt.errorbar(sub_val[:,0]+(ii-0.5*n_curves)*0.01, sub_val[:,1], sub_val[:,2],
+                        label=k[0]+', '+k[1], lw=2, c=c,
+                        marker=symb[ii%len(symb)], markersize=10)
+            ii+=1
+    plt.legend(ncol=2, fontsize=fs*0.7)
+    plt.ylabel('titer', fontsize=fs)
+    plt.xlabel('year', fontsize=fs)
+
+    if fname is not None:
+        plt.savefig(fname)
+
+
 if __name__=="__main__":
     args = parse_args()
     prepared_json = args.json
 
-    pprint("Processing {}".format(prepared_json))
+    print("Processing {}".format(prepared_json))
     runner = process(make_config(prepared_json, args))
 
     # this should be in the json...
@@ -255,7 +311,12 @@ if __name__=="__main__":
                 H3N2_scores(runner, runner.tree.tree, runner.config["epitope_mask"])
             if runner.config["auspice"]["titers_export"]:
                 HI_export(runner)
-
+            plot_titers(runner.HI_subs, runner.HI_subs.titers,
+                        fname='processed/%s_raw_titers.png'%runner.info["prefix"],
+                        title = runner.info["prefix"])
+            plot_titers(runner.HI_subs, runner.HI_subs.titers_normalized,
+                        fname='processed/%s_normalized_titers.png'%runner.info["prefix"],
+                        title = runner.info["prefix"])
 
         # outputs figures and tables of age distributions
         age_distribution(runner)
