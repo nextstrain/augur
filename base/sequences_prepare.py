@@ -3,7 +3,7 @@ parse, filter, subsample and save as JSON
 '''
 from __future__ import division, print_function
 import os, re, time, csv, sys
-from base.titer_model import TiterModel
+from base.titer_model import TiterCollection
 from io_util import myopen
 from collections import defaultdict
 from Bio import SeqIO
@@ -291,7 +291,7 @@ class sequence_set(object):
         # Titers must be present in the config and not None to be used.
         if config.get("titers") is not None:
             # Subset titer data to match the strains selected for export.
-            filtered_titers = TiterModel.filter_strains(config["titers"], self.seqs.keys())
+            filtered_titers = TiterCollection.filter_strains(config["titers"], self.seqs.keys())
 
             # Convert tuple dictionary keys to strings for JSON compatability.
             data["titers"] = {str(key): value
