@@ -75,7 +75,7 @@ def build_cdc(
                             '--segments', " ".join(segments),
                             '--sequences', seq_files,
                             '--titers', '../../../fauna/data/%s_cdc_%s_%s_titers.tsv'%(lineage, assay, passage),
-                            '--file_prefix', 'flu_%s_*segment*_%s_%s_%s'%(lineage, resolution, passage, assay)]
+                            '--file_prefix', 'flu_cdc_%s_*segment*_%s_%s_%s'%(lineage, resolution, passage, assay)]
                         if frequencies == "complete":
                             call = call + ['--complete_frequencies']
                         print(' '.join(call))
@@ -83,12 +83,12 @@ def build_cdc(
 
                     call = [
                         'flu.process.py',
-                        '--json', 'prepared/flu_%s_ha_%s_%s_%s.json'%(lineage, resolution, passage, assay),
+                        '--json', 'prepared/flu_cdc_%s_ha_%s_%s_%s.json'%(lineage, resolution, passage, assay),
                         '--titers_export']
                     if process_na:
                         call = [
                             'flu.process.py',
-                            '--json', 'prepared/flu_%s_na_%s_%s_%s.json'%(lineage, resolution, passage, assay),
+                            '--json', 'prepared/flu_cdc_%s_na_%s_%s_%s.json'%(lineage, resolution, passage, assay),
                             '--titers_export']
 
                     if (system == "qsub"):
