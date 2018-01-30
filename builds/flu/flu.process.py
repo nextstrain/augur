@@ -311,12 +311,14 @@ if __name__=="__main__":
                 H3N2_scores(runner, runner.tree.tree, runner.config["epitope_mask"])
             if runner.config["auspice"]["titers_export"]:
                 HI_export(runner)
-            plot_titers(runner.HI_subs, runner.HI_subs.titers,
-                        fname='processed/%s_raw_titers.png'%runner.info["prefix"],
-                        title = runner.info["prefix"])
-            plot_titers(runner.HI_subs, runner.HI_subs.titers_normalized,
-                        fname='processed/%s_normalized_titers.png'%runner.info["prefix"],
-                        title = runner.info["prefix"])
+            # commented out, as of 7359bd3585c (titer collections PR) this plot_titers fails with error:
+            # AttributeError: 'TiterCollection' object has no attribute 'items'
+            # plot_titers(runner.HI_subs, runner.HI_subs.titers,
+            #             fname='processed/%s_raw_titers.png'%runner.info["prefix"],
+            #             title = runner.info["prefix"])
+            # plot_titers(runner.HI_subs, runner.HI_subs.titers_normalized,
+            #             fname='processed/%s_normalized_titers.png'%runner.info["prefix"],
+            #             title = runner.info["prefix"])
 
         # outputs figures and tables of age distributions
         age_distribution(runner)
