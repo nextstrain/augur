@@ -4,7 +4,8 @@ def build_live(
     lineages = None, resolutions = None,
     system="local",
     frequencies="complete",
-    process_na=False
+    process_na=False,
+    no_prepare=False
     ):
     lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
     resolutions = ['2y', '3y', '6y'] if resolutions is None else resolutions
@@ -15,7 +16,7 @@ def build_live(
                               for segment in segments])
         for resolution in resolutions:
 
-            if not process_na:
+            if not (process_na or no_prepare):
                 call = ['python',
                     'flu.prepare.py',
                     '--lineage', lineage,
@@ -52,7 +53,8 @@ def build_cdc(
     lineages = None, resolutions = None,
     system="local",
     frequencies="complete",
-    process_na=False
+    process_na=False,
+    no_prepare = False
     ):
     lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
     resolutions = ['2y', '3y', '6y'] if resolutions is None else resolutions
@@ -67,7 +69,7 @@ def build_cdc(
                     if lineage!='h3n2' and assay=='fra':
                         continue
 
-                    if not process_na:
+                    if not (process_na or no_prepare):
                         call = ['python',
                             'flu.prepare.py',
                             '--lineage', lineage,
@@ -113,6 +115,7 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--resolutions', nargs='+', type = str,  help ="flu resolutions to include")
     parser.add_argument('--frequencies', type = str, default = 'complete', help='frequencies to complete, complete or subsampled')
     parser.add_argument('--process_na', action="store_true", default=False,  help = "supplemental run of na")
+    parser.add_argument('--no_prepare', action="store_true", default=False,  help = "rerun previously prepared jsons")
     params = parser.parse_args()
 
     if params.lineages is None:
@@ -130,11 +133,13 @@ if __name__ == '__main__':
             resolutions = params.resolutions,
             system = params.system,
             frequencies = params.frequencies,
-            process_na = params.process_na)
+            process_na = params.process_na,
+            no_prepare = params.no_prepare)
     elif params.build == "cdc":
         build_cdc(
             lineages = params.lineages,
             resolutions = params.resolutions,
             system = params.system,
             frequencies = params.frequencies,
-            process_na = params.process_na)
+            process_na = params.process_na,
+            no_prepare = params.no_prepare)
