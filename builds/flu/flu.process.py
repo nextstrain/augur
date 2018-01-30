@@ -274,13 +274,14 @@ if __name__=="__main__":
         runner.global_frequencies(min_freq, average_global=weighted_global_average)
 
         # so far do this only for HA
-        if segment=='ha':
+        if segment in ['ha', 'na']:
+            genes_by_segment = {'ha':['HA1', 'HA2'], 'na':['NA']}
             if not os.path.exists("processed/rising_mutations/"):
                 os.makedirs("processed/rising_mutations/")
             for region in ['AS', 'NA', 'EU']:
                mlist = rising_mutations(runner.mutation_frequencies,
                             runner.mutation_frequency_counts,
-                         ['HA1', 'HA2'], region=region, dn=4, offset=2,
+                         genes_by_segment[segment], region=region, dn=4, offset=2,
                          fname = "processed/rising_mutations/%s_%s_rising_mutations.txt"%("_".join(runner.info["prefix"].split('_')[:-2]), region))
 
 
@@ -332,6 +333,7 @@ if __name__=="__main__":
                 print("Abs clade error: %s" % fitness_model.clade_fit(fitness_model.model_params))
                 runner.fitness_model = fitness_model
 
+        if segment in ['ha', 'na']:
             if not os.path.exists("processed/recurring_mutations/"):
                 os.makedirs("processed/recurring_mutations/")
             recurring_mutations(runner.tree.tree,
