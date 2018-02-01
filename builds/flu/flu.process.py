@@ -196,11 +196,17 @@ def age_distribution(runner):
     plt.close()
 
 
-def plot_titers(titer_model, titers, fname=None, title=None):
+def mean_func(x, mean='arithmetric'):
+    if mean=='arithmetric':
+        return np.mean(x)
+    elif mean=='geometric':
+        return np.exp(np.mean(np.log(x)))
+
+def plot_titers(titer_model, titers, fname=None, title=None, mean='geometric'):
     from collections import defaultdict
     import matplotlib
     # important to use a non-interactive backend, otherwise will crash on cluster
-    matplotlib.use('PDF')
+    matplotlib.use('agg')
     import matplotlib.pyplot as plt
 
     symb = ['o', 's', 'd', 'v', '<', '>', '+']
@@ -216,12 +222,12 @@ def plot_titers(titer_model, titers, fname=None, title=None):
             if np.isscalar(val):
                 grouped_titers[(ref, serum, date)].append(val)
             else:
-                grouped_titers[(ref, serum, date)].append(np.exp(np.mean(np.log(val))))
+                grouped_titers[(ref, serum, date)].append(mean_func(val, mean=mean))
 
 
     titer_means = defaultdict(list)
     for (ref, serum, date), val in grouped_titers.items():
-        d = [date, np.mean(val), np.std(val), len(val)]
+        d = [date, mean_func(val, mean=mean), np.std(val), len(val)]
         titer_means[(ref, serum)].append(d)
 
     for k in titer_means:
@@ -250,6 +256,83 @@ def plot_titers(titer_model, titers, fname=None, title=None):
 
     if fname is not None:
         plt.savefig(fname)
+
+
+def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, mean='arithmetric'):
+    from collections import defaultdict
+    import matplotlib
+    # important to use a non-interactive backend, otherwise will crash on cluster
+    matplotlib.use('agg')
+    import matplotlib.pyplot as plt
+
+    symb = ['o', 's', 'd', 'v', '<', '>', '+']
+    cols = ['C'+str(i) for i in range(10)]
+    if clades is None:
+        clades = ['3c2.a', '3c2.a1', '1', '2', '3', '4', '5']
+
+    fs =16
+    grouped_titers = defaultdict(list)
+    autologous = defaultdict(list)
+    for (test, (ref, serum)), val in titers.items():
+        if test not in titer_model.node_lookup:
+            continue
+        node = titer_model.node_lookup[test]
+        date = node.attr["num_date"]
+        date = int(date*2)/2.
+        if "named_clades" in node.attr:
+            clade = '_'.join(node.attr["named_clades"])
+        else:
+            clade = 'unassigned'
+        if ref!=test:
+            if date>=2017:
+                if np.isscalar(val):
+                    grouped_titers[(ref, serum, clade)].append(val)
+                else:
+                    grouped_titers[(ref, serum, clade)].append(mean_func(val, mean=mean))
+        else:
+            autologous[(ref, serum)].append(mean_func(val, mean=mean))
+
+    titer_means = defaultdict(list)
+    ntiters = defaultdict(int)
+    for k, val in grouped_titers.items():
+        d = [date, mean_func(val, mean=mean), np.std(val), len(val)]
+        ntiters[(k[0], k[1])]+=d[-1]
+        titer_means[k] = d
+
+    for k, val in autologous.items():
+        autologous[k] = mean_func(val, mean=mean)
+
+    titer_matrix = []
+    sera = sorted(ntiters.items(), key=lambda x:x[1], reverse=True)
+    rows = []
+    for serum,n in sera:
+        if n>100:
+            rows.append('\n'.join(serum))
+            tmp = []
+            for clade in clades:
+                k = (serum[0], serum[1], clade)
+                if k in titer_means and titer_means[k][-1]>5:
+                    if mean=='geometric':
+                        tmp.append(-np.log2(titer_means[(k)][1]/autologous[serum]))
+                    else:
+                        tmp.append(titer_means[(k)][1]-autologous[serum])
+                else:
+                    tmp.append(np.nan)
+            titer_matrix.append(tmp)
+
+    titer_matrix = np.array(titer_matrix)
+
+
+    import seaborn as sns
+    plt.figure()
+    sns.heatmap(titer_matrix, xticklabels=clades, yticklabels=rows,
+                annot=True, cmap='YlOrRd', vmin=0, vmax=3)
+    plt.yticks(rotation=0)
+    plt.tight_layout()
+
+    if fname is not None:
+        plt.savefig(fname)
+        plt.close()
 
 
 if __name__=="__main__":
@@ -304,25 +387,13 @@ if __name__=="__main__":
             for regionTuple in runner.info["regions"]:
                 runner.estimate_tree_frequencies(region=str(regionTuple[0]))
 
-        # titers
-        seasonal_flu_scores(runner, runner.tree.tree)
-        if hasattr(runner, "titers"):
-            HI_model(runner)
-            if runner.info["lineage"] == "h3n2":
-                H3N2_scores(runner, runner.tree.tree, runner.config["epitope_mask"])
-            if runner.config["auspice"]["titers_export"]:
-                HI_export(runner)
-                plot_titers(runner.HI_subs, runner.HI_subs.titers.titers,
-                            fname='processed/%s_raw_titers.png'%runner.info["prefix"],
-                            title = runner.info["prefix"])
-                plot_titers(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
-                            fname='processed/%s_normalized_titers.png'%runner.info["prefix"],
-                            title = runner.info["prefix"])
 
-        # outputs figures and tables of age distributions
-        age_distribution(runner)
         # ignore fitness for NA.
         if segment=='ha':
+            if runner.info["lineage"]=='h3n2':
+                clades = ['3c3.a', '3c2.a', '3c2.a1', '1', '2', '3', '4', '5']
+            else:
+                clades = clade_designations[runner.info["lineage"]].keys()
             runner.matchClades(clade_designations[runner.info["lineage"]])
 
             # Predict fitness.
@@ -341,7 +412,30 @@ if __name__=="__main__":
                                 fname_by_mutation = "processed/recurring_mutations/%s_recurring_mutations.txt"%(runner.info["prefix"]))
 
         # runner.save_as_nexus()
-    if segment=="na":
+        # titers
+        seasonal_flu_scores(runner, runner.tree.tree)
+        if hasattr(runner, "titers"):
+            HI_model(runner)
+            if runner.info["lineage"] == "h3n2":
+                H3N2_scores(runner, runner.tree.tree, runner.config["epitope_mask"])
+            if runner.config["auspice"]["titers_export"]:
+                HI_export(runner)
+                plot_titers(runner.HI_subs, runner.HI_subs.titers.titers,
+                            fname='processed/%s_raw_titers.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], mean='geometric')
+                plot_titers(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                            fname='processed/%s_normalized_titers.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], mean='arithmetric')
+                plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers,
+                            fname='processed/%s_raw_titer_matrix.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], mean='geometric', clades=clades)
+                # plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                #             fname='processed/%s_normalized_titer_matrix.png'%runner.info["prefix"],
+                #             title = runner.info["prefix"], mean='arithmetric', clades=clades)
+
+        # outputs figures and tables of age distributions
+        age_distribution(runner)
+    if segment in ["na"]:
         import json
         ha_tree_json_fname = os.path.join(runner.config["output"]["auspice"], runner.info["prefix"]) + "_tree.json"
         ha_tree_json_fname = ha_tree_json_fname.replace("_na", "_ha")
