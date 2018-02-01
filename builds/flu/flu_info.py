@@ -247,13 +247,15 @@ reference_maps["yam"]["na"]["metadata"] = reference_maps["yam"]["ha"]["metadata"
 reference_viruses = {
     'h3n2':[
         'A/Wisconsin/67/2005', 'A/Brisbane/10/2007', 'A/Perth/16/2009', 'A/Victoria/361/2011',
-        'A/Texas/50/2012', 'A/Switzerland/9715293/2013', 'A/HongKong/4801/2014', 'A/Hawaii/47/2014',
+        'A/Texas/50/2012', 'A/Southauckland/7/2012' 'A/Singapore/22/2012', 'A/Christchurch/516/2012',
+        'A/Switzerland/9715293/2013', 'A/Victoria/505/2013' 'A/Victoria/506/2013' 'A/HongKong/4801/2014',
+        'A/Hawaii/47/2014', 'A/Tasmania/11/2014', 'A/Newcastle/22/2014', 'A/Sidney/7/2014',
         'A/Michigan/15/2014', 'A/NewJersey/26/2014', 'A/HongKong/7127/2014', 'A/SouthAustralia/55/2014',
-        'A/NewCaledonia/71/2014', 'A/Stockholm/6/2014', 'A/Wisconsin/20/2015', 'A/Wisconsin/66/2015',
-        'A/Ontario/RV2414/2015', 'A/Nebraska/19/2015', 'A/Montana/28/2015', 'A/Alaska/232/2015',
-        'A/Singapore/Infimh-16-0019/2016', 'A/Texas/88/2016', 'A/Idaho/33/2016', 'A/Texas/88/2016',
-        'A/NorthCarolina/4/2016', 'A/Delaware/32/2016', 'A/Florida/23/2017', 'A/Washington/16/2017',
-        'A/NorthCarolina/4/2017','A/SouthCarolina/4/2017'
+        'A/NewCaledonia/71/2014', 'A/Stockholm/6/2014', 'A/Fiji/2/2015', 'A/Wisconsin/20/2015',
+        'A/Wisconsin/66/2015', 'A/Brisbane/45/2015', 'A/Ontario/RV2414/2015', 'A/Nebraska/19/2015',
+        'A/Montana/28/2015', 'A/Alaska/232/2015', 'A/Singapore/Infimh-16-0019/2016', 'A/Texas/88/2016',
+        'A/Idaho/33/2016', 'A/Texas/88/2016', 'A/NorthCarolina/4/2016', 'A/Delaware/32/2016',
+        'A/Florida/23/2017', 'A/Washington/16/2017', 'A/NorthCarolina/4/2017','A/SouthCarolina/4/2017'
     ],
     'h1n1pdm':[
         'A/California/7/2009', 'A/Bangladesh/2021/2012', 'A/Victoria/367/2012', 'A/Brisbane/96/2012',
