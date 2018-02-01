@@ -109,6 +109,14 @@ def export_metadata_json(process, prefix, indent):
     meta_json["filters"] = process.info["auspice_filters"]
     meta_json["annotations"] = extract_annotations(process)
 
+    # pass through flu specific information (if present)
+    if "vaccine_choices" in process.info:
+        meta_json["vaccine_choices"] = process.info["vaccine_choices"]
+    if "LBItau" in process.info:
+        meta_json["LBItau"] = process.info["LBItau"]
+    if "dfreq_dn" in process.info:
+        meta_json["dfreq_dn"] = process.info["dfreq_dn"]
+
     if "defaults" in process.config["auspice"]:
         meta_json["defaults"] = process.config["auspice"]["defaults"]
 

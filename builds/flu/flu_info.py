@@ -244,6 +244,7 @@ reference_maps = {
 reference_maps["yam"]["na"]["metadata"] = reference_maps["yam"]["ha"]["metadata"]
 
 # these will be included in narrower builds, for example 'A/Michigan/15/2014' will appear in a 2015-2017
+# place vaccine strains here - this ensures they'll be sampled
 reference_viruses = {
     'h3n2':[
         'A/Wisconsin/67/2005', 'A/Brisbane/10/2007', 'A/Perth/16/2009', 'A/Victoria/361/2011',
@@ -278,6 +279,56 @@ reference_viruses = {
     ]
 }
 
+# vaccine choices copied from https://github.com/blab/nextflu/tree/de1c8323f75b0fbac9cf26451380d2758288290e/auspice/_includes feb 1 2018
+vaccine_choices = {
+    "h3n2": {
+        'A/Sydney/5/1997': "1997-09-25",
+        'A/Moscow/10/1999': "1999-09-25",
+        'A/Fujian/411/2002': "2003-09-25",
+        'A/California/7/2004': "2005-02-21",
+        'A/Wisconsin/67/2005': "2006-02-21",
+        'A/Brisbane/10/2007': "2007-09-25",
+        'A/Perth/16/2009': "2009-09-25",
+        'A/Victoria/361/2011': "2012-02-21",
+        'A/Texas/50/2012': "2013-09-25",
+        'A/Switzerland/9715293/2013': "2014-09-25",
+        'A/HongKong/4801/2014': "2015-09-24",
+        'A/Singapore/Infimh-16-0019/2016': "2017-09-28"
+    },
+    "vic": {
+        'B/Shangdong/7/1997': "1999-09-25",
+        'B/HongKong/330/2001': "2002-09-25",
+        'B/Malaysia/2506/2004': "2006-09-25",
+        'B/Brisbane/60/2008': "2009-09-25"
+    },
+    "yam": {
+        'B/Beijing/184/1993': "1998-11-01",
+        'B/Sichuan/379/1999': "2001-09-25",
+        'B/Shanghai/361/2002': "2004-09-25",
+        'B/Florida/4/2006': "2008-09-25",
+        'B/Wisconsin/1/2010': "2012-02-25",
+        'B/Massachusetts/2/2012': "2013-02-25",
+        'B/Phuket/3073/2013': "2014-09-25"
+    },
+    "h1n1pdm": {
+        'A/California/7/2009': "2009-09-25",
+        'A/Michigan/45/2015': "2016-09-29"
+    }
+}
+
+# LBItau (LBI time_window is never used) and dfreq_dn copied from (e.g.) https://github.com/blab/nextflu/blob/de1c8323f75b0fbac9cf26451380d2758288290e/auspice/_includes/12y_meta.js
+LBItau = {
+    '2y': 0.3,
+    '3y': 0.4,
+    '6y': 0.25,
+    '12y': 0.0005
+}
+dfreq_dn = {
+    '2y': 6,
+    '3y': 6,
+    '6y': 6,
+    '12y': 6
+}
 clade_designations = {
     "h3n2":{
         "3c3.a": [('HA1',128,'A'), ('HA1',142,'G'), ('HA1',159,'S')],
