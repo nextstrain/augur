@@ -306,8 +306,8 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
     sera = sorted(ntiters.items(), key=lambda x:x[1], reverse=True)
     rows = []
     for serum,n in sera:
-        if n>100:
-            rows.append('\n'.join(serum))
+        if n>80:
+            rows.append('\n'.join(serum)+'; hom: %d'%int(autologous[serum]))
             tmp = []
             for clade in clades:
                 k = (serum[0], serum[1], clade)
@@ -322,17 +322,18 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
 
     titer_matrix = np.array(titer_matrix)
 
+    if len(titer_matrix.shape):
+        import seaborn as sns
+        plt.figure(figsize=(12,9))
+        sns.heatmap(titer_matrix, xticklabels=clades, yticklabels=rows,
+                    annot=True, cmap='YlOrRd', vmin=0, vmax=3, square=True)
+        plt.yticks(rotation=0)
+        plt.xticks(rotation=30)
+        plt.tight_layout()
 
-    import seaborn as sns
-    plt.figure()
-    sns.heatmap(titer_matrix, xticklabels=clades, yticklabels=rows,
-                annot=True, cmap='YlOrRd', vmin=0, vmax=3)
-    plt.yticks(rotation=0)
-    plt.tight_layout()
-
-    if fname is not None:
-        plt.savefig(fname)
-        plt.close()
+        if fname is not None:
+            plt.savefig(fname)
+            plt.close()
 
 
 if __name__=="__main__":
