@@ -3,14 +3,13 @@ from collections import defaultdict
 from itertools import izip
 import numpy as np
 import os
+import pandas as pd
 from scipy.interpolate import interp1d
 from scipy.stats import linregress
 
 from frequencies import logit_transform, tree_frequencies
 from fitness_predictors import fitness_predictors
 
-min_freq = 0.1
-max_freq = 0.99
 min_tips = 10
 pc=1e-2
 regularization = 1e-3
@@ -63,6 +62,21 @@ def make_pivots(start, stop, pivots_per_year=12, precision=2):
         precision
     )
 
+
+def matthews_correlation_coefficient(tp, tn, fp, fn):
+    """Return Matthews correlation coefficient for values from a confusion matrix.
+    Implementation is based on the definition from wikipedia:
+
+    https://en.wikipedia.org/wiki/Matthews_correlation_coefficient
+    """
+    numerator = (tp * tn) - (fp * fn)
+    denominator = np.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
+    if denominator == 0:
+            denominator = 1
+
+    return float(numerator) / denominator
+
+
 class fitness_model(object):
 
     def __init__(self, tree, frequencies, time_interval, predictor_input = ['ep', 'lb', 'dfreq'], pivot_spacing = 1.0 / 12, verbose = 0, enforce_positive_predictors = True, **kwargs):
@@ -78,6 +92,8 @@ class fitness_model(object):
         self.verbose = verbose
         self.enforce_positive_predictors = enforce_positive_predictors
         self.estimate_coefficients = True
+        self.min_freq = kwargs.get("min_freq", 0.1)
+        self.max_freq = kwargs.get("max_freq", 0.99)
 
         # Convert datetime date interval to floating point interval from
         # earliest to latest.
@@ -180,7 +196,7 @@ class fitness_model(object):
         # Calculate global tree/clade frequencies if they have not been calculated already.
         if region not in self.frequencies or self.rootnode.clade not in self.frequencies["global"]:
             print("calculating global node frequencies")
-            tree_freqs = tree_frequencies(self.tree, self.pivots)
+            tree_freqs = tree_frequencies(self.tree, self.pivots, method="SLSQP", verbose=1)
             tree_freqs.estimate_clade_frequencies()
             self.frequencies[region] = tree_freqs.frequencies
         else:
@@ -246,6 +262,9 @@ class fitness_model(object):
         print("fitting time censored tree frequencies")
         # this doesn't interfere with the previous freq estimates via difference in region: global_censored vs global
         region = "global_censored"
+        if not region in self.frequencies:
+            self.frequencies[region] = {}
+
         freq_cutoff = 25.0
         pivots_fit = 6
         freq_window = 1.0
@@ -263,18 +282,18 @@ class fitness_model(object):
 
             # Recalculate tree frequencies for the given time interval and its
             # corresponding pivots.
-            tree_freqs = tree_frequencies(self.tree, pivots, node_filter=node_filter_func)
+            tree_freqs = tree_frequencies(self.tree, pivots, node_filter=node_filter_func, method="SLSQP")
             tree_freqs.estimate_clade_frequencies()
-            self.frequencies[time] = tree_freqs.frequencies
+            self.frequencies[region][time] = tree_freqs.frequencies
 
             # Annotate censored frequencies on nodes.
             # TODO: replace node-based annotation with dicts indexed by node name.
             for node in self.nodes:
                 node.freq = {
-                    region: self.frequencies[time][node.clade]
+                    region: self.frequencies[region][time][node.clade]
                 }
                 node.logit_freq = {
-                    region: logit_transform(self.frequencies[time][node.clade], 1e-4)
+                    region: logit_transform(self.frequencies[region][time][node.clade], 1e-4)
                 }
 
             for node in self.nodes:
@@ -287,6 +306,10 @@ class fitness_model(object):
                     node.freq_slope[time] = slope
                 except:
                     import ipdb; ipdb.set_trace()
+
+        # Clean up frequencies.
+        del self.frequencies[region]
+
         # reset pivots in tree to global pivots
         self.rootnode.pivots = self.pivots
 
@@ -341,8 +364,8 @@ class fitness_model(object):
         for time in self.timepoints[:-1]:
             self.fit_clades[time] = []
             for node in self.nodes:
-                if  node.timepoint_freqs[time] >= min_freq and \
-                    node.timepoint_freqs[time] <= max_freq and \
+                if  node.timepoint_freqs[time] >= self.min_freq and \
+                    node.timepoint_freqs[time] <= self.max_freq and \
                     node.timepoint_freqs[time] < self.node_parents[node].timepoint_freqs[time]:
                     self.fit_clades[time].append(node)
 
@@ -352,6 +375,7 @@ class fitness_model(object):
         # tested that the sum of frequencies of tips within a clade is equal to the direct clade frequency
         timepoint_errors = []
         self.pred_vs_true = []
+        pred_vs_true_values = []
         for time in self.timepoints[:-1]:
 
             # normalization factor for predicted tip frequencies
@@ -367,9 +391,16 @@ class fitness_model(object):
                 freqs = self.freq_arrays[time][clade.tips]
                 pred_final_freq = np.sum(self.projection(params, pred, freqs, self.delta_time)) / total_pred_freq
                 tmp_pred_vs_true.append((initial_freq, obs_final_freq, pred_final_freq))
+                pred_vs_true_values.append((time, clade.clade, len(clade.tips), initial_freq, obs_final_freq, pred_final_freq))
                 clade_errors.append(np.absolute(pred_final_freq - obs_final_freq))
             timepoint_errors.append(np.mean(clade_errors))
             self.pred_vs_true.append(np.array(tmp_pred_vs_true))
+
+        # Prepare a data frame with all initial, observed, and predicted frequencies by time and clade.
+        self.pred_vs_true_df = pd.DataFrame(
+            pred_vs_true_values,
+            columns=("timepoint", "clade", "clade_size", "initial_freq", "observed_freq", "predicted_freq")
+        )
 
         mean_error = np.mean(timepoint_errors)
         if any(np.isnan(timepoint_errors)+np.isinf(timepoint_errors)):
@@ -508,6 +539,9 @@ class fitness_model(object):
     def validate_prediction(self):
         import matplotlib.pyplot as plt
         from scipy.stats import spearmanr
+
+        abs_clade_error = self.clade_fit(self.model_params)
+
         fig, axs = plt.subplots(1,4, figsize=(10,5))
         for time, pred_vs_true in izip(self.timepoints[:-1], self.pred_vs_true):
             # 0: initial, 1: observed, 2: predicted
@@ -521,7 +555,7 @@ class fitness_model(object):
 
         # pred_vs_true is initial, observed, predicted
         tmp = np.vstack(self.pred_vs_true)
-        print("Abs clade error:"), self.clade_fit(self.model_params)
+        print("Abs clade error:"), abs_clade_error
         print("Spearman's rho, null:", spearmanr(tmp[:,0], tmp[:,1]))
         print("Spearman's rho, raw:", spearmanr(tmp[:,1], tmp[:,2]))
         print("Spearman's rho, rel:", spearmanr(tmp[:,1]/tmp[:,0],
@@ -534,9 +568,17 @@ class fitness_model(object):
         correct_decline = decline_list.count(True)
         total_decline = float(len(decline_list))
 
-        print ("Correct at predicting growth:", correct_growth / total_growth)
-        print ("Correct at predicting decline:",  correct_decline / total_decline)
-        print ("Correct classification:",  (correct_growth+correct_decline) / (total_growth+total_decline))
+        trajectory_mcc = matthews_correlation_coefficient(
+            correct_growth,
+            correct_decline,
+            total_growth - correct_growth,
+            total_decline - correct_decline
+        )
+
+        print("Correct at predicting growth: %s (%s / %s)" % ((correct_growth / total_growth), correct_growth, total_growth))
+        print("Correct at predicting decline: %s (%s / %s)" % ((correct_decline / total_decline), correct_decline, total_decline))
+        print("Correct classification:",  (correct_growth+correct_decline) / (total_growth+total_decline))
+        print("Matthew's correlation coefficient: %s" % trajectory_mcc)
 
         axs[0].set_ylabel('predicted')
         axs[0].set_xlabel('observed')
@@ -552,17 +594,16 @@ class fitness_model(object):
         axs[3].set_xlabel('initial')
         axs[3].set_yscale('log')
 
-        import pandas as pd
         pred_data = []
         for time, pred_vs_true in izip(self.timepoints[:-1], self.pred_vs_true):
             for entry in pred_vs_true:
                 pred_data.append(np.append(entry, time))
-        self.pred_vs_true_df = pd.DataFrame(pred_data, columns=['initial', 'obs', 'pred', 'time'])
+        pred_vs_true_df = pd.DataFrame(pred_data, columns=['initial', 'obs', 'pred', 'time'])
 
         output_dir = "data"
         if not os.path.isdir(output_dir):
             os.mkdir(output_dir)
-        self.pred_vs_true_df.to_csv(os.path.join(output_dir, "prediction_pairs.tsv"), sep="\t", index=False)
+        pred_vs_true_df.to_csv(os.path.join(output_dir, "prediction_pairs.tsv"), sep="\t", index=False)
 
     def validate_trajectories(self):
         '''
@@ -588,30 +629,20 @@ class fitness_model(object):
                         self.trajectory_data.append([series, str(clade), time, time+delta, obs_freq, pred_freq])
                 series += 1
 
-        import pandas as pd
         self.trajectory_data_df = pd.DataFrame(self.trajectory_data, columns=['series', 'clade', 'initial_time', 'time', 'obs', 'pred'])
         self.trajectory_data_df.to_csv("data/prediction_trajectories.tsv", sep="\t", index=False)
-        import bokeh.charts as bk
-        bk.defaults.height = 250
-        bk.output_file("lines.html", title="line plot example")
-        lines = []
-        for time in self.timepoints[:-1]:
-            line = bk.Line(self.trajectory_data_df[self.trajectory_data_df.initial_time == time],
-                    x='time', y=['obs', 'pred'], dash=['obs', 'pred'], color='clade',
-                    xlabel='Date', ylabel='Frequency', tools=False)
-            lines.append(line)
-        bk.show(bk.vplot(*lines))
-#           import seaborn as sns
-#           import matplotlib.pyplot as plt
-#           cols = sns.color_palette(n_colors=6)
-#           fig, axs = plt.subplots(6,4, sharey=True)
-#           for tp, ax in zip(self.timepoints[:-1], axs.flatten()):
-#               traj = self.trajectory_data_df[self.trajectory_data_df.initial_time == tp]
-#               clades = np.unique(traj['series'])
-#               for ci in clades:
-#                   tmp = traj[traj['series']==ci]
-#                   ax.plot(tmp['time'], tmp['obs'], ls='-', c=cols[ci%6])
-#                   ax.plot(tmp['time'], tmp['pred'], ls='--', c=cols[ci%6])
+
+        import seaborn as sns
+        import matplotlib.pyplot as plt
+        cols = sns.color_palette(n_colors=6)
+        fig, axs = plt.subplots(6,4, sharey=True)
+        for tp, ax in zip(self.timepoints[:-1], axs.flatten()):
+            traj = self.trajectory_data_df[self.trajectory_data_df.initial_time == tp]
+            clades = np.unique(traj['series'])
+            for ci in clades:
+                tmp = traj[traj['series']==ci]
+                ax.plot(tmp['time'], tmp['obs'], ls='-', c=cols[ci%6])
+                ax.plot(tmp['time'], tmp['pred'], ls='--', c=cols[ci%6])
 
 def main(params):
     import time

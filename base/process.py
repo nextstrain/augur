@@ -633,6 +633,9 @@ class process(object):
         if "epitope_mask_version" in self.config:
             kwargs["epitope_mask_version"] = self.config["epitope_mask_version"]
 
+        if "tolerance_mask_version" in self.config:
+            kwargs["tolerance_mask_version"] = self.config["tolerance_mask_version"]
+
         if self.config["subprocess_verbosity_level"] > 0:
             kwargs["verbose"] = 1
 

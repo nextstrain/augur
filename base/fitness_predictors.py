@@ -1,6 +1,7 @@
 import Bio
 import time
 import numpy as np
+import pandas as pd
 from itertools import izip
 from scipy.stats import linregress
 import sys
@@ -39,7 +40,12 @@ class fitness_predictors(object):
         if pred == 'ne_star':
             self.calc_nonepitope_star_distance(tree)
         if pred == 'tol':
-            self.calc_tolerance(tree, attr = 'tol')
+            self.calc_tolerance(tree, preferences_file='metadata/2017-12-07-H3N2-preferences-rescaled.csv', attr = 'tol')
+        if pred == 'tol_mask':
+            self.calc_tolerance(tree, preferences_file='metadata/2017-12-07-H3N2-preferences-rescaled.csv', attr = pred, use_epitope_mask=True)
+        if pred == 'dms':
+            if not hasattr(tree.root, pred):
+                self.calc_dms(tree, preferences_file='metadata/2017-12-07-H3N2-preferences-rescaled.csv')
         if pred == 'tol_ne':
             self.calc_tolerance(tree, epitope_mask = self.tolerance_mask, attr = 'tol_ne')
         if pred == 'null':
@@ -52,7 +58,7 @@ class fitness_predictors(object):
             # do nothing
 
     def setup_epitope_mask(self, epitope_masks_fname = 'builds/flu/metadata/h3n2_epitope_masks.tsv', epitope_mask_version = 'wolf', tolerance_mask_version = 'ha1'):
-        sys.stderr.write("setup " + epitope_mask_version + " epitope mask and " + tolerance_mask_version + " tolerance mask\n")
+        sys.stderr.write("setup " + str(epitope_mask_version) + " epitope mask and " + str(tolerance_mask_version) + " tolerance mask\n")
         self.epitope_mask = ""
         self.tolerance_mask = ""
         epitope_map = {}
@@ -179,13 +185,139 @@ class fitness_predictors(object):
                 node.aa = self._translate(node)
             node.__setattr__(attr, self.rbs_distance(node.aa, ref))
 
-    def calc_tolerance(self, tree, epitope_mask=None, attr='tol'):
-        '''
-        calculates log odds of a node's AA sequence relative to a set of site-specific AA preferences
-        tree   --   dendropy tree
-        attr   --   the attribute name used to save the result
-        '''
-        assign_fitness_tolerance(tree, epitope_mask=epitope_mask, attr=attr)
+    def calc_dms(self, tree, preferences_file, attr="dms"):
+        """Calculates the cumulative mutational effect of mutations per node relative to
+        their parent node in the given tree and based on a set of site-specific
+        AA preferences.
+
+        The calculation can be limited to a given list of `positions` in the
+        given sequence.
+        """
+        preferences = pd.read_csv(preferences_file)
+        preferences = preferences.reset_index()
+        stacked_preferences = preferences.loc[:, "A":"Y"].stack()
+
+        # Use all positions in the given sequence by default.
+        tree.root.aa = self._translate(tree.root)
+        positions = list(range(len(tree.root.aa)))
+
+        # Calculate a default value for missing preferences.
+        missing_preference = 1e-10
+
+        for node in tree.root.find_clades():
+            # Determine amino acid sequence if it is not defined.
+            if not hasattr(node, "aa"):
+                node.aa = self._translate(node)
+
+            # Get amino acid mutations between this node and its parent.
+            if node.up is None:
+                mut_effect = 0.0
+            else:
+                parent_mutations = []
+                node_mutations = []
+
+                for i in positions:
+                    if node.aa[i] != node.up.aa[i]:
+                        parent_mutations.append((i, node.up.aa[i]))
+                        node_mutations.append((i, node.aa[i]))
+
+                # Calculate mutational effect for this node based on its differences
+                # since the parent node. If there are no mutations since the parent,
+                # this node keeps the same effect. Otherwise, sum the effects of all
+                # mutations since the parent.
+                mut_effect = node.up.attr[attr]
+                if len(node_mutations) > 0:
+                    # Mutational effect is the preference of the current node's amino acid
+                    # at each mutated site divided by the preference of the original and
+                    # transformed to log scale such that changes to less preferred amino acids
+                    # will produce a negative effect and changes to more preferred will be positive.
+                    node_preferences = stacked_preferences[node_mutations].fillna(missing_preference)
+                    parent_preferences = stacked_preferences[parent_mutations].fillna(missing_preference)
+                    new_mut_effect = np.log2(node_preferences.values / parent_preferences.values).sum()
+                    mut_effect += new_mut_effect
+
+            setattr(node, attr, mut_effect)
+            node.attr[attr] = mut_effect
+
+    def calc_tolerance(self, tree, preferences_file, attr="tol", use_epitope_mask=False):
+        """Calculates log odds of a node's AA sequence relative to a set of
+        site-specific AA preferences.
+
+        Takes a tree and a path to a DMS preferences file with one row per site
+        and labeled columns per amino acid.
+        """
+        preferences = pd.read_csv(preferences_file)
+        preferences = preferences.reset_index()
+        stacked_preferences = preferences.loc[:, "A":"Y"].stack()
+
+        # Use all positions in the given sequence by default.
+        tree.root.aa = self._translate(tree.root)
+        if use_epitope_mask:
+            positions = [i for i in range(len(self.epitope_mask))
+                         if self.epitope_mask[i] == "1"]
+            print("Using %i positions for sequence preferences from epitope mask." % (len(positions)))
+        else:
+            positions = list(range(len(tree.root.aa)))
+            print("Using %i positions for sequence preferences from all sites." % (len(positions)))
+
+        # Log scale all preferences prior to tolerance calculation.
+        log_preferences = np.log(stacked_preferences)
+
+        # Calculate a default value for missing preferences.
+        missing_preference = np.log(1e-10)
+
+        # Calculate the sequence preference for the root node.
+
+        # Create a list of keys into the preference series where the first
+        # value is the zero-based protein position and the second value is
+        # the amino acid at that position in the given sequence.
+        aa_array = [(i, tree.root.aa[i]) for i in positions]
+
+        # Look up preferences for the amino acids at each site in the given
+        # protein using the given `preferences` series indexed by site and
+        # amino acid.
+        node_preferences = log_preferences[aa_array]
+
+        # Replace missing values with a very small probability. This
+        # primarily accounts for stop codons ("X") that do not have an
+        # associated DMS preference.
+        node_preferences = node_preferences.fillna(missing_preference)
+
+        # Calculate sum of the log of the preferences the node's amino acid
+        # sequence.
+        tolerance = node_preferences.sum() / len(positions)
+        setattr(tree.root, attr, tolerance)
+        tree.root.attr[attr] = tolerance
+
+        # Calculate the tolerance for the remaining nodes in the tree based
+        # on the difference between each node and its parent.
+        for node in tree.root.find_clades():
+            # Determine amino acid sequence if it is not defined.
+            if not hasattr(node, "aa"):
+                node.aa = self._translate(node)
+
+            # Skip the root.
+            if node == tree.root:
+                continue
+
+            # Get amino acid mutations between this node and its parent.
+            node_mutations = []
+            parent_mutations = []
+            for i in positions:
+                if node.aa[i] != node.up.aa[i]:
+                    parent_mutations.append((i, node.up.aa[i]))
+                    node_mutations.append((i, node.aa[i]))
+
+            # Assign a new tolerance to this node based on its differences
+            # since the parent node.
+            tolerance = node.up.attr[attr]
+            if len(node_mutations) > 0:
+                tolerance = (tolerance -
+                             (log_preferences[parent_mutations].fillna(missing_preference).sum() / len(positions)) +
+                             (log_preferences[node_mutations].fillna(missing_preference).sum() / len(positions)))
+
+            setattr(node, attr, tolerance)
+            node.attr[attr] = tolerance
 
     def calc_nonepitope_distance(self, tree, attr='ne', ref = None):
         '''
@@ -240,28 +372,28 @@ class fitness_predictors(object):
         for node in tree.find_clades(order="postorder"):
             node.down_polarizer = 0
             node.up_polarizer = 0
-            for child in node.child_nodes():
+            for child in node.clades:
                 node.up_polarizer += child.up_polarizer
-            bl =  node.edge_length/tau
+            bl =  node.branch_length/tau
             node.up_polarizer *= np.exp(-bl)
             if node.alive: node.up_polarizer += tau*(1-np.exp(-bl))
 
         # traverse the tree in preorder (parents first) to calculate msg to children
-        for node in tree.preorder_internal_node_iter():
-            for child1 in node.child_nodes():
+        for node in tree.get_nonterminals():
+            for child1 in node.clades:
                 child1.down_polarizer = node.down_polarizer
-                for child2 in node.child_nodes():
+                for child2 in node.clades:
                     if child1!=child2:
                         child1.down_polarizer += child2.up_polarizer
 
-                bl =  child1.edge_length/tau
+                bl =  child1.branch_length/tau
                 child1.down_polarizer *= np.exp(-bl)
                 if child1.alive: child1.down_polarizer += tau*(1-np.exp(-bl))
 
         # go over all nodes and calculate the LBI (can be done in any order)
         for node in tree.find_clades(order="postorder"):
             tmp_LBI = node.down_polarizer
-            for child in node.child_nodes():
+            for child in node.clades:
                 tmp_LBI += child.up_polarizer
             node.__setattr__(attr, transform(tmp_LBI))
 
