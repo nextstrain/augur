@@ -316,19 +316,22 @@ vaccine_choices = {
     }
 }
 
-# LBItau (LBI time_window is never used) and dfreq_dn copied from (e.g.) https://github.com/blab/nextflu/blob/de1c8323f75b0fbac9cf26451380d2758288290e/auspice/_includes/12y_meta.js
-LBItau = {
-    '2y': 0.3,
-    '3y': 0.4,
-    '6y': 0.25,
-    '12y': 0.0005
+# Local Branching Index (LBI) params
+LBI_params = {
+    '2y': {"tau": 0.3, "time_window": 0.5},
+    '3y': {"tau": 0.4, "time_window": 0.6},
+    '6y': {"tau": 0.25, "time_window": 0.75},
+    '12y': {"tau": 0.0005, "time_window": 0.5}
 }
-dfreq_dn = {
-    '2y': 6,
-    '3y': 6,
-    '6y': 6,
-    '12y': 6
+
+# Frequency Params
+frequency_params = {
+    '2y': {"dfreq_dn": 6},
+    '3y': {"dfreq_dn": 6},
+    '6y': {"dfreq_dn": 6},
+    '12y': {"dfreq_dn": 6}
 }
+
 clade_designations = {
     "h3n2":{
         "3c3.a": [('HA1',128,'A'), ('HA1',142,'G'), ('HA1',159,'S')],

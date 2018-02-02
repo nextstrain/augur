@@ -306,11 +306,10 @@ class sequence_set(object):
                     data["info"]["vaccine_choices"][k] = v
                 else:
                     print("WARNING! Vaccine strain {} was not present in the data".format(k))
-        if "LBItau" in config and config["LBItau"] is not None:
-            data["info"]["LBItau"] = config["LBItau"]
-        if "dfreq_dn" in config and config["dfreq_dn"] is not None:
-            data["info"]["dfreq_dn"] = config["dfreq_dn"]
-
+        if "LBI_params" in config:
+            data["info"]["LBI_params"] = config["LBI_params"]
+        if "frequency_params" in config:
+            data["info"]["frequency_params"] = config["frequency_params"]
 
         json.dump(data, fh, indent=2)
 
