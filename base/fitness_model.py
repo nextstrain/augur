@@ -3,6 +3,7 @@ from collections import defaultdict
 from itertools import izip
 import numpy as np
 import os
+import pandas as pd
 from scipy.interpolate import interp1d
 from scipy.stats import linregress
 
@@ -374,6 +375,7 @@ class fitness_model(object):
         # tested that the sum of frequencies of tips within a clade is equal to the direct clade frequency
         timepoint_errors = []
         self.pred_vs_true = []
+        pred_vs_true_values = []
         for time in self.timepoints[:-1]:
 
             # normalization factor for predicted tip frequencies
@@ -389,9 +391,16 @@ class fitness_model(object):
                 freqs = self.freq_arrays[time][clade.tips]
                 pred_final_freq = np.sum(self.projection(params, pred, freqs, self.delta_time)) / total_pred_freq
                 tmp_pred_vs_true.append((initial_freq, obs_final_freq, pred_final_freq))
+                pred_vs_true_values.append((time, clade.clade, len(clade.tips), initial_freq, obs_final_freq, pred_final_freq))
                 clade_errors.append(np.absolute(pred_final_freq - obs_final_freq))
             timepoint_errors.append(np.mean(clade_errors))
             self.pred_vs_true.append(np.array(tmp_pred_vs_true))
+
+        # Prepare a data frame with all initial, observed, and predicted frequencies by time and clade.
+        self.pred_vs_true_df = pd.DataFrame(
+            pred_vs_true_values,
+            columns=("timepoint", "clade", "clade_size", "initial_freq", "observed_freq", "predicted_freq")
+        )
 
         mean_error = np.mean(timepoint_errors)
         if any(np.isnan(timepoint_errors)+np.isinf(timepoint_errors)):
@@ -582,17 +591,16 @@ class fitness_model(object):
         axs[3].set_xlabel('initial')
         axs[3].set_yscale('log')
 
-        import pandas as pd
         pred_data = []
         for time, pred_vs_true in izip(self.timepoints[:-1], self.pred_vs_true):
             for entry in pred_vs_true:
                 pred_data.append(np.append(entry, time))
-        self.pred_vs_true_df = pd.DataFrame(pred_data, columns=['initial', 'obs', 'pred', 'time'])
+        pred_vs_true_df = pd.DataFrame(pred_data, columns=['initial', 'obs', 'pred', 'time'])
 
         output_dir = "data"
         if not os.path.isdir(output_dir):
             os.mkdir(output_dir)
-        self.pred_vs_true_df.to_csv(os.path.join(output_dir, "prediction_pairs.tsv"), sep="\t", index=False)
+        pred_vs_true_df.to_csv(os.path.join(output_dir, "prediction_pairs.tsv"), sep="\t", index=False)
 
     def validate_trajectories(self):
         '''
@@ -618,7 +626,6 @@ class fitness_model(object):
                         self.trajectory_data.append([series, str(clade), time, time+delta, obs_freq, pred_freq])
                 series += 1
 
-        import pandas as pd
         self.trajectory_data_df = pd.DataFrame(self.trajectory_data, columns=['series', 'clade', 'initial_time', 'time', 'obs', 'pred'])
         self.trajectory_data_df.to_csv("data/prediction_trajectories.tsv", sep="\t", index=False)
 
