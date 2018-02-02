@@ -9,8 +9,6 @@ from scipy.stats import linregress
 from frequencies import logit_transform, tree_frequencies
 from fitness_predictors import fitness_predictors
 
-min_freq = 0.1
-max_freq = 0.99
 min_tips = 10
 pc=1e-2
 regularization = 1e-3
@@ -93,6 +91,8 @@ class fitness_model(object):
         self.verbose = verbose
         self.enforce_positive_predictors = enforce_positive_predictors
         self.estimate_coefficients = True
+        self.min_freq = kwargs.get("min_freq", 0.1)
+        self.max_freq = kwargs.get("max_freq", 0.99)
 
         # Convert datetime date interval to floating point interval from
         # earliest to latest.
@@ -363,8 +363,8 @@ class fitness_model(object):
         for time in self.timepoints[:-1]:
             self.fit_clades[time] = []
             for node in self.nodes:
-                if  node.timepoint_freqs[time] >= min_freq and \
-                    node.timepoint_freqs[time] <= max_freq and \
+                if  node.timepoint_freqs[time] >= self.min_freq and \
+                    node.timepoint_freqs[time] <= self.max_freq and \
                     node.timepoint_freqs[time] < self.node_parents[node].timepoint_freqs[time]:
                     self.fit_clades[time].append(node)
 
