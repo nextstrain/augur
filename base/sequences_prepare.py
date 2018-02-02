@@ -298,6 +298,20 @@ class sequence_set(object):
                               for key, value in filtered_titers.iteritems()}
             logger.debug("Filtered titers from %i to %i measures" % (len(config["titers"]), len(data["titers"])))
 
+        # Flu-specific elements...
+        if "vaccine_choices" in config and config["vaccine_choices"] is not None:
+            data["info"]["vaccine_choices"] = {}
+            for k, v in config["vaccine_choices"].items():
+                if k in self.extras["leaves"]:
+                    data["info"]["vaccine_choices"][k] = v
+                else:
+                    print("WARNING! Vaccine strain {} was not present in the data".format(k))
+        if "LBItau" in config and config["LBItau"] is not None:
+            data["info"]["LBItau"] = config["LBItau"]
+        if "dfreq_dn" in config and config["dfreq_dn"] is not None:
+            data["info"]["dfreq_dn"] = config["dfreq_dn"]
+
+
         json.dump(data, fh, indent=2)
 
     def load_reference(self, path, fmts, metadata, include=2, genes=False):
