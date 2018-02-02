@@ -40,8 +40,9 @@ class fitness_predictors(object):
         if pred == 'ne_star':
             self.calc_nonepitope_star_distance(tree)
         if pred == 'tol':
-            if not hasattr(tree.root, pred):
-                self.calc_tolerance(tree, preferences_file='metadata/2017-12-07-H3N2-preferences-rescaled.csv', attr = 'tol', mask_version = 'wolf_nonepitope')
+            self.calc_tolerance(tree, preferences_file='metadata/2017-12-07-H3N2-preferences-rescaled.csv', attr = 'tol')
+        if pred == 'tol_mask':
+            self.calc_tolerance(tree, preferences_file='metadata/2017-12-07-H3N2-preferences-rescaled.csv', attr = pred, use_epitope_mask=True)
         if pred == 'dms':
             if not hasattr(tree.root, pred):
                 self.calc_dms(tree, preferences_file='metadata/2017-12-07-H3N2-preferences-rescaled.csv')
@@ -238,7 +239,7 @@ class fitness_predictors(object):
             setattr(node, attr, mut_effect)
             node.attr[attr] = mut_effect
 
-    def calc_tolerance(self, tree, preferences_file, attr="tol", mask_version="all"):
+    def calc_tolerance(self, tree, preferences_file, attr="tol", use_epitope_mask=False):
         """Calculates log odds of a node's AA sequence relative to a set of
         site-specific AA preferences.
 
@@ -251,13 +252,14 @@ class fitness_predictors(object):
 
         # Use all positions in the given sequence by default.
         tree.root.aa = self._translate(tree.root)
-        if mask_version == "all":
-            positions = list(range(len(tree.root.aa)))
-        else:
+        if use_epitope_mask:
             positions = [i for i in range(len(self.epitope_mask))
                          if self.epitope_mask[i] == "1"]
+            print("Using %i positions for sequence preferences from epitope mask." % (len(positions)))
+        else:
+            positions = list(range(len(tree.root.aa)))
+            print("Using %i positions for sequence preferences from all sites." % (len(positions)))
 
-        print("Using %i positions for sequence preferences from '%s' mask." % (len(positions), mask_version))
         # Log scale all preferences prior to tolerance calculation.
         log_preferences = np.log(stacked_preferences)
 
