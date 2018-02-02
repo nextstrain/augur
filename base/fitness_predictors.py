@@ -372,7 +372,7 @@ class fitness_predictors(object):
         for node in tree.find_clades(order="postorder"):
             node.down_polarizer = 0
             node.up_polarizer = 0
-            for child in node.find_clades():
+            for child in node.clades:
                 node.up_polarizer += child.up_polarizer
             bl =  node.branch_length/tau
             node.up_polarizer *= np.exp(-bl)
@@ -380,9 +380,9 @@ class fitness_predictors(object):
 
         # traverse the tree in preorder (parents first) to calculate msg to children
         for node in tree.get_nonterminals():
-            for child1 in node.find_clades():
+            for child1 in node.clades:
                 child1.down_polarizer = node.down_polarizer
-                for child2 in node.find_clades():
+                for child2 in node.clades:
                     if child1!=child2:
                         child1.down_polarizer += child2.up_polarizer
 
@@ -393,7 +393,7 @@ class fitness_predictors(object):
         # go over all nodes and calculate the LBI (can be done in any order)
         for node in tree.find_clades(order="postorder"):
             tmp_LBI = node.down_polarizer
-            for child in node.find_clades():
+            for child in node.clades:
                 tmp_LBI += child.up_polarizer
             node.__setattr__(attr, transform(tmp_LBI))
 
