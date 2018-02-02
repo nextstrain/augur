@@ -1,6 +1,6 @@
 import numpy as np
 from pdb import set_trace
-import os
+import os,re
 
 def HI_model(process):
     '''
@@ -74,7 +74,122 @@ def HI_export(process):
     else:
         print('Substitution model not yet trained')
 
-def H3N2_scores(self, tree, epitope_mask_file, epitope_mask_version='wolf'):
+
+def get_total_peptide(node, segment='ha'):
+    '''
+    the concatenation of signal peptide, HA1, HA1
+    '''
+    if segment=='ha':
+        return np.fromstring(node.translations['SigPep'] + node.translations['HA1'] + node.translations['HA2'], 'S1')
+    elif segment=='na':
+        return np.fromstring(node.translations['NA'], 'S1')
+
+
+def seasonal_flu_scores(runner, tree):
+
+    def glycosylation_count(aa):
+        # need to restrict to surface residues.
+        return len(re.findall('N[^P][ST][^P]', aa))
+
+    root = tree.root
+    root_total_aa_seq = get_total_peptide(root, runner.segment)
+    for node in tree.find_clades():
+        total_aa_seq = get_total_peptide(node, runner.segment)
+        node.attr['glyc'] = glycosylation_count(total_aa_seq)
+
+    for node in tree.get_terminals():
+        node.tip_count=1.0
+        if ('age' in node.attr) and type(node.attr['age']) in [str, unicode]:
+            tmp_age = node.attr['age']
+            if tmp_age[-1] in ['y', 'm']:
+                node.attr['age'] = int(tmp_age[:-1])
+                if tmp_age[-1]=='m':
+                    node.attr['age']/=12.0
+                elif node.attr['age']>120:
+                    node.attr['age'] = 'unknown'
+            else:
+                node.attr['age'] = 'unknown'
+        else:
+            node.attr['age'] = 'unknown'
+        node.tip_ages = [] if node.attr['age']=="unknown" else [node.attr['age']]
+
+    # assign a list of ages to each internal node (will be used to calculate changes in age distribution)
+    for node in tree.get_nonterminals(order='postorder'):
+        valid_ages = [c.attr['age'] for c in node if c.attr['age'] is not "unknown"]
+        node.tip_ages = sum( [c.tip_ages for c in node] , [])
+        valid_tipcounts = [c.tip_count for c in node if c.attr['age'] is not "unknown"]
+        node.tip_count = np.sum(valid_tipcounts)
+        if len(valid_ages):
+            node.attr['age'] = np.sum([a*t for a,t in zip(valid_ages, valid_tipcounts)])/np.sum(valid_tipcounts)
+        else:
+            node.attr['age'] = "unknown"
+    root.outgroup_ages = []
+
+    # assign avg_age. This is redundant in that deep nodes have average ages already
+    # but terminal nodes or small clades don't have a smooth average. this assigns those
+    # to the parent.
+    # outgroup_ages: these are ages of all nodes NOT within the clade.
+    root.attr['avg_age'] = root.attr['age']
+    for node in tree.get_nonterminals(order='preorder'):
+        for c1 in node:
+            c1.outgroup_ages = node.outgroup_ages + sum([c2.tip_ages for c2 in node if c1!=c2], [])
+            if c1.tip_count<20:
+                c1.attr['avg_age'] = node.attr['avg_age']
+            else:
+                c1.attr['avg_age'] = c1.attr['age']
+
+    # calculate the a score to spot changing age distributions (for what ever reason, i.e. geography)
+    # these are calculated as a 2-sample KS test based on ages within and outside the clade in question
+    from scipy import stats
+    for node in tree.find_clades(order='preorder'):
+        if node==root:
+            node.attr['age_score'] = 0
+            continue
+        if len(node.tip_ages)>20 and len(node.outgroup_ages)>20:
+            ks = stats.ks_2samp(node.outgroup_ages, node.tip_ages)
+            node.attr['age_score'] = -np.log10(ks.pvalue)
+        else:
+            node.attr['age_score'] = node.up.attr['age_score']
+
+        if np.isnan(node.attr['age_score']):
+            node.attr['age_score']=0.0
+
+    # gender seems not to be a relevant quantity as of now...
+    for node in tree.get_terminals():
+        node.tip_count=1.0
+        if ('gender' in node.attr) and type(node.attr['gender']) in [str, unicode]:
+            g = node.attr["gender"]
+            node.attr["num_gender"] = -1 if g=='male' else (1 if g=='female' else 0)
+        else:
+            node.attr["num_gender"] = 0
+
+    for node in tree.get_nonterminals(order='postorder'):
+        node.tip_count = np.sum([c.tip_count for c in node])
+        node.attr['num_gender'] = np.sum([c.attr['num_gender']*c.tip_count for c in node])/node.tip_count
+
+
+    # not sure those have any effects right now... but auspice 2.0 might use them
+    runner.config["auspice"]["color_options"]["glyc"] = {
+        "menuItem": "potential glycosylation sites",
+        "type": "continuous",
+        "legendTitle": "Pot. glycosylation count",
+        "key": "glyc"
+    }
+    runner.config["auspice"]["color_options"]["age"] = {
+        "menuItem": "average host age in clade",
+        "type": "continuous",
+        "legendTitle": "Avg host age in clade",
+        "key": "age"
+    }
+    runner.config["auspice"]["color_options"]["gender"] = {
+        "menuItem": "average host gender in clade",
+        "type": "continuous",
+        "legendTitle": "Avg host gender in clade",
+        "key": "num_gender"
+    }
+
+
+def H3N2_scores(runner, tree, epitope_mask_file, epitope_mask_version='wolf'):
     '''
     takes a H3N2 HA tree and assigns H3 specific characteristics to
     internal and external nodes
@@ -95,12 +210,6 @@ def H3N2_scores(self, tree, epitope_mask_file, epitope_mask_version='wolf'):
         rbs = map(lambda x:x+sp-1, [145, 155, 156, 158, 159, 189, 193])
         return np.array([aa[pos] for pos in rbs])
 
-    def get_total_peptide(node):
-        '''
-        the concatenation of signal peptide, HA1, HA1
-        '''
-        return np.fromstring(node.translations['SigPep']+node.translations['HA1']
-                       + node.translations['HA2'], 'S1')
 
     def epitope_distance(aaA, aaB):
         """Return distance of sequences aaA and aaB by comparing epitope sites"""
@@ -131,26 +240,27 @@ def H3N2_scores(self, tree, epitope_mask_file, epitope_mask_version='wolf'):
     if epitope_mask_version in epitope_map:
         epitope_mask = np.fromstring(epitope_map[epitope_mask_version], 'S1')=='1'
     root = tree.root
-    root_total_aa_seq = get_total_peptide(root)
+    root_total_aa_seq = get_total_peptide(root, runner.segment)
     for node in tree.find_clades():
-        total_aa_seq = get_total_peptide(node)
+        total_aa_seq = get_total_peptide(node, runner.segment)
         node.attr['ep'] = epitope_distance(total_aa_seq, root_total_aa_seq)
         node.attr['ne'] = nonepitope_distance(total_aa_seq, root_total_aa_seq)
         node.attr['rb'] = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
 
-    self.config["auspice"]["color_options"]["ep"] = {
+
+    runner.config["auspice"]["color_options"]["ep"] = {
         "menuItem": "epitope mutations",
         "type": "continuous",
         "legendTitle": "Epitope mutations",
         "key": "ep"
     }
-    self.config["auspice"]["color_options"]["ne"] = {
+    runner.config["auspice"]["color_options"]["ne"] = {
         "menuItem": "non-epitope mutations",
         "type": "continuous",
         "legendTitle": "Non-epitope mutations",
         "key": "ne"
     }
-    self.config["auspice"]["color_options"]["rb"] = {
+    runner.config["auspice"]["color_options"]["rb"] = {
         "menuItem": "receptor binding mutations",
         "type": "continuous",
         "legendTitle": "Receptor binding mutations",

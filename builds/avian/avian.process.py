@@ -20,19 +20,20 @@ def collect_args():
 config = {
     "dir": "avian",
     # "in": "prepared/flu_H7N9_HA.json", # should be able to specify from command line
-    "geo_inference": ['country'], # what traits to perform this on
+    "geo_inference": [], # what traits to perform this on
     "auspice": { ## settings for auspice JSON export
         "panels": ['tree', 'map', 'entropy'],
+        "defaults": {
+            "colorBy": "division",
+            "geoResolution": "division"
+        },
         "extra_attr": [],
         "date_range": {},
-        "analysisSlider": "fauna_date",
         "color_options": {
-            "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete", "color_map": []},
             "division":{"key":"division", "legendTitle":"Division", "menuItem":"division", "type":"discrete", "color_map": []},
             "host":{"key":"host", "legendTitle":"Host", "menuItem":"host", "type":"discrete", "color_map": []},
             "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
-            "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"},
-            "fauna_date":{"key":"fauna_date", "legendTitle":"Analysis date", "menuItem":"Analysis date", "type":"continuous"},
+            "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
         },
         "controls": {'geographic location':['country'], 'authors':['authors']}
     },
@@ -51,6 +52,6 @@ if __name__=="__main__":
     runner.align()
     runner.build_tree()
     runner.timetree_setup_filter_run()
-    runner.run_geo_inference()
+    #runner.run_geo_inference()
     runner.save_as_nexus()
     runner.auspice_export()

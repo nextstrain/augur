@@ -1,5 +1,5 @@
 import matplotlib as mpl
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 from datetime import datetime
 from base.io_util import tree_to_json
 import numpy as np
@@ -11,17 +11,17 @@ def generate_cmap(data, discrete):
     returns dict of (e.g.) country -> hex
     '''
     norm = mpl.colors.Normalize(0, len(data) - 1)
-    cmap = mpl.cm.get_cmap("viridis")
-    if discrete:
-        if len(data) <= 10:
-            cmap = mpl.cm.get_cmap("Vega10")
-        elif len(data) <= 20:
-            cmap = mpl.cm.get_cmap("Vega20")
 
-    ret = []
-    for idx, val in enumerate(list(data)):
-        ret.append((val, mpl.colors.to_hex(cmap(norm(idx)))))
-    return ret
+    if discrete:
+        nbins = len(data)
+    else:
+        nbins = 256
+
+    default_colors =  ["#511EA8", "#482BB6", "#4039C3", "#3F4ACA", "#3E5CD0", "#416CCE", "#447CCD", "#4989C4", "#4E96BC", "#559FB0", "#5DA8A4", "#66AE96", "#6FB388", "#7AB77C", "#85BA6F", "#91BC64", "#9DBE5A", "#AABD53", "#B6BD4B", "#C2BA46", "#CDB642", "#D6B03F", "#DDA83C", "#E29D39", "#E69036", "#E67F33", "#E56D30", "#E2592C", "#DF4428", "#DC2F24"]
+    cmap = mpl.colors.LinearSegmentedColormap.from_list('default_cmap', default_colors, N=nbins)
+
+    colors = [(val, mpl.colors.to_hex(cmap(norm(idx)))) for idx, val in enumerate(list(data))]
+    return colors
 
 def define_latitude_longitude(lat_long_defs, log):
     import csv

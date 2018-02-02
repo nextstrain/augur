@@ -58,6 +58,21 @@ def summarise_publications_from_tree(tree):
                 info[authors][attr] = clade.attr[attr]
     return (info, mapping)
 
+def extract_annotations(runner):
+    annotations = {}
+    for name, prot in runner.proteins.iteritems():
+        annotations[name] = {
+            "start": int(prot.start),
+            "end": int(prot.end),
+            "strand": prot.strand
+        }
+    # nucleotides:
+    annotations["nuc"] = {
+        "start": 1,
+        "end": len(str(runner.reference_seq.seq)) + 1
+    }
+    return annotations;
+
 def export_metadata_json(process, prefix, indent):
     process.log.notify("Writing out metaprocess")
     meta_json = {}
@@ -91,6 +106,16 @@ def export_metadata_json(process, prefix, indent):
     meta_json["updated"] = time.strftime("X%d %b %Y").replace('X0','X').replace('X','')
     meta_json["title"] = process.info["title"]
     meta_json["maintainer"] = process.info["maintainer"]
+    meta_json["filters"] = process.info["auspice_filters"]
+    meta_json["annotations"] = extract_annotations(process)
+
+    # pass through flu specific information (if present)
+    if "vaccine_choices" in process.info:
+        meta_json["vaccine_choices"] = process.info["vaccine_choices"]
+    if "LBItau" in process.info:
+        meta_json["LBItau"] = process.info["LBItau"]
+    if "dfreq_dn" in process.info:
+        meta_json["dfreq_dn"] = process.info["dfreq_dn"]
 
     if "defaults" in process.config["auspice"]:
         meta_json["defaults"] = process.config["auspice"]["defaults"]

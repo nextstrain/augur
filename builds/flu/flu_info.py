@@ -25,7 +25,7 @@ outliers = {
     'h3n2':[
         "A/Chile/8266/2003", "A/Louisiana/4/2003", "A/Lousiana/4/2003", "A/India/D0512577/2005",
         "A/Kunming/1-Va10/2005", "A/Ontario/RV1273/2005", "A/OSAKA/31/2005", "A/Sari/388/2006",
-        "A/Ontario/1252/2007", "A/HongKong/HK1/2008", "A/HongKong/HK1MA21-1/2008",
+        "A/Santiago/6764/2006", "A/Ontario/1252/2007", "A/HongKong/HK1/2008", "A/HongKong/HK1MA21-1/2008",
         "A/HongKong/HK1MA21-2/2008", "A/HongKong/HK1MA21-3/2008", "A/HongKong/HK1MA21-4/2008",
         "A/HongKong/HK2/2008", "A/HongKong/HK2MA21-1/2008", "A/HongKong/HK2MA21-2/2008",
         "A/HongKong/HK2MA21-3/2008", "A/HongKong/HK4/2008", "A/HongKong/HK4MA21-3/2008",
@@ -63,7 +63,9 @@ outliers = {
         "A/Michigan/93/2016", "A/Michigan/94/2016", "A/Michigan/95/2016", "A/Michigan/96/2016",
         "A/Ohio/27/2016", "A/Ohio/28/2016", "A/Ohio/32/2016", "A/Ohio/33/2016", "A/Ohio/35/2016",
         "A/Zhejiang-Wuxin/1300/2016", "A/Catalonia/NSVH100533399/2017", "A/Catalonia/NSVH100560486/2017",
-        "A/Piaui/494713/2017", "A/SaoPaulo/554097/2017"
+        "A/Piaui/494713/2017", "A/SaoPaulo/554097/2017", "A/Ireland/61451/2017", "A/Ireland/53051/2017",
+        "A/Ireland/62518/2017", "A/Ireland/52590/2017", "A/Ireland/61097/2017",
+        "A/Shanghai-Minxing/1482/2017"
     ],
     'h1n1pdm': [
         "A/Wisconsin/87/2005", "A/Illinois/9/2007", "A/Ohio/2/2007", "A/California/07/2009NYMC-X18113/198",
@@ -73,7 +75,8 @@ outliers = {
         "A/RioGrandedoNorte/117490/2012", "A/SriLanka/11/2012", "A/Arkansas/14/2013", "A/Arkansas/15/2013",
         "A/Hungary/02/2013", "A/Hungary/16/2013", "A/Poland/16/2013", "A/Brest/1161/2014", "A/Dakar/3/2014",
         "A/India/Pun1418633/2014", "A/Minnesota/33/2014", "A/Norway/1929/2014", "A/Iowa/39/2015",
-        "A/Minnesota/46/2015", "A/Ohio/9/2015", "A/Bari/166/2016", "A/Bari/167/2016", "A/Belgium/G0027/2016"
+        "A/India/4101/2015", "A/Minnesota/46/2015", "A/Ohio/9/2015", "A/Bari/166/2016", "A/Bari/167/2016",
+        "A/Belgium/G0027/2016", "A/Ohio/1/2007", "A/Iowa/1/2006", "A/Minnesota/3/2008", "A/Texas/14/2008"
     ],
     'vic':[
         "A/Malaysia/438/2016", "B/Togo/LNG/419/2013", "B/Brisbine/33/2008", "B/Kol/2024/2008",
@@ -81,7 +84,7 @@ outliers = {
         "B/Cambodia/30/2011", "B/Cambodia/62/2011", "B/Cambodia/89/2011", "B/Cambodia/V1005378/2011",
         "B/Stockholm/7/2011", "B/Bangkok/SI17/2012", "B/Bangkok/SI58/2012", "B/SouthAustralia/81/2012",
         "B/Netherlands/76/2014", "B/NewCaledonia/119/2015", "B/Thailand/CU-B11637/2015",
-        "B/Brisbane/14/2016", "B/Sydney/6/2016"
+        "B/Brisbane/14/2016", "B/Sydney/6/2016", "B/Netherlands/883/2016"
     ],
     "yam":[
         "B/Kisumu/7/2005", "B/Nairobi/351/2005", "B/Kolkata/2546/2009", "B/Kolkata/N-1272/2009",
@@ -108,6 +111,23 @@ reference_maps = {
             },
             "include": 0,
             "genes": ["SigPep", "HA1", "HA2"]
+        },
+        "na": {
+            "path": "metadata/h3n2_na_outgroup.gb",
+            "metadata": {
+                'strain': "A/Beijing/32/1992",
+                'isolate_id': "CY113677",
+                'date': "1992-XX-XX",
+                'region': "china",
+                'country': "China",
+                "city": "Beijing",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["NA"]
         }
     },
     "yam": {
@@ -130,6 +150,18 @@ reference_maps = {
         },
         "na": {
             "path": "metadata/yam_na_outgroup.gb",
+            "metadata": {
+                'strain': "B/Singapore/11/1994",
+                'isolate_id': "CY019707",
+                'date': "1994-05-10",
+                'region': "southeast_asia",
+                'country': "Singapore",
+                "city": "Singapore",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "M"
+            },
             "include": 0,
             "genes": ["NA", "NB"]
         }
@@ -151,6 +183,23 @@ reference_maps = {
             },
             "include": 0,
             "genes": ["SigPep", "HA1", "HA2"]
+        },
+        "na": {
+            "path": "metadata/vic_na_outgroup.gb",
+            "metadata": {
+                'strain': "B/Hong Kong/02/1993",
+                'isolate_id': "CY018813",
+                'date': "1993-02-15",
+                'region': "china",
+                'country': "Hong Kong",
+                "city": "Hong Kong",
+                "passage": "4",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["NB", "NA"]
         }
     },
     "h1n1pdm": {
@@ -170,6 +219,23 @@ reference_maps = {
             },
             "include": 0,
             "genes": ["SigPep", "HA1", "HA2"]
+        },
+        "na": {
+            "path": "metadata/h1n1pdm_na_outgroup.gb",
+            "metadata": {
+                'strain': "A/Swine/Indiana/P12439/00",
+                'isolate_id': "AF455680",
+                'date': "unknown",
+                'region': "north america",
+                'country': "USA",
+                "city": "unknown",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["NA"]
         }
     }
 }
@@ -177,26 +243,92 @@ reference_maps = {
 ## lots of the references share data
 reference_maps["yam"]["na"]["metadata"] = reference_maps["yam"]["ha"]["metadata"]
 
+# these will be included in narrower builds, for example 'A/Michigan/15/2014' will appear in a 2015-2017
+# place vaccine strains here - this ensures they'll be sampled
 reference_viruses = {
     'h3n2':[
-        'A/Wisconsin/67/2005', 'A/Brisbane/10/2007', 'A/Perth/16/2009',
-        'A/Victoria/361/2011','A/Texas/50/2012', 'A/Switzerland/9715293/2013',
-        'A/HongKong/4801/2014', 'A/Alaska/232/2015'
+        'A/Wisconsin/67/2005', 'A/Brisbane/10/2007', 'A/Perth/16/2009', 'A/Victoria/361/2011',
+        'A/Texas/50/2012', 'A/Southauckland/7/2012' 'A/Singapore/22/2012', 'A/Christchurch/516/2012',
+        'A/Switzerland/9715293/2013', 'A/Victoria/505/2013' 'A/Victoria/506/2013' 'A/HongKong/4801/2014',
+        'A/Hawaii/47/2014', 'A/Tasmania/11/2014', 'A/Newcastle/22/2014', 'A/Sidney/7/2014',
+        'A/Michigan/15/2014', 'A/NewJersey/26/2014', 'A/HongKong/7127/2014', 'A/SouthAustralia/55/2014',
+        'A/NewCaledonia/71/2014', 'A/Stockholm/6/2014', 'A/Fiji/2/2015', 'A/Wisconsin/20/2015',
+        'A/Wisconsin/66/2015', 'A/Brisbane/45/2015', 'A/Ontario/RV2414/2015', 'A/Nebraska/19/2015',
+        'A/Montana/28/2015', 'A/Alaska/232/2015', 'A/Singapore/Infimh-16-0019/2016', 'A/Texas/88/2016',
+        'A/Idaho/33/2016', 'A/Texas/88/2016', 'A/NorthCarolina/4/2016', 'A/Delaware/32/2016',
+        'A/Florida/23/2017', 'A/Washington/16/2017', 'A/NorthCarolina/4/2017','A/SouthCarolina/4/2017'
     ],
     'h1n1pdm':[
-        'A/California/7/2009', 'A/Michigan/45/2015'
+        'A/California/7/2009', 'A/Bangladesh/2021/2012', 'A/Victoria/367/2012', 'A/Brisbane/96/2012',
+        'A/SouthAfrica/3626/2013', 'A/Brisbane/28/2013', 'A/Bolivia/559/2013', 'A/Florida/62/2014',
+        'A/Newcaledonia/58/2014', 'A/Tasmania/24/2014', 'A/Florida/62/2014', 'A/Michigan/45/2015',
+        'A/Perth/103/2015', 'A/Brisbane/181/2015', 'A/Singapore/GP1908/2015', 'A/Iowa/53/2015',
+        'A/StPetersburg/61/2015', 'A/Minnesota/32/2015', 'A/Bangladesh/3002/2015', 'A/Indiana/21/2016',
+        'A/Victoria/503/2016'
     ],
     'vic':[
-        'B/Shangdong/7/1997', 'B/HongKong/330/2001', 'B/Malaysia/2506/2004',
-        'B/Brisbane/60/2008'
+        'B/Shangdong/7/1997', 'B/HongKong/330/2001', 'B/Malaysia/2506/2004', 'B/Ohio/1/2005',
+        'B/Brisbane/60/2008', 'B/Utah/8/2012', 'B/Montana/5/2012', 'B/Texas/2/2013', 'B/Florida/33/2014',
+        'B/Indiana/25/2015', 'B/Florida/78/2015'
     ],
     'yam':[
-        'B/Beijing/184/1993', 'B/Sichuan/379/1999', 'B/Shanghai/361/2002',
-        'B/Florida/4/2006', 'B/Wisconsin/1/2010', 'B/Massachusetts/2/2012',
-        'B/Phuket/3073/2013'
+        'B/Beijing/184/1993', 'B/Sichuan/379/1999', 'B/Shanghai/361/2002', 'B/Florida/4/2006',
+        'B/Wisconsin/1/2010', 'B/Massachusetts/2/2012', 'B/Phuket/3073/2013', 'B/Utah/9/2014',
+        'B/Brisbane/9/2014', 'B/Guangdong-Liwan/1133/2014', 'B/California/12/2015', 'B/Arizona/10/2015',
+        'B/NewHampshire/1/2016'
     ]
 }
 
+# vaccine choices copied from https://github.com/blab/nextflu/tree/de1c8323f75b0fbac9cf26451380d2758288290e/auspice/_includes feb 1 2018
+vaccine_choices = {
+    "h3n2": {
+        'A/Sydney/5/1997': "1997-09-25",
+        'A/Moscow/10/1999': "1999-09-25",
+        'A/Fujian/411/2002': "2003-09-25",
+        'A/California/7/2004': "2005-02-21",
+        'A/Wisconsin/67/2005': "2006-02-21",
+        'A/Brisbane/10/2007': "2007-09-25",
+        'A/Perth/16/2009': "2009-09-25",
+        'A/Victoria/361/2011': "2012-02-21",
+        'A/Texas/50/2012': "2013-09-25",
+        'A/Switzerland/9715293/2013': "2014-09-25",
+        'A/HongKong/4801/2014': "2015-09-24",
+        'A/Singapore/Infimh-16-0019/2016': "2017-09-28"
+    },
+    "vic": {
+        'B/Shangdong/7/1997': "1999-09-25",
+        'B/HongKong/330/2001': "2002-09-25",
+        'B/Malaysia/2506/2004': "2006-09-25",
+        'B/Brisbane/60/2008': "2009-09-25"
+    },
+    "yam": {
+        'B/Beijing/184/1993': "1998-11-01",
+        'B/Sichuan/379/1999': "2001-09-25",
+        'B/Shanghai/361/2002': "2004-09-25",
+        'B/Florida/4/2006': "2008-09-25",
+        'B/Wisconsin/1/2010': "2012-02-25",
+        'B/Massachusetts/2/2012': "2013-02-25",
+        'B/Phuket/3073/2013': "2014-09-25"
+    },
+    "h1n1pdm": {
+        'A/California/7/2009': "2009-09-25",
+        'A/Michigan/45/2015': "2016-09-29"
+    }
+}
+
+# LBItau (LBI time_window is never used) and dfreq_dn copied from (e.g.) https://github.com/blab/nextflu/blob/de1c8323f75b0fbac9cf26451380d2758288290e/auspice/_includes/12y_meta.js
+LBItau = {
+    '2y': 0.3,
+    '3y': 0.4,
+    '6y': 0.25,
+    '12y': 0.0005
+}
+dfreq_dn = {
+    '2y': 6,
+    '3y': 6,
+    '6y': 6,
+    '12y': 6
+}
 clade_designations = {
     "h3n2":{
         "3c3.a": [('HA1',128,'A'), ('HA1',142,'G'), ('HA1',159,'S')],

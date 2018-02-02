@@ -3,7 +3,7 @@ parse, filter, subsample and save as JSON
 '''
 from __future__ import division, print_function
 import os, re, time, csv, sys
-from base.titer_model import TiterModel
+from base.titer_model import TiterCollection
 from io_util import myopen
 from collections import defaultdict
 from Bio import SeqIO
@@ -257,7 +257,8 @@ class sequence_set(object):
             "subsampled": bool(config["subsample"]),
             "traits_are_dates": [],
             "title": config["title"],
-            "maintainer": config["maintainer"]
+            "maintainer": config["maintainer"],
+            "auspice_filters": config["auspice_filters"]
         }
         if "traits_are_dates" in config and isinstance(config["traits_are_dates"], (list, tuple)):
             data["info"]["traits_are_dates"] = [trait for trait in config["traits_are_dates"] if trait in config["header_fields"].values()]
@@ -290,12 +291,26 @@ class sequence_set(object):
         # Titers must be present in the config and not None to be used.
         if config.get("titers") is not None:
             # Subset titer data to match the strains selected for export.
-            filtered_titers = TiterModel.filter_strains(config["titers"], self.seqs.keys())
+            filtered_titers = TiterCollection.filter_strains(config["titers"], self.seqs.keys())
 
             # Convert tuple dictionary keys to strings for JSON compatability.
             data["titers"] = {str(key): value
                               for key, value in filtered_titers.iteritems()}
             logger.debug("Filtered titers from %i to %i measures" % (len(config["titers"]), len(data["titers"])))
+
+        # Flu-specific elements...
+        if "vaccine_choices" in config and config["vaccine_choices"] is not None:
+            data["info"]["vaccine_choices"] = {}
+            for k, v in config["vaccine_choices"].items():
+                if k in self.extras["leaves"]:
+                    data["info"]["vaccine_choices"][k] = v
+                else:
+                    print("WARNING! Vaccine strain {} was not present in the data".format(k))
+        if "LBItau" in config and config["LBItau"] is not None:
+            data["info"]["LBItau"] = config["LBItau"]
+        if "dfreq_dn" in config and config["dfreq_dn"] is not None:
+            data["info"]["dfreq_dn"] = config["dfreq_dn"]
+
 
         json.dump(data, fh, indent=2)
 

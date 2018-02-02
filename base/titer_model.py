@@ -12,16 +12,10 @@ TITER_ROUND=4
 logger = logging.getLogger(__name__)
 
 
-class TiterModel(object):
-    '''
-    this class decorates as phylogenetic tree with titer measurements and infers
-    different models that describe titer differences in a parsimonious way.
-    Two additive models are currently implemented, the tree and the subsitution
-    model. The tree model describes titer drops as a sum of terms associated with
-    branches in the tree, while the substitution model attributes titer drops to amino
-    acid mutations. More details on the methods can be found in
-    Neher et al, PNAS, 2016
-    '''
+class TiterCollection(object):
+    """
+    Container for raw titer values and methods for analyzing these values.
+    """
     @staticmethod
     def load_from_file(filename, excluded_sources=None):
         """Load titers from a tab-delimited file.
@@ -37,7 +31,7 @@ class TiterModel(object):
             list: distinct strains present as either test or reference viruses
             list: distinct sources of titers
 
-        >>> measurements, strains, sources = TiterModel.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
+        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
         >>> type(measurements)
         <type 'dict'>
         >>> len(measurements)
@@ -48,7 +42,7 @@ class TiterModel(object):
         13
         >>> len(sources)
         5
-        >>> measurements, strains, sources = TiterModel.load_from_file("tests/titer_model/h3n2_titers_subset.tsv", excluded_sources=["NIMR_Sep2013_7-11.csv"])
+        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/titer_model/h3n2_titers_subset.tsv", excluded_sources=["NIMR_Sep2013_7-11.csv"])
         >>> len(measurements)
         5
         >>> measurements.get(("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10")))
@@ -87,7 +81,6 @@ class TiterModel(object):
 
         return dict(measurements), list(strains), list(sources)
 
-
     @staticmethod
     def count_strains(titers):
         """Count test and reference virus strains in the given titers.
@@ -100,8 +93,8 @@ class TiterModel(object):
             dict: counts of virus strains that appear as either tests or
                   references in the given titers
 
-        >>> measurements, strains, sources = TiterModel.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
-        >>> titer_counts = TiterModel.count_strains(measurements)
+        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
+        >>> titer_counts = TiterCollection.count_strains(measurements)
         >>> titer_counts["A/Acores/11/2013"]
         6
         >>> titer_counts["A/Acores/SU43/2012"]
@@ -116,7 +109,6 @@ class TiterModel(object):
 
         return counts
 
-
     @staticmethod
     def filter_strains(titers, strains):
         """Filter the given titers to only include values from the given strains
@@ -130,45 +122,32 @@ class TiterModel(object):
         Returns:
             dict: titer values filtered to include only given strains
 
-        >>> measurements, strains, sources = TiterModel.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
+        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
         >>> len(measurements)
         11
 
         Test the case when a test strain exists in the subset but the none of
         its corresponding reference strains do.
 
-        >>> len(TiterModel.filter_strains(measurements, ["A/Acores/11/2013"]))
+        >>> len(TiterCollection.filter_strains(measurements, ["A/Acores/11/2013"]))
         0
 
         Test when both the test and reference strains exist in the subset.
 
-        >>> len(TiterModel.filter_strains(measurements, ["A/Acores/11/2013", "A/Alabama/5/2010", "A/Athens/112/2012"]))
+        >>> len(TiterCollection.filter_strains(measurements, ["A/Acores/11/2013", "A/Alabama/5/2010", "A/Athens/112/2012"]))
         2
-        >>> len(TiterModel.filter_strains(measurements, ["A/Acores/11/2013", "A/Acores/SU43/2012", "A/Alabama/5/2010", "A/Athens/112/2012"]))
+        >>> len(TiterCollection.filter_strains(measurements, ["A/Acores/11/2013", "A/Acores/SU43/2012", "A/Alabama/5/2010", "A/Athens/112/2012"]))
         3
-        >>> len(TiterModel.filter_strains(measurements, []))
+        >>> len(TiterCollection.filter_strains(measurements, []))
         0
         """
         return {key: value for key, value in titers.iteritems()
                 if key[0] in strains and key[1][0] in strains}
 
-
-    def __init__(self, tree, titers, serum_Kc=0, **kwargs):
-        '''
-        default constructor assumes a Bio.Phylo tree as first positional argument and a dictionay of
-        titer measurements as second positional argument. This dictionary has composite keys consisting
-        of the (test_virus_strain_name, (reference_virus_strain_name, serum_id))
-        Arguments:
-            - tree      -- Bio,Phylo tree
-            - titers    -- dictionary with titer measurements or name of titer file.
-            - serum_Kc  -- optional argument that can be used to even out contribution of sera.
-                           should be roughly the inverse of the number of measurements beyond which
-                           the contribution of a serum should saturate
-        '''
-        self.kwargs = kwargs
-        # set self.tree and dress tree with a number of extra attributes
-        self.prepare_tree(tree)
-
+    def __init__(self, titers, **kwargs):
+        """Accepts the name of a file containing titers to load or a preloaded titers
+        dictionary.
+        """
         # Assign titers and prepare list of strains.
         if isinstance(titers, str) and os.path.isfile(titers):
             self.read_titers(titers)
@@ -177,25 +156,6 @@ class TiterModel(object):
             strain_counts = type(self).count_strains(titers)
             self.strains = strain_counts.keys()
 
-        self.serum_Kc = serum_Kc
-        self.normalize_titers()
-
-
-    def prepare_tree(self, tree):
-        self.tree = tree # not copied, just linked
-        # produce dictionaries that map node names to nodes regardless of capitalization
-        self.node_lookup = {n.name:n for n in tree.get_terminals()}
-        self.node_lookup.update({n.name.upper():n for n in tree.get_terminals()})
-        self.node_lookup.update({n.name.lower():n for n in tree.get_terminals()})
-
-        # have each node link to its parent. this will be needed for walking up and down the tree
-        # but should be already in place if treetime is used.
-        self.tree.root.up=None
-        for node in self.tree.get_nonterminals():
-            for c in node.clades:
-                c.up = node
-
-
     def read_titers(self, fname):
         self.titer_fname = fname
         if "excluded_tables" in self.kwargs:
@@ -203,11 +163,10 @@ class TiterModel(object):
         else:
             self.excluded_tables = []
 
-        self.titers, self.strains, self.sources = TiterModel.load_from_file(
+        self.titers, self.strains, self.sources = type(self).load_from_file(
                                                             fname,
                                                             self.excluded_tables
                                                         )
-
 
     def normalize(self, ref, val):
         '''
@@ -216,7 +175,6 @@ class TiterModel(object):
         consensus_func = np.mean
         return consensus_func(np.log2(self.autologous_titers[ref]['val'])) \
                 - consensus_func(np.log2(val))
-
 
     def determine_autologous_titers(self):
         '''
@@ -229,10 +187,9 @@ class TiterModel(object):
         autologous = defaultdict(list)
         all_titers_per_serum = defaultdict(list)
         for (test, ref), val in self.titers.iteritems():
-            if ref[0].upper() in self.node_lookup:
-                all_titers_per_serum[ref].append(val)
-                if ref[0]==test:
-                    autologous[ref].append(val)
+            all_titers_per_serum[ref].append(val)
+            if ref[0]==test:
+                autologous[ref].append(val)
 
         self.autologous_titers = {}
         for serum in all_titers_per_serum:
@@ -251,7 +208,6 @@ class TiterModel(object):
                     # print("discarding",serum,"since there are only ",
                     #        len(all_titers_per_serum[serum]),'measurements')
 
-
     def normalize_titers(self):
         '''
         convert the titer measurements into the log2 difference between the average
@@ -265,43 +221,92 @@ class TiterModel(object):
         self.consensus_titers_raw = {}
         self.measurements_per_serum = defaultdict(int)
         for (test, ref), val in self.titers.iteritems():
-            if test.upper() in self.node_lookup and ref[0].upper() in self.node_lookup:
-                if ref in self.autologous_titers: # use only titers for which estimates of the autologous titer exists
-                    self.titers_normalized[(test, ref)] = self.normalize(ref, val)
-                    self.consensus_titers_raw[(test, ref)] = np.median(val)
-                    self.measurements_per_serum[ref]+=1
-                else:
-                    pass
-                    #print "no homologous titer found:", ref
+            if ref in self.autologous_titers: # use only titers for which estimates of the autologous titer exists
+                self.titers_normalized[(test, ref)] = self.normalize(ref, val)
+                self.consensus_titers_raw[(test, ref)] = np.median(val)
+                self.measurements_per_serum[ref]+=1
+            else:
+                pass
+                #print "no homologous titer found:", ref
 
-        self.strain_census()
-        print("Normalized titers and restricted to measurements in tree:")
-        self.titer_stats()
-
-
-    def strain_census(self):
-        '''
+    def strain_census(self, titers):
+        """
         make lists of reference viruses, test viruses and sera
-        (there are often multiple sera oer reference virus)
-        '''
+        (there are often multiple sera per reference virus)
+
+        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
+        >>> titers = TiterCollection(measurements)
+        >>> sera, ref_strains, test_strains = titers.strain_census(measurements)
+        >>> len(sera)
+        9
+        >>> len(ref_strains)
+        9
+        >>> len(test_strains)
+        13
+        """
         sera = set()
         ref_strains = set()
         test_strains = set()
-        if hasattr(self, 'train_titers'):
-            tt = self.train_titers
+
+        for test, ref in titers:
+            test_strains.add(test)
+            test_strains.add(ref[0])
+            sera.add(ref)
+            ref_strains.add(ref[0])
+
+        return list(sera), list(ref_strains), list(test_strains)
+
+
+class TiterModel(object):
+    '''
+    this class decorates as phylogenetic tree with titer measurements and infers
+    different models that describe titer differences in a parsimonious way.
+    Two additive models are currently implemented, the tree and the subsitution
+    model. The tree model describes titer drops as a sum of terms associated with
+    branches in the tree, while the substitution model attributes titer drops to amino
+    acid mutations. More details on the methods can be found in
+    Neher et al, PNAS, 2016
+    '''
+    def __init__(self, tree, titers, serum_Kc=0, **kwargs):
+        '''
+        default constructor assumes a Bio.Phylo tree as first positional argument and a dictionay of
+        titer measurements as second positional argument. This dictionary has composite keys consisting
+        of the (test_virus_strain_name, (reference_virus_strain_name, serum_id))
+        Arguments:
+            - tree      -- Bio,Phylo tree
+            - titers    -- dictionary with titer measurements or name of titer file.
+            - serum_Kc  -- optional argument that can be used to even out contribution of sera.
+                           should be roughly the inverse of the number of measurements beyond which
+                           the contribution of a serum should saturate
+        '''
+        self.kwargs = kwargs
+        # set self.tree and dress tree with a number of extra attributes
+        self.prepare_tree(tree)
+        self.serum_Kc = serum_Kc
+
+        # Load titer measurements from a file or from a given dictionary of
+        # measurements.
+        if isinstance(titers, str) and os.path.isfile(titers):
+            titer_measurements = TiterCollection.load_from_file(titers)
         else:
-            tt = self.titers_normalized
+            titer_measurements = titers
 
-        for test,ref in tt:
-            if test.upper() in self.node_lookup and ref[0].upper() in self.node_lookup:
-                test_strains.add(test)
-                test_strains.add(ref[0])
-                sera.add(ref)
-                ref_strains.add(ref[0])
+        # Filter titer measurements to those from strains in the given tree.
+        filtered_titer_measurements = TiterCollection.filter_strains(
+            titer_measurements,
+            self.node_lookup.keys()
+        )
 
-        self.sera = list(sera)
-        self.ref_strains = list(ref_strains)
-        self.test_strains = list(test_strains)
+        # Create a titer collection for the filtered titer measurements.
+        self.titers = TiterCollection(filtered_titer_measurements, **kwargs)
+
+        # Normalize titers.
+        self.titers.normalize_titers()
+
+        # Determine distinct sera, reference strains, and test strains.
+        self.sera, self.ref_strains, self.test_strains = self.titers.strain_census(self.titers.titers_normalized)
+        print("Normalized titers and restricted to measurements in tree:")
+        self.titer_stats()
 
 
     def titer_stats(self):
@@ -309,9 +314,24 @@ class TiterModel(object):
         print(' ---', len(self.ref_strains), " reference virues")
         print(' ---', len(self.sera), " sera")
         print(' ---', len(self.test_strains), " test_viruses")
-        print(' ---', len(self.titers_normalized), " non-redundant test virus/serum pairs")
+        print(' ---', len(self.titers.titers_normalized), " non-redundant test virus/serum pairs")
         if hasattr(self, 'train_titers'):
             print(' ---', len(self.train_titers), " measurements in training set")
+
+
+    def prepare_tree(self, tree):
+        self.tree = tree # not copied, just linked
+        # produce dictionaries that map node names to nodes regardless of capitalization
+        self.node_lookup = {n.name:n for n in tree.get_terminals()}
+        self.node_lookup.update({n.name.upper():n for n in tree.get_terminals()})
+        self.node_lookup.update({n.name.lower():n for n in tree.get_terminals()})
+
+        # have each node link to its parent. this will be needed for walking up and down the tree
+        # but should be already in place if treetime is used.
+        self.tree.root.up=None
+        for node in self.tree.get_nonterminals():
+            for c in node.clades:
+                c.up = node
 
 
     def subset_to_date(self, date_range):
@@ -322,7 +342,9 @@ class TiterModel(object):
                                self.node_lookup[key[1][0]].num_date>=date_range[0] and
                                self.node_lookup[key[0]].num_date<date_range[1] and
                                self.node_lookup[key[1][0]].num_date<date_range[1]}
-        self.strain_census()
+
+        self.sera, self.ref_strains, self.test_strains = self.titers.strain_census(self.train_titers)
+
         print("Reduced training data to date range", date_range)
         self.titer_stats()
 
@@ -338,21 +360,21 @@ class TiterModel(object):
                 for tmpstrain in self.ref_strains:      # add all reference viruses to the training set
                     if tmpstrain not in training_strains:
                         training_strains.append(tmpstrain)
-                for key, val in self.titers_normalized.iteritems():
+                for key, val in self.titers.titers_normalized.iteritems():
                     if key[0] in training_strains:
                         self.train_titers[key]=val
                     else:
                         self.test_titers[key]=val
             else: # simply use a fraction of all measurements for testing
-                for key, val in self.titers_normalized.iteritems():
+                for key, val in self.titers.titers_normalized.iteritems():
                     if np.random.uniform()>training_fraction:
                         self.test_titers[key]=val
                     else:
                         self.train_titers[key]=val
         else: # without the need for a test data set, use the entire data set for training
-            self.train_titers = self.titers_normalized
+            self.train_titers = self.titers.titers_normalized
 
-        self.strain_census()
+        self.sera, self.ref_strains, self.test_strains = self.titers.strain_census(self.train_titers)
         print("Made training data as fraction",training_fraction, "of all measurements")
         self.titer_stats()
 
@@ -444,7 +466,7 @@ class TiterModel(object):
         def dstruct():
             return defaultdict(int)
         self.titer_counts = defaultdict(dstruct)
-        for test_vir, (ref_vir, serum) in self.titers_normalized:
+        for test_vir, (ref_vir, serum) in self.titers.titers_normalized:
             self.titer_counts[ref_vir][serum]+=1
 
 
@@ -459,11 +481,11 @@ class TiterModel(object):
             return defaultdict(dict)
         titer_json = defaultdict(dstruct)
 
-        for key, val in self.titers_normalized.iteritems():
+        for key, val in self.titers.titers_normalized.iteritems():
             test_vir, (ref_vir, serum) = key
             test_clade = self.node_lookup[test_vir.upper()].clade
             ref_clade = self.node_lookup[ref_vir.upper()].clade
-            titer_json[ref_clade][test_clade][serum] = [np.round(val,TITER_ROUND), np.median(self.titers[key])]
+            titer_json[ref_clade][test_clade][serum] = [np.round(val,TITER_ROUND), np.median(self.titers.titers[key])]
 
         return titer_json
 
@@ -714,7 +736,7 @@ class TreeModel(TiterModel):
                         # append model and fit value to lists tree_graph and titer_dist
                         tree_graph.append(tmp)
                         titer_dist.append(val)
-                        weights.append(1.0/(1.0 + self.serum_Kc*self.measurements_per_serum[ref]))
+                        weights.append(1.0/(1.0 + self.serum_Kc*self.titers.measurements_per_serum[ref]))
                 except:
                     import ipdb; ipdb.set_trace()
                     print(test, ref, "ERROR")
@@ -857,7 +879,7 @@ class SubstitutionModel(TiterModel):
                     seq_graph.append(tmp)
                     titer_dist.append(val)
                     # for each measurment (row in the big matrix), attach weight that accounts for representation of serum
-                    weights.append(1.0/(1.0 + self.serum_Kc*self.measurements_per_serum[ref]))
+                    weights.append(1.0/(1.0 + self.serum_Kc*self.titers.measurements_per_serum[ref]))
                 except:
                     import pdb; pdb.set_trace()
                     print(test, ref, "ERROR")

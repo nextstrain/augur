@@ -1,0 +1,24 @@
+region  china  #4042C7
+region  southeast_asia  #4274CE
+region  south_asia  #5199B7
+region  japan_korea #69B091
+region  oceania #88BB6C
+region  west_asia #ADBD51
+region  africa #CEB541
+region  europe  #E39B39
+region  south_america #E56C2F
+region  north_america #DC2F24
+
+country	china	#4B26B1
+country	vietnam	#3F4ACA
+country	japan	#4272CE
+country	russia	#4D92BF
+country	gambia	#5DA8A3
+country	sudan	#74B583
+country	morocco	#8EBC66
+country	italy	#ACBD51
+country	germany	#C8B944
+country	france	#DDA93C
+country	united_kingdom	#E68B35
+country	usa	#E3602D
+country	canada	#DC2F24

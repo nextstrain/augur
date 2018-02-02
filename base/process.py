@@ -231,7 +231,7 @@ class process(object):
                     self.mutation_frequency_confidence = pickled[1]
                     self.mutation_frequency_counts = pickled[2]
                     self.log.notify("Successfully restored mutation frequencies")
-                    return
+                return
             except IOError:
                 pass
             except AssertionError as err:
@@ -344,13 +344,7 @@ class process(object):
                          self.mutation_frequency_counts), fh, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-    def global_frequencies(self, min_freq):
-        # determine sites whose frequencies need to be computed in all regions
-        self.seqs.diversity_statistics()
-        include_set = {}
-        for prot in ['nuc'] + self.seqs.translations.keys():
-            include_set[prot] = np.where(np.sum(self.seqs.af[prot][:-2]**2, axis=0)<np.sum(self.seqs.af[prot][:-2], axis=0)**2-min_freq)[0]
-
+    def global_frequencies(self, min_freq, average_global=False, inertia=2.0/12, stiffness=2.0*12):
         # set pivots and define groups of larger regions for frequency display
         pivots = self.get_pivots_via_spacing()
         acronyms = set([x[1] for x in self.info["regions"] if x[1]!=""])
@@ -358,11 +352,29 @@ class process(object):
         pop_sizes = {str(x):np.sum([y[-1] for y in self.info["regions"] if y[1] == x]) for x in acronyms}
         total_popsize = np.sum(pop_sizes.values())
 
+        # if global frequencies are to be calculated from the set of sequences, do the following
+        if average_global==False:
+            self.estimate_mutation_frequencies(pivots=pivots, min_freq=min_freq,
+                                                 inertia=np.exp(-inertia), stiffness=stiffness)
+            for region in region_groups.iteritems():
+                self.estimate_mutation_frequencies(region=region, min_freq=min_freq,
+                                                     inertia=np.exp(-inertia), stiffness=stiffness)
+            return
+        # ELSE:
+        # if global frequences are to be calculated from a weighted average of regional ones
+        # the following applies:
+
+        # determine sites whose frequencies need to be computed in all regions
+        self.seqs.diversity_statistics()
+        include_set = {}
+        for prot in ['nuc'] + self.seqs.translations.keys():
+            include_set[prot] = np.where(np.sum(self.seqs.af[prot][:-2]**2, axis=0)
+                                                <np.sum(self.seqs.af[prot][:-2], axis=0)**2-min_freq)[0]
+
         # estimate frequencies in individual regions
-        # TODO: move inertia and stiffness parameters to config
         for region in region_groups.iteritems():
-            self.estimate_mutation_frequencies(pivots=pivots, region=region, min_freq=0.02, include_set=include_set,
-                                                 inertia=np.exp(-2.0/12), stiffness=2.0*12)
+            self.estimate_mutation_frequencies(pivots=pivots, region=region, min_freq=min_freq, include_set=include_set,
+                                                 inertia=np.exp(-inertia), stiffness=stiffness)
 
         # perform a weighted average of frequencies across the regions to determine
         # global frequencies.
@@ -377,6 +389,7 @@ class process(object):
         # compute the normalizer
         total_weight = np.sum([weights[region] for region in acronyms],axis=0)
 
+        # average regional frequencies to calculate global
         for prot in ['nuc'] + self.seqs.translations.keys():
             gl_freqs, gl_counts, gl_confidence = {}, {}, {}
             all_muts = set()
@@ -433,7 +446,7 @@ class process(object):
         self.tree_frequency_counts = {}
 
 
-    def estimate_tree_frequencies(self, region='global', pivots=24):
+    def estimate_tree_frequencies(self, region='global', pivots=24, stiffness=20.0):
         '''
         estimate frequencies of clades in the tree, possibly region specific
         '''
@@ -457,9 +470,8 @@ class process(object):
 
         tree_freqs = tree_frequencies(self.tree.tree, self.pivots, method='SLSQP',
                                       node_filter = node_filter_func,
-                                      ws = max(2,self.tree.tree.count_terminals()//10))
-                                    # who knows what kwargs are needed here
-                                    #   **self.kwargs)
+                                      ws = max(2,self.tree.tree.count_terminals()//10),
+                                      stiffness = stiffness)
 
         tree_freqs.estimate_clade_frequencies()
         conf = tree_freqs.calc_confidence()
@@ -580,17 +592,26 @@ class process(object):
                         for gene, pos, state in genotype])
 
         self.clades_to_nodes = {}
+        for n in self.tree.tree.find_clades():
+            n.attr["named_clades"]=[]
         for clade_name, genotype in clades.iteritems():
             matching_nodes = filter(lambda x:match(x,genotype), self.tree.tree.get_nonterminals())
             matching_nodes.sort(key=lambda x:x.numdate if hasattr(x,'numdate') else x.dist2root)
             if len(matching_nodes):
                 self.clades_to_nodes[clade_name] = matching_nodes[0]
                 self.clades_to_nodes[clade_name].attr['clade_name']=clade_name
+                for n in filter(lambda x:match(x,genotype), self.tree.tree.find_clades()):
+                    n.attr["named_clades"].append(clade_name)
             else:
                 print('matchClades: no match found for ', clade_name, genotype)
                 for allele in genotype:
                     partial_matches = filter(lambda x:match(x,[allele]), self.tree.tree.get_nonterminals())
                     print('Found %d partial matches for allele '%len(partial_matches), allele)
+
+            for n in filter(lambda x:match(x,genotype), self.tree.tree.find_clades()):
+                n.attr["named_clades"].sort(key=lambda x:self.clades_to_nodes[x].numdate, reverse=True)
+                n.attr["named_clades"] = n.attr["named_clades"][:1]
+
 
     def annotate_fitness(self):
         """Run the fitness prediction model and annotate the tree's nodes with fitness
@@ -643,6 +664,7 @@ class process(object):
             controls_json[super_cat] = cat_count
         return controls_json
 
+
     def auspice_export(self):
         '''
         export the tree, sequences, frequencies to json files for auspice visualization
@@ -651,15 +673,21 @@ class process(object):
         indent = 2
 
         ## ENTROPY (alignment diversity) ##
-        self.seqs.export_diversity(fname=prefix+'_entropy.json', indent=indent)
+        if "entropy" in self.config["auspice"]["extra_jsons"]:
+            self.seqs.export_diversity(fname=prefix+'_entropy.json', indent=indent)
 
-        ## TREE (includes inferred states, mutations etc) ##
+        ## TREE & SEQUENCES ##
         if hasattr(self, 'tree') and self.tree is not None:
-            self.tree.export(path=prefix, extra_attr = self.config["auspice"]["extra_attr"]
-                         + ["muts", "aa_muts","attr", "clade"], indent = indent)
+            self.tree.export(
+                path = prefix,
+                extra_attr = self.config["auspice"]["extra_attr"] + ["muts", "aa_muts","attr", "clade"],
+                indent = indent,
+                write_seqs_json = "sequences" in self.config["auspice"]["extra_jsons"]
+            )
 
         ## FREQUENCIES ##
-        export_frequency_json(self, prefix=prefix, indent=indent)
+        if "frequencies" in self.config["auspice"]["extra_jsons"]:
+            export_frequency_json(self, prefix=prefix, indent=indent)
 
         ## METADATA ##
         export_metadata_json(self, prefix=prefix, indent=indent)

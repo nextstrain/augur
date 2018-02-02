@@ -13,7 +13,7 @@ def collect_args():
     """
     parser = base.prepare.collect_args()
     parser.set_defaults(
-        viruses_per_month=15,
+        viruses_per_month=20,
         file_prefix="zika"
     )
     return parser
@@ -23,10 +23,10 @@ dropped_strains = [
     "ZF36_36S", # possible contamination
     "Dominican_Republic/2016/PD2", "GD01", "GDZ16001", "VEN/UF_2/2016", "ZZ_1", # true strains, but duplicates of other strains in dataset
     "Bahia04", "JAM/2016/WI_JM6", "Bahia11", "Bahia12", "DOM/2016/MA_WGS16_009", "VE_Ganxian",
-        "BRA/2016/FC_DQ60D1", "CX5", # excessive terminal branch length
+        "BRA/2016/FC_DQ60D1", "CX5", "Thailand/1605aTw", # excessive terminal branch length
     "VR10599/Pavia/2016", "34997/Pavia/2016", # exports
     "THA/PLCal_ZV/2013", "SK403/13AS", "SV0010/15", "SK364/13AS", # clock is off
-    "AFMC_U", "AFMC_S", "JMB_185", # too basal
+    "AFMC_U", "AFMC_S", "JMB_185", "VIE/Bra/2016", # too basal
     "COL/PRV_00027/2015", "COL/PRV_00028/2015", "COL/PAN_00029/2015" "COL/PAN_00030/2015",
     "COL/FLR_00034/2015", "COL/FLR_00035/2015", "COL/FLR_00036/2015", "COL/FLR_00038/2015",
     "COL/FLR_00040/2015", "COL/FLR_00041/2015", "COL/FLR_00042/2015" # almost certainly misdated, other Colombian genomes from same study are Dec 2015 and fit the clock
@@ -35,8 +35,8 @@ dropped_strains = [
 config = {
     "dir": "zika",
     "file_prefix": "zika",
-    "title": "Genomic analysis of the worldwide spread of Zika virus (ZIKV)",
-    "maintainer": ["@trvrb", "https://twitter.com/trvrb"],
+    "title": "Real-time tracking of Zika virus evolution",
+    "maintainer": ["Trevor Bedford", "http://bedford.io/team/trevor-bedford/"],
     "input_paths": ["../../../fauna/data/zika.fasta"],
     "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
                     6:'division', 8:'db', 10:'authors', 11:'url', 12:'title',
@@ -53,6 +53,7 @@ config = {
     "colors": ["country", "region"],
     "color_defs": ["./colors.tsv"],
     "lat_longs": ["country", "region"],
+    "auspice_filters": ["country", "region"],
     "reference": {
         "path": "metadata/zika_outgroup.gb",
         "metadata": {

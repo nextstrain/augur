@@ -215,8 +215,11 @@ class prepare(object):
     def write_to_json(self, segment_addendum=False):
         for seg, obj in self.segments.iteritems():
             prefix = self.config["file_prefix"]
-            if segment_addendum:
-                prefix += "_" + seg
+            if segment_addendum:                                # add segment to file
+                if "*segment*" in prefix:                       # replace *segment* placeholder if it exists
+                    prefix = prefix.replace("*segment*", seg)
+                else:                                           # else, append
+                    prefix += "_" + seg
             fname = os.path.join(self.config["output_folder"], prefix + ".json")
             with open(fname, 'w') as fh:
                 obj.write_json(fh, self.config, prefix)
