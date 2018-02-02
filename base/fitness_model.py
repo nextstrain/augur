@@ -195,7 +195,7 @@ class fitness_model(object):
         # Calculate global tree/clade frequencies if they have not been calculated already.
         if region not in self.frequencies or self.rootnode.clade not in self.frequencies["global"]:
             print("calculating global node frequencies")
-            tree_freqs = tree_frequencies(self.tree, self.pivots)
+            tree_freqs = tree_frequencies(self.tree, self.pivots, method="SLSQP", verbose=1)
             tree_freqs.estimate_clade_frequencies()
             self.frequencies[region] = tree_freqs.frequencies
         else:
@@ -281,7 +281,7 @@ class fitness_model(object):
 
             # Recalculate tree frequencies for the given time interval and its
             # corresponding pivots.
-            tree_freqs = tree_frequencies(self.tree, pivots, node_filter=node_filter_func)
+            tree_freqs = tree_frequencies(self.tree, pivots, node_filter=node_filter_func, method="SLSQP")
             tree_freqs.estimate_clade_frequencies()
             self.frequencies[region][time] = tree_freqs.frequencies
 
