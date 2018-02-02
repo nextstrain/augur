@@ -539,6 +539,9 @@ class fitness_model(object):
     def validate_prediction(self):
         import matplotlib.pyplot as plt
         from scipy.stats import spearmanr
+
+        abs_clade_error = self.clade_fit(self.model_params)
+
         fig, axs = plt.subplots(1,4, figsize=(10,5))
         for time, pred_vs_true in izip(self.timepoints[:-1], self.pred_vs_true):
             # 0: initial, 1: observed, 2: predicted
@@ -552,7 +555,7 @@ class fitness_model(object):
 
         # pred_vs_true is initial, observed, predicted
         tmp = np.vstack(self.pred_vs_true)
-        print("Abs clade error:"), self.clade_fit(self.model_params)
+        print("Abs clade error:"), abs_clade_error
         print("Spearman's rho, null:", spearmanr(tmp[:,0], tmp[:,1]))
         print("Spearman's rho, raw:", spearmanr(tmp[:,1], tmp[:,2]))
         print("Spearman's rho, rel:", spearmanr(tmp[:,1]/tmp[:,0],
