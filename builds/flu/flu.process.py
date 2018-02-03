@@ -423,18 +423,19 @@ if __name__=="__main__":
                 H3N2_scores(runner, runner.tree.tree, runner.config["epitope_mask"])
             if runner.config["auspice"]["titers_export"]:
                 HI_export(runner)
-                plot_titers(runner.HI_subs, runner.HI_subs.titers.titers,
-                            fname='processed/%s_raw_titers.png'%runner.info["prefix"],
-                            title = runner.info["prefix"], mean='geometric')
-                plot_titers(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
-                            fname='processed/%s_normalized_titers.png'%runner.info["prefix"],
-                            title = runner.info["prefix"], mean='arithmetric')
-                plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers,
-                            fname='processed/%s_raw_titer_matrix.png'%runner.info["prefix"],
-                            title = runner.info["prefix"], mean='geometric', clades=clades)
-                # plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
-                #             fname='processed/%s_normalized_titer_matrix.png'%runner.info["prefix"],
-                #             title = runner.info["prefix"], mean='arithmetric', clades=clades)
+                if segment=='ha':
+                    plot_titers(runner.HI_subs, runner.HI_subs.titers.titers,
+                                fname='processed/%s_raw_titers.png'%runner.info["prefix"],
+                                title = runner.info["prefix"], mean='geometric')
+                    plot_titers(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                                fname='processed/%s_normalized_titers.png'%runner.info["prefix"],
+                                title = runner.info["prefix"], mean='arithmetric')
+                    plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers,
+                                fname='processed/%s_raw_titer_matrix.png'%runner.info["prefix"],
+                                title = runner.info["prefix"], mean='geometric', clades=clades)
+                    # plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                    #             fname='processed/%s_normalized_titer_matrix.png'%runner.info["prefix"],
+                    #             title = runner.info["prefix"], mean='arithmetric', clades=clades)
 
         # outputs figures and tables of age distributions
         age_distribution(runner)
