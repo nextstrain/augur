@@ -98,8 +98,8 @@ class fitness_model(object):
         # Convert datetime date interval to floating point interval from
         # earliest to latest.
         self.time_interval = (
-            time_interval[1].year + (time_interval[1].month - 1) / 12.0,
-            time_interval[0].year + time_interval[0].month / 12.0
+            time_interval[1].year + (time_interval[1].month) / 12.0,
+            time_interval[0].year + (time_interval[0].month - 1) / 12.0
         )
 
         if isinstance(predictor_input, dict):
