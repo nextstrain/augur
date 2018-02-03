@@ -56,7 +56,7 @@ def make_config(lineage, resolution, params):
         time_interval = sorted([datetime.strptime(x, '%Y-%m-%d').date() for x in params.time_interval], reverse=True)
     else:
         time_interval = [datetime.today().date(), (datetime.today()  - timedelta(days=365.25 * years_back)).date()]
-    reference_cutoff = date(year = time_interval[1].year - 3, month=1, day=1)
+    reference_cutoff = date(year = time_interval[1].year - 4, month=1, day=1)
     fixed_outliers = [fix_names(x) for x in outliers[lineage]]
     fixed_references = [fix_names(x) for x in reference_viruses[lineage]]
 

@@ -8,7 +8,7 @@ def run_live(
     no_prepare=False
     ):
     lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
-    resolutions = ['2y', '3y', '6y'] if resolutions is None else resolutions
+    resolutions = ['2y', '3y', '6y', '12y'] if resolutions is None else resolutions
     segments = ['ha', 'na']
 
     for lineage in lineages:
@@ -58,7 +58,7 @@ def run_who(
     ):
     builds = ['cdc', 'vidrl', 'who'] if builds is None else builds
     lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
-    resolutions = ['2y', '3y', '6y'] if resolutions is None else resolutions
+    resolutions = ['2y', '6y'] if resolutions is None else resolutions
     segments = ['ha', 'na']
 
     for build in builds:
@@ -138,7 +138,7 @@ if __name__ == '__main__':
         if params.version == "live":
             params.resolutions = ['2y', '3y', '6y', '12y']
         elif params.version == "who":
-            params.resolutions = ['2y', '3y', '6y']
+            params.resolutions = ['2y', '6y']
 
     if params.version == "live":
         run_live(
