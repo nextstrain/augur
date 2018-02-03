@@ -260,7 +260,7 @@ def plot_titers(titer_model, titers, fname=None, title=None, mean='geometric'):
         plt.savefig(fname)
 
 
-def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, mean='arithmetric'):
+def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, mean='arithmetric', normalized=False):
     from collections import defaultdict
     import matplotlib
     # important to use a non-interactive backend, otherwise will crash on cluster
@@ -309,19 +309,30 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
     rows = []
     for serum,n in sera:
         if n>80:
-            rows.append('\n'.join(serum)+'; hom: %d'%int(autologous[serum]))
+            print("serum:", serum)
+            print("n: ", n)
+            print("autologous: ", autologous[serum])
+            tmp_autologous = 640
+            if autologous[serum]:
+                tmp_autologous = autologous[serum]
+            rows.append('\n'.join(serum)+'; hom: %d'%tmp_autologous)
             tmp = []
             for clade in clades:
                 k = (serum[0], serum[1], clade)
                 if k in titer_means and titer_means[k][-1]>5:
-                    if mean=='geometric':
-                        tmp.append(-np.log2(titer_means[(k)][1]/autologous[serum]))
+                    if normalized:
+                        tmp.append(titer_means[(k)][1])
                     else:
-                        tmp.append(titer_means[(k)][1]-autologous[serum])
+                        if mean=='geometric':
+                            tmp.append(-np.log2(titer_means[(k)][1]/tmp_autologous))
+                        else:
+                            tmp.append(titer_means[(k)][1]-tmp_autologous)
                 else:
                     tmp.append(np.nan)
+            print("row: ", tmp)
             titer_matrix.append(tmp)
 
+    print(titer_matrix)
     titer_matrix = np.array(titer_matrix)
 
     if len(titer_matrix.shape):
@@ -417,6 +428,7 @@ if __name__=="__main__":
         # runner.save_as_nexus()
         # titers
         seasonal_flu_scores(runner, runner.tree.tree)
+        runner.config["auspice"]["titers_export"] = True
         if hasattr(runner, "titers"):
             HI_model(runner)
             if runner.info["lineage"] == "h3n2":
@@ -432,10 +444,10 @@ if __name__=="__main__":
                                 title = runner.info["prefix"], mean='arithmetric')
                     plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers,
                                 fname='processed/%s_raw_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], mean='geometric', clades=clades)
-                    # plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
-                    #             fname='processed/%s_normalized_titer_matrix.png'%runner.info["prefix"],
-                    #             title = runner.info["prefix"], mean='arithmetric', clades=clades)
+                                title = runner.info["prefix"], mean='geometric', clades=clades, normalized=False)
+                    plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                                fname='processed/%s_normalized_titer_matrix.png'%runner.info["prefix"],
+                                title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True)
 
         # outputs figures and tables of age distributions
         age_distribution(runner)
