@@ -260,7 +260,7 @@ def plot_titers(titer_model, titers, fname=None, title=None, mean='geometric'):
         plt.savefig(fname)
 
 
-def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, mean='arithmetric', normalized=False):
+def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, mean='arithmetric', normalized=False, potency=False):
     from collections import defaultdict
     import matplotlib
     # important to use a non-interactive backend, otherwise will crash on cluster
@@ -315,20 +315,22 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
             tmp_autologous = 640
             if autologous[serum]:
                 tmp_autologous = autologous[serum]
-            rows.append('\n'.join(serum)+'; hom: %d'%tmp_autologous)
+            rows.append('\n'.join(serum))
             tmp = []
             for clade in clades:
                 k = (serum[0], serum[1], clade)
+                meanvalue = np.nan
                 if k in titer_means and titer_means[k][-1]>5:
                     if normalized:
-                        tmp.append(titer_means[(k)][1])
+                        meanvalue = titer_means[(k)][1]
                     else:
                         if mean=='geometric':
-                            tmp.append(-np.log2(titer_means[(k)][1]/tmp_autologous))
+                            meanvalue = -np.log2(titer_means[(k)][1]/tmp_autologous)
                         else:
-                            tmp.append(titer_means[(k)][1]-tmp_autologous)
-                else:
-                    tmp.append(np.nan)
+                            meanvalue = titer_means[(k)][1]-tmp_autologous
+                    if potency:
+                        meanvalue -= titer_model.serum_potency[serum]
+                tmp.append(meanvalue)
             print("row: ", tmp)
             titer_matrix.append(tmp)
 
@@ -444,10 +446,13 @@ if __name__=="__main__":
                                 title = runner.info["prefix"], mean='arithmetric')
                     plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers,
                                 fname='processed/%s_raw_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], mean='geometric', clades=clades, normalized=False)
+                                title = runner.info["prefix"], mean='geometric', clades=clades, normalized=False, potency=False)
                     plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
                                 fname='processed/%s_normalized_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True)
+                                title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True, potency=False)
+                    plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                                fname='processed/%s_normalized_with_potency_titer_matrix.png'%runner.info["prefix"],
+                                title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True, potency=True)
 
         # outputs figures and tables of age distributions
         age_distribution(runner)
