@@ -270,7 +270,7 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
     symb = ['o', 's', 'd', 'v', '<', '>', '+']
     cols = ['C'+str(i) for i in range(10)]
     if clades is None:
-        clades = ['3c2.a1', '2', '3', '5']
+        clades = ['3c2.a', '3c2.a1', '2', '3', '5']
 
     fs = 16
     grouped_titers = defaultdict(list)
@@ -366,7 +366,7 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
             plt.close()
 
 # only use with normalized titers (so arithmetric mean)
-def plot_titer_matrix_grouped(titer_model, titers, clades=None, fname=None, title=None, potency=False):
+def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clades=None, fname=None, title=None, potency=False):
     from collections import defaultdict
     import matplotlib
     # important to use a non-interactive backend, otherwise will crash on cluster
@@ -375,8 +375,10 @@ def plot_titer_matrix_grouped(titer_model, titers, clades=None, fname=None, titl
 
     symb = ['o', 's', 'd', 'v', '<', '>', '+']
     cols = ['C'+str(i) for i in range(10)]
-    if clades is None:
-        clades = ['3c2.a1', '2', '3', '5']
+    if virus_clades is None:
+        virus_clades = ['3c2.a1', '2', '3', '5']
+    if serum_clades is None:
+        serum_clades = ['3c2.a', '3c2.a1', '1', '2', '3', '4', '5']
 
     fs = 16
     grouped_titers = defaultdict(list)
@@ -407,7 +409,7 @@ def plot_titer_matrix_grouped(titer_model, titers, clades=None, fname=None, titl
     titer_matrix = []
     rows = []
     sera_with_counts = []
-    for clade in clades:    # sort sera according to clades
+    for clade in serum_clades:    # sort sera according to clades
         for serum,count in ntiters.items():
             serum_strain = serum
             serum_clade = 'unassigned'
@@ -425,15 +427,18 @@ def plot_titer_matrix_grouped(titer_model, titers, clades=None, fname=None, titl
                 node = titer_model.node_lookup[serum]
                 if "named_clades" in node.attr:
                     serum_clade = '_'.join(node.attr["named_clades"])
-            rows.append(serum+'\n'+serum_clade)
             tmp = []
-            for clade in clades:
+            good_rows = 0
+            for clade in virus_clades:
                 k = (serum, clade)
                 meanvalue = np.nan
                 if k in titer_means and titer_means[k][-1]>5:
                     meanvalue = titer_means[k][0]
+                    good_rows += 1
                 tmp.append(meanvalue)
-            titer_matrix.append(tmp)
+            if good_rows > 1:
+                rows.append(serum+'\n'+serum_clade)
+                titer_matrix.append(tmp)
 
     titer_matrix = np.array(titer_matrix)
 
@@ -441,7 +446,7 @@ def plot_titer_matrix_grouped(titer_model, titers, clades=None, fname=None, titl
         import seaborn as sns
         plt.figure(figsize=(7, 0.6*len(rows)+1))
         cmap = sns.cubehelix_palette(start=2.6, rot=.1, as_cmap=True)
-        sns.heatmap(titer_matrix, xticklabels=clades, yticklabels=rows,
+        sns.heatmap(titer_matrix, xticklabels=virus_clades, yticklabels=rows,
                     annot=True, fmt='2.1f', cmap=cmap, vmin=0, vmax=4)
         plt.yticks(rotation=0)
         plt.xticks(rotation=30)
@@ -508,7 +513,9 @@ if __name__=="__main__":
         # ignore fitness for NA.
         if segment=='ha':
             if runner.info["lineage"]=='h3n2':
-                clades = ['3c2.a1', '2', '3', '5']
+                clades = ['3c2.a', '3c2.a1', '2', '3', '5']
+                virus_clades = ['3c2.a1', '2', '3', '5']
+                serum_clades = ['3c2.a', '3c2.a1', '1', '2', '3', '4', '5']
             else:
                 clades = clade_designations[runner.info["lineage"]].keys()
             runner.matchClades(clade_designations[runner.info["lineage"]])
@@ -556,10 +563,10 @@ if __name__=="__main__":
                                 title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True, potency=True)
                     plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
                                 fname='processed/%s_grouped_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], clades=clades, potency=False)
+                                title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=False)
                     plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
                                 fname='processed/%s_grouped_with_potency_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], clades=clades, potency=True)
+                                title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=True)
 
         # outputs figures and tables of age distributions
         age_distribution(runner)
