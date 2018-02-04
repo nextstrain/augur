@@ -381,6 +381,8 @@ def plot_titer_matrix_grouped(titer_model, titers, clades=None, fname=None, titl
     fs = 16
     grouped_titers = defaultdict(list)
     for (test, (ref, serum)), val in titers.items():
+        if potency:
+            val -= titer_model.serum_potency[(ref, serum)]
         if test not in titer_model.node_lookup:
             continue
         node = titer_model.node_lookup[test]
@@ -398,19 +400,15 @@ def plot_titer_matrix_grouped(titer_model, titers, clades=None, fname=None, titl
 
     titer_means = defaultdict(list)
     ntiters = defaultdict(int)
-    for k, val in grouped_titers.items():
-        data = [date, np.mean(val), np.std(val), len(val)]
-        ntiters[k[0]] += data[-1]
-        titer_means[k] = data
+    for (serum_strain, clade), val in grouped_titers.items():
+        ntiters[serum_strain] += len(val)
+        titer_means[(serum_strain, clade)] = [np.mean(val), len(val)]
 
     titer_matrix = []
-    sera_with_counts = sorted(ntiters.items(), key=lambda x:x[1], reverse=True)
     rows = []
-
-    # sort sera according to clades
-    sorted_sera_with_counts = []
-    for clade in clades:
-        for serum,count in sera_with_counts:
+    sera_with_counts = []
+    for clade in clades:    # sort sera according to clades
+        for serum,count in ntiters.items():
             serum_strain = serum
             serum_clade = 'unassigned'
             if serum_strain in titer_model.node_lookup:
@@ -418,9 +416,9 @@ def plot_titer_matrix_grouped(titer_model, titers, clades=None, fname=None, titl
                 if "named_clades" in node.attr:
                     serum_clade = '_'.join(node.attr["named_clades"])
             if clade == serum_clade:
-                sorted_sera_with_counts.append((serum,count))
+                sera_with_counts.append((serum,count))
 
-    for serum,count in sorted_sera_with_counts:
+    for serum,count in sera_with_counts:
         if count>30:
             serum_clade = 'unassigned'
             if serum in titer_model.node_lookup:
@@ -433,9 +431,7 @@ def plot_titer_matrix_grouped(titer_model, titers, clades=None, fname=None, titl
                 k = (serum, clade)
                 meanvalue = np.nan
                 if k in titer_means and titer_means[k][-1]>5:
-                    meanvalue = titer_means[(k)][1]
-                    if potency: # fix this
-                        meanvalue -= titer_model.serum_potency[serum]
+                    meanvalue = titer_means[k][0]
                 tmp.append(meanvalue)
             titer_matrix.append(tmp)
 
@@ -443,16 +439,16 @@ def plot_titer_matrix_grouped(titer_model, titers, clades=None, fname=None, titl
 
     if len(titer_matrix.shape):
         import seaborn as sns
-        plt.figure(figsize=(12,9))
+        plt.figure(figsize=(7, 0.6*len(rows)+1))
         cmap = sns.cubehelix_palette(start=2.6, rot=.1, as_cmap=True)
         sns.heatmap(titer_matrix, xticklabels=clades, yticklabels=rows,
-                    annot=True, cmap=cmap, vmin=0, vmax=4)
+                    annot=True, fmt='2.1f', cmap=cmap, vmin=0, vmax=4)
         plt.yticks(rotation=0)
         plt.xticks(rotation=30)
         plt.tight_layout()
 
         if fname is not None:
-            plt.savefig(fname)
+            plt.savefig(fname, dpi=200)
             plt.close()
 
 
@@ -561,6 +557,9 @@ if __name__=="__main__":
                     plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
                                 fname='processed/%s_grouped_titer_matrix.png'%runner.info["prefix"],
                                 title = runner.info["prefix"], clades=clades, potency=False)
+                    plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                                fname='processed/%s_grouped_with_potency_titer_matrix.png'%runner.info["prefix"],
+                                title = runner.info["prefix"], clades=clades, potency=True)
 
         # outputs figures and tables of age distributions
         age_distribution(runner)
