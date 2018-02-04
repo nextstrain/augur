@@ -312,7 +312,6 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
     # sort sera according to clades
     for clade in clades:
         for serum,count in sera_with_counts:
-            print(serum)
             serum_strain = serum[0]
             serum_clade = 'unassigned'
             if serum_strain in titer_model.node_lookup:
@@ -321,9 +320,6 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
                     serum_clade = '_'.join(node.attr["named_clades"])
             if clade == serum_clade:
                 sorted_sera_with_counts.append((serum,count))
-            print(serum_clade)
-
-    print("sorted_sera: ", sorted_sera_with_counts)
 
     for serum,count in sorted_sera_with_counts:
         if count>50:
@@ -349,6 +345,96 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
                         else:
                             meanvalue = titer_means[(k)][1]-tmp_autologous
                     if potency:
+                        meanvalue -= titer_model.serum_potency[serum]
+                tmp.append(meanvalue)
+            titer_matrix.append(tmp)
+
+    titer_matrix = np.array(titer_matrix)
+
+    if len(titer_matrix.shape):
+        import seaborn as sns
+        plt.figure(figsize=(12,9))
+        cmap = sns.cubehelix_palette(start=2.6, rot=.1, as_cmap=True)
+        sns.heatmap(titer_matrix, xticklabels=clades, yticklabels=rows,
+                    annot=True, cmap=cmap, vmin=0, vmax=4)
+        plt.yticks(rotation=0)
+        plt.xticks(rotation=30)
+        plt.tight_layout()
+
+        if fname is not None:
+            plt.savefig(fname)
+            plt.close()
+
+# only use with normalized titers (so arithmetric mean)
+def plot_titer_matrix_grouped(titer_model, titers, clades=None, fname=None, title=None, potency=False):
+    from collections import defaultdict
+    import matplotlib
+    # important to use a non-interactive backend, otherwise will crash on cluster
+    matplotlib.use('agg')
+    import matplotlib.pyplot as plt
+
+    symb = ['o', 's', 'd', 'v', '<', '>', '+']
+    cols = ['C'+str(i) for i in range(10)]
+    if clades is None:
+        clades = ['3c2.a1', '2', '3', '5']
+
+    fs = 16
+    grouped_titers = defaultdict(list)
+    for (test, (ref, serum)), val in titers.items():
+        if test not in titer_model.node_lookup:
+            continue
+        node = titer_model.node_lookup[test]
+        date = node.attr["num_date"]
+        date = int(date*2)/2.
+        if "named_clades" in node.attr:
+            clade = '_'.join(node.attr["named_clades"])
+        else:
+            clade = 'unassigned'
+        if date>=2016:
+            if np.isscalar(val):
+                grouped_titers[(ref, clade)].append(val)
+            else:
+                grouped_titers[(ref, clade)].append(np.mean(val))
+
+    titer_means = defaultdict(list)
+    ntiters = defaultdict(int)
+    for k, val in grouped_titers.items():
+        data = [date, np.mean(val), np.std(val), len(val)]
+        ntiters[k[0]] += data[-1]
+        titer_means[k] = data
+
+    titer_matrix = []
+    sera_with_counts = sorted(ntiters.items(), key=lambda x:x[1], reverse=True)
+    rows = []
+
+    # sort sera according to clades
+    sorted_sera_with_counts = []
+    for clade in clades:
+        for serum,count in sera_with_counts:
+            serum_strain = serum
+            serum_clade = 'unassigned'
+            if serum_strain in titer_model.node_lookup:
+                node = titer_model.node_lookup[serum_strain]
+                if "named_clades" in node.attr:
+                    serum_clade = '_'.join(node.attr["named_clades"])
+            if clade == serum_clade:
+                sorted_sera_with_counts.append((serum,count))
+
+    for serum,count in sorted_sera_with_counts:
+        if count>30:
+            serum_clade = 'unassigned'
+            if serum in titer_model.node_lookup:
+                node = titer_model.node_lookup[serum]
+                if "named_clades" in node.attr:
+                    serum_clade = '_'.join(node.attr["named_clades"])
+            rows.append(serum+'\n'+serum_clade)
+            tmp = []
+            for clade in clades:
+                k = (serum, clade)
+                meanvalue = np.nan
+                if k in titer_means and titer_means[k][-1]>5:
+                    meanvalue = titer_means[(k)][1]
+                    if potency: # fix this
                         meanvalue -= titer_model.serum_potency[serum]
                 tmp.append(meanvalue)
             titer_matrix.append(tmp)
@@ -472,6 +558,9 @@ if __name__=="__main__":
                     plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
                                 fname='processed/%s_normalized_with_potency_titer_matrix.png'%runner.info["prefix"],
                                 title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True, potency=True)
+                    plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                                fname='processed/%s_grouped_titer_matrix.png'%runner.info["prefix"],
+                                title = runner.info["prefix"], clades=clades, potency=False)
 
         # outputs figures and tables of age distributions
         age_distribution(runner)
