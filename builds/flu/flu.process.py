@@ -270,9 +270,9 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
     symb = ['o', 's', 'd', 'v', '<', '>', '+']
     cols = ['C'+str(i) for i in range(10)]
     if clades is None:
-        clades = ['3c2.a', '3c2.a1', '1', '2', '3', '4', '5']
+        clades = ['3c2.a1', '2', '3', '5']
 
-    fs =16
+    fs = 16
     grouped_titers = defaultdict(list)
     autologous = defaultdict(list)
     for (test, (ref, serum)), val in titers.items():
@@ -286,7 +286,7 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
         else:
             clade = 'unassigned'
         if ref!=test:
-            if date>=2017:
+            if date>=2016:
                 if np.isscalar(val):
                     grouped_titers[(ref, serum, clade)].append(val)
                 else:
@@ -305,17 +305,37 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
         autologous[k] = mean_func(val, mean=mean)
 
     titer_matrix = []
-    sera = sorted(ntiters.items(), key=lambda x:x[1], reverse=True)
+    sera_with_counts = sorted(ntiters.items(), key=lambda x:x[1], reverse=True)
     rows = []
-    for serum,n in sera:
-        if n>80:
-            print("serum:", serum)
-            print("n: ", n)
-            print("autologous: ", autologous[serum])
+
+    sorted_sera_with_counts = []
+    # sort sera according to clades
+    for clade in clades:
+        for serum,count in sera_with_counts:
+            print(serum)
+            serum_strain = serum[0]
+            serum_clade = 'unassigned'
+            if serum_strain in titer_model.node_lookup:
+                node = titer_model.node_lookup[serum_strain]
+                if "named_clades" in node.attr:
+                    serum_clade = '_'.join(node.attr["named_clades"])
+            if clade == serum_clade:
+                sorted_sera_with_counts.append((serum,count))
+            print(serum_clade)
+
+    print("sorted_sera: ", sorted_sera_with_counts)
+
+    for serum,count in sorted_sera_with_counts:
+        if count>50:
+            serum_clade = 'unassigned'
+            if serum[0] in titer_model.node_lookup:
+                node = titer_model.node_lookup[serum[0]]
+                if "named_clades" in node.attr:
+                    serum_clade = '_'.join(node.attr["named_clades"])
             tmp_autologous = 640
             if autologous[serum]:
                 tmp_autologous = autologous[serum]
-            rows.append('\n'.join(serum))
+            rows.append('\n'.join(serum)+'\n'+serum_clade)
             tmp = []
             for clade in clades:
                 k = (serum[0], serum[1], clade)
@@ -331,17 +351,16 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
                     if potency:
                         meanvalue -= titer_model.serum_potency[serum]
                 tmp.append(meanvalue)
-            print("row: ", tmp)
             titer_matrix.append(tmp)
 
-    print(titer_matrix)
     titer_matrix = np.array(titer_matrix)
 
     if len(titer_matrix.shape):
         import seaborn as sns
         plt.figure(figsize=(12,9))
+        cmap = sns.cubehelix_palette(start=2.6, rot=.1, as_cmap=True)
         sns.heatmap(titer_matrix, xticklabels=clades, yticklabels=rows,
-                    annot=True, cmap='YlOrRd', vmin=0, vmax=3, square=True)
+                    annot=True, cmap=cmap, vmin=0, vmax=4)
         plt.yticks(rotation=0)
         plt.xticks(rotation=30)
         plt.tight_layout()
@@ -407,7 +426,7 @@ if __name__=="__main__":
         # ignore fitness for NA.
         if segment=='ha':
             if runner.info["lineage"]=='h3n2':
-                clades = ['3c3.a', '3c2.a', '3c2.a1', '1', '2', '3', '4', '5']
+                clades = ['3c2.a1', '2', '3', '5']
             else:
                 clades = clade_designations[runner.info["lineage"]].keys()
             runner.matchClades(clade_designations[runner.info["lineage"]])
