@@ -521,7 +521,7 @@ if __name__=="__main__":
                 virus_clades = clades
                 serum_clades = clades
             elif runner.info["lineage"]=='vic':
-                clades = ['1A', '117V', '180V']
+                clades = ['1A', '117V', 'DV']
                 virus_clades = clades
                 serum_clades = clades
             elif runner.info["lineage"]=='yam':
