@@ -378,7 +378,7 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
     if virus_clades is None:
         virus_clades = ['3c2.a1', '2', '3', '5']
     if serum_clades is None:
-        serum_clades = ['3c2.a', '3c2.a1', '1', '2', '3', '4', '5']
+        serum_clades = ['3c2.a', '3c2.a1', '2', '3', '5']
 
     fs = 16
     grouped_titers = defaultdict(list)
@@ -436,7 +436,7 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
                     meanvalue = titer_means[k][0]
                     good_rows += 1
                 tmp.append(meanvalue)
-            if good_rows > 1:
+            if good_rows >= 3:
                 rows.append(serum+'\n'+serum_clade)
                 titer_matrix.append(tmp)
 
@@ -515,9 +515,23 @@ if __name__=="__main__":
             if runner.info["lineage"]=='h3n2':
                 clades = ['3c2.a', '3c2.a1', '2', '3', '5']
                 virus_clades = ['3c2.a1', '2', '3', '5']
-                serum_clades = ['3c2.a', '3c2.a1', '1', '2', '3', '4', '5']
+                serum_clades = ['3c2.a', '3c2.a1', '2', '3', '5']
+            elif runner.info["lineage"]=='h1n1pdm':
+                clades = ['6', '6b', '6b.1', '6b.2']
+                virus_clades = clades
+                serum_clades = clades
+            elif runner.info["lineage"]=='vic':
+                clades = ['1A', '117V', '180V']
+                virus_clades = clades
+                serum_clades = clades
+            elif runner.info["lineage"]=='yam':
+                clades = ['2', '3', '172Q']
+                virus_clades = clades
+                serum_clades = clades
             else:
                 clades = clade_designations[runner.info["lineage"]].keys()
+                virus_clades = clades
+                serum_clades = clades
             runner.matchClades(clade_designations[runner.info["lineage"]])
 
             # Predict fitness.
