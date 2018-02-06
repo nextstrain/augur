@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, date
 from base.utils import fix_names
 from pprint import pprint
 from pdb import set_trace
-from flu_info import regions, outliers, reference_maps, reference_viruses, segments, LBItau, dfreq_dn, vaccine_choices
+from flu_info import regions, outliers, reference_maps, reference_viruses, segments, frequency_params, LBI_params, vaccine_choices
 from flu_subsampling import flu_subsampling
 
 import logging
@@ -75,26 +75,7 @@ def make_config(lineage, resolution, params):
     else:
         file_prefix = "flu_{}_{}_{}".format(lineage, params.segments[0], resolution) # flu_h3n2_ha_6y
 
-    extras = {}
-    if resolution in LBItau:
-        extras["LBItau"] = LBItau[resolution]
-    else:
-        print("WARNING. LBItau is undefined for this resolution")
-        extras["LBItau"] = None;
-
-    if resolution in dfreq_dn:
-        extras["dfreq_dn"] = dfreq_dn[resolution]
-    else:
-        print("WARNING. dfreq_dn is undefined for this resolution")
-        extras["dfreq_dn"] = None;
-
-    if lineage in vaccine_choices:
-        extras["vaccine_choices"] = vaccine_choices[lineage]
-    else:
-        print("WARNING. vaccine_choices are undefined for this lineage")
-        extras["vaccine_choices"] = None;
-
-    return {
+    config = {
         "dir": "flu",
         "file_prefix": file_prefix,
         "title": make_title(lineage, resolution),
@@ -132,11 +113,28 @@ def make_config(lineage, resolution, params):
         "regions": regions,
         "time_interval": time_interval,
         "strains": params.strains,
-        "titers": titer_values,
-        "vaccine_choices": extras["vaccine_choices"],
-        "LBItau": extras["LBItau"],
-        "dfreq_dn": extras["dfreq_dn"]
+        "titers": titer_values
     }
+
+    ## VACCINES
+    if lineage in vaccine_choices:
+        config["vaccine_choices"] = vaccine_choices[lineage]
+    else:
+        print("WARNING. vaccine_choices are undefined for this lineage")
+
+    ## LBI
+    try:
+        config["LBI_params"] = LBI_params[resolution]
+    except:
+        print("WARNING. LBI parameters are undefined for this resolution")
+
+    ## FREQUENCIES
+    try:
+        config["frequency_params"] = frequency_params[resolution]
+    except:
+        print("WARNING. Frequency parameters are undefined for this resolution")
+
+    return config;
 
 if __name__=="__main__":
     params = parse_args()
