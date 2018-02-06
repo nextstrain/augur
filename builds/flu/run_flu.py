@@ -23,7 +23,7 @@ def run_live(
                     '--resolution', resolution,
                     '--segments', " ".join(segments),
                     '--sequences', seq_files,
-                    '--titers', '../../../fauna/data/%s_who_hi_cell_titers.tsv'%(lineage),
+                    '--titers', '../../../fauna/data/%s_public_hi_cell_titers.tsv'%(lineage),
                     '--file_prefix', 'flu_%s_*segment*_%s'%(lineage, resolution)]
                 if frequencies == "complete":
                     call = call + ['--complete_frequencies']
