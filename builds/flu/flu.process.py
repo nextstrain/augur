@@ -351,7 +351,7 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
 
     titer_matrix = np.array(titer_matrix)
 
-    if len(titer_matrix.shape):
+    if len(rows) > 0:
         import seaborn as sns
         plt.figure(figsize=(12,9))
         cmap = sns.cubehelix_palette(start=2.6, rot=.1, as_cmap=True)
@@ -442,7 +442,7 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
 
     titer_matrix = np.array(titer_matrix)
 
-    if len(titer_matrix.shape):
+    if len(rows) > 0:
         import seaborn as sns
         plt.figure(figsize=(7, 0.6*len(rows)+1))
         cmap = sns.cubehelix_palette(start=2.6, rot=.1, as_cmap=True)
