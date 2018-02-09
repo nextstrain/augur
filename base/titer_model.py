@@ -199,10 +199,11 @@ class TiterCollection(object):
             else:
                 # use max tier if there are at least 10 measurements, don't bother otherwuise
                 if len(all_titers_per_serum[serum])>10:
-                    self.autologous_titers[serum] = {'val':np.max(all_titers_per_serum[serum]),
+                    autologous_proxy = np.percentile([np.median(x) for x in all_titers_per_serum[serum]],90)
+                    self.autologous_titers[serum] = {'val':autologous_proxy,
                                                      'autologous':False}
-                    print(serum,": using max titer instead of autologous,",
-                          np.max(all_titers_per_serum[serum]))
+                    print(serum,": using 90% percentile instead of autologous,",
+                          autologous_proxy)
                 else:
                     pass
                     # print("discarding",serum,"since there are only ",
