@@ -68,13 +68,8 @@ def run_who(
             for resolution in resolutions:
                 for passage in ['cell', 'egg']:
                     for assay in ['hi', 'fra']:
-                        if lineage!='h3n2' and assay=='fra':
-                            continue
 
-                        # temporary, remove when VIDRL titers are fixed for Vic and Yam
-                        if lineage=='vic' and build=='vidrl':
-                            continue
-                        if lineage=='yam' and build=='vidrl':
+                        if lineage!='h3n2' and assay=='fra':
                             continue
 
                         if not (process_na or no_prepare):
