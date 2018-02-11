@@ -56,7 +56,7 @@ def run_who(
     process_na=False,
     no_prepare = False
     ):
-    builds = ['cdc', 'crick', 'vidrl', 'who'] if builds is None else builds
+    builds = ['cdc', 'crick', 'niid', 'vidrl', 'who'] if builds is None else builds
     lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
     resolutions = ['2y', '6y'] if resolutions is None else resolutions
     segments = ['ha', 'na']
@@ -124,7 +124,7 @@ if __name__ == '__main__':
 
     # only applicable to who version
     if params.builds is None:
-        params.builds = ['cdc', 'crick', 'vidrl', 'who']
+        params.builds = ['cdc', 'crick', 'niid', 'vidrl', 'who']
 
     if params.lineages is None:
         params.lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam']
