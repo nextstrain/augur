@@ -270,7 +270,7 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
     symb = ['o', 's', 'd', 'v', '<', '>', '+']
     cols = ['C'+str(i) for i in range(10)]
     if clades is None:
-        clades = ['3c2.a', '3c2.a1', '2', '3', '5']
+        clades = ['3c2.a', 'a1', 'a2', 'a3', 'a1b/135K', 'a1b/135N']
 
     fs = 16
     grouped_titers = defaultdict(list)
@@ -376,9 +376,9 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
     symb = ['o', 's', 'd', 'v', '<', '>', '+']
     cols = ['C'+str(i) for i in range(10)]
     if virus_clades is None:
-        virus_clades = ['3c2.a1', '2', '3', '5']
+        virus_clades = ['3c2.a', 'a1', 'a2', 'a3', 'a1b/135K', 'a1b/135N']
     if serum_clades is None:
-        serum_clades = ['3c2.a', '3c2.a1', '2', '3', '5']
+        serum_clades = ['3c2.a', 'a1', 'a2', 'a3', 'a1b/135K', 'a1b/135N']
 
     fs = 16
     grouped_titers = defaultdict(list)
@@ -513,9 +513,9 @@ if __name__=="__main__":
         # ignore fitness for NA.
         if segment=='ha':
             if runner.info["lineage"]=='h3n2':
-                clades = ['3c2.a', '3c2.a1', '2', '3', '5']
-                virus_clades = ['3c2.a1', '2', '3', '5']
-                serum_clades = ['3c2.a', '3c2.a1', '2', '3', '5']
+                clades = ['3c2.a','a3', 'a4',  'a1', 'a1b/135K']
+                virus_clades = ['3c2.a', 'a3', 'a4','a1',  'a1b/135K']
+                serum_clades = ['3c2.a', 'a3', 'a4','a1',  'a1b/135K']
             elif runner.info["lineage"]=='h1n1pdm':
                 clades = ['6b.1', '6b.2', '164T']
                 virus_clades = clades
