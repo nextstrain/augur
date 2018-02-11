@@ -513,9 +513,9 @@ if __name__=="__main__":
         # ignore fitness for NA.
         if segment=='ha':
             if runner.info["lineage"]=='h3n2':
-                clades = ['3c2.a','a3', 'a4',  'a1', 'a1b/135K']
-                virus_clades = ['3c2.a', 'a3', 'a4','a1',  'a1b/135K']
-                serum_clades = ['3c2.a', 'a3', 'a4','a1',  'a1b/135K']
+                clades = ['3c2.a','a3', 'a4',  'a1', 'a1b']
+                virus_clades = ['3c2.a', 'a3', 'a4','a1', 'a1b/135K']
+                serum_clades = ['3c2.a', 'a3', 'a4','a1', 'a1b']
             elif runner.info["lineage"]=='h1n1pdm':
                 clades = ['6b.1', '6b.2', '164T']
                 virus_clades = clades
