@@ -269,9 +269,6 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
 
     symb = ['o', 's', 'd', 'v', '<', '>', '+']
     cols = ['C'+str(i) for i in range(10)]
-    if clades is None:
-        clades = ['3c2.A', 'A1', 'A1b/135K', 'A1b/135N', 'A2', 'A3']
-
     fs = 16
     grouped_titers = defaultdict(list)
     autologous = defaultdict(list)
@@ -354,6 +351,8 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
     if len(rows) > 0:
         import seaborn as sns
         plt.figure(figsize=(12,9))
+        if title is not None:
+            plt.title(title)
         cmap = sns.cubehelix_palette(start=2.6, rot=.1, as_cmap=True)
         sns.heatmap(titer_matrix, xticklabels=clades, yticklabels=rows,
                     annot=True, cmap=cmap, vmin=0, vmax=4)
@@ -375,17 +374,14 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
 
     symb = ['o', 's', 'd', 'v', '<', '>', '+']
     cols = ['C'+str(i) for i in range(10)]
-    if virus_clades is None:
-        virus_clades = ['3c2.A', 'A1', 'A1b/135K', 'A1b/135N', 'A2', 'A3']
-    if serum_clades is None:
-        serum_clades = ['3c2.A', 'A1', 'A1b/135K', 'A1b/135N', 'A2', 'A3']
-
     fs = 16
     grouped_titers = defaultdict(list)
     for (test, (ref, serum)), val in titers.items():
         if potency:
             val -= titer_model.serum_potency[(ref, serum)]
         if test not in titer_model.node_lookup:
+            continue
+        if "-egg" in test: # only keep cell antigens, egg sera are already normalized
             continue
         node = titer_model.node_lookup[test]
         date = node.attr["num_date"]
@@ -436,7 +432,7 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
                     meanvalue = titer_means[k][0]
                     good_rows += 1
                 tmp.append(meanvalue)
-            if good_rows >= 3:
+            if good_rows >= 2:
                 rows.append(serum+'\n'+serum_clade)
                 titer_matrix.append(tmp)
 
@@ -445,6 +441,13 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
     if len(rows) > 0:
         import seaborn as sns
         plt.figure(figsize=(7, 0.6*len(rows)+1))
+        if title is not None:
+            title = title.replace("flu_", "").replace("_ha_", "_").replace("_2y_", "_")
+            title = title.replace("h3n2", "H3N2").replace("h1n1pdm", "H1N1pdm").replace("vic", "Vic").replace("yam", "Yam")
+            title = title.replace("who", "WHO").replace("cdc", "CDC").replace("crick", "Crick").replace("niid", "NIID").replace("vidrl", "VIDRL")
+            title = title.replace("hi", "HI").replace("fra", "FRA")
+            title = title.replace("_", " ")
+            plt.title(title)
         cmap = sns.cubehelix_palette(start=2.6, rot=.1, as_cmap=True)
         sns.heatmap(titer_matrix, xticklabels=virus_clades, yticklabels=rows,
                     annot=True, fmt='2.1f', cmap=cmap, vmin=0, vmax=4)
@@ -513,9 +516,9 @@ if __name__=="__main__":
         # ignore fitness for NA.
         if segment=='ha':
             if runner.info["lineage"]=='h3n2':
-                clades = ['3c2.A', 'A1', 'A1b/135K', 'A1b/135N', 'A2', 'A3']
-                virus_clades = ['3c2.A', 'A1', 'A1b/135K', 'A1b/135N', 'A2', 'A3']
-                serum_clades = ['3c2.A', 'A1', 'A1b/135K', 'A1b/135N', 'A2', 'A3']
+                clades = ['3c2.A', 'A1', 'A1b/135K', 'A2', 'A3']
+                virus_clades = ['A1', 'A1b/135K', 'A2', 'A3']
+                serum_clades = ['3c2.A', 'A1', 'A1b/135K', 'A2', 'A3']
             elif runner.info["lineage"]=='h1n1pdm':
                 clades = ['6b.1', '6b.2', '164T']
                 virus_clades = clades
