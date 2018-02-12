@@ -333,7 +333,10 @@ class tree_frequencies(object):
                 if len(c.leafs)>self.min_clades:
                     obs_to_estimate[c.clade] = np.in1d(node.leafs, c.leafs)
                 else:
-                    small_clades.append(c)
+                    # Only include internal nodes or tips that pass the node
+                    # filter as small clades.
+                    if not c.is_terminal() or self.node_filter(c):
+                        small_clades.append(c)
             if len(obs_to_estimate):
                 if len(small_clades):
                     remainder = {}
@@ -369,6 +372,11 @@ class tree_frequencies(object):
                     else:
                         frac = 0.0
                     self.frequencies[clade.clade] = frac*self.frequencies[node.clade]
+
+        # Assign zero frequencies to tips that did not pass the node_filter.
+        for tip in self.tree.get_nonterminals():
+            if not self.node_filter(tip):
+                self.frequencies[tip.clade] = np.zeros(len(self.pivots))
 
 
     def calc_confidence(self):
