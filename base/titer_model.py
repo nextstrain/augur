@@ -889,7 +889,7 @@ class SubstitutionModel(TiterModel):
         self.weights = np.sqrt(weights)
         self.titer_dist =  np.array(titer_dist)*self.weights
         self.design_matrix = (np.array(seq_graph).T*self.weights).T
-        if colin_thres is not None:
+        if colin_thres is not None and self.genetic_params > 0:
             self.collapse_colinear_mutations(colin_thres)
         self.TgT = np.dot(self.design_matrix.T, self.design_matrix)
         print ("Found", self.design_matrix.shape, "measurements x parameters")
