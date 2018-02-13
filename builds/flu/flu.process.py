@@ -365,7 +365,7 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
             plt.close()
 
 # only use with normalized titers (so arithmetric mean)
-def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clades=None, fname=None, title=None, potency=False):
+def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clades=None, fname=None, title=None, potency=False, minDate=2016, minMeasurements=30, minRows=2, maxSeraPerClade=5):
     from collections import defaultdict
     import matplotlib
     # important to use a non-interactive backend, otherwise will crash on cluster
@@ -376,12 +376,15 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
     cols = ['C'+str(i) for i in range(10)]
     fs = 16
     grouped_titers = defaultdict(list)
+
+    autologous_exists = {}
+    for (test, (ref, serum)), val in titers.items():
+        autologous_exists[ref] = False
+
     for (test, (ref, serum)), val in titers.items():
         if potency:
             val -= titer_model.serum_potency[(ref, serum)]
         if test not in titer_model.node_lookup:
-            continue
-        if "-egg" in test: # only keep cell antigens, egg sera are already normalized
             continue
         node = titer_model.node_lookup[test]
         date = node.attr["num_date"]
@@ -390,23 +393,29 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
             clade = '_'.join(node.attr["named_clades"])
         else:
             clade = 'unassigned'
-        if date>=2016:
-            if np.isscalar(val):
-                grouped_titers[(ref, clade)].append(val)
-            else:
-                grouped_titers[(ref, clade)].append(np.mean(val))
+        if ref!=test:
+            if date >= minDate and "-egg" not in test: # only keep measurements to cell antigens, egg sera are already normalized
+                if np.isscalar(val):
+                    grouped_titers[(ref, clade)].append(val)
+                else:
+                    grouped_titers[(ref, clade)].append(np.mean(val))
+        else:
+            autologous_exists[ref] = True
 
     titer_means = defaultdict(list)
     ntiters = defaultdict(int)
     for (serum_strain, clade), val in grouped_titers.items():
         ntiters[serum_strain] += len(val)
         titer_means[(serum_strain, clade)] = [np.mean(val), len(val)]
+    sorted_ntiters = sorted(ntiters.items(), key=lambda x:x[1], reverse=True)
 
     titer_matrix = []
     rows = []
     sera_with_counts = []
-    for clade in serum_clades:    # sort sera according to clades
-        for serum,count in ntiters.items():
+
+    # sort sera according to clade, then by count, this only sorts, keeps all data
+    for clade in serum_clades:
+        for serum,count in sorted_ntiters:
             serum_strain = serum
             serum_clade = 'unassigned'
             if serum_strain in titer_model.node_lookup:
@@ -416,8 +425,13 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
             if clade == serum_clade:
                 sera_with_counts.append((serum,count))
 
+    # walk through and keep good bins, taking their average
+    count_for_clade = {}
+    for clade in serum_clades:
+        count_for_clade[clade] = 0
+
     for serum,count in sera_with_counts:
-        if count>30:
+        if count > minMeasurements and autologous_exists[serum]:
             serum_clade = 'unassigned'
             if serum in titer_model.node_lookup:
                 node = titer_model.node_lookup[serum]
@@ -432,9 +446,10 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
                     meanvalue = titer_means[k][0]
                     good_rows += 1
                 tmp.append(meanvalue)
-            if good_rows >= 2:
+            if good_rows >= minRows and count_for_clade[serum_clade] < maxSeraPerClade:
                 rows.append(serum+'\n'+serum_clade)
                 titer_matrix.append(tmp)
+                count_for_clade[serum_clade] += 1
 
     titer_matrix = np.array(titer_matrix)
 
@@ -449,10 +464,12 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
             title = title.replace("_", " ")
             plt.title(title)
         cmap = sns.cubehelix_palette(start=2.6, rot=.1, as_cmap=True)
-        sns.heatmap(titer_matrix, xticklabels=virus_clades, yticklabels=rows,
+        ax = sns.heatmap(titer_matrix, xticklabels=virus_clades, yticklabels=rows,
                     annot=True, fmt='2.1f', cmap=cmap, vmin=0, vmax=4)
         plt.yticks(rotation=0)
         plt.xticks(rotation=30)
+        cbar = ax.collections[0].colorbar
+        cbar.set_ticks([0, 1, 2, 3, 4])
         plt.tight_layout()
 
         if fname is not None:
@@ -517,8 +534,8 @@ if __name__=="__main__":
         if segment=='ha':
             if runner.info["lineage"]=='h3n2':
                 clades = ['3c2.A', 'A1', 'A1b/135K', 'A2', 'A3']
-                virus_clades = ['A1', 'A1b/135K', 'A2', 'A3']
-                serum_clades = ['3c2.A', 'A1', 'A1b/135K', 'A2', 'A3']
+                virus_clades = ['A1', 'A1a', 'A1b/135K', 'A1b/135N', 'A2', 'A3']
+                serum_clades = ['3c2.A', 'A1', 'A1a', 'A1b', 'A1b/135K', 'A1b/135N', 'A2', 'A3']
             elif runner.info["lineage"]=='h1n1pdm':
                 clades = ['6b.1', '6b.2', '164T']
                 virus_clades = clades
