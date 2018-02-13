@@ -164,7 +164,7 @@ class frequency_estimator(object):
                 self.sol = minimize(logLH, logit_transform(self.pivot_freq,self.pc), method='powell')
 
             self.pivot_freq = logit_inv(self.sol['x'], self.pc)
-        self.pivot_freq = fix_freq(self.pivot_freq, 0.0001)
+        self.pivot_freq = fix_freq(self.pivot_freq, self.pc)
 
         # instantiate an interpolation object based on the optimal frequency pivots
         self.frequency_estimate = interp1d(self.pivots, self.pivot_freq, kind=self.interpolation_type, bounds_error=False)
