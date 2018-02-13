@@ -374,7 +374,7 @@ class tree_frequencies(object):
                     self.frequencies[clade.clade] = frac*self.frequencies[node.clade]
 
         # Assign zero frequencies to tips that did not pass the node_filter.
-        for tip in self.tree.get_nonterminals():
+        for tip in self.tree.get_terminals():
             if not self.node_filter(tip):
                 self.frequencies[tip.clade] = np.zeros(len(self.pivots))
 
