@@ -1,5 +1,12 @@
 import os
 
+resolution_to_spacing = {
+    "2y": 1.0,
+    "3y": 1.0,
+    "6y": 2.0,
+    "12y": 3.0
+}
+
 def run_live(
     lineages = None, resolutions = None,
     system="local",
@@ -36,7 +43,9 @@ def run_live(
             if process_na:
                 call = [
                     'flu.process.py',
-                    '--json', 'prepared/flu_%s_na_%s.json'%(lineage, resolution)]
+                    '--json', 'prepared/flu_%s_na_%s.json'%(lineage, resolution),
+                    '--pivot_spacing', resolution_to_spacing[resolution]
+                ]
             if (system == "qsub"):
                 call = ['qsub', 'submit_script.sh'] + call
             elif (system == "rhino"):
@@ -89,12 +98,17 @@ def run_who(
                         call = [
                             'flu.process.py',
                             '--json', 'prepared/flu_%s_%s_ha_%s_%s_%s.json'%(build, lineage, resolution, passage, assay),
-                            '--titers_export']
+                            '--pivot_spacing', resolution_to_spacing[resolution]
+                            '--titers_export'
+                        ]
+
                         if process_na:
                             call = [
                                 'flu.process.py',
                                 '--json', 'prepared/flu_%s_%s_na_%s_%s_%s.json'%(build, lineage, resolution, passage, assay),
-                                '--titers_export']
+                                '--pivot_spacing', resolution_to_spacing[resolution]
+                                '--titers_export'
+                            ]
 
                         if (system == "qsub"):
                             call = ['qsub', 'submit_script.sh'] + call
