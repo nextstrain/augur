@@ -98,7 +98,7 @@ def run_who(
                         call = [
                             'flu.process.py',
                             '--json', 'prepared/flu_%s_%s_ha_%s_%s_%s.json'%(build, lineage, resolution, passage, assay),
-                            '--pivot_spacing', resolution_to_spacing[resolution]
+                            '--pivot_spacing', resolution_to_spacing[resolution],
                             '--titers_export'
                         ]
 
@@ -106,7 +106,7 @@ def run_who(
                             call = [
                                 'flu.process.py',
                                 '--json', 'prepared/flu_%s_%s_na_%s_%s_%s.json'%(build, lineage, resolution, passage, assay),
-                                '--pivot_spacing', resolution_to_spacing[resolution]
+                                '--pivot_spacing', resolution_to_spacing[resolution],
                                 '--titers_export'
                             ]
 
