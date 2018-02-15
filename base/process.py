@@ -450,11 +450,6 @@ class process(object):
         '''
         estimate frequencies of clades in the tree, possibly region specific
         '''
-        if region=='global':
-            node_filter_func = None
-        else:
-            node_filter_func = lambda x:x.attr['region']==region
-
         if not hasattr(self, 'tree_frequencies'):
             self.restore_tree_frequencies()
 
@@ -467,6 +462,12 @@ class process(object):
             self.pivots=make_pivots(pivots, tps)
 
         self.log.notify('Estimate tree frequencies for %s: using self.pivots' % (region))
+
+        # Omit strains sampled prior to the first pivot from frequency calculations.
+        if region=='global':
+            node_filter_func = lambda node: node.attr["num_date"] >= self.pivots[0]
+        else:
+            node_filter_func = lambda node: (node.attr['region'] == region) and (node.attr["num_date"] >= self.pivots[0])
 
         tree_freqs = tree_frequencies(self.tree.tree, self.pivots, method='SLSQP',
                                       node_filter = node_filter_func,
