@@ -1,10 +1,10 @@
 import os
 
 resolution_to_spacing = {
-    "2y": 1.0,
-    "3y": 1.0,
-    "6y": 2.0,
-    "12y": 3.0
+    "2y": "1.0",
+    "3y": "1.0",
+    "6y": "2.0",
+    "12y": "3.0"
 }
 
 def run_live(
