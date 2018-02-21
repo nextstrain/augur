@@ -5,34 +5,33 @@ import json
 from pdb import set_trace
 from collections import defaultdict
 
+def process_freqs(frequencies, num_dp):
+    """ round frequency estimates to useful precision (reduces file size) """
+    return [round(x, num_dp) for x in frequencies]
+
 def export_frequency_json(process, prefix, indent):
-
-    # local function or round frequency estimates to useful precision (reduces file size)
-    def process_freqs(freq):
-        return [round(x,4) for x in freq]
-
     # construct a json file containing all frequency estimate
     # the format is region_protein:159F for mutations and region_clade:123 for clades
     if hasattr(process, 'pivots'):
-        freq_json = {'pivots':process_freqs(process.pivots)}
+        freq_json = {'pivots':process_freqs(process.pivots, 4)}
         if hasattr(process, 'mutation_frequencies'):
             freq_json['counts'] = {x:list(counts) for x, counts in process.mutation_frequency_counts.iteritems()}
             for (region, gene), tmp_freqs in process.mutation_frequencies.iteritems():
                 for mut, freq in tmp_freqs.iteritems():
                     label_str =  region+"_"+ gene + ':' + str(mut[0]+1)+mut[1]
-                    freq_json[label_str] = process_freqs(freq)
+                    freq_json[label_str] = process_freqs(freq, 4)
         # repeat for clade frequencies in trees
         if hasattr(process, 'tree_frequencies'):
             for region in process.tree_frequencies:
                 for clade, freq in process.tree_frequencies[region].iteritems():
                     label_str = region+'_clade:'+str(clade)
-                    freq_json[label_str] = process_freqs(freq)
+                    freq_json[label_str] = process_freqs(freq, 4)
         # repeat for named clades
         if hasattr(process, 'clades_to_nodes') and hasattr(process, 'tree_frequencies'):
             for region in process.tree_frequencies:
                 for clade, node in process.clades_to_nodes.iteritems():
                     label_str = region+'_'+str(clade)
-                    freq_json[label_str] = process_freqs(process.tree_frequencies[region][node.clade])
+                    freq_json[label_str] = process_freqs(process.tree_frequencies[region][node.clade], 4)
         # write to one frequency json
         if hasattr(process, 'tree_frequencies') or hasattr(process, 'mutation_frequencies'):
             write_json(freq_json, prefix+'_frequencies.json', indent=indent)
@@ -40,20 +39,17 @@ def export_frequency_json(process, prefix, indent):
         process.log.notify("Cannot export frequencies - pivots do not exist")
 
 def export_tip_frequency_json(process, prefix, indent):
-    def process_freqs(freq): # 6dp here, 4 above
-        return [round(x,6) for x in freq]
-
     if not (hasattr(process, 'pivots') and hasattr(process, 'tree_frequencies')):
         process.log.notify("Cannot export tip frequencies - pivots and/or tree_frequencies do not exist")
         return;
 
-    freq_json = {'pivots':process_freqs(process.pivots)}
+    freq_json = {'pivots':process_freqs(process.pivots, 6)}
 
     clade_tip_map = {n.clade: n.name for n in process.tree.tree.get_terminals()}
 
     for clade, freq in process.tree_frequencies["global"].iteritems():
         if clade in clade_tip_map:
-            freq_json[clade_tip_map[clade]] = process_freqs(freq)
+            freq_json[clade_tip_map[clade]] = process_freqs(freq, 6)
 
     write_json(freq_json, prefix+'_tip-frequencies.json', indent=indent)
 
