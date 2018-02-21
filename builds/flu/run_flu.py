@@ -39,7 +39,9 @@ def run_live(
 
             call = [
                 'flu.process.py',
-                '--json', 'prepared/flu_%s_ha_%s.json'%(lineage, resolution)]
+                '--json', 'prepared/flu_%s_ha_%s.json'%(lineage, resolution),
+                '--pivot_spacing', resolution_to_spacing[resolution]
+            ]
             if process_na:
                 call = [
                     'flu.process.py',
