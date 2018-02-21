@@ -47,11 +47,8 @@ def export_tip_frequency_json(process, prefix, indent):
     num_dp = 6;
     freq_json = {'pivots':process_freqs(process.pivots, num_dp)}
 
-    clade_tip_map = {n.clade: n.name for n in process.tree.tree.get_terminals()}
-
-    for clade, freq in process.tree_frequencies["global"].iteritems():
-        if clade in clade_tip_map:
-            freq_json[clade_tip_map[clade]] = process_freqs(freq, num_dp)
+    for n in process.tree.tree.get_terminals():
+        freq_json["global_clade:"+str(n.clade)] = process_freqs(process.tree_frequencies["global"][n.clade], num_dp)
 
     write_json(freq_json, prefix+'_tip-frequencies.json', indent=indent)
 
