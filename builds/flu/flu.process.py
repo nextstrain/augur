@@ -50,7 +50,7 @@ def make_config (prepared_json, args):
         "in": prepared_json,
         "geo_inference": ['region'],
         "auspice": { ## settings for auspice JSON export
-            "panels": ['tree', 'entropy'],
+            "panels": ['tree', 'entropy', 'frequencies'],
             "extra_attr": ['serum'],
             "color_options": {
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
