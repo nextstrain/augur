@@ -55,7 +55,7 @@ def export_tip_frequency_json(process, prefix, indent):
         if clade in clade_tip_map:
             freq_json[clade_tip_map[clade]] = process_freqs(freq)
 
-    write_json(freq_json, prefix+'_tipfrequencies.json', indent=indent)
+    write_json(freq_json, prefix+'_tip-frequencies.json', indent=indent)
 
 def summarise_publications_from_tree(tree):
     info = defaultdict(lambda: {"n": 0, "title": "?"})
