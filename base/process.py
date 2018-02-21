@@ -9,7 +9,7 @@ from base.utils import num_date, save_as_nexus, parse_date
 from base.tree import tree
 from base.fitness_model import fitness_model
 from base.frequencies import alignment_frequencies, tree_frequencies, make_pivots
-from base.auspice_export import export_metadata_json, export_frequency_json
+from base.auspice_export import export_metadata_json, export_frequency_json, export_tip_frequency_json
 import numpy as np
 from datetime import datetime
 import json
@@ -689,6 +689,7 @@ class process(object):
         ## FREQUENCIES ##
         if "frequencies" in self.config["auspice"]["extra_jsons"]:
             export_frequency_json(self, prefix=prefix, indent=indent)
+            export_tip_frequency_json(self, prefix=prefix, indent=indent)
 
         ## METADATA ##
         export_metadata_json(self, prefix=prefix, indent=indent)

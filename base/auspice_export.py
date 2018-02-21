@@ -39,6 +39,23 @@ def export_frequency_json(process, prefix, indent):
     else:
         process.log.notify("Cannot export frequencies - pivots do not exist")
 
+def export_tip_frequency_json(process, prefix, indent):
+    def process_freqs(freq): # 6dp here, 4 above
+        return [round(x,6) for x in freq]
+
+    if not (hasattr(process, 'pivots') and hasattr(process, 'tree_frequencies')):
+        process.log.notify("Cannot export tip frequencies - pivots and/or tree_frequencies do not exist")
+        return;
+
+    freq_json = {'pivots':process_freqs(process.pivots)}
+
+    clade_tip_map = {n.clade: n.name for n in process.tree.tree.get_terminals()}
+
+    for clade, freq in process.tree_frequencies["global"].iteritems():
+        if clade in clade_tip_map:
+            freq_json[clade_tip_map[clade]] = process_freqs(freq)
+
+    write_json(freq_json, prefix+'_tipfrequencies.json', indent=indent)
 
 def summarise_publications_from_tree(tree):
     info = defaultdict(lambda: {"n": 0, "title": "?"})
