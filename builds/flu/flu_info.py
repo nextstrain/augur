@@ -276,7 +276,7 @@ reference_viruses = {
     'vic':[
         'B/Shangdong/7/1997', 'B/HongKong/330/2001', 'B/Malaysia/2506/2004', 'B/Ohio/1/2005',
         'B/Brisbane/60/2008', 'B/Utah/8/2012', 'B/Montana/5/2012', 'B/Texas/2/2013', 'B/Florida/33/2014',
-        'B/Indiana/25/2015', 'B/Florida/78/2015'
+        'B/Indiana/25/2015', 'B/Florida/78/2015', 'B/Colorado/6/2017'
     ],
     'yam':[
         'B/Beijing/184/1993', 'B/Sichuan/379/1999', 'B/Shanghai/361/2002', 'B/Florida/4/2006',
@@ -306,7 +306,8 @@ vaccine_choices = {
         'B/Shangdong/7/1997': "1999-09-25",
         'B/HongKong/330/2001': "2002-09-25",
         'B/Malaysia/2506/2004': "2006-09-25",
-        'B/Brisbane/60/2008': "2009-09-25"
+        'B/Brisbane/60/2008': "2009-09-25",
+        'B/Colorado/6/2017': "2018-02-22"
     },
     "yam": {
         'B/Beijing/184/1993': "1998-11-01",
