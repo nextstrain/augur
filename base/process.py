@@ -592,6 +592,8 @@ class process(object):
             return all([node.translations[gene][pos+offset]==state if gene in node.translations else node.sequence[pos+offset]==state
                         for gene, pos, state in genotype])
 
+        ## NOTE clades_to_nodes is used in the (full) frequencies export
+        # TODO remove all references here to named_clades and clade_name
         self.clades_to_nodes = {}
         for n in self.tree.tree.find_clades():
             n.attr["named_clades"]=[]
@@ -601,6 +603,7 @@ class process(object):
             if len(matching_nodes):
                 self.clades_to_nodes[clade_name] = matching_nodes[0]
                 self.clades_to_nodes[clade_name].attr['clade_name']=clade_name
+                self.clades_to_nodes[clade_name].attr['clade_annotation']=clade_name
                 for n in filter(lambda x:match(x,genotype), self.tree.tree.find_clades()):
                     n.attr["named_clades"].append(clade_name)
             else:
@@ -612,6 +615,13 @@ class process(object):
             for n in filter(lambda x:match(x,genotype), self.tree.tree.find_clades()):
                 n.attr["named_clades"].sort(key=lambda x:self.clades_to_nodes[x].numdate, reverse=True)
                 n.attr["named_clades"] = n.attr["named_clades"][:1]
+
+        ## Now preorder traverse the tree with state replacement to set the clade_membership via clade_annotation
+        ordered_clades = sorted(self.clades_to_nodes.keys(), key=lambda name: self.clades_to_nodes[name].tvalue)
+        for clade_annotation in ordered_clades:
+            for node in self.clades_to_nodes[clade_annotation].find_clades(order='preorder'):
+                node.attr['clade_membership'] = clade_annotation
+
 
 
     def annotate_fitness(self):

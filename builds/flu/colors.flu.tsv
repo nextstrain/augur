@@ -8,3 +8,17 @@ region  africa #CEB541
 region  europe  #E39B39
 region  south_america #E56C2F
 region  north_america #DC2F24
+
+clade_membership  3c3  #4B26B1
+clade_membership  3c3.A  #3F4ACA
+clade_membership  3c3.B  #4272CE
+clade_membership  3c2  #4D92BF
+clade_membership  3c2.A  #5DA8A3
+clade_membership  A1  #74B583
+clade_membership  A1a  #8EBC66
+clade_membership  A1b  #ACBD51
+clade_membership  A1b/135N  #C8B944
+clade_membership  A1b/135K  #DDA93C
+clade_membership  A2  #E68B35
+clade_membership  A3  #E3602D
+clade_membership  A4  #DC2F24

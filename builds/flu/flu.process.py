@@ -54,6 +54,7 @@ def make_config (prepared_json, args):
             "extra_attr": ['serum'],
             "color_options": {
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
+                "clade_membership": {"menuItem": "named clades", "legendTitle": "named clades", "type": "discrete", "key": "clade_membership"},
             },
             "controls": {'authors':['authors']},
             "defaults": {'colorBy': 'cTiter',
