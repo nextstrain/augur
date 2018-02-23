@@ -572,7 +572,6 @@ if __name__=="__main__":
         # runner.save_as_nexus()
         # titers
         seasonal_flu_scores(runner, runner.tree.tree)
-        runner.config["auspice"]["titers_export"] = True
         if hasattr(runner, "titers"):
             HI_model(runner)
             if runner.info["lineage"] == "h3n2":
