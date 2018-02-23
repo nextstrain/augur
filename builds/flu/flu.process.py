@@ -53,10 +53,11 @@ def make_config (prepared_json, args):
             "panels": ['tree', 'entropy', 'frequencies'],
             "extra_attr": ['serum'],
             "color_options": {
-                "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
+                "region":{"menuItem":"region", "legendTitle":"Region", "key":"region", "type":"discrete"},
+                "clade_membership": {"menuItem": "clade", "legendTitle": "Clade", "key": "clade_membership", "type": "discrete"},
             },
             "controls": {'authors':['authors']},
-            "defaults": {'colorBy': 'cTiter',
+            "defaults": {'colorBy': 'clade_membership',
                 'geoResolution': 'region',
                 'distanceMeasure': 'div',
                 'mapTriplicate': True},
