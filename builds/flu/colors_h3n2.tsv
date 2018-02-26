@@ -1,14 +1,3 @@
-region  china  #4042C7
-region  southeast_asia  #4274CE
-region  south_asia  #5199B7
-region  japan_korea #69B091
-region  oceania #88BB6C
-region  west_asia #ADBD51
-region  africa #CEB541
-region  europe  #E39B39
-region  south_america #E56C2F
-region  north_america #DC2F24
-
 clade_membership  3c3  #4B26B1
 clade_membership  3c3.A  #3F4ACA
 clade_membership  3c3.B  #4272CE
