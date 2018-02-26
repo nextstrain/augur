@@ -59,7 +59,6 @@ def make_config (prepared_json, args):
             "controls": {'authors':['authors']},
             "defaults": {'colorBy': 'clade_membership',
                 'geoResolution': 'region',
-                'distanceMeasure': 'div',
                 'mapTriplicate': True},
             "titers_export": args.titers_export
         },
