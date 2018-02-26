@@ -53,12 +53,12 @@ def make_config (prepared_json, args):
             "panels": ['tree', 'entropy', 'frequencies'],
             "extra_attr": ['serum'],
             "color_options": {
-                "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
+                "region":{"menuItem":"region", "legendTitle":"Region", "key":"region", "type":"discrete"},
+                "clade_membership": {"menuItem": "clade", "legendTitle": "Clade", "key": "clade_membership", "type": "discrete"},
             },
             "controls": {'authors':['authors']},
-            "defaults": {'colorBy': 'cTiter',
+            "defaults": {'colorBy': 'clade_membership',
                 'geoResolution': 'region',
-                'distanceMeasure': 'div',
                 'mapTriplicate': True},
             "titers_export": args.titers_export
         },
@@ -572,7 +572,6 @@ if __name__=="__main__":
         # runner.save_as_nexus()
         # titers
         seasonal_flu_scores(runner, runner.tree.tree)
-        runner.config["auspice"]["titers_export"] = True
         if hasattr(runner, "titers"):
             HI_model(runner)
             if runner.info["lineage"] == "h3n2":
