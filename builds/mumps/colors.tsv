@@ -45,13 +45,13 @@ division	pennsylvania	#E1512A
 division	new_jersey	#DF4027
 division	british_columbia	#DC2F24
 
-MuV_genotype	A	#462EB9
-MuV_genotype	B	#3E58CF
-MuV_genotype	C	#4580CA
-MuV_genotype	D	#69B091
-MuV_genotype	E	#A2BE57
-MuV_genotype	F	#C1BA47
-MuV_genotype	G	#E69136
-MuV_genotype	H	#DC2F24
+MuV_genotype	A	#69B091
+#MuV_genotype	B	#3E58CF
+#MuV_genotype	C	#4580CA
+#MuV_genotype	D	#69B091
+#MuV_genotype	E	#A2BE57
+MuV_genotype	F	#D9AD3D
+MuV_genotype	G	#462EB9
+#MuV_genotype	H	#DC2F24
+MuV_genotype	K	#DC2F24
 MuV_genotype	?	#bebebe
-MuV_genotype	K	#549DB2

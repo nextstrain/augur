@@ -31,7 +31,7 @@ def make_config(params):
     if params.geo == "global":
         file_prefix = "mumps_global"
         if params.viruses_per_month == 0:
-            viruses_per_month = 10
+            viruses_per_month = 3
         else:
             viruses_per_month = params.viruses_per_month
         dropped_strains = [
@@ -54,7 +54,7 @@ def make_config(params):
     elif params.geo == "na":
         file_prefix = "mumps_na"
         if params.viruses_per_month == 0:
-            viruses_per_month = 10
+            viruses_per_month = 100
         else:
             viruses_per_month = params.viruses_per_month
         dropped_strains = [
@@ -66,7 +66,8 @@ def make_config(params):
             # true strains, but group outside NA outbreak clade
             "WA0268502_buccal/Washington.USA/16", # not yet released
             #"Washington.USA/2017217/8.17/3/G", # outlier. MRCA with other NA strains of 1990
-            "BritishColumbia.CAN/34.16/2/F" #MuV genotype F. MRCA of 1943 (!)
+            "BritishColumbia.CAN/34.16/2/F", #MuV genotype F. MRCA of 1943 (!)
+            "Massachusetts.USA/24.17/5/K"
         ]
         colors = ["country", "division","MuV_genotype"]
         lat_longs = ["country", "division"]
@@ -91,7 +92,7 @@ def make_config(params):
         "filters": filters,
         "subsample": {
             "threshold": viruses_per_month,
-            "category": lambda x:(x.attributes['date'].year, x.attributes['date'].month, x.attributes['country'])
+            "category": lambda x:(x.attributes['date'].year, x.attributes['date'].month, x.attributes['country'],x.attributes['MuV_genotype'])
         },
         "colors": colors,
         "color_defs": ["./colors.tsv"],
@@ -101,7 +102,7 @@ def make_config(params):
             "path": "mumps-reference.gb",
             "metadata": {
                 'strain': "MuV/Gabon/13/2", "accession": "KM597072.1", "date": "2013-03-01",
-                'host': "human", 'country': "Gabon", 'region': "Gabon", 'MuV_genotype': "G", 'county' : 'NA', 'vaccination_status' : 'NA', 'Marshallese_descent' : 'NA'
+                'host': "human", 'country': "Gabon", 'region': "Gabon", 'MuV_genotype': "G"
             },
             "include": 0,
             "genes": ['NC', 'P', 'V', 'I', 'M', 'F', 'SH', 'HN', 'L']
