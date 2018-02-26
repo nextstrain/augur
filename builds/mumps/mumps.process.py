@@ -22,18 +22,19 @@ def make_config(prepared_json, clean, params):
             "colorBy": "country",
             "geoResolution": "country"
         }
-        geo_inference = False
+        geo_inference = ['country','region']
     elif params.geo == "na":
         color_options = {
             "division":{"key":"division", "legendTitle":"Division", "menuItem":"division", "type":"discrete"},
             "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
-            "MuV_genotype":{"key":"muvgeno", "legendTitle":"MuV genotype", "menuItem":"MuV genotype", "type":"discrete"}
+            "MuV_genotype":{"key":"muvgeno", "legendTitle":"MuV genotype", "menuItem":"MuV genotype", "type":"discrete"},
+
         }
         defaults = {
             "colorBy": "division",
             "geoResolution": "division"
         }
-        geo_inference = False
+        geo_inference = ['country','division']
     return {
         "dir": "mumps",
         "in": prepared_json,

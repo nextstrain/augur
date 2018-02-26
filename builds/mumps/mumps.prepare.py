@@ -31,15 +31,19 @@ def make_config(params):
     if params.geo == "global":
         file_prefix = "mumps_global"
         if params.viruses_per_month == 0:
-            viruses_per_month = 3
+            viruses_per_month = 10
         else:
             viruses_per_month = params.viruses_per_month
         dropped_strains = [
-            "WA0268502_buccal/Washington.USA/16" # not yet released
+            "WA0268502_buccal/Washington.USA/16", # not yet released
+            "Split.CRO/05.11/G",   # retracted sequence
+            "9218/Zg98",   # retracted sequence
+            "Zagreb.HRV/28.12/G",  # retracted sequence
+            "Du/CRO05"   # retracted sequence
         ]
-        colors = ["country", "region"]
+        colors = ["country","region","MuV_genotype"]
         lat_longs = ["country", "region"]
-        auspice_filters = ["country", "region"]
+        auspice_filters = ["country", "region","MuV_genotype"]
         filters = (
             ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
             ("Restrict Date Range", lambda s: s.attributes['date'] >= datetime(1950,01,1).date()),
@@ -50,7 +54,7 @@ def make_config(params):
     elif params.geo == "na":
         file_prefix = "mumps_na"
         if params.viruses_per_month == 0:
-            viruses_per_month = 100
+            viruses_per_month = 10
         else:
             viruses_per_month = params.viruses_per_month
         dropped_strains = [
@@ -61,12 +65,12 @@ def make_config(params):
             "BritishColumbia.CAN/28.16/3/G",
             # true strains, but group outside NA outbreak clade
             "WA0268502_buccal/Washington.USA/16", # not yet released
-            "Washington.USA/2017217/8.17/3/G", # outlier. MRCA with other NA strains of 1990
+            #"Washington.USA/2017217/8.17/3/G", # outlier. MRCA with other NA strains of 1990
             "BritishColumbia.CAN/34.16/2/F" #MuV genotype F. MRCA of 1943 (!)
         ]
-        colors = ["country", "division"]
+        colors = ["country", "division","MuV_genotype"]
         lat_longs = ["country", "division"]
-        auspice_filters = ["country", "division"]
+        auspice_filters = ["country", "division","MuV_genotype"]
         filters = (
             ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
             ("Restrict Date Range", lambda s: s.attributes['date'] >= datetime(2009,01,1).date()),
@@ -97,7 +101,7 @@ def make_config(params):
             "path": "mumps-reference.gb",
             "metadata": {
                 'strain': "MuV/Gabon/13/2", "accession": "KM597072.1", "date": "2013-03-01",
-                'host': "human", 'country': "Gabon", 'region': "Gabon", 'MuV_genotype': "G"
+                'host': "human", 'country': "Gabon", 'region': "Gabon", 'MuV_genotype': "G", 'county' : 'NA', 'vaccination_status' : 'NA', 'Marshallese_descent' : 'NA'
             },
             "include": 0,
             "genes": ['NC', 'P', 'V', 'I', 'M', 'F', 'SH', 'HN', 'L']
