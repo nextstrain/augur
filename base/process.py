@@ -617,6 +617,8 @@ class process(object):
                 n.attr["named_clades"] = n.attr["named_clades"][:1]
 
         ## Now preorder traverse the tree with state replacement to set the clade_membership via clade_annotation
+        for node in self.tree.tree.find_clades():
+            node.attr['clade_membership'] = 'unassigned'
         ordered_clades = sorted(self.clades_to_nodes.keys(), key=lambda name: self.clades_to_nodes[name].numdate)
         for clade_annotation in ordered_clades:
             for node in self.clades_to_nodes[clade_annotation].find_clades(order='preorder'):
