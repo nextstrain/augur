@@ -175,18 +175,18 @@ def seasonal_flu_scores(runner, tree):
         "legendTitle": "Pot. glycosylation count",
         "key": "glyc"
     }
-    runner.config["auspice"]["color_options"]["age"] = {
-        "menuItem": "average host age in clade",
-        "type": "continuous",
-        "legendTitle": "Avg host age in clade",
-        "key": "age"
-    }
-    runner.config["auspice"]["color_options"]["gender"] = {
-        "menuItem": "average host gender in clade",
-        "type": "continuous",
-        "legendTitle": "Avg host gender in clade",
-        "key": "num_gender"
-    }
+    # runner.config["auspice"]["color_options"]["age"] = {
+    #     "menuItem": "average host age in clade",
+    #     "type": "continuous",
+    #     "legendTitle": "Avg host age in clade",
+    #     "key": "age"
+    # }
+    # runner.config["auspice"]["color_options"]["gender"] = {
+    #     "menuItem": "average host gender in clade",
+    #     "type": "continuous",
+    #     "legendTitle": "Avg host gender in clade",
+    #     "key": "num_gender"
+    # }
 
 
 def H3N2_scores(runner, tree, epitope_mask_file, epitope_mask_version='wolf'):
