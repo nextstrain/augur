@@ -63,11 +63,16 @@ def make_config(params):
             "Virginia.USA/10.12/H", "BritishColumbia.CAN/33.16/3/G",
             "BritishColumbia.CAN/33.16/1/G", "BritishColumbia.CAN/9.17/A",
             "BritishColumbia.CAN/28.16/3/G",
-            # true strains, but group outside NA outbreak clade
+            # all below are true strains, but group outside NA outbreak clade
             "WA0268502_buccal/Washington.USA/16", # not yet released
-            #"Washington.USA/2017217/8.17/3/G", # outlier. MRCA with other NA strains of 1990
+            "Washington.USA/2017217/8.17/3/G", # outlier. MRCA with other NA strains of 1990
             "BritishColumbia.CAN/34.16/2/F", #MuV genotype F. MRCA of 1943 (!)
-            "Massachusetts.USA/24.17/5/K"
+            "Massachusetts.USA/24.17/5/K", #MuV genotype K
+            "Massachusetts.USA/11.17/G" , "Massachusetts.USA/7.17/G", "Massachusetts.USA/9.17/G", 
+            "Massachusetts.USA/10.17/G","Massachusetts.USA/10.17/2/G","Massachusetts.USA/7.17/2/G",
+            "Massachusetts.USA/13.17/G","Massachusetts.USA/12.17/G","Georgia.USA/2.17/G",
+            "Massachusetts.USA/5.17/G","Massachusetts.USA/18.17/G","Massachusetts.USA/22.17/7/G",
+            "Massachusetts.USA/23.17/2/G","Massachusetts.USA/19.17/2/G"
         ]
         colors = ["country", "division","MuV_genotype"]
         lat_longs = ["country", "division"]
