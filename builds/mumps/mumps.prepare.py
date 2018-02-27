@@ -89,7 +89,7 @@ def make_config(params):
         "dir": "mumps",
         "file_prefix": file_prefix,
         "title": "Real-time tracking of mumps virus evolution",
-        "maintainer": ["James Hadfield", "http://bedford.io/team/james-hadfield/"],
+        "maintainer": ["Louise Moncla", "http://bedford.io/team/louise-moncla/"],
         "input_paths": ["../../../fauna/data/mumps.fasta"],
         "header_fields": {0:'strain', 2:'accession', 3:'date', 4:'region', 5:'country',
             6:'division', 8:'db', 10:'authors', 11:'url', 12:'title',
