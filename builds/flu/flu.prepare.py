@@ -80,7 +80,7 @@ def make_config(lineage, resolution, params):
         "file_prefix": file_prefix,
         "title": make_title(lineage, resolution),
         "maintainer": ["Trevor Bedford", "http://bedford.io/team/trevor-bedford/"],
-        "auspice_filters": ["region"],
+        "auspice_filters": ["region", "country"],
         "segments": params.segments,
         "ensure_all_segments": params.ensure_all_segments,
         "lineage": lineage,
