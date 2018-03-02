@@ -228,12 +228,13 @@ class freq_est_clipped(object):
 
         self.pivot_freq = np.zeros_like(self.pivots)
         self.pivot_freq[self.good_pivots] = self.fe.pivot_freq
+
         # set pivots outside of the window used for estimation to strictly zero or one
         # we previously had simply filled all data points with closest pivot that was
-        # estimated, but this potentially causes propation of numerical issues when
+        # estimated, but this potentially causes propagation of numerical issues when
         # estimating many nested clades.
         if self.fe.pivot_freq[0]<0.5:
-            self.pivot_freq[self.pivots<self.pivot_lower_cutoff] = 0
+            self.pivot_freq[self.pivots<self.pivot_lower_cutoff] = 0.0
         else:
             self.pivot_freq[self.pivots<self.pivot_lower_cutoff] = 1.0
 
