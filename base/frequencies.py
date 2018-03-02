@@ -283,7 +283,7 @@ class tree_frequencies(object):
     to be named with an attribute clade, of root doesn't have such an attribute, clades
     will be numbered in preorder. Each node is assumed to have an attribute "numdate"
     '''
-    def __init__(self, tree, pivots, node_filter=None, min_clades = 20, verbose=0, **kwargs):
+    def __init__(self, tree, pivots, node_filter=None, min_clades = 20, verbose=0, pc=1e-4, **kwargs):
         '''
         set up the internal tree, the pivots and cutoffs
         node_filter -- a function that can be used to exclude terminals nodes
@@ -295,7 +295,8 @@ class tree_frequencies(object):
         self.min_clades = 10 #min_clades
         self.pivots = pivots
         self.kwargs = kwargs
-        self.verbose=verbose
+        self.verbose = verbose
+        self.pc = pc
         if node_filter is None:
             self.node_filter = lambda x:True
         else:
@@ -360,11 +361,14 @@ class tree_frequencies(object):
                     else:
                         obs_to_estimate['other'] = np.any(remainder.values(), axis=0)
 
-                ne = nested_frequencies(node_tps, obs_to_estimate, self.pivots, **self.kwargs)
+                ne = nested_frequencies(node_tps, obs_to_estimate, self.pivots, pc=pc, **self.kwargs)
                 freq_est = ne.calc_freqs()
                 for clade, tmp_freq in freq_est.iteritems():
                     if clade!="other":
-                        self.frequencies[clade] = self.frequencies[node.clade]*tmp_freq
+                        fixed_freq = np.copy(tmp_freq)
+                        fixed_freq[fix_freq>1.0-2*pc] = 1.0
+                        fixed_freq[fix_freq<2*pc] = 0.0
+                        self.frequencies[clade] = self.frequencies[node.clade]*fixed_freq
 
                 if len(small_clades) > 1:
                     total_leaves_in_small_clades = 0
