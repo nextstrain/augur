@@ -365,11 +365,8 @@ class tree_frequencies(object):
                 ne = nested_frequencies(node_tps, obs_to_estimate, self.pivots, pc=self.pc, **self.kwargs)
                 freq_est = ne.calc_freqs()
                 for clade, tmp_freq in freq_est.iteritems():
-                    if clade!="other":
-                        fixed_freq = np.copy(tmp_freq)
-                        fixed_freq[fix_freq>1.0-2*pc] = 1.0
-                        fixed_freq[fix_freq<2*pc] = 0.0
-                        self.frequencies[clade] = self.frequencies[node.clade]*fixed_freq
+                    if clade != "other":
+                        self.frequencies[clade] = self.frequencies[node.clade] * tmp_freq
 
                 if len(small_clades) > 1:
                     total_leaves_in_small_clades = 0
