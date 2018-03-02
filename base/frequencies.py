@@ -362,7 +362,7 @@ class tree_frequencies(object):
                     else:
                         obs_to_estimate['other'] = np.any(remainder.values(), axis=0)
 
-                ne = nested_frequencies(node_tps, obs_to_estimate, self.pivots, pc=pc, **self.kwargs)
+                ne = nested_frequencies(node_tps, obs_to_estimate, self.pivots, pc=self.pc, **self.kwargs)
                 freq_est = ne.calc_freqs()
                 for clade, tmp_freq in freq_est.iteritems():
                     if clade!="other":
