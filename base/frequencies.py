@@ -129,12 +129,14 @@ class frequency_estimator(object):
         # print('optimizing with', len(self.pivots), 'pivots')
         self.dt = np.diff(self.pivots)
         def logLH(x):
+            # x is logit frequency x = log(p/(1-p)) -> p = e^x/(1+e^x); 1-p = 1/(1+e^x)
             self.pivot_freq = logit_inv(x, self.pc)
             try:
                 freq = interp1d(self.pivots, x, kind=self.interpolation_type,bounds_error = False, assume_sorted=True) # Throws a bug with some numpy installations, isn't necessary other than for speed.
             except:
                 freq = interp1d(self.pivots, x, kind=self.interpolation_type,bounds_error = False)
             estfreq = freq(self.tps)
+            # log(p^obs (1-p)^(1-obs)) = log((p/(1-p))^obs (1-p)) = obs*x - log(1+e^x)
             bernoulli_LH = np.sum(estfreq[self.obs]) - np.sum(np.log(1+np.exp(estfreq)))
 
             stiffness_LH = self.stiffLH()
@@ -226,8 +228,19 @@ class freq_est_clipped(object):
 
         self.pivot_freq = np.zeros_like(self.pivots)
         self.pivot_freq[self.good_pivots] = self.fe.pivot_freq
-        self.pivot_freq[self.pivots<self.pivot_lower_cutoff] = self.fe.pivot_freq[0]
-        self.pivot_freq[self.pivots>=self.pivot_upper_cutoff] = self.fe.pivot_freq[-1]
+        # set pivots outside of the window used for estimation to strictly zero or one
+        # we previously had simply filled all data points with closest pivot that was
+        # estimated, but this potentially causes propation of numerical issues when
+        # estimating many nested clades.
+        if self.fe.pivot_freq[0]<0.5:
+            self.pivot_freq[self.pivots<self.pivot_lower_cutoff] = 0
+        else:
+            self.pivot_freq[self.pivots<self.pivot_lower_cutoff] = 1.0
+
+        if self.fe.pivot_freq[-1]<0.5:
+            self.pivot_freq[self.pivots>=self.pivot_upper_cutoff] = 0.0
+        else:
+            self.pivot_freq[self.pivots>=self.pivot_upper_cutoff] = 1.0
 
 
 class nested_frequencies(object):
