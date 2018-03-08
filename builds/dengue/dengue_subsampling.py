@@ -3,7 +3,7 @@ import numpy as np
 from collections import defaultdict
 from pprint import pprint
 from base.io_util import myopen
-from base.titer_model import TiterModel
+from base.titer_model import TiterCollection
 
 def populate_counts(obj):
     sequence_count_total = defaultdict(int)
@@ -25,7 +25,7 @@ def dengue_subsampling(params, years_back, titer_values, force_include = []):
 
     ### Priority: # titer measurements, # unambiguous sites
     if titer_values is not None:
-        titer_count = TiterModel.count_strains(titer_values)
+        titer_count = TiterCollection.count_strains(titer_values)
 
         def priority(seq):
             strain = seq.attributes['strain']
