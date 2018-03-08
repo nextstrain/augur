@@ -1,4 +1,4 @@
-def tree_additivity_symmetry(mytitermodel):
+def tree_additivity_symmetry(titer_model):
     '''
     The titer model makes two major assumptions:
     1 - Once we correct for virus avidity and serum potency, titers are roughly symmetric
@@ -17,21 +17,21 @@ def tree_additivity_symmetry(mytitermodel):
 
     reciprocal_measurements = []
     reciprocal_measurements_titers = []
-    for (testvir, serum) in mytitermodel.titers_normalized:
-        tmp_recip = [v for v in mytitermodel.titers_normalized if serum[0]==v[0] and testvir==v[1][0]]
+    for (testvir, serum) in titer_model.titers.titers_normalized:
+        tmp_recip = [v for v in titer_model.titers.titers_normalized if serum[0]==v[0] and testvir==v[1][0]]
         for v in tmp_recip:
-            val_fwd = mytitermodel.titers_normalized[(testvir,serum)]
-            val_bwd = mytitermodel.titers_normalized[v]
-            date_fwd = mytitermodel.node_lookup[testvir].attr['num_date']
-            date_bwd = mytitermodel.node_lookup[serum[0]].attr['num_date']
+            val_fwd = titer_model.titers.titers_normalized[(testvir,serum)]
+            val_bwd = titer_model.titers.titers_normalized[v]
+            date_fwd = titer_model.node_lookup[testvir].attr['num_date']
+            date_bwd = titer_model.node_lookup[serum[0]].attr['num_date']
             diff_uncorrected = val_fwd - val_bwd
-            diff_corrected = (val_fwd - mytitermodel.serum_potency[serum] - mytitermodel.virus_effect[testvir])\
-                            -(val_bwd - mytitermodel.serum_potency[v[1]] - mytitermodel.virus_effect[serum[0]])
-            val_bwd = mytitermodel.titers_normalized[v]
+            diff_corrected = (val_fwd - titer_model.serum_potency[serum] - titer_model.virus_effect[testvir])\
+                            -(val_bwd - titer_model.serum_potency[v[1]] - titer_model.virus_effect[serum[0]])
+            val_bwd = titer_model.titers.titers_normalized[v]
             reciprocal_measurements.append([testvir, serum, diff_uncorrected, diff_corrected, np.sign(date_fwd-date_bwd)])
             reciprocal_measurements_titers.append([testvir, serum, val_fwd, val_bwd,
-                                                  (val_fwd - mytitermodel.serum_potency[serum] - mytitermodel.virus_effect[testvir]),
-                                                  (val_bwd - mytitermodel.serum_potency[v[1]] - mytitermodel.virus_effect[serum[0]]),
+                                                  (val_fwd - titer_model.serum_potency[serum] - titer_model.virus_effect[testvir]),
+                                                  (val_bwd - titer_model.serum_potency[v[1]] - titer_model.virus_effect[serum[0]]),
                                                   ])
     plt.figure(figsize=(9,6))
     ax = plt.subplot(121)
@@ -56,12 +56,12 @@ def tree_additivity_symmetry(mytitermodel):
     G.add_nodes_from(all_reciprocal)
     for vi,v in enumerate(all_reciprocal):
         for w in all_reciprocal[:vi]:
-            if ((v[0], w) in mytitermodel.titers_normalized) and ((w[0], v) in mytitermodel.titers_normalized):
+            if ((v[0], w) in titer_model.titers.titers_normalized) and ((w[0], v) in titer_model.titers.titers_normalized):
                 G.add_edge(v,w)
     C = nx.find_cliques(G)
     def symm_distance(v,w):
-        res =  mytitermodel.titers_normalized[(v[0], w)] - mytitermodel.virus_effect[v[0]] - mytitermodel.serum_potency[w]
-        res += mytitermodel.titers_normalized[(w[0], v)] - mytitermodel.virus_effect[w[0]] - mytitermodel.serum_potency[v]
+        res =  titer_model.titers.titers_normalized[(v[0], w)] - titer_model.virus_effect[v[0]] - titer_model.serum_potency[w]
+        res += titer_model.titers.titers_normalized[(w[0], v)] - titer_model.virus_effect[w[0]] - titer_model.serum_potency[v]
         return res*0.5
 
     additivity_test = {'test':[], 'control':[]}
@@ -94,7 +94,7 @@ def tree_additivity_symmetry(mytitermodel):
     plt.tight_layout()
     plt.savefig('./processed/titer_asymmetry.png')
 
-def titer_model(process, sanofi_strain = None, plot_symmetry=False, **kwargs):
+def titer_model(process, sanofi_strain = None, **kwargs):
     '''
     estimate a titer tree model using titers in titer_fname.
     '''
@@ -125,7 +125,7 @@ def titer_model(process, sanofi_strain = None, plot_symmetry=False, **kwargs):
                 trace = process.tree.tree.trace(tip, sanofi_tip)
                 trace_dTiter = sum([i.dTiter for i in trace])
                 tip.attr['dTiter_sanofi']= round(trace_dTiter, 2)
-                
+
         # export for auspice visualization
         process.config["auspice"]["color_options"]["dTiter_sanofi"] = {
         "menuItem": "antigenic dist. from vaccine", "type": "continuous", "legendTitle": "log2 titer distance from sanofi vaccine strain",
@@ -136,7 +136,7 @@ def titer_model(process, sanofi_strain = None, plot_symmetry=False, **kwargs):
         "menuItem": "antigenic dist. from root", "type": "continuous", "legendTitle": "log2 titer distance from root",
         "key": "cTiter", "vmin": "0.0", "vmax": "2.0"}
 
-    if 'plot_symmetry' == True:
+    if kwargs['plot_symmetry'] == True:
         tree_additivity_symmetry(process.titer_tree)
 
 def titer_export(process):
@@ -154,15 +154,9 @@ def titer_export(process):
 
         validation_values = {'actual': [v[0] for v in process.titer_tree.validation.values()],
                              'predicted': [v[1] for v in process.titer_tree.validation.values()]}
-        print(validation_values)
         import pandas as pd
         validation_values = pd.DataFrame(validation_values)
         validation_values.to_csv(prefix+'tree_model_validation.csv')
-
-        ### In case we want to also log the regularization params used and resulting performance
-        # outfile = open('./processed/titer_model_error.csv', 'a')
-        # outfile.write('%f,%f,%f,%f,%f,%f\n'%(self.lam_drop, self.lam_avi, self.lam_pot, self.abs_error, self.rms_error, self.r2))
-        # outfile.close()
 
     else:
         print('Tree model not yet trained')
