@@ -5,7 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import base.prepare
 from base.prepare import prepare
 from base.utils import fix_names
-from base.titer_model import TiterModel
+from base.titer_model import TiterCollection
 from datetime import datetime, timedelta, date
 import argparse
 from dengue_subsampling import dengue_subsampling
@@ -92,7 +92,7 @@ def make_config(serotype, params):
     if params.titers is not None:
         if not os.path.isfile(params.titers):
             params.titers = '../../../fauna/data/%s'%params.titers
-        titer_values, strains, sources = TiterModel.load_from_file(params.titers)
+        titer_values, strains, sources = TiterCollection.load_from_file(params.titers)
     else:
         titer_values, strains, sources = None, None, None
 
