@@ -105,7 +105,7 @@ def make_config(lineage, resolution, params):
             ("Bad geo info", lambda s: s.attributes["country"]!= "?" and s.attributes["region"]!= "?" ),
         ),
         "subsample": flu_subsampling(params, years_back, titer_values),
-        "colors": ["region"],
+        "colors": ["region", "country"],
         "color_defs": ["colors.tsv"],
         "lat_longs": ["country", "region"],
         "lat_long_defs": '../../../fauna/source-data/geo_lat_long.tsv',
