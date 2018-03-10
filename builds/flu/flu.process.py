@@ -30,6 +30,7 @@ def parse_args():
     parser.add_argument('--predictors_sds', type=float, nargs='+', help="precalculated global standard deviations for each of the given predictors")
     parser.add_argument('--epitope_mask_version', default="wolf", help="name of the epitope mask that defines epitope mutations")
     parser.add_argument('--tolerance_mask_version', help="name of the tolerance mask that defines non-epitope mutations")
+    parser.add_argument('--glyc_mask_version', default='ha1_h3n2', help="name of the mask that defines putative glycosylation sites")
 
     parser.set_defaults(
         json="prepared/flu.json"
@@ -74,6 +75,7 @@ def make_config (prepared_json, args):
         "ha_masks": "metadata/ha_masks.tsv",
         "epitope_mask_version": args.epitope_mask_version,
         "tolerance_mask_version": args.tolerance_mask_version,
+        "glyc_mask_version": args.glyc_mask_version,
         "annotate_fitness": args.annotate_fitness,
         "predictors": predictors,
         "clean": args.clean,
@@ -571,10 +573,11 @@ if __name__=="__main__":
 
         # runner.save_as_nexus()
         # titers
-        seasonal_flu_scores(runner, runner.tree.tree)
+        seasonal_flu_scores(runner, runner.tree.tree, runner.config["ha_masks"],
+                            glyc_mask_version=runner.config["glyc_mask_version"])
         if hasattr(runner, "titers"):
             HI_model(runner)
-            if runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
+            if segment=='ha' and runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
                 IAV_scores(runner, runner.tree.tree, runner.config["ha_masks"],
                            epitope_mask_version = runner.config["epitope_mask_version"])
             if runner.config["auspice"]["titers_export"]:

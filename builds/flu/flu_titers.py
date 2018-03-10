@@ -84,18 +84,35 @@ def get_total_peptide(node, segment='ha'):
     elif segment=='na':
         return np.fromstring(node.translations['NA'], 'S1')
 
+def read_masks(mask_file):
+    ha_masks = {}
+    with open(mask_file) as f:
+        for line in f:
+            (key, value) = line.strip().split()
+            ha_masks[key] = np.fromstring(value, 'S1')=='1'
+    return ha_masks
 
-def seasonal_flu_scores(runner, tree):
+def seasonal_flu_scores(runner, tree, mask_file, glyc_mask_version='wolf'):
 
     def glycosylation_count(aa):
         # need to restrict to surface residues.
         return len(re.findall('N[^P][ST][^P]', aa))
 
+
     root = tree.root
     root_total_aa_seq = get_total_peptide(root, runner.segment)
+    ha_masks = read_masks(mask_file)
+    if glyc_mask_version in ha_masks:
+        glyc_mask = ha_masks[glyc_mask_version]
+    else:
+        print("seasonal_flu_scores: glycosylation mask '%s' not found, using all positions instead!"%glyc_mask_version)
+        glyc_mask = np.ones(len(root_total_aa_seq), dtype='bool')
+
     for node in tree.find_clades():
         total_aa_seq = get_total_peptide(node, runner.segment)
-        node.attr['glyc'] = glycosylation_count(total_aa_seq)
+        total_aa_seq_masked = "".join([aa if mask else 'X'
+                              for (mask, aa) in zip(glyc_mask,total_aa_seq)])
+        node.attr['glyc'] = glycosylation_count(total_aa_seq_masked)
 
     for node in tree.get_terminals():
         node.tip_count=1.0
@@ -233,13 +250,9 @@ def IAV_scores(runner, tree, mask_file, epitope_mask_version='wolf'):
         distance = np.sum(neA!=neB)
         return distance
 
-    ha_masks = {}
-    with open(mask_file) as f:
-        for line in f:
-            (key, value) = line.strip().split()
-            ha_masks[key] = value
+    ha_masks = read_masks(mask_file)
     if epitope_mask_version in ha_masks:
-        epitope_mask = np.fromstring(ha_masks[epitope_mask_version], 'S1')=='1'
+        epitope_mask = ha_masks[epitope_mask_version]
         root = tree.root
         root_total_aa_seq = get_total_peptide(root, runner.segment)
         for node in tree.find_clades():

@@ -16,4 +16,4 @@ ha1_head_mask = "".join(['1' if str(x).startswith('HA1_globular_head') else '0' 
 with open('metadata/ha_masks.tsv', 'a') as ofile:
 	ofile.write('canton\t'+epi_mask+'\n')
 	ofile.write('ha1_h1n1pdm\t'+ha1_mask+'\n')
-	ofile.write('HA1_globular_head_h1n1pdm\t'+ha1_head_mask+'\n')
+	ofile.write('ha1_globular_head_h1n1pdm\t'+ha1_head_mask+'\n')
