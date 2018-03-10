@@ -91,42 +91,81 @@ class tree(object):
         except:
             return False
 
-    def build_newick(self, newick_file, nthreads=2, root='midpoint', raxml=True, raxml_bin='raxml', debug=False, num_distinct_starting_trees=1):
-        from Bio import Phylo, AlignIO
-        import subprocess, glob, shutil
+    def build_newick(self, newick_file, nthreads=2, method="raxml", raxml_options={},
+                     iqtree_options={}, debug=False):
         make_dir(self.run_dir)
         os.chdir(self.run_dir)
         for seq in self.aln: seq.name=seq.id
-        AlignIO.write(self.aln, 'temp.fasta', 'fasta')
         out_fname = os.path.join("..", newick_file)
-        if raxml:
-            self.logger("modified RAxML script - no branch length optimisation or time limit", 1)
-            AlignIO.write(self.aln,"temp.phyx", "phylip-relaxed")
-            if num_distinct_starting_trees == 1:
-                cmd = raxml_bin + " -f d -T " + str(nthreads) + " -m GTRCAT -c 25 -p 235813 -n tre -s temp.phyx"
-            else:
-                self.logger("RAxML running with {} starting trees (longer but better...)".format(num_distinct_starting_trees), 1)
-                cmd = raxml_bin + " -f d -T " + str(nthreads) + " -N " + str(num_distinct_starting_trees) + " -m GTRCAT -c 25 -p 235813 -n tre -s temp.phyx"
-
-            try:
-                with open("raxml.log", 'w') as fh:
-                    check_call(cmd, stdout=fh, stderr=STDOUT, shell=True)
-                    self.logger("RAXML COMPLETED.", 1)
-            except CalledProcessError:
-                self.logger("RAXML TREE FAILED - check {}/raxml.log".format(self.run_dir), 1)
-                raise
-            shutil.copy('RAxML_bestTree.tre', out_fname)
-        else:
-            self.logger("Building tree with fasttree instead of raxml", 1)
-            tree_cmd = ["fasttree"]
-            if self.nuc: tree_cmd.append("-nt")
-            tree_cmd.extend(["temp.fasta","1>","initial_tree.newick", "2>", "fasttree_stderr"])
-            os.system(" ".join(tree_cmd))
-            shutil.copy('initial_tree.newick', out_fname)
+        if method=="raxml":
+            self.build_newick_raxml(out_fname, nthreads=nthreads, **raxml_options)
+        elif method=="fasttree":
+            self.build_newick_fasttree(out_fname)
+        elif method=="iqtree":
+            self.build_newick_iqtree(out_fname, **iqtree_options)
         os.chdir('..')
         self.logger("Saved new tree to %s"%out_fname, 1)
         if not debug:
             remove_dir(self.run_dir)
+
+
+    def build_newick_fasttree(self, out_fname):
+        from Bio import Phylo, AlignIO
+        AlignIO.write(self.aln, 'temp.fasta', 'fasta')
+        self.logger("Building tree with fasttree", 1)
+        tree_cmd = ["fasttree"]
+        if self.nuc: tree_cmd.append("-nt")
+
+        tree_cmd.extend(["temp.fasta","1>",out_fname, "2>", "fasttree_stderr"])
+        os.system(" ".join(tree_cmd))
+
+
+    def build_newick_raxml(self, out_fname, nthreads=2, raxml_bin="raxml",
+                           num_distinct_starting_trees=1, **kwargs):
+        from Bio import Phylo, AlignIO
+        import shutil
+        self.logger("modified RAxML script - no branch length optimisation or time limit", 1)
+        AlignIO.write(self.aln,"temp.phyx", "phylip-relaxed")
+        if num_distinct_starting_trees == 1:
+            cmd = raxml_bin + " -f d -T " + str(nthreads) + " -m GTRCAT -c 25 -p 235813 -n tre -s temp.phyx"
+        else:
+            self.logger("RAxML running with {} starting trees (longer but better...)".format(num_distinct_starting_trees), 1)
+            cmd = raxml_bin + " -f d -T " + str(nthreads) + " -N " + str(num_distinct_starting_trees) + " -m GTRCAT -c 25 -p 235813 -n tre -s temp.phyx"
+
+        try:
+            with open("raxml.log", 'w') as fh:
+                check_call(cmd, stdout=fh, stderr=STDOUT, shell=True)
+                self.logger("RAXML COMPLETED.", 1)
+        except CalledProcessError:
+            self.logger("RAXML TREE FAILED - check {}/raxml.log".format(self.run_dir), 1)
+            raise
+        shutil.copy('RAxML_bestTree.tre', out_fname)
+
+
+    def build_newick_iqtree(self, out_fname, nthreads=2, iqtree_bin="iqtree",
+                            iqmodel="HKY",  **kwargs):
+        from Bio import Phylo, AlignIO
+        import shutil
+        self.logger("modified RAxML script - no branch length optimisation or time limit", 1)
+        aln_file = "temp.fasta"
+        AlignIO.write(self.aln, aln_file, "fasta")
+        with open(aln_file) as ifile:
+            tmp_seqs = ifile.readlines()
+        with open(aln_file, 'w') as ofile:
+            for line in tmp_seqs:
+                ofile.write(line.replace('/', '_X_X_'))
+
+        if iqmodel:
+            call = ["iqtree", "-nt", str(nthreads), "-s", aln_file, "-m", iqmodel, "-fast",
+                ">", "iqtree.log"]
+        else:
+            call = ["iqtree", "-nt", str(nthreads), "-s", aln_file, ">", "iqtree.log"]
+
+        os.system(" ".join(call))
+        T = Phylo.read(aln_file+".treefile", 'newick')
+        for n in T.get_terminals():
+            n.name = n.name.replace('_X_X_','/')
+        Phylo.write(T,out_fname, 'newick')
 
 
     def tt_from_file(self, infile, root='best', nodefile=None):

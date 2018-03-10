@@ -54,7 +54,7 @@ if __name__=="__main__":
     if params.json:
         config["in"] = params.json
 
-    config["newick_tree_options"]["raxml"] = not params.no_raxml
+    config["newick_tree_options"]["method"] = params.tree_method
 
     runner = process(config)
     runner.align(fill_gaps=True)
