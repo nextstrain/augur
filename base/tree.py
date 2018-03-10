@@ -428,7 +428,7 @@ class tree(object):
                 if len(deletions):
                     length = 0
                     for pi, (a,pos,d) in enumerate(deletions[:-1]):
-                        if pos!=deletions[pi+1]:
+                        if pos!=deletions[pi+1][1]-1:
                             if length==1:
                                 node.muts.append(a+str(pos+1)+d)
                             elif d=='-':
