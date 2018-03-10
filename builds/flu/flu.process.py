@@ -6,7 +6,7 @@ import base.process
 from base.fitness_model import process_predictor_args
 from base.process import process
 from base.utils import fix_names
-from flu_titers import HI_model, HI_export, H3N2_scores, seasonal_flu_scores
+from flu_titers import HI_model, HI_export, IAV_scores, seasonal_flu_scores
 from flu_info import clade_designations
 import argparse
 import numpy as np
@@ -71,7 +71,7 @@ def make_config (prepared_json, args):
         "build_tree": not args.no_tree,
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
-        "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
+        "ha_masks": "metadata/ha_masks.tsv",
         "epitope_mask_version": args.epitope_mask_version,
         "tolerance_mask_version": args.tolerance_mask_version,
         "annotate_fitness": args.annotate_fitness,
@@ -574,8 +574,9 @@ if __name__=="__main__":
         seasonal_flu_scores(runner, runner.tree.tree)
         if hasattr(runner, "titers"):
             HI_model(runner)
-            if runner.info["lineage"] == "h3n2":
-                H3N2_scores(runner, runner.tree.tree, runner.config["epitope_mask"])
+            if runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
+                IAV_scores(runner, runner.tree.tree, runner.config["ha_masks"],
+                           epitope_mask_version = runner.config["epitope_mask_version"])
             if runner.config["auspice"]["titers_export"]:
                 HI_export(runner)
                 if segment=='ha':

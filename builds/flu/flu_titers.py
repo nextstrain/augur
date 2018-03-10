@@ -189,7 +189,7 @@ def seasonal_flu_scores(runner, tree):
     # }
 
 
-def H3N2_scores(runner, tree, epitope_mask_file, epitope_mask_version='wolf'):
+def IAV_scores(runner, tree, mask_file, epitope_mask_version='wolf'):
     '''
     takes a H3N2 HA tree and assigns H3 specific characteristics to
     internal and external nodes
@@ -202,6 +202,7 @@ def H3N2_scores(runner, tree, epitope_mask_file, epitope_mask_version='wolf'):
 
     def receptor_binding_sites(aa):
         '''
+        THIS IS H3N2 specific
         Receptor binding site mutations from Koel et al. 2014
         These are (145, 155, 156, 158, 159, 189, 193) in canonical HA numbering
         need to subtract one since python arrays start at 0
@@ -232,37 +233,41 @@ def H3N2_scores(runner, tree, epitope_mask_file, epitope_mask_version='wolf'):
         distance = np.sum(neA!=neB)
         return distance
 
-    epitope_map = {}
-    with open(epitope_mask_file) as f:
+    ha_masks = {}
+    with open(mask_file) as f:
         for line in f:
             (key, value) = line.strip().split()
-            epitope_map[key] = value
-    if epitope_mask_version in epitope_map:
-        epitope_mask = np.fromstring(epitope_map[epitope_mask_version], 'S1')=='1'
-    root = tree.root
-    root_total_aa_seq = get_total_peptide(root, runner.segment)
-    for node in tree.find_clades():
-        total_aa_seq = get_total_peptide(node, runner.segment)
-        node.attr['ep'] = epitope_distance(total_aa_seq, root_total_aa_seq)
-        node.attr['ne'] = nonepitope_distance(total_aa_seq, root_total_aa_seq)
-        node.attr['rb'] = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
+            ha_masks[key] = value
+    if epitope_mask_version in ha_masks:
+        epitope_mask = np.fromstring(ha_masks[epitope_mask_version], 'S1')=='1'
+        root = tree.root
+        root_total_aa_seq = get_total_peptide(root, runner.segment)
+        for node in tree.find_clades():
+            total_aa_seq = get_total_peptide(node, runner.segment)
+            node.attr['ep'] = epitope_distance(total_aa_seq, root_total_aa_seq)
+            node.attr['ne'] = nonepitope_distance(total_aa_seq, root_total_aa_seq)
+            if runner.info["lineage"]=='h3n2':
+                node.attr['rb'] = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
 
 
-    runner.config["auspice"]["color_options"]["ep"] = {
-        "menuItem": "epitope mutations",
-        "type": "continuous",
-        "legendTitle": "Epitope mutations",
-        "key": "ep"
-    }
-    runner.config["auspice"]["color_options"]["ne"] = {
-        "menuItem": "non-epitope mutations",
-        "type": "continuous",
-        "legendTitle": "Non-epitope mutations",
-        "key": "ne"
-    }
-    runner.config["auspice"]["color_options"]["rb"] = {
-        "menuItem": "receptor binding mutations",
-        "type": "continuous",
-        "legendTitle": "Receptor binding mutations",
-        "key": "rb"
-    }
+        runner.config["auspice"]["color_options"]["ep"] = {
+            "menuItem": "epitope mutations",
+            "type": "continuous",
+            "legendTitle": "Epitope mutations",
+            "key": "ep"
+        }
+        runner.config["auspice"]["color_options"]["ne"] = {
+            "menuItem": "non-epitope mutations",
+            "type": "continuous",
+            "legendTitle": "Non-epitope mutations",
+            "key": "ne"
+        }
+        if runner.info["lineage"]=='h3n2':
+            runner.config["auspice"]["color_options"]["rb"] = {
+                "menuItem": "receptor binding mutations",
+                "type": "continuous",
+                "legendTitle": "Receptor binding mutations",
+                "key": "rb"
+            }
+    else:
+        print("no matching eptiope mask found! looking for ",epitope_mask_version)
