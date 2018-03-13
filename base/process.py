@@ -28,7 +28,7 @@ def collect_args():
 
     parser.add_argument('-j', '--json', help="prepared JSON to process")
     parser.add_argument('--clean', default=False, action='store_true', help="clean build (remove previous checkpoints)")
-    parser.add_argument('--tree_method', type=str, default='raxml', help="specify the method used to build the tree")
+    parser.add_argument('--tree_method', type=str, default='raxml', choices=["fasttree", "raxml", "iqtree"], help="specify the method used to build the tree")
     parser.add_argument('--no_tree', action='store_true', help="do not build a tree")
 
     return parser
