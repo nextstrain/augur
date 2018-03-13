@@ -84,7 +84,7 @@ def make_config (prepared_json, args):
             # "use_marginal":True
         },
         "newick_tree_options":{
-            "raxml": not args.no_raxml
+            "method": args.tree_method
         }
     }
 
