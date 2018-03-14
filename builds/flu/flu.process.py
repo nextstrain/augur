@@ -611,12 +611,11 @@ if __name__=="__main__":
             with open(ha_tree_json_fname) as jfile:
                 ha_tree_json = json.load(jfile)
             ha_tree_flat = flatten_json(ha_tree_json)
-
+            for node in runner.tree.tree.find_clades():
+                node.attr['clade_membership'] = 'unassigned'
             for n in runner.tree.tree.get_terminals():
                 if n.name in ha_tree_flat:
                     if "clade_membership" in ha_tree_flat[n.name]["attr"]:
                         n.attr["clade_membership"] = ha_tree_flat[n.name]["attr"]["clade_membership"]
-                else:
-                    n.attr["clade_membership"] = "unassigned"
 
     runner.auspice_export()
