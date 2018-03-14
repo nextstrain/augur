@@ -572,7 +572,7 @@ if __name__=="__main__":
         # runner.save_as_nexus()
         # titers
         seasonal_flu_scores(runner, runner.tree.tree)
-        if hasattr(runner, "titers"):
+        if hasattr(runner, "titers") and segment == "ha":
             HI_model(runner)
             if runner.info["lineage"] == "h3n2":
                 H3N2_scores(runner, runner.tree.tree, runner.config["epitope_mask"])
@@ -614,9 +614,9 @@ if __name__=="__main__":
 
             for n in runner.tree.tree.get_terminals():
                 if n.name in ha_tree_flat:
-                    if "named_clades" in ha_tree_flat[n.name]["attr"]:
-                        n.attr["named_clades"] = ha_tree_flat[n.name]["attr"]["named_clades"]
+                    if "clade_membership" in ha_tree_flat[n.name]["attr"]:
+                        n.attr["clade_membership"] = ha_tree_flat[n.name]["attr"]["clade_membership"]
                 else:
-                    n.attr["named_clades"] = ["unassigned"]
+                    n.attr["clade_membership"] = "unassigned"
 
     runner.auspice_export()
