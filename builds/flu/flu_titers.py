@@ -168,13 +168,13 @@ def seasonal_flu_scores(runner, tree):
         node.attr['num_gender'] = np.sum([c.attr['num_gender']*c.tip_count for c in node])/node.tip_count
 
 
-    # not sure those have any effects right now... but auspice 2.0 might use them
-    runner.config["auspice"]["color_options"]["glyc"] = {
-        "menuItem": "potential glycosylation sites",
-        "type": "continuous",
-        "legendTitle": "Pot. glycosylation count",
-        "key": "glyc"
-    }
+    # off while confirming that these are working properly
+    # runner.config["auspice"]["color_options"]["glyc"] = {
+    #     "menuItem": "potential glycosylation sites",
+    #     "type": "continuous",
+    #     "legendTitle": "Pot. glycosylation count",
+    #     "key": "glyc"
+    # }
     # runner.config["auspice"]["color_options"]["age"] = {
     #     "menuItem": "average host age in clade",
     #     "type": "continuous",
