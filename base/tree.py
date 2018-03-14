@@ -424,7 +424,14 @@ class tree(object):
         for node in self.tree.find_clades():
             if node.up is not None:
                 node.muts = ["".join(map(str, [a, pos+1, d])) for a,pos,d in node.mutations if '-' not in [a,d]]
-                deletions = sorted([(a,pos,d) for a,pos, d in node.mutations if '-' in [a,d]])
+
+                # Sort all deletions by position to enable identification of
+                # deletions >1 bp below.
+                deletions = sorted(
+                    [(a,pos,d) for a,pos, d in node.mutations if '-' in [a,d]],
+                    key=lambda mutation: mutation[1]
+                )
+
                 if len(deletions):
                     length = 0
                     for pi, (a,pos,d) in enumerate(deletions[:-1]):
