@@ -101,18 +101,23 @@ def titer_model(process, sanofi_strain = None, **kwargs):
     from base.titer_model import TreeModel, SubstitutionModel
     ## TREE MODEL
     process.titer_tree = TreeModel(process.tree.tree, process.titers, **kwargs)
-    process.titer_tree.prepare(**kwargs) # make training set, find subtree with titer measurements, and make_treegraph
-    process.titer_tree.train(**kwargs)   # pick longest branch on path between each (test, ref) pair, assign titer drops to this branch
+
+    if 'cross_validate' in kwargs:
+        assert kwargs['training_fraction'] < 1.0
+        process.cross_validation = process.titer_tree.cross_validate(n=kwargs['cross_validate'], **kwargs)
+
+    else:
+        process.titer_tree.prepare(**kwargs) # make training set, find subtree with titer measurements, and make_treegraph
+        process.titer_tree.train(**kwargs)   # pick longest branch on path between each (test, ref) pair, assign titer drops to this branch
                                          # then calculate a cumulative antigenic evolution score for each node
+        if kwargs['training_fraction'] != 1.0:
+            process.titer_tree.validate(kwargs)
 
     # add attributes for the estimated branch-specific titer drop values (dTiter)
     # and cumulative (from root) titer drop values (cTiter) to each branch
     for n in process.tree.tree.find_clades():
         n.attr['cTiter'] = n.cTiter
         n.attr['dTiter'] = n.dTiter
-
-    if kwargs['training_fraction'] != 1.0:
-        process.titer_tree.validate(kwargs)
 
     if sanofi_strain: # calculate antigenic distance from vaccine strain for each serotype-specific build
         # find the vaccine strain in the tree
@@ -141,22 +146,34 @@ def titer_model(process, sanofi_strain = None, **kwargs):
 
 def titer_export(process):
     from base.io_util import write_json
+    from itertools import chain
+    import pandas as pd
+
     prefix = process.config["output"]["auspice"]+'/'+process.info["prefix"]+'_'
+
     if hasattr(process, 'titer_tree'):
         # export the raw titers
         data = process.titer_tree.compile_titers()
         write_json(data, prefix+'titers.json', indent=1)
-        # export the tree model (avidities and potencies only)
+        # export the tree model
         tree_model = {'potency':process.titer_tree.compile_potencies(),
                       'avidity':process.titer_tree.compile_virus_effects(),
                       'dTiter':{n.clade:n.dTiter for n in process.tree.tree.find_clades() if n.dTiter>1e-6}}
         write_json(tree_model, prefix+'tree_model.json')
 
-        validation_values = {'actual': [v[0] for v in process.titer_tree.validation.values()],
-                             'predicted': [v[1] for v in process.titer_tree.validation.values()]}
-        import pandas as pd
-        validation_values = pd.DataFrame(validation_values)
-        validation_values.to_csv(prefix+'tree_model_validation.csv')
+        # export model performance on test set
+        if hasattr(process.titer_tree, 'cross_validation'):
+            predicted_values = list(chain.from_iterable([iteration.pop('values') for iteration in process.titer_tree.cross_validation ])) # flatten to one list of (actual, predicted) tuples
+            predicted_values = pd.DataFrame(predicted_values, columns=['actual', 'predicted']) # cast to df so we can easily write to csv
+            model_performance = pd.DataFrame(process.titer_tree.cross_validation) # list of dictionaries -> df
+
+            predicted_values.to_csv(prefix+'predicted_titers.csv', index=False)
+            model_performance.to_csv(prefix+'titer_model_performance.csv', index=False)
+        elif hasattr(process.titer_tree.hasattr, 'validation'):
+            predicted_values = pd.DataFrame(process.titer_tree.validation.pop('values'), columns=['actual', 'predicted'])
+            model_performance = pd.DataFrame(process.titer_tree.validation)
+            predicted_values.to_csv(prefix+'predicted_titers.csv', index=False)
+            model_performance.to_csv(prefix+'titer_model_performance.csv', index=False)
 
     else:
         print('Tree model not yet trained')
