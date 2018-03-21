@@ -449,26 +449,26 @@ class TiterModel(object):
         model_performance['values'] = validation.values()
 
         self.validation = model_performance
-        # if plot:
-        #     import matplotlib.pyplot as plt
-        #     import seaborn as sns
-        #     fs=16
-        #     sns.set_style('darkgrid')
-        #     plt.figure()
-        #     ax = plt.subplot(111)
-        #     plt.plot([-1,6], [-1,6], 'k')
-        #     plt.scatter(actual, predicted)
-        #     plt.ylabel(r"predicted $\log_2$ distance", fontsize = fs)
-        #     plt.xlabel(r"measured $\log_2$ distance" , fontsize = fs)
-        #     ax.tick_params(axis='both', labelsize=fs)
-        #     plt.text(-2.5,6,'regularization:\nprediction error:\nR^2:', fontsize = fs-2)
-        #     plt.text(1.2,6, str(self.lam_drop)+'/'+str(self.lam_pot)+'/'+str(self.lam_avi)+' (HI/pot/avi)'
-        #              +'\n'+str(round(model_performance['abs_error'], 2))+'/'+str(round(model_performance['rms_error'], 2))+' (abs/rms)'
-        #              + '\n' + str(model_performance['r_squared']), fontsize = fs-2)
-        #     plt.tight_layout()
-        #
-        #     if fname:
-        #         plt.savefig(fname)
+        if plot:
+            import matplotlib.pyplot as plt
+            import seaborn as sns
+            fs=16
+            sns.set_style('darkgrid')
+            plt.figure()
+            ax = plt.subplot(111)
+            plt.plot([-1,6], [-1,6], 'k')
+            plt.scatter(actual, predicted)
+            plt.ylabel(r"predicted $\log_2$ distance", fontsize = fs)
+            plt.xlabel(r"measured $\log_2$ distance" , fontsize = fs)
+            ax.tick_params(axis='both', labelsize=fs)
+            plt.text(-2.5,6,'regularization:\nprediction error:\nR^2:', fontsize = fs-2)
+            plt.text(1.2,6, str(self.lam_drop)+'/'+str(self.lam_pot)+'/'+str(self.lam_avi)+' (HI/pot/avi)'
+                     +'\n'+str(round(model_performance['abs_error'], 2))+'/'+str(round(model_performance['rms_error'], 2))+' (abs/rms)'
+                     + '\n' + str(model_performance['r_squared']), fontsize = fs-2)
+            plt.tight_layout()
+
+            if fname:
+                plt.savefig(fname)
 
         return model_performance
 
