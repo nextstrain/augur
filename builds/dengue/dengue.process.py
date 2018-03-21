@@ -121,15 +121,16 @@ if __name__=="__main__":
                 titer_model(runner,
                             lam_pot = runner.config['titers']['lam_pot'],
                             lam_avi = runner.config['titers']['lam_avi'],
-                            lam_drop = runner.config['titers']['lam_drop'],
-                            training_fraction = runner.config['titers']['training_fraction'],
-                            sanofi_strain = sanofi_vaccine_strains[runner.info['lineage']], # vaccine strain for each serotype-specific build
+                        lam_drop = runner.config['titers']['lam_drop'],
+                        training_fraction = runner.config['titers']['training_fraction'],
+                        sanofi_strain = sanofi_vaccine_strains[runner.info['lineage']], # vaccine strain for each serotype-specific build
                             plot=False,
                             criterium = lambda node: True) # calculate dTiter for all branches
-                titer_export(runner)
+                        cross_validate=3) # calculate dTiter for all branches
+            titer_export(runner)
 
-            ### Export for visualization in auspice
-            runner.auspice_export()
+        ### Export for visualization in auspice
+        runner.auspice_export()
 
         except:
             continue
