@@ -19,8 +19,21 @@ Augur is the informatic processing pipeline to track evolution from sequence and
 ![flowchart](docs/assets/flow.png)
 
 ## Install
+To install augur, clone the git repository and the submodules
+```
+git clone https://github.com/nextstrain/augur.git
+cd augur
+git submodule update --init
+```
+Augur has a number of python dependencies that are listed in `requirements.txt` and best installed via a package manager like conda or pip.
+```
+pip install -r requirements.txt
+```
+In addition, needs working installations of [mafft](https://mafft.cbrc.jp/alignment/software/) and one of the following tree builders
+  * DEFAULT: [RAxML](https://sco.h-its.org/exelixis/web/software/raxml/index.html). You'll probably need to create a symlink `raxml -> raxmlHPC` because `augur` expects an excutable named `raxml`
+  * OPTIONAL: FastTree
+  * OPTIONAL: IQ-TREE
 
-_Add install instructions._
 
 ## Documentation
 
