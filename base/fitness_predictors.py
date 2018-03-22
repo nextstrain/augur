@@ -28,9 +28,9 @@ class fitness_predictors(object):
         """
         return "".join(node.translations.values())
 
-    def setup_predictor(self, tree, pred, timepoint):
+    def setup_predictor(self, tree, pred, timepoint, **kwargs):
         if pred == 'lb':
-            self.calc_LBI(tree, tau = 0.0005, transform = lambda x:x)
+            self.calc_LBI(tree, **kwargs)
         if pred == 'ep':
             self.calc_epitope_distance(tree)
         if pred == 'ep_x':
