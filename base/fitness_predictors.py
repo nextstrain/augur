@@ -368,13 +368,20 @@ class fitness_predictors(object):
         tree -- dendropy tree for whose node the LBI is being computed
         attr     -- the attribute name used to store the result
         '''
+        # Check for clock length attribute and create it if it does not exist.
+        if not hasattr(tree.root, "clock_length"):
+            tree.root.clock_length = 0.0
+            for node in tree.find_clades():
+                for child in node.clades:
+                    child.clock_length = child.tvalue - node.tvalue
+
         # traverse the tree in postorder (children first) to calculate msg to parents
         for node in tree.find_clades(order="postorder"):
             node.down_polarizer = 0
             node.up_polarizer = 0
             for child in node.clades:
                 node.up_polarizer += child.up_polarizer
-            bl =  node.branch_length/tau
+            bl =  node.clock_length / tau
             node.up_polarizer *= np.exp(-bl)
             if node.alive: node.up_polarizer += tau*(1-np.exp(-bl))
 
@@ -386,7 +393,7 @@ class fitness_predictors(object):
                     if child1!=child2:
                         child1.down_polarizer += child2.up_polarizer
 
-                bl =  child1.branch_length/tau
+                bl =  child1.clock_length / tau
                 child1.down_polarizer *= np.exp(-bl)
                 if child1.alive: child1.down_polarizer += tau*(1-np.exp(-bl))
 
