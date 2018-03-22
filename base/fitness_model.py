@@ -79,7 +79,7 @@ def matthews_correlation_coefficient(tp, tn, fp, fn):
 
 class fitness_model(object):
 
-    def __init__(self, tree, frequencies, time_interval, predictor_input = ['ep', 'lb', 'dfreq'], pivot_spacing = 1.0 / 12, verbose = 0, enforce_positive_predictors = True, **kwargs):
+    def __init__(self, tree, frequencies, time_interval, predictor_input = ['ep', 'lb', 'dfreq'], pivots = None, pivot_spacing = 1.0 / 12, verbose = 0, enforce_positive_predictors = True, predictor_kwargs=None, **kwargs):
         '''
         parameters:
         tree -- tree of sequences for which a fitness model is to be determined
@@ -94,6 +94,13 @@ class fitness_model(object):
         self.estimate_coefficients = True
         self.min_freq = kwargs.get("min_freq", 0.1)
         self.max_freq = kwargs.get("max_freq", 0.99)
+
+        if predictor_kwargs is None:
+            self.predictor_kwargs = {}
+        else:
+            self.predictor_kwargs = predictor_kwargs
+
+        self.time_window = kwargs.get("time_window", 6.0 / 12.0)
 
         # Convert datetime date interval to floating point interval from
         # earliest to latest.
@@ -112,9 +119,9 @@ class fitness_model(object):
                 self.estimate_coefficients = True
 
         # If pivots have not been calculated yet, calculate them here.
-        if (not hasattr(self, "pivots") and
-            hasattr(self, "time_interval") and
-            hasattr(self, "pivot_spacing")):
+        if pivots is not None:
+            self.pivots = pivots
+        else:
             self.pivots = make_pivots(
                 self.time_interval[0],
                 self.time_interval[1],
