@@ -46,7 +46,7 @@ def make_config(params):
         "colors": ["country", "division"], # essential. Maybe False.
         "color_defs": ["./colors.tsv"],
         "lat_longs": ["country", "division"], # essential. Maybe False.
-        "auspice_filters": ["country", "division"],   
+        "auspice_filters": ["authors", "country", "division"],   
         "reference": {
             "path": "metadata/ebola_outgroup.gb",
             "metadata": {

@@ -93,7 +93,7 @@ config = {
     # see the docs for what's going on with colours (sic) & lat/longs
     "colors": ["division", "host"], # essential. Maybe False.
     "color_defs": ["./colors.avian.tsv"],
-    "auspice_filters": ["division", "host"],
+    "auspice_filters": ["authors", "division", "host"],
     "lat_longs": ["division"], # essential. Maybe False.
     "references": references, # imported
 }

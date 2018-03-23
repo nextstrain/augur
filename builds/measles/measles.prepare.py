@@ -45,7 +45,7 @@ def make_config(params):
         "colors": ["country", "region"],
         "color_defs": ["./colors.tsv"],
         "lat_longs": ["country", "region"],
-        "auspice_filters": ["country", "region"],
+        "auspice_filters": ["authors", "region", "country"],
         "reference": {
             "path": "measles-reference.gb",
             "metadata": {
