@@ -42,7 +42,7 @@ def make_config(params):
             "threshold": params.viruses_per_month,
             "category": lambda x:(x.attributes['date'].year, x.attributes['date'].month, x.attributes['country'])
         },
-        "colors": ["country", "region"],
+        "colors": ["authors", "country", "region"],
         "color_defs": ["./colors.tsv"],
         "lat_longs": ["country", "region"],
         "auspice_filters": ["authors", "region", "country"],

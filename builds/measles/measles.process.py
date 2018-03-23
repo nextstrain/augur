@@ -21,8 +21,9 @@ def make_config(prepared_json, clean, params):
         "geo_inference": False,
         "auspice": { ## settings for auspice JSON export
             "color_options": {
-                "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
-                "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
+                "region": {"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
+                "country": {"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
+                "authors": {"key":"authors", "legendTitle":"Authors", "menuItem":"authors", "type":"discrete"}
             },
             "defaults": {
                 "colorBy": "country",
