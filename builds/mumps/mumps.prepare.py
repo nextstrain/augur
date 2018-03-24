@@ -41,7 +41,7 @@ def make_config(params):
             "Zagreb.HRV/28.12/G",  # retracted sequence
             "Du/CRO05"   # retracted sequence
         ]
-        colors = ["country", "region", "MuV_genotype"]
+        colors = ["authors", "region", "country", "MuV_genotype"]
         lat_longs = ["country", "region"]
         auspice_filters = ["authors", "region", "country", "MuV_genotype"]
         filters = (
@@ -74,7 +74,7 @@ def make_config(params):
             "Massachusetts.USA/5.17/G","Massachusetts.USA/18.17/G","Massachusetts.USA/22.17/7/G",
             "Massachusetts.USA/23.17/2/G","Massachusetts.USA/19.17/2/G"
         ]
-        colors = ["country", "division", "MuV_genotype"]
+        colors = ["authors", "country", "division", "MuV_genotype"]
         lat_longs = ["country", "division"]
         auspice_filters = ["authors", "country", "division", "MuV_genotype"]
         filters = (

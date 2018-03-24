@@ -32,8 +32,9 @@ config = {
     },
     "auspice": { ## settings for auspice JSON export
         "color_options": {
-            "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
-            "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
+            "authors": {"key":"authors", "legendTitle":"Authors", "menuItem":"authors", "type":"discrete"},
+            "region": {"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
+            "country": {"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"}
         },
         "controls": {'authors':['authors']},
         "defaults": {'mapTriplicate': True}

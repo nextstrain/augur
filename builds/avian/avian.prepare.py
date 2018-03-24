@@ -51,7 +51,7 @@ dropped_strains = [
 config = {
     "dir": "avian", # the current directory. You must be inside this to run the script.
     "title": "Real-time tracking of influenza A/H7N9 evolution",
-    "maintainer": ["James Hadfield", "http://bedford.io/team/james-hadfield/"],
+    "maintainer": ["Trevor Bedford", "http://bedford.io/team/trevor-bedford/"],
     "input_paths": [
         "../../../fauna/data/h7n9_pb2.fasta",
         "../../../fauna/data/h7n9_pb1.fasta",
@@ -93,7 +93,7 @@ config = {
     # see the docs for what's going on with colours (sic) & lat/longs
     "colors": ["division", "host"], # essential. Maybe False.
     "color_defs": ["./colors.avian.tsv"],
-    "auspice_filters": ["authors", "division", "host"],
+    "auspice_filters": ["division", "host"],
     "lat_longs": ["division"], # essential. Maybe False.
     "references": references, # imported
 }
@@ -123,8 +123,16 @@ if __name__=="__main__":
     runner = prepare(config)
     runner.load_references()
     runner.applyFilters()
-    #runner.ensure_all_segments()
     runner.subsample()
+    # set china to ? for division label
+    for segment in runner.segments:
+        seqs = runner.segments[segment].seqs
+        for strain in seqs:
+            attrs = seqs[strain].attributes
+            if 'division' in attrs:
+                if attrs['division'] == "china":
+                    print("setting division for", strain, "to ?")
+                    attrs['division'] = "?"
     runner.colors()
     runner.latlongs()
     runner.write_to_json(segment_addendum=segment_addendum)

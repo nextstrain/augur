@@ -20,8 +20,9 @@ config = {
     "geo_inference": ['country', 'division'], # what traits to perform this on
     "auspice": { ## settings for auspice JSON export
         "color_options": {
-            "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
-            "division":{"key":"division", "legendTitle":"Division", "menuItem":"division", "type":"discrete"},
+            "authors": {"key":"authors", "legendTitle":"Authors", "menuItem":"authors", "type":"discrete"},        
+            "country": {"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
+            "division": {"key":"division", "legendTitle":"Division", "menuItem":"division", "type":"discrete"},
         },
         "controls": {'geographic location':['country', 'division'], 'authors':['authors']},
         "defaults": {

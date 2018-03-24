@@ -43,10 +43,10 @@ def make_config(params):
             "threshold": params.viruses_per_month,
             "priority": lambda x:x.id in forced_strains
         },
-        "colors": ["country", "division"], # essential. Maybe False.
+        "colors": ["authors", "country", "division"], # essential. Maybe False.
         "color_defs": ["./colors.tsv"],
         "lat_longs": ["country", "division"], # essential. Maybe False.
-        "auspice_filters": ["authors", "country", "division"],   
+        "auspice_filters": ["authors", "country", "division"],
         "reference": {
             "path": "metadata/ebola_outgroup.gb",
             "metadata": {

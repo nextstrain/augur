@@ -121,7 +121,7 @@ def make_config(serotype, params):
             "prefix": "https://www.ncbi.nlm.nih.gov/nuccore/%s",
             "attr": "accession" },
 
-        "colors": ["region", "country"],
+        "colors": ["authors", "region", "country"],
         "lat_longs": ["region", "country"],
         "lat_long_defs": '../../../fauna/source-data/geo_lat_long.tsv',
         "auspice_filters": ["authors", "region", "country"],
