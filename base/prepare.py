@@ -165,7 +165,7 @@ class prepare(object):
                     continue
                 self.log.notify("Generating colour maps for '{}'".format(trait))
                 vals = set.union(*[obj.get_trait_values(trait) for seg, obj in self.segments.iteritems()])
-                missing_vals = vals - set([x[0] for x in cols[trait]])
+                missing_vals = vals - set([x[0] for x in cols[trait]]) - set(["?"])
                 if len(missing_vals):
                     cols[trait].extend(generate_cmap(missing_vals, False))
                 # remove colours for values that have no sequences
@@ -193,8 +193,9 @@ class prepare(object):
                     try:
                         lat_longs[trait][key] = lat_long_db[key.lower()]
                     except KeyError:
-                        lat_longs[trait][key] = {'latitude': 0,'longitude': 0}
-                        self.log.warn("Unknown lat/longs for {} {}. Setting to 0,0 in order to appease auspice but you should fix this.".format(trait, key))
+                        if key != "?":
+                            lat_longs[trait][key] = {'latitude': 0,'longitude': 0}
+                            self.log.warn("Unknown lat/longs for {} {}. Setting to 0,0 in order to appease auspice but you should fix this.".format(trait, key))
 
             # save to each sequence_set object. It's them that write the JSONs
             for seg, obj in self.segments.iteritems():
