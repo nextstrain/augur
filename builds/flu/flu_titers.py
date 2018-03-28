@@ -92,13 +92,11 @@ def read_masks(mask_file):
             ha_masks[key] = np.fromstring(value, 'S1')=='1'
     return ha_masks
 
+def glycosylation_count(aa):
+    # need to restrict to surface residues.
+    return len(re.findall('N[^P][ST][^P]', aa))
+
 def seasonal_flu_scores(runner, tree, mask_file, glyc_mask_version='wolf'):
-
-    def glycosylation_count(aa):
-        # need to restrict to surface residues.
-        return len(re.findall('N[^P][ST][^P]', aa))
-
-
     root = tree.root
     root_total_aa_seq = get_total_peptide(root, runner.segment)
     ha_masks = read_masks(mask_file)
