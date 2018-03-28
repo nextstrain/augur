@@ -578,12 +578,54 @@ if __name__=="__main__":
         assert "glyc" in runner.tree.tree.root.attr, "glycosylation not annotated"
         assert "age" in runner.tree.tree.root.attr, "age not annotated"
 
+        # Define color options for score annotations.
+        runner.config["auspice"]["color_options"]["glyc"] = {
+            "menuItem": "potential glycosylation sites",
+            "type": "continuous",
+            "legendTitle": "Pot. glycosylation count",
+            "key": "glyc"
+        }
+        # runner.config["auspice"]["color_options"]["age"] = {
+        #     "menuItem": "average host age in clade",
+        #     "type": "continuous",
+        #     "legendTitle": "Avg host age in clade",
+        #     "key": "age"
+        # }
+        # runner.config["auspice"]["color_options"]["gender"] = {
+        #     "menuItem": "average host gender in clade",
+        #     "type": "continuous",
+        #     "legendTitle": "Avg host gender in clade",
+        #     "key": "num_gender"
+        # }
+
         if segment=='ha' and runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
             IAV_scores(runner, runner.tree.tree, runner.config["ha_masks"],
                        epitope_mask_version = runner.config["epitope_mask_version"])
             assert "ep" in runner.tree.tree.root.attr, "epitope mutations not annotated"
             assert "ne" in runner.tree.tree.root.attr, "non-epitope mutations not annotated"
             assert "rb" in runner.tree.tree.root.attr, "rbs mutations not annotated"
+
+            # Define color options for sequence score annotations.
+            runner.config["auspice"]["color_options"]["ep"] = {
+                "menuItem": "epitope mutations",
+                "type": "continuous",
+                "legendTitle": "Epitope mutations",
+                "key": "ep"
+            }
+            runner.config["auspice"]["color_options"]["ne"] = {
+                "menuItem": "non-epitope mutations",
+                "type": "continuous",
+                "legendTitle": "Non-epitope mutations",
+                "key": "ne"
+            }
+
+            if runner.info["lineage"]=='h3n2':
+                runner.config["auspice"]["color_options"]["rb"] = {
+                    "menuItem": "receptor binding mutations",
+                    "type": "continuous",
+                    "legendTitle": "Receptor binding mutations",
+                    "key": "rb"
+                }
 
         if hasattr(runner, "titers"):
             HI_model(runner)

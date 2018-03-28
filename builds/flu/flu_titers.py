@@ -183,26 +183,6 @@ def seasonal_flu_scores(runner, tree, mask_file, glyc_mask_version='wolf'):
         node.attr['num_gender'] = np.sum([c.attr['num_gender']*c.tip_count for c in node])/node.tip_count
 
 
-    # not sure those have any effects right now... but auspice 2.0 might use them
-    runner.config["auspice"]["color_options"]["glyc"] = {
-        "menuItem": "potential glycosylation sites",
-        "type": "continuous",
-        "legendTitle": "Pot. glycosylation count",
-        "key": "glyc"
-    }
-    # runner.config["auspice"]["color_options"]["age"] = {
-    #     "menuItem": "average host age in clade",
-    #     "type": "continuous",
-    #     "legendTitle": "Avg host age in clade",
-    #     "key": "age"
-    # }
-    # runner.config["auspice"]["color_options"]["gender"] = {
-    #     "menuItem": "average host gender in clade",
-    #     "type": "continuous",
-    #     "legendTitle": "Avg host gender in clade",
-    #     "key": "num_gender"
-    # }
-
 def epitope_sites(aa, epitope_mask):
     return aa[epitope_mask[:len(aa)]]
 
@@ -258,26 +238,5 @@ def IAV_scores(runner, tree, mask_file, epitope_mask_version='wolf'):
             node.attr['ne'] = nonepitope_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
             if runner.info["lineage"]=='h3n2':
                 node.attr['rb'] = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
-
-
-        runner.config["auspice"]["color_options"]["ep"] = {
-            "menuItem": "epitope mutations",
-            "type": "continuous",
-            "legendTitle": "Epitope mutations",
-            "key": "ep"
-        }
-        runner.config["auspice"]["color_options"]["ne"] = {
-            "menuItem": "non-epitope mutations",
-            "type": "continuous",
-            "legendTitle": "Non-epitope mutations",
-            "key": "ne"
-        }
-        if runner.info["lineage"]=='h3n2':
-            runner.config["auspice"]["color_options"]["rb"] = {
-                "menuItem": "receptor binding mutations",
-                "type": "continuous",
-                "legendTitle": "Receptor binding mutations",
-                "key": "rb"
-            }
     else:
         print("no matching eptiope mask found! looking for ",epitope_mask_version)
