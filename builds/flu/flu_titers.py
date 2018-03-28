@@ -190,18 +190,6 @@ def epitope_sites(aa, epitope_mask):
 def nonepitope_sites(aa, epitope_mask):
     return aa[~epitope_mask[:len(aa)]]
 
-def receptor_binding_sites(aa):
-    '''
-    THIS IS H3N2 specific
-    Receptor binding site mutations from Koel et al. 2014
-    These are (145, 155, 156, 158, 159, 189, 193) in canonical HA numbering
-    need to subtract one since python arrays start at 0
-    '''
-    sp = 16
-    rbs = map(lambda x:x+sp-1, [145, 155, 156, 158, 159, 189, 193])
-    return np.array([aa[pos] for pos in rbs])
-
-
 def epitope_distance(aaA, aaB, epitope_mask):
     """Return distance of sequences aaA and aaB by comparing epitope sites"""
     epA = epitope_sites(aaA, epitope_mask)
@@ -213,13 +201,6 @@ def nonepitope_distance(aaA, aaB, epitope_mask):
     """Return distance of sequences aaA and aaB by comparing non-epitope sites"""
     neA = nonepitope_sites(aaA, epitope_mask)
     neB = nonepitope_sites(aaB, epitope_mask)
-    distance = np.sum(neA!=neB)
-    return distance
-
-def receptor_binding_distance(aaA, aaB):
-    """Return distance of sequences aaA and aaB by comparing receptor binding sites"""
-    neA = receptor_binding_sites(aaA)
-    neB = receptor_binding_sites(aaB)
     distance = np.sum(neA!=neB)
     return distance
 
@@ -235,11 +216,15 @@ def IAV_scores(tree, mask_file, lineage, segment, epitope_mask_version='wolf'):
         sys.stderr.write("ERROR: Could not find an epitope mask named '%s'.\n" % epitope_mask_version)
         raise e
 
+    rbs_mask_name = "%s_%s_rbs" % (lineage, segment)
+    rbs_mask = ha_masks.get(rbs_mask_name)
+
     root = tree.root
     root_total_aa_seq = get_total_peptide(root, segment)
     for node in tree.find_clades():
         total_aa_seq = get_total_peptide(node, segment)
         node.attr['ep'] = epitope_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
         node.attr['ne'] = nonepitope_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
-        if lineage == 'h3n2':
-            node.attr['rb'] = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
+
+        if rbs_mask is not None:
+            node.attr['rb'] = epitope_distance(total_aa_seq, root_total_aa_seq, rbs_mask)
