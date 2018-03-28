@@ -93,25 +93,15 @@ def read_masks(mask_file):
             ha_masks[key] = np.fromstring(value, 'S1')=='1'
     return ha_masks
 
-def glycosylation_count(aa):
-    # need to restrict to surface residues.
-    return len(re.findall('N[^P][ST][^P]', aa))
+def glycosylation_count(total_aa_seq, glyc_mask):
+    # TODO: need to restrict to surface residues.
+    total_aa_seq_masked = "".join([aa if mask else 'X'
+                                   for (mask, aa) in zip(glyc_mask, total_aa_seq)])
 
-def seasonal_flu_scores(tree, mask_file, segment, glyc_mask_version='wolf'):
+    return len(re.findall('N[^P][ST][^P]', total_aa_seq_masked))
+
+def seasonal_flu_scores(tree, segment):
     root = tree.root
-    root_total_aa_seq = get_total_peptide(root, segment)
-    ha_masks = read_masks(mask_file)
-    if glyc_mask_version in ha_masks:
-        glyc_mask = ha_masks[glyc_mask_version]
-    else:
-        print("seasonal_flu_scores: glycosylation mask '%s' not found, using all positions instead!"%glyc_mask_version)
-        glyc_mask = np.ones(len(root_total_aa_seq), dtype='bool')
-
-    for node in tree.find_clades():
-        total_aa_seq = get_total_peptide(node, segment)
-        total_aa_seq_masked = "".join([aa if mask else 'X'
-                              for (mask, aa) in zip(glyc_mask,total_aa_seq)])
-        node.attr['glyc'] = glycosylation_count(total_aa_seq_masked)
 
     for node in tree.get_terminals():
         node.tip_count=1.0
@@ -204,7 +194,7 @@ def nonepitope_distance(aaA, aaB, epitope_mask):
     distance = np.sum(neA!=neB)
     return distance
 
-def IAV_scores(tree, mask_file, lineage, segment, epitope_mask_version='wolf'):
+def calculate_sequence_scores(tree, mask_file, lineage, segment, epitope_mask_version='wolf', glyc_mask_version='wolf'):
     '''
     takes a H3N2 HA tree and assigns H3 specific characteristics to
     internal and external nodes
@@ -216,15 +206,26 @@ def IAV_scores(tree, mask_file, lineage, segment, epitope_mask_version='wolf'):
         sys.stderr.write("ERROR: Could not find an epitope mask named '%s'.\n" % epitope_mask_version)
         raise e
 
+    # Get amino acid sequence of root node.
+    root = tree.root
+    root_total_aa_seq = get_total_peptide(root, segment)
+
+    # Setup receptor binding site mask.
     rbs_mask_name = "%s_%s_rbs" % (lineage, segment)
     rbs_mask = ha_masks.get(rbs_mask_name)
 
-    root = tree.root
-    root_total_aa_seq = get_total_peptide(root, segment)
+    # Setup glycosylation mask.
+    if glyc_mask_version in ha_masks:
+        glyc_mask = ha_masks[glyc_mask_version]
+    else:
+        sys.stderr.write("WARNING: Could not find a glycosylation mask named '%s'; using all positions instead.\n" % glyc_mask_version)
+        glyc_mask = np.ones(len(root_total_aa_seq), dtype='bool')
+
     for node in tree.find_clades():
         total_aa_seq = get_total_peptide(node, segment)
         node.attr['ep'] = epitope_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
         node.attr['ne'] = nonepitope_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
+        node.attr['glyc'] = glycosylation_count(total_aa_seq, glyc_mask)
 
         if rbs_mask is not None:
             node.attr['rb'] = epitope_distance(total_aa_seq, root_total_aa_seq, rbs_mask)
