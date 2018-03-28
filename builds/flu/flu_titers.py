@@ -1,6 +1,7 @@
 import numpy as np
 from pdb import set_trace
 import os,re
+import sys
 
 def HI_model(process):
     '''
@@ -228,15 +229,17 @@ def IAV_scores(runner, tree, mask_file, epitope_mask_version='wolf'):
     internal and external nodes
     '''
     ha_masks = read_masks(mask_file)
-    if epitope_mask_version in ha_masks:
+    try:
         epitope_mask = ha_masks[epitope_mask_version]
-        root = tree.root
-        root_total_aa_seq = get_total_peptide(root, runner.segment)
-        for node in tree.find_clades():
-            total_aa_seq = get_total_peptide(node, runner.segment)
-            node.attr['ep'] = epitope_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
-            node.attr['ne'] = nonepitope_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
-            if runner.info["lineage"]=='h3n2':
-                node.attr['rb'] = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
-    else:
-        print("no matching eptiope mask found! looking for ",epitope_mask_version)
+    except KeyError, e:
+        sys.stderr.write("ERROR: Could not find an epitope mask named '%s'.\n" % epitope_mask_version)
+        raise e
+
+    root = tree.root
+    root_total_aa_seq = get_total_peptide(root, runner.segment)
+    for node in tree.find_clades():
+        total_aa_seq = get_total_peptide(node, runner.segment)
+        node.attr['ep'] = epitope_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
+        node.attr['ne'] = nonepitope_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
+        if runner.info["lineage"]=='h3n2':
+            node.attr['rb'] = receptor_binding_distance(total_aa_seq, root_total_aa_seq)
