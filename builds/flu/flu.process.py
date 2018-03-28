@@ -575,11 +575,18 @@ if __name__=="__main__":
         # titers
         seasonal_flu_scores(runner, runner.tree.tree, runner.config["ha_masks"],
                             glyc_mask_version=runner.config["glyc_mask_version"])
+        assert "glyc" in runner.tree.tree.root.attr, "glycosylation not annotated"
+        assert "age" in runner.tree.tree.root.attr, "age not annotated"
+
         if hasattr(runner, "titers"):
             HI_model(runner)
             if segment=='ha' and runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
                 IAV_scores(runner, runner.tree.tree, runner.config["ha_masks"],
                            epitope_mask_version = runner.config["epitope_mask_version"])
+                assert "ep" in runner.tree.tree.root.attr, "epitope mutations not annotated"
+                assert "ne" in runner.tree.tree.root.attr, "non-epitope mutations not annotated"
+                assert "rb" in runner.tree.tree.root.attr, "rbs mutations not annotated"
+
             if runner.config["auspice"]["titers_export"]:
                 HI_export(runner)
                 if segment=='ha':
