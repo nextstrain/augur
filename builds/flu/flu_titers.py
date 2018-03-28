@@ -97,9 +97,9 @@ def glycosylation_count(aa):
     # need to restrict to surface residues.
     return len(re.findall('N[^P][ST][^P]', aa))
 
-def seasonal_flu_scores(runner, tree, mask_file, glyc_mask_version='wolf'):
+def seasonal_flu_scores(tree, mask_file, segment, glyc_mask_version='wolf'):
     root = tree.root
-    root_total_aa_seq = get_total_peptide(root, runner.segment)
+    root_total_aa_seq = get_total_peptide(root, segment)
     ha_masks = read_masks(mask_file)
     if glyc_mask_version in ha_masks:
         glyc_mask = ha_masks[glyc_mask_version]
@@ -108,7 +108,7 @@ def seasonal_flu_scores(runner, tree, mask_file, glyc_mask_version='wolf'):
         glyc_mask = np.ones(len(root_total_aa_seq), dtype='bool')
 
     for node in tree.find_clades():
-        total_aa_seq = get_total_peptide(node, runner.segment)
+        total_aa_seq = get_total_peptide(node, segment)
         total_aa_seq_masked = "".join([aa if mask else 'X'
                               for (mask, aa) in zip(glyc_mask,total_aa_seq)])
         node.attr['glyc'] = glycosylation_count(total_aa_seq_masked)
@@ -223,7 +223,7 @@ def receptor_binding_distance(aaA, aaB):
     distance = np.sum(neA!=neB)
     return distance
 
-def IAV_scores(runner, tree, mask_file, epitope_mask_version='wolf'):
+def IAV_scores(tree, mask_file, lineage, segment, epitope_mask_version='wolf'):
     '''
     takes a H3N2 HA tree and assigns H3 specific characteristics to
     internal and external nodes
@@ -236,10 +236,10 @@ def IAV_scores(runner, tree, mask_file, epitope_mask_version='wolf'):
         raise e
 
     root = tree.root
-    root_total_aa_seq = get_total_peptide(root, runner.segment)
+    root_total_aa_seq = get_total_peptide(root, segment)
     for node in tree.find_clades():
-        total_aa_seq = get_total_peptide(node, runner.segment)
+        total_aa_seq = get_total_peptide(node, segment)
         node.attr['ep'] = epitope_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
         node.attr['ne'] = nonepitope_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
-        if runner.info["lineage"]=='h3n2':
+        if lineage == 'h3n2':
             node.attr['rb'] = receptor_binding_distance(total_aa_seq, root_total_aa_seq)

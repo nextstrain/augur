@@ -573,7 +573,7 @@ if __name__=="__main__":
 
         # runner.save_as_nexus()
         # titers
-        seasonal_flu_scores(runner, runner.tree.tree, runner.config["ha_masks"],
+        seasonal_flu_scores(runner.tree.tree, runner.config["ha_masks"], runner.segment,
                             glyc_mask_version=runner.config["glyc_mask_version"])
         assert "glyc" in runner.tree.tree.root.attr, "glycosylation not annotated"
         assert "age" in runner.tree.tree.root.attr, "age not annotated"
@@ -599,7 +599,7 @@ if __name__=="__main__":
         # }
 
         if segment=='ha' and runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
-            IAV_scores(runner, runner.tree.tree, runner.config["ha_masks"],
+            IAV_scores(runner.tree.tree, runner.config["ha_masks"], runner.info["lineage"], runner.segment,
                        epitope_mask_version = runner.config["epitope_mask_version"])
             assert "ep" in runner.tree.tree.root.attr, "epitope mutations not annotated"
             assert "ne" in runner.tree.tree.root.attr, "non-epitope mutations not annotated"
