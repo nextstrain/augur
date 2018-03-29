@@ -575,13 +575,6 @@ if __name__=="__main__":
         calculate_metadata_scores(runner.tree.tree, runner.segment)
         assert "age" in runner.tree.tree.root.attr, "age not annotated"
 
-        # Define color options for score annotations.
-        runner.config["auspice"]["color_options"]["glyc"] = {
-            "menuItem": "potential glycosylation sites",
-            "type": "continuous",
-            "legendTitle": "Pot. glycosylation count",
-            "key": "glyc"
-        }
         # runner.config["auspice"]["color_options"]["age"] = {
         #     "menuItem": "average host age in clade",
         #     "type": "continuous",
@@ -623,6 +616,13 @@ if __name__=="__main__":
                 "key": "ne"
             }
 
+            runner.config["auspice"]["color_options"]["glyc"] = {
+                "menuItem": "potential glycosylation sites",
+                "type": "continuous",
+            "legendTitle": "Pot. glycosylation count",
+                "key": "glyc"
+            }
+
             if runner.info["lineage"]=='h3n2':
                 runner.config["auspice"]["color_options"]["rb"] = {
                     "menuItem": "receptor binding mutations",
@@ -631,6 +631,7 @@ if __name__=="__main__":
                     "key": "rb"
                 }
 
+        # titers
         if hasattr(runner, "titers"):
             HI_model(runner)
 
