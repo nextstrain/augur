@@ -93,13 +93,6 @@ def read_masks(mask_file):
             ha_masks[key] = np.fromstring(value, 'S1')=='1'
     return ha_masks
 
-def glycosylation_count(total_aa_seq, glyc_mask):
-    # TODO: need to restrict to surface residues.
-    total_aa_seq_masked = "".join([aa if mask else 'X'
-                                   for (mask, aa) in zip(glyc_mask, total_aa_seq)])
-
-    return len(re.findall('N[^P][ST][^P]', total_aa_seq_masked))
-
 def seasonal_flu_scores(tree, segment):
     root = tree.root
 
@@ -193,6 +186,13 @@ def nonepitope_distance(aaA, aaB, epitope_mask):
     neB = nonepitope_sites(aaB, epitope_mask)
     distance = np.sum(neA!=neB)
     return distance
+
+def glycosylation_count(total_aa_seq, glyc_mask):
+    # TODO: need to restrict to surface residues.
+    total_aa_seq_masked = "".join([aa if mask else 'X'
+                                   for (mask, aa) in zip(glyc_mask, total_aa_seq)])
+
+    return len(re.findall('N[^P][ST][^P]', total_aa_seq_masked))
 
 def calculate_sequence_scores(tree, mask_file, lineage, segment, epitope_mask_version='wolf', glyc_mask_version='wolf'):
     '''
