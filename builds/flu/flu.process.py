@@ -601,7 +601,9 @@ if __name__=="__main__":
             assert "ep" in runner.tree.tree.root.attr, "epitope mutations not annotated"
             assert "ne" in runner.tree.tree.root.attr, "non-epitope mutations not annotated"
             assert "glyc" in runner.tree.tree.root.attr, "glycosylation not annotated"
-            assert "rb" in runner.tree.tree.root.attr, "rbs mutations not annotated"
+
+            if runner.info["lineage"] == "h3n2":
+                assert "rb" in runner.tree.tree.root.attr, "rbs mutations not annotated"
 
             # Define color options for sequence score annotations.
             runner.config["auspice"]["color_options"]["ep"] = {
