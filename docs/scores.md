@@ -9,6 +9,7 @@ We calculate the following sequence scores from amino acid sequences.
 We annotate each node of a given tree with a key in its `attr` attribute.
 
 | Score | Attribute key | Description |
+| --- | --- | --- |
 | epitope mutations | `ep` | Number of epitope mutations between the sequences of the root and the current node |
 | non-epitope mutations | `ne` | Number of non-epitope mutations between the root and current node |
 | receptor binding site mutations | `rb` | Number of mutations at experimentally-defined receptor binding sites |
@@ -31,6 +32,7 @@ The second column specifies the binary string of the mask.
 We annotate the following scores from metadata that accompanies each sequence record.
 
 | Score | Attribute key | Description |
+| --- | --- | --- |
 | age | `age` | Age of infected individual in years for tips or average age of individuals associated with tips for internal nodes |
 | sex | `num_gender` | A numerical coding of the sex of the infected individual (male: -1, female: 1, and unknown: 0) |
 
@@ -39,4 +41,5 @@ We annotate the following scores from metadata that accompanies each sequence re
 We annotate the following scores from the phylogeny rather than from individual node characteristics.
 
 | Score | Attribute key | Description |
+| --- | --- | --- |
 | local branching index | `lb` | Local branching index of a node with respect to a specific neighborhood on the phylogeny as defined by [Neher et al. 2013](https://elifesciences.org/articles/03568) |
