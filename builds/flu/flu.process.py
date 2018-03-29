@@ -87,7 +87,7 @@ def make_config (prepared_json, args):
             # "use_marginal":True
         },
         "newick_tree_options":{
-            "raxml": not args.no_raxml
+            "method": args.tree_method
         }
     }
 
@@ -635,7 +635,7 @@ if __name__=="__main__":
                 }
 
         # titers
-        if hasattr(runner, "titers"):
+        if hasattr(runner, "titers") and segment == "ha":
             HI_model(runner)
 
             if runner.config["auspice"]["titers_export"]:
@@ -673,12 +673,11 @@ if __name__=="__main__":
             with open(ha_tree_json_fname) as jfile:
                 ha_tree_json = json.load(jfile)
             ha_tree_flat = flatten_json(ha_tree_json)
-
+            for node in runner.tree.tree.find_clades():
+                node.attr['clade_membership'] = 'unassigned'
             for n in runner.tree.tree.get_terminals():
                 if n.name in ha_tree_flat:
-                    if "named_clades" in ha_tree_flat[n.name]["attr"]:
-                        n.attr["named_clades"] = ha_tree_flat[n.name]["attr"]["named_clades"]
-                else:
-                    n.attr["named_clades"] = ["unassigned"]
+                    if "clade_membership" in ha_tree_flat[n.name]["attr"]:
+                        n.attr["clade_membership"] = ha_tree_flat[n.name]["attr"]["clade_membership"]
 
     runner.auspice_export()

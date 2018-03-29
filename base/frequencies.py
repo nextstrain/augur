@@ -129,12 +129,14 @@ class frequency_estimator(object):
         # print('optimizing with', len(self.pivots), 'pivots')
         self.dt = np.diff(self.pivots)
         def logLH(x):
+            # x is logit frequency x = log(p/(1-p)) -> p = e^x/(1+e^x); 1-p = 1/(1+e^x)
             self.pivot_freq = logit_inv(x, self.pc)
             try:
                 freq = interp1d(self.pivots, x, kind=self.interpolation_type,bounds_error = False, assume_sorted=True) # Throws a bug with some numpy installations, isn't necessary other than for speed.
             except:
                 freq = interp1d(self.pivots, x, kind=self.interpolation_type,bounds_error = False)
             estfreq = freq(self.tps)
+            # log(p^obs (1-p)^(1-obs)) = log((p/(1-p))^obs (1-p)) = obs*x - log(1+e^x)
             bernoulli_LH = np.sum(estfreq[self.obs]) - np.sum(np.log(1+np.exp(estfreq)))
 
             stiffness_LH = self.stiffLH()
@@ -226,8 +228,20 @@ class freq_est_clipped(object):
 
         self.pivot_freq = np.zeros_like(self.pivots)
         self.pivot_freq[self.good_pivots] = self.fe.pivot_freq
-        self.pivot_freq[self.pivots<self.pivot_lower_cutoff] = self.fe.pivot_freq[0]
-        self.pivot_freq[self.pivots>=self.pivot_upper_cutoff] = self.fe.pivot_freq[-1]
+
+        # set pivots outside of the window used for estimation to strictly zero or one
+        # we previously had simply filled all data points with closest pivot that was
+        # estimated, but this potentially causes propagation of numerical issues when
+        # estimating many nested clades.
+        if self.fe.pivot_freq[0]<0.5:
+            self.pivot_freq[self.pivots<self.pivot_lower_cutoff] = 0.0
+        else:
+            self.pivot_freq[self.pivots<self.pivot_lower_cutoff] = 1.0
+
+        if self.fe.pivot_freq[-1]<0.5:
+            self.pivot_freq[self.pivots>=self.pivot_upper_cutoff] = 0.0
+        else:
+            self.pivot_freq[self.pivots>=self.pivot_upper_cutoff] = 1.0
 
 
 class nested_frequencies(object):
@@ -270,7 +284,7 @@ class tree_frequencies(object):
     to be named with an attribute clade, of root doesn't have such an attribute, clades
     will be numbered in preorder. Each node is assumed to have an attribute "numdate"
     '''
-    def __init__(self, tree, pivots, node_filter=None, min_clades = 20, verbose=0, **kwargs):
+    def __init__(self, tree, pivots, node_filter=None, min_clades = 20, verbose=0, pc=1e-4, **kwargs):
         '''
         set up the internal tree, the pivots and cutoffs
         node_filter -- a function that can be used to exclude terminals nodes
@@ -282,7 +296,8 @@ class tree_frequencies(object):
         self.min_clades = 10 #min_clades
         self.pivots = pivots
         self.kwargs = kwargs
-        self.verbose=verbose
+        self.verbose = verbose
+        self.pc = pc
         if node_filter is None:
             self.node_filter = lambda x:True
         else:
@@ -347,11 +362,11 @@ class tree_frequencies(object):
                     else:
                         obs_to_estimate['other'] = np.any(remainder.values(), axis=0)
 
-                ne = nested_frequencies(node_tps, obs_to_estimate, self.pivots, **self.kwargs)
+                ne = nested_frequencies(node_tps, obs_to_estimate, self.pivots, pc=self.pc, **self.kwargs)
                 freq_est = ne.calc_freqs()
                 for clade, tmp_freq in freq_est.iteritems():
-                    if clade!="other":
-                        self.frequencies[clade] = self.frequencies[node.clade]*tmp_freq
+                    if clade != "other":
+                        self.frequencies[clade] = self.frequencies[node.clade] * tmp_freq
 
                 if len(small_clades) > 1:
                     total_leaves_in_small_clades = 0

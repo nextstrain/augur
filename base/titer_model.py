@@ -7,6 +7,7 @@ from collections import defaultdict
 from base.io_util import myopen
 from itertools import izip
 import pandas as pd
+from pprint import pprint
 
 TITER_ROUND=4
 logger = logging.getLogger(__name__)
@@ -420,25 +421,34 @@ class TiterModel(object):
         predict titers of the validation set (separate set of test_titers aside previously)
         and compare against known values. If requested by plot=True,
         a figure comparing predicted and measured titers is produced
+
+        Compute basic error metrics for actual vs. predicted titer values.
+        Return a dictionary of {'metric': computed_metric, 'values': [(actual, predicted), ...]}, save a copy in self.validation
         '''
         from scipy.stats import linregress, pearsonr
         if validation_set is None:
             validation_set=self.test_titers
-        self.validation = {}
+        validation = {}
         for key, val in validation_set.iteritems():
             pred_titer = self.predict_titer(key[0], key[1], cutoff=cutoff)
-            self.validation[key] = (val, pred_titer)
+            validation[key] = (val, pred_titer)
 
-        a = np.array(self.validation.values())
-        print ("number of prediction-measurement pairs",a.shape)
-        self.abs_error = np.mean(np.abs(a[:,0]-a[:,1]))
-        self.rms_error = np.sqrt(np.mean((a[:,0]-a[:,1])**2))
-        self.slope, self.intercept, tmpa, tmpb, tmpc = linregress(a[:,0], a[:,1])
-        print ("error (abs/rms): ",self.abs_error, self.rms_error)
-        print ("slope, intercept:", self.slope, self.intercept)
-        self.r2 = pearsonr(a[:,0], a[:,1])[0]**2
-        print ("pearson correlation:", self.r2)
+        validation_array = np.array(validation.values())
+        actual = validation_array[:,0]
+        predicted = validation_array[:,1]
 
+        regression = linregress(actual, predicted)
+        model_performance = {
+                        'slope': regression[0],
+                        'intercept': regression[1],
+                        'r_squared': pearsonr(actual, predicted)[0]**2,
+                        'abs_error':  np.mean(np.abs(actual-predicted)),
+                        'rms_error': np.sqrt(np.mean((actual-predicted)**2)),
+        }
+        pprint(model_performance)
+        model_performance['values'] = validation.values()
+
+        self.validation = model_performance
         if plot:
             import matplotlib.pyplot as plt
             import seaborn as sns
@@ -447,18 +457,20 @@ class TiterModel(object):
             plt.figure()
             ax = plt.subplot(111)
             plt.plot([-1,6], [-1,6], 'k')
-            plt.scatter(a[:,0], a[:,1])
+            plt.scatter(actual, predicted)
             plt.ylabel(r"predicted $\log_2$ distance", fontsize = fs)
             plt.xlabel(r"measured $\log_2$ distance" , fontsize = fs)
             ax.tick_params(axis='both', labelsize=fs)
             plt.text(-2.5,6,'regularization:\nprediction error:\nR^2:', fontsize = fs-2)
             plt.text(1.2,6, str(self.lam_drop)+'/'+str(self.lam_pot)+'/'+str(self.lam_avi)+' (HI/pot/avi)'
-                     +'\n'+str(round(self.abs_error, 2))+'/'+str(round(self.rms_error, 2))+' (abs/rms)'
-                     + '\n' + str(self.r2), fontsize = fs-2)
+                     +'\n'+str(round(model_performance['abs_error'], 2))+'/'+str(round(model_performance['rms_error'], 2))+' (abs/rms)'
+                     + '\n' + str(model_performance['r_squared']), fontsize = fs-2)
             plt.tight_layout()
 
             if fname:
                 plt.savefig(fname)
+
+        return model_performance
 
     def reference_virus_statistic(self):
         '''
@@ -630,6 +642,25 @@ class TreeModel(TiterModel):
     """
     def __init__(self,*args, **kwargs):
         super(TreeModel, self).__init__(*args, **kwargs)
+
+
+    def cross_validate(self, n, **kwargs):
+        '''
+        For each of n iterations, randomly re-allocate titers to training and test set.
+        Fit the model using training titers, assess performance using test titers (see TiterModel.validate)
+        Append dictionaries of {'abs_error': , 'rms_error': , 'values': [(actual, predicted), ...], etc.} for each iteration to the model_performance list.
+        Return model_performance, and save a copy in self.cross_validation
+        '''
+
+        model_performance = []
+        for iteration in range(n):
+            self.prepare(**kwargs) # randomly reassign titers to training and test sets
+            self.train(**kwargs) # train the model
+            performance = self.validate() # assess performance on the withheld test data. Returns {'values': [(actual, predicted), ...], 'metric': metric_value, ...}
+            model_performance.append(performance)
+
+        self.cross_validation = model_performance
+        return self.cross_validation
 
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
@@ -961,7 +992,7 @@ if __name__=="__main__":
     ttm.train(method='nnl1reg')
     ttm.validate(plot=True)
 
-    tsm = TreeModel(flu.tree.tree, flu.titers)
+    tsm = SubstitutionModel(flu.tree.tree, flu.titers)
     tsm.prepare(training_fraction=0.8)
     tsm.train(method='nnl1reg')
     tsm.validate(plot=True)

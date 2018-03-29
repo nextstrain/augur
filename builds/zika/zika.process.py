@@ -32,8 +32,9 @@ config = {
     },
     "auspice": { ## settings for auspice JSON export
         "color_options": {
-            "country":{"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
-            "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
+            "authors": {"key":"authors", "legendTitle":"Authors", "menuItem":"authors", "type":"discrete"},
+            "region": {"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
+            "country": {"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"}
         },
         "controls": {'authors':['authors']},
         "defaults": {'mapTriplicate': True}
@@ -54,7 +55,7 @@ if __name__=="__main__":
     if params.json:
         config["in"] = params.json
 
-    config["newick_tree_options"]["raxml"] = not params.no_raxml
+    config["newick_tree_options"]["method"] = params.tree_method
 
     runner = process(config)
     runner.align(fill_gaps=True)

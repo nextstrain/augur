@@ -10,7 +10,7 @@ def process_freqs(frequencies, num_dp):
     return [round(x, num_dp) for x in frequencies]
 
 def export_frequency_json(process, prefix, indent):
-    num_dp = 4;
+    num_dp = 6
     # construct a json file containing all frequency estimate
     # the format is region_protein:159F for mutations and region_clade:123 for clades
     if hasattr(process, 'pivots'):

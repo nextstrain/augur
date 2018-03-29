@@ -20,7 +20,7 @@ def collect_args():
 config = {
     "dir": "avian",
     # "in": "prepared/flu_H7N9_HA.json", # should be able to specify from command line
-    "geo_inference": [], # what traits to perform this on
+    "geo_inference": ["division"], # what traits to perform this on
     "auspice": { ## settings for auspice JSON export
         "panels": ['tree', 'map', 'entropy'],
         "defaults": {
@@ -46,12 +46,11 @@ if __name__=="__main__":
 
     config["in"] = params.json
     config["clean"] = params.clean
-    config["newick_tree_options"]["raxml"] = not params.no_raxml
 
     runner = process(config)
     runner.align()
     runner.build_tree()
     runner.timetree_setup_filter_run()
-    #runner.run_geo_inference()
+    runner.run_geo_inference()
     runner.save_as_nexus()
     runner.auspice_export()
