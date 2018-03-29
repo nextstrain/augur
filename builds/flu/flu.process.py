@@ -6,7 +6,8 @@ import base.process
 from base.fitness_model import process_predictor_args
 from base.process import process
 from base.utils import fix_names
-from flu_titers import HI_model, HI_export, calculate_sequence_scores, calculate_metadata_scores
+from flu_titers import HI_model, HI_export
+from scores import calculate_sequence_scores, calculate_metadata_scores
 from flu_info import clade_designations
 import argparse
 import numpy as np
