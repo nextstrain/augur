@@ -572,7 +572,7 @@ if __name__=="__main__":
                                 fname_by_mutation = "processed/recurring_mutations/%s_recurring_mutations.txt"%(runner.info["prefix"]))
 
         # runner.save_as_nexus()
-        calculate_metadata_scores(runner.tree.tree, runner.segment)
+        calculate_metadata_scores(runner.tree.tree)
         assert "age" in runner.tree.tree.root.attr, "age not annotated"
 
         # runner.config["auspice"]["color_options"]["age"] = {

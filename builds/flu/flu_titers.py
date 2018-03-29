@@ -93,7 +93,10 @@ def read_masks(mask_file):
             ha_masks[key] = np.fromstring(value, 'S1')=='1'
     return ha_masks
 
-def calculate_metadata_scores(tree, segment):
+def calculate_metadata_scores(tree):
+    """Calculate scores for each node in the given tree based on metadata already
+    annotated on each node including age and sex of infected individuals.
+    """
     root = tree.root
 
     for node in tree.get_terminals():
@@ -195,10 +198,10 @@ def glycosylation_count(total_aa_seq, glyc_mask):
     return len(re.findall('N[^P][ST][^P]', total_aa_seq_masked))
 
 def calculate_sequence_scores(tree, mask_file, lineage, segment, epitope_mask_version='wolf', glyc_mask_version='wolf'):
-    '''
-    takes a H3N2 HA tree and assigns H3 specific characteristics to
-    internal and external nodes
-    '''
+    """Calculate scores from the amino acid sequence of each node in the given tree.
+
+    Sequence scores depend on lineage- and segment-specific amino acid site masks or named masks.
+    """
     ha_masks = read_masks(mask_file)
     try:
         epitope_mask = ha_masks[epitope_mask_version]
@@ -221,6 +224,7 @@ def calculate_sequence_scores(tree, mask_file, lineage, segment, epitope_mask_ve
         sys.stderr.write("WARNING: Could not find a glycosylation mask named '%s'; using all positions instead.\n" % glyc_mask_version)
         glyc_mask = np.ones(len(root_total_aa_seq), dtype='bool')
 
+    # Annotate scores to each node based on its amino acid sequence.
     for node in tree.find_clades():
         total_aa_seq = get_total_peptide(node, segment)
         node.attr['ep'] = epitope_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
