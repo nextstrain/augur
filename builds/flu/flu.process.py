@@ -6,7 +6,7 @@ import base.process
 from base.fitness_model import process_predictor_args
 from base.process import process
 from base.utils import fix_names
-from flu_titers import HI_model, HI_export, calculate_sequence_scores, seasonal_flu_scores
+from flu_titers import HI_model, HI_export, calculate_sequence_scores, calculate_metadata_scores
 from flu_info import clade_designations
 import argparse
 import numpy as np
@@ -572,8 +572,7 @@ if __name__=="__main__":
                                 fname_by_mutation = "processed/recurring_mutations/%s_recurring_mutations.txt"%(runner.info["prefix"]))
 
         # runner.save_as_nexus()
-        # titers
-        seasonal_flu_scores(runner.tree.tree, runner.segment)
+        calculate_metadata_scores(runner.tree.tree, runner.segment)
         assert "age" in runner.tree.tree.root.attr, "age not annotated"
 
         # Define color options for score annotations.

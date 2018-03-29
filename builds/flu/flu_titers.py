@@ -93,7 +93,7 @@ def read_masks(mask_file):
             ha_masks[key] = np.fromstring(value, 'S1')=='1'
     return ha_masks
 
-def seasonal_flu_scores(tree, segment):
+def calculate_metadata_scores(tree, segment):
     root = tree.root
 
     for node in tree.get_terminals():
