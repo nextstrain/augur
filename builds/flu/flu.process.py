@@ -619,12 +619,12 @@ if __name__=="__main__":
                 "key": "ne"
             }
 
-            runner.config["auspice"]["color_options"]["glyc"] = {
-                "menuItem": "potential glycosylation sites",
-                "type": "continuous",
-            "legendTitle": "Pot. glycosylation count",
-                "key": "glyc"
-            }
+            # runner.config["auspice"]["color_options"]["glyc"] = {
+            #     "menuItem": "potential glycosylation sites",
+            #     "type": "continuous",
+            # "legendTitle": "Pot. glycosylation count",
+            #     "key": "glyc"
+            # }
 
             if runner.info["lineage"]=='h3n2':
                 runner.config["auspice"]["color_options"]["rb"] = {
