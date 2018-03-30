@@ -155,7 +155,7 @@ class fitness_predictors(object):
         comparison_nodes = []
         for node in tree.find_clades(order="postorder"):
             if node.is_leaf():
-                if node.num_date < timepoint and node.num_date > timepoint - window:
+                if node.attr['num_date'] < timepoint and node.attr['num_date'] > timepoint - window:
                     comparison_nodes.append(node)
             if not hasattr(node, 'np_ep'):
                 if not hasattr(node, 'aa'):
@@ -373,7 +373,7 @@ class fitness_predictors(object):
             tree.root.clock_length = 0.0
             for node in tree.find_clades():
                 for child in node.clades:
-                    child.clock_length = child.tvalue - node.tvalue
+                    child.clock_length = child.attr['num_date'] - node.attr['num_date']
 
         # traverse the tree in postorder (children first) to calculate msg to parents
         for node in tree.find_clades(order="postorder"):

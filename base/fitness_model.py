@@ -250,13 +250,13 @@ class fitness_model(object):
         This annotation is used by the LBI and epitope cross-immunity predictors.
         """
         for node in self.tree.find_clades(order="postorder"):
-            if not node.is_terminal():
-                node.alive = any(ch.alive for ch in node.clades)
-            else:
-                if node.numdate <= timepoint and node.numdate > timepoint - time_window:
+            if node.is_terminal():
+                if node.attr['num_date'] <= timepoint and node.attr['num_date'] > timepoint - time_window:
                     node.alive=True
                 else:
                     node.alive=False
+            else:
+                node.alive = any(ch.alive for ch in node.clades)
 
     def calc_time_censored_tree_frequencies(self):
         print("fitting time censored tree frequencies")
@@ -278,7 +278,7 @@ class fitness_model(object):
                 time_interval[1],
                 1 / self.pivot_spacing
             )
-            node_filter_func = lambda node: node.numdate >= time_interval[0] and node.numdate < time_interval[1]
+            node_filter_func = lambda node: node.attr['num_date'] >= time_interval[0] and node.attr['num_date'] < time_interval[1]
 
             # Recalculate tree frequencies for the given time interval and its
             # corresponding pivots.
