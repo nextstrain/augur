@@ -96,25 +96,14 @@ def calculate_metadata_scores(tree):
         node.tip_count = np.sum([c.tip_count for c in node])
         node.attr['num_gender'] = np.sum([c.attr['num_gender']*c.tip_count for c in node])/node.tip_count
 
+def mask_sites(aa, mask):
+    return aa[mask[:len(aa)]]
 
-def epitope_sites(aa, epitope_mask):
-    return aa[epitope_mask[:len(aa)]]
-
-def nonepitope_sites(aa, epitope_mask):
-    return aa[~epitope_mask[:len(aa)]]
-
-def epitope_distance(aaA, aaB, epitope_mask):
-    """Return distance of sequences aaA and aaB by comparing epitope sites"""
-    epA = epitope_sites(aaA, epitope_mask)
-    epB = epitope_sites(aaB, epitope_mask)
-    distance = np.sum(epA!=epB)
-    return distance
-
-def nonepitope_distance(aaA, aaB, epitope_mask):
-    """Return distance of sequences aaA and aaB by comparing non-epitope sites"""
-    neA = nonepitope_sites(aaA, epitope_mask)
-    neB = nonepitope_sites(aaB, epitope_mask)
-    distance = np.sum(neA!=neB)
+def mask_distance(aaA, aaB, mask):
+    """Return distance of sequences aaA and aaB by comparing sites in the given binary mask."""
+    sites_A = mask_sites(aaA, mask)
+    sites_B = mask_sites(aaB, mask)
+    distance = np.sum(sites_A != sites_B)
     return distance
 
 def glycosylation_count(total_aa_seq, glyc_mask):
@@ -154,9 +143,9 @@ def calculate_sequence_scores(tree, mask_file, lineage, segment, epitope_mask_ve
     # Annotate scores to each node based on its amino acid sequence.
     for node in tree.find_clades():
         total_aa_seq = get_total_peptide(node, segment)
-        node.attr['ep'] = epitope_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
-        node.attr['ne'] = nonepitope_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
+        node.attr['ep'] = mask_distance(total_aa_seq, root_total_aa_seq, epitope_mask)
+        node.attr['ne'] = mask_distance(total_aa_seq, root_total_aa_seq, ~epitope_mask)
         node.attr['glyc'] = glycosylation_count(total_aa_seq, glyc_mask)
 
         if rbs_mask is not None:
-            node.attr['rb'] = epitope_distance(total_aa_seq, root_total_aa_seq, rbs_mask)
+            node.attr['rb'] = mask_distance(total_aa_seq, root_total_aa_seq, rbs_mask)
