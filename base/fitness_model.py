@@ -79,7 +79,7 @@ def matthews_correlation_coefficient(tp, tn, fp, fn):
 
 class fitness_model(object):
 
-    def __init__(self, tree, frequencies, time_interval, predictor_input = ['ep', 'lb', 'dfreq'], pivot_spacing = 1.0 / 12, verbose = 0, enforce_positive_predictors = True, **kwargs):
+    def __init__(self, tree, frequencies, time_interval, predictor_input = ['ep', 'lb', 'dfreq'], pivots = None, pivot_spacing = 1.0 / 12, verbose = 0, enforce_positive_predictors = True, predictor_kwargs=None, **kwargs):
         '''
         parameters:
         tree -- tree of sequences for which a fitness model is to be determined
@@ -94,6 +94,13 @@ class fitness_model(object):
         self.estimate_coefficients = True
         self.min_freq = kwargs.get("min_freq", 0.1)
         self.max_freq = kwargs.get("max_freq", 0.99)
+
+        if predictor_kwargs is None:
+            self.predictor_kwargs = {}
+        else:
+            self.predictor_kwargs = predictor_kwargs
+
+        self.time_window = kwargs.get("time_window", 6.0 / 12.0)
 
         # Convert datetime date interval to floating point interval from
         # earliest to latest.
@@ -112,9 +119,9 @@ class fitness_model(object):
                 self.estimate_coefficients = True
 
         # If pivots have not been calculated yet, calculate them here.
-        if (not hasattr(self, "pivots") and
-            hasattr(self, "time_interval") and
-            hasattr(self, "pivot_spacing")):
+        if pivots is not None:
+            self.pivots = pivots
+        else:
             self.pivots = make_pivots(
                 self.time_interval[0],
                 self.time_interval[1],
@@ -234,29 +241,22 @@ class fitness_model(object):
         for pred in self.predictors:
             # calculate the predictors for all nodes of the tree and save as node.attr
             if pred != 'dfreq':
-                self.fp.setup_predictor(self.tree, pred, timepoint)
+                self.fp.setup_predictor(self.tree, pred, timepoint, **self.predictor_kwargs)
 
-    def select_nodes_in_season(self, timepoint):
-        # used by fitness_predictors:calc_LBI and fitness_predictors:calc_epitope_cross_immunity
-        # TODO: fix me for continous time model
-        cutoff = 0.001
-#           for node in self.nodes:
-#               #if season in node.season_tips and len(node.season_tips[season])>0:
-#               if node.timepoint_freqs[timepoint] > cutoff:
-#                   node.alive=True
-#               else:
-#                   node.alive=False
+    def select_nodes_in_season(self, timepoint, time_window):
+        """Annotate a boolean to each node in the tree if it is alive at the given
+        timepoint or prior to the timepoint by the given time window preceding.
 
-        # TODO: loop through nodes from self.nodes instead of self.tree.
+        This annotation is used by the LBI and epitope cross-immunity predictors.
+        """
         for node in self.tree.find_clades(order="postorder"):
-            #if season in node.season_tips and len(node.season_tips[season])>0:
-            if not node.is_terminal():
-                node.alive = any(ch.alive for ch in node.clades)
-            else:
-                if node.numdate <= timepoint and node.numdate > timepoint - 6.0/12.0:
+            if node.is_terminal():
+                if node.attr['num_date'] <= timepoint and node.attr['num_date'] > timepoint - time_window:
                     node.alive=True
                 else:
                     node.alive=False
+            else:
+                node.alive = any(ch.alive for ch in node.clades)
 
     def calc_time_censored_tree_frequencies(self):
         print("fitting time censored tree frequencies")
@@ -278,7 +278,7 @@ class fitness_model(object):
                 time_interval[1],
                 1 / self.pivot_spacing
             )
-            node_filter_func = lambda node: node.numdate >= time_interval[0] and node.numdate < time_interval[1]
+            node_filter_func = lambda node: node.attr['num_date'] >= time_interval[0] and node.attr['num_date'] < time_interval[1]
 
             # Recalculate tree frequencies for the given time interval and its
             # corresponding pivots.
@@ -323,7 +323,7 @@ class fitness_model(object):
             node.predictors = {}
         for time in self.timepoints:
             if self.verbose: print "calculating predictors for time", time
-            self.select_nodes_in_season(time)
+            self.select_nodes_in_season(time, self.time_window)
             self.calc_predictors(time)
             for node in self.nodes:
                 if 'dfreq' in [x for x in self.predictors]: node.dfreq = node.freq_slope[time]

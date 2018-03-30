@@ -28,9 +28,9 @@ class fitness_predictors(object):
         """
         return "".join(node.translations.values())
 
-    def setup_predictor(self, tree, pred, timepoint):
+    def setup_predictor(self, tree, pred, timepoint, **kwargs):
         if pred == 'lb':
-            self.calc_LBI(tree, tau = 0.0005, transform = lambda x:x)
+            self.calc_LBI(tree, **kwargs)
         if pred == 'ep':
             self.calc_epitope_distance(tree)
         if pred == 'ep_x':
@@ -155,7 +155,7 @@ class fitness_predictors(object):
         comparison_nodes = []
         for node in tree.find_clades(order="postorder"):
             if node.is_leaf():
-                if node.num_date < timepoint and node.num_date > timepoint - window:
+                if node.attr['num_date'] < timepoint and node.attr['num_date'] > timepoint - window:
                     comparison_nodes.append(node)
             if not hasattr(node, 'np_ep'):
                 if not hasattr(node, 'aa'):
@@ -360,7 +360,7 @@ class fitness_predictors(object):
             else:
                 node.__setattr__(attr, np.nan)
 
-    def calc_LBI(self, tree, attr = 'lb', tau=0.0005, transform = lambda x:x):
+    def calc_LBI(self, tree, attr = 'lb', tau=0.4, transform = lambda x:x):
         '''
         traverses the tree in postorder and preorder to calculate the
         up and downstream tree length exponentially weighted by distance.
@@ -368,13 +368,20 @@ class fitness_predictors(object):
         tree -- dendropy tree for whose node the LBI is being computed
         attr     -- the attribute name used to store the result
         '''
+        # Check for clock length attribute and create it if it does not exist.
+        if not hasattr(tree.root, "clock_length"):
+            tree.root.clock_length = 0.0
+            for node in tree.find_clades():
+                for child in node.clades:
+                    child.clock_length = child.attr['num_date'] - node.attr['num_date']
+
         # traverse the tree in postorder (children first) to calculate msg to parents
         for node in tree.find_clades(order="postorder"):
             node.down_polarizer = 0
             node.up_polarizer = 0
             for child in node.clades:
                 node.up_polarizer += child.up_polarizer
-            bl =  node.branch_length/tau
+            bl =  node.clock_length / tau
             node.up_polarizer *= np.exp(-bl)
             if node.alive: node.up_polarizer += tau*(1-np.exp(-bl))
 
@@ -386,7 +393,7 @@ class fitness_predictors(object):
                     if child1!=child2:
                         child1.down_polarizer += child2.up_polarizer
 
-                bl =  child1.branch_length/tau
+                bl =  child1.clock_length / tau
                 child1.down_polarizer *= np.exp(-bl)
                 if child1.alive: child1.down_polarizer += tau*(1-np.exp(-bl))
 
