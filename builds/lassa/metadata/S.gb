@@ -1,0 +1,126 @@
+LOCUS       AY628207                3428 bp    RNA     linear   VRL 18-AUG-2004
+DEFINITION  Lassa virus strain Pinneo segment S, complete sequence.
+ACCESSION   AY628207
+VERSION     AY628207.1
+KEYWORDS    .
+SOURCE      Lassa mammarenavirus
+  ORGANISM  Lassa mammarenavirus
+            Viruses; ssRNA viruses; ssRNA negative-strand viruses;
+            Arenaviridae; Mammarenavirus.
+REFERENCE   1  (bases 1 to 3428)
+  AUTHORS   Hajjaj,A., Chain,P.S.G., Do,L.H., Smith,K.L., Imbro,P.M. and
+            Malfatti,S.A.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (18-MAY-2004) Viral Sequencing Group, Lawrence Livermore
+            National Laboratory, 7000 East Avenue, Livermore, CA 94550, USA
+REFERENCE   2  (bases 1 to 3428)
+  AUTHORS   Jahrling,P.B., Geisbert,J. and Ibrahim,M.S.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (18-MAY-2004) Viral Genomics Group, USAMRIID, Fort
+            Detrick, MD 21702, USA
+FEATURES             Location/Qualifiers
+     source          1..3428
+                     /organism="Lassa mammarenavirus"
+                     /mol_type="genomic RNA"
+                     /strain="Pinneo"
+                     /db_xref="taxon:11620"
+                     /segment="S"
+     primer_bind     1..19
+     gene            115..1824
+                     /gene="N"
+     CDS             115..1824
+                     /gene="N"
+                     /codon_start=1
+                     /product="nucleocapsid protein"
+                     /protein_id="AAT49011.1"
+                     /translation="MSNSKEIKSFLWTQSLRRELSGYCSNIKLQVVKDAQALLHGLDF
+                     SEVSNVQRLMRKQKRDDADLKRLRDLNQAVNNLVELKSTQQKNVLRVGTLSSDDLITL
+                     AADLEKLKSKVIRTERPLSSGVYMGNLSSQQLDQRRALLSMIGMSGGPQGNRTGGDGV
+                     VRVWDVKNAELLNNQFGTMPSLTLACLTKQGQVDLNDAVQALTDLGLIYTAKYPNSSD
+                     LDMLTQSHPILGMVDTKKSSLNISGYNFSLGAAVKAGACMLDGGNMLETIKVSPQTMD
+                     GILKSILKVKRSLGMFISDTPGERNPYENILYKICLSGEGWPYIASRTSITGRAWENT
+                     LVDLESDNKPPKLNSAGSNKSLQAAGLNAGLTYSQLMTLKDCMLQLDPSSKTWIDIEG
+                     RPEDPVEIALFQPSSGCYIHFFREPTDLKQFKQDAKYSHGIDVTDLFSTQPGLTSAVI
+                     EALPRNMVLTCQGSDDIKKLLESQGRRDIKLIDISLSKADSRKFENAVWDQYKDLCHM
+                     HTGVVVEKKKRGGKEEITPHCALLDCIMFDAATTGSLNITTLRAVLPRDMVFRTSTPK
+                     VVL"
+     stem_loop       1831..1871
+                     /note="hairpin intergenic region"
+     gene            complement(1886..3358)
+                     /gene="GPC"
+     CDS             complement(1886..3358)
+                     /gene="GPC"
+                     /codon_start=1
+                     /product="glycoprotein precursor"
+                     /protein_id="AAT49012.1"
+                     /translation="MGQIITFFQEVPHVIEEVMNIVLIALSLLAILKGLYNIATCGII
+                     GLVAFLFLCGKSCSLTLKGGYELQTLELNMETLNMTMPLSCTKNSSHHYIRVGNETGL
+                     ELTLTNTSIINHKFCNLSDAHKKNLYDHALMSIISTFHLSIPNFNQYEAMSCDFNGGK
+                     ISVQYNLSHSYAGDAAEHCGTVANGVLQTFMRMAWGGRYIALDSGKGNWDCIMTSYQY
+                     LIIQNTTWEDHCQFSRPSPIGYLGLLSQRTRDIYISRRLLGTFTWTLSDSEGNETPGG
+                     YCLTRWMLIEAELKCFGNTAVAKCNEKHDEEFCDMLRLFDFNKQAIRRLKAEAQMSIQ
+                     LINKAVNALINDQLIMKNHLRDIMGIPYCNYSKYWYLNHTSSGRTSLPKCWLISNGSY
+                     LNETQFSDDIEQQADNMITEMLQKEYIERQGKTPLGLVDIFIFSTSFYLISIFLHLIK
+                     IPTHRHIVGKPCPKPHRLNHMGVCSCGLYKHPGVPTKWKR"
+     primer_bind     complement(3410..3428)
+ORIGIN      
+        1 cgcacagtgg atcctaggcg attggattgc gctttgtgat aattgtgcag agtaaagtga
+       61 ctcttacaga accacttgtc actccacctt taggttgctc caagcacatc agcaatgagc
+      121 aactccaagg aaatcaaatc attcctttgg actcagtcct tacgaaggga actatctggt
+      181 tactgttcta acataaagtt gcaagttgtc aaagatgctc aggctctcct gcatggcctt
+      241 gacttttctg aggtcagcaa tgtgcagagg ctgatgcgca agcagaagag agatgatgca
+      301 gacctaaagc gactgaggga tctgaatcaa gctgtcaaca atcttgttga actgaagtca
+      361 actcaacaga agaatgtctt aagggtcggc accttgagtt cagatgatct aataactttg
+      421 gcagcggacc tggaaaaact caagtccaaa gtcataagga cagaaaggcc tttgagctca
+      481 ggtgtttaca tggggaattt aagctcacaa cagcttgatc aaaggagggc tctcttgagc
+      541 atgattggga tgtcaggtgg acctcaagga aataggacag gtggggatgg tgtcgtcagg
+      601 gtttgggacg taaaaaatgc agaattactc aataaccaat ttggaaccat gccaagcctc
+      661 accttggcgt gcctcaccaa acaagggcaa gtggacctca atgatgctgt gcaagcttta
+      721 acagatttag gtttgattta cacagcaaag tacccgaact cttcagatct agacatgctc
+      781 actcagagtc accctatact aggaatggtt gacacaaaaa agagttccct gaacatctca
+      841 ggttacaact tcagtctggg ggctgcagtt aaagctggtg cttgcatgct tgatgggggc
+      901 aacatgttgg aaacaataaa agtgtcacca caaacaatgg acggtatttt gaaatctatt
+      961 ctgaaggtca aaagatcact gggaatgttc atttctgaca ctcctggtga aagaaaccca
+     1021 tatgagaaca tcctctataa gatctgcctt tcaggtgaag gttggccgta tattgcatca
+     1081 agaacatcaa ttactgggag agcttgggaa aacactcttg ttgatttgga atctgacaac
+     1141 aaaccaccga aactaaatag cgctggttcc aataaaagct tgcaggctgc aggtctaaat
+     1201 gctgggttga cctattctca actgatgaca ctaaaagatt gtatgttaca gttggaccca
+     1261 agtagcaaaa catggataga tattgagggc aggcctgaag acccagtgga gattgctttg
+     1321 tttcaaccaa gctctggttg ttacatacac ttttttagag aacctactga ccttaagcaa
+     1381 ttcaaacagg atgctaagta ctcacatggg atagatgtta cagatctttt ttccacacaa
+     1441 cccgggctga caagtgctgt catagaggca cttccccgca atatggtgtt gacctgccag
+     1501 gggtcagatg acatcaaaaa gctgttggag tctcaaggga gaagagacat caaattgatt
+     1561 gatatttctt tgagcaaagc agattcaagg aagtttgaaa atgctgtgtg ggaccaatac
+     1621 aaagacttgt gtcacatgca cacgggagta gtcgttgaga agaaaaagag gggtggaaaa
+     1681 gaggaaatca ccccacattg cgctttactg gactgcatca tgtttgatgc agctactact
+     1741 ggtagtttga acatcacaac actgagggca gtacttccca gagacatggt cttcaggacc
+     1801 agcaccccta aagtcgttct gtaaatgaac gcccccgtga cccaccgcca ttggcggtgg
+     1861 gtcacggggg ctccctgttt ggagtctatc tcttccactt tgttggaaca ccagggtgtt
+     1921 tgtacagtcc acaggaacat actcccatgt gatttagtct atggggtttg ggacagggtt
+     1981 tcccaacgat gtgtcgatgt gtagggattt taattaaatg caagaaaatg ctgatcagat
+     2041 aaaagcttgt gctaaagatg aaaatgtcca ctagtcccaa gggcgttttc ccttgtcttt
+     2101 caatgtattc tttctgaagc atctctgtga tcatattgtc ggcttgctgt tctatgtcat
+     2161 cagagaactg ggtttcattt agatatgacc cattggatat aagccaacac tttggtagtg
+     2221 atgttctccc gctactagta tgattaaggt accaatactt gctgtaattg cagtagggaa
+     2281 tgcccatgat gtctcttaaa tggttcttca tgattaattg atcattgatt aaggcattca
+     2341 cggctttatt tattaattga atactcatct gggcctcagc cttcaaccta cggattgctt
+     2401 gcttgttgaa atcaaacaat ctcagcatgt cacaaaactc ctcatcatgc ttctcattgc
+     2461 attttgccac agctgtattc ccaaaacact tgagttctgc ttcaattagc atccacctgg
+     2521 ttaaacaata accacctggt gtttcattgc cctcagaatc tgacaatgtc caggtgaagg
+     2581 tccccaagag cctcctactt atatatatat ctcttgtcct ttgtgacaaa aggccaaggt
+     2641 acccgatagg agacggtctt gagaattggc agtggtcctc ccatgttgta ttttgaatta
+     2701 tcaggtactg gtagctggtc attatacagt cccagtttcc ctttcctgag tctaatgcaa
+     2761 tgtatcttcc accccaggcc attctcataa atgtttgcaa cactccgttg gcaactgtcc
+     2821 cacagtgttc ggccgcatcc ccagcatagg aatgagagag gttgtattgc acactgattt
+     2881 tccctccatt gaaatcacaa ctcatggctt catactgatt gaagtttgga atggatagat
+     2941 ggaatgttga gatgatgctc atgagagcat gatcataaag attctttttg tgagcatcgg
+     3001 ataagttgca aaatttgtga tttataatgc tggtgttagt taaagtcaat tctaatccag
+     3061 tctcattgcc cactcttatg taatgatgac tgctgttctt ggtgcatgat aagggcatgg
+     3121 tcatgtttag ggtctccata tttaattcta aggtttgcag ctcatatccc cctttaaggg
+     3181 ttagggaaca agacttgcca cacaagaata aaaaggcaac caatccaata atcccacatg
+     3241 tagcgatgtt atacaagccc ttcaagattg ccaatagaga aagcgcaatt agcacaatgt
+     3301 tcatgacttc ctctattaca tgtggcactt cttgaaagaa tgtaataatc tgccccatga
+     3361 tttaggaatt cctaactagt agtgaatctc taaaagcgca atcctaaatg cctaggatcc
+     3421 actgtgcg
+//
+
