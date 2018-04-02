@@ -15,6 +15,7 @@ While _process_ can be computationally expensive, as long as the underlying _pre
 * [TimeTree](./phylogenies.md) - temporal filtering, ancestral reconstruction + node dating.
 * geographical inference
 * [estimate tree frequencies](./frequencies.md)
+* [annotate tree with scores](./scores.md) - calculate sequence- and metadata-based scores for each node in the tree
 * Titer models (See [Neher et al, PNAS, 2016](http://www.pnas.org/content/113/12/E1701.abstract) )
 * Identify predetermined clades
 * [Export for auspice](./auspice_output.md)

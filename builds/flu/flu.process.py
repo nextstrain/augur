@@ -6,7 +6,8 @@ import base.process
 from base.fitness_model import process_predictor_args
 from base.process import process
 from base.utils import fix_names
-from flu_titers import HI_model, HI_export, H3N2_scores, seasonal_flu_scores
+from flu_titers import HI_model, HI_export
+from scores import calculate_sequence_scores, calculate_metadata_scores
 from flu_info import clade_designations
 import argparse
 import numpy as np
@@ -30,6 +31,7 @@ def parse_args():
     parser.add_argument('--predictors_sds', type=float, nargs='+', help="precalculated global standard deviations for each of the given predictors")
     parser.add_argument('--epitope_mask_version', default="wolf", help="name of the epitope mask that defines epitope mutations")
     parser.add_argument('--tolerance_mask_version', help="name of the tolerance mask that defines non-epitope mutations")
+    parser.add_argument('--glyc_mask_version', default='ha1_h3n2', help="name of the mask that defines putative glycosylation sites")
 
     parser.set_defaults(
         json="prepared/flu.json"
@@ -71,9 +73,10 @@ def make_config (prepared_json, args):
         "build_tree": not args.no_tree,
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
-        "epitope_mask": "metadata/h3n2_epitope_masks.tsv",
+        "ha_masks": "metadata/ha_masks.tsv",
         "epitope_mask_version": args.epitope_mask_version,
         "tolerance_mask_version": args.tolerance_mask_version,
+        "glyc_mask_version": args.glyc_mask_version,
         "annotate_fitness": args.annotate_fitness,
         "predictors": predictors,
         "clean": args.clean,
@@ -570,12 +573,71 @@ if __name__=="__main__":
                                 fname_by_mutation = "processed/recurring_mutations/%s_recurring_mutations.txt"%(runner.info["prefix"]))
 
         # runner.save_as_nexus()
+        calculate_metadata_scores(runner.tree.tree)
+        assert "age" in runner.tree.tree.root.attr, "age not annotated"
+
+        # runner.config["auspice"]["color_options"]["age"] = {
+        #     "menuItem": "average host age in clade",
+        #     "type": "continuous",
+        #     "legendTitle": "Avg host age in clade",
+        #     "key": "age"
+        # }
+        # runner.config["auspice"]["color_options"]["gender"] = {
+        #     "menuItem": "average host gender in clade",
+        #     "type": "continuous",
+        #     "legendTitle": "Avg host gender in clade",
+        #     "key": "num_gender"
+        # }
+
+        if segment=='ha' and runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
+            calculate_sequence_scores(
+                runner.tree.tree,
+                runner.config["ha_masks"],
+                runner.info["lineage"],
+                runner.segment,
+                epitope_mask_version=runner.config["epitope_mask_version"],
+                glyc_mask_version=runner.config["glyc_mask_version"]
+            )
+            assert "ep" in runner.tree.tree.root.attr, "epitope mutations not annotated"
+            assert "ne" in runner.tree.tree.root.attr, "non-epitope mutations not annotated"
+            assert "glyc" in runner.tree.tree.root.attr, "glycosylation not annotated"
+
+            if runner.info["lineage"] == "h3n2":
+                assert "rb" in runner.tree.tree.root.attr, "rbs mutations not annotated"
+
+            # Define color options for sequence score annotations.
+            runner.config["auspice"]["color_options"]["ep"] = {
+                "menuItem": "epitope mutations",
+                "type": "continuous",
+                "legendTitle": "Epitope mutations",
+                "key": "ep"
+            }
+            runner.config["auspice"]["color_options"]["ne"] = {
+                "menuItem": "non-epitope mutations",
+                "type": "continuous",
+                "legendTitle": "Non-epitope mutations",
+                "key": "ne"
+            }
+
+            # runner.config["auspice"]["color_options"]["glyc"] = {
+            #     "menuItem": "potential glycosylation sites",
+            #     "type": "continuous",
+            # "legendTitle": "Pot. glycosylation count",
+            #     "key": "glyc"
+            # }
+
+            if runner.info["lineage"]=='h3n2':
+                runner.config["auspice"]["color_options"]["rb"] = {
+                    "menuItem": "receptor binding mutations",
+                    "type": "continuous",
+                    "legendTitle": "Receptor binding mutations",
+                    "key": "rb"
+                }
+
         # titers
-        seasonal_flu_scores(runner, runner.tree.tree)
         if hasattr(runner, "titers") and segment == "ha":
             HI_model(runner)
-            if runner.info["lineage"] == "h3n2":
-                H3N2_scores(runner, runner.tree.tree, runner.config["epitope_mask"])
+
             if runner.config["auspice"]["titers_export"]:
                 HI_export(runner)
                 if segment=='ha':

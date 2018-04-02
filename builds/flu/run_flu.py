@@ -7,6 +7,20 @@ resolution_to_spacing = {
     "12y": "3.0"
 }
 
+lineage_to_epitope_mask = {
+    "h3n2": "wolf",
+    "h1n1pdm": "canton",
+    "vic": "None",
+    "yam": "None"
+}
+
+lineage_to_glyc_mask = {
+    "h3n2": "ha1_h3n2",
+    "h1n1pdm": "ha1_globular_head_h1n1pdm",
+    "vic": "None",
+    "yam": "None"
+}
+
 def run_live(
     lineages = None, resolutions = None,
     system="local",
@@ -40,7 +54,9 @@ def run_live(
             call = [
                 'flu.process.py',
                 '--json', 'prepared/flu_%s_ha_%s.json'%(lineage, resolution),
-                '--pivot_spacing', resolution_to_spacing[resolution]
+                '--pivot_spacing', resolution_to_spacing[resolution],
+                '--epitope_mask_version', lineage_to_epitope_mask[lineage],
+                '--glyc_mask_version', lineage_to_glyc_mask[lineage]
             ]
             if process_na:
                 call = [
