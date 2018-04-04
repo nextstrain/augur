@@ -7,7 +7,7 @@ from base.fitness_model import process_predictor_args
 from base.process import process
 from base.utils import fix_names
 from flu_titers import HI_model, HI_export
-from scores import calculate_sequence_scores, calculate_metadata_scores
+from scores import calculate_sequence_scores, calculate_metadata_scores, calculate_phylogenetic_scores
 from flu_info import clade_designations
 import argparse
 import numpy as np
@@ -588,6 +588,22 @@ if __name__=="__main__":
         #     "legendTitle": "Avg host gender in clade",
         #     "key": "num_gender"
         # }
+
+        calculate_phylogenetic_scores(
+            runner.tree.tree,
+            tau=runner.info["LBI_params"]["tau"],
+            time_window=runner.info["LBI_params"]["time_window"]
+        )
+        assert "lb" in runner.tree.tree.root.attr, "LBI not annotated"
+
+        runner.config["auspice"]["color_options"]["lb"] = {
+            "menuItem": "local branching index (new)",
+            "type": "continuous",
+            "legendTitle": "local branching index",
+            "key": "lb",
+            "vmin": 0,
+            "vmax": 0.7
+        }
 
         if segment=='ha' and runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
             calculate_sequence_scores(
