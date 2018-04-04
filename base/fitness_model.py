@@ -243,21 +243,6 @@ class fitness_model(object):
             if pred != 'dfreq':
                 self.fp.setup_predictor(self.tree, pred, timepoint, **self.predictor_kwargs)
 
-    def select_nodes_in_season(self, timepoint, time_window):
-        """Annotate a boolean to each node in the tree if it is alive at the given
-        timepoint or prior to the timepoint by the given time window preceding.
-
-        This annotation is used by the LBI and epitope cross-immunity predictors.
-        """
-        for node in self.tree.find_clades(order="postorder"):
-            if node.is_terminal():
-                if node.attr['num_date'] <= timepoint and node.attr['num_date'] > timepoint - time_window:
-                    node.alive=True
-                else:
-                    node.alive=False
-            else:
-                node.alive = any(ch.alive for ch in node.clades)
-
     def calc_time_censored_tree_frequencies(self):
         print("fitting time censored tree frequencies")
         # this doesn't interfere with the previous freq estimates via difference in region: global_censored vs global
