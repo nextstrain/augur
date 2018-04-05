@@ -29,11 +29,13 @@ config = {
         }
     },
     "newick_tree_options": {},
+    "clock_filter":False,
     "timetree_options": {
         "Tc": "skyline",
         "resolve_polytomies": True,
         "n_points": 20,
         "stiffness": 3.0,
+        "fixed_clock_rate":0.0006,
     }
 }
 

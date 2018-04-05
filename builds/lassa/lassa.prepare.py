@@ -9,6 +9,7 @@ from base.utils import fix_names
 import argparse
 
 dropped_strains = [
+'KAK_428','NGA/2016/ISTH_0779'
 ]
 forced_strains = [
 ]
