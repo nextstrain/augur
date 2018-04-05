@@ -37,11 +37,14 @@ def make_config(params):
         "header_fields": {0:'accession', 1:'strain', 2:'date', 3: 'segment', 4: 'country', 5:'region'},
         "filters": (
             ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
-            # ("Restrict Date Range", lambda s: s.attributes['date'] >= datetime(2012,01,1).date()),
+            ("Restrict Date Range for S segment", {
+                "S": lambda s: s.attributes['date'] >= datetime(2000,01,1).date(),
+                "L": lambda s: True
+            }),
             # ("Restrict Date Range", lambda s: s.attributes['date'] <= datetime(2018,01,1).date()),
             ("Sequence Length", {
-                "S": lambda s: len(s.seq)>=3000,
-                "L": lambda s: len(s.seq)>=6000,
+                "S": lambda s: len(s.seq)>=2500,
+                "L": lambda s: len(s.seq)>=5000,
             })
         ),
         "subsample": {
@@ -60,11 +63,11 @@ def make_config(params):
             "S": {
                 "path": "metadata/S.gb",
                 "metadata": {
-                    'strain': "Pinneo-NIG-1969", "accession": "AY628207", "date": "1969-XX-XX",
+                    'strain': "Nig08_04", "accession": "GU481068", "date": "2008-XX-XX",
                     'country': "nigeria", 'segment': 'S'
                 },
                 "include": 1,
-                "genes": ['N', 'GPC']
+                "genes": ['NP', 'GPC']
             },
             "L": {
                 "path": "metadata/L.gb",
