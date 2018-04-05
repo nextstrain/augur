@@ -532,8 +532,6 @@ if __name__=="__main__":
             for regionTuple in runner.info["regions"]:
                 runner.estimate_tree_frequencies(region=str(regionTuple[0]))
 
-
-        # ignore fitness for NA.
         if segment=='ha':
             if runner.info["lineage"]=='h3n2':
                 clades = ['3c2.A', 'A1', 'A1b/135K', 'A2', 'A3']
@@ -556,15 +554,6 @@ if __name__=="__main__":
                 virus_clades = clades
                 serum_clades = clades
             runner.matchClades(clade_designations[runner.info["lineage"]])
-
-            # Predict fitness.
-            if runner.config["annotate_fitness"]:
-                fitness_model = runner.annotate_fitness()
-                if fitness_model is not None:
-                    print("Fitness model parameters: %s" % str(zip(fitness_model.predictors, fitness_model.model_params)))
-                    print("Fitness model deviations: %s" % str(zip(fitness_model.predictors, fitness_model.global_sds)))
-                    print("Abs clade error: %s" % fitness_model.clade_fit(fitness_model.model_params))
-                    runner.fitness_model = fitness_model
 
         if segment in ['ha', 'na']:
             if not os.path.exists("processed/recurring_mutations/"):
@@ -696,5 +685,14 @@ if __name__=="__main__":
                 if n.name in ha_tree_flat:
                     if "clade_membership" in ha_tree_flat[n.name]["attr"]:
                         n.attr["clade_membership"] = ha_tree_flat[n.name]["attr"]["clade_membership"]
+
+    # Predict fitness for HA after all other scores and annotations have completed.
+    if segment == 'ha' and runner.config["annotate_fitness"]:
+        fitness_model = runner.annotate_fitness()
+        if fitness_model is not None:
+            print("Fitness model parameters: %s" % str(zip(fitness_model.predictors, fitness_model.model_params)))
+            print("Fitness model deviations: %s" % str(zip(fitness_model.predictors, fitness_model.global_sds)))
+            print("Abs clade error: %s" % fitness_model.clade_fit(fitness_model.model_params))
+            runner.fitness_model = fitness_model
 
     runner.auspice_export()
