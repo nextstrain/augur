@@ -630,6 +630,10 @@ class process(object):
         """Run the fitness prediction model and annotate the tree's nodes with fitness
         values. Returns the resulting fitness model instance.
         """
+        if not hasattr(self, "tree_frequencies"):
+            self.log.warn("Could not find tree frequencies.")
+            return
+
         kwargs = {
             "tree": self.tree.tree,
             "frequencies": self.tree_frequencies,
