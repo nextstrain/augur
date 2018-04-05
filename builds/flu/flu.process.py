@@ -560,10 +560,11 @@ if __name__=="__main__":
             # Predict fitness.
             if runner.config["annotate_fitness"]:
                 fitness_model = runner.annotate_fitness()
-                print("Fitness model parameters: %s" % str(zip(fitness_model.predictors, fitness_model.model_params)))
-                print("Fitness model deviations: %s" % str(zip(fitness_model.predictors, fitness_model.global_sds)))
-                print("Abs clade error: %s" % fitness_model.clade_fit(fitness_model.model_params))
-                runner.fitness_model = fitness_model
+                if fitness_model is not None:
+                    print("Fitness model parameters: %s" % str(zip(fitness_model.predictors, fitness_model.model_params)))
+                    print("Fitness model deviations: %s" % str(zip(fitness_model.predictors, fitness_model.global_sds)))
+                    print("Abs clade error: %s" % fitness_model.clade_fit(fitness_model.model_params))
+                    runner.fitness_model = fitness_model
 
         if segment in ['ha', 'na']:
             if not os.path.exists("processed/recurring_mutations/"):
