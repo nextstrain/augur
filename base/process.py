@@ -638,7 +638,7 @@ class process(object):
             "tree": self.tree.tree,
             "frequencies": self.tree_frequencies,
             "time_interval": self.info["time_interval"],
-            "pivot_spacing": self.config["pivot_spacing"]
+            "pivots": np.around(self.pivots, 2)
         }
 
         if "predictors" in self.config:
