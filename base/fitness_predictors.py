@@ -6,6 +6,8 @@ from itertools import izip
 from scipy.stats import linregress
 import sys
 
+from builds.flu.scores import calculate_LBI
+
 # all fitness predictors should be designed to give a positive sign, ie.
 # number of epitope mutations
 # -1 * number of non-epitope mutations
@@ -29,8 +31,8 @@ class fitness_predictors(object):
         return "".join(node.translations.values())
 
     def setup_predictor(self, tree, pred, timepoint, **kwargs):
-        #if pred == 'lb':
-        #    self.calc_LBI(tree, **kwargs)
+        if pred == 'lb':
+           calculate_LBI(tree, **kwargs)
         # if pred == 'ep':
         #     self.calc_epitope_distance(tree)
         if pred == 'ep_x':

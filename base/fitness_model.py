@@ -7,6 +7,7 @@ import pandas as pd
 from scipy.interpolate import interp1d
 from scipy.stats import linregress
 
+from builds.flu.scores import select_nodes_in_season
 from frequencies import logit_transform, tree_frequencies
 from fitness_predictors import fitness_predictors
 
@@ -308,7 +309,7 @@ class fitness_model(object):
             node.predictors = {}
         for time in self.timepoints:
             if self.verbose: print "calculating predictors for time", time
-            self.select_nodes_in_season(time, self.time_window)
+            select_nodes_in_season(self.tree, time, self.time_window)
             self.calc_predictors(time)
             for node in self.nodes:
                 if 'dfreq' in [x for x in self.predictors]: node.dfreq = node.freq_slope[time]

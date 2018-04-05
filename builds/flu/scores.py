@@ -220,6 +220,7 @@ def calculate_LBI(tree, attr="lb", tau=0.4, transform=lambda x:x, **kwargs):
     # Normalize LBI to range [0, 1].
     for node in tree.find_clades():
         node.attr[attr] /= max_LBI
+        setattr(node, attr, node.attr[attr])
 
 def calculate_phylogenetic_scores(tree, **kwargs):
     """Calculate scores based on a given phylogenetic tree and assign scores to each node.
