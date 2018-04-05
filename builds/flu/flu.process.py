@@ -579,21 +579,22 @@ if __name__=="__main__":
         #     "key": "num_gender"
         # }
 
-        calculate_phylogenetic_scores(
-            runner.tree.tree,
-            tau=runner.info["LBI_params"]["tau"],
-            time_window=runner.info["LBI_params"]["time_window"]
-        )
-        assert "lb" in runner.tree.tree.root.attr, "LBI not annotated"
+        if "LBI_params" in runner.info:
+            calculate_phylogenetic_scores(
+                runner.tree.tree,
+                tau=runner.info["LBI_params"]["tau"],
+                time_window=runner.info["LBI_params"]["time_window"]
+            )
+            assert "lb" in runner.tree.tree.root.attr, "LBI not annotated"
 
-        runner.config["auspice"]["color_options"]["lb"] = {
-            "menuItem": "local branching index (new)",
-            "type": "continuous",
-            "legendTitle": "local branching index",
-            "key": "lb",
-            "vmin": 0,
-            "vmax": 0.7
-        }
+            runner.config["auspice"]["color_options"]["lb"] = {
+                "menuItem": "local branching index",
+                "type": "continuous",
+                "legendTitle": "local branching index",
+                "key": "lb",
+                "vmin": 0,
+                "vmax": 0.7
+            }
 
         if segment=='ha' and runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
             calculate_sequence_scores(
