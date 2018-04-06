@@ -113,7 +113,7 @@ def glycosylation_count(total_aa_seq, glyc_mask):
 
     return len(re.findall('N[^P][ST][^P]', total_aa_seq_masked))
 
-def calculate_sequence_scores(tree, mask_file, lineage, segment, epitope_mask_version='wolf', glyc_mask_version='wolf'):
+def calculate_sequence_scores(tree, mask_file, lineage, segment, epitope_mask_version, glyc_mask_version):
     """Calculate scores from the amino acid sequence of each node in the given tree.
 
     Sequence scores depend on lineage- and segment-specific amino acid site masks or named masks.
