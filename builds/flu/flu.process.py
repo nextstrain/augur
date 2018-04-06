@@ -566,6 +566,9 @@ if __name__=="__main__":
         calculate_metadata_scores(runner.tree.tree)
         assert "age" in runner.tree.tree.root.attr, "age not annotated"
 
+        # outputs figures and tables of age distributions
+        age_distribution(runner)
+
         # runner.config["auspice"]["color_options"]["age"] = {
         #     "menuItem": "average host age in clade",
         #     "type": "continuous",
@@ -670,8 +673,6 @@ if __name__=="__main__":
                                 fname='processed/%s_grouped_with_potency_titer_matrix.png'%runner.info["prefix"],
                                 title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=True)
 
-        # outputs figures and tables of age distributions
-        age_distribution(runner)
     if segment in ["na"]:
         import json
         ha_tree_json_fname = os.path.join(runner.config["output"]["auspice"], runner.info["prefix"]) + "_tree.json"
