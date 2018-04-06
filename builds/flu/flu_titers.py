@@ -1,5 +1,6 @@
 import os
-
+from flu_info import vaccine_choices
+from base.io_util import write_json
 
 def HI_model(process):
     '''
@@ -48,10 +49,73 @@ def HI_model(process):
         node.attr["cTiterSub"] = node.cTiterSub
         node.attr["dTiterSub"] = node.dTiterSub
 
+def vaccine_distance(process, attributes=['ep', 'dTiter', 'dTiterSub']):
+    '''
+    For each tip in the tree, trace the path between the tip and each vaccine strain.
+    Sum up the requested attributes along this path.
+    Also pull the tip's strain name, numdate, and region.
+
+    Writes to prefix_vaccine_dist.json
+    e.g.,
+        [
+      {
+        "strain": "A/Incheon/677/2006",
+        "num_date": 2006.867,
+        "region": "japan_korea",
+        "ep": {
+          "A/Perth/16/2009": 4,
+          "A/Victoria/361/2011": 6
+        },
+        "cTiter": {
+          "A/Perth/16/2009": 2.3,
+          "A/Victoria/361/2011": 4.2
+        },
+        "cTiterSub": {
+          "A/Perth/16/2009": 1.9,
+          "A/Victoria/361/2011": 3.7
+        }
+      }
+    ]
+    '''
+
+
+    tree = process.tree.tree
+    tips = [ k for k in tree.get_terminals() ] # all tips in the tree
+    vaccine_strains = vaccine_choices[process.info['lineage']]  # list of strains
+    vaccine_tips = { k.name: k for k in tips if k.name in vaccine_strains } # { strain_name: biophylo object}
+
+    def sum_along_path(path, attribute):
+        if len(path) == 1: # start == end
+            return 0.
+        try:
+            return sum([k.attr[attribute] for k in path]) # assume it's in the .attr dictionary
+        except KeyError:
+            return sum([getattr(k, attribute) for k in path]) # if that fails, try accessing it directly
+
+    distance_to_vaccine = []
+
+    for k in tips: # pull basic strain data
+        tip_data = { 'strain': k.name,
+                     'num_date': k.attr['num_date'],
+                     'region': k.attr['region'] }
+
+        # compute the paths between this tip and each vaccine strain once
+        paths_to_vaccines = { vaccine_strain: tree.trace(k, vaccine_tip) for vaccine_strain, vaccine_tip in vaccine_tips.items() }
+
+        for a in attributes: # for each attribute of interest, pull the precomputed path and sum up the attribute along it
+            summed_attribute = { vaccine_strain: sum_along_path(paths_to_vaccines[vaccine_strain], a) for vaccine_strain, vaccine_tip in vaccine_tips.items()}
+            tip_data[a] = summed_attribute
+        distance_to_vaccine.append(tip_data)
+        
+    prefix = os.path.join(process.config["output"]["auspice"], process.info["prefix"])
+    write_json(distance_to_vaccine, prefix+'_vaccine_dist.json')
+
 
 def HI_export(process):
-    from base.io_util import write_json
     prefix = os.path.join(process.config["output"]["auspice"], process.info["prefix"])
+
+    vaccine_distance_attribs = ['ep'] # which attributes/distances from vaccine strains to log
+
     if hasattr(process, 'HI_tree'):
         # export the raw titers
         hi_data = process.HI_tree.compile_titers()
@@ -61,6 +125,7 @@ def HI_export(process):
                       'avidity':process.HI_tree.compile_virus_effects(),
                       'dTiter':{n.clade:n.dTiter for n in process.tree.tree.find_clades() if n.dTiter>1e-6}}
         write_json(tree_model, prefix+'_titer_tree_model.json')
+        vaccine_distance_attribs.append('dTiter')
     else:
         print('Tree model not yet trained')
 
@@ -70,5 +135,8 @@ def HI_export(process):
                       'avidity':process.HI_subs.compile_virus_effects(),
                       'substitution':process.HI_subs.compile_substitution_effects()}
         write_json(subs_model, prefix+'_titer_subs_model.json')
+        vaccine_distance_attribs.append('dTiterSub')
     else:
         print('Substitution model not yet trained')
+
+    vaccine_distance(process, vaccine_distance_attribs)
