@@ -16,6 +16,7 @@ def collect_args():
 
 config = {
     "dir": "lassa",
+    "subprocess_verbosity_level":3,
     "geo_inference": ['country'], # what traits to perform this on
     "auspice": { ## settings for auspice JSON export
         "panels": ['tree', 'map', 'entropy'],
@@ -28,14 +29,15 @@ config = {
             "geoResolution": "country"
         }
     },
-    "newick_tree_options": {},
+    "newick_tree_options": {}, #"method":"iqtree"},
     "clock_filter":False,
     "timetree_options": {
         "Tc": "skyline",
         "resolve_polytomies": True,
         "n_points": 20,
         "stiffness": 3.0,
-        "fixed_clock_rate":0.0006,
+        "reroot":"min_dev",
+        "fixed_clock_rate":0.0006
     }
 }
 
