@@ -273,6 +273,11 @@ class sequence_set(object):
             for seq in self.aln:
                 tmpseq = self.proteins[prot].extract(seq)
                 translated_seq, translation_exception = safe_translate(str(tmpseq.seq), report_exceptions=True)
+
+                # Strip stop codons from translated sequences.
+                if translated_seq.endswith("*"):
+                    translated_seq = translated_seq[:-1]
+
                 if translation_exception:
                     self.log.notify("Trouble translating because of invalid codons %s" % seq.id)
 
