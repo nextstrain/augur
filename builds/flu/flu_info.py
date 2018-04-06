@@ -340,6 +340,17 @@ frequency_params = {
     '12y': {"dfreq_dn": 6}
 }
 
+# Map lineages to specific HA masks.
+lineage_to_epitope_mask = {
+    "h3n2": "wolf",
+    "h1n1pdm": "canton"
+}
+
+lineage_to_glyc_mask = {
+    "h3n2": "ha1_h3n2",
+    "h1n1pdm": "ha1_globular_head_h1n1pdm"
+}
+
 clade_designations = {
     "h3n2":{
         "3b":    [('HA2',158,'N'), ('HA1',198,'S'), ('HA1',312,'S'), ('HA1',223,'I'),
