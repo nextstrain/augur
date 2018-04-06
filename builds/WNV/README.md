@@ -2,31 +2,13 @@
 
 ### How to run
 
-#### 1. Run all commands from this directory
-
-#### 2. Download FASTA file via fauna and prepare analysis
-```
-python zika.prepare.py
-```
-Alternatively, supply a FASTA file with conforming headings and pass in this file with `--sequences`.
-```
-python zika.prepare.py --sequences example_data/zika.fasta
-```
-Running `zika.prepare.py` creates the file `prepared/zika.json`.
-
-#### 3. Run build
-```
-python zika.process.py
-```
-This creates intermediary files in `processed/` and auspice-ready JSONs in `auspice/`.
-
-#### 4. Copy JSONs to auspice
-```
-cp auspice/zika_* ../../../auspice/data/
-```
-
-#### 5. Run auspice to visualize
-```
-cd ../../../auspice
-npm run start:local
-```
+* `cd` into this directory
+* Make sure there's an (updated) fasta file in `./data`. Currently this is named `./data/full_dataset.singleline.aligned.pipeChar.fasta` and set in `wnv.prepare.py`.
+* `python zika.prepare.py` (very quick) creates the JSON `prepared/WNV_NA.json`
+* `python zika.process.py` (slow) creates the auspice-ready JSONs in `auspice`
+* `cp auspice/WNV_NA_meta.JSON auspice/WNV_NA_tree.JSON ../../../auspice/data/` to test in auspice
+* (to test in auspice) `cd ../../../auspice; npm run start:local`
+* push to S3 via:
+  * `cp auspice/WNV_NA_meta.JSON auspice/WNV_NA_tree.JSON ../../s3/`
+  * `cd ../../s3`
+  * `python ../scripts/s3.py push nextstrain-staging WNV_NA*` or `python ../scripts/s3.py push nextstrain-data WNV_NA*`

@@ -7,18 +7,14 @@ from base.process import process
 
 
 def collect_args():
-    """Returns a Zika-specific argument parser.
-    """
+    """Returns a WNV-specific argument parser."""
     parser = base.process.collect_args()
-    # parser.set_defaults(
-    #     json="prepared/zika.json"
-    # )
     return parser
 
 
 config = {
     "dir": "WNV",
-    "in": "prepared/WNV.json",
+    "in": "prepared/WNV_NA.json",
     "newick_tree_options": {"nthreads": 3},
     "clock_filter": {
         "n_iqd": 4,
