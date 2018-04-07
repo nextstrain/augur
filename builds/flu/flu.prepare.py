@@ -84,6 +84,7 @@ def make_config(lineage, resolution, params):
         "segments": params.segments,
         "ensure_all_segments": params.ensure_all_segments,
         "lineage": lineage,
+        "resolution": resolution,
         "input_paths": input_paths,
         #  0                     1   2         3          4      5     6       7       8          9                             10  11
         # >A/Galicia/RR9542/2012|flu|EPI376225|2012-02-23|europe|spain|galicia|galicia|unpassaged|instituto_de_salud_carlos_iii|47y|female

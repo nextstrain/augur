@@ -271,6 +271,8 @@ class sequence_set(object):
             data["info"]["time_interval"] = [str(x) for x in config["time_interval"]]
         potentially_combine(config, data["info"], "regions")
         potentially_combine(config, data["info"], "lineage", False)
+        data["info"]["segment"] = self.segmentName
+        potentially_combine(config, data["info"], "resolution", False)
         data["sequences"] = {}
         for seqName, seq in self.seqs.iteritems():
             data["sequences"][seqName] = {

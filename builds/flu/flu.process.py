@@ -8,7 +8,7 @@ from base.process import process
 from base.utils import fix_names
 from flu_titers import HI_model, HI_export
 from scores import calculate_sequence_scores, calculate_metadata_scores
-from flu_info import clade_designations, lineage_to_epitope_mask, lineage_to_glyc_mask
+from flu_info import clade_designations, lineage_to_epitope_mask, lineage_to_glyc_mask, resolution_to_pivot_spacing
 import argparse
 import numpy as np
 from pprint import pprint
@@ -23,7 +23,7 @@ def parse_args():
 
     parser.add_argument('--no_mut_freqs', default=False, action='store_true', help="skip mutation frequencies")
     parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
-    parser.add_argument('--pivot_spacing', type=float, default=1.0, help="month per pivot")
+    parser.add_argument('--pivot_spacing', type=float, help="month per pivot")
     parser.add_argument('--titers_export', default=False, action='store_true', help="export titers.json file")
     parser.add_argument('--annotate_fitness', default=False, action='store_true', help="run fitness prediction model and annotate fitnesses on tree nodes")
     parser.add_argument('--predictors', default=['cTiter'], nargs='+', help="attributes to use as fitness model predictors")
@@ -39,7 +39,7 @@ def parse_args():
 
     return parser.parse_args()
 
-def make_config (prepared_json, args):
+def make_config(prepared_json, args):
     # Create a fitness model parameters data structure for the given arguments.
     predictors = process_predictor_args(
         args.predictors,
@@ -80,7 +80,7 @@ def make_config (prepared_json, args):
         "annotate_fitness": args.annotate_fitness,
         "predictors": predictors,
         "clean": args.clean,
-        "pivot_spacing": args.pivot_spacing/12.0,
+        "pivot_spacing": args.pivot_spacing,
         "timetree_options": {
             "Tc": 0.03,
             # "confidence":True,
@@ -91,6 +91,14 @@ def make_config (prepared_json, args):
         }
     }
 
+# set defaults when command line parameter is None based on lineage, segment and resolution
+def set_config_defaults(runner):
+    if runner.config["epitope_mask_version"] is None:
+        runner.config["epitope_mask_version"] = lineage_to_epitope_mask[runner.info["lineage"]]
+    if runner.config["glyc_mask_version"] is None:
+        runner.config["glyc_mask_version"] = lineage_to_glyc_mask[runner.info["lineage"]]
+    if runner.config["pivot_spacing"] is None:
+        runner.config["pivot_spacing"] = resolution_to_pivot_spacing[runner.info["resolution"]]
 
 def rising_mutations(freqs, counts, genes, region='NA', dn=5, offset=0, baseline = 0.01, fname='tmp.txt'):
     '''
@@ -487,11 +495,8 @@ if __name__=="__main__":
     print("Processing {}".format(prepared_json))
     runner = process(make_config(prepared_json, args))
 
-    # this should be in the json...
-    segment = "ha"
-    if "_na_" in prepared_json:
-        segment = "na"
-    runner.segment = segment
+    # set defaults
+    set_config_defaults(runner)
 
     runner.align()
     min_freq = 0.003
@@ -590,20 +595,13 @@ if __name__=="__main__":
         # }
 
         if segment=='ha' and runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
-            epitope_mask_version = runner.config["epitope_mask_version"]
-            if epitope_mask_version is None:
-                epitope_mask_version = lineage_to_epitope_mask[runner.info["lineage"]]
-
-            glyc_mask_version = runner.config["glyc_mask_version"]
-            if glyc_mask_version is None:
-                glyc_mask_version = lineage_to_glyc_mask[runner.info["lineage"]]
 
             print("Calculating scores with epitope mask '%s' and glycosylation mask '%s'." % (epitope_mask_version, glyc_mask_version))
             calculate_sequence_scores(
                 runner.tree.tree,
                 runner.config["ha_masks"],
                 runner.info["lineage"],
-                runner.segment,
+                runner.info["segment"],
                 epitope_mask_version=epitope_mask_version,
                 glyc_mask_version=glyc_mask_version
             )
