@@ -408,7 +408,7 @@ class fitness_model(object):
         return af
 
     def af_fit(self, params):
-        # TODO: fix me for continuos prediction
+        # TODO: fix me for continuous prediction
         seasonal_errors = []
         self.pred_vs_true = []
         for s,t in self.fit_test_season_pairs:

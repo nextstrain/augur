@@ -173,7 +173,7 @@ def calculate_LBI(tree, attr="lb", tau=0.4, transform=lambda x:x, **kwargs):
     traverses the tree in postorder and preorder to calculate the
     up and downstream tree length exponentially weighted by distance.
     then adds them as LBI
-    tree -- dendropy tree for whose node the LBI is being computed
+    tree     -- biopython tree for whose node the LBI is being computed
     attr     -- the attribute name used to store the result
     '''
     print("Tau: %s" % tau)
