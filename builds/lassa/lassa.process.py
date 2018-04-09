@@ -23,7 +23,7 @@ config = {
         "color_options": {
             "country": {"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete", "color_map": []},
         },
-        "controls": {'geographic location':['country']},
+        "controls": {'geographic location':['country'], 'authors':['authors']},
         "defaults": {
             "colorBy": "country",
             "geoResolution": "country"

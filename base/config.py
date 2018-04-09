@@ -105,10 +105,10 @@ def combine_configs(config_type, user_config):
         except AssertionError:
             print("Fatal Error: Auspice filters in config file must be a list")
             sys.exit(2)
-        for filterName in config["auspice_filters"]:
-            if filterName not in config["colors"]:
-                print("Fatal Error: Auspice filter {} not a colorBy".format(filterName))
-                sys.exit(2)
+        # for filterName in config["auspice_filters"]:
+        #     if filterName not in config["colors"]:
+        #         print("Fatal Error: Auspice filter {} not a colorBy".format(filterName))
+        #         sys.exit(2)
 
     # pprint(config)
     # pprint(config["auspice"])

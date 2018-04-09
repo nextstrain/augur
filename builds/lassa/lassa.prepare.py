@@ -35,7 +35,7 @@ def make_config(params):
             "../../../flora/downloaded_data/lassa.S.fasta",
             "../../../flora/downloaded_data/lassa.L.fasta",
         ],
-        "header_fields": {0:'accession', 1:'strain', 2:'date', 3: 'segment', 4: 'country', 5:'region'},
+        "header_fields": {0:'accession', 1:'strain', 2:'date', 3: 'segment', 4: 'country', 5:'region', 6:'authors', 7:'title', 8:'journal', 9:'paper_url'},
         "filters": (
             ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
             ("Restrict Date Range for S segment", {
@@ -56,7 +56,7 @@ def make_config(params):
         "colors": ["country"],
         "color_defs": ["./colors.tsv"],
         "lat_longs": ["country"],
-        "auspice_filters": ["country"],
+        "auspice_filters": ["country", "authors"],
         "references": {
             # references are pinneo strain. Same as Kristian's Cell paper.
             # Pinneo paper: http://jvi.asm.org/content/74/15/6992.long
