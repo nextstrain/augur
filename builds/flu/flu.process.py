@@ -8,7 +8,7 @@ from base.process import process
 from base.utils import fix_names
 from flu_titers import HI_model, HI_export
 from scores import calculate_sequence_scores, calculate_metadata_scores, calculate_phylogenetic_scores
-from flu_info import clade_designations
+from flu_info import clade_designations, lineage_to_epitope_mask, lineage_to_glyc_mask
 import argparse
 import numpy as np
 from pprint import pprint
@@ -29,9 +29,9 @@ def parse_args():
     parser.add_argument('--predictors', default=['cTiter'], nargs='+', help="attributes to use as fitness model predictors")
     parser.add_argument('--predictors_params', type=float, nargs='+', help="precalculated fitness model parameters for each of the given predictors")
     parser.add_argument('--predictors_sds', type=float, nargs='+', help="precalculated global standard deviations for each of the given predictors")
-    parser.add_argument('--epitope_mask_version', default="wolf", help="name of the epitope mask that defines epitope mutations")
+    parser.add_argument('--epitope_mask_version', help="name of the epitope mask that defines epitope mutations")
     parser.add_argument('--tolerance_mask_version', help="name of the tolerance mask that defines non-epitope mutations")
-    parser.add_argument('--glyc_mask_version', default='ha1_h3n2', help="name of the mask that defines putative glycosylation sites")
+    parser.add_argument('--glyc_mask_version', help="name of the mask that defines putative glycosylation sites")
 
     parser.set_defaults(
         json="prepared/flu.json"
@@ -600,13 +600,22 @@ if __name__=="__main__":
             }
 
         if segment=='ha' and runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
+            epitope_mask_version = runner.config["epitope_mask_version"]
+            if epitope_mask_version is None:
+                epitope_mask_version = lineage_to_epitope_mask[runner.info["lineage"]]
+
+            glyc_mask_version = runner.config["glyc_mask_version"]
+            if glyc_mask_version is None:
+                glyc_mask_version = lineage_to_glyc_mask[runner.info["lineage"]]
+
+            print("Calculating scores with epitope mask '%s' and glycosylation mask '%s'." % (epitope_mask_version, glyc_mask_version))
             calculate_sequence_scores(
                 runner.tree.tree,
                 runner.config["ha_masks"],
                 runner.info["lineage"],
                 runner.segment,
-                epitope_mask_version=runner.config["epitope_mask_version"],
-                glyc_mask_version=runner.config["glyc_mask_version"]
+                epitope_mask_version=epitope_mask_version,
+                glyc_mask_version=glyc_mask_version
             )
             assert "ep" in runner.tree.tree.root.attr, "epitope mutations not annotated"
             assert "ne" in runner.tree.tree.root.attr, "non-epitope mutations not annotated"
