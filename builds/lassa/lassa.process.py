@@ -9,7 +9,7 @@ from base.process import process
 def collect_args():
     parser = base.process.collect_args()
     parser.set_defaults(
-        json="prepared/ebola.json"
+        json="prepared/lassa_S.json"
     )
     return parser
 
