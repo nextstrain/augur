@@ -9,7 +9,7 @@ from base.process import process
 def collect_args():
     parser = base.process.collect_args()
     parser.set_defaults(
-        json="prepared/lassa_S.json"
+        json="prepared/lassa_s.json"
     )
     return parser
 
@@ -22,6 +22,7 @@ config = {
         "panels": ['tree', 'map', 'entropy'],
         "color_options": {
             "country": {"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete", "color_map": []},
+            "host_species": {"key":"host_species", "legendTitle":"Host", "menuItem":"host", "type":"discrete", "color_map": []}            
         },
         "controls": {'geographic location':['country'], 'authors':['authors']},
         "defaults": {

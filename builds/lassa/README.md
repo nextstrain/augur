@@ -1,4 +1,4 @@
-## Ebola build
+## Lassa build
 
 ### How to run
 
@@ -7,18 +7,18 @@
 ```
 python lassa.prepare.py
 ```
-* Running `lassa.prepare.py` creates the files `prepared/lassa_S.json` and `prepared/lassa_L.json`.
+* Running `lassa.prepare.py` creates the files `prepared/lassa_s.json` and `prepared/lassa_l.json`.
 
 #### 3. Run build
 ```
-python lassa.process.py --json prepared/lassa_S.json.json
-python lassa.process.py --json prepared/lassa_L.json.json
+python lassa.process.py --json prepared/lassa_s.json
+python lassa.process.py --json prepared/lassa_l.json
 ```
 This creates intermediary files in `processed/` and auspice-ready JSONs in `auspice/`.
 
 #### 4. Copy JSONs to auspice
 ```
-cp auspice/ebola_* ../../../auspice/data/
+cp auspice/lassa_* ../../../auspice/data/
 ```
 
 #### 5. Run auspice to visualize

@@ -9,7 +9,7 @@ from base.utils import fix_names
 import argparse
 
 dropped_strains = [
-'KAK_428','NGA/2016/ISTH_0779'
+    'KAK_428', 'NGA/2016/ISTH_0779', 'GUINEA_Z_185a', 'NIGERIA_IKEJI' # overly divergent
 ]
 forced_strains = [
 ]
@@ -18,7 +18,7 @@ def collect_args():
     """Returns an Ebola-specific argument parser.
     """
     parser = base.prepare.collect_args()
-    segments = ["S", "L"]
+    segments = ["s", "l"]
     parser.add_argument('-s', '--segments', choices=segments, default=segments, nargs='+', type = str,  help = "segments to prepare")
     parser.set_defaults(
         viruses_per_month=0
@@ -29,23 +29,23 @@ def make_config(params):
     return {
         "dir": "lassa",
         "file_prefix": "lassa",
-        "title": "Genomic epidemiology of Lassa virus",
+        "title": "Real-time tracking of Lassa virus evolution",
         "maintainer": ["Bedford Lab", "http://bedford.io/team/"],
         "input_paths": [
-            "../../../flora/downloaded_data/lassa.S.fasta",
-            "../../../flora/downloaded_data/lassa.L.fasta",
+            "../../../flora/data/lassa_s.fasta",
+            "../../../flora/data/lassa_l.fasta",
         ],
-        "header_fields": {0:'accession', 1:'strain', 2:'date', 3: 'segment', 4: 'country', 5:'region', 6:'authors', 7:'title', 8:'journal', 9:'paper_url'},
+        "header_fields": {0:'strain', 1:'accesion', 2: 'segment', 3:'date', 4:'region', 5: 'country', 6:'host_species', 7:'authors', 8:'title', 9:'journal', 10:'paper_url'},
         "filters": (
             ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
             ("Restrict Date Range for S segment", {
-                "S": lambda s: s.attributes['date'] >= datetime(2000,01,1).date(),
-                "L": lambda s: True
+                "s": lambda s: True,
+                "l": lambda s: True
             }),
             # ("Restrict Date Range", lambda s: s.attributes['date'] <= datetime(2018,01,1).date()),
             ("Sequence Length", {
-                "S": lambda s: len(s.seq)>=2500,
-                "L": lambda s: len(s.seq)>=5000,
+                "s": lambda s: len(s.seq)>=2500,
+                "l": lambda s: len(s.seq)>=5000,
             })
         ),
         "subsample": {
@@ -53,16 +53,16 @@ def make_config(params):
             "threshold": params.viruses_per_month,
             "priority": lambda x:x.id in forced_strains
         },
-        "colors": ["country"],
+        "colors": ["country", "host_species"],
         "color_defs": ["./colors.tsv"],
         "lat_longs": ["country"],
-        "auspice_filters": ["country", "authors"],
+        "auspice_filters": ["country", "authors", "host_species"],
         "references": {
             # references are pinneo strain. Same as Kristian's Cell paper.
             # Pinneo paper: http://jvi.asm.org/content/74/15/6992.long
             # Cell paper: http://www.cell.com/cell/pdfExtended/S0092-8674(15)00897-1
-            "S": {
-                "path": "metadata/S.gb",
+            "s": {
+                "path": "metadata/lassa_s.gb",
                 "metadata": {
                     'strain': "Nig08_04", "accession": "GU481068", "date": "2008-XX-XX",
                     'country': "nigeria", 'segment': 'S'
@@ -70,8 +70,8 @@ def make_config(params):
                 "include": 1,
                 "genes": ['NP', 'GPC']
             },
-            "L": {
-                "path": "metadata/L.gb",
+            "l": {
+                "path": "metadata/lassa_l.gb",
                 "metadata": {
                     'strain': "Pinneo-NIG-1969", "accession": "KM822127", "date": "1969-XX-XX",
                     'country': "nigeria", 'segment': 'L'
