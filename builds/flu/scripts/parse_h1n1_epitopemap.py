@@ -9,11 +9,15 @@ df = pd.read_excel(CDC_h1n1pdm_antigenic_table)
 
 epitope_col = u'Antigenic Site (Caton)'
 
-# there are two extra rows in the file, but this doesn't matter since
-# we restrict to length of the total peptide in augur
-epi_mask = "".join(['1' if type(x)==unicode else "0" for x in df.loc[:,epitope_col]][1:])
-ha1_mask = "".join(['1' if str(x).startswith('HA1') else '0' for x in df.index][1:])
-ha1_head_mask = "".join(['1' if str(x).startswith('HA1_globular_head') else '0' for x in df.index][1:])
+# Find all rows for which the amino acid position is defined.
+aa_position_defined = ~pd.isnull(df["Amino Acid Position"])
+
+# Convert missing (null) values in the antigenic site column to 0 and present values to 1.
+epi_mask = "".join((~pd.isnull(df.loc[aa_position_defined, epitope_col])).astype(int).astype(str))
+
+# Find all sites in HA1, generally, and the globular head, specifically.
+ha1_mask = "".join(df[aa_position_defined].index.str.startswith("HA1").astype(int).astype(str))
+ha1_head_mask = "".join(df[aa_position_defined].index.str.startswith("HA1_globular_head").astype(int).astype(str))
 
 print('canton\t'+epi_mask)
 print('ha1_h1n1pdm\t'+ha1_mask)
