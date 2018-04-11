@@ -333,7 +333,8 @@ class sequence_set(object):
             # so just do it in the Process part instead. For reference:
             # FeatureLocation(start=f.location.start, end=f.location.end, strand=1)
             self.reference.genes = {
-                sequence_set.get_gene_name(f.qualifiers['gene'][0], genes): {"start": int(f.location.start), "end": int(f.location.end), "strand": 1}
+                sequence_set.get_gene_name(f.qualifiers['gene'][0], genes): {"start": int(f.location.start),
+                                           "end": int(f.location.end), "strand": f.location.strand}
                 for f in self.reference.features
                 if 'gene' in f.qualifiers and f.qualifiers['gene'][0] in genes
             }

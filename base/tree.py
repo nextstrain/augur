@@ -343,6 +343,7 @@ class tree(object):
         alphabet_rev = {v:k for k,v in alphabet.iteritems()}
 
         # set geo info to nodes as one letter sequence.
+        self.tt.seq_len = 1
         for node in self.tree.get_terminals():
             if hasattr(node, 'attr'):
                 if attr in node.attr:
