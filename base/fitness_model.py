@@ -7,6 +7,7 @@ import pandas as pd
 from scipy.interpolate import interp1d
 from scipy.stats import linregress
 
+from builds.flu.scores import select_nodes_in_season
 from frequencies import logit_transform, tree_frequencies
 from fitness_predictors import fitness_predictors
 
@@ -243,21 +244,6 @@ class fitness_model(object):
             if pred != 'dfreq':
                 self.fp.setup_predictor(self.tree, pred, timepoint, **self.predictor_kwargs)
 
-    def select_nodes_in_season(self, timepoint, time_window):
-        """Annotate a boolean to each node in the tree if it is alive at the given
-        timepoint or prior to the timepoint by the given time window preceding.
-
-        This annotation is used by the LBI and epitope cross-immunity predictors.
-        """
-        for node in self.tree.find_clades(order="postorder"):
-            if node.is_terminal():
-                if node.attr['num_date'] <= timepoint and node.attr['num_date'] > timepoint - time_window:
-                    node.alive=True
-                else:
-                    node.alive=False
-            else:
-                node.alive = any(ch.alive for ch in node.clades)
-
     def calc_time_censored_tree_frequencies(self):
         print("fitting time censored tree frequencies")
         # this doesn't interfere with the previous freq estimates via difference in region: global_censored vs global
@@ -323,11 +309,12 @@ class fitness_model(object):
             node.predictors = {}
         for time in self.timepoints:
             if self.verbose: print "calculating predictors for time", time
-            self.select_nodes_in_season(time, self.time_window)
+            select_nodes_in_season(self.tree, time, self.time_window)
             self.calc_predictors(time)
             for node in self.nodes:
                 if 'dfreq' in [x for x in self.predictors]: node.dfreq = node.freq_slope[time]
-                node.predictors[time] = np.array([node.__getattribute__(pred) for pred in self.predictors])
+                node.predictors[time] = np.array([hasattr(node, pred) and getattr(node, pred) or node.attr[pred]
+                                                  for pred in self.predictors])
             tmp_preds = []
             for tip in self.tips:
                 tmp_preds.append(tip.predictors[time])
@@ -421,7 +408,7 @@ class fitness_model(object):
         return af
 
     def af_fit(self, params):
-        # TODO: fix me for continuos prediction
+        # TODO: fix me for continuous prediction
         seasonal_errors = []
         self.pred_vs_true = []
         for s,t in self.fit_test_season_pairs:

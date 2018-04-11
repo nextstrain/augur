@@ -7,7 +7,7 @@ from base.fitness_model import process_predictor_args
 from base.process import process
 from base.utils import fix_names
 from flu_titers import HI_model, HI_export
-from scores import calculate_sequence_scores, calculate_metadata_scores
+from scores import calculate_sequence_scores, calculate_metadata_scores, calculate_phylogenetic_scores
 from flu_info import clade_designations, lineage_to_epitope_mask, lineage_to_glyc_mask
 import argparse
 import numpy as np
@@ -532,8 +532,6 @@ if __name__=="__main__":
             for regionTuple in runner.info["regions"]:
                 runner.estimate_tree_frequencies(region=str(regionTuple[0]))
 
-
-        # ignore fitness for NA.
         if segment=='ha':
             if runner.info["lineage"]=='h3n2':
                 clades = ['3c2.A', 'A1', 'A1b/135K', 'A2', 'A3']
@@ -557,14 +555,6 @@ if __name__=="__main__":
                 serum_clades = clades
             runner.matchClades(clade_designations[runner.info["lineage"]])
 
-            # Predict fitness.
-            if runner.config["annotate_fitness"]:
-                fitness_model = runner.annotate_fitness()
-                print("Fitness model parameters: %s" % str(zip(fitness_model.predictors, fitness_model.model_params)))
-                print("Fitness model deviations: %s" % str(zip(fitness_model.predictors, fitness_model.global_sds)))
-                print("Abs clade error: %s" % fitness_model.clade_fit(fitness_model.model_params))
-                runner.fitness_model = fitness_model
-
         if segment in ['ha', 'na']:
             if not os.path.exists("processed/recurring_mutations/"):
                 os.makedirs("processed/recurring_mutations/")
@@ -575,6 +565,9 @@ if __name__=="__main__":
         # runner.save_as_nexus()
         calculate_metadata_scores(runner.tree.tree)
         assert "age" in runner.tree.tree.root.attr, "age not annotated"
+
+        # outputs figures and tables of age distributions
+        age_distribution(runner)
 
         # runner.config["auspice"]["color_options"]["age"] = {
         #     "menuItem": "average host age in clade",
@@ -588,6 +581,23 @@ if __name__=="__main__":
         #     "legendTitle": "Avg host gender in clade",
         #     "key": "num_gender"
         # }
+
+        if "LBI_params" in runner.info:
+            calculate_phylogenetic_scores(
+                runner.tree.tree,
+                tau=runner.info["LBI_params"]["tau"],
+                time_window=runner.info["LBI_params"]["time_window"]
+            )
+            assert "lb" in runner.tree.tree.root.attr, "LBI not annotated"
+
+            runner.config["auspice"]["color_options"]["lbi"] = {
+                "menuItem": "local branching index",
+                "type": "continuous",
+                "legendTitle": "local branching index",
+                "key": "lb",
+                "vmin": 0,
+                "vmax": 0.7
+            }
 
         if segment=='ha' and runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
             epitope_mask_version = runner.config["epitope_mask_version"]
@@ -672,8 +682,6 @@ if __name__=="__main__":
                                 fname='processed/%s_grouped_with_potency_titer_matrix.png'%runner.info["prefix"],
                                 title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=True)
 
-        # outputs figures and tables of age distributions
-        age_distribution(runner)
     if segment in ["na"]:
         import json
         ha_tree_json_fname = os.path.join(runner.config["output"]["auspice"], runner.info["prefix"]) + "_tree.json"
@@ -688,5 +696,14 @@ if __name__=="__main__":
                 if n.name in ha_tree_flat:
                     if "clade_membership" in ha_tree_flat[n.name]["attr"]:
                         n.attr["clade_membership"] = ha_tree_flat[n.name]["attr"]["clade_membership"]
+
+    # Predict fitness for HA after all other scores and annotations have completed.
+    if segment == 'ha' and runner.config["annotate_fitness"]:
+        fitness_model = runner.annotate_fitness()
+        if fitness_model is not None:
+            print("Fitness model parameters: %s" % str(zip(fitness_model.predictors, fitness_model.model_params)))
+            print("Fitness model deviations: %s" % str(zip(fitness_model.predictors, fitness_model.global_sds)))
+            print("Abs clade error: %s" % fitness_model.clade_fit(fitness_model.model_params))
+            runner.fitness_model = fitness_model
 
     runner.auspice_export()

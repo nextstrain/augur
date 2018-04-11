@@ -113,7 +113,7 @@ def glycosylation_count(total_aa_seq, glyc_mask):
 
     return len(re.findall('N[^P][ST][^P]', total_aa_seq_masked))
 
-def calculate_sequence_scores(tree, mask_file, lineage, segment, epitope_mask_version='wolf', glyc_mask_version='wolf'):
+def calculate_sequence_scores(tree, mask_file, lineage, segment, epitope_mask_version, glyc_mask_version):
     """Calculate scores from the amino acid sequence of each node in the given tree.
 
     Sequence scores depend on lineage- and segment-specific amino acid site masks or named masks.
@@ -152,3 +152,91 @@ def calculate_sequence_scores(tree, mask_file, lineage, segment, epitope_mask_ve
 
         if rbs_mask is not None:
             node.attr['rb'] = mask_distance(total_aa_seq, root_total_aa_seq, rbs_mask)
+
+def select_nodes_in_season(tree, timepoint, time_window=0.6, **kwargs):
+    """Annotate a boolean to each node in the tree if it is alive at the given
+    timepoint or prior to the timepoint by the given time window preceding.
+
+    This annotation is used by the LBI and epitope cross-immunity predictors.
+    """
+    print("Time point: %s" % timepoint)
+    print("Time window: %s" % time_window)
+
+    for node in tree.find_clades(order="postorder"):
+        if node.is_terminal():
+            if node.attr['num_date'] <= timepoint and node.attr['num_date'] > timepoint - time_window:
+                node.alive=True
+            else:
+                node.alive=False
+        else:
+            node.alive = any(ch.alive for ch in node.clades)
+
+def calculate_LBI(tree, attr="lb", tau=0.4, transform=lambda x:x, **kwargs):
+    '''
+    traverses the tree in postorder and preorder to calculate the
+    up and downstream tree length exponentially weighted by distance.
+    then adds them as LBI
+    tree     -- biopython tree for whose node the LBI is being computed
+    attr     -- the attribute name used to store the result
+    '''
+    print("Tau: %s" % tau)
+
+    # Calculate clock length.
+    tree.root.clock_length = 0.0
+    for node in tree.find_clades():
+        for child in node.clades:
+            child.clock_length = child.attr['num_date'] - node.attr['num_date']
+
+    # traverse the tree in postorder (children first) to calculate msg to parents
+    for node in tree.find_clades(order="postorder"):
+        node.down_polarizer = 0
+        node.up_polarizer = 0
+        for child in node.clades:
+            node.up_polarizer += child.up_polarizer
+        bl =  node.clock_length / tau
+        node.up_polarizer *= np.exp(-bl)
+        if node.alive: node.up_polarizer += tau*(1-np.exp(-bl))
+
+    # traverse the tree in preorder (parents first) to calculate msg to children
+    for node in tree.get_nonterminals():
+        for child1 in node.clades:
+            child1.down_polarizer = node.down_polarizer
+            for child2 in node.clades:
+                if child1!=child2:
+                    child1.down_polarizer += child2.up_polarizer
+
+            bl =  child1.clock_length / tau
+            child1.down_polarizer *= np.exp(-bl)
+            if child1.alive: child1.down_polarizer += tau*(1-np.exp(-bl))
+
+    # go over all nodes and calculate the LBI (can be done in any order)
+    max_LBI = 0.0
+    for node in tree.find_clades(order="postorder"):
+        tmp_LBI = node.down_polarizer
+        for child in node.clades:
+            tmp_LBI += child.up_polarizer
+
+        node.attr[attr] = transform(tmp_LBI)
+        if node.attr[attr] > max_LBI:
+            max_LBI = node.attr[attr]
+
+    # Normalize LBI to range [0, 1].
+    for node in tree.find_clades():
+        node.attr[attr] /= max_LBI
+        setattr(node, attr, node.attr[attr])
+
+def calculate_phylogenetic_scores(tree, **kwargs):
+    """Calculate scores based on a given phylogenetic tree and assign scores to each node.
+
+    Scores include:
+
+      - LBI
+    """
+    # Find maximum time point in the given tree.
+    timepoint = max(node.attr["num_date"] for node in tree.find_clades())
+
+    # Select nodes within time window for LBI.
+    select_nodes_in_season(tree, timepoint, **kwargs)
+
+    # Calculate LBI.
+    calculate_LBI(tree, **kwargs)

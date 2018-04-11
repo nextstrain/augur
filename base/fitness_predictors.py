@@ -6,6 +6,8 @@ from itertools import izip
 from scipy.stats import linregress
 import sys
 
+from builds.flu.scores import calculate_LBI
+
 # all fitness predictors should be designed to give a positive sign, ie.
 # number of epitope mutations
 # -1 * number of non-epitope mutations
@@ -30,13 +32,13 @@ class fitness_predictors(object):
 
     def setup_predictor(self, tree, pred, timepoint, **kwargs):
         if pred == 'lb':
-            self.calc_LBI(tree, **kwargs)
-        if pred == 'ep':
-            self.calc_epitope_distance(tree)
+           calculate_LBI(tree, **kwargs)
+        # if pred == 'ep':
+        #     self.calc_epitope_distance(tree)
         if pred == 'ep_x':
             self.calc_epitope_cross_immunity(tree, timepoint)
-        if pred == 'ne':
-            self.calc_nonepitope_distance(tree)
+        #if pred == 'ne':
+        #    self.calc_nonepitope_distance(tree)
         if pred == 'ne_star':
             self.calc_nonepitope_star_distance(tree)
         if pred == 'tol':
@@ -57,7 +59,7 @@ class fitness_predictors(object):
         #if pred == 'cHI':
             # do nothing
 
-    def setup_epitope_mask(self, epitope_masks_fname = 'builds/flu/metadata/h3n2_epitope_masks.tsv', epitope_mask_version = 'wolf', tolerance_mask_version = 'ha1'):
+    def setup_epitope_mask(self, epitope_masks_fname = 'metadata/ha_masks.tsv', epitope_mask_version = 'wolf', tolerance_mask_version = 'ha1'):
         sys.stderr.write("setup " + str(epitope_mask_version) + " epitope mask and " + str(tolerance_mask_version) + " tolerance mask\n")
         self.epitope_mask = ""
         self.tolerance_mask = ""
@@ -359,50 +361,6 @@ class fitness_predictors(object):
                 node.__setattr__(attr, self.nonepitope_distance(node.aa, tmp_node.aa))
             else:
                 node.__setattr__(attr, np.nan)
-
-    def calc_LBI(self, tree, attr = 'lb', tau=0.4, transform = lambda x:x):
-        '''
-        traverses the tree in postorder and preorder to calculate the
-        up and downstream tree length exponentially weighted by distance.
-        then adds them as LBI
-        tree -- dendropy tree for whose node the LBI is being computed
-        attr     -- the attribute name used to store the result
-        '''
-        # Check for clock length attribute and create it if it does not exist.
-        if not hasattr(tree.root, "clock_length"):
-            tree.root.clock_length = 0.0
-            for node in tree.find_clades():
-                for child in node.clades:
-                    child.clock_length = child.attr['num_date'] - node.attr['num_date']
-
-        # traverse the tree in postorder (children first) to calculate msg to parents
-        for node in tree.find_clades(order="postorder"):
-            node.down_polarizer = 0
-            node.up_polarizer = 0
-            for child in node.clades:
-                node.up_polarizer += child.up_polarizer
-            bl =  node.clock_length / tau
-            node.up_polarizer *= np.exp(-bl)
-            if node.alive: node.up_polarizer += tau*(1-np.exp(-bl))
-
-        # traverse the tree in preorder (parents first) to calculate msg to children
-        for node in tree.get_nonterminals():
-            for child1 in node.clades:
-                child1.down_polarizer = node.down_polarizer
-                for child2 in node.clades:
-                    if child1!=child2:
-                        child1.down_polarizer += child2.up_polarizer
-
-                bl =  child1.clock_length / tau
-                child1.down_polarizer *= np.exp(-bl)
-                if child1.alive: child1.down_polarizer += tau*(1-np.exp(-bl))
-
-        # go over all nodes and calculate the LBI (can be done in any order)
-        for node in tree.find_clades(order="postorder"):
-            tmp_LBI = node.down_polarizer
-            for child in node.clades:
-                tmp_LBI += child.up_polarizer
-            node.__setattr__(attr, transform(tmp_LBI))
 
     def calc_null_predictor(self, tree, attr="null"):
         """Assign a zero value to each node as a control representing a null predictor.

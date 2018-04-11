@@ -128,15 +128,6 @@ def export_metadata_json(process, prefix, indent):
     if "vaccine_choices" in process.info:
         meta_json["vaccine_choices"] = process.info["vaccine_choices"]
 
-    if "LBI_params" in process.info:
-        meta_json["color_options"]["lbi"] = {
-            "key": "LBI",
-            "legendTitle": "local branching index",
-            "menuItem": "local branching index",
-            "tau": process.info["LBI_params"]["tau"],
-            "timeWindow": process.info["LBI_params"]["time_window"]
-        }
-
     ## ignore frequency params for now until they are implemented in nextstrain/auspice
 
     if "defaults" in process.config["auspice"]:
