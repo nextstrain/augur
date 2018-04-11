@@ -706,4 +706,18 @@ if __name__=="__main__":
             print("Abs clade error: %s" % fitness_model.clade_fit(fitness_model.model_params))
             runner.fitness_model = fitness_model
 
+            runner.config["auspice"]["color_options"]["fitness"] = {
+                "menuItem": "fitness",
+                "type": "continuous",
+                "legendTitle": "Fitness",
+                "key": "fitness"
+            }
+
+            runner.config["auspice"]["color_options"]["predicted_freq"] = {
+                "menuItem": "predicted_freq",
+                "type": "continuous",
+                "legendTitle": "Predicted frequency",
+                "key": "predicted_freq"
+            }
+
     runner.auspice_export()
