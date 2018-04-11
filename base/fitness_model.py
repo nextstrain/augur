@@ -513,6 +513,21 @@ class fitness_model(object):
             else:
                 node.fitness = 0.0
 
+            node.attr["fitness"] = node.fitness
+
+    def assign_predicted_frequency(self, delta=1.0):
+        total_freq = 0
+        timepoint = self.timepoints[-1]
+        for node in self.tree.get_terminals():
+            pred = self.predictor_arrays[timepoint][node.tips]
+            freqs = self.freq_arrays[timepoint][node.tips]
+            node.predicted_freq = self.projection(self.model_params, pred, freqs, delta)[0]
+            total_freq += node.predicted_freq
+
+        for node in self.tree.get_terminals():
+            node.predicted_freq /= total_freq
+            node.attr["predicted_freq"] = node.predicted_freq
+
     def predict(self, niter = 10, estimate_frequencies = True):
         self.prep_nodes()
         self.calc_node_frequencies()
@@ -522,6 +537,7 @@ class fitness_model(object):
         if self.estimate_coefficients:
             self.learn_parameters(niter = niter, fit_func = "clade")
         self.assign_fitness()
+        self.assign_predicted_frequency()
 
     def validate_prediction(self):
         import matplotlib.pyplot as plt
