@@ -6,9 +6,10 @@ import base.process
 from base.fitness_model import process_predictor_args
 from base.process import process
 from base.utils import fix_names
-from flu_titers import HI_model, HI_export
+from base.io_util import write_json
+from flu_titers import HI_model, HI_export, vaccine_distance
 from scores import calculate_sequence_scores, calculate_metadata_scores
-from flu_info import clade_designations
+from flu_info import clade_designations, vaccine_choices 
 import argparse
 import numpy as np
 from pprint import pprint
@@ -640,6 +641,11 @@ if __name__=="__main__":
 
             if runner.config["auspice"]["titers_export"]:
                 HI_export(runner)
+                vaccine_distance_json = vaccine_distance(titer_tree = runner.tree.tree,
+                                                         vaccine_strains = vaccine_choices[runner.info['lineage']],
+                                                         attributes=['dTiter', 'dTiterSub'])
+                write_json(vaccine_distance_json, os.path.join(runner.config["output"]["auspice"], runner.info["prefix"])+'_vaccine_dist.json')
+
                 if segment=='ha':
                     plot_titers(runner.HI_subs, runner.HI_subs.titers.titers,
                                 fname='processed/%s_raw_titers.png'%runner.info["prefix"],
