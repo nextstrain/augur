@@ -9,7 +9,7 @@ from base.utils import fix_names
 from base.io_util import write_json
 from flu_titers import HI_model, HI_export, vaccine_distance
 from scores import calculate_sequence_scores, calculate_metadata_scores, calculate_phylogenetic_scores
-from flu_info import clade_designations, lineage_to_epitope_mask, lineage_to_glyc_mask, resolution_to_pivot_spacing, vaccine_choices 
+from flu_info import clade_designations, lineage_to_epitope_mask, lineage_to_glyc_mask, resolution_to_pivot_spacing, vaccine_choices
 import argparse
 import numpy as np
 from pprint import pprint
@@ -94,11 +94,11 @@ def make_config(prepared_json, args):
 
 # set defaults when command line parameter is None based on lineage, segment and resolution
 def set_config_defaults(runner):
-    if runner.config["epitope_mask_version"] is None:
+    if runner.config["epitope_mask_version"] is None and runner.info["lineage"] in lineage_to_epitope_mask:
         runner.config["epitope_mask_version"] = lineage_to_epitope_mask[runner.info["lineage"]]
-    if runner.config["glyc_mask_version"] is None:
+    if runner.config["glyc_mask_version"] is None and runner.info["lineage"] in lineage_to_glyc_mask:
         runner.config["glyc_mask_version"] = lineage_to_glyc_mask[runner.info["lineage"]]
-    if runner.config["pivot_spacing"] is None:
+    if runner.config["pivot_spacing"] is None and runner.info["resolution"] in resolution_to_pivot_spacing:
         runner.config["pivot_spacing"] = resolution_to_pivot_spacing[runner.info["resolution"]]
 
 def rising_mutations(freqs, counts, genes, region='NA', dn=5, offset=0, baseline = 0.01, fname='tmp.txt'):
@@ -497,9 +497,6 @@ if __name__=="__main__":
     runner = process(make_config(prepared_json, args))
 
     # set defaults
-    segment = "ha"
-    if "_na_" in prepared_json:
-        segment = "na"
     set_config_defaults(runner)
 
     runner.align()
@@ -511,7 +508,7 @@ if __name__=="__main__":
         runner.global_frequencies(min_freq, average_global=weighted_global_average)
 
         # so far do this only for HA
-        if segment in ['ha', 'na']:
+        if runner.info["segment"] in ['ha', 'na']:
             genes_by_segment = {'ha':['HA1', 'HA2'], 'na':['NA']}
             if not os.path.exists("processed/rising_mutations/"):
                 os.makedirs("processed/rising_mutations/")
@@ -541,7 +538,7 @@ if __name__=="__main__":
             for regionTuple in runner.info["regions"]:
                 runner.estimate_tree_frequencies(region=str(regionTuple[0]))
 
-        if segment=='ha':
+        if runner.info["segment"]=='ha':
             if runner.info["lineage"]=='h3n2':
                 clades = ['3c2.A', 'A1', 'A1b/135K', 'A2', 'A3']
                 virus_clades = ['A1', 'A1a', 'A1b/135K', 'A1b/135N', 'A2', 'A3']
@@ -564,7 +561,7 @@ if __name__=="__main__":
                 serum_clades = clades
             runner.matchClades(clade_designations[runner.info["lineage"]])
 
-        if segment in ['ha', 'na']:
+        if runner.info["segment"] in ['ha', 'na']:
             if not os.path.exists("processed/recurring_mutations/"):
                 os.makedirs("processed/recurring_mutations/")
             recurring_mutations(runner.tree.tree,
@@ -608,16 +605,16 @@ if __name__=="__main__":
                 "vmax": 0.7
             }
 
-        if segment=='ha' and runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
+        if runner.info["segment"]=='ha' and runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
 
-            print("Calculating scores with epitope mask '%s' and glycosylation mask '%s'." % (epitope_mask_version, glyc_mask_version))
+            print("Calculating scores with epitope mask '%s' and glycosylation mask '%s'." % (runner.config["epitope_mask_version"], runner.config["glyc_mask_version"]))
             calculate_sequence_scores(
                 runner.tree.tree,
                 runner.config["ha_masks"],
                 runner.info["lineage"],
                 runner.info["segment"],
-                epitope_mask_version=epitope_mask_version,
-                glyc_mask_version=glyc_mask_version
+                epitope_mask_version=runner.config["epitope_mask_version"],
+                glyc_mask_version=runner.config["glyc_mask_version"]
             )
             assert "ep" in runner.tree.tree.root.attr, "epitope mutations not annotated"
             assert "ne" in runner.tree.tree.root.attr, "non-epitope mutations not annotated"
@@ -656,7 +653,7 @@ if __name__=="__main__":
                 }
 
         # titers
-        if hasattr(runner, "titers") and segment == "ha":
+        if hasattr(runner, "titers") and runner.info["segment"] == "ha":
             HI_model(runner)
 
             if runner.config["auspice"]["titers_export"]:
@@ -666,7 +663,7 @@ if __name__=="__main__":
                                                          attributes=['dTiter', 'dTiterSub'])
                 write_json(vaccine_distance_json, os.path.join(runner.config["output"]["auspice"], runner.info["prefix"])+'_vaccine_dist.json')
 
-                if segment=='ha':
+                if runner.info["segment"]=='ha':
                     plot_titers(runner.HI_subs, runner.HI_subs.titers.titers,
                                 fname='processed/%s_raw_titers.png'%runner.info["prefix"],
                                 title = runner.info["prefix"], mean='geometric')
@@ -689,7 +686,7 @@ if __name__=="__main__":
                                 fname='processed/%s_grouped_with_potency_titer_matrix.png'%runner.info["prefix"],
                                 title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=True)
 
-    if segment in ["na"]:
+    if runner.info["segment"] == "na":
         import json
         ha_tree_json_fname = os.path.join(runner.config["output"]["auspice"], runner.info["prefix"]) + "_tree.json"
         ha_tree_json_fname = ha_tree_json_fname.replace("_na", "_ha")
@@ -705,7 +702,7 @@ if __name__=="__main__":
                         n.attr["clade_membership"] = ha_tree_flat[n.name]["attr"]["clade_membership"]
 
     # Predict fitness for HA after all other scores and annotations have completed.
-    if segment == 'ha' and runner.config["annotate_fitness"]:
+    if runner.info["segment"] == 'ha' and runner.config["annotate_fitness"]:
         fitness_model = runner.annotate_fitness()
         if fitness_model is not None:
             print("Fitness model parameters: %s" % str(zip(fitness_model.predictors, fitness_model.model_params)))
