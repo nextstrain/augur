@@ -515,7 +515,7 @@ if __name__=="__main__":
             for region in ['AS', 'NA', 'EU']:
                mlist = rising_mutations(runner.mutation_frequencies,
                             runner.mutation_frequency_counts,
-                         genes_by_segment[segment], region=region, dn=4, offset=2,
+                         genes_by_segment[runner.info["segment"]], region=region, dn=4, offset=2,
                          fname = "processed/rising_mutations/%s_%s_rising_mutations.txt"%("_".join(runner.info["prefix"].split('_')[:-2]), region))
 
 
