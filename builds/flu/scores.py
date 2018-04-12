@@ -172,7 +172,7 @@ def select_nodes_in_season(tree, timepoint, time_window=0.6, **kwargs):
         else:
             node.alive = any(ch.alive for ch in node.clades)
 
-def calculate_LBI(tree, attr="lb", tau=0.4, transform=lambda x:x, **kwargs):
+def calculate_LBI(tree, attr="lbi", tau=0.4, transform=lambda x:x, **kwargs):
     '''
     traverses the tree in postorder and preorder to calculate the
     up and downstream tree length exponentially weighted by distance.

@@ -594,13 +594,13 @@ if __name__=="__main__":
                 tau=runner.info["LBI_params"]["tau"],
                 time_window=runner.info["LBI_params"]["time_window"]
             )
-            assert "lb" in runner.tree.tree.root.attr, "LBI not annotated"
+            assert "lbi" in runner.tree.tree.root.attr, "LBI not annotated"
 
             runner.config["auspice"]["color_options"]["lbi"] = {
                 "menuItem": "local branching index",
                 "type": "continuous",
                 "legendTitle": "local branching index",
-                "key": "lb",
+                "key": "lbi",
                 "vmin": 0,
                 "vmax": 0.7
             }
