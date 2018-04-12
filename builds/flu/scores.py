@@ -130,8 +130,7 @@ def calculate_sequence_scores(tree, mask_file, lineage, segment, epitope_mask_ve
     root_total_aa_seq = get_total_peptide(root, segment)
 
     # Confirm that mask and sequence lengths are equal.
-    # assert len(root_total_aa_seq) == len(epitope_mask), "Sequence and mask lengths are not equal: %s != %s." % (len(root_total_aa_seq), len(epitope_mask))
-    # FIXME this is breaking for H1N1pdm
+    assert len(root_total_aa_seq) == len(epitope_mask), "Sequence and mask lengths are not equal: %s != %s." % (len(root_total_aa_seq), len(epitope_mask))
 
     # Setup receptor binding site mask.
     rbs_mask_name = "%s_%s_rbs" % (lineage, segment)
