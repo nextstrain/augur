@@ -596,7 +596,7 @@ if __name__=="__main__":
             )
             assert "lb" in runner.tree.tree.root.attr, "LBI not annotated"
 
-            runner.config["auspice"]["color_options"]["lbi"] = {
+            runner.config["auspice"]["color_options"]["lb"] = {
                 "menuItem": "local branching index",
                 "type": "continuous",
                 "legendTitle": "local branching index",
