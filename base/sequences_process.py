@@ -120,7 +120,17 @@ class sequence_set(object):
         self.reference_seq = SeqRecord(Seq(reference["seq"], generic_dna),
                id=name, name=name, description=name)
         if "genes" in reference and len(reference["genes"]):
-            self.proteins = {k:FeatureLocation(start=v["start"], end=v["end"], strand=v["strand"]) for k, v in reference["genes"].iteritems()}
+            self.proteins = {}
+            for k, v in reference["genes"].iteritems():
+                feature = FeatureLocation(start=v["start"], end=v["end"], strand=v["strand"])
+
+                # Translate sequences to identify any proteins ending with a stop codon.
+                translation = Seq.translate(Seq(feature.extract(str(self.reference_seq.seq))))
+                if translation.endswith("*"):
+                    # Truncate the last codon of the protein to omit the stop codon.
+                    feature = FeatureLocation(start=v["start"], end=v["end"] - 3, strand=v["strand"])
+
+                self.proteins[k] = feature
         else:
             self.proteins = None
 
@@ -270,7 +280,6 @@ class sequence_set(object):
         # loop over all proteins and create one MSA for each
         for prot in self.proteins:
             aa_seqs = []
-            trim_end = False
             for seq in self.aln:
                 tmpseq = self.proteins[prot].extract(seq)
                 translated_seq, translation_exception = safe_translate(str(tmpseq.seq), report_exceptions=True)
@@ -278,20 +287,12 @@ class sequence_set(object):
                 if translation_exception:
                     self.log.notify("Trouble translating because of invalid codons %s" % seq.id)
 
-                if translated_seq.endswith("*"):
-                    trim_end = True
-
                 tmpseq.seq = Seq(translated_seq)
 
                 # copy attributes
                 tmpseq.attributes = seq.attributes
                 aa_seqs.append(tmpseq)
 
-            # strip stop codons from translated sequences, some sequences may end in NNNNN
-            if trim_end:
-                for aa_seq in aa_seqs:
-                    aa_seq = aa_seq[:-1]
-                    
             self.translations[prot] = MultipleSeqAlignment(aa_seqs)
 
     def clock_filter(self, root_seq=None, n_iqd=3, max_gaps = 1.0, plot=False):
