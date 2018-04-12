@@ -340,7 +340,15 @@ frequency_params = {
     '12y': {"dfreq_dn": 6}
 }
 
-# Map lineages to specific HA masks.
+# Map resolution to pivot spacing
+resolution_to_pivot_spacing = {
+    "2y": 1. / 12.,
+    "3y": 1. / 12.,
+    "6y": 2. / 12.,
+    "12y": 3. / 12.
+}
+
+# Map lineages to specific HA masks
 lineage_to_epitope_mask = {
     "h3n2": "wolf",
     "h1n1pdm": "canton"
