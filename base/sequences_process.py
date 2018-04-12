@@ -270,22 +270,28 @@ class sequence_set(object):
         # loop over all proteins and create one MSA for each
         for prot in self.proteins:
             aa_seqs = []
+            trim_end = False
             for seq in self.aln:
                 tmpseq = self.proteins[prot].extract(seq)
                 translated_seq, translation_exception = safe_translate(str(tmpseq.seq), report_exceptions=True)
 
-                # Strip stop codons from translated sequences.
-                if translated_seq.endswith("*"):
-                    translated_seq = translated_seq[:-1]
-
                 if translation_exception:
                     self.log.notify("Trouble translating because of invalid codons %s" % seq.id)
+
+                if translated_seq.endswith("*"):
+                    trim_end = True
 
                 tmpseq.seq = Seq(translated_seq)
 
                 # copy attributes
                 tmpseq.attributes = seq.attributes
                 aa_seqs.append(tmpseq)
+
+            # strip stop codons from translated sequences, some sequences may end in NNNNN
+            if trim_end:
+                for aa_seq in aa_seqs:
+                    aa_seq = aa_seq[:-1]
+                    
             self.translations[prot] = MultipleSeqAlignment(aa_seqs)
 
     def clock_filter(self, root_seq=None, n_iqd=3, max_gaps = 1.0, plot=False):
