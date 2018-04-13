@@ -1,5 +1,6 @@
 from __future__ import division, print_function
 import Bio.Phylo
+import numpy as np
 
 def myopen(fname, mode='r'):
     if fname[-2:] == 'gz':
@@ -107,3 +108,39 @@ def json_to_tree(json_dict):
             setattr(node, attr, value)
 
     return node
+
+
+def json_to_clade_frequencies(json_dict):
+    """Converts the given JSON dictionary to the same clade frequencies data structure used by augur.
+
+    Each entry in the JSON dictionary looks like the following:
+
+    "north_america_clade:2024": [
+    0.0,
+    0.0,
+    0.0,
+    ...
+    ]
+
+    where the key is "{region}_clade:{clade}" and the values are the frequencies per timepoint.
+
+    >>> import json
+    >>> json_fh = open("tests/json_tree_to_nexus/flu_h3n2_ha_3y_frequencies.json", "r")
+    >>> json_dict = json.load(json_fh)
+    >>> frequencies = json_to_tree(json_dict)
+    """
+    frequencies = {}
+
+    for key, values in json_dict.iteritems():
+        # Skip non-clade frequencies.
+        if not "_clade:" in key:
+            continue
+
+        region, clade = key.split("_clade:")
+
+        if region not in frequencies:
+            frequencies[region] = {}
+
+        frequencies[region][int(clade)] = np.array(values)
+
+    return frequencies
