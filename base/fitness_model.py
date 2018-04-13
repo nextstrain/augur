@@ -7,6 +7,7 @@ import pandas as pd
 from scipy.interpolate import interp1d
 from scipy.stats import linregress
 
+from base.io_util import write_json
 from builds.flu.scores import select_nodes_in_season
 from frequencies import logit_transform, tree_frequencies
 from fitness_predictors import fitness_predictors
@@ -646,6 +647,27 @@ class fitness_model(object):
                 tmp = traj[traj['series']==ci]
                 ax.plot(tmp['time'], tmp['obs'], ls='-', c=cols[ci%6])
                 ax.plot(tmp['time'], tmp['pred'], ls='--', c=cols[ci%6])
+
+    def to_json(self, filename):
+        """Export fitness model parameters, data, and accuracy statistics to JSON.
+        """
+        # Convert predictor parameters to a data frame to easily export as
+        # records.
+        params_df = pd.DataFrame({
+            "predictor": self.predictors,
+            "param": self.model_params.tolist(),
+            "global_sd": self.global_sds.tolist()
+        })
+
+        data = {
+            "params": params_df.to_dict(orient="records"),
+            "data": self.pred_vs_true_df.to_dict(orient="records"),
+            "accuracy": {
+                "clade_error": self.clade_fit(self.model_params)
+            }
+        }
+        write_json(data, filename)
+
 
 def main(params):
     import time
