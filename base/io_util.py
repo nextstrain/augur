@@ -76,9 +76,37 @@ def tree_to_json(node, extra_attr = []):
     return tree_json
 
 
-def json_to_tree(json_dict):
+# Biopython's trees don't store links to node parents, so we need to build
+# a map of each node to its parent.
+# Code from the Bio.Phylo cookbook: http://biopython.org/wiki/Phylo_cookbook
+def all_parents(tree):
+    parents = {}
+    for clade in tree.find_clades(order='level'):
+        for child in clade:
+            parents[child] = clade
+    return parents
+
+
+def annotate_parents(tree):
+    # Get all parent nodes by node.
+    parents_by_node = all_parents(tree)
+
+    # Next, annotate each node with its parent.
+    for node in tree.find_clades():
+        if node == tree.root:
+            node.parent = None
+        else:
+            node.parent = parents_by_node[node]
+
+    # Return the tree.
+    return tree
+
+
+def json_to_tree(json_dict, root=True):
     """Returns a Bio.Phylo tree corresponding to the given JSON dictionary exported
     by `tree_to_json`.
+
+    Assigns links back to parent nodes for the root of the tree.
 
     >>> import json
     >>> json_fh = open("tests/json_tree_to_nexus/flu_h3n2_ha_3y_tree.json", "r")
@@ -100,12 +128,18 @@ def json_to_tree(json_dict):
 
     if "children" in json_dict:
         # Recursively add children to the current node.
-        node.clades = [json_to_tree(child) for child in json_dict["children"]]
+        node.clades = [json_to_tree(child, root=False) for child in json_dict["children"]]
 
     # Assign all non-children attributes.
     for attr, value in json_dict.iteritems():
         if attr != "children":
             setattr(node, attr, value)
+
+    node.numdate = node.attr.get("num_date")
+    node.branch_length = node.attr.get("div")
+
+    if root:
+        node = annotate_parents(node)
 
     return node
 
