@@ -184,7 +184,7 @@ def freq_auto_corr(freq1, freq2, min_dfreq=0.2):
 def age_distribution(runner):
     import matplotlib
     # important to use a non-interactive backend, otherwise will crash on cluster
-    matplotlib.use('PDF')
+    matplotlib.use('agg')
     import matplotlib.pyplot as plt
 
     fs=16
