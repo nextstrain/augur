@@ -68,6 +68,11 @@ outliers = {
         "A/Ireland/61097/2017", "A/Shanghai-Minxing/1482/2017"
     ],
     'h1n1pdm': [
+        "A/Malaysia/2142295/2009", "A/Malaysia/2142299/2009", "A/Singapore/SM15/2009",
+        "A/HongKong/H090-665-V1/2009", "A/HongKong/H090-667-V1/2009", "A/HongKong/H090-751-V3/2009",
+        "A/Austria/183/2009-egg", "A/HongKong/H090-771-V1/2009", "A/HongKong/H090-774-V1/2009",
+        "A/HongKong/H090-684-V10/2009", "A/Austria/183/2009-egg", "A/Malaysia/2143696/2009",
+        "A/HongKong/H090-667-V2/2009", "A/Shandong/1/2009-egg",
         "A/Wisconsin/87/2005", "A/Iowa/1/2006-egg", "A/Illinois/9/2007", "A/Ohio/2/2007",
         "A/California/07/2009NYMC-X18113/198", "A/Iowa/2/2009", "A/Shandong/1/2009", "A/Iowa/2/2009-egg",
         "A/Asturias/RR6898/2010", "A/Christchurch/16/2010NIB-74xp13/202", "A/Tomsk/273-MA1/2010",
@@ -402,7 +407,8 @@ clade_designations = {
             ('nuc',452,'A')]
     },
     "h1n1pdm":{
-        '2': [('HA1', 125, 'N'), ('HA1', 134 ,'A'), ('HA1', 183, 'S'), ('HA1', 31,'D'), ('HA1', 172,'N'), ('HA1', 186,'T')],
+        '1': [('HA1', 125, 'N'), ('HA1', 134 ,'A'), ('HA1', 183, 'S'), ('HA1', 31,'N'), ('HA1', 216, 'I')],
+        '2': [('HA1', 125, 'N'), ('HA1', 134 ,'A'), ('HA1', 183, 'S'), ('HA1', 31,'D')],
         '3': [('HA1', 134 ,'T'), ('HA1', 183, 'P')],
         '4': [('HA1', 125, 'D'), ('HA1', 134 ,'A'), ('HA1', 183, 'S')],
         '5': [('HA1', 87, 'N'), ('HA1', 205, 'K'), ('HA1', 216, 'V'), ('HA1', 149, 'L')],

@@ -20,7 +20,7 @@ def parse_args():
     parser = base.prepare.collect_args()
 
     parser.add_argument('-l', '--lineage', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default='h3n2', type=str, help="single lineage to include (default: h3n2)")
-    parser.add_argument('-r', '--resolutions', default=['3y'], nargs='+', type = str,  help = "list of resolutions to include (default: 3y)")
+    parser.add_argument('-r', '--resolution', choices=['2y', '3y', '6y', '12y'], default=['3y'], type = str,  help = "single resolution to include (default: 3y)")
     parser.add_argument('--ensure_all_segments', action="store_true", default=False,  help = "exclude all strains that don't have the full set of segments")
     parser.add_argument('-s', '--segments', default=['ha'], nargs='+', type = str,  help = "list of segments to include (default: ha)")
     parser.add_argument('--sampling', default = 'even', type=str,
@@ -155,21 +155,18 @@ if __name__=="__main__":
         logger.debug("Verbose reporting enabled")
 
     ## lots of loops to allow multiple downstream analysis
-    for resolution in params.resolutions:
-        pprint("Preparing lineage {}, segments: {}, resolutions: {}".format(params.lineage, params.segments, resolution))
+    pprint("Preparing lineage {}, segments: {}, resolutions: {}".format(params.lineage, params.segments, params.resolution))
 
-        config = make_config(params.lineage, resolution, params)
-        runner = prepare(config)
-        runner.load_references()
-        runner.applyFilters()
-        runner.ensure_all_segments()
-        if not params.complete_frequencies: # if complete_frequencies, do subsampling later on in flu.process
-            runner.subsample()
-        taxa_to_include = list(runner.segments[params.segments[0]].get_subsampled_names(config))
-        for seg in params.segments:
-            runner.segments[seg].extras['leaves'] = taxa_to_include
-        runner.colors()
-        runner.latlongs()
-        runner.write_to_json(segment_addendum=len(params.segments)>1)
-        if params.time_interval:
-            break
+    config = make_config(params.lineage, params.resolution, params)
+    runner = prepare(config)
+    runner.load_references()
+    runner.applyFilters()
+    runner.ensure_all_segments()
+    if not params.complete_frequencies: # if complete_frequencies, do subsampling later on in flu.process
+        runner.subsample()
+    taxa_to_include = list(runner.segments[params.segments[0]].get_subsampled_names(config))
+    for seg in params.segments:
+        runner.segments[seg].extras['leaves'] = taxa_to_include
+    runner.colors()
+    runner.latlongs()
+    runner.write_to_json(segment_addendum=len(params.segments)>1)
