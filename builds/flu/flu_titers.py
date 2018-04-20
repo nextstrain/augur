@@ -21,8 +21,8 @@ def HI_model(process):
         n.attr['cTiter'] = n.cTiter
         n.attr['dTiter'] = n.dTiter
         # print("cumulative: {} delta: {}".format(n.cTiter, n.dTiter))
-    process.config["auspice"]["color_options"]["cTiter"] = {
-        "menuItem": "antigenic advance", "type": "continuous", "legendTitle": "Antigenic Advance", "key": "cTiter"
+    process.config["auspice"]["color_options"]["cTiterSub"] = {
+        "menuItem": "antigenic advance", "type": "continuous", "legendTitle": "Antigenic advance", "key": "cTiterSub"
     }
 
     # SUBSTITUTION MODEL

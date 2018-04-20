@@ -34,6 +34,9 @@ def run_live(
                 'flu.process.py',
                 '--json', 'prepared/flu_%s_ha_%s.json'%(lineage, resolution)
             ]
+            if lineage == "h3n2":
+                call = call + ['--annotate_fitness', '--predictors', 'cTiterSub', '--predictors_params', '1.13', '--predictors_sds', '0.72']
+
             if process_na:
                 call = [
                     'flu.process.py',
