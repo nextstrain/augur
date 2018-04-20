@@ -669,11 +669,14 @@ class fitness_model(object):
             "global_sd": self.global_sds.tolist()
         })
 
+        rho_null, rho_raw, rho_rel = self.get_correlation()
+
         data = {
             "params": params_df.to_dict(orient="records"),
             "data": self.pred_vs_true_df.to_dict(orient="records"),
             "accuracy": {
-                "clade_error": self.clade_fit(self.model_params)
+                "clade_error": self.clade_fit(self.model_params),
+                "rho_rel": rho_rel[0]
             }
         }
         write_json(data, filename)
