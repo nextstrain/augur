@@ -3,6 +3,7 @@ from Bio import Phylo
 from StringIO import StringIO
 import numpy as np
 import sys, csv, logging, json, argparse, imp, math
+from collections import defaultdict
 sys.path.append('')
 from base.colorLogging import ColorizingStreamHandler
 
@@ -35,6 +36,8 @@ def get_command_line_args():
     general.add_argument('--title', default=None, type=str, help="Title (to be displayed by auspice)")
     general.add_argument("--defaults", type=str, nargs='+', default=[], help="Auspice defaults. Format: \"key:value\"")
     general.add_argument("--filters", type=str, nargs='+', default=[], help="Auspice filters.")
+    general.add_argument('--geo', type=str, help="CSV File w. header \"trait,value,latitude,longitude\". Turns on the map panel.")
+
 
     return parser.parse_args()
 
@@ -301,6 +304,27 @@ if __name__=="__main__":
         for trait in header[1:]:
             meta_json["color_options"][trait] = {"menuItem": trait, "type": "discrete", "legendTitle": trait, "key": trait}
 
+    if args.geo:
+        geo = defaultdict(lambda: defaultdict(dict))
+        with open(args.geo, 'rb') as fh:
+            csvdata = csv.reader(fh, delimiter=',', quotechar='"')
+            header = removeBOM(csvdata.next())
+            assert(len(header) == 4)
+            for line in csvdata:
+                # trait,value,latitude,longitude
+                geo[line[0]][line[1]] = {"latitude": line[2], "longitude": line[3]}
+        meta_json["geo"] = geo
+        if "map" not in meta_json["panels"]:
+            meta_json["panels"].append("map")
+
+        # some basic checks
+        geo_traits = geo.keys()
+        for node in tree.find_clades():
+            if hasattr(node, "attr"):
+                for trait in geo_traits:
+                    if trait in node.attr:
+                        if node.attr[trait] not in geo[trait]:
+                            logger.warn("{} has no GPS co-ords".format(node.attr[trait]))
 
     tree_json = modified_tree_to_json(tree.root)
 
