@@ -1,12 +1,8 @@
 from __future__ import division, print_function
 from Bio import Phylo
 from StringIO import StringIO
-import json
 import numpy as np
-import argparse
-import sys
-import imp
-import logging
+import sys, csv, logging, json, argparse, imp, math
 sys.path.append('')
 from base.colorLogging import ColorizingStreamHandler
 
@@ -24,8 +20,12 @@ def get_command_line_args():
     beast.add_argument('--most_recent_tip', type=float, help="Date of the most recent tip (in decimal format)")
     beast.add_argument('--discrete_traits', type=str, nargs='+', default=[], help="Discrete traits to extract from the BEAST annotations")
     beast.add_argument('--continuous_traits', type=str, nargs='+', default=[], help="Continuous traits to extract from the BEAST annotations")
+    beast.add_argument('--make_traits_log', type=str, nargs='+', default=[], help="Convert these (continous) traits to log space: y=-ln(x)")
+    beast.add_argument("--fake_divergence", action="store_true", help="Set the divergence as time (prevents auspice crashing)")
+
 
     metadata = parser.add_argument_group('metadata')
+    metadata.add_argument('--strain_csv', default=None, type=str, help="Metadata (with headers) linking strain to some metadata columns")
 
 
     general = parser.add_argument_group('general')
@@ -33,6 +33,8 @@ def get_command_line_args():
     general.add_argument("--debug", action="store_const", dest="loglevel", const=logging.DEBUG, help="Enable debugging logging")
     general.add_argument('--output_prefix', '-o', required=True, type=str, help="Output prefix (i.e. \"_meta.json\" will be appended to this)")
     general.add_argument('--title', default=None, type=str, help="Title (to be displayed by auspice)")
+    general.add_argument("--defaults", type=str, nargs='+', default=[], help="Auspice defaults. Format: \"key:value\"")
+    general.add_argument("--filters", type=str, nargs='+', default=[], help="Auspice filters.")
 
     return parser.parse_args()
 
@@ -105,19 +107,34 @@ def mock_meta_json(tree, args):
         meta["title"] = args.title
 
     meta["color_options"] = {
-      "country": {
-        "menuItem": "country",
-        "type": "discrete",
-        "legendTitle": "country",
-        "key": "country"
-      }
+        # "country": {
+        #     "menuItem": "country",
+        #     "type": "discrete",
+        #     "legendTitle": "country",
+        #     "key": "country"
+        #   },
+        "num_date": {
+            "menuItem": "date",
+            "type": "continuous",
+            "legendTitle": "Sampling date",
+            "key": "num_date"
+        },
     }
-    meta["filters"] = ["type"]
+    meta["filters"] = []
+    for filter in args.filters:
+        meta["filters"].append(filter)
     meta["commit"] = "unknown"
     meta["panels"] = ["tree"]
     meta["geo"] = {"country": {}}
     meta["annotations"] = {}
     meta["author_info"] = {}
+    if args.defaults:
+        meta["defaults"] = {}
+        for default in args.defaults:
+            kv = default.split(":")
+            meta["defaults"][kv[0]] = kv[1]
+
+
     return meta;
 
 def set_basic_information_on_nodes(tree):
@@ -168,6 +185,14 @@ def make_up_country(tree):
         if node.is_terminal():
             node.attr["country"] = np.random.choice(countries)
 
+def calc_entropy(vals):
+    if len(vals) == 1:
+        return 0.0
+    return sum([v * math.log(v+1E-20) for v in vals]) * -1 / math.log(len(vals))
+
+
+def removeBOM(arr):
+    return [field.replace('\xef\xbb\xbf', '') for field in arr] # excel BOM \U+FEFF
 
 if __name__=="__main__":
     args = get_command_line_args()
@@ -213,12 +238,21 @@ if __name__=="__main__":
                 setattr(node,'xvalue',b.height) ## 0.0 in the future?
                 setattr(node,'yvalue',b.y) ## y value after drawing
                 setattr(node,'clade',b.index) ## clade
+
                 attrs={}
 
                 if b.absoluteTime!=None:
                     attrs['num_date']=b.absoluteTime
                 else: # root
                     attrs['num_date']=bt_tree.Objects[0].absoluteTime
+
+                if b.traits.has_key('height_95%_HPD'):
+                    attrs['num_date_confidence']=[args.most_recent_tip-t for t in b.traits['height_95%_HPD']]
+
+
+                if args.fake_divergence:
+                    attrs['div'] = attrs['num_date']
+
 
                 setattr(node,'attr',attrs)
 
@@ -229,31 +263,57 @@ if __name__=="__main__":
                         tprob = trait+".set.prob"
                         if b.traits.has_key(tset) and b.traits.has_key(tprob):
                             attrs[trait+'_confidence']={t:p for t,p in zip(b.traits[tset], b.traits[tprob])}
+                            attrs[trait+'_entropy'] = calc_entropy(b.traits[tprob])
 
                 for trait in args.continuous_traits:
+                    make_log = trait in args.make_traits_log
                     rate = trait+".rate"
                     hpd = trait+".rate_95%_HPD"
                     if b.traits.has_key(rate):
-                        attrs[trait] = b.traits[rate]
+                        attrs[trait] = np.log(b.traits[rate]) if make_log else b.traits[rate]
                         if b.traits.has_key(hpd):
-                            attrs[trait+'_confidence'] = b.traits[hpd]
+                            attrs[trait+'_confidence'] = [np.log(x) for x in b.traits[hpd]] if make_log else b.traits[hpd]
+                            attrs[trait+'_entropy'] = calc_entropy(b.traits[hpd])
 
 
         # import pdb; pdb.set_trace()
+    meta_json = mock_meta_json(tree, args)
 
+
+    if args.strain_csv:
+        meta = {}
+        with open(args.strain_csv, 'rb') as fh:
+            csvdata = csv.reader(fh, delimiter=',', quotechar='"')
+            header = removeBOM(csvdata.next())
+            assert(header[0] == "strain")
+            for line in csvdata:
+                meta[line[0]] = {k:v for k,v in zip(header, line) if k != "strain"}
+
+        for node in tree.find_clades():
+            if node.name in meta:
+                if not hasattr(node, "attr"): # confusing!
+                    setattr(node, "attr", {})
+                for key, value in meta[node.name].iteritems():
+                    if value == "":
+                        continue
+                    node.attr[key] = value
+
+        for trait in header[1:]:
+            meta_json["color_options"][trait] = {"menuItem": trait, "type": "discrete", "legendTitle": trait, "key": trait}
 
 
     tree_json = modified_tree_to_json(tree.root)
-    json.dump(tree_json, open("{}_tree.json".format(args.output_prefix), 'w'), indent=2)
-    meta_json = mock_meta_json(tree, args)
 
-    ## add the discrete & continous traits as colorBys
+    if args.nexus:
+        tree_json = tree_json["children"][0] # hacky
+
+    ## add the discrete & continuous traits as colorBys
     for trait in args.discrete_traits:
         meta_json["color_options"][trait] = {"menuItem": trait, "type": "discrete", "legendTitle": trait, "key": trait}
     for trait in args.continuous_traits:
-        meta_json["color_options"][trait] = {"menuItem": trait, "type": "continous", "legendTitle": trait, "key": trait}
+        meta_json["color_options"][trait] = {"menuItem": trait, "type": "continuous", "legendTitle": trait, "key": trait}
 
-
+    json.dump(tree_json, open("{}_tree.json".format(args.output_prefix), 'w'), indent=2)
     json.dump(meta_json, open("{}_meta.json".format(args.output_prefix), 'w'), indent=2)
 
     logger.info("DONE")
