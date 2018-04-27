@@ -17,6 +17,7 @@ def run(args):
 
     if args.aligner=='mafft':
         os.system("mafft --anysymbol --thread %d %s 1> %s 2>mafft_stderr"%(args.nthreads, args.s, args.o))
+        print("using mafft to align: \n Katoh et al, Nucleic Acid Research, vol 30, issue 14\n https://doi.org/10.1093%2Fnar%2Fgkf436")
     else:
         print('not implemented')
 

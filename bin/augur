@@ -15,12 +15,33 @@ if __name__=="__main__":
     args = parser.parse_args(sys.argv[1:2])
 
 
-    if args.command=="align":
+    if args.command=="prepare":
+        from augur import prepare
+        prepare.run(sys.argv[2:])
+    elif args.command=="align":
         from augur import align
         align.run(sys.argv[2:])
     elif args.command=="tree":
         from augur import tree
         tree.run(sys.argv[2:])
+    elif args.command=="translate":
+        from augur import translate
+        translate.run(sys.argv[2:])
+    elif args.command=="mugration":
+        from augur import mugration
+        mugration.run(sys.argv[2:])
+    elif args.command=="frequency":
+        from augur import frequency
+        frequency.run(sys.argv[2:])
+    elif args.command=="titer":
+        from augur import titer
+        titer.run(sys.argv[2:])
+    elif args.command=="titer":
+        from augur import titer
+        titer.run(sys.argv[2:])
+    elif args.command=="export":
+        from augur import export
+        export.run(sys.argv[2:])
     else:
         print("unrecognized command")
         exit(1)
