@@ -24,7 +24,9 @@ config = {
         "color_options": {
             "country": {"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
             "division": {"key":"division", "legendTitle":"division", "menuItem":"division", "type":"discrete"},
-            "state": {"key":"state", "legendTitle":"state", "menuItem":"state", "type":"discrete"}
+            "state": {"key":"state", "legendTitle":"state", "menuItem":"state", "type":"discrete"},
+            "authors": {"key":"authors", "legendTitle":"Authors", "menuItem":"authors", "type":"discrete"},
+            "host": {"key":"host", "legendTitle":"Host Species", "menuItem":"host", "type":"discrete"},
         },
         "controls": {},
         "defaults": {

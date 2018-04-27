@@ -24,9 +24,9 @@ config = {
     "file_prefix": "WNV_NA",
     "title": "Twenty years of West Nile Virus in North America",
     "maintainer": ["James Hadfield / Nate Grubaugh", ""],
-    "input_paths": ["./data/full_dataset.singleline.aligned.pipeChar.fasta"],
+    "input_paths": ["./data/WNV.fasta"],
     # >W112|2016-02-18|USA|CA|SD|-117.0239963|32.6299784
-    "header_fields": {0:'strain', 1:'date', 2:'country', 3:'state', 4:'division'},
+    "header_fields": {0:'strain', 1:'date', 2:'country', 3:'state', 4:'division', 7:'host', 8:'authors', 9:'journal', 10:'title', 11:'url'},
     "filters": (
         ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
         # ("Restrict Date Range", lambda s: s.attributes['date'] >= datetime(2012,01,1).date()),
@@ -36,11 +36,11 @@ config = {
     "subsample": {
         "category": lambda x:(x.attributes['date'].year, x.attributes['date'].month),
     },
-    "colors": ["country", "division", "state"],
+    "colors": ["country", "division", "state", "authors", "host"],
     "color_defs": [], #["./colors.tsv"],
     "lat_longs": ["state"],
     "lat_long_defs": "./lat_longs.tsv",
-    "auspice_filters": ["country", "division", "state"],
+    "auspice_filters": ["country", "division", "state", "authors"],
     "reference": {
         "path": "reference.gb",
         "metadata": {
