@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+import sys
+
+if __name__=="__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description = "Augur: Real-Time Phylogenetic analysis.",
+        usage=
+        "augur <command> [options]\n"
+        "   available subcommands:\n"
+        "   align\n"
+        "   tree")
+    parser.add_argument('command',help='subcommand to run')
+
+    args = parser.parse_args(sys.argv[1:2])
+
+
+    if args.command=="align":
+        from augur import align
+        align.run(sys.argv[2:])
+    elif args.command=="tree":
+        from augur import tree
+        tree.run(sys.argv[2:])
+    else:
+        print("unrecognized command")
+        exit(1)
