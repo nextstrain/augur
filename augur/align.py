@@ -4,35 +4,59 @@ from Bio import AlignIO, SeqIO, Seq
 
 
 def run(args):
-    parser = argparse.ArgumentParser("Align sequences")
-    parser.add_argument('-s', required=True, help="sequences in fasta format")
-    parser.add_argument('-o', required=True, help="output file")
-    parser.add_argument('--nthreads', type=int, default=2,
-                        help="number of threads used by mafft")
-    parser.add_argument('--aligner', default='mafft',
-                        help="alignment program to use")
-    parser.add_argument('--reference', type=str, help="strip insertions relative to reference sequence")
-    parser.add_argument('--remove_reference', action="store_true", help="keep reference sequence in alignment")
-    args = parser.parse_args(args)
+    seq_fname = args.sequences
+    ref_name = args.reference_name
+    ref_fname = args.reference_sequence
+    if args.output:
+        output = args.output
+    else:
+        output = "aligment.fasta"
+
+    try:
+        seqs = {s.id:s for s in SeqIO.parse(seq_fname, 'fasta')}
+    except:
+        print("Cannot read sequences -- make sure the file %s exists and contains sequences in fasta format"%seq_fname)
+        return -1
+
+    if ref_name and (ref_name not in seqs):
+        print("Specified reference name %s is not in the sequence sample. Will not trim."%ref_name)
+        ref_name = None
+
+    if ref_fname and (not ref_name):
+        if os.path.isfile(ref_fname):
+            try:
+                ref_seq = SeqIO.read(ref_fname, 'genbank' if ref_fname.split('.')[-1] in ['gb', 'genbank'] else 'fasta')
+            except:
+                print("WARNING: Cannot read reference sequence."
+                      "\n\tmake sure the file %s contains one sequence in genbank or fasta format"%ref_fname)
+            else:
+                ref_name = ref_seq.id
+                seq_fname+='.ref.fasta'
+                SeqIO.write(list(seqs.values())+[ref_seq], seq_fname, 'fasta')
+        else:
+            print("WARNING: Cannot read reference sequence."
+                  "\n\tmake sure the file %s does not exist"%ref_fname)
 
     if args.aligner=='mafft':
-        os.system("mafft --anysymbol --thread %d %s 1> %s 2>mafft_stderr"%(args.nthreads, args.s, args.o))
-        print("using mafft to align: \n Katoh et al, Nucleic Acid Research, vol 30, issue 14\n https://doi.org/10.1093%2Fnar%2Fgkf436")
+        cmd = "mafft --anysymbol --thread %d %s 1> %s 2>mafft_stderr"%(args.nthreads, seq_fname, output)
+        os.system(cmd)
+        print("\nusing mafft to align via:\n\t" + cmd +
+              " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"
+              "\n\thttps://doi.org/10.1093%2Fnar%2Fgkf436\n")
     else:
-        print('not implemented')
+        print('ERROR: aligner not implemented')
+        return -1
 
     from Bio import AlignIO
-    aln = AlignIO.read(args.o, 'fasta')
-    aln_dict = {}
+    aln = AlignIO.read(output, 'fasta')
     for seq in aln:
         seq.seq = seq.seq.upper()
-        aln_dict[seq.name]=seq
-    AlignIO.write(aln, args.o, 'fasta')
+    AlignIO.write(aln, output, 'fasta')
 
-
-    if args.reference:
-        seqs = strip_non_reference(args.o, args.reference, keep_reference=not args.remove_reference)
-        SeqIO.write(seqs, args.o, 'fasta')
+    if ref_name:
+        seqs = strip_non_reference(output, ref_name, keep_reference=not args.remove_reference)
+        if seqs:
+            SeqIO.write(seqs, output, 'fasta')
 
 
 
@@ -48,7 +72,7 @@ def strip_non_reference(alignment_fname, reference, keep_reference=False):
         ungapped = ref_array!='-'
         ref_aln_array = np.array(aln)[:,ungapped]
     else:
-        print("reference", reference, "not found in alignment")
+        print("WARNING: reference", reference, "not found in alignment")
         return
 
     out_seqs = []
@@ -57,8 +81,6 @@ def strip_non_reference(alignment_fname, reference, keep_reference=False):
         if keep_reference or seq.name!=reference:
             out_seqs.append(seq)
 
+    print("Trimmed gaps in", reference, "from the alignment")
     return out_seqs
 
-
-if __name__ == '__main__':
-    run(sys.argv)

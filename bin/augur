@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+from augur import align
 
 if __name__=="__main__":
     import argparse
@@ -10,38 +11,52 @@ if __name__=="__main__":
         "   available subcommands:\n"
         "   align\n"
         "   tree")
-    parser.add_argument('command',help='subcommand to run')
+    subparsers = parser.add_subparsers()
 
-    args = parser.parse_args(sys.argv[1:2])
+    ### ALIGN.PY
+    align_parser = subparsers.add_parser('align')
+    align_parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
+    align_parser.add_argument('--output', help="output file")
+    align_parser.add_argument('--nthreads', type=int, default=2,
+                        help="number of threads used by mafft")
+    align_parser.add_argument('--aligner', default='mafft',
+                        help="alignment program to use")
+    align_parser.add_argument('--reference_name', type=str, help="strip insertions relative to reference sequence")
+    align_parser.add_argument('--reference_sequence', type=str, help="strip insertions relative to reference sequence")
+    align_parser.add_argument('--remove_reference', action="store_true", help="keep reference sequence in alignment")
+    align_parser.set_defaults(func=align.run)
 
+    args = parser.parse_args()
 
-    if args.command=="prepare":
-        from augur import prepare
-        prepare.run(sys.argv[2:])
-    elif args.command=="align":
-        from augur import align
-        align.run(sys.argv[2:])
-    elif args.command=="tree":
-        from augur import tree
-        tree.run(sys.argv[2:])
-    elif args.command=="translate":
-        from augur import translate
-        translate.run(sys.argv[2:])
-    elif args.command=="mugration":
-        from augur import mugration
-        mugration.run(sys.argv[2:])
-    elif args.command=="frequency":
-        from augur import frequency
-        frequency.run(sys.argv[2:])
-    elif args.command=="titer":
-        from augur import titer
-        titer.run(sys.argv[2:])
-    elif args.command=="titer":
-        from augur import titer
-        titer.run(sys.argv[2:])
-    elif args.command=="export":
-        from augur import export
-        export.run(sys.argv[2:])
-    else:
-        print("unrecognized command")
-        exit(1)
+    return_code = args.func(args)
+
+    # if args.command=="prepare":
+    #     from augur import prepare
+    #     prepare.run(sys.argv[2:])
+    # elif args.command=="align":
+    #     from augur import align
+    #     align.run(sys.argv[2:])
+    # elif args.command=="tree":
+    #     from augur import tree
+    #     tree.run(sys.argv[2:])
+    # elif args.command=="translate":
+    #     from augur import translate
+    #     translate.run(sys.argv[2:])
+    # elif args.command=="mugration":
+    #     from augur import mugration
+    #     mugration.run(sys.argv[2:])
+    # elif args.command=="frequency":
+    #     from augur import frequency
+    #     frequency.run(sys.argv[2:])
+    # elif args.command=="titer":
+    #     from augur import titer
+    #     titer.run(sys.argv[2:])
+    # elif args.command=="titer":
+    #     from augur import titer
+    #     titer.run(sys.argv[2:])
+    # elif args.command=="export":
+    #     from augur import export
+    #     export.run(sys.argv[2:])
+    # else:
+    #     print("unrecognized command")
+    #     exit(1)
