@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-from augur import align
+from augur import align, tree
 
 if __name__=="__main__":
     import argparse
@@ -26,8 +26,18 @@ if __name__=="__main__":
     align_parser.add_argument('--remove_reference', action="store_true", help="keep reference sequence in alignment")
     align_parser.set_defaults(func=align.run)
 
-    args = parser.parse_args()
+    ## TREE.PY
+    tree_parser = subparsers.add_parser('tree')
+    tree_parser.add_argument('--alignment', required=True, help="alignment to build tree from")
+    tree_parser.add_argument('--method', default='iqtree', help="tree builder to use")
+    tree_parser.add_argument('--output', help='file name to write tree to')
+    tree_parser.add_argument('--iqmodel', help='substitution model to use for iq-tree')
+    tree_parser.add_argument('--nthreads', type=int, default=2,
+                             help="number of threads used by mafft")
+    tree_parser.set_defaults(func=tree.run)
 
+
+    args = parser.parse_args()
     return_code = args.func(args)
 
     # if args.command=="prepare":
