@@ -39,11 +39,20 @@ def build_fasttree(aln_file, out_file, clean_up=True):
 
 def build_iqtree(aln_file, out_file, iqmodel, clean_up=True, nthreads=2):
     #return Phylo.read(out_file.replace(".nwk",".iqtree.nwk"), 'newick') #uncomment for debug skip straight to TreeTime
+
+    with open(aln_file) as ifile:
+        tmp_seqs = ifile.readlines()
+
+    aln_file = "temp_iqtree.fasta"
+    with open(aln_file, 'w') as ofile:
+        for line in tmp_seqs:
+            ofile.write(line.replace('/', '_X_X_').replace('|','_Y_Y_'))
+
     if iqmodel:
         call = ["iqtree", "-nt", str(nthreads), "-s", aln_file, "-m", iqmodel[0],
             ">", "iqtree.log"]
     else:
-        call = ["iqtree", "-nt", str(nthreads), "-s", aln_file, ">", "iqtree.log"]
+        call = ["iqtree", "-fast -nt", str(nthreads), "-s", aln_file, ">", "iqtree.log"]
     cmd = " ".join(call)
     print("Building a tree via:\n\t" + cmd +
           "\n\tNguyen et al: IQ-TREE: A fast and effective stochastic algorithm for estimating maximum likelihood phylogenies."
@@ -57,9 +66,12 @@ def build_iqtree(aln_file, out_file, iqmodel, clean_up=True, nthreads=2):
             #allow user to see chosen model
             shutil.copyfile('iqtree.log', out_file.replace("tree.nwk","iqtree.log"))
             os.remove('iqtree.log')
+            os.remove(aln_file)
             for ext in [".bionj",".ckp.gz",".iqtree",".log",".mldist",".model.gz",".treefile"]:
                 if os.path.isfile(aln_file + ext):
                     os.remove(aln_file + ext)
+            for n in T.get_terminals():
+                n.name = n.name.replace('_X_X_','/').replace('_Y_Y_','|')
     except:
         print("TREE BUILDING FAILED")
         T=None

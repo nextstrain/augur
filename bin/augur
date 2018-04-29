@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-from augur import align, tree
+from augur import align, tree, mugration
 
 if __name__=="__main__":
     import argparse
@@ -36,6 +36,17 @@ if __name__=="__main__":
                              help="number of threads used by mafft")
     tree_parser.set_defaults(func=tree.run)
 
+
+    ## MUGRATION.PY
+    traits_parser = subparsers.add_parser('traits')
+    traits_parser.add_argument('--tree', required=True, help="tree to perform trait reconstruction on")
+    traits_parser.add_argument('--metadata', required=True, help="tsv/csv table with meta data")
+    traits_parser.add_argument('--columns', required=True, nargs='+',
+                        help='meta data field to perform discrete reconstruction on')
+    traits_parser.add_argument('--confidence',action="store_true",
+                        help='record the distribution of subleading mugration states')
+    traits_parser.add_argument('--output', default='traits.json', help='')
+    traits_parser.set_defaults(func=mugration.run)
 
     args = parser.parse_args()
     return_code = args.func(args)
