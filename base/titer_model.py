@@ -8,6 +8,7 @@ from base.io_util import myopen
 from itertools import izip
 import pandas as pd
 from pprint import pprint
+import sys
 
 TITER_ROUND=4
 logger = logging.getLogger(__name__)
@@ -144,6 +145,25 @@ class TiterCollection(object):
         """
         return {key: value for key, value in titers.iteritems()
                 if key[0] in strains and key[1][0] in strains}
+
+    @classmethod
+    def subset_to_date(cls, titers, node_lookup, date_range):
+        """Subset the given titers to the given date range based on the dates annotated
+        on each node.
+        """
+        # Filter titers from the future by keeping titers associated with
+        # strains from the given timepoint or earlier.
+        filtered_strains = set([
+            node_name
+            for node_name, node in node_lookup.items()
+            if node.numdate <= date_range[1] and node.numdate >= date_range[0]
+        ])
+        filtered_titers = cls.filter_strains(titers, filtered_strains)
+        original_counts = sum(cls.count_strains(titers).values())
+        filtered_counts = sum(cls.count_strains(filtered_titers).values())
+        sys.stderr.write("Filtered from %i to %i titers between %s and %s\n" % (original_counts, filtered_counts, date_range[0], date_range[1]))
+
+        return filtered_titers
 
     def __init__(self, titers, **kwargs):
         """Accepts the name of a file containing titers to load or a preloaded titers
@@ -334,22 +354,6 @@ class TiterModel(object):
         for node in self.tree.get_nonterminals():
             for c in node.clades:
                 c.up = node
-
-
-    def subset_to_date(self, date_range):
-        # if data is to censored by date, subset the data set and
-        # reassign sera, reference strains, and test viruses
-        self.train_titers = {key:val for key,val in self.train_titers.iteritems()
-                            if self.node_lookup[key[0]].num_date>=date_range[0] and
-                               self.node_lookup[key[1][0]].num_date>=date_range[0] and
-                               self.node_lookup[key[0]].num_date<date_range[1] and
-                               self.node_lookup[key[1][0]].num_date<date_range[1]}
-
-        self.sera, self.ref_strains, self.test_strains = self.titers.strain_census(self.train_titers)
-
-        print("Reduced training data to date range", date_range)
-        self.titer_stats()
-
 
     def make_training_set(self, training_fraction=1.0, subset_strains=False, **kwargs):
         if training_fraction<1.0: # validation mode, set aside a fraction of measurements to validate the fit
