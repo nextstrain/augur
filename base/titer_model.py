@@ -969,6 +969,19 @@ class SubstitutionModel(TiterModel):
         for mi, mut in enumerate(self.relevant_muts):
             self.substitution_effect[mut] = self.model_params[mi]
 
+        # Annotate branch-specific and cumulative antigenic evolution scores.
+        for node in self.tree.find_clades():
+            dTiterSub = 0
+            if hasattr(node, "aa_muts"):
+                for gene, mutations in node.aa_muts.iteritems():
+                    for mutation in mutations:
+                        dTiterSub += self.substitution_effect.get((gene, mutation), 0)
+
+            node.dTiterSub = dTiterSub
+            if node.up is not None:
+                node.cTiterSub = node.up.cTiterSub + dTiterSub
+            else:
+                node.cTiterSub = 0
 
     def predict_titer(self, virus, serum, cutoff=0.0):
         muts= self.get_mutations(serum[0], virus)
