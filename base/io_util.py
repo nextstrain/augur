@@ -161,7 +161,11 @@ def json_to_clade_frequencies(json_dict):
     >>> import json
     >>> json_fh = open("tests/json_tree_to_nexus/flu_h3n2_ha_3y_frequencies.json", "r")
     >>> json_dict = json.load(json_fh)
-    >>> frequencies = json_to_tree(json_dict)
+    >>> frequencies = json_to_clade_frequencies(json_dict)
+    >>> len(frequencies["pivots"])
+    36
+    >>> frequencies["global"][202][0] > 0
+    True
     """
     frequencies = {}
 
