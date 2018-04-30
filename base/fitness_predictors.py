@@ -6,6 +6,7 @@ from itertools import izip
 from scipy.stats import linregress
 import sys
 
+from titer_model import SubstitutionModel, TiterCollection, TreeModel
 from builds.flu.scores import calculate_LBI
 
 # all fitness predictors should be designed to give a positive sign, ie.
@@ -56,8 +57,10 @@ class fitness_predictors(object):
             self.calc_random_predictor(tree)
         #if pred == 'dfreq':
             # do nothing
-        #if pred == 'cHI':
-            # do nothing
+        if pred == 'cTiter':
+            self.calc_titer_model("tree", tree, timepoint, **kwargs)
+        if pred == 'cTiterSub':
+            self.calc_titer_model("substitution", tree, timepoint, **kwargs)
 
     def setup_epitope_mask(self, epitope_masks_fname = 'metadata/ha_masks.tsv', epitope_mask_version = 'wolf', tolerance_mask_version = 'ha1'):
         sys.stderr.write("setup " + str(epitope_mask_version) + " epitope mask and " + str(tolerance_mask_version) + " tolerance mask\n")
@@ -380,3 +383,29 @@ class fitness_predictors(object):
         """
         for node in tree.find_clades():
             setattr(node, attr, np.random.random())
+
+    def calc_titer_model(self, model, tree, timepoint, titers, lam_avi, lam_pot, lam_drop):
+        """Calculates the requested titer model for the given tree using only titers
+        associated with strains sampled prior to the given timepoint.
+        """
+        # Filter titers by date from the root node to the current timepoint.
+        node_lookup = {node.name: node for node in tree.get_terminals()}
+        date_range = [tree.root.numdate, timepoint]
+        filtered_titers = TiterCollection.subset_to_date(titers, node_lookup, date_range)
+
+        # Set titer model parameters.
+        kwargs = {
+            "criterium": lambda node: hasattr(node, "aa_muts") and sum([len(node.aa_muts[protein]) for protein in node.aa_muts]) > 0,
+            "lam_avi": lam_avi,
+            "lam_pot": lam_pot,
+            "lam_drop": lam_drop
+        }
+
+        # Run the requested model and annotate results to nodes.
+        if model == "tree":
+            titer_model = TreeModel(tree, filtered_titers, **kwargs)
+        elif model == "substitution":
+            titer_model = SubstitutionModel(tree, filtered_titers, **kwargs)
+
+        titer_model.prepare(**kwargs)
+        titer_model.train(**kwargs)
