@@ -13,9 +13,10 @@ with open("data/full_dataset.singleline.aligned.pipeChar.fasta", "rU") as f:
         # if count > 30:
         #     break
 
-## HOST INFO
+## HOST & GENOTYPE INFO
 hosts = {}
-with open("data/2018.04.08_WNV_headers.csv", "rU") as f:
+lineage = {}
+with open("data/2018.04.08_WNV_headers_v2.csv", "rU") as f:
     for line in f:
         fields = line.strip().split(',')
         try:
@@ -25,6 +26,7 @@ with open("data/2018.04.08_WNV_headers.csv", "rU") as f:
             print(line)
             sys.exit(2)
         hosts[fields[0]] = fields[5]
+        lineage[fields[0]] = fields[6]
 
 unknown = "Unknown"
 
@@ -34,6 +36,11 @@ for strain,record in fasta.iteritems():
         record.description += "|" + unknown
     else:
         record.description += "|" + hosts[strain]
+    if strain not in lineage:
+        print("{} not in lineage. setting to {}".format(strain, unknown))
+        record.description += "|" + unknown
+    else:
+        record.description += "|" + lineage[strain]
 
 ## AUTHOR INFO. We want to add authors, journal, title, URL
 accessions = fasta.keys()
@@ -54,10 +61,16 @@ for accession,record in fasta.iteritems():
         author = re.match(r'^([^,]*)', reference.authors).group(0) + " et al"
         journal = reference.journal
         title = reference.title
-        url = "https://www.ncbi.nlm.nih.gov/pubmed/" + reference.pubmed_id
+
+        if not reference.pubmed_id:
+            print("no pubmed_id for ", author, title, "using accession")
+            url = "https://www.ncbi.nlm.nih.gov/nuccore/" + accession
+        else:
+            url = "https://www.ncbi.nlm.nih.gov/pubmed/" + reference.pubmed_id
+
 
     record.description += "|{}|{}|{}|{}".format(author, journal, title, url)
-    print(record.description)
+    # print(record.description)
 
 
 ## clean for outp:

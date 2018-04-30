@@ -15,14 +15,15 @@ def collect_args():
 config = {
     "dir": "WNV",
     "in": "prepared/WNV_NA.json",
-    "newick_tree_options": {"nthreads": 3},
+    "newick_tree_options": {"nthreads": 4},
     "clock_filter": {
         "n_iqd": 4,
     },
-    "geo_inference": ['state'], # what traits to perform this on
+    "geo_inference": ['state', "lineage"], # what traits to perform this on
     "auspice": { ## settings for auspice JSON export
         "color_options": {
             "country": {"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
+            "wnv_strain": {"key":"wnv_strain", "legendTitle":"Strain", "menuItem":"strain", "type":"wnv_strain"},
             "division": {"key":"division", "legendTitle":"division", "menuItem":"division", "type":"discrete"},
             "state": {"key":"state", "legendTitle":"state", "menuItem":"state", "type":"discrete"},
             "authors": {"key":"authors", "legendTitle":"Authors", "menuItem":"authors", "type":"discrete"},
