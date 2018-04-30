@@ -94,9 +94,9 @@ def annotate_parents(tree):
     # Next, annotate each node with its parent.
     for node in tree.find_clades():
         if node == tree.root:
-            node.parent = None
+            node.up = None
         else:
-            node.parent = parents_by_node[node]
+            node.up = parents_by_node[node]
 
     # Return the tree.
     return tree
