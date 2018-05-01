@@ -9,6 +9,7 @@ auspice/
 test_input/
 test_output/
 scratch/
+s3/
 
 # For Python #
 ##############
