@@ -663,40 +663,6 @@ if __name__=="__main__":
                     "key": "rb"
                 }
 
-        # titers
-        if hasattr(runner, "titers") and runner.info["segment"] == "ha":
-            HI_model(runner)
-
-            if runner.config["auspice"]["titers_export"]:
-                HI_export(runner)
-                vaccine_distance_json = vaccine_distance(titer_tree = runner.tree.tree,
-                                                         vaccine_strains = vaccine_choices[runner.info['lineage']],
-                                                         attributes=['dTiter', 'dTiterSub'])
-                write_json(vaccine_distance_json, os.path.join(runner.config["output"]["auspice"], runner.info["prefix"])+'_vaccine_dist.json')
-
-                if runner.info["segment"]=='ha':
-                    plot_titers(runner.HI_subs, runner.HI_subs.titers.titers,
-                                fname='processed/%s_raw_titers.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], mean='geometric')
-                    plot_titers(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
-                                fname='processed/%s_normalized_titers.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], mean='arithmetric')
-                    plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers,
-                                fname='processed/%s_raw_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], mean='geometric', clades=clades, normalized=False, potency=False)
-                    plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
-                                fname='processed/%s_normalized_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True, potency=False)
-                    plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
-                                fname='processed/%s_normalized_with_potency_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True, potency=True)
-                    plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
-                                fname='processed/%s_grouped_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=False)
-                    plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
-                                fname='processed/%s_grouped_with_potency_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=True)
-
     if runner.info["segment"] == "na":
         import json
         ha_tree_json_fname = os.path.join(runner.config["output"]["auspice"], runner.info["prefix"]) + "_tree.json"
@@ -745,5 +711,39 @@ if __name__=="__main__":
             #     "legendTitle": "Predicted frequency",
             #     "key": "predicted_freq"
             # }
+
+    # titers
+    if hasattr(runner, "titers") and runner.info["segment"] == "ha":
+        HI_model(runner)
+
+        if runner.config["auspice"]["titers_export"]:
+            HI_export(runner)
+            vaccine_distance_json = vaccine_distance(titer_tree = runner.tree.tree,
+                                                     vaccine_strains = vaccine_choices[runner.info['lineage']],
+                                                     attributes=['dTiter', 'dTiterSub'])
+            write_json(vaccine_distance_json, os.path.join(runner.config["output"]["auspice"], runner.info["prefix"])+'_vaccine_dist.json')
+
+            if runner.info["segment"]=='ha':
+                plot_titers(runner.HI_subs, runner.HI_subs.titers.titers,
+                            fname='processed/%s_raw_titers.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], mean='geometric')
+                plot_titers(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                            fname='processed/%s_normalized_titers.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], mean='arithmetric')
+                plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers,
+                            fname='processed/%s_raw_titer_matrix.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], mean='geometric', clades=clades, normalized=False, potency=False)
+                plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                            fname='processed/%s_normalized_titer_matrix.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True, potency=False)
+                plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                            fname='processed/%s_normalized_with_potency_titer_matrix.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True, potency=True)
+                plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                            fname='processed/%s_grouped_titer_matrix.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=False)
+                plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                            fname='processed/%s_grouped_with_potency_titer_matrix.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=True)
 
     runner.auspice_export()
