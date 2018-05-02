@@ -331,8 +331,14 @@ class fitness_model(object):
             self.calc_predictors(time)
             for node in self.nodes:
                 if 'dfreq' in [x for x in self.predictors]: node.dfreq = node.freq_slope[time]
-                node.predictors[time] = np.array([hasattr(node, pred) and getattr(node, pred) or node.attr[pred]
-                                                  for pred in self.predictors])
+                predictors_at_time = []
+                for pred in self.predictors:
+                    if hasattr(node, pred):
+                        predictors_at_time.append(getattr(node, pred))
+                    else:
+                        predictors_at_time.append(node.attr[pred])
+
+                node.predictors[time] = np.array(predictors_at_time)
             tmp_preds = []
             for tip in self.tips:
                 tmp_preds.append(tip.predictors[time])
