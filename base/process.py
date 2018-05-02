@@ -626,7 +626,7 @@ class process(object):
 
 
 
-    def annotate_fitness(self):
+    def annotate_fitness(self, predictor_kwargs=None):
         """Run the fitness prediction model and annotate the tree's nodes with fitness
         values. Returns the resulting fitness model instance.
         """
@@ -643,6 +643,9 @@ class process(object):
 
         if "predictors" in self.config:
             kwargs["predictor_input"] = self.config["predictors"]
+
+        if predictor_kwargs is not None:
+            kwargs["predictor_kwargs"] = predictor_kwargs
 
         if "epitope_mask" in self.config:
             kwargs["epitope_masks_fname"] = self.config["epitope_mask"]
