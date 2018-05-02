@@ -5,8 +5,9 @@ import numpy as np
 import os
 import pandas as pd
 from scipy.interpolate import interp1d
-from scipy.stats import linregress
+from scipy.stats import linregress, spearmanr
 
+from base.io_util import write_json
 from builds.flu.scores import select_nodes_in_season
 from frequencies import logit_transform, tree_frequencies
 from fitness_predictors import fitness_predictors
@@ -539,30 +540,54 @@ class fitness_model(object):
         self.assign_fitness()
         self.assign_predicted_frequency()
 
-    def validate_prediction(self):
-        import matplotlib.pyplot as plt
-        from scipy.stats import spearmanr
+    def get_correlation(self):
+        tmp = np.vstack(self.pred_vs_true)
+        rho_null = spearmanr(tmp[:,0], tmp[:,1])
+        rho_raw = spearmanr(tmp[:,1], tmp[:,2])
+        rho_rel = spearmanr(tmp[:,1]/tmp[:,0],
+                            tmp[:,2]/tmp[:,0])
+
+        return rho_null, rho_raw, rho_rel
+
+    def validate_prediction(self, plot=False):
+        if plot:
+            import matplotlib.pyplot as plt
+
+            fig, axs = plt.subplots(1,4, figsize=(10,5))
+            for time, pred_vs_true in izip(self.timepoints[:-1], self.pred_vs_true):
+                # 0: initial, 1: observed, 2: predicted
+                axs[0].scatter(pred_vs_true[:,1], pred_vs_true[:,2])
+                axs[1].scatter(pred_vs_true[:,1]/pred_vs_true[:,0],
+                               pred_vs_true[:,2]/pred_vs_true[:,0], c=pred_vs_true[0])
+                for s, o, p  in pred_vs_true:
+                    axs[2].arrow(s, s, o-s, p-s)
+                axs[3].scatter(pred_vs_true[:,0],
+                               (pred_vs_true[:,2]+0.01)/(pred_vs_true[:,1]+0.01))
+
+            axs[0].set_ylabel('predicted')
+            axs[0].set_xlabel('observed')
+            axs[1].set_ylabel('predicted/initial')
+            axs[1].set_xlabel('observed/initial')
+            axs[1].set_yscale('linear')
+            axs[1].set_xscale('linear')
+            axs[2].set_ylabel('predicted')
+            axs[2].set_xlabel('observed')
+            axs[2].set_ylim(-0.1, 1.1)
+            axs[2].set_xlim(-0.1, 1.1)
+            axs[3].set_ylabel('predicted / observed')
+            axs[3].set_xlabel('initial')
+            axs[3].set_yscale('log')
 
         abs_clade_error = self.clade_fit(self.model_params)
+        print("Abs clade error:"), abs_clade_error
 
-        fig, axs = plt.subplots(1,4, figsize=(10,5))
-        for time, pred_vs_true in izip(self.timepoints[:-1], self.pred_vs_true):
-            # 0: initial, 1: observed, 2: predicted
-            axs[0].scatter(pred_vs_true[:,1], pred_vs_true[:,2])
-            axs[1].scatter(pred_vs_true[:,1]/pred_vs_true[:,0],
-                           pred_vs_true[:,2]/pred_vs_true[:,0], c=pred_vs_true[0])
-            for s, o, p  in pred_vs_true:
-                axs[2].arrow(s, s, o-s, p-s)
-            axs[3].scatter(pred_vs_true[:,0],
-                           (pred_vs_true[:,2]+0.01)/(pred_vs_true[:,1]+0.01))
+        rho_null, rho_raw, rho_rel = self.get_correlation()
+        print("Spearman's rho, null:", rho_null)
+        print("Spearman's rho, raw:", rho_raw)
+        print("Spearman's rho, rel:", rho_rel)
 
         # pred_vs_true is initial, observed, predicted
         tmp = np.vstack(self.pred_vs_true)
-        print("Abs clade error:"), abs_clade_error
-        print("Spearman's rho, null:", spearmanr(tmp[:,0], tmp[:,1]))
-        print("Spearman's rho, raw:", spearmanr(tmp[:,1], tmp[:,2]))
-        print("Spearman's rho, rel:", spearmanr(tmp[:,1]/tmp[:,0],
-                                              tmp[:,2]/tmp[:,0]))
 
         growth_list = [pred > initial for (initial, obs, pred) in tmp if obs > initial]
         correct_growth = growth_list.count(True)
@@ -582,20 +607,6 @@ class fitness_model(object):
         print("Correct at predicting decline: %s (%s / %s)" % ((correct_decline / total_decline), correct_decline, total_decline))
         print("Correct classification:",  (correct_growth+correct_decline) / (total_growth+total_decline))
         print("Matthew's correlation coefficient: %s" % trajectory_mcc)
-
-        axs[0].set_ylabel('predicted')
-        axs[0].set_xlabel('observed')
-        axs[1].set_ylabel('predicted/initial')
-        axs[1].set_xlabel('observed/initial')
-        axs[1].set_yscale('linear')
-        axs[1].set_xscale('linear')
-        axs[2].set_ylabel('predicted')
-        axs[2].set_xlabel('observed')
-        axs[2].set_ylim(-0.1, 1.1)
-        axs[2].set_xlim(-0.1, 1.1)
-        axs[3].set_ylabel('predicted / observed')
-        axs[3].set_xlabel('initial')
-        axs[3].set_yscale('log')
 
         pred_data = []
         for time, pred_vs_true in izip(self.timepoints[:-1], self.pred_vs_true):
@@ -646,6 +657,30 @@ class fitness_model(object):
                 tmp = traj[traj['series']==ci]
                 ax.plot(tmp['time'], tmp['obs'], ls='-', c=cols[ci%6])
                 ax.plot(tmp['time'], tmp['pred'], ls='--', c=cols[ci%6])
+
+    def to_json(self, filename):
+        """Export fitness model parameters, data, and accuracy statistics to JSON.
+        """
+        # Convert predictor parameters to a data frame to easily export as
+        # records.
+        params_df = pd.DataFrame({
+            "predictor": self.predictors,
+            "param": self.model_params.tolist(),
+            "global_sd": self.global_sds.tolist()
+        })
+
+        rho_null, rho_raw, rho_rel = self.get_correlation()
+
+        data = {
+            "params": params_df.to_dict(orient="records"),
+            "data": self.pred_vs_true_df.to_dict(orient="records"),
+            "accuracy": {
+                "clade_error": self.clade_fit(self.model_params),
+                "rho_rel": rho_rel[0]
+            }
+        }
+        write_json(data, filename)
+
 
 def main(params):
     import time

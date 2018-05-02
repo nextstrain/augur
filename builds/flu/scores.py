@@ -159,9 +159,6 @@ def select_nodes_in_season(tree, timepoint, time_window=0.6, **kwargs):
 
     This annotation is used by the LBI and epitope cross-immunity predictors.
     """
-    print("Time point: %s" % timepoint)
-    print("Time window: %s" % time_window)
-
     for node in tree.find_clades(order="postorder"):
         if node.is_terminal():
             if node.attr['num_date'] <= timepoint and node.attr['num_date'] > timepoint - time_window:
@@ -179,8 +176,6 @@ def calculate_LBI(tree, attr="lbi", tau=0.4, transform=lambda x:x, **kwargs):
     tree     -- biopython tree for whose node the LBI is being computed
     attr     -- the attribute name used to store the result
     '''
-    print("Tau: %s" % tau)
-
     # Calculate clock length.
     tree.root.clock_length = 0.0
     for node in tree.find_clades():
