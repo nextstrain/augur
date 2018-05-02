@@ -825,7 +825,8 @@ class SubstitutionModel(TiterModel):
     """
     def __init__(self, *args, **kwargs):
         super(SubstitutionModel, self).__init__(*args, **kwargs)
-        self.proteins = self.tree.root.translations.keys()
+        if hasattr(self.tree.root, "translations"):
+            self.proteins = self.tree.root.translations.keys()
 
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
@@ -850,12 +851,116 @@ class SubstitutionModel(TiterModel):
         between as tuples (protein, mutation) e.g. (HA1, 159F)
         '''
         muts = []
-        for prot in self.proteins:
-            seq1 = node1.translations[prot]
-            seq2 = node2.translations[prot]
-            muts.extend([(prot, aa1+str(pos+1)+aa2) for pos, (aa1, aa2)
-                        in enumerate(izip(seq1, seq2)) if aa1!=aa2])
+
+        # If proteins information is available and node translations are
+        # annotated, use those to find pairwise amino acid mutations.
+        # Otherwise, use the annotated amino acid mutations per branch to
+        # reconstruct what the pairwise mutations are between the two nodes.
+        if hasattr(self, "proteins"):
+            for prot in self.proteins:
+                seq1 = node1.translations[prot]
+                seq2 = node2.translations[prot]
+                muts.extend([(prot, aa1+str(pos+1)+aa2) for pos, (aa1, aa2)
+                            in enumerate(izip(seq1, seq2)) if aa1!=aa2])
+        else:
+            # Find the last common ancestor of the two nodes.
+            mrca = self.tree.common_ancestor([node1, node2])
+
+            # Find the most recent unreverted mutation at each gene position
+            # in both nodes.
+            muts1 = self.find_mutations_to_mrca(node1, mrca)
+            muts2 = self.find_mutations_to_mrca(node2, mrca)
+
+            # Find all mutated positions from both nodes to their MRCA that
+            # were:
+            #
+            # a) only mutated in one node. The initial to final amino
+            # acids in each of these records should reflect the pairwise
+            # difference between the node that mutated and the ancestral
+            # sequence in the unmutated node.
+            #
+            # OR
+            #
+            # b) mutated in both nodes with different final amino acids.
+            # In this case, the different amino acids reflect the pairwise
+            # amino acid difference we would find between complete sequences.
+            mutations = []
+            for key in muts1:
+                # Test for mutations at each site only in one node.
+                if not key in muts2:
+                    # Report the first node's final as the first mutation and the
+                    # ancestral amino acid as the second node's value.
+                    muts.append((key[0], muts1[key]["final"] + str(key[1]) + muts1[key]["initial"]))
+                # Test for different mutations at the same site in the two nodes.
+                elif key in muts2:
+                    if muts1[key]["final"] != muts2[key]["final"]:
+                        # Store the mutation and then remove it from the second node's mutations.
+                        muts.append((key[0], muts1[key]["final"] + str(key[1]) + muts2[key]["final"]))
+
+                    # Delete the shared mutation from the second node. If the two
+                    # nodes ended with different mutations, we have just stored
+                    # that differences and if they have the same final mutations,
+                    # we don't want to count that as a difference.
+                    del muts2[key]
+
+            # Add all of the second node's remaining mutations to the set.
+            # We know these must not be shared with the first node now.
+            for key in muts2:
+                muts.append((key[0], muts2[key]["initial"] + str(key[1]) + muts2[key]["final"]))
+
         return muts
+
+
+    def find_mutations_to_mrca(self, node, mrca):
+        """Find all pairwise amino acid mutations between the given node
+        and one of its ancestors.
+
+        >>>
+        """
+        current_node = node
+        muts_node = {}
+
+        while current_node != mrca and current_node.up is not None:
+            for gene, muts in current_node.aa_muts.items():
+                for mut in muts:
+                    initial_aa = mut[0]
+                    final_aa = mut[-1]
+                    position = int(mut[1:-1])
+                    key = (gene, position)
+
+                    if not key in muts_node:
+                        # If we haven't seen a mutation at this gene position,
+                        # track the initial and final amino acids.
+                        muts_node[key] = {
+                            "initial": initial_aa,
+                            "final": final_aa
+                        }
+                    else:
+                        # If we have already seen a mutation at this position,
+                        # check whether the current mutation reverts the current
+                        # final amino acid. For example, the following sequence
+                        # from first to last in time reverts the amino acid at
+                        # a given position:
+                        #
+                        # 1. G -> K
+                        # 2. K -> L
+                        # 3. L -> G
+                        #
+                        # As we walk backward in time to the MRCA, if we find
+                        # an initial "G" that resulted in the final "G", we
+                        # collapse the reversion by removing the gene position
+                        # from the tracked mutations.
+                        if initial_aa == muts_node[key]["final"]:
+                             # If it is a reversion, remove the stored mutation and continue.
+                            del muts_node[key]
+                        else:
+                            # If the next mutation is not a reversion, update the initial
+                            # amino acid to track the ancestral state in the MRCA.
+                            muts_node[key]["initial"] = initial_aa
+
+            current_node = current_node.up
+
+        return muts_node
 
 
     def determine_relevant_mutations(self, min_count=10):
