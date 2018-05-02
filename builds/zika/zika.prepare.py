@@ -27,6 +27,7 @@ dropped_strains = [
     "VR10599/Pavia/2016", "34997/Pavia/2016", # exports
     "THA/PLCal_ZV/2013", "SK403/13AS", "SV0010/15", "SK364/13AS", # clock is off
     "AFMC_U", "AFMC_S", "JMB_185", "VIE/Bra/2016", "PHL/2012/CPC_0740", # too basal
+    "Boracay/16423", "SI_BKK01", "DMSc05684_16", "ZK_YN001", # too basal
     "COL/PRV_00027/2015", "COL/PRV_00028/2015", "COL/PAN_00029/2015" "COL/PAN_00030/2015",
     "COL/FLR_00034/2015", "COL/FLR_00035/2015", "COL/FLR_00036/2015", "COL/FLR_00038/2015",
     "COL/FLR_00040/2015", "COL/FLR_00041/2015", "COL/FLR_00042/2015" # almost certainly misdated, other Colombian genomes from same study are Dec 2015 and fit the clock

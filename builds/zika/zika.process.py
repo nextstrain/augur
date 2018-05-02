@@ -27,7 +27,7 @@ config = {
     "geo_inference_options": {
         "root_state": {
             "region": "southeast_asia",
-            "country": "vietnam",
+            "country": "thailand",
         },
     },
     "auspice": { ## settings for auspice JSON export
