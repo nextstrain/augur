@@ -14,7 +14,7 @@ if __name__=="__main__":
     align_parser.add_argument('--output', help="output file")
     align_parser.add_argument('--nthreads', type=int, default=2,
                         help="number of threads used by mafft")
-    align_parser.add_argument('--aligner', default='mafft',
+    align_parser.add_argument('--aligner', default='mafft', choices=["mafft"],
                         help="alignment program to use")
     align_parser.add_argument('--reference_name', type=str, help="strip insertions relative to reference sequence")
     align_parser.add_argument('--reference_sequence', type=str, help="strip insertions relative to reference sequence")
@@ -24,7 +24,7 @@ if __name__=="__main__":
     ## TREE.PY
     tree_parser = subparsers.add_parser('tree')
     tree_parser.add_argument('--alignment', required=True, help="alignment to build tree from")
-    tree_parser.add_argument('--method', default='iqtree', help="tree builder to use")
+    tree_parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
     tree_parser.add_argument('--output', help='file name to write tree to')
     tree_parser.add_argument('--iqmodel', help='substitution model to use for iq-tree')
     tree_parser.add_argument('--nthreads', type=int, default=2,
