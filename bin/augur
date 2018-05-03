@@ -9,7 +9,7 @@ if __name__=="__main__":
     subparsers = parser.add_subparsers()
 
     ### ALIGN.PY
-    align_parser = subparsers.add_parser('align')
+    align_parser = subparsers.add_parser('align', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     align_parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
     align_parser.add_argument('--output', help="output file")
     align_parser.add_argument('--nthreads', type=int, default=2,
@@ -22,7 +22,7 @@ if __name__=="__main__":
     align_parser.set_defaults(func=align.run)
 
     ## TREE.PY
-    tree_parser = subparsers.add_parser('tree')
+    tree_parser = subparsers.add_parser('tree', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     tree_parser.add_argument('--alignment', required=True, help="alignment to build tree from")
     tree_parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
     tree_parser.add_argument('--output', help='file name to write tree to')
@@ -33,7 +33,7 @@ if __name__=="__main__":
 
 
     ## MUGRATION.PY
-    traits_parser = subparsers.add_parser('traits')
+    traits_parser = subparsers.add_parser('traits', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     traits_parser.add_argument('--tree', required=True, help="tree to perform trait reconstruction on")
     traits_parser.add_argument('--metadata', required=True, help="tsv/csv table with meta data")
     traits_parser.add_argument('--columns', required=True, nargs='+',
