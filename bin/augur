@@ -5,12 +5,7 @@ from augur import align, tree, mugration
 if __name__=="__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description = "Augur: Real-Time Phylogenetic analysis.",
-        usage=
-        "augur <command> [options]\n"
-        "   available subcommands:\n"
-        "   align\n"
-        "   tree")
+    parser = argparse.ArgumentParser(description = "Augur: Real-Time Phylogenetic analysis.")
     subparsers = parser.add_subparsers()
 
     ### ALIGN.PY
