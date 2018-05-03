@@ -23,7 +23,7 @@ def build_fasttree(aln_file, out_file, clean_up=True):
     call = ["fasttree", "-nt", aln_file, "1>", out_file, "2>", "fasttree.log"]
     cmd = " ".join(call)
     print("Building a tree via:\n\t" + cmd +
-          "\n\tPrice et al: FastTree 2 – Approximately Maximum-Likelihood Trees for Large Alignments."
+          "\n\tPrice et al: FastTree 2 - Approximately Maximum-Likelihood Trees for Large Alignments." +
           "\n\tPLoS ONE 5(3): e9490. https://doi.org/10.1371/journal.pone.0009490\n")
     os.system(cmd)
     try:
