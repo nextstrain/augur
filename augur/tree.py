@@ -37,7 +37,7 @@ def build_fasttree(aln_file, out_file, clean_up=True):
     return T
 
 
-def build_iqtree(aln_file, out_file, iqmodel, clean_up=True, nthreads=2):
+def build_iqtree(aln_file, out_file, iqmodel="HKY+F", clean_up=True, nthreads=2):
     #return Phylo.read(out_file.replace(".nwk",".iqtree.nwk"), 'newick') #uncomment for debug skip straight to TreeTime
 
     with open(aln_file) as ifile:
@@ -49,10 +49,11 @@ def build_iqtree(aln_file, out_file, iqmodel, clean_up=True, nthreads=2):
             ofile.write(line.replace('/', '_X_X_').replace('|','_Y_Y_'))
 
     if iqmodel:
-        call = ["iqtree", "-nt", str(nthreads), "-s", aln_file, "-m", iqmodel[0],
+        call = ["iqtree", "-fast -nt", str(nthreads), "-s", aln_file, "-m", iqmodel,
             ">", "iqtree.log"]
     else:
         call = ["iqtree", "-fast -nt", str(nthreads), "-s", aln_file, ">", "iqtree.log"]
+
     cmd = " ".join(call)
     print("Building a tree via:\n\t" + cmd +
           "\n\tNguyen et al: IQ-TREE: A fast and effective stochastic algorithm for estimating maximum likelihood phylogenies."
@@ -77,26 +78,115 @@ def build_iqtree(aln_file, out_file, iqmodel, clean_up=True, nthreads=2):
         T=None
     return T
 
-def run(args):
-    if args.output:
-        tree_fname = args.output
-    else:
-        tree_fname = '.'.join(args.alignment.split('.')) + '.nwk'
-    aln = args.alignment
 
-    if args.iqmodel and not args.method=='iqtree':
-        print("Cannot specify model unless using IQTree. Model specification ignored.")
+def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False,
+             confidence=False, resolve_polytomies=True, max_iter=2, dateLimits=None,
+             infer_gtr=True, Tc=0.01, reroot='best', use_marginal=False, fixed_pi=None, **kwarks):
+    from treetime import TreeTime
+
+    dL_int = None
+    if dateLimits:
+        dL_int = [int(x) for x in dateLimits]
+        dL_int.sort()
+
+    #send ref, if is None, does no harm
+    tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates, gtr='JC69')
+
+    if confidence and use_marginal:
+        # estimate confidence intervals via marginal ML and assign marginal ML times to nodes
+        marginal = 'assign'
+    else:
+        marginal = confidence
+
+    tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
+           resolve_polytomies=resolve_polytomies, max_iter=max_iter, fixed_pi=pi, **kwarks)
+
+    if confidence:
+        for n in T.find_clades():
+            n.numdate_confidence = list(tt.get_max_posterior_region(n, 0.9))
+
+    return tt
+
+
+def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
+                                 optimize_branch_length=True):
+    from treetime import TreeAnc
+    tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69')
+
+    if optimize_branch_length:
+        tt.optimize_seq_and_branch_len(infer_gtr=infer_gtr)
+    else: # only infer ancestral sequences, leave branch length untouched
+        tt.infer_ancestral_sequences(infer_gtr=infer_gtr)
+
+    return tt
+
+def prep_tree(T, attributes):
+    data = {}
+    for n in T.find_clades():
+        data[n.name] = {attr:n.__getattr__(attr) for attr in attributes if hasattr(n,attr)}
+    return data
+
+def run(args):
+    # check alignment type, construct reduced alignment if needed
+    if any([args.alignment.endswith(x) for x in ['.vcf', '.vcf.gz']]):
+        aln = "make alignment from VCF"
+    else:
+        aln = args.alignment
+
+    T = None
+    tree_meta = {'alignment':args.alignment}
+    attributes = ['branchlength']
+    # check if tree is provided an can be read
+    if args.tree:
+        for fmt in ["newick", "nexus"]:
+            try:
+                T = Phylo.read(T, args.tree, fmt)
+                tree_meta['input_tree'] = args.tree
+                break
+            except:
+                pass
+        if T is None:
+            print("WARNING: reading tree from %s failed."
+                  "\n\t-- Will attempt to build from alignment."%args.tree)
 
     start = time.time()
-    if args.method=='raxml':
-        T = build_raxml(aln, tree_fname, args.nthreads)
-    elif args.method=='iqtree':
-        T = build_iqtree(aln, tree_fname, args.iqmodel, args.nthreads)
-    else: #use fasttree - if add more options, put another check here
-        T = build_fasttree(aln, tree_fname)
-    end = time.time()
-    print("Building original tree took {}".format(str(end-start)))
-    if T:
-        return Phylo.write(T, tree_fname, 'newick')
+    # without tree, attempt to build tree
+    if T is None:
+        if args.output:
+            tree_fname = args.output
+        else:
+            tree_fname = '.'.join(args.alignment.split('.')) + '.nwk'
+
+        if args.iqmodel and not args.method=='iqtree':
+            print("Cannot specify model unless using IQTree. Model specification ignored.")
+
+        args.tree_meta['topology method':args.method]
+        if args.method=='raxml':
+            T = build_raxml(aln, tree_fname, args.nthreads)
+        elif args.method=='iqtree':
+            T = build_iqtree(aln, tree_fname, args.iqmodel, args.nthreads)
+        else: #use fasttree - if add more options, put another check here
+            T = build_fasttree(aln, tree_fname)
+        end = time.time()
+        print("Building original tree took {}".format(str(end-start)))
+
+    if args.timetree and T:
+        tt = timetree(tree=T, aln=aln, dates=dates, confidence=args.date_confidence)
+        attributes.extend(['numdate', 'clock_length', 'mutation_length'])
+        args.tree_meta['clock':{'rate':tt.date2dist.clock, 'intercept':tt.date2dist.intercept}]
+    elif args.ancestral in ['joint', 'marginal']:
+        tt = ancestral(tree=T, aln=aln, marginal=args.ancestral, optimize_branch_length=args.branchlengths=='div')
+        attributes.extend(['mutation_length'])
     else:
-        return 0
+        tt = None
+
+    tree_meta['nodes'] = prep_tree(T, attributes)
+
+    if T:
+        import json
+        tree_success = Phylo.write(T, tree_fname, 'newick')
+        with open(args.output, 'w') as ofile:
+            meta_success = json.dump(tree_meta, ofile, indent=1)
+        return 0 if (tree_success and meta_success) else -1
+    else:
+        return -1
