@@ -1,8 +1,12 @@
 import os, shutil, time
 from Bio import Phylo
+from .utils import parse_metadata, meta_to_date_dict
 
 def build_raxml(aln_file, out_file, clean_up=True, nthreads=2):
-    call = ["raxml","-f d -T",str(nthreads),"-m GTRCAT -c 25 -p 235813 -n tre -s",aln_file,"> raxml.log"]
+    '''
+    build tree using RAxML with parameters '-f d -m GTRCAT -c 25 -p 235813 -n tre"
+    '''
+    call = ["raxml","-T",str(nthreads)," -f d -m GTRCAT -c 25 -p 235813 -n tre -s",aln_file,"> raxml.log"]
     cmd = " ".join(call)
     print("Building a tree via:\n\t" + cmd +
           "\n\tStamatakis, A: RAxML Version 8: A tool for Phylogenetic Analysis and Post-Analysis of Large Phylogenies."
@@ -20,6 +24,9 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=2):
     return T
 
 def build_fasttree(aln_file, out_file, clean_up=True):
+    '''
+    build tree using fasttree with parameters "-nt"
+    '''
     call = ["fasttree", "-nt", aln_file, "1>", out_file, "2>", "fasttree.log"]
     cmd = " ".join(call)
     print("Building a tree via:\n\t" + cmd +
@@ -38,11 +45,16 @@ def build_fasttree(aln_file, out_file, clean_up=True):
 
 
 def build_iqtree(aln_file, out_file, iqmodel="HKY+F", clean_up=True, nthreads=2):
-    #return Phylo.read(out_file.replace(".nwk",".iqtree.nwk"), 'newick') #uncomment for debug skip straight to TreeTime
-
+    '''
+    build tree using IQ-Tree with parameters "-fast"
+    arguments:
+        aln_file    file name of input aligment
+        out_file    file name to write tree to
+    '''
     with open(aln_file) as ifile:
         tmp_seqs = ifile.readlines()
 
+    # IQ-tree messes with taxon names. Hence remove offending characters, reinstaniate later
     aln_file = "temp_iqtree.fasta"
     with open(aln_file, 'w') as ofile:
         for line in tmp_seqs:
@@ -59,6 +71,8 @@ def build_iqtree(aln_file, out_file, iqmodel="HKY+F", clean_up=True, nthreads=2)
           "\n\tNguyen et al: IQ-TREE: A fast and effective stochastic algorithm for estimating maximum likelihood phylogenies."
           "\n\tMol. Biol. Evol., 32:268-274. https://doi.org/10.1093/molbev/msu300\n")
     os.system(cmd)
+
+    # Check result
     try:
         T = Phylo.read(aln_file+".treefile", 'newick')
         shutil.copyfile(aln_file+".treefile", out_file)
@@ -99,7 +113,7 @@ def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False,
         marginal = confidence
 
     tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
-           resolve_polytomies=resolve_polytomies, max_iter=max_iter, fixed_pi=pi, **kwarks)
+           resolve_polytomies=resolve_polytomies, max_iter=max_iter, fixed_pi=fixed_pi, **kwarks)
 
     if confidence:
         for n in T.find_clades():
@@ -109,22 +123,27 @@ def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False,
 
 
 def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
-                                 optimize_branch_length=True):
+                                 marginal=False, optimize_branch_length=True):
     from treetime import TreeAnc
     tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69')
 
     if optimize_branch_length:
-        tt.optimize_seq_and_branch_len(infer_gtr=infer_gtr)
+        tt.optimize_seq_and_branch_len(infer_gtr=infer_gtr, marginal=marginal)
     else: # only infer ancestral sequences, leave branch length untouched
-        tt.infer_ancestral_sequences(infer_gtr=infer_gtr)
+        tt.infer_ancestral_sequences(infer_gtr=infer_gtr, marginal=marginal)
 
     return tt
 
 def prep_tree(T, attributes):
     data = {}
     for n in T.find_clades():
-        data[n.name] = {attr:n.__getattr__(attr) for attr in attributes if hasattr(n,attr)}
+        data[n.name] = {attr:n.__getattribute__(attr)
+                        for attr in attributes if hasattr(n,attr)}
+    if 'mutations' in attributes:
+        for n in T.find_clades():
+            data[n.name]['mutations'] = [[a,int(pos),d] for a,pos,d in data[n.name]['mutations']]
     return data
+
 
 def run(args):
     # check alignment type, construct reduced alignment if needed
@@ -155,12 +174,12 @@ def run(args):
         if args.output:
             tree_fname = args.output
         else:
-            tree_fname = '.'.join(args.alignment.split('.')) + '.nwk'
+            tree_fname = '.'.join(args.alignment.split('.')[:-1]) + '.nwk'
 
         if args.iqmodel and not args.method=='iqtree':
             print("Cannot specify model unless using IQTree. Model specification ignored.")
 
-        args.tree_meta['topology method':args.method]
+        tree_meta['topology method'] = args.method
         if args.method=='raxml':
             T = build_raxml(aln, tree_fname, args.nthreads)
         elif args.method=='iqtree':
@@ -171,12 +190,23 @@ def run(args):
         print("Building original tree took {}".format(str(end-start)))
 
     if args.timetree and T:
+        if args.metadata is None:
+            print("ERROR: meta data with dates is required for time tree reconstruction")
+            return -1
+        metadata = parse_metadata(args.metadata)
+        dates = meta_to_date_dict(metadata, fmt=args.date_fmt)
+
         tt = timetree(tree=T, aln=aln, dates=dates, confidence=args.date_confidence)
-        attributes.extend(['numdate', 'clock_length', 'mutation_length'])
-        args.tree_meta['clock':{'rate':tt.date2dist.clock, 'intercept':tt.date2dist.intercept}]
+        tree_meta['clock'] = {'rate':tt.date2dist.clock_rate,
+                              'intercept':tt.date2dist.intercept,
+                              'rtt_Tmrca':-tt.date2dist.intercept/tt.date2dist.clock_rate}
+        attributes.extend(['numdate', 'clock_length', 'mutation_length', 'mutations'])
+        if args.date_confidence:
+            attributes.append('numdate_confidence')
     elif args.ancestral in ['joint', 'marginal']:
-        tt = ancestral(tree=T, aln=aln, marginal=args.ancestral, optimize_branch_length=args.branchlengths=='div')
-        attributes.extend(['mutation_length'])
+        tt = ancestral_sequence_inference(tree=T, aln=aln, marginal=args.ancestral,
+                                          optimize_branch_length=args.branchlengths=='div')
+        attributes.extend(['mutation_length', 'mutations'])
     else:
         tt = None
 
@@ -185,8 +215,13 @@ def run(args):
     if T:
         import json
         tree_success = Phylo.write(T, tree_fname, 'newick')
-        with open(args.output, 'w') as ofile:
-            meta_success = json.dump(tree_meta, ofile, indent=1)
+        if args.node_data:
+            node_data_fname = args.node_data
+        else:
+            node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data'
+
+        with open(node_data_fname, 'w') as ofile:
+            meta_success = json.dump(tree_meta, ofile)
         return 0 if (tree_success and meta_success) else -1
     else:
         return -1

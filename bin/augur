@@ -25,7 +25,17 @@ if __name__=="__main__":
     tree_parser = subparsers.add_parser('tree', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     tree_parser.add_argument('--alignment', required=True, help="alignment to build tree from")
     tree_parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
+    tree_parser.add_argument('--tree', help="prebuild newick -- no tree will be build if provided")
+    tree_parser.add_argument('--metadata', help="tsv/csv table with meta data for sequences")
+    tree_parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")
+    tree_parser.add_argument('--date_fmt', default="%Y-%m-%d", help="date format")
+    tree_parser.add_argument('--date_confidence', action="store_true", help="calculate confidence intervals for node dates")
+    tree_parser.add_argument('--ancestral', default="joint", choices=["joint", "marginal", "None"],
+                                help="calculate joint maximum likelihood ancestral sequence states")
+    tree_parser.add_argument('--branchlengths', default='div', choices = ['div', 'clock'],
+                                help='branch length of the output tree')
     tree_parser.add_argument('--output', help='file name to write tree to')
+    tree_parser.add_argument('--node_data', help='file name to write additional node data')
     tree_parser.add_argument('--iqmodel', default="HKY+F", help='substitution model to use for iq-tree')
     tree_parser.add_argument('--nthreads', type=int, default=2,
                              help="number of threads used by mafft")
