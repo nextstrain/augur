@@ -62,10 +62,10 @@ outliers = {
         "A/Michigan/84/2016", "A/Michigan/87/2016", "A/Michigan/89/2016", "A/Michigan/90/2016",
         "A/Michigan/91/2016", "A/Michigan/93/2016", "A/Michigan/94/2016", "A/Michigan/95/2016",
         "A/Michigan/96/2016", "A/Ohio/27/2016", "A/Ohio/28/2016", "A/Ohio/32/2016", "A/Ohio/33/2016",
-        "A/Ohio/35/2016", "A/Zhejiang-Wuxin/1300/2016", "A/Catalonia/NSVH100533399/2017",
-        "A/Catalonia/NSVH100560486/2017", "A/Piaui/494713/2017", "A/SaoPaulo/554097/2017",
-        "A/Ireland/61451/2017", "A/Ireland/53051/2017", "A/Ireland/62518/2017", "A/Ireland/52590/2017",
-        "A/Ireland/61097/2017", "A/Shanghai-Minxing/1482/2017"
+        "A/SouthAustralia/47/2016", "A/Ohio/35/2016", "A/Zhejiang-Wuxin/1300/2016",
+        "A/Catalonia/NSVH100533399/2017", "A/Catalonia/NSVH100560486/2017", "A/Piaui/494713/2017",
+        "A/SaoPaulo/554097/2017", "A/Ireland/61451/2017", "A/Ireland/53051/2017", "A/Ireland/62518/2017",
+        "A/Ireland/52590/2017", "A/Ireland/61097/2017", "A/Shanghai-Minxing/1482/2017"
     ],
     'h1n1pdm': [
         "A/Malaysia/2142295/2009", "A/Malaysia/2142299/2009", "A/Singapore/SM15/2009",
