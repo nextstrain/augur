@@ -15,7 +15,7 @@ def collect_args():
 config = {
     "dir": "WNV",
     "in": "prepared/WNV_NA.json",
-    "newick_tree_options": {"nthreads": 4},
+    "newick_tree_options": {"nthreads": 3},
     "clock_filter": {
         "n_iqd": 4,
     },

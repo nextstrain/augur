@@ -28,6 +28,7 @@ config = {
     # >W112|2016-02-18|USA|CA|SD|-117.0239963|32.6299784
     "header_fields": {0:'strain', 1:'date', 2:'country', 3:'state', 4:'division', 7:'host', 8: 'wnv_strain', 9: 'authors', 10:'journal', 11:'title', 12:'url'},
     "filters": (
+        ("Remove Shabman et al seqs (JCVI data!)", lambda s: s.attributes["authors"] != "Shabman_et_al"),
         ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
         # ("Restrict Date Range", lambda s: s.attributes['date'] >= datetime(2012,01,1).date()),
         # ("Restrict Date Range", lambda s: s.attributes['date'] <= datetime(2018,01,1).date()),
