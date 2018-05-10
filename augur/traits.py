@@ -46,12 +46,14 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
         model.profile_map[missing_char] = np.ones(nc)
         model.ambiguous = missing_char
         alphabet_rev = {v:k for k,v in alphabet.items()}
+        print(alphabet_rev)
 
         # construct pseudo alignment
         pseudo_seqs = []
         for name, meta in seq_meta.items():
-            s=alphabet_rev[meta[field]] if field in meta else missing_char
-            pseudo_seqs.append(SeqRecord(Seq(s), name=name, id=name))
+            if name in nodes:
+                s=alphabet_rev[meta[field]] if field in meta else missing_char
+                pseudo_seqs.append(SeqRecord(Seq(s), name=name, id=name))
         aln = MultipleSeqAlignment(pseudo_seqs)
 
         # set up treetime and infer
@@ -113,7 +115,7 @@ def run(args):
             if args.confidence:
                 mugration_states[node.name][column+'_confidence'] = node.__getattribute__(column+'_confidence')
 
-        with open(os.path.dirname(args.output)+'./%s.mugration_model.txt'%column, 'w') as ofile:
+        with open(os.path.dirname(args.output)+'/%s.mugration_model.txt'%column, 'w') as ofile:
             ofile.write('Map from character to field name\n')
             for k,v in alphabet.items():
                 ofile.write(k+':\t'+str(v)+'\n')

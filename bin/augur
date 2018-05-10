@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
-from augur import align, tree, traits, parse
+from augur import align, tree, traits, parse, filter
 
 if __name__=="__main__":
     import argparse
@@ -8,7 +8,7 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(description = "Augur: Real-Time Phylogenetic analysis.")
     subparsers = parser.add_subparsers()
 
-    ### PARSE.PY
+    ### PARSE.PY -- produce a pair of tsv/fasta files from a single fasta file
     align_parser = subparsers.add_parser('parse', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     align_parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
     align_parser.add_argument('--fields', nargs='+', help="fields in fasta header")
@@ -18,6 +18,18 @@ if __name__=="__main__":
     align_parser.add_argument('--fix_dates', choices=['dayfirst', 'monthfirst'],
                                  help="attempt to parse dates and output them in standard format")
     align_parser.set_defaults(func=parse.run)
+
+    ### FILTER.PY -- filter and subsample an sequence set
+    align_parser = subparsers.add_parser('filter', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    align_parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
+    align_parser.add_argument('--metadata', required=True, help="metadata associated with sequences")
+    align_parser.add_argument('--min_date', type=float, help="minimal cutoff for numerical date")
+    align_parser.add_argument('--max_date', type=float, help="maximal cutoff for numerical date")
+    align_parser.add_argument('--exclude', type=str, help="file with list of names that are to be excluded")
+    align_parser.add_argument('--viruses_per_cat', type=int, help="maximal number of viruses per category")
+    align_parser.add_argument('--cat', nargs='+', help="categories with respect to subsample")
+    align_parser.add_argument('--output', help="output file")
+    align_parser.set_defaults(func=filter.run)
 
     ### ALIGN.PY
     align_parser = subparsers.add_parser('align', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -37,7 +49,7 @@ if __name__=="__main__":
     tree_parser.add_argument('--alignment', required=True, help="alignment to build tree from")
     tree_parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
     tree_parser.add_argument('--tree', help="prebuild newick -- no tree will be build if provided")
-    tree_parser.add_argument('--metadata', help="tsv/csv table with meta data for sequences")
+    tree_parser.add_argument('--metadata', type=str, help="tsv/csv table with meta data for sequences")
     tree_parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")
     tree_parser.add_argument('--date_fmt', default="%Y-%m-%d", help="date format")
     tree_parser.add_argument('--date_confidence', action="store_true", help="calculate confidence intervals for node dates")
@@ -45,8 +57,8 @@ if __name__=="__main__":
                                 help="calculate joint maximum likelihood ancestral sequence states")
     tree_parser.add_argument('--branchlengths', default='div', choices = ['div', 'clock'],
                                 help='branch length of the output tree')
-    tree_parser.add_argument('--output', help='file name to write tree to')
-    tree_parser.add_argument('--node_data', help='file name to write additional node data')
+    tree_parser.add_argument('--output', type=str, help='file name to write tree to')
+    tree_parser.add_argument('--node_data', type=str, help='file name to write additional node data')
     tree_parser.add_argument('--iqmodel', default="HKY+F", help='substitution model to use for iq-tree')
     tree_parser.add_argument('--nthreads', type=int, default=2,
                              help="number of threads used by mafft")

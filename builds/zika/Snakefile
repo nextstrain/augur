@@ -1,0 +1,57 @@
+rule parse:
+	input:
+		"../fauna/data/zika.fasta"
+	output:
+		seq = "builds/zika/results/raw_seqs.fasta",
+		meta = "builds/zika/results/meta.tsv"
+	params:
+		fields = "strain virus accession date region country division city db segment author reference"
+	shell:
+		'./bin/augur parse --sequences {input} --output {output.seq} --metadata {output.meta} --fields {params.fields}'
+
+
+rule filter:
+	input:
+		seq = "builds/zika/results/raw_seqs.fasta",
+		meta = "builds/zika/results/meta.tsv",
+		exclude = "builds/zika/metadata/dropped_strains.txt"
+	output:
+		"builds/zika/results/filtered.fasta"
+	params:
+		vpc = 20,
+		cat = "year, month"
+	shell:
+		"./bin/augur filter --sequences {input.seq} --output {output} --metadata {input.meta} --viruses_per_cat {params.vpc} --exclude {input.exclude} --cat {params.cat}"
+
+
+rule align:
+	input:
+		seq = "builds/zika/results/filtered.fasta",
+		ref = "builds/zika/metadata/zika_outgroup.gb"
+	output:
+		"builds/zika/results/aligned.fasta"
+	shell:
+		'./bin/augur align --sequences {input.seq} --output {output} --reference_sequence {input.ref}'
+
+
+rule tree:
+	input:
+		aln = "builds/zika/results/aligned.fasta",
+		metadata = "builds/zika/results/meta.tsv"
+	output:
+		tree = "builds/zika/results/tree.nwk",
+		node_data = "builds/zika/results/node_data.json"
+	shell:
+		'./bin/augur tree --alignment {input.aln} --metadata {input.metadata} --output {output.tree} --node_data {output.node_data} --timetree '
+
+rule traits:
+	input:
+		tree = "builds/zika/results/tree.nwk",
+		metadata = "builds/zika/results/meta.tsv"
+	output:
+		"builds/zika/results/traits.json",
+	params:
+		cols = "region country"
+	shell:
+		'./bin/augur traits --tree {input.tree} --metadata {input.metadata} --output {output} --columns {params.cols}'
+
