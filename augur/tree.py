@@ -1,6 +1,6 @@
 import os, shutil, time
 from Bio import Phylo
-from .utils import parse_metadata, meta_to_date_dict
+from .utils import read_metadata, get_numerical_dates
 
 def build_raxml(aln_file, out_file, clean_up=True, nthreads=2):
     '''
@@ -193,8 +193,8 @@ def run(args):
         if args.metadata is None:
             print("ERROR: meta data with dates is required for time tree reconstruction")
             return -1
-        metadata = parse_metadata(args.metadata)
-        dates = meta_to_date_dict(metadata, fmt=args.date_fmt)
+        metadata, columns = read_metadata(args.metadata)
+        dates = get_numerical_dates(metadata, fmt=args.date_fmt)
 
         tt = timetree(tree=T, aln=aln, dates=dates, confidence=args.date_confidence)
         tree_meta['clock'] = {'rate':tt.date2dist.clock_rate,
