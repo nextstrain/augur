@@ -18,8 +18,8 @@ def fix_dates(d, dayfirst=True):
             return "%d-%02d-XX"%(dto.year, dto.month)
         else:
             return "%d-%02d-%02d"%(dto.year, dto.month, dto.day)
-    except:
-        print("WARNING: unable to parse %s as date"%d)
+    except Exception as e:
+        print("WARNING: unable to parse %s as date"%d, e)
         return d
 
 

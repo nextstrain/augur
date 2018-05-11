@@ -2,6 +2,7 @@ import numpy as np
 from collections import defaultdict
 import json, os
 import pandas as pd
+from .utils import read_metadata
 TINY = 1e-12
 
 def mugration_inference(tree=None, seq_meta=None, field='country', confidence=True,
@@ -46,12 +47,14 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
         model.profile_map[missing_char] = np.ones(nc)
         model.ambiguous = missing_char
         alphabet_rev = {v:k for k,v in alphabet.items()}
+        print(alphabet_rev)
 
         # construct pseudo alignment
         pseudo_seqs = []
         for name, meta in seq_meta.items():
-            s=alphabet_rev[meta[field]] if field in meta else missing_char
-            pseudo_seqs.append(SeqRecord(Seq(s), name=name, id=name))
+            if name in nodes:
+                s=alphabet_rev[meta[field]] if field in meta else missing_char
+                pseudo_seqs.append(SeqRecord(Seq(s), name=name, id=name))
         aln = MultipleSeqAlignment(pseudo_seqs)
 
         # set up treetime and infer
@@ -84,21 +87,7 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
 
 def run(args):
     tree_fname = args.tree
-    if os.path.isfile(args.metadata):
-        traits_df = pd.read_csv(args.metadata, sep='\t' if args.metadata[-3:]=='tsv' else ',',
-                             skipinitialspace=True)
-
-        traits = {}
-        for ii, val in traits_df.iterrows():
-            if hasattr(val, "strain"):
-                traits[val.strain] = val.to_dict()
-            elif hasattr(val, "name"):
-                traits[val.name] = val.to_dict()
-            else:
-                print("ERROR: meta data file needs 'name' or 'strain' column")
-    else:
-        print("ERROR: file with states does not exist")
-        return -1
+    traits, columns = read_metadata(args.metadata)
 
     mugration_states = defaultdict(dict)
     for column in args.columns:
@@ -113,7 +102,7 @@ def run(args):
             if args.confidence:
                 mugration_states[node.name][column+'_confidence'] = node.__getattribute__(column+'_confidence')
 
-        with open(os.path.dirname(args.output)+'./%s.mugration_model.txt'%column, 'w') as ofile:
+        with open(os.path.dirname(args.output)+'/%s.mugration_model.txt'%column, 'w') as ofile:
             ofile.write('Map from character to field name\n')
             for k,v in alphabet.items():
                 ofile.write(k+':\t'+str(v)+'\n')

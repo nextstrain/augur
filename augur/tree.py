@@ -1,6 +1,6 @@
 import os, shutil, time
 from Bio import Phylo
-from .utils import parse_metadata, meta_to_date_dict
+from .utils import read_metadata, get_numerical_dates, write_json
 
 def build_raxml(aln_file, out_file, clean_up=True, nthreads=2):
     '''
@@ -104,7 +104,8 @@ def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False,
         dL_int.sort()
 
     #send ref, if is None, does no harm
-    tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates, gtr='JC69')
+    tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates,
+                  verbose=1, gtr='JC69')
 
     if confidence and use_marginal:
         # estimate confidence intervals via marginal ML and assign marginal ML times to nodes
@@ -125,7 +126,7 @@ def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False,
 def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
                                  marginal=False, optimize_branch_length=True):
     from treetime import TreeAnc
-    tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69')
+    tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69', verbose=1)
 
     if optimize_branch_length:
         tt.optimize_seq_and_branch_len(infer_gtr=infer_gtr, marginal=marginal)
@@ -193,8 +194,8 @@ def run(args):
         if args.metadata is None:
             print("ERROR: meta data with dates is required for time tree reconstruction")
             return -1
-        metadata = parse_metadata(args.metadata)
-        dates = meta_to_date_dict(metadata, fmt=args.date_fmt)
+        metadata, columns = read_metadata(args.metadata)
+        dates = get_numerical_dates(metadata, fmt=args.date_fmt)
 
         tt = timetree(tree=T, aln=aln, dates=dates, confidence=args.date_confidence)
         tree_meta['clock'] = {'rate':tt.date2dist.clock_rate,
