@@ -73,7 +73,7 @@ def make_config(lineage, resolution, params):
     if params.file_prefix:
         file_prefix = params.file_prefix
     else:
-        file_prefix = "flu_{}_{}_{}".format(lineage, params.segments[0], resolution) # flu_h3n2_ha_6y
+        file_prefix = "flu_seasonal_{}_{}_{}".format(lineage, params.segments[0], resolution) # flu_seasonal_h3n2_ha_6y
 
     config = {
         "dir": "flu",

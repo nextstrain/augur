@@ -13,7 +13,7 @@ def build(
     for segment in segments:
         call = [
             'avian.process.py',
-            '--json', 'prepared/avian_h7n9_%s.json'%(segment)]
+            '--json', 'prepared/flu_avian_h7n9_%s.json'%(segment)]
         if (system == "qsub"):
             call = ['qsub', 'submit_script.sh'] + call
         elif (system == "sbatch"):
