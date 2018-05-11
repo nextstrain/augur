@@ -1,0 +1,99 @@
+#!/usr/bin/env python
+import sys
+from augur import align, tree, traits, parse
+
+if __name__=="__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description = "Augur: Real-Time Phylogenetic analysis.")
+    subparsers = parser.add_subparsers()
+
+    ### PARSE.PY
+    align_parser = subparsers.add_parser('parse', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    align_parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
+    align_parser.add_argument('--fields', nargs='+', help="fields in fasta header")
+    align_parser.add_argument('--output', help="output file")
+    align_parser.add_argument('--metadata', help="output file")
+    align_parser.add_argument('--sep', default='|', help="separator of fasta header")
+    align_parser.add_argument('--fix_dates', choices=['dayfirst', 'monthfirst'],
+                                 help="attempt to parse dates and output them in standard format")
+    align_parser.set_defaults(func=parse.run)
+
+    ### ALIGN.PY
+    align_parser = subparsers.add_parser('align', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    align_parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
+    align_parser.add_argument('--output', help="output file")
+    align_parser.add_argument('--nthreads', type=int, default=2,
+                        help="number of threads used by mafft")
+    align_parser.add_argument('--aligner', default='mafft', choices=["mafft"],
+                        help="alignment program to use")
+    align_parser.add_argument('--reference_name', type=str, help="strip insertions relative to reference sequence")
+    align_parser.add_argument('--reference_sequence', type=str, help="strip insertions relative to reference sequence")
+    align_parser.add_argument('--remove_reference', action="store_true", help="keep reference sequence in alignment")
+    align_parser.set_defaults(func=align.run)
+
+    ## TREE.PY
+    tree_parser = subparsers.add_parser('tree', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    tree_parser.add_argument('--alignment', required=True, help="alignment to build tree from")
+    tree_parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
+    tree_parser.add_argument('--tree', help="prebuild newick -- no tree will be build if provided")
+    tree_parser.add_argument('--metadata', help="tsv/csv table with meta data for sequences")
+    tree_parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")
+    tree_parser.add_argument('--date_fmt', default="%Y-%m-%d", help="date format")
+    tree_parser.add_argument('--date_confidence', action="store_true", help="calculate confidence intervals for node dates")
+    tree_parser.add_argument('--ancestral', default="joint", choices=["joint", "marginal", "None"],
+                                help="calculate joint maximum likelihood ancestral sequence states")
+    tree_parser.add_argument('--branchlengths', default='div', choices = ['div', 'clock'],
+                                help='branch length of the output tree')
+    tree_parser.add_argument('--output', help='file name to write tree to')
+    tree_parser.add_argument('--node_data', help='file name to write additional node data')
+    tree_parser.add_argument('--iqmodel', default="HKY+F", help='substitution model to use for iq-tree')
+    tree_parser.add_argument('--nthreads', type=int, default=2,
+                             help="number of threads used by mafft")
+    tree_parser.set_defaults(func=tree.run)
+
+
+    ## TRAITS.PY
+    traits_parser = subparsers.add_parser('traits', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    traits_parser.add_argument('--tree', required=True, help="tree to perform trait reconstruction on")
+    traits_parser.add_argument('--metadata', required=True, help="tsv/csv table with meta data")
+    traits_parser.add_argument('--columns', required=True, nargs='+',
+                        help='meta data field to perform discrete reconstruction on')
+    traits_parser.add_argument('--confidence',action="store_true",
+                        help='record the distribution of subleading mugration states')
+    traits_parser.add_argument('--output', default='traits.json', help='')
+    traits_parser.set_defaults(func=traits.run)
+
+    args = parser.parse_args()
+    return_code = args.func(args)
+
+    # if args.command=="prepare":
+    #     from augur import prepare
+    #     prepare.run(sys.argv[2:])
+    # elif args.command=="align":
+    #     from augur import align
+    #     align.run(sys.argv[2:])
+    # elif args.command=="tree":
+    #     from augur import tree
+    #     tree.run(sys.argv[2:])
+    # elif args.command=="translate":
+    #     from augur import translate
+    #     translate.run(sys.argv[2:])
+    # elif args.command=="mugration":
+    #     from augur import mugration
+    #     mugration.run(sys.argv[2:])
+    # elif args.command=="frequency":
+    #     from augur import frequency
+    #     frequency.run(sys.argv[2:])
+    # elif args.command=="titer":
+    #     from augur import titer
+    #     titer.run(sys.argv[2:])
+    # elif args.command=="titer":
+    #     from augur import titer
+    #     titer.run(sys.argv[2:])
+    # elif args.command=="export":
+    #     from augur import export
+    #     export.run(sys.argv[2:])
+    # else:
+    #     print("unrecognized command")
+    #     exit(1)
