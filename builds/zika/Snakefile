@@ -18,8 +18,8 @@ rule filter:
 	output:
 		"builds/zika/results/filtered.fasta"
 	params:
-		vpc = 20,
-		cat = "year, month"
+		vpc = 10,
+		cat = "year month"
 	shell:
 		"./bin/augur filter --sequences {input.seq} --output {output} --metadata {input.meta} --viruses_per_cat {params.vpc} --exclude {input.exclude} --cat {params.cat}"
 
@@ -54,4 +54,14 @@ rule traits:
 		cols = "region country"
 	shell:
 		'./bin/augur traits --tree {input.tree} --metadata {input.metadata} --output {output} --columns {params.cols}'
+
+rule export:
+	input:
+		tree = "builds/zika/results/tree.nwk",
+		nodedata = "builds/zika/results/node_data.json",
+		traits = "builds/zika/results/traits.json",
+	output:
+		"builds/zika/auspice/zika_tree.json",
+	shell:
+		'./bin/augur export --tree {input.tree} --nodedata {input.nodedata} --traits {input.traits} --output {output}'
 

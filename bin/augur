@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-from augur import align, tree, traits, parse, filter
+from augur import align, tree, traits, parse, filter, export
 
 if __name__=="__main__":
     import argparse
@@ -76,36 +76,17 @@ if __name__=="__main__":
     traits_parser.add_argument('--output', default='traits.json', help='')
     traits_parser.set_defaults(func=traits.run)
 
+    ## EXPORT.PY
+    export_parser =  subparsers.add_parser("export", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    export_parser.add_argument('--tree', required=True, help="tree to perform trait reconstruction on")
+    export_parser.add_argument('--nodedata', required=True, help="json file with meta data for each node")
+    export_parser.add_argument('--traits',help="json file with trait inferences")
+    export_parser.add_argument('--reference',
+                        help="reference sequence needed for entropy feature export")
+    export_parser.add_argument('--output', required=True,
+                        help="json file name that is passed on to auspice (e.g., zika.fasta)")
+    export_parser.set_defaults(func=export.run)
+
+
     args = parser.parse_args()
     return_code = args.func(args)
-
-    # if args.command=="prepare":
-    #     from augur import prepare
-    #     prepare.run(sys.argv[2:])
-    # elif args.command=="align":
-    #     from augur import align
-    #     align.run(sys.argv[2:])
-    # elif args.command=="tree":
-    #     from augur import tree
-    #     tree.run(sys.argv[2:])
-    # elif args.command=="translate":
-    #     from augur import translate
-    #     translate.run(sys.argv[2:])
-    # elif args.command=="mugration":
-    #     from augur import mugration
-    #     mugration.run(sys.argv[2:])
-    # elif args.command=="frequency":
-    #     from augur import frequency
-    #     frequency.run(sys.argv[2:])
-    # elif args.command=="titer":
-    #     from augur import titer
-    #     titer.run(sys.argv[2:])
-    # elif args.command=="titer":
-    #     from augur import titer
-    #     titer.run(sys.argv[2:])
-    # elif args.command=="export":
-    #     from augur import export
-    #     export.run(sys.argv[2:])
-    # else:
-    #     print("unrecognized command")
-    #     exit(1)

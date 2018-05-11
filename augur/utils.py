@@ -36,3 +36,38 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None):
         numerical_dates = {k:float(v) for k,v in dates.items()}
 
     return numerical_dates
+
+def read_nodedata(fname, traits=None):
+    import json
+    if os.path.isfile(fname):
+        with open(fname) as jfile:
+            nodedata = json.load(jfile)
+    else:
+        print("ERROR: node data can't be read, file %s not found"%fname)
+    if traits and os.path.isfile(traits):
+        with open(traits) as jfile:
+            trait_data = json.load(jfile)
+        for k,v in trait_data.items():
+            if k in nodedata["nodes"]:
+                nodedata["nodes"][k].update(v)
+    return nodedata
+
+
+def write_json(data, file_name, indent=1):
+    import json
+    import os
+
+    #in case auspice folder does not exist yet
+    if not os.path.exists(os.path.dirname(file_name)):
+        try:
+            os.makedirs(os.path.dirname(file_name))
+        except OSError: #Guard against race condition
+            if not os.path.isdir(os.path.dirname(file_name)):
+                raise
+    try:
+        handle = open(file_name, 'w')
+    except IOError:
+        raise
+    else:
+        json.dump(data, handle, indent=indent)
+        handle.close()
