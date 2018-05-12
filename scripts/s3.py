@@ -15,16 +15,8 @@ python scripts/s3.py push -b nextstrain-staging \
 python ../../scripts/s3.py sync --from nextstrain-staging \
     --to production-data --prefixes flu_h3n2
 """
-import argparse
-import boto3
-import botocore
-import gzip
-import io
-import logging
-import os
-import shutil
-import time
-import glob
+import argparse, boto3, botocore, glob, gzip, io, logging, os, shutil, time
+
 
 # Map S3 buckets to their corresponding CloudFront ids.
 CLOUDFRONT_ID_BY_BUCKET = {
@@ -81,8 +73,10 @@ def create_cloudfront_invalidation(bucket_name, path):
     # Connect to CloudFront.
     cloudfront = boto3.client("cloudfront")
 
-    # Create the invalidation batch. Top-level keys require a "/" prefix for
-    # proper invalidation.
+    # Create the invalidation. Top-level keys require a "/" prefix for
+    # proper invalidation. This is purposely a single path invalidation
+    # due to how AWS charges, see here:
+    # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Invalidation.html
     invalidation_batch = {
         "Paths": {
             "Quantity": 1,
@@ -269,7 +263,7 @@ if __name__ == "__main__":
 
     parser_push = subparsers.add_parser("push")
     parser_push.add_argument("--bucket", "-b", type=str, help="S3 bucket to push files to")
-    parser_push.add_argument("--glob", "-g", type=str, help="Glob string to identify set of local files")
+    parser_push.add_argument("--glob", "-g", type=str, help="Glob string to identify set of local files, must have quotes")
     parser_push.set_defaults(func=push)
 
     parser_pull = subparsers.add_parser("pull")
