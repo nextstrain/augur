@@ -1,22 +1,4 @@
-# Seasonal flu (H3N2, H1N1pdm, B/Vic, B/Yam) build
-
-### Status
-* all lineages working
-* references only defined for HA (so far)
-* subsampling is always a single pass and cannot be repeated
-* tree frequencies have not been tested properly
-* matchClades has not been properly tested
-
-### summary of the necessary files
-
-| File         | Details           |
-| ------------- | ------------- |
-| `flu.prepare.py`    | Prepare script.      |
-| `flu.process.py`    | Process script.      |
-| `flu_info.py`      | Holds (a lot of) information about sequences to drop, reference genomes etc. Used by prepare.  |
-| `../../fauna/data/<LINEAGE>_<SEG>.fasta` | (Fauna) fasta file      |
-| `colors.flu.tsv` | color maps      |
-
+# Seasonal flu (H3N2, H1N1pdm, Vic, Yam) build
 
 ### How to run
 
@@ -26,11 +8,11 @@
 ```
 python flu.prepare.py --lineage h3n2 --resolution 3y
 ```
-Running this creates the file `prepared/flu_h3n2_ha_3y.json`.
+Running this creates the file `prepared/flu_seasonal_h3n2_ha_3y.json`.
 
 #### 3. Run build
 ```
-python flu.process.py --json prepared/flu_h3n2_ha_3y.json
+python flu.process.py --json prepared/flu_seasonal_h3n2_ha_3y.json
 ```
 This creates intermediary files in `processed/` and auspice-ready JSONs in `auspice/`.
 
@@ -51,3 +33,13 @@ The script `run_flu.py` will batch calls to `flu.prepare.py` and `flu.process.py
 ```
 python run_flu.py
 ```
+
+### Summary of the necessary files
+
+| File         | Details           |
+| ------------- | ------------- |
+| `flu.prepare.py`    | Prepare script.      |
+| `flu.process.py`    | Process script.      |
+| `flu_info.py`      | Holds (a lot of) information about sequences to drop, reference genomes etc. Used by prepare.  |
+| `../../fauna/data/<LINEAGE>_<SEG>.fasta` | (Fauna) fasta file      |
+| `colors.flu.tsv` | color maps      |

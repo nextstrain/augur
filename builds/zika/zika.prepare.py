@@ -59,7 +59,7 @@ config = {
         "path": "metadata/zika_outgroup.gb",
         "metadata": {
             'strain': "PF13/251013_18", "accession": "KX369547", "date": "2013-10-25",
-            'host': "human", 'country': "French Polynesia"
+            'host': "human", 'country': "french_polynesia"
         },
         "include": 2,
         "genes": ['CA', 'PRO', 'MP', 'ENV', 'NS1', 'NS2A', 'NS2B', 'NS3', 'NS4A', '2K', 'NS4B', 'NS5']
