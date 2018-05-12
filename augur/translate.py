@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from Bio import SeqIO, SeqFeature, Seq, SeqRecord, Phylo
-from .utils import read_nodedata, load_features, write_json
+from .utils import read_node_data, load_features, write_json
 
 def safe_translate(sequence, report_exceptions=False):
     """Returns an amino acid translation of the given nucleotide sequence accounting
@@ -70,6 +70,14 @@ def safe_translate(sequence, report_exceptions=False):
 
 
 def translate_feature(aln, feature):
+    '''
+    translates a subsequence of input nucleotide sequences
+    input:
+        aln -- dictionary of sequences indexed by node name
+        feature -- Biopython sequence feature
+    returns:
+        dictionary of translated sequences indexed by node name
+    '''
     translations = {}
     for sname, seq in aln.items():
         aa_seq = safe_translate(str(feature.extract(seq)))
@@ -78,17 +86,21 @@ def translate_feature(aln, feature):
     return translations
 
 def run(args):
+    # read tree and data, if reading data fails, return with error code
     tree = Phylo.read(args.tree, 'newick')
-    node_data = read_nodedata(args.node_data)
+    node_data = read_node_data(args.node_data)
     features = load_features(args.reference_sequence, args.genes)
     if features is None or node_data is None:
+        print("ERROR: could not read node data (incl sequences) or features of reference sequence")
         return -1
 
+    # extract sequences from node meta data
     sequences = {}
     for k,v in node_data['nodes'].items():
         if 'sequence' in v:
-            sequences[k] = Seq.Seq(v['sequence'])
+            sequences[k] = v['sequence']
 
+    # translate every feature
     translations = {}
     for fname, feat in features.items():
         translations[fname] = translate_feature(sequences, feat)

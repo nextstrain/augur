@@ -37,24 +37,24 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None):
 
     return numerical_dates
 
-def read_nodedata(fname, traits=None, aa_muts=None):
+def read_node_data(fname, traits=None, aa_muts=None):
     import json
     if os.path.isfile(fname):
         with open(fname) as jfile:
-            nodedata = json.load(jfile)
+            node_data = json.load(jfile)
 
         for more_data in [traits, aa_muts]:
             if more_data and os.path.isfile(more_data):
                 with open(more_data) as jfile:
                     tmp_data = json.load(jfile)
                 for k,v in tmp_data.items():
-                    if k in nodedata["nodes"]:
-                        nodedata["nodes"][k].update(v)
+                    if k in node_data["nodes"]:
+                        node_data["nodes"][k].update(v)
     else:
         print("ERROR: node data can't be read, file %s not found"%fname)
-        nodedata=None
+        node_data=None
 
-    return nodedata
+    return node_data
 
 
 def write_json(data, file_name, indent=1):

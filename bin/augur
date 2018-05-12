@@ -41,7 +41,7 @@ if __name__=="__main__":
                         help="alignment program to use")
     align_parser.add_argument('--reference_name', type=str, help="strip insertions relative to reference sequence")
     align_parser.add_argument('--reference_sequence', type=str, help="strip insertions relative to reference sequence")
-    align_parser.add_argument('--remove_reference', action="store_true", help="keep reference sequence in alignment")
+    align_parser.add_argument('--remove_reference', action="store_true", default=False, help="remove reference sequence from the alignment")
     align_parser.set_defaults(func=align.run)
 
     ## TREE.PY
@@ -91,7 +91,7 @@ if __name__=="__main__":
     ## EXPORT.PY
     export_parser =  subparsers.add_parser("export", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     export_parser.add_argument('--tree', required=True, help="tree to perform trait reconstruction on")
-    export_parser.add_argument('--nodedata', required=True, help="json file with meta data for each node")
+    export_parser.add_argument('--node_data', required=True, help="json file with meta data for each node")
     export_parser.add_argument('--traits',help="json file with trait inferences")
     export_parser.add_argument('--aa_muts',help="json file with amino acid mutations")
     export_parser.add_argument('--reference_sequence',

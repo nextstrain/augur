@@ -120,6 +120,9 @@ def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False,
         for n in T.find_clades():
             n.numdate_confidence = list(tt.get_max_posterior_region(n, 0.9))
 
+    print("\nInferred a time resolved phylogeny using TreeTime:"
+          "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
+          "\n\tVirus Evolution, vol 4, https://academic.oup.com/ve/article/4/1/vex042/4794731\n")
     return tt
 
 
@@ -132,6 +135,10 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
         tt.optimize_seq_and_branch_len(infer_gtr=infer_gtr, marginal=marginal)
     else: # only infer ancestral sequences, leave branch length untouched
         tt.infer_ancestral_sequences(infer_gtr=infer_gtr, marginal=marginal)
+
+    print("\nInferred ancestral sequence states using TreeTime:"
+          "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
+          "\n\tVirus Evolution, vol 4, https://academic.oup.com/ve/article/4/1/vex042/4794731\n")
 
     return tt
 
@@ -177,6 +184,7 @@ def run(args):
                   "\n\t-- Will attempt to build from alignment."%args.tree)
 
     start = time.time()
+
     # without tree, attempt to build tree
     if T is None:
         if args.output:
@@ -195,7 +203,7 @@ def run(args):
         else: #use fasttree - if add more options, put another check here
             T = build_fasttree(aln, tree_fname)
         end = time.time()
-        print("Building original tree took {}".format(str(end-start)))
+        print("Building original tree took {} seconds".format(str(end-start)))
 
     if args.timetree and T:
         if args.metadata is None:
