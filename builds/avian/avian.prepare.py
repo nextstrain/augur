@@ -115,7 +115,7 @@ if __name__=="__main__":
         config["file_prefix"] = params.file_prefix
         segment_addendum = False
     else:
-        config["file_prefix"] = "avian_h7n9"
+        config["file_prefix"] = "flu_avian_h7n9"
         segment_addendum = True
 
     config["segments"] = params.segments

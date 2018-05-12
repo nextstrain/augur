@@ -469,7 +469,7 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
         import seaborn as sns
         plt.figure(figsize=(7, 0.6*len(rows)+1))
         if title is not None:
-            title = title.replace("flu_", "").replace("_ha_", "_").replace("_2y_", "_")
+            title = title.replace("flu_seasonal_", "").replace("_ha_", "_").replace("_2y_", "_")
             title = title.replace("h3n2", "H3N2").replace("h1n1pdm", "H1N1pdm").replace("vic", "Vic").replace("yam", "Yam")
             title = title.replace("who", "WHO").replace("cdc", "CDC").replace("crick", "Crick").replace("niid", "NIID").replace("vidrl", "VIDRL")
             title = title.replace("hi", "HI").replace("fra", "FRA")

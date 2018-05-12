@@ -13,9 +13,12 @@ def build(
     for segment in segments:
         call = [
             'avian.process.py',
-            '--json', 'prepared/avian_h7n9_%s.json'%(segment)]
+            '--json', 'prepared/flu_avian_h7n9_%s.json'%(segment)]
         if (system == "qsub"):
             call = ['qsub', 'submit_script.sh'] + call
+        elif (system == "rhino"):
+            concat = '"' + ' '.join( ['python'] + call ) + '"'
+            call = ['sbatch', '-n', '1', '-c', '2', '--mem', '16192', '--time', '12:00:00', '--wrap', concat]
         elif (system == "sbatch"):
             call = ['python'] + call
             concat = '"' + ' '.join(call) + '"'

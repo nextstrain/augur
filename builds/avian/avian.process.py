@@ -12,7 +12,7 @@ def collect_args():
     """
     parser = base.process.collect_args()
     parser.set_defaults(
-        json="prepared/avian_h7n9_ha.json"
+        json="prepared/flu_avian_h7n9_ha.json"
     )
     return parser
 
