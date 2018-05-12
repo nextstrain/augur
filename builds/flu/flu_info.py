@@ -68,20 +68,21 @@ outliers = {
         "A/Ireland/52590/2017", "A/Ireland/61097/2017", "A/Shanghai-Minxing/1482/2017"
     ],
     'h1n1pdm': [
-        "A/Malaysia/2142295/2009", "A/Malaysia/2142299/2009", "A/Singapore/SM15/2009",
-        "A/HongKong/H090-665-V1/2009", "A/HongKong/H090-667-V1/2009", "A/HongKong/H090-751-V3/2009",
-        "A/Austria/183/2009-egg", "A/HongKong/H090-771-V1/2009", "A/HongKong/H090-774-V1/2009",
-        "A/HongKong/H090-684-V10/2009", "A/Austria/183/2009-egg", "A/Malaysia/2143696/2009",
-        "A/HongKong/H090-667-V2/2009", "A/Shandong/1/2009-egg",
-        "A/Wisconsin/87/2005", "A/Iowa/1/2006-egg", "A/Illinois/9/2007", "A/Ohio/2/2007",
-        "A/California/07/2009NYMC-X18113/198", "A/Iowa/2/2009", "A/Shandong/1/2009", "A/Iowa/2/2009-egg",
-        "A/Asturias/RR6898/2010", "A/Christchurch/16/2010NIB-74xp13/202", "A/Tomsk/273-MA1/2010",
-        "A/Wisconsin/28/2011", "A/Kenya/264/2012", "A/Missouri/12/2012", "A/Ontario/N163578/2012",
+        "A/Wisconsin/87/2005", "A/Iowa/1/2006", "A/Iowa/1/2006-egg", "A/Ohio/1/2007", "A/Ohio/2/2007",
+        "A/Illinois/9/2007", "A/Minnesota/3/2008", "A/Texas/14/2008", "A/Malaysia/2142295/2009",
+        "A/Malaysia/2142299/2009", "A/Singapore/SM15/2009", "A/HongKong/H090-665-V1/2009",
+        "A/HongKong/H090-667-V1/2009", "A/HongKong/H090-751-V3/2009", "A/Austria/183/2009-egg",
+        "A/HongKong/H090-771-V1/2009", "A/HongKong/H090-774-V1/2009", "A/HongKong/H090-684-V10/2009",
+        "A/Austria/183/2009-egg", "A/Malaysia/2143696/2009", "A/HongKong/H090-667-V2/2009",
+        "A/Shandong/1/2009-egg", "A/California/07/2009NYMC-X18113/198", "A/Iowa/2/2009",
+        "A/Shandong/1/2009", "A/Iowa/2/2009-egg", "A/Asturias/RR6898/2010",
+        "A/Christchurch/16/2010NIB-74xp13/202", "A/Tomsk/273-MA1/2010", "A/Wisconsin/28/2011",
+        "A/Kenya/264/2012", "A/Missouri/12/2012", "A/Ontario/N163578/2012",
         "A/RioGrandedoNorte/117490/2012", "A/SriLanka/11/2012", "A/Arkansas/14/2013", "A/Arkansas/15/2013",
         "A/Hungary/02/2013", "A/Hungary/16/2013", "A/Poland/16/2013", "A/Brest/1161/2014", "A/Dakar/3/2014",
         "A/India/Pun1418633/2014", "A/Minnesota/33/2014", "A/Norway/1929/2014", "A/Iowa/39/2015",
         "A/India/4101/2015", "A/Minnesota/46/2015", "A/Ohio/9/2015", "A/Bari/166/2016", "A/Bari/167/2016",
-        "A/Belgium/G0027/2016", "A/Ohio/1/2007", "A/Iowa/1/2006", "A/Minnesota/3/2008", "A/Texas/14/2008"
+        "A/Cherkessk/2/2016", "A/Belgium/G0027/2016"
     ],
     'vic':[
         "A/Malaysia/438/2016", "B/Togo/LNG/419/2013", "B/Brisbine/33/2008", "B/Kol/2024/2008",
