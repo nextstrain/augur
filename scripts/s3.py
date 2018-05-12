@@ -1,20 +1,19 @@
 """
 Script to sync files between local disk and S3 buckets.
 
-# Go to flu build.
-cd augur/builds/flu
+# From augur/ directory
 
 # Download flu H3N2 data into auspice directory.
-python ../../scripts/s3.py pull dev-data \
-    --prefixes flu_h3n2 --to auspice
+python scripts/s3.py pull -b nextstrain-staging \
+    --to builds/flu/auspice --prefixes flu_h3n2
 
 # Upload flu H3N2 data to S3 dev bucket.
-python ../../scripts/s3.py push dev-data \
-    auspice/flu_h3n2_*
+python scripts/s3.py push -b nextstrain-staging \
+    -g "builds/flu/auspice/flu_h3n2_*"
 
 # Sync H3N2 data from one bucket to another and create CloudFront invalidation.
-python ../../scripts/s3.py sync dev-data production-data \
-    --prefixes flu_h3n2
+python ../../scripts/s3.py sync --from nextstrain-staging \
+    --to production-data --prefixes flu_h3n2
 """
 import argparse
 import boto3
@@ -25,6 +24,7 @@ import logging
 import os
 import shutil
 import time
+import glob
 
 # Map S3 buckets to their corresponding CloudFront ids.
 CLOUDFRONT_ID_BY_BUCKET = {
@@ -57,12 +57,12 @@ def get_bucket_keys_by_prefixes(bucket, prefixes):
     return object_keys
 
 
-def create_cloudfront_invalidation(bucket_name, keys):
+def create_cloudfront_invalidation(bucket_name, path):
     """Create a cache invalidation for the given files if a CloudFront id is given.
 
     Args:
         bucket_name: an S3 bucket name that may or may not have a CloudFront id
-        keys: a list of keys to invalidate cache for
+        path: invalidation path, may contain *
 
     Returns:
         dict or NoneType: CloudFront API response or None if no CloudFront is defined for the given bucket
@@ -76,7 +76,7 @@ def create_cloudfront_invalidation(bucket_name, keys):
         logger.warning("Could not find a CloudFront id for the S3 bucket '%s'" % bucket_name)
         return
 
-    print("Creating invalidation for %i keys in the CloudFront distribution '%s'" % (len(keys), cloudfront_id))
+    print("Creating invalidation for '%s' in the CloudFront distribution '%s'" % (path, cloudfront_id))
 
     # Connect to CloudFront.
     cloudfront = boto3.client("cloudfront")
@@ -85,8 +85,8 @@ def create_cloudfront_invalidation(bucket_name, keys):
     # proper invalidation.
     invalidation_batch = {
         "Paths": {
-            "Quantity": len(keys),
-            "Items": ["/%s" % key for key in keys]
+            "Quantity": 1,
+            "Items": ["/%s" % path]
         },
         "CallerReference": str(time.time())
     }
@@ -102,17 +102,20 @@ def create_cloudfront_invalidation(bucket_name, keys):
     return response
 
 
-def push(bucket_name, files, dryrun=False):
+def push(bucket_name, file_glob, dryrun=False):
     """Push the given files to the given S3 bucket and optionally invalidate the
     cache for a given CloudFront id.
 
     Args:
         bucket_name: S3 bucket to pull from
-        files: a list of local files to upload to the given bucket
+        glob: string to identify local files to push, of the from builds/zika/auspice/zika_*
         dryrun: boolean indicating whether files should be downloaded or not
     """
     # Setup logging.
     logger = logging.getLogger(__name__)
+
+    # Construct file list from glob
+    files = glob.glob(file_glob)
 
     # Create a distinct list of files to push.
     files = list(set(files))
@@ -151,9 +154,10 @@ def push(bucket_name, files, dryrun=False):
                     {"ContentEncoding": "gzip", "ContentType": "application/json"}
                 )
 
-    # Create a CloudFront invalidation for the destination bucket.
+    # Create a CloudFront invalidation for the destination bucket
     if not dryrun:
-        response = create_cloudfront_invalidation(bucket_name, s3_keys)
+        invalidation_path = os.path.split(file_glob)[-1]
+        response = create_cloudfront_invalidation(bucket_name, invalidation_path)
 
 
 def pull(bucket_name, prefixes=None, local_dir=None, dryrun=False):
@@ -264,19 +268,19 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(dest="command_name")
 
     parser_push = subparsers.add_parser("push")
-    parser_push.add_argument("bucket", help="S3 bucket to push files to")
-    parser_push.add_argument("files", nargs="+", help="One or more sets of files to push to the given bucket")
+    parser_push.add_argument("--bucket", "-b", type=str, help="S3 bucket to push files to")
+    parser_push.add_argument("--glob", "-g", type=str, help="Glob string to identify set of local files")
     parser_push.set_defaults(func=push)
 
     parser_pull = subparsers.add_parser("pull")
-    parser_pull.add_argument("bucket", help="S3 bucket to pull files from")
+    parser_pull.add_argument("--bucket", "-b", type=str, help="S3 bucket to pull files from")
     parser_pull.add_argument("--prefixes", "-p", nargs="+", help="One or more file prefixes to match in the given bucket")
     parser_pull.add_argument("--local_dir", "--to", "-t", help="Local directory to download files into")
     parser_pull.set_defaults(func=pull)
 
     parser_sync = subparsers.add_parser("sync")
-    parser_sync.add_argument("source_bucket", help="Source S3 bucket")
-    parser_sync.add_argument("destination_bucket", help="Destination S3 bucket")
+    parser_sync.add_argument("--source_bucket", "--from", type=str, help="Source S3 bucket")
+    parser_sync.add_argument("--destination_bucket", "--to", type=str, help="Destination S3 bucket")
     parser_sync.add_argument("--prefixes", "-p", nargs="+", help="One or more prefixes for files to sync between buckets")
     parser_sync.set_defaults(func=sync)
 
@@ -285,7 +289,7 @@ if __name__ == "__main__":
 
     try:
         if args.command_name == "push":
-            args.func(args.bucket, args.files, args.dryrun)
+            args.func(args.bucket, args.glob, args.dryrun)
         elif args.command_name == "pull":
             args.func(args.bucket, args.prefixes, args.local_dir, args.dryrun)
         elif args.command_name == "sync":
