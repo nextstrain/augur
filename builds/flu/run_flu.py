@@ -85,7 +85,7 @@ def run_who(
                                 '--segments', " ".join(segments),
                                 '--sequences', seq_files,
                                 '--titers', '../../../fauna/data/%s_%s_%s_%s_titers.tsv'%(lineage, build, assay, passage),
-                                '--file_prefix', 'flu_seasonal_%s_%s_*segment*_%s_%s_%s'%(build, lineage, resolution, passage, assay)]
+                                '--file_prefix', 'flu_%s_%s_*segment*_%s_%s_%s'%(build, lineage, resolution, passage, assay)]
                             if frequencies == "complete":
                                 call = call + ['--complete_frequencies']
                             print(' '.join(call))
@@ -93,14 +93,14 @@ def run_who(
 
                         call = [
                             'flu.process.py',
-                            '--json', 'prepared/flu_seasonal_%s_%s_ha_%s_%s_%s.json'%(build, lineage, resolution, passage, assay),
+                            '--json', 'prepared/flu_%s_%s_ha_%s_%s_%s.json'%(build, lineage, resolution, passage, assay),
                             '--titers_export'
                         ]
 
                         if process_na:
                             call = [
                                 'flu.process.py',
-                                '--json', 'prepared/flu_seasonal_%s_%s_na_%s_%s_%s.json'%(build, lineage, resolution, passage, assay),
+                                '--json', 'prepared/flu_%s_%s_na_%s_%s_%s.json'%(build, lineage, resolution, passage, assay),
                                 '--titers_export'
                             ]
 
