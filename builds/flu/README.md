@@ -14,7 +14,7 @@
 | `flu.prepare.py`    | Prepare script.      |
 | `flu.process.py`    | Process script.      |
 | `flu_info.py`      | Holds (a lot of) information about sequences to drop, reference genomes etc. Used by prepare.  |
-| `../../fauna/flu_<SERO>_<SEG>.fasta` | (Fauna) fasta file      |
+| `../../fauna/data/<LINEAGE>_<SEG>.fasta` | (Fauna) fasta file      |
 | `colors.flu.tsv` | color maps      |
 
 

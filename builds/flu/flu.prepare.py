@@ -109,7 +109,6 @@ def make_config(lineage, resolution, params):
         "colors": ["region", "country"],
         "color_defs": ["colors.tsv"],
         "lat_longs": ["country", "region"],
-        "lat_long_defs": '../../../fauna/source-data/geo_lat_long.tsv',
         "references": {seg:reference_maps[lineage][seg] for seg in params.segments},
         "regions": regions,
         "time_interval": time_interval,

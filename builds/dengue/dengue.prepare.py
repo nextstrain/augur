@@ -123,7 +123,6 @@ def make_config(serotype, params):
 
         "colors": ["authors", "region", "country"],
         "lat_longs": ["region", "country"],
-        "lat_long_defs": '../../../fauna/source-data/geo_lat_long.tsv',
         "auspice_filters": ["authors", "region", "country"],
         "reference": references[serotype],
         "time_interval": time_interval,
