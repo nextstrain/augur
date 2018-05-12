@@ -143,6 +143,13 @@ def prep_tree(T, attributes):
     if 'mutations' in attributes:
         for n in T.find_clades():
             data[n.name]['mutations'] = [[a,int(pos),d] for a,pos,d in data[n.name]['mutations']]
+    if 'sequence' in attributes:
+        for n in T.find_clades():
+            if hasattr(n, 'sequence'):
+                data[n.name]['sequence'] = ''.join(n.sequence)
+            else:
+                data[n.name]['sequence']=''
+
     return data
 
 
@@ -201,13 +208,13 @@ def run(args):
         tree_meta['clock'] = {'rate':tt.date2dist.clock_rate,
                               'intercept':tt.date2dist.intercept,
                               'rtt_Tmrca':-tt.date2dist.intercept/tt.date2dist.clock_rate}
-        attributes.extend(['numdate', 'clock_length', 'mutation_length', 'mutations'])
+        attributes.extend(['numdate', 'clock_length', 'mutation_length', 'mutations', 'sequence'])
         if args.date_confidence:
             attributes.append('numdate_confidence')
     elif args.ancestral in ['joint', 'marginal']:
         tt = ancestral_sequence_inference(tree=T, aln=aln, marginal=args.ancestral,
                                           optimize_branch_length=args.branchlengths=='div')
-        attributes.extend(['mutation_length', 'mutations'])
+        attributes.extend(['mutation_length', 'mutations', 'sequence'])
     else:
         tt = None
 

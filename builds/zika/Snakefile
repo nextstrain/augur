@@ -55,13 +55,24 @@ rule traits:
 	shell:
 		'./bin/augur traits --tree {input.tree} --metadata {input.metadata} --output {output} --columns {params.cols}'
 
+rule translate:
+	input:
+		tree = "builds/zika/results/tree.nwk",
+		ref = "builds/zika/metadata/zika_outgroup.gb",
+		node_data = "builds/zika/results/node_data.json"
+	output:
+		"builds/zika/results/aa_muts.json"
+	shell:
+		'./bin/augur translate --tree {input.tree} --node_data {input.node_data} --output {output} --reference_sequence {input.ref}'
+
 rule export:
 	input:
 		tree = "builds/zika/results/tree.nwk",
 		nodedata = "builds/zika/results/node_data.json",
 		traits = "builds/zika/results/traits.json",
+		aa_muts = "builds/zika/results/aa_muts.json",
 	output:
 		"builds/zika/auspice/zika_tree.json",
 	shell:
-		'./bin/augur export --tree {input.tree} --nodedata {input.nodedata} --traits {input.traits} --output {output}'
+		'./bin/augur export --tree {input.tree} --nodedata {input.nodedata} --traits {input.traits} --aa_muts {input.aa_muts} --output {output}'
 

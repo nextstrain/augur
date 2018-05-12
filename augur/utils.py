@@ -37,19 +37,23 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None):
 
     return numerical_dates
 
-def read_nodedata(fname, traits=None):
+def read_nodedata(fname, traits=None, aa_muts=None):
     import json
     if os.path.isfile(fname):
         with open(fname) as jfile:
             nodedata = json.load(jfile)
+
+        for more_data in [traits, aa_muts]:
+            if more_data and os.path.isfile(more_data):
+                with open(more_data) as jfile:
+                    tmp_data = json.load(jfile)
+                for k,v in tmp_data.items():
+                    if k in nodedata["nodes"]:
+                        nodedata["nodes"][k].update(v)
     else:
         print("ERROR: node data can't be read, file %s not found"%fname)
-    if traits and os.path.isfile(traits):
-        with open(traits) as jfile:
-            trait_data = json.load(jfile)
-        for k,v in trait_data.items():
-            if k in nodedata["nodes"]:
-                nodedata["nodes"][k].update(v)
+        nodedata=None
+
     return nodedata
 
 
@@ -71,3 +75,47 @@ def write_json(data, file_name, indent=1):
     else:
         json.dump(data, handle, indent=indent)
         handle.close()
+
+
+def load_features(reference, feature_names=None):
+    #read in appropriately whether GFF or Genbank
+    #checks explicitly for GFF otherwise assumes Genbank
+    if not os.path.isfile(reference):
+        print("ERROR: reference sequence not found. looking for", reference)
+        return None
+
+    features = {}
+    if '.gff' in reference.lower():
+        #looks for 'gene' and 'gene' as best for TB
+        from BCBio import GFF
+        limit_info = dict( gff_type = ['gene'] )
+
+        with open(reference) as in_handle:
+            for rec in GFF.parse(in_handle, limit_info=limit_info):
+                for feat in rec.features:
+                    if "gene" in feat.qualifiers:
+                        fname = feat.qualifiers["gene"][0]
+                    else:
+                        fname = feat.qualifiers["locus_tag"][0]
+                    if feature_names is None or fname in feature_names:
+                        features[fname] = feat
+
+            if feature_names is not None:
+                for fe in feature_names:
+                    if fe not in features:
+                        print("Couldn't find gene {} in GFF or GenBank file".format(fe))
+
+    else:
+        from Bio import SeqIO
+        for feat in SeqIO.read(reference, 'genbank').features:
+            if feat.type=='CDS':
+                if "locus_tag" in feat.qualifiers:
+                    fname = feat.qualifiers["locus_tag"][0]
+                    if feature_names is None or fname in feature_names:
+                        features[fname] = feat
+                elif "gene" in feat.qualifiers:
+                    fname = feat.qualifiers["gene"][0]
+                    if feature_names is None or fname in feature_names:
+                        features[fname] = feat
+
+    return features

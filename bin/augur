@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-from augur import align, tree, traits, parse, filter, export
+from augur import align, tree, traits, parse, filter, export, translate
 
 if __name__=="__main__":
     import argparse
@@ -64,6 +64,18 @@ if __name__=="__main__":
                              help="number of threads used by mafft")
     tree_parser.set_defaults(func=tree.run)
 
+    ## TRANSLATE.PY
+    translate_parser = subparsers.add_parser('translate', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    translate_parser.add_argument('--tree', help="prebuild newick -- no tree will be build if provided")
+    translate_parser.add_argument('--node_data', type=str, help='file with additional node data including ancestral sequences')
+    translate_parser.add_argument('--reference_sequence', required=True,
+                        help='genbank file containing the annotation')
+    translate_parser.add_argument('--genes', nargs='+', help="genes to translate")
+    translate_parser.add_argument('--output', type=str, help="name of json files for aa mutations")
+    translate_parser.add_argument('--alignment_output', type=str, help="write the alignment of each gene to file,"
+                                  "specify the file name like so: 'my_alignment_GENE.fasta' where 'GENE'"
+                                   "will be replaced by the name of the gene")
+    translate_parser.set_defaults(func=translate.run)
 
     ## TRAITS.PY
     traits_parser = subparsers.add_parser('traits', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -81,7 +93,8 @@ if __name__=="__main__":
     export_parser.add_argument('--tree', required=True, help="tree to perform trait reconstruction on")
     export_parser.add_argument('--nodedata', required=True, help="json file with meta data for each node")
     export_parser.add_argument('--traits',help="json file with trait inferences")
-    export_parser.add_argument('--reference',
+    export_parser.add_argument('--aa_muts',help="json file with amino acid mutations")
+    export_parser.add_argument('--reference_sequence',
                         help="reference sequence needed for entropy feature export")
     export_parser.add_argument('--output', required=True,
                         help="json file name that is passed on to auspice (e.g., zika.fasta)")
