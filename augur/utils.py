@@ -1,7 +1,32 @@
 import os
 import pandas as pd
 from treetime.utils import numeric_date
-from base.utils import ambiguous_date_to_date_range
+
+def ambiguous_date_to_date_range(mydate, fmt):
+    from datetime import datetime
+    sep = fmt.split('%')[1][-1]
+    min_date, max_date = {}, {}
+    today = datetime.today().date()
+
+    for val, field  in zip(mydate.split(sep), fmt.split(sep+'%')):
+        f = 'year' if 'y' in field.lower() else ('day' if 'd' in field.lower() else 'month')
+        if 'XX' in val:
+            if f=='year':
+                return None, None
+            elif f=='month':
+                min_date[f]=1
+                max_date[f]=12
+            elif f=='day':
+                min_date[f]=1
+                max_date[f]=31
+        else:
+            min_date[f]=int(val)
+            max_date[f]=int(val)
+    max_date['day'] = min(max_date['day'], 31 if max_date['month'] in [1,3,5,7,8,10,12]
+                                           else 28 if max_date['month']==2 else 30)
+    lower_bound = datetime(year=min_date['year'], month=min_date['month'], day=min_date['day']).date()
+    upper_bound = datetime(year=max_date['year'], month=max_date['month'], day=max_date['day']).date()
+    return (lower_bound, upper_bound if upper_bound<today else today)
 
 def read_metadata(fname):
     if os.path.isfile(fname):
@@ -31,7 +56,10 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None):
             if 'XX' in v:
                 numerical_dates[k] = [numeric_date(d) for d in ambiguous_date_to_date_range(v, fmt)]
             else:
-                numerical_dates[k] = numeric_date(datetime.strptime(v, fmt))
+                try:
+                    numerical_dates[k] = numeric_date(datetime.strptime(v, fmt))
+                except:
+                    numerical_dates[k] = None
     else:
         numerical_dates = {k:float(v) for k,v in dates.items()}
 

@@ -40,7 +40,11 @@ def run(args):
                 if c in m:
                     cat.append(m.loc[c])
                 elif c in ['month', 'year'] and 'date' in m:
-                    year = int(m["date"].split('-')[0])
+                    try:
+                        year = int(m["date"].split('-')[0])
+                    except:
+                        print("WARNING: no valid year, skipping",seq.id, m["date"])
+                        continue
                     if c=='month':
                         try:
                             month = int(m["date"].split('-')[1])

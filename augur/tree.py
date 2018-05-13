@@ -93,9 +93,10 @@ def build_iqtree(aln_file, out_file, iqmodel="HKY+F", clean_up=True, nthreads=2)
     return T
 
 
-def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False,
+def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False, branch_length_mode='auto',
              confidence=False, resolve_polytomies=True, max_iter=2, dateLimits=None,
-             infer_gtr=True, Tc=0.01, reroot='best', use_marginal=False, fixed_pi=None, **kwarks):
+             infer_gtr=True, Tc=0.01, reroot='best', use_marginal=False, fixed_pi=None,
+             clock_rate=None, **kwarks):
     from treetime import TreeTime
 
     dL_int = None
@@ -113,8 +114,9 @@ def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False,
     else:
         marginal = confidence
 
-    tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
-           resolve_polytomies=resolve_polytomies, max_iter=max_iter, fixed_pi=fixed_pi, **kwarks)
+    tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal, branch_length_mode=branch_length_mode,
+           resolve_polytomies=resolve_polytomies, max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
+           **kwarks)
 
     if confidence:
         for n in T.find_clades():
@@ -174,7 +176,7 @@ def run(args):
     if args.tree:
         for fmt in ["newick", "nexus"]:
             try:
-                T = Phylo.read(T, args.tree, fmt)
+                T = Phylo.read(args.tree, fmt)
                 tree_meta['input_tree'] = args.tree
                 break
             except:
@@ -186,12 +188,11 @@ def run(args):
     start = time.time()
 
     # without tree, attempt to build tree
+    if args.output:
+        tree_fname = args.output
+    else:
+        tree_fname = '.'.join(args.alignment.split('.')[:-1]) + '.nwk'
     if T is None:
-        if args.output:
-            tree_fname = args.output
-        else:
-            tree_fname = '.'.join(args.alignment.split('.')[:-1]) + '.nwk'
-
         if args.iqmodel and not args.method=='iqtree':
             print("Cannot specify model unless using IQTree. Model specification ignored.")
 
@@ -212,7 +213,8 @@ def run(args):
         metadata, columns = read_metadata(args.metadata)
         dates = get_numerical_dates(metadata, fmt=args.date_fmt)
 
-        tt = timetree(tree=T, aln=aln, dates=dates, confidence=args.date_confidence)
+        tt = timetree(tree=T, aln=aln, dates=dates, confidence=args.date_confidence,
+                      reroot=args.root if args.root else 'best', clock_rate=args.clock_rate)
         tree_meta['clock'] = {'rate':tt.date2dist.clock_rate,
                               'intercept':tt.date2dist.intercept,
                               'rtt_Tmrca':-tt.date2dist.intercept/tt.date2dist.clock_rate}
