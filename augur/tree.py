@@ -233,13 +233,17 @@ def run(args):
     if T:
         import json
         tree_success = Phylo.write(T, tree_fname, 'newick')
-        if args.node_data:
-            node_data_fname = args.node_data
-        else:
-            node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data'
+        if args.timetree or args.ancestral in ['joint', 'marginal']:
+            if args.node_data:
+                node_data_fname = args.node_data
+            else:
+                node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data'
 
-        with open(node_data_fname, 'w') as ofile:
-            meta_success = json.dump(tree_meta, ofile)
+            with open(node_data_fname, 'w') as ofile:
+                meta_success = json.dump(tree_meta, ofile)
+        else:
+            meta_success=True
+
         return 0 if (tree_success and meta_success) else -1
     else:
         return -1

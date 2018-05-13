@@ -53,7 +53,10 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None):
         numerical_dates = {}
         for k,m in meta_dict.items():
             v = m[date_col]
-            if 'XX' in v:
+            if type(v)!=str:
+                print("WARNING: %s has an invalid data string:"%k,v)
+                continue
+            elif 'XX' in v:
                 numerical_dates[k] = [numeric_date(d) for d in ambiguous_date_to_date_range(v, fmt)]
             else:
                 try:
