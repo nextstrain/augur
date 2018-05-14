@@ -119,8 +119,8 @@ def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False, branch_l
            **kwarks)
 
     if confidence:
-        for n in T.find_clades():
-            n.numdate_confidence = list(tt.get_max_posterior_region(n, 0.9))
+        for n in tt.tree.find_clades():
+            n.num_date_confidence = list(tt.get_max_posterior_region(n, 0.9))
 
     print("\nInferred a time resolved phylogeny using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
@@ -220,7 +220,7 @@ def run(args):
                               'rtt_Tmrca':-tt.date2dist.intercept/tt.date2dist.clock_rate}
         attributes.extend(['numdate', 'clock_length', 'mutation_length', 'mutations', 'sequence'])
         if args.date_confidence:
-            attributes.append('numdate_confidence')
+            attributes.append('num_date_confidence')
     elif args.ancestral in ['joint', 'marginal']:
         tt = ancestral_sequence_inference(tree=T, aln=aln, marginal=args.ancestral,
                                           optimize_branch_length=args.branchlengths=='div')

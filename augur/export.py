@@ -62,6 +62,8 @@ def attach_tree_meta_data(T, node_meta):
         n.attr={}
         n.aa_muts={}
         for field, val in node_meta[n.name].items():
+            if field=='sequence':
+                continue
             if field=='mutations':
                 muts = process_mutations(val)
                 if muts[0]: #must test if string empty, not array! causes NaN error in Auspice

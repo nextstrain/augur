@@ -42,7 +42,9 @@ rule tree:
 		tree = "results/tree.nwk",
 		node_data = "results/node_data.json"
 	shell:
-		'augur tree --alignment {input.aln} --metadata {input.metadata} --output {output.tree} --node_data {output.node_data} --timetree '
+		'augur tree --alignment {input.aln} --metadata {input.metadata}'
+			' --output {output.tree} --node_data {output.node_data}'
+			' --timetree --date_confidence'
 
 rule traits:
 	input:
@@ -53,7 +55,7 @@ rule traits:
 	params:
 		cols = "region country"
 	shell:
-		'augur traits --tree {input.tree} --metadata {input.metadata} --output {output} --columns {params.cols}'
+		'augur traits --confidence --tree {input.tree} --metadata {input.metadata} --output {output} --columns {params.cols}'
 
 rule translate:
 	input:
