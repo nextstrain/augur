@@ -1,67 +1,78 @@
 rule parse:
 	input:
-		"../fauna/data/zika.fasta"
+		"../../../fauna/data/zika.fasta"
 	output:
-		seq = "builds/zika/results/raw_seqs.fasta",
-		meta = "builds/zika/results/meta.tsv"
+		seq = "results/raw_seqs.fasta",
+		meta = "results/meta.tsv"
 	params:
 		fields = "strain virus accession date region country division city db segment author reference"
 	shell:
-		'./bin/augur parse --sequences {input} --output {output.seq} --metadata {output.meta} --fields {params.fields}'
+		'augur parse --sequences {input} --output {output.seq} --metadata {output.meta} --fields {params.fields}'
 
 
 rule filter:
 	input:
-		seq = "builds/zika/results/raw_seqs.fasta",
-		meta = "builds/zika/results/meta.tsv",
-		exclude = "builds/zika/metadata/dropped_strains.txt"
+		seq = "results/raw_seqs.fasta",
+		meta = "results/meta.tsv",
+		exclude = "metadata/dropped_strains.txt"
 	output:
-		"builds/zika/results/filtered.fasta"
+		"results/filtered.fasta"
 	params:
-		vpc = 10,
+		vpc = 30,
 		cat = "year month"
 	shell:
-		"./bin/augur filter --sequences {input.seq} --output {output} --metadata {input.meta} --viruses_per_cat {params.vpc} --exclude {input.exclude} --cat {params.cat}"
+		"augur filter --sequences {input.seq} --output {output} --metadata {input.meta} --viruses_per_cat {params.vpc} --exclude {input.exclude} --cat {params.cat}"
 
 
 rule align:
 	input:
-		seq = "builds/zika/results/filtered.fasta",
-		ref = "builds/zika/metadata/zika_outgroup.gb"
+		seq = "results/filtered.fasta",
+		ref = "metadata/zika_outgroup.gb"
 	output:
-		"builds/zika/results/aligned.fasta"
+		"results/aligned.fasta"
 	shell:
-		'./bin/augur align --sequences {input.seq} --output {output} --reference_sequence {input.ref}'
+		'augur align --sequences {input.seq} --output {output} --reference_sequence {input.ref}'
 
 
 rule tree:
 	input:
-		aln = "builds/zika/results/aligned.fasta",
-		metadata = "builds/zika/results/meta.tsv"
+		aln = "results/aligned.fasta",
+		metadata = "results/meta.tsv"
 	output:
-		tree = "builds/zika/results/tree.nwk",
-		node_data = "builds/zika/results/node_data.json"
+		tree = "results/tree.nwk",
+		node_data = "results/node_data.json"
 	shell:
-		'./bin/augur tree --alignment {input.aln} --metadata {input.metadata} --output {output.tree} --node_data {output.node_data} --timetree '
+		'augur tree --alignment {input.aln} --metadata {input.metadata} --output {output.tree} --node_data {output.node_data} --timetree '
 
 rule traits:
 	input:
-		tree = "builds/zika/results/tree.nwk",
-		metadata = "builds/zika/results/meta.tsv"
+		tree = "results/tree.nwk",
+		metadata = "results/meta.tsv"
 	output:
-		"builds/zika/results/traits.json",
+		"results/traits.json",
 	params:
 		cols = "region country"
 	shell:
-		'./bin/augur traits --tree {input.tree} --metadata {input.metadata} --output {output} --columns {params.cols}'
+		'augur traits --tree {input.tree} --metadata {input.metadata} --output {output} --columns {params.cols}'
+
+rule translate:
+	input:
+		tree = "results/tree.nwk",
+		ref = "metadata/zika_outgroup.gb",
+		node_data = "results/node_data.json"
+	output:
+		"results/aa_muts.json"
+	shell:
+		'augur translate --tree {input.tree} --node_data {input.node_data} --output {output} --reference_sequence {input.ref}'
 
 rule export:
 	input:
-		tree = "builds/zika/results/tree.nwk",
-		nodedata = "builds/zika/results/node_data.json",
-		traits = "builds/zika/results/traits.json",
+		tree = "results/tree.nwk",
+		node_data = "results/node_data.json",
+		traits = "results/traits.json",
+		aa_muts = "results/aa_muts.json",
 	output:
-		"builds/zika/auspice/zika_tree.json",
+		"auspice/zika_tree.json",
 	shell:
-		'./bin/augur export --tree {input.tree} --nodedata {input.nodedata} --traits {input.traits} --output {output}'
+		'augur export --tree {input.tree} --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts} --output {output}'
 

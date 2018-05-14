@@ -1,7 +1,32 @@
 import os
 import pandas as pd
 from treetime.utils import numeric_date
-from base.utils import ambiguous_date_to_date_range
+
+def ambiguous_date_to_date_range(mydate, fmt):
+    from datetime import datetime
+    sep = fmt.split('%')[1][-1]
+    min_date, max_date = {}, {}
+    today = datetime.today().date()
+
+    for val, field  in zip(mydate.split(sep), fmt.split(sep+'%')):
+        f = 'year' if 'y' in field.lower() else ('day' if 'd' in field.lower() else 'month')
+        if 'XX' in val:
+            if f=='year':
+                return None, None
+            elif f=='month':
+                min_date[f]=1
+                max_date[f]=12
+            elif f=='day':
+                min_date[f]=1
+                max_date[f]=31
+        else:
+            min_date[f]=int(val)
+            max_date[f]=int(val)
+    max_date['day'] = min(max_date['day'], 31 if max_date['month'] in [1,3,5,7,8,10,12]
+                                           else 28 if max_date['month']==2 else 30)
+    lower_bound = datetime(year=min_date['year'], month=min_date['month'], day=min_date['day']).date()
+    upper_bound = datetime(year=max_date['year'], month=max_date['month'], day=max_date['day']).date()
+    return (lower_bound, upper_bound if upper_bound<today else today)
 
 def read_metadata(fname):
     if os.path.isfile(fname):
@@ -28,29 +53,39 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None):
         numerical_dates = {}
         for k,m in meta_dict.items():
             v = m[date_col]
-            if 'XX' in v:
+            if type(v)!=str:
+                print("WARNING: %s has an invalid data string:"%k,v)
+                continue
+            elif 'XX' in v:
                 numerical_dates[k] = [numeric_date(d) for d in ambiguous_date_to_date_range(v, fmt)]
             else:
-                numerical_dates[k] = numeric_date(datetime.strptime(v, fmt))
+                try:
+                    numerical_dates[k] = numeric_date(datetime.strptime(v, fmt))
+                except:
+                    numerical_dates[k] = None
     else:
         numerical_dates = {k:float(v) for k,v in dates.items()}
 
     return numerical_dates
 
-def read_nodedata(fname, traits=None):
+def read_node_data(fname, traits=None, aa_muts=None):
     import json
     if os.path.isfile(fname):
         with open(fname) as jfile:
-            nodedata = json.load(jfile)
+            node_data = json.load(jfile)
+
+        for more_data in [traits, aa_muts]:
+            if more_data and os.path.isfile(more_data):
+                with open(more_data) as jfile:
+                    tmp_data = json.load(jfile)
+                for k,v in tmp_data.items():
+                    if k in node_data["nodes"]:
+                        node_data["nodes"][k].update(v)
     else:
         print("ERROR: node data can't be read, file %s not found"%fname)
-    if traits and os.path.isfile(traits):
-        with open(traits) as jfile:
-            trait_data = json.load(jfile)
-        for k,v in trait_data.items():
-            if k in nodedata["nodes"]:
-                nodedata["nodes"][k].update(v)
-    return nodedata
+        node_data=None
+
+    return node_data
 
 
 def write_json(data, file_name, indent=1):
@@ -71,3 +106,47 @@ def write_json(data, file_name, indent=1):
     else:
         json.dump(data, handle, indent=indent)
         handle.close()
+
+
+def load_features(reference, feature_names=None):
+    #read in appropriately whether GFF or Genbank
+    #checks explicitly for GFF otherwise assumes Genbank
+    if not os.path.isfile(reference):
+        print("ERROR: reference sequence not found. looking for", reference)
+        return None
+
+    features = {}
+    if '.gff' in reference.lower():
+        #looks for 'gene' and 'gene' as best for TB
+        from BCBio import GFF
+        limit_info = dict( gff_type = ['gene'] )
+
+        with open(reference) as in_handle:
+            for rec in GFF.parse(in_handle, limit_info=limit_info):
+                for feat in rec.features:
+                    if "gene" in feat.qualifiers:
+                        fname = feat.qualifiers["gene"][0]
+                    else:
+                        fname = feat.qualifiers["locus_tag"][0]
+                    if feature_names is None or fname in feature_names:
+                        features[fname] = feat
+
+            if feature_names is not None:
+                for fe in feature_names:
+                    if fe not in features:
+                        print("Couldn't find gene {} in GFF or GenBank file".format(fe))
+
+    else:
+        from Bio import SeqIO
+        for feat in SeqIO.read(reference, 'genbank').features:
+            if feat.type=='CDS':
+                if "locus_tag" in feat.qualifiers:
+                    fname = feat.qualifiers["locus_tag"][0]
+                    if feature_names is None or fname in feature_names:
+                        features[fname] = feat
+                elif "gene" in feat.qualifiers:
+                    fname = feat.qualifiers["gene"][0]
+                    if feature_names is None or fname in feature_names:
+                        features[fname] = feat
+
+    return features

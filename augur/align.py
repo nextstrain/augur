@@ -38,7 +38,7 @@ def run(args):
                   "\n\tmake sure the file %s does not exist"%ref_fname)
 
     if args.aligner=='mafft':
-        cmd = "mafft --anysymbol --thread %d %s 1> %s 2>mafft_stderr"%(args.nthreads, seq_fname, output)
+        cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2>mafft_stderr"%(args.nthreads, seq_fname, output)
         os.system(cmd)
         print("\nusing mafft to align via:\n\t" + cmd +
               " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"

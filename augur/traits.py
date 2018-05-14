@@ -47,7 +47,6 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
         model.profile_map[missing_char] = np.ones(nc)
         model.ambiguous = missing_char
         alphabet_rev = {v:k for k,v in alphabet.items()}
-        print(alphabet_rev)
 
         # construct pseudo alignment
         pseudo_seqs = []
