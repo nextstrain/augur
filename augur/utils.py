@@ -74,13 +74,20 @@ def read_node_data(fname, traits=None, aa_muts=None):
         with open(fname) as jfile:
             node_data = json.load(jfile)
 
-        for more_data in [traits, aa_muts]:
+        for more_data in [traits]:
             if more_data and os.path.isfile(more_data):
                 with open(more_data) as jfile:
                     tmp_data = json.load(jfile)
                 for k,v in tmp_data.items():
                     if k in node_data["nodes"]:
                         node_data["nodes"][k].update(v)
+        if aa_muts and os.path.isfile(aa_muts):
+            with open(aa_muts) as jfile:
+                tmp_data = json.load(jfile)
+            node_data['annotation'] = tmp_data['annotation']
+            for k,v in tmp_data['mutations'].items():
+                if k in node_data["nodes"]:
+                    node_data["nodes"][k].update(v)
     else:
         print("ERROR: node data can't be read, file %s not found"%fname)
         node_data=None

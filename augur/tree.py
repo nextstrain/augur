@@ -187,11 +187,12 @@ def run(args):
 
     start = time.time()
 
-    # without tree, attempt to build tree
     if args.output:
         tree_fname = args.output
     else:
         tree_fname = '.'.join(args.alignment.split('.')[:-1]) + '.nwk'
+
+    # without tree, attempt to build tree
     if T is None:
         if args.iqmodel and not args.method=='iqtree':
             print("Cannot specify model unless using IQTree. Model specification ignored.")

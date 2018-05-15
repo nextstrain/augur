@@ -10,7 +10,7 @@ def run(args):
     '''
     filter and subsample a set of sequences into an analysis set
     '''
-    seqs = list(SeqIO.parse(args.sequences, 'fasta'))
+    seqs = {seq.id:seq for seq in SeqIO.parse(args.sequences, 'fasta')}
     meta_dict, meta_columns = read_metadata(args.metadata)
 
     if args.exclude and os.path.isfile(args.exclude):
@@ -27,15 +27,15 @@ def run(args):
 
     if args.cat and args.viruses_per_cat:
         vpc = args.viruses_per_cat
-        seqs_by_cat = defaultdict(list)
+        seq_names_by_cat = defaultdict(list)
 
-        for seq in seqs:
+        for seq_name in seqs:
             cat = []
             if seq.id not in meta_dict:
-                print("WARNING: no metadata for %s, skipping"%seq.id)
+                print("WARNING: no metadata for %s, skipping"%seq_name)
                 continue
             else:
-                m = meta_dict[seq.id]
+                m = meta_dict[seq_name]
             for c in args.cat:
                 if c in m:
                     cat.append(m.loc[c])
@@ -43,7 +43,7 @@ def run(args):
                     try:
                         year = int(m["date"].split('-')[0])
                     except:
-                        print("WARNING: no valid year, skipping",seq.id, m["date"])
+                        print("WARNING: no valid year, skipping",seq_name, m["date"])
                         continue
                     if c=='month':
                         try:
@@ -53,12 +53,16 @@ def run(args):
                         cat.append((year, month))
                     else:
                         cat.append(year)
-            seqs_by_cat[tuple(cat)].append(seq)
+            seq_names_by_cat[tuple(cat)].append(seq_name)
 
-        seqs = []
-        for cat, s in seqs_by_cat.items():
-            seqs.extend(s if len(s)<=vpc else random.sample(s,vpc))
+        seq_subsample = []
+        for cat, s in seq_names_by_cat.items():
+            tmp_seqs = [seqs[seq_name] for seq_name in s]
+            seq_subsample.extend(tmp_seqs if len(s)<=vpc
+                                 else random.sample(tmp_seqs,vpc))
+    else:
+        seq_subsample = list(seqs.values())
 
-    SeqIO.write(seqs, args.output, 'fasta')
+    SeqIO.write(seq_subsample, args.output, 'fasta')
 
 
