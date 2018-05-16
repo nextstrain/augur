@@ -669,6 +669,7 @@ class KdeFrequencies(object):
         observation's region as defined in the given regions tuple.
 
         """
+        # Collect all tips from the given tree and sort by their observation date.
         tips = np.array(sorted([(tip.clade, tip.attr["num_date"], tip.attr["region"])
                                 for tip in tree.get_terminals()], key=lambda row: row[1]))
 
@@ -676,11 +677,14 @@ class KdeFrequencies(object):
         tip_dates = tips[:, 1].astype(float)
         tip_regions = tips[:, 2]
 
+        # Calculate the total global population size.
         population_by_region = {region_data[0]: region_data[2] for region_data in regions}
         total_population = 0
         for region, population in population_by_region.items():
             total_population += population
 
+        # Create a vector of population proportions (relative to the total
+        # global population) by tip based on each tip's region.
         tip_populations = []
         for region in tip_regions:
             tip_populations.append(population_by_region[region] / total_population)
@@ -702,8 +706,11 @@ class KdeFrequencies(object):
         for region in tip_index_by_region:
             tip_index_by_region[region] = np.array(tip_index_by_region[region])
 
+        # Calculate tip frequencies weighted by tip population sizes and then normalized.
         normalized_freq_matrix = cls.estimate_frequencies(tip_dates, pivots, tip_populations, **kwargs)
 
+        # Calculate clade frequencies as the sum of respective tip frequencies
+        # both globally and across all regions.
         clade_frequencies = defaultdict(dict)
         for node in tree.find_clades(order="postorder"):
             if node.is_terminal():
@@ -715,6 +722,7 @@ class KdeFrequencies(object):
                     if node.attr["region"] == region:
                         clade_frequencies[region][node.clade] = normalized_freq_matrix[clade_to_index[node.clade]]
                     else:
+                        # The current tip is not in the current region.
                         clade_frequencies[region][node.clade] = np.zeros_like(pivots)
             else:
                 clade_frequencies["global"][node.clade] = np.array([clade_frequencies["global"][child.clade]
