@@ -76,6 +76,7 @@ rule export:
 		aa_muts = "results/aa_muts.json",
 		color_defs = "metadata/colors.tsv",
 		config = "metadata/config.json",
+		geo_info = "../../../fauna/source-data/geo_lat_long.tsv"
 	output:
 		tree = "auspice/zika_tree.json",
 		meta = "auspice/zika_meta.json",
@@ -83,5 +84,5 @@ rule export:
 		'augur export --tree {input.tree} --metadata {input.metadata}'
 			' --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts}'
 			' --config {input.config} --color_defs {input.color_defs} --output {output.tree}'
-			' --meta_output {output.meta}'
+			' --geo_info {input.geo_info} --meta_output {output.meta}'
 
