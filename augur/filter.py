@@ -80,7 +80,7 @@ def run(args):
         vpc = args.viruses_per_cat
         seq_names_by_cat = defaultdict(list)
 
-        for seq_name in seq_names:
+        for seq_name in seq_keep:
             cat = []
             if seq_name not in meta_dict:
                 print("WARNING: no metadata for %s, skipping"%seq_name)

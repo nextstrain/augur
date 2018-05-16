@@ -159,7 +159,7 @@ def read_color_maps(fname):
                 fields = line.strip().split()
                 if len(fields)!=3: continue
                 cm[fields[0]].append((fields[1], fields[2]))
-    except IOError:
+    except Exception:
         print("WARNING: Couldn't open color definitions file {}.".format(fname))
 
     return cm
@@ -182,7 +182,8 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_inf
         if trait in color_maps:
             col_opts[trait]["color_map"] = color_maps[trait]
 
-    meta_json["annotations"] = tree_meta['annotation']
+    if "annotations" in tree_meta:
+        meta_json["annotations"] = tree_meta['annotation']
 
     meta_json.update(config)
     if len(config["controls"]):
@@ -203,7 +204,7 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_inf
                     else:
                         geo[geo_field][loc] = {"latitude":0, "longitude":0}
 
-    meta_json["geo"]=geo
+        meta_json["geo"]=geo
     write_json(meta_json, fname)
 
 

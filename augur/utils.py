@@ -159,17 +159,17 @@ def load_features(reference, feature_names=None):
     return features
 
 def read_config(fname):
-    if os.path.isfile(fname):
+    if fname and os.path.isfile(fname):
         with open(fname) as ifile:
             config = json.load(ifile)
     else:
         print("ERROR: config file %s not found."%fname)
-        config = defaultdict('')
+        config = defaultdict(dict)
 
     return config
 
 def read_geo(fname):
-    if os.path.isfile(fname):
+    if fname and os.path.isfile(fname):
         coordinates = {}
         with open(fname) as ifile:
             header = ifile.readline().strip().split('\t')
@@ -184,6 +184,6 @@ def read_geo(fname):
                 coordinates[fields[0]] = tmp
     else:
         print("ERROR: geo def file %s not found."%fname)
-        coordinates = defaultdict({})
+        coordinates = defaultdict(dict)
 
     return coordinates
