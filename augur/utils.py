@@ -167,3 +167,23 @@ def read_config(fname):
         config = defaultdict('')
 
     return config
+
+def read_geo(fname):
+    if os.path.isfile(fname):
+        coordinates = {}
+        with open(fname) as ifile:
+            header = ifile.readline().strip().split('\t')
+            for line in ifile:
+                fields = line.strip().split('\t')
+                tmp = {}
+                for f, val in zip(header[1:], fields[1:]):
+                    try:
+                        tmp[f] = float(val)
+                    except:
+                        tmp[f] = val
+                coordinates[fields[0]] = tmp
+    else:
+        print("ERROR: geo def file %s not found."%fname)
+        coordinates = defaultdict({})
+
+    return coordinates
