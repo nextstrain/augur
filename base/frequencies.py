@@ -616,12 +616,6 @@ class KdeFrequencies(object):
             else:
                 counts, bin_edges = cls.get_counts_from_observation(obs, pivots, **kwargs)
 
-                # Zero out counts from pivots after the given maximum date to
-                # prevent numerical errors associated with normalizing very
-                # small values to 1.
-                if max_date is not None:
-                    counts[pivots > max_date] = 0.0
-
             freq_matrix[i] = counts
 
         return freq_matrix
@@ -633,8 +627,8 @@ class KdeFrequencies(object):
         """
         normalized_freq_matrix = freq_matrix.copy()
 
-        # Find columns that can be divided by their sum.
-        nonzero_columns = np.nonzero(freq_matrix.sum(axis=0))[0]
+        # Find columns that can be meaningfully normalized.
+        nonzero_columns = np.where(freq_matrix.sum(axis=0) > 1)[0]
 
         # Normalize by column.
         normalized_freq_matrix[:, nonzero_columns] = freq_matrix[:, nonzero_columns] / freq_matrix[:, nonzero_columns].sum(axis=0)
