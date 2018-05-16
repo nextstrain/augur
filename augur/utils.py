@@ -64,7 +64,7 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None):
                 except:
                     numerical_dates[k] = None
     else:
-        numerical_dates = {k:float(v) for k,v in dates.items()}
+        numerical_dates = {k:float(v) for k,v in meta_dict.items()}
 
     return numerical_dates
 
