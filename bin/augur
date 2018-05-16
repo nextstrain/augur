@@ -93,13 +93,16 @@ if __name__=="__main__":
     ## EXPORT.PY
     export_parser =  subparsers.add_parser("export", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     export_parser.add_argument('--tree', required=True, help="tree to perform trait reconstruction on")
+    export_parser.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
     export_parser.add_argument('--node_data', required=True, help="json file with meta data for each node")
     export_parser.add_argument('--traits',help="json file with trait inferences")
     export_parser.add_argument('--aa_muts',help="json file with amino acid mutations")
-    export_parser.add_argument('--reference_sequence',
-                        help="reference sequence needed for entropy feature export")
+    export_parser.add_argument('--config', help="file with auspice configuration")
+    export_parser.add_argument('--color_defs', help="file with color definitions")
     export_parser.add_argument('--output', required=True,
-                        help="json file name that is passed on to auspice (e.g., zika.fasta)")
+                        help="json file name that is passed on to auspice (e.g., zika_tree.json)")
+    export_parser.add_argument('--meta_output', required=True,
+                        help="json file name that is passed on to auspice (e.g., zika_meta.json)")
     export_parser.set_defaults(func=export.run)
 
 
