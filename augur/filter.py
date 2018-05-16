@@ -14,7 +14,6 @@ def read_vcf(compressed, input_file):
     with opn(input_file, mode='rt') as f: #'rt' necessary for gzip
         for line in f:
             if line[0:2] == "#C":
-                print(line)
                 header = line.strip().split('\t')
                 seq_keep = header[header.index("FORMAT")+1:]
                 all_seq = seq_keep.copy() #because we need 'seqs to remove' for VCF
