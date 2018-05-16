@@ -57,7 +57,7 @@ def run(args):
     #if Fasta, read in file to get sequence names and sequences
     else:
         seqs = {seq.id:seq for seq in SeqIO.parse(args.sequences, 'fasta')}
-        seq_keep = seqs.keys()
+        seq_keep = list(seqs.keys())
 
     meta_dict, meta_columns = read_metadata(args.metadata)
 
@@ -80,7 +80,7 @@ def run(args):
         vpc = args.viruses_per_cat
         seq_names_by_cat = defaultdict(list)
 
-        for seq_name in seq_keep:
+        for seq_name in seq_names:
             cat = []
             if seq_name not in meta_dict:
                 print("WARNING: no metadata for %s, skipping"%seq_name)

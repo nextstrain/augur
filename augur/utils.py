@@ -1,6 +1,7 @@
-import os
+import os, json
 import pandas as pd
 from treetime.utils import numeric_date
+from collections import defaultdict
 
 def ambiguous_date_to_date_range(mydate, fmt):
     from datetime import datetime
@@ -69,7 +70,6 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None):
     return numerical_dates
 
 def read_node_data(fname, traits=None, aa_muts=None):
-    import json
     if os.path.isfile(fname):
         with open(fname) as jfile:
             node_data = json.load(jfile)
@@ -157,3 +157,33 @@ def load_features(reference, feature_names=None):
                         features[fname] = feat
 
     return features
+
+def read_config(fname):
+    if os.path.isfile(fname):
+        with open(fname) as ifile:
+            config = json.load(ifile)
+    else:
+        print("ERROR: config file %s not found."%fname)
+        config = defaultdict('')
+
+    return config
+
+def read_geo(fname):
+    if os.path.isfile(fname):
+        coordinates = {}
+        with open(fname) as ifile:
+            header = ifile.readline().strip().split('\t')
+            for line in ifile:
+                fields = line.strip().split('\t')
+                tmp = {}
+                for f, val in zip(header[1:], fields[1:]):
+                    try:
+                        tmp[f] = float(val)
+                    except:
+                        tmp[f] = val
+                coordinates[fields[0]] = tmp
+    else:
+        print("ERROR: geo def file %s not found."%fname)
+        coordinates = defaultdict({})
+
+    return coordinates

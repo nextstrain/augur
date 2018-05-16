@@ -1,6 +1,7 @@
 import numpy as np
 from Bio import Phylo
-from .utils import read_metadata, read_node_data, write_json
+from collections import defaultdict
+from .utils import read_metadata, read_node_data, write_json, read_config, read_geo
 
 def tree_to_json(node, extra_attr = []):
     '''
@@ -47,7 +48,7 @@ def tree_to_json(node, extra_attr = []):
 
     return tree_json
 
-# but the data saved in node_data json back onto the tree
+# put the data saved in node_data json back onto the tree
 # we really should just grab these data during export.
 def attach_tree_meta_data(T, node_meta):
     def process_mutations(muts):
@@ -59,6 +60,10 @@ def attach_tree_meta_data(T, node_meta):
         return realMut
 
     for n in T.find_clades(order='preorder'):
+        if n.name not in node_meta:
+            print("ERROR: keys in tree and node meta data don't match. Node %s is missing"%n.name)
+            continue
+
         n.attr={}
         n.aa_muts={}
         for field, val in node_meta[n.name].items():
@@ -106,14 +111,113 @@ def tree_layout(T):
         n.xvalue = n.attr['div']
 
 
+def summarise_publications(metadata):
+    info = defaultdict(lambda: {"n": 0, "title": "?"})
+    mapping = {}
+    for n, d in metadata.items():
+        if "authors" not in d:
+            mapping[n] = None
+            print("Error - {} had no authors".format(n))
+            continue
+
+        authors = d["authors"]
+        mapping[n] = authors
+        info[authors]["n"] += 1
+        for attr in ["title", "journal", "paper_url"]:
+            if attr in d:
+                info[authors][attr] = d[attr]
+
+    return (info, mapping)
+
+def make_control_json(T, controls):
+    controls_json = {}
+    for super_cat, fields in controls.items():
+        cat_count = {}
+        for n in T.get_terminals():
+            tmp = cat_count
+            for field in fields:
+                tmp["name"] = field
+                if field in n.attr:
+                    cat = n.attr[field]
+                else:
+                    cat='unknown'
+                if cat in tmp:
+                    tmp[cat]['count']+=1
+                else:
+                    tmp[cat] = {'count':1, 'subcats':{}}
+                tmp = tmp[cat]['subcats']
+        controls_json[super_cat] = cat_count
+    return controls_json
+
+def read_color_maps(fname):
+    cm = defaultdict(list)
+    try:
+        with open(fname) as fh:
+            for line in fh:
+                # line: trait   trait_value     hex_code
+                if line.startswith('#'): continue
+                fields = line.strip().split()
+                if len(fields)!=3: continue
+                cm[fields[0]].append((fields[1], fields[2]))
+    except IOError:
+        print("WARNING: Couldn't open color definitions file {}.".format(fname))
+
+    return cm
+
+
+def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_info, fname, indent=0):
+    meta_json = {}
+    terminals = [n.name for n in T.get_terminals()]
+    meta_json["virus_count"] = len(terminals)
+    meta_subset = {k:v for k,v in metadata.items() if k in terminals}
+    color_maps = read_color_maps(color_map_file)
+
+    (author_info, seq_to_author) = summarise_publications(meta_subset)
+    meta_json["author_info"] = author_info
+    meta_json["seq_author_map"] = seq_to_author
+
+    # join up config color options with those in the input JSONs.
+    col_opts = config["color_options"]
+    for trait in col_opts:
+        if trait in color_maps:
+            col_opts[trait]["color_map"] = color_maps[trait]
+
+    meta_json["annotations"] = tree_meta['annotation']
+
+    meta_json.update(config)
+    if len(config["controls"]):
+        meta_json["controls"] = make_control_json(T, config["controls"])
+
+    if "geographic location" in config["controls"]:
+        geo={}
+        for geo_field in config["controls"]["geographic location"]:
+            print(geo_field)
+            geo[geo_field]={}
+            for n, v in tree_meta["nodes"].items():
+                print(n)
+                if geo_field in v:
+                    loc = v[geo_field]
+                    print(n, loc)
+                    if loc in geo_info:
+                        geo[geo_field][loc] = geo_info[loc]
+                    else:
+                        geo[geo_field][loc] = {"latitude":0, "longitude":0}
+
+    meta_json["geo"]=geo
+    write_json(meta_json, fname)
+
+
 def run(args):
     # load data, process, and write out
     T = Phylo.read(args.tree, 'newick')
-    tree_meta = read_node_data(args.node_data, traits=args.traits, aa_muts=args.aa_muts)['nodes']
-    attach_tree_meta_data(T, tree_meta)
+    seq_meta, meta_columns = read_metadata(args.metadata)
+    tree_meta = read_node_data(args.node_data, traits=args.traits, aa_muts=args.aa_muts)
+    attach_tree_meta_data(T, tree_meta["nodes"])
     tree_layout(T)
-    fields_to_export = list(list(tree_meta.values())[0].keys())\
+    fields_to_export = list(list(tree_meta['nodes'].values())[0].keys())\
                        +["clade","tvalue","yvalue", "xvalue", "attr", "muts", "aa_muts"]
     tjson = tree_to_json(T.root, extra_attr=fields_to_export)
     write_json(tjson, args.output)
 
+    export_metadata_json(T, seq_meta, tree_meta, read_config(args.config),
+                         args.color_defs, read_geo(args.geo_info), args.meta_output)
