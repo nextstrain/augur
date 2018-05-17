@@ -4,19 +4,21 @@ def run_live(
     lineages = None, resolutions = None,
     system="local",
     frequencies="complete",
-    process_na=False,
+    process_segment="ha",
     no_prepare=False
     ):
     lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
     resolutions = ['2y', '3y', '6y', '12y'] if resolutions is None else resolutions
-    segments = ['ha', 'na']
+    segments = ['ha', 'na', 'mp', 'np', 'ns', 'pa', 'pb1', 'pb2']
+
+    assert process_segment in segments, "ERROR: %s is not a recognized segment."%(process_segment)
 
     for lineage in lineages:
         seq_files = " ".join(['../../../fauna/data/%s_%s.fasta'%(lineage, segment)
                               for segment in segments])
         for resolution in resolutions:
 
-            if not (process_na or no_prepare):
+            if segment=="ha" or (not no_prepare):
                 call = ['python',
                     'flu.prepare.py',
                     '--lineage', lineage,
@@ -37,11 +39,12 @@ def run_live(
             if lineage == "h3n2":
                 call = call + ['--annotate_fitness', '--predictors', 'cTiterSub', '--predictors_params', '1.13', '--predictors_sds', '0.72']
 
-            if process_na:
+            if segment != "ha":
                 call = [
                     'flu.process.py',
-                    '--json', 'prepared/flu_seasonal_%s_na_%s.json'%(lineage, resolution)
+                    '--json', 'prepared/flu_seasonal_%s_%s_%s.json'%(lineage, segment, resolution)
                 ]
+
             if (system == "qsub"):
                 call = ['qsub', 'submit_script.sh'] + call
             elif (system == "rhino"):
@@ -126,7 +129,7 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--lineages', nargs='+', type = str,  help ="flu lineages to include")
     parser.add_argument('-r', '--resolutions', nargs='+', type = str,  help ="flu resolutions to include")
     parser.add_argument('--frequencies', type = str, default = 'complete', help='frequencies to complete, complete or subsampled')
-    parser.add_argument('--process_na', action="store_true", default=False,  help = "supplemental run of na")
+    parser.add_argument('--segment', type=str, default='ha',  help = "choose a segment to process; default is ha")
     parser.add_argument('--no_prepare', action="store_true", default=False,  help = "rerun previously prepared jsons")
     params = parser.parse_args()
 
@@ -149,7 +152,7 @@ if __name__ == '__main__':
             resolutions = params.resolutions,
             system = params.system,
             frequencies = params.frequencies,
-            process_na = params.process_na,
+            process_segment = params.segment,
             no_prepare = params.no_prepare)
     elif params.version == "who":
         run_who(
@@ -158,5 +161,5 @@ if __name__ == '__main__':
             resolutions = params.resolutions,
             system = params.system,
             frequencies = params.frequencies,
-            process_na = params.process_na,
+            process_segment = params.segment,
             no_prepare = params.no_prepare)
