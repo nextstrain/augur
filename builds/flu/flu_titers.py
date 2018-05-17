@@ -14,8 +14,16 @@ def HI_model(process):
 
     ## TREE MODEL
     process.HI_tree = TreeModel(process.tree.tree, process.titers, **kwargs)
-    process.HI_tree.prepare(**kwargs)
-    process.HI_tree.train(**kwargs)
+
+    if process.config["titers"]["validate"]:
+        process.HI_tree.prepare(training_fraction=0.8, **kwargs)
+        process.HI_tree.train(**kwargs)
+        prefix = os.path.join(process.config["output"]["data"], process.info["prefix"])
+        process.HI_tree.validate(plot=True, fname=prefix+'_titer_tree_validation.png')
+    else:
+        process.HI_tree.prepare(**kwargs)
+        process.HI_tree.train(**kwargs)
+
     # add tree attributes to the list of attributes that are saved in intermediate files
     for n in process.tree.tree.find_clades():
         n.attr['cTiter'] = n.cTiter
@@ -27,8 +35,15 @@ def HI_model(process):
 
     # SUBSTITUTION MODEL
     process.HI_subs = SubstitutionModel(process.tree.tree, process.titers, **kwargs)
-    process.HI_subs.prepare(**kwargs)
-    process.HI_subs.train(**kwargs)
+
+    if process.config["titers"]["validate"]:
+        process.HI_subs.prepare(training_fraction=0.8, **kwargs)
+        process.HI_subs.train(**kwargs)
+        prefix = os.path.join(process.config["output"]["data"], process.info["prefix"])
+        process.HI_subs.validate(plot=True, fname=prefix+'_titer_sub_validation.png')
+    else:
+        process.HI_subs.prepare(**kwargs)
+        process.HI_subs.train(**kwargs)
 
     for node in process.tree.tree.find_clades():
         dTiterSub = 0

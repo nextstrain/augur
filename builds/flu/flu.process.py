@@ -26,6 +26,7 @@ def parse_args():
     parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
     parser.add_argument('--pivot_spacing', type=float, help="month per pivot")
     parser.add_argument('--titers_export', default=False, action='store_true', help="export titers.json file")
+    parser.add_argument('--validate_titers', default=False, action='store_true', help="validate separate test set")
     parser.add_argument('--annotate_fitness', default=False, action='store_true', help="run fitness prediction model and annotate fitnesses on tree nodes")
     parser.add_argument('--predictors', default=['cTiter'], nargs='+', help="attributes to use as fitness model predictors")
     parser.add_argument('--predictors_params', type=float, nargs='+', help="precalculated fitness model parameters for each of the given predictors")
@@ -66,6 +67,7 @@ def make_config(prepared_json, args):
             "titers_export": args.titers_export
         },
         "titers": {
+            "validate": args.validate_titers,
             "criterium": lambda x: sum([len(x.aa_mutations[k]) for k in x.aa_mutations])>0,
             "lam_avi":2.0,
             "lam_pot":0.3,

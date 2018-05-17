@@ -832,44 +832,48 @@ class SubstitutionModel(TiterModel):
             print('subsitution model: no titers to train')
 
 
-    def get_mutations(self, strain1, strain2):
+    def get_mutations(self, strain1, strain2, symmetric=False):
         ''' return amino acid mutations between viruses specified by strain names as tuples (HA1, F159S) '''
         if strain1 in self.node_lookup and strain2 in self.node_lookup:
-            return self.get_mutations_nodes(self.node_lookup[strain1], self.node_lookup[strain2])
+            return self.get_mutations_nodes(self.node_lookup[strain1], self.node_lookup[strain2], symmetric=symmetric)
         else:
             return None
 
 
-    def get_mutations_nodes(self, node1, node2):
+    def get_mutations_nodes(self, node1, node2, symmetric=False):
         '''
         loops over all translations (listed in self.proteins) and returns a list of
         between as tuples (protein, mutation) e.g. (HA1, 159F)
+        if symmetric, order AAs alphabetically so that F159Y and Y159F both map to F159Y
+        return pair that looks like ('HA1', 'F159Y')
         '''
         muts = []
         for prot in self.proteins:
             seq1 = node1.translations[prot]
             seq2 = node2.translations[prot]
-            muts.extend([(prot, aa1+str(pos+1)+aa2) for pos, (aa1, aa2)
-                        in enumerate(izip(seq1, seq2)) if aa1!=aa2])
+            for pos, (aa1, aa2) in enumerate(izip(seq1, seq2)):
+                if aa1!=aa2:
+                    if symmetric:
+                        if aa2 < aa1:
+                            aa2, aa1 = aa1, aa2
+                    mut_string = aa1+str(pos+1)+aa2
+                    muts.append((prot, mut_string))
         return muts
 
 
-    def determine_relevant_mutations(self, min_count=10):
+    def determine_relevant_mutations(self, min_count=10, symmetric=False):
         # count how often each mutation separates a reference test virus pair
         self.mutation_counter = defaultdict(int)
         for (test, ref), val in self.train_titers.iteritems():
-            muts = self.get_mutations(ref[0], test)
+            muts = self.get_mutations(ref[0], test, symmetric=symmetric)
             if muts is None:
                 continue
             for mut in muts:
-                self.mutation_counter[mut]+=1
+                self.mutation_counter[mut] += 1
 
-        # make a list of mutations deemed relevant via frequency thresholds
+        # make a list of mutations deemed relevant via count threshold
         relevant_muts = []
         for mut, count in self.mutation_counter.iteritems():
-            gene = mut[0]
-            pos = int(mut[1][1:-1])-1
-            aa1, aa2 = mut[1][0],mut[1][-1]
             if count>min_count:
                 relevant_muts.append(mut)
 
