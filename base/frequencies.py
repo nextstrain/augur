@@ -683,13 +683,9 @@ class KdeFrequencies(object):
         clade_to_index = {clades[i]: i for i in range(len(clades))}
 
         # Map tips to regions for quick lookup in the frequency matrix.
-        tip_index_by_region = {}
+        tip_index_by_region = defaultdict(list)
         for node in tree.get_terminals():
-            region = node.attr["region"]
-            if not region in tip_index_by_region:
-                tip_index_by_region[region] = []
-
-            tip_index_by_region[region].append(clade_to_index[node.clade])
+            tip_index_by_region[node.attr["region"]].append(clade_to_index[node.clade])
 
         for region in tip_index_by_region:
             tip_index_by_region[region] = np.array(tip_index_by_region[region])
