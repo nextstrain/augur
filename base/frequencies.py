@@ -580,23 +580,17 @@ class KdeFrequencies(object):
         pass
 
     @classmethod
-    def get_counts_from_observation(cls, mu, pivots, sigma=3 / 12.0, points=1000):
+    def get_counts_from_observation(cls, mu, pivots, sigma=3 / 12.0):
         """Build a normal distribution centered across the given floating point date,
-        mu, with a standard deviation based on the given sigma value and map the
-        corresponding distribution into discrete bins defined by the given
-        pivots.
-
-        Returns counts and bin edges from a numpy histogram call where counts
-        represent a discretized normal distribution thay will compose a kernel
-        density estimate.
+        mu, with a standard deviation based on the given sigma value and return
+        the probability mass between pivots for each pivot. These mass values
+        per pivot will form the input for a kernel density estimate across
+        multiple observations.
         """
-        x = np.linspace(mu - 3 * sigma, mu + 3 * sigma, points)
-        y = norm.pdf(x, loc=mu, scale=sigma)
-
         dt = pivots[1] - pivots[0]
         bins = [pivots[0] - 0.5 * dt] + list(pivots + 0.5 * dt)
-        counts, bin_edges = np.histogram(x, bins=bins, weights=y, density=True)
-        return counts, bin_edges
+        counts = np.diff(norm.cdf(bins, loc=mu, scale=sigma))
+        return counts
 
     @classmethod
     def get_frequencies_from_observations(cls, observations, pivots, max_date=None, **kwargs):
@@ -614,7 +608,7 @@ class KdeFrequencies(object):
             if (obs < pivots[0] or obs > pivots[-1]) or (max_date is not None and obs > max_date):
                 counts = np.zeros_like(pivots)
             else:
-                counts, bin_edges = cls.get_counts_from_observation(obs, pivots, **kwargs)
+                counts = cls.get_counts_from_observation(obs, pivots, **kwargs)
 
             freq_matrix[i] = counts
 
