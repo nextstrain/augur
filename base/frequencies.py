@@ -595,7 +595,7 @@ class KdeFrequencies(object):
     @classmethod
     def get_frequencies_from_observations(cls, observations, pivots, max_date=None, **kwargs):
         """Create a matrix of frequencies for one or more observations across the given
-        pivots.
+        pivots with one row per observation and one column per pivot.
 
         Observations can be optionally filtered by a maximum date such that all
         frequencies are estimated to be zero after that date.
