@@ -701,8 +701,9 @@ if __name__=="__main__":
                     if "clade_membership" in ha_tree_flat[n.name]["attr"]:
                         n.attr["clade_membership"] = ha_tree_flat[n.name]["attr"]["clade_membership"]
 
-    # Predict fitness for HA after all other scores and annotations have completed.
-    if runner.info["segment"] == 'ha' and runner.config["annotate_fitness"]:
+    # Predict fitness for HA after all other scores and annotations have completed
+    # Only predict 2y resolution due to coefficient match
+    if runner.info["segment"] == 'ha' and runner.info["resolution"] == "2y" and runner.config["annotate_fitness"]:
         fitness_model = runner.annotate_fitness()
         if fitness_model is not None:
             print("Fitness model parameters: %s" % str(zip(fitness_model.predictors, fitness_model.model_params)))
@@ -717,11 +718,11 @@ if __name__=="__main__":
                 "key": "fitness"
             }
 
-            runner.config["auspice"]["color_options"]["predicted_freq"] = {
-                "menuItem": "predicted_freq",
-                "type": "continuous",
-                "legendTitle": "Predicted frequency",
-                "key": "predicted_freq"
-            }
+            # runner.config["auspice"]["color_options"]["predicted_freq"] = {
+            #     "menuItem": "predicted frequency",
+            #     "type": "continuous",
+            #     "legendTitle": "Predicted frequency",
+            #     "key": "predicted_freq"
+            # }
 
     runner.auspice_export()
