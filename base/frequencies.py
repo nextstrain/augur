@@ -677,6 +677,10 @@ class KdeFrequencies(object):
         for region in tip_regions:
             tip_populations.append(population_by_region[region] / total_population)
 
+        # Reshape vector of population proportions to an N x 1 matrix for N
+        # total observations. This allows each row of the frequency matrix
+        # (i.e., an individual observation's frequencies) to be scaled by the
+        # same value across all time points.
         tip_populations = np.array(tip_populations).reshape((len(tip_populations), -1))
 
         # Map clade ids to their corresponding frequency matrix row index.
