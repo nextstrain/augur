@@ -622,7 +622,7 @@ class KdeFrequencies(object):
         normalized_freq_matrix = freq_matrix.copy()
 
         # Find columns that can be meaningfully normalized.
-        nonzero_columns = np.where(freq_matrix.sum(axis=0) > 1)[0]
+        nonzero_columns = np.where(freq_matrix.sum(axis=0) > 0)[0]
 
         # Normalize by column.
         normalized_freq_matrix[:, nonzero_columns] = freq_matrix[:, nonzero_columns] / freq_matrix[:, nonzero_columns].sum(axis=0)
