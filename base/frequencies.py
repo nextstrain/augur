@@ -616,8 +616,8 @@ class KdeFrequencies(object):
 
     @classmethod
     def normalize_frequencies(cls, freq_matrix):
-        """Normalize the values of a given frequency matrix to 1 across all columns with
-        non-zero sums.
+        """Normalize the values of a given frequency matrix to 1 across all columns
+        (time points) with non-zero sums.
         """
         normalized_freq_matrix = freq_matrix.copy()
 
