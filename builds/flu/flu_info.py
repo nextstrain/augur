@@ -134,6 +134,108 @@ reference_maps = {
             },
             "include": 0,
             "genes": ["NA"]
+        },
+        "mp": {
+            "path": "metadata/h3n2_mp_outgroup.gb",
+            "metadata": {
+                'strain': "A/Beijing/32/1992",
+                'isolate_id': "CY113677",
+                'date': "1992-XX-XX",
+                'region': "china",
+                'country': "China",
+                "city": "Beijing",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["M1", "M2"]
+        },
+        "np": {
+            "path": "metadata/h3n2_np_outgroup.gb",
+            "metadata": {
+                'strain': "A/Beijing/32/1992",
+                'isolate_id': "CY113677",
+                'date': "1992-XX-XX",
+                'region': "china",
+                'country': "China",
+                "city": "Beijing",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["NP"]
+        },
+        "ns": {
+            "path": "metadata/h3n2_ns_outgroup.gb",
+            "metadata": {
+                'strain': "A/Beijing/32/1992",
+                'isolate_id': "CY113677",
+                'date': "1992-XX-XX",
+                'region': "china",
+                'country': "China",
+                "city": "Beijing",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["NEP", "NS1"]
+        },
+        "pa": {
+            "path": "metadata/h3n2_pa_outgroup.gb",
+            "metadata": {
+                'strain': "A/Beijing/32/1992",
+                'isolate_id': "CY113677",
+                'date': "1992-XX-XX",
+                'region': "china",
+                'country': "China",
+                "city": "Beijing",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["PA"]
+            },
+        "pb1": {
+            "path": "metadata/h3n2_pb1_outgroup.gb",
+            "metadata": {
+                'strain': "A/Beijing/32/1992",
+                'isolate_id': "CY113677",
+                'date': "1992-XX-XX",
+                'region': "china",
+                'country': "China",
+                "city": "Beijing",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["PB1", "PB1-F2"]
+            },
+        "pb2": {
+            "path": "metadata/h3n2_pb2_outgroup.gb",
+            "metadata": {
+                'strain': "A/Beijing/32/1992",
+                'isolate_id': "CY113677",
+                'date': "1992-XX-XX",
+                'region': "china",
+                'country': "China",
+                "city": "Beijing",
+                "passage": "unknown",
+                'lab': "unknown",
+                'age': "unknown",
+                'gender': "unknown"
+            },
+            "include": 0,
+            "genes": ["PB2"]
         }
     },
     "yam": {
