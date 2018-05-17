@@ -825,9 +825,9 @@ class SubstitutionModel(TiterModel):
 
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
-        self.determine_relevant_mutations()
+        self.determine_relevant_mutations() # symmetric=True for symmtric model
         if len(self.train_titers)>1:
-            self.make_seqgraph()
+            self.make_seqgraph() # symmetric=True for symmtric model
         else:
             print('subsitution model: no titers to train')
 
@@ -883,7 +883,7 @@ class SubstitutionModel(TiterModel):
         self.genetic_params = len(relevant_muts)
 
 
-    def make_seqgraph(self, colin_thres = 5):
+    def make_seqgraph(self, colin_thres = 5, symmetric=False):
         '''
         code amino acid differences between sequences into a matrix
         the matrix has dimensions #measurements x #observed mutations
@@ -898,7 +898,7 @@ class SubstitutionModel(TiterModel):
         for (test, ref), val in self.train_titers.iteritems():
             if not np.isnan(val):
                 try:
-                    muts = self.get_mutations(ref[0], test)
+                    muts = self.get_mutations(ref[0], test, symmetric=symmetric)
                     if muts is None:
                         continue
                     tmp = np.zeros(n_params, dtype=int) # zero vector, ones will be filled in
@@ -970,8 +970,8 @@ class SubstitutionModel(TiterModel):
             self.substitution_effect[mut] = self.model_params[mi]
 
 
-    def predict_titer(self, virus, serum, cutoff=0.0):
-        muts= self.get_mutations(serum[0], virus)
+    def predict_titer(self, virus, serum, cutoff=0.0, symmetric=False):
+        muts= self.get_mutations(serum[0], virus, symmetric=symmetric)
         if muts is not None:
             pot = self.serum_potency[serum] if serum in self.serum_potency else 0.0
             avi = self.virus_effect[virus] if virus in self.virus_effect else 0.0
