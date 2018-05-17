@@ -1,6 +1,7 @@
 from __future__ import division, print_function
 import sys, os, time, gzip, glob
 from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
+from base.frequencies import KdeFrequencies
 import json
 from pdb import set_trace
 from collections import defaultdict
@@ -40,16 +41,22 @@ def export_frequency_json(process, prefix, indent):
         process.log.notify("Cannot export frequencies - pivots do not exist")
 
 def export_tip_frequency_json(process, prefix, indent):
-    if not (hasattr(process, 'pivots') and hasattr(process, 'tree_frequencies')):
-        process.log.notify("Cannot export tip frequencies - pivots and/or tree_frequencies do not exist")
-        return;
+    if not (hasattr(process, 'pivots') and hasattr(process, 'tree')):
+        process.log.notify("Cannot export tip frequencies - pivots and/or tree do not exist")
+        return
 
-    num_dp = 6;
+    num_dp = 6
     freq_json = {'pivots':process_freqs(process.pivots, num_dp)}
+
+    frequencies = KdeFrequencies.estimate_frequencies_for_tree(
+        process.tree.tree,
+        process.pivots,
+        process.info["regions"]
+    )
 
     for n in process.tree.tree.get_terminals():
         freq_json[n.name] = {
-            "frequencies" : process_freqs(process.tree_frequencies["global"][n.clade], num_dp),
+            "frequencies" : process_freqs(frequencies["global"][n.clade], num_dp),
             "weight": 1.0
         }
 
