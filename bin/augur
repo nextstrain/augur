@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-from augur import align, tree, traits, parse, filter, export, translate
+from augur import align, tree, traits, parse, filter, export, translate, mask
 
 if __name__=="__main__":
     import argparse
@@ -30,6 +30,13 @@ if __name__=="__main__":
     align_parser.add_argument('--cat', nargs='+', help="categories with respect to subsample")
     align_parser.add_argument('--output', help="output file")
     align_parser.set_defaults(func=filter.run)
+    
+    ### MASK.PY -- mask specified sites from a VCF file
+    align_parser = subparsers.add_parser('mask', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    align_parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF format")
+    align_parser.add_argument('--mask', required=True, help="locations to be masked in BED file format")
+    align_parser.add_argument('--output', help="output file")
+    align_parser.set_defaults(func=mask.run)
 
     ### ALIGN.PY
     align_parser = subparsers.add_parser('align', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
