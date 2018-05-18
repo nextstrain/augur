@@ -1,7 +1,7 @@
 import numpy as np
 from Bio import Phylo
 from collections import defaultdict
-from .utils import read_metadata, read_node_data, write_json, read_config
+from .utils import read_metadata, read_node_data, write_json, read_config, read_geo
 
 def tree_to_json(node, extra_attr = []):
     '''
@@ -159,13 +159,13 @@ def read_color_maps(fname):
                 fields = line.strip().split()
                 if len(fields)!=3: continue
                 cm[fields[0]].append((fields[1], fields[2]))
-    except IOError:
+    except Exception:
         print("WARNING: Couldn't open color definitions file {}.".format(fname))
 
     return cm
 
 
-def export_metadata_json(T, metadata, tree_meta, config, color_map_file, fname, indent=0):
+def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_info, fname, indent=0):
     meta_json = {}
     terminals = [n.name for n in T.get_terminals()]
     meta_json["virus_count"] = len(terminals)
@@ -182,12 +182,29 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, fname, 
         if trait in color_maps:
             col_opts[trait]["color_map"] = color_maps[trait]
 
-    meta_json["annotations"] = tree_meta['annotation']
+    if "annotations" in tree_meta:
+        meta_json["annotations"] = tree_meta['annotation']
 
     meta_json.update(config)
     if len(config["controls"]):
         meta_json["controls"] = make_control_json(T, config["controls"])
 
+    if "geographic location" in config["controls"]:
+        geo={}
+        for geo_field in config["controls"]["geographic location"]:
+            print(geo_field)
+            geo[geo_field]={}
+            for n, v in tree_meta["nodes"].items():
+                print(n)
+                if geo_field in v:
+                    loc = v[geo_field]
+                    print(n, loc)
+                    if loc in geo_info:
+                        geo[geo_field][loc] = geo_info[loc]
+                    else:
+                        geo[geo_field][loc] = {"latitude":0, "longitude":0}
+
+        meta_json["geo"]=geo
     write_json(meta_json, fname)
 
 
@@ -204,4 +221,4 @@ def run(args):
     write_json(tjson, args.output)
 
     export_metadata_json(T, seq_meta, tree_meta, read_config(args.config),
-                         args.color_defs, args.meta_output)
+                         args.color_defs, read_geo(args.geo_info), args.meta_output)

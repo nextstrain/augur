@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-from augur import align, tree, traits, parse, filter, export, translate
+from augur import align, tree, traits, parse, filter, export, translate, mask
 
 if __name__=="__main__":
     import argparse
@@ -30,6 +30,13 @@ if __name__=="__main__":
     align_parser.add_argument('--cat', nargs='+', help="categories with respect to subsample")
     align_parser.add_argument('--output', help="output file")
     align_parser.set_defaults(func=filter.run)
+    
+    ### MASK.PY -- mask specified sites from a VCF file
+    align_parser = subparsers.add_parser('mask', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    align_parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF format")
+    align_parser.add_argument('--mask', required=True, help="locations to be masked in BED file format")
+    align_parser.add_argument('--output', help="output file")
+    align_parser.set_defaults(func=mask.run)
 
     ### ALIGN.PY
     align_parser = subparsers.add_parser('align', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -62,6 +69,8 @@ if __name__=="__main__":
     tree_parser.add_argument('--output', type=str, help='file name to write tree to')
     tree_parser.add_argument('--node_data', type=str, help='file name to write additional node data')
     tree_parser.add_argument('--iqmodel', default="HKY+F", help='substitution model to use for iq-tree')
+    tree_parser.add_argument('--n_iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
+                             'interquartile ranges from the root-to-tip vs time regression')
     tree_parser.add_argument('--nthreads', type=int, default=2,
                              help="number of threads used by mafft")
     tree_parser.set_defaults(func=tree.run)
@@ -99,6 +108,7 @@ if __name__=="__main__":
     export_parser.add_argument('--aa_muts',help="json file with amino acid mutations")
     export_parser.add_argument('--config', help="file with auspice configuration")
     export_parser.add_argument('--color_defs', help="file with color definitions")
+    export_parser.add_argument('--geo_info', help="file latitudes and longidutes")
     export_parser.add_argument('--output', required=True,
                         help="json file name that is passed on to auspice (e.g., zika_tree.json)")
     export_parser.add_argument('--meta_output', required=True,

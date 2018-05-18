@@ -65,7 +65,7 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None):
                 except:
                     numerical_dates[k] = None
     else:
-        numerical_dates = {k:float(v) for k,v in dates.items()}
+        numerical_dates = {k:float(v) for k,v in meta_dict.items()}
 
     return numerical_dates
 
@@ -159,11 +159,31 @@ def load_features(reference, feature_names=None):
     return features
 
 def read_config(fname):
-    if os.path.isfile(fname):
+    if fname and os.path.isfile(fname):
         with open(fname) as ifile:
             config = json.load(ifile)
     else:
         print("ERROR: config file %s not found."%fname)
-        config = defaultdict('')
+        config = defaultdict(dict)
 
     return config
+
+def read_geo(fname):
+    if fname and os.path.isfile(fname):
+        coordinates = {}
+        with open(fname) as ifile:
+            header = ifile.readline().strip().split('\t')
+            for line in ifile:
+                fields = line.strip().split('\t')
+                tmp = {}
+                for f, val in zip(header[1:], fields[1:]):
+                    try:
+                        tmp[f] = float(val)
+                    except:
+                        tmp[f] = val
+                coordinates[fields[0]] = tmp
+    else:
+        print("ERROR: geo def file %s not found."%fname)
+        coordinates = defaultdict(dict)
+
+    return coordinates
