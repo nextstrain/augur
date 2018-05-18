@@ -580,7 +580,7 @@ class KdeFrequencies(object):
         pass
 
     @classmethod
-    def get_counts_from_observation(cls, mu, pivots, sigma=3 / 12.0):
+    def get_counts_from_observation(cls, mu, pivots, sigma=1 / 12.0):
         """Build a normal distribution centered across the given floating point date,
         mu, with a standard deviation based on the given sigma value and return
         the probability mass between pivots for each pivot. These mass values
