@@ -9,7 +9,7 @@ from scipy.stats import linregress, spearmanr
 
 from base.io_util import write_json
 from builds.flu.scores import select_nodes_in_season
-from frequencies import logit_transform, tree_frequencies
+from frequencies import logit_transform, KdeFrequencies
 from fitness_predictors import fitness_predictors
 
 min_tips = 10
@@ -161,6 +161,9 @@ class fitness_model(object):
             for child in clade:
                 self.node_parents[child] = clade
 
+        self.sigma = kwargs.get("sigma")
+
+
     def prep_nodes(self):
         """Assigns data from the tree to top-level fitness model attributes.
 
@@ -205,9 +208,8 @@ class fitness_model(object):
         # Calculate global tree/clade frequencies if they have not been calculated already.
         if region not in self.frequencies or self.rootnode.clade not in self.frequencies["global"]:
             print("calculating global node frequencies")
-            tree_freqs = tree_frequencies(self.tree, self.pivots, method="SLSQP", verbose=1)
-            tree_freqs.estimate_clade_frequencies()
-            self.frequencies[region] = tree_freqs.frequencies
+            frequencies = KdeFrequencies.estimate_frequencies_for_tree(self.tree, self.pivots, sigma=self.sigma)
+            self.frequencies[region] = frequencies[region]
         else:
             print("found existing global node frequencies")
 
@@ -232,10 +234,25 @@ class fitness_model(object):
 
         # freq_arrays list *all* tips for each initial timepoint
         self.freq_arrays={}
-        for time in self.timepoints:
+        for i in range(len(self.timepoints)):
+            time = self.timepoints[i]
             tmp_freqs = []
-            for tip in self.tips:
-                tmp_freqs.append(tip.timepoint_freqs[time])
+
+            if hasattr(self, "sigma"):
+                print("Calculating censored frequencies for %s" % time)
+                # Recalculate frequencies with observations after the current time
+                # censored from the calculations.
+                frequencies = KdeFrequencies.estimate_frequencies_for_tree(self.tree, self.pivots, sigma=self.sigma, max_date=time)
+
+                for tip in self.tips:
+                    # Determine the frequency of this tip at the given timepoint.
+                    interpolation = interp1d(self.pivots, self.frequencies[region][tip.clade], kind="linear", bounds_error=True)
+                    tmp_freqs.append(np.asscalar(interpolation(time)))
+            else:
+                print("Using precalculated frequencies for tips")
+                for tip in self.tips:
+                    tmp_freqs.append(tip.timepoint_freqs[time])
+
             self.freq_arrays[time] = np.array(tmp_freqs)
 
 
