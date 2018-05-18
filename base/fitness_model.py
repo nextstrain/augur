@@ -397,8 +397,8 @@ class fitness_model(object):
                 pred_final_freq = np.sum(self.projection(params, pred, freqs, self.delta_time)) / total_pred_freq
                 tmp_pred_vs_true.append((initial_freq, obs_final_freq, pred_final_freq))
                 pred_vs_true_values.append((time, clade.clade, len(clade.tips), initial_freq, obs_final_freq, pred_final_freq))
-                clade_errors.append(np.absolute(pred_final_freq - obs_final_freq))
-            timepoint_errors.append(np.mean(clade_errors))
+                clade_errors.append((pred_final_freq - obs_final_freq) ** 2)
+            timepoint_errors.append(np.sum(clade_errors))
             self.pred_vs_true.append(np.array(tmp_pred_vs_true))
 
         # Prepare a data frame with all initial, observed, and predicted frequencies by time and clade.
@@ -407,7 +407,7 @@ class fitness_model(object):
             columns=("timepoint", "clade", "clade_size", "initial_freq", "observed_freq", "predicted_freq")
         )
 
-        mean_error = np.mean(timepoint_errors)
+        mean_error = np.sum(timepoint_errors)
         if any(np.isnan(timepoint_errors)+np.isinf(timepoint_errors)):
             mean_error = 1e10
         self.last_fit = mean_error
