@@ -5,7 +5,7 @@ rule parse:
 		seq = "results/raw_seqs.fasta",
 		meta = "results/meta.tsv"
 	params:
-		fields = "strain virus accession date region country division city db segment author reference"
+		fields = "strain virus accession date region country division city db segment authors paper_url"
 	shell:
 		'augur parse --sequences {input} --output {output.seq} --metadata {output.meta} --fields {params.fields}'
 
@@ -71,10 +71,18 @@ rule export:
 	input:
 		tree = "results/tree.nwk",
 		node_data = "results/node_data.json",
+		metadata = "results/meta.tsv",
 		traits = "results/traits.json",
 		aa_muts = "results/aa_muts.json",
+		color_defs = "metadata/colors.tsv",
+		config = "metadata/config.json",
+		geo_info = "../../../fauna/source-data/geo_lat_long.tsv"
 	output:
-		"auspice/zika_tree.json",
+		tree = "auspice/zika_tree.json",
+		meta = "auspice/zika_meta.json",
 	shell:
-		'augur export --tree {input.tree} --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts} --output {output}'
+		'augur export --tree {input.tree} --metadata {input.metadata}'
+			' --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts}'
+			' --config {input.config} --color_defs {input.color_defs} --output {output.tree}'
+			' --geo_info {input.geo_info} --meta_output {output.meta}'
 

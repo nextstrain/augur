@@ -57,7 +57,7 @@ def run(args):
     #if Fasta, read in file to get sequence names and sequences
     else:
         seqs = {seq.id:seq for seq in SeqIO.parse(args.sequences, 'fasta')}
-        seq_keep = seqs.keys()
+        seq_keep = list(seqs.keys())
 
     meta_dict, meta_columns = read_metadata(args.metadata)
 
