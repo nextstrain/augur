@@ -1,6 +1,7 @@
-import os
+import os, json
 import pandas as pd
 from treetime.utils import numeric_date
+from collections import defaultdict
 
 def ambiguous_date_to_date_range(mydate, fmt):
     from datetime import datetime
@@ -64,23 +65,29 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None):
                 except:
                     numerical_dates[k] = None
     else:
-        numerical_dates = {k:float(v) for k,v in dates.items()}
+        numerical_dates = {k:float(v) for k,v in meta_dict.items()}
 
     return numerical_dates
 
 def read_node_data(fname, traits=None, aa_muts=None):
-    import json
     if os.path.isfile(fname):
         with open(fname) as jfile:
             node_data = json.load(jfile)
 
-        for more_data in [traits, aa_muts]:
+        for more_data in [traits]:
             if more_data and os.path.isfile(more_data):
                 with open(more_data) as jfile:
                     tmp_data = json.load(jfile)
                 for k,v in tmp_data.items():
                     if k in node_data["nodes"]:
                         node_data["nodes"][k].update(v)
+        if aa_muts and os.path.isfile(aa_muts):
+            with open(aa_muts) as jfile:
+                tmp_data = json.load(jfile)
+            node_data['annotation'] = tmp_data['annotation']
+            for k,v in tmp_data['mutations'].items():
+                if k in node_data["nodes"]:
+                    node_data["nodes"][k].update(v)
     else:
         print("ERROR: node data can't be read, file %s not found"%fname)
         node_data=None
@@ -150,3 +157,33 @@ def load_features(reference, feature_names=None):
                         features[fname] = feat
 
     return features
+
+def read_config(fname):
+    if fname and os.path.isfile(fname):
+        with open(fname) as ifile:
+            config = json.load(ifile)
+    else:
+        print("ERROR: config file %s not found."%fname)
+        config = defaultdict(dict)
+
+    return config
+
+def read_geo(fname):
+    if fname and os.path.isfile(fname):
+        coordinates = {}
+        with open(fname) as ifile:
+            header = ifile.readline().strip().split('\t')
+            for line in ifile:
+                fields = line.strip().split('\t')
+                tmp = {}
+                for f, val in zip(header[1:], fields[1:]):
+                    try:
+                        tmp[f] = float(val)
+                    except:
+                        tmp[f] = val
+                coordinates[fields[0]] = tmp
+    else:
+        print("ERROR: geo def file %s not found."%fname)
+        coordinates = defaultdict(dict)
+
+    return coordinates

@@ -75,7 +75,7 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
 
                 marginal = [(alphabet[tt.gtr.alphabet[i]], pdis[i]) for i in range(len(tt.gtr.alphabet))]
                 marginal.sort(key=lambda x: x[1], reverse=True) # sort on likelihoods
-                marginal = [(a, b) for a, b in marginal if b > 0.001][:4] #only take stuff over 1% and the top 4 elements
+                marginal = [(a, b) for a, b in marginal if b > 0.001][:4] #only take stuff over .1% and the top 4 elements
                 conf = {a:b for a,b in marginal}
                 node.__setattr__(field + "_entropy", S)
                 node.__setattr__(field + "_confidence", conf)
@@ -100,6 +100,7 @@ def run(args):
             mugration_states[node.name][column] = node.__getattribute__(column)
             if args.confidence:
                 mugration_states[node.name][column+'_confidence'] = node.__getattribute__(column+'_confidence')
+                mugration_states[node.name][column+'_entropy'] = node.__getattribute__(column+'_entropy')
 
         with open(os.path.dirname(args.output)+'/%s.mugration_model.txt'%column, 'w') as ofile:
             ofile.write('Map from character to field name\n')
