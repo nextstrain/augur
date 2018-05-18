@@ -630,32 +630,21 @@ class KdeFrequencies(object):
         return normalized_freq_matrix
 
     @classmethod
-    def estimate_frequencies(cls, tip_dates, pivots, tip_populations, **kwargs):
+    def estimate_frequencies(cls, tip_dates, pivots, **kwargs):
         """Estimate frequencies of the given observations across the given pivots.
-
-        Initial frequencies are weighted by the size of the population where
-        each observation originated and the resulting weighted values are
-        normalized to sum to 1.
         """
         # Calculate base frequencies from observations.
         freq_matrix = cls.get_frequencies_from_observations(tip_dates, pivots, **kwargs)
 
-        # Weight initial frequencies by region population size.
-        weighted_freq_matrix = freq_matrix * tip_populations
-
         # Normalize frequencies to sum to 1.
-        normalized_freq_matrix = cls.normalize_frequencies(weighted_freq_matrix)
+        normalized_freq_matrix = cls.normalize_frequencies(freq_matrix)
 
         return normalized_freq_matrix
 
     @classmethod
-    def estimate_frequencies_for_tree(cls, tree, pivots, regions, **kwargs):
+    def estimate_frequencies_for_tree(cls, tree, pivots, **kwargs):
         """Estimate global and regional frequencies for all nodes in a tree across the
         given pivots.
-
-        Frequencies are weighted by the population size of the each individual
-        observation's region as defined in the given regions tuple.
-
         """
         # Collect all tips from the given tree and sort by their observation date.
         tips = np.array(sorted([(tip.clade, tip.attr["num_date"], tip.attr["region"])
@@ -664,38 +653,13 @@ class KdeFrequencies(object):
         clades = tips[:, 0].astype(int)
         tip_dates = tips[:, 1].astype(float)
         tip_regions = tips[:, 2]
-
-        # Calculate the total global population size.
-        population_by_region = {region_data[0]: region_data[2] for region_data in regions}
-        total_population = 0
-        for region, population in population_by_region.items():
-            total_population += population
-
-        # Create a vector of population proportions (relative to the total
-        # global population) by tip based on each tip's region.
-        tip_populations = []
-        for region in tip_regions:
-            tip_populations.append(population_by_region[region] / total_population)
-
-        # Reshape vector of population proportions to an N x 1 matrix for N
-        # total observations. This allows each row of the frequency matrix
-        # (i.e., an individual observation's frequencies) to be scaled by the
-        # same value across all time points.
-        tip_populations = np.array(tip_populations).reshape((len(tip_populations), -1))
+        regions = np.unique(tip_regions)
 
         # Map clade ids to their corresponding frequency matrix row index.
         clade_to_index = {clades[i]: i for i in range(len(clades))}
 
-        # Map tips to regions for quick lookup in the frequency matrix.
-        tip_index_by_region = defaultdict(list)
-        for node in tree.get_terminals():
-            tip_index_by_region[node.attr["region"]].append(clade_to_index[node.clade])
-
-        for region in tip_index_by_region:
-            tip_index_by_region[region] = np.array(tip_index_by_region[region])
-
         # Calculate tip frequencies weighted by tip population sizes and then normalized.
-        normalized_freq_matrix = cls.estimate_frequencies(tip_dates, pivots, tip_populations, **kwargs)
+        normalized_freq_matrix = cls.estimate_frequencies(tip_dates, pivots, **kwargs)
 
         # Calculate clade frequencies as the sum of respective tip frequencies
         # both globally and across all regions.
@@ -706,7 +670,7 @@ class KdeFrequencies(object):
                 clade_frequencies["global"][node.clade] = normalized_freq_matrix[clade_to_index[node.clade]]
 
                 # Get regional frequencies.
-                for region in tip_index_by_region:
+                for region in regions:
                     if node.attr["region"] == region:
                         clade_frequencies[region][node.clade] = normalized_freq_matrix[clade_to_index[node.clade]]
                     else:
@@ -715,7 +679,7 @@ class KdeFrequencies(object):
             else:
                 clade_frequencies["global"][node.clade] = np.array([clade_frequencies["global"][child.clade]
                                                                   for child in node.clades]).sum(axis=0)
-                for region in tip_index_by_region:
+                for region in regions:
                     clade_frequencies[region][node.clade] = np.array([clade_frequencies[region][child.clade]
                                                                       for child in node.clades]).sum(axis=0)
 
