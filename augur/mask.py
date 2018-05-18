@@ -17,6 +17,7 @@ def get_mask_sites(vcf_file, mask_file):
             if line[0] != "#":
                 header = line.strip().split('\t')
                 chromName = header[0]
+                break   # once chrom is found, no need to go through rest
 
     #Read in BED file - 2nd column always chromStart, 3rd always chromEnd
     #I timed this against sets/update/sorted; this is faster
@@ -35,6 +36,7 @@ def get_mask_sites(vcf_file, mask_file):
         the_file.write("\n".join(exclude))
 
     return tempMaskFile
+
 
 def run(args):
     '''
