@@ -7,6 +7,7 @@ from base.fitness_model import process_predictor_args
 from base.process import process
 from base.utils import fix_names
 from base.io_util import write_json
+from base.frequencies import KdeFrequencies
 from flu_titers import HI_model, HI_export, vaccine_distance
 from scores import calculate_sequence_scores, calculate_metadata_scores, calculate_phylogenetic_scores
 from flu_info import clade_designations, lineage_to_epitope_mask, lineage_to_glyc_mask, resolution_to_pivot_spacing, vaccine_choices
@@ -24,6 +25,7 @@ def parse_args():
 
     parser.add_argument('--no_mut_freqs', default=False, action='store_true', help="skip mutation frequencies")
     parser.add_argument('--no_tree_freqs', default=False, action='store_true', help="skip tree (clade) frequencies")
+    parser.add_argument('--no_kde_freqs', default=False, action='store_true', help="skip KDE tip frequencies")
     parser.add_argument('--pivot_spacing', type=float, help="month per pivot")
     parser.add_argument('--titers_export', default=False, action='store_true', help="export titers.json file")
     parser.add_argument('--annotate_fitness', default=False, action='store_true', help="run fitness prediction model and annotate fitnesses on tree nodes")
@@ -74,6 +76,7 @@ def make_config(prepared_json, args):
         "build_tree": not args.no_tree,
         "estimate_mutation_frequencies": not args.no_mut_freqs,
         "estimate_tree_frequencies": not args.no_tree_freqs,
+        "estimate_kde_frequencies": not args.no_kde_freqs,
         "ha_masks": "metadata/ha_masks.tsv",
         "epitope_mask_version": args.epitope_mask_version,
         "tolerance_mask_version": args.tolerance_mask_version,
@@ -531,12 +534,20 @@ if __name__=="__main__":
         runner.timetree_setup_filter_run()
         runner.run_geo_inference()
 
-        # estimate tree frequencies here.
+        # estimate tree frequencies
         if runner.config["estimate_tree_frequencies"]:
             pivots = runner.get_pivots_via_spacing()
             runner.estimate_tree_frequencies(pivots=pivots)
             for regionTuple in runner.info["regions"]:
                 runner.estimate_tree_frequencies(region=str(regionTuple[0]))
+
+        # estimate KDE tip frequencies
+        if runner.config["estimate_kde_frequencies"]:
+            runner.pivots = runner.get_pivots_via_spacing()
+            runner.kde_frequencies = KdeFrequencies.estimate_frequencies_for_tree(
+                runner.tree.tree,
+                runner.pivots
+            )
 
         if runner.info["segment"]=='ha':
             if runner.info["lineage"]=='h3n2':
