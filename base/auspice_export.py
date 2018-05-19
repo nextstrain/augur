@@ -50,8 +50,7 @@ def export_tip_frequency_json(process, prefix, indent):
 
     frequencies = KdeFrequencies.estimate_frequencies_for_tree(
         process.tree.tree,
-        process.pivots,
-        process.info["regions"]
+        process.pivots
     )
 
     for n in process.tree.tree.get_terminals():
