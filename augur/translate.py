@@ -124,7 +124,7 @@ def run(args):
                             enumerate(zip(aln[n.name], aln[c.name])) if a!=d]
                 aa_muts[c.name]["aa_muts"][fname] = tmp
 
-    write_json({'annotation':annotations, 'mutations':aa_muts}, args.output)
+    write_json({'annotation':annotations, 'nodes':aa_muts}, args.output)
 
     ## write alignments to file is requested
     if args.alignment_output and '%GENE' in args.alignment_output:
