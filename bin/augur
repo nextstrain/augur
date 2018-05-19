@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-from augur import align, tree, traits, parse, filter, export, translate, mask
+from augur import align, tree, traits, parse, filter, export, translate, mask, titers
 
 if __name__=="__main__":
     import argparse
@@ -30,7 +30,7 @@ if __name__=="__main__":
     align_parser.add_argument('--cat', nargs='+', help="categories with respect to subsample")
     align_parser.add_argument('--output', help="output file")
     align_parser.set_defaults(func=filter.run)
-    
+
     ### MASK.PY -- mask specified sites from a VCF file
     align_parser = subparsers.add_parser('mask', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     align_parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF format")
@@ -99,6 +99,15 @@ if __name__=="__main__":
     traits_parser.add_argument('--output', default='traits.json', help='')
     traits_parser.set_defaults(func=traits.run)
 
+    ## TITERS.PY
+    titers_parser = subparsers.add_parser('titers', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    titers_parser.add_argument('--titers', required=True, type=str, help="file with titer measurements")
+    titers_parser.add_argument('--tree', type=str, required=True, help="tree to perform fit titer model to")
+    titers_parser.add_argument('--node_data', required=True, help="json file with meta data for each node")
+    titers_parser.add_argument('--output_tree_model', type=str, help='json file to save tree model')
+    titers_parser.add_argument('--output_subs_model', type=str, help='json file to save subs model')
+    titers_parser.set_defaults(func=titers.run)
+
     ## EXPORT.PY
     export_parser =  subparsers.add_parser("export", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     export_parser.add_argument('--tree', required=True, help="tree to perform trait reconstruction on")
@@ -106,6 +115,8 @@ if __name__=="__main__":
     export_parser.add_argument('--node_data', required=True, help="json file with meta data for each node")
     export_parser.add_argument('--traits',help="json file with trait inferences")
     export_parser.add_argument('--aa_muts',help="json file with amino acid mutations")
+    export_parser.add_argument('--titer_tree_model',type=str, help="json file with tree titer model")
+    export_parser.add_argument('--titer_subs_model',type=str, help="json file with substitution titer model")
     export_parser.add_argument('--config', help="file with auspice configuration")
     export_parser.add_argument('--color_defs', help="file with color definitions")
     export_parser.add_argument('--geo_info', help="file latitudes and longidutes")
