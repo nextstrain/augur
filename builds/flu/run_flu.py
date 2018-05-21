@@ -18,7 +18,7 @@ def run_live(
                               for segment in segments])
         for resolution in resolutions:
 
-            if segment=="ha" or (not no_prepare):
+            if process_segment=="ha" or (not no_prepare):
                 call = ['python',
                     'flu.prepare.py',
                     '--lineage', lineage,
@@ -39,7 +39,7 @@ def run_live(
             if lineage == "h3n2":
                 call = call + ['--annotate_fitness', '--predictors', 'cTiterSub', '--predictors_params', '1.13', '--predictors_sds', '0.72']
 
-            if segment != "ha":
+            if process_segment != "ha":
                 call = [
                     'flu.process.py',
                     '--json', 'prepared/flu_seasonal_%s_%s_%s.json'%(lineage, segment, resolution)
