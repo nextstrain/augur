@@ -294,7 +294,7 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
         date = node.attr["num_date"]
         date = int(date*2)/2.
         if "clade_membership" in node.attr:
-            clade = node.attr[""clade_membership""]
+            clade = node.attr["clade_membership"]
         else:
             clade = 'unassigned'
         if ref!=test:
