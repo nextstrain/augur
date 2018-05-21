@@ -1,93 +1,56 @@
 import numpy as np
 from Bio import Phylo
-from .utils import read_metadata, read_node_data, write_json
+from collections import defaultdict
+from .utils import read_metadata, read_node_data, write_json, read_config, read_geo, attach_tree_meta_data
 
-def tree_to_json(node, extra_attr = []):
+def tree_to_json(node, fields_to_export = [], top_level = [], div=0):
     '''
     converts the Biopython tree structure to a dictionary that can
     be written to file as a json. This is called recursively.
     input
         node -- node for which top level dict is produced.
-        extra_attr -- attributes to export in addition to strain name and numdate
+        fields_to_export -- attributes to export in addition to strain name and numdate
     '''
-    tree_json = {}
-    str_attr = ['strain']
-    num_attr = ['numdate']
+    tree_json = {'attr':{"div":div}, 'branch_length':node.branch_length}
     if hasattr(node, 'name'):
         tree_json['strain'] = node.name
 
     # transfer attributes, round numerical ones
-    for prop in str_attr:
-        if hasattr(node, prop):
-            tree_json[prop] = node.__getattribute__(prop)
-    for prop in num_attr:
-        if hasattr(node, prop):
-            try:
-                tree_json[prop] = round(node.__getattribute__(prop),5)
-            except:
-                print("cannot round:", node.__getattribute__(prop), "assigned as is")
-                tree_json[prop] = node.__getattribute__(prop)
-
-    # loop over extra attributes. Extra-attributed be tuples where
-    # element 0 is the name of the attribute, 1 is a callable to
-    # convert the data to the desired format
-    for prop in extra_attr:
-        if len(prop)==2 and callable(prop[1]):
-            if hasattr(node, prop[0]):
-                tree_json[prop] = prop[1](node.__getattribute__(prop[0]))
+    for field in fields_to_export+top_level:
+        val=None
+        if len(field)==2 and callable(field[1]):
+            fname = field[0]
+            if hasattr(node, fname):
+                val = field[1](node.__getattribute__(fname))
         else:
-            if hasattr(node, prop):
-                tree_json[prop] = node.__getattribute__(prop)
+            fname = field
+            if hasattr(node, fname):
+                val = node.__getattribute__(fname)
+
+        if field in top_level:
+            tree_json[fname] = val
+        else:
+            tree_json['attr'][fname] = val
 
     # call on children
     if node.clades:
         tree_json["children"] = []
         for ch in node.clades:
-            tree_json["children"].append(tree_to_json(ch, extra_attr))
+            cdiv = div + (ch.mutation_length if hasattr(ch, "mutation_length") else ch.branch_length)
+            tree_json["children"].append(tree_to_json(ch, fields_to_export, top_level, div=cdiv))
 
     return tree_json
 
-# but the data saved in node_data json back onto the tree
-# we really should just grab these data during export.
-def attach_tree_meta_data(T, node_meta):
-    def process_mutations(muts):
-        realMut = [a+str(pos+1)+d for (a, pos ,d) in muts if a!='-' and d!='-']
-        #This exclude gaps from displaying in Auspice. They're ignored, in
-        #treebuilding anyway, and clutter up display/prevent from seeing real ones
-        if len(realMut)==0:
-            realMut = [""]
-        return realMut
+def process_mutations(muts):
+    realMut = [a+str(pos+1)+d for (a, pos ,d) in muts if a!='-' and d!='-']
+    #This exclude gaps from displaying in Auspice. They're ignored, in
+    #treebuilding anyway, and clutter up display/prevent from seeing real ones
+    if len(realMut)==0:
+        realMut = [""]
+    return realMut
 
-    for n in T.find_clades(order='preorder'):
-        n.attr={}
-        n.aa_muts={}
-        for field, val in node_meta[n.name].items():
-            if field=='mutations':
-                muts = process_mutations(val)
-                if muts[0]: #must test if string empty, not array! causes NaN error in Auspice
-                    n.__setattr__('muts', muts)
-            elif field=='aa_muts':
-                n.aa_muts = {}
-                for prot, tmp_muts in val.items():
-                    muts = process_mutations(tmp_muts)
-                    if muts[0]: #must test if string is empty, not array!
-                        n.aa_muts[prot] = muts
-            elif field in ['branch_length', 'mutation_length', 'clock_length',
-                           'clade', 'num_date', 'numdate']:
-                n.__setattr__(field, val)
-                n.attr[field] = val
-            else:
-                n.attr[field] = val
-            if field=='numdate':
-                n.__setattr__("num_date", val)
-                n.attr["num_date"] = val
-
-    # calculate divergence by summing branch length
-    T.root.attr['div']=0
-    for n in T.get_nonterminals(order='preorder'):
-        for c in n:
-            bl =  c.mutation_length if hasattr(c, "mutation_length") else c.branch_length
-            c.attr["div"] = n.attr["div"] + bl
+def process_mutation_dict(muts):
+    return {k:process_mutations(v) for k,v in muts.items() if len(v)}
 
 # calculate tree layout. should be obsolete with future auspice versions
 def tree_layout(T):
@@ -101,17 +64,124 @@ def tree_layout(T):
         else:
             child_yvalues = [c.yvalue for c in n]
             n.yvalue=0.5*(np.min(child_yvalues)+np.max(child_yvalues))
-        n.xvalue = n.attr['div']
+
+
+def summarise_publications(metadata):
+    info = defaultdict(lambda: {"n": 0, "title": "?"})
+    mapping = {}
+    for n, d in metadata.items():
+        if "authors" not in d:
+            mapping[n] = None
+            print("Error - {} had no authors".format(n))
+            continue
+
+        authors = d["authors"]
+        mapping[n] = authors
+        info[authors]["n"] += 1
+        for attr in ["title", "journal", "paper_url"]:
+            if attr in d:
+                info[authors][attr] = d[attr]
+
+    return (info, mapping)
+
+def make_control_json(T, controls):
+    controls_json = {}
+    for super_cat, fields in controls.items():
+        cat_count = {}
+        for n in T.get_terminals():
+            tmp = cat_count
+            for field in fields:
+                tmp["name"] = field
+                if field in n.attr:
+                    cat = n.attr[field]
+                else:
+                    cat='unknown'
+                if cat in tmp:
+                    tmp[cat]['count']+=1
+                else:
+                    tmp[cat] = {'count':1, 'subcats':{}}
+                tmp = tmp[cat]['subcats']
+        controls_json[super_cat] = cat_count
+    return controls_json
+
+def read_color_maps(fname):
+    cm = defaultdict(list)
+    try:
+        with open(fname) as fh:
+            for line in fh:
+                # line: trait   trait_value     hex_code
+                if line.startswith('#'): continue
+                fields = line.strip().split()
+                if len(fields)!=3: continue
+                cm[fields[0]].append((fields[1], fields[2]))
+    except Exception:
+        print("WARNING: Couldn't open color definitions file {}.".format(fname))
+
+    return cm
+
+
+def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_info, fname, indent=0):
+    meta_json = {}
+    terminals = [n.name for n in T.get_terminals()]
+    meta_json["virus_count"] = len(terminals)
+    meta_subset = {k:v for k,v in metadata.items() if k in terminals}
+    color_maps = read_color_maps(color_map_file)
+
+    (author_info, seq_to_author) = summarise_publications(meta_subset)
+    meta_json["author_info"] = author_info
+    meta_json["seq_author_map"] = seq_to_author
+
+    # join up config color options with those in the input JSONs.
+    col_opts = config["color_options"]
+    for trait in col_opts:
+        if trait in color_maps:
+            col_opts[trait]["color_map"] = color_maps[trait]
+
+    if "annotations" in tree_meta:
+        meta_json["annotations"] = tree_meta['annotation']
+
+    meta_json.update(config)
+    if len(config["controls"]):
+        meta_json["controls"] = make_control_json(T, config["controls"])
+
+    if "geographic location" in config["controls"]:
+        geo={}
+        for geo_field in config["controls"]["geographic location"]:
+            geo[geo_field]={}
+            for n, v in tree_meta["nodes"].items():
+                if geo_field in v:
+                    loc = v[geo_field]
+                    if loc in geo_info:
+                        geo[geo_field][loc] = geo_info[loc]
+                    else:
+                        geo[geo_field][loc] = {"latitude":0, "longitude":0}
+
+        meta_json["geo"]=geo
+    write_json(meta_json, fname)
 
 
 def run(args):
     # load data, process, and write out
     T = Phylo.read(args.tree, 'newick')
-    tree_meta = read_node_data(args.node_data, traits=args.traits, aa_muts=args.aa_muts)['nodes']
-    attach_tree_meta_data(T, tree_meta)
+    seq_meta, meta_columns = read_metadata(args.metadata)
+    other_files = []
+    if args.traits: other_files.append(args.traits)
+    if args.aa_muts: other_files.append(args.aa_muts)
+    if args.titer_tree_model: other_files.append(args.titer_tree_model)
+    if args.titer_subs_model: other_files.append(args.titer_subs_model)
+
+    tree_meta = read_node_data(args.node_data, other_files=other_files)
+    attach_tree_meta_data(T, tree_meta["nodes"])
+
     tree_layout(T)
-    fields_to_export = list(list(tree_meta.values())[0].keys())\
-                       +["clade","tvalue","yvalue", "xvalue", "attr", "muts", "aa_muts"]
-    tjson = tree_to_json(T.root, extra_attr=fields_to_export)
+    fields_to_export = [x for x in  list(tree_meta['nodes'].values())[0].keys()
+                        if x not in ['sequence', 'mutations', 'muts', 'aa_muts']]+['num_date']
+
+    top_level = ["clade","tvalue","yvalue", "xvalue"]\
+                +[("muts", process_mutations), ("aa_muts", process_mutation_dict)]
+
+    tjson = tree_to_json(T.root, fields_to_export=fields_to_export, top_level=top_level)
     write_json(tjson, args.output)
 
+    export_metadata_json(T, seq_meta, tree_meta, read_config(args.config),
+                         args.color_defs, read_geo(args.geo_info), args.meta_output)

@@ -580,55 +580,49 @@ class KdeFrequencies(object):
         pass
 
     @classmethod
-    def get_counts_from_observation(cls, mu, pivots, sigma=1 / 12.0):
+    def get_density_for_observation(cls, mu, pivots, sigmaNarrow=1/12.0, sigmaWide=3/12.0, proportionWide=0.2):
         """Build a normal distribution centered across the given floating point date,
         mu, with a standard deviation based on the given sigma value and return
-        the probability mass between pivots for each pivot. These mass values
-        per pivot will form the input for a kernel density estimate across
-        multiple observations.
+        the probability mass at each pivot. These mass values per pivot will form the
+        input for a kernel density estimate across multiple observations.
         """
-        if sigma is None:
-            sigma = 1 / 12.0
-
-        dt = pivots[1] - pivots[0]
-        bins = [pivots[0] - 0.5 * dt] + list(pivots + 0.5 * dt)
-        counts = np.diff(norm.cdf(bins, loc=mu, scale=sigma))
-        return counts
+        return (1-proportionWide) * norm.pdf(pivots, loc=mu, scale=sigmaNarrow) + proportionWide * norm.pdf(pivots, loc=mu, scale=sigmaWide)
 
     @classmethod
-    def get_frequencies_from_observations(cls, observations, pivots, max_date=None, **kwargs):
-        """Create a matrix of frequencies for one or more observations across the given
+    def get_densities_for_observations(cls, observations, pivots, max_date=None, **kwargs):
+        """Create a matrix of densities for one or more observations across the given
         pivots with one row per observation and one column per pivot.
 
         Observations can be optionally filtered by a maximum date such that all
-        frequencies are estimated to be zero after that date.
+        densities are estimated to be zero after that date.
         """
-        freq_matrix = np.zeros((len(observations), len(pivots)))
+        density_matrix = np.zeros((len(observations), len(pivots)))
         for i, obs in enumerate(observations):
             # If the given observation occurred outside the given pivots or
             # after the given maximum date, do not try to estimate its
             # frequency.
             if (obs < pivots[0] or obs > pivots[-1]) or (max_date is not None and obs > max_date):
-                counts = np.zeros_like(pivots)
+                density = np.zeros_like(pivots)
             else:
-                counts = cls.get_counts_from_observation(obs, pivots, **kwargs)
+                density = cls.get_density_for_observation(obs, pivots, **kwargs)
 
-            freq_matrix[i] = counts
+            density_matrix[i] = density
 
-        return freq_matrix
+        return density_matrix
 
     @classmethod
-    def normalize_frequencies(cls, freq_matrix):
-        """Normalize the values of a given frequency matrix to 1 across all columns
-        (time points) with non-zero sums.
+    def normalize_to_frequencies(cls, density_matrix):
+        """Normalize the values of a given density matrix to 1 across all columns
+        (time points) with non-zero sums. This converts kernal PDF mass into a
+        frequency estimate.
         """
-        normalized_freq_matrix = freq_matrix.copy()
+        normalized_freq_matrix = density_matrix.copy()
 
         # Find columns that can be meaningfully normalized.
-        nonzero_columns = np.where(freq_matrix.sum(axis=0) > 1)[0]
+        nonzero_columns = np.where(density_matrix.sum(axis=0) > 0)[0]
 
-        # Normalize columns by sum.
-        normalized_freq_matrix[:, nonzero_columns] = freq_matrix[:, nonzero_columns] / freq_matrix[:, nonzero_columns].sum(axis=0)
+        # Normalize by column.
+        normalized_freq_matrix[:, nonzero_columns] = density_matrix[:, nonzero_columns] / density_matrix[:, nonzero_columns].sum(axis=0)
 
         return normalized_freq_matrix
 
@@ -637,10 +631,10 @@ class KdeFrequencies(object):
         """Estimate frequencies of the given observations across the given pivots.
         """
         # Calculate base frequencies from observations.
-        freq_matrix = cls.get_frequencies_from_observations(tip_dates, pivots, **kwargs)
+        density_matrix = cls.get_densities_for_observations(tip_dates, pivots, **kwargs)
 
         # Normalize frequencies to sum to 1.
-        normalized_freq_matrix = cls.normalize_frequencies(freq_matrix)
+        normalized_freq_matrix = cls.normalize_to_frequencies(density_matrix)
 
         return normalized_freq_matrix
 

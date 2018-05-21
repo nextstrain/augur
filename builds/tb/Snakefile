@@ -1,0 +1,22 @@
+rule filter:
+	input:
+		seq = "data/lee_2015.vcf.gz",
+		meta = "data/meta.tsv",
+		exclude = "data/dropped_strains.txt"
+	output:
+		"results/filtered.vcf.gz"
+	params:
+		vpc = 30,
+		cat = "year month"
+	shell:
+        "augur filter --sequences {input.seq} --output {output} --min_date 1992 --metadata {input.meta} --viruses_per_cat {params.vpc} --exclude {input.exclude} --cat {params.cat}"
+
+rule mask:
+    input:
+        seq = "results/filtered.vcf.gz",
+        mask = "data/Locus_to_exclude_Mtb.bed"
+    output:
+       "results/masked.vcf"
+    shell:
+        "augur mask --sequences {input.seq} --output {output} --mask {input.mask}"
+   

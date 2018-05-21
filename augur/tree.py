@@ -96,7 +96,7 @@ def build_iqtree(aln_file, out_file, iqmodel="HKY+F", clean_up=True, nthreads=2)
 def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False, branch_length_mode='auto',
              confidence=False, resolve_polytomies=True, max_iter=2, dateLimits=None,
              infer_gtr=True, Tc=0.01, reroot='best', use_marginal=False, fixed_pi=None,
-             clock_rate=None, **kwarks):
+             clock_rate=None, n_iqd=None, **kwarks):
     from treetime import TreeTime
 
     dL_int = None
@@ -114,13 +114,14 @@ def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False, branch_l
     else:
         marginal = confidence
 
-    tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal, branch_length_mode=branch_length_mode,
-           resolve_polytomies=resolve_polytomies, max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
-           **kwarks)
+    tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
+           branch_length_mode=branch_length_mode, resolve_polytomies=resolve_polytomies,
+           max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
+           n_iqd=n_iqd, **kwarks)
 
     if confidence:
-        for n in T.find_clades():
-            n.numdate_confidence = list(tt.get_max_posterior_region(n, 0.9))
+        for n in tt.tree.find_clades():
+            n.num_date_confidence = list(tt.get_max_posterior_region(n, 0.9))
 
     print("\nInferred a time resolved phylogeny using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
@@ -187,11 +188,12 @@ def run(args):
 
     start = time.time()
 
-    # without tree, attempt to build tree
     if args.output:
         tree_fname = args.output
     else:
         tree_fname = '.'.join(args.alignment.split('.')[:-1]) + '.nwk'
+
+    # without tree, attempt to build tree
     if T is None:
         if args.iqmodel and not args.method=='iqtree':
             print("Cannot specify model unless using IQTree. Model specification ignored.")
@@ -214,13 +216,14 @@ def run(args):
         dates = get_numerical_dates(metadata, fmt=args.date_fmt)
 
         tt = timetree(tree=T, aln=aln, dates=dates, confidence=args.date_confidence,
-                      reroot=args.root if args.root else 'best', clock_rate=args.clock_rate)
+                      reroot=args.root if args.root else 'best',
+                      clock_rate=args.clock_rate, n_iqd=args.n_iqd)
         tree_meta['clock'] = {'rate':tt.date2dist.clock_rate,
                               'intercept':tt.date2dist.intercept,
                               'rtt_Tmrca':-tt.date2dist.intercept/tt.date2dist.clock_rate}
         attributes.extend(['numdate', 'clock_length', 'mutation_length', 'mutations', 'sequence'])
         if args.date_confidence:
-            attributes.append('numdate_confidence')
+            attributes.append('num_date_confidence')
     elif args.ancestral in ['joint', 'marginal']:
         tt = ancestral_sequence_inference(tree=T, aln=aln, marginal=args.ancestral,
                                           optimize_branch_length=args.branchlengths=='div')

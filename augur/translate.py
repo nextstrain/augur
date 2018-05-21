@@ -105,6 +105,13 @@ def run(args):
     for fname, feat in features.items():
         translations[fname] = translate_feature(sequences, feat)
 
+    ## glob the annotations for later auspice export
+    annotations = {}
+    for fname, feat in features.items():
+        annotations[fname] = {'start':int(feat.location.start),
+                              'end':int(feat.location.end),
+                              'strand': feat.location.strand}
+
     ## determine amino acid mutations for each node
     aa_muts = {}
     for n in tree.get_nonterminals():
@@ -117,7 +124,7 @@ def run(args):
                             enumerate(zip(aln[n.name], aln[c.name])) if a!=d]
                 aa_muts[c.name]["aa_muts"][fname] = tmp
 
-    write_json(aa_muts, args.output)
+    write_json({'annotation':annotations, 'nodes':aa_muts}, args.output)
 
     ## write alignments to file is requested
     if args.alignment_output and '%GENE' in args.alignment_output:

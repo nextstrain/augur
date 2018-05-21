@@ -1,6 +1,14 @@
-import os
+import os, json
 import pandas as pd
 from treetime.utils import numeric_date
+from collections import defaultdict
+
+def myopen(fname, mode):
+    if fname.endswith('.gz'):
+        import gzip
+        return gzip.open(fname, mode)
+    else:
+        return open(fname, mode)
 
 def ambiguous_date_to_date_range(mydate, fmt):
     from datetime import datetime
@@ -64,28 +72,57 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None):
                 except:
                     numerical_dates[k] = None
     else:
-        numerical_dates = {k:float(v) for k,v in dates.items()}
+        numerical_dates = {k:float(v) for k,v in meta_dict.items()}
 
     return numerical_dates
 
-def read_node_data(fname, traits=None, aa_muts=None):
-    import json
+def read_node_data(fname, other_files=None):
     if os.path.isfile(fname):
         with open(fname) as jfile:
             node_data = json.load(jfile)
 
-        for more_data in [traits, aa_muts]:
-            if more_data and os.path.isfile(more_data):
-                with open(more_data) as jfile:
+        if type(other_files) is str:
+            other_files = [other_files]
+        elif other_files is None:
+            other_files = []
+
+        for tmp_fname in other_files:
+            if os.path.isfile(tmp_fname):
+                with open(tmp_fname) as jfile:
                     tmp_data = json.load(jfile)
                 for k,v in tmp_data.items():
-                    if k in node_data["nodes"]:
-                        node_data["nodes"][k].update(v)
+                    if k=="nodes":
+                        for n,nv in v.items():
+                            if n in node_data["nodes"]:
+                                node_data["nodes"][n].update(nv)
+                    elif k in node_data:
+                        node_data[k].update(v)
+                    else:
+                        node_data[k]=v
+            else:
+                print("ERROR: additional meta data file %s not found"%tmp_fname)
     else:
         print("ERROR: node data can't be read, file %s not found"%fname)
         node_data=None
 
     return node_data
+
+
+# put the data saved in node_data json back onto the tree
+def attach_tree_meta_data(T, node_meta):
+    for n in T.find_clades(order='preorder'):
+        if n.name not in node_meta:
+            print("ERROR: keys in tree and node meta data don't match. Node %s is missing"%n.name)
+            continue
+
+        n.attr={}
+        n.aa_muts={}
+        for field, val in node_meta[n.name].items():
+            n.__setattr__(field, val)
+            if field=='mutations':
+                n.muts = val
+            if field=='numdate':
+                n.num_date = val
 
 
 def write_json(data, file_name, indent=1):
@@ -150,3 +187,33 @@ def load_features(reference, feature_names=None):
                         features[fname] = feat
 
     return features
+
+def read_config(fname):
+    if fname and os.path.isfile(fname):
+        with open(fname) as ifile:
+            config = json.load(ifile)
+    else:
+        print("ERROR: config file %s not found."%fname)
+        config = defaultdict(dict)
+
+    return config
+
+def read_geo(fname):
+    if fname and os.path.isfile(fname):
+        coordinates = {}
+        with open(fname) as ifile:
+            header = ifile.readline().strip().split('\t')
+            for line in ifile:
+                fields = line.strip().split('\t')
+                tmp = {}
+                for f, val in zip(header[1:], fields[1:]):
+                    try:
+                        tmp[f] = float(val)
+                    except:
+                        tmp[f] = val
+                coordinates[fields[0]] = tmp
+    else:
+        print("ERROR: geo def file %s not found."%fname)
+        coordinates = defaultdict(dict)
+
+    return coordinates
