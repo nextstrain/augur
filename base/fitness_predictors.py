@@ -47,7 +47,7 @@ class fitness_predictors(object):
             self.calc_tolerance(tree, preferences_file='metadata/2017-12-07-H3N2-preferences-rescaled.csv', attr = pred, use_epitope_mask=True)
         if pred == 'dms':
             if not hasattr(tree.root, pred):
-                self.calc_dms(tree, preferences_file='metadata/2017-12-07-H3N2-preferences-rescaled.csv')
+                self.calc_dms(tree, preferences_file=kwargs.get("preferences_file", "metadata/2017-12-07-H3N2-preferences-rescaled.csv"))
         if pred == 'tol_ne':
             self.calc_tolerance(tree, epitope_mask = self.tolerance_mask, attr = 'tol_ne')
         if pred == 'null':
@@ -200,43 +200,50 @@ class fitness_predictors(object):
         stacked_preferences = preferences.loc[:, "A":"Y"].stack()
 
         # Use all positions in the given sequence by default.
-        tree.root.aa = self._translate(tree.root)
-        positions = list(range(len(tree.root.aa)))
+        aa_length = 566
+        positions = list(range(aa_length))
+
+        # Define start positions in amino acids for HA genes including SigPep,
+        # HA1, and HA2.  These positions will be used to calculate the absolute
+        # position in HA for amino acid mutations annotated in gene-specific
+        # coordinates.
+        gene_start_coordinates = {
+            "SigPep": 0,
+            "HA1": 16,
+            "HA2": 345
+        }
 
         # Calculate a default value for missing preferences.
-        missing_preference = 1e-10
+        default_preference = 1e-4
 
         for node in tree.root.find_clades():
-            # Determine amino acid sequence if it is not defined.
-            if not hasattr(node, "aa"):
-                node.aa = self._translate(node)
-
-            # Get amino acid mutations between this node and its parent.
             if node.up is None:
                 mut_effect = 0.0
             else:
-                parent_mutations = []
-                node_mutations = []
-
-                for i in positions:
-                    if node.aa[i] != node.up.aa[i]:
-                        parent_mutations.append((i, node.up.aa[i]))
-                        node_mutations.append((i, node.aa[i]))
-
-                # Calculate mutational effect for this node based on its differences
-                # since the parent node. If there are no mutations since the parent,
-                # this node keeps the same effect. Otherwise, sum the effects of all
-                # mutations since the parent.
                 mut_effect = node.up.attr[attr]
-                if len(node_mutations) > 0:
-                    # Mutational effect is the preference of the current node's amino acid
-                    # at each mutated site divided by the preference of the original and
-                    # transformed to log scale such that changes to less preferred amino acids
-                    # will produce a negative effect and changes to more preferred will be positive.
-                    node_preferences = stacked_preferences[node_mutations].fillna(missing_preference)
-                    parent_preferences = stacked_preferences[parent_mutations].fillna(missing_preference)
-                    new_mut_effect = np.log2(node_preferences.values / parent_preferences.values).sum()
-                    mut_effect += new_mut_effect
+
+            if hasattr(node, "aa_muts"):
+                for gene, muts in node.aa_muts.items():
+                    for mut in muts:
+                        # Identify the original and mutation amino acids.
+                        a1 = mut[0]
+                        a2 = mut[-1]
+
+                        # Calculate absolute position of mutation in HA coordinates.
+                        # Mutation coordinates from `aa_muts` are 1-based, while DMS
+                        # preferences are zero-based.
+                        r = int(mut[1:-1]) - 1 + gene_start_coordinates[gene]
+
+                        # Calculate mutational effect if the mutation does not involve
+                        # an unknown amino acid or stop codon.
+                        if not r in positions and len(positions) == aa_length:
+                            print("WARNING: Couldn't find position %i in all sites" % r)
+
+                        if "X" not in mut and "*" not in mut and r in positions:
+                            mut_effect += np.log2(
+                                stacked_preferences.get((r, a2), default_preference) /
+                                stacked_preferences.get((r, a1), default_preference)
+                            )
 
             setattr(node, attr, mut_effect)
             node.attr[attr] = mut_effect
