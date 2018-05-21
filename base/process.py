@@ -587,34 +587,27 @@ class process(object):
             - clades: a dictionary with clade names as keys and lists of genoypes as values
             - offset: the offset to be applied to the position specification, typically -1
                       to conform with counting starting at 0 as opposed to 1
+        "clade_annotation" is a label to a specific node in the tree that is used to hang a text label in auspice
+        "clade_membership" is an attribute of every node in the tree that defines clade membership, used as coloring in auspice
         '''
         def match(node, genotype):
             return all([node.translations[gene][pos+offset]==state if gene in node.translations else node.sequence[pos+offset]==state
                         for gene, pos, state in genotype])
 
+        ## Label root nodes for each clade as clade_annotation via clades_to_nodes
         ## NOTE clades_to_nodes is used in the (full) frequencies export
-        # TODO remove all references here to named_clades and clade_name
         self.clades_to_nodes = {}
-        for n in self.tree.tree.find_clades():
-            n.attr["named_clades"]=[]
         for clade_name, genotype in clades.iteritems():
             matching_nodes = filter(lambda x:match(x,genotype), self.tree.tree.get_nonterminals())
             matching_nodes.sort(key=lambda x:x.numdate if hasattr(x,'numdate') else x.dist2root)
             if len(matching_nodes):
                 self.clades_to_nodes[clade_name] = matching_nodes[0]
-                self.clades_to_nodes[clade_name].attr['clade_name']=clade_name
-                self.clades_to_nodes[clade_name].attr['clade_annotation']=clade_name
-                for n in filter(lambda x:match(x,genotype), self.tree.tree.find_clades()):
-                    n.attr["named_clades"].append(clade_name)
+                self.clades_to_nodes[clade_name].attr['clade_annotation'] = clade_name
             else:
                 print('matchClades: no match found for ', clade_name, genotype)
                 for allele in genotype:
                     partial_matches = filter(lambda x:match(x,[allele]), self.tree.tree.get_nonterminals())
                     print('Found %d partial matches for allele '%len(partial_matches), allele)
-
-            for n in filter(lambda x:match(x,genotype), self.tree.tree.find_clades()):
-                n.attr["named_clades"].sort(key=lambda x:self.clades_to_nodes[x].numdate, reverse=True)
-                n.attr["named_clades"] = n.attr["named_clades"][:1]
 
         ## Now preorder traverse the tree with state replacement to set the clade_membership via clade_annotation
         for node in self.tree.tree.find_clades():

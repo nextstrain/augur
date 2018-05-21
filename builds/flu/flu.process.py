@@ -293,8 +293,8 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
         node = titer_model.node_lookup[test]
         date = node.attr["num_date"]
         date = int(date*2)/2.
-        if "named_clades" in node.attr:
-            clade = '_'.join(node.attr["named_clades"])
+        if "clade_membership" in node.attr:
+            clade = node.attr[""clade_membership""]
         else:
             clade = 'unassigned'
         if ref!=test:
@@ -328,8 +328,8 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
             serum_clade = 'unassigned'
             if serum_strain in titer_model.node_lookup:
                 node = titer_model.node_lookup[serum_strain]
-                if "named_clades" in node.attr:
-                    serum_clade = '_'.join(node.attr["named_clades"])
+                if "clade_membership" in node.attr:
+                    serum_clade = node.attr["clade_membership"]
             if clade == serum_clade:
                 sorted_sera_with_counts.append((serum,count))
 
@@ -338,8 +338,8 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
             serum_clade = 'unassigned'
             if serum[0] in titer_model.node_lookup:
                 node = titer_model.node_lookup[serum[0]]
-                if "named_clades" in node.attr:
-                    serum_clade = '_'.join(node.attr["named_clades"])
+                if "clade_membership" in node.attr:
+                    serum_clade = node.attr["clade_membership"]
             tmp_autologous = 640
             if autologous[serum]:
                 tmp_autologous = autologous[serum]
@@ -404,8 +404,8 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
         node = titer_model.node_lookup[test]
         date = node.attr["num_date"]
         date = int(date*2)/2.
-        if "named_clades" in node.attr:
-            clade = '_'.join(node.attr["named_clades"])
+        if "clade_membership" in node.attr:
+            clade = node.attr["clade_membership"]
         else:
             clade = 'unassigned'
         if ref!=test:
@@ -435,8 +435,8 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
             serum_clade = 'unassigned'
             if serum_strain in titer_model.node_lookup:
                 node = titer_model.node_lookup[serum_strain]
-                if "named_clades" in node.attr:
-                    serum_clade = '_'.join(node.attr["named_clades"])
+                if "clade_membership" in node.attr:
+                    serum_clade = node.attr["clade_membership"]
             if clade == serum_clade:
                 sera_with_counts.append((serum,count))
 
@@ -450,8 +450,8 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
             serum_clade = 'unassigned'
             if serum in titer_model.node_lookup:
                 node = titer_model.node_lookup[serum]
-                if "named_clades" in node.attr:
-                    serum_clade = '_'.join(node.attr["named_clades"])
+                if "clade_membership" in node.attr:
+                    serum_clade = node.attr["clade_membership"]
             tmp = []
             good_rows = 0
             for clade in virus_clades:
