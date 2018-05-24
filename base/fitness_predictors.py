@@ -7,7 +7,7 @@ from scipy.stats import linregress
 import sys
 
 from titer_model import SubstitutionModel, TiterCollection, TreeModel
-from builds.flu.scores import calculate_LBI
+from builds.flu.scores import calculate_LBI, select_nodes_in_season
 
 # all fitness predictors should be designed to give a positive sign, ie.
 # number of epitope mutations
@@ -33,7 +33,8 @@ class fitness_predictors(object):
 
     def setup_predictor(self, tree, pred, timepoint, **kwargs):
         if pred == 'lb':
-           calculate_LBI(tree, **kwargs)
+            select_nodes_in_season(tree, timepoint)
+            calculate_LBI(tree, **kwargs)
         # if pred == 'ep':
         #     self.calc_epitope_distance(tree)
         if pred == 'ep_x':
