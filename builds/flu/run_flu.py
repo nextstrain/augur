@@ -18,7 +18,7 @@ def run_live(
                               for segment in segments])
         for resolution in resolutions:
 
-            if process_segment=="ha" or (not no_prepare):
+            if process_segment=="ha" or no_prepare:
                 call = ['python',
                     'flu.prepare.py',
                     '--lineage', lineage,
@@ -155,11 +155,15 @@ if __name__ == '__main__':
             process_segment = params.segment,
             no_prepare = params.no_prepare)
     elif params.version == "who":
+        if params.segment == "na":
+            na = True
+        else:
+            na = False
         run_who(
             builds = params.builds,
             lineages = params.lineages,
             resolutions = params.resolutions,
             system = params.system,
             frequencies = params.frequencies,
-            process_segment = params.segment,
+            process_na = na,
             no_prepare = params.no_prepare)
