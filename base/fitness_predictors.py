@@ -385,7 +385,7 @@ class fitness_predictors(object):
         for node in tree.find_clades():
             setattr(node, attr, np.random.random())
 
-    def calc_titer_model(self, model, tree, timepoint, titers, lam_avi, lam_pot, lam_drop):
+    def calc_titer_model(self, model, tree, timepoint, titers, lam_avi, lam_pot, lam_drop, **kwargs):
         """Calculates the requested titer model for the given tree using only titers
         associated with strains sampled prior to the given timepoint.
         """
