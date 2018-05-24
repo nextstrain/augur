@@ -393,10 +393,8 @@ class TiterModel(object):
         self.lam_pot = lam_pot
         self.lam_avi = lam_avi
         self.lam_drop = lam_drop
-        if len(self.train_titers)==0:
-            print('no titers to train')
-            self.model_params = np.zeros(self.genetic_params+len(self.sera)+len(self.test_strains))
-        else:
+
+        if len(self.train_titers) > 1:
             if method=='l1reg':  # l1 regularized fit, no constraint on sign of effect
                 self.model_params = self.fit_l1reg()
             elif method=='nnls':  # non-negative least square, not regularized
@@ -407,6 +405,9 @@ class TiterModel(object):
                 self.model_params = self.fit_nnl1reg()
 
             print('rms deviation on training set=',np.sqrt(self.fit_func()))
+        else:
+            print('no titers to train')
+            self.model_params = np.zeros(self.genetic_params+len(self.sera)+len(self.test_strains))
 
         # extract and save the potencies and virus effects. The genetic parameters
         # are subclass specific and need to be process by the subclass
