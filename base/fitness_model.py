@@ -246,7 +246,7 @@ class fitness_model(object):
 
                 for tip in self.tips:
                     # Determine the frequency of this tip at the given timepoint.
-                    interpolation = interp1d(self.pivots, self.frequencies[region][tip.clade], kind="linear", bounds_error=True)
+                    interpolation = interp1d(self.pivots, frequencies[region][tip.clade], kind="linear", bounds_error=True)
                     tmp_freqs.append(np.asscalar(interpolation(time)))
             else:
                 print("Using precalculated frequencies for tips")
