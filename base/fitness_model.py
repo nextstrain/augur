@@ -208,7 +208,7 @@ class fitness_model(object):
         # Calculate global tree/clade frequencies if they have not been calculated already.
         if region not in self.frequencies or self.rootnode.clade not in self.frequencies["global"]:
             print("calculating global node frequencies")
-            frequencies = KdeFrequencies.estimate_frequencies_for_tree(self.tree, self.pivots, sigma=self.sigma)
+            frequencies = KdeFrequencies.estimate_frequencies_for_tree(self.tree, self.pivots, sigmaNarrow=self.sigma)
             self.frequencies[region] = frequencies[region]
         else:
             print("found existing global node frequencies")
@@ -238,11 +238,11 @@ class fitness_model(object):
             time = self.timepoints[i]
             tmp_freqs = []
 
-            if hasattr(self, "sigma"):
+            if hasattr(self, "sigma") and self.sigma is not None:
                 print("Calculating censored frequencies for %s" % time)
                 # Recalculate frequencies with observations after the current time
                 # censored from the calculations.
-                frequencies = KdeFrequencies.estimate_frequencies_for_tree(self.tree, self.pivots, sigma=self.sigma, max_date=time)
+                frequencies = KdeFrequencies.estimate_frequencies_for_tree(self.tree, self.pivots, sigmaNarrow=self.sigma, max_date=time)
 
                 for tip in self.tips:
                     # Determine the frequency of this tip at the given timepoint.
