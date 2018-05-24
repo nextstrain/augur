@@ -701,7 +701,12 @@ class KdeFrequencies(object):
                 clade_frequencies[region][clade] = normalized_freq_matrix_regional[clade_to_index[clade]]
 
         for node in tree.find_clades(order="postorder"):
-            if not node.is_terminal():
+            if node.is_terminal():
+                # Set regional frequencies for tips from different regions to zero.
+                for region in regions:
+                    if not node.clade in clade_frequencies[region]:
+                        clade_frequencies[region][node.clade] = np.zeros_like(pivots)
+            else:
                 clade_frequencies["global"][node.clade] = np.array(
                     [clade_frequencies["global"][child.clade] for child in node.clades]
                 ).sum(axis=0)
