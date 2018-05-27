@@ -1,6 +1,8 @@
 # estimates clade frequencies
 from __future__ import division, print_function
+from collections import defaultdict
 from scipy.interpolate import interp1d
+from scipy.stats import norm
 import time
 import numpy as np
 import sys
@@ -566,6 +568,119 @@ def test_nested_estimator():
             plt.plot(fe.pivots,fe.frequencies[k], 'o')
 
     return nested_freq
+
+
+class KdeFrequencies(object):
+    """Methods to estimate clade frequencies for phylogenetic trees by creating
+    normal distributions from timestamped tips in the tree and building a kernel
+    density estimate across discrete time points from these tip observations for
+    each clade in the tree.
+    """
+    def __init__(self):
+        pass
+
+    @classmethod
+    def get_density_for_observation(cls, mu, pivots, sigmaNarrow=1/12.0, sigmaWide=3/12.0, proportionWide=0.2):
+        """Build a normal distribution centered across the given floating point date,
+        mu, with a standard deviation based on the given sigma value and return
+        the probability mass at each pivot. These mass values per pivot will form the
+        input for a kernel density estimate across multiple observations.
+        """
+        return (1-proportionWide) * norm.pdf(pivots, loc=mu, scale=sigmaNarrow) + proportionWide * norm.pdf(pivots, loc=mu, scale=sigmaWide)
+
+    @classmethod
+    def get_densities_for_observations(cls, observations, pivots, max_date=None, **kwargs):
+        """Create a matrix of densities for one or more observations across the given
+        pivots with one row per observation and one column per pivot.
+
+        Observations can be optionally filtered by a maximum date such that all
+        densities are estimated to be zero after that date.
+        """
+        density_matrix = np.zeros((len(observations), len(pivots)))
+        for i, obs in enumerate(observations):
+            # If the given observation occurred outside the given pivots or
+            # after the given maximum date, do not try to estimate its
+            # frequency.
+            if (obs < pivots[0] or obs > pivots[-1]) or (max_date is not None and obs > max_date):
+                density = np.zeros_like(pivots)
+            else:
+                density = cls.get_density_for_observation(obs, pivots, **kwargs)
+
+            density_matrix[i] = density
+
+        return density_matrix
+
+    @classmethod
+    def normalize_to_frequencies(cls, density_matrix):
+        """Normalize the values of a given density matrix to 1 across all columns
+        (time points) with non-zero sums. This converts kernal PDF mass into a
+        frequency estimate.
+        """
+        normalized_freq_matrix = density_matrix.copy()
+
+        # Find columns that can be meaningfully normalized.
+        nonzero_columns = np.where(density_matrix.sum(axis=0) > 0)[0]
+
+        # Normalize by column.
+        normalized_freq_matrix[:, nonzero_columns] = density_matrix[:, nonzero_columns] / density_matrix[:, nonzero_columns].sum(axis=0)
+
+        return normalized_freq_matrix
+
+    @classmethod
+    def estimate_frequencies(cls, tip_dates, pivots, **kwargs):
+        """Estimate frequencies of the given observations across the given pivots.
+        """
+        # Calculate base frequencies from observations.
+        density_matrix = cls.get_densities_for_observations(tip_dates, pivots, **kwargs)
+
+        # Normalize frequencies to sum to 1.
+        normalized_freq_matrix = cls.normalize_to_frequencies(density_matrix)
+
+        return normalized_freq_matrix
+
+    @classmethod
+    def estimate_frequencies_for_tree(cls, tree, pivots, **kwargs):
+        """Estimate global and regional frequencies for all nodes in a tree across the
+        given pivots.
+        """
+        # Collect all tips from the given tree and sort by their observation date.
+        tips = np.array(sorted([(tip.clade, tip.attr["num_date"], tip.attr["region"])
+                                for tip in tree.get_terminals()], key=lambda row: row[1]))
+
+        clades = tips[:, 0].astype(int)
+        tip_dates = tips[:, 1].astype(float)
+        tip_regions = tips[:, 2]
+        regions = np.unique(tip_regions)
+
+        # Map clade ids to their corresponding frequency matrix row index.
+        clade_to_index = {clades[i]: i for i in range(len(clades))}
+
+        # Calculate tip frequencies weighted by tip population sizes and then normalized.
+        normalized_freq_matrix = cls.estimate_frequencies(tip_dates, pivots, **kwargs)
+
+        # Calculate clade frequencies as the sum of respective tip frequencies
+        # both globally and across all regions.
+        clade_frequencies = defaultdict(dict)
+        for node in tree.find_clades(order="postorder"):
+            if node.is_terminal():
+                # Get global frequencies.
+                clade_frequencies["global"][node.clade] = normalized_freq_matrix[clade_to_index[node.clade]]
+
+                # Get regional frequencies.
+                for region in regions:
+                    if node.attr["region"] == region:
+                        clade_frequencies[region][node.clade] = normalized_freq_matrix[clade_to_index[node.clade]]
+                    else:
+                        # The current tip is not in the current region.
+                        clade_frequencies[region][node.clade] = np.zeros_like(pivots)
+            else:
+                clade_frequencies["global"][node.clade] = np.array([clade_frequencies["global"][child.clade]
+                                                                  for child in node.clades]).sum(axis=0)
+                for region in regions:
+                    clade_frequencies[region][node.clade] = np.array([clade_frequencies[region][child.clade]
+                                                                      for child in node.clades]).sum(axis=0)
+
+        return clade_frequencies
 
 
 if __name__=="__main__":
