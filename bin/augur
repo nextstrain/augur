@@ -55,11 +55,11 @@ if __name__=="__main__":
     tree_parser = subparsers.add_parser('tree', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     tree_parser.add_argument('--alignment', required=True, help="alignment to build tree from")
     tree_parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
-    tree_parser.add_argument('--tree', help="prebuild newick -- no tree will be build if provided")
+    tree_parser.add_argument('--tree', help="prebuilt newick -- no tree will be built if provided")
     tree_parser.add_argument('--metadata', type=str, help="tsv/csv table with meta data for sequences")
     tree_parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")
     tree_parser.add_argument('--clock_rate', type=float, help="fixed clock rate")
-    tree_parser.add_argument('--root', type=str, help="root or rooting mechanism")
+    tree_parser.add_argument('--root', type=str, help="root or rooting mechanism ('best' (default), 'rsq', 'min_dev')")
     tree_parser.add_argument('--date_fmt', default="%Y-%m-%d", help="date format")
     tree_parser.add_argument('--date_confidence', action="store_true", help="calculate confidence intervals for node dates")
     tree_parser.add_argument('--ancestral', default="None", choices=["joint", "marginal", "None"],
@@ -72,7 +72,13 @@ if __name__=="__main__":
     tree_parser.add_argument('--n_iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
                              'interquartile ranges from the root-to-tip vs time regression')
     tree_parser.add_argument('--nthreads', type=int, default=2,
-                             help="number of threads used by mafft")
+                             help="number of threads used")
+    tree_parser.add_argument('--vcf_reference', type=str, help='fasta file of the sequence the VCF was mapped to')                         
+    tree_parser.add_argument('--keep_vcf_fasta', action="store_true", help='do not delete informative-site fasta created when '
+                             'making tree from VCF input')
+    tree_parser.add_argument('--strip_sites', type=str, help='file name of sites to exclude for raw tree building (VCF only)')
+    tree_parser.add_argument('--output_vcf', type=str, help='name of output VCF file which will include ancestral seqs, if treetime or ancestral is run')
+    tree_parser.add_argument('--year_limit', type=int, nargs='+', help='specify min or max & min years for samples with XX in year')
     tree_parser.set_defaults(func=tree.run)
 
     ## TRANSLATE.PY

@@ -10,7 +10,7 @@ def myopen(fname, mode):
     else:
         return open(fname, mode)
 
-def ambiguous_date_to_date_range(mydate, fmt):
+def ambiguous_date_to_date_range(mydate, fmt, min_max_year=None):
     from datetime import datetime
     sep = fmt.split('%')[1][-1]
     min_date, max_date = {}, {}
@@ -20,7 +20,14 @@ def ambiguous_date_to_date_range(mydate, fmt):
         f = 'year' if 'y' in field.lower() else ('day' if 'd' in field.lower() else 'month')
         if 'XX' in val:
             if f=='year':
-                return None, None
+                if min_max_year:
+                    min_date[f]=min_max_year[0]
+                    if len(min_max_year)>1:
+                        max_date[f]=min_max_year[1]
+                    elif len(min_max_year)==1:
+                        max_date[f]=4000 #will be replaced by 'today' below.
+                else:
+                    return None, None
             elif f=='month':
                 min_date[f]=1
                 max_date[f]=12
@@ -55,7 +62,7 @@ def read_metadata(fname):
         return {}, []
 
 
-def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None):
+def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, min_max_year=None):
     if fmt:
         from datetime import datetime
         numerical_dates = {}
@@ -65,7 +72,11 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None):
                 print("WARNING: %s has an invalid data string:"%k,v)
                 continue
             elif 'XX' in v:
-                numerical_dates[k] = [numeric_date(d) for d in ambiguous_date_to_date_range(v, fmt)]
+                ambig_date = ambiguous_date_to_date_range(v, fmt, min_max_year)
+                if ambig_date is None or None in ambig_date:
+                    numerical_dates[k] = [None, None] #don't send to numeric_date or will be set to today
+                else:
+                    numerical_dates[k] = [numeric_date(d) for d in ambig_date]
             else:
                 try:
                     numerical_dates[k] = numeric_date(datetime.strptime(v, fmt))

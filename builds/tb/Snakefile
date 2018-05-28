@@ -1,22 +1,63 @@
+rule data:
+    input:
+        seq = "data/lee_2015.vcf.gz",
+        meta = "data/meta.tsv",
+        exclude = "data/dropped_strains.txt",
+        mask = "data/Locus_to_exclude_Mtb.bed",
+        ref = "data/ref.fasta",
+        drms = "data/DRMs.txt",
+        sites = "data/drm_sites.txt"
+    params:
+        method = 'iqtree'
+
 rule filter:
 	input:
-		seq = "data/lee_2015.vcf.gz",
-		meta = "data/meta.tsv",
-		exclude = "data/dropped_strains.txt"
+		seq = rules.data.input.seq,
+		meta = rules.data.input.meta,
+		exclude = rules.data.input.exclude
 	output:
 		"results/filtered.vcf.gz"
 	params:
 		vpc = 30,
 		cat = "year month"
 	shell:
-        "augur filter --sequences {input.seq} --output {output} --min_date 1992 --metadata {input.meta} --viruses_per_cat {params.vpc} --exclude {input.exclude} --cat {params.cat}"
+		"augur filter --sequences {input.seq} --output {output} --metadata {input.meta} --exclude {input.exclude}"
 
 rule mask:
     input:
-        seq = "results/filtered.vcf.gz",
-        mask = "data/Locus_to_exclude_Mtb.bed"
+        seq = rules.filter.output,
+        mask = rules.data.input.mask
     output:
-       "results/masked.vcf"
+       "results/masked.vcf.gz"
     shell:
         "augur mask --sequences {input.seq} --output {output} --mask {input.mask}"
-   
+
+rule tree:
+    input:
+        aln = rules.mask.output,
+        ref = rules.data.input.ref,
+        sites = rules.data.input.sites
+    output:
+        "results/tree_raw.nwk"
+    params:
+        method = rules.data.params.method
+    shell:
+        'augur tree --keep_vcf_fasta --strip_sites {input.sites} --alignment {input.aln} --vcf_reference {input.ref} --output {output} --method {params.method}'
+        
+rule timetree:
+	input:
+		aln = rules.mask.output,
+        ref = rules.data.input.ref,
+		metadata = rules.data.input.meta,
+		tree = rules.tree.output
+	output:
+		tree = "results/tree.nwk",
+		node_data = "results/node_data.json",
+		vcf = "results/treetime.vcf"
+	params:
+		root = 'residual'
+	shell:
+		'augur tree --alignment {input.aln} --tree {input.tree} --metadata {input.metadata}'
+		' --output {output.tree} --node_data {output.node_data} --vcf_reference {input.ref}'
+		' --timetree --root {params.root} --output_vcf {output.vcf} --year_limit 2016 2000'  
+
