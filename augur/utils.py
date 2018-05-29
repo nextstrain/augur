@@ -172,11 +172,19 @@ def load_features(reference, feature_names=None):
         with open(reference) as in_handle:
             for rec in GFF.parse(in_handle, limit_info=limit_info):
                 for feat in rec.features:
-                    if "gene" in feat.qualifiers:
-                        fname = feat.qualifiers["gene"][0]
+                    if feature_names is not None: #check both tags; user may have used either
+                        if "gene" in feat.qualifiers and feat.qualifiers["gene"][0] in feature_names:
+                            fname = feat.qualifiers["gene"][0]
+                        elif "locus_tag" in feat.qualifiers and feat.qualifiers["locus_tag"][0] in feature_names:
+                            fname = feat.qualifiers["locus_tag"][0]
+                        else:
+                            fname = None
                     else:
-                        fname = feat.qualifiers["locus_tag"][0]
-                    if feature_names is None or fname in feature_names:
+                        if "gene" in feat.qualifiers:
+                            fname = feat.qualifiers["gene"][0]
+                        else:
+                            fname = feat.qualifiers["locus_tag"][0]
+                    if fname:
                         features[fname] = feat
 
             if feature_names is not None:
@@ -228,3 +236,91 @@ def read_geo(fname):
         coordinates = defaultdict(dict)
 
     return coordinates
+
+
+def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
+    """
+    Writes out a VCF-style file (which seems to be minimally handleable
+    by vcftools and pyvcf) of the AA differences between sequences and the reference.
+    This is a similar format created/used by read_in_vcf except that there is one
+    of these dicts (with sequences, reference, positions) for EACH gene.
+
+    Also writes out a fasta of the reference alignment.
+
+    EBH 12 Dec 2017
+    """
+    import numpy as np
+
+    #for the header
+    seqNames = list(prot_dict[list(prot_dict.keys())[0]]['sequences'].keys())
+
+    #prepare the header of the VCF & write out
+    header=["#CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT"]+seqNames
+    with open(vcf_file_name, 'w') as the_file:
+        the_file.write( "##fileformat=VCFv4.2\n"+
+                        "##source=NextStrain_Protein_Translation\n"+
+                        "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n")
+        the_file.write("\t".join(header)+"\n")
+
+    refWrite = []
+    vcfWrite = []
+
+    #go through for every gene/protein
+    for fname, prot in prot_dict.items():
+        sequences = prot['sequences']
+        ref = prot['reference']
+        positions = prot['positions']
+
+        #write out the reference fasta
+        refWrite.append(">"+fname)
+        refWrite.append(ref)
+
+        #go through every variable position
+        #There are no deletions here, so it's simpler than for VCF nuc sequenes!
+        for pi in positions:
+            pos = pi+1 #change numbering to match VCF not python
+            refb = ref[pi] #reference base at this position
+
+            #try/except is (much) faster than list comprehension!
+            pattern = []
+            for k,v in sequences.items():
+                try:
+                    pattern.append(sequences[k][pi])
+                except KeyError:
+                    pattern.append('.')
+            pattern = np.array(pattern)
+
+            #get the list of ALTs - minus any '.'!
+            uniques = np.unique(pattern)
+            uniques = uniques[np.where(uniques!='.')]
+
+            #Convert bases to the number that matches the ALT
+            j=1
+            for u in uniques:
+                pattern[np.where(pattern==u)[0]] = str(j)
+                j+=1
+            #Now convert these calls to #/# (VCF format)
+            calls = [ j+"/"+j if j!='.' else '.' for j in pattern ]
+            if len(uniques)==0:
+                print ("UNEXPECTED ERROR WHILE CONVERTING TO VCF AT POSITION {}".format(str(pi)))
+                break
+
+            #put it all together and write it out
+            output = [fname, str(pos), ".", refb, ",".join(uniques), ".", "PASS", ".", "GT"] + calls
+
+            vcfWrite.append("\t".join(output))
+
+    #write it all out
+    with open(ref_file_name, 'w') as the_file:
+        the_file.write("\n".join(refWrite))
+
+    with open(vcf_file_name, 'a') as the_file:
+        the_file.write("\n".join(vcfWrite))
+
+    if vcf_file_name.lower().endswith('.gz'):
+        import os
+        #must temporarily remove .gz ending, or gzip won't zip it!
+        os.rename(vcf_file_name, vcf_file_name[:-3])
+        call = ["gzip", vcf_file_name[:-3]]
+        os.system(" ".join(call))
+

@@ -6,7 +6,9 @@ rule data:
         mask = "data/Locus_to_exclude_Mtb.bed",
         ref = "data/ref.fasta",
         drms = "data/DRMs.txt",
-        sites = "data/drm_sites.txt"
+        sites = "data/drm_sites.txt",
+        generef = "data/Mtb_H37Rv_NCBI_Annot.gff",
+        genes = "data/genes.txt"
     params:
         method = 'iqtree'
 
@@ -43,7 +45,7 @@ rule tree:
         method = rules.data.params.method
     shell:
         'augur tree --keep_vcf_fasta --strip_sites {input.sites} --alignment {input.aln} --vcf_reference {input.ref} --output {output} --method {params.method}'
-        
+
 rule timetree:
 	input:
 		aln = rules.mask.output,
@@ -59,5 +61,22 @@ rule timetree:
 	shell:
 		'augur tree --alignment {input.aln} --tree {input.tree} --metadata {input.metadata}'
 		' --output {output.tree} --node_data {output.node_data} --vcf_reference {input.ref}'
-		' --timetree --root {params.root} --output_vcf {output.vcf} --year_limit 2016 2000'  
+		' --timetree --root {params.root} --output_vcf {output.vcf} --year_limit 2016 2000'
+
+rule translate:
+	input:
+		tree = rules.timetree.output.tree,
+		ref = rules.data.input.ref,
+		gene_ref = rules.data.input.generef,
+		vcf = rules.timetree.output.vcf,
+		genes = rules.data.input.genes
+	output:
+		aa_data = "results/aa_muts.json",
+		vcf_out = "results/translations.vcf"
+	shell:
+		'augur translate --tree {input.tree} --genes {input.genes} --vcf_reference {input.ref}'
+		' --vcf_input {input.vcf} --output {output.aa_data} --reference_sequence {input.gene_ref}'
+		' --vcf_output {output.vcf_out}'
+
+
 

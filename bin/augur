@@ -30,7 +30,7 @@ if __name__=="__main__":
     align_parser.add_argument('--cat', nargs='+', help="categories with respect to subsample")
     align_parser.add_argument('--output', help="output file")
     align_parser.set_defaults(func=filter.run)
-    
+
     ### MASK.PY -- mask specified sites from a VCF file
     align_parser = subparsers.add_parser('mask', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     align_parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF format")
@@ -73,7 +73,7 @@ if __name__=="__main__":
                              'interquartile ranges from the root-to-tip vs time regression')
     tree_parser.add_argument('--nthreads', type=int, default=2,
                              help="number of threads used")
-    tree_parser.add_argument('--vcf_reference', type=str, help='fasta file of the sequence the VCF was mapped to')                         
+    tree_parser.add_argument('--vcf_reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     tree_parser.add_argument('--keep_vcf_fasta', action="store_true", help='do not delete informative-site fasta created when '
                              'making tree from VCF input')
     tree_parser.add_argument('--strip_sites', type=str, help='file name of sites to exclude for raw tree building (VCF only)')
@@ -92,6 +92,10 @@ if __name__=="__main__":
     translate_parser.add_argument('--alignment_output', type=str, help="write the alignment of each gene to file,"
                                   "specify the file name like so: 'my_alignment_GENE.fasta' where 'GENE'"
                                    "will be replaced by the name of the gene")
+    translate_parser.add_argument('--vcf_input', type=str, help='VCF file with original and ancestral sequences')
+    translate_parser.add_argument('--vcf_reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    translate_parser.add_argument('--vcf_output', type=str, help='write a faux-VCF alignment of the translations to a file.'
+                                   'a corresponding fasta reference will be generated')
     translate_parser.set_defaults(func=translate.run)
 
     ## TRAITS.PY
