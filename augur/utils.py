@@ -46,7 +46,7 @@ def ambiguous_date_to_date_range(mydate, fmt, min_max_year=None):
 def read_metadata(fname):
     if os.path.isfile(fname):
         metadata = pd.read_csv(fname, sep='\t' if fname[-3:]=='tsv' else ',',
-                             skipinitialspace=True)
+                             skipinitialspace=True).fillna('')
         meta_dict = {}
         for ii, val in metadata.iterrows():
             if hasattr(val, "strain"):
