@@ -611,7 +611,7 @@ class KdeFrequencies(object):
         return density_matrix
 
     @classmethod
-    def normalize_to_frequencies(cls, density_matrix):
+    def normalize_to_frequencies(cls, density_matrix, normalize_to=1.0):
         """Normalize the values of a given density matrix to 1 across all columns
         (time points) with non-zero sums. This converts kernal PDF mass into a
         frequency estimate.
@@ -622,66 +622,100 @@ class KdeFrequencies(object):
         nonzero_columns = np.where(density_matrix.sum(axis=0) > 0)[0]
 
         # Normalize by column.
-        normalized_freq_matrix[:, nonzero_columns] = density_matrix[:, nonzero_columns] / density_matrix[:, nonzero_columns].sum(axis=0)
+        normalized_freq_matrix[:, nonzero_columns] = normalize_to * density_matrix[:, nonzero_columns] / density_matrix[:, nonzero_columns].sum(axis=0)
 
         return normalized_freq_matrix
 
     @classmethod
-    def estimate_frequencies(cls, tip_dates, pivots, **kwargs):
+    def estimate_frequencies(cls, tip_dates, pivots, normalize_to=1.0, **kwargs):
         """Estimate frequencies of the given observations across the given pivots.
         """
         # Calculate base frequencies from observations.
         density_matrix = cls.get_densities_for_observations(tip_dates, pivots, **kwargs)
 
         # Normalize frequencies to sum to 1.
-        normalized_freq_matrix = cls.normalize_to_frequencies(density_matrix)
+        normalized_freq_matrix = cls.normalize_to_frequencies(density_matrix, normalize_to=normalize_to)
 
         return normalized_freq_matrix
 
     @classmethod
     def estimate_frequencies_for_tree(cls, tree, pivots, **kwargs):
-        """Estimate global and regional frequencies for all nodes in a tree across the
-        given pivots.
+        """Estimate global frequencies for all nodes in a tree across the given pivots.
         """
-        # Collect all tips from the given tree and sort by their observation date.
-        tips = np.array(sorted([(tip.clade, tip.attr["num_date"], tip.attr["region"])
-                                for tip in tree.get_terminals()], key=lambda row: row[1]))
 
+        clade_frequencies = defaultdict(dict)
+
+        # Find tips within region.
+        tips = [(tip.clade, tip.attr["num_date"]) for tip in tree.get_terminals()]
+        tips = np.array(sorted(tips, key=lambda row: row[1]))
         clades = tips[:, 0].astype(int)
         tip_dates = tips[:, 1].astype(float)
-        tip_regions = tips[:, 2]
-        regions = np.unique(tip_regions)
 
         # Map clade ids to their corresponding frequency matrix row index.
         clade_to_index = {clades[i]: i for i in range(len(clades))}
 
-        # Calculate tip frequencies weighted by tip population sizes and then normalized.
-        normalized_freq_matrix = cls.estimate_frequencies(tip_dates, pivots, **kwargs)
+        # Calculate tip frequencies and normalize.
+        normalized_freq_matrix = cls.estimate_frequencies(tip_dates, pivots, normalize_to=1.0, **kwargs)
 
-        # Calculate clade frequencies as the sum of respective tip frequencies
-        # both globally and across all regions.
-        clade_frequencies = defaultdict(dict)
+        for clade in clades:
+            clade_frequencies["global"][clade] = normalized_freq_matrix[clade_to_index[clade]]
+
         for node in tree.find_clades(order="postorder"):
-            if node.is_terminal():
-                # Get global frequencies.
-                clade_frequencies["global"][node.clade] = normalized_freq_matrix[clade_to_index[node.clade]]
-
-                # Get regional frequencies.
-                for region in regions:
-                    if node.attr["region"] == region:
-                        clade_frequencies[region][node.clade] = normalized_freq_matrix[clade_to_index[node.clade]]
-                    else:
-                        # The current tip is not in the current region.
-                        clade_frequencies[region][node.clade] = np.zeros_like(pivots)
-            else:
+            if not node.is_terminal():
                 clade_frequencies["global"][node.clade] = np.array([clade_frequencies["global"][child.clade]
-                                                                  for child in node.clades]).sum(axis=0)
-                for region in regions:
-                    clade_frequencies[region][node.clade] = np.array([clade_frequencies[region][child.clade]
-                                                                      for child in node.clades]).sum(axis=0)
+                                                                for child in node.clades]).sum(axis=0)
 
         return clade_frequencies
 
+
+    @classmethod
+    def estimate_region_weighted_frequencies_for_tree(cls, tree, pivots, regions, weights, **kwargs):
+        """Estimate global and regional frequencies for all nodes in a tree across the
+        given pivots. Global frequencies represent a weighted mean across regions.
+        regions is a list of region names
+        weights is a list of region weights
+        """
+
+        clade_frequencies = defaultdict(dict)
+
+        proportions = np.array(weights) / np.array(weights).sum(axis=0)
+
+        for (region, proportion) in zip(regions, proportions):
+
+            # Find tips within region.
+            tips = [(tip.clade, tip.attr["num_date"])
+                for tip in tree.get_terminals() if tip.attr["region"] == region]
+            tips = np.array(sorted(tips, key=lambda row: row[1]))
+            clades = tips[:, 0].astype(int)
+            tip_dates = tips[:, 1].astype(float)
+
+            # Map clade ids to their corresponding frequency matrix row index.
+            clade_to_index = {clades[i]: i for i in range(len(clades))}
+
+            # Calculate tip frequencies and normalize.
+            normalized_freq_matrix_global = cls.estimate_frequencies(tip_dates, pivots, normalize_to=proportion, **kwargs)
+            normalized_freq_matrix_regional = cls.estimate_frequencies(tip_dates, pivots, normalize_to=1.0, **kwargs)
+
+            for clade in clades:
+                clade_frequencies["global"][clade] = normalized_freq_matrix_global[clade_to_index[clade]]
+                clade_frequencies[region][clade] = normalized_freq_matrix_regional[clade_to_index[clade]]
+
+        for node in tree.find_clades(order="postorder"):
+            if node.is_terminal():
+                # Set regional frequencies for tips from different regions to zero.
+                for region in regions:
+                    if not node.clade in clade_frequencies[region]:
+                        clade_frequencies[region][node.clade] = np.zeros_like(pivots)
+            else:
+                clade_frequencies["global"][node.clade] = np.array(
+                    [clade_frequencies["global"][child.clade] for child in node.clades]
+                ).sum(axis=0)
+                for region in regions:
+                    clade_frequencies[region][node.clade] = np.array(
+                        [clade_frequencies[region][child.clade] for child in node.clades]
+                    ).sum(axis=0)
+
+        return clade_frequencies
 
 if __name__=="__main__":
     plot=True

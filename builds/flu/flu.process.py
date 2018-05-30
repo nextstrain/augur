@@ -544,9 +544,11 @@ if __name__=="__main__":
         # estimate KDE tip frequencies
         if runner.config["estimate_kde_frequencies"]:
             runner.pivots = runner.get_pivots_via_spacing()
-            runner.kde_frequencies = KdeFrequencies.estimate_frequencies_for_tree(
+            runner.kde_frequencies = KdeFrequencies.estimate_region_weighted_frequencies_for_tree(
                 runner.tree.tree,
-                runner.pivots
+                runner.pivots,
+                [el[0] for el in runner.info["regions"]],
+                [el[2] for el in runner.info["regions"]]
             )
 
         if runner.info["segment"]=='ha':
