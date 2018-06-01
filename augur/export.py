@@ -201,7 +201,6 @@ def run(args):
     tree_layout(T)
     node_fields = set()
     for n in tree_meta['nodes'].values():
-        print(n.keys())
         node_fields.update(n.keys())
     fields_to_export = [x for x in  node_fields
                         if x not in ['sequence', 'mutations', 'muts', 'aa_muts']]+['num_date']
