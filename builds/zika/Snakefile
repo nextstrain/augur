@@ -5,7 +5,7 @@ rule parse:
 		seq = "results/raw_seqs.fasta",
 		meta = "results/meta.tsv"
 	params:
-		fields = "strain virus accession date region country division city db segment authors paper_url"
+		fields = "strain virus accession date region country division city db segment authors url title journal paper_url"
 	shell:
 		'augur parse --sequences {input} --output {output.seq} --metadata {output.meta} --fields {params.fields}'
 
@@ -19,9 +19,12 @@ rule filter:
 		"results/filtered.fasta"
 	params:
 		vpc = 30,
-		cat = "year month"
+		cat = "year month",
+		min_date = 2012
 	shell:
-		"augur filter --sequences {input.seq} --output {output} --metadata {input.meta} --viruses_per_cat {params.vpc} --exclude {input.exclude} --cat {params.cat}"
+		"augur filter --sequences {input.seq} --output {output} --metadata {input.meta} "
+			"--viruses_per_cat {params.vpc} "
+			"--exclude {input.exclude} --cat {params.cat} --min_date {params.min_date}"
 
 
 rule align:

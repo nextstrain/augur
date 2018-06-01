@@ -75,6 +75,7 @@ if __name__=="__main__":
     tt_parser.add_argument('--metadata', type=str, help="tsv/csv table with meta data for sequences")
     tt_parser.add_argument('--node_data', type=str, help='file name to write additional node data')
     tt_parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")
+    tt_parser.add_argument('--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
     tt_parser.add_argument('--clock_rate', type=float, help="fixed clock rate")
     tt_parser.add_argument('--root', type=str, choices = ['best', 'residual', 'rsq', 'min_dev'], help="root or rooting mechanism ('best' (default), 'rsq', 'min_dev')")
     tt_parser.add_argument('--date_fmt', default="%Y-%m-%d", help="date format")

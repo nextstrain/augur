@@ -139,7 +139,7 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_inf
         config["panels"] = ["tree","map"]
     if "panels" not in config:
         config["panels"] = ["tree","map","entropy"]
-    
+
     # join up config color options with those in the input JSONs.
     col_opts = config["color_options"]
     for trait in col_opts:
@@ -172,7 +172,7 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_inf
         meta_json["geo"]=geo
     write_json(meta_json, fname)
 
-def tree_author_info(tree_meta, seq_meta):
+def tree_meta_info(tree_meta, seq_meta, fields=['authors', 'url', 'accession']):
     '''
     Attaches author name to nodes so it's included in tree.json
     Should also perhaps be attaching paper_url, journal, url here?
@@ -180,11 +180,11 @@ def tree_author_info(tree_meta, seq_meta):
     for key in tree_meta['nodes'].keys():
         val = tree_meta['nodes'][key]
         if key in seq_meta:
-            val['authors'] = seq_meta[key]['authors']
-        else:
-            val['authors'] = ""
+            for f in fields:
+                if f in seq_meta[key]:
+                    val[f] = seq_meta[key][f]
     return tree_meta
-        
+
 
 def run(args):
     # load data, process, and write out
@@ -197,11 +197,15 @@ def run(args):
     if args.titer_subs_model: other_files.append(args.titer_subs_model)
 
     tree_meta = read_node_data(args.node_data, other_files=other_files)
-    tree_meta = tree_author_info(tree_meta, seq_meta) #attach author name to node 
+    tree_meta = tree_meta_info(tree_meta, seq_meta) #attach author name to node
     attach_tree_meta_data(T, tree_meta["nodes"])
 
     tree_layout(T)
-    fields_to_export = [x for x in  list(tree_meta['nodes'].values())[0].keys()
+    node_fields = set()
+    for n in tree_meta['nodes'].values():
+        print(n.keys())
+        node_fields.update(n.keys())
+    fields_to_export = [x for x in  node_fields
                         if x not in ['sequence', 'mutations', 'muts', 'aa_muts']]+['num_date']
     top_level = ["clade","tvalue","yvalue", "xvalue"]\
                 +[("muts", process_mutations), ("aa_muts", process_mutation_dict)]
