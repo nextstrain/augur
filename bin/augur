@@ -123,6 +123,8 @@ if __name__=="__main__":
                         help="json file name that is passed on to auspice (e.g., zika_tree.json)")
     export_parser.add_argument('--meta_output', required=True,
                         help="json file name that is passed on to auspice (e.g., zika_meta.json)")
+    export_parser.add_argument('--titer_tree_model', help="file with titer tree model")
+    export_parser.add_argument('--titer_subs_model', help="file with titer subs model")
     export_parser.set_defaults(func=export.run)
 
 

@@ -132,7 +132,7 @@ def attach_tree_meta_data(T, node_meta):
             n.__setattr__(field, val)
             if field=='mutations':
                 n.muts = val
-            if field=='numdate':
+            if field=='numdate': #this causes end up with 2 numdates...?
                 n.num_date = val
 
 
@@ -204,6 +204,8 @@ def load_features(reference, feature_names=None):
                     fname = feat.qualifiers["gene"][0]
                     if feature_names is None or fname in feature_names:
                         features[fname] = feat
+            elif feat.type=='source': #read 'nuc' as well for annotations - need start/end of whole!
+                features['nuc'] = feat
 
     return features
 

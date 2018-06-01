@@ -247,7 +247,7 @@ def run(args):
         print("ERROR: could not read features of reference sequence file")
         return -1
 
-    ### translate every feature
+    ### translate every feature - but not 'nuc'!
     translations = {}
     deleted = []
     for fname, feat in features.items():
@@ -258,7 +258,8 @@ def run(args):
             else:
                 deleted.append(fname)
         else:
-            translations[fname] = translate_feature(sequences, feat)
+            if feat.type != 'source':
+                translations[fname] = translate_feature(sequences, feat)
 
     if len(deleted) != 0:
         print("{} genes had no mutations and so have been be excluded.".format(len(deleted)))
@@ -266,9 +267,14 @@ def run(args):
     ## glob the annotations for later auspice export
     annotations = {}
     for fname, feat in features.items():
-        annotations[fname] = {'start':int(feat.location.start),
+        increment = 0 if feat.type != 'source' else 1 #'nuc' goes to 0, unsure why - make 1
+        annotations[fname] = {'start':int(feat.location.start)+increment,
                               'end':int(feat.location.end),
                               'strand': feat.location.strand}
+    if is_vcf: #need to add our own nuc
+        annotations['nuc'] = {'start': 0,
+                              'end': len(ref),
+                              'strand': 1}
 
     ## determine amino acid mutations for each node
     if is_vcf:
@@ -285,7 +291,7 @@ def run(args):
                                 enumerate(zip(aln[n.name], aln[c.name])) if a!=d]
                     aa_muts[c.name]["aa_muts"][fname] = tmp
 
-    write_json({'annotation':annotations, 'nodes':aa_muts}, args.output)
+    write_json({'annotations':annotations, 'nodes':aa_muts}, args.output)
 
     ## write alignments to file is requested
     if args.alignment_output and '%GENE' in args.alignment_output:

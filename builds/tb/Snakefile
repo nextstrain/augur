@@ -8,9 +8,12 @@ rule data:
         drms = "data/DRMs.txt",
         sites = "data/drm_sites.txt",
         generef = "data/Mtb_H37Rv_NCBI_Annot.gff",
-        genes = "data/genes.txt"
+        genes = "data/genes.txt",
+        colors = "data/color.tsv",
+        config = "data/config.json"
     params:
-        method = 'iqtree'
+        method = 'iqtree',
+        traits = 'country cluster'
 
 rule filter:
 	input:
@@ -78,5 +81,33 @@ rule translate:
 		' --vcf_input {input.vcf} --output {output.aa_data} --reference_sequence {input.gene_ref}'
 		' --vcf_output {output.vcf_out}'
 
+rule traits:
+	input:
+		tree = rules.timetree.output.tree,
+		meta = rules.data.input.meta
+	output:
+		"results/traits.json"
+	params:
+		traits = rules.data.params.traits
+	shell:
+		'augur traits --tree {input.tree} --metadata {input.meta}'
+		' --columns {params.traits} --output {output}'
 
-
+rule export:
+	input:
+		tree = rules.timetree.output.tree,
+		node_data = rules.timetree.output.node_data,
+		metadata = rules.data.input.meta,
+		traits = rules.traits.output,
+		aa_muts = rules.translate.output.aa_data,
+		color_defs = rules.data.input.colors,
+		config = rules.data.input.config,
+		geo_info = "../../../fauna/source-data/geo_lat_long.tsv"
+	output:
+		tree = "auspice/tb_tree.json",
+		meta = "auspice/tb_meta.json",
+	shell:
+		'augur export --tree {input.tree} --metadata {input.metadata}'
+			' --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts}'
+			' --config {input.config} --color_defs {input.color_defs} --output {output.tree}'
+			' --geo_info {input.geo_info} --meta_output {output.meta}'

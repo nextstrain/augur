@@ -42,9 +42,7 @@ def tree_to_json(node, fields_to_export = [], top_level = [], div=0):
     return tree_json
 
 def process_mutations(muts):
-    realMut = [a+str(pos+1)+d for (a, pos ,d) in muts if a!='-' and d!='-']
-    #This exclude gaps from displaying in Auspice. They're ignored, in
-    #treebuilding anyway, and clutter up display/prevent from seeing real ones
+    realMut = [a+str(pos)+d for (a, pos, d) in muts]
     if len(realMut)==0:
         realMut = [""]
     return realMut
@@ -67,7 +65,9 @@ def tree_layout(T):
 
 
 def summarise_publications(metadata):
-    info = defaultdict(lambda: {"n": 0, "title": "?"})
+    #Return one format to go into 'author_info' and one to go into 'authors' in 'controls'
+    control_authors = defaultdict(lambda: {"count": 0, "subcats": {} })
+    author_info = defaultdict(lambda: {"n": 0, "title": "?" })
     mapping = {}
     for n, d in metadata.items():
         if "authors" not in d:
@@ -77,12 +77,13 @@ def summarise_publications(metadata):
 
         authors = d["authors"]
         mapping[n] = authors
-        info[authors]["n"] += 1
+        author_info[authors]["n"] += 1
+        control_authors[authors]["count"] += 1
         for attr in ["title", "journal", "paper_url"]:
             if attr in d:
-                info[authors][attr] = d[attr]
+                author_info[authors][attr] = d[attr]
 
-    return (info, mapping)
+    return (author_info, mapping, control_authors)
 
 def make_control_json(T, controls):
     controls_json = {}
@@ -92,8 +93,8 @@ def make_control_json(T, controls):
             tmp = cat_count
             for field in fields:
                 tmp["name"] = field
-                if field in n.attr:
-                    cat = n.attr[field]
+                if hasattr(n, field):
+                    cat = n.__getattribute__(field)
                 else:
                     cat='unknown'
                 if cat in tmp:
@@ -122,27 +123,36 @@ def read_color_maps(fname):
 
 def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_info, fname, indent=0):
     meta_json = {}
+    import time
+    meta_json["updated"] = time.strftime("%d %b %Y")
     terminals = [n.name for n in T.get_terminals()]
     meta_json["virus_count"] = len(terminals)
     meta_subset = {k:v for k,v in metadata.items() if k in terminals}
     color_maps = read_color_maps(color_map_file)
 
-    (author_info, seq_to_author) = summarise_publications(meta_subset)
+    (author_info, seq_to_author, control_authors) = summarise_publications(meta_subset)
     meta_json["author_info"] = author_info
     meta_json["seq_author_map"] = seq_to_author
 
+    if "panels" not in config:
+        config["panels"] = ["tree","map","entropy"]
+    
     # join up config color options with those in the input JSONs.
     col_opts = config["color_options"]
     for trait in col_opts:
         if trait in color_maps:
+            col_opts[trait]["legendTitle"] = trait
+            col_opts[trait]["menuItem"] = trait
+            col_opts[trait]["key"] = trait
             col_opts[trait]["color_map"] = color_maps[trait]
 
     if "annotations" in tree_meta:
-        meta_json["annotations"] = tree_meta['annotation']
+        meta_json["annotations"] = tree_meta['annotations']
 
     meta_json.update(config)
     if len(config["controls"]):
         meta_json["controls"] = make_control_json(T, config["controls"])
+        meta_json["controls"]["authors"]= control_authors
 
     if "geographic location" in config["controls"]:
         geo={}
@@ -159,6 +169,19 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_inf
         meta_json["geo"]=geo
     write_json(meta_json, fname)
 
+def tree_author_info(tree_meta, seq_meta):
+    '''
+    Attaches author name to nodes so it's included in tree.json
+    Should also perhaps be attaching paper_url, journal, url here?
+    '''
+    for key in tree_meta['nodes'].keys():
+        val = tree_meta['nodes'][key]
+        if key in seq_meta:
+            val['authors'] = seq_meta[key]['authors']
+        else:
+            val['authors'] = ""
+    return tree_meta
+        
 
 def run(args):
     # load data, process, and write out
@@ -171,12 +194,12 @@ def run(args):
     if args.titer_subs_model: other_files.append(args.titer_subs_model)
 
     tree_meta = read_node_data(args.node_data, other_files=other_files)
+    tree_meta = tree_author_info(tree_meta, seq_meta) #attach author name to node 
     attach_tree_meta_data(T, tree_meta["nodes"])
 
     tree_layout(T)
     fields_to_export = [x for x in  list(tree_meta['nodes'].values())[0].keys()
                         if x not in ['sequence', 'mutations', 'muts', 'aa_muts']]+['num_date']
-
     top_level = ["clade","tvalue","yvalue", "xvalue"]\
                 +[("muts", process_mutations), ("aa_muts", process_mutation_dict)]
 
