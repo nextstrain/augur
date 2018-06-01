@@ -37,12 +37,22 @@ rule align:
 rule tree:
 	input:
 		aln = "results/aligned.fasta",
-		metadata = "results/meta.tsv"
 	output:
-		tree = "results/tree.nwk",
-		node_data = "results/node_data.json"
+		tree = "results/tree_raw.nwk",
 	shell:
-		'augur tree --alignment {input.aln} --metadata {input.metadata}'
+		'augur tree --alignment {input.aln} --output {output.tree}'
+
+
+rule timetree:
+	input:
+		aln = "results/aligned.fasta",
+		metadata = "results/meta.tsv",
+		tree = rules.tree.output.tree,
+	output:
+		node_data = "results/node_data.json",
+		tree = "results/tree.nwk",
+	shell:
+		'augur treetime --tree {input.tree} --alignment {input.aln} --metadata {input.metadata}'
 			' --output {output.tree} --node_data {output.node_data}'
 			' --timetree --date_confidence'
 

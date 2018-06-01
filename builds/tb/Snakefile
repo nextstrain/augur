@@ -62,7 +62,7 @@ rule timetree:
 	params:
 		root = 'residual'
 	shell:
-		'augur tree --alignment {input.aln} --tree {input.tree} --metadata {input.metadata}'
+		'augur treetime --alignment {input.aln} --tree {input.tree} --metadata {input.metadata}'
 		' --output {output.tree} --node_data {output.node_data} --vcf_reference {input.ref}'
 		' --timetree --root {params.root} --output_vcf {output.vcf} --year_limit 2016 2000'
 

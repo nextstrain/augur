@@ -1,6 +1,7 @@
 # For augur repo #
 environment*
 temp*
+results*
 data/
 dengue/utils/
 prepared/
@@ -10,6 +11,7 @@ test_input/
 test_output/
 scratch/
 s3/
+.snakemake
 
 # For Python #
 ##############
