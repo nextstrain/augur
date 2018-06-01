@@ -100,7 +100,6 @@ def run(args):
         print("ERROR: reading tree from %s failed."%args.tree)
         return -1
 
-
     if not args.alignment:
         # fake alignment to appease treetime when only using it for naming nodes...
         if args.ancestral or args.timetree:
@@ -164,8 +163,7 @@ def run(args):
     else:
         from treetime import TreeAnc
         # instantiate treetime for the sole reason to name internal nodes
-        tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69', verbose=1)
-
+        tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=1)
 
     if is_vcf:
         #TreeTime overwrites ambig sites on tips during ancestral reconst.
@@ -177,19 +175,16 @@ def run(args):
     if T:
         import json
         tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
-        if args.timetree or args.ancestral in ['joint', 'marginal']:
-            if args.node_data:
-                node_data_fname = args.node_data
-            else:
-                node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data'
-
-            with open(node_data_fname, 'w') as ofile:
-                meta_success = json.dump(tree_meta, ofile)
+        if args.node_data:
+            node_data_fname = args.node_data
         else:
-            meta_success=True
+            node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data'
+
+        with open(node_data_fname, 'w') as ofile:
+            meta_success = json.dump(tree_meta, ofile)
 
     #If VCF and ancestral reconst. was done, output VCF including new ancestral seqs
-    if is_vcf and (args.ancestral or args.treetime):
+    if is_vcf and (args.ancestral or args.timetree):
         if args.output_vcf:
             vcf_fname = args.output_vcf
         else:

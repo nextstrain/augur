@@ -82,7 +82,7 @@ if __name__=="__main__":
     tt_parser.add_argument('--date_fmt', default="%Y-%m-%d", help="date format")
     tt_parser.add_argument('--date_confidence', action="store_true", help="calculate confidence intervals for node dates")
     tt_parser.add_argument('--time_marginal', action="store_true", help="assign internal nodes to their marginally most likely dates, not jointly most likely")
-    tt_parser.add_argument('--ancestral', default="None", choices=["joint", "marginal", "None"],
+    tt_parser.add_argument('--ancestral', choices=["joint", "marginal"],
                                 help="calculate joint maximum likelihood ancestral sequence states")
     tt_parser.add_argument('--branch_length_mode', default='auto', choices = ['auto', 'joint', 'marginal', 'input'],
                                 help='branch length mode of treetime to use')

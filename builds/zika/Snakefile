@@ -59,7 +59,7 @@ rule timetree:
 		'augur treetime --tree {input.tree} --alignment {input.aln} '
 		    '--metadata {input.metadata}'
 			' --output {output.tree} --node_data {output.node_data}'
-			' --timetree --date_confidence --time_marginal'
+			' --timetree --date_confidence --time_marginal --coalescent opt'
 
 rule traits:
 	input:
