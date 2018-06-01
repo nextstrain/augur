@@ -134,6 +134,9 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_inf
     meta_json["author_info"] = author_info
     meta_json["seq_author_map"] = seq_to_author
 
+    if "annotations" not in tree_meta: #if haven't run tree through treetime
+        meta_json["annotations"] = {}
+        config["panels"] = ["tree","map"]
     if "panels" not in config:
         config["panels"] = ["tree","map","entropy"]
     

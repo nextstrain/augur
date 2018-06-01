@@ -132,7 +132,7 @@ def attach_tree_meta_data(T, node_meta):
             n.__setattr__(field, val)
             if field=='mutations':
                 n.muts = val
-            if field=='numdate': #this causes end up with 2 numdates...?
+            if field=='numdate': 
                 n.num_date = val
 
 
