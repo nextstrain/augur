@@ -145,6 +145,7 @@ def run(args):
         tt = timetree(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                       reroot=args.root or 'best',
                       Tc=args.coalescent or 0.01,
+                      use_marginal = args.time_marginal or False,
                       branch_length_mode = args.branch_length_mode or 'auto',
                       clock_rate=args.clock_rate, n_iqd=args.n_iqd)
 

@@ -169,6 +169,7 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_inf
         meta_json["geo"]=geo
     write_json(meta_json, fname)
 
+
 def tree_meta_info(tree_meta, seq_meta, fields=['authors', 'url', 'accession']):
     '''
     Attaches author name to nodes so it's included in tree.json

@@ -49,6 +49,7 @@ if __name__=="__main__":
     align_parser.add_argument('--reference_name', type=str, help="strip insertions relative to reference sequence")
     align_parser.add_argument('--reference_sequence', type=str, help="strip insertions relative to reference sequence")
     align_parser.add_argument('--remove_reference', action="store_true", default=False, help="remove reference sequence from the alignment")
+    align_parser.add_argument('--fill_gaps', action="store_true", default=False, help="if gaps are more like missing data, replace by N after aligning")
     align_parser.set_defaults(func=align.run)
 
     ## TREE.PY
@@ -80,6 +81,7 @@ if __name__=="__main__":
     tt_parser.add_argument('--root', type=str, choices = ['best', 'residual', 'rsq', 'min_dev'], help="root or rooting mechanism ('best' (default), 'rsq', 'min_dev')")
     tt_parser.add_argument('--date_fmt', default="%Y-%m-%d", help="date format")
     tt_parser.add_argument('--date_confidence', action="store_true", help="calculate confidence intervals for node dates")
+    tt_parser.add_argument('--time_marginal', action="store_true", help="assign internal nodes to their marginally most likely dates, not jointly most likely")
     tt_parser.add_argument('--ancestral', default="None", choices=["joint", "marginal", "None"],
                                 help="calculate joint maximum likelihood ancestral sequence states")
     tt_parser.add_argument('--branch_length_mode', default='auto', choices = ['auto', 'joint', 'marginal', 'input'],

@@ -34,7 +34,8 @@ rule align:
 	output:
 		"results/aligned.fasta"
 	shell:
-		'augur align --sequences {input.seq} --output {output} --reference_sequence {input.ref}'
+		'augur align --sequences {input.seq} --output {output} '
+		 '--reference_sequence {input.ref}  --fill_gaps'
 
 
 rule tree:
@@ -55,9 +56,10 @@ rule timetree:
 		node_data = "results/node_data.json",
 		tree = "results/tree.nwk",
 	shell:
-		'augur treetime --tree {input.tree} --alignment {input.aln} --metadata {input.metadata}'
+		'augur treetime --tree {input.tree} --alignment {input.aln} '
+		    '--metadata {input.metadata}'
 			' --output {output.tree} --node_data {output.node_data}'
-			' --timetree --date_confidence'
+			' --timetree --date_confidence --time_marginal'
 
 rule traits:
 	input:
