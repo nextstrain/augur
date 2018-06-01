@@ -72,9 +72,9 @@ def run(args):
     if (args.min_date or args.max_date) and 'date' in meta_columns:
         dates = get_numerical_dates(meta_dict, fmt="%Y-%m-%d")
         if args.min_date:
-            seq_keep = [s for s in seq_keep if np.min(dates[s])>args.min_date]
+            seq_keep = [s for s in seq_keep if dates[s] and np.min(dates[s])>args.min_date]
         if args.max_date:
-            seq_keep = [s for s in seq_keep if np.min(dates[s])<args.max_date]
+            seq_keep = [s for s in seq_keep if dates[s] and np.min(dates[s])<args.max_date]
 
     if args.cat and args.viruses_per_cat:
         vpc = args.viruses_per_cat

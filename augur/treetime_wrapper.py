@@ -138,16 +138,20 @@ def run(args):
         if args.year_limit:
             args.year_limit.sort()
         dates = get_numerical_dates(metadata, fmt=args.date_fmt, min_max_year=args.year_limit)
+        for n in T.get_terminals():
+            if n.name in metadata and 'date' in metadata[n.name]:
+                n.raw_date = metadata[n.name]['date']
 
         tt = timetree(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                       reroot=args.root or 'best',
+                      Tc=args.coalescent or 0.01,
                       branch_length_mode = args.branch_length_mode or 'auto',
                       clock_rate=args.clock_rate, n_iqd=args.n_iqd)
 
         tree_meta['clock'] = {'rate':tt.date2dist.clock_rate,
                               'intercept':tt.date2dist.intercept,
                               'rtt_Tmrca':-tt.date2dist.intercept/tt.date2dist.clock_rate}
-        attributes.extend(['numdate', 'clock_length', 'mutation_length', 'mutations'])
+        attributes.extend(['numdate', 'clock_length', 'mutation_length', 'mutations', 'raw_date'])
         if not is_vcf:
             attributes.extend(['sequence']) #don't add sequences if VCF - huge!
         if args.date_confidence:

@@ -1,7 +1,7 @@
 from Bio import SeqIO
 import pandas as pd
 
-forbidden_characters = [(' ',''), ('(','_'),(')','_'),(':','_'),(',','_'),(';','_')]
+forbidden_characters = [(' ',''), ('(','_'),(')','_'),(':','_'),(',','_'),(';','_'),('\\','_')]
 
 def fix_dates(d, dayfirst=True):
     '''
