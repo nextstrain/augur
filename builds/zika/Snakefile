@@ -5,7 +5,7 @@ rule parse:
 		seq = "results/raw_seqs.fasta",
 		meta = "results/meta.tsv"
 	params:
-		fields = "strain virus accession date region country division city db segment authors paper_url"
+		fields = "strain virus accession date region country division city db segment authors url title journal paper_url"
 	shell:
 		'augur parse --sequences {input} --output {output.seq} --metadata {output.meta} --fields {params.fields}'
 
@@ -19,9 +19,12 @@ rule filter:
 		"results/filtered.fasta"
 	params:
 		vpc = 30,
-		cat = "year month"
+		cat = "year month",
+		min_date = 2012
 	shell:
-		"augur filter --sequences {input.seq} --output {output} --metadata {input.meta} --viruses_per_cat {params.vpc} --exclude {input.exclude} --cat {params.cat}"
+		"augur filter --sequences {input.seq} --output {output} --metadata {input.meta} "
+			"--viruses_per_cat {params.vpc} "
+			"--exclude {input.exclude} --cat {params.cat} --min_date {params.min_date}"
 
 
 rule align:
@@ -31,20 +34,32 @@ rule align:
 	output:
 		"results/aligned.fasta"
 	shell:
-		'augur align --sequences {input.seq} --output {output} --reference_sequence {input.ref}'
+		'augur align --sequences {input.seq} --output {output} '
+		 '--reference_sequence {input.ref}  --fill_gaps'
 
 
 rule tree:
 	input:
 		aln = "results/aligned.fasta",
-		metadata = "results/meta.tsv"
 	output:
-		tree = "results/tree.nwk",
-		node_data = "results/node_data.json"
+		tree = "results/tree_raw.nwk",
 	shell:
-		'augur tree --alignment {input.aln} --metadata {input.metadata}'
+		'augur tree --alignment {input.aln} --output {output.tree}'
+
+
+rule timetree:
+	input:
+		aln = "results/aligned.fasta",
+		metadata = "results/meta.tsv",
+		tree = rules.tree.output.tree,
+	output:
+		node_data = "results/node_data.json",
+		tree = "results/tree.nwk",
+	shell:
+		'augur treetime --tree {input.tree} --alignment {input.aln} '
+		    '--metadata {input.metadata}'
 			' --output {output.tree} --node_data {output.node_data}'
-			' --timetree --date_confidence'
+			' --timetree --date_confidence --time_marginal --coalescent opt'
 
 rule traits:
 	input:

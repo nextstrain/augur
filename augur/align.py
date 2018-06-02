@@ -2,6 +2,17 @@ import os,sys,argparse
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq
 
+def make_gaps_ambiguous(aln):
+    '''
+    replace all gaps by 'N' in all sequences in the alignment. TreeTime will treat them
+    as fully ambiguous and replace then with the most likely state
+    '''
+    for seq in aln:
+        seq_array = np.array(seq)
+        gaps = seq_array=='-'
+        seq_array[gaps]='N'
+        seq.seq = Seq.Seq("".join(seq_array))
+
 
 def run(args):
     seq_fname = args.sequences
@@ -51,6 +62,9 @@ def run(args):
     aln = AlignIO.read(output, 'fasta')
     for seq in aln:
         seq.seq = seq.seq.upper()
+    if args.fill_gaps:
+        make_gaps_ambiguous(aln)
+
     AlignIO.write(aln, output, 'fasta')
 
     if ref_name:

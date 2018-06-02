@@ -102,7 +102,9 @@ def run(args):
                 mugration_states[node.name][column+'_confidence'] = node.__getattribute__(column+'_confidence')
                 mugration_states[node.name][column+'_entropy'] = node.__getattribute__(column+'_entropy')
 
-        with open(os.path.dirname(args.output)+'/%s.mugration_model.txt'%column, 'w') as ofile:
+        #if args.output is default (no dir), including '/' messes up writing
+        prefix = os.path.dirname(args.output)+'/' if len(os.path.dirname(args.output)) != 0 else ''
+        with open(prefix+'%s.mugration_model.txt'%column, 'w') as ofile:
             ofile.write('Map from character to field name\n')
             for k,v in alphabet.items():
                 ofile.write(k+':\t'+str(v)+'\n')
