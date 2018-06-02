@@ -89,7 +89,7 @@ def run(args):
                 m = meta_dict[seq_name]
             for c in args.cat:
                 if c in m:
-                    cat.append(m.loc[c])
+                    cat.append(m[c])
                 elif c in ['month', 'year'] and 'date' in m:
                     try:
                         year = int(m["date"].split('-')[0])
@@ -106,13 +106,34 @@ def run(args):
                         cat.append(year)
             seq_names_by_cat[tuple(cat)].append(seq_name)
 
+        if args.priority and os.path.isfile(args.priority):
+            priorities = defaultdict(float)
+            with open(args.priority) as pfile:
+                for l in pfile:
+                    f = l.strip().split()
+                    try:
+                        priorities[f[0]] = float(f[1])
+                    except:
+                        print("ERROR: malformatted priority:",l)
+
         seq_subsample = []
         for cat, s in seq_names_by_cat.items():
             tmp_seqs = [seq_name for seq_name in s]
-            seq_subsample.extend(tmp_seqs if len(s)<=vpc
-                                 else random.sample(tmp_seqs,vpc))
+            if args.priority:
+                seq_subsample.extend(sorted(tmp_seqs, key=lambda x:priorities[x])[:vpc])
+            else:
+                seq_subsample.extend(tmp_seqs if len(s)<=vpc
+                                     else random.sample(tmp_seqs,vpc))
     else:
         seq_subsample = seq_keep
+
+    if args.include and os.path.isfile(args.include):
+        with open(args.include, 'r') as ifile:
+            to_include = set([line.strip() for line in ifile if line[0]!=comment_char])
+
+        for s in to_include:
+            if s not in seq_subsample:
+                seq_subsample.append(s)
 
 
     ####Write out files
