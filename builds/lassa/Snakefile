@@ -89,8 +89,16 @@ rule export:
 		node_data = rules.timetree.output.node_data,
 		traits = rules.traits.output,
 		aa_muts = rules.translate.output,
+		metadata = rules.parse.output.meta,
+		color_defs = "metadata/colors.tsv",
+		config = "metadata/config.json",
+		geo_info = "../../../fauna/source-data/geo_lat_long.tsv"
 	output:
-		"auspice/lassa_{segment}_tree.json",
+		tree = "auspice/lassa_{segment}_tree.json",
+		meta = "auspice/lassa_{segment}_meta.json",
 	shell:
-		'augur export --tree {input.tree} --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts} --output {output}'
+		'augur export --tree {input.tree} --metadata {input.metadata}'
+			' --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts}'
+			' --config {input.config} --color_defs {input.color_defs} --output {output.tree}'
+			' --geo_info {input.geo_info} --meta_output {output.meta}'
 
