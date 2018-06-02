@@ -12,8 +12,8 @@ rule parse:
 
 rule filter:
 	input:
-		seq = "results_{segment}/raw_seqs.fasta",
-		meta = "results_{segment}/meta.tsv",
+		seq = rules.parse.output.seq,
+		meta = rules.parse.output.meta,
 		exclude = "metadata/dropped_strains.txt"
 	output:
 		"results_{segment}/filtered.fasta"
@@ -26,7 +26,7 @@ rule filter:
 
 rule align:
 	input:
-		seq = "results_{segment}/filtered.fasta",
+		seq = rules.filter.output,
 		ref = "metadata/lassa_{segment}.gb"
 	output:
 		"results_{segment}/aligned.fasta"
@@ -36,7 +36,7 @@ rule align:
 
 rule tree:
 	input:
-		aln = "results_{segment}/aligned.fasta",
+		aln = rules.align.output,
 	output:
 		tree = "results_{segment}/tree_raw.nwk",
 	params:
@@ -46,24 +46,26 @@ rule tree:
 
 rule timetree:
 	input:
-		aln = "results_{segment}/aligned.fasta",
-		metadata = "results_{segment}/meta.tsv",
-		tree = "results_{segment}/tree_raw.nwk",
+		aln = rules.align.output,
+		metadata = rules.parse.output.meta,
+		tree = rules.tree.output.tree,
 	output:
 		tree = "results_{segment}/tree.nwk",
 		node_data = "results_{segment}/node_data.json"
 	params:
 		clock_rate = 0.0006,
-		root = 'min_dev'
+		root = 'min_dev',
+		branch_length_mode = 'input'
 	shell:
-		'augur tree --alignment {input.aln} --tree {input.tree} --metadata {input.metadata}'
+		'augur treetime --alignment {input.aln} --tree {input.tree} --metadata {input.metadata}'
 		' --output {output.tree} --node_data {output.node_data}'
 		' --timetree --clock_rate {params.clock_rate} --root {params.root}'
+		' --branch_length_mode {params.branch_length_mode}'
 
 rule traits:
 	input:
-		tree = "results_{segment}/tree.nwk",
-		metadata = "results_{segment}/meta.tsv"
+		tree = rules.timetree.output.tree,
+		metadata = rules.parse.output.meta
 	output:
 		"results_{segment}/traits.json",
 	params:
@@ -73,9 +75,9 @@ rule traits:
 
 rule translate:
 	input:
-		tree = "results_{segment}/tree.nwk",
+		tree = rules.timetree.output.tree,
 		ref = "metadata/lassa_{segment}.gb",
-		node_data = "results_{segment}/node_data.json"
+		node_data = rules.timetree.output.node_data
 	output:
 		"results_{segment}/aa_muts.json"
 	shell:
@@ -83,10 +85,10 @@ rule translate:
 
 rule export:
 	input:
-		tree = "results_{segment}/tree.nwk",
-		node_data = "results_{segment}/node_data.json",
-		traits = "results_{segment}/traits.json",
-		aa_muts = "results_{segment}/aa_muts.json",
+		tree = rules.timetree.output.tree,
+		node_data = rules.timetree.output.node_data,
+		traits = rules.traits.output,
+		aa_muts = rules.translate.output,
 	output:
 		"auspice/lassa_{segment}_tree.json",
 	shell:

@@ -120,7 +120,7 @@ def run(args):
         for cat, s in seq_names_by_cat.items():
             tmp_seqs = [seq_name for seq_name in s]
             if args.priority:
-                seq_subsample.extend(sorted(tmp_seqs, key=lambda x:priorities[x])[:vpc])
+                seq_subsample.extend(sorted(tmp_seqs, key=lambda x:priorities[x], reverse=True)[:vpc])
             else:
                 seq_subsample.extend(tmp_seqs if len(s)<=vpc
                                      else random.sample(tmp_seqs,vpc))
