@@ -26,6 +26,7 @@ if __name__=="__main__":
     filter_parser.add_argument('--metadata', required=True, help="metadata associated with sequences")
     filter_parser.add_argument('--min_date', type=float, help="minimal cutoff for numerical date")
     filter_parser.add_argument('--max_date', type=float, help="maximal cutoff for numerical date")
+    filter_parser.add_argument('--min_length', type=int, help="minimal length of the sequences")
     filter_parser.add_argument('--exclude', type=str, help="file with list of names that are to be excluded")
     filter_parser.add_argument('--include', type=str, help="file with list of names that are to be included regardless of priorities or subsampling")
     filter_parser.add_argument('--priority', type=str, help="file with list priority scores for sequences (strain\tpriority)")

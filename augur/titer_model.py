@@ -54,7 +54,7 @@ class TiterCollection(object):
 
         with myopen(filename, 'r') as infile:
             for line in infile:
-                entries = line.strip().split()
+                entries = line.strip().split('\t')
                 try:
                     val = float(entries[4])
                 except:
