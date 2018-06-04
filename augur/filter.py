@@ -68,7 +68,9 @@ def run(args):
             to_exclude = set([line.strip() for line in ifile if line[0]!=comment_char])
         seq_keep = [s for s in seq_keep if s not in to_exclude]
 
-    if args.min_length:
+    if is_vcf and args.min_length: #doesn't make sense for VCF, ignore.
+        print("WARNING: Cannot use min_length for VCF files. Ignoring...")
+    elif (not is_vcf) and args.min_length:
         seq_keep = [s for s in seq_keep if len(seqs[s])>=args.min_length]
 
     if (args.min_date or args.max_date) and 'date' in meta_columns:

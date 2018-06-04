@@ -62,16 +62,19 @@ def build_iqtree(aln_file, out_file, iqmodel="HKY+F", clean_up=True, nthreads=2)
         for line in tmp_seqs:
             ofile.write(line.replace('/', '_X_X_').replace('|','_Y_Y_'))
 
-    if iqmodel:
+    if iqmodel.lower() != "none":
         call = ["iqtree", "-fast -nt", str(nthreads), "-s", aln_file, "-m", iqmodel,
             ">", "iqtree.log"]
     else:
         call = ["iqtree", "-fast -nt", str(nthreads), "-s", aln_file, ">", "iqtree.log"]
 
     cmd = " ".join(call)
+
     print("Building a tree via:\n\t" + cmd +
           "\n\tNguyen et al: IQ-TREE: A fast and effective stochastic algorithm for estimating maximum likelihood phylogenies."
           "\n\tMol. Biol. Evol., 32:268-274. https://doi.org/10.1093/molbev/msu300\n")
+    if iqmodel.lower() == "none":
+        print("Conducting a model test... see iqtree.log for the result. You can specify this with --iqmodel in future runs.")
     os.system(cmd)
 
     # Check result
@@ -80,11 +83,12 @@ def build_iqtree(aln_file, out_file, iqmodel="HKY+F", clean_up=True, nthreads=2)
         shutil.copyfile(aln_file+".treefile", out_file)
         #this allows the user to check intermediate output, as tree.nwk will be
         if clean_up:
-            #allow user to see chosen model
-            shutil.copyfile('iqtree.log', out_file.replace("tree.nwk","iqtree.log"))
+            #allow user to see chosen model if modeltest was run
+            if iqmodel.lower() == 'none':
+                shutil.copyfile('iqtree.log', out_file.replace(out_file.split('/')[-1],"iqtree.log"))
             os.remove('iqtree.log')
             os.remove(aln_file)
-            for ext in [".bionj",".ckp.gz",".iqtree",".log",".mldist",".model.gz",".treefile"]:
+            for ext in [".bionj",".ckp.gz",".iqtree",".log",".mldist",".model.gz",".treefile",".uniqueseq.phy",".model"]:
                 if os.path.isfile(aln_file + ext):
                     os.remove(aln_file + ext)
             for n in T.get_terminals():

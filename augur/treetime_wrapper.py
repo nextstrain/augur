@@ -17,9 +17,10 @@ def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False, branch_l
             fixed_pi[-1] = 0.05
             fixed_pi = [v-0.01 for v in fixed_pi]
 
-        #set this explicitly, as informative-site only trees can have big branch lengths,
+        #set this explicitly if auto, as informative-site only trees can have big branch lengths,
         #making this set incorrectly in TreeTime
-        branch_length_mode = 'joint'
+        if branch_length_mode == 'auto':
+            branch_length_mode = 'joint'
 
     #send ref, if is None, does no harm
     tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates,

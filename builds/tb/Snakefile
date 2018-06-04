@@ -13,7 +13,8 @@ rule data:
         config = "data/config.json"
     params:
         method = 'iqtree',
-        traits = 'country cluster'
+        traits = 'country cluster',
+        min_len = 200000
 
 rule filter:
 	input:
@@ -23,8 +24,9 @@ rule filter:
 	output:
 		"results/filtered.vcf.gz"
 	params:
-		vpc = 30,
-		cat = "year month"
+		vpc = 10,
+		cat = "year month",
+		min_len = rules.data.params.min_len
 	shell:
 		"augur filter --sequences {input.seq} --output {output} --metadata {input.meta} --exclude {input.exclude}"
 

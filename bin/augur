@@ -63,7 +63,7 @@ if __name__=="__main__":
     tree_parser.add_argument('--metadata', type=str, help="tsv/csv table with meta data for sequences")
     tree_parser.add_argument('--date_fmt', default="%Y-%m-%d", help="date format")
     tree_parser.add_argument('--output', type=str, help='file name to write tree to')
-    tree_parser.add_argument('--iqmodel', default="HKY+F", help='substitution model to use for iq-tree')
+    tree_parser.add_argument('--iqmodel', default="HKY+F", help='substitution model to use for iq-tree. specify \'none\' to run ModelTest')
     tree_parser.add_argument('--nthreads', type=int, default=2,
                              help="number of threads used")
     tree_parser.add_argument('--vcf_reference', type=str, help='fasta file of the sequence the VCF was mapped to')
@@ -73,7 +73,7 @@ if __name__=="__main__":
     tree_parser.set_defaults(func=tree.run)
 
 
-    ## TREE.PY
+    ## TREETIME_WRAPPER.PY
     tt_parser = subparsers.add_parser('treetime', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     tt_parser.add_argument('--alignment', help="alignment to build tree from")
     tt_parser.add_argument('--tree',required=True, help="prebuilt newick")
@@ -82,7 +82,7 @@ if __name__=="__main__":
     tt_parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")
     tt_parser.add_argument('--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
     tt_parser.add_argument('--clock_rate', type=float, help="fixed clock rate")
-    tt_parser.add_argument('--root', type=str, choices = ['best', 'residual', 'rsq', 'min_dev'], help="root or rooting mechanism ('best' (default), 'rsq', 'min_dev')")
+    tt_parser.add_argument('--root', type=str, choices = ['best', 'residual', 'rsq', 'min_dev'], help="root or rooting mechanism ('best' (default), 'residual', 'rsq', 'min_dev')")
     tt_parser.add_argument('--date_fmt', default="%Y-%m-%d", help="date format")
     tt_parser.add_argument('--date_confidence', action="store_true", help="calculate confidence intervals for node dates")
     tt_parser.add_argument('--time_marginal', action="store_true", help="assign internal nodes to their marginally most likely dates, not jointly most likely")
@@ -97,9 +97,6 @@ if __name__=="__main__":
     tt_parser.add_argument('--nthreads', type=int, default=2,
                              help="number of threads used")
     tt_parser.add_argument('--vcf_reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    tt_parser.add_argument('--keep_vcf_fasta', action="store_true", help='do not delete informative-site fasta created when '
-                             'making tree from VCF input')
-    tt_parser.add_argument('--strip_sites', type=str, help='file name of sites to exclude for raw tree building (VCF only)')
     tt_parser.add_argument('--output_vcf', type=str, help='name of output VCF file which will include ancestral seqs, if treetime or ancestral is run')
     tt_parser.add_argument('--year_limit', type=int, nargs='+', help='specify min or max & min years for samples with XX in year')
     tt_parser.set_defaults(func=treetime_wrapper.run)
@@ -109,12 +106,12 @@ if __name__=="__main__":
     translate_parser.add_argument('--tree', help="prebuild newick -- no tree will be build if provided")
     translate_parser.add_argument('--node_data', type=str, help='file with additional node data including ancestral sequences')
     translate_parser.add_argument('--reference_sequence', required=True,
-                        help='genbank file containing the annotation')
-    translate_parser.add_argument('--genes', nargs='+', help="genes to translate")
+                        help='genbank or GFF file containing the annotation')
+    translate_parser.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
     translate_parser.add_argument('--output', type=str, help="name of json files for aa mutations")
     translate_parser.add_argument('--alignment_output', type=str, help="write the alignment of each gene to file,"
                                   "specify the file name like so: 'my_alignment_GENE.fasta' where 'GENE'"
-                                   "will be replaced by the name of the gene")
+                                   "will be replaced by the name of the gene (Fasta-input only)")
     translate_parser.add_argument('--vcf_input', type=str, help='VCF file with original and ancestral sequences')
     translate_parser.add_argument('--vcf_reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     translate_parser.add_argument('--vcf_output', type=str, help='write a faux-VCF alignment of the translations to a file.'
