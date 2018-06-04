@@ -52,10 +52,13 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
     from treetime import TreeAnc
     tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69', verbose=1)
 
+    #convert marginal (from args.ancestral) from 'joint' or 'marginal' to True or False
+    bool_marginal = True if marginal == "marginal" else False
+
     if optimize_branch_length:
-        tt.optimize_seq_and_branch_len(infer_gtr=infer_gtr, marginal=marginal)
+        tt.optimize_seq_and_branch_len(infer_gtr=infer_gtr, marginal_sequences=bool_marginal)
     else: # only infer ancestral sequences, leave branch length untouched
-        tt.infer_ancestral_sequences(infer_gtr=infer_gtr, marginal=marginal)
+        tt.infer_ancestral_sequences(infer_gtr=infer_gtr, marginal=bool_marginal)
 
     print("\nInferred ancestral sequence states using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
@@ -158,9 +161,11 @@ def run(args):
         if args.date_confidence:
             attributes.append('num_date_confidence')
     elif args.ancestral in ['joint', 'marginal']:
-        tt = ancestral_sequence_inference(tree=T, aln=aln, marginal=args.ancestral,
-                                          optimize_branch_length=args.branchlengths=='div')
-        attributes.extend(['mutation_length', 'mutations', 'sequence'])
+        tt = ancestral_sequence_inference(tree=T, aln=aln, ref=ref, marginal=args.ancestral,
+                                          optimize_branch_length=args.branchlengths)
+        attributes.extend(['mutation_length', 'mutations'])
+        if not is_vcf:
+            attributes.extend(['sequence']) #don't add sequences if VCF - huge!
     else:
         from treetime import TreeAnc
         # instantiate treetime for the sole reason to name internal nodes
