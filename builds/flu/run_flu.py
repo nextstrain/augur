@@ -18,7 +18,7 @@ def run_live(
                               for segment in segments])
         for resolution in resolutions:
 
-            if process_segment=="ha" or no_prepare:
+            if process_segment=="ha" and not no_prepare:
                 call = ['python',
                     'flu.prepare.py',
                     '--lineage', lineage,
