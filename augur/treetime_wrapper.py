@@ -6,9 +6,12 @@ import numpy as np
 
 def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False, branch_length_mode='auto',
              confidence=False, resolve_polytomies=True, max_iter=2,
-             infer_gtr=True, Tc=0.01, reroot='best', use_marginal=False, fixed_pi=None,
+             infer_gtr=True, Tc=0.01, reroot=None, use_marginal=False, fixed_pi=None,
              clock_rate=None, n_iqd=None, verbosity=1, **kwarks):
     from treetime import TreeTime
+
+    if reroot is None:
+        keeproot = True #though this isn't used anywhere
 
     if ref != None: #if VCF, fix pi
         #Otherwise mutation TO gaps is overestimated b/c of seq length
@@ -145,8 +148,11 @@ def run(args):
             if n.name in metadata and 'date' in metadata[n.name]:
                 n.raw_date = metadata[n.name]['date']
 
+        if args.root and len(args.root) == 1: #if anything but a list of seqs, don't send as a list
+            args.root = args.root[0]
+
         tt = timetree(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
-                      reroot=args.root or 'best',
+                      reroot=args.root, #or 'best',
                       Tc=args.coalescent or 0.01,
                       use_marginal = args.time_marginal or False,
                       branch_length_mode = args.branch_length_mode or 'auto',
