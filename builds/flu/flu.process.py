@@ -686,10 +686,10 @@ if __name__=="__main__":
                                 fname='processed/%s_grouped_with_potency_titer_matrix.png'%runner.info["prefix"],
                                 title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=True)
 
-    if runner.info["segment"] == "na":
+    if runner.info["segment"] != "ha":
         import json
         ha_tree_json_fname = os.path.join(runner.config["output"]["auspice"], runner.info["prefix"]) + "_tree.json"
-        ha_tree_json_fname = ha_tree_json_fname.replace("_na", "_ha")
+        ha_tree_json_fname = ha_tree_json_fname.replace("_{}".format(runner.info["segment"]), "_ha")
         if os.path.isfile(ha_tree_json_fname):      # confirm file exists
             with open(ha_tree_json_fname) as jfile:
                 ha_tree_json = json.load(jfile)
