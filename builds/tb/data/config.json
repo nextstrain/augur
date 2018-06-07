@@ -13,21 +13,19 @@
    "type": "continuous", 
    "key": "num_date"
   },
-  "country": {
+  "location": {
   },
   "cluster": {
   }
  },
  "controls": {
   "geographic location": {
-   "country": {
-   },
-   "cluster": {
+   "location": {
    }
   }
  },
  "filters": [
-  "country", 
+  "location", 
   "cluster", 
   "authors"
  ]

@@ -13,7 +13,7 @@ rule data:
         config = "data/config.json"
     params:
         method = 'iqtree',
-        traits = 'country cluster',
+        traits = 'location cluster',
         min_len = 200000
 
 rule filter:
@@ -66,7 +66,7 @@ rule timetree:
 	shell:
 		'augur treetime --alignment {input.aln} --tree {input.tree} --metadata {input.metadata}'
 		' --output {output.tree} --node_data {output.node_data} --vcf_reference {input.ref}'
-		' --timetree --root {params.root} --output_vcf {output.vcf} --year_limit 2016 2000'
+		' --timetree --root {params.root} --output_vcf {output.vcf} --coalescent opt ' 
 
 rule translate:
 	input:
