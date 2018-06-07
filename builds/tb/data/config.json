@@ -1,5 +1,5 @@
 { 
- "title": "Real-time tracking of TB evolution", 
+ "title": "TB outbreak in Nunavik, Canada", 
  "color_options": {
   "gt": {
    "menuItem": "genotype", 
@@ -28,5 +28,9 @@
   "location", 
   "cluster", 
   "authors"
- ]
+ ],
+  "maintainer": [
+    "Emma Hodcroft",
+    "https://neherlab.org/emma-hodcroft.html"
+  ]
 }

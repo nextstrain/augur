@@ -157,7 +157,7 @@ def run(args):
         tree_meta['clock'] = {'rate':tt.date2dist.clock_rate,
                               'intercept':tt.date2dist.intercept,
                               'rtt_Tmrca':-tt.date2dist.intercept/tt.date2dist.clock_rate}
-        attributes.extend(['numdate', 'clock_length', 'mutation_length', 'mutations', 'raw_date'])
+        attributes.extend(['numdate', 'clock_length', 'mutation_length', 'mutations', 'raw_date', 'date'])
         if not is_vcf:
             attributes.extend(['sequence']) #don't add sequences if VCF - huge!
         if args.date_confidence:
