@@ -32,7 +32,7 @@ class fitness_predictors(object):
         return "".join(node.translations.values())
 
     def setup_predictor(self, tree, pred, timepoint, **kwargs):
-        if pred == 'lb':
+        if pred == 'lbi':
             select_nodes_in_season(tree, timepoint)
             calculate_LBI(tree, **kwargs)
         # if pred == 'ep':
