@@ -408,13 +408,25 @@ class fitness_model(object):
             clade_errors = []
             tmp_pred_vs_true = []
             for clade in self.fit_clades[time]:
-                initial_freq = clade.timepoint_freqs[time]
+                # The observed final frequency is calculated for each clade from
+                # all available data.
                 obs_final_freq = clade.delta_freqs[time]
+
+                # The initial frequency is calculated from the sum of each
+                # clade's censored tip frequencies.
                 pred = self.predictor_arrays[time][clade.tips]
                 freqs = self.freq_arrays[time][clade.tips]
+                initial_freq = freqs.sum(axis=0)
+
+                # The predicted final frequency is also calculated from each
+                # clade's censored tip frequencies modified by the fitness and
+                # model parameters.
                 pred_final_freq = np.sum(self.projection(params, pred, freqs, self.delta_time)) / total_pred_freq
+
                 tmp_pred_vs_true.append((initial_freq, obs_final_freq, pred_final_freq))
                 pred_vs_true_values.append((time, clade.clade, len(clade.tips), initial_freq, obs_final_freq, pred_final_freq))
+
+                # The model minimizes the sum of squared errors.
                 clade_errors.append((pred_final_freq - obs_final_freq) ** 2)
             timepoint_errors.append(np.sum(clade_errors))
             self.pred_vs_true.append(np.array(tmp_pred_vs_true))
