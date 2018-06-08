@@ -141,6 +141,10 @@ class fitness_model(object):
             2
         )
 
+        # Exclude the first timepoint from fitness model as censored frequencies
+        # there will be have a probability mass of zero.
+        self.timepoints = self.timepoints[1:]
+
         self.predictors = predictor_names
 
         self.model_params = np.zeros(len(self.predictors))
