@@ -5,7 +5,7 @@ import numpy as np
 import os
 import pandas as pd
 from scipy.interpolate import interp1d
-from scipy.stats import linregress, spearmanr
+from scipy.stats import linregress, pearsonr
 
 from base.io_util import write_json
 from builds.flu.scores import select_nodes_in_season
@@ -565,10 +565,10 @@ class fitness_model(object):
 
     def get_correlation(self):
         tmp = np.vstack(self.pred_vs_true)
-        rho_null = spearmanr(tmp[:,0], tmp[:,1])
-        rho_raw = spearmanr(tmp[:,1], tmp[:,2])
-        rho_rel = spearmanr(np.log(tmp[:,1]) / np.log(tmp[:,0]),
-                            np.log(tmp[:,2]) / np.log(tmp[:,0]))
+        rho_null = pearsonr(tmp[:,0], tmp[:,1])
+        rho_raw = pearsonr(tmp[:,1], tmp[:,2])
+        rho_rel = pearsonr(tmp[:,1] / tmp[:,0],
+                           tmp[:,2] / tmp[:,0])
 
         return rho_null, rho_raw, rho_rel
 
@@ -605,9 +605,9 @@ class fitness_model(object):
         print("Abs clade error:"), abs_clade_error
 
         rho_null, rho_raw, rho_rel = self.get_correlation()
-        print("Spearman's rho, null:", rho_null)
-        print("Spearman's rho, raw:", rho_raw)
-        print("Spearman's rho, rel:", rho_rel)
+        print("Pearson's R, null:", rho_null)
+        print("Pearson's R, raw:", rho_raw)
+        print("Pearson's R, rel:", rho_rel)
 
         # pred_vs_true is initial, observed, predicted
         tmp = np.vstack(self.pred_vs_true)
