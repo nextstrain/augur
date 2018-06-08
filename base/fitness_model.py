@@ -377,10 +377,12 @@ class fitness_model(object):
 
         for time in self.timepoints:
             for node in self.nodes:
-                if node.predictors[time] is not None:
+                if node.predictors[time] is not None and (self.global_sds == 0).sum() == 0:
                     node.predictors[time] = (node.predictors[time]-self.predictor_means[time]) / self.global_sds
             self.predictor_arrays[time][:,self.to_standardize] -= self.predictor_means[time][self.to_standardize]
-            self.predictor_arrays[time][:,self.to_standardize] /= self.global_sds[self.to_standardize]
+
+            if (self.global_sds == 0).sum() == 0:
+                self.predictor_arrays[time][:,self.to_standardize] /= self.global_sds[self.to_standardize]
 
 
     def select_clades_for_fitting(self):
