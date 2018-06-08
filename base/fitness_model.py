@@ -386,9 +386,10 @@ class fitness_model(object):
         for time in self.timepoints[:-1]:
             self.fit_clades[time] = []
             for node in self.nodes:
-                if  node.timepoint_freqs[time] >= self.min_freq and \
-                    node.timepoint_freqs[time] <= self.max_freq and \
-                    node.timepoint_freqs[time] < self.node_parents[node].timepoint_freqs[time]:
+                node_freq = self.freq_arrays[time][node.tips].sum(axis=0)
+                if  node_freq >= self.min_freq and \
+                    node_freq <= self.max_freq and \
+                    node_freq < self.node_parents[node].timepoint_freqs[time]:
                     self.fit_clades[time].append(node)
 
 
