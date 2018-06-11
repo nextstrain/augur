@@ -9,6 +9,8 @@ cycler==0.10.0
 decorator==4.3.0
 enum34==1.1.6
 funcsigs==1.0.2
+gitdb2==2.0.3
+GitPython==2.1.10
 ipdb==0.10.3
 ipython==5.7.0
 ipython-genutils==0.2.0
@@ -34,6 +36,7 @@ scipy==1.1.0
 seaborn==0.6.0
 simplegeneric==0.8.1
 six==1.11.0
+smmap2==2.0.3
 subprocess32==3.5.2
 tox==2.9.1
 traitlets==4.3.2

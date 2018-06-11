@@ -135,12 +135,8 @@ def export_metadata_json(process, prefix, indent):
         meta_json["defaults"] = process.config["auspice"]["defaults"]
 
     try:
-        from pygit2 import Repository, discover_repository
-        current_working_directory = os.getcwd()
-        repository_path = discover_repository(current_working_directory)
-        repo = Repository(repository_path)
-        commit_id = repo[repo.head.target].id
-        meta_json["commit"] = str(commit_id)
+        import git
+        meta_json["commit"] = git.Repo(search_parent_directories=True).head.object.hexsha
     except ImportError:
         meta_json["commit"] = "unknown"
     if len(process.config["auspice"]["controls"]):
