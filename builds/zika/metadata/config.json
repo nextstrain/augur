@@ -26,6 +26,10 @@
    }
   }
  },
+ "maintainer": [
+   "Trevor Bedford",
+   "http://bedford.io/team/trevor-bedford/"
+  ],
  "filters": [
   "country", 
   "region", 
