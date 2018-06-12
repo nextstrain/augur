@@ -4,9 +4,9 @@ from .utils import read_metadata, get_numerical_dates, write_json
 from treetime.vcf_utils import read_vcf, write_vcf
 import numpy as np
 
-def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False, branch_length_mode='auto',
+def timetree(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto',
              confidence=False, resolve_polytomies=True, max_iter=2,
-             infer_gtr=True, Tc=0.01, reroot='best', use_marginal=False, fixed_pi=None,
+             infer_gtr=True, Tc=0.01, reroot=None, use_marginal=False, fixed_pi=None,
              clock_rate=None, n_iqd=None, verbosity=1, **kwarks):
     from treetime import TreeTime
 
@@ -53,14 +53,19 @@ def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False, branch_l
 
 
 def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
-                                 marginal=False, optimize_branch_length=True):
+                                 marginal=False, optimize_branch_length=True,
+                                 branch_length_mode='auto'):
     from treetime import TreeAnc
     tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69', verbose=1)
 
+    #convert marginal (from args.ancestral) from 'joint' or 'marginal' to True or False
+    bool_marginal = (marginal == "marginal")
+
     if optimize_branch_length:
-        tt.optimize_seq_and_branch_len(infer_gtr=infer_gtr, marginal=marginal)
+        tt.optimize_seq_and_branch_len(infer_gtr=infer_gtr, marginal_sequences=bool_marginal,
+        							   branch_length_mode=branch_length_mode)
     else: # only infer ancestral sequences, leave branch length untouched
-        tt.infer_ancestral_sequences(infer_gtr=infer_gtr, marginal=marginal)
+        tt.infer_ancestral_sequences(infer_gtr=infer_gtr, marginal=bool_marginal)
 
     print("\nInferred ancestral sequence states using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
@@ -147,6 +152,9 @@ def run(args):
             if n.name in metadata and 'date' in metadata[n.name]:
                 n.raw_date = metadata[n.name]['date']
 
+        if args.root and len(args.root) == 1: #if anything but a list of seqs, don't send as a list
+            args.root = args.root[0]
+
         tt = timetree(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                       reroot=args.root or 'best',
                       Tc=args.coalescent if args.coalescent is not None else 0.01, #Otherwise can't set to 0
@@ -163,9 +171,12 @@ def run(args):
         if args.date_confidence:
             attributes.append('num_date_confidence')
     elif args.ancestral in ['joint', 'marginal']:
-        tt = ancestral_sequence_inference(tree=T, aln=aln, marginal=args.ancestral,
-                                          optimize_branch_length=args.branchlengths=='div')
-        attributes.extend(['mutation_length', 'mutations', 'sequence'])
+        tt = ancestral_sequence_inference(tree=T, aln=aln, ref=ref, marginal=args.ancestral,
+                                          optimize_branch_length=args.branchlengths,
+                                          branch_length_mode=args.branch_length_mode)
+        attributes.extend(['mutation_length', 'mutations'])
+        if not is_vcf:
+            attributes.extend(['sequence']) #don't add sequences if VCF - huge!
     else:
         from treetime import TreeAnc
         # instantiate treetime for the sole reason to name internal nodes
