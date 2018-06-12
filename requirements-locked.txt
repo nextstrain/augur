@@ -40,5 +40,6 @@ smmap2==2.0.3
 subprocess32==3.5.2
 tox==2.9.1
 traitlets==4.3.2
+treetime==0.3.0
 virtualenv==16.0.0
 wcwidth==0.1.7
