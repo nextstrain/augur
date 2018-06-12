@@ -26,6 +26,7 @@ dropped_strains = [
         "BRA/2016/FC_DQ60D1", "CX5", "Thailand/1605aTw", # excessive terminal branch length
     "VR10599/Pavia/2016", "34997/Pavia/2016", # exports
     "THA/PLCal_ZV/2013", "SK403/13AS", "SV0010/15", "SK364/13AS", # clock is off
+    "MEX/42_018_F_V3_O/2016", "MEX/2016/mex50", "GTM/2016/Guatemala_2411", # clock is off
     "AFMC_U", "AFMC_S", "JMB_185", "VIE/Bra/2016", "PHL/2012/CPC_0740", # too basal
     "Boracay/16423", "SI_BKK01", "DMSc05684_16", "ZK_YN001", # too basal
     "COL/PRV_00027/2015", "COL/PRV_00028/2015", "COL/PAN_00029/2015" "COL/PAN_00030/2015",

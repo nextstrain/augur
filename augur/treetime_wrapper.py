@@ -10,6 +10,11 @@ def timetree(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto
              clock_rate=None, n_iqd=None, verbosity=1, **kwarks):
     from treetime import TreeTime
 
+    try: #Tc could be a number or  'opt' or 'skyline'. TreeTime expects a float or int if a number.
+        Tc = float(Tc)
+    except ValueError:
+        True #let it remain a string
+
     if ref != None: #if VCF, fix pi
         #Otherwise mutation TO gaps is overestimated b/c of seq length
         fixed_pi = [ref.count(base)/len(ref) for base in ['A','C','G','T','-']]
@@ -151,8 +156,8 @@ def run(args):
             args.root = args.root[0]
 
         tt = timetree(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
-                      reroot=args.root,
-                      Tc=args.coalescent or 0.01,
+                      reroot=args.root or 'best',
+                      Tc=args.coalescent if args.coalescent is not None else 0.01, #Otherwise can't set to 0
                       use_marginal = args.time_marginal or False,
                       branch_length_mode = args.branch_length_mode or 'auto',
                       clock_rate=args.clock_rate, n_iqd=args.n_iqd)
@@ -160,7 +165,7 @@ def run(args):
         tree_meta['clock'] = {'rate':tt.date2dist.clock_rate,
                               'intercept':tt.date2dist.intercept,
                               'rtt_Tmrca':-tt.date2dist.intercept/tt.date2dist.clock_rate}
-        attributes.extend(['numdate', 'clock_length', 'mutation_length', 'mutations', 'raw_date'])
+        attributes.extend(['numdate', 'clock_length', 'mutation_length', 'mutations', 'raw_date', 'date'])
         if not is_vcf:
             attributes.extend(['sequence']) #don't add sequences if VCF - huge!
         if args.date_confidence:
