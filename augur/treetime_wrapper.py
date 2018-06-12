@@ -4,14 +4,11 @@ from .utils import read_metadata, get_numerical_dates, write_json
 from treetime.vcf_utils import read_vcf, write_vcf
 import numpy as np
 
-def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False, branch_length_mode='auto',
+def timetree(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto',
              confidence=False, resolve_polytomies=True, max_iter=2,
              infer_gtr=True, Tc=0.01, reroot=None, use_marginal=False, fixed_pi=None,
              clock_rate=None, n_iqd=None, verbosity=1, **kwarks):
     from treetime import TreeTime
-
-    if reroot is None:
-        keeproot = True #though this isn't used anywhere
 
     if ref != None: #if VCF, fix pi
         #Otherwise mutation TO gaps is overestimated b/c of seq length
@@ -51,15 +48,17 @@ def timetree(tree=None, aln=None, ref=None, dates=None, keeproot=False, branch_l
 
 
 def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
-                                 marginal=False, optimize_branch_length=True):
+                                 marginal=False, optimize_branch_length=True,
+                                 branch_length_mode='auto'):
     from treetime import TreeAnc
     tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69', verbose=1)
 
     #convert marginal (from args.ancestral) from 'joint' or 'marginal' to True or False
-    bool_marginal = True if marginal == "marginal" else False
+    bool_marginal = (marginal == "marginal")
 
     if optimize_branch_length:
-        tt.optimize_seq_and_branch_len(infer_gtr=infer_gtr, marginal_sequences=bool_marginal)
+        tt.optimize_seq_and_branch_len(infer_gtr=infer_gtr, marginal_sequences=bool_marginal,
+        							   branch_length_mode=branch_length_mode)
     else: # only infer ancestral sequences, leave branch length untouched
         tt.infer_ancestral_sequences(infer_gtr=infer_gtr, marginal=bool_marginal)
 
@@ -152,7 +151,7 @@ def run(args):
             args.root = args.root[0]
 
         tt = timetree(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
-                      reroot=args.root, #or 'best',
+                      reroot=args.root,
                       Tc=args.coalescent or 0.01,
                       use_marginal = args.time_marginal or False,
                       branch_length_mode = args.branch_length_mode or 'auto',
@@ -168,7 +167,8 @@ def run(args):
             attributes.append('num_date_confidence')
     elif args.ancestral in ['joint', 'marginal']:
         tt = ancestral_sequence_inference(tree=T, aln=aln, ref=ref, marginal=args.ancestral,
-                                          optimize_branch_length=args.branchlengths)
+                                          optimize_branch_length=args.branchlengths,
+                                          branch_length_mode=args.branch_length_mode)
         attributes.extend(['mutation_length', 'mutations'])
         if not is_vcf:
             attributes.extend(['sequence']) #don't add sequences if VCF - huge!
