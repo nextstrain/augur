@@ -33,6 +33,9 @@ def run(args):
         print("Specified reference name %s is not in the sequence sample. Will not trim."%ref_name)
         ref_name = None
 
+    for s in seqs:
+        seqs[s].seq = Seq.Seq(str(seqs[s].seq).replace("n", "").replace("N", ""))
+
     if ref_fname and (not ref_name):
         if os.path.isfile(ref_fname):
             try:
@@ -47,6 +50,8 @@ def run(args):
         else:
             print("WARNING: Cannot read reference sequence."
                   "\n\tmake sure the file %s does not exist"%ref_fname)
+    else:
+        SeqIO.write(list(seqs.values()), seq_fname, 'fasta')
 
     if args.aligner=='mafft':
         cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2>mafft_stderr"%(args.nthreads, seq_fname, output)
