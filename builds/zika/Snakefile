@@ -1,20 +1,36 @@
+# config variables to be used by rules below
+# kind of following https://snakemake.readthedocs.io/en/latest/tutorial/advanced.html#step-2-config-files
+# however if defined as a dict then cannot be accessed in shell commands
+# the advantage of this is that one can (eventually) import rules from a template
+# currently only files are defined here - parameters are defined in their own rules
+rule config:
+	params:
+		input_fasta = "../../../fauna/data/zika.fasta",
+		fasta_fields = "strain virus accession date region country division city db segment authors url title journal paper_url",
+		dropped_strains = "metadata/dropped_strains.txt",
+		reference = "metadata/zika_outgroup.gb",
+		geo_info = "../../source-data/geo_lat_long.tsv",
+		color_maps = "metadata/colors.tsv",
+		auspice_config = "metadata/config.json",
+
+config = rules.config.params # so we can use config.x rather than rules.config.params.x
+# end of config definition
+
 rule parse:
 	input:
-		"../../../fauna/data/zika.fasta"
+		config.input_fasta
 	output:
 		seq = "results/raw_seqs.fasta",
 		meta = "results/meta.tsv"
-	params:
-		fields = "strain virus accession date region country division city db segment authors url title journal paper_url"
 	shell:
-		'augur parse --sequences {input} --output {output.seq} --metadata {output.meta} --fields {params.fields}'
+		'augur parse --sequences {input} --output {output.seq} --metadata {output.meta} --fields {config.fasta_fields}'
 
 
 rule filter:
 	input:
-		seq = "results/raw_seqs.fasta",
-		meta = "results/meta.tsv",
-		exclude = "metadata/dropped_strains.txt"
+		seq = rules.parse.output.seq,
+		meta = rules.parse.output.meta,
+		exclude = config.dropped_strains
 	output:
 		"results/filtered.fasta"
 	params:
@@ -29,8 +45,8 @@ rule filter:
 
 rule align:
 	input:
-		seq = "results/filtered.fasta",
-		ref = "metadata/zika_outgroup.gb"
+		seq = rules.filter.output,
+		ref = config.reference
 	output:
 		"results/aligned.fasta"
 	shell:
@@ -40,7 +56,7 @@ rule align:
 
 rule tree:
 	input:
-		aln = "results/aligned.fasta",
+		aln = rules.align.output
 	output:
 		tree = "results/tree_raw.nwk",
 	shell:
@@ -49,8 +65,8 @@ rule tree:
 
 rule timetree:
 	input:
-		aln = "results/aligned.fasta",
-		metadata = "results/meta.tsv",
+		aln = rules.align.output,
+		metadata = rules.parse.output.meta,
 		tree = rules.tree.output.tree,
 	output:
 		node_data = "results/node_data.json",
@@ -63,8 +79,8 @@ rule timetree:
 
 rule traits:
 	input:
-		tree = "results/tree.nwk",
-		metadata = "results/meta.tsv"
+		tree = rules.timetree.output.tree,
+		metadata = rules.parse.output.meta
 	output:
 		"results/traits.json",
 	params:
@@ -74,9 +90,9 @@ rule traits:
 
 rule translate:
 	input:
-		tree = "results/tree.nwk",
-		ref = "metadata/zika_outgroup.gb",
-		node_data = "results/node_data.json"
+		tree = rules.timetree.output.tree,
+		ref = config.reference,
+		node_data = rules.timetree.output.node_data,
 	output:
 		"results/aa_muts.json"
 	shell:
@@ -84,20 +100,19 @@ rule translate:
 
 rule export:
 	input:
-		tree = "results/tree.nwk",
-		node_data = "results/node_data.json",
-		metadata = "results/meta.tsv",
-		traits = "results/traits.json",
-		aa_muts = "results/aa_muts.json",
-		color_defs = "metadata/colors.tsv",
-		config = "metadata/config.json",
-		geo_info = "../../../fauna/source-data/geo_lat_long.tsv"
+		tree = rules.timetree.output.tree,
+		node_data = rules.timetree.output.node_data,
+		metadata = rules.parse.output.meta,
+		traits = rules.traits.output,
+		aa_muts = rules.translate.output,
+		color_defs = config.color_maps,
+		auspice_config = config.auspice_config,
+		geo_info = config.geo_info
 	output:
 		tree = "auspice/zika_tree.json",
 		meta = "auspice/zika_meta.json",
 	shell:
 		'augur export --tree {input.tree} --metadata {input.metadata}'
 			' --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts}'
-			' --config {input.config} --color_defs {input.color_defs} --output {output.tree}'
+			' --config {input.auspice_config} --color_defs {input.color_defs} --output {output.tree}'
 			' --geo_info {input.geo_info} --meta_output {output.meta}'
-

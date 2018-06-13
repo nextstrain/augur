@@ -12,6 +12,7 @@ test_output/
 scratch/
 s3/
 .snakemake
+*stderr
 
 # For Python #
 ##############
