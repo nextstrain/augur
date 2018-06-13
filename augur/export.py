@@ -29,6 +29,10 @@ def tree_to_json(node, fields_to_export = [], top_level = [], div=0):
             if hasattr(node, fname):
                 val = node.__getattribute__(fname)
 
+        # shadow clade by strain. clade is deprecated and will be removed.
+        if field == "clade"
+            val = node.__getattribute__("strain")
+
         if field in top_level:
             tree_json[fname] = val
         else:
