@@ -1,38 +1,44 @@
-{ 
- "title": "Real-time tracking of Zika virus evolution", 
- "color_options": {
-  "gt": {
-   "menuItem": "genotype", 
-   "legendTitle": "Genotype", 
-   "type": "discrete", 
-   "key": "genotype"
+{
+  "title": "Real-time tracking of Zika virus evolution",
+  "color_options": {
+    "gt": {
+      "menuItem": "genotype",
+      "legendTitle": "Genotype",
+      "type": "discrete",
+      "key": "genotype"
+    },
+    "num_date": {
+      "menuItem": "date",
+      "legendTitle": "Sampling date",
+      "type": "continuous",
+      "key": "num_date"
+    },
+    "authors": {
+      "key":"authors",
+      "legendTitle":"Authors",
+      "menuItem":"authors",
+      "type":"discrete"
+    },
+    "country": {
+    },
+    "region": {
+    }
   },
-  "num_date": {
-   "menuItem": "date", 
-   "legendTitle": "Sampling date", 
-   "type": "continuous", 
-   "key": "num_date"
+  "controls": {
+    "geographic location": {
+      "country": {
+      },
+      "region": {
+      }
+    }
   },
-  "country": {
-  },
-  "region": {
-  }
- },
- "controls": {
-  "geographic location": {
-   "country": {
-   },
-   "region": {
-   }
-  }
- },
- "maintainer": [
-   "Trevor Bedford",
-   "http://bedford.io/team/trevor-bedford/"
+  "maintainer": [
+    "Trevor Bedford",
+    "http://bedford.io/team/trevor-bedford/"
   ],
- "filters": [
-  "country", 
-  "region", 
-  "authors"
- ]
+  "filters": [
+    "country",
+    "region",
+    "authors"
+  ]
 }
