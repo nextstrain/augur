@@ -89,7 +89,7 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, m
 
 def read_node_data(fnames):
     """parse the "nodes" field of the given JSONs and join the data together"""
-    if type(fnames) is str: 
+    if type(fnames) is str:
         fnames = [fnames]
     node_data = {"nodes": {}}
     for fname in fnames:

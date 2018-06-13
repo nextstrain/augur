@@ -87,6 +87,7 @@ def summarise_publications(metadata):
 
     return (author_info, mapping, control_authors)
 
+"""please leave this (uncalled) function until we are sure WHO nextflu can run without it"""
 def make_control_json(T, controls):
     controls_json = {}
     for super_cat, fields in controls.items():
@@ -143,6 +144,7 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_inf
         config["panels"] = ["tree","map","entropy"]
 
     # join up config color options with those in the input JSONs.
+    # TODO: change the schema for these
     col_opts = config["color_options"]
     for trait in col_opts:
         if trait in color_maps:
@@ -156,7 +158,9 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_inf
 
     meta_json.update(config)
     if len(config["controls"]):
-        meta_json["controls"] = make_control_json(T, config["controls"])
+        # the following is not needed in nextstrain, but may be in nextflu
+        # meta_json["controls"] = make_control_json(T, config["controls"])
+        meta_json["controls"] = {}
         meta_json["controls"]["authors"]= control_authors
 
     if "geographic location" in config["controls"]:

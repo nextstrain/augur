@@ -111,11 +111,6 @@ rule export:
 	output:
 		tree = "auspice/zika_tree.json",
 		meta = "auspice/zika_meta.json",
-	# shell:
-	# 	'augur export --tree {input.tree} --metadata {input.metadata}'
-	# 		' --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts}'
-	# 		' --config {input.auspice_config} --color_defs {input.color_defs} --output {output.tree}'
-	# 		' --geo_info {input.geo_info} --meta_output {output.meta}'
 	shell:
 		'augur export --tree {input.tree} --metadata {input.metadata}'
 			' --node_data {input.node_data} {input.traits} {input.aa_muts}' # node decorations for the tree JSON
