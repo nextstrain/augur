@@ -30,7 +30,7 @@ Augur is written in Python 2.7 and requires Python 2.7 to run. Your version of P
 
 In addition, augur needs working installations of [mafft](https://mafft.cbrc.jp/alignment/software/) and one of the following tree builders
 
-* DEFAULT: [RAxML](https://sco.h-its.org/exelixis/web/software/raxml/index.html). You'll probably need to create a symlink `raxml -> raxmlHPC` because `augur` expects an excutable named `raxml`.
+* DEFAULT: [RAxML](https://sco.h-its.org/exelixis/web/software/raxml/index.html)
 * OPTIONAL: [FastTree](http://www.microbesonline.org/fasttree/)
 * OPTIONAL: [IQ-TREE](http://www.iqtree.org/)
 
