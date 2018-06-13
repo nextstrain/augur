@@ -4,11 +4,47 @@ from .utils import read_metadata, get_numerical_dates, write_json
 from treetime.vcf_utils import read_vcf, write_vcf
 import numpy as np
 
+def find_executable(names, default = None):
+    """
+    Return the path to the first executable found in PATH from the given list
+    of names.
+
+    Raises a (hopefully helpful) error if no executable is found.  Provide a
+    value for the "default" parameter to instead return a value.
+    """
+    exe = next(filter(shutil.which, names), default)
+
+    if exe is None:
+        print("Unable to find any of %s in PATH=%s" % (names, os.environ["PATH"]))
+        print("Hint: You can install the missing program using conda or homebrew or apt-get.")
+        raise Exception
+
+    return exe
+
+
 def build_raxml(aln_file, out_file, clean_up=True, nthreads=2):
     '''
     build tree using RAxML with parameters '-f d -m GTRCAT -c 25 -p 235813 -n tre"
     '''
-    call = ["raxml","-T",str(nthreads)," -f d -m GTRCAT -c 25 -p 235813 -n tre -s",aln_file,"> raxml.log"]
+
+    raxml = find_executable([
+        # Users who symlink/install as "raxml" can pick a specific version,
+        # otherwise we have our own search order based on expected parallelism.
+        # The variants we look for are not exhaustive, but based on what's
+        # provided by conda and Ubuntu's raxml packages.  This may want to be
+        # adjusted in the future depending on use.
+        "raxml",
+        "raxmlHPC-PTHREADS-SSE3",
+        "raxmlHPC-PTHREADS-AVX2",
+        "raxmlHPC-PTHREADS-AVX",
+        "raxmlHPC-PTHREADS",
+        "raxmlHPC-SSE3",
+        "raxmlHPC-AVX2",
+        "raxmlHPC-AVX",
+        "raxmlHPC",
+    ])
+
+    call = [raxml,"-T",str(nthreads)," -f d -m GTRCAT -c 25 -p 235813 -n tre -s",aln_file,"> raxml.log"]
     cmd = " ".join(call)
     print("Building a tree via:\n\t" + cmd +
           "\n\tStamatakis, A: RAxML Version 8: A tool for Phylogenetic Analysis and Post-Analysis of Large Phylogenies."
@@ -29,7 +65,19 @@ def build_fasttree(aln_file, out_file, clean_up=True):
     '''
     build tree using fasttree with parameters "-nt"
     '''
-    call = ["fasttree", "-nt", aln_file, "1>", out_file, "2>", "fasttree.log"]
+
+    fasttree = find_executable([
+        # Search order is based on expected parallelism and accuracy
+        # (double-precision versions).
+        "FastTreeDblMP",
+        "FastTreeDbl",
+        "FastTreeMP",
+        "fasttreeMP",   # Ubuntu lowercases
+        "FastTree",
+        "fasttree"
+    ])
+
+    call = [fasttree, "-nt", aln_file, "1>", out_file, "2>", "fasttree.log"]
     cmd = " ".join(call)
     print("Building a tree via:\n\t" + cmd +
           "\n\tPrice et al: FastTree 2 - Approximately Maximum-Likelihood Trees for Large Alignments." +
