@@ -82,6 +82,8 @@ def run(args):
 
     if args.cat and args.viruses_per_cat:
         vpc = args.viruses_per_cat
+        if vpc == 0:
+            vpc = 1000000
         seq_names_by_cat = defaultdict(list)
 
         for seq_name in seq_keep:
@@ -150,5 +152,3 @@ def run(args):
     else:
         seq_to_keep = [seq for id,seq in seqs.items() if id in seq_subsample]
         SeqIO.write(seq_to_keep, args.output, 'fasta')
-
-

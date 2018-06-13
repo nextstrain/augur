@@ -34,7 +34,7 @@ rule filter:
 	output:
 		"results/filtered.fasta"
 	params:
-		vpc = 30,
+		vpc = 0,
 		cat = "year month",
 		min_date = 2012
 	shell:
