@@ -1,3 +1,7 @@
+
+rule all:
+    input: "auspice/zika_tree.json"
+
 # config variables to be used by rules below
 # kind of following https://snakemake.readthedocs.io/en/latest/tutorial/advanced.html#step-2-config-files
 # however if defined as a dict then cannot be accessed in shell commands
