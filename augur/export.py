@@ -191,27 +191,27 @@ def run(args):
     # load data, process, and write out
     T = Phylo.read(args.tree, 'newick')
     seq_meta, meta_columns = read_metadata(args.metadata)
-    other_files = []
-    if args.traits: other_files.append(args.traits)
-    if args.aa_muts: other_files.append(args.aa_muts)
-    if args.titer_tree_model: other_files.append(args.titer_tree_model)
-    if args.titer_subs_model: other_files.append(args.titer_subs_model)
-
-    tree_meta = read_node_data(args.node_data, other_files=other_files)
+    tree_meta = read_node_data(args.node_data) # an array of multiple files (or a single file)
     tree_meta = tree_meta_info(tree_meta, seq_meta) #attach author name to node
+
+    # TODO: remove the following function and combine it with tree_to_json
     attach_tree_meta_data(T, tree_meta["nodes"])
 
+    # TODO: can remove the y-values, they're now calculated in auspice (maybe keep temporarily?)
     tree_layout(T)
+
+    # from the fields in the tree_meta (taken from one or more JSONs), which ones do we want to export?
     node_fields = set()
     for n in tree_meta['nodes'].values():
         node_fields.update(n.keys())
     fields_to_export = [x for x in  node_fields
                         if x not in ['sequence', 'mutations', 'muts', 'aa_muts']]+['num_date']
+    # and which fields are top level? (the rest are all in the attr dict)
     top_level = ["clade","tvalue","yvalue", "xvalue"]\
                 +[("muts", process_mutations), ("aa_muts", process_mutation_dict)]
 
     tjson = tree_to_json(T.root, fields_to_export=fields_to_export, top_level=top_level)
-    write_json(tjson, args.output)
+    write_json(tjson, args.tree_output)
 
-    export_metadata_json(T, seq_meta, tree_meta, read_config(args.config),
-                         args.color_defs, read_geo(args.geo_info), args.meta_output)
+    export_metadata_json(T, seq_meta, tree_meta, read_config(args.auspice_config),
+                         args.color_maps, read_geo(args.geo_info), args.meta_output)

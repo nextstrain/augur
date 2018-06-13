@@ -87,35 +87,29 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, m
 
     return numerical_dates
 
-def read_node_data(fname, other_files=None):
-    if os.path.isfile(fname):
-        with open(fname) as jfile:
-            node_data = json.load(jfile)
-
-        if type(other_files) is str:
-            other_files = [other_files]
-        elif other_files is None:
-            other_files = []
-
-        for tmp_fname in other_files:
-            if os.path.isfile(tmp_fname):
-                with open(tmp_fname) as jfile:
-                    tmp_data = json.load(jfile)
-                for k,v in tmp_data.items():
-                    if k=="nodes":
-                        for n,nv in v.items():
-                            if n in node_data["nodes"]:
-                                node_data["nodes"][n].update(nv)
-                    elif k in node_data:
-                        node_data[k].update(v)
-                    else:
-                        node_data[k]=v
-            else:
-                print("ERROR: additional meta data file %s not found"%tmp_fname)
-    else:
-        print("ERROR: node data can't be read, file %s not found"%fname)
-        node_data=None
-
+def read_node_data(fnames):
+    """parse the "nodes" field of the given JSONs and join the data together"""
+    if type(fnames) is str: 
+        fnames = [fnames]
+    node_data = {"nodes": {}}
+    for fname in fnames:
+        if os.path.isfile(fname):
+            with open(fname) as jfile:
+                tmp_data = json.load(jfile)
+            for k,v in tmp_data.items():
+                if k=="nodes":
+                    for n,nv in v.items():
+                        if n in node_data["nodes"]:
+                            node_data["nodes"][n].update(nv)
+                        else:
+                            node_data["nodes"][n] = nv
+                elif k in node_data:
+                    # will this recurse into nested dicts?!?!
+                    node_data[k].update(v)
+                else:
+                    node_data[k]=v
+        else:
+            print("ERROR: node_data JSON file %s not found. Attempting to proceed without it."%fname)
     return node_data
 
 
@@ -132,7 +126,7 @@ def attach_tree_meta_data(T, node_meta):
             n.__setattr__(field, val)
             if field=='mutations':
                 n.muts = val
-            if field=='numdate': 
+            if field=='numdate':
                 n.num_date = val
 
 
@@ -329,4 +323,3 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
         os.rename(vcf_file_name, vcf_file_name[:-3])
         call = ["gzip", vcf_file_name[:-3]]
         os.system(" ".join(call))
-
