@@ -62,13 +62,13 @@ def run(args):
     aln = AlignIO.read(output, 'fasta')
     for seq in aln:
         seq.seq = seq.seq.upper()
-    if args.fill_gaps:
-        make_gaps_ambiguous(aln)
 
     AlignIO.write(aln, output, 'fasta')
 
     if ref_name:
         seqs = strip_non_reference(output, ref_name, keep_reference=not args.remove_reference)
+        if args.fill_gaps:
+            make_gaps_ambiguous(seqs)
         if seqs:
             SeqIO.write(seqs, output, 'fasta')
 
@@ -97,4 +97,3 @@ def strip_non_reference(alignment_fname, reference, keep_reference=False):
 
     print("Trimmed gaps in", reference, "from the alignment")
     return out_seqs
-
