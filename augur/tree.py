@@ -34,13 +34,13 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=2):
         # provided by conda and Ubuntu's raxml packages.  This may want to be
         # adjusted in the future depending on use.
         "raxml",
-        "raxmlHPC-PTHREADS-SSE3",
         "raxmlHPC-PTHREADS-AVX2",
         "raxmlHPC-PTHREADS-AVX",
+        "raxmlHPC-PTHREADS-SSE3",
         "raxmlHPC-PTHREADS",
-        "raxmlHPC-SSE3",
         "raxmlHPC-AVX2",
         "raxmlHPC-AVX",
+        "raxmlHPC-SSE3",
         "raxmlHPC",
     ])
 
