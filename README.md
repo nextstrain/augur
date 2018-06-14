@@ -12,22 +12,72 @@ Augur is the bioinformatic processing pipeline to track evolution from sequence 
 
 ## Install
 
-To install augur, clone the git repository:
+There are currently two parallel but separate versions of augur: __original
+augur__ (or old augur) and __modular augur__ (or new augur).  They can be used
+at the same time, but we're actively migrating pathogens to use the new,
+modular augur and eventually old augur will be removed.  Currently, both
+versions live inside this git repository, which can get pretty confusing.
+These are the files associated with new, modular augur:
+
+    augur/
+      __init__.py
+      align.py
+      export.py
+      ...
+    bin/
+      augur
+    setup.py
+
+and these are the files associated with the old augur:
+
+    __init__.py
+    base/
+      auspice_export.py
+      colorLogging.py
+      config.py
+      ...
+    requirements.txt
+    requirements-locked.txt
+    scripts/
+      beast-to-auspice-jsons-proof-of-principle.py
+      json_tree_to_nexus.py
+      plot_msa.py
+
+New, modular augur is setup as a standard Python package with several modules
+that are runnable from the command-line using the `augur` command.  Old augur
+requires writing Python scripts which import functions and classes from the
+`base/` directory.
+
+Note that old augur requires Python 2.7 while new, modular augur requires
+Python 3.
+
+To install either version of augur, first clone the git repository:
 
 ```
 git clone https://github.com/nextstrain/augur.git
 cd augur
 ```
 
-Augur has a number of python dependencies that are listed in `requirements.txt` and are best installed via a package manager like conda or pip.
+Both versions of augur have a number of Python dependencies.  The dependencies
+of old augur are listed in `requirements.txt` and are best installed via a
+package manager like conda or pip.  You may choose to use
+`requirements-locked.txt` if you'd like a fixed set of known-good packages.
 
 ```
 pip install -r requirements.txt
 ```
 
-Augur is written in Python 2.7 and requires Python 2.7 to run. Your version of Python can be confirmed by running `python --version`.
+The dependencies of new, modular augur are specified in `setup.py`, which is
+the standard location for Python packages.  You can install modular augur,
+including the `augur` command, and all its dependencies using pip3:
 
-In addition, augur needs working installations of [mafft](https://mafft.cbrc.jp/alignment/software/) and one of the following tree builders
+```
+pip3 install --process-dependency-links .
+```
+
+In addition, both versions of augur need working installations of
+[mafft](https://mafft.cbrc.jp/alignment/software/) and one of the following
+tree builders:
 
 * DEFAULT: [RAxML](https://sco.h-its.org/exelixis/web/software/raxml/index.html)
 * OPTIONAL: [FastTree](http://www.microbesonline.org/fasttree/)
