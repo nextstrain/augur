@@ -62,11 +62,28 @@ def build_iqtree(aln_file, out_file, iqmodel="HKY+F", clean_up=True, nthreads=2)
         for line in tmp_seqs:
             ofile.write(line.replace('/', '_X_X_').replace('|','_Y_Y_'))
 
+    # For compat with older versions of iqtree, we avoid the newish -fast
+    # option alias and instead spell out its component parts:
+    #
+    #     -ninit 2
+    #     -n 2
+    #     -me 0.05
+    #
+    # This may need to be updated in the future if we want to stay in lock-step
+    # with -fast, although there's probably no particular reason we have to.
+    # Refer to the handling of -fast in utils/tools.cpp:
+    #   https://github.com/Cibiv/IQ-TREE/blob/44753aba/utils/tools.cpp#L2926-L2936
+    fast_opts = [
+        "-ninit", "2",
+        "-n",     "2",
+        "-me",    "0.05"
+    ]
+
     if iqmodel.lower() != "none":
-        call = ["iqtree", "-fast -nt", str(nthreads), "-s", aln_file, "-m", iqmodel,
+        call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", aln_file, "-m", iqmodel,
             ">", "iqtree.log"]
     else:
-        call = ["iqtree", "-fast -nt", str(nthreads), "-s", aln_file, ">", "iqtree.log"]
+        call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", aln_file, ">", "iqtree.log"]
 
     cmd = " ".join(call)
 
