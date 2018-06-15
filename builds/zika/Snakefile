@@ -75,11 +75,14 @@ rule timetree:
 	output:
 		node_data = "results/node_data.json",
 		tree = "results/tree.nwk",
+	params:
+		n_iqd = 4
 	shell:
 		'augur treetime --tree {input.tree} --alignment {input.aln} '
 		    '--metadata {input.metadata}'
 			' --output {output.tree} --node_data {output.node_data}'
 			' --timetree --date_confidence --time_marginal --coalescent opt'
+			' --n_iqd {params.n_iqd}'
 
 rule traits:
 	input:

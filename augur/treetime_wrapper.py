@@ -31,6 +31,16 @@ def timetree(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto
     tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates,
                   verbose=verbosity, gtr='JC69')
 
+    if n_iqd:
+        tt.clock_filter(reroot='best', n_iqd=n_iqd, plot=False)
+        leaves = [x for x in tt.tree.get_terminals()]
+        for n in leaves:
+            if n.bad_branch:
+                tt.tree.prune(n)
+                print('pruning leaf ', n.name)
+
+        tt.prepare_tree()
+
     if confidence and use_marginal:
         # estimate confidence intervals via marginal ML and assign marginal ML times to nodes
         marginal = 'assign'
@@ -40,7 +50,7 @@ def timetree(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto
     tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
            branch_length_mode=branch_length_mode, resolve_polytomies=resolve_polytomies,
            max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
-           n_iqd=n_iqd, **kwarks)
+           **kwarks)
 
     if confidence:
         for n in tt.tree.find_clades():
