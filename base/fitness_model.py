@@ -81,7 +81,7 @@ def matthews_correlation_coefficient(tp, tn, fp, fn):
 
 class fitness_model(object):
 
-    def __init__(self, tree, frequencies, time_interval, predictor_input = ['ep', 'lb', 'dfreq'], pivots = None, pivot_spacing = 1.0 / 12, verbose = 0, enforce_positive_predictors = True, predictor_kwargs=None, **kwargs):
+    def __init__(self, tree, frequencies, time_interval, predictor_input = ['ep', 'lb', 'dfreq'], pivots = None, pivot_spacing = 1.0 / 12, delta_time = 1.0, verbose = 0, enforce_positive_predictors = True, predictor_kwargs=None, **kwargs):
         '''
         parameters:
         tree -- tree of sequences for which a fitness model is to be determined
@@ -132,7 +132,7 @@ class fitness_model(object):
 
         # final timepoint is end of interval and is only projected forward, not tested
         self.timepoint_step_size = 0.5      # amount of time between timepoints chosen for fitting
-        self.delta_time = 1.0               # amount of time projected forward to do fitting
+        self.delta_time = delta_time        # amount of time projected forward to do fitting
         self.timepoints = np.around(
             np.append(
                 make_pivots(self.time_interval[0], self.time_interval[1]-self.delta_time+0.0001, 1 / self.timepoint_step_size),
