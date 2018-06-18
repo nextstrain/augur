@@ -724,8 +724,13 @@ class fitness_model(object):
 
         rho_null, rho_raw, rho_rel = self.get_correlation()
 
+        predictor_kwargs = self.predictor_kwargs.copy()
+        if "titers" in predictor_kwargs:
+            del predictor_kwargs["titers"]
+
         data = {
             "params": params_df.to_dict(orient="records"),
+            "predictor_kwargs": predictor_kwargs,
             "data": self.pred_vs_true_df.to_dict(orient="records"),
             "accuracy": {
                 "clade_error": self.clade_fit(self.model_params),
