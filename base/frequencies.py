@@ -580,13 +580,13 @@ class KdeFrequencies(object):
         pass
 
     @classmethod
-    def get_density_for_observation(cls, mu, pivots, sigmaNarrow=1/12.0, sigmaWide=3/12.0, proportionWide=0.2):
+    def get_density_for_observation(cls, mu, pivots, sigma_narrow=1/12.0, sigma_wide=3/12.0, proportion_wide=0.2):
         """Build a normal distribution centered across the given floating point date,
         mu, with a standard deviation based on the given sigma value and return
         the probability mass at each pivot. These mass values per pivot will form the
         input for a kernel density estimate across multiple observations.
         """
-        return (1-proportionWide) * norm.pdf(pivots, loc=mu, scale=sigmaNarrow) + proportionWide * norm.pdf(pivots, loc=mu, scale=sigmaWide)
+        return (1-proportion_wide) * norm.pdf(pivots, loc=mu, scale=sigma_narrow) + proportion_wide * norm.pdf(pivots, loc=mu, scale=sigma_wide)
 
     @classmethod
     def get_densities_for_observations(cls, observations, pivots, max_date=None, **kwargs):
