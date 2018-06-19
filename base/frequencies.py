@@ -576,8 +576,68 @@ class KdeFrequencies(object):
     density estimate across discrete time points from these tip observations for
     each clade in the tree.
     """
-    def __init__(self):
-        pass
+    def __init__(self, tree, pivots, sigma_narrow=1 / 12.0, sigma_wide=3 / 12.0, proportion_wide=0.2, regions=None, weights=None):
+        """Calculate frequencies from a given tree and pivots.
+        """
+        self.tree = tree
+        self.pivots = pivots
+        self.sigma_narrow = sigma_narrow
+        self.sigma_wide = sigma_wide
+        self.proportion_wide = proportion_wide
+        self.regions = regions
+        self.weights = weights
+
+        if regions is None:
+            self.frequencies = self.estimate_frequencies_for_tree(
+                self.tree,
+                self.pivots,
+                sigma_narrow=self.sigma_narrow,
+                sigma_wide=self.sigma_wide,
+                proportion_wide=self.proportion_wide
+            )
+        else:
+            self.frequencies = self.estimate_region_weighted_frequencies_for_tree(
+                self.tree,
+                self.pivots,
+                self.regions,
+                self.weights,
+                sigma_narrow=self.sigma_narrow,
+                sigma_wide=self.sigma_wide,
+                proportion_wide=self.proportion_wide
+            )
+
+    @classmethod
+    def from_json(cls, tree, json_dict):
+        """Returns an instance populated with parameters and data from the given JSON dictionary.
+        """
+        params = json_dict["parameters"]
+        params["pivots"] = np.array(params["pivots"])
+        instance = cls(tree, **params)
+        instance.frequencies = json_dict["frequencies"]
+
+        return instance
+
+    def to_json(self):
+        """Returns a dictionary for the current instance that can be serialized in a JSON file.
+        """
+        frequencies = {}
+        for region in self.frequencies:
+            frequencies[region] = {}
+
+            for clade in self.frequencies[region]:
+                frequencies[region][clade] = self.frequencies[region][clade].tolist()
+
+        return {
+            "parameters": {
+                "pivots": self.pivots.tolist(),
+                "sigma_narrow": self.sigma_narrow,
+                "sigma_wide": self.sigma_wide,
+                "proportion_wide": self.proportion_wide,
+                "regions": self.regions,
+                "weights": self.weights
+            },
+            "frequencies": frequencies
+        }
 
     @classmethod
     def get_density_for_observation(cls, mu, pivots, sigma_narrow=1/12.0, sigma_wide=3/12.0, proportion_wide=0.2):
