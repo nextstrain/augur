@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 from augur import align, tree, traits, parse, filter, export, translate
-from augur import mask, treetime_wrapper, titers
+from augur import mask, treetime_wrapper, titers, find_drm
 
 if __name__=="__main__":
     import argparse
@@ -131,6 +131,18 @@ if __name__=="__main__":
     traits_parser.add_argument('--output', default='traits.json', help='')
     traits_parser.set_defaults(func=traits.run)
 
+    ## FIND_DRM.PY
+    drm_parser = subparsers.add_parser('find_drm', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    drm_parser.add_argument('--alignment', required=True, help="alignment to search for DRMs in (can include ancestral seqs)")
+    drm_parser.add_argument('--vcf_reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    drm_parser.add_argument('--drm_file', type=str, help='file that includes DRMs to identify')
+    drm_parser.add_argument('--color_defs', type=str, help="file with color definitions "
+                            "(will be combined with colors generated for DRMs in new output file, if supplied)")
+    drm_parser.add_argument('--output', type=str, help='output json with DRM information')
+    drm_parser.add_argument('--col_output', type=str, help='file with colours generated for DRMs '
+                            '(will be combined with values from --color_defs if supplied)')
+    drm_parser.set_defaults(func=find_drm.run)
+
     ## TITERS.PY
     titers_parser = subparsers.add_parser('titers', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     titers_parser.add_argument('--titers', required=True, type=str, help="file with titer measurements")
@@ -147,6 +159,7 @@ if __name__=="__main__":
     export_parser.add_argument('--node_data', required=True, help="json file with meta data for each node")
     export_parser.add_argument('--traits',help="json file with trait inferences")
     export_parser.add_argument('--aa_muts',help="json file with amino acid mutations")
+    export_parser.add_argument('--drms', help="json file with DRM information")
     export_parser.add_argument('--titer_tree_model',type=str, help="json file with tree titer model")
     export_parser.add_argument('--titer_subs_model',type=str, help="json file with substitution titer model")
     export_parser.add_argument('--config', help="file with auspice configuration")

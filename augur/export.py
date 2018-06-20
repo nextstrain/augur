@@ -149,6 +149,15 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_inf
             col_opts[trait]["key"] = trait
             col_opts[trait]["color_map"] = color_maps[trait]
 
+    #Adds things for which there's a colour in the file - like DRMs!
+    for trait in color_maps:
+        if trait not in col_opts:
+            col_opts[trait] = {}
+            col_opts[trait]["legendTitle"] = trait
+            col_opts[trait]["menuItem"] = trait
+            col_opts[trait]["key"] = trait
+            col_opts[trait]["color_map"] = color_maps[trait]
+
     if "annotations" in tree_meta:
         meta_json["annotations"] = tree_meta['annotations']
 
@@ -196,6 +205,7 @@ def run(args):
     if args.aa_muts: other_files.append(args.aa_muts)
     if args.titer_tree_model: other_files.append(args.titer_tree_model)
     if args.titer_subs_model: other_files.append(args.titer_subs_model)
+    if args.drms: other_files.append(args.drms)
 
     tree_meta = read_node_data(args.node_data, other_files=other_files)
     tree_meta = tree_meta_info(tree_meta, seq_meta) #attach author name to node
