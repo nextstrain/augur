@@ -12,12 +12,11 @@ Augur is the bioinformatic processing pipeline to track evolution from sequence 
 
 ## Install
 
-To install augur, clone the git repository and its submodules
+To install augur, clone the git repository:
 
 ```
 git clone https://github.com/nextstrain/augur.git
 cd augur
-git submodule update --init
 ```
 
 Augur has a number of python dependencies that are listed in `requirements.txt` and are best installed via a package manager like conda or pip.
