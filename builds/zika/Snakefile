@@ -1,6 +1,8 @@
 
 rule all:
-    input: "auspice/zika_tree.json"
+    input:
+        tree = "auspice/zika_tree.json",
+        meta = "auspice/zika_meta.json"
 
 # config variables to be used by rules below
 # kind of following https://snakemake.readthedocs.io/en/latest/tutorial/advanced.html#step-2-config-files
@@ -116,8 +118,8 @@ rule export:
 		auspice_config = config.auspice_config,
 		geo_info = config.geo_info
 	output:
-		tree = "auspice/zika_tree.json",
-		meta = "auspice/zika_meta.json",
+		tree = rules.all.input.tree,
+		meta = rules.all.input.meta
 	shell:
 		'augur export --tree {input.tree} --metadata {input.metadata}'
 			' --node_data {input.node_data} {input.traits} {input.aa_muts}' # node decorations for the tree JSON
