@@ -587,25 +587,6 @@ class KdeFrequencies(object):
         self.regions = regions
         self.weights = weights
 
-        if regions is None:
-            self.frequencies = self.estimate_frequencies_for_tree(
-                self.tree,
-                self.pivots,
-                sigma_narrow=self.sigma_narrow,
-                sigma_wide=self.sigma_wide,
-                proportion_wide=self.proportion_wide
-            )
-        else:
-            self.frequencies = self.estimate_region_weighted_frequencies_for_tree(
-                self.tree,
-                self.pivots,
-                self.regions,
-                self.weights,
-                sigma_narrow=self.sigma_narrow,
-                sigma_wide=self.sigma_wide,
-                proportion_wide=self.proportion_wide
-            )
-
     @classmethod
     def from_json(cls, tree, json_dict):
         """Returns an instance populated with parameters and data from the given JSON dictionary.
