@@ -24,7 +24,7 @@ setup(
             "treetime ==0.4.0"
         ],
         dependency_links = [
-            "https://api.github.com/repos/neherlab/treetime/tarball/py3#egg=treetime-0.4.0"
+            "https://api.github.com/repos/neherlab/treetime/tarball/v0.4.0#egg=treetime-0.4.0"
         ],
         classifiers=[
             "Development Status :: 3 - Alpha",
