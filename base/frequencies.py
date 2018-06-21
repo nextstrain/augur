@@ -596,6 +596,10 @@ class KdeFrequencies(object):
         instance = cls(tree, **params)
         instance.frequencies = json_dict["frequencies"]
 
+        for region in instance.frequencies:
+            for clade in instance.frequencies[region]:
+                instance.frequencies[region][clade] = np.array(instance.frequencies[region][clade])
+
         return instance
 
     def to_json(self):
