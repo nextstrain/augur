@@ -11,9 +11,9 @@ from Bio import Phylo
 import cPickle as pickle
 from collections import OrderedDict
 try:
-    from treetime_augur import TreeTime
+    from treetime import TreeTime
 except ImportError:
-    print("Couldn't import treetime_augur. Here's the searched paths:")
+    print("Couldn't import treetime. Here's the searched paths:")
     pprint(sys.path)
 
 def resolve_polytomies(tree):
@@ -173,7 +173,7 @@ class tree(object):
         self.logger('Reading tree from file '+infile,2)
         dates  =   {seq.id:seq.attributes['num_date']
                     for seq in self.aln if 'date' in seq.attributes}
-        self.tt = TreeTime(dates=dates, tree=infile, gtr='Jukes-Cantor',
+        self.tt = TreeTime(dates=dates, tree=str(infile), gtr='Jukes-Cantor',
                             aln = self.aln, verbose=self.verbose, fill_overhangs=True)
         if root:
             self.tt.reroot(root=root)
@@ -293,7 +293,7 @@ class tree(object):
         infer a "mugration" model by pretending each region corresponds to a sequence
         state and repurposing the GTR inference and ancestral reconstruction
         '''
-        from treetime_augur import GTR
+        from treetime import GTR
         # Determine alphabet
         places = set()
         for node in self.tree.find_clades():
