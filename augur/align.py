@@ -67,10 +67,11 @@ def run(args):
 
     if ref_name:
         seqs = strip_non_reference(output, ref_name, keep_reference=not args.remove_reference)
+        if not seqs:
+            return # error already printed from strip_non_reference
         if args.fill_gaps:
             make_gaps_ambiguous(seqs)
-        if seqs:
-            SeqIO.write(seqs, output, 'fasta')
+        SeqIO.write(seqs, output, 'fasta')
 
 
 
