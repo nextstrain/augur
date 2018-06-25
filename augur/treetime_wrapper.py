@@ -85,7 +85,7 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
 
 def prep_tree(T, attributes, is_vcf=False):
     data = {}
-    inc = 1 if is_vcf else 0 #convert python numbering to start-at-1
+    inc = 1 #convert python numbering to start-at-1
     for n in T.find_clades():
         data[n.name] = {attr:n.__getattribute__(attr)
                         for attr in attributes if hasattr(n,attr)}
@@ -100,8 +100,6 @@ def prep_tree(T, attributes, is_vcf=False):
                 data[n.name]['sequence']=''
 
     return data
-
-
 
 def run(args):
     # check alignment type, set flags, read in if VCF

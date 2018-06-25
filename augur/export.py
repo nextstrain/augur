@@ -49,7 +49,7 @@ def tree_to_json(node, fields_to_export = [], top_level = [], div=0):
     return tree_json
 
 def process_mutations(muts):
-    realMut = [a+str(pos+1)+d for (a, pos, d) in muts]
+    realMut = [a+str(pos)+d for (a, pos, d) in muts]
     if len(realMut)==0:
         realMut = [""]
     return realMut
