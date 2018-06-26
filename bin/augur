@@ -13,8 +13,8 @@ if __name__=="__main__":
     p_parse = subparsers.add_parser('parse', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     p_parse.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
     p_parse.add_argument('--fields', nargs='+', help="fields in fasta header")
-    p_parse.add_argument('--output', help="output file")
-    p_parse.add_argument('--metadata', help="output file")
+    p_parse.add_argument('--output-sequences', help="output sequences file")
+    p_parse.add_argument('--output-metadata', help="output metadata file")
     p_parse.add_argument('--sep', default='|', help="separator of fasta header")
     p_parse.add_argument('--fix-dates', choices=['dayfirst', 'monthfirst'],
                                  help="attempt to parse dates and output them in standard format")
@@ -148,9 +148,9 @@ if __name__=="__main__":
     export_parser.add_argument('--auspice-config', help="file with auspice configuration")
     export_parser.add_argument('--colors', help="file with color definitions")
     export_parser.add_argument('--lat-longs', help="file latitudes and longitudes")
-    export_parser.add_argument('--tree-output', required=True,
+    export_parser.add_argument('--output-tree', required=True,
                         help="json file name that is passed on to auspice (e.g., zika_tree.json)")
-    export_parser.add_argument('--meta-output', required=True,
+    export_parser.add_argument('--output-meta', required=True,
                         help="json file name that is passed on to auspice (e.g., zika_meta.json)")
     export_parser.set_defaults(func=export.run)
 

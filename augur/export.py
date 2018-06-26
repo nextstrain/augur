@@ -222,7 +222,7 @@ def run(args):
                 +[("muts", process_mutations), ("aa_muts", process_mutation_dict)]
 
     tjson = tree_to_json(T.root, fields_to_export=fields_to_export, top_level=top_level)
-    write_json(tjson, args.tree_output)
+    write_json(tjson, args.output_tree)
 
     export_metadata_json(T, seq_meta, tree_meta, read_config(args.auspice_config),
-                         args.colors, read_geo(args.lat_longs), args.meta_output)
+                         args.colors, read_geo(args.lat_longs), args.output_meta)

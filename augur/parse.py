@@ -57,7 +57,7 @@ def run(args):
                                         dayfirst=args.fix_dates=='dayfirst')
 
     # output results to a new fasta alignment and tsv/csv via pandas
-    SeqIO.write(seqs, args.output, 'fasta')
+    SeqIO.write(seqs, args.output_sequences, 'fasta')
     df = pd.DataFrame.from_dict(meta_data, orient='index')
-    df.to_csv(args.metadata, index_label='strain',
-              sep='\t' if args.metadata[-3:]=='tsv' else ',')
+    df.to_csv(args.output_metadata, index_label='strain',
+              sep='\t' if args.output_metadata[-3:]=='tsv' else ',')
