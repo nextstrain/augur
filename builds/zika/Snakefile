@@ -93,9 +93,9 @@ rule traits:
     output:
         "results/traits.json",
     params:
-        cols = "region country"
+        columns = "region country"
     shell:
-        'augur traits --confidence --tree {input.tree} --metadata {input.metadata} --output {output} --columns {params.cols}'
+        'augur traits --confidence --tree {input.tree} --metadata {input.metadata} --output {output} --columns {params.columns}'
 
 rule translate:
     input:

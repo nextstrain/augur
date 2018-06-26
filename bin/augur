@@ -125,7 +125,7 @@ if __name__=="__main__":
     traits_parser.add_argument('--tree', required=True, help="tree to perform trait reconstruction on")
     traits_parser.add_argument('--metadata', required=True, help="tsv/csv table with meta data")
     traits_parser.add_argument('--columns', required=True, nargs='+',
-                        help='meta data field to perform discrete reconstruction on')
+                        help='metadata fields to perform discrete reconstruction on')
     traits_parser.add_argument('--confidence',action="store_true",
                         help='record the distribution of subleading mugration states')
     traits_parser.add_argument('--output', default='traits.json', help='')
