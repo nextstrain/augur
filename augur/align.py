@@ -54,14 +54,14 @@ def run(args):
     copyfile(seq_fname, output+".pre_aligner.fasta")
 
     # align
-    if args.aligner=='mafft':
+    if args.method=='mafft':
         cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2>mafft_stderr"%(args.nthreads, seq_fname, output)
         os.system(cmd)
         print("\nusing mafft to align via:\n\t" + cmd +
               " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"
               "\n\thttps://doi.org/10.1093%2Fnar%2Fgkf436\n")
     else:
-        print('ERROR: aligner not implemented')
+        print('ERROR: alignment method not implemented')
         return -1
 
     # after aligning, make a copy of the data that the aligner produced (useful for debugging)

@@ -48,7 +48,7 @@ if __name__=="__main__":
     align_parser.add_argument('--output', help="output file")
     align_parser.add_argument('--nthreads', type=int, default=2,
                         help="number of threads used by mafft")
-    align_parser.add_argument('--aligner', default='mafft', choices=["mafft"],
+    align_parser.add_argument('--method', default='mafft', choices=["mafft"],
                         help="alignment program to use")
     align_parser.add_argument('--reference-name', type=str, help="strip insertions relative to reference sequence; use if the reference is already in the input sequences")
     align_parser.add_argument('--reference-sequence', type=str, help="strip insertions relative to reference sequence; use if the reference is NOT already in the input sequences")
