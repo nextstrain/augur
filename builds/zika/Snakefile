@@ -3,11 +3,6 @@ rule all:
         auspice_tree = "auspice/zika_tree.json",
         auspice_meta = "auspice/zika_meta.json"
 
-# config variables to be used by rules below
-# kind of following https://snakemake.readthedocs.io/en/latest/tutorial/advanced.html#step-2-config-files
-# however if defined as a dict then cannot be accessed in shell commands
-# the advantage of this is that one can (eventually) import rules from a template
-# currently only files are defined here - parameters are defined in their own rules
 rule config:
     params:
         input_fasta = "../../../fauna/data/zika.fasta",
@@ -18,8 +13,7 @@ rule config:
         colors = "config/colors.tsv",
         auspice_config = "config/auspice_config.json"
 
-config = rules.config.params # so we can use config.x rather than rules.config.params.x
-# end of config definition
+config = rules.config.params
 
 rule parse:
     input:
@@ -28,9 +22,8 @@ rule parse:
        sequences = "results/sequences.fasta",
        metadata = "results/metadata.tsv"
     shell:
-        "augur parse --sequences {input} --output-sequences {output.sequences} --output-metadata {output.metadata} "
-            "--fields {config.fasta_fields}"
-
+        'augur parse --sequences {input} --output-sequences {output.sequences} --output-metadata {output.metadata} '
+            '--fields {config.fasta_fields}'
 
 rule filter:
     input:
@@ -44,10 +37,9 @@ rule filter:
         categories = "country year month",
         min_date = 2012
     shell:
-        "augur filter --sequences {input.sequences} --output {output} --metadata {input.metadata} "
-            "--sequences-per-category {params.sequences_per_category} "
-            "--exclude {input.exclude} --categories {params.categories} --min-date {params.min_date}"
-
+        'augur filter --sequences {input.sequences} --output {output} --metadata {input.metadata} '
+            '--sequences-per-category {params.sequences_per_category} '
+            '--exclude {input.exclude} --categories {params.categories} --min-date {params.min_date}'
 
 rule align:
     input:
@@ -59,7 +51,6 @@ rule align:
         'augur align --sequences {input.sequences} --output {output} '
          '--reference-sequence {input.ref}  --fill-gaps'
 
-
 rule tree:
     input:
         alignment = rules.align.output
@@ -67,7 +58,6 @@ rule tree:
         tree = "results/tree_raw.nwk",
     shell:
         'augur tree --alignment {input.alignment} --output {output.tree}'
-
 
 rule timetree:
     input:
