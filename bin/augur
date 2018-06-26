@@ -146,7 +146,7 @@ if __name__=="__main__":
     export_parser.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
     export_parser.add_argument('--node-data', required=True, nargs='+', help="json files with meta data for each node")
     export_parser.add_argument('--auspice-config', help="file with auspice configuration")
-    export_parser.add_argument('--color-maps', help="file with color definitions")
+    export_parser.add_argument('--colors', help="file with color definitions")
     export_parser.add_argument('--geo-info', help="file latitudes and longitudes")
     export_parser.add_argument('--tree-output', required=True,
                         help="json file name that is passed on to auspice (e.g., zika_tree.json)")

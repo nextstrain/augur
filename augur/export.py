@@ -225,4 +225,4 @@ def run(args):
     write_json(tjson, args.tree_output)
 
     export_metadata_json(T, seq_meta, tree_meta, read_config(args.auspice_config),
-                         args.color_maps, read_geo(args.geo_info), args.meta_output)
+                         args.colors, read_geo(args.geo_info), args.meta_output)

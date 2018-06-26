@@ -15,7 +15,7 @@ rule config:
         dropped_strains = "config/dropped_strains.txt",
         reference = "config/zika_outgroup.gb",
         geo_info = "../../source-data/geo_lat_long.tsv",
-        color_maps = "config/colors.tsv",
+        colors = "config/colors.tsv",
         auspice_config = "config/auspice_config.json"
 
 config = rules.config.params # so we can use config.x rather than rules.config.params.x
@@ -114,7 +114,7 @@ rule export:
         metadata = rules.parse.output.metadata,
         traits = rules.traits.output,
         aa_muts = rules.translate.output,
-        color_defs = config.color_maps,
+        colors = config.colors,
         auspice_config = config.auspice_config,
         geo_info = config.geo_info
     output:
@@ -123,5 +123,5 @@ rule export:
     shell:
         'augur export --tree {input.tree} --metadata {input.metadata}'
             ' --node-data {input.node_data} {input.traits} {input.aa_muts}' # node decorations for the tree JSON
-            ' --color-maps {input.color_defs} --geo-info {input.geo_info} --auspice-config {input.auspice_config}' #for the meta JSON
+            ' --colors {input.colors} --geo-info {input.geo_info} --auspice-config {input.auspice_config}' #for the meta JSON
             ' --tree-output {output.auspice_tree} --meta-output {output.auspice_meta}'
