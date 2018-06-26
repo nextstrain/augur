@@ -1,7 +1,6 @@
 import os, shutil, time
 from Bio import Phylo
-from .utils import read_metadata, get_numerical_dates, write_json
-from treetime.vcf_utils import read_vcf, write_vcf
+from treetime.vcf_utils import read_vcf
 import numpy as np
 
 def build_raxml(aln_file, out_file, clean_up=True, nthreads=2):

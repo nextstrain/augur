@@ -60,8 +60,6 @@ if __name__=="__main__":
     tree_parser = subparsers.add_parser('tree', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     tree_parser.add_argument('--alignment', required=True, help="alignment to build tree from")
     tree_parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
-    tree_parser.add_argument('--metadata', type=str, help="tsv/csv table with meta data for sequences")
-    tree_parser.add_argument('--date-fmt', default="%Y-%m-%d", help="date format")
     tree_parser.add_argument('--output', type=str, help='file name to write tree to')
     tree_parser.add_argument('--iqmodel', default="HKY+F", help='substitution model to use for iq-tree. specify \'none\' to run ModelTest')
     tree_parser.add_argument('--nthreads', type=int, default=2,
