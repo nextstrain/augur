@@ -15,7 +15,7 @@ if __name__=="__main__":
     p_parse.add_argument('--fields', nargs='+', help="fields in fasta header")
     p_parse.add_argument('--output-sequences', help="output sequences file")
     p_parse.add_argument('--output-metadata', help="output metadata file")
-    p_parse.add_argument('--sep', default='|', help="separator of fasta header")
+    p_parse.add_argument('--separator', default='|', help="separator of fasta header")
     p_parse.add_argument('--fix-dates', choices=['dayfirst', 'monthfirst'],
                                  help="attempt to parse dates and output them in standard format")
     p_parse.set_defaults(func=parse.run)
