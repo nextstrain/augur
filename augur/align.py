@@ -1,6 +1,7 @@
 import os,sys,argparse
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq
+from shutil import copyfile
 
 def make_gaps_ambiguous(aln):
     '''
@@ -33,6 +34,7 @@ def run(args):
         print("Specified reference name %s is not in the sequence sample. Will not trim."%ref_name)
         ref_name = None
 
+    # potentially add the reference seuqnce to the sequences
     if ref_fname and (not ref_name):
         if os.path.isfile(ref_fname):
             try:
@@ -48,6 +50,10 @@ def run(args):
             print("WARNING: Cannot read reference sequence."
                   "\n\tmake sure the file %s does not exist"%ref_fname)
 
+    # before aligning, make a copy of the data that the aligner receives as input (very useful for debugging purposes)
+    copyfile(seq_fname, output+".pre_aligner.fasta")
+
+    # align
     if args.aligner=='mafft':
         cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2>mafft_stderr"%(args.nthreads, seq_fname, output)
         os.system(cmd)
@@ -58,20 +64,24 @@ def run(args):
         print('ERROR: aligner not implemented')
         return -1
 
-    from Bio import AlignIO
+    # after aligning, make a copy of the data that the aligner produced (useful for debugging)
+    copyfile(output, output+".post_aligner.fasta")
+
+    # convert the aligner output to upper case (replacing the file in place)
     aln = AlignIO.read(output, 'fasta')
     for seq in aln:
         seq.seq = seq.seq.upper()
-
     AlignIO.write(aln, output, 'fasta')
 
+    # if there's a valid reference in the alignment, strip out all the columns not present in the reference
+    # this will overwrite the alignment file
     if ref_name:
         seqs = strip_non_reference(output, ref_name, keep_reference=not args.remove_reference)
+        if not seqs:
+            return # error already printed from strip_non_reference
         if args.fill_gaps:
             make_gaps_ambiguous(seqs)
-        if seqs:
-            SeqIO.write(seqs, output, 'fasta')
-
+        SeqIO.write(seqs, output, 'fasta')
 
 
 def strip_non_reference(alignment_fname, reference, keep_reference=False):

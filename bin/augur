@@ -16,7 +16,7 @@ if __name__=="__main__":
     p_parse.add_argument('--output', help="output file")
     p_parse.add_argument('--metadata', help="output file")
     p_parse.add_argument('--sep', default='|', help="separator of fasta header")
-    p_parse.add_argument('--fix_dates', choices=['dayfirst', 'monthfirst'],
+    p_parse.add_argument('--fix-dates', choices=['dayfirst', 'monthfirst'],
                                  help="attempt to parse dates and output them in standard format")
     p_parse.set_defaults(func=parse.run)
 
@@ -24,13 +24,13 @@ if __name__=="__main__":
     filter_parser = subparsers.add_parser('filter', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     filter_parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
     filter_parser.add_argument('--metadata', required=True, help="metadata associated with sequences")
-    filter_parser.add_argument('--min_date', type=float, help="minimal cutoff for numerical date")
-    filter_parser.add_argument('--max_date', type=float, help="maximal cutoff for numerical date")
-    filter_parser.add_argument('--min_length', type=int, help="minimal length of the sequences")
+    filter_parser.add_argument('--min-date', type=float, help="minimal cutoff for numerical date")
+    filter_parser.add_argument('--max-date', type=float, help="maximal cutoff for numerical date")
+    filter_parser.add_argument('--min-length', type=int, help="minimal length of the sequences")
     filter_parser.add_argument('--exclude', type=str, help="file with list of names that are to be excluded")
     filter_parser.add_argument('--include', type=str, help="file with list of names that are to be included regardless of priorities or subsampling")
     filter_parser.add_argument('--priority', type=str, help="file with list priority scores for sequences (strain\tpriority)")
-    filter_parser.add_argument('--viruses_per_cat', type=int, help="maximal number of viruses per category")
+    filter_parser.add_argument('--viruses-per-cat', type=int, help="maximal number of viruses per category")
     filter_parser.add_argument('--cat', nargs='+', help="categories with respect to subsample")
     filter_parser.add_argument('--output', help="output file")
     filter_parser.set_defaults(func=filter.run)
@@ -50,10 +50,10 @@ if __name__=="__main__":
                         help="number of threads used by mafft")
     align_parser.add_argument('--aligner', default='mafft', choices=["mafft"],
                         help="alignment program to use")
-    align_parser.add_argument('--reference_name', type=str, help="strip insertions relative to reference sequence")
-    align_parser.add_argument('--reference_sequence', type=str, help="strip insertions relative to reference sequence")
-    align_parser.add_argument('--remove_reference', action="store_true", default=False, help="remove reference sequence from the alignment")
-    align_parser.add_argument('--fill_gaps', action="store_true", default=False, help="if gaps are more like missing data, replace by N after aligning")
+    align_parser.add_argument('--reference-name', type=str, help="strip insertions relative to reference sequence")
+    align_parser.add_argument('--reference-sequence', type=str, help="strip insertions relative to reference sequence")
+    align_parser.add_argument('--remove-reference', action="store_true", default=False, help="remove reference sequence from the alignment")
+    align_parser.add_argument('--fill-gaps', action="store_true", default=False, help="if gaps are more like missing data, replace by N after aligning")
     align_parser.set_defaults(func=align.run)
 
     ## TREE.PY
@@ -61,15 +61,15 @@ if __name__=="__main__":
     tree_parser.add_argument('--alignment', required=True, help="alignment to build tree from")
     tree_parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
     tree_parser.add_argument('--metadata', type=str, help="tsv/csv table with meta data for sequences")
-    tree_parser.add_argument('--date_fmt', default="%Y-%m-%d", help="date format")
+    tree_parser.add_argument('--date-fmt', default="%Y-%m-%d", help="date format")
     tree_parser.add_argument('--output', type=str, help='file name to write tree to')
     tree_parser.add_argument('--iqmodel', default="HKY+F", help='substitution model to use for iq-tree. specify \'none\' to run ModelTest')
     tree_parser.add_argument('--nthreads', type=int, default=2,
                              help="number of threads used")
-    tree_parser.add_argument('--vcf_reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    tree_parser.add_argument('--keep_vcf_fasta', action="store_true", help='do not delete informative-site fasta created when '
+    tree_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    tree_parser.add_argument('--keep-vcf-fasta', action="store_true", help='do not delete informative-site fasta created when '
                              'making tree from VCF input')
-    tree_parser.add_argument('--strip_sites', type=str, help='file name of sites to exclude for raw tree building (VCF only)')
+    tree_parser.add_argument('--strip-sites', type=str, help='file name of sites to exclude for raw tree building (VCF only)')
     tree_parser.set_defaults(func=tree.run)
 
 
@@ -78,45 +78,45 @@ if __name__=="__main__":
     tt_parser.add_argument('--alignment', help="alignment to build tree from")
     tt_parser.add_argument('--tree',required=True, help="prebuilt newick")
     tt_parser.add_argument('--metadata', type=str, help="tsv/csv table with meta data for sequences")
-    tt_parser.add_argument('--node_data', type=str, help='file name to write additional node data')
+    tt_parser.add_argument('--node-data', type=str, help='file name to write additional node data')
     tt_parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")
     tt_parser.add_argument('--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
-    tt_parser.add_argument('--clock_rate', type=float, help="fixed clock rate")
+    tt_parser.add_argument('--clock-rate', type=float, help="fixed clock rate")
     tt_parser.add_argument('--root', nargs="+", help="rooting mechanism ('best', 'residual', 'rsq', 'min_dev') "
                             "OR node to root by OR two nodes indicating a monophyletic group to root by")
-    tt_parser.add_argument('--date_fmt', default="%Y-%m-%d", help="date format")
-    tt_parser.add_argument('--date_confidence', action="store_true", help="calculate confidence intervals for node dates")
-    tt_parser.add_argument('--time_marginal', action="store_true", help="assign internal nodes to their marginally most likely dates, not jointly most likely")
+    tt_parser.add_argument('--date-fmt', default="%Y-%m-%d", help="date format")
+    tt_parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
+    tt_parser.add_argument('--time-marginal', action="store_true", help="assign internal nodes to their marginally most likely dates, not jointly most likely")
     tt_parser.add_argument('--ancestral', choices=["joint", "marginal"],
                                 help="calculate joint maximum likelihood ancestral sequence states")
     tt_parser.add_argument('--branchlengths', action="store_true", help="used with --ancestral; optimize branch length before reconstructing ancestral sequences")
-    tt_parser.add_argument('--branch_length_mode', default='auto', choices = ['auto', 'joint', 'marginal', 'input'],
+    tt_parser.add_argument('--branch-length-mode', default='auto', choices = ['auto', 'joint', 'marginal', 'input'],
                                 help='branch length mode of treetime to use')
     tt_parser.add_argument('--output', type=str, help='file name to write tree to')
     tt_parser.add_argument('--iqmodel', default="HKY+F", help='substitution model to use for iq-tree')
-    tt_parser.add_argument('--n_iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
+    tt_parser.add_argument('--n-iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
                              'interquartile ranges from the root-to-tip vs time regression')
     tt_parser.add_argument('--nthreads', type=int, default=2,
                              help="number of threads used")
-    tt_parser.add_argument('--vcf_reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    tt_parser.add_argument('--output_vcf', type=str, help='name of output VCF file which will include ancestral seqs, if treetime or ancestral is run')
-    tt_parser.add_argument('--year_limit', type=int, nargs='+', help='specify min or max & min years for samples with XX in year')
+    tt_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    tt_parser.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs, if treetime or ancestral is run')
+    tt_parser.add_argument('--year-limit', type=int, nargs='+', help='specify min or max & min years for samples with XX in year')
     tt_parser.set_defaults(func=treetime_wrapper.run)
 
     ## TRANSLATE.PY
     translate_parser = subparsers.add_parser('translate', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     translate_parser.add_argument('--tree', help="prebuild newick -- no tree will be build if provided")
-    translate_parser.add_argument('--node_data', type=str, help='file with additional node data including ancestral sequences')
-    translate_parser.add_argument('--reference_sequence', required=True,
+    translate_parser.add_argument('--node-data', type=str, help='file with additional node data including ancestral sequences')
+    translate_parser.add_argument('--reference-sequence', required=True,
                         help='genbank or GFF file containing the annotation')
     translate_parser.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
     translate_parser.add_argument('--output', type=str, help="name of json files for aa mutations")
-    translate_parser.add_argument('--alignment_output', type=str, help="write the alignment of each gene to file,"
+    translate_parser.add_argument('--alignment-output', type=str, help="write the alignment of each gene to file,"
                                   "specify the file name like so: 'my_alignment_GENE.fasta' where 'GENE'"
                                    "will be replaced by the name of the gene (Fasta-input only)")
-    translate_parser.add_argument('--vcf_input', type=str, help='VCF file with original and ancestral sequences')
-    translate_parser.add_argument('--vcf_reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    translate_parser.add_argument('--vcf_output', type=str, help='write a faux-VCF alignment of the translations to a file.'
+    translate_parser.add_argument('--vcf-input', type=str, help='VCF file with original and ancestral sequences')
+    translate_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    translate_parser.add_argument('--vcf-output', type=str, help='write a faux-VCF alignment of the translations to a file.'
                                    'a corresponding fasta reference will be generated')
     translate_parser.set_defaults(func=translate.run)
 
@@ -136,21 +136,21 @@ if __name__=="__main__":
     titers_parser.add_argument('--titers', required=True, type=str, help="file with titer measurements")
     titers_parser.add_argument('--tree', type=str, required=True, help="tree to perform fit titer model to")
     titers_parser.add_argument('--node_data', required=True, help="json file with meta data for each node")
-    titers_parser.add_argument('--output_tree_model', type=str, help='json file to save tree model')
-    titers_parser.add_argument('--output_subs_model', type=str, help='json file to save subs model')
+    titers_parser.add_argument('--output-tree-model', type=str, help='json file to save tree model')
+    titers_parser.add_argument('--output-subs-model', type=str, help='json file to save subs model')
     titers_parser.set_defaults(func=titers.run)
 
     ## EXPORT.PY
     export_parser =  subparsers.add_parser("export", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     export_parser.add_argument('--tree', required=True, help="tree to perform trait reconstruction on")
     export_parser.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
-    export_parser.add_argument('--node_data', required=True, nargs='+', help="json files with meta data for each node")
-    export_parser.add_argument('--auspice_config', help="file with auspice configuration")
-    export_parser.add_argument('--color_maps', help="file with color definitions")
-    export_parser.add_argument('--geo_info', help="file latitudes and longitudes")
-    export_parser.add_argument('--tree_output', required=True,
+    export_parser.add_argument('--node-data', required=True, nargs='+', help="json files with meta data for each node")
+    export_parser.add_argument('--auspice-config', help="file with auspice configuration")
+    export_parser.add_argument('--color-maps', help="file with color definitions")
+    export_parser.add_argument('--geo-info', help="file latitudes and longitudes")
+    export_parser.add_argument('--tree-output', required=True,
                         help="json file name that is passed on to auspice (e.g., zika_tree.json)")
-    export_parser.add_argument('--meta_output', required=True,
+    export_parser.add_argument('--meta-output', required=True,
                         help="json file name that is passed on to auspice (e.g., zika_meta.json)")
     export_parser.set_defaults(func=export.run)
 

@@ -1,6 +1,8 @@
 
 rule all:
-    input: "auspice/zika_tree.json"
+    input:
+        tree = "auspice/zika_tree.json",
+        meta = "auspice/zika_meta.json"
 
 # config variables to be used by rules below
 # kind of following https://snakemake.readthedocs.io/en/latest/tutorial/advanced.html#step-2-config-files
@@ -43,8 +45,8 @@ rule filter:
 		min_date = 2012
 	shell:
 		"augur filter --sequences {input.seq} --output {output} --metadata {input.meta} "
-			"--viruses_per_cat {params.vpc} "
-			"--exclude {input.exclude} --cat {params.cat} --min_date {params.min_date}"
+			"--viruses-per-cat {params.vpc} "
+			"--exclude {input.exclude} --cat {params.cat} --min-date {params.min_date}"
 
 
 rule align:
@@ -55,7 +57,7 @@ rule align:
 		"results/aligned.fasta"
 	shell:
 		'augur align --sequences {input.seq} --output {output} '
-		 '--reference_sequence {input.ref}  --fill_gaps'
+		 '--reference-sequence {input.ref}  --fill-gaps'
 
 
 rule tree:
@@ -80,9 +82,9 @@ rule timetree:
 	shell:
 		'augur treetime --tree {input.tree} --alignment {input.aln} '
 		    '--metadata {input.metadata}'
-			' --output {output.tree} --node_data {output.node_data}'
-			' --timetree --date_confidence --time_marginal --coalescent opt'
-			' --n_iqd {params.n_iqd}'
+			' --output {output.tree} --node-data {output.node_data}'
+			' --timetree --date-confidence --time-marginal --coalescent opt'
+			' --n-iqd {params.n_iqd}'
 
 rule traits:
 	input:
@@ -103,7 +105,7 @@ rule translate:
 	output:
 		"results/aa_muts.json"
 	shell:
-		'augur translate --tree {input.tree} --node_data {input.node_data} --output {output} --reference_sequence {input.ref}'
+		'augur translate --tree {input.tree} --node-data {input.node_data} --output {output} --reference-sequence {input.ref}'
 
 rule export:
 	input:
@@ -116,10 +118,10 @@ rule export:
 		auspice_config = config.auspice_config,
 		geo_info = config.geo_info
 	output:
-		tree = "auspice/zika_tree.json",
-		meta = "auspice/zika_meta.json",
+		tree = rules.all.input.tree,
+		meta = rules.all.input.meta
 	shell:
 		'augur export --tree {input.tree} --metadata {input.metadata}'
-			' --node_data {input.node_data} {input.traits} {input.aa_muts}' # node decorations for the tree JSON
-			' --color_maps {input.color_defs} --geo_info {input.geo_info} --auspice_config {input.auspice_config}' #for the meta JSON
-			' --tree_output {output.tree} --meta_output {output.meta}'
+			' --node-data {input.node_data} {input.traits} {input.aa_muts}' # node decorations for the tree JSON
+			' --color-maps {input.color_defs} --geo-info {input.geo_info} --auspice-config {input.auspice_config}' #for the meta JSON
+			' --tree-output {output.tree} --meta-output {output.meta}'
