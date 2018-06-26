@@ -129,7 +129,7 @@ def read_color_maps(fname):
     return cm
 
 
-def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_info, fname, indent=0):
+def export_metadata_json(T, metadata, tree_meta, config, color_map_file, lat_longs, fname, indent=0):
     meta_json = {}
     import time
     meta_json["updated"] = time.strftime("%d %b %Y")
@@ -175,8 +175,8 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_inf
             for n, v in tree_meta["nodes"].items():
                 if geo_field in v:
                     loc = v[geo_field]
-                    if loc in geo_info:
-                        geo[geo_field][loc] = geo_info[loc]
+                    if loc in lat_longs:
+                        geo[geo_field][loc] = lat_longs[loc]
                     else:
                         geo[geo_field][loc] = {"latitude":0, "longitude":0}
 
@@ -225,4 +225,4 @@ def run(args):
     write_json(tjson, args.tree_output)
 
     export_metadata_json(T, seq_meta, tree_meta, read_config(args.auspice_config),
-                         args.colors, read_geo(args.geo_info), args.meta_output)
+                         args.colors, read_geo(args.lat_longs), args.meta_output)
