@@ -50,8 +50,8 @@ if __name__=="__main__":
                         help="number of threads used by mafft")
     align_parser.add_argument('--aligner', default='mafft', choices=["mafft"],
                         help="alignment program to use")
-    align_parser.add_argument('--reference-name', type=str, help="strip insertions relative to reference sequence")
-    align_parser.add_argument('--reference-sequence', type=str, help="strip insertions relative to reference sequence")
+    align_parser.add_argument('--reference-name', type=str, help="strip insertions relative to reference sequence; use if the reference is already in the input sequences")
+    align_parser.add_argument('--reference-sequence', type=str, help="strip insertions relative to reference sequence; use if the reference is NOT already in the input sequences")
     align_parser.add_argument('--remove-reference', action="store_true", default=False, help="remove reference sequence from the alignment")
     align_parser.add_argument('--fill-gaps', action="store_true", default=False, help="if gaps are more like missing data, replace by N after aligning")
     align_parser.set_defaults(func=align.run)
