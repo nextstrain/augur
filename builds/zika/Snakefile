@@ -40,13 +40,13 @@ rule filter:
     output:
         "results/filtered.fasta"
     params:
-        vpc = 20,
-        cat = "year month",
+        sequences_per_category = 20,
+        categories = "country year month",
         min_date = 2012
     shell:
         "augur filter --sequences {input.sequences} --output {output} --metadata {input.metadata} "
-            "--viruses-per-cat {params.vpc} "
-            "--exclude {input.exclude} --cat {params.cat} --min-date {params.min_date}"
+            "--sequences-per-category {params.sequences_per_category} "
+            "--exclude {input.exclude} --categories {params.categories} --min-date {params.min_date}"
 
 
 rule align:

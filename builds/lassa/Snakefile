@@ -18,10 +18,10 @@ rule filter:
     output:
         "results_{segment}/filtered.fasta"
     params:
-        vpc = 30,
-        cat = "year month"
+        sequences_per_category = 30,
+        categories = "year month"
     shell:
-        "augur filter --sequences {input.seq} --output {output} --metadata {input.meta} --viruses_per_cat {params.vpc} --exclude {input.exclude} --cat {params.cat}"
+        "augur filter --sequences {input.seq} --output {output} --metadata {input.meta} --sequences_per_category {params.sequences_per_category} --exclude {input.exclude} --categories {params.categories}"
 
 
 rule align:
@@ -101,4 +101,3 @@ rule export:
             ' --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts}'
             ' --config {input.config} --color_defs {input.color_defs} --output {output.tree}'
             ' --geo_info {input.geo_info} --meta_output {output.meta}'
-

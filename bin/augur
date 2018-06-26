@@ -30,8 +30,8 @@ if __name__=="__main__":
     filter_parser.add_argument('--exclude', type=str, help="file with list of names that are to be excluded")
     filter_parser.add_argument('--include', type=str, help="file with list of names that are to be included regardless of priorities or subsampling")
     filter_parser.add_argument('--priority', type=str, help="file with list priority scores for sequences (strain\tpriority)")
-    filter_parser.add_argument('--viruses-per-cat', type=int, help="maximal number of viruses per category")
-    filter_parser.add_argument('--cat', nargs='+', help="categories with respect to subsample")
+    filter_parser.add_argument('--sequences-per-category', type=int, help="maximal number of viruses per category")
+    filter_parser.add_argument('--categories', nargs='+', help="categories with respect to subsample")
     filter_parser.add_argument('--output', help="output file")
     filter_parser.set_defaults(func=filter.run)
 
