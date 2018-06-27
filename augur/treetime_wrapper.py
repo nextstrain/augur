@@ -155,7 +155,7 @@ def run(args):
         metadata, columns = read_metadata(args.metadata)
         if args.year_limit:
             args.year_limit.sort()
-        dates = get_numerical_dates(metadata, fmt=args.date_fmt, min_max_year=args.year_limit)
+        dates = get_numerical_dates(metadata, fmt=args.date_format, min_max_year=args.year_limit)
         for n in T.get_terminals():
             if n.name in metadata and 'date' in metadata[n.name]:
                 n.raw_date = metadata[n.name]['date']

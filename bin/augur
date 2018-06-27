@@ -82,7 +82,7 @@ if __name__=="__main__":
     tt_parser.add_argument('--clock-rate', type=float, help="fixed clock rate")
     tt_parser.add_argument('--root', nargs="+", help="rooting mechanism ('best', 'residual', 'rsq', 'min_dev') "
                             "OR node to root by OR two nodes indicating a monophyletic group to root by")
-    tt_parser.add_argument('--date-fmt', default="%Y-%m-%d", help="date format")
+    tt_parser.add_argument('--date-format', default="%Y-%m-%d", help="date format")
     tt_parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
     tt_parser.add_argument('--time-marginal', action="store_true", help="assign internal nodes to their marginally most likely dates, not jointly most likely")
     tt_parser.add_argument('--ancestral', choices=["joint", "marginal"],
