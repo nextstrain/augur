@@ -11,7 +11,7 @@ if __name__=="__main__":
 
     ### PARSE.PY -- produce a pair of tsv/fasta files from a single fasta file
     p_parse = subparsers.add_parser('parse', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    p_parse.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
+    p_parse.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
     p_parse.add_argument('--fields', nargs='+', help="fields in fasta header")
     p_parse.add_argument('--output-sequences', help="output sequences file")
     p_parse.add_argument('--output-metadata', help="output metadata file")
@@ -22,7 +22,7 @@ if __name__=="__main__":
 
     ### FILTER.PY -- filter and subsample an sequence set
     filter_parser = subparsers.add_parser('filter', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    filter_parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
+    filter_parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
     filter_parser.add_argument('--metadata', required=True, help="metadata associated with sequences")
     filter_parser.add_argument('--min-date', type=float, help="minimal cutoff for numerical date")
     filter_parser.add_argument('--max-date', type=float, help="maximal cutoff for numerical date")
@@ -44,7 +44,7 @@ if __name__=="__main__":
 
     ### ALIGN.PY
     align_parser = subparsers.add_parser('align', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    align_parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
+    align_parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
     align_parser.add_argument('--output', help="output file")
     align_parser.add_argument('--nthreads', type=int, default=2,
                         help="number of threads used by mafft")
@@ -58,7 +58,7 @@ if __name__=="__main__":
 
     ## TREE.PY
     tree_parser = subparsers.add_parser('tree', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    tree_parser.add_argument('--alignment', required=True, help="alignment to build tree from")
+    tree_parser.add_argument('--alignment', required=True, help="alignment in fasta or VCF format")
     tree_parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
     tree_parser.add_argument('--output', type=str, help='file name to write tree to')
     tree_parser.add_argument('--iqmodel', default="HKY+F", help='substitution model to use for iq-tree. specify \'none\' to run ModelTest')
@@ -73,7 +73,7 @@ if __name__=="__main__":
 
     ## TREETIME_WRAPPER.PY
     tt_parser = subparsers.add_parser('treetime', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    tt_parser.add_argument('--alignment', help="alignment to build tree from")
+    tt_parser.add_argument('--alignment', help="alignment in fasta or VCF format")
     tt_parser.add_argument('--tree',required=True, help="prebuilt Newick")
     tt_parser.add_argument('--metadata', type=str, help="tsv/csv table with meta data for sequences")
     tt_parser.add_argument('--node-data', type=str, help='file name to write additional node data')
