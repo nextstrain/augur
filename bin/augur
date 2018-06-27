@@ -30,7 +30,7 @@ if __name__=="__main__":
     filter_parser.add_argument('--exclude', type=str, help="file with list of names that are to be excluded")
     filter_parser.add_argument('--include', type=str, help="file with list of names that are to be included regardless of priorities or subsampling")
     filter_parser.add_argument('--priority', type=str, help="file with list priority scores for sequences (strain\tpriority)")
-    filter_parser.add_argument('--sequences-per-category', type=int, help="maximal number of viruses per category")
+    filter_parser.add_argument('--sequences-per-category', type=int, help="subsample to no more than this number of sequences per category")
     filter_parser.add_argument('--categories', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
     filter_parser.add_argument('--output', help="output file")
     filter_parser.set_defaults(func=filter.run)
