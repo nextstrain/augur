@@ -74,7 +74,7 @@ if __name__=="__main__":
     ## TREETIME_WRAPPER.PY
     tt_parser = subparsers.add_parser('treetime', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     tt_parser.add_argument('--alignment', help="alignment to build tree from")
-    tt_parser.add_argument('--tree',required=True, help="prebuilt newick")
+    tt_parser.add_argument('--tree',required=True, help="prebuilt Newick")
     tt_parser.add_argument('--metadata', type=str, help="tsv/csv table with meta data for sequences")
     tt_parser.add_argument('--node-data', type=str, help='file name to write additional node data')
     tt_parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")
@@ -103,15 +103,15 @@ if __name__=="__main__":
 
     ## TRANSLATE.PY
     translate_parser = subparsers.add_parser('translate', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    translate_parser.add_argument('--tree', help="prebuild newick -- no tree will be build if provided")
+    translate_parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
     translate_parser.add_argument('--node-data', type=str, help='file with additional node data including ancestral sequences')
     translate_parser.add_argument('--reference-sequence', required=True,
-                        help='genbank or GFF file containing the annotation')
+                        help='GenBank or GFF file containing the annotation')
     translate_parser.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
-    translate_parser.add_argument('--output', type=str, help="name of json files for aa mutations")
+    translate_parser.add_argument('--output', type=str, help="name of JSON files for aa mutations")
     translate_parser.add_argument('--alignment-output', type=str, help="write the alignment of each gene to file,"
                                   "specify the file name like so: 'my_alignment_GENE.fasta' where 'GENE'"
-                                   "will be replaced by the name of the gene (Fasta-input only)")
+                                   "will be replaced by the name of the gene (fasta-input only)")
     translate_parser.add_argument('--vcf-input', type=str, help='VCF file with original and ancestral sequences')
     translate_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     translate_parser.add_argument('--vcf-output', type=str, help='write a faux-VCF alignment of the translations to a file.'
@@ -133,23 +133,23 @@ if __name__=="__main__":
     titers_parser = subparsers.add_parser('titers', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     titers_parser.add_argument('--titers', required=True, type=str, help="file with titer measurements")
     titers_parser.add_argument('--tree', type=str, required=True, help="tree to perform fit titer model to")
-    titers_parser.add_argument('--node_data', required=True, help="json file with meta data for each node")
-    titers_parser.add_argument('--output-tree-model', type=str, help='json file to save tree model')
-    titers_parser.add_argument('--output-subs-model', type=str, help='json file to save subs model')
+    titers_parser.add_argument('--node_data', required=True, help="JSON file with meta data for each node")
+    titers_parser.add_argument('--output-tree-model', type=str, help='JSON file to save tree model')
+    titers_parser.add_argument('--output-subs-model', type=str, help='JSON file to save subs model')
     titers_parser.set_defaults(func=titers.run)
 
     ## EXPORT.PY
     export_parser =  subparsers.add_parser("export", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     export_parser.add_argument('--tree', required=True, help="tree to perform trait reconstruction on")
     export_parser.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
-    export_parser.add_argument('--node-data', required=True, nargs='+', help="json files with meta data for each node")
+    export_parser.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
     export_parser.add_argument('--auspice-config', help="file with auspice configuration")
     export_parser.add_argument('--colors', help="file with color definitions")
     export_parser.add_argument('--lat-longs', help="file latitudes and longitudes")
     export_parser.add_argument('--output-tree', required=True,
-                        help="json file name that is passed on to auspice (e.g., zika_tree.json)")
+                        help="JSON file name that is passed on to auspice (e.g., zika_tree.json)")
     export_parser.add_argument('--output-meta', required=True,
-                        help="json file name that is passed on to auspice (e.g., zika_meta.json)")
+                        help="JSON file name that is passed on to auspice (e.g., zika_meta.json)")
     export_parser.set_defaults(func=export.run)
 
 
