@@ -2,7 +2,6 @@
 environment*
 temp*
 results*
-data/
 dengue/utils/
 prepared/
 processed/

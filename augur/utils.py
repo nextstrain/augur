@@ -217,42 +217,69 @@ def read_config(fname):
 
     return config
 
-def read_geo(defaultfile, suppfile):
+def read_lat_longs(defaults, overrides=None):
     coordinates = {}
-    if defaultfile and os.path.isfile(defaultfile):
-        with open(defaultfile) as ifile:
-            for line in ifile:
-                fields = line.strip().split('\t')
-                if len(fields) == 4:
-                    geo_field = fields[0]
-                    loc = fields[1]
-                    lat = float(fields[2])
-                    long = float(fields[3])
-                    coordinates[(geo_field, loc)] = {
-                        "latitude": lat,
-                        "longitude": long
-                    }
-    else:
-        print("ERROR: default lat/long file %s not found." % defaultfile)
+    if defaults:
+        if os.path.isfile(defaults):
+            with open(defaults) as ifile:
+                for line in ifile:
+                    if line.startswith('#'): continue
+                    fields = line.strip().split()
+                    if len(fields) == 4:
+                        geo_field, loc = fields[0], fields[1]
+                        lat, long = float(fields[2]), float(fields[3])
+                        coordinates[(geo_field, loc)] = {
+                            "latitude": lat,
+                            "longitude": long
+                        }
+        else:
+            print("ERROR: default lat/long file %s not found." % defaults)
 
-    if suppfile and os.path.isfile(suppfile):
-        with open(suppfile) as ifile:
-            for line in ifile:
-                fields = line.strip().split('\t')
-                if len(fields) == 4:
-                    geo_field = fields[0]
-                    loc = fields[1]
-                    lat = float(fields[2])
-                    long = float(fields[3])
-                    coordinates[(geo_field, loc)] = {
-                        "latitude": lat,
-                        "longitude": long
-                    }
-    else:
-        print("ERROR: input lat/long file %s not found." % suppfile)
-
+    if overrides:
+        if os.path.isfile(overrides):
+            with open(overrides) as ifile:
+                for line in ifile:
+                    if line.startswith('#'): continue
+                    fields = line.strip().split()
+                    if len(fields) == 4:
+                        geo_field, loc = fields[0], fields[1]
+                        lat, long = float(fields[2]), float(fields[3])
+                        coordinates[(geo_field, loc)] = {
+                            "latitude": lat,
+                            "longitude": long
+                        }
+        else:
+            print("WARNING: input lat/long file %s not found." % overrides)
     return coordinates
 
+def read_colors(defaults, overrides=None):
+    colors = {}
+    if defaults:
+        if os.path.isfile(defaults):
+            with open(defaults) as fh:
+                for line in fh:
+                    if line.startswith('#'): continue
+                    fields = line.strip().split()
+                    if len(fields) == 3:
+                        trait, trait_value, hex_code = fields[0], fields[1], fields[2]
+                        colors[(trait, trait_value)] = hex_code
+        else:
+            print("WARNING: Couldn't open color definitions file {}.".format(defaults))
+    if overrides:
+        if os.path.isfile(overrides):
+            with open(overrides) as fh:
+                for line in fh:
+                    if line.startswith('#'): continue
+                    fields = line.strip().split()
+                    if len(fields) == 3:
+                        trait, trait_value, hex_code = fields[0], fields[1], fields[2]
+                        colors[(trait, trait_value)] = hex_code
+        else:
+            print("WARNING: Couldn't open color definitions file {}.".format(overrides))
+    color_map = defaultdict(list)
+    for (trait, trait_value), hex_code in colors.items():
+        color_map[trait].append((trait_value, hex_code))
+    return color_map
 
 def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
     """

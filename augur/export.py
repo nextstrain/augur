@@ -2,7 +2,7 @@ import os
 import numpy as np
 from Bio import Phylo
 from collections import defaultdict
-from .utils import read_metadata, read_node_data, write_json, read_config, read_geo, attach_tree_meta_data
+from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors, attach_tree_meta_data
 
 def tree_to_json(node, fields_to_export = [], top_level = [], div=0):
     '''
@@ -114,30 +114,13 @@ def make_control_json(T, controls):
         controls_json[super_cat] = cat_count
     return controls_json
 
-def read_color_maps(fname):
-    cm = defaultdict(list)
-    try:
-        with open(fname) as fh:
-            for line in fh:
-                # line: trait   trait_value     hex_code
-                if line.startswith('#'): continue
-                fields = line.strip().split()
-                if len(fields)!=3: continue
-                cm[fields[0]].append((fields[1], fields[2]))
-    except Exception:
-        print("WARNING: Couldn't open color definitions file {}.".format(fname))
-
-    return cm
-
-
-def export_metadata_json(T, metadata, tree_meta, config, color_map_file, lat_long_mapping, fname, indent=0):
+def export_metadata_json(T, metadata, tree_meta, config, color_mapping, lat_long_mapping, fname, indent=0):
     meta_json = {}
     import time
     meta_json["updated"] = time.strftime("%d %b %Y")
     terminals = [n.name for n in T.get_terminals()]
     meta_json["virus_count"] = len(terminals)
     meta_subset = {k:v for k,v in metadata.items() if k in terminals}
-    color_maps = read_color_maps(color_map_file)
 
     (author_info, seq_to_author, control_authors) = summarise_publications(meta_subset)
     meta_json["author_info"] = author_info
@@ -153,11 +136,13 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, lat_lon
     # TODO: change the schema for these
     col_opts = config["color_options"]
     for trait in col_opts:
-        if trait in color_maps:
-            col_opts[trait]["legendTitle"] = trait
-            col_opts[trait]["menuItem"] = trait
-            col_opts[trait]["key"] = trait
-            col_opts[trait]["color_map"] = color_maps[trait]
+        col_opts[trait]["legendTitle"] = trait
+        col_opts[trait]["menuItem"] = trait
+        col_opts[trait]["key"] = trait
+        if trait in color_mapping:
+            col_opts[trait]["color_map"] = color_mapping[trait]
+        else:
+            col_opts[trait]["type"] = "discrete"
 
     if "annotations" in tree_meta:
         meta_json["annotations"] = tree_meta['annotations']
@@ -223,14 +208,15 @@ def run(args):
     top_level = ["clade","tvalue","yvalue", "xvalue"]\
                 +[("muts", process_mutations), ("aa_muts", process_mutation_dict)]
 
-    tjson = tree_to_json(T.root, fields_to_export=fields_to_export, top_level=top_level)
-    write_json(tjson, args.output_tree)
+    tree_json = tree_to_json(T.root, fields_to_export=fields_to_export, top_level=top_level)
+    write_json(tree_json, args.output_tree)
 
-    # load default lat/longs and supp file that overrides defaults
+    # load defaults and supp file that overrides defaults
     package_directory = os.path.dirname(os.path.abspath(__file__))
     lat_longs_default = package_directory + "/data/lat_longs.tsv"
-    lat_longs_supp = args.lat_longs
-    lat_long_mapping = read_geo(lat_longs_default, lat_longs_supp)
+    lat_long_mapping = read_lat_longs(lat_longs_default, args.lat_longs)
+    colors_default = package_directory + "/data/colors.tsv"
+    color_mapping = read_colors(colors_default, args.colors)
 
     export_metadata_json(T, seq_meta, tree_meta, read_config(args.auspice_config),
-                         args.colors, lat_long_mapping, args.output_meta)
+                         color_mapping, lat_long_mapping, args.output_meta)
