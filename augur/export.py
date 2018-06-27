@@ -72,10 +72,9 @@ def tree_layout(T):
 
 
 def summarise_publications(metadata):
-    #Return one format to go into 'author_info' and one to go into 'authors' in 'controls'
+    # Return one format to go into 'author_info' and one to go into 'authors' in 'controls'
     control_authors = defaultdict(lambda: {"count": 0, "subcats": {} })
     author_info = defaultdict(lambda: {"n": 0, "title": "?" })
-    mapping = {}
     for n, d in metadata.items():
         if "authors" not in d:
             mapping[n] = None
@@ -83,14 +82,13 @@ def summarise_publications(metadata):
             continue
 
         authors = d["authors"]
-        mapping[n] = authors
         author_info[authors]["n"] += 1
         control_authors[authors]["count"] += 1
         for attr in ["title", "journal", "paper_url"]:
             if attr in d:
                 author_info[authors][attr] = d[attr]
 
-    return (author_info, mapping, control_authors)
+    return (author_info, control_authors)
 
 """please leave this (uncalled) function until we are sure WHO nextflu can run without it"""
 def make_control_json(T, controls):
@@ -138,9 +136,8 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, lat_lon
     meta_subset = {k:v for k,v in metadata.items() if k in terminals}
     color_maps = read_color_maps(color_map_file)
 
-    (author_info, seq_to_author, control_authors) = summarise_publications(meta_subset)
+    (author_info, control_authors) = summarise_publications(meta_subset)
     meta_json["author_info"] = author_info
-    meta_json["seq_author_map"] = seq_to_author
 
     if "annotations" not in tree_meta: #if haven't run tree through treetime
         meta_json["annotations"] = {}
