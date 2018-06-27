@@ -11,6 +11,7 @@ setup(
         keywords = "nextstrain, molecular epidemiology",
         url = "https://github.com/nextstrain/augur",
         packages=['augur'],
+        package_data={'augur': ['data/*.tsv']},
         classifiers=[
             "Development Status :: 3 - Alpha",
             "Topic :: Science",

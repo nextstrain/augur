@@ -145,7 +145,7 @@ if __name__=="__main__":
     export_parser.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
     export_parser.add_argument('--auspice-config', help="file with auspice configuration")
     export_parser.add_argument('--colors', help="file with color definitions")
-    export_parser.add_argument('--lat-longs', help="file latitudes and longitudes")
+    export_parser.add_argument('--lat-longs', help="file latitudes and longitudes, overrides built in mappings")
     export_parser.add_argument('--output-tree', required=True,
                         help="JSON file name that is passed on to auspice (e.g., zika_tree.json)")
     export_parser.add_argument('--output-meta', required=True,

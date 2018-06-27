@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from Bio import Phylo
 from collections import defaultdict
@@ -129,7 +130,7 @@ def read_color_maps(fname):
     return cm
 
 
-def export_metadata_json(T, metadata, tree_meta, config, color_map_file, lat_longs, fname, indent=0):
+def export_metadata_json(T, metadata, tree_meta, config, color_map_file, lat_long_mapping, fname, indent=0):
     meta_json = {}
     import time
     meta_json["updated"] = time.strftime("%d %b %Y")
@@ -172,15 +173,16 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, lat_lon
         geo={}
         for geo_field in config["controls"]["geographic location"]:
             geo[geo_field]={}
-            for n, v in tree_meta["nodes"].items():
-                if geo_field in v:
-                    loc = v[geo_field]
-                    if loc in lat_longs:
-                        geo[geo_field][loc] = lat_longs[loc]
-                    else:
-                        geo[geo_field][loc] = {"latitude":0, "longitude":0}
-
-        meta_json["geo"]=geo
+            for node, attrs in tree_meta["nodes"].items():
+                if geo_field in attrs:
+                    loc = attrs[geo_field]
+                    if loc not in geo[geo_field]:
+                        if (geo_field,loc) in lat_long_mapping:
+                            geo[geo_field][loc] = lat_long_mapping[(geo_field,loc)]
+                        else:
+                            print("Lat/long for " + loc + " absent, defaulting to 0,0")
+                            geo[geo_field][loc] = {"latitude": 0, "longitude": 0}
+        meta_json["geo"] = geo
     write_json(meta_json, fname)
 
 
@@ -224,5 +226,11 @@ def run(args):
     tjson = tree_to_json(T.root, fields_to_export=fields_to_export, top_level=top_level)
     write_json(tjson, args.output_tree)
 
+    # load default lat/longs and supp file that overrides defaults
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    lat_longs_default = package_directory + "/data/lat_longs.tsv"
+    lat_longs_supp = args.lat_longs
+    lat_long_mapping = read_geo(lat_longs_default, lat_longs_supp)
+
     export_metadata_json(T, seq_meta, tree_meta, read_config(args.auspice_config),
-                         args.colors, read_geo(args.lat_longs), args.output_meta)
+                         args.colors, lat_long_mapping, args.output_meta)
