@@ -53,11 +53,11 @@ config = {
         "category": lambda x:(x.attributes['date'].year, x.attributes['date'].month, x.attributes['country']),
     },
     "colors": ["authors", "region", "country"],
-    "color_defs": ["./colors.tsv"],
+    "color_defs": ["config/colors.tsv"],
     "lat_longs": ["country", "region"],
     "auspice_filters": ["authors", "region", "country"],
     "reference": {
-        "path": "metadata/zika_outgroup.gb",
+        "path": "config/zika_outgroup.gb",
         "metadata": {
             'strain': "PF13/251013_18", "accession": "KX369547", "date": "2013-10-25",
             'host': "human", 'country': "french_polynesia"
