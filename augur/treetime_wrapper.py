@@ -31,6 +31,16 @@ def timetree(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto
     tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates,
                   verbose=verbosity, gtr='JC69')
 
+    if n_iqd:
+        tt.clock_filter(reroot='best', n_iqd=n_iqd, plot=False)
+        leaves = [x for x in tt.tree.get_terminals()]
+        for n in leaves:
+            if n.bad_branch:
+                tt.tree.prune(n)
+                print('pruning leaf ', n.name)
+
+        tt.prepare_tree()
+
     if confidence and use_marginal:
         # estimate confidence intervals via marginal ML and assign marginal ML times to nodes
         marginal = 'assign'
@@ -40,7 +50,7 @@ def timetree(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto
     tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
            branch_length_mode=branch_length_mode, resolve_polytomies=resolve_polytomies,
            max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
-           n_iqd=n_iqd, **kwarks)
+           **kwarks)
 
     if confidence:
         for n in tt.tree.find_clades():
@@ -75,7 +85,7 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
 
 def prep_tree(T, attributes, is_vcf=False):
     data = {}
-    inc = 1 if is_vcf else 0 #convert python numbering to start-at-1
+    inc = 1 #convert python numbering to start-at-1
     for n in T.find_clades():
         data[n.name] = {attr:n.__getattribute__(attr)
                         for attr in attributes if hasattr(n,attr)}
@@ -90,8 +100,6 @@ def prep_tree(T, attributes, is_vcf=False):
                 data[n.name]['sequence']=''
 
     return data
-
-
 
 def run(args):
     # check alignment type, set flags, read in if VCF
@@ -147,7 +155,7 @@ def run(args):
         metadata, columns = read_metadata(args.metadata)
         if args.year_limit:
             args.year_limit.sort()
-        dates = get_numerical_dates(metadata, fmt=args.date_fmt, min_max_year=args.year_limit)
+        dates = get_numerical_dates(metadata, fmt=args.date_format, min_max_year=args.year_limit)
         for n in T.get_terminals():
             if n.name in metadata and 'date' in metadata[n.name]:
                 n.raw_date = metadata[n.name]['date']
@@ -182,7 +190,7 @@ def run(args):
         # instantiate treetime for the sole reason to name internal nodes
         tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=1)
 
-    if is_vcf:
+    if is_vcf and (args.ancestral or args.timetree):
         #TreeTime overwrites ambig sites on tips during ancestral reconst.
         #Put these back in tip sequences now, to avoid misleading
         tt.recover_var_ambigs()

@@ -1,103 +1,102 @@
 rule parse:
-	input:
-		"../../../fauna/data/ebola.fasta"
-	output:
-		seq = "results/raw_seqs.fasta",
-		meta = "results/meta.tsv"
-	params:
-		fields = "strain virus accession date region country division city db segment authors url title journal paper_url"
-	shell:
-		'augur parse --sequences {input} --output {output.seq} --metadata {output.meta} --fields {params.fields}'
+    input:
+        "../../../fauna/data/ebola.fasta"
+    output:
+        seq = "results/raw_seqs.fasta",
+        meta = "results/meta.tsv"
+    params:
+        fields = "strain virus accession date region country division city db segment authors url title journal paper_url"
+    shell:
+        'augur parse --sequences {input} --output {output.seq} --metadata {output.meta} --fields {params.fields}'
 
 
 rule filter:
-	input:
-		seq = rules.parse.output.seq,
-		meta = rules.parse.output.meta,
-		exclude = "metadata/dropped_strains.txt"
-	output:
-		"results/filtered.fasta"
-	params:
-		vpc = 100,
-		cat = "region year month",
-		min_date = 2012
-	shell:
-		"augur filter --sequences {input.seq} --output {output} --metadata {input.meta} "
-			"--viruses_per_cat {params.vpc} "
-			"--exclude {input.exclude} --cat {params.cat} --min_date {params.min_date}"
+    input:
+        seq = rules.parse.output.seq,
+        meta = rules.parse.output.meta,
+        exclude = "metadata/dropped_strains.txt"
+    output:
+        "results/filtered.fasta"
+    params:
+        sequences_per_category = 100,
+        categories = "region year month",
+        min_date = 2012
+    shell:
+        "augur filter --sequences {input.seq} --output {output} --metadata {input.meta} "
+            "--sequences-per-category {params.sequences_per_category} "
+            "--exclude {input.exclude} --cat {params.cat} --min_date {params.min_date}"
 
 
 rule align:
-	input:
-		seq = rules.filter.output,
-		ref = "metadata/ebola_outgroup.gb"
-	output:
-		"results/aligned.fasta"
-	shell:
-		'augur align --sequences {input.seq} --output {output} '
-		 '--reference_sequence {input.ref}  --fill_gaps'
+    input:
+        seq = rules.filter.output,
+        ref = "metadata/ebola_outgroup.gb"
+    output:
+        "results/aligned.fasta"
+    shell:
+        'augur align --sequences {input.seq} --output {output} '
+         '--reference_sequence {input.ref}  --fill_gaps'
 
 
 rule tree:
-	input:
-		aln = rules.align.output,
-	output:
-		tree = "results/tree_raw.nwk",
-	shell:
-		'augur tree --alignment {input.aln} --output {output.tree}'
+    input:
+        aln = rules.align.output,
+    output:
+        tree = "results/tree_raw.nwk",
+    shell:
+        'augur tree --alignment {input.aln} --output {output.tree}'
 
 
 rule timetree:
-	input:
-		aln = rules.align.output,
-		metadata = rules.parse.output.meta,
-		tree = rules.tree.output.tree,
-	output:
-		node_data = "results/node_data.json",
-		tree = "results/tree.nwk",
-	shell:
-		'augur treetime --tree {input.tree} --alignment {input.aln} '
-		    '--metadata {input.metadata}'
-			' --output {output.tree} --node_data {output.node_data}'
-			' --timetree --date_confidence --time_marginal --coalescent skyline'
+    input:
+        aln = rules.align.output,
+        metadata = rules.parse.output.meta,
+        tree = rules.tree.output.tree,
+    output:
+        node_data = "results/node_data.json",
+        tree = "results/tree.nwk",
+    shell:
+        'augur treetime --tree {input.tree} --alignment {input.aln} '
+            '--metadata {input.metadata}'
+            ' --output {output.tree} --node_data {output.node_data}'
+            ' --timetree --date_confidence --time_marginal --coalescent skyline'
 
 rule traits:
-	input:
-		tree = rules.timetree.output.tree,
-		metadata = rules.parse.output.meta
-	output:
-		"results/traits.json",
-	params:
-		cols = "country division"
-	shell:
-		'augur traits --confidence --tree {input.tree} --metadata {input.metadata} --output {output} --columns {params.cols}'
+    input:
+        tree = rules.timetree.output.tree,
+        metadata = rules.parse.output.meta
+    output:
+        "results/traits.json",
+    params:
+        cols = "country division"
+    shell:
+        'augur traits --confidence --tree {input.tree} --metadata {input.metadata} --output {output} --columns {params.cols}'
 
 rule translate:
-	input:
-		tree = rules.timetree.output.tree,
-		ref = "metadata/ebola_outgroup.gb",
-		node_data = rules.timetree.output.node_data
-	output:
-		"results/aa_muts.json"
-	shell:
-		'augur translate --tree {input.tree} --node_data {input.node_data} --output {output} --reference_sequence {input.ref}'
+    input:
+        tree = rules.timetree.output.tree,
+        ref = "metadata/ebola_outgroup.gb",
+        node_data = rules.timetree.output.node_data
+    output:
+        "results/aa_muts.json"
+    shell:
+        'augur translate --tree {input.tree} --node_data {input.node_data} --output {output} --reference_sequence {input.ref}'
 
 rule export:
-	input:
-		tree = rules.timetree.output.tree,
-		node_data = rules.timetree.output.node_data,
-		metadata = rules.parse.output.meta,
-		traits = rules.traits.output,
-		aa_muts = rules.translate.output,
-		color_defs = "metadata/colors.tsv",
-		config = "metadata/config.json",
-		geo_info = "../../../fauna/source-data/geo_lat_long.tsv"
-	output:
-		tree = "auspice/ebola_tree.json",
-		meta = "auspice/ebola_meta.json",
-	shell:
-		'augur export --tree {input.tree} --metadata {input.metadata}'
-			' --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts}'
-			' --config {input.config} --color_defs {input.color_defs} --output {output.tree}'
-			' --geo_info {input.geo_info} --meta_output {output.meta}'
-
+    input:
+        tree = rules.timetree.output.tree,
+        node_data = rules.timetree.output.node_data,
+        metadata = rules.parse.output.meta,
+        traits = rules.traits.output,
+        aa_muts = rules.translate.output,
+        color_defs = "metadata/colors.tsv",
+        config = "metadata/config.json",
+        geo_info = "../../../fauna/source-data/geo_lat_long.tsv"
+    output:
+        tree = "auspice/ebola_tree.json",
+        meta = "auspice/ebola_meta.json",
+    shell:
+        'augur export --tree {input.tree} --metadata {input.metadata}'
+            ' --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts}'
+            ' --config {input.config} --color_defs {input.color_defs} --output {output.tree}'
+            ' --geo_info {input.geo_info} --meta_output {output.meta}'

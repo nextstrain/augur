@@ -10,6 +10,8 @@ def tree_to_json(node, fields_to_export = [], top_level = [], div=0):
     input
         node -- node for which top level dict is produced.
         fields_to_export -- attributes to export in addition to strain name and numdate
+        top_level -- list of strings or tuples of length 2. If tuple, second field is the fn which
+                     is called to produce the value. If string, the key->value lookup is used.
     '''
     tree_json = {'attr':{"div":div}, 'branch_length':node.branch_length}
     if hasattr(node, 'name'):
@@ -26,6 +28,11 @@ def tree_to_json(node, fields_to_export = [], top_level = [], div=0):
             fname = field
             if hasattr(node, fname):
                 val = node.__getattribute__(fname)
+
+        # shadow clade by strain. clade is deprecated and will be removed.
+        if field == "clade":
+            try: val = node.__getattribute__("strain")
+            except: pass
 
         if field in top_level:
             tree_json[fname] = val
@@ -85,6 +92,7 @@ def summarise_publications(metadata):
 
     return (author_info, mapping, control_authors)
 
+"""please leave this (uncalled) function until we are sure WHO nextflu can run without it"""
 def make_control_json(T, controls):
     controls_json = {}
     for super_cat, fields in controls.items():
@@ -121,7 +129,7 @@ def read_color_maps(fname):
     return cm
 
 
-def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_info, fname, indent=0):
+def export_metadata_json(T, metadata, tree_meta, config, color_map_file, lat_longs, fname, indent=0):
     meta_json = {}
     import time
     meta_json["updated"] = time.strftime("%d %b %Y")
@@ -141,6 +149,7 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_inf
         config["panels"] = ["tree","map","entropy"]
 
     # join up config color options with those in the input JSONs.
+    # TODO: change the schema for these
     col_opts = config["color_options"]
     for trait in col_opts:
         if trait in color_maps:
@@ -154,7 +163,9 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_inf
 
     meta_json.update(config)
     if len(config["controls"]):
-        meta_json["controls"] = make_control_json(T, config["controls"])
+        # the following is not needed in nextstrain, but may be in nextflu
+        # meta_json["controls"] = make_control_json(T, config["controls"])
+        meta_json["controls"] = {}
         meta_json["controls"]["authors"]= control_authors
 
     if "geographic location" in config["controls"]:
@@ -164,8 +175,8 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, geo_inf
             for n, v in tree_meta["nodes"].items():
                 if geo_field in v:
                     loc = v[geo_field]
-                    if loc in geo_info:
-                        geo[geo_field][loc] = geo_info[loc]
+                    if loc in lat_longs:
+                        geo[geo_field][loc] = lat_longs[loc]
                     else:
                         geo[geo_field][loc] = {"latitude":0, "longitude":0}
 
@@ -191,27 +202,27 @@ def run(args):
     # load data, process, and write out
     T = Phylo.read(args.tree, 'newick')
     seq_meta, meta_columns = read_metadata(args.metadata)
-    other_files = []
-    if args.traits: other_files.append(args.traits)
-    if args.aa_muts: other_files.append(args.aa_muts)
-    if args.titer_tree_model: other_files.append(args.titer_tree_model)
-    if args.titer_subs_model: other_files.append(args.titer_subs_model)
-
-    tree_meta = read_node_data(args.node_data, other_files=other_files)
+    tree_meta = read_node_data(args.node_data) # an array of multiple files (or a single file)
     tree_meta = tree_meta_info(tree_meta, seq_meta) #attach author name to node
+
+    # TODO: remove the following function and combine it with tree_to_json
     attach_tree_meta_data(T, tree_meta["nodes"])
 
+    # TODO: can remove the y-values, they're now calculated in auspice (maybe keep temporarily?)
     tree_layout(T)
+
+    # from the fields in the tree_meta (taken from one or more JSONs), which ones do we want to export?
     node_fields = set()
     for n in tree_meta['nodes'].values():
         node_fields.update(n.keys())
     fields_to_export = [x for x in  node_fields
                         if x not in ['sequence', 'mutations', 'muts', 'aa_muts']]+['num_date']
+    # and which fields are top level? (the rest are all in the attr dict)
     top_level = ["clade","tvalue","yvalue", "xvalue"]\
                 +[("muts", process_mutations), ("aa_muts", process_mutation_dict)]
 
     tjson = tree_to_json(T.root, fields_to_export=fields_to_export, top_level=top_level)
-    write_json(tjson, args.output)
+    write_json(tjson, args.output_tree)
 
-    export_metadata_json(T, seq_meta, tree_meta, read_config(args.config),
-                         args.color_defs, read_geo(args.geo_info), args.meta_output)
+    export_metadata_json(T, seq_meta, tree_meta, read_config(args.auspice_config),
+                         args.colors, read_geo(args.lat_longs), args.output_meta)

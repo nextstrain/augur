@@ -80,8 +80,8 @@ def run(args):
         if args.max_date:
             seq_keep = [s for s in seq_keep if dates[s] and np.min(dates[s])<args.max_date]
 
-    if args.cat and args.viruses_per_cat:
-        vpc = args.viruses_per_cat
+    if args.categories and args.sequences_per_category:
+        spc = args.sequences_per_category
         seq_names_by_cat = defaultdict(list)
 
         for seq_name in seq_keep:
@@ -91,7 +91,7 @@ def run(args):
                 continue
             else:
                 m = meta_dict[seq_name]
-            for c in args.cat:
+            for c in args.categories:
                 if c in m:
                     cat.append(m[c])
                 elif c in ['month', 'year'] and 'date' in m:
@@ -124,10 +124,10 @@ def run(args):
         for cat, s in seq_names_by_cat.items():
             tmp_seqs = [seq_name for seq_name in s]
             if args.priority:
-                seq_subsample.extend(sorted(tmp_seqs, key=lambda x:priorities[x], reverse=True)[:vpc])
+                seq_subsample.extend(sorted(tmp_seqs, key=lambda x:priorities[x], reverse=True)[:spc])
             else:
-                seq_subsample.extend(tmp_seqs if len(s)<=vpc
-                                     else random.sample(tmp_seqs,vpc))
+                seq_subsample.extend(tmp_seqs if len(s)<=spc
+                                     else random.sample(tmp_seqs,spc))
     else:
         seq_subsample = seq_keep
 
@@ -150,5 +150,3 @@ def run(args):
     else:
         seq_to_keep = [seq for id,seq in seqs.items() if id in seq_subsample]
         SeqIO.write(seq_to_keep, args.output, 'fasta')
-
-

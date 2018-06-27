@@ -11,7 +11,10 @@ test_input/
 test_output/
 scratch/
 s3/
+build/
+dist/
 .snakemake
+*stderr
 
 # For Python #
 ##############

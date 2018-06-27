@@ -287,7 +287,7 @@ def run(args):
             for fname, aln in translations.items():
                 for c in n:
                     if c.name in aln and n.name in aln:
-                        tmp = [(a,pos,d) for pos, (a,d) in
+                        tmp = [(a,pos+1,d) for pos, (a,d) in
                                 enumerate(zip(aln[n.name], aln[c.name])) if a!=d]
                     aa_muts[c.name]["aa_muts"][fname] = tmp
 
@@ -307,5 +307,3 @@ def run(args):
             fileEndings = -2
         vcf_out_ref = '.'.join(args.vcf_output.split('.')[:fileEndings]) + '_reference.fasta'
         write_VCF_translation(translations, args.vcf_output, vcf_out_ref)
-
-
