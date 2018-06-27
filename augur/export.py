@@ -90,27 +90,6 @@ def summarise_publications(metadata):
 
     return (author_info, control_authors)
 
-"""please leave this (uncalled) function until we are sure WHO nextflu can run without it"""
-def make_control_json(T, controls):
-    controls_json = {}
-    for super_cat, fields in controls.items():
-        cat_count = {}
-        for n in T.get_terminals():
-            tmp = cat_count
-            for field in fields:
-                tmp["name"] = field
-                if hasattr(n, field):
-                    cat = n.__getattribute__(field)
-                else:
-                    cat='unknown'
-                if cat in tmp:
-                    tmp[cat]['count']+=1
-                else:
-                    tmp[cat] = {'count':1, 'subcats':{}}
-                tmp = tmp[cat]['subcats']
-        controls_json[super_cat] = cat_count
-    return controls_json
-
 def read_color_maps(fname):
     cm = defaultdict(list)
     try:
@@ -159,15 +138,10 @@ def export_metadata_json(T, metadata, tree_meta, config, color_map_file, lat_lon
         meta_json["annotations"] = tree_meta['annotations']
 
     meta_json.update(config)
-    if len(config["controls"]):
-        # the following is not needed in nextstrain, but may be in nextflu
-        # meta_json["controls"] = make_control_json(T, config["controls"])
-        meta_json["controls"] = {}
-        meta_json["controls"]["authors"]= control_authors
 
-    if "geographic location" in config["controls"]:
+    if "geo" in config:
         geo={}
-        for geo_field in config["controls"]["geographic location"]:
+        for geo_field in config["geo"]:
             geo[geo_field]={}
             for n, v in tree_meta["nodes"].items():
                 if geo_field in v:

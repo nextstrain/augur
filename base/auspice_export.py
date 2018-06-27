@@ -134,7 +134,5 @@ def export_metadata_json(process, prefix, indent):
         meta_json["commit"] = git.Repo(search_parent_directories=True).head.object.hexsha
     except ImportError:
         meta_json["commit"] = "unknown"
-    if len(process.config["auspice"]["controls"]):
-        meta_json["controls"] = process.make_control_json(process.config["auspice"]["controls"])
     meta_json["geo"] = process.lat_longs
     write_json(meta_json, prefix+'_meta.json')

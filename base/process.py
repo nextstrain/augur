@@ -654,27 +654,6 @@ class process(object):
 
         return model
 
-    def make_control_json(self, controls):
-        controls_json = {}
-        for super_cat, fields in controls.iteritems():
-            cat_count = {}
-            for n in self.tree.tree.get_terminals():
-                tmp = cat_count
-                for field in fields:
-                    tmp["name"] = field
-                    if field in n.attr:
-                        cat = n.attr[field]
-                    else:
-                        cat='unknown'
-                    if cat in tmp:
-                        tmp[cat]['count']+=1
-                    else:
-                        tmp[cat] = {'count':1, 'subcats':{}}
-                    tmp = tmp[cat]['subcats']
-            controls_json[super_cat] = cat_count
-        return controls_json
-
-
     def auspice_export(self):
         '''
         export the tree, sequences, frequencies to json files for auspice visualization
