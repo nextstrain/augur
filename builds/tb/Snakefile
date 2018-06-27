@@ -1,5 +1,13 @@
-rule data:
+rule all:
     input:
+        auspice_tree = "auspice/temp_tree.json",
+        auspice_meta = "auspice/temp_meta.json"
+
+# Config variables to be used by rules
+# Parameters are defined within their own rules
+
+rule config:
+    params:
         seq = "data/lee_2015.vcf.gz",
         meta = "data/meta.tsv",
         exclude = "data/dropped_strains.txt",
@@ -11,31 +19,28 @@ rule data:
         genes = "data/genes.txt",
         colors = "data/color.tsv",
         config = "data/config.json"
-    params:
-        method = 'iqtree',
-        traits = 'location cluster',
-        vpc = 10,
-        cat = "year month",
-        min_len = 200000
+
+config = rules.config.params #so we can use config.x rather than rules.config.params.x
+#end of config definition
 
 rule filter:
 	input:
-		seq = rules.data.input.seq,
-		meta = rules.data.input.meta,
-		exclude = rules.data.input.exclude
+		seq = config.seq,
+		meta = config.meta,
+		exclude = config.exclude
 	output:
 		"results/filtered.vcf.gz"
 	params:
-		vpc = rules.data.params.vpc
-		cat = rules.data.params.cat
-		min_len = rules.data.params.min_len
+		vpc = 10,
+		cat = "year month",
+		min_len = 200000
 	shell:
 		"augur filter --sequences {input.seq} --output {output} --metadata {input.meta} --exclude {input.exclude}"
 
 rule mask:
     input:
         seq = rules.filter.output,
-        mask = rules.data.input.mask
+        mask = config.mask
     output:
        "results/masked.vcf.gz"
     shell:
@@ -44,20 +49,20 @@ rule mask:
 rule tree:
     input:
         aln = rules.mask.output,
-        ref = rules.data.input.ref,
-        sites = rules.data.input.sites
+        ref = config.ref,
+        sites = config.sites
     output:
         "results/tree_raw.nwk"
     params:
-        method = rules.data.params.method
+        method = 'iqtree'
     shell:
-        'augur tree --keep_vcf_fasta --strip_sites {input.sites} --alignment {input.aln} --vcf_reference {input.ref} --output {output} --method {params.method}'
+        'augur tree --keep-vcf-fasta --strip-sites {input.sites} --alignment {input.aln} --vcf-reference {input.ref} --output {output} --method {params.method}'
 
 rule timetree:
 	input:
 		aln = rules.mask.output,
-        ref = rules.data.input.ref,
-		metadata = rules.data.input.meta,
+        ref = config.ref,
+		metadata = config.meta,
 		tree = rules.tree.output
 	output:
 		tree = "results/tree.nwk",
@@ -67,32 +72,32 @@ rule timetree:
 		root = 'residual'
 	shell:
 		'augur treetime --alignment {input.aln} --tree {input.tree} --metadata {input.metadata}'
-		' --output {output.tree} --node_data {output.node_data} --vcf_reference {input.ref}'
-		' --timetree --root {params.root} --output_vcf {output.vcf} --coalescent 0.0 ' 
+		' --output {output.tree} --node-data {output.node_data} --vcf-reference {input.ref}'
+		' --timetree --root {params.root} --output-vcf {output.vcf} --coalescent 0.0 '
 
 rule translate:
 	input:
 		tree = rules.timetree.output.tree,
-		ref = rules.data.input.ref,
-		gene_ref = rules.data.input.generef,
+		ref = config.ref,
+		gene_ref = config.generef,
 		vcf = rules.timetree.output.vcf,
-		genes = rules.data.input.genes
+		genes = config.genes
 	output:
 		aa_data = "results/aa_muts.json",
 		vcf_out = "results/translations.vcf"
 	shell:
-		'augur translate --tree {input.tree} --genes {input.genes} --vcf_reference {input.ref}'
-		' --vcf_input {input.vcf} --output {output.aa_data} --reference_sequence {input.gene_ref}'
-		' --vcf_output {output.vcf_out}'
+		'augur translate --tree {input.tree} --genes {input.genes} --vcf-reference {input.ref}'
+		' --vcf-input {input.vcf} --output {output.aa_data} --reference-sequence {input.gene_ref}'
+		' --vcf-output {output.vcf_out}'
 
 rule traits:
 	input:
 		tree = rules.timetree.output.tree,
-		meta = rules.data.input.meta
+		meta = config.meta
 	output:
 		"results/traits.json"
 	params:
-		traits = rules.data.params.traits
+		traits = 'location cluster'
 	shell:
 		'augur traits --tree {input.tree} --metadata {input.meta}'
 		' --columns {params.traits} --output {output}'
@@ -101,17 +106,17 @@ rule export:
 	input:
 		tree = rules.timetree.output.tree,
 		node_data = rules.timetree.output.node_data,
-		metadata = rules.data.input.meta,
+		metadata = config.meta,
 		traits = rules.traits.output,
 		aa_muts = rules.translate.output.aa_data,
-		color_defs = rules.data.input.colors,
-		config = rules.data.input.config,
+		color_defs = config.colors,
+		config = config.config,
 		geo_info = "../../../fauna/source-data/geo_lat_long.tsv"
 	output:
-		tree = "auspice/tb_tree.json",
-		meta = "auspice/tb_meta.json",
+		tree = rules.all.input.auspice_tree,
+		meta = rules.all.input.auspice_meta
 	shell:
 		'augur export --tree {input.tree} --metadata {input.metadata}'
-			' --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts}'
-			' --config {input.config} --color_defs {input.color_defs} --output {output.tree}'
-			' --geo_info {input.geo_info} --meta_output {output.meta}'
+			' --node-data {input.node_data} {input.traits} {input.aa_muts}'
+			' --auspice-config {input.config} --colors {input.color_defs} --output-tree {output.tree}'
+			' --lat-longs {input.geo_info} --output-meta {output.meta}'

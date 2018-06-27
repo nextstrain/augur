@@ -190,7 +190,7 @@ def run(args):
         # instantiate treetime for the sole reason to name internal nodes
         tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=1)
 
-    if is_vcf:
+    if is_vcf and (args.ancestral or args.timetree):
         #TreeTime overwrites ambig sites on tips during ancestral reconst.
         #Put these back in tip sequences now, to avoid misleading
         tt.recover_var_ambigs()
