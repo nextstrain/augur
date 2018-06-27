@@ -55,7 +55,7 @@ def run(args):
 
     # align
     if args.method=='mafft':
-        cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2>mafft_stderr"%(args.nthreads, seq_fname, output)
+        cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2> %s.log"%(args.nthreads, seq_fname, output, output)
         os.system(cmd)
         print("\nusing mafft to align via:\n\t" + cmd +
               " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"
