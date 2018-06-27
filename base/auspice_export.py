@@ -58,21 +58,18 @@ def export_tip_frequency_json(process, prefix, indent):
 
 def summarise_publications_from_tree(tree):
     info = defaultdict(lambda: {"n": 0, "title": "?"})
-    mapping = {}
     for clade in tree.find_clades():
         if not clade.is_terminal():
             continue
         if "authors" not in clade.attr:
-            mapping[clade.name] = None
             print("Error - {} had no authors".format(clade.name))
             continue
         authors = clade.attr["authors"]
-        mapping[clade.name] = authors
         info[authors]["n"] += 1
         for attr in ["title", "journal", "paper_url"]:
             if attr in clade.attr:
                 info[authors][attr] = clade.attr[attr]
-    return (info, mapping)
+    return info
 
 def extract_annotations(runner):
     annotations = {}
@@ -99,10 +96,8 @@ def export_metadata_json(process, prefix, indent):
         virus_count += 1
     meta_json["virus_count"] = virus_count
 
-    (author_info, seq_to_author) = summarise_publications_from_tree(process.tree.tree)
+    author_info = summarise_publications_from_tree(process.tree.tree)
     meta_json["author_info"] = author_info
-    meta_json["seq_author_map"] = seq_to_author
-
 
     # join up config color options with those in the input JSONs.
     col_opts = process.config["auspice"]["color_options"]
