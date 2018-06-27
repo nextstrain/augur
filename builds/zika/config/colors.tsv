@@ -1,14 +1,3 @@
-region  china  #4042C7
-region  southeast_asia  #4274CE
-region  south_asia  #5199B7
-region  japan_korea #69B091
-region  oceania #88BB6C
-region  west_asia #ADBD51
-region  africa #CEB541
-region  europe  #E39B39
-region  south_america #E56C2F
-region  north_america #DC2F24
-
 country	thailand	#511EA8
 country	vietnam	#4928B4
 country	singapore	#4334BF
@@ -20,7 +9,6 @@ country	china	#4379CD
 country taiwan	#4784C7
 country	japan	#4B8FC1
 country	italy	#5098B9
-
 country	brazil	#56A0AF
 country	peru	#5CA7A4
 country	ecuador	#63AC99
@@ -28,7 +16,6 @@ country	colombia	#6BB18E
 country	french_guiana	#73B583
 country	suriname	#7CB878
 country	venezuela	#86BB6E
-
 country	panama	#A4BE56
 country	nicaragua	#AFBD4F
 country	honduras	#B9BC4A
