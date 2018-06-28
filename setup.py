@@ -11,6 +11,7 @@ setup(
         keywords = "nextstrain, molecular epidemiology",
         url = "https://github.com/nextstrain/augur",
         packages=['augur'],
+        package_data={'augur': ['data/*.tsv']},
         install_requires = [
             "biopython >=1.69, ==1.*",
             "boto >=2.38, ==2.*",

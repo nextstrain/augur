@@ -2,6 +2,8 @@ import os, json
 import pandas as pd
 from treetime.utils import numeric_date
 from collections import defaultdict
+from pkg_resources import resource_stream
+from io import TextIOWrapper
 
 def myopen(fname, mode):
     if fname.endswith('.gz'):
@@ -217,26 +219,64 @@ def read_config(fname):
 
     return config
 
-def read_geo(fname):
-    if fname and os.path.isfile(fname):
-        coordinates = {}
-        with open(fname) as ifile:
-            header = ifile.readline().strip().split('\t')
-            for line in ifile:
-                fields = line.strip().split('\t')
-                tmp = {}
-                for f, val in zip(header[1:], fields[1:]):
-                    try:
-                        tmp[f] = float(val)
-                    except:
-                        tmp[f] = val
-                coordinates[fields[0]] = tmp
-    else:
-        print("ERROR: geo def file %s not found."%fname)
-        coordinates = defaultdict(dict)
-
+def read_lat_longs(overrides=None, use_defaults=True):
+    coordinates = {}
+    if use_defaults:
+        with resource_stream(__package__, "data/lat_longs.tsv") as stream:
+            with TextIOWrapper(stream, "utf-8") as defaults:
+                for line in defaults:
+                    if line.startswith('#'): continue
+                    fields = line.strip().split()
+                    if len(fields) == 4:
+                        geo_field, loc = fields[0], fields[1]
+                        lat, long = float(fields[2]), float(fields[3])
+                        coordinates[(geo_field, loc)] = {
+                            "latitude": lat,
+                            "longitude": long
+                        }
+    if overrides:
+        if os.path.isfile(overrides):
+            with open(overrides) as ifile:
+                for line in ifile:
+                    if line.startswith('#'): continue
+                    fields = line.strip().split()
+                    if len(fields) == 4:
+                        geo_field, loc = fields[0], fields[1]
+                        lat, long = float(fields[2]), float(fields[3])
+                        coordinates[(geo_field, loc)] = {
+                            "latitude": lat,
+                            "longitude": long
+                        }
+        else:
+            print("WARNING: input lat/long file %s not found." % overrides)
     return coordinates
 
+def read_colors(overrides=None, use_defaults=True):
+    colors = {}
+    if use_defaults:
+        with resource_stream(__package__, "data/colors.tsv") as stream:
+            with TextIOWrapper(stream, "utf-8") as defaults:
+                for line in defaults:
+                    if line.startswith('#'): continue
+                    fields = line.strip().split()
+                    if len(fields) == 3:
+                        trait, trait_value, hex_code = fields[0], fields[1], fields[2]
+                        colors[(trait, trait_value)] = hex_code
+    if overrides:
+        if os.path.isfile(overrides):
+            with open(overrides) as fh:
+                for line in fh:
+                    if line.startswith('#'): continue
+                    fields = line.strip().split()
+                    if len(fields) == 3:
+                        trait, trait_value, hex_code = fields[0], fields[1], fields[2]
+                        colors[(trait, trait_value)] = hex_code
+        else:
+            print("WARNING: Couldn't open color definitions file {}.".format(overrides))
+    color_map = defaultdict(list)
+    for (trait, trait_value), hex_code in colors.items():
+        color_map[trait].append((trait_value, hex_code))
+    return color_map
 
 def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
     """

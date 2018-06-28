@@ -9,7 +9,6 @@ rule config:
         fasta_fields = "strain virus accession date region country division city db segment authors url title journal paper_url",
         dropped_strains = "config/dropped_strains.txt",
         reference = "config/zika_outgroup.gb",
-        lat_longs = "../../source-data/lat_longs.tsv",
         colors = "config/colors.tsv",
         auspice_config = "config/auspice_config.json"
 
@@ -105,7 +104,6 @@ rule export:
         traits = rules.traits.output,
         aa_muts = rules.translate.output,
         colors = config.colors,
-        lat_longs = config.lat_longs,
         auspice_config = config.auspice_config
     output:
         auspice_tree = rules.all.input.auspice_tree,
@@ -113,5 +111,5 @@ rule export:
     shell:
         'augur export --tree {input.tree} --metadata {input.metadata}'
             ' --node-data {input.node_data} {input.traits} {input.aa_muts}' # node decorations for the tree JSON
-            ' --colors {input.colors} --lat-longs {input.lat_longs} --auspice-config {input.auspice_config}' #for the meta JSON
+            ' --colors {input.colors} --auspice-config {input.auspice_config}' #for the meta JSON
             ' --output-tree {output.auspice_tree} --output-meta {output.auspice_meta}'
