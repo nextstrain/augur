@@ -34,8 +34,7 @@ config = {
             "host":{"key":"host", "legendTitle":"Host", "menuItem":"host", "type":"discrete", "color_map": []},
             "num_date":{"key":"num_date", "legendTitle":"Sampling date", "menuItem":"date", "type":"continuous"},
             "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"}
-        },
-        "controls": {'geographic location':['country'], 'authors':['authors']}
+        }
     },
     "newick_tree_options": {}
 }

@@ -18,14 +18,9 @@
   "region": {
   }
  },
- "controls": {
-  "geographic location": {
-   "country": {
-   },
-   "region": {
-   }
-  }
- },
+ "geo": [
+   "country"
+ ],
  "filters": [
   "country",
   "region",
