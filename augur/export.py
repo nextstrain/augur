@@ -136,13 +136,11 @@ def export_metadata_json(T, metadata, tree_meta, config, color_mapping, lat_long
     # TODO: change the schema for these
     col_opts = config["color_options"]
     for trait in col_opts:
-        col_opts[trait]["legendTitle"] = trait
-        col_opts[trait]["menuItem"] = trait
-        col_opts[trait]["key"] = trait
         if trait in color_mapping:
+            col_opts[trait]["legendTitle"] = trait
+            col_opts[trait]["menuItem"] = trait
+            col_opts[trait]["key"] = trait
             col_opts[trait]["color_map"] = color_mapping[trait]
-        else:
-            col_opts[trait]["type"] = "discrete"
 
     if "annotations" in tree_meta:
         meta_json["annotations"] = tree_meta['annotations']
