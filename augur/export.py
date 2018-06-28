@@ -212,11 +212,8 @@ def run(args):
     write_json(tree_json, args.output_tree)
 
     # load defaults and supp file that overrides defaults
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    lat_longs_default = package_directory + "/data/lat_longs.tsv"
-    lat_long_mapping = read_lat_longs(lat_longs_default, args.lat_longs)
-    colors_default = package_directory + "/data/colors.tsv"
-    color_mapping = read_colors(colors_default, args.colors)
+    lat_long_mapping = read_lat_longs(args.lat_longs)
+    color_mapping = read_colors(args.colors)
 
     export_metadata_json(T, seq_meta, tree_meta, read_config(args.auspice_config),
                          color_mapping, lat_long_mapping, args.output_meta)

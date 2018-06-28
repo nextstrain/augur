@@ -2,6 +2,8 @@ import os, json
 import pandas as pd
 from treetime.utils import numeric_date
 from collections import defaultdict
+from pkg_resources import resource_stream
+from io import TextIOWrapper
 
 def myopen(fname, mode):
     if fname.endswith('.gz'):
@@ -217,12 +219,12 @@ def read_config(fname):
 
     return config
 
-def read_lat_longs(defaults, overrides=None):
+def read_lat_longs(overrides=None, use_defaults=True):
     coordinates = {}
-    if defaults:
-        if os.path.isfile(defaults):
-            with open(defaults) as ifile:
-                for line in ifile:
+    if use_defaults:
+        with resource_stream(__package__, "data/lat_longs.tsv") as stream:
+            with TextIOWrapper(stream, "utf-8") as defaults:
+                for line in defaults:
                     if line.startswith('#'): continue
                     fields = line.strip().split()
                     if len(fields) == 4:
@@ -232,9 +234,6 @@ def read_lat_longs(defaults, overrides=None):
                             "latitude": lat,
                             "longitude": long
                         }
-        else:
-            print("ERROR: default lat/long file %s not found." % defaults)
-
     if overrides:
         if os.path.isfile(overrides):
             with open(overrides) as ifile:
@@ -252,19 +251,17 @@ def read_lat_longs(defaults, overrides=None):
             print("WARNING: input lat/long file %s not found." % overrides)
     return coordinates
 
-def read_colors(defaults, overrides=None):
+def read_colors(overrides=None, use_defaults=True):
     colors = {}
-    if defaults:
-        if os.path.isfile(defaults):
-            with open(defaults) as fh:
-                for line in fh:
+    if use_defaults:
+        with resource_stream(__package__, "data/colors.tsv") as stream:
+            with TextIOWrapper(stream, "utf-8") as defaults:
+                for line in defaults:
                     if line.startswith('#'): continue
                     fields = line.strip().split()
                     if len(fields) == 3:
                         trait, trait_value, hex_code = fields[0], fields[1], fields[2]
                         colors[(trait, trait_value)] = hex_code
-        else:
-            print("WARNING: Couldn't open color definitions file {}.".format(defaults))
     if overrides:
         if os.path.isfile(overrides):
             with open(overrides) as fh:
