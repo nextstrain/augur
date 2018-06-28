@@ -217,23 +217,39 @@ def read_config(fname):
 
     return config
 
-def read_geo(fname):
-    if fname and os.path.isfile(fname):
-        coordinates = {}
-        with open(fname) as ifile:
-            header = ifile.readline().strip().split('\t')
+def read_geo(defaultfile, suppfile):
+    coordinates = {}
+    if defaultfile and os.path.isfile(defaultfile):
+        with open(defaultfile) as ifile:
             for line in ifile:
                 fields = line.strip().split('\t')
-                tmp = {}
-                for f, val in zip(header[1:], fields[1:]):
-                    try:
-                        tmp[f] = float(val)
-                    except:
-                        tmp[f] = val
-                coordinates[fields[0]] = tmp
+                if len(fields) == 4:
+                    geo_field = fields[0]
+                    loc = fields[1]
+                    lat = float(fields[2])
+                    long = float(fields[3])
+                    coordinates[(geo_field, loc)] = {
+                        "latitude": lat,
+                        "longitude": long
+                    }
     else:
-        print("ERROR: geo def file %s not found."%fname)
-        coordinates = defaultdict(dict)
+        print("ERROR: default lat/long file %s not found." % defaultfile)
+
+    if suppfile and os.path.isfile(suppfile):
+        with open(suppfile) as ifile:
+            for line in ifile:
+                fields = line.strip().split('\t')
+                if len(fields) == 4:
+                    geo_field = fields[0]
+                    loc = fields[1]
+                    lat = float(fields[2])
+                    long = float(fields[3])
+                    coordinates[(geo_field, loc)] = {
+                        "latitude": lat,
+                        "longitude": long
+                    }
+    else:
+        print("ERROR: input lat/long file %s not found." % suppfile)
 
     return coordinates
 
