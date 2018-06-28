@@ -22,9 +22,8 @@ config = {
         "panels": ['tree', 'map', 'entropy'],
         "color_options": {
             "country": {"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete", "color_map": []},
-            "host_species": {"key":"host_species", "legendTitle":"Host", "menuItem":"host", "type":"discrete", "color_map": []}            
+            "host_species": {"key":"host_species", "legendTitle":"Host", "menuItem":"host", "type":"discrete", "color_map": []}
         },
-        "controls": {'geographic location':['country'], 'authors':['authors']},
         "defaults": {
             "colorBy": "country",
             "geoResolution": "country"

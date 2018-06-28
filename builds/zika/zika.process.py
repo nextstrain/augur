@@ -36,7 +36,6 @@ config = {
             "region": {"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
             "country": {"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"}
         },
-        "controls": {'authors':['authors']},
         "defaults": {'mapTriplicate': True}
     },
     "timetree_options": {

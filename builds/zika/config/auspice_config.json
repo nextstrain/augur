@@ -24,14 +24,10 @@
     "region": {
     }
   },
-  "controls": {
-    "geographic location": {
-      "country": {
-      },
-      "region": {
-      }
-    }
-  },
+  "geo": [
+    "country",
+    "region"
+  ],
   "maintainer": [
     "Trevor Bedford",
     "http://bedford.io/team/trevor-bedford/"

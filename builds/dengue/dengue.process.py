@@ -51,7 +51,6 @@ def make_config (prepared_json, args):
                 "region":{"key":"region", "legendTitle":"Region", "menuItem":"region", "type":"discrete"},
                 "gt":{"key":"genotype", "legendTitle":"Genotype", "menuItem":"genotype", "type":"discrete"},
             },
-            "controls": {'authors':['authors']},
             "defaults": {'geoResolution': 'region', 'colorBy': 'region', 'distanceMeasure': 'div', 'mapTriplicate': True}
             },
 
