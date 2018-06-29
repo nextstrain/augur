@@ -230,7 +230,7 @@ def run(args):
         ref = compress_seq['reference']
         is_vcf = True
     else:
-        node_data = read_node_data(args.node_data)
+        node_data = read_node_data(args.node_data, args.tree)
         if node_data is None:
             print("ERROR: could not read node data (incl sequences)")
             return -1
@@ -289,7 +289,9 @@ def run(args):
                     if c.name in aln and n.name in aln:
                         tmp = [(a,pos+1,d) for pos, (a,d) in
                                 enumerate(zip(aln[n.name], aln[c.name])) if a!=d]
-                    aa_muts[c.name]["aa_muts"][fname] = tmp
+                        aa_muts[c.name]["aa_muts"][fname] = tmp
+                    else:
+                        print("no sequence pair for nodes %s-%s"%(c.name, n.name))
 
     write_json({'annotations':annotations, 'nodes':aa_muts}, args.output)
 

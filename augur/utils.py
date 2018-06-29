@@ -1,4 +1,4 @@
-import os, json
+import os, json, sys
 import pandas as pd
 from treetime.utils import numeric_date
 from collections import defaultdict
@@ -89,7 +89,7 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, m
 
     return numerical_dates
 
-def read_node_data(fnames):
+def read_node_data(fnames, tree=None):
     """parse the "nodes" field of the given JSONs and join the data together"""
     if type(fnames) is str:
         fnames = [fnames]
@@ -112,6 +112,20 @@ def read_node_data(fnames):
                     node_data[k]=v
         else:
             print("ERROR: node_data JSON file %s not found. Attempting to proceed without it."%fname)
+
+    if tree and os.path.isfile(tree):
+        from Bio import Phylo
+        try:
+            T = Phylo.read(tree, 'newick')
+        except:
+            print("Failed to read tree from file "+tree, file=sys.stderr)
+        else:
+            tree_node_names = set([l.name for l in T.find_clades()])
+            meta_node_names = set(node_data["nodes"].keys())
+            if tree_node_names!=meta_node_names:
+                print("Names of nodes (including internal nodes) of tree %s don't"
+                      " match node names in the node data files."%tree, file=sys.stderr)
+
     return node_data
 
 
