@@ -1,7 +1,7 @@
 rule all:
     input:
-        auspice_tree = "auspice/temp_tree.json",
-        auspice_meta = "auspice/temp_meta.json"
+        auspice_tree = "auspice/tb_tree.json",
+        auspice_meta = "auspice/tb_meta.json"
 
 # Config variables to be used by rules
 # Parameters are defined within their own rules
@@ -18,7 +18,8 @@ rule config:
         generef = "data/Mtb_H37Rv_NCBI_Annot.gff",
         genes = "data/genes.txt",
         colors = "data/color.tsv",
-        config = "data/config.json"
+        config = "data/config.json",
+        geo_info = "data/lat_longs.tsv"
 
 config = rules.config.params #so we can use config.x rather than rules.config.params.x
 #end of config definition
@@ -111,7 +112,7 @@ rule export:
 		aa_muts = rules.translate.output.aa_data,
 		color_defs = config.colors,
 		config = config.config,
-		geo_info = "../../../fauna/source-data/geo_lat_long.tsv"
+		geo_info = config.geo_info
 	output:
 		tree = rules.all.input.auspice_tree,
 		meta = rules.all.input.auspice_meta
