@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
-from augur import align, tree, refine, traits, parse, filter, translate
-from augur import mask, titers, export
+from augur import parse, filter, align, tree, refine, ancestral
+from augur import traits, translate, mask, titers, export
 
 if __name__=="__main__":
     import argparse
@@ -100,6 +100,16 @@ if __name__=="__main__":
     refine_parser.add_argument('--year-limit', type=int, nargs='+', help='specify min or max & min years for samples with XX in year')
     refine_parser.set_defaults(func=refine.run)
 
+    ## ANCESTRAL.PY
+    ancestral_parser = subparsers.add_parser('ancestral', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    ancestral_parser.add_argument('--tree',required=True, help="prebuilt Newick")
+    ancestral_parser.add_argument('--alignment', help="alignment in fasta or VCF format")
+    ancestral_parser.add_argument('--output', type=str, help='file name to mutations to')
+    ancestral_parser.add_argument('--inference', default='joint', choices=["joint", "marginal"],
+                                    help="calculate joint or marginal maximum likelihood ancestral sequence states")
+    ancestral_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    ancestral_parser.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
+    ancestral_parser.set_defaults(func=ancestral.run)
 
     ## TRANSLATE.PY
     translate_parser = subparsers.add_parser('translate', formatter_class=argparse.ArgumentDefaultsHelpFormatter)

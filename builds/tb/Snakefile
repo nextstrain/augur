@@ -76,12 +76,29 @@ rule refine:
 		' --output {output.tree} --node-data {output.node_data} --vcf-reference {input.ref}'
 		' --timetree --root {params.root} --output-vcf {output.vcf} --coalescent 0.0 '
 
+rule ancestral:
+    input:
+        tree = rules.refine.output.tree,
+        alignment = rules.mask.output,
+        ref = config.ref
+    output:
+        node_data = "results/nt_muts.json",
+        vcf = "results/nt_muts.vcf"
+    params:
+        inference = "joint"
+    shell:
+        """
+        augur ancestral --tree {input.tree} --alignment {input.alignment} \
+            --output {output.node_data} --inference {params.inference} \
+            --output-vcf {output.vcf} --vcf-reference {input.ref}
+        """
+
 rule translate:
 	input:
 		tree = rules.refine.output.tree,
 		ref = config.ref,
 		gene_ref = config.generef,
-		vcf = rules.refine.output.vcf,
+		vcf = rules.ancestral.output.vcf,
 		genes = config.genes
 	output:
 		aa_data = "results/aa_muts.json",

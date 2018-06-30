@@ -88,6 +88,20 @@ rule refine:
             --n-iqd {params.n_iqd}
         """
 
+rule ancestral:
+    input:
+        tree = rules.refine.output.tree,
+        alignment = rules.align.output
+    output:
+        node_data = "results/nt_muts.json"
+    params:
+        inference = "joint"
+    shell:
+        """
+        augur ancestral --tree {input.tree} --alignment {input.alignment} \
+            --output {output.node_data} --inference {params.inference}
+        """
+
 rule traits:
     input:
         tree = rules.refine.output.tree,
@@ -105,7 +119,7 @@ rule traits:
 rule translate:
     input:
         tree = rules.refine.output.tree,
-        node_data = rules.refine.output.node_data,
+        node_data = rules.ancestral.output.node_data,
         ref = config.reference
     output:
         node_data = "results/aa_muts.json"
