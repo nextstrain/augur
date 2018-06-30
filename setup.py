@@ -13,6 +13,7 @@ setup(
         packages=['augur'],
         package_data={'augur': ['data/*.tsv']},
         install_requires = [
+            "bcbio-gff >=0.6.4, ==0.6.*",
             "biopython >=1.69, ==1.*",
             "boto >=2.38, ==2.*",
             "cvxopt >=1.1.8, ==1.1.*",
