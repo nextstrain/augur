@@ -4,7 +4,7 @@ from .utils import read_metadata, get_numerical_dates, write_json
 from treetime.vcf_utils import read_vcf, write_vcf
 import numpy as np
 
-def timetree(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto',
+def refine(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto',
              confidence=False, resolve_polytomies=True, max_iter=2,
              infer_gtr=True, Tc=0.01, reroot=None, use_marginal=False, fixed_pi=None,
              clock_rate=None, n_iqd=None, verbosity=1, **kwarks):
@@ -163,7 +163,7 @@ def run(args):
         if args.root and len(args.root) == 1: #if anything but a list of seqs, don't send as a list
             args.root = args.root[0]
 
-        tt = timetree(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
+        tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                       reroot=args.root or 'best',
                       Tc=args.coalescent if args.coalescent is not None else 0.01, #Otherwise can't set to 0
                       use_marginal = args.time_marginal or False,

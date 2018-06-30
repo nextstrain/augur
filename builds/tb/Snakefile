@@ -59,7 +59,7 @@ rule tree:
     shell:
         'augur tree --keep-vcf-fasta --strip-sites {input.sites} --alignment {input.aln} --vcf-reference {input.ref} --output {output} --method {params.method}'
 
-rule timetree:
+rule refine:
 	input:
 		aln = rules.mask.output,
         ref = config.ref,
@@ -72,16 +72,16 @@ rule timetree:
 	params:
 		root = 'residual'
 	shell:
-		'augur treetime --alignment {input.aln} --tree {input.tree} --metadata {input.metadata}'
+		'augur refine --alignment {input.aln} --tree {input.tree} --metadata {input.metadata}'
 		' --output {output.tree} --node-data {output.node_data} --vcf-reference {input.ref}'
 		' --timetree --root {params.root} --output-vcf {output.vcf} --coalescent 0.0 '
 
 rule translate:
 	input:
-		tree = rules.timetree.output.tree,
+		tree = rules.refine.output.tree,
 		ref = config.ref,
 		gene_ref = config.generef,
-		vcf = rules.timetree.output.vcf,
+		vcf = rules.refine.output.vcf,
 		genes = config.genes
 	output:
 		aa_data = "results/aa_muts.json",
@@ -93,7 +93,7 @@ rule translate:
 
 rule traits:
 	input:
-		tree = rules.timetree.output.tree,
+		tree = rules.refine.output.tree,
 		meta = config.meta
 	output:
 		"results/traits.json"
@@ -105,8 +105,8 @@ rule traits:
 
 rule export:
 	input:
-		tree = rules.timetree.output.tree,
-		node_data = rules.timetree.output.node_data,
+		tree = rules.refine.output.tree,
+		node_data = rules.refine.output.node_data,
 		metadata = config.meta,
 		traits = rules.traits.output,
 		aa_muts = rules.translate.output.aa_data,
