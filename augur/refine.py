@@ -111,8 +111,8 @@ def run(args):
         aln = args.alignment
 
 
-    if args.output:
-        tree_fname = args.output
+    if args.output_tree:
+        tree_fname = args.output_tree
     else:
         tree_fname = '.'.join(args.alignment.split('.')[:-1]) + '_tt.nwk'
 
@@ -154,8 +154,8 @@ def run(args):
     if T:
         import json
         tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
-        if args.node_data:
-            node_data_fname = args.node_data
+        if args.output_node_data:
+            node_data_fname = args.output_node_data
         else:
             node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data'
 
