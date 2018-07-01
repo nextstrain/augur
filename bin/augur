@@ -85,18 +85,14 @@ if __name__=="__main__":
     refine_parser.add_argument('--date-format', default="%Y-%m-%d", help="date format")
     refine_parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
     refine_parser.add_argument('--time-marginal', action="store_true", help="assign internal nodes to their marginally most likely dates, not jointly most likely")
-    refine_parser.add_argument('--ancestral', choices=["joint", "marginal"],
-                                help="calculate joint maximum likelihood ancestral sequence states")
-    refine_parser.add_argument('--branchlengths', action="store_true", help="used with --ancestral; optimize branch length before reconstructing ancestral sequences")
     refine_parser.add_argument('--branch-length-mode', default='auto', choices = ['auto', 'joint', 'marginal', 'input'],
                                 help='branch length mode of treetime to use')
     refine_parser.add_argument('--output', type=str, help='file name to write tree to')
-    refine_parser.add_argument('--n-iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
+    refine_parser.add_argument('--clock-filter-iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
                              'interquartile ranges from the root-to-tip vs time regression')
     refine_parser.add_argument('--nthreads', type=int, default=2,
                                 help="number of threads used")
     refine_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    refine_parser.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs, if treetime or ancestral is run')
     refine_parser.add_argument('--year-limit', type=int, nargs='+', help='specify min or max & min years for samples with XX in year')
     refine_parser.set_defaults(func=refine.run)
 

@@ -78,14 +78,14 @@ rule refine:
         tree = "results/tree.nwk",
         node_data = "results/node_data.json"
     params:
-        n_iqd = 4
+        clock_filter_iqd = 4
     shell:
         """
         augur refine --tree {input.tree} --alignment {input.alignment} \
             --metadata {input.metadata} \
             --output {output.tree} --node-data {output.node_data} \
             --timetree --date-confidence --time-marginal --coalescent opt \
-            --n-iqd {params.n_iqd}
+            --clock-filter-iqd {params.clock_filter_iqd}
         """
 
 rule ancestral:
