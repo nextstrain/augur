@@ -166,6 +166,9 @@ def translate_vcf_feature(sequences, ref, feature):
     else:
         return prot
 
+def construct_mut(start, pos, end):
+    return str(start) + str(pos) + str(end)
+
 def assign_aa_vcf(tree, translations):
     aa_muts = {}
 
@@ -181,11 +184,11 @@ def assign_aa_vcf(tree, translations):
                     #if pos in both, check if same
                     if pos in n_muts and pos in c_muts:
                         if n_muts[pos] != c_muts[pos]:
-                            tmp.append((n_muts[pos],int(pos+1),c_muts[pos]))
+                            tmp.append(construct_mut(n_muts[pos], int(pos+1), c_muts[pos]))
                     elif pos in n_muts:
-                        tmp.append((n_muts[pos],int(pos+1),prot['reference'][pos]))
+                        tmp.append(construct_mut(n_muts[pos], int(pos+1), prot['reference'][pos]))
                     elif pos in c_muts:
-                        tmp.append((prot['reference'][pos],int(pos+1),c_muts[pos]))
+                        tmp.append(construct_mut(prot['reference'][pos], int(pos+1), c_muts[pos]))
 
                 aa_muts[c.name]["aa_muts"][fname] = tmp
 
@@ -287,7 +290,7 @@ def run(args):
             for fname, aln in translations.items():
                 for c in n:
                     if c.name in aln and n.name in aln:
-                        tmp = [(a,pos+1,d) for pos, (a,d) in
+                        tmp = [construct_mut(a, int(pos+1), d) for pos, (a,d) in
                                 enumerate(zip(aln[n.name], aln[c.name])) if a!=d]
                     aa_muts[c.name]["aa_muts"][fname] = tmp
 

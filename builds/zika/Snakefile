@@ -135,6 +135,7 @@ rule export:
         metadata = rules.parse.output.metadata,
         node_data = rules.refine.output.node_data,
         traits = rules.traits.output.node_data,
+        nt_muts = rules.ancestral.output.node_data,
         aa_muts = rules.translate.output.node_data,
         colors = config.colors,
         auspice_config = config.auspice_config
@@ -144,7 +145,7 @@ rule export:
     shell:
         """
         augur export --tree {input.tree} --metadata {input.metadata} \
-            --node-data {input.node_data} {input.traits} {input.aa_muts} \
+            --node-data {input.node_data} {input.traits} {input.nt_muts} {input.aa_muts} \
             --colors {input.colors} --auspice-config {input.auspice_config} \
             --output-tree {output.auspice_tree} --output-meta {output.auspice_meta}
         """

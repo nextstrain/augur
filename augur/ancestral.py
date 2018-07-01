@@ -26,15 +26,17 @@ def prep_tree(T, attributes, is_vcf=False):
     for n in T.find_clades():
         data[n.name] = {attr:n.__getattribute__(attr)
                         for attr in attributes if hasattr(n,attr)}
-    if 'mutations' in attributes:
+    for n in T.find_clades():
+        if hasattr(n, "mutations"):
+            mutations_attr = n.__getattribute__("mutations")
+            data[n.name]['muts'] = [str(a)+str(int(pos)+inc)+str(d) for a,pos,d in mutations_attr]
+    if not is_vcf:
         for n in T.find_clades():
-            data[n.name]['mutations'] = [[a,int(pos)+inc,d] for a,pos,d in data[n.name]['mutations']]
-    if not is_vcf and 'sequence' in attributes: # don't attach sequence if VCF!
-        for n in T.find_clades():
-            if hasattr(n, 'sequence'):
-                data[n.name]['sequence'] = ''.join(n.sequence)
+            if hasattr(n, "sequence"):
+                sequence_attr = n.__getattribute__("sequence")
+                data[n.name]['sequence'] = ''.join(sequence_attr)
             else:
-                data[n.name]['sequence']=''
+                data[n.name]['sequence'] = ''
 
     return data
 
@@ -42,13 +44,12 @@ def run(args):
     # check alignment type, set flags, read in if VCF
     is_vcf = False
     ref = None
-    node_data = {'alignment': args.alignment, 'inference': args.inference}
+    node_data = {}
     attributes = []
     # check if tree is provided and can be read
     for fmt in ["newick", "nexus"]:
         try:
             T = Phylo.read(args.tree, fmt)
-            node_data['input_tree'] = args.tree
             break
         except:
             pass
@@ -70,8 +71,6 @@ def run(args):
         aln = args.alignment
 
     tt = ancestral_sequence_inference(tree=T, aln=aln, ref=ref, marginal=args.inference)
-
-    attributes.extend(['mutations'])
 
     if not is_vcf:
         attributes.extend(['sequence']) # don't add sequences if VCF - huge!

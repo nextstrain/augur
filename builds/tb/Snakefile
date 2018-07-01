@@ -83,15 +83,15 @@ rule ancestral:
         alignment = rules.mask.output,
         ref = config.ref
     output:
-        node_data = "results/nt_muts.json",
-        vcf = "results/nt_muts.vcf"
+        nt_data = "results/nt_muts.json",
+        vcf_out = "results/nt_muts.vcf"
     params:
         inference = "joint"
     shell:
         """
         augur ancestral --tree {input.tree} --alignment {input.alignment} \
-            --output {output.node_data} --inference {params.inference} \
-            --output-vcf {output.vcf} --vcf-reference {input.ref}
+            --output {output.nt_data} --inference {params.inference} \
+            --output-vcf {output.vcf_out} --vcf-reference {input.ref}
         """
 
 rule translate:
@@ -99,7 +99,7 @@ rule translate:
         tree = rules.refine.output.tree,
         ref = config.ref,
         gene_ref = config.generef,
-        vcf = rules.ancestral.output.vcf,
+        vcf = rules.ancestral.output.vcf_out,
         genes = config.genes
     output:
         aa_data = "results/aa_muts.json",
@@ -127,6 +127,7 @@ rule export:
         node_data = rules.refine.output.node_data,
         metadata = config.meta,
         traits = rules.traits.output,
+        nt_muts = rules.ancestral.output.nt_data,
         aa_muts = rules.translate.output.aa_data,
         color_defs = config.colors,
         config = config.config,
@@ -136,6 +137,6 @@ rule export:
         meta = rules.all.input.auspice_meta
     shell:
         'augur export --tree {input.tree} --metadata {input.metadata}'
-            ' --node-data {input.node_data} {input.traits} {input.aa_muts}'
+            ' --node-data {input.node_data} {input.traits} {input.aa_muts} {input.nt_muts}'
             ' --auspice-config {input.config} --colors {input.color_defs} --output-tree {output.tree}'
             ' --lat-longs {input.geo_info} --output-meta {output.meta}'
