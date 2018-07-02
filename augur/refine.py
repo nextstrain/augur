@@ -14,7 +14,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto',
     except ValueError:
         True #let it remain a string
 
-    if ref != None: #if VCF, fix pi
+    if (ref is not None) and (fixed_pi is not None): #if VCF, fix pi
         #Otherwise mutation TO gaps is overestimated b/c of seq length
         fixed_pi = [ref.count(base)/len(ref) for base in ['A','C','G','T','-']]
         if fixed_pi[-1] == 0:
@@ -30,18 +30,22 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto',
     tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates,
                   verbose=verbosity, gtr='JC69')
 
+    # conditionally run clock-filter and remove bad tips
     if clock_filter_iqd:
+        # treetime clock filter will mark, but not remove bad tips
         tt.clock_filter(reroot='best', n_iqd=clock_filter_iqd, plot=False)
+        # remove them explicitly
         leaves = [x for x in tt.tree.get_terminals()]
         for n in leaves:
             if n.bad_branch:
                 tt.tree.prune(n)
                 print('pruning leaf ', n.name)
-
+        # fix treetime set-up for new tree topology
         tt.prepare_tree()
 
     if confidence and use_marginal:
-        # estimate confidence intervals via marginal ML and assign marginal ML times to nodes
+        # estimate confidence intervals via marginal ML and assign
+        # marginal ML times to nodes
         marginal = 'assign'
     else:
         marginal = confidence
@@ -61,9 +65,8 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto',
     return tt
 
 
-def prep_tree(T, attributes, is_vcf=False):
+def collect_node_data(T, attributes):
     data = {}
-    inc = 1 #convert python numbering to start-at-1
     for n in T.find_clades():
         data[n.name] = {attr:n.__getattribute__(attr)
                         for attr in attributes if hasattr(n,attr)}
@@ -73,8 +76,12 @@ def run(args):
     # check alignment type, set flags, read in if VCF
     is_vcf = False
     ref = None
+
+    # node data is the dict that will be exported as json
     node_data = {'alignment': args.alignment}
+    # list of node attributes that are to be exported, will grow
     attributes = ['branch_length']
+
     # check if tree is provided an can be read
     for fmt in ["newick", "nexus"]:
         try:
@@ -103,27 +110,31 @@ def run(args):
             return -1
 
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
-        sequences = compress_seq['sequences']
+        aln = compress_seq['sequences']
         ref = compress_seq['reference']
         is_vcf = True
-        aln = sequences
     else:
         aln = args.alignment
 
 
+    # if not specified, construct default output file name with suffix _tt.nwk
     if args.output_tree:
         tree_fname = args.output_tree
     else:
         tree_fname = '.'.join(args.alignment.split('.')[:-1]) + '_tt.nwk'
 
-    if args.timetree and T:
+    if args.timetree:
+        # load meta data and covert dates to numeric
         if args.metadata is None:
             print("ERROR: meta data with dates is required for time tree reconstruction")
             return -1
         metadata, columns = read_metadata(args.metadata)
         if args.year_limit:
             args.year_limit.sort()
-        dates = get_numerical_dates(metadata, fmt=args.date_format, min_max_year=args.year_limit)
+        dates = get_numerical_dates(metadata, fmt=args.date_format,
+                                    min_max_year=args.year_limit)
+
+        # save input state string for later export
         for n in T.get_terminals():
             if n.name in metadata and 'date' in metadata[n.name]:
                 n.raw_date = metadata[n.name]['date']
@@ -133,7 +144,7 @@ def run(args):
 
         tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                       reroot=args.root or 'best',
-                      Tc=args.coalescent if args.coalescent is not None else 0.01, #Otherwise can't set to 0
+                      Tc=args.coalescent or 0.01, #use 0.01 as default coalescent time scale
                       use_marginal = args.time_marginal or False,
                       branch_length_mode = args.branch_length_mode or 'auto',
                       clock_rate=args.clock_rate, clock_filter_iqd=args.clock_filter_iqd)
@@ -149,14 +160,16 @@ def run(args):
         # instantiate treetime for the sole reason to name internal nodes
         tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=1)
 
-    node_data['nodes'] = prep_tree(T, attributes, is_vcf)
+    node_data['nodes'] = collect_node_data(T, attributes)
 
-    if T:
-        import json
-        tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
-        if args.output_node_data:
-            node_data_fname = args.output_node_data
-        else:
-            node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data'
+    # Export refined tree and node data
+    import json
+    tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
+    if args.output_node_data:
+        node_data_fname = args.output_node_data
+    else:
+        node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data.json'
 
-        write_json(node_data, node_data_fname)
+    json_success = write_json(node_data, node_data_fname)
+
+    return 0 if (tree_success and json_success) else -1

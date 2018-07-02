@@ -2,6 +2,7 @@ import os, shutil, time, json
 from Bio import Phylo
 from .utils import write_json
 from treetime.vcf_utils import read_vcf, write_vcf
+from collections import defaultdict
 
 def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
                                  marginal=False):
@@ -20,16 +21,14 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
 
     return tt
 
-def prep_tree(T, attributes, is_vcf=False):
-    data = {}
+def collect_sequences_and_mutations(T, is_vcf=False):
+    data = defaultdict(dict)
     inc = 1 # convert python numbering to start-at-1
-    for n in T.find_clades():
-        data[n.name] = {attr:n.__getattribute__(attr)
-                        for attr in attributes if hasattr(n,attr)}
     for n in T.find_clades():
         if hasattr(n, "mutations"):
             mutations_attr = n.__getattribute__("mutations")
-            data[n.name]['muts'] = [str(a)+str(int(pos)+inc)+str(d) for a,pos,d in mutations_attr]
+            data[n.name]['muts'] = [str(a)+str(int(pos)+inc)+str(d)
+                                    for a,pos,d in mutations_attr]
     if not is_vcf:
         for n in T.find_clades():
             if hasattr(n, "sequence"):
@@ -44,8 +43,7 @@ def run(args):
     # check alignment type, set flags, read in if VCF
     is_vcf = False
     ref = None
-    node_data = {}
-    attributes = []
+    anc_seqs = {}
     # check if tree is provided and can be read
     for fmt in ["newick", "nexus"]:
         try:
@@ -63,31 +61,27 @@ def run(args):
             return -1
 
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
-        sequences = compress_seq['sequences']
+        aln = compress_seq['sequences']
         ref = compress_seq['reference']
         is_vcf = True
-        aln = sequences
     else:
         aln = args.alignment
 
     tt = ancestral_sequence_inference(tree=T, aln=aln, ref=ref, marginal=args.inference)
-
-    if not is_vcf:
-        attributes.extend(['sequence']) # don't add sequences if VCF - huge!
 
     if is_vcf:
         # TreeTime overwrites ambig sites on tips during ancestral reconst.
         # Put these back in tip sequences now, to avoid misleading
         tt.recover_var_ambigs()
 
-    node_data['nodes'] = prep_tree(T, attributes, is_vcf)
+    anc_seqs['nodes'] = collect_sequences_and_mutations(T, is_vcf)
 
     if args.output:
-        node_data_fname = args.output
+        anc_seqs_fname = args.output
     else:
-        node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data'
+        anc_seqs_fname = '.'.join(args.alignment.split('.')[:-1]) + '.anc_seqs.json'
 
-    node_data_success = write_json(node_data, node_data_fname)
+    anc_seqs_success = write_json(anc_seqs, anc_seqs_fname)
 
     # If VCF, output VCF including new ancestral seqs
     if is_vcf:
@@ -97,7 +91,7 @@ def run(args):
             vcf_fname = '.'.join(args.alignment.split('.')[:-1]) + '.vcf'
         write_vcf(tt.get_tree_dict(keep_var_ambigs=True), vcf_fname)
 
-    if node_data_success:
+    if anc_seqs_success:
         return 0
     else:
         return -1
