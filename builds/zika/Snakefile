@@ -69,28 +69,55 @@ rule tree:
         augur tree --alignment {input.alignment} --output {output.tree}
         """
 
-rule timetree:
+rule refine:
     input:
         tree = rules.tree.output.tree,
         alignment = rules.align.output,
         metadata = rules.parse.output.metadata
     output:
         tree = "results/tree.nwk",
-        node_data = "results/node_data.json"
+        node_data = "results/branch_lengths.json"
     params:
-        n_iqd = 4
+        clock_filter_iqd = 4
     shell:
         """
-        augur treetime --tree {input.tree} --alignment {input.alignment} \
+        augur refine --tree {input.tree} --alignment {input.alignment} \
             --metadata {input.metadata} \
-            --output {output.tree} --node-data {output.node_data} \
+            --output-tree {output.tree} --output-node-data {output.node_data} \
             --timetree --date-confidence --time-marginal --coalescent opt \
-            --n-iqd {params.n_iqd}
+            --clock-filter-iqd {params.clock_filter_iqd}
+        """
+
+rule ancestral:
+    input:
+        tree = rules.refine.output.tree,
+        alignment = rules.align.output
+    output:
+        node_data = "results/nt_muts.json"
+    params:
+        inference = "joint"
+    shell:
+        """
+        augur ancestral --tree {input.tree} --alignment {input.alignment} \
+            --output {output.node_data} --inference {params.inference}
+        """
+
+rule translate:
+    input:
+        tree = rules.refine.output.tree,
+        node_data = rules.ancestral.output.node_data,
+        ref = config.reference
+    output:
+        node_data = "results/aa_muts.json"
+    shell:
+        """
+        augur translate --tree {input.tree} --node-data {input.node_data} \
+            --output {output.node_data} --reference-sequence {input.ref}
         """
 
 rule traits:
     input:
-        tree = rules.timetree.output.tree,
+        tree = rules.refine.output.tree,
         metadata = rules.parse.output.metadata
     output:
         node_data = "results/traits.json",
@@ -102,25 +129,13 @@ rule traits:
             --output {output.node_data} --confidence --columns {params.columns}
         """
 
-rule translate:
-    input:
-        tree = rules.timetree.output.tree,
-        node_data = rules.timetree.output.node_data,
-        ref = config.reference
-    output:
-        node_data = "results/aa_muts.json"
-    shell:
-        """
-        augur translate --tree {input.tree} --node-data {input.node_data} \
-            --output {output.node_data} --reference-sequence {input.ref}
-        """
-
 rule export:
     input:
-        tree = rules.timetree.output.tree,
+        tree = rules.refine.output.tree,
         metadata = rules.parse.output.metadata,
-        node_data = rules.timetree.output.node_data,
+        branch_lengths = rules.refine.output.node_data,
         traits = rules.traits.output.node_data,
+        nt_muts = rules.ancestral.output.node_data,
         aa_muts = rules.translate.output.node_data,
         colors = config.colors,
         auspice_config = config.auspice_config
@@ -130,7 +145,7 @@ rule export:
     shell:
         """
         augur export --tree {input.tree} --metadata {input.metadata} \
-            --node-data {input.node_data} {input.traits} {input.aa_muts} \
+            --node-data {input.branch_lengths} {input.traits} {input.nt_muts} {input.aa_muts} \
             --colors {input.colors} --auspice-config {input.auspice_config} \
             --output-tree {output.auspice_tree} --output-meta {output.auspice_meta}
         """
