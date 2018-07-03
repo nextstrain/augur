@@ -181,4 +181,6 @@ def json_to_clade_frequencies(json_dict):
 
         frequencies[region][int(clade)] = np.array(values)
 
+    frequencies["pivots"] = json_dict["pivots"]
+
     return frequencies
