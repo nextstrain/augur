@@ -2,19 +2,19 @@ from __future__ import division, print_function
 import argparse
 import sys, os, time, gzip, glob
 from collections import defaultdict
-from base.config import combine_configs
-from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
-from base.sequences_process import sequence_set
-from base.utils import num_date, save_as_nexus, parse_date
-from base.tree import tree
-from base.fitness_model import fitness_model
-from base.frequencies import alignment_frequencies, tree_frequencies, make_pivots
-from base.auspice_export import export_metadata_json, export_frequency_json, export_tip_frequency_json
+from .config import combine_configs
+from .io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
+from .sequences_process import sequence_set
+from .utils import num_date, save_as_nexus, parse_date
+from .tree import tree
+from .fitness_model import fitness_model
+from .frequencies import alignment_frequencies, tree_frequencies, make_pivots
+from .auspice_export import export_metadata_json, export_frequency_json, export_tip_frequency_json
 import numpy as np
 from datetime import datetime
 import json
 from pdb import set_trace
-from base.logger import logger
+from .logger import logger
 from Bio import SeqIO
 from Bio import AlignIO
 import cPickle as pickle

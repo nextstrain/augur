@@ -1,7 +1,7 @@
 from __future__ import division, print_function
 import sys, os, time, gzip, glob
-from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
-from base.frequencies import KdeFrequencies
+from .io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
+from .frequencies import KdeFrequencies
 import json
 from pdb import set_trace
 from collections import defaultdict
