@@ -43,7 +43,7 @@ def simple_tree():
     index = 0
     for node in tree.find_clades(order="preorder"):
         node.aa = sequences[index]
-        node.numdate = dates[index]
+        node.attr = {"num_date": dates[index]}
         index += 1
 
     return tree
@@ -68,14 +68,14 @@ def real_tree(multiple_sequence_alignment):
             # Since sequence names look like "A/Singapore/TT0495/2017",
             # convert the last element to a floating point value for
             # simplicity.
-            node.numdate = float(node.name.split("/")[-1])
+            node.attr = {"num_date": float(node.name.split("/")[-1])}
         else:
             # Build a "dumb" consensus from the alignment for the
             # ancestral node and assign an arbitrary date in the
             # past.
             summary = Bio.Align.AlignInfo.SummaryInfo(multiple_sequence_alignment)
             node.sequence = np.fromstring(str(summary.dumb_consensus(threshold=0.5, ambiguous="N")), "S1")
-            node.numdate = 2014.8
+            node.attr = {"num_date": 2014.8}
 
     return tree
 

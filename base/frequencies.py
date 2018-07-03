@@ -284,7 +284,8 @@ class tree_frequencies(object):
     '''
     class that estimates frequencies for nodes in the tree. each internal node is assumed
     to be named with an attribute clade, of root doesn't have such an attribute, clades
-    will be numbered in preorder. Each node is assumed to have an attribute "numdate"
+    will be numbered in preorder. Each node is assumed to have an attribute `attr` with a
+    key "num_date".
     '''
     def __init__(self, tree, pivots, node_filter=None, min_clades = 20, verbose=0, pc=1e-4, **kwargs):
         '''
@@ -320,7 +321,7 @@ class tree_frequencies(object):
         for node in self.tree.find_clades(order='postorder'):
             if node.is_terminal():
                 if self.node_filter(node):
-                    tps.append(node.numdate)
+                    tps.append(node.attr["num_date"])
                     node.leafs = np.array([leaf_count], dtype=int)
                     leaf_count+=1
                 else:
