@@ -89,7 +89,9 @@ def simple_fitness_model(simple_tree):
         time_interval=(
             datetime.date(2015, 1, 1),
             datetime.date(2012, 1, 1)
-        )
+        ),
+        epitope_masks_fname="builds/flu/metadata/ha_masks.tsv",
+        epitope_mask_version="wolf"
     )
 
 @pytest.fixture
@@ -102,7 +104,9 @@ def real_fitness_model(real_tree, multiple_sequence_alignment):
         time_interval=(
             datetime.date(2017, 6, 1),
             datetime.date(2014, 6, 1)
-        )
+        ),
+        epitope_masks_fname="builds/flu/metadata/ha_masks.tsv",
+        epitope_mask_version="wolf"
     )
     model.nuc_aln = multiple_sequence_alignment
     model.nuc_alphabet = 'ACGT-N'
@@ -122,7 +126,9 @@ def precalculated_fitness_model(simple_tree):
         time_interval=(
             datetime.date(2015, 1, 1),
             datetime.date(2012, 1, 1)
-        )
+        ),
+        epitope_masks_fname="builds/flu/metadata/ha_masks.tsv",
+        epitope_mask_version="wolf"
     )
 
 @pytest.fixture

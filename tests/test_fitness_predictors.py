@@ -19,7 +19,8 @@ def fitness_predictor():
     from ..base.fitness_predictors import fitness_predictors
     return fitness_predictors(
         epitope_mask_version="wolf",
-        tolerance_mask_version="ha1"
+        tolerance_mask_version="ha1",
+        epitope_masks_fname="builds/flu/metadata/ha_masks.tsv"
     )
 
 @pytest.fixture
