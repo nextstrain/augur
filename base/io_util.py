@@ -163,7 +163,7 @@ def json_to_clade_frequencies(json_dict):
     >>> json_dict = json.load(json_fh)
     >>> frequencies = json_to_clade_frequencies(json_dict)
     >>> len(frequencies["pivots"])
-    36
+    37
     >>> frequencies["global"][202][0] > 0
     True
     """
