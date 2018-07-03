@@ -20,7 +20,7 @@ def parse_args():
     parser = base.prepare.collect_args()
 
     parser.add_argument('-l', '--lineage', choices=['h3n2', 'h1n1pdm', 'vic', 'yam'], default='h3n2', type=str, help="single lineage to include (default: h3n2)")
-    parser.add_argument('-r', '--resolution', choices=['2y', '3y', '6y', '12y'], default=['3y'], type = str,  help = "single resolution to include (default: 3y)")
+    parser.add_argument('-r', '--resolution', choices=['2y', '3y', '6y', '12y'], default='3y', type = str,  help = "single resolution to include (default: 3y)")
     parser.add_argument('--ensure_all_segments', action="store_true", default=False,  help = "exclude all strains that don't have the full set of segments")
     parser.add_argument('-s', '--segments', default=['ha'], nargs='+', type = str,  help = "list of segments to include (default: ha)")
     parser.add_argument('--sampling', default = 'even', type=str,
