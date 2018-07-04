@@ -224,11 +224,12 @@ def run(args):
 
     ## check file format and read in sequences
     is_vcf = False
-    if args.vcf_input:
+    #if args.vcf_input:
+    if any([args.ancestral_seqs.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
         if not args.vcf_reference:
             print("ERROR: a reference Fasta is required with VCF-format input")
             return -1
-        compress_seq = read_vcf(args.vcf_input, args.vcf_reference)
+        compress_seq = read_vcf(args.ancestral_seqs, args.vcf_reference)
         sequences = compress_seq['sequences']
         ref = compress_seq['reference']
         is_vcf = True
@@ -297,16 +298,22 @@ def run(args):
     write_json({'annotations':annotations, 'nodes':aa_muts}, args.output)
 
     ## write alignments to file is requested
-    if args.alignment_output and '%GENE' in args.alignment_output:
-        for fname, seqs in translations.items():
-            SeqIO.write([SeqRecord.SeqRecord(seq=Seq.Seq(s), id=sname, name=sname, description='')
-                         for sname, s in seqs.items()],
-                         args.alignment_output.replace('%GENE', fname), 'fasta')
+    if args.alignment_output:
+        if is_vcf:
+            ## write VCF-style output if requested
+            fileEndings = -1
+            if args.alignment_output.lower().endswith('.gz'):
+                fileEndings = -2
+            vcf_out_ref = '.'.join(args.alignment_output.split('.')[:fileEndings]) + '_reference.fasta'
+            write_VCF_translation(translations, args.alignment_output, vcf_out_ref)
+        else:
+            ## write fasta-style output if requested
+            if '%GENE' in args.alignment_output:
+                for fname, seqs in translations.items():
+                    SeqIO.write([SeqRecord.SeqRecord(seq=Seq.Seq(s), id=sname, name=sname, description='')
+                                 for sname, s in seqs.items()],
+                                 args.alignment_output.replace('%GENE', fname), 'fasta')
+            else:
+                print("ERROR: alignment output file does not contain '%GENE', so will not be written.")
 
-    ## write VCF-style output if requested
-    if args.vcf_output:
-        fileEndings = -1
-        if args.vcf_output.lower().endswith('.gz'):
-            fileEndings = -2
-        vcf_out_ref = '.'.join(args.vcf_output.split('.')[:fileEndings]) + '_reference.fasta'
-        write_VCF_translation(translations, args.vcf_output, vcf_out_ref)
+
