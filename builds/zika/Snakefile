@@ -3,35 +3,36 @@ rule all:
         auspice_tree = "auspice/zika_tree.json",
         auspice_meta = "auspice/zika_meta.json"
 
-rule config:
+rule files:
     params:
         input_fasta = "../../../fauna/data/zika.fasta",
-        fasta_fields = "strain virus accession date region country division city db segment authors url title journal paper_url",
         dropped_strains = "config/dropped_strains.txt",
         reference = "config/zika_outgroup.gb",
         colors = "config/colors.tsv",
         auspice_config = "config/auspice_config.json"
 
-config = rules.config.params
+files = rules.files.params
 
 rule parse:
     input:
-       sequences = config.input_fasta
+        sequences = files.input_fasta
     output:
-       sequences = "results/sequences.fasta",
-       metadata = "results/metadata.tsv"
+        sequences = "results/sequences.fasta",
+        metadata = "results/metadata.tsv"
+    params:
+        fasta_fields = "strain virus accession date region country division city db segment authors url title journal paper_url"
     shell:
         """
         augur parse --sequences {input.sequences} \
             --output-sequences {output.sequences} --output-metadata {output.metadata} \
-            --fields {config.fasta_fields}
+            --fields {params.fasta_fields}
         """
 
 rule filter:
     input:
         sequences = rules.parse.output.sequences,
         metadata = rules.parse.output.metadata,
-        exclude = config.dropped_strains
+        exclude = files.dropped_strains
     output:
         sequences = "results/filtered.fasta"
     params:
@@ -50,13 +51,13 @@ rule filter:
 rule align:
     input:
         sequences = rules.filter.output.sequences,
-        ref = config.reference
+        reference = files.reference
     output:
         alignment = "results/aligned.fasta"
     shell:
         """
         augur align --sequences {input.sequences} --output {output.alignment} \
-            --reference-sequence {input.ref} --fill-gaps
+            --reference-sequence {input.reference} --fill-gaps
         """
 
 rule tree:
@@ -106,13 +107,13 @@ rule translate:
     input:
         tree = rules.refine.output.tree,
         node_data = rules.ancestral.output.node_data,
-        ref = config.reference
+        reference = files.reference
     output:
         node_data = "results/aa_muts.json"
     shell:
         """
         augur translate --tree {input.tree} --node-data {input.node_data} \
-            --output {output.node_data} --reference-sequence {input.ref}
+            --output {output.node_data} --reference-sequence {input.reference}
         """
 
 rule traits:
@@ -137,8 +138,8 @@ rule export:
         traits = rules.traits.output.node_data,
         nt_muts = rules.ancestral.output.node_data,
         aa_muts = rules.translate.output.node_data,
-        colors = config.colors,
-        auspice_config = config.auspice_config
+        colors = files.colors,
+        auspice_config = files.auspice_config
     output:
         auspice_tree = rules.all.input.auspice_tree,
         auspice_meta = rules.all.input.auspice_meta
