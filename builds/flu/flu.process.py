@@ -664,40 +664,6 @@ if __name__=="__main__":
                     "key": "rb"
                 }
 
-        # titers
-        if hasattr(runner, "titers") and runner.info["segment"] == "ha":
-            HI_model(runner)
-
-            if runner.config["auspice"]["titers_export"]:
-                HI_export(runner)
-                vaccine_distance_json = vaccine_distance(titer_tree = runner.tree.tree,
-                                                         vaccine_strains = vaccine_choices[runner.info['lineage']],
-                                                         attributes=['dTiter', 'dTiterSub'])
-                write_json(vaccine_distance_json, os.path.join(runner.config["output"]["auspice"], runner.info["prefix"])+'_vaccine_dist.json')
-
-                if runner.info["segment"]=='ha':
-                    plot_titers(runner.HI_subs, runner.HI_subs.titers.titers,
-                                fname='processed/%s_raw_titers.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], mean='geometric')
-                    plot_titers(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
-                                fname='processed/%s_normalized_titers.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], mean='arithmetric')
-                    plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers,
-                                fname='processed/%s_raw_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], mean='geometric', clades=clades, normalized=False, potency=False)
-                    plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
-                                fname='processed/%s_normalized_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True, potency=False)
-                    plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
-                                fname='processed/%s_normalized_with_potency_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True, potency=True)
-                    plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
-                                fname='processed/%s_grouped_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=False)
-                    plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
-                                fname='processed/%s_grouped_with_potency_titer_matrix.png'%runner.info["prefix"],
-                                title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=True)
-
     if runner.info["segment"] == "na":
         import json
         ha_tree_json_fname = os.path.join(runner.config["output"]["auspice"], runner.info["prefix"]) + "_tree.json"
@@ -713,10 +679,20 @@ if __name__=="__main__":
                     if "clade_membership" in ha_tree_flat[n.name]["attr"]:
                         n.attr["clade_membership"] = ha_tree_flat[n.name]["attr"]["clade_membership"]
 
-    # Predict fitness for HA after all other scores and annotations have completed
+    # Predict fitness for HA after all other scores and annotations have completed.
     # Only predict 2y resolution due to coefficient match
     if runner.info["segment"] == 'ha' and runner.info["resolution"] == "2y" and runner.config["annotate_fitness"]:
-        fitness_model = runner.annotate_fitness()
+        if hasattr(runner, "titers"):
+            predictor_kwargs = {
+                "lam_avi": runner.config["titers"]["lam_avi"],
+                "lam_pot": runner.config["titers"]["lam_pot"],
+                "lam_drop": runner.config["titers"]["lam_drop"],
+                "titers": runner.titers
+            }
+        else:
+            predictor_kwargs = {}
+
+        fitness_model = runner.annotate_fitness(predictor_kwargs=predictor_kwargs)
         if fitness_model is not None:
             print("Fitness model parameters: %s" % str(zip(fitness_model.predictors, fitness_model.model_params)))
             print("Fitness model deviations: %s" % str(zip(fitness_model.predictors, fitness_model.global_sds)))
@@ -736,5 +712,39 @@ if __name__=="__main__":
             #     "legendTitle": "Predicted frequency",
             #     "key": "predicted_freq"
             # }
+
+    # titers
+    if hasattr(runner, "titers") and runner.info["segment"] == "ha":
+        HI_model(runner)
+
+        if runner.config["auspice"]["titers_export"]:
+            HI_export(runner)
+            vaccine_distance_json = vaccine_distance(titer_tree = runner.tree.tree,
+                                                     vaccine_strains = vaccine_choices[runner.info['lineage']],
+                                                     attributes=['dTiter', 'dTiterSub'])
+            write_json(vaccine_distance_json, os.path.join(runner.config["output"]["auspice"], runner.info["prefix"])+'_vaccine_dist.json')
+
+            if runner.info["segment"]=='ha':
+                plot_titers(runner.HI_subs, runner.HI_subs.titers.titers,
+                            fname='processed/%s_raw_titers.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], mean='geometric')
+                plot_titers(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                            fname='processed/%s_normalized_titers.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], mean='arithmetric')
+                plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers,
+                            fname='processed/%s_raw_titer_matrix.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], mean='geometric', clades=clades, normalized=False, potency=False)
+                plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                            fname='processed/%s_normalized_titer_matrix.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True, potency=False)
+                plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                            fname='processed/%s_normalized_with_potency_titer_matrix.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True, potency=True)
+                plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                            fname='processed/%s_grouped_titer_matrix.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=False)
+                plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                            fname='processed/%s_grouped_with_potency_titer_matrix.png'%runner.info["prefix"],
+                            title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=True)
 
     runner.auspice_export()

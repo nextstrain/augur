@@ -8,6 +8,7 @@ from base.io_util import myopen
 from itertools import izip
 import pandas as pd
 from pprint import pprint
+import sys
 
 TITER_ROUND=4
 logger = logging.getLogger(__name__)
@@ -144,6 +145,25 @@ class TiterCollection(object):
         """
         return {key: value for key, value in titers.iteritems()
                 if key[0] in strains and key[1][0] in strains}
+
+    @classmethod
+    def subset_to_date(cls, titers, node_lookup, date_range):
+        """Subset the given titers to the given date range based on the dates annotated
+        on each node.
+        """
+        # Filter titers from the future by keeping titers associated with
+        # strains from the given timepoint or earlier.
+        filtered_strains = set([
+            node_name
+            for node_name, node in node_lookup.items()
+            if node.numdate <= date_range[1] and node.numdate >= date_range[0]
+        ])
+        filtered_titers = cls.filter_strains(titers, filtered_strains)
+        original_counts = sum(cls.count_strains(titers).values())
+        filtered_counts = sum(cls.count_strains(filtered_titers).values())
+        sys.stderr.write("Filtered from %i to %i titers between %s and %s\n" % (original_counts, filtered_counts, date_range[0], date_range[1]))
+
+        return filtered_titers
 
     def __init__(self, titers, **kwargs):
         """Accepts the name of a file containing titers to load or a preloaded titers
@@ -335,22 +355,6 @@ class TiterModel(object):
             for c in node.clades:
                 c.up = node
 
-
-    def subset_to_date(self, date_range):
-        # if data is to censored by date, subset the data set and
-        # reassign sera, reference strains, and test viruses
-        self.train_titers = {key:val for key,val in self.train_titers.iteritems()
-                            if self.node_lookup[key[0]].num_date>=date_range[0] and
-                               self.node_lookup[key[1][0]].num_date>=date_range[0] and
-                               self.node_lookup[key[0]].num_date<date_range[1] and
-                               self.node_lookup[key[1][0]].num_date<date_range[1]}
-
-        self.sera, self.ref_strains, self.test_strains = self.titers.strain_census(self.train_titers)
-
-        print("Reduced training data to date range", date_range)
-        self.titer_stats()
-
-
     def make_training_set(self, training_fraction=1.0, subset_strains=False, **kwargs):
         if training_fraction<1.0: # validation mode, set aside a fraction of measurements to validate the fit
             self.test_titers, self.train_titers = {}, {}
@@ -389,10 +393,8 @@ class TiterModel(object):
         self.lam_pot = lam_pot
         self.lam_avi = lam_avi
         self.lam_drop = lam_drop
-        if len(self.train_titers)==0:
-            print('no titers to train')
-            self.model_params = np.zeros(self.genetic_params+len(self.sera)+len(self.test_strains))
-        else:
+
+        if len(self.train_titers) > 1:
             if method=='l1reg':  # l1 regularized fit, no constraint on sign of effect
                 self.model_params = self.fit_l1reg()
             elif method=='nnls':  # non-negative least square, not regularized
@@ -403,6 +405,9 @@ class TiterModel(object):
                 self.model_params = self.fit_nnl1reg()
 
             print('rms deviation on training set=',np.sqrt(self.fit_func()))
+        else:
+            print('no titers to train')
+            self.model_params = np.zeros(self.genetic_params+len(self.sera)+len(self.test_strains))
 
         # extract and save the potencies and virus effects. The genetic parameters
         # are subclass specific and need to be process by the subclass
@@ -821,7 +826,8 @@ class SubstitutionModel(TiterModel):
     """
     def __init__(self, *args, **kwargs):
         super(SubstitutionModel, self).__init__(*args, **kwargs)
-        self.proteins = self.tree.root.translations.keys()
+        if hasattr(self.tree.root, "translations"):
+            self.proteins = self.tree.root.translations.keys()
 
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
@@ -846,12 +852,116 @@ class SubstitutionModel(TiterModel):
         between as tuples (protein, mutation) e.g. (HA1, 159F)
         '''
         muts = []
-        for prot in self.proteins:
-            seq1 = node1.translations[prot]
-            seq2 = node2.translations[prot]
-            muts.extend([(prot, aa1+str(pos+1)+aa2) for pos, (aa1, aa2)
-                        in enumerate(izip(seq1, seq2)) if aa1!=aa2])
+
+        # If proteins information is available and node translations are
+        # annotated, use those to find pairwise amino acid mutations.
+        # Otherwise, use the annotated amino acid mutations per branch to
+        # reconstruct what the pairwise mutations are between the two nodes.
+        if hasattr(self, "proteins"):
+            for prot in self.proteins:
+                seq1 = node1.translations[prot]
+                seq2 = node2.translations[prot]
+                muts.extend([(prot, aa1+str(pos+1)+aa2) for pos, (aa1, aa2)
+                            in enumerate(izip(seq1, seq2)) if aa1!=aa2])
+        else:
+            # Find the last common ancestor of the two nodes.
+            mrca = self.tree.common_ancestor([node1, node2])
+
+            # Find the most recent unreverted mutation at each gene position
+            # in both nodes.
+            muts1 = self.find_mutations_to_mrca(node1, mrca)
+            muts2 = self.find_mutations_to_mrca(node2, mrca)
+
+            # Find all mutated positions from both nodes to their MRCA that
+            # were:
+            #
+            # a) only mutated in one node. The initial to final amino
+            # acids in each of these records should reflect the pairwise
+            # difference between the node that mutated and the ancestral
+            # sequence in the unmutated node.
+            #
+            # OR
+            #
+            # b) mutated in both nodes with different final amino acids.
+            # In this case, the different amino acids reflect the pairwise
+            # amino acid difference we would find between complete sequences.
+            mutations = []
+            for key in muts1:
+                # Test for mutations at each site only in one node.
+                if not key in muts2:
+                    # Report the first node's final as the first mutation and the
+                    # ancestral amino acid as the second node's value.
+                    muts.append((key[0], muts1[key]["final"] + str(key[1]) + muts1[key]["initial"]))
+                # Test for different mutations at the same site in the two nodes.
+                elif key in muts2:
+                    if muts1[key]["final"] != muts2[key]["final"]:
+                        # Store the mutation and then remove it from the second node's mutations.
+                        muts.append((key[0], muts1[key]["final"] + str(key[1]) + muts2[key]["final"]))
+
+                    # Delete the shared mutation from the second node. If the two
+                    # nodes ended with different mutations, we have just stored
+                    # that differences and if they have the same final mutations,
+                    # we don't want to count that as a difference.
+                    del muts2[key]
+
+            # Add all of the second node's remaining mutations to the set.
+            # We know these must not be shared with the first node now.
+            for key in muts2:
+                muts.append((key[0], muts2[key]["initial"] + str(key[1]) + muts2[key]["final"]))
+
         return muts
+
+
+    def find_mutations_to_mrca(self, node, mrca):
+        """Find all pairwise amino acid mutations between the given node
+        and one of its ancestors.
+
+        >>>
+        """
+        current_node = node
+        muts_node = {}
+
+        while current_node != mrca and current_node.up is not None:
+            for gene, muts in current_node.aa_muts.items():
+                for mut in muts:
+                    initial_aa = mut[0]
+                    final_aa = mut[-1]
+                    position = int(mut[1:-1])
+                    key = (gene, position)
+
+                    if not key in muts_node:
+                        # If we haven't seen a mutation at this gene position,
+                        # track the initial and final amino acids.
+                        muts_node[key] = {
+                            "initial": initial_aa,
+                            "final": final_aa
+                        }
+                    else:
+                        # If we have already seen a mutation at this position,
+                        # check whether the current mutation reverts the current
+                        # final amino acid. For example, the following sequence
+                        # from first to last in time reverts the amino acid at
+                        # a given position:
+                        #
+                        # 1. G -> K
+                        # 2. K -> L
+                        # 3. L -> G
+                        #
+                        # As we walk backward in time to the MRCA, if we find
+                        # an initial "G" that resulted in the final "G", we
+                        # collapse the reversion by removing the gene position
+                        # from the tracked mutations.
+                        if initial_aa == muts_node[key]["final"]:
+                             # If it is a reversion, remove the stored mutation and continue.
+                            del muts_node[key]
+                        else:
+                            # If the next mutation is not a reversion, update the initial
+                            # amino acid to track the ancestral state in the MRCA.
+                            muts_node[key]["initial"] = initial_aa
+
+            current_node = current_node.up
+
+        return muts_node
 
 
     def determine_relevant_mutations(self, min_count=10):
@@ -965,6 +1075,19 @@ class SubstitutionModel(TiterModel):
         for mi, mut in enumerate(self.relevant_muts):
             self.substitution_effect[mut] = self.model_params[mi]
 
+        # Annotate branch-specific and cumulative antigenic evolution scores.
+        for node in self.tree.find_clades():
+            dTiterSub = 0
+            if hasattr(node, "aa_muts"):
+                for gene, mutations in node.aa_muts.iteritems():
+                    for mutation in mutations:
+                        dTiterSub += self.substitution_effect.get((gene, mutation), 0)
+
+            node.dTiterSub = dTiterSub
+            if node.up is not None:
+                node.cTiterSub = node.up.cTiterSub + dTiterSub
+            else:
+                node.cTiterSub = 0
 
     def predict_titer(self, virus, serum, cutoff=0.0):
         muts= self.get_mutations(serum[0], virus)
