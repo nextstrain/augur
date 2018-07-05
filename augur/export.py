@@ -49,15 +49,6 @@ def tree_to_json(node, fields_to_export = [], top_level = [], div=0):
 
     return tree_json
 
-def process_mutations(muts):
-    realMut = [a+str(pos)+d for (a, pos, d) in muts]
-    if len(realMut)==0:
-        realMut = [""]
-    return realMut
-
-def process_mutation_dict(muts):
-    return {k:process_mutations(v) for k,v in muts.items() if len(v)}
-
 # calculate tree layout. should be obsolete with future auspice versions
 def tree_layout(T):
     yval=T.count_terminals()
@@ -174,8 +165,7 @@ def run(args):
     fields_to_export = [x for x in  node_fields
                         if x not in ['sequence', 'mutations', 'muts', 'aa_muts']]+['num_date']
     # and which fields are top level? (the rest are all in the attr dict)
-    top_level = ["clade","tvalue","yvalue", "xvalue"]\
-                +[("muts", process_mutations), ("aa_muts", process_mutation_dict)]
+    top_level = ["clade","tvalue","yvalue", "xvalue", "muts", "aa_muts"]
 
     tree_json = tree_to_json(T.root, fields_to_export=fields_to_export, top_level=top_level)
     write_json(tree_json, args.output_tree)

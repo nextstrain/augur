@@ -147,8 +147,8 @@ def attach_tree_meta_data(T, node_meta):
 
 
 def write_json(data, file_name, indent=1):
-    import json
-    import os
+    import json, os
+    success = False
 
     #in case auspice folder does not exist yet
     if not os.path.exists(os.path.dirname(file_name)):
@@ -164,6 +164,9 @@ def write_json(data, file_name, indent=1):
     else:
         json.dump(data, handle, indent=indent)
         handle.close()
+        success=True
+
+    return success
 
 
 def load_features(reference, feature_names=None):
