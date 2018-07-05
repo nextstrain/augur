@@ -36,15 +36,15 @@ rule filter:
     output:
         sequences = "results/filtered.fasta"
     params:
-        sequences_per_category = 20,
-        categories = "country year month",
+        sequences_per_group = 20,
+        group_by = "country year month",
         min_date = 2012
     shell:
         """
         augur filter --sequences {input.sequences} --metadata {input.metadata} \
             --output {output.sequences} \
-            --categories {params.categories} \
-            --sequences-per-category {params.sequences_per_category} \
+            --group-by {params.group_by} \
+            --sequences-per-group {params.sequences_per_group} \
             --exclude {input.exclude}  --min-date {params.min_date}
         """
 

@@ -32,11 +32,17 @@ rule filter:
     output:
         "results/filtered.vcf.gz"
     params:
-        vpc = 10,
-        cat = "year month",
+        sequences_per_group = 10,
+        group_by = "year month",
         min_len = 200000
     shell:
-        "augur filter --sequences {input.seq} --output {output} --metadata {input.meta} --exclude {input.exclude}"
+        """
+        augur filter --sequences {input.seq} --metadata {input.meta} \
+            --output {output} \
+            --exclude {input.exclude} \
+            --group-by {params.group_by} \
+            --sequences-per-group {params.sequences_per_group} \
+        """
 
 rule mask:
     input:
