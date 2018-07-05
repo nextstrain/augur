@@ -94,7 +94,7 @@ def build_fasttree(aln_file, out_file, clean_up=True):
     return T
 
 
-def build_iqtree(aln_file, out_file, substitution_model="GTR+G", clean_up=True, nthreads=2):
+def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nthreads=2):
     '''
     build tree using IQ-Tree with parameters "-fast"
     arguments:
