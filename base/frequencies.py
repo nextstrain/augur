@@ -577,13 +577,26 @@ class KdeFrequencies(object):
     density estimate across discrete time points from these tip observations for
     each clade in the tree.
     """
-    def __init__(self, tree, pivots, sigma_narrow=1 / 12.0, sigma_wide=3 / 12.0, proportion_wide=0.2, regions=None, weights=None):
-        """Calculate frequencies from a given tree and pivots.
+    def __init__(self, sigma_narrow=1 / 12.0, sigma_wide=3 / 12.0, proportion_wide=0.2, pivot_count=None,
+                 pivot_frequency=None, weights=None, weights_attribute=None, max_date=None,
+                 include_internal_nodes=True):
+        """Define parameters for KDE-based frequency estimation.
 
-        regions is a list of region names
-        weights is a list of region weights
+        Args:
+            sigma_narrow (float): Bandwidth for first of two Gaussians composing the KDEs
+            sigma_wide (float): Bandwidth for second of two Gaussians composing the KDEs
+            proportion_wide (float): Proportion of the second Gaussian to include in each KDE
+            pivot_count (int): Number of pivots to create in the given tree timespan
+            pivot_frequency (float): Frequency at which pivots should occur in fractions of a year
+            weights (dict): Numerical weights indexed by attribute values and applied to individual tips
+            weights_attribute (str): Attribute annotated on tips of a tree to use for weighting
+            max_date (float): Maximum year beyond which tips are excluded from frequency estimation and are assigned
+                              frequencies of zero
+            include_internal_nodes (bool): Whether internal (non-tip) nodes should have their frequencies estimated
+
+        Returns:
+            KdeFrequencies
         """
-        self.tree = tree
         self.pivots = pivots
         self.sigma_narrow = sigma_narrow
         self.sigma_wide = sigma_wide
@@ -772,6 +785,18 @@ class KdeFrequencies(object):
                     ).sum(axis=0)
 
         return clade_frequencies
+
+    def estimate(self, tree):
+        """
+
+        Args:
+            tree (Bio.Phylo): annotated tree whose nodes all have an `attr` attribute with at least  "num_date" key
+
+        Returns:
+            frequencies (dict): node frequencies by region
+        """
+        pass
+
 
 if __name__=="__main__":
     plot=True
