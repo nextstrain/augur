@@ -139,7 +139,6 @@ if __name__=="__main__":
     titers_parser = subparsers.add_parser('titers', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     titers_parser.add_argument('--titers', required=True, type=str, help="file with titer measurements")
     titers_parser.add_argument('--tree', type=str, required=True, help="tree to perform fit titer model to")
-    titers_parser.add_argument('--node_data', required=True, help="JSON file with meta data for each node")
     titers_parser.add_argument('--output-tree-model', type=str, help='JSON file to save tree model')
     titers_parser.add_argument('--output-subs-model', type=str, help='JSON file to save subs model')
     titers_parser.set_defaults(func=titers.run)

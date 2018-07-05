@@ -5,7 +5,6 @@ from Bio import Phylo
 from .utils import read_metadata, read_node_data, attach_tree_meta_data, write_json
 
 def run(args):
-    node_data = read_node_data(args.node_data)
     T = Phylo.read(args.tree, 'newick')
 
     TM_tree, TM_subs = None, None
