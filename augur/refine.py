@@ -130,10 +130,10 @@ def run(args):
             print("ERROR: meta data with dates is required for time tree reconstruction")
             return -1
         metadata, columns = read_metadata(args.metadata)
-        if args.year_limit:
-            args.year_limit.sort()
+        if args.year_bounds:
+            args.year_bounds.sort()
         dates = get_numerical_dates(metadata, fmt=args.date_format,
-                                    min_max_year=args.year_limit)
+                                    min_max_year=args.year_bounds)
 
         # save input state string for later export
         for n in T.get_terminals():
