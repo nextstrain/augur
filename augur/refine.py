@@ -14,15 +14,16 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto',
     except ValueError:
         True #let it remain a string
 
-    if (ref is not None) and (fixed_pi is not None): #if VCF, fix pi
+    if (ref is not None) and (fixed_pi is None): #if VCF, fix pi
         #Otherwise mutation TO gaps is overestimated b/c of seq length
         fixed_pi = [ref.count(base)/len(ref) for base in ['A','C','G','T','-']]
         if fixed_pi[-1] == 0:
             fixed_pi[-1] = 0.05
             fixed_pi = [v-0.01 for v in fixed_pi]
 
-        #set this explicitly if auto, as informative-site only trees can have big branch lengths,
-        #making this set incorrectly in TreeTime
+    if ref is not None: # VCF -> adjust branch length
+        #set branch length mode explicitly if auto, as informative-site only
+        #trees can have big branch lengths, making this set incorrectly in TreeTime
         if branch_length_mode == 'auto':
             branch_length_mode = 'joint'
 
@@ -144,7 +145,7 @@ def run(args):
 
         tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                       reroot=args.root or 'best',
-                      Tc=args.coalescent or 0.01, #use 0.01 as default coalescent time scale
+                      Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
                       use_marginal = args.time_marginal or False,
                       branch_length_mode = args.branch_length_mode or 'auto',
                       clock_rate=args.clock_rate, clock_filter_iqd=args.clock_filter_iqd)
