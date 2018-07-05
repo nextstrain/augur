@@ -1,6 +1,6 @@
 import numpy as np
 from collections import defaultdict
-import json, os
+import json, os, sys
 import pandas as pd
 from .utils import read_metadata
 TINY = 1e-12
@@ -28,13 +28,13 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
     places = sorted(places)
     nc = len(places)
     if nc>180:
-        print("ERROR: geo_inference: can't have more than 180 places!")
+        print("ERROR: geo_inference: can't have more than 180 places!", file=sys.stderr)
         return None,None
     elif nc==1:
-        print("WARNING: geo_inference: only one place found -- set every internal node to %s!"%places[0])
+        print("WARNING: geo_inference: only one place found -- set every internal node to %s!"%places[0], file=sys.stderr)
         return None,None
     elif nc==0:
-        print("ERROR: geo_inference: list of places is empty!")
+        print("ERROR: geo_inference: list of places is empty!", file=sys.stderr)
         return None,None
     else:
         # set up model
@@ -117,5 +117,5 @@ def run(args):
 
     print("\nInferred ancestral states of discrete character using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
-          "\n\tVirus Evolution, vol 4, https://academic.oup.com/ve/article/4/1/vex042/4794731\n")
-    print("results written to",args.output)
+          "\n\tVirus Evolution, vol 4, https://academic.oup.com/ve/article/4/1/vex042/4794731\n", file=sys.stdout)
+    print("results written to",args.output, file=sys.stdout)

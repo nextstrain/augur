@@ -1,4 +1,4 @@
-import os
+import os, sys
 import numpy as np
 from Bio import SeqIO, SeqFeature, Seq, SeqRecord, Phylo
 from .utils import read_node_data, load_features, write_json, write_VCF_translation
@@ -38,7 +38,7 @@ def safe_translate(sequence, report_exceptions=False):
         if len(sequence)%3 != 0:
             #This gives messy BiopythonWarning, so avoid.
             #But can result in lots of printing if doing all TB genes. Better way?
-            print("Gene length is not a multiple of 3. Adding trailing N's before translating.")
+            print("Gene length is not a multiple of 3. Adding trailing N's before translating.", file=sys.stderr)
             while len(sequence)%3 != 0:
                 sequence += "N"
         translated_sequence = str(Seq.Seq(sequence).translate(gap='-'))
@@ -234,7 +234,7 @@ def run(args):
         ref = compress_seq['reference']
         is_vcf = True
     else:
-        node_data = read_node_data(args.node_data)
+        node_data = read_node_data(args.node_data, args.tree)
         if node_data is None:
             print("ERROR: could not read node data (incl sequences)")
             return -1
@@ -293,9 +293,12 @@ def run(args):
                     if c.name in aln and n.name in aln:
                         tmp = [construct_mut(a, int(pos+1), d) for pos, (a,d) in
                                 enumerate(zip(aln[n.name], aln[c.name])) if a!=d]
-                    aa_muts[c.name]["aa_muts"][fname] = tmp
+                        aa_muts[c.name]["aa_muts"][fname] = tmp
+                    else:
+                        print("no sequence pair for nodes %s-%s"%(c.name, n.name))
 
     write_json({'annotations':annotations, 'nodes':aa_muts}, args.output)
+    print("amino acid mutations written to",args.output, file=sys.stdout)
 
     ## write alignments to file is requested
     if args.alignment_output:

@@ -1,4 +1,4 @@
-import os, shutil, time
+import os, shutil, time, sys
 from Bio import Phylo
 from .utils import read_metadata, get_numerical_dates, write_json
 from treetime.vcf_utils import read_vcf, write_vcf
@@ -14,15 +14,16 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto',
     except ValueError:
         True #let it remain a string
 
-    if (ref is not None) and (fixed_pi is not None): #if VCF, fix pi
+    if (ref is not None) and (fixed_pi is None): #if VCF, fix pi
         #Otherwise mutation TO gaps is overestimated b/c of seq length
         fixed_pi = [ref.count(base)/len(ref) for base in ['A','C','G','T','-']]
         if fixed_pi[-1] == 0:
             fixed_pi[-1] = 0.05
             fixed_pi = [v-0.01 for v in fixed_pi]
 
-        #set this explicitly if auto, as informative-site only trees can have big branch lengths,
-        #making this set incorrectly in TreeTime
+    if ref is not None: # VCF -> adjust branch length
+        #set branch length mode explicitly if auto, as informative-site only
+        #trees can have big branch lengths, making this set incorrectly in TreeTime
         if branch_length_mode == 'auto':
             branch_length_mode = 'joint'
 
@@ -144,7 +145,7 @@ def run(args):
 
         tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                       reroot=args.root or 'best',
-                      Tc=args.coalescent or 0.01, #use 0.01 as default coalescent time scale
+                      Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
                       use_marginal = args.time_marginal or False,
                       branch_length_mode = args.branch_length_mode or 'auto',
                       clock_rate=args.clock_rate, clock_filter_iqd=args.clock_filter_iqd)
@@ -165,11 +166,13 @@ def run(args):
     # Export refined tree and node data
     import json
     tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
+    print("updated tree written to",tree_fname, file=sys.stdout)
     if args.output_node_data:
         node_data_fname = args.output_node_data
     else:
         node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data.json'
 
     json_success = write_json(node_data, node_data_fname)
+    print("node attributes written to",node_data_fname, file=sys.stdout)
 
-    return 0 if (tree_success and json_success) else -1
+    return 0 if (tree_success and json_success) else 1
