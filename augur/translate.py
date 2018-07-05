@@ -224,17 +224,16 @@ def run(args):
 
     ## check file format and read in sequences
     is_vcf = False
-    #if args.vcf_input:
-    if any([args.ancestral_seqs.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
+    if any([args.ancestral_sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
         if not args.vcf_reference:
             print("ERROR: a reference Fasta is required with VCF-format input")
             return -1
-        compress_seq = read_vcf(args.ancestral_seqs, args.vcf_reference)
+        compress_seq = read_vcf(args.ancestral_sequences, args.vcf_reference)
         sequences = compress_seq['sequences']
         ref = compress_seq['reference']
         is_vcf = True
     else:
-        node_data = read_node_data(args.node_data, args.tree)
+        node_data = read_node_data(args.ancestral_sequences, args.tree)
         if node_data is None:
             print("ERROR: could not read node data (incl sequences)")
             return -1

@@ -105,9 +105,11 @@ rule translate:
         aa_data = "results/aa_muts.json",
         vcf_out = "results/translations.vcf"
     shell:
-        'augur translate --tree {input.tree} --genes {input.genes} --vcf-reference {input.ref}'
-        ' --ancestral-seqs {input.vcf} --output {output.aa_data} --reference-sequence {input.gene_ref}'
-        ' --alignment-output {output.vcf_out}'
+        """
+        augur translate --tree {input.tree} --genes {input.genes} --vcf-reference {input.ref} \
+            --ancestral-sequences {input.vcf} --output {output.aa_data} --reference-sequence {input.gene_ref} \
+            --alignment-output {output.vcf_out}
+        """
 
 rule traits:
     input:

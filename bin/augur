@@ -110,8 +110,7 @@ if __name__=="__main__":
     ## TRANSLATE.PY
     translate_parser = subparsers.add_parser('translate', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     translate_parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
-    translate_parser.add_argument('--ancestral-seqs', type=str, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
-    #translate_parser.add_argument('--node-data', type=str, help='file with additional node data including ancestral sequences')
+    translate_parser.add_argument('--ancestral-sequences', type=str, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
     translate_parser.add_argument('--reference-sequence', required=True,
                         help='GenBank or GFF file containing the annotation')
     translate_parser.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
@@ -119,10 +118,7 @@ if __name__=="__main__":
     translate_parser.add_argument('--alignment-output', type=str, help="write out translated gene alignments. "
                                    "If a VCF-input, a .vcf or .vcf.gz will be output here (depending on file ending). If fasta-input, specify the file name "
                                    "like so: 'my_alignment_%GENE.fasta', where '%GENE' will be replaced by the name of the gene")
-    #translate_parser.add_argument('--vcf-input', type=str, help='VCF file with original and ancestral sequences')
     translate_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    #translate_parser.add_argument('--vcf-output', type=str, help='write a faux-VCF alignment of the translations to a file.'
-    #                               'a corresponding fasta reference will be generated')
     translate_parser.set_defaults(func=translate.run)
 
     ## TRAITS.PY
