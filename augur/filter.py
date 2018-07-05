@@ -88,20 +88,20 @@ def run(args):
         if args.max_date:
             seq_keep = [s for s in seq_keep if dates[s] and np.min(dates[s])<args.max_date]
 
-    if args.categories and args.sequences_per_category:
-        spc = args.sequences_per_category
-        seq_names_by_cat = defaultdict(list)
+    if args.group_by and args.sequences_per_group:
+        spg = args.sequences_per_group
+        seq_names_by_group = defaultdict(list)
 
         for seq_name in seq_keep:
-            cat = []
+            group = []
             if seq_name not in meta_dict:
                 print("WARNING: no metadata for %s, skipping"%seq_name)
                 continue
             else:
                 m = meta_dict[seq_name]
-            for c in args.categories:
+            for c in args.group_by:
                 if c in m:
-                    cat.append(m[c])
+                    group.append(m[c])
                 elif c in ['month', 'year'] and 'date' in m:
                     try:
                         year = int(m["date"].split('-')[0])
@@ -113,10 +113,10 @@ def run(args):
                             month = int(m["date"].split('-')[1])
                         except:
                             month = random.randint(1,12)
-                        cat.append((year, month))
+                        group.append((year, month))
                     else:
-                        cat.append(year)
-            seq_names_by_cat[tuple(cat)].append(seq_name)
+                        group.append(year)
+            seq_names_by_group[tuple(group)].append(seq_name)
 
         if args.priority and os.path.isfile(args.priority):
             priorities = defaultdict(float)
@@ -129,13 +129,13 @@ def run(args):
                         print("ERROR: malformatted priority:",l)
 
         seq_subsample = []
-        for cat, s in seq_names_by_cat.items():
+        for group, s in seq_names_by_group.items():
             tmp_seqs = [seq_name for seq_name in s]
             if args.priority:
-                seq_subsample.extend(sorted(tmp_seqs, key=lambda x:priorities[x], reverse=True)[:spc])
+                seq_subsample.extend(sorted(tmp_seqs, key=lambda x:priorities[x], reverse=True)[:spg])
             else:
-                seq_subsample.extend(tmp_seqs if len(s)<=spc
-                                     else random.sample(tmp_seqs,spc))
+                seq_subsample.extend(tmp_seqs if len(s)<=spg
+                                     else random.sample(tmp_seqs, spg))
     else:
         seq_subsample = seq_keep
 
