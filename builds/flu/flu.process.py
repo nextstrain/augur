@@ -61,7 +61,6 @@ def make_config(prepared_json, args):
                 "region":{"menuItem":"region", "legendTitle":"Region", "key":"region", "type":"discrete"},
                 "clade_membership": {"menuItem": "clade", "legendTitle": "Clade", "key": "clade_membership", "type": "discrete"},
             },
-            "controls": {'authors':['authors']},
             "defaults": {'colorBy': 'clade_membership',
                 'geoResolution': 'region',
                 'mapTriplicate': True},

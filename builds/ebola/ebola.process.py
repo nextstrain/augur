@@ -20,11 +20,10 @@ config = {
     "geo_inference": ['country', 'division'], # what traits to perform this on
     "auspice": { ## settings for auspice JSON export
         "color_options": {
-            "authors": {"key":"authors", "legendTitle":"Authors", "menuItem":"authors", "type":"discrete"},        
+            "authors": {"key":"authors", "legendTitle":"Authors", "menuItem":"authors", "type":"discrete"},
             "country": {"key":"country", "legendTitle":"Country", "menuItem":"country", "type":"discrete"},
             "division": {"key":"division", "legendTitle":"Division", "menuItem":"division", "type":"discrete"},
         },
-        "controls": {'geographic location':['country', 'division'], 'authors':['authors']},
         "defaults": {
             "colorBy": "division",
             "geoResolution": "division"
@@ -49,8 +48,6 @@ if __name__=="__main__":
 
     if params.json:
         config["in"] = params.json
-
-    config["newick_tree_options"]["raxml"] = not params.no_raxml
 
     runner = process(config)
     runner.align()

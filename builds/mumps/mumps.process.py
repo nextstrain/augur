@@ -21,9 +21,10 @@ def make_config(prepared_json, clean, params):
         }
         defaults = {
             "colorBy": "country",
-            "geoResolution": "country"
+            "geoResolution": "country",
+            'mapTriplicate': True
         }
-        geo_inference = ['country','region']
+        geo_inference = False
     elif params.geo == "na":
         color_options = {
             "authors": {"key":"authors", "legendTitle":"Authors", "menuItem":"authors", "type":"discrete"},

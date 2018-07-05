@@ -1,7 +1,9 @@
-import os, json
+import os, json, sys
 import pandas as pd
 from treetime.utils import numeric_date
 from collections import defaultdict
+from pkg_resources import resource_stream
+from io import TextIOWrapper
 
 def myopen(fname, mode):
     if fname.endswith('.gz'):
@@ -87,7 +89,7 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, m
 
     return numerical_dates
 
-def read_node_data(fnames):
+def read_node_data(fnames, tree=None):
     """parse the "nodes" field of the given JSONs and join the data together"""
     if type(fnames) is str:
         fnames = [fnames]
@@ -110,6 +112,20 @@ def read_node_data(fnames):
                     node_data[k]=v
         else:
             print("ERROR: node_data JSON file %s not found. Attempting to proceed without it."%fname)
+
+    if tree and os.path.isfile(tree):
+        from Bio import Phylo
+        try:
+            T = Phylo.read(tree, 'newick')
+        except:
+            print("Failed to read tree from file "+tree, file=sys.stderr)
+        else:
+            tree_node_names = set([l.name for l in T.find_clades()])
+            meta_node_names = set(node_data["nodes"].keys())
+            if tree_node_names!=meta_node_names:
+                print("Names of nodes (including internal nodes) of tree %s don't"
+                      " match node names in the node data files."%tree, file=sys.stderr)
+
     return node_data
 
 
@@ -131,8 +147,8 @@ def attach_tree_meta_data(T, node_meta):
 
 
 def write_json(data, file_name, indent=1):
-    import json
-    import os
+    import json, os
+    success = False
 
     #in case auspice folder does not exist yet
     if not os.path.exists(os.path.dirname(file_name)):
@@ -148,6 +164,9 @@ def write_json(data, file_name, indent=1):
     else:
         json.dump(data, handle, indent=indent)
         handle.close()
+        success=True
+
+    return success
 
 
 def load_features(reference, feature_names=None):
@@ -217,26 +236,64 @@ def read_config(fname):
 
     return config
 
-def read_geo(fname):
-    if fname and os.path.isfile(fname):
-        coordinates = {}
-        with open(fname) as ifile:
-            header = ifile.readline().strip().split('\t')
-            for line in ifile:
-                fields = line.strip().split('\t')
-                tmp = {}
-                for f, val in zip(header[1:], fields[1:]):
-                    try:
-                        tmp[f] = float(val)
-                    except:
-                        tmp[f] = val
-                coordinates[fields[0]] = tmp
-    else:
-        print("ERROR: geo def file %s not found."%fname)
-        coordinates = defaultdict(dict)
-
+def read_lat_longs(overrides=None, use_defaults=True):
+    coordinates = {}
+    if use_defaults:
+        with resource_stream(__package__, "data/lat_longs.tsv") as stream:
+            with TextIOWrapper(stream, "utf-8") as defaults:
+                for line in defaults:
+                    if line.startswith('#'): continue
+                    fields = line.strip().split()
+                    if len(fields) == 4:
+                        geo_field, loc = fields[0], fields[1]
+                        lat, long = float(fields[2]), float(fields[3])
+                        coordinates[(geo_field, loc)] = {
+                            "latitude": lat,
+                            "longitude": long
+                        }
+    if overrides:
+        if os.path.isfile(overrides):
+            with open(overrides) as ifile:
+                for line in ifile:
+                    if line.startswith('#'): continue
+                    fields = line.strip().split()
+                    if len(fields) == 4:
+                        geo_field, loc = fields[0], fields[1]
+                        lat, long = float(fields[2]), float(fields[3])
+                        coordinates[(geo_field, loc)] = {
+                            "latitude": lat,
+                            "longitude": long
+                        }
+        else:
+            print("WARNING: input lat/long file %s not found." % overrides)
     return coordinates
 
+def read_colors(overrides=None, use_defaults=True):
+    colors = {}
+    if use_defaults:
+        with resource_stream(__package__, "data/colors.tsv") as stream:
+            with TextIOWrapper(stream, "utf-8") as defaults:
+                for line in defaults:
+                    if line.startswith('#'): continue
+                    fields = line.strip().split()
+                    if len(fields) == 3:
+                        trait, trait_value, hex_code = fields[0], fields[1], fields[2]
+                        colors[(trait, trait_value)] = hex_code
+    if overrides:
+        if os.path.isfile(overrides):
+            with open(overrides) as fh:
+                for line in fh:
+                    if line.startswith('#'): continue
+                    fields = line.strip().split()
+                    if len(fields) == 3:
+                        trait, trait_value, hex_code = fields[0], fields[1], fields[2]
+                        colors[(trait, trait_value)] = hex_code
+        else:
+            print("WARNING: Couldn't open color definitions file {}.".format(overrides))
+    color_map = defaultdict(list)
+    for (trait, trait_value), hex_code in colors.items():
+        color_map[trait].append((trait_value, hex_code))
+    return color_map
 
 def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
     """

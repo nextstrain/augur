@@ -42,7 +42,7 @@ def run(args):
 
     # loop over sequences, parse fasta header of each sequence
     for seq in seqs:
-        fields = seq.description.split(args.sep)
+        fields = seq.description.split(args.separator)
         tmp_name = fields[strain_index]
         for x, y in forbidden_characters:
             tmp_name = tmp_name.replace(x, y)
@@ -57,7 +57,7 @@ def run(args):
                                         dayfirst=args.fix_dates=='dayfirst')
 
     # output results to a new fasta alignment and tsv/csv via pandas
-    SeqIO.write(seqs, args.output, 'fasta')
+    SeqIO.write(seqs, args.output_sequences, 'fasta')
     df = pd.DataFrame.from_dict(meta_data, orient='index')
-    df.to_csv(args.metadata, index_label='strain',
-              sep='\t' if args.metadata[-3:]=='tsv' else ',')
+    df.to_csv(args.output_metadata, index_label='strain',
+              sep='\t' if args.output_metadata[-3:]=='tsv' else ',')

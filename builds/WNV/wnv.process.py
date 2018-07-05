@@ -29,7 +29,6 @@ config = {
             "authors": {"key":"authors", "legendTitle":"Authors", "menuItem":"authors", "type":"discrete"},
             "host": {"key":"host", "legendTitle":"Host Species", "menuItem":"host", "type":"discrete"},
         },
-        "controls": {},
         "defaults": {
             'mapTriplicate': False,
             'colorBy': "state"

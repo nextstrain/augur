@@ -83,6 +83,8 @@ tree builders:
 * OPTIONAL: [FastTree](http://www.microbesonline.org/fasttree/)
 * OPTIONAL: [IQ-TREE](http://www.iqtree.org/)
 
+Additionally, bacterial builds require a working installation of [vcftools](https://vcftools.github.io/).
+
 
 ## Virus builds
 

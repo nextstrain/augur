@@ -1,7 +1,6 @@
 import os, shutil, time
 from Bio import Phylo
-from .utils import read_metadata, get_numerical_dates, write_json
-from treetime.vcf_utils import read_vcf, write_vcf
+from treetime.vcf_utils import read_vcf
 import numpy as np
 
 def find_executable(names, default = None):
@@ -65,6 +64,7 @@ def build_fasttree(aln_file, out_file, clean_up=True):
     '''
     build tree using fasttree with parameters "-nt"
     '''
+    log_file = out_file + ".log"
 
     fasttree = find_executable([
         # Search order is based on expected parallelism and accuracy
@@ -77,7 +77,7 @@ def build_fasttree(aln_file, out_file, clean_up=True):
         "fasttree"
     ])
 
-    call = [fasttree, "-nt", aln_file, "1>", out_file, "2>", "fasttree.log"]
+    call = [fasttree, "-nt", aln_file, "1>", out_file, "2>", log_file]
     cmd = " ".join(call)
     print("Building a tree via:\n\t" + cmd +
           "\n\tPrice et al: FastTree 2 - Approximately Maximum-Likelihood Trees for Large Alignments." +
@@ -86,7 +86,7 @@ def build_fasttree(aln_file, out_file, clean_up=True):
     try:
         T = Phylo.read(out_file, 'newick')
         if clean_up:
-            os.remove('fasttree.log')
+            os.remove(log_file)
     except:
         print("TREE BUILDING FAILED")
         T=None

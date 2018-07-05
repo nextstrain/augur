@@ -18,12 +18,9 @@
   "cluster": {
   }
  },
- "controls": {
-  "geographic location": {
-   "location": {
-   }
-  }
- },
+ "geo": [
+   "location"
+ ],
  "filters": [
   "location", 
   "cluster", 

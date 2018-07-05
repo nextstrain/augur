@@ -1,104 +1,103 @@
 rule parse:
-	input:
-		"../../../flora/data/lassa_{segment}.fasta"
-	output:
-		seq = "results_{segment}/raw_seqs.fasta",
-		meta = "results_{segment}/meta.tsv"
-	params:
-		fields = "strain accession segment date region country host author reference url"
-	shell:
-		'augur parse --sequences {input} --output {output.seq} --metadata {output.meta} --fields {params.fields}'
+    input:
+        "../../../flora/data/lassa_{segment}.fasta"
+    output:
+        seq = "results_{segment}/raw_seqs.fasta",
+        meta = "results_{segment}/meta.tsv"
+    params:
+        fields = "strain accession segment date region country host author reference url"
+    shell:
+        'augur parse --sequences {input} --output {output.seq} --metadata {output.meta} --fields {params.fields}'
 
 
 rule filter:
-	input:
-		seq = rules.parse.output.seq,
-		meta = rules.parse.output.meta,
-		exclude = "metadata/dropped_strains.txt"
-	output:
-		"results_{segment}/filtered.fasta"
-	params:
-		vpc = 30,
-		cat = "year month"
-	shell:
-		"augur filter --sequences {input.seq} --output {output} --metadata {input.meta} --viruses_per_cat {params.vpc} --exclude {input.exclude} --cat {params.cat}"
+    input:
+        seq = rules.parse.output.seq,
+        meta = rules.parse.output.meta,
+        exclude = "metadata/dropped_strains.txt"
+    output:
+        "results_{segment}/filtered.fasta"
+    params:
+        sequences_per_category = 30,
+        categories = "year month"
+    shell:
+        "augur filter --sequences {input.seq} --output {output} --metadata {input.meta} --sequences_per_category {params.sequences_per_category} --exclude {input.exclude} --categories {params.categories}"
 
 
 rule align:
-	input:
-		seq = rules.filter.output,
-		ref = "metadata/lassa_{segment}.gb"
-	output:
-		"results_{segment}/aligned.fasta"
-	shell:
-		'augur align --sequences {input.seq} --output {output} --reference_sequence {input.ref}'
+    input:
+        seq = rules.filter.output,
+        ref = "metadata/lassa_{segment}.gb"
+    output:
+        "results_{segment}/aligned.fasta"
+    shell:
+        'augur align --sequences {input.seq} --output {output} --reference_sequence {input.ref}'
 
 
 rule tree:
-	input:
-		aln = rules.align.output,
-	output:
-		tree = "results_{segment}/tree_raw.nwk",
-	params:
-		method = 'iqtree'
-	shell:
-		'augur tree --alignment {input.aln} --output {output.tree} --method {params.method}'
+    input:
+        aln = rules.align.output,
+    output:
+        tree = "results_{segment}/tree_raw.nwk",
+    params:
+        method = 'iqtree'
+    shell:
+        'augur tree --alignment {input.aln} --output {output.tree} --method {params.method}'
 
 rule timetree:
-	input:
-		aln = rules.align.output,
-		metadata = rules.parse.output.meta,
-		tree = rules.tree.output.tree,
-	output:
-		tree = "results_{segment}/tree.nwk",
-		node_data = "results_{segment}/node_data.json"
-	params:
-		clock_rate = 0.0006,
-		root = 'min_dev',
-		branch_length_mode = 'input'
-	shell:
-		'augur treetime --alignment {input.aln} --tree {input.tree} --metadata {input.metadata}'
-		' --output {output.tree} --node_data {output.node_data}'
-		' --timetree --clock_rate {params.clock_rate} --root {params.root}'
-		' --branch_length_mode {params.branch_length_mode}'
+    input:
+        aln = rules.align.output,
+        metadata = rules.parse.output.meta,
+        tree = rules.tree.output.tree,
+    output:
+        tree = "results_{segment}/tree.nwk",
+        node_data = "results_{segment}/node_data.json"
+    params:
+        clock_rate = 0.0006,
+        root = 'min_dev',
+        branch_length_mode = 'input'
+    shell:
+        'augur treetime --alignment {input.aln} --tree {input.tree} --metadata {input.metadata}'
+        ' --output {output.tree} --node_data {output.node_data}'
+        ' --timetree --clock_rate {params.clock_rate} --root {params.root}'
+        ' --branch_length_mode {params.branch_length_mode}'
 
 rule traits:
-	input:
-		tree = rules.timetree.output.tree,
-		metadata = rules.parse.output.meta
-	output:
-		"results_{segment}/traits.json",
-	params:
-		cols = "country"
-	shell:
-		'augur traits --tree {input.tree} --metadata {input.metadata} --output {output} --columns {params.cols}'
+    input:
+        tree = rules.timetree.output.tree,
+        metadata = rules.parse.output.meta
+    output:
+        "results_{segment}/traits.json",
+    params:
+        cols = "country"
+    shell:
+        'augur traits --tree {input.tree} --metadata {input.metadata} --output {output} --columns {params.cols}'
 
 rule translate:
-	input:
-		tree = rules.timetree.output.tree,
-		ref = "metadata/lassa_{segment}.gb",
-		node_data = rules.timetree.output.node_data
-	output:
-		"results_{segment}/aa_muts.json"
-	shell:
-		'augur translate --tree {input.tree} --node_data {input.node_data} --output {output} --reference_sequence {input.ref}'
+    input:
+        tree = rules.timetree.output.tree,
+        ref = "metadata/lassa_{segment}.gb",
+        node_data = rules.timetree.output.node_data
+    output:
+        "results_{segment}/aa_muts.json"
+    shell:
+        'augur translate --tree {input.tree} --node_data {input.node_data} --output {output} --reference_sequence {input.ref}'
 
 rule export:
-	input:
-		tree = rules.timetree.output.tree,
-		node_data = rules.timetree.output.node_data,
-		traits = rules.traits.output,
-		aa_muts = rules.translate.output,
-		metadata = rules.parse.output.meta,
-		color_defs = "metadata/colors.tsv",
-		config = "metadata/config.json",
-		geo_info = "../../../fauna/source-data/geo_lat_long.tsv"
-	output:
-		tree = "auspice/lassa_{segment}_tree.json",
-		meta = "auspice/lassa_{segment}_meta.json",
-	shell:
-		'augur export --tree {input.tree} --metadata {input.metadata}'
-			' --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts}'
-			' --config {input.config} --color_defs {input.color_defs} --output {output.tree}'
-			' --geo_info {input.geo_info} --meta_output {output.meta}'
-
+    input:
+        tree = rules.timetree.output.tree,
+        node_data = rules.timetree.output.node_data,
+        traits = rules.traits.output,
+        aa_muts = rules.translate.output,
+        metadata = rules.parse.output.meta,
+        color_defs = "metadata/colors.tsv",
+        config = "metadata/config.json",
+        geo_info = "../../../fauna/source-data/geo_lat_long.tsv"
+    output:
+        tree = "auspice/lassa_{segment}_tree.json",
+        meta = "auspice/lassa_{segment}_meta.json",
+    shell:
+        'augur export --tree {input.tree} --metadata {input.metadata}'
+            ' --node_data {input.node_data} --traits {input.traits} --aa_muts {input.aa_muts}'
+            ' --config {input.config} --color_defs {input.color_defs} --output {output.tree}'
+            ' --geo_info {input.geo_info} --meta_output {output.meta}'

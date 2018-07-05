@@ -28,7 +28,7 @@ prepare = {
     "require_dates": True,
     "subsample": False,
     "ensure_all_segments": True, #this is ignored if only 1 segment
-    "lat_long_defs": '../../source-data/geo_lat_long.tsv',
+    "lat_long_defs": '../../source-data/lat_longs.tsv',
     "maintainer": "unknown",
     "auspice_filters": [],
 }
@@ -92,9 +92,6 @@ def combine_configs(config_type, user_config):
     # update key by key so that if the value is itself a dictionary
     # they can be merged together... (recursively)
     config = merge(config, user_config)
-    if "geo_inference" in config and config["geo_inference"] != False and "geographic location" not in config["auspice"]["controls"]:
-        config["auspice"]["controls"]["geographic location"] = config["geo_inference"]
-
 
     if config_type == "prepare" and "title" not in config:
         config["title"] = config["file_prefix"]
