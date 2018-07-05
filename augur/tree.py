@@ -94,7 +94,7 @@ def build_fasttree(aln_file, out_file, clean_up=True):
     return T
 
 
-def build_iqtree(aln_file, out_file, iqmodel="HKY+F", clean_up=True, nthreads=2):
+def build_iqtree(aln_file, out_file, substitution_model="GTR+G", clean_up=True, nthreads=2):
     '''
     build tree using IQ-Tree with parameters "-fast"
     arguments:
@@ -127,8 +127,8 @@ def build_iqtree(aln_file, out_file, iqmodel="HKY+F", clean_up=True, nthreads=2)
         "-me",    "0.05"
     ]
 
-    if iqmodel.lower() != "none":
-        call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", aln_file, "-m", iqmodel,
+    if substitution_model.lower() != "none":
+        call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", aln_file, "-m", substitution_model,
             ">", "iqtree.log"]
     else:
         call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", aln_file, ">", "iqtree.log"]
@@ -138,8 +138,8 @@ def build_iqtree(aln_file, out_file, iqmodel="HKY+F", clean_up=True, nthreads=2)
     print("Building a tree via:\n\t" + cmd +
           "\n\tNguyen et al: IQ-TREE: A fast and effective stochastic algorithm for estimating maximum likelihood phylogenies."
           "\n\tMol. Biol. Evol., 32:268-274. https://doi.org/10.1093/molbev/msu300\n")
-    if iqmodel.lower() == "none":
-        print("Conducting a model test... see iqtree.log for the result. You can specify this with --iqmodel in future runs.")
+    if substitution_model.lower() == "none":
+        print("Conducting a model test... see iqtree.log for the result. You can specify this with --substitution-model in future runs.")
     os.system(cmd)
 
     # Check result
@@ -149,7 +149,7 @@ def build_iqtree(aln_file, out_file, iqmodel="HKY+F", clean_up=True, nthreads=2)
         #this allows the user to check intermediate output, as tree.nwk will be
         if clean_up:
             #allow user to see chosen model if modeltest was run
-            if iqmodel.lower() == 'none':
+            if substitution_model.lower() == 'none':
                 shutil.copyfile('iqtree.log', out_file.replace(out_file.split('/')[-1],"iqtree.log"))
             os.remove('iqtree.log')
             os.remove(aln_file)
@@ -256,13 +256,13 @@ def run(args):
     else:
         fasta = aln
 
-    if args.iqmodel and not args.method=='iqtree':
+    if args.substitution_model and not args.method=='iqtree':
         print("Cannot specify model unless using IQTree. Model specification ignored.")
 
     if args.method=='raxml':
         T = build_raxml(fasta, tree_fname, args.nthreads)
     elif args.method=='iqtree':
-        T = build_iqtree(fasta, tree_fname, args.iqmodel, args.nthreads)
+        T = build_iqtree(fasta, tree_fname, args.substitution_model, args.nthreads)
     else: #use fasttree - if add more options, put another check here
         T = build_fasttree(fasta, tree_fname)
     end = time.time()

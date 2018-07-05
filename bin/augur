@@ -58,10 +58,11 @@ if __name__=="__main__":
 
     ## TREE.PY
     tree_parser = subparsers.add_parser('tree', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    tree_parser.add_argument('--alignment', required=True, help="alignment in fasta or VCF format")
+    tree_parser.add_argument('--alignment', '-a', required=True, help="alignment in fasta or VCF format")
     tree_parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
-    tree_parser.add_argument('--output', type=str, help='file name to write tree to')
-    tree_parser.add_argument('--iqmodel', default="HKY+F", help='substitution model to use for iq-tree. specify \'none\' to run ModelTest')
+    tree_parser.add_argument('--output', '-o', type=str, help='file name to write tree to')
+    tree_parser.add_argument('--substitution-model', default="GTR+G", choices=["HKY", "GTR", "HKY+G", "GTR+G"],
+                                help='substitution model to use. Specify \'none\' to run ModelTest. Currently, only available for IQTREE.')
     tree_parser.add_argument('--nthreads', type=int, default=2,
                              help="number of threads used")
     tree_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
