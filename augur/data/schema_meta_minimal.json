@@ -1,0 +1,134 @@
+{
+    "type" : "object",
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "Nextstrain metadata JSON schema version a.b.c",
+    "description": " This is the validation schema for the augur produced metadata JSON, for consumption in Auspice Nothing is required for the metadata, but auspice is pretty useless without this, so shouldn't we require a bunch of stuff?!?",
+    "definitions": {
+        "latlong": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+        }
+    },
+    "additionalProperties": false,
+    "properties" : {
+        "title" : {
+            "type" : "string"
+        },
+        "updated" : {
+            "type" : "string"
+        },
+        "virus_count" : {
+            "type" : "number"
+        },
+        "author_info": {
+            "$comment": "Each key in this object is an author name, e.g. \"Black et al\"",
+            "type": "object",
+            "patternProperties": {
+                "^.*$": {
+                    "type": "object",
+                    "properties": {
+                        "n": {"type": "number"},
+                        "title": {"type": "string"},
+                        "journal": {"type": "string"},
+                        "paper_url": {"type": "string"}
+                    }
+                }
+            }
+        },
+        "annotations": {
+            "$comment": "Used for the entropy panel",
+            "type": "object",
+            "patternProperties": {
+                "^.*$": {
+                    "type": "object",
+                    "properties": {
+                        "start": {"type": "number"},
+                        "end": {"type": "number"},
+                        "strand": {"type": "number"}
+                    }
+                }
+            }
+        },
+        "maintainer": {
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 2,
+            "maxItems": 2
+        },
+        "filters": {
+            "$comment": "TODO: must be attr keys on the tree",
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string"}
+        },
+        "panels": {
+            "$comment": "TODO: if entropy then annotations must exist, as well as mutations on the tree",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": ["tree", "map", "frequencies", "entropy"]
+                },
+            "uniqueItems": true
+        },
+        "geo": {
+            "$comment": "These keys (simple strings) will appear in the geoResolution drop down\nTODO: these keys need to be present as attrs on the tree nodes",
+            "type": "object",
+            "patternProperties": {
+                "^[a-z]*$": {
+                    "$comment": "These keys (simple strings incl _) are the countries / regions etc\nTODO: these keys must appear as values of the parent key attr on the tree nodes",
+                    "type": "object",
+                    "patternProperties": {
+                        "^[a-z_]*$": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "latitude": {"$ref": "#/definitions/latlong"},
+                                "longitude": {"$ref": "#/definitions/latlong"}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "color_options": {
+            "$comment": "These keys are the available colorBys for auspice\nTODO: The keys on geo must (should?) appear here",
+            "type": "object",
+            "patternProperties": {
+                "^[a-z_]*$": {
+                    "type": "object",
+                    "properties": {
+                        "key": {"type": "string"},
+                        "menuItem": {"type": "string"},
+                        "legendTitle": {"type": "string"},
+                        "type": {"type": "string"},
+                        "color_map": {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "array",
+                                "additionalItems": false,
+                                "items": [
+                                    {
+                                      "type": "string",
+                                      "pattern": "^[a-z_]+$"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "pattern": "^#[0-9A-F]{6}$"
+                                    }
+                                ]
+                            }
+
+                        }
+                    }
+                }
+
+
+            }
+        }
+
+
+    }
+
+}
