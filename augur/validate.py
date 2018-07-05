@@ -13,7 +13,7 @@ schemas = {
         "recommended": None
     },
     "tree": {
-        "minimal": None,
+        "minimal": "data/schema_tree_minimal.json",
         "recommended": None
     },
     "frequencies": {

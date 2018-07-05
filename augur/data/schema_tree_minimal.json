@@ -1,0 +1,41 @@
+{
+    "type" : "object",
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "Nextstrain tree (phylogeny) JSON schema version a.b.c",
+    "description": "to do",
+    "additionalProperties": false,
+    "properties": {
+        "attr": {
+            "type": "object",
+            "$comment": "Not sure how to encode all the possible attrs added here...",
+            "additionalProperties": true,
+            "properties": {
+                "div": {"type": "number"},
+                "clock_length": {"type": "number"},
+                "mutation_length": {"type": "number"},
+                "branch_length": {"type": "number"},
+                "num_date": {"type": "number"},
+                "num_date_confidence": {
+                  "type": "array",
+                  "items": [{"type": "number"}, {"type": "number"}]
+                },
+                "date": {"type": "string"},
+                "url": {"type": ["null", "string"]},
+                "accession": {"type": ["null", "string"]},
+                "authors": {"type": ["null", "string"]}
+            }
+        },
+        "branch_length": {"type": "number"},
+        "strain": {"type": "string"},
+        "clade": {"type": "number"},
+        "tvalue": {"type": ["null", "number"]},
+        "yvalue": {"type": ["null", "number"]},
+        "xvalue": {"type": ["null", "number"]},
+        "muts": {"type": "array"},
+        "aa_muts": {"type": "object"},
+        "children": {
+          "type": "array",
+          "items": {"$ref": "#"}
+        }
+    }
+}
