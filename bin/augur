@@ -10,15 +10,15 @@ if __name__=="__main__":
     subparsers = parser.add_subparsers()
 
     ### PARSE.PY -- produce a pair of tsv/fasta files from a single fasta file
-    p_parse = subparsers.add_parser('parse', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    p_parse.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
-    p_parse.add_argument('--fields', nargs='+', help="fields in fasta header")
-    p_parse.add_argument('--output-sequences', help="output sequences file")
-    p_parse.add_argument('--output-metadata', help="output metadata file")
-    p_parse.add_argument('--separator', default='|', help="separator of fasta header")
-    p_parse.add_argument('--fix-dates', choices=['dayfirst', 'monthfirst'],
-                                 help="attempt to parse dates and output them in standard format")
-    p_parse.set_defaults(func=parse.run)
+    parse_parser = subparsers.add_parser('parse', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parse_parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
+    parse_parser.add_argument('--output-sequences', help="output sequences file")
+    parse_parser.add_argument('--output-metadata', help="output metadata file")
+    parse_parser.add_argument('--fields', nargs='+', help="fields in fasta header")
+    parse_parser.add_argument('--separator', default='|', help="separator of fasta header")
+    parse_parser.add_argument('--fix-dates', choices=['dayfirst', 'monthfirst'],
+                                help="attempt to parse non-standard dates and output them in standard YYYY-MM-DD format")
+    parse_parser.set_defaults(func=parse.run)
 
     ### FILTER.PY -- filter and subsample an sequence set
     filter_parser = subparsers.add_parser('filter', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -39,21 +39,21 @@ if __name__=="__main__":
     mask_parser = subparsers.add_parser('mask', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     mask_parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF format")
     mask_parser.add_argument('--mask', required=True, help="locations to be masked in BED file format")
-    mask_parser.add_argument('--output', help="output file")
+    mask_parser.add_argument('--output', '-o', help="output file")
     mask_parser.set_defaults(func=mask.run)
 
     ### ALIGN.PY
     align_parser = subparsers.add_parser('align', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     align_parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
-    align_parser.add_argument('--output', help="output file")
+    align_parser.add_argument('--output', '-o', help="output file")
     align_parser.add_argument('--nthreads', type=int, default=2,
-                        help="number of threads used by mafft")
+                                help="number of threads used")
     align_parser.add_argument('--method', default='mafft', choices=["mafft"],
-                        help="alignment program to use")
+                                help="alignment program to use")
     align_parser.add_argument('--reference-name', type=str, help="strip insertions relative to reference sequence; use if the reference is already in the input sequences")
     align_parser.add_argument('--reference-sequence', type=str, help="strip insertions relative to reference sequence; use if the reference is NOT already in the input sequences")
     align_parser.add_argument('--remove-reference', action="store_true", default=False, help="remove reference sequence from the alignment")
-    align_parser.add_argument('--fill-gaps', action="store_true", default=False, help="if gaps are more like missing data, replace by N after aligning")
+    align_parser.add_argument('--fill-gaps', action="store_true", default=False, help="if gaps represent missing data rather than true indels, replace by N after aligning")
     align_parser.set_defaults(func=align.run)
 
     ## TREE.PY
@@ -74,8 +74,8 @@ if __name__=="__main__":
 
     ## REFINE.PY
     refine_parser = subparsers.add_parser('refine', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    refine_parser.add_argument('--alignment', help="alignment in fasta or VCF format")
-    refine_parser.add_argument('--tree',required=True, help="prebuilt Newick")
+    refine_parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
+    refine_parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     refine_parser.add_argument('--metadata', type=str, help="tsv/csv table with meta data for sequences")
     refine_parser.add_argument('--output-tree', type=str, help='file name to write tree to')
     refine_parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
@@ -99,9 +99,9 @@ if __name__=="__main__":
 
     ## ANCESTRAL.PY
     ancestral_parser = subparsers.add_parser('ancestral', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    ancestral_parser.add_argument('--tree',required=True, help="prebuilt Newick")
-    ancestral_parser.add_argument('--alignment', help="alignment in fasta or VCF format")
-    ancestral_parser.add_argument('--output', type=str, help='file name to save mutations and ancestral sequences to')
+    ancestral_parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
+    ancestral_parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
+    ancestral_parser.add_argument('--output', '-o', type=str, help='file name to save mutations and ancestral sequences to')
     ancestral_parser.add_argument('--inference', default='joint', choices=["joint", "marginal"],
                                     help="calculate joint or marginal maximum likelihood ancestral sequence states")
     ancestral_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
@@ -124,26 +124,26 @@ if __name__=="__main__":
 
     ## TRAITS.PY
     traits_parser = subparsers.add_parser('traits', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    traits_parser.add_argument('--tree', required=True, help="tree to perform trait reconstruction on")
+    traits_parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
     traits_parser.add_argument('--metadata', required=True, help="tsv/csv table with meta data")
     traits_parser.add_argument('--columns', required=True, nargs='+',
                         help='metadata fields to perform discrete reconstruction on')
     traits_parser.add_argument('--confidence',action="store_true",
                         help='record the distribution of subleading mugration states')
-    traits_parser.add_argument('--output', default='traits.json', help='')
+    traits_parser.add_argument('--output', '-o', default='traits.json', help='')
     traits_parser.set_defaults(func=traits.run)
 
     ## TITERS.PY
     titers_parser = subparsers.add_parser('titers', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     titers_parser.add_argument('--titers', required=True, type=str, help="file with titer measurements")
-    titers_parser.add_argument('--tree', type=str, required=True, help="tree to perform fit titer model to")
+    titers_parser.add_argument('--tree', '-t', type=str, required=True, help="tree to perform fit titer model to")
     titers_parser.add_argument('--output-tree-model', type=str, help='JSON file to save tree model')
     titers_parser.add_argument('--output-subs-model', type=str, help='JSON file to save subs model')
     titers_parser.set_defaults(func=titers.run)
 
     ## EXPORT.PY
     export_parser =  subparsers.add_parser("export", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    export_parser.add_argument('--tree', required=True, help="tree to perform trait reconstruction on")
+    export_parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
     export_parser.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
     export_parser.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
     export_parser.add_argument('--auspice-config', help="file with auspice configuration")
