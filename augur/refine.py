@@ -1,4 +1,4 @@
-import os, shutil, time
+import os, shutil, time, sys
 from Bio import Phylo
 from .utils import read_metadata, get_numerical_dates, write_json
 from treetime.vcf_utils import read_vcf, write_vcf
@@ -165,11 +165,13 @@ def run(args):
     # Export refined tree and node data
     import json
     tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
+    print("updated tree written to",tree_fname, file=sys.stdout)
     if args.output_node_data:
         node_data_fname = args.output_node_data
     else:
         node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data.json'
 
     json_success = write_json(node_data, node_data_fname)
+    print("node attributes written to",node_data_fname, file=sys.stdout)
 
-    return 0 if (tree_success and json_success) else -1
+    return 0 if (tree_success and json_success) else 1
