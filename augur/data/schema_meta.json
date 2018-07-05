@@ -1,8 +1,9 @@
 {
     "type" : "object",
     "$schema": "http://json-schema.org/draft-06/schema#",
-    "title": "Nextstrain metadata JSON schema version a.b.c",
-    "description": " This is the validation schema for the augur produced metadata JSON, for consumption in Auspice Nothing is required for the metadata, but auspice is pretty useless without this, so shouldn't we require a bunch of stuff?!?",
+    "version": "0.1",
+    "title": "Nextstrain minimal metadata JSON schema",
+    "description": "This is the validation schema for the augur produced metadata JSON, for consumption in Auspice. Note that every field is optional, but excluding fields may disable certain features in Auspice.",
     "definitions": {
         "latlong": {
             "type": "number",
@@ -10,12 +11,13 @@
             "maximum": 180
         }
     },
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties" : {
         "title" : {
             "type" : "string"
         },
         "updated" : {
+            "description": "Auspice displays this in the footer",
             "type" : "string"
         },
         "virus_count" : {

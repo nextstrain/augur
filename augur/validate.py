@@ -2,24 +2,15 @@ import jsonschema
 import os
 import json
 from collections import defaultdict
-from pkg_resources import resource_string
+from pkg_resources import resource_string, resource_filename
+from copy import deepcopy
 
 # pip install git+git://github.com/Julian/jsonschema@9632422aa90cb1fbfbbb141954ef6d06437b0801
 
-
-schemas = {
-    "meta": {
-        "minimal": "data/schema_meta_minimal.json",
-        "recommended": None
-    },
-    "tree": {
-        "minimal": "data/schema_tree_minimal.json",
-        "recommended": None
-    },
-    "frequencies": {
-        "minimal": None,
-        "recommended": None
-    }
+schemaLocations = {
+    "meta": "data/schema_meta.json",
+    "tree": "data/schema_tree.json",
+    "recommendations": "data/schema_recommendations.json"
 }
 
 
@@ -44,26 +35,53 @@ def loadJSONsToValidate(paths):
         })
     return ret
 
+def isSchemaValid(schema, name):
+    # see http://python-jsonschema.readthedocs.io/en/latest/errors/
+    try:
+        jsonschema.Draft6Validator.check_schema(schema)
+    except jsonschema.exceptions.SchemaError as err:
+        print("Schema {} did not pass validation. Error: {}".format(name, err))
+        return False
+    return True
+
 # with resource_stream(__package__, "data/colors.tsv") as stream:
 # resource_string should just return the string
 def loadSchemas(names):
     ret = defaultdict(dict)
+
+    # Unfortunately, you cannot create a recommended schemas which inherit the minimal schema using $ref
+    # see https://spacetelescope.github.io/understanding-json-schema/reference/combining.html
+    # so we do it dynamically here
+    try:
+        recommendations = json.loads(resource_string(__package__, schemaLocations["recommendations"]))
+    except:
+        print("Could not load the schema recommendations. Proceeding with minimal schemas only.")
+
     for name in names:
         if name in ret:
             continue
-        for schemaType, schemaPath in schemas[name].items():
-            if schemaPath is None:
-                continue
+        if name not in schemaLocations:
+            print("ERROR: No specified schema for ", name)
+            continue
 
-            # see http://python-jsonschema.readthedocs.io/en/latest/errors/
-            try:
-                schema = json.loads(resource_string(__package__, schemaPath))
-                jsonschema.Draft6Validator.check_schema(schema)
-            except json.JSONDecodeError as err:
-                print("Schema {} is not a valid JSON file. Error: {}".format(schemaPath, err))
-            except jsonschema.exceptions.SchemaError as err:
-                print("Schema {} did not pass validation. Error: {}".format(schemaPath, err))
-            ret[name][schemaType] = schema
+        ### LOAD THE (MINIMAL) SCHEMA
+        try:
+            schema = json.loads(resource_string(__package__, schemaLocations[name]))
+        except json.JSONDecodeError as err:
+            print("Schema {} is not a valid JSON file. Error: {}".format(schemaLocations[name], err))
+            continue
+        if not isSchemaValid(schema, schemaLocations[name]):
+            continue
+        ret[name]["minimal"] = jsonschema.Draft6Validator(schema)
+
+        # dynamically create the "recommended" schema
+        if recommendations and name in recommendations:
+            schema = deepcopy(schema) # so we don't modify the minimal one
+            for keyToInject, value in recommendations[name].items():
+                schema[keyToInject] = value;
+            if not isSchemaValid(schema, "Recommended schema derived from "+schemaLocations[name]):
+                continue
+            ret[name]["recommended"] = jsonschema.Draft6Validator(schema)
 
     return ret
 
@@ -84,22 +102,21 @@ def run(args):
         # make this cmd line controllable
         for schemaType in ["minimal", "recommended"]:
             if schemaType not in schemas[data["name"]]:
-                # print("WARNING: {} schema for {} doesn't exist!".format(schemaType, data["name"]))
-                continue;
-            print("Validating {} using the {}/{} schema".format(data["path"], data["name"], schemaType))
+                continue
+            print("Validating {} using the {}/{} schema... ".format(data["path"], data["name"], schemaType), end='')
 
-            schema = schemas[data["name"]][schemaType]
-
-            # https://python-jsonschema.readthedocs.io/en/latest/validate/
+            validator = schemas[data["name"]][schemaType]
             try:
-                jsonschema.Draft6Validator(schema).validate(data["json"])
+                validator.validate(data["json"]) # https://python-jsonschema.readthedocs.io/en/latest/validate/
             except jsonschema.exceptions.ValidationError:
+                print("") # new line
                 ret_code = 1
-                v = jsonschema.Draft6Validator(schema)
-                for error in sorted(v.iter_errors(data["json"]), key=str):
-                    print("\tERROR", error.message, "see:", error.schema_path)
+                msgType = "ERROR" if schemaType is "minimal" else "WARNING"
+                for error in sorted(validator.iter_errors(data["json"]), key=str):
+                    # TODO: make this more meaningful. Can you extract the definition if available?
+                    print("\t", msgType, error.message, "see:", error.schema_path)
             else:
-                print("\tSuccess")
+                print("SUCCESS")
 
     checkMetaValuesAppearOnTreeNodes()
     return return_code
