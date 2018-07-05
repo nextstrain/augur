@@ -63,6 +63,14 @@ def run(args):
 
 
     ####Filtering steps
+    tmp = [ ]
+    for s in seq_keep:
+        if s in meta_dict:
+            tmp.append(s)
+        else:
+            print("No meta data for",s)
+    seq_keep = tmp
+
     if args.exclude and os.path.isfile(args.exclude):
         with open(args.exclude, 'r') as ifile:
             to_exclude = set([line.strip() for line in ifile if line[0]!=comment_char])
