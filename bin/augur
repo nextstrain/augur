@@ -88,7 +88,7 @@ if __name__=="__main__":
     refine_parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
     refine_parser.add_argument('--date-inference', default='joint', choices=["joint", "marginal"],
                                 help="assign internal nodes to their marginally most likely dates, not jointly most likely")
-    refine_parser.add_argument('--branch-length-mode', default='auto', choices = ['auto', 'joint', 'marginal', 'input'],
+    refine_parser.add_argument('--branch-length-inference', default='auto', choices = ['auto', 'joint', 'marginal', 'input'],
                                 help='branch length mode of treetime to use')
     refine_parser.add_argument('--clock-filter-iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
                                 'interquartile ranges from the root-to-tip vs time regression')
