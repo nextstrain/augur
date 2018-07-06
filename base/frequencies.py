@@ -728,13 +728,13 @@ class KdeFrequencies(object):
 
         return normalized_freq_matrix
 
-    def estimate_frequencies_for_tree(self, **kwargs):
+    def estimate_frequencies_for_tree(self, tree):
         """Estimate global frequencies for all nodes in a tree across the given pivots.
         """
         clade_frequencies = defaultdict(dict)
 
         # Find tips within region.
-        tips = [(tip.clade, tip.attr["num_date"]) for tip in self.tree.get_terminals()]
+        tips = [(tip.clade, tip.attr["num_date"]) for tip in tree.get_terminals()]
         tips = np.array(sorted(tips, key=lambda row: row[1]))
         clades = tips[:, 0].astype(int)
         tip_dates = tips[:, 1].astype(float)
@@ -742,23 +742,20 @@ class KdeFrequencies(object):
         # Map clade ids to their corresponding frequency matrix row index.
         clade_to_index = {clades[i]: i for i in range(len(clades))}
 
-        # Determine parameters for frequency estimation.
-        params = {}
-        for param in ("sigma_narrow", "sigma_wide", "proportion_wide"):
-            params[param] = kwargs.get(param, getattr(self, param))
-
         # Calculate tip frequencies and normalize.
         normalized_freq_matrix = self.estimate_frequencies(
             tip_dates,
             self.pivots,
             normalize_to=1.0,
-            **params
+            sigma_narrow=self.sigma_narrow,
+            sigma_wide=self.sigma_wide,
+            proportion_wide=self.proportion_wide
         )
 
         for clade in clades:
             clade_frequencies["global"][clade] = normalized_freq_matrix[clade_to_index[clade]]
 
-        for node in self.tree.find_clades(order="postorder"):
+        for node in tree.find_clades(order="postorder"):
             if not node.is_terminal():
                 clade_frequencies["global"][node.clade] = np.array([clade_frequencies["global"][child.clade]
                                                                 for child in node.clades]).sum(axis=0)
@@ -823,7 +820,13 @@ class KdeFrequencies(object):
         Returns:
             frequencies (dict): node frequencies by region
         """
-        pass
+        # Calculate pivots for the given tree.
+        self.pivots = self.calculate_pivots(tree, self.pivot_frequency)
+
+        # Estimate unweighted frequencies for the given tree.
+        frequencies = self.estimate_frequencies_for_tree(tree)
+
+        return frequencies
 
 
 if __name__=="__main__":
