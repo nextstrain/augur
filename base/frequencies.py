@@ -762,23 +762,21 @@ class KdeFrequencies(object):
 
         return clade_frequencies
 
-    def estimate_region_weighted_frequencies_for_tree(self, **kwargs):
+    def estimate_weighted_frequencies_for_tree(self, tree):
         """Estimate global and regional frequencies for all nodes in a tree across the
-        given pivots. Global frequencies represent a weighted mean across regions.
+        given pivots. Global frequencies represent a weighted mean across the values in
+        attribute defined by `self.weights_attribute`.
         """
         clade_frequencies = defaultdict(dict)
 
-        # Determine parameters for frequency estimation.
-        params = {}
-        for param in ("sigma_narrow", "sigma_wide", "proportion_wide"):
-            params[param] = kwargs.get(param, getattr(self, param))
+        weight_keys, weight_values = zip(*sorted(self.weights.items()))
+        proportions = np.array(weight_values) / np.array(weight_values).sum(axis=0)
 
-        proportions = np.array(self.weights) / np.array(self.weights).sum(axis=0)
-
-        for (region, proportion) in zip(self.regions, proportions):
+        for (weight_key, proportion) in zip(weight_keys, proportions):
             # Find tips within region.
             tips = [(tip.clade, tip.attr["num_date"])
-                for tip in self.tree.get_terminals() if tip.attr["region"] == region]
+                    for tip in tree.get_terminals()
+                    if tip.attr[self.weights_attribute] == weight_key]
             tips = np.array(sorted(tips, key=lambda row: row[1]))
             clades = tips[:, 0].astype(int)
             tip_dates = tips[:, 1].astype(float)
@@ -787,26 +785,40 @@ class KdeFrequencies(object):
             clade_to_index = {clades[i]: i for i in range(len(clades))}
 
             # Calculate tip frequencies and normalize.
-            normalized_freq_matrix_global = self.estimate_frequencies(tip_dates, self.pivots, normalize_to=proportion, **params)
-            normalized_freq_matrix_regional = self.estimate_frequencies(tip_dates, self.pivots, normalize_to=1.0, **params)
+            normalized_freq_matrix_global = self.estimate_frequencies(
+                tip_dates,
+                self.pivots,
+                normalize_to=proportion,
+                sigma_narrow=self.sigma_narrow,
+                sigma_wide=self.sigma_wide,
+                proportion_wide=self.proportion_wide
+            )
+            normalized_freq_matrix_regional = self.estimate_frequencies(
+                tip_dates,
+                self.pivots,
+                normalize_to=1.0,
+                sigma_narrow=self.sigma_narrow,
+                sigma_wide=self.sigma_wide,
+                proportion_wide=self.proportion_wide
+            )
 
             for clade in clades:
                 clade_frequencies["global"][clade] = normalized_freq_matrix_global[clade_to_index[clade]]
-                clade_frequencies[region][clade] = normalized_freq_matrix_regional[clade_to_index[clade]]
+                clade_frequencies[weight_key][clade] = normalized_freq_matrix_regional[clade_to_index[clade]]
 
-        for node in self.tree.find_clades(order="postorder"):
+        for node in tree.find_clades(order="postorder"):
             if node.is_terminal():
                 # Set regional frequencies for tips from different regions to zero.
-                for region in self.regions:
-                    if not node.clade in clade_frequencies[region]:
-                        clade_frequencies[region][node.clade] = np.zeros_like(self.pivots)
+                for weight_key in weight_keys:
+                    if not node.clade in clade_frequencies[weight_key]:
+                        clade_frequencies[weight_key][node.clade] = np.zeros_like(self.pivots)
             else:
                 clade_frequencies["global"][node.clade] = np.array(
                     [clade_frequencies["global"][child.clade] for child in node.clades]
                 ).sum(axis=0)
-                for region in self.regions:
-                    clade_frequencies[region][node.clade] = np.array(
-                        [clade_frequencies[region][child.clade] for child in node.clades]
+                for weight_key in weight_keys:
+                    clade_frequencies[weight_key][node.clade] = np.array(
+                        [clade_frequencies[weight_key][child.clade] for child in node.clades]
                     ).sum(axis=0)
 
         return clade_frequencies
@@ -823,8 +835,15 @@ class KdeFrequencies(object):
         # Calculate pivots for the given tree.
         self.pivots = self.calculate_pivots(tree, self.pivot_frequency)
 
-        # Estimate unweighted frequencies for the given tree.
-        frequencies = self.estimate_frequencies_for_tree(tree)
+        if self.weights is None:
+            # Estimate unweighted frequencies for the given tree.
+            frequencies = self.estimate_frequencies_for_tree(tree)
+        else:
+            # Estimate weighted frequencies.
+            frequencies = self.estimate_weighted_frequencies_for_tree(tree)
+
+        # Store frequencies in the current instance for simplified exporting.
+        self.frequencies = frequencies
 
         return frequencies
 
