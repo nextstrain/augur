@@ -52,7 +52,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
         marginal = confidence
 
     tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
-           branch_length_inference=branch_length_inference, resolve_polytomies=resolve_polytomies,
+           branch_length_mode=branch_length_inference, resolve_polytomies=resolve_polytomies,
            max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
            **kwarks)
 
