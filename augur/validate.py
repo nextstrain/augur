@@ -5,16 +5,16 @@ from collections import defaultdict
 from pkg_resources import resource_string, resource_filename
 from copy import deepcopy
 
-# pip install git+git://github.com/Julian/jsonschema@9632422aa90cb1fbfbbb141954ef6d06437b0801
-
 schemaLocations = {
     "meta": "data/schema_meta.json",
     "tree": "data/schema_tree.json",
     "recommendations": "data/schema_recommendations.json"
 }
 
-
 def loadJSONsToValidate(paths):
+    """
+    paths: array of paths to JSONs. Must end in "_tree.json", "_meta.json" etc.
+    """
     ret = {}
     for path in paths:
         with open(path) as f:
@@ -27,7 +27,7 @@ def loadJSONsToValidate(paths):
         elif path.endswith("_meta.json"):
             name = "meta"
         else:
-            raise Exception('Unknown metadata type: {}'.format(name))
+            raise Exception('Unknown JSON type for {}'.format(path))
         if name in ret:
             raise Exception('Cannot deal with multiple JSONs of the same type ({})'.format(name))
         ret[name] = {
@@ -45,9 +45,12 @@ def isSchemaValid(schema, name):
         return False
     return True
 
-# with resource_stream(__package__, "data/colors.tsv") as stream:
-# resource_string should just return the string
 def loadSchemas(names):
+    """
+    For names (such as "tree", "meta"), load and internally-verify the schema.
+    If there are additional fields that are recommended (see the file specified by schemaLocations["recommendations"])
+    then dynamically modify the schema to create a (second) recommended schema.
+    """
     ret = defaultdict(dict)
 
     # Unfortunately, you cannot create a recommended schemas which inherit the minimal schema using $ref
@@ -87,6 +90,10 @@ def loadSchemas(names):
     return ret
 
 def collectTreeAttrs(root):
+    """
+    Collect all keys specified on node->attr throughout the tree
+    If the values of these keys are strings, then also collect the values
+    """
     seen = defaultdict(lambda: {"count": 0, "values": set(), "onAllNodes": False})
     num_nodes, num_terminal = (0, 0)
     def recurse(node):
@@ -111,6 +118,9 @@ def collectTreeAttrs(root):
 
 
 def collectAAMutationGenes(root):
+    """
+    Returns a set of all genes specified in the tree in the "aa_muts" objects
+    """
     genes = set()
     def recurse(node):
         if "aa_muts" in node and len(node["aa_muts"]):
@@ -122,6 +132,9 @@ def collectAAMutationGenes(root):
 
 
 def verifyMetaJSONIsInternallyConsistent(status, meta):
+    """
+    Check all possible sources of internal conflict within the metadata JSON that cannot be checked by the schema
+    """
     print("Validating that {} is internally consistent... ".format(meta["path"]))
     j = meta["json"]
     if "panels" in j and "entropy" in j["panels"] and "annotations" not in j:
@@ -132,6 +145,9 @@ def verifyMetaJSONIsInternallyConsistent(status, meta):
 
 
 def verifyMetaAndTreeJSONsAreInternallyConsistent(status, meta, tree):
+    """
+    Check all possible sources of conflict between the metadata & tree JSONs that cannot be checked by the schemas
+    """
     print("Validating that {} and {} are internally consistent... ".format(meta["path"], tree["path"]))
     mj, tj = (meta["json"], tree["json"])
     treeAttrs, num_terminal_nodes = collectTreeAttrs(tj)
@@ -155,7 +171,7 @@ def verifyMetaAndTreeJSONsAreInternallyConsistent(status, meta, tree):
             else:
                 for geoValue in mj["geo"][geoName]:
                     if geoValue not in treeAttrs[geoName]["values"]:
-                        warn("\"{}\", a value of the geographic resolution \"{}\", does not appear as a value of attr->{} on any tree nodes.".format(geoValue, geoName, geoValue))
+                        warn("\"{}\", a value of the geographic resolution \"{}\", does not appear as a value of attr->{} on any tree nodes.".format(geoValue, geoName, geoName))
 
     if "color_options" in mj:
         for colorBy in [x for x in mj["color_options"] if x != "gt"]:
@@ -194,16 +210,14 @@ def verifyMetaAndTreeJSONsAreInternallyConsistent(status, meta, tree):
                 if gene not in mj["annotations"]:
                     error("The tree defined AA mutations on gene {} which doesn't appear in the metadata annotations object.".format(gene))
 
-
     return status
 
 
 def run(args):
     '''
-    Validate augur produced JSONs
+    Validate auspice-compatable JSONs against a schema
     '''
     status = "ok" # possible values are "warn" and "error"
-    return_code = 0;
 
     try:
         datasets = loadJSONsToValidate(args.json)
@@ -232,15 +246,13 @@ def run(args):
                     msgType = "WARNING"
 
                 for error in sorted(validator.iter_errors(data["json"]), key=str):
-                    trace = list(error.schema_path)
-                    ptrace = " - ".join(trace[-5:] if len(trace) > 6 else trace)
-                    print("\t{}: {}. Trace: {}".format(msgType, error.message, ptrace), file=sys.stderr)
+                    trace = list(error.schema_path) # this may be really long for nested tree structures
+                    if len(trace) > 6:
+                        trace = ["..."] + trace[-5:]
+                    trace = [str(x) for x in trace]
+                    print("\t{}: {}. Trace: {}".format(msgType, error.message, " - ".join(trace)), file=sys.stderr)
             else:
                 print("SUCCESS")
-
-    if status == "error":
-        print("Skipping consistency checks", file=sys.stderr)
-        return 1
 
     if "meta" in datasets:
         status = verifyMetaJSONIsInternallyConsistent(status, datasets["meta"])

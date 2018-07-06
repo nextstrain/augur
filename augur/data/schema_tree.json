@@ -6,8 +6,7 @@
     "required": ["attr", "strain"],
     "properties": {
         "attr": {
-            "description": "",
-            "$comment": "Not sure how to encode all the possible attrs added here...",
+            "description": "Attributes / decorations on the nodes",
             "type": "object",
             "additionalProperties": true,
             "required": ["div", "num_date"],
@@ -124,12 +123,21 @@
             "$comment": "DEPRECATED. Not used in auspice.",
             "type": ["null", "number"]
         },
+        "serum": {
+            "description": "to do",
+            "$comment": "Used in dengue & flu trees",
+            "type": "boolean"
+        },
         "muts": {
             "description": "Nucleotide mutations occuring between the parent and this node",
             "$comment": "same numbering scheme as used by the meta.JSON -> annotations",
             "type": "array",
             "items": {
-              "pattern": "^[ATCG][0-9]+[ATCG]$"
+              "oneOf": [
+                {"type": "string", "pattern": "^[ATCG-][0-9]+[ATCG-]$"},
+                {"type": "string", "pattern": "^insertion [0-9]+-[0-9]+$", "$comment": "unused by auspice"},
+                {"type": "string", "pattern": "^deletion [0-9]+-[0-9]+$", "$comment": "unused by auspice"}
+              ]
             }
         },
         "aa_muts": {

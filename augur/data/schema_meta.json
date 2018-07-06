@@ -22,11 +22,12 @@
             "description": "Used to display information about terminal nodes & for filtering by author (if \"authors\" is in \"filters\", see below)",
             "$comment": "Each key is typically an author name, e.g. \"Black et al\", and must exist in the attrs object of at least one terminal node of the tree",
             "type": "object",
+            "additionalProperties": false,
             "patternProperties": {
-                "^.*$": {
+                "^.+$": {
                     "type": "object",
                     "additionalProperties": false,
-                    "required": ["n", "title", "journal", "paper_url"],
+                    "$comment": "in the future these properties may be required",
                     "properties": {
                         "n": {
                             "description": "Number of sequences / samples associated with this publication",
