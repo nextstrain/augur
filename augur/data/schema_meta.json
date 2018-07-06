@@ -25,6 +25,8 @@
             "patternProperties": {
                 "^.*$": {
                     "type": "object",
+                    "additionalProperties": false,
+                    "required": ["n", "title", "journal", "paper_url"],
                     "properties": {
                         "n": {
                             "description": "Number of sequences / samples associated with this publication",
@@ -146,8 +148,9 @@
             "description": "Available colorBys for Auspice",
             "$comment": "These properties need to be present as keys in the attrs of the tree nodes",
             "type": "object",
+            "additionalProperties": false,
             "patternProperties": {
-                "^[a-z_]*$": {
+                "^[A-Za-z_]*$": {
                     "description": "property name is the key used on the tree node attrs",
                     "type": "object",
                     "properties": {
@@ -197,6 +200,7 @@
         "defaults": {
             "description": "Set the defaults for certain display options in Auspice. All are optional.",
             "type": "object",
+            "additionalProperties": false,
             "properties": {
                 "geoResolution": {
                     "description": "Default geographic resolution",
