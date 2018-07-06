@@ -611,13 +611,15 @@ class KdeFrequencies(object):
         """
         params = json_dict["params"]
         instance = cls(**params)
-        instance.pivots = np.array(json_dict["data"]["pivots"])
-        frequencies = json_dict["data"]["frequencies"]
 
-        instance.frequencies = defaultdict(dict)
-        for region in frequencies:
-            for clade in frequencies[region]:
-                instance.frequencies[region][int(clade)] = np.array(frequencies[region][clade])
+        if "data" in json_dict:
+            instance.pivots = np.array(json_dict["data"]["pivots"])
+            frequencies = json_dict["data"]["frequencies"]
+
+            instance.frequencies = defaultdict(dict)
+            for region in frequencies:
+                for clade in frequencies[region]:
+                    instance.frequencies[region][int(clade)] = np.array(frequencies[region][clade])
 
         return instance
 

@@ -172,3 +172,15 @@ class TestKdeFrequencies(object):
             kde_frequencies.frequencies["global"][key],
             new_kde_frequencies.frequencies["global"][key]
         )
+
+    def test_import_without_frequencies(self):
+        """Test import of frequencies JSON that was exported from a frequencies instance without frequency values.
+        """
+        kde_frequencies = KdeFrequencies()
+        frequencies_json = kde_frequencies.to_json()
+
+        # Import frequencies from existing tree and JSON.
+        new_kde_frequencies = KdeFrequencies.from_json(frequencies_json)
+
+        assert kde_frequencies.pivot_frequency == new_kde_frequencies.pivot_frequency
+        assert not hasattr(new_kde_frequencies, "frequencies")
