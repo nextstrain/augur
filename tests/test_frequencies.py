@@ -93,3 +93,21 @@ class TestKdeFrequencies(object):
 
         assert not any([node.clade in frequencies["global"]
                         for node in tree.get_nonterminals()])
+
+    def test_export_with_frequencies(self, tree, tmpdir):
+        """Test frequencies export to JSON when frequencies have been estimated.
+        """
+        kde_frequencies = KdeFrequencies()
+        frequencies = kde_frequencies.estimate(tree)
+        frequencies_json = kde_frequencies.to_json()
+
+        assert "params" in frequencies_json
+        assert kde_frequencies.pivot_frequency == frequencies_json["params"]["pivot_frequency"]
+        assert "data" in frequencies_json
+        assert "pivots" in frequencies_json["data"]
+        assert "frequencies" in frequencies_json["data"]
+        assert "global" in frequencies_json["data"]["frequencies"]
+
+        # Try to dump exported JSON to disk.
+        fh = tmpdir.mkdir("json").join("frequencies.json")
+        json.dump(frequencies_json, fh)

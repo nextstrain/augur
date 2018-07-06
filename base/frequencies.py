@@ -631,15 +631,20 @@ class KdeFrequencies(object):
                 frequencies[region][clade] = self.frequencies[region][clade].tolist()
 
         return {
-            "parameters": {
-                "pivots": self.pivots.tolist(),
+            "params": {
                 "sigma_narrow": self.sigma_narrow,
                 "sigma_wide": self.sigma_wide,
                 "proportion_wide": self.proportion_wide,
-                "regions": self.regions,
-                "weights": self.weights
+                "pivot_frequency": self.pivot_frequency,
+                "weights": self.weights,
+                "weights_attribute": self.weights_attribute,
+                "max_date": self.max_date,
+                "include_internal_nodes": self.include_internal_nodes
             },
-            "frequencies": frequencies
+            "data": {
+                "pivots": self.pivots.tolist(),
+                "frequencies": frequencies
+            }
         }
 
     @classmethod
