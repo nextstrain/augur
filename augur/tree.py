@@ -251,7 +251,7 @@ def run(args):
 
     # construct reduced alignment if needed
     if is_vcf:
-        variable_fasta = write_out_informative_fasta(compress_seq, args.alignment, stripFile=args.strip_sites)
+        variable_fasta = write_out_informative_fasta(compress_seq, args.alignment, stripFile=args.exclude_sites)
         fasta = variable_fasta
     else:
         fasta = aln

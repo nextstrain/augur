@@ -3,7 +3,7 @@ from Bio import Phylo
 from .utils import read_metadata, get_numerical_dates, write_json
 from treetime.vcf_utils import read_vcf, write_vcf
 
-def refine(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto',
+def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
              confidence=False, resolve_polytomies=True, max_iter=2,
              infer_gtr=True, Tc=0.01, reroot=None, use_marginal=False, fixed_pi=None,
              clock_rate=None, clock_filter_iqd=None, verbosity=1, **kwarks):
@@ -24,8 +24,8 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto',
     if ref is not None: # VCF -> adjust branch length
         #set branch length mode explicitly if auto, as informative-site only
         #trees can have big branch lengths, making this set incorrectly in TreeTime
-        if branch_length_mode == 'auto':
-            branch_length_mode = 'joint'
+        if branch_length_inference == 'auto':
+            branch_length_inference = 'joint'
 
     #send ref, if is None, does no harm
     tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates,
@@ -52,7 +52,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_mode='auto',
         marginal = confidence
 
     tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
-           branch_length_mode=branch_length_mode, resolve_polytomies=resolve_polytomies,
+           branch_length_inference=branch_length_inference, resolve_polytomies=resolve_polytomies,
            max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
            **kwarks)
 
@@ -130,10 +130,10 @@ def run(args):
             print("ERROR: meta data with dates is required for time tree reconstruction")
             return -1
         metadata, columns = read_metadata(args.metadata)
-        if args.year_limit:
-            args.year_limit.sort()
+        if args.year_bounds:
+            args.year_bounds.sort()
         dates = get_numerical_dates(metadata, fmt=args.date_format,
-                                    min_max_year=args.year_limit)
+                                    min_max_year=args.year_bounds)
 
         # save input state string for later export
         for n in T.get_terminals():
@@ -146,8 +146,8 @@ def run(args):
         tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                       reroot=args.root or 'best',
                       Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
-                      use_marginal = args.time_marginal or False,
-                      branch_length_mode = args.branch_length_mode or 'auto',
+                      use_marginal = args.date_inference == 'marginal',
+                      branch_length_inference = args.branch_length_inference or 'auto',
                       clock_rate=args.clock_rate, clock_filter_iqd=args.clock_filter_iqd)
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
