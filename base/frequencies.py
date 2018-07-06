@@ -645,6 +645,31 @@ class KdeFrequencies(object):
         }
 
     @classmethod
+    def calculate_pivots(cls, tree, pivot_frequency):
+        """
+        Calculate pivots for a given tree and pivot frequency.
+
+        The start and end interval for these pivots is determined by the earliest and latest strain date in the tree.
+
+        Args:
+            tree (Bio.Phylo): an annotated tree
+            pivot_frequency (float): frequency pivots should occur by fraction of a year
+
+        Returns:
+            pivots (numpy array): pivots spanning the given the dates represented by the tree's tips
+        """
+        # Determine pivot start and end dates from the range of tip dates in the given tree.
+        tip_dates = [tip.attr["num_date"] for tip in tree.get_terminals()]
+        pivot_start = min(tip_dates)  # type: float
+        pivot_end = max(tip_dates)    # type: float
+
+        return np.arange(
+            pivot_start,
+            pivot_end,
+            pivot_frequency
+        )
+
+    @classmethod
     def get_density_for_observation(cls, mu, pivots, sigma_narrow=1/12.0, sigma_wide=3/12.0, proportion_wide=0.2):
         """Build a normal distribution centered across the given floating point date,
         mu, with a standard deviation based on the given sigma value and return

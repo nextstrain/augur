@@ -2,6 +2,7 @@
 Unit tests for frequency estimation
 """
 import json
+import numpy as np
 import pytest
 
 from ..base.frequencies import KdeFrequencies
@@ -20,12 +21,18 @@ def tree():
 
 
 class TestKdeFrequencies(object):
+    """Tests KDE-based frequency estimation methods
     """
-    Tests KDE-based frequency estimation methods
-    """
-    def test_estimate(self, tree):
+    def test_calculate_pivots(self, tree):
+        """Test pivot calculations.
         """
-        Test frequency estimation with default parameters.
+        pivot_frequency = 0.25
+        pivots = KdeFrequencies.calculate_pivots(tree, pivot_frequency)
+        assert isinstance(pivots, np.ndarray)
+        assert pivots[1] - pivots[0] == pivot_frequency
+
+    def test_estimate(self, tree):
+        """Test frequency estimation with default parameters.
         """
         kde_frequencies = KdeFrequencies()
         frequencies = kde_frequencies.estimate(tree)
