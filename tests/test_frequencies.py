@@ -140,3 +140,35 @@ class TestKdeFrequencies(object):
         assert "params" in frequencies_json
         assert kde_frequencies.pivot_frequency == frequencies_json["params"]["pivot_frequency"]
         assert "data" not in frequencies_json
+
+    def test_import(self, tree, tmpdir):
+        """Test import of frequencies JSON that was exported from a frequencies instance.
+        """
+        kde_frequencies = KdeFrequencies()
+        frequencies = kde_frequencies.estimate(tree)
+        frequencies_json = kde_frequencies.to_json()
+
+        # Try to dump exported JSON to disk.
+        tmp_fh = tmpdir.mkdir("json").join("frequencies.json")
+        fh = tmp_fh.open(mode="w")
+        json.dump(frequencies_json, fh)
+        fh.close()
+        assert tmp_fh.check()
+
+        # Import frequencies from existing tree and JSON.
+        fh = tmp_fh.open()
+        new_frequencies_json = json.load(fh)
+        fh.close()
+        new_kde_frequencies = KdeFrequencies.from_json(new_frequencies_json)
+
+        assert np.array_equal(
+            kde_frequencies.pivots,
+            new_kde_frequencies.pivots
+        )
+
+        # Get the first non-root key (root clade is number 0) and should be first in the sorted list of keys.
+        key = sorted(kde_frequencies.frequencies["global"].keys())[1]
+        assert np.array_equal(
+            kde_frequencies.frequencies["global"][key],
+            new_kde_frequencies.frequencies["global"][key]
+        )

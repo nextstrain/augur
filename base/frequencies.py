@@ -606,17 +606,18 @@ class KdeFrequencies(object):
         self.include_internal_nodes = include_internal_nodes
 
     @classmethod
-    def from_json(cls, tree, json_dict):
+    def from_json(cls, json_dict):
         """Returns an instance populated with parameters and data from the given JSON dictionary.
         """
-        params = json_dict["parameters"]
-        params["pivots"] = np.array(params["pivots"])
-        instance = cls(tree, **params)
-        instance.frequencies = json_dict["frequencies"]
+        params = json_dict["params"]
+        instance = cls(**params)
+        instance.pivots = np.array(json_dict["data"]["pivots"])
+        frequencies = json_dict["data"]["frequencies"]
 
-        for region in instance.frequencies:
-            for clade in instance.frequencies[region]:
-                instance.frequencies[region][clade] = np.array(instance.frequencies[region][clade])
+        instance.frequencies = defaultdict(dict)
+        for region in frequencies:
+            for clade in frequencies[region]:
+                instance.frequencies[region][int(clade)] = np.array(frequencies[region][clade])
 
         return instance
 
