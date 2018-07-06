@@ -162,3 +162,4 @@ if __name__=="__main__":
 
     args = parser.parse_args()
     return_code = args.func(args)
+    sys.exit(return_code)
