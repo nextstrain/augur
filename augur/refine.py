@@ -146,7 +146,7 @@ def run(args):
         tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                       reroot=args.root or 'best',
                       Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
-                      use_marginal = args.time_marginal or False,
+                      use_marginal = args.date_inference == 'marginal',
                       branch_length_mode = args.branch_length_mode or 'auto',
                       clock_rate=args.clock_rate, clock_filter_iqd=args.clock_filter_iqd)
 
