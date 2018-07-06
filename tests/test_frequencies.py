@@ -111,3 +111,13 @@ class TestKdeFrequencies(object):
         # Try to dump exported JSON to disk.
         fh = tmpdir.mkdir("json").join("frequencies.json")
         json.dump(frequencies_json, fh)
+
+    def test_export_without_frequencies(self):
+        """Test frequencies export to JSON when frequencies have *not* been estimated.
+        """
+        kde_frequencies = KdeFrequencies()
+        frequencies_json = kde_frequencies.to_json()
+
+        assert "params" in frequencies_json
+        assert kde_frequencies.pivot_frequency == frequencies_json["params"]["pivot_frequency"]
+        assert "data" not in frequencies_json

@@ -623,14 +623,7 @@ class KdeFrequencies(object):
     def to_json(self):
         """Returns a dictionary for the current instance that can be serialized in a JSON file.
         """
-        frequencies = {}
-        for region in self.frequencies:
-            frequencies[region] = {}
-
-            for clade in self.frequencies[region]:
-                frequencies[region][clade] = self.frequencies[region][clade].tolist()
-
-        return {
+        frequencies_json = {
             "params": {
                 "sigma_narrow": self.sigma_narrow,
                 "sigma_wide": self.sigma_wide,
@@ -640,12 +633,25 @@ class KdeFrequencies(object):
                 "weights_attribute": self.weights_attribute,
                 "max_date": self.max_date,
                 "include_internal_nodes": self.include_internal_nodes
-            },
-            "data": {
+            }
+        }
+
+        # If frequencies have been estimated, export them along with the pivots as data.
+        if hasattr(self, "frequencies"):
+            frequencies = {}
+            for region in self.frequencies:
+                frequencies[region] = {}
+
+                for clade in self.frequencies[region]:
+                    # numpy arrays are not supported by JSON and need to be converted to lists.
+                    frequencies[region][clade] = self.frequencies[region][clade].tolist()
+
+            frequencies_json["data"] = {
                 "pivots": self.pivots.tolist(),
                 "frequencies": frequencies
             }
-        }
+
+        return frequencies_json
 
     @classmethod
     def calculate_pivots(cls, tree, pivot_frequency):
