@@ -55,6 +55,7 @@
             "$comment": "Required for the entropy panel",
             "type": "object",
             "required": ["nuc"],
+            "additionalProperties": false,
             "properties": {
                 "nuc": {
                     "type": "object",
@@ -76,7 +77,7 @@
                 }
             },
             "patternProperties": {
-                "^[a-z0-9]*$": {"$ref": "#/properties/annotations/properties/nuc"}
+                "^[a-zA-Z0-9]+$": {"$ref": "#/properties/annotations/properties/nuc"}
             }
         },
         "maintainer": {
