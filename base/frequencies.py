@@ -825,6 +825,7 @@ class KdeFrequencies(object):
 
     def estimate(self, tree):
         """
+        Estimate frequencies for a given tree using the parameters defined for this instance.
 
         Args:
             tree (Bio.Phylo): annotated tree whose nodes all have an `attr` attribute with at least  "num_date" key
