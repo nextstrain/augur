@@ -26,7 +26,7 @@ REGIONS = [
 def tree():
     """Returns an annotated Bio.Phylo tree.
     """
-    with open("tests/data/flu_seasonal_h3n2_ha_2y_tree.json") as fh:
+    with open("tests/data/flu_seasonal_h3n2_ha_3y_tree.json") as fh:
         json_tree = json.load(fh)
 
     tree = json_to_tree(json_tree)
