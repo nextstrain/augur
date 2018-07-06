@@ -9,7 +9,8 @@
             "author_info",
             "annotations",
             "maintainer",
-            "color_options"
+            "color_options",
+            "panels"
         ]
     }
 }

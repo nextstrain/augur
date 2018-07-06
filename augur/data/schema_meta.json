@@ -4,16 +4,10 @@
     "version": "0.1",
     "title": "Nextstrain minimal metadata JSON schema",
     "description": "This is the validation schema for the augur produced metadata JSON, for consumption in Auspice. Note that every field is optional, but excluding fields may disable certain features in Auspice.",
-    "definitions": {
-        "latlong": {
-            "type": "number",
-            "minimum": -180,
-            "maximum": 180
-        }
-    },
     "additionalProperties": true,
     "properties" : {
         "title" : {
+            "description": "Auspice displays this at the top of the page",
             "type" : "string"
         },
         "updated" : {
@@ -21,72 +15,126 @@
             "type" : "string"
         },
         "virus_count" : {
+            "description": "Auspice uses this in the header info text and the status page. Should be renamed or deprecated for version 1.0",
             "type" : "number"
         },
         "author_info": {
-            "$comment": "Each key in this object is an author name, e.g. \"Black et al\"",
+            "description": "Used to display information about terminal nodes & for filtering by author (if \"authors\" is in \"filters\", see below)",
+            "$comment": "Each key is typically an author name, e.g. \"Black et al\", and must exist in the attrs object of at least one terminal node of the tree",
             "type": "object",
             "patternProperties": {
                 "^.*$": {
                     "type": "object",
                     "properties": {
-                        "n": {"type": "number"},
-                        "title": {"type": "string"},
-                        "journal": {"type": "string"},
-                        "paper_url": {"type": "string"}
+                        "n": {
+                            "description": "Number of sequences / samples associated with this publication",
+                            "type": "number"
+                        },
+                        "title": {
+                            "description": "Publication title",
+                            "type": "string"
+                        },
+                        "journal": {
+                            "description": "Journal title",
+                            "type": "string"
+                        },
+                        "paper_url": {
+                            "description": "URL link to paper or NCBI genome. Use \"?\" if unknown",
+                            "type": "string",
+                            "oneOf": [
+                                {"pattern": "^https?://.+$"},
+                                {"enum": ["?"]}
+                            ]
+                        }
                     }
                 }
             }
         },
         "annotations": {
-            "$comment": "Used for the entropy panel",
+            "description": "Genome annotations (e.g. genes), relative to the reference genome",
+            "$comment": "Required for the entropy panel",
             "type": "object",
-            "patternProperties": {
-                "^.*$": {
+            "required": ["nuc"],
+            "properties": {
+                "nuc": {
                     "type": "object",
                     "properties": {
-                        "start": {"type": "number"},
-                        "end": {"type": "number"},
-                        "strand": {"type": "number"}
+                        "start": {
+                            "description": "Gene start position (one-based)",
+                            "type": "number"
+                        },
+                        "end": {
+                            "description": "Gene end position (one-based)",
+                            "type": "number"
+                        },
+                        "strand": {
+                            "description": "Positive or negative strand",
+                            "type": "number",
+                            "enum": [-1, 1]
+                        }
                     }
                 }
+            },
+            "patternProperties": {
+                "^[a-z0-9]*$": {"$ref": "#/properties/annotations/properties/nuc"}
             }
         },
         "maintainer": {
+            "description": "Auspice displays the maintainer in the footer",
             "type": "array",
-            "items": {"type": "string"},
-            "minItems": 2,
-            "maxItems": 2
+            "items": [
+                {
+                    "type": "string",
+                    "description": "Text displayed in the browser"
+                },
+                {
+                    "type": "string",
+                    "description": "href for the text. E.g. mailto:, twitter link, lab website"
+                }
+            ]
         },
         "filters": {
-            "$comment": "TODO: must be attr keys on the tree",
+            "description": "These appear as filters in the footer of Auspice (which populates the displayed values based upon the tree)",
+            "$comment": "These values must be present as keys on the attr of nodes on the tree",
             "type": "array",
             "uniqueItems": true,
             "items": {"type": "string"}
         },
         "panels": {
-            "$comment": "TODO: if entropy then annotations must exist, as well as mutations on the tree",
+            "description": "Which panels should Auspice display?",
             "type": "array",
             "items": {
                 "type": "string",
                 "enum": ["tree", "map", "frequencies", "entropy"]
-                },
-            "uniqueItems": true
+            },
+            "uniqueItems": true,
+            "minItems": 1
         },
         "geo": {
-            "$comment": "These keys (simple strings) will appear in the geoResolution drop down\nTODO: these keys need to be present as attrs on the tree nodes",
+            "description": "The available options for the geographic resolution dropdown",
             "type": "object",
             "patternProperties": {
                 "^[a-z]*$": {
-                    "$comment": "These keys (simple strings incl _) are the countries / regions etc\nTODO: these keys must appear as values of the parent key attr on the tree nodes",
+                    "description": "The names of the geographic resolutions",
+                    "$comment": "E.g. country or region. These need to be present as keys in the attrs of the tree nodes",
                     "type": "object",
                     "patternProperties": {
                         "^[a-z_]*$": {
+                            "description": "The values (of the demes) for this geographic resolutions",
+                            "$comment": "E.g. Brazil, China etc. The tree nodes must contain these as values of the geographic resolution key",
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
-                                "latitude": {"$ref": "#/definitions/latlong"},
-                                "longitude": {"$ref": "#/definitions/latlong"}
+                                "latitude": {
+                                    "type": "number",
+                                    "minimum": -180,
+                                    "maximum": 180
+                                },
+                                "longitude": {
+                                    "type": "number",
+                                    "minimum": -180,
+                                    "maximum": 180
+                                }
                             }
                         }
                     }
@@ -94,17 +142,34 @@
             }
         },
         "color_options": {
-            "$comment": "These keys are the available colorBys for auspice\nTODO: The keys on geo must (should?) appear here",
+            "description": "Available colorBys for Auspice",
+            "$comment": "These properties need to be present as keys in the attrs of the tree nodes",
             "type": "object",
             "patternProperties": {
                 "^[a-z_]*$": {
+                    "description": "property name is the key used on the tree node attrs",
                     "type": "object",
                     "properties": {
-                        "key": {"type": "string"},
-                        "menuItem": {"type": "string"},
-                        "legendTitle": {"type": "string"},
-                        "type": {"type": "string"},
+                        "key": {
+                            "description": "???",
+                            "type": "string"
+                        },
+                        "menuItem": {
+                            "description": "Text to be displayed in the \"color by\" dropdown menu",
+                            "type": "string"
+                        },
+                        "legendTitle": {
+                            "description": "Text to be displayed in the \"color by\" tree menu",
+                            "type": "string"
+                        },
+                        "type": {
+                            "description": "Dictates how the color scale should be made",
+                            "type": "string",
+                            "enum": ["continuous", "discrete"]
+                        },
                         "color_map": {
+                            "description": "Links values to colors. Enforces a discrete scale, no matter what the \"type\" property is.",
+                            "$comment": "A greyscale ramp will be used for missing values (i.e. defined on the tree but not here)",
                             "type": "array",
                             "uniqueItems": true,
                             "items": {
@@ -112,25 +177,69 @@
                                 "additionalItems": false,
                                 "items": [
                                     {
-                                      "type": "string",
-                                      "pattern": "^[a-z_]+$"
+                                        "description": "value (tree nodes -> attrs -> propertyName)",
+                                        "type": "string",
+                                        "pattern": "^[0-9A-Za-z_-]+$"
                                     },
                                     {
-                                      "type": "string",
-                                      "pattern": "^#[0-9A-F]{6}$"
+                                        "description": "color hex value",
+                                        "type": "string",
+                                        "pattern": "^#[0-9A-Fa-f]{6}$"
                                     }
                                 ]
                             }
-
                         }
                     }
                 }
-
-
+            }
+        },
+        "defaults": {
+            "description": "Set the defaults for certain display options in Auspice. All are optional.",
+            "type": "object",
+            "properties": {
+                "geoResolution": {
+                    "description": "Default geographic resolution",
+                    "$comment": "The value here must be present in the geo object (see above)",
+                    "type": "string"
+                },
+                "colorBy": {
+                    "description": "Default color by",
+                    "$comment": "The value here must be present in the color_options object (see above)",
+                    "type": "string"
+                },
+                "distanceMeasure": {
+                    "description": "Default tree metric",
+                    "type": "string",
+                    "enum": ["div", "num_date"]
+                },
+                "mapTriplicate": {
+                    "description": "Should the map be extended / wrapped around. Useful if transmissions are worldwide.",
+                    "type": "boolean"
+                }
+            }
+        },
+        "commit": {
+            "description": "Augur commit used to prepare these JSONs",
+            "$comment": "DEPRECATED. Will be replaced with version in 0.1",
+            "type": "string"
+        },
+        "controls": {
+            "$comment": "DEPRECATED"
+        },
+        "seq_author_map": {
+            "$comment": "DEPRECATED"
+        },
+        "vaccine_choices": {
+            "description": "Vaccine strains displayed in Auspice",
+            "type": "object",
+            "patternProperties": {
+                "^.+$": {
+                    "description": "Strain names",
+                    "$comment": "must exist as a strain name on the tree. Currently the value is unused.",
+                    "type": "string",
+                    "pattern": "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$"
+                }
             }
         }
-
-
     }
-
 }
