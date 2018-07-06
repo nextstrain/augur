@@ -268,9 +268,6 @@ def run(args):
     end = time.time()
     print("Building original tree took {} seconds".format(str(end-start)))
 
-    if is_vcf and not args.keep_vcf_fasta:
-        os.remove(variable_fasta)
-
     if T:
         import json
         tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')

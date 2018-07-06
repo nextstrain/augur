@@ -66,8 +66,6 @@ if __name__=="__main__":
     tree_parser.add_argument('--nthreads', type=int, default=2,
                              help="number of threads used")
     tree_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    tree_parser.add_argument('--keep-vcf-fasta', action="store_true", help='do not delete informative-site fasta created when '
-                             'making tree from VCF input')
     tree_parser.add_argument('--exclude-sites', type=str, help='file name of sites to exclude for raw tree building (VCF only)')
     tree_parser.set_defaults(func=tree.run)
 

@@ -63,7 +63,7 @@ rule tree:
     params:
         method = 'iqtree'
     shell:
-        'augur tree --keep-vcf-fasta --exclude-sites {input.sites} --alignment {input.aln} --vcf-reference {input.ref} --output {output} --method {params.method}'
+        'augur tree --exclude-sites {input.sites} --alignment {input.aln} --vcf-reference {input.ref} --output {output} --method {params.method}'
 
 rule refine:
     input:
