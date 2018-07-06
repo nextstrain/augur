@@ -94,6 +94,25 @@ class TestKdeFrequencies(object):
         assert not any([node.clade in frequencies["global"]
                         for node in tree.get_nonterminals()])
 
+    def test_censored_frequencies(self, tree):
+        """Test estimation of frequencies where tips sampled beyond a given date are censored from the calculations.
+        """
+        max_date = 2017.0
+        kde_frequencies = KdeFrequencies(
+            max_date=max_date
+        )
+        frequencies = kde_frequencies.estimate(tree)
+
+        # Confirm that tips sampled after the max date have zero frequencies.
+        assert all([frequencies["global"][tip.clade].sum() == 0
+                    for tip in tree.get_terminals()
+                    if tip.attr["num_date"] > max_date])
+
+        # Confirm that one or more tips sampled before the max date have nonzero frequencies.
+        assert any([frequencies["global"][tip.clade].sum() > 0
+                    for tip in tree.get_terminals()
+                    if tip.attr["num_date"] <= max_date])
+
     def test_export_with_frequencies(self, tree, tmpdir):
         """Test frequencies export to JSON when frequencies have been estimated.
         """
