@@ -597,12 +597,15 @@ class KdeFrequencies(object):
         Returns:
             KdeFrequencies
         """
-        self.pivots = pivots
         self.sigma_narrow = sigma_narrow
         self.sigma_wide = sigma_wide
         self.proportion_wide = proportion_wide
-        self.regions = regions
+        self.pivot_count = pivot_count
+        self.pivot_frequency = pivot_frequency
         self.weights = weights
+        self.weights_attribute = weights_attribute
+        self.max_date = max_date
+        self.include_internal_nodes = include_internal_nodes
 
     @classmethod
     def from_json(cls, tree, json_dict):
