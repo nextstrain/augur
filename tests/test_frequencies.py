@@ -78,3 +78,18 @@ class TestKdeFrequencies(object):
             frequencies["global"][1],
             unweighted_frequencies["global"][1]
         )
+
+    def test_only_tip_estimates(self, tree):
+        """Test frequency estimation for only tips in a given tree.
+        """
+        kde_frequencies = KdeFrequencies(
+            include_internal_nodes=False
+        )
+        frequencies = kde_frequencies.estimate(tree)
+
+        # Verify that all tips have frequency estimates and none of the internal nodes do.
+        assert all([tip.clade in frequencies["global"]
+                    for tip in tree.get_terminals()])
+
+        assert not any([node.clade in frequencies["global"]
+                        for node in tree.get_nonterminals()])

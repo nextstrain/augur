@@ -755,10 +755,11 @@ class KdeFrequencies(object):
         for clade in clades:
             clade_frequencies["global"][clade] = normalized_freq_matrix[clade_to_index[clade]]
 
-        for node in tree.find_clades(order="postorder"):
-            if not node.is_terminal():
-                clade_frequencies["global"][node.clade] = np.array([clade_frequencies["global"][child.clade]
-                                                                for child in node.clades]).sum(axis=0)
+        if self.include_internal_nodes:
+            for node in tree.find_clades(order="postorder"):
+                if not node.is_terminal():
+                    clade_frequencies["global"][node.clade] = np.array([clade_frequencies["global"][child.clade]
+                                                                        for child in node.clades]).sum(axis=0)
 
         return clade_frequencies
 
@@ -812,7 +813,7 @@ class KdeFrequencies(object):
                 for weight_key in weight_keys:
                     if not node.clade in clade_frequencies[weight_key]:
                         clade_frequencies[weight_key][node.clade] = np.zeros_like(self.pivots)
-            else:
+            elif self.include_internal_nodes:
                 clade_frequencies["global"][node.clade] = np.array(
                     [clade_frequencies["global"][child.clade] for child in node.clades]
                 ).sum(axis=0)
@@ -820,6 +821,9 @@ class KdeFrequencies(object):
                     clade_frequencies[weight_key][node.clade] = np.array(
                         [clade_frequencies[weight_key][child.clade] for child in node.clades]
                     ).sum(axis=0)
+            else:
+                # Exclude internal nodes.
+                pass
 
         return clade_frequencies
 
