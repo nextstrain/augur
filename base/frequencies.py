@@ -577,7 +577,7 @@ class KdeFrequencies(object):
     density estimate across discrete time points from these tip observations for
     each clade in the tree.
     """
-    def __init__(self, sigma_narrow=1 / 12.0, sigma_wide=3 / 12.0, proportion_wide=0.2, pivot_count=None,
+    def __init__(self, sigma_narrow=1 / 12.0, sigma_wide=3 / 12.0, proportion_wide=0.2,
                  pivot_frequency=None, weights=None, weights_attribute=None, max_date=None,
                  include_internal_nodes=True):
         """Define parameters for KDE-based frequency estimation.
@@ -586,7 +586,6 @@ class KdeFrequencies(object):
             sigma_narrow (float): Bandwidth for first of two Gaussians composing the KDEs
             sigma_wide (float): Bandwidth for second of two Gaussians composing the KDEs
             proportion_wide (float): Proportion of the second Gaussian to include in each KDE
-            pivot_count (int): Number of pivots to create in the given tree timespan
             pivot_frequency (float): Frequency at which pivots should occur in fractions of a year
             weights (dict): Numerical weights indexed by attribute values and applied to individual tips
             weights_attribute (str): Attribute annotated on tips of a tree to use for weighting
@@ -600,7 +599,6 @@ class KdeFrequencies(object):
         self.sigma_narrow = sigma_narrow
         self.sigma_wide = sigma_wide
         self.proportion_wide = proportion_wide
-        self.pivot_count = pivot_count
         self.pivot_frequency = pivot_frequency
         self.weights = weights
         self.weights_attribute = weights_attribute
