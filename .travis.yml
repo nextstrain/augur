@@ -1,0 +1,13 @@
+language: python
+sudo: required
+python:
+  - "3.6"
+before_install:
+  - sudo apt-get -y update
+  - sudo apt-get install -y mafft
+  - sudo apt-get install -y fasttree
+install:
+  - pip3 install --process-dependency-links .
+script:
+  - cd tests/zika
+  - snakemake
