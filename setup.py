@@ -18,6 +18,7 @@ setup(
             "boto >=2.38, ==2.*",
             "cvxopt >=1.1.8, ==1.1.*",
             "ipdb >=0.10.1",
+            "jsonschema ==3.0.0a1",
             "matplotlib >=2.0, ==2.*",
             "pandas >=0.17.1",
             "pytest >=3.2.1, ==3.*",
@@ -28,7 +29,7 @@ setup(
         ],
         dependency_links = [
             "https://api.github.com/repos/neherlab/treetime/tarball/v0.4.1#egg=treetime-0.4.1",
-            "git+https://github.com/Julian/jsonschema@9632422aa90cb1fbfbbb141954ef6d06437b0801#egg=jsonschema-3.0.0a1"
+            "git+https://github.com/Julian/jsonschema.git@9632422aa90cb1fbfbbb141954ef6d06437b0801#egg=jsonschema-3.0.0a1"
         ],
         classifiers=[
             "Development Status :: 3 - Alpha",
