@@ -65,6 +65,7 @@ class TestKdeFrequencies(object):
         frequencies = kde_frequencies.estimate(tree)
         assert "global" in frequencies
         assert hasattr(kde_frequencies, "pivots")
+        assert np.around(kde_frequencies.pivots[1] - kde_frequencies.pivots[0], 2) == np.around(1 / 12.0, 2)
         assert hasattr(kde_frequencies, "frequencies")
         assert frequencies["global"].values()[0].shape == kde_frequencies.pivots.shape
 

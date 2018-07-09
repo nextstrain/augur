@@ -578,7 +578,7 @@ class KdeFrequencies(object):
     each clade in the tree.
     """
     def __init__(self, sigma_narrow=1 / 12.0, sigma_wide=3 / 12.0, proportion_wide=0.2,
-                 pivot_frequency=None, start_date=None, end_date=None, weights=None, weights_attribute=None,
+                 pivot_frequency=1 / 12.0, start_date=None, end_date=None, weights=None, weights_attribute=None,
                  max_date=None, include_internal_nodes=True):
         """Define parameters for KDE-based frequency estimation.
 
