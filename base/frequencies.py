@@ -778,7 +778,8 @@ class KdeFrequencies(object):
             normalize_to=1.0,
             sigma_narrow=self.sigma_narrow,
             sigma_wide=self.sigma_wide,
-            proportion_wide=self.proportion_wide
+            proportion_wide=self.proportion_wide,
+            max_date=self.max_date
         )
 
         for clade in clades:
@@ -821,7 +822,8 @@ class KdeFrequencies(object):
                 normalize_to=proportion,
                 sigma_narrow=self.sigma_narrow,
                 sigma_wide=self.sigma_wide,
-                proportion_wide=self.proportion_wide
+                proportion_wide=self.proportion_wide,
+                max_date=self.max_date
             )
             normalized_freq_matrix_regional = self.estimate_frequencies(
                 tip_dates,
@@ -829,7 +831,8 @@ class KdeFrequencies(object):
                 normalize_to=1.0,
                 sigma_narrow=self.sigma_narrow,
                 sigma_wide=self.sigma_wide,
-                proportion_wide=self.proportion_wide
+                proportion_wide=self.proportion_wide,
+                max_date=self.max_date
             )
 
             for clade in clades:
