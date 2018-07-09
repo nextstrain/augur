@@ -177,9 +177,21 @@ def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
     #IF FIND STANDARDIZED DRM FILE FORMAT, IMPLEMENT HERE
     strip_pos = []
     if stripFile:
-        with open(stripFile, 'r') as ifile:
-            strip_pos = [int(line.strip()) for line in ifile]
+        if stripFile.lower().endswith('.bed'): #BED format file
+            import pandas as pd
+            bed = pd.read_csv(stripFile, sep='\t')
+            for index, row in bed.iterrows():
+                strip_pos.extend(list(range(row[1], row[2]+1)))
 
+        else: #site-per-line format or DRM-file format
+            with open(stripFile, 'r') as ifile:
+                line1 = ifile.readline()
+                if '\t' in line1: #DRM-file format
+                    strip_pos = [int(line.strip().split('\t')[1]) for line in ifile]
+                else: #site-per-line
+                    strip_pos.append(int(line1.strip())) #add back 1st line
+
+    strip_pos = np.unique(strip_pos)
     #Get sequence names
     seqNames = list(sequences.keys())
 
