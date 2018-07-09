@@ -36,13 +36,27 @@ def tree():
 class TestKdeFrequencies(object):
     """Tests KDE-based frequency estimation methods
     """
-    def test_calculate_pivots(self, tree):
+    def test_calculate_pivots_from_tree_only(self, tree):
         """Test pivot calculations.
         """
         pivot_frequency = 0.25
-        pivots = KdeFrequencies.calculate_pivots(tree, pivot_frequency)
+        pivots = KdeFrequencies.calculate_pivots(pivot_frequency, tree=tree)
         assert isinstance(pivots, np.ndarray)
         assert pivots[1] - pivots[0] == pivot_frequency
+
+    def test_calculate_pivots_from_start_and_end_date(self):
+        """
+        Test pivot calculation from a given start and end date instead of a given tree.
+        """
+        pivot_frequency = 0.25
+        start_date = 2015.5
+        end_date = 2018.5
+        pivots = KdeFrequencies.calculate_pivots(pivot_frequency, start_date=start_date, end_date=end_date)
+        assert isinstance(pivots, np.ndarray)
+        assert pivots[1] - pivots[0] == pivot_frequency
+        assert pivots[0] == start_date
+        assert pivots[-1] != end_date
+        assert pivots[-1] >= end_date - pivot_frequency
 
     def test_estimate(self, tree):
         """Test frequency estimation with default parameters.
@@ -51,6 +65,22 @@ class TestKdeFrequencies(object):
         frequencies = kde_frequencies.estimate(tree)
         assert "global" in frequencies
         assert hasattr(kde_frequencies, "pivots")
+        assert hasattr(kde_frequencies, "frequencies")
+        assert frequencies["global"].values()[0].shape == kde_frequencies.pivots.shape
+
+    def test_estimate_with_time_interval(self, tree):
+        """Test frequency estimation with a given time interval.
+        """
+        start_date = 2015.5
+        end_date = 2018.5
+        kde_frequencies = KdeFrequencies(
+            start_date=start_date,
+            end_date=end_date
+        )
+        frequencies = kde_frequencies.estimate(tree)
+        assert "global" in frequencies
+        assert hasattr(kde_frequencies, "pivots")
+        assert kde_frequencies.pivots[0] == start_date
         assert hasattr(kde_frequencies, "frequencies")
         assert frequencies["global"].values()[0].shape == kde_frequencies.pivots.shape
 
@@ -122,6 +152,8 @@ class TestKdeFrequencies(object):
 
         assert "params" in frequencies_json
         assert kde_frequencies.pivot_frequency == frequencies_json["params"]["pivot_frequency"]
+        assert kde_frequencies.start_date == frequencies_json["params"]["start_date"]
+        assert kde_frequencies.end_date == frequencies_json["params"]["end_date"]
         assert "data" in frequencies_json
         assert "pivots" in frequencies_json["data"]
         assert "frequencies" in frequencies_json["data"]
@@ -144,7 +176,12 @@ class TestKdeFrequencies(object):
     def test_import(self, tree, tmpdir):
         """Test import of frequencies JSON that was exported from a frequencies instance.
         """
-        kde_frequencies = KdeFrequencies()
+        start_date = 2015.5
+        end_date = 2018.5
+        kde_frequencies = KdeFrequencies(
+            start_date=start_date,
+            end_date=end_date
+        )
         frequencies = kde_frequencies.estimate(tree)
         frequencies_json = kde_frequencies.to_json()
 
