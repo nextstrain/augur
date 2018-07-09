@@ -1,0 +1,16 @@
+{
+    "description": "Details certain properties to be dynamically added to the (root of the) minimal schema by validate.py",
+    "meta": {
+        "additionalProperties": false,
+        "required": [
+            "title",
+            "updated",
+            "virus_count",
+            "author_info",
+            "annotations",
+            "maintainer",
+            "color_options",
+            "panels"
+        ]
+    }
+}

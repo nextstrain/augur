@@ -2,6 +2,7 @@
 import sys
 from augur import parse, filter, align, tree, refine, ancestral
 from augur import traits, translate, mask, titers, export
+from augur import validate
 
 if __name__=="__main__":
     import argparse
@@ -155,6 +156,11 @@ if __name__=="__main__":
                         help="JSON file name that is passed on to auspice (e.g., zika_meta.json)")
     export_parser.set_defaults(func=export.run)
 
+    ## VALIDATE.PY
+    validate_parser = subparsers.add_parser('validate', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    validate_parser.add_argument('--json', required=True, nargs='+', help="JSONs to validate")
+    validate_parser.set_defaults(func=validate.run)
 
     args = parser.parse_args()
     return_code = args.func(args)
+    sys.exit(return_code)
