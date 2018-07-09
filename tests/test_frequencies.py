@@ -144,7 +144,7 @@ class TestKdeFrequencies(object):
                     for tip in tree.get_terminals()
                     if tip.attr["num_date"] <= max_date])
 
-    def test_export_with_frequencies(self, tree, tmpdir):
+    def test_export_with_frequencies(self, tree):
         """Test frequencies export to JSON when frequencies have been estimated.
         """
         kde_frequencies = KdeFrequencies()
@@ -159,10 +159,6 @@ class TestKdeFrequencies(object):
         assert "pivots" in frequencies_json["data"]
         assert "frequencies" in frequencies_json["data"]
         assert "global" in frequencies_json["data"]["frequencies"]
-
-        # Try to dump exported JSON to disk.
-        fh = tmpdir.mkdir("json").join("frequencies.json")
-        json.dump(frequencies_json, fh)
 
     def test_export_without_frequencies(self):
         """Test frequencies export to JSON when frequencies have *not* been estimated.
