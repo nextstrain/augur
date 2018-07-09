@@ -113,6 +113,7 @@ class TestKdeFrequencies(object):
     def test_only_tip_estimates(self, tree):
         """Test frequency estimation for only tips in a given tree.
         """
+        # Estimate unweighted frequencies.
         kde_frequencies = KdeFrequencies(
             include_internal_nodes=False
         )
@@ -124,6 +125,24 @@ class TestKdeFrequencies(object):
 
         assert not any([node.clade in frequencies["global"]
                         for node in tree.get_nonterminals()])
+
+        # Estimate weighted frequencies.
+        weights = {region[0]: region[1] for region in REGIONS}
+        kde_frequencies = KdeFrequencies(
+            weights=weights,
+            weights_attribute="region",
+            include_internal_nodes=False
+        )
+        frequencies = kde_frequencies.estimate(tree)
+
+        # Verify that all tips have frequency estimates and none of the internal nodes do.
+        assert all([tip.clade in frequencies["global"]
+                    for tip in tree.get_terminals()])
+
+        assert not any([node.clade in frequencies["global"]
+                        for node in tree.get_nonterminals()])
+
+
 
     def test_censored_frequencies(self, tree):
         """Test estimation of frequencies where tips sampled beyond a given date are censored from the calculations.
