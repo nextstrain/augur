@@ -206,17 +206,36 @@ class process(object):
         # for name, msa in self.seqs.translations.iteritems():
         #     SeqIO.write(msa, self.output_path + "_aligned_" + name + ".mfa", "fasta")
 
+    def get_time_interval_as_floats(self):
+        """
+        Converts the current process's datetime interval to start and end floats.
+
+        Returns None values if the `info` attribute has no "time_interval" key defined.
+
+        Returns:
+            start_date (float): the start of the current process's time interval
+            end_date (float): the end of the current process's time interval
+        """
+        try:
+            time_interval = self.info["time_interval"]
+            start_date = time_interval[1].year + (time_interval[1].month - 1) / 12.0
+            end_date = time_interval[0].year + time_interval[0].month / 12.0
+        except KeyError:
+            self.log.fatal("Cannot space pivots without a time interval in the prepared JSON")
+            start_date = None
+            end_date = None
+
+        return start_date, end_date
 
     def get_pivots_via_spacing(self):
         try:
-            time_interval = self.info["time_interval"]
             assert("pivot_spacing" in self.config)
         except AssertionError:
-            self.log.fatal("Cannot space pivots without prividing \"pivot_spacing\" in the config")
-        except KeyError:
-            self.log.fatal("Cannot space pivots without a time interval in the prepared JSON")
-        return np.arange(time_interval[1].year+(time_interval[1].month-1)/12.0,
-                         time_interval[0].year+time_interval[0].month/12.0,
+            self.log.fatal("Cannot space pivots without providing \"pivot_spacing\" in the config")
+
+        start_date, end_date = self.get_time_interval_as_floats()
+        return np.arange(start_date,
+                         end_date,
                          self.config["pivot_spacing"])
 
     def restore_mutation_frequencies(self):
