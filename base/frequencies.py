@@ -578,8 +578,8 @@ class KdeFrequencies(object):
     each clade in the tree.
     """
     def __init__(self, sigma_narrow=1 / 12.0, sigma_wide=3 / 12.0, proportion_wide=0.2,
-                 pivot_frequency=None, weights=None, weights_attribute=None, max_date=None,
-                 include_internal_nodes=True):
+                 pivot_frequency=None, start_date=None, end_date=None, weights=None, weights_attribute=None,
+                 max_date=None, include_internal_nodes=True):
         """Define parameters for KDE-based frequency estimation.
 
         Args:
@@ -587,6 +587,8 @@ class KdeFrequencies(object):
             sigma_wide (float): Bandwidth for second of two Gaussians composing the KDEs
             proportion_wide (float): Proportion of the second Gaussian to include in each KDE
             pivot_frequency (float): Frequency at which pivots should occur in fractions of a year
+            start_date (float): start of the pivots interval
+            end_date (float): end of the pivots interval
             weights (dict): Numerical weights indexed by attribute values and applied to individual tips
             weights_attribute (str): Attribute annotated on tips of a tree to use for weighting
             max_date (float): Maximum year beyond which tips are excluded from frequency estimation and are assigned
@@ -600,6 +602,8 @@ class KdeFrequencies(object):
         self.sigma_wide = sigma_wide
         self.proportion_wide = proportion_wide
         self.pivot_frequency = pivot_frequency
+        self.start_date = start_date
+        self.end_date = end_date
         self.weights = weights
         self.weights_attribute = weights_attribute
         self.max_date = max_date
@@ -632,6 +636,8 @@ class KdeFrequencies(object):
                 "sigma_wide": self.sigma_wide,
                 "proportion_wide": self.proportion_wide,
                 "pivot_frequency": self.pivot_frequency,
+                "start_date": self.start_date,
+                "end_date": self.end_date,
                 "weights": self.weights,
                 "weights_attribute": self.weights_attribute,
                 "max_date": self.max_date,
@@ -657,23 +663,34 @@ class KdeFrequencies(object):
         return frequencies_json
 
     @classmethod
-    def calculate_pivots(cls, tree, pivot_frequency):
+    def calculate_pivots(cls, pivot_frequency, tree=None, start_date=None, end_date=None):
         """
-        Calculate pivots for a given tree and pivot frequency.
+        Calculate pivots for a given pivot frequency and either a tree or a start and end date.
 
-        The start and end interval for these pivots is determined by the earliest and latest strain date in the tree.
+        If a tree is given, the start and end interval for these pivots is determined by the earliest and latest strain
+        date in the tree.
+
+        If a start and end date are given, those values determine the range of the pivots. These values and the tree
+        are mutually exclusive. If all arguments are provided, the start and end dates will be preferred over the tree.
 
         Args:
-            tree (Bio.Phylo): an annotated tree
             pivot_frequency (float): frequency pivots should occur by fraction of a year
+            tree (Bio.Phylo): an annotated tree
+            start_date (float): start of the pivots interval
+            end_date (float): end of the pivots interval
 
         Returns:
             pivots (numpy array): pivots spanning the given the dates represented by the tree's tips
         """
-        # Determine pivot start and end dates from the range of tip dates in the given tree.
-        tip_dates = [tip.attr["num_date"] for tip in tree.get_terminals()]
-        pivot_start = min(tip_dates)  # type: float
-        pivot_end = max(tip_dates)    # type: float
+        if start_date is None or end_date is None:
+            # Determine pivot start and end dates from the range of tip dates in the given tree.
+            tip_dates = [tip.attr["num_date"] for tip in tree.get_terminals()]
+            pivot_start = min(tip_dates)  # type: float
+            pivot_end = max(tip_dates)    # type: float
+        else:
+            # Use the explicitly provided start and end dates.
+            pivot_start = start_date
+            pivot_end = end_date
 
         return np.arange(
             pivot_start,
@@ -850,7 +867,12 @@ class KdeFrequencies(object):
             frequencies (dict): node frequencies by region
         """
         # Calculate pivots for the given tree.
-        self.pivots = self.calculate_pivots(tree, self.pivot_frequency)
+        self.pivots = self.calculate_pivots(
+            self.pivot_frequency,
+            tree=tree,
+            start_date=self.start_date,
+            end_date=self.end_date
+        )
 
         if self.weights is None:
             # Estimate unweighted frequencies for the given tree.
