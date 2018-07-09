@@ -1,24 +1,40 @@
 {
     "type" : "object",
     "$schema": "http://json-schema.org/draft-06/schema#",
-    "version": "0.1",
-    "title": "Nextstrain minimal metadata JSON schema",
-    "description": "This is the validation schema for the augur produced metadata JSON, for consumption in Auspice. Note that every field is optional, but excluding fields may disable certain features in Auspice.",
-    "additionalProperties": true,
+    "version": "2.0",
+    "title": "Nextstrain metadata JSON schema proposal",
+    "additionalProperties": false,
+    "required": ["version", "title", "updated", "maintainers", "panels"],
     "properties" : {
+        "version" : {
+            "description": "JSON schema version",
+            "type" : "string",
+            "pattern": "^[0-9]+[.][0-9]+$"
+        },
         "title" : {
             "description": "Auspice displays this at the top of the page",
             "type" : "string"
         },
         "updated" : {
-            "description": "Auspice displays this in the footer",
-            "type" : "string"
+            "description": "Auspice displays this (currently only in the footer)",
+            "type" : "string",
+            "pattern": "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$"
         },
-        "virus_count" : {
-            "description": "Auspice uses this in the header info text and the status page. Should be renamed or deprecated for version 1.0",
-            "type" : "number"
+        "maintainers": {
+            "description": "Who maintains this dataset?",
+            "$comment": "order similar to a publication",
+            "type": "array",
+            "uniqueItems": true,
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "href": {"type": "string"}
+                }
+            }
         },
-        "author_info": {
+        "authorInfo": {
             "description": "Used to display information about terminal nodes & for filtering by author (if \"authors\" is in \"filters\", see below)",
             "$comment": "Each key is typically an author name, e.g. \"Black et al\", and must exist in the attrs object of at least one terminal node of the tree",
             "type": "object",
@@ -27,12 +43,8 @@
                 "^.+$": {
                     "type": "object",
                     "additionalProperties": false,
-                    "$comment": "in the future these properties may be required",
+                    "$comment": "Unknown properties should simply be excluded",
                     "properties": {
-                        "n": {
-                            "description": "Number of sequences / samples associated with this publication",
-                            "type": "number"
-                        },
                         "title": {
                             "description": "Publication title",
                             "type": "string"
@@ -41,19 +53,16 @@
                             "description": "Journal title",
                             "type": "string"
                         },
-                        "paper_url": {
-                            "description": "URL link to paper or NCBI genome. Use \"?\" if unknown",
+                        "href": {
+                            "description": "URL link to paper or NCBI genome.",
                             "type": "string",
-                            "oneOf": [
-                                {"pattern": "^https?://.+$"},
-                                {"enum": ["?"]}
-                            ]
+                            "pattern": "^https?://.+$"
                         }
                     }
                 }
             }
         },
-        "annotations": {
+        "genomeAnnotations": {
             "description": "Genome annotations (e.g. genes), relative to the reference genome",
             "$comment": "Required for the entropy panel",
             "type": "object",
@@ -62,6 +71,7 @@
             "properties": {
                 "nuc": {
                     "type": "object",
+                    "$comment": "I imagine this can get more complex at some point",
                     "properties": {
                         "start": {
                             "description": "Gene start position (one-based)",
@@ -73,6 +83,7 @@
                         },
                         "strand": {
                             "description": "Positive or negative strand",
+                            "$comment": "not yet used by Auspice",
                             "type": "number",
                             "enum": [-1, 1]
                         }
@@ -83,29 +94,16 @@
                 "^[a-zA-Z0-9]+$": {"$ref": "#/properties/annotations/properties/nuc"}
             }
         },
-        "maintainer": {
-            "description": "Auspice displays the maintainer in the footer",
-            "type": "array",
-            "items": [
-                {
-                    "type": "string",
-                    "description": "Text displayed in the browser"
-                },
-                {
-                    "type": "string",
-                    "description": "href for the text. E.g. mailto:, twitter link, lab website"
-                }
-            ]
-        },
         "filters": {
             "description": "These appear as filters in the footer of Auspice (which populates the displayed values based upon the tree)",
-            "$comment": "These values must be present as keys on the attr of nodes on the tree",
+            "$comment": "These values must be present as keys on a tree node -> trait",
             "type": "array",
             "uniqueItems": true,
             "items": {"type": "string"}
         },
         "panels": {
             "description": "Which panels should Auspice display?",
+            "$comment": "If additional JSONs are required (e.g. for frequencies), they will be fetched after parsing this array",
             "type": "array",
             "items": {
                 "type": "string",
@@ -114,18 +112,20 @@
             "uniqueItems": true,
             "minItems": 1
         },
-        "geo": {
-            "description": "The available options for the geographic resolution dropdown",
+        "geographicInfo": {
+            "description": "The available options for the geographic resolution dropdown, and their lat/long information",
+            "$comment": "Properties here specify the values of the geographic resolution dropdown in Auspice. They must be specified on the tree via node -> traits -> X",
             "type": "object",
+            "additionalProperties": false,
             "patternProperties": {
-                "^[a-z]*$": {
-                    "description": "The names of the geographic resolutions",
-                    "$comment": "E.g. country or region. These need to be present as keys in the attrs of the tree nodes",
+                "^[a-z]+$": {
+                    "description": "The deme names & lat/long info for this geographic resolution",
+                    "$comment": "Each value defined across the tree needs to be present here, else Auspice cannot display the deme appropriately",
                     "type": "object",
                     "patternProperties": {
-                        "^[a-z_]*$": {
-                            "description": "The values (of the demes) for this geographic resolutions",
-                            "$comment": "E.g. Brazil, China etc. The tree nodes must contain these as values of the geographic resolution key",
+                        "^[a-z_]+$": {
+                            "description": "Lat/long info for this deme",
+                            "$comment": "one day this may define a shape / polygon",
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
@@ -145,61 +145,62 @@
                 }
             }
         },
-        "color_options": {
+        "colorBys": {
             "description": "Available colorBys for Auspice",
-            "$comment": "These properties need to be present as keys in the attrs of the tree nodes",
+            "$comment": "The property names are found on node->traits, where the value there defines the deme for that node",
+            "$comment": "There are a few exceptions - a property of 'numDate', 'gt' (genotype) or 'authors' are interpreted differently by Auspice as they are defined on the node itself, not node->traits",
+            "$comment": "Property strings are not themselves displayed in auspice.",
             "type": "object",
             "additionalProperties": false,
             "patternProperties": {
-                "^[A-Za-z_]*$": {
-                    "description": "property name is the key used on the tree node attrs",
+                "^[A-Za-z_-]+$": {
                     "type": "object",
+                    "required": ["title", "type"],
                     "properties": {
-                        "key": {
-                            "description": "???",
-                            "type": "string"
-                        },
-                        "menuItem": {
-                            "description": "Text to be displayed in the \"color by\" dropdown menu",
-                            "type": "string"
-                        },
-                        "legendTitle": {
-                            "description": "Text to be displayed in the \"color by\" tree menu",
+                        "title": {
+                            "description": "Text to be displayed in the \"color by\" dropdown and the tree legend",
+                            "$comment": "string is parsed unchanged by Auspice",
                             "type": "string"
                         },
                         "type": {
-                            "description": "Dictates how the color scale should be made",
+                            "description": "Dictates how the color scale should be constructed",
                             "type": "string",
-                            "enum": ["continuous", "discrete"]
+                            "enum": ["continuous", "discrete", "ordinal"]
                         },
-                        "color_map": {
-                            "description": "Links values to colors. Enforces a discrete scale, no matter what the \"type\" property is.",
-                            "$comment": "A greyscale ramp will be used for missing values (i.e. defined on the tree but not here)",
+                        "domain": {
+                            "description": "Color scale domain",
+                            "$comment": "only used if type is continuous",
                             "type": "array",
-                            "uniqueItems": true,
-                            "items": {
-                                "type": "array",
-                                "additionalItems": false,
-                                "items": [
-                                    {
-                                        "description": "value (tree nodes -> attrs -> propertyName)",
-                                        "type": "string",
-                                        "pattern": "^[0-9A-Za-z_-]+$"
-                                    },
-                                    {
-                                        "description": "color hex value",
-                                        "type": "string",
-                                        "pattern": "^#[0-9A-Fa-f]{6}$"
-                                    }
-                                ]
+                            "items": [
+                                {"type": "number"},
+                                {"type": "number"}
+                            ]
+                        },
+                        "scale": {
+                            "description": "Color scale",
+                            "$comment": "We could accept strings such as 'viridis', 'rainbow' etc",
+                            "$comment": "or an array of hex values to construct a scale over"
+                        },
+                        "hexMap": {
+                            "description": "Links values to colors. Only used if \"type\" is ordinal or discrete.",
+                            "$comment": "A greyscale ramp will be used for missing values (i.e. defined on the tree but not here)",
+                            "$comment": "properties match tree nodes -> traits -> propertyName",
+                            "type": "object",
+                            "patternProperties": {
+                                "^[A-Za-z_-]+$": {
+                                    "description": "color hex value",
+                                    "type": "string",
+                                    "pattern": "^#[0-9A-Fa-f]{6}$"
+                                }
                             }
                         }
                     }
                 }
             }
         },
-        "defaults": {
+        "displayDefaults": {
             "description": "Set the defaults for certain display options in Auspice. All are optional.",
+            "$comment": "Anything able to be encoded in the auspice URL should be an option here, so this will expand over time",
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -221,29 +222,6 @@
                 "mapTriplicate": {
                     "description": "Should the map be extended / wrapped around. Useful if transmissions are worldwide.",
                     "type": "boolean"
-                }
-            }
-        },
-        "commit": {
-            "description": "Augur commit used to prepare these JSONs",
-            "$comment": "DEPRECATED. Will be replaced with version in 0.1",
-            "type": "string"
-        },
-        "controls": {
-            "$comment": "DEPRECATED"
-        },
-        "seq_author_map": {
-            "$comment": "DEPRECATED"
-        },
-        "vaccine_choices": {
-            "description": "Vaccine strains displayed in Auspice",
-            "type": "object",
-            "patternProperties": {
-                "^.+$": {
-                    "description": "Strain names",
-                    "$comment": "must exist as a strain name on the tree. Currently the value is unused.",
-                    "type": "string",
-                    "pattern": "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$"
                 }
             }
         }

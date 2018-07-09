@@ -1,156 +1,172 @@
 {
     "type" : "object",
     "$schema": "http://json-schema.org/draft-06/schema#",
-    "title": "Nextstrain tree JSON schema",
+    "title": "Nextstrain tree JSON schema proposal",
     "additionalProperties": false,
-    "required": ["attr", "strain"],
+    "required": ["strain"],
     "properties": {
-        "attr": {
-            "description": "Attributes / decorations on the nodes",
+        "strain": {
+            "description": "Strain name. Must be unique. No spaces",
+            "type": "string"
+        },
+        "div": {
+            "description": "Node (phylogenetic) divergence",
+            "$comment": "Cumulative (root = 0)",
+            "type": "number"
+        },
+        "numDate": {
+            "$comment": "Sample date in decimal format (e.g. 2012.1234)",
+            "$comment": "This is the only date information. We no longer have string dates.",
             "type": "object",
-            "additionalProperties": true,
-            "required": ["div", "num_date"],
+            "required": ["value"],
             "properties": {
-                "div": {
-                    "description": "Node (phylogenetic) divergence",
-                    "$comment": "Cumulative (root = 0)",
-                    "type": "number"
-                },
-                "num_date": {
-                    "description": "Node date",
-                    "$comment": "Year in decimal format",
-                    "type": "number"
-                },
-                "num_date_confidence": {
+                "value": {"type": "number"},
+                "confidence": {
                     "description": "Confidence of the node date",
                     "type": "array",
                     "items": [
                         {"type": "number"},
                         {"type": "number"}
                     ]
+                }
+            }
+        },
+        "vaccine": {
+            "description": "Vaccine information",
+            "$comment": "cc richard, trevor",
+            "properties": {
+                "serum": {
+                    "description": "strain used to raise sera (for ???)",
+                    "$comment": "Currently in the flu & dengue trees",
+                    "type": "boolean"
                 },
-                "date": {
-                    "description": "Node date",
-                    "$comment": "Is this used? Should only use this or num_date",
+                "selectionDate": {
+                    "description": "Vaccine selection date",
+                    "$comment": "this is currently in the metadata JSON",
                     "type": "string",
                     "pattern": "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$"
                 },
-                "clock_length": {
-                    "$comment": "DEPRECATED. Not used in auspice.",
-                    "type": "number"
+                "startDate": {
+                    "description": "Vaccine usage start date",
+                    "type": "string",
+                    "pattern": "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$"
                 },
-                "mutation_length": {
-                    "$comment": "DEPRECATED. Not used in auspice.",
-                    "type": "number"
-                },
-                "branch_length": {
-                    "$comment": "DEPRECATED. Not used in auspice.",
-                    "type": "number"
-                },
-                "url": {
-                    "description": "URL of the sequence (usually https://www.ncbi.nlm.nih.gov/nuccore/...)",
-                    "type": ["null", "string"]
-                },
-                "accession": {
-                    "description": "Genome accession",
-                    "oneOf": [
-                        {
-                            "type": "string",
-                            "pattern": "^[0-9A-Z]+$"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "authors": {
-                    "description": "Author lookup key for the relevant publication / credit",
-                    "$comment": "Should have a corresponding entry in the meta JSON author_info property",
-                    "type": ["null", "string"]
+                "endDate": {
+                    "description": "When the vaccine was stopped",
+                    "$comment": "if vaccine still in use, don't include this property",
+                    "type": "string",
+                    "pattern": "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$"
+                }
+            }
+        },
+        "labels": {
+            "description": "Node labels",
+            "$comment": "Auspice scans this to generate the branch labels dropdown",
+            "patternProperties": {
+                "^[a-zA-Z0-9]+$": {
+                    "$comment": "e.g. clade->3c3a",
+                    "$comment": "string is parsed unchanged by Auspice",
+                    "type": "string"
+                }
+            }
+        },
+        "hidden": {
+            "$comment": "If true, Auspice hides the branches from this node to it's children",
+            "type": "boolean"
+        },
+        "mutations": {
+            "description": "Mutations occuring between the parent and this node",
+            "$comment": "same numbering scheme as used by the meta.JSON -> annotations",
+            "$comment": "combining nuc + AAs parallels the metadata -> annotations structure",
+            "type": "object",
+            "properties":  {
+                "nuc": {
+                    "description": "nucelotide mutations",
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {"type": "string", "pattern": "^[ATCG-][0-9]+[ATCG-]$"},
+                        {"type": "string", "pattern": "^insertion [0-9]+-[0-9]+$", "$comment": "TODO unused by auspice"},
+                        {"type": "string", "pattern": "^deletion [0-9]+-[0-9]+$", "$comment": "TODO unused by auspice"}
+                      ]
+                    }
                 }
             },
             "patternProperties": {
-                "^.*_confidence$": {
-                    "description": "confidence values for trait",
-                    "$comment": "The trait must exist. This cannot be checked for in the JSON schema AFAIK",
-                    "oneOf": [
-                        {
-                            "description": "",
-                            "type": "object",
-                            "patternProperties": {
-                                "^.+$": {
-                                    "type": "number"
-                                }
-                            }
-                        },
-                        {
-                            "description": "",
-                            "type": "array",
-                            "items": [
-                                {"type": "number"},
-                                {"type": "number"}
-                            ]
-                        }
-                    ]
-                },
-                "^.*_entropy$": {
-                    "description": "",
-                    "type": "number"
-                }
-            }
-        },
-        "branch_length": {
-            "$comment": "DEPRECATED. Not used in auspice.",
-            "type": "number"
-        },
-        "strain": {
-            "description": "Strain name. Must be unique",
-            "type": "string"
-        },
-        "clade": {
-            "description": "Will be deprecated",
-            "type": ["string", "number"]
-        },
-        "tvalue": {
-            "$comment": "DEPRECATED. Not used in auspice.",
-            "type": ["null", "number"]
-        },
-        "yvalue": {
-            "$comment": "DEPRECATED. Not used in auspice.",
-            "type": ["null", "number"]
-        },
-        "xvalue": {
-            "$comment": "DEPRECATED. Not used in auspice.",
-            "type": ["null", "number"]
-        },
-        "serum": {
-            "description": "to do",
-            "$comment": "Used in dengue & flu trees",
-            "type": "boolean"
-        },
-        "muts": {
-            "description": "Nucleotide mutations occuring between the parent and this node",
-            "$comment": "same numbering scheme as used by the meta.JSON -> annotations",
-            "type": "array",
-            "items": {
-              "oneOf": [
-                {"type": "string", "pattern": "^[ATCG-][0-9]+[ATCG-]$"},
-                {"type": "string", "pattern": "^insertion [0-9]+-[0-9]+$", "$comment": "unused by auspice"},
-                {"type": "string", "pattern": "^deletion [0-9]+-[0-9]+$", "$comment": "unused by auspice"}
-              ]
-            }
-        },
-        "aa_muts": {
-            "description": "Amino-acid mutations (for each gene) occuring between the parent and this node",
-            "$comment": "properties (keys) must exist in the meta.JSON -> annotation object, and cannot be \"nuc\"",
-            "type": "object",
-            "additionalProperties": false,
-            "patternProperties": {
                 "^[a-zA-Z0-9]+$": {
-                    "description": "Mutations for this gene (or annotated region)",
+                    "description": "Amino acid mutations for this gene (or annotated region)",
+                    "$comment": "properties must exist in the meta.JSON -> annotation object",
                     "type": "array",
                     "items": {
                       "pattern": "^[A-Z*][0-9]+[A-Z*]$"
+                    }
+                }
+            }
+        },
+        "url": {
+            "description": "URL of the sequence (usually https://www.ncbi.nlm.nih.gov/nuccore/...)",
+            "$comment": "Obviously only for terminal nodes",
+            "$comment": "If not known/available, don't include this as a property of the node",
+            "type": "string",
+            "pattern": "^https?://.+$"
+        },
+        "authors": {
+            "description": "Author lookup key for the relevant publication / credit",
+            "$comment": "Must have a corresponding entry in the meta JSON author_info property",
+            "$comment": "Obviously only for terminal nodes",
+            "$comment": "If not known/available, don't include this as a property of the node",
+            "type": "string"
+        },
+        "accession": {
+            "description": "Sequence accession number",
+            "$comment": "Obviously only for terminal nodes",
+            "$comment": "If not known/available, don't include this as a property of the node",
+            "type": "string",
+            "pattern": "^[0-9A-Z]+$"
+        },
+        "traits": {
+            "description": "Inferred Attributes / traits decorations on the nodes",
+            "$comment": "dynamically created, i.e. we can't predict them",
+            "type": "object",
+            "patternProperties": {
+                "^.+$": {
+                    "description": "Inferred trait",
+                    "$comment": "property name is the trait name, e.g. country, cTiterSub, ...",
+                    "type": "object",
+                    "required": ["value"],
+                    "properties": {
+                        "value": {
+                            "type": ["string", "number"]
+                        },
+                        "confidence": {
+                            "description": "Confidence of the trait date",
+                            "$comment": "Should we use different keys for the two structures here?",
+                            "type": "array",
+                            "oneOf": [
+                                {
+                                    "type": "array",
+                                    "items": [
+                                        {"type": "number"},
+                                        {"type": "number"}
+                                    ]
+                                },
+                                {
+                                    "type": "object",
+                                    "$comment": "alternative possibilities & their confidence values",
+                                    "patternProperties": {
+                                        "^.+$": {
+                                            "type": "number",
+                                            "minimum": 0.0,
+                                            "maximum": 1.0
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "entropy": {
+                            "$comment": "Auspice uses this to control opacity of the color-by",
+                            "type": "number"
+                        }
                     }
                 }
             }
