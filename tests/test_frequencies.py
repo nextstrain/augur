@@ -5,8 +5,8 @@ import json
 import numpy as np
 import pytest
 
-from ..base.frequencies import KdeFrequencies
-from ..base.io_util import json_to_tree
+from base.frequencies import KdeFrequencies
+from base.io_util import json_to_tree
 
 # Define regions to use for testing weighted frequencies.
 REGIONS = [

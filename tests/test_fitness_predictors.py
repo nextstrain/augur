@@ -16,7 +16,7 @@ except ImportError:
 
 @pytest.fixture
 def fitness_predictor():
-    from ..base.fitness_predictors import fitness_predictors
+    from base.fitness_predictors import fitness_predictors
     return fitness_predictors(
         epitope_mask_version="wolf",
         tolerance_mask_version="ha1",
