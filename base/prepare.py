@@ -3,10 +3,10 @@ import argparse
 import sys, os
 import numpy as np
 from datetime import datetime
-from base.config import combine_configs
-from base.sequences_prepare import sequence_set
-from base.logger import logger
-from base.utils import generate_cmap, define_latitude_longitude
+from .config import combine_configs
+from .sequences_prepare import sequence_set
+from .logger import logger
+from .utils import generate_cmap, define_latitude_longitude
 # useful for debugging
 from pdb import set_trace
 from pprint import pprint

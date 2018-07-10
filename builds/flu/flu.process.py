@@ -9,7 +9,7 @@ from base.utils import fix_names
 from base.io_util import write_json
 from base.frequencies import KdeFrequencies
 from flu_titers import HI_model, HI_export, vaccine_distance
-from scores import calculate_sequence_scores, calculate_metadata_scores, calculate_phylogenetic_scores
+from base.scores import calculate_sequence_scores, calculate_metadata_scores, calculate_phylogenetic_scores
 from flu_info import clade_designations, lineage_to_epitope_mask, lineage_to_glyc_mask, resolution_to_pivot_spacing, vaccine_choices
 import argparse
 import numpy as np
@@ -542,13 +542,18 @@ if __name__=="__main__":
 
         # estimate KDE tip frequencies
         if runner.config["estimate_kde_frequencies"]:
-            runner.pivots = runner.get_pivots_via_spacing()
-            runner.kde_frequencies = KdeFrequencies.estimate_region_weighted_frequencies_for_tree(
-                runner.tree.tree,
-                runner.pivots,
-                [el[0] for el in runner.info["regions"]],
-                [el[2] for el in runner.info["regions"]]
+            start_date, end_date = runner.get_time_interval_as_floats()
+
+            kde_frequencies = KdeFrequencies(
+                pivot_frequency=runner.config["pivot_spacing"],
+                start_date=start_date,
+                end_date=end_date,
+                weights={region[0]: region[2] for region in runner.info["regions"]},
+                weights_attribute="region",
+                include_internal_nodes=False
             )
+            kde_frequencies.estimate(runner.tree.tree)
+            runner.kde_frequencies = kde_frequencies
 
         if runner.info["segment"]=='ha':
             if runner.info["lineage"]=='h3n2':

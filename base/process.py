@@ -2,19 +2,19 @@ from __future__ import division, print_function
 import argparse
 import sys, os, time, gzip, glob
 from collections import defaultdict
-from base.config import combine_configs
-from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
-from base.sequences_process import sequence_set
-from base.utils import num_date, save_as_nexus, parse_date
-from base.tree import tree
-from base.fitness_model import fitness_model
-from base.frequencies import alignment_frequencies, tree_frequencies, make_pivots
-from base.auspice_export import export_metadata_json, export_frequency_json, export_tip_frequency_json
+from .config import combine_configs
+from .io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
+from .sequences_process import sequence_set
+from .utils import num_date, save_as_nexus, parse_date
+from .tree import tree
+from .fitness_model import fitness_model
+from .frequencies import alignment_frequencies, tree_frequencies, make_pivots
+from .auspice_export import export_metadata_json, export_frequency_json, export_tip_frequency_json
 import numpy as np
 from datetime import datetime
 import json
 from pdb import set_trace
-from base.logger import logger
+from .logger import logger
 from Bio import SeqIO
 from Bio import AlignIO
 import cPickle as pickle
@@ -206,17 +206,36 @@ class process(object):
         # for name, msa in self.seqs.translations.iteritems():
         #     SeqIO.write(msa, self.output_path + "_aligned_" + name + ".mfa", "fasta")
 
+    def get_time_interval_as_floats(self):
+        """
+        Converts the current process's datetime interval to start and end floats.
+
+        Returns None values if the `info` attribute has no "time_interval" key defined.
+
+        Returns:
+            start_date (float): the start of the current process's time interval
+            end_date (float): the end of the current process's time interval
+        """
+        try:
+            time_interval = self.info["time_interval"]
+            start_date = time_interval[1].year + (time_interval[1].month - 1) / 12.0
+            end_date = time_interval[0].year + time_interval[0].month / 12.0
+        except KeyError:
+            self.log.fatal("Cannot space pivots without a time interval in the prepared JSON")
+            start_date = None
+            end_date = None
+
+        return start_date, end_date
 
     def get_pivots_via_spacing(self):
         try:
-            time_interval = self.info["time_interval"]
             assert("pivot_spacing" in self.config)
         except AssertionError:
-            self.log.fatal("Cannot space pivots without prividing \"pivot_spacing\" in the config")
-        except KeyError:
-            self.log.fatal("Cannot space pivots without a time interval in the prepared JSON")
-        return np.arange(time_interval[1].year+(time_interval[1].month-1)/12.0,
-                         time_interval[0].year+time_interval[0].month/12.0,
+            self.log.fatal("Cannot space pivots without providing \"pivot_spacing\" in the config")
+
+        start_date, end_date = self.get_time_interval_as_floats()
+        return np.arange(start_date,
+                         end_date,
                          self.config["pivot_spacing"])
 
     def restore_mutation_frequencies(self):

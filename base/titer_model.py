@@ -4,7 +4,7 @@ import logging
 import numpy as np
 import time
 from collections import defaultdict
-from base.io_util import myopen
+from .io_util import myopen
 from itertools import izip
 import pandas as pd
 from pprint import pprint
