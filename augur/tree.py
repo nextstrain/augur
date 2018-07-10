@@ -188,6 +188,7 @@ def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
                 if '\t' in line1: #DRM-file format
                     strip_pos = [int(line.strip().split('\t')[1]) for line in ifile]
                 else: #site-per-line
+                    strip_pos = [int(line.strip()) for line in ifile]
                     strip_pos.append(int(line1.strip())) #add back 1st line
         strip_pos = np.unique(strip_pos)
     #Get sequence names
