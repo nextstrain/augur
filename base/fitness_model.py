@@ -178,7 +178,7 @@ class fitness_model(object):
         for node in self.nodes:
             tmp_tips = []
             if node.is_terminal():
-                tmp_tips.append((tip_index_region_specific, node.numdate))
+                tmp_tips.append((tip_index_region_specific, node.attr["num_date"]))
                 tip_index_region_specific += 1
 
             for child in node.clades:
