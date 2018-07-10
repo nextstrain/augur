@@ -3,7 +3,7 @@ parse, filter, subsample and save as JSON
 '''
 from __future__ import division, print_function
 import os, re, time, csv, sys
-from base.titer_model import TiterCollection
+from .titer_model import TiterCollection
 from io_util import myopen
 from collections import defaultdict
 from Bio import SeqIO
