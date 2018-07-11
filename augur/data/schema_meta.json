@@ -36,15 +36,21 @@
         },
         "authorInfo": {
             "description": "Used to display information about terminal nodes & for filtering by author (if \"authors\" is in \"filters\", see below)",
-            "$comment": "Each key is typically an author name, e.g. \"Black et al\", and must exist in the attrs object of at least one terminal node of the tree",
+            "$comment": "Keys are first authors last name + year of publication + first word of title, all in lowercase. E.g. \"white2015isolation\"",
+            "$comment": "Keys must exist in the attrs object of at least one terminal node of the tree",
             "type": "object",
             "additionalProperties": false,
             "patternProperties": {
-                "^.+$": {
+                "^[a-z-]+[0-9]{4}[a-z-]+$": {
                     "type": "object",
                     "additionalProperties": false,
                     "$comment": "Unknown properties should simply be excluded",
                     "properties": {
+                        "authors": {
+                            "description": "Authors",
+                            "$comment": "Case is respected by auspice",
+                            "type": "string"
+                        },
                         "title": {
                             "description": "Publication title",
                             "type": "string"

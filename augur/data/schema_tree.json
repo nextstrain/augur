@@ -113,9 +113,11 @@
         "authors": {
             "description": "Author lookup key for the relevant publication / credit",
             "$comment": "Must have a corresponding entry in the meta JSON author_info property",
-            "$comment": "Obviously only for terminal nodes",
+            "$comment": "Keys are first authors last name + year of publication + first word of title, all in lowercase. E.g. \"white2015isolation\"",
+            "$comment": "Only for terminal nodes",
             "$comment": "If not known/available, don't include this as a property of the node",
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-z-]+[0-9]{4}[a-z-]+$"
         },
         "accession": {
             "description": "Sequence accession number",
