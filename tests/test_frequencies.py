@@ -63,11 +63,10 @@ class TestKdeFrequencies(object):
         """
         kde_frequencies = KdeFrequencies()
         frequencies = kde_frequencies.estimate(tree)
-        assert "global" in frequencies
         assert hasattr(kde_frequencies, "pivots")
         assert np.around(kde_frequencies.pivots[1] - kde_frequencies.pivots[0], 2) == np.around(1 / 12.0, 2)
         assert hasattr(kde_frequencies, "frequencies")
-        assert frequencies["global"].values()[0].shape == kde_frequencies.pivots.shape
+        assert frequencies.values()[0].shape == kde_frequencies.pivots.shape
 
     def test_estimate_with_time_interval(self, tree):
         """Test frequency estimation with a given time interval.
@@ -79,11 +78,10 @@ class TestKdeFrequencies(object):
             end_date=end_date
         )
         frequencies = kde_frequencies.estimate(tree)
-        assert "global" in frequencies
         assert hasattr(kde_frequencies, "pivots")
         assert kde_frequencies.pivots[0] == start_date
         assert hasattr(kde_frequencies, "frequencies")
-        assert frequencies["global"].values()[0].shape == kde_frequencies.pivots.shape
+        assert frequencies.values()[0].shape == kde_frequencies.pivots.shape
 
     def test_weighted_estimate(self, tree):
         """Test frequency estimation with weighted tips.
@@ -95,10 +93,9 @@ class TestKdeFrequencies(object):
             weights_attribute="region"
         )
         frequencies = kde_frequencies.estimate(tree)
-        assert "global" in frequencies
         assert hasattr(kde_frequencies, "pivots")
         assert hasattr(kde_frequencies, "frequencies")
-        assert frequencies["global"].values()[0].shape == kde_frequencies.pivots.shape
+        assert frequencies.values()[0].shape == kde_frequencies.pivots.shape
 
         # Estimate unweighted frequencies to compare with weighted frequencies.
         unweighted_kde_frequencies = KdeFrequencies()
@@ -106,8 +103,8 @@ class TestKdeFrequencies(object):
 
         # The any non-root node of the tree should have different frequencies with or without weighting.
         assert not np.array_equal(
-            frequencies["global"][1],
-            unweighted_frequencies["global"][1]
+            frequencies[1],
+            unweighted_frequencies[1]
         )
 
     def test_only_tip_estimates(self, tree):
@@ -120,10 +117,10 @@ class TestKdeFrequencies(object):
         frequencies = kde_frequencies.estimate(tree)
 
         # Verify that all tips have frequency estimates and none of the internal nodes do.
-        assert all([tip.clade in frequencies["global"]
+        assert all([tip.clade in frequencies
                     for tip in tree.get_terminals()])
 
-        assert not any([node.clade in frequencies["global"]
+        assert not any([node.clade in frequencies
                         for node in tree.get_nonterminals()])
 
         # Estimate weighted frequencies.
@@ -136,13 +133,24 @@ class TestKdeFrequencies(object):
         frequencies = kde_frequencies.estimate(tree)
 
         # Verify that all tips have frequency estimates and none of the internal nodes do.
-        assert all([tip.clade in frequencies["global"]
+        assert all([tip.clade in frequencies
                     for tip in tree.get_terminals()])
 
-        assert not any([node.clade in frequencies["global"]
+        assert not any([node.clade in frequencies
                         for node in tree.get_nonterminals()])
 
+    def test_tip_and_internal_node_estimates(self, tree):
+        """Test frequency estimation for tips and internal nodes in a given tree.
+        """
+        # Estimate unweighted frequencies.
+        kde_frequencies = KdeFrequencies(
+            include_internal_nodes=True
+        )
+        frequencies = kde_frequencies.estimate(tree)
 
+        # Verify that all tips and internal nodes have frequency estimates.
+        assert all([tip.clade in frequencies
+                    for tip in tree.find_clades()])
 
     def test_censored_frequencies(self, tree):
         """Test estimation of frequencies where tips sampled beyond a given date are censored from the calculations.
@@ -154,12 +162,12 @@ class TestKdeFrequencies(object):
         frequencies = kde_frequencies.estimate(tree)
 
         # Confirm that tips sampled after the max date have zero frequencies.
-        assert all([frequencies["global"][tip.clade].sum() == 0
+        assert all([frequencies[tip.clade].sum() == 0
                     for tip in tree.get_terminals()
                     if tip.attr["num_date"] > max_date])
 
         # Confirm that one or more tips sampled before the max date have nonzero frequencies.
-        assert any([frequencies["global"][tip.clade].sum() > 0
+        assert any([frequencies[tip.clade].sum() > 0
                     for tip in tree.get_terminals()
                     if tip.attr["num_date"] <= max_date])
 
@@ -177,7 +185,6 @@ class TestKdeFrequencies(object):
         assert "data" in frequencies_json
         assert "pivots" in frequencies_json["data"]
         assert "frequencies" in frequencies_json["data"]
-        assert "global" in frequencies_json["data"]["frequencies"]
 
     def test_export_without_frequencies(self):
         """Test frequencies export to JSON when frequencies have *not* been estimated.
@@ -220,10 +227,10 @@ class TestKdeFrequencies(object):
         )
 
         # Get the first non-root key (root clade is number 0) and should be first in the sorted list of keys.
-        key = sorted(kde_frequencies.frequencies["global"].keys())[1]
+        key = sorted(kde_frequencies.frequencies.keys())[1]
         assert np.array_equal(
-            kde_frequencies.frequencies["global"][key],
-            new_kde_frequencies.frequencies["global"][key]
+            kde_frequencies.frequencies[key],
+            new_kde_frequencies.frequencies[key]
         )
 
     def test_import_without_frequencies(self):
