@@ -85,6 +85,16 @@ tree builders:
 
 Additionally, bacterial builds require a working installation of [vcftools](https://vcftools.github.io/).
 
+## Dev install
+
+If you're going to be editing augur source code rather than just running augur from command line, it's recommended to install with
+
+```
+pip3 install --process-dependency-links -e .
+```
+
+to make module "editable".
+
 
 ## Virus builds
 
