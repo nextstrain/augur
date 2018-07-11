@@ -13,7 +13,7 @@ try:
 except ImportError:
     from io import StringIO
 
-from ..base.fitness_model import fitness_model
+from base.fitness_model import fitness_model
 
 #
 # Fixtures
@@ -43,7 +43,7 @@ def simple_tree():
     index = 0
     for node in tree.find_clades(order="preorder"):
         node.aa = sequences[index]
-        node.numdate = dates[index]
+        node.attr = {"num_date": dates[index]}
         index += 1
 
     return tree
@@ -68,14 +68,14 @@ def real_tree(multiple_sequence_alignment):
             # Since sequence names look like "A/Singapore/TT0495/2017",
             # convert the last element to a floating point value for
             # simplicity.
-            node.numdate = float(node.name.split("/")[-1])
+            node.attr = {"num_date": float(node.name.split("/")[-1])}
         else:
             # Build a "dumb" consensus from the alignment for the
             # ancestral node and assign an arbitrary date in the
             # past.
             summary = Bio.Align.AlignInfo.SummaryInfo(multiple_sequence_alignment)
             node.sequence = np.fromstring(str(summary.dumb_consensus(threshold=0.5, ambiguous="N")), "S1")
-            node.numdate = 2014.8
+            node.attr = {"num_date": 2014.8}
 
     return tree
 
@@ -89,7 +89,9 @@ def simple_fitness_model(simple_tree):
         time_interval=(
             datetime.date(2015, 1, 1),
             datetime.date(2012, 1, 1)
-        )
+        ),
+        epitope_masks_fname="builds/flu/metadata/ha_masks.tsv",
+        epitope_mask_version="wolf"
     )
 
 @pytest.fixture
@@ -102,7 +104,9 @@ def real_fitness_model(real_tree, multiple_sequence_alignment):
         time_interval=(
             datetime.date(2017, 6, 1),
             datetime.date(2014, 6, 1)
-        )
+        ),
+        epitope_masks_fname="builds/flu/metadata/ha_masks.tsv",
+        epitope_mask_version="wolf"
     )
     model.nuc_aln = multiple_sequence_alignment
     model.nuc_alphabet = 'ACGT-N'
@@ -122,7 +126,9 @@ def precalculated_fitness_model(simple_tree):
         time_interval=(
             datetime.date(2015, 1, 1),
             datetime.date(2012, 1, 1)
-        )
+        ),
+        epitope_masks_fname="builds/flu/metadata/ha_masks.tsv",
+        epitope_mask_version="wolf"
     )
 
 @pytest.fixture
