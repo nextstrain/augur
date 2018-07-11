@@ -14,7 +14,7 @@
             "$comment": "Cumulative (root = 0)",
             "type": "number"
         },
-        "numDate": {
+        "num_date": {
             "$comment": "Sample date in decimal format (e.g. 2012.1234)",
             "$comment": "This is the only date information. We no longer have string dates.",
             "type": "object",
@@ -40,18 +40,18 @@
                     "$comment": "Currently in the flu & dengue trees",
                     "type": "boolean"
                 },
-                "selectionDate": {
+                "selection_date": {
                     "description": "Vaccine selection date",
                     "$comment": "this is currently in the metadata JSON",
                     "type": "string",
                     "pattern": "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$"
                 },
-                "startDate": {
+                "start_date": {
                     "description": "Vaccine usage start date",
                     "type": "string",
                     "pattern": "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$"
                 },
-                "endDate": {
+                "end_date": {
                     "description": "When the vaccine was stopped",
                     "$comment": "if vaccine still in use, don't include this property",
                     "type": "string",

@@ -34,7 +34,7 @@
                 }
             }
         },
-        "authorInfo": {
+        "author_info": {
             "description": "Used to display information about terminal nodes & for filtering by author (if \"authors\" is in \"filters\", see below)",
             "$comment": "Keys are first authors last name + year of publication + first word of title, all in lowercase. E.g. \"white2015isolation\"",
             "$comment": "Keys must exist in the attrs object of at least one terminal node of the tree",
@@ -68,7 +68,7 @@
                 }
             }
         },
-        "genomeAnnotations": {
+        "genome_annotations": {
             "description": "Genome annotations (e.g. genes), relative to the reference genome",
             "$comment": "Required for the entropy panel",
             "type": "object",
@@ -118,7 +118,7 @@
             "uniqueItems": true,
             "minItems": 1
         },
-        "geographicInfo": {
+        "geographic_info": {
             "description": "The available options for the geographic resolution dropdown, and their lat/long information",
             "$comment": "Properties here specify the values of the geographic resolution dropdown in Auspice. They must be specified on the tree via node -> traits -> X",
             "type": "object",
@@ -151,7 +151,7 @@
                 }
             }
         },
-        "colorBys": {
+        "color_bys": {
             "description": "Available colorBys for Auspice",
             "$comment": "The property names are found on node->traits, where the value there defines the deme for that node",
             "$comment": "There are a few exceptions - a property of 'numDate', 'gt' (genotype) or 'authors' are interpreted differently by Auspice as they are defined on the node itself, not node->traits",
@@ -187,7 +187,7 @@
                             "$comment": "We could accept strings such as 'viridis', 'rainbow' etc",
                             "$comment": "or an array of hex values to construct a scale over"
                         },
-                        "hexMap": {
+                        "hex_map": {
                             "description": "Links values to colors. Only used if \"type\" is ordinal or discrete.",
                             "$comment": "A greyscale ramp will be used for missing values (i.e. defined on the tree but not here)",
                             "$comment": "properties match tree nodes -> traits -> propertyName",
@@ -204,28 +204,28 @@
                 }
             }
         },
-        "displayDefaults": {
+        "display_defaults": {
             "description": "Set the defaults for certain display options in Auspice. All are optional.",
             "$comment": "Anything able to be encoded in the auspice URL should be an option here, so this will expand over time",
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "geoResolution": {
+                "geo_resolution": {
                     "description": "Default geographic resolution",
                     "$comment": "The value here must be present in the geo object (see above)",
                     "type": "string"
                 },
-                "colorBy": {
+                "color_by": {
                     "description": "Default color by",
                     "$comment": "The value here must be present in the color_options object (see above)",
                     "type": "string"
                 },
-                "distanceMeasure": {
+                "distance_measure": {
                     "description": "Default tree metric",
                     "type": "string",
                     "enum": ["div", "num_date"]
                 },
-                "mapTriplicate": {
+                "map_triplicate": {
                     "description": "Should the map be extended / wrapped around. Useful if transmissions are worldwide.",
                     "type": "boolean"
                 }
