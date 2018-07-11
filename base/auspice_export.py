@@ -10,10 +10,12 @@ def round_freqs(frequencies, num_dp):
     """ round frequency estimates to useful precision (reduces file size) """
     return [round(x, num_dp) for x in frequencies]
 
-def export_frequency_json(process, prefix, indent):
+def export_frequency_json(process, prefix, indent, threshold=0.01):
     num_dp = 6
     # construct a json file containing all frequency estimate
     # the format is region_protein:159F for mutations and region_clade:123 for clades
+    # only output trajectories in cases where at least one value is greater than threshold=0.01
+    # except include all named clades regardless
     if hasattr(process, 'pivots'):
         freq_json = {'pivots':round_freqs(process.pivots, num_dp)}
         if hasattr(process, 'mutation_frequencies'):
@@ -21,13 +23,15 @@ def export_frequency_json(process, prefix, indent):
             for (region, gene), tmp_freqs in process.mutation_frequencies.iteritems():
                 for mut, freq in tmp_freqs.iteritems():
                     label_str =  region+"_"+ gene + ':' + str(mut[0]+1)+mut[1]
-                    freq_json[label_str] = round_freqs(freq, num_dp)
+                    if max(freq) > threshold:
+                        freq_json[label_str] = round_freqs(freq, num_dp)
         # repeat for clade frequencies in trees
         if hasattr(process, 'tree_frequencies'):
             for region in process.tree_frequencies:
                 for clade, freq in process.tree_frequencies[region].iteritems():
                     label_str = region+'_clade:'+str(clade)
-                    freq_json[label_str] = round_freqs(freq, num_dp)
+                    if max(freq) > threshold:
+                        freq_json[label_str] = round_freqs(freq, num_dp)
         # repeat for named clades
         if hasattr(process, 'clades_to_nodes') and hasattr(process, 'tree_frequencies'):
             for region in process.tree_frequencies:
