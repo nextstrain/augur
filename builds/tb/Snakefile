@@ -129,6 +129,21 @@ rule traits:
         'augur traits --tree {input.tree} --metadata {input.meta}'
         ' --columns {params.traits} --output {output}'
 
+rule drm:
+    input:
+        align = rules.ancestral.output.vcf_out,
+        ref = config.ref,
+        drms = config.drms,
+        cols = config.colors,
+    output:
+        drm_data = "results/drms.json",
+        new_col = "results/colors.tsv"
+    shell:
+        """
+        augur find_drm --alignment {input.align} --vcf-reference {input.ref} --drms {input.drms} \
+            --colors {input.cols} --output {output.drm_data} --colors-output {output.new_col}
+        """
+
 rule export:
     input:
         tree = rules.refine.output.tree,

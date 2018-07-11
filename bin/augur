@@ -2,7 +2,7 @@
 import sys
 from augur import parse, filter, align, tree, refine, ancestral
 from augur import traits, translate, mask, titers, export
-from augur import validate
+from augur import validate, find_drm
 
 if __name__=="__main__":
     import argparse
@@ -132,6 +132,18 @@ if __name__=="__main__":
                         help='record the distribution of subleading mugration states')
     traits_parser.add_argument('--output', '-o', default='traits.json', help='')
     traits_parser.set_defaults(func=traits.run)
+
+    ## DRM.PY
+    drm_parser = subparsers.add_parser('find_drm', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    drm_parser.add_argument('--alignment', '-a', required=True, help="alignment to search for DRMs in (can include ancestral seqs)")
+    drm_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    drm_parser.add_argument('--drms', type=str, help='file that includes DRMs to identify')
+    drm_parser.add_argument('--colors', type=str, help="file with color definitions "
+                            "(will be combined with colors generated for DRMs in new output file, if supplied)")
+    drm_parser.add_argument('--output', '-o', type=str, help='output json with DRM information')
+    drm_parser.add_argument('--colors-output', type=str, help='file with colours generated for DRMs '
+                            '(will be combined with values from --colors if supplied)')
+    drm_parser.set_defaults(func=find_drm.run)
 
     ## TITERS.PY
     titers_parser = subparsers.add_parser('titers', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
