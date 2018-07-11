@@ -7,7 +7,7 @@ before_install:
   - sudo apt-get install -y mafft
   - sudo apt-get install -y fasttree
 install:
-  - pip3 install --process-dependency-links .
+  - pip3 install --process-dependency-links -e .[dev]
 script:
   - cd tests/zika
   - snakemake
