@@ -2,7 +2,7 @@ import numpy as np
 from collections import defaultdict
 import json, os
 from Bio import Phylo
-from .utils import read_metadata, read_node_data, attach_tree_meta_data, write_json
+from .utils import read_metadata, read_node_data, write_json
 
 def run(args):
     T = Phylo.read(args.tree, 'newick')

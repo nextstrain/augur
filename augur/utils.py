@@ -129,23 +129,6 @@ def read_node_data(fnames, tree=None):
     return node_data
 
 
-# put the data saved in node_data json back onto the tree
-def attach_tree_meta_data(T, node_meta):
-    for n in T.find_clades(order='preorder'):
-        if n.name not in node_meta:
-            print("ERROR: keys in tree and node meta data don't match. Node %s is missing"%n.name)
-            continue
-
-        n.attr={}
-        n.aa_muts={}
-        for field, val in node_meta[n.name].items():
-            n.__setattr__(field, val)
-            if field=='mutations':
-                n.muts = val
-            if field=='numdate':
-                n.num_date = val
-
-
 def write_json(data, file_name, indent=1):
     import json, os
     success = False

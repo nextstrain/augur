@@ -1,56 +1,84 @@
 import os
+import time
 import numpy as np
 from Bio import Phylo
 from collections import defaultdict
-from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors, attach_tree_meta_data
+from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
 
-def tree_to_json(node, fields_to_export = [], top_level = [], div=0):
-    '''
+def convert_tree_to_json_structure(node, div=0):
+    """
     converts the Biopython tree structure to a dictionary that can
     be written to file as a json. This is called recursively.
     input
         node -- node for which top level dict is produced.
-        fields_to_export -- attributes to export in addition to strain name and numdate
-        top_level -- list of strings or tuples of length 2. If tuple, second field is the fn which
-                     is called to produce the value. If string, the key->value lookup is used.
-    '''
-    tree_json = {'attr':{"div":div}, 'branch_length':node.branch_length}
-    if hasattr(node, 'name'):
-        tree_json['strain'] = node.name
+        div  -- cumulative divergence (root = 0)
+    """
+    node_struct = {
+        'attr': {"div": div},
+        'strain': node.name
+    }
 
-    # transfer attributes, round numerical ones
-    for field in fields_to_export+top_level:
-        val=None
-        if len(field)==2 and callable(field[1]):
-            fname = field[0]
-            if hasattr(node, fname):
-                val = field[1](node.__getattribute__(fname))
-        else:
-            fname = field
-            if hasattr(node, fname):
-                val = node.__getattribute__(fname)
+    # the following are DEPRECATED and to be removed
+    for attr in ['branch_length', 'tvalue', 'yvalue', 'xvalue']:
+        try:
+            node_struct[attr] = node.__getattribute__(attr)
+        except AttributeError:
+            pass
 
-        # shadow clade by strain. clade is deprecated and will be removed.
-        if field == "clade":
-            try: val = node.__getattribute__("strain")
-            except: pass
-
-        if field in top_level:
-            tree_json[fname] = val
-        else:
-            tree_json['attr'][fname] = val
-
-    # call on children
     if node.clades:
-        tree_json["children"] = []
-        for ch in node.clades:
-            cdiv = div + (ch.mutation_length if hasattr(ch, "mutation_length") else ch.branch_length)
-            tree_json["children"].append(tree_to_json(ch, fields_to_export, top_level, div=cdiv))
+        node_struct["children"] = []
+        for child in node.clades:
+            cdiv = div + (child.mutation_length if hasattr(child, "mutation_length") else child.branch_length)
+            node_struct["children"].append(convert_tree_to_json_structure(child, div=cdiv))
 
-    return tree_json
+    return node_struct
 
-# calculate tree layout. should be obsolete with future auspice versions
+
+def recursively_decorate_tree_json(node, node_metadata, decorations):
+    """
+    For given decorations, add information from node_metadata to
+    each node in the tree.
+    * decorations must have property "key" which is the key used to insert
+    into the node and the default key used to access node_metadata
+    * if decorations has property "lookup_key", this is used to access
+    node meta_data instead
+    * if decorations has property "is_attr" (and it's value is True)
+    then the result is inserted into node["attr"]
+
+    returns Null
+    """
+    try:
+        metadata = node_metadata[node["strain"]]
+        metadata["strain"] = node["strain"]
+    except KeyError:
+        raise Exception("ERROR: node %s is not found in the node metadata."%n.name)
+
+    for data in decorations:
+        val = None
+        insert_key = data["key"]
+        try:
+            if "lookup_key" in data:
+                val = metadata[data["lookup_key"]]
+            else:
+                val = metadata[insert_key]
+        except KeyError:
+            pass
+
+        if val is not None:
+            if "is_attr" in data and data["is_attr"]:
+                node["attr"][insert_key] = val
+            else:
+                node[insert_key] = val
+
+    if "children" in node:
+        for child in node["children"]:
+            recursively_decorate_tree_json(child, node_metadata, decorations)
+
+
 def tree_layout(T):
+    """
+    calculate tree layout. should be obsolete with future auspice versions
+    """
     yval=T.count_terminals()
     clade = 0;
     for n in T.find_clades(order='postorder'):
@@ -63,115 +91,140 @@ def tree_layout(T):
             n.yvalue=0.5*(np.min(child_yvalues)+np.max(child_yvalues))
 
 
-def summarise_publications(metadata):
-    # Return one format to go into 'author_info' and one to go into 'authors' in 'controls'
-    control_authors = defaultdict(lambda: {"count": 0, "subcats": {} })
-    author_info = defaultdict(lambda: {"n": 0, "title": "?" })
-    for n, d in metadata.items():
-        if "authors" not in d:
+def process_color_options(color_options, color_mapping, nodes):
+    for trait, options in color_options.items():
+        if "legendTitle" not in options:
+            options["legendTitle"] = trait
+        if "menuItem" not in options:
+            options["menuItem"] = trait
+        if "key" not in options:
+            options["key"] = trait
+
+        if trait in color_mapping:
+            valuesInTree = {node[trait] for node in nodes.values() if trait in node}
+            options["color_map"] = [m for m in color_mapping[trait] if m[0] in valuesInTree]
+
+    return color_options
+
+def process_geo_resolutions(meta_json, lat_long_mapping, nodes):
+    geo = defaultdict(dict)
+    if "geo" not in meta_json:
+        return geo
+    traits = meta_json["geo"]
+    for trait in traits:
+        demesInTree = {node[trait] for node in nodes.values() if trait in node}
+        for deme in demesInTree:
+            try:
+                geo[trait][deme] = lat_long_mapping[(trait,deme)]
+            except KeyError:
+                print("Error. {}->{} did not have an associated lat/long value".format(trait, deme))
+    return geo
+
+def process_annotations(node_data):
+    # treetime adds "annotations" to node_data
+    if "annotations" not in node_data: #if haven't run tree through treetime
+        return {}
+    return node_data["annotations"]
+
+def process_panels(meta_json):
+    try:
+        panels = meta_json["panels"]
+    except KeyError:
+        panels = ["tree", "map", "entropy"]
+    if "entropy" in panels and len(meta_json["annotations"].keys()) == 0:
+        panels.remove("entropy")
+    if "map" in panels and len(meta_json["geo"].keys()) == 0:
+        panels.remove("map")
+    return panels
+
+def add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json, extra_fields=['authors', 'url', 'accession']):
+    """
+    Add the relevent fields from meta_tsv to the nodes
+    (both are dictionaries keyed off of strain names)
+    * the relevent fields are found by scanning the meta json
+    together with the extra_fields param
+    """
+    fields = [x for x in meta_json["color_options"].keys() if x != "gt"] + meta_json["geo"] + extra_fields
+
+    for strain, node in nodes.items():
+        if strain not in meta_tsv:
+            continue
+        for field in fields:
+            if field not in node and field in meta_tsv[strain]:
+                node[field] = meta_tsv[strain][field]
+
+def getTerminalKeyValuesFromNodes(tree, nodes, key):
+    """
+    Find the values for the given key across the tree
+    nodes is the per-node metadata dict
+    """
+    vals = set()
+    for node in tree.find_clades(order='postorder'):
+        if node.is_terminal and node.name in nodes and key in nodes[node.name]:
+            vals.add(nodes[node.name][key])
+    return vals
+
+def construct_author_info(metadata, authorsInTree):
+    """
+    author info maps the "authors" property present on tree nodes
+    to further information about the paper etc
+    """
+    author_info = defaultdict(lambda: {"n": 0})
+    for strain, data in metadata.items():
+        if "authors" not in data:
             print("Error - {} had no authors".format(n))
             continue
-
-        authors = d["authors"]
+        if data["authors"] not in authorsInTree:
+            continue
+        authors = data["authors"]
         author_info[authors]["n"] += 1
-        control_authors[authors]["count"] += 1
+        # add in extra attributes if they're present in the meta TSV (for this strain...)
         for attr in ["title", "journal", "paper_url"]:
-            if attr in d:
-                author_info[authors][attr] = d[attr]
+            if attr in data:
+                if attr in author_info[authors] and data[attr].strip() != author_info[authors][attr].strip():
+                    print("Error - {} had contradictory {}(s): {} vs {}".format(authors, attr, data[attr], author_info[authors][attr]))
+                author_info[authors][attr] = data[attr].strip()
 
-    return (author_info, control_authors)
-
-def export_metadata_json(T, metadata, tree_meta, config, color_mapping, lat_long_mapping, fname, indent=0):
-    meta_json = {}
-    import time
-    meta_json["updated"] = time.strftime("%d %b %Y")
-    terminals = [n.name for n in T.get_terminals()]
-    meta_json["virus_count"] = len(terminals)
-    meta_subset = {k:v for k,v in metadata.items() if k in terminals}
-
-    (author_info, control_authors) = summarise_publications(meta_subset)
-    meta_json["author_info"] = author_info
-
-    if "annotations" not in tree_meta: #if haven't run tree through treetime
-        meta_json["annotations"] = {}
-        config["panels"] = ["tree","map"]
-    if "panels" not in config:
-        config["panels"] = ["tree","map","entropy"]
-
-    # join up config color options with those in the input JSONs.
-    # TODO: change the schema for these
-    col_opts = config["color_options"]
-    for trait in col_opts:
-        if trait in color_mapping:
-            col_opts[trait]["legendTitle"] = trait
-            col_opts[trait]["menuItem"] = trait
-            col_opts[trait]["key"] = trait
-            col_opts[trait]["color_map"] = color_mapping[trait]
-
-    if "annotations" in tree_meta:
-        meta_json["annotations"] = tree_meta['annotations']
-
-    meta_json.update(config)
-
-    if "geo" in config:
-        geo={}
-        for geo_field in config["geo"]:
-            geo[geo_field]={}
-            for node, attrs in tree_meta["nodes"].items():
-                if geo_field in attrs:
-                    loc = attrs[geo_field]
-                    if loc not in geo[geo_field]:
-                        if (geo_field,loc) in lat_long_mapping:
-                            geo[geo_field][loc] = lat_long_mapping[(geo_field,loc)]
-                        else:
-                            print("Lat/long for " + loc + " absent, defaulting to 0,0")
-                            geo[geo_field][loc] = {"latitude": 0, "longitude": 0}
-        meta_json["geo"] = geo
-    write_json(meta_json, fname)
-
-
-def tree_meta_info(tree_meta, seq_meta, fields=['authors', 'url', 'accession']):
-    '''
-    Attaches author name to nodes so it's included in tree.json
-    Should also perhaps be attaching paper_url, journal, url here?
-    '''
-    for key in tree_meta['nodes'].keys():
-        val = tree_meta['nodes'][key]
-        if key in seq_meta:
-            for f in fields:
-                if f in seq_meta[key]:
-                    val[f] = seq_meta[key][f]
-    return tree_meta
+    return author_info
 
 
 def run(args):
-    # load data, process, and write out
     T = Phylo.read(args.tree, 'newick')
-    seq_meta, meta_columns = read_metadata(args.metadata)
-    tree_meta = read_node_data(args.node_data) # an array of multiple files (or a single file)
-    tree_meta = tree_meta_info(tree_meta, seq_meta) #attach author name to node
+    meta_tsv, _ = read_metadata(args.metadata)
+    node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
+    meta_json = read_config(args.auspice_config)
+    nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
 
-    # TODO: remove the following function and combine it with tree_to_json
-    attach_tree_meta_data(T, tree_meta["nodes"])
+    # export the tree JSON first
+    add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json)
+    tree_layout(T) # TODO: deprecated. Should remove.
+    tree_json = convert_tree_to_json_structure(T.root)
 
-    # TODO: can remove the y-values, they're now calculated in auspice (maybe keep temporarily?)
-    tree_layout(T)
+    # now the messy bit about what decorations (e.g. "country", "aa_muts") do we want to add to the tree?
+    # see recursively_decorate_tree_json to understand the tree_decorations structure
+    tree_decorations = [
+        {"key": "clade", "lookup_key": "strain"}, # DEPRECATED. Auspice still refers to "clade" so this must stay for the moment.
+        {"key": "num_date", "lookup_key": "numdate", "is_attr": True},
+        {"key": "muts", "is_attr": False},
+        {"key": "aa_muts", "is_attr": False}
+    ]
+    traits_via_node_metadata = {k for node in nodes.values() for k in node.keys()}
+    traits_via_node_metadata -= {'sequence', 'mutation_length', 'branch_length', 'numdate', 'mutations', 'muts', 'aa_muts'}
+    for trait in traits_via_node_metadata:
+        tree_decorations.append({"key": trait, "is_attr": True})
 
-    # from the fields in the tree_meta (taken from one or more JSONs), which ones do we want to export?
-    node_fields = set()
-    for n in tree_meta['nodes'].values():
-        node_fields.update(n.keys())
-    fields_to_export = [x for x in  node_fields
-                        if x not in ['sequence', 'mutations', 'muts', 'aa_muts']]+['num_date']
-    # and which fields are top level? (the rest are all in the attr dict)
-    top_level = ["clade","tvalue","yvalue", "xvalue", "muts", "aa_muts"]
+    recursively_decorate_tree_json(tree_json, nodes, decorations=tree_decorations)
+    write_json(tree_json, args.output_tree, indent=2)
 
-    tree_json = tree_to_json(T.root, fields_to_export=fields_to_export, top_level=top_level)
-    write_json(tree_json, args.output_tree)
-
-    # load defaults and supp file that overrides defaults
+    # Export the metadata JSON
     lat_long_mapping = read_lat_longs(args.lat_longs)
     color_mapping = read_colors(args.colors)
+    meta_json["updated"] = time.strftime("%d %b %Y")
+    meta_json["virus_count"] = len(list(T.get_terminals()))
+    meta_json["author_info"] = construct_author_info(meta_tsv, getTerminalKeyValuesFromNodes(T, nodes, "authors"))
+    meta_json["color_options"] = process_color_options(meta_json["color_options"], color_mapping, nodes)
+    meta_json["geo"] = process_geo_resolutions(meta_json, lat_long_mapping, nodes)
+    meta_json["annotations"] = process_annotations(node_data)
+    meta_json["panels"] = process_panels(meta_json)
 
-    export_metadata_json(T, seq_meta, tree_meta, read_config(args.auspice_config),
-                         color_mapping, lat_long_mapping, args.output_meta)
+    write_json(meta_json, args.output_meta, indent=2)
