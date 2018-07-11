@@ -181,9 +181,9 @@ def construct_author_info(metadata, authorsInTree):
         # add in extra attributes if they're present in the meta TSV (for this strain...)
         for attr in ["title", "journal", "paper_url"]:
             if attr in data:
-                if attr in author_info[authors] and data[attr] != author_info[authors][attr]:
+                if attr in author_info[authors] and data[attr].strip() != author_info[authors][attr].strip():
                     print("Error - {} had contradictory {}(s): {} vs {}".format(authors, attr, data[attr], author_info[authors][attr]))
-                author_info[authors][attr] = data[attr]
+                author_info[authors][attr] = data[attr].strip()
 
     return author_info
 
