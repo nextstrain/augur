@@ -119,7 +119,7 @@ def export_metadata_json(T, metadata, tree_meta, config, color_mapping, lat_long
             geo[geo_field]={}
             for node, attrs in tree_meta["nodes"].items():
                 if geo_field in attrs:
-                    loc = attrs[geo_field].lower()
+                    loc = attrs[geo_field]
                     if loc not in geo[geo_field]:
                         if (geo_field,loc) in lat_long_mapping:
                             geo[geo_field][loc] = lat_long_mapping[(geo_field,loc)]
