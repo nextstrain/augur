@@ -24,7 +24,6 @@ setup(
             "pytest >=3.2.1, ==3.*",
             "seaborn >=0.6.0, ==0.6.*",
             "snakemake >=5.1.5, ==5.*",
-            "tox >=2.8.2, ==2.*",
             "treetime ==0.4.1"
         ],
         dependency_links = [

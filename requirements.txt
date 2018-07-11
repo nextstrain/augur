@@ -7,5 +7,4 @@ matplotlib >=2.0, ==2.*
 pandas >=0.17.1, ==0.17.*
 pytest >=3.2.1, ==3.*
 seaborn >=0.6.0, ==0.6.*
-tox >=2.8.2, ==2.*
 git+https://github.com/neherlab/treetime.git#egg=treetime

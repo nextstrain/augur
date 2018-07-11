@@ -18,7 +18,6 @@ dist/
 # For Python #
 ##############
 *.pyc
-.tox/
 .cache/
 augur.egg-info/
 env/
