@@ -41,17 +41,16 @@ def export_frequency_json(process, prefix, indent):
         process.log.notify("Cannot export frequencies - pivots do not exist")
 
 def export_tip_frequency_json(process, prefix, indent):
-    if not (hasattr(process, 'pivots') and hasattr(process, 'kde_frequencies')):
-        process.log.notify("Cannot export tip frequencies - pivots and/or kde_frequencies do not exist")
+    if not hasattr(process, 'kde_frequencies'):
+        process.log.notify("Cannot export tip frequencies - kde_frequencies do not exist")
         return
 
     num_dp = 6
-    freq_json = {'pivots':round_freqs(process.pivots, num_dp)}
+    freq_json = {'pivots':round_freqs(process.kde_frequencies.pivots, num_dp)}
 
     for n in process.tree.tree.get_terminals():
         freq_json[n.name] = {
-            "frequencies" : round_freqs(process.kde_frequencies["global"][n.clade], num_dp),
-            "weight": 1.0
+            "frequencies" : round_freqs(process.kde_frequencies.frequencies[n.clade], num_dp)
         }
 
     write_json(freq_json, prefix+'_tip-frequencies.json', indent=indent)
