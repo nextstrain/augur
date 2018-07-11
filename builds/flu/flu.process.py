@@ -9,7 +9,7 @@ from base.utils import fix_names
 from base.io_util import write_json
 from base.frequencies import KdeFrequencies
 from flu_titers import HI_model, HI_export, vaccine_distance
-from scores import calculate_sequence_scores, calculate_metadata_scores, calculate_phylogenetic_scores
+from base.scores import calculate_sequence_scores, calculate_metadata_scores, calculate_phylogenetic_scores
 from flu_info import clade_designations, lineage_to_epitope_mask, lineage_to_glyc_mask, resolution_to_pivot_spacing, vaccine_choices
 import argparse
 import numpy as np

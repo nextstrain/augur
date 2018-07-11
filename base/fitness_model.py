@@ -7,8 +7,8 @@ import pandas as pd
 from scipy.interpolate import interp1d
 from scipy.stats import linregress, spearmanr
 
-from base.io_util import write_json
-from builds.flu.scores import select_nodes_in_season
+from io_util import write_json
+from scores import select_nodes_in_season
 from frequencies import logit_transform, tree_frequencies
 from fitness_predictors import fitness_predictors
 

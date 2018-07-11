@@ -6,7 +6,7 @@ from itertools import izip
 from scipy.stats import linregress
 import sys
 
-from builds.flu.scores import calculate_LBI
+from scores import calculate_LBI
 
 # all fitness predictors should be designed to give a positive sign, ie.
 # number of epitope mutations
