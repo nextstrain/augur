@@ -50,7 +50,7 @@ def export_tip_frequency_json(process, prefix, indent):
 
     for n in process.tree.tree.get_terminals():
         freq_json[n.name] = {
-            "frequencies" : round_freqs(process.kde_frequencies.frequencies["global"][n.clade], num_dp)
+            "frequencies" : round_freqs(process.kde_frequencies.frequencies[n.clade], num_dp)
         }
 
     write_json(freq_json, prefix+'_tip-frequencies.json', indent=indent)
