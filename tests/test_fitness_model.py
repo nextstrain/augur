@@ -14,6 +14,7 @@ except ImportError:
     from io import StringIO
 
 from base.fitness_model import fitness_model
+from base.frequencies import KdeFrequencies
 
 #
 # Fixtures
@@ -42,6 +43,7 @@ def simple_tree():
     dates = (2012.5, 2013.25, 2014.8)
     index = 0
     for node in tree.find_clades(order="preorder"):
+        node.clade = index
         node.aa = sequences[index]
         node.attr = {"num_date": dates[index]}
         index += 1
@@ -61,6 +63,7 @@ def real_tree(multiple_sequence_alignment):
                   for alignment in multiple_sequence_alignment])
 
     # Assign sequences to the tree.
+    index = 0
     for node in tree.find_clades():
         if node.name is not None:
             node.sequence = np.fromstring(sequences_by_name[node.name], "S1")
@@ -77,13 +80,20 @@ def real_tree(multiple_sequence_alignment):
             node.sequence = np.fromstring(str(summary.dumb_consensus(threshold=0.5, ambiguous="N")), "S1")
             node.attr = {"num_date": 2014.8}
 
+        node.clade = index
+        index += 1
+
     return tree
 
 @pytest.fixture
 def simple_fitness_model(simple_tree):
     return fitness_model(
         tree=simple_tree,
-        frequencies={},
+        frequencies=KdeFrequencies(
+            start_date=2012.0,
+            end_date=2015.0,
+            include_internal_nodes=True
+        ),
         predictor_input=["random"],
         pivot_spacing=1.0 / 12,
         time_interval=(
@@ -98,7 +108,11 @@ def simple_fitness_model(simple_tree):
 def real_fitness_model(real_tree, multiple_sequence_alignment):
     model = fitness_model(
         tree=real_tree,
-        frequencies={},
+        frequencies=KdeFrequencies(
+            start_date=2014.5,
+            end_date=2017.5,
+            include_internal_nodes=True
+        ),
         predictor_input=["random"],
         pivot_spacing=1.0 / 12,
         time_interval=(
@@ -120,7 +134,11 @@ def precalculated_fitness_model(simple_tree):
     """
     return fitness_model(
         tree=simple_tree,
-        frequencies={},
+        frequencies=KdeFrequencies(
+            start_date=2012.0,
+            end_date=2015.0,
+            include_internal_nodes=True
+        ),
         predictor_input={"random": MODEL_PARAMS},
         pivot_spacing=1.0 / 12,
         time_interval=(

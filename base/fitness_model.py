@@ -8,7 +8,7 @@ from scipy.stats import linregress, spearmanr
 
 from .io_util import write_json
 from .scores import select_nodes_in_season
-from .frequencies import logit_transform, tree_frequencies
+from .frequencies import logit_transform, KdeFrequencies
 from .fitness_predictors import fitness_predictors
 
 try:
@@ -86,12 +86,20 @@ def matthews_correlation_coefficient(tp, tn, fp, fn):
 class fitness_model(object):
 
     def __init__(self, tree, frequencies, time_interval, predictor_input = ['ep', 'lb', 'dfreq'], pivots = None, pivot_spacing = 1.0 / 12, verbose = 0, enforce_positive_predictors = True, predictor_kwargs=None, **kwargs):
-        '''
-        parameters:
-        tree -- tree of sequences for which a fitness model is to be determined
-        frequencies -- dictionary of precalculated clade frequencies indexed by region (e.g., "global")
-        predictor_input -- list of predictors to fit or dict of predictors to coefficients / std deviations
-        '''
+        """
+
+        Args:
+            tree (Bio.Phylo): an annotated tree for which a fitness model is to be determined
+            frequencies (KdeFrequencies): a frequency estimator and its parameters
+            time_interval:
+            predictor_input: a list of predictors to fit or dict of predictors to coefficients / std deviations
+            pivots:
+            pivot_spacing:
+            verbose:
+            enforce_positive_predictors:
+            predictor_kwargs:
+            **kwargs:
+        """
         self.tree = tree
         self.frequencies = frequencies
         self.pivot_spacing = pivot_spacing
@@ -207,22 +215,21 @@ class fitness_model(object):
         region = "global"
 
         # Calculate global tree/clade frequencies if they have not been calculated already.
-        if region not in self.frequencies or self.rootnode.clade not in self.frequencies["global"]:
-            print("calculating global node frequencies")
-            tree_freqs = tree_frequencies(self.tree, self.pivots, method="SLSQP", verbose=1)
-            tree_freqs.estimate_clade_frequencies()
-            self.frequencies[region] = tree_freqs.frequencies
+        if not hasattr(self.frequencies, "frequencies") or self.tree.root.clade not in self.frequencies.frequencies:
+            print("calculating node frequencies")
+            frequencies = self.frequencies.estimate(self.tree)
         else:
+            frequencies = self.frequencies.frequencies
             print("found existing global node frequencies")
 
         # Annotate frequencies on nodes.
         # TODO: replace node-based annotation with dicts indexed by node name.
         for node in self.nodes:
             node.freq = {
-                region: self.frequencies[region][node.clade]
+                region: frequencies[node.clade]
             }
             node.logit_freq = {
-                region: logit_transform(self.frequencies[region][node.clade], 1e-4)
+                region: logit_transform(frequencies[node.clade], 1e-4)
             }
 
         for node in self.nodes:
@@ -253,9 +260,7 @@ class fitness_model(object):
         print("fitting time censored tree frequencies")
         # this doesn't interfere with the previous freq estimates via difference in region: global_censored vs global
         region = "global_censored"
-        if not region in self.frequencies:
-            self.frequencies[region] = {}
-
+        frequency_parameters = self.frequencies.get_params()
         freq_cutoff = 25.0
         pivots_fit = 6
         freq_window = 1.0
@@ -264,27 +269,23 @@ class fitness_model(object):
             node.freq_slope = {}
         for time in self.timepoints:
             time_interval = [time - freq_window, time]
-            pivots = make_pivots(
-                time_interval[0],
-                time_interval[1],
-                1 / self.pivot_spacing
-            )
             node_filter_func = lambda node: node.attr['num_date'] >= time_interval[0] and node.attr['num_date'] < time_interval[1]
 
-            # Recalculate tree frequencies for the given time interval and its
-            # corresponding pivots.
-            tree_freqs = tree_frequencies(self.tree, pivots, node_filter=node_filter_func, method="SLSQP")
-            tree_freqs.estimate_clade_frequencies()
-            self.frequencies[region][time] = tree_freqs.frequencies
+            # Recalculate  frequencies for the given time interval and its corresponding pivots.
+            frequency_parameters["start_date"] = time_interval[0]
+            frequency_parameters["end_date"] = time_interval[1]
+            frequency_parameters["max_date"] = time_interval[1]
+            frequency_estimator = type(self.frequencies)(**frequency_parameters)
+            frequencies = frequency_estimator.estimate(self.tree)
 
             # Annotate censored frequencies on nodes.
             # TODO: replace node-based annotation with dicts indexed by node name.
             for node in self.nodes:
                 node.freq = {
-                    region: self.frequencies[region][time][node.clade]
+                    region: frequencies[node.clade]
                 }
                 node.logit_freq = {
-                    region: logit_transform(self.frequencies[region][time][node.clade], 1e-4)
+                    region: logit_transform(frequencies[node.clade], 1e-4)
                 }
 
             for node in self.nodes:
@@ -297,9 +298,6 @@ class fitness_model(object):
                     node.freq_slope[time] = slope
                 except:
                     import ipdb; ipdb.set_trace()
-
-        # Clean up frequencies.
-        del self.frequencies[region]
 
         # reset pivots in tree to global pivots
         self.rootnode.pivots = self.pivots
