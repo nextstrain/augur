@@ -1,33 +1,36 @@
-import os, shutil, time, sys
+import sys
 from Bio import Phylo
 from .utils import read_metadata, get_numerical_dates, write_json
-from treetime.vcf_utils import read_vcf, write_vcf
+from treetime.vcf_utils import read_vcf
+
 
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
-             confidence=False, resolve_polytomies=True, max_iter=2,
-             infer_gtr=True, Tc=0.01, reroot=None, use_marginal=False, fixed_pi=None,
-             clock_rate=None, clock_filter_iqd=None, verbosity=1, **kwarks):
+           confidence=False, resolve_polytomies=True, max_iter=2,
+           infer_gtr=True, Tc=0.01, reroot=None, use_marginal=False, fixed_pi=None,
+           clock_rate=None, clock_filter_iqd=None, verbosity=1, **kwarks):
     from treetime import TreeTime
 
-    try: #Tc could be a number or  'opt' or 'skyline'. TreeTime expects a float or int if a number.
+    # Tc could be a number or  'opt' or 'skyline'.
+    # TreeTime expects a float or int if a number.
+    try:
         Tc = float(Tc)
     except ValueError:
-        True #let it remain a string
+        True  # let it remain a string
 
-    if (ref is not None) and (fixed_pi is None): #if VCF, fix pi
-        #Otherwise mutation TO gaps is overestimated b/c of seq length
-        fixed_pi = [ref.count(base)/len(ref) for base in ['A','C','G','T','-']]
+    if (ref is not None) and (fixed_pi is None):  # if VCF, fix pi
+        # Otherwise mutation TO gaps is overestimated b/c of seq length
+        fixed_pi = [ref.count(base)/len(ref) for base in ['A', 'C', 'G', 'T', '-']]
         if fixed_pi[-1] == 0:
             fixed_pi[-1] = 0.05
             fixed_pi = [v-0.01 for v in fixed_pi]
 
-    if ref is not None: # VCF -> adjust branch length
-        #set branch length mode explicitly if auto, as informative-site only
-        #trees can have big branch lengths, making this set incorrectly in TreeTime
+    if ref is not None:  # VCF -> adjust branch length
+        # set branch length mode explicitly if auto, as informative-site only
+        # trees can have big branch lengths, making this set incorrectly in TreeTime
         if branch_length_inference == 'auto':
             branch_length_inference = 'joint'
 
-    #send ref, if is None, does no harm
+    # send ref, if is None, does no harm
     tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates,
                   verbose=verbosity, gtr='JC69')
 
@@ -52,7 +55,8 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
         marginal = confidence
 
     tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
-           branch_length_mode=branch_length_inference, resolve_polytomies=resolve_polytomies,
+           branch_length_mode=branch_length_inference,
+           resolve_polytomies=resolve_polytomies,
            max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
            **kwarks)
 
@@ -62,20 +66,20 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
 
     print("\nInferred a time resolved phylogeny using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
-          "\n\tVirus Evolution, vol 4, https://academic.oup.com/ve/article/4/1/vex042/4794731\n")
+          "\n\tVirus Evolution, vol 4, http://dx.doi.org/10.1093/ve/vex042\n")
     return tt
 
 
 def collect_node_data(T, attributes):
     data = {}
     for n in T.find_clades():
-        data[n.name] = {attr:n.__getattribute__(attr)
-                        for attr in attributes if hasattr(n,attr)}
+        data[n.name] = {attr: n.__getattribute__(attr)
+                        for attr in attributes if hasattr(n, attr)}
     return data
+
 
 def run(args):
     # check alignment type, set flags, read in if VCF
-    is_vcf = False
     ref = None
 
     # node data is the dict that will be exported as json
@@ -92,18 +96,22 @@ def run(args):
         except:
             pass
     if T is None:
-        print("ERROR: reading tree from %s failed."%args.tree)
+        print("ERROR: reading tree from %s failed." % args.tree)
         return -1
 
     if not args.alignment:
         # fake alignment to appease treetime when only using it for naming nodes...
         if args.timetree:
-            print("ERROR: alignment is required for ancestral reconstruction or timetree inference")
+            print("ERROR: alignment is required for ancestral reconstruction"
+                  "or timetree inference")
             return -1
         from Bio import SeqRecord, Seq, Align
         seqs = []
         for n in T.get_terminals():
-            seqs.append(SeqRecord.SeqRecord(seq=Seq.Seq('ACGT'), id=n.name, name=n.name, description=''))
+            seqs.append(SeqRecord.SeqRecord(seq=Seq.Seq('ACGT'),
+                                            id=n.name,
+                                            name=n.name,
+                                            description=''))
         aln = Align.MultipleSeqAlignment(seqs)
     elif any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
         if not args.vcf_reference:
@@ -113,10 +121,8 @@ def run(args):
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
         aln = compress_seq['sequences']
         ref = compress_seq['reference']
-        is_vcf = True
     else:
         aln = args.alignment
-
 
     # if not specified, construct default output file name with suffix _tt.nwk
     if args.output_tree:
@@ -140,20 +146,26 @@ def run(args):
             if n.name in metadata and 'date' in metadata[n.name]:
                 n.raw_date = metadata[n.name]['date']
 
-        if args.root and len(args.root) == 1: #if anything but a list of seqs, don't send as a list
+        # if anything but a list of seqs, don't send as a list
+        if args.root and len(args.root) == 1:
             args.root = args.root[0]
 
-        tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
-                      reroot=args.root or 'best',
-                      Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
-                      use_marginal = args.date_inference == 'marginal',
-                      branch_length_inference = args.branch_length_inference or 'auto',
-                      clock_rate=args.clock_rate, clock_filter_iqd=args.clock_filter_iqd)
+        tt = refine(tree=T, aln=aln, ref=ref, dates=dates,
+                    confidence=args.date_confidence,
+                    reroot=args.root or 'best',
+                    Tc=0.01 if args.coalescent is None else args.coalescent,  # use 0.01 as default coalescent time scale
+                    use_marginal=args.date_inference == 'marginal',
+                    branch_length_inference=args.branch_length_inference or 'auto',
+                    clock_rate=args.clock_rate, clock_filter_iqd=args.clock_filter_iqd)
 
-        node_data['clock'] = {'rate': tt.date2dist.clock_rate,
-                              'intercept': tt.date2dist.intercept,
-                              'rtt_Tmrca': -tt.date2dist.intercept/tt.date2dist.clock_rate}
-        attributes.extend(['numdate', 'clock_length', 'mutation_length', 'raw_date', 'date'])
+        node_data['clock'] = {
+            'rate': tt.date2dist.clock_rate,
+            'intercept': tt.date2dist.intercept,
+            'rtt_Tmrca': -tt.date2dist.intercept/tt.date2dist.clock_rate
+        }
+        attributes.extend(
+            ['numdate', 'clock_length', 'mutation_length', 'raw_date', 'date']
+        )
         if args.date_confidence:
             attributes.append('num_date_confidence')
     else:
@@ -164,15 +176,14 @@ def run(args):
     node_data['nodes'] = collect_node_data(T, attributes)
 
     # Export refined tree and node data
-    import json
     tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
-    print("updated tree written to",tree_fname, file=sys.stdout)
+    print("updated tree written to", tree_fname, file=sys.stdout)
     if args.output_node_data:
         node_data_fname = args.output_node_data
     else:
         node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data.json'
 
     json_success = write_json(node_data, node_data_fname)
-    print("node attributes written to",node_data_fname, file=sys.stdout)
+    print("node attributes written to", node_data_fname, file=sys.stdout)
 
     return 0 if (tree_success and json_success) else 1

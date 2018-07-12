@@ -1,7 +1,7 @@
-import os,sys,argparse
+import os
+from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq
-from shutil import copyfile
 
 def make_gaps_ambiguous(aln):
     '''
@@ -10,8 +10,8 @@ def make_gaps_ambiguous(aln):
     '''
     for seq in aln:
         seq_array = np.array(seq)
-        gaps = seq_array=='-'
-        seq_array[gaps]='N'
+        gaps = seq_array == '-'
+        seq_array[gaps] = 'N'
         seq.seq = Seq.Seq("".join(seq_array))
 
 
@@ -27,7 +27,8 @@ def run(args):
     try:
         seqs = {s.id:s for s in SeqIO.parse(seq_fname, 'fasta')}
     except:
-        print("Cannot read sequences -- make sure the file %s exists and contains sequences in fasta format"%seq_fname)
+        print("Cannot read sequences -- make sure the file %s exists and contains sequences in"
+              "fasta format"%seq_fname)
         return -1
 
     if ref_name and (ref_name not in seqs):
@@ -38,24 +39,29 @@ def run(args):
     if ref_fname and (not ref_name):
         if os.path.isfile(ref_fname):
             try:
-                ref_seq = SeqIO.read(ref_fname, 'genbank' if ref_fname.split('.')[-1] in ['gb', 'genbank'] else 'fasta')
+                file_type = 'genbank' if ref_fname.split('.')[-1] in ['gb', 'genbank'] else 'fasta'
+                ref_seq = SeqIO.read(ref_fname, file_type)
             except:
                 print("WARNING: Cannot read reference sequence."
-                      "\n\tmake sure the file %s contains one sequence in genbank or fasta format"%ref_fname)
+                      "\n\tMake sure the file %s contains one sequence in genbank or"
+                      "fasta format"%ref_fname)
             else:
                 ref_name = ref_seq.id
-                seq_fname+='.ref.fasta'
+                seq_fname += '.ref.fasta'
                 SeqIO.write(list(seqs.values())+[ref_seq], seq_fname, 'fasta')
         else:
             print("WARNING: Cannot read reference sequence."
                   "\n\tmake sure the file %s does not exist"%ref_fname)
 
-    # before aligning, make a copy of the data that the aligner receives as input (very useful for debugging purposes)
+    # before aligning, make a copy of the data that the aligner receives as input
+    # (very useful for debugging purposes)
     copyfile(seq_fname, output+".pre_aligner.fasta")
 
     # align
-    if args.method=='mafft':
-        cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2> %s.log"%(args.nthreads, seq_fname, output, output)
+    if args.method == 'mafft':
+        cmd = """
+              mafft --reorder --anysymbol --thread %d %s 1> %s 2> %s.log
+              """%(args.nthreads, seq_fname, output, output)
         os.system(cmd)
         print("\nusing mafft to align via:\n\t" + cmd +
               " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"
@@ -73,8 +79,8 @@ def run(args):
         seq.seq = seq.seq.upper()
     AlignIO.write(aln, output, 'fasta')
 
-    # if there's a valid reference in the alignment, strip out all the columns not present in the reference
-    # this will overwrite the alignment file
+    # if there's a valid reference in the alignment, strip out all the columns not present
+    # in the reference, this will overwrite the alignment file
     if ref_name:
         seqs = strip_non_reference(output, ref_name, keep_reference=not args.remove_reference)
         if not seqs:
@@ -93,8 +99,8 @@ def strip_non_reference(alignment_fname, reference, keep_reference=False):
     seqs = {s.name:s for s in aln}
     if reference in seqs:
         ref_array = np.array(seqs[reference])
-        ungapped = ref_array!='-'
-        ref_aln_array = np.array(aln)[:,ungapped]
+        ungapped = ref_array != '-'
+        ref_aln_array = np.array(aln)[:, ungapped]
     else:
         print("WARNING: reference", reference, "not found in alignment")
         return
@@ -102,7 +108,7 @@ def strip_non_reference(alignment_fname, reference, keep_reference=False):
     out_seqs = []
     for seq, seq_array in zip(aln, ref_aln_array):
         seq.seq = Seq.Seq(''.join(seq_array))
-        if keep_reference or seq.name!=reference:
+        if keep_reference or seq.name != reference:
             out_seqs.append(seq)
 
     print("Trimmed gaps in", reference, "from the alignment")
