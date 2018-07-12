@@ -1,6 +1,6 @@
 from __future__ import division, print_function
 import os, re, time, csv, sys
-from io_util import make_dir, remove_dir, write_json
+from .io_util import make_dir, remove_dir, write_json
 # from io_util import myopen, make_dir, remove_dir, tree_to_json, write_json
 # from collections import defaultdict
 from Bio import SeqIO
@@ -11,11 +11,11 @@ from Bio.SeqFeature import FeatureLocation
 from Bio.Data.CodonTable import TranslationError
 from Bio.Seq import CodonTable
 import numpy as np
-from seq_util import pad_nucleotide_sequences, nuc_alpha, aa_alpha
+from .seq_util import pad_nucleotide_sequences, nuc_alpha, aa_alpha
 from datetime import datetime
 import json
 from pdb import set_trace
-from utils import fix_names, num_date, parse_date
+from .utils import fix_names, num_date, parse_date
 from pprint import pprint
 from Bio import AlignIO
 from Bio.Align import MultipleSeqAlignment
@@ -103,7 +103,7 @@ class sequence_set(object):
 
         # load sequences from the (parsed) JSON - don't forget to sort out dates
         self.seqs = {}
-        for name, data in sequences.iteritems():
+        for name, data in sequences.items():
             self.seqs[name] = SeqRecord(Seq(data["seq"], generic_dna),
                    id=name, name=name, description=name)
             self.seqs[name].attributes = data["attributes"]
@@ -121,7 +121,7 @@ class sequence_set(object):
                id=name, name=name, description=name)
         if "genes" in reference and len(reference["genes"]):
             self.proteins = {}
-            for k, v in reference["genes"].iteritems():
+            for k, v in reference["genes"].items():
                 feature = FeatureLocation(start=v["start"], end=v["end"], strand=v["strand"])
 
                 # Translate sequences to identify any proteins ending with a stop codon.
@@ -139,7 +139,7 @@ class sequence_set(object):
         self.nthreads = 2 # should load from config file
 
     def convert_trait_to_numerical_date(self, trait, dateFormat):
-        for name, seq in self.seqs.iteritems():
+        for name, seq in self.seqs.items():
             try:
                 date_struc = parse_date(seq.attributes[trait], dateFormat)
                 seq.attributes[trait] = date_struc[1]
@@ -193,7 +193,7 @@ class sequence_set(object):
         self.sequence_lookup = {seq.id:seq for seq in self.aln}
 
     def add_attributes_to_aln(self):
-        for seqid, seq in self.seqs.iteritems():
+        for seqid, seq in self.seqs.items():
             self.sequence_lookup[seqid].attributes = seq.attributes
 
     def try_restore_align_from_disk(self, fname):
@@ -352,7 +352,7 @@ class sequence_set(object):
         self.entropy ={'nuc': -(tmp_af*np.log(tmp_af+TINY)).sum(axis=0)}
 
         if hasattr(self, "translations"):
-            for prot, aln in self.translations.iteritems():
+            for prot, aln in self.translations.items():
                 self.af[prot] = calc_af(aln, aa_alpha)
                 tmp_af = self.af[prot][:-2]/self.af[prot][:-2].sum(axis=0)
                 self.entropy[prot] = -(tmp_af*np.log(tmp_af+TINY)).sum(axis=0)
@@ -368,7 +368,7 @@ class sequence_set(object):
             S = [max(0,round(x,4)) for x in self.entropy[feat]]
             n = len(S)
             if feat=='nuc':
-                entropy_json[feat] = {'pos':range(0,n), 'codon':[x//3 for x in range(0,n)], 'val':S}
+                entropy_json[feat] = {'pos':list(range(0,n)), 'codon':[x//3 for x in range(0,n)], 'val':S}
             else:
                 entropy_json[feat] = {'pos':[x for x in self.proteins[feat]][::3],
                                       'codon':[(x-self.proteins[feat].start)//3 for x in self.proteins[feat]][::3], 'val':S}

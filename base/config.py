@@ -71,7 +71,7 @@ process = {
 }
 
 def merge(a, b):
-    for key, value in b.iteritems():
+    for key, value in b.items():
         if key in a and isinstance(a[key], dict) and isinstance(b[key], dict):
             a[key] = merge(a[key], b[key])
         else:

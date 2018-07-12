@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+from builtins import range
 import Bio.Phylo
 import numpy as np
 
@@ -23,7 +24,7 @@ def remove_dir(dname, max_attempts=5):
         # Try to remove the given directory repeatedly to compensate for NFS
         # latency that can result in OSError exceptions when a directory appears
         # not to be empty when shutil attempts to remove it.
-        for i in xrange(max_attempts):
+        for i in range(max_attempts):
             try:
                 shutil.rmtree(dname)
                 return

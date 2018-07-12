@@ -2,11 +2,15 @@ import Bio
 import time
 import numpy as np
 import pandas as pd
-from itertools import izip
 from scipy.stats import linregress
 import sys
 
-from scores import calculate_LBI
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass
+
+from .scores import calculate_LBI
 
 # all fitness predictors should be designed to give a positive sign, ie.
 # number of epitope mutations
@@ -163,7 +167,7 @@ class fitness_predictors(object):
                 if not hasattr(node, 'aa'):
                     node.aa = self._translate(node)
                 node.np_ep = np.array(list(self.epitope_sites(node.aa)))
-        print "calculating cross-immunity to " + str(len(comparison_nodes)) + " comparison nodes"
+        print("calculating cross-immunity to " + str(len(comparison_nodes)) + " comparison nodes")
         for node in tree.find_clades(order="postorder"):
             mean_distance = 0
             count = 0

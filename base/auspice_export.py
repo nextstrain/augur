@@ -19,23 +19,23 @@ def export_frequency_json(process, prefix, indent, threshold=0.01):
     if hasattr(process, 'pivots'):
         freq_json = {'pivots':round_freqs(process.pivots, num_dp)}
         if hasattr(process, 'mutation_frequencies'):
-            freq_json['counts'] = {x:list(counts) for x, counts in process.mutation_frequency_counts.iteritems()}
-            for (region, gene), tmp_freqs in process.mutation_frequencies.iteritems():
-                for mut, freq in tmp_freqs.iteritems():
+            freq_json['counts'] = {x:list(counts) for x, counts in process.mutation_frequency_counts.items()}
+            for (region, gene), tmp_freqs in process.mutation_frequencies.items():
+                for mut, freq in tmp_freqs.items():
                     label_str =  region+"_"+ gene + ':' + str(mut[0]+1)+mut[1]
                     if max(freq) > threshold:
                         freq_json[label_str] = round_freqs(freq, num_dp)
         # repeat for clade frequencies in trees
         if hasattr(process, 'tree_frequencies'):
             for region in process.tree_frequencies:
-                for clade, freq in process.tree_frequencies[region].iteritems():
+                for clade, freq in process.tree_frequencies[region].items():
                     label_str = region+'_clade:'+str(clade)
                     if max(freq) > threshold:
                         freq_json[label_str] = round_freqs(freq, num_dp)
         # repeat for named clades
         if hasattr(process, 'clades_to_nodes') and hasattr(process, 'tree_frequencies'):
             for region in process.tree_frequencies:
-                for clade, node in process.clades_to_nodes.iteritems():
+                for clade, node in process.clades_to_nodes.items():
                     label_str = region+'_'+str(clade)
                     freq_json[label_str] = round_freqs(process.tree_frequencies[region][node.clade], num_dp)
         # write to one frequency json
@@ -76,7 +76,7 @@ def summarise_publications_from_tree(tree):
 
 def extract_annotations(runner):
     annotations = {}
-    for name, prot in runner.proteins.iteritems():
+    for name, prot in runner.proteins.items():
         annotations[name] = {
             "start": int(prot.start),
             "end": int(prot.end),
@@ -105,7 +105,7 @@ def export_metadata_json(process, prefix, indent):
     # join up config color options with those in the input JSONs.
     col_opts = process.config["auspice"]["color_options"]
     if process.colors:
-        for trait, col in process.colors.iteritems():
+        for trait, col in process.colors.items():
             if trait in col_opts:
                 col_opts[trait]["color_map"] = col
             else:

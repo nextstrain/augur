@@ -9,6 +9,7 @@ cycler==0.10.0
 decorator==4.3.0
 enum34==1.1.6
 funcsigs==1.0.2
+future==0.16.0
 gitdb2==2.0.3
 GitPython==2.1.10
 ipdb==0.10.3
