@@ -1,15 +1,21 @@
 from __future__ import division, print_function
 import os, time, sys
 sys.path.insert(0,'../') # path.abspath(path.join(__file__ ,".."))
-from io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
+from .io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
 import numpy as np
 import math
 from subprocess import CalledProcessError, check_call, STDOUT
 from pprint import pprint
 from pdb import set_trace
 from Bio import Phylo
-import cPickle as pickle
+import pickle
 from collections import OrderedDict
+
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass
+
 try:
     from treetime import TreeTime
 except ImportError:
@@ -80,8 +86,7 @@ class tree(object):
             node_props[node.name] = {attr:node.__getattribute__(attr) for attr in self.dump_attr if hasattr(node, attr)}
 
         with myopen(nodefile, 'w') as nfile:
-            from cPickle import dump
-            dump(node_props, nfile)
+            pickle.dump(node_props, nfile)
 
     def check_newick(self, newick_file):
         try:
@@ -193,8 +198,7 @@ class tree(object):
         if nodefile is not None:
             self.logger('reading node properties from file: '+nodefile,2)
             with myopen(nodefile, 'r') as infile:
-                from cPickle import load
-                node_props = load(infile)
+                node_props = pickle.load(infile)
             for n in self.tree.find_clades():
                 if n.name in node_props:
                     for attr in node_props[n.name]:
@@ -248,14 +252,14 @@ class tree(object):
                 "timetree_options": ttopts,
                 "clock_filter_options": cfopts,
                 "nodes": n,
-                "original_seqs": self.sequence_lookup.keys(),
+                "original_seqs": list(self.sequence_lookup.keys()),
             }, fh, protocol=pickle.HIGHEST_PROTOCOL)
 
     def restore_timetree_node_info(self, nodes):
         for node in self.tt.tree.find_clades():
             info = nodes[node.name]
             # print("restoring node info for node ", node.name)
-            for k, v in info.iteritems():
+            for k, v in info.items():
                 setattr(node, k, v)
         self.is_timetree=True
 
@@ -340,7 +344,7 @@ class tree(object):
         missing_char = chr(65+nc)
         alphabet[missing_char]=missing
         myGeoGTR.profile_map[missing_char] = np.ones(nc)
-        alphabet_rev = {v:k for k,v in alphabet.iteritems()}
+        alphabet_rev = {v:k for k,v in alphabet.items()}
 
         # set geo info to nodes as one letter sequence.
         self.tt.seq_len = 1
@@ -544,7 +548,6 @@ class tree(object):
                             len(seq)/plain_export
         '''
         from Bio import Seq
-        from itertools import izip
         timetree_fname = path+'_tree.json'
         sequence_fname = path+'_sequences.json'
         tree_json = tree_to_json(self.tree.root, extra_attr=extra_attr)
@@ -555,7 +558,7 @@ class tree(object):
         elems = {}
         elems['root'] = {}
         elems['root']['nuc'] = "".join(self.tree.root.sequence)
-        for prot,seq in self.tree.root.translations.iteritems():
+        for prot,seq in self.tree.root.translations.items():
             elems['root'][prot] = seq
 
         # add sequence for every node in tree. code as difference to root
@@ -564,9 +567,9 @@ class tree(object):
             if hasattr(node, "clade"):
                 elems[node.clade] = {}
                 # loop over proteins and nucleotide sequences
-                for prot, seq in [('nuc', "".join(node.sequence))]+node.translations.items():
+                for prot, seq in [('nuc', "".join(node.sequence))]+list(node.translations.items()):
                     differences = {pos:state for pos, (state, ancstate) in
-                                enumerate(izip(seq, elems['root'][prot]))
+                                enumerate(zip(seq, elems['root'][prot]))
                                 if state!=ancstate}
                     if plain_export*len(differences)<=len(seq):
                         elems[node.clade][prot] = differences

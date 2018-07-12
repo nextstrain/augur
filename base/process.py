@@ -17,7 +17,7 @@ from pdb import set_trace
 from .logger import logger
 from Bio import SeqIO
 from Bio import AlignIO
-import cPickle as pickle
+import pickle
 
 
 def collect_args():
@@ -129,7 +129,6 @@ class process(object):
         write the current state to file
         '''
         self.log.warn("unsure if dump() works")
-        from cPickle import dump
         from Bio import Phylo
         for attr_name, fname in self.file_dumps.iteritems():
             if hasattr(self,attr_name):
@@ -142,21 +141,20 @@ class process(object):
                         #biopython trees don't pickle well, write as newick + node info
                         self.tree.dump(fname, self.file_dumps['nodes'])
                     else:
-                        dump(getattr(self,attr_name), ofile, -1)
+                        pickle.dump(getattr(self,attr_name), ofile, -1)
 
     def load(self, debug=False):
         '''
         reconstruct instance from files
         '''
         self.log.warn("unsure if load() works")
-        from cPickle import load
         for attr_name, fname in self.file_dumps.iteritems():
             if attr_name=='tree':
                 continue
             if os.path.isfile(fname):
                 with myopen(fname, 'r') as ifile:
                     print('loading',attr_name,'from file',fname)
-                    setattr(self, attr_name, load(ifile))
+                    setattr(self, attr_name, pickle.load(ifile))
 
         tree_name = self.file_dumps['tree']
         if os.path.isfile(tree_name):

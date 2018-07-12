@@ -121,9 +121,9 @@ def calculate_sequence_scores(tree, mask_file, lineage, segment, epitope_mask_ve
     ha_masks = read_masks(mask_file)
     try:
         epitope_mask = ha_masks[epitope_mask_version]
-    except KeyError, e:
+    except KeyError as error:
         sys.stderr.write("ERROR: Could not find an epitope mask named '%s'.\n" % epitope_mask_version)
-        raise e
+        raise error
 
     # Get amino acid sequence of root node.
     root = tree.root

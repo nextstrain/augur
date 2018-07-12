@@ -45,8 +45,8 @@ config = {
                     13: 'journal', 14: 'paper_url'},
     "filters": (
         ("Dropped Strains", lambda s: s.id not in [fix_names(x) for x in dropped_strains]),
-        ("Restrict Date Range", lambda s: s.attributes['date'] >= datetime(2012,01,1).date()),
-        ("Restrict Date Range", lambda s: s.attributes['date'] <= datetime(2018,01,1).date()),
+        ("Restrict Date Range", lambda s: s.attributes['date'] >= datetime(2012,1,1).date()),
+        ("Restrict Date Range", lambda s: s.attributes['date'] <= datetime(2018,1,1).date()),
         ("Sequence Length", lambda s: len(s.seq)>=5000),
     ),
     "subsample": {

@@ -4,16 +4,16 @@ parse, filter, subsample and save as JSON
 from __future__ import division, print_function
 import os, re, time, csv, sys
 from .titer_model import TiterCollection
-from io_util import myopen
+from .io_util import myopen
 from collections import defaultdict
 from Bio import SeqIO
 import numpy as np
-from seq_util import pad_nucleotide_sequences, nuc_alpha, aa_alpha
+from .seq_util import pad_nucleotide_sequences, nuc_alpha, aa_alpha
 from datetime import datetime
 import json
 from pdb import set_trace
 import git
-from utils import fix_names, num_date, ambiguous_date_to_date_range, potentially_combine
+from .utils import fix_names, num_date, ambiguous_date_to_date_range, potentially_combine
 from pprint import pprint
 import logging
 
@@ -132,7 +132,7 @@ class sequence_set(object):
         #     self.log.debug("{} missing date(s)".format(seq.name))
 
     def parse_date(self, fmts, prune):
-        if not hasattr(self.seqs.values()[0], "attributes"):
+        if not hasattr(list(self.seqs.values())[0], "attributes"):
             self.log.fatal("parse meta info first")
         from datetime import datetime
         for seq in self.seqs.values():
@@ -145,17 +145,17 @@ class sequence_set(object):
     def filterSeqs(self, funcName, func):
         names = set(self.seqs.keys())
         if hasattr(self, "reference") and self.reference.include == 2:
-            self.seqs = {key:seq for key, seq in self.seqs.iteritems() if func(seq) or key==self.reference.name}
+            self.seqs = {key:seq for key, seq in self.seqs.items() if func(seq) or key==self.reference.name}
         else:
-            self.seqs = {key:seq for key, seq in self.seqs.iteritems() if func(seq)}
+            self.seqs = {key:seq for key, seq in self.seqs.items() if func(seq)}
         for name in names - set(self.seqs.keys()):
             self.log.drop(name, self.segmentName, funcName)
 
     # def filter(self, func, leave_ref=False):
     #     if leave_ref:
-    #         self.all_seqs = {key:seq for key, seq in self.all_seqs.iteritems() if func(seq) or key==self.reference_seq.name}
+    #         self.all_seqs = {key:seq for key, seq in self.all_seqs.items() if func(seq) or key==self.reference_seq.name}
     #     else:
-    #         self.all_seqs = {key:seq for key, seq in self.all_seqs.iteritems() if func(seq)}
+    #         self.all_seqs = {key:seq for key, seq in self.all_seqs.items() if func(seq)}
     #     print("Filtered to %d sequences"%len(self.all_seqs))
 
     def getSubsamplingFunc(self, config, name):
@@ -217,7 +217,7 @@ class sequence_set(object):
 
             # collect taxa to include
             include = set([])
-            for cat, seqs in self.sequence_categories.iteritems():
+            for cat, seqs in self.sequence_categories.items():
                 under_sampling = min(1.00, 1.0*len(seqs)/threshold(cat))
                 for s in seqs: s.under_sampling=under_sampling
                 seqs.sort(key=lambda x:x._priority, reverse=True)
@@ -228,7 +228,7 @@ class sequence_set(object):
 
     def get_trait_values(self, trait):
         vals = set()
-        for seq, obj in self.seqs.iteritems():
+        for seq, obj in self.seqs.items():
             if trait in obj.attributes:
                 vals.add(obj.attributes[trait])
         # don't forget the reference here
@@ -274,7 +274,7 @@ class sequence_set(object):
         data["info"]["segment"] = self.segmentName
         potentially_combine(config, data["info"], "resolution", False)
         data["sequences"] = {}
-        for seqName, seq in self.seqs.iteritems():
+        for seqName, seq in self.seqs.items():
             data["sequences"][seqName] = {
                 "attributes": seq.attributes,
                 "seq": str(seq.seq)
@@ -297,7 +297,7 @@ class sequence_set(object):
 
             # Convert tuple dictionary keys to strings for JSON compatability.
             data["titers"] = {str(key): value
-                              for key, value in filtered_titers.iteritems()}
+                              for key, value in filtered_titers.items()}
             logger.debug("Filtered titers from %i to %i measures" % (len(config["titers"]), len(data["titers"])))
 
         # Flu-specific elements...
@@ -344,7 +344,7 @@ class sequence_set(object):
             self.reference.genes = {}
 
         # use the supplied metadata dict to define attributes
-        seq_attr_keys = self.seqs.values()[0].attributes.keys()
+        seq_attr_keys = list(self.seqs.values())[0].attributes.keys()
         self.reference.attributes = {k:fix_names(v) for k,v in metadata.items() if k in seq_attr_keys}
         self.reference.name = self.reference.attributes["strain"]
         self.reference.id = self.reference.attributes["strain"]

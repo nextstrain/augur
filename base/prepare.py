@@ -93,13 +93,13 @@ class prepare(object):
 
         for (fName, fFunc) in self.config["filters"]:
             if callable(fFunc):
-                for seg, obj in self.segments.iteritems():
+                for seg, obj in self.segments.items():
                     tmp = len(obj.seqs)
                     obj.filterSeqs(fName, fFunc)
                     self.log.notify("Applied filter '{}' to segment '{}'. n: {} -> {}".format(fName, seg, tmp, len(obj.seqs)))
             else: # wasn't callable
                 if isinstance(fFunc, dict):
-                    for seg, segFunc in fFunc.iteritems():
+                    for seg, segFunc in fFunc.items():
                         if callable(segFunc) and seg in self.segments.keys():
                             tmp = len(self.segments[seg].seqs)
                             self.segments[seg].filterSeqs(fName, segFunc)
@@ -126,10 +126,10 @@ class prepare(object):
             if len(self.segments) == 1:
                 self.log.notify("Ignoring \"ensure_all_segments\" as there's only 1 segment...")
                 return
-            in_all = set.intersection(*[set(obj.seqs.keys()) for seg, obj in self.segments.iteritems()])
+            in_all = set.intersection(*[set(obj.seqs.keys()) for seg, obj in self.segments.items()])
             # to_drop = {n for segment in self.segments.keys() for n in self.segments[segment].seqs.keys()} - in_all
             self.log.notify("Removing sequences without the full complement of segments")
-            for seg, obj in self.segments.iteritems():
+            for seg, obj in self.segments.items():
                 obj.filterSeqs("ensure_all_segments", lambda s: s.name in  in_all)
                 # NB if reference.include == 2 the refs will be kept (per segment)
             self.log.notify("n(seqs): "+ ", ".join([a+"="+str(len(b.seqs)) for a,b in self.segments.items()]))
@@ -164,7 +164,7 @@ class prepare(object):
                     self.log.warn("Colour trait {} not in header_fields. Skipping".format(trait))
                     continue
                 self.log.notify("Generating colour maps for '{}'".format(trait))
-                vals = set.union(*[obj.get_trait_values(trait) for seg, obj in self.segments.iteritems()])
+                vals = set.union(*[obj.get_trait_values(trait) for seg, obj in self.segments.items()])
                 missing_vals = vals - set([x[0] for x in cols[trait]]) - set(["?"])
                 if len(missing_vals):
                     cols[trait].extend(generate_cmap(missing_vals, False))
@@ -172,7 +172,7 @@ class prepare(object):
                 for idx in [i for i, v in enumerate(cols[trait]) if v[0] not in vals][::-1]:
                     del cols[trait][idx]
             # save to each sequence_set object. It's them that write the JSONs
-            for seg, obj in self.segments.iteritems():
+            for seg, obj in self.segments.items():
                 obj.extras["colors"] = cols
 
     def latlongs(self):
@@ -186,7 +186,7 @@ class prepare(object):
             if not len(lat_long_db):
                 self.log.fatal("You asked for lat/longs but the definition files weren't useful")
             for trait in self.config["lat_longs"]:
-                vals = set.union(*[obj.get_trait_values(trait) for seg, obj in self.segments.iteritems()])
+                vals = set.union(*[obj.get_trait_values(trait) for seg, obj in self.segments.items()])
                 lat_longs[trait] = {}
                 # do it the long way to handle missing data
                 for key in vals: # well named
@@ -198,7 +198,7 @@ class prepare(object):
                             self.log.warn("Unknown lat/longs for {} {}. Setting to 0,0 in order to appease auspice but you should fix this.".format(trait, key))
 
             # save to each sequence_set object. It's them that write the JSONs
-            for seg, obj in self.segments.iteritems():
+            for seg, obj in self.segments.items():
                 obj.extras["lat_longs"] = lat_longs
 
     def load_references(self):
@@ -207,14 +207,14 @@ class prepare(object):
                 self.log.fatal("Config must define references (not reference) for segemented virus")
             self.segments[self.config["segments"][0]].load_reference(fmts=self.config["date_format"], **self.config["reference"])
         elif "references" in self.config:
-            for k, v in self.config["references"].iteritems():
+            for k, v in self.config["references"].items():
                 if k not in self.segments.keys():
                     self.log.warn("Reference segment {} not found in segments".format(k))
                 else:
                     self.segments[k].load_reference(fmts=self.config["date_format"], **v)
 
     def write_to_json(self, segment_addendum=False):
-        for seg, obj in self.segments.iteritems():
+        for seg, obj in self.segments.items():
             prefix = self.config["file_prefix"]
             if segment_addendum:                                # add segment to file
                 if "*segment*" in prefix:                       # replace *segment* placeholder if it exists

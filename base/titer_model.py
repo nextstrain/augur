@@ -5,9 +5,13 @@ import numpy as np
 import time
 from collections import defaultdict
 from .io_util import myopen
-from itertools import izip
 import pandas as pd
 from pprint import pprint
+
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass
 
 TITER_ROUND=4
 logger = logging.getLogger(__name__)
@@ -684,7 +688,7 @@ class TreeModel(TiterModel):
                 tmp_p.append(self.tree.root)
                 tmp_p.reverse()
 
-            for pi, (tmp_v1, tmp_v2) in enumerate(izip(p1,p2)):
+            for pi, (tmp_v1, tmp_v2) in enumerate(zip(p1,p2)):
                 if tmp_v1!=tmp_v2:
                     break
             path = [n for n in p1[pi:] if n.titer_info>1] + [n for n in p2[pi:] if n.titer_info>1]
@@ -850,7 +854,7 @@ class SubstitutionModel(TiterModel):
             seq1 = node1.translations[prot]
             seq2 = node2.translations[prot]
             muts.extend([(prot, aa1+str(pos+1)+aa2) for pos, (aa1, aa2)
-                        in enumerate(izip(seq1, seq2)) if aa1!=aa2])
+                        in enumerate(zip(seq1, seq2)) if aa1!=aa2])
         return muts
 
 
@@ -934,7 +938,7 @@ class SubstitutionModel(TiterModel):
         mutation_clusters = []
         n_measurements = self.design_matrix.shape[0]
         # a greedy algorithm: if column is similar to existing cluster -> merge with cluster, else -> new cluster
-        for col, mut in izip(TT, self.relevant_muts):
+        for col, mut in zip(TT, self.relevant_muts):
             col_found = False
             for cluster in mutation_clusters:
                 # similarity is defined as number of measurements at whcih the cluster and column differ
