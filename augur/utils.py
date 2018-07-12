@@ -228,7 +228,7 @@ def read_lat_longs(overrides=None, use_defaults=True):
                     if line.startswith('#'): continue
                     fields = line.strip().split()
                     if len(fields) == 4:
-                        geo_field, loc = fields[0], fields[1]
+                        geo_field, loc = fields[0].lower(), fields[1].lower()
                         lat, long = float(fields[2]), float(fields[3])
                         coordinates[(geo_field, loc)] = {
                             "latitude": lat,

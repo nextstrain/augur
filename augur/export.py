@@ -115,9 +115,9 @@ def process_geo_resolutions(meta_json, lat_long_mapping, nodes):
         demesInTree = {node[trait] for node in nodes.values() if trait in node}
         for deme in demesInTree:
             try:
-                geo[trait][deme] = lat_long_mapping[(trait,deme)]
+                geo[trait][deme] = lat_long_mapping[(trait.lower(),deme.lower())]
             except KeyError:
-                print("Error. {}->{} did not have an associated lat/long value".format(trait, deme))
+                print("Error. {}->{} did not have an associated lat/long value (matching performed in lower case)".format(trait, deme))
     return geo
 
 def process_annotations(node_data):
