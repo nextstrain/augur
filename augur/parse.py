@@ -1,7 +1,17 @@
 from Bio import SeqIO
 import pandas as pd
 
-forbidden_characters = [(' ','_'),('-','_'),  ('(','_'),(')','_'),(':','_'),(',','_'),(';','_'),('\\','_')]
+forbidden_characters = [
+    (' ', '_'),
+    ('-', '_'),
+    ('(', '_'),
+    (')', '_'),
+    (':', '_'),
+    (',', '_'),
+    (';', '_'),
+    ('\\', '_')
+]
+
 
 def fix_dates(d, dayfirst=True):
     '''
@@ -13,13 +23,13 @@ def fix_dates(d, dayfirst=True):
     try:
         dto, _, res = pd.core.tools.datetimes.parse_time_string(d, dayfirst=dayfirst)
         if res == 'year':
-            return "%d-XX-XX"%dto.year
+            return "%d-XX-XX" % dto.year
         elif res == 'month':
-            return "%d-%02d-XX"%(dto.year, dto.month)
+            return "%d-%02d-XX" % (dto.year, dto.month)
         else:
-            return "%d-%02d-%02d"%(dto.year, dto.month, dto.day)
+            return "%d-%02d-%02d" % (dto.year, dto.month, dto.day)
     except Exception as e:
-        print("WARNING: unable to parse %s as date"%d, e)
+        print("WARNING: unable to parse %s as date" % d, e)
         return d
 
 
@@ -49,15 +59,17 @@ def run(args):
 
         seq.name = seq.id = tmp_name
         seq.description = ''
-        meta_data[seq.id] = {k:v for k,v in zip(args.fields, fields) }
+        meta_data[seq.id] = {k: v for k, v in zip(args.fields, fields)}
         meta_data[seq.id].pop('strain')
         # parse dates and convert to a canonical format
         if args.fix_dates and 'date' in args.fields:
-            meta_data[seq.id]['date'] = fix_dates(meta_data[seq.id]['date'],
-                                        dayfirst=args.fix_dates=='dayfirst')
+            meta_data[seq.id]['date'] = fix_dates(
+                                            meta_data[seq.id]['date'],
+                                            dayfirst=args.fix_dates == 'dayfirst'
+                                        )
 
     # output results to a new fasta alignment and tsv/csv via pandas
     SeqIO.write(seqs, args.output_sequences, 'fasta')
     df = pd.DataFrame.from_dict(meta_data, orient='index')
     df.to_csv(args.output_metadata, index_label='strain',
-              sep='\t' if args.output_metadata[-3:]=='tsv' else ',')
+              sep='\t' if args.output_metadata[-3:] == 'tsv' else ',')
