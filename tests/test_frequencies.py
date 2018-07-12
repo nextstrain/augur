@@ -244,3 +244,19 @@ class TestKdeFrequencies(object):
 
         assert kde_frequencies.pivot_frequency == new_kde_frequencies.pivot_frequency
         assert not hasattr(new_kde_frequencies, "frequencies")
+
+    def test_get_params(self, tree):
+        """Test export of parameters used to create an instance.
+        """
+        initial_params = {
+            "max_date": 2017.0,
+            "start_date": 2015.5,
+            "end_date": 2018.5
+        }
+        kde_frequencies = KdeFrequencies(**initial_params)
+        frequencies = kde_frequencies.estimate(tree)
+
+        # Confirm that the exported parameters match the input.
+        params = kde_frequencies.get_params()
+        for param in initial_params:
+            assert params[param] == initial_params[param]
