@@ -77,6 +77,7 @@ def make_config(prepared_json, args):
         "estimate_tree_frequencies": not args.no_tree_freqs,
         "estimate_kde_frequencies": not args.no_kde_freqs,
         "ha_masks": "metadata/ha_masks.tsv",
+        "na_masks": "metadata/na_masks.tsv",
         "epitope_mask_version": args.epitope_mask_version,
         "tolerance_mask_version": args.tolerance_mask_version,
         "glyc_mask_version": args.glyc_mask_version,
@@ -622,12 +623,14 @@ if __name__=="__main__":
                 "vmax": 0.7
             }
 
-        if runner.info["segment"]=='ha' and runner.info["lineage"] in ["h3n2", "h1n1pdm"]:
+        if ((runner.info["segment"] == 'ha' and runner.info["lineage"] in ["h3n2", "h1n1pdm"]) or
+            (runner.info["segment"] == 'na' and runner.info["lineage"] == "h3n2")):
 
-            print("Calculating scores with epitope mask '%s' and glycosylation mask '%s'." % (runner.config["epitope_mask_version"], runner.config["glyc_mask_version"]))
+            print("Calculating scores with epitope mask '%s' and glycosylation mask '%s'." %
+                  (runner.config["epitope_mask_version"], runner.config["glyc_mask_version"]))
             calculate_sequence_scores(
                 runner.tree.tree,
-                runner.config["ha_masks"],
+                runner.config["%s_masks" % runner.info["segment"]],
                 runner.info["lineage"],
                 runner.info["segment"],
                 epitope_mask_version=runner.config["epitope_mask_version"],
@@ -637,8 +640,14 @@ if __name__=="__main__":
             assert "ne" in runner.tree.tree.root.attr, "non-epitope mutations not annotated"
             assert "glyc" in runner.tree.tree.root.attr, "glycosylation not annotated"
 
-            if runner.info["lineage"] == "h3n2":
+            if runner.info["segment"] == "ha" and runner.info["lineage"] == "h3n2":
                 assert "rb" in runner.tree.tree.root.attr, "rbs mutations not annotated"
+                runner.config["auspice"]["color_options"]["rb"] = {
+                    "menuItem": "receptor binding mutations",
+                    "type": "continuous",
+                    "legendTitle": "Receptor binding mutations",
+                    "key": "rb"
+                }
 
             # Define color options for sequence score annotations.
             runner.config["auspice"]["color_options"]["ep"] = {
@@ -660,14 +669,6 @@ if __name__=="__main__":
             # "legendTitle": "Pot. glycosylation count",
             #     "key": "glyc"
             # }
-
-            if runner.info["lineage"]=='h3n2':
-                runner.config["auspice"]["color_options"]["rb"] = {
-                    "menuItem": "receptor binding mutations",
-                    "type": "continuous",
-                    "legendTitle": "Receptor binding mutations",
-                    "key": "rb"
-                }
 
         # titers
         if hasattr(runner, "titers") and runner.info["segment"] == "ha":
