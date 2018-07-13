@@ -27,7 +27,7 @@ setup(
         ],
         extras_require={
             'dev': [
-                "pylint >=1.9.2, ==1.9.*",
+                "pylint >=1.7.6, ==1.7.*",
                 "pytest >=3.2.1, ==3.*",
             ]
         },
