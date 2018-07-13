@@ -4,6 +4,11 @@ Unit tests for frequency estimation
 import json
 import numpy as np
 import pytest
+import sys
+import os
+
+# we assume (and assert) that this script is running from the tests/ directory
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from base.frequencies import KdeFrequencies
 from base.io_util import json_to_tree

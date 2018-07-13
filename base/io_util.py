@@ -110,7 +110,7 @@ def json_to_tree(json_dict, root=True):
     Assigns links back to parent nodes for the root of the tree.
 
     >>> import json
-    >>> json_fh = open("tests/json_tree_to_nexus/flu_h3n2_ha_3y_tree.json", "r")
+    >>> json_fh = open("tests/data/json_tree_to_nexus/flu_h3n2_ha_3y_tree.json", "r")
     >>> json_dict = json.load(json_fh)
     >>> tree = json_to_tree(json_dict)
     >>> tree.name
@@ -160,7 +160,7 @@ def json_to_clade_frequencies(json_dict):
     where the key is "{region}_clade:{clade}" and the values are the frequencies per timepoint.
 
     >>> import json
-    >>> json_fh = open("tests/json_tree_to_nexus/flu_h3n2_ha_3y_frequencies.json", "r")
+    >>> json_fh = open("tests/data/json_tree_to_nexus/flu_h3n2_ha_3y_frequencies.json", "r")
     >>> json_dict = json.load(json_fh)
     >>> frequencies = json_to_clade_frequencies(json_dict)
     >>> len(frequencies["pivots"])
