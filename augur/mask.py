@@ -71,9 +71,12 @@ def run(args):
     print(" ".join(call))
     os.system(" ".join(call))
     os.remove(tempMaskFile) #remove masking file
-    os.remove('out.log') #remove vcftools log file
+    # remove vcftools log file
+    try:
+        os.remove('out.log')
+    except OSError:
+        pass
 
     #remove copy of input if there was no output specified
     if not(args.output):
         os.remove(in_file)
-
