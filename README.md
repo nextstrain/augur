@@ -90,10 +90,10 @@ Additionally, bacterial builds require a working installation of [vcftools](http
 If you're going to be editing augur source code rather than just running augur from command line, it's recommended to install with
 
 ```
-pip3 install --process-dependency-links -e .
+pip3 install --process-dependency-links -e .[dev]
 ```
 
-to make module "editable".
+to make module "editable" and install dev dependencies.
 
 
 ## Virus builds
