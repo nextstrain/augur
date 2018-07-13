@@ -4,13 +4,14 @@ python:
   - "2.7"
   - "3.6"
 before_install:
-  - echo $TRAVIS_PYTHON_VERSION
   - sudo apt-get -y update
   - sudo apt-get install -y mafft
   - sudo apt-get install -y fasttree
+  - sudo apt-get install -y vcftools  
 install:
   - if [ $TRAVIS_PYTHON_VERSION = "2.7" ]; then pip install -r requirements.txt; fi
   - if [ $TRAVIS_PYTHON_VERSION = "3.6" ]; then pip3 install --process-dependency-links -e .[dev]; fi
 script:
   - if [ $TRAVIS_PYTHON_VERSION = "2.7" ]; then pytest; fi
   - if [ $TRAVIS_PYTHON_VERSION = "3.6" ]; then (cd tests/builds/zika/; snakemake); fi
+  - if [ $TRAVIS_PYTHON_VERSION = "3.6" ]; then (cd tests/builds/tb/; snakemake); fi
