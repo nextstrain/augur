@@ -77,7 +77,7 @@ rule tree:
     output:
         tree = "results/tree_raw.nwk"
     params:
-        method = "fasttree"
+        method = "iqtree"
     shell:
         """
         augur tree \
