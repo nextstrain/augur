@@ -4,6 +4,11 @@ Tests for the `fitness_predictors` module.
 import Bio.Phylo
 import Bio.SeqIO
 import pytest
+import sys
+import os
+
+# we assume (and assert) that this script is running from the tests/ directory
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 try:
     from StringIO import StringIO
@@ -27,7 +32,7 @@ def fitness_predictor():
 def sequence():
     """Returns an amino acid sequence for an ancestral H3N2 virus (Hong Kong 1968).
     """
-    with open("tests/fitness_model/AAK51718.fasta", "r") as handle:
+    with open("tests/data/fitness_model/AAK51718.fasta", "r") as handle:
         record = list(Bio.SeqIO.parse(handle, "fasta"))[0]
 
     aa = str(record.seq)
