@@ -30,3 +30,7 @@ script:
   - if [ $TRAVIS_PYTHON_VERSION = "2.7" ]; then pytest; fi
   - if [ $TRAVIS_PYTHON_VERSION = "3.6" ]; then (cd tests/builds/zika/; snakemake); fi
   - if [ $TRAVIS_PYTHON_VERSION = "3.6" ]; then (cd tests/builds/tb/; snakemake); fi
+after_success:
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "3.6" && $TRAVIS_BRANCH = "master" ]]; then
+      ./scripts/rebuild-docker-image.sh;
+    fi
