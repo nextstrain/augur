@@ -7,14 +7,16 @@ import shutil, json
 
 def read_in_DRMs(drm_file):
     '''
-    Reads in and stores position, ref & alt base, drug, AA change, and gene
+    Reads in and stores position, ref & alt base, drug, AA change
     of drug resistance mutations (DRMs)
     This reads in the file-format below - don't know if standardized!
 
-    KEY	GENOMIC_POSITION	REF_BASE	ALT_BASE	LOCUS	GENE	SUBSTITUTION	DRUG	SOURCE	COMMENT
-    1	6505	G	T	Rv0005	gyrB	D461N	FQ	Malik_PLOS_ONE_2012
-    2	6505	G	C	Rv0005	gyrB	D461N	FQ	Malik_PLOS_ONE_2012
-    3	6618	G	A	Rv0005	gyrB	N499D	FQ	Malik_PLOS_ONE_2012
+    GENOMIC_POSITION	ALT_BASE	SUBSTITUTION	DRUG
+    6505	T	D461N	FQ
+    6505	C	D461N	FQ
+    760314	T	V170F	RIF
+    760882	C	V359A	RIF
+
     '''
     import pandas as pd
 
@@ -34,14 +36,13 @@ def read_in_DRMs(drm_file):
             DRMs[pos]['base'] = [m.ALT_BASE]
             DRMs[pos]['drug'] = m.DRUG
             DRMs[pos]['AA'] = [m.SUBSTITUTION]
-            DRMs[pos]['gene'] = m.GENE
 
     drmPositions = np.array(drmPositions)
     drmPositions = np.unique(drmPositions)
     drmPositions = np.sort(drmPositions)
 
     DRM_info = {'DRMs': DRMs,
-            'drmPositions': drmPositions}
+                'drmPositions': drmPositions}
 
     return DRM_info
 
@@ -61,23 +62,6 @@ def drugTranslate(x):
         'KAN': 'Kanamycin',
         'AK': 'Amikacin'
     }[x]
-
-def get_N_HexCol(n=5):
-    '''
-    Auto-generate colours for DRMs to prevent users having to do it
-
-    modified from jhrf's answer on stackoverflow: (modified to py3 from ceprio's answer)
-    https://stackoverflow.com/questions/876853/generating-color-ranges-in-python
-    '''
-    import colorsys
-
-    HSV_tuples = [(x*1.0/n, 0.7, 0.7) for x in range(n)]
-    hex_out = []
-    for rgb in HSV_tuples:
-        rgb = map(lambda x: int(x*255),colorsys.hsv_to_rgb(*rgb))
-        hex_out.append('#%02x%02x%02x' % tuple(rgb))
-        #hex_out.append("#"+"".join(map(lambda x: chr(x).encode('hex'),rgb)))
-    return hex_out
 
 
 def find_drms(DRM_info, sequences):
@@ -174,32 +158,3 @@ def run(args):
     #write out json
     with open(args.output, 'w') as results:
         json.dump({"nodes":drm_meta}, results, indent=1)
-
-    #Generate colours
-    newColAdds = []
-    drugMuts["Drug_Resistance"].sort()
-    for drug,muts in drugMuts.items():
-        cols = get_N_HexCol(len(muts))
-        drugCol = [ "\t".join([drug, muts[i], cols[i]]) for i in range(len(muts)) ]
-        drugCol.append("")
-        newColAdds = newColAdds + drugCol
-
-    #copy and add to existing color file, if supplied:
-    write_status = 'w'
-    if args.colors:
-        shutil.copyfile(args.colors, args.colors_output)
-        write_status = 'a'
-        newColAdds = ['',''] + newColAdds #skips a line, looks nice
-
-    with open(args.colors_output, write_status) as the_file:
-        the_file.write("\n".join(newColAdds))
-
-
-
-
-
-
-
-
-
-
