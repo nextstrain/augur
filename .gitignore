@@ -18,9 +18,10 @@ dist/
 # For Python #
 ##############
 *.pyc
-.tox/
 .cache/
 augur.egg-info/
+env/
+.pytest_cache
 
 # Compiled source #
 ###################

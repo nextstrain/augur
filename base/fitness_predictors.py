@@ -2,11 +2,15 @@ import Bio
 import time
 import numpy as np
 import pandas as pd
-from itertools import izip
 from scipy.stats import linregress
 import sys
 
-from builds.flu.scores import calculate_LBI
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass
+
+from .scores import calculate_LBI
 
 # all fitness predictors should be designed to give a positive sign, ie.
 # number of epitope mutations
@@ -80,7 +84,7 @@ class fitness_predictors(object):
         a predefined epitope mask.
         """
         sites = []
-        for a, m in izip(aa, self.epitope_mask):
+        for a, m in zip(aa, self.epitope_mask):
             if m == '1':
                 sites.append(a)
         return ''.join(sites)
@@ -90,7 +94,7 @@ class fitness_predictors(object):
         non-epitope sites.
         """
         sites = []
-        for a, m in izip(aa, self.tolerance_mask):
+        for a, m in zip(aa, self.tolerance_mask):
             if m == '0':
                 sites.append(a)
         return ''.join(sites)
@@ -108,7 +112,7 @@ class fitness_predictors(object):
         """Return distance of sequences aaA and aaB by comparing epitope sites"""
         epA = self.epitope_sites(aaA)
         epB = self.epitope_sites(aaB)
-        distance = sum(a != b for a, b in izip(epA, epB))
+        distance = sum(a != b for a, b in zip(epA, epB))
         return distance
 
     def fast_epitope_distance(self, epA, epB):
@@ -119,14 +123,14 @@ class fitness_predictors(object):
         """Return distance of sequences aaA and aaB by comparing non-epitope sites"""
         neA = self.nonepitope_sites(aaA)
         neB = self.nonepitope_sites(aaB)
-        distance = sum(a != b for a, b in izip(neA, neB))
+        distance = sum(a != b for a, b in zip(neA, neB))
         return distance
 
     def rbs_distance(self, aaA, aaB):
         """Return distance of sequences aaA and aaB by comparing receptor binding sites (Koel sites)"""
         rbsA = self.receptor_binding_sites(aaA)
         rbsB = self.receptor_binding_sites(aaB)
-        distance = sum(a != b for a, b in izip(rbsA, rbsB))
+        distance = sum(a != b for a, b in zip(rbsA, rbsB))
         return distance
 
     def calc_epitope_distance(self, tree, attr='ep', ref = None):
@@ -163,7 +167,7 @@ class fitness_predictors(object):
                 if not hasattr(node, 'aa'):
                     node.aa = self._translate(node)
                 node.np_ep = np.array(list(self.epitope_sites(node.aa)))
-        print "calculating cross-immunity to " + str(len(comparison_nodes)) + " comparison nodes"
+        print("calculating cross-immunity to " + str(len(comparison_nodes)) + " comparison nodes")
         for node in tree.find_clades(order="postorder"):
             mean_distance = 0
             count = 0

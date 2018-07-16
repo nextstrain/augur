@@ -1,16 +1,20 @@
 import argparse
 from collections import defaultdict
-from itertools import izip
 import numpy as np
 import os
 import pandas as pd
 from scipy.interpolate import interp1d
 from scipy.stats import linregress, spearmanr
 
-from base.io_util import write_json
-from builds.flu.scores import select_nodes_in_season
-from frequencies import logit_transform, tree_frequencies
-from fitness_predictors import fitness_predictors
+from .io_util import write_json
+from .scores import select_nodes_in_season
+from .frequencies import logit_transform, tree_frequencies
+from .fitness_predictors import fitness_predictors
+
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass
 
 min_tips = 10
 pc=1e-2
@@ -178,7 +182,7 @@ class fitness_model(object):
         for node in self.nodes:
             tmp_tips = []
             if node.is_terminal():
-                tmp_tips.append((tip_index_region_specific, node.numdate))
+                tmp_tips.append((tip_index_region_specific, node.attr["num_date"]))
                 tip_index_region_specific += 1
 
             for child in node.clades:
@@ -309,7 +313,7 @@ class fitness_model(object):
         for node in self.nodes:
             node.predictors = {}
         for time in self.timepoints:
-            if self.verbose: print "calculating predictors for time", time
+            if self.verbose: print("calculating predictors for time", time)
             select_nodes_in_season(self.tree, time, self.time_window)
             self.calc_predictors(time)
             for node in self.nodes:
@@ -324,7 +328,7 @@ class fitness_model(object):
     def standardize_predictors(self):
         self.predictor_means = {}
         self.predictor_sds = {}
-        if self.verbose: print "standardizing predictors"
+        if self.verbose: print("standardizing predictors")
         for time in self.timepoints:
             values = self.predictor_arrays[time]
             weights = self.freq_arrays[time]
@@ -394,7 +398,7 @@ class fitness_model(object):
         if any(np.isnan(timepoint_errors)+np.isinf(timepoint_errors)):
             mean_error = 1e10
         self.last_fit = mean_error
-        if self.verbose>2: print params, self.last_fit
+        if self.verbose>2: print(params, self.last_fit)
         penalty = regularization*np.sum(params**2)
         if self.enforce_positive_predictors:
             for param in params:
@@ -425,7 +429,7 @@ class fitness_model(object):
         if any(np.isnan(seasonal_errors)+np.isinf(seasonal_errors)):
             mean_error = 1e10
         self.last_fit = mean_error
-        if self.verbose>2: print params, self.last_fit
+        if self.verbose>2: print(params, self.last_fit)
         return mean_error + regularization*np.sum(params**2)
 
     def fitness(self, params, pred):
@@ -437,12 +441,12 @@ class fitness_model(object):
     def minimize_clade_error(self):
         from scipy.optimize import fmin as minimizer
         if self.verbose:
-            print "initial function value:", self.clade_fit(self.model_params)
-            print "initial parameters:", self.model_params
+            print("initial function value:", self.clade_fit(self.model_params))
+            print("initial parameters:", self.model_params)
         self.model_params = minimizer(self.clade_fit, self.model_params, disp = self.verbose>1)
         if self.verbose:
-            print "final function value:", self.clade_fit(self.model_params)
-            print "final parameters:", self.model_params, '\n'
+            print("final function value:", self.clade_fit(self.model_params))
+            print("final parameters:", self.model_params, '\n')
 
     def prep_af(self):
         if not hasattr(self,'variable_nuc'):
@@ -459,12 +463,12 @@ class fitness_model(object):
     def minimize_af_error(self):
         from scipy.optimize import fmin as minimizer
         if self.verbose:
-            print "initial function value:", self.af_fit(self.model_params)
-            print "initial parameters:", self.model_params
+            print("initial function value:", self.af_fit(self.model_params))
+            print("initial parameters:", self.model_params)
         self.model_params = minimizer(self.af_fit, self.model_params, disp = self.verbose>1)
         if self.verbose:
-            print "final function value:", self.af_fit(self.model_params)
-            print "final parameters:", self.model_params, '\n'
+            print("final function value:", self.af_fit(self.model_params))
+            print("final parameters:", self.model_params, '\n')
 
 
     def learn_parameters(self, niter = 10, fit_func = "clade"):
@@ -478,19 +482,19 @@ class fitness_model(object):
             print("fit function", fit_func,"does not exist")
             raise NotImplementedError
 
-        print "fitting parameters of the fitness model\n"
+        print("fitting parameters of the fitness model\n")
 
         params_stack = []
 
         if self.verbose:
-            print "null parameters"
+            print("null parameters")
         self.model_params = 0*np.ones(len(self.predictors))  # initial values
         minimize_error()
         params_stack.append((self.last_fit, self.model_params))
 
         for ii in xrange(niter):
             if self.verbose:
-                print "iteration:", ii+1
+                print("iteration:", ii+1)
             self.model_params = np.random.rand(len(self.predictors)) #0*np.ones(len(self.predictors))  # initial values
             minimize_error()
             params_stack.append((self.last_fit, self.model_params))
@@ -498,14 +502,14 @@ class fitness_model(object):
         self.model_params = params_stack[np.argmin([x[0] for x in params_stack])][1]
         fit_func(self.model_params)
         if self.verbose:
-            print "best after",niter,"iterations\nfunction value:", self.last_fit
-            print "fit parameters:"
-            for pred, val in izip(self.predictors, self.model_params):
-                print pred,':', val
+            print("best after",niter,"iterations\nfunction value:", self.last_fit)
+            print("fit parameters:")
+            for pred, val in zip(self.predictors, self.model_params):
+                print(pred,':', val)
 
 
     def assign_fitness(self):
-        if self.verbose: print "calculating predictors for the final timepoint"
+        if self.verbose: print("calculating predictors for the final timepoint")
         final_timepoint = self.timepoints[-1]
 
         for node in self.nodes:
@@ -554,7 +558,7 @@ class fitness_model(object):
             import matplotlib.pyplot as plt
 
             fig, axs = plt.subplots(1,4, figsize=(10,5))
-            for time, pred_vs_true in izip(self.timepoints[:-1], self.pred_vs_true):
+            for time, pred_vs_true in zip(self.timepoints[:-1], self.pred_vs_true):
                 # 0: initial, 1: observed, 2: predicted
                 axs[0].scatter(pred_vs_true[:,1], pred_vs_true[:,2])
                 axs[1].scatter(pred_vs_true[:,1]/pred_vs_true[:,0],
@@ -579,7 +583,7 @@ class fitness_model(object):
             axs[3].set_yscale('log')
 
         abs_clade_error = self.clade_fit(self.model_params)
-        print("Abs clade error:"), abs_clade_error
+        print("Abs clade error:", abs_clade_error)
 
         rho_null, rho_raw, rho_rel = self.get_correlation()
         print("Spearman's rho, null:", rho_null)
@@ -609,7 +613,7 @@ class fitness_model(object):
         print("Matthew's correlation coefficient: %s" % trajectory_mcc)
 
         pred_data = []
-        for time, pred_vs_true in izip(self.timepoints[:-1], self.pred_vs_true):
+        for time, pred_vs_true in zip(self.timepoints[:-1], self.pred_vs_true):
             for entry in pred_vs_true:
                 pred_data.append(np.append(entry, time))
         pred_vs_true_df = pd.DataFrame(pred_data, columns=['initial', 'obs', 'pred', 'time'])
@@ -688,7 +692,7 @@ def main(params):
     from io_util import write_json
     from tree_util import json_to_dendropy, dendropy_to_json
 
-    print "--- Start fitness model optimization at " + time.strftime("%H:%M:%S") + " ---"
+    print("--- Start fitness model optimization at " + time.strftime("%H:%M:%S") + " ---")
 
     tree_fname='data/tree_refine.json'
     tree =  json_to_dendropy(read_json(tree_fname))

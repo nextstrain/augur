@@ -4,10 +4,14 @@ import logging
 import numpy as np
 import time
 from collections import defaultdict
-from base.io_util import myopen
-from itertools import izip
+from .io_util import myopen
 import pandas as pd
 from pprint import pprint
+
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass
 
 TITER_ROUND=4
 logger = logging.getLogger(__name__)
@@ -32,7 +36,7 @@ class TiterCollection(object):
             list: distinct strains present as either test or reference viruses
             list: distinct sources of titers
 
-        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
+        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv")
         >>> type(measurements)
         <type 'dict'>
         >>> len(measurements)
@@ -43,7 +47,7 @@ class TiterCollection(object):
         13
         >>> len(sources)
         5
-        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/titer_model/h3n2_titers_subset.tsv", excluded_sources=["NIMR_Sep2013_7-11.csv"])
+        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv", excluded_sources=["NIMR_Sep2013_7-11.csv"])
         >>> len(measurements)
         5
         >>> measurements.get(("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10")))
@@ -94,7 +98,7 @@ class TiterCollection(object):
             dict: counts of virus strains that appear as either tests or
                   references in the given titers
 
-        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
+        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv")
         >>> titer_counts = TiterCollection.count_strains(measurements)
         >>> titer_counts["A/Acores/11/2013"]
         6
@@ -123,7 +127,7 @@ class TiterCollection(object):
         Returns:
             dict: titer values filtered to include only given strains
 
-        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
+        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv")
         >>> len(measurements)
         11
 
@@ -236,7 +240,7 @@ class TiterCollection(object):
         make lists of reference viruses, test viruses and sera
         (there are often multiple sera per reference virus)
 
-        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/titer_model/h3n2_titers_subset.tsv")
+        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv")
         >>> titers = TiterCollection(measurements)
         >>> sera, ref_strains, test_strains = titers.strain_census(measurements)
         >>> len(sera)
@@ -684,7 +688,7 @@ class TreeModel(TiterModel):
                 tmp_p.append(self.tree.root)
                 tmp_p.reverse()
 
-            for pi, (tmp_v1, tmp_v2) in enumerate(izip(p1,p2)):
+            for pi, (tmp_v1, tmp_v2) in enumerate(zip(p1,p2)):
                 if tmp_v1!=tmp_v2:
                     break
             path = [n for n in p1[pi:] if n.titer_info>1] + [n for n in p2[pi:] if n.titer_info>1]
@@ -850,7 +854,7 @@ class SubstitutionModel(TiterModel):
             seq1 = node1.translations[prot]
             seq2 = node2.translations[prot]
             muts.extend([(prot, aa1+str(pos+1)+aa2) for pos, (aa1, aa2)
-                        in enumerate(izip(seq1, seq2)) if aa1!=aa2])
+                        in enumerate(zip(seq1, seq2)) if aa1!=aa2])
         return muts
 
 
@@ -934,7 +938,7 @@ class SubstitutionModel(TiterModel):
         mutation_clusters = []
         n_measurements = self.design_matrix.shape[0]
         # a greedy algorithm: if column is similar to existing cluster -> merge with cluster, else -> new cluster
-        for col, mut in izip(TT, self.relevant_muts):
+        for col, mut in zip(TT, self.relevant_muts):
             col_found = False
             for cluster in mutation_clusters:
                 # similarity is defined as number of measurements at whcih the cluster and column differ

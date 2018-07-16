@@ -109,7 +109,7 @@
         },
         "clade": {
             "description": "Will be deprecated",
-            "type": "number"
+            "type": ["string", "number"]
         },
         "tvalue": {
             "$comment": "DEPRECATED. Not used in auspice.",

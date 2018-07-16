@@ -9,6 +9,7 @@ cycler==0.10.0
 decorator==4.3.0
 enum34==1.1.6
 funcsigs==1.0.2
+future==0.16.0
 gitdb2==2.0.3
 GitPython==2.1.10
 ipdb==0.10.3
@@ -38,7 +39,6 @@ simplegeneric==0.8.1
 six==1.11.0
 smmap2==2.0.3
 subprocess32==3.5.2
-tox==2.9.1
 traitlets==4.3.2
 treetime==0.3.0
 virtualenv==16.0.0

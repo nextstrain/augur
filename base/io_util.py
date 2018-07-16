@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+from builtins import range
 import Bio.Phylo
 import numpy as np
 
@@ -23,7 +24,7 @@ def remove_dir(dname, max_attempts=5):
         # Try to remove the given directory repeatedly to compensate for NFS
         # latency that can result in OSError exceptions when a directory appears
         # not to be empty when shutil attempts to remove it.
-        for i in xrange(max_attempts):
+        for i in range(max_attempts):
             try:
                 shutil.rmtree(dname)
                 return
@@ -109,7 +110,7 @@ def json_to_tree(json_dict, root=True):
     Assigns links back to parent nodes for the root of the tree.
 
     >>> import json
-    >>> json_fh = open("tests/json_tree_to_nexus/flu_h3n2_ha_3y_tree.json", "r")
+    >>> json_fh = open("tests/data/json_tree_to_nexus/flu_h3n2_ha_3y_tree.json", "r")
     >>> json_dict = json.load(json_fh)
     >>> tree = json_to_tree(json_dict)
     >>> tree.name
@@ -159,11 +160,11 @@ def json_to_clade_frequencies(json_dict):
     where the key is "{region}_clade:{clade}" and the values are the frequencies per timepoint.
 
     >>> import json
-    >>> json_fh = open("tests/json_tree_to_nexus/flu_h3n2_ha_3y_frequencies.json", "r")
+    >>> json_fh = open("tests/data/json_tree_to_nexus/flu_h3n2_ha_3y_frequencies.json", "r")
     >>> json_dict = json.load(json_fh)
     >>> frequencies = json_to_clade_frequencies(json_dict)
     >>> len(frequencies["pivots"])
-    36
+    37
     >>> frequencies["global"][202][0] > 0
     True
     """
@@ -180,5 +181,7 @@ def json_to_clade_frequencies(json_dict):
             frequencies[region] = {}
 
         frequencies[region][int(clade)] = np.array(values)
+
+    frequencies["pivots"] = json_dict["pivots"]
 
     return frequencies

@@ -20,8 +20,8 @@ def pad_nucleotide_sequences(aln_aa, seq_nuc):
         try:
             tmp_nuc_seq = str(seq_nuc[aa_seq.id].seq)
         except KeyError as e:
-            print aa_seq.id
-            print 'Key not found, continue with next sequence'
+            print(aa_seq.id)
+            print('Key not found, continue with next sequence')
             continue
 
         tmpseq = ''

@@ -1,7 +1,7 @@
 from __future__ import division, print_function
 import sys, os, time, gzip, glob
-from base.io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
-from base.frequencies import KdeFrequencies
+from .io_util import make_dir, remove_dir, tree_to_json, write_json, myopen
+from .frequencies import KdeFrequencies
 import json
 from pdb import set_trace
 from collections import defaultdict
@@ -10,28 +10,32 @@ def round_freqs(frequencies, num_dp):
     """ round frequency estimates to useful precision (reduces file size) """
     return [round(x, num_dp) for x in frequencies]
 
-def export_frequency_json(process, prefix, indent):
+def export_frequency_json(process, prefix, indent, threshold=0.01):
     num_dp = 6
     # construct a json file containing all frequency estimate
     # the format is region_protein:159F for mutations and region_clade:123 for clades
+    # only output trajectories in cases where at least one value is greater than threshold=0.01
+    # except include all named clades regardless
     if hasattr(process, 'pivots'):
         freq_json = {'pivots':round_freqs(process.pivots, num_dp)}
         if hasattr(process, 'mutation_frequencies'):
-            freq_json['counts'] = {x:list(counts) for x, counts in process.mutation_frequency_counts.iteritems()}
-            for (region, gene), tmp_freqs in process.mutation_frequencies.iteritems():
-                for mut, freq in tmp_freqs.iteritems():
+            freq_json['counts'] = {x:list(counts) for x, counts in process.mutation_frequency_counts.items()}
+            for (region, gene), tmp_freqs in process.mutation_frequencies.items():
+                for mut, freq in tmp_freqs.items():
                     label_str =  region+"_"+ gene + ':' + str(mut[0]+1)+mut[1]
-                    freq_json[label_str] = round_freqs(freq, num_dp)
+                    if max(freq) > threshold:
+                        freq_json[label_str] = round_freqs(freq, num_dp)
         # repeat for clade frequencies in trees
         if hasattr(process, 'tree_frequencies'):
             for region in process.tree_frequencies:
-                for clade, freq in process.tree_frequencies[region].iteritems():
+                for clade, freq in process.tree_frequencies[region].items():
                     label_str = region+'_clade:'+str(clade)
-                    freq_json[label_str] = round_freqs(freq, num_dp)
+                    if max(freq) > threshold:
+                        freq_json[label_str] = round_freqs(freq, num_dp)
         # repeat for named clades
         if hasattr(process, 'clades_to_nodes') and hasattr(process, 'tree_frequencies'):
             for region in process.tree_frequencies:
-                for clade, node in process.clades_to_nodes.iteritems():
+                for clade, node in process.clades_to_nodes.items():
                     label_str = region+'_'+str(clade)
                     freq_json[label_str] = round_freqs(process.tree_frequencies[region][node.clade], num_dp)
         # write to one frequency json
@@ -41,17 +45,16 @@ def export_frequency_json(process, prefix, indent):
         process.log.notify("Cannot export frequencies - pivots do not exist")
 
 def export_tip_frequency_json(process, prefix, indent):
-    if not (hasattr(process, 'pivots') and hasattr(process, 'kde_frequencies')):
-        process.log.notify("Cannot export tip frequencies - pivots and/or kde_frequencies do not exist")
+    if not hasattr(process, 'kde_frequencies'):
+        process.log.notify("Cannot export tip frequencies - kde_frequencies do not exist")
         return
 
     num_dp = 6
-    freq_json = {'pivots':round_freqs(process.pivots, num_dp)}
+    freq_json = {'pivots':round_freqs(process.kde_frequencies.pivots, num_dp)}
 
     for n in process.tree.tree.get_terminals():
         freq_json[n.name] = {
-            "frequencies" : round_freqs(process.kde_frequencies["global"][n.clade], num_dp),
-            "weight": 1.0
+            "frequencies" : round_freqs(process.kde_frequencies.frequencies[n.clade], num_dp)
         }
 
     write_json(freq_json, prefix+'_tip-frequencies.json', indent=indent)
@@ -73,7 +76,7 @@ def summarise_publications_from_tree(tree):
 
 def extract_annotations(runner):
     annotations = {}
-    for name, prot in runner.proteins.iteritems():
+    for name, prot in runner.proteins.items():
         annotations[name] = {
             "start": int(prot.start),
             "end": int(prot.end),
@@ -102,7 +105,7 @@ def export_metadata_json(process, prefix, indent):
     # join up config color options with those in the input JSONs.
     col_opts = process.config["auspice"]["color_options"]
     if process.colors:
-        for trait, col in process.colors.iteritems():
+        for trait, col in process.colors.items():
             if trait in col_opts:
                 col_opts[trait]["color_map"] = col
             else:

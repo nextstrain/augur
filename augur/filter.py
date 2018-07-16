@@ -31,7 +31,11 @@ def write_vcf(compressed, input_file, output_file, dropped_samps):
     print("Filtering samples using VCFTools with the call:")
     print(" ".join(call))
     os.system(" ".join(call))
-    os.remove('out.log') #remove vcftools log file
+    # remove vcftools log file
+    try:
+        os.remove('out.log')
+    except OSError:
+        pass
 
 
 

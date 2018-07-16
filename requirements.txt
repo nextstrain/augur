@@ -1,11 +1,11 @@
 biopython >=1.69, ==1.*
 boto >=2.38, ==2.*
 cvxopt >=1.1.8, ==1.1.*
+future >=0.16.0, ==0.16.*
 GitPython >=2.1.10, ==2.1.*
 ipdb >=0.10.1, ==0.10.*
 matplotlib >=2.0, ==2.*
 pandas >=0.17.1, ==0.17.*
 pytest >=3.2.1, ==3.*
 seaborn >=0.6.0, ==0.6.*
-tox >=2.8.2, ==2.*
 git+https://github.com/neherlab/treetime.git#egg=treetime

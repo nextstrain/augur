@@ -1,7 +1,7 @@
 import matplotlib as mpl
 #from matplotlib import pyplot as plt
 from datetime import datetime
-from base.io_util import tree_to_json
+from .io_util import tree_to_json
 import numpy as np
 
 def generate_cmap(data, discrete):
