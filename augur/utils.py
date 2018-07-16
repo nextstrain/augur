@@ -253,24 +253,31 @@ def read_lat_longs(overrides=None, use_defaults=True):
 
 def read_colors(overrides=None, use_defaults=True):
     colors = {}
+    def add_line(line):
+        if line.startswith('#'):
+            return
+        fields = line.strip().split()
+        if len(fields) != 3:
+            print("WARNING: Color map file contained this invalid line: ", line)
+            return
+        trait, trait_value, hex_code = fields[0].lower(), fields[1].lower(), fields[2]
+        if not hex_code.startswith("#") or len(hex_code) != 7:
+            print("WARNING: Color map file contained this invalid hex code: ", hex_code)
+            return
+        colors[(trait, trait_value)] = hex_code
+
+
     if use_defaults:
         with resource_stream(__package__, "data/colors.tsv") as stream:
             with TextIOWrapper(stream, "utf-8") as defaults:
                 for line in defaults:
-                    if line.startswith('#'): continue
-                    fields = line.strip().split()
-                    if len(fields) == 3:
-                        trait, trait_value, hex_code = fields[0], fields[1], fields[2]
-                        colors[(trait, trait_value)] = hex_code
+                    add_line(line)
+
     if overrides:
         if os.path.isfile(overrides):
             with open(overrides) as fh:
                 for line in fh:
-                    if line.startswith('#'): continue
-                    fields = line.strip().split()
-                    if len(fields) == 3:
-                        trait, trait_value, hex_code = fields[0], fields[1], fields[2]
-                        colors[(trait, trait_value)] = hex_code
+                    add_line(line)
         else:
             print("WARNING: Couldn't open color definitions file {}.".format(overrides))
     color_map = defaultdict(list)
