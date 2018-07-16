@@ -151,7 +151,7 @@
                 }
             }
         },
-        "color_bys": {
+        "colorings": {
             "description": "Available colorBys for Auspice",
             "$comment": "The property names are found on node->traits, where the value there defines the deme for that node",
             "$comment": "There are a few exceptions - a property of 'numDate', 'gt' (genotype) or 'authors' are interpreted differently by Auspice as they are defined on the node itself, not node->traits",
@@ -170,35 +170,43 @@
                         },
                         "type": {
                             "description": "Dictates how the color scale should be constructed",
+                            "$comment": "The trait values (defined on tree nodes) must be numeric for continuous types, True / False for boolean, string or numeric for ordinal / categorical",
                             "type": "string",
-                            "enum": ["continuous", "discrete", "ordinal"]
+                            "enum": ["continuous", "ordinal", "categorical", "boolean"]
                         },
                         "domain": {
                             "description": "Color scale domain",
-                            "$comment": "only used if type is continuous",
+                            "$comment": "if type is continuous, this defines the domain of the color scale. If numItems > 2, then this also defines the legend entries",
+                            "$comment": "if type is ordinal / categorical, this defines the ordering (to be displayed in the legend, and to which a color scale will be applied)",
+                            "$comment": "not available for boolean types",
                             "type": "array",
-                            "items": [
-                                {"type": "number"},
-                                {"type": "number"}
-                            ]
+                            "minItems": 2
                         },
                         "scale": {
-                            "description": "Color scale",
-                            "$comment": "We could accept strings such as 'viridis', 'rainbow' etc",
-                            "$comment": "or an array of hex values to construct a scale over"
-                        },
-                        "hex_map": {
-                            "description": "Links values to colors. Only used if \"type\" is ordinal or discrete.",
-                            "$comment": "A greyscale ramp will be used for missing values (i.e. defined on the tree but not here)",
-                            "$comment": "properties match tree nodes -> traits -> propertyName",
-                            "type": "object",
-                            "patternProperties": {
-                                "^[A-Za-z_-]+$": {
-                                    "description": "color hex value",
+                            "description": "Used to calculate the colour scale",
+                            "oneOf": [
+                                {
+                                    "description": "Provided mapping between trait values & hex values",
+                                    "$comment": "If type is continuous or ordinal, values between those provided here are interpolated",
+                                    "$comment": "If type is categorical, values not present here are grey",
+                                    "$comment": "If type is boolean, use \"1\" (true) and \"0\" (false) as properties",
+                                    "type": "object",
+                                    "patternProperties": {
+                                        "^.+$": {
+                                            "description": "color hex value",
+                                            "type": "string",
+                                            "pattern": "^#[0-9A-Fa-f]{6}$"
+                                        }
+                                    }
+                                },
+                                {
+                                    "description": "Name of a color scale to use",
+                                    "$comment": "Not yet implemented in Auspice",
                                     "type": "string",
-                                    "pattern": "^#[0-9A-Fa-f]{6}$"
+                                    "enum": []
                                 }
-                            }
+                            ]
+
                         }
                     }
                 }
