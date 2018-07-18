@@ -159,6 +159,7 @@ if __name__=="__main__":
     ## VALIDATE.PY
     validate_parser = subparsers.add_parser('validate', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     validate_parser.add_argument('--json', required=True, nargs='+', help="JSONs to validate")
+    validate_parser.add_argument('--schema-v1', action="store_true", help="use schema v1.0")
     validate_parser.set_defaults(func=validate.run)
 
     args = parser.parse_args()
