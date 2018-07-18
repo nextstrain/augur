@@ -334,11 +334,12 @@ def run(args):
 
     # consistency validation is different for v1 (meta &/or tree) vs v2 (unified)
     if v1:
-        if "meta" in datasets:
-            tree = datasets["tree"] if "tree" in datasets else None
-            return_status = verifyMetaAndOrTreeJSONsAreInternallyConsistent(datasets["meta"], tree) | return_status
+        if "meta" in datasets and "tree" in datasets:
+            return_status = verifyMetaAndOrTreeJSONsAreInternallyConsistent(datasets["meta"], datasets["tree"]) | return_status
     else:
         if "main" in datasets:
             return_status = verifyMainJSONIsInternallyConsistent(datasets["main"]) | return_status
+    if not return_status:
+        print("SUCCESS")
 
     return return_status
