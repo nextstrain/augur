@@ -5,6 +5,9 @@ from collections import defaultdict
 from pkg_resources import resource_string, resource_filename
 from copy import deepcopy
 
+class ValidateError(Exception):
+    pass
+
 def loadJSONsToValidate(paths):
     """
     paths: array of paths to JSONs.
@@ -17,8 +20,7 @@ def loadJSONsToValidate(paths):
             try:
                 jsonToValidate = json.load(f)
             except json.JSONDecodeError:
-                print("Supplied JSON to validate ({}) is not a valid JSON".format(path))
-                sys.exit(2)
+                raise ValidateError("Supplied JSON to validate ({}) is not a valid JSON".format(path))
         if path.endswith("_tree.json"):
             schema_type = "tree"
         elif path.endswith("_meta.json"):
@@ -30,8 +32,7 @@ def loadJSONsToValidate(paths):
             schema_type = "main"
 
         if schema_type in ret:
-            print('Cannot deal with multiple JSONs of the same type ({})'.format(schema_type))
-            sys.exit(2)
+            raise ValidateError('Cannot deal with multiple JSONs of the same type ({})'.format(schema_type))
 
         ret[schema_type] = {
             "path": path,
@@ -39,14 +40,12 @@ def loadJSONsToValidate(paths):
         }
     return ret
 
-def isSchemaValid(schema, name):
+def checkSchemaIsValid(schema, name):
     # see http://python-jsonschema.readthedocs.io/en/latest/errors/
     try:
         jsonschema.Draft6Validator.check_schema(schema)
     except jsonschema.exceptions.SchemaError as err:
-        print("Schema {} did not pass validation. Error: {}".format(name, err))
-        return False
-    return True
+        raise ValidateError("Schema {} is not a valid JSON file. Error: {}".format(path, err))
 
 def loadSchemas(types, nextflu_schema):
     """
@@ -63,22 +62,18 @@ def loadSchemas(types, nextflu_schema):
             elif schema_type == "tree":
                 path = "data/schema_tree.json"
             else:
-                print("ERROR: No specified (nextflu) schema for ", schema_type)
-                sys.exit(2)
+                raise ValidateError("ERROR: No specified (nextflu) schema for ", schema_type)
         else:
             if schema_type == "main":
                 path = "data/schema.json"
             else:
-                print("ERROR: No specified schema for ", schema_type)
-                sys.exit(2)
+                raise ValidateError("ERROR: No specified schema for ", schema_type)
 
         try:
             schema = json.loads(resource_string(__package__, path))
         except json.JSONDecodeError as err:
-            print("Schema {} is not a valid JSON file. Error: {}".format(path, err))
-            sys.exit(2)
-        if not isSchemaValid(schema, path):
-            sys.exit(2)
+            raise ValidateError("Schema {} is not a valid JSON file. Error: {}".format(path, err))
+        checkSchemaIsValid(schema, path)
         ret[schema_type] = jsonschema.Draft6Validator(schema)
 
     return ret
@@ -324,8 +319,13 @@ def run(args):
     '''
     nextflu_schema = args.nextflu_schema
     return_status = 0
-    datasets = loadJSONsToValidate(args.json)
-    schemas = loadSchemas([x for x in datasets], nextflu_schema)
+    try:
+        datasets = loadJSONsToValidate(args.json)
+        schemas = loadSchemas([x for x in datasets], nextflu_schema)
+    except ValidateError as e:
+        print(e)
+        return 1
+
 
     for schema_type, data in datasets.items():
         print("Validating {} using the {} schema (version {})... ".format(data["path"], schema_type, "nexflu-like" if nextflu_schema else "new"), end='')
