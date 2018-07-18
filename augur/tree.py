@@ -77,7 +77,7 @@ def build_fasttree(aln_file, out_file, clean_up=True):
         "fasttree"
     ])
 
-    call = [fasttree, "-nt", aln_file, "1>", out_file, "2>", log_file]
+    call = [fasttree, "-nosupport", "-nt", aln_file, "1>", out_file, "2>", log_file]
     cmd = " ".join(call)
     print("Building a tree via:\n\t" + cmd +
           "\n\tPrice et al: FastTree 2 - Approximately Maximum-Likelihood Trees for Large Alignments." +
