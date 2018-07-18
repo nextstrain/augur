@@ -162,5 +162,5 @@ G22583	MT-721	2008-XX-XX	north_america	canada	village_a	genbank	Lee et al	Mj-III
 G22584	MT-751	2008-XX-XX	north_america	canada	village_b	genbank	Lee et al	Mj-V.a	http://www.pnas.org/content/112/44/13609	Population_Genomics_of_Mycobacterium_tuberculosis_in_the_Inuit
 G22585	MT-853	2011-XX-XX	north_america	canada	village_c	genbank	Lee et al	Mj-IV.c	http://www.pnas.org/content/112/44/13609	Population_Genomics_of_Mycobacterium_tuberculosis_in_the_Inuit
 G22586	MT-877	2010-XX-XX	north_america	canada	other_village	genbank	Lee et al	Mj-IV.c	http://www.pnas.org/content/112/44/13609	Population_Genomics_of_Mycobacterium_tuberculosis_in_the_Inuit 
-G22650	None1	20XX-XX-XX	north_america	canada		genbank	Lee et al		http://www.pnas.org/content/112/44/13609	Population_Genomics_of_Mycobacterium_tuberculosis_in_the_Inuit
-G22724	None2	20XX-XX-XX	north_america	canada		genbank	Lee et al		http://www.pnas.org/content/112/44/13609	Population_Genomics_of_Mycobacterium_tuberculosis_in_the_Inuit
+G22650	None1	20XX-XX-XX	north_america	canada	?	genbank	Lee et al		http://www.pnas.org/content/112/44/13609	Population_Genomics_of_Mycobacterium_tuberculosis_in_the_Inuit
+G22724	None2	20XX-XX-XX	north_america	canada	?	genbank	Lee et al		http://www.pnas.org/content/112/44/13609	Population_Genomics_of_Mycobacterium_tuberculosis_in_the_Inuit
