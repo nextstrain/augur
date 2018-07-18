@@ -257,6 +257,8 @@ def read_colors(overrides=None, use_defaults=True):
         if line.startswith('#'):
             return
         fields = line.strip().split()
+        if not fields:
+            return # blank lines
         if len(fields) != 3:
             print("WARNING: Color map file contained this invalid line: ", line)
             return
