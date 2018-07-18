@@ -1,0 +1,33 @@
+{
+ "title": "TB outbreak in Nunavik, Canada",
+ "colorings": {
+  "gt": {
+   "title": "Genotype",
+   "type": "ordinal"
+  },
+  "num_date": {
+   "title": "Sampling date",
+   "type": "continuous"
+  },
+  "location": {
+    "type": "categorical"
+  },
+  "cluster": {
+    "type": "categorical"
+  }
+ },
+ "geographic_info": [
+   "location"
+ ],
+ "filters": [
+  "location",
+  "cluster",
+  "authors"
+ ],
+ "maintainers": [
+   {
+     "name": "Emma Hodcroft",
+     "href": "https://neherlab.org/emma-hodcroft.html"
+   }
+ ]
+}

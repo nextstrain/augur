@@ -56,7 +56,7 @@
                     "oneOf": [
                         {
                             "type": "string",
-                            "pattern": "^[0-9A-Z]+$"
+                            "pattern": "^[0-9A-Za-z-]+$"
                         },
                         {
                             "type": "null"
