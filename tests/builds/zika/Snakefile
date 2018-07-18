@@ -1,7 +1,8 @@
 rule all:
     input:
         auspice_tree = "auspice/zika_tree.json",
-        auspice_meta = "auspice/zika_meta.json"
+        auspice_meta = "auspice/zika_meta.json",
+        auspice_main = "auspice/zika.json"
 
 rule files:
     params:
@@ -9,7 +10,8 @@ rule files:
         dropped_strains = "config/dropped_strains.txt",
         reference = "config/zika_outgroup.gb",
         colors = "config/colors.tsv",
-        auspice_config = "config/auspice_config.json"
+        auspice_config = "config/auspice_config.json",
+        auspice_config_v2 = "config/auspice_config_v2.json"
 
 files = rules.files.params
 
@@ -169,7 +171,7 @@ rule traits:
         """
 
 rule export:
-    message: "Exporting data files for for auspice"
+    message: "Exporting data files for for auspice using nextflu compatible schema"
     input:
         tree = rules.refine.output.tree,
         metadata = rules.parse.output.metadata,
@@ -185,6 +187,7 @@ rule export:
     shell:
         """
         augur export \
+            --nextflu-schema \
             --tree {input.tree} \
             --metadata {input.metadata} \
             --node-data {input.branch_lengths} {input.traits} {input.nt_muts} {input.aa_muts} \
@@ -192,12 +195,37 @@ rule export:
             --auspice-config {input.auspice_config} \
             --output-tree {output.auspice_tree} \
             --output-meta {output.auspice_meta}
+        augur validate --nextflu-schema --json {output.auspice_tree} {output.auspice_meta}
+        """
+
+rule exportv2:
+    message: "Exporting data files for for auspice using nextstrain schema v2"
+    input:
+        tree = rules.refine.output.tree,
+        metadata = rules.parse.output.metadata,
+        branch_lengths = rules.refine.output.node_data,
+        traits = rules.traits.output.node_data,
+        nt_muts = rules.ancestral.output.node_data,
+        aa_muts = rules.translate.output.node_data,
+        colors = files.colors,
+        auspice_config = files.auspice_config_v2
+    output:
+        auspice_main = rules.all.input.auspice_main
+    shell:
+        """
+        augur export \
+            --tree {input.tree} \
+            --metadata {input.metadata} \
+            --node-data {input.branch_lengths} {input.traits} {input.nt_muts} {input.aa_muts} \
+            --colors {input.colors} \
+            --auspice-config {input.auspice_config} \
+            --output-main {output.auspice_main}
+        augur validate --json {output.auspice_main}
         """
 
 rule clean:
     message: "Removing directories: {params}"
     params:
-        "data "
         "results ",
         "auspice"
     shell:
