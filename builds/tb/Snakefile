@@ -133,15 +133,13 @@ rule drm:
     input:
         align = rules.ancestral.output.vcf_out,
         ref = config.ref,
-        drms = config.drms,
-        cols = config.colors,
+        drms = config.drms
     output:
-        drm_data = "results/drms.json",
-        new_col = "results/colors.tsv"
+        drm_data = "results/drms.json"
     shell:
         """
         augur find_drm --alignment {input.align} --vcf-reference {input.ref} --drms {input.drms} \
-            --colors {input.cols} --output {output.drm_data} --colors-output {output.new_col}
+            --output {output.drm_data}
         """
 
 rule export:
