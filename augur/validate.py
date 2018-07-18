@@ -9,7 +9,7 @@ def loadJSONsToValidate(paths):
     """
     paths: array of paths to JSONs.
     JSON type (and therefore schema type) is inferred from the pathname, paralleling Auspice
-    tree & meta JSONs are v1.0, unified JSON is v2.0
+    tree & meta JSONs are "nexflu-schema", unified JSON is the new schema
     """
     ret = {}
     for path in paths:
@@ -48,7 +48,7 @@ def isSchemaValid(schema, name):
         return False
     return True
 
-def loadSchemas(types, v1):
+def loadSchemas(types, nextflu_schema):
     """
     For types (such as "tree", "meta"), load and internally-verify the schema.
     """
@@ -57,19 +57,19 @@ def loadSchemas(types, v1):
     for schema_type in types:
         if schema_type in ret:
             continue
-        if v1:
+        if nextflu_schema:
             if schema_type == "meta":
                 path = "data/schema_meta.json"
             elif schema_type == "tree":
                 path = "data/schema_tree.json"
             else:
-                print("ERROR: No specified (v1.0) schema for ", schema_type)
+                print("ERROR: No specified (nextflu) schema for ", schema_type)
                 sys.exit(2)
         else:
             if schema_type == "main":
                 path = "data/schema.json"
             else:
-                print("ERROR: No specified (v2.0) schema for ", schema_type)
+                print("ERROR: No specified schema for ", schema_type)
                 sys.exit(2)
 
         try:
@@ -83,9 +83,9 @@ def loadSchemas(types, v1):
 
     return ret
 
-def collectTreeAttrs(root):
+def collectTreeAttrs(root, nextflu=False):
     """
-    Collect all keys specified on node->attr throughout the tree
+    Collect all keys specified on node->attr (or node->traits) throughout the tree
     If the values of these keys are strings, then also collect the values
     """
     seen = defaultdict(lambda: {"count": 0, "values": set(), "onAllNodes": False})
@@ -93,11 +93,22 @@ def collectTreeAttrs(root):
     def recurse(node):
         nonlocal num_nodes, num_terminal
         num_nodes += 1
-        for property in node["attr"].keys():
+        traits = node["attr"].keys() if nextflu else node["traits"].keys()
+        for property in traits:
             seen[property]["count"] += 1
-            value = node["attr"][property]
+            value = node["attr"][property] if nextflu else node["traits"][property]["value"]
             if isinstance(value, str):
                 seen[property]["values"].add(value)
+
+        # add some node properties (as these have shifted in schema 2.0)
+        if not nextflu:
+            if "authors" in node:
+                seen["authors"]["count"] += 1
+                seen["authors"]["values"].add(node["authors"])
+            if "num_date" in node:
+                seen["num_date"]["count"] += 1
+                seen["num_date"]["values"].add(node["num_date"]["value"])
+
         if "children" in node:
             [recurse(child) for child in node["children"]]
         else:
@@ -111,7 +122,7 @@ def collectTreeAttrs(root):
     return(seen, num_terminal)
 
 
-def collectAAMutationGenesV1(root):
+def collectAAMutationGenesNextfluSchema(root):
     """
     Returns a set of all genes specified in the tree in the "aa_muts" objects
     """
@@ -143,7 +154,7 @@ def verifyMetaAndOrTreeJSONsAreInternallyConsistent(meta, tree):
     """
     Check all possible sources of conflict internally & between the metadata & tree JSONs
     This is only that which cannot be checked by the schemas
-    This function is only used for schema v1.0
+    This function is only used for nexflu-like schemas
     """
     return_status = 0
 
@@ -166,7 +177,7 @@ def verifyMetaAndOrTreeJSONsAreInternallyConsistent(meta, tree):
         return return_status
 
     tj = tree["json"]
-    treeAttrs, num_terminal_nodes = collectTreeAttrs(tj)
+    treeAttrs, num_terminal_nodes = collectTreeAttrs(tj, nextflu=True)
 
     if "geo" in mj:
         for geoName in mj["geo"]:
@@ -189,7 +200,7 @@ def verifyMetaAndOrTreeJSONsAreInternallyConsistent(meta, tree):
     if "filters" in mj:
         for filter in mj["filters"]:
             if filter not in treeAttrs:
-                error("The filter \"{}\" does not appear as an attr on any tree nodes.".format(filter))
+                error("The filter \"{}\" does not appear on any tree nodes.".format(filter))
 
     if "author_info" in mj:
         if "authors" not in treeAttrs:
@@ -205,7 +216,7 @@ def verifyMetaAndOrTreeJSONsAreInternallyConsistent(meta, tree):
     if "virus_count" in mj and mj["virus_count"] != num_terminal_nodes:
         error("Meta JSON virus_count ({}) differs from the number of nodes in the tree ({})".format(mj["virus_count"], num_terminal_nodes))
 
-    genes_with_aa_muts = collectAAMutationGenesV1(tj)
+    genes_with_aa_muts = collectAAMutationGenesNextfluSchema(tj)
     if len(genes_with_aa_muts):
         if "annotations" not in mj:
             error("The tree defined AA mutations on genes {}, but annotations aren't defined in the meta JSON.".format(", ".join(genes_with_aa_muts)))
@@ -232,21 +243,21 @@ def verifyMainJSONIsInternallyConsistent(main):
         print("\tWARNING: ", msg, file=sys.stderr)
 
 
-    print("Validating that {} and {} are internally consistent... ".format(meta["path"], tree["path"]))
+    print("Validating that {} is internally consistent... ".format(main["path"]))
     data = main["json"]
 
-    if "entropy" in data["panels"] and "annotations" not in data:
-        error("\tERROR: The entropy panel has been specified but annotations don't exist.", file=sys.stderr)
+    if "entropy" in data["panels"] and "genome_annotations" not in data:
+        error("The entropy panel has been specified but annotations don't exist.")
 
-    treeAttrs, num_terminal_nodes = collectTreeAttrs(data["tree"])
+    treeTraits, _ = collectTreeAttrs(data["tree"])
 
     if "geographic_info" in data:
         for geoName in data["geographic_info"]:
-            if geoName not in treeAttrs:
+            if geoName not in treeTraits:
                 error("The geographic resolution \"{}\" does not appear as an attr on any tree nodes.".format(geoName))
             else:
                 for geoValue in data["geographic_info"][geoName]:
-                    if geoValue not in treeAttrs[geoName]["values"]:
+                    if geoValue not in treeTraits[geoName]["values"]:
                         warn("\"{}\", a value of the geographic resolution \"{}\", does not appear as a value of attr->{} on any tree nodes.".format(geoValue, geoName, geoName))
     else:
         if "map" in data["panels"]:
@@ -255,20 +266,22 @@ def verifyMainJSONIsInternallyConsistent(main):
 
     if "colorings" in data:
         for colorBy in [x for x in data["colorings"] if x != "gt"]:
-            if colorBy not in treeAttrs:
+            if colorBy not in treeTraits:
                 error("The coloring \"{}\" does not appear as an attr on any tree nodes.".format(colorBy))
             if "scale" in data["colorings"][colorBy]:
                 scale = data["colorings"][colorBy]["scale"]
                 if isinstance(scale, dict):
-                    for (value, hex) in scale:
-                        if value not in treeAttrs[colorBy]["values"]:
+                    for value, hex in scale.items():
+                        if value not in treeTraits[colorBy]["values"]:
                             warn("Color option \"{}\" specifies a hex code for \"{}\" but this isn't ever seen on the tree nodes.".format(colorBy, value))
-                else: # a string
+                elif isinstance(scale, list):
+                    error("List colour scales are invalid")
+                else:
                     error("String colour scales are not yet implemented")
             if "domain" in data["colorings"][colorBy]:
                 domain = data["colorings"][colorBy]["domain"]
                 if data["colorings"][colorBy]["type"] in ["ordinal", "categorical"]:
-                    if len([val for val in domain if val not in treeAttrs[colorBy]["values"]]):
+                    if len([val for val in domain if val not in treeTraits[colorBy]["values"]]):
                         warn("Domain for {} defined values which are not present on the tree...".format(colorBy))
                 elif data["colorings"][colorBy]["type"] == "boolean":
                     error("Cannot povide a domain for a boolean coloring ({})".format(colorBy))
@@ -277,17 +290,17 @@ def verifyMainJSONIsInternallyConsistent(main):
 
     if "filters" in data:
         for filter in data["filters"]:
-            if filter not in treeAttrs:
-                error("The filter \"{}\" does not appear as an attr on any tree nodes.".format(filter))
+            if filter not in treeTraits:
+                error("The filter \"{}\" does not appear as a property on any tree nodes.".format(filter))
 
     if "author_info" in data:
-        if "authors" not in treeAttrs:
+        if "authors" not in treeTraits:
             error("\"author_info\" exists in the metadata JSON but \"authors\" are never defined on a tree node attr.")
         else:
             for author in data["author_info"]:
-                if author not in treeAttrs["authors"]["values"]:
+                if author not in treeTraits["authors"]["values"]:
                     warn("Author \"{}\" defined in \"author_info\" but does not appear on any tree node.".format(author))
-            for author in treeAttrs["authors"]["values"]:
+            for author in treeTraits["authors"]["values"]:
                 if author not in data["author_info"]:
                     error("Author \"{}\" defined on a tree node but not in \"author_info\".".format(author))
 
@@ -309,13 +322,13 @@ def run(args):
     '''
     Validate auspice-compatable JSONs against a schema
     '''
-    v1 = args.schema_v1
+    nextflu_schema = args.nextflu_schema
     return_status = 0
     datasets = loadJSONsToValidate(args.json)
-    schemas = loadSchemas([x for x in datasets], v1)
+    schemas = loadSchemas([x for x in datasets], nextflu_schema)
 
     for schema_type, data in datasets.items():
-        print("Validating {} using the {} schema (version {})... ".format(data["path"], schema_type, "1.0" if v1 else "2.0"), end='')
+        print("Validating {} using the {} schema (version {})... ".format(data["path"], schema_type, "nexflu-like" if nextflu_schema else "new"), end='')
         validator = schemas[schema_type]
 
         try:
@@ -332,8 +345,8 @@ def run(args):
         else:
             print("SUCCESS")
 
-    # consistency validation is different for v1 (meta &/or tree) vs v2 (unified)
-    if v1:
+    # consistency validation is different for nextflu_schema (meta &/or tree) vs v2 (unified)
+    if nextflu_schema:
         if "meta" in datasets and "tree" in datasets:
             return_status = verifyMetaAndOrTreeJSONsAreInternallyConsistent(datasets["meta"], datasets["tree"]) | return_status
     else:

@@ -30,7 +30,7 @@
                 "type": "object",
                 "properties": {
                     "name": {"type": "string"},
-                    "href": {"type": "string"}
+                    "url": {"type": "string"}
                 }
             }
         },
@@ -59,7 +59,7 @@
                             "description": "Journal title",
                             "type": "string"
                         },
-                        "href": {
+                        "url": {
                             "description": "URL link to paper or NCBI genome.",
                             "type": "string",
                             "pattern": "^https?://.+$"
@@ -97,7 +97,7 @@
                 }
             },
             "patternProperties": {
-                "^[a-zA-Z0-9]+$": {"$ref": "#/properties/annotations/properties/nuc"}
+                "^[a-zA-Z0-9]+$": {"$ref": "#/properties/genome_annotations/properties/nuc"}
             }
         },
         "filters": {
@@ -202,8 +202,7 @@
                                 {
                                     "description": "Name of a color scale to use",
                                     "$comment": "Not yet implemented in Auspice",
-                                    "type": "string",
-                                    "enum": []
+                                    "type": "string"
                                 }
                             ]
 
@@ -383,7 +382,6 @@
                                 "confidence": {
                                     "description": "Confidence of the trait date",
                                     "$comment": "Should we use different keys for the two structures here?",
-                                    "type": "array",
                                     "oneOf": [
                                         {
                                             "type": "array",
