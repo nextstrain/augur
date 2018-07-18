@@ -100,9 +100,11 @@ def process_color_options(color_options, color_mapping, nodes):
         if "key" not in options:
             options["key"] = trait
 
-        if trait in color_mapping:
-            valuesInTree = {node[trait] for node in nodes.values() if trait in node}
-            options["color_map"] = [m for m in color_mapping[trait] if m[0] in valuesInTree]
+        if trait.lower() in color_mapping:
+            # remember that the color maps (from the TSV) are in lower case, but this is not how they should be exported
+            values_in_tree = {node[trait] for node in nodes.values() if trait in node}
+            case_map = {val.lower(): val for val in values_in_tree}
+            options["color_map"] = [(case_map[m[0]], m[1]) for m in color_mapping[trait.lower()] if m[0] in case_map]
 
     return color_options
 
@@ -115,9 +117,9 @@ def process_geo_resolutions(meta_json, lat_long_mapping, nodes):
         demesInTree = {node[trait] for node in nodes.values() if trait in node}
         for deme in demesInTree:
             try:
-                geo[trait][deme] = lat_long_mapping[(trait,deme)]
+                geo[trait][deme] = lat_long_mapping[(trait.lower(),deme.lower())]
             except KeyError:
-                print("Error. {}->{} did not have an associated lat/long value".format(trait, deme))
+                print("Error. {}->{} did not have an associated lat/long value (matching performed in lower case)".format(trait, deme))
     return geo
 
 def process_annotations(node_data):
