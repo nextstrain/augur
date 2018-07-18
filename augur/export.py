@@ -5,7 +5,7 @@ from Bio import Phylo
 from collections import defaultdict
 from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
 
-def convert_tree_to_json_structure(node, div=0):
+def convert_tree_to_json_structure(node, metadata, div=0):
     """
     converts the Biopython tree structure to a dictionary that can
     be written to file as a json. This is called recursively.
@@ -28,8 +28,8 @@ def convert_tree_to_json_structure(node, div=0):
     if node.clades:
         node_struct["children"] = []
         for child in node.clades:
-            cdiv = div + (child.mutation_length if hasattr(child, "mutation_length") else child.branch_length)
-            node_struct["children"].append(convert_tree_to_json_structure(child, div=cdiv))
+            cdiv = div + metadata[child.name]['mutation_length']
+            node_struct["children"].append(convert_tree_to_json_structure(child, metadata, div=cdiv))
 
     return node_struct
 
@@ -100,9 +100,11 @@ def process_color_options(color_options, color_mapping, nodes):
         if "key" not in options:
             options["key"] = trait
 
-        if trait in color_mapping:
-            valuesInTree = {node[trait] for node in nodes.values() if trait in node}
-            options["color_map"] = [m for m in color_mapping[trait] if m[0] in valuesInTree]
+        if trait.lower() in color_mapping:
+            # remember that the color maps (from the TSV) are in lower case, but this is not how they should be exported
+            values_in_tree = {node[trait] for node in nodes.values() if trait in node}
+            case_map = {val.lower(): val for val in values_in_tree}
+            options["color_map"] = [(case_map[m[0]], m[1]) for m in color_mapping[trait.lower()] if m[0] in case_map]
 
     return color_options
 
@@ -115,9 +117,9 @@ def process_geo_resolutions(meta_json, lat_long_mapping, nodes):
         demesInTree = {node[trait] for node in nodes.values() if trait in node}
         for deme in demesInTree:
             try:
-                geo[trait][deme] = lat_long_mapping[(trait,deme)]
+                geo[trait][deme] = lat_long_mapping[(trait.lower(),deme.lower())]
             except KeyError:
-                print("Error. {}->{} did not have an associated lat/long value".format(trait, deme))
+                print("Error. {}->{} did not have an associated lat/long value (matching performed in lower case)".format(trait, deme))
     return geo
 
 def process_annotations(node_data):
@@ -198,7 +200,7 @@ def run(args):
     # export the tree JSON first
     add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json)
     tree_layout(T) # TODO: deprecated. Should remove.
-    tree_json = convert_tree_to_json_structure(T.root)
+    tree_json = convert_tree_to_json_structure(T.root, nodes)
 
     # now the messy bit about what decorations (e.g. "country", "aa_muts") do we want to add to the tree?
     # see recursively_decorate_tree_json to understand the tree_decorations structure
@@ -209,7 +211,7 @@ def run(args):
         {"key": "aa_muts", "is_attr": False}
     ]
     traits_via_node_metadata = {k for node in nodes.values() for k in node.keys()}
-    traits_via_node_metadata -= {'sequence', 'mutation_length', 'branch_length', 'numdate', 'mutations', 'muts', 'aa_muts'}
+    traits_via_node_metadata -= {'sequence', 'mutation_length', 'branch_length', 'numdate', 'mutations', 'muts', 'aa_muts', 'clock_length'}
     for trait in traits_via_node_metadata:
         tree_decorations.append({"key": trait, "is_attr": True})
 
