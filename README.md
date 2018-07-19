@@ -72,7 +72,7 @@ the standard location for Python packages.  You can install modular augur,
 including the `augur` command, and all its dependencies using pip3:
 
 ```
-pip3 install --process-dependency-links .
+pip3 install .
 ```
 
 In addition, both versions of augur need working installations of
@@ -90,7 +90,7 @@ Additionally, bacterial builds require a working installation of [vcftools](http
 If you're going to be editing augur source code rather than just running augur from command line, it's recommended to install with
 
 ```
-pip3 install --process-dependency-links -e .[dev]
+pip3 install -e .[dev]
 ```
 
 to make module "editable" and install dev dependencies.
