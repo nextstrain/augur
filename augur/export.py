@@ -15,7 +15,8 @@ def convert_tree_to_json_structure(node, metadata, div=0):
     """
     node_struct = {
         'attr': {"div": div},
-        'strain': node.name
+        'strain': node.name,
+        'clade': node.clade
     }
 
     # the following are DEPRECATED and to be removed
@@ -205,7 +206,6 @@ def run(args):
     # now the messy bit about what decorations (e.g. "country", "aa_muts") do we want to add to the tree?
     # see recursively_decorate_tree_json to understand the tree_decorations structure
     tree_decorations = [
-        {"key": "clade", "lookup_key": "strain"}, # DEPRECATED. Auspice still refers to "clade" so this must stay for the moment.
         {"key": "num_date", "lookup_key": "numdate", "is_attr": True},
         {"key": "muts", "is_attr": False},
         {"key": "aa_muts", "is_attr": False}
