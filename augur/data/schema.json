@@ -97,7 +97,7 @@
                 }
             },
             "patternProperties": {
-                "^[a-zA-Z0-9]+$": {"$ref": "#/properties/genome_annotations/properties/nuc"}
+                "^[a-zA-Z0-9_*]+$": {"$ref": "#/properties/genome_annotations/properties/nuc"}
             }
         },
         "filters": {
@@ -324,7 +324,7 @@
                             "type": "array",
                             "items": {
                               "oneOf": [
-                                {"type": "string", "pattern": "^[ATCG-][0-9]+[ATCG-]$"},
+                                {"type": "string", "pattern": "^[ATCGN-][0-9]+[ATCGN-]$"},
                                 {"type": "string", "pattern": "^insertion [0-9]+-[0-9]+$", "$comment": "TODO unused by auspice"},
                                 {"type": "string", "pattern": "^deletion [0-9]+-[0-9]+$", "$comment": "TODO unused by auspice"}
                               ]
@@ -363,7 +363,7 @@
                     "$comment": "Obviously only for terminal nodes",
                     "$comment": "If not known/available, don't include this as a property of the node",
                     "type": "string",
-                    "pattern": "^[0-9A-Z]+$"
+                    "pattern": "^[0-9A-Za-z-]+$"
                 },
                 "traits": {
                     "description": "Inferred Attributes / traits decorations on the nodes",
