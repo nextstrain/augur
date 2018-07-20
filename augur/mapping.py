@@ -176,11 +176,11 @@ def find_aa_drm(DRM_info, prots):
             if gene in prots and pos in prots[gene]['positions']:
                 #import ipdb; ipdb.set_trace()
                 for seq, muts in prots[gene]['sequences'].items():
-                    if pos in muts and muts[pos] in info['base']:
+                    if pos-1 in muts and muts[pos-1] in info['base']:
                         if seq not in seqDRM:
                             seqDRM[seq] = {}
-                        refB = prots[gene]['reference'][pos]
-                        seqDRM[seq][refB+str(pos)+muts[pos]] = info['drug']
+                        refB = prots[gene]['reference'][pos-1]
+                        seqDRM[seq][refB+str(pos)+muts[pos-1]] = info['drug']
 
     #import ipdb; ipdb.set_trace()
     return seqDRM
