@@ -426,6 +426,7 @@ def run(args):
         all_traits.extend(args.extra_traits)
     entries = ['branch_length', 'num_date', 'numdate', 'clock_length', 'mutation_length', 'date', 'muts']
     traits = [x for x in all_traits if x not in entries]
+    traits = [x for x in traits if '_confidence' not in x and '_entropy' not in x]
 
     node_metadata = transfer_metadata_to_strains(strains, raw_strain_info, traits)
     unified["author_info"] = construct_author_info_and_make_keys(node_metadata, raw_strain_info)
