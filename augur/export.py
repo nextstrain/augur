@@ -367,7 +367,7 @@ def run(args):
     T = Phylo.read(args.tree, 'newick')
     node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
 
-    if args.nextflu_schema:
+    if not args.new_schema:
         # This schema is deprecated. It remains because:
         # (1) auspice can't use schema 2.0 yet, (2) nexflu doesn't use schema 2.0
         # export the tree JSON first

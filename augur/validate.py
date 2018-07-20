@@ -317,7 +317,7 @@ def run(args):
     '''
     Validate auspice-compatable JSONs against a schema
     '''
-    nextflu_schema = args.nextflu_schema
+    nextflu_schema = not args.new_schema
     return_status = 0
     try:
         datasets = loadJSONsToValidate(args.json)

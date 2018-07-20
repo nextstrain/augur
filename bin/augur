@@ -150,7 +150,7 @@ if __name__=="__main__":
     export_parser.add_argument('--auspice-config', help="file with auspice configuration")
     export_parser.add_argument('--colors', help="file with color definitions")
     export_parser.add_argument('--lat-longs', help="file latitudes and longitudes, overrides built in mappings")
-    export_parser.add_argument('--nextflu-schema', action="store_true", help="export JSONs using nexflu schema")
+    export_parser.add_argument('--new-schema', action="store_true", help="export JSONs using nexflu schema")
     export_parser.add_argument('--output-main', help="Main JSON file name that is passed on to auspice (e.g., zika.json).")
     export_parser.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json). Only used with --nextflu-schema")
     export_parser.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json). Only used with --nextflu-schema")
@@ -165,7 +165,7 @@ if __name__=="__main__":
     ## VALIDATE.PY
     validate_parser = subparsers.add_parser('validate', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     validate_parser.add_argument('--json', required=True, nargs='+', help="JSONs to validate")
-    validate_parser.add_argument('--nextflu-schema', action="store_true", help="use nexflu JSON schema")
+    validate_parser.add_argument('--new-schema', action="store_true", help="use nexflu JSON schema")
     validate_parser.set_defaults(func=validate.run)
 
     args = parser.parse_args()

@@ -20,7 +20,6 @@ rule config:
         genes = "data/genes.txt",
         colors = "data/color.tsv",
         config = "data/config.json",
-        configv2 = "data/config_v2.json",
         geo_info = "data/lat_longs.tsv"
 
 config = rules.config.params #so we can use config.x rather than rules.config.params.x
@@ -149,7 +148,6 @@ rule export:
     shell:
         """
         augur export \
-            --nextflu-schema \
             --tree {input.tree} \
             --metadata {input.metadata} \
             --node-data {input.branch_lengths} {input.traits} {input.aa_muts} {input.nt_muts} \
@@ -158,7 +156,7 @@ rule export:
             --lat-longs {input.geo_info} \
             --output-tree {output.tree} \
             --output-meta {output.meta}
-        augur validate --nextflu-schema --json {output.tree} {output.meta}
+        augur validate --json {output.tree} {output.meta}
         """
 
 
@@ -172,7 +170,6 @@ rule exportv2:
         nt_muts = rules.ancestral.output.nt_data,
         aa_muts = rules.translate.output.aa_data,
         color_defs = config.colors,
-        config = config.configv2,
         geo_info = config.geo_info
     output:
         main = rules.all.input.auspice_main
@@ -186,18 +183,18 @@ rule exportv2:
     shell:
         """
         augur export \
+            --new-schema \
             --tree {input.tree} \
             --metadata {input.metadata} \
             --node-data {input.branch_lengths} {input.traits} {input.aa_muts} {input.nt_muts} \
-            --auspice-config {input.config} \
             --colors {input.color_defs} \
             --lat-longs {input.geo_info} \
             --output-main {output.main} \
             --title {params.title} \
             --maintainers {params.auth} \
             --maintainer-urls {params.url} \
-            --geography-traits {params.geo} 
-        # augur validate --json {output.main}
+            --geography-traits {params.geo}
+        # augur validate --new-schema --json {output.main}
         """
 
 rule clean:
