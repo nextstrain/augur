@@ -2,7 +2,7 @@
 import sys
 from augur import parse, filter, align, tree, refine, ancestral
 from augur import traits, translate, mask, titers, export
-from augur import validate, find_drm
+from augur import validate, mapping
 
 if __name__=="__main__":
     import argparse
@@ -133,13 +133,16 @@ if __name__=="__main__":
     traits_parser.add_argument('--output', '-o', default='traits.json', help='')
     traits_parser.set_defaults(func=traits.run)
 
-    ## DRM.PY
-    drm_parser = subparsers.add_parser('find-drm', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    drm_parser.add_argument('--alignment', '-a', required=True, help="alignment to search for DRMs in (can include ancestral seqs)")
-    drm_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    drm_parser.add_argument('--drms', type=str, help='file that includes DRMs to identify')
-    drm_parser.add_argument('--output', '-o', type=str, help='output json with DRM information')
-    drm_parser.set_defaults(func=find_drm.run)
+    ## MAPPING.PY
+    map_parser = subparsers.add_parser('mapping', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    map_parser.add_argument('--alignment', '-a', required=True, help="alignment to search for DRMs in (can include ancestral seqs)")
+    map_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    map_parser.add_argument('--nucleotide', type=str, help='file that includes sites to identify in tab-delimited format "GENOMIC_POSITION ALT_BASE DRUG AA(optional)"')
+    map_parser.add_argument('--amino-acid', type=str, help='file that includes sites to identify in tab-delimited format "GENE SITE ALT_AA DRUG"')
+    map_parser.add_argument('--translate-vcf', type=str, help='VCF file of protein translations')
+    map_parser.add_argument('--translate-ref', type=str, help='fasta file of protein translation references')
+    map_parser.add_argument('--output', '-o', type=str, help='output json with DRM information')
+    map_parser.set_defaults(func=mapping.run)
 
     ## TITERS.PY
     titers_parser = subparsers.add_parser('titers', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
