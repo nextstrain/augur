@@ -80,7 +80,7 @@
                 }
             },
             "patternProperties": {
-                "^[a-zA-Z0-9]+$": {"$ref": "#/properties/annotations/properties/nuc"}
+                "^[a-zA-Z0-9_*]+$": {"$ref": "#/properties/annotations/properties/nuc"}
             }
         },
         "maintainer": {
@@ -184,7 +184,7 @@
                                     {
                                         "description": "value (tree nodes -> attrs -> propertyName)",
                                         "type": "string",
-                                        "pattern": "^[0-9A-Za-z_-]+$"
+                                        "pattern": "^[0-9A-Za-z_.-]+$"
                                     },
                                     {
                                         "description": "color hex value",

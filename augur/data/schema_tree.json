@@ -56,7 +56,7 @@
                     "oneOf": [
                         {
                             "type": "string",
-                            "pattern": "^[0-9A-Z]+$"
+                            "pattern": "^[0-9A-Za-z-]+$"
                         },
                         {
                             "type": "null"
@@ -134,7 +134,7 @@
             "type": "array",
             "items": {
               "oneOf": [
-                {"type": "string", "pattern": "^[ATCG-][0-9]+[ATCG-]$"},
+                {"type": "string", "pattern": "^[ATCGN-][0-9]+[ATCGN-]$"},
                 {"type": "string", "pattern": "^insertion [0-9]+-[0-9]+$", "$comment": "unused by auspice"},
                 {"type": "string", "pattern": "^deletion [0-9]+-[0-9]+$", "$comment": "unused by auspice"}
               ]
