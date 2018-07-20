@@ -36,12 +36,12 @@
         },
         "author_info": {
             "description": "Used to display information about terminal nodes & for filtering by author (if \"authors\" is in \"filters\", see below)",
-            "$comment": "Keys are first authors last name + year of publication + first word of title, all in lowercase. E.g. \"white2015isolation\"",
+            "$comment": "Keys are ideally first authors last name + year of publication + first word of title, all in lowercase. E.g. \"white2015isolation\"",
             "$comment": "Keys must exist in the attrs object of at least one terminal node of the tree",
             "type": "object",
             "additionalProperties": false,
             "patternProperties": {
-                "^[a-z-]+[0-9]{4}[a-z-]+$": {
+                "^[0-9A-Za-z-]+$": {
                     "type": "object",
                     "additionalProperties": false,
                     "$comment": "Unknown properties should simply be excluded",
@@ -337,7 +337,7 @@
                             "$comment": "properties must exist in the meta.JSON -> annotation object",
                             "type": "array",
                             "items": {
-                              "pattern": "^[A-Z*][0-9]+[A-Z*]$"
+                              "pattern": "^[A-Z*-][0-9]+[A-Z*-]$"
                             }
                         }
                     }
@@ -356,7 +356,7 @@
                     "$comment": "Only for terminal nodes",
                     "$comment": "If not known/available, don't include this as a property of the node",
                     "type": "string",
-                    "pattern": "^[a-z-]+[0-9]{4}[a-z-]+$"
+                    "pattern": "^[0-9A-Za-z-]+$"
                 },
                 "accession": {
                     "description": "Sequence accession number",

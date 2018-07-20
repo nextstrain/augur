@@ -194,7 +194,7 @@ rule exportv2:
             --maintainers {params.auth} \
             --maintainer-urls {params.url} \
             --geography-traits {params.geo}
-        # augur validate --new-schema --json {output.main}
+        augur validate --new-schema --json {output.main}
         """
 
 rule clean:
