@@ -176,6 +176,13 @@ rule exportv2:
         geo_info = config.geo_info
     output:
         main = rules.all.input.auspice_main
+    params:
+        title = '\'TB outbreak in Nunavik, Canada\'',
+        auth = "'Emma Hodcroft' 'John Brown'",
+        url = 'https://neherlab.org/emma-hodcroft.html http://www.google.com',
+        geo = 'location',
+        # extra_traits = 'host',
+        # panels = 'tree map entropy frequencies'
     shell:
         """
         augur export \
@@ -185,7 +192,11 @@ rule exportv2:
             --auspice-config {input.config} \
             --colors {input.color_defs} \
             --lat-longs {input.geo_info} \
-            --output-main {output.main}
+            --output-main {output.main} \
+            --title {params.title} \
+            --maintainers {params.auth} \
+            --maintainer-urls {params.url} \
+            --geography-traits {params.geo} 
         # augur validate --json {output.main}
         """
 

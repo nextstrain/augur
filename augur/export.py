@@ -118,10 +118,15 @@ def process_colorings(jsn, color_mapping, nodes=None, node_metadata=None, nextfl
             return
         data = jsn["color_options"]
     else:
-        if "colorings" not in jsn:
+        #if "colorings" not in jsn:
+        if jsn is None or len(jsn)==0:
             print("WARNING: no colorings were defined")
             return
-        data = jsn["colorings"]
+        data = {k: {'type': 'categorical'} for k in jsn}
+        #Always add in genotype and date to colour by
+        data['gt'] = {'title': 'Genotype', 'type': 'ordinal'}
+        #figure out how to see if num_date is there? Is it possible to not have?
+        data['num_date']  = {'title': 'Sampling date', 'type': 'continuous'}
 
     for trait, options in data.items():
         if nextflu:
@@ -149,11 +154,12 @@ def process_colorings(jsn, color_mapping, nodes=None, node_metadata=None, nextfl
     return data
 
 def process_geographic_info(jsn, lat_long_mapping, nextflu=False, node_metadata=None, nodes=None):
-    if (nextflu and "geo" not in jsn) or (not nextflu and "geographic_info" not in jsn):
+    if (nextflu and "geo" not in jsn) or (not nextflu and (jsn is None or len(jsn)==0)):
         return {}
     geo = defaultdict(dict)
 
-    traits = jsn["geo"] if nextflu else jsn["geographic_info"]
+    traits = jsn["geo"] if nextflu else jsn #jsn["geographic_info"]
+
     for trait in traits:
         if nextflu:
             demes_in_tree = {node[trait] for node in nodes.values() if trait in node}
@@ -172,11 +178,14 @@ def process_annotations(node_data):
         return {}
     return node_data["annotations"]
 
-def process_panels(j, nextflu=False):
+def process_panels(user_panels, j, nextflu=False):
     try:
         panels = j["panels"]
     except KeyError:
         panels = ["tree", "map", "entropy"]
+
+    if user_panels is not None and len(user_panels) != 0:
+        panels = user_panels
 
     if nextflu:
         geoTraits = j["geo"].keys()
@@ -394,35 +403,46 @@ def run(args):
         meta_json["color_options"] = process_colorings(meta_json, color_mapping, nodes=nodes, nextflu=True)
         meta_json["geo"] = process_geographic_info(meta_json, lat_long_mapping, nodes=nodes, nextflu=True)
         meta_json["annotations"] = process_annotations(node_data)
-        meta_json["panels"] = process_panels(meta_json, nextflu=True)
+        meta_json["panels"] = process_panels(None, meta_json, nextflu=True)
 
         write_json(meta_json, args.output_meta, indent=2)
         return 0
 
     ## SCHEMA v2.0 ##
-    unified = read_config(args.auspice_config)
+    unified = {}
+
+    unified['title'] = args.title
+    unified['maintainers'] = [{'name': name, 'href':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
     unified["version"] = "2.0"
+
     raw_strain_info = collect_strain_info(node_data, args.metadata)
     unified["tree"], strains = convert_tree_to_json_structure(T.root, raw_strain_info)
 
     # collect traits to transfer to the nodes (i.e. properties of node.traits)
-    traits = {k for k in unified["colorings"]}
-    traits |= {k for k in unified["geographic_info"]}
-    traits -= {"num_date", "numdate", "authors", "gt"}
+    # is safe to assume all nodes have same traits that have been mapped to tree??
+    all_traits = next(iter(node_data['nodes'].values()))
+    all_traits = list(all_traits.keys())
+    if args.extra_traits:
+        all_traits.extend(args.extra_traits)
+    entries = ['branch_length', 'num_date', 'numdate', 'clock_length', 'mutation_length', 'date', 'muts']
+    traits = [x for x in all_traits if x not in entries]
 
     node_metadata = transfer_metadata_to_strains(strains, raw_strain_info, traits)
     unified["author_info"] = construct_author_info_and_make_keys(node_metadata, raw_strain_info)
     add_metadata_to_tree(unified["tree"], node_metadata)
 
+    #Is this ok if there's no author data? (I imagine not)
+    unified['filters'] = traits + ['authors']
+
     color_mapping = read_colors(args.colors)
-    unified["colorings"] = process_colorings(unified, color_mapping, node_metadata=node_metadata)
+    unified["colorings"] = process_colorings(traits, color_mapping, node_metadata=node_metadata)
 
     lat_long_mapping = read_lat_longs(args.lat_longs)
-    unified["geographic_info"] = process_geographic_info(unified, lat_long_mapping, node_metadata=node_metadata)
+    unified["geographic_info"] = process_geographic_info(args.geography_traits, lat_long_mapping, node_metadata=node_metadata)
 
     unified["updated"] = time.strftime('%Y-%m-%d')
     unified["genome_annotations"] = process_annotations(node_data)
-    unified["panels"] = process_panels(unified)
+    unified["panels"] = process_panels(args.panels, unified)
 
 
     write_json(unified, args.output_main, indent=2)

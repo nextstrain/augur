@@ -154,6 +154,12 @@ if __name__=="__main__":
     export_parser.add_argument('--output-main', help="Main JSON file name that is passed on to auspice (e.g., zika.json).")
     export_parser.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json). Only used with --nextflu-schema")
     export_parser.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json). Only used with --nextflu-schema")
+    export_parser.add_argument('--title', default="Analysis", help="Title to be displayed by auspice")
+    export_parser.add_argument('--maintainers', default=[""], nargs='+', help="Analysis maintained by")
+    export_parser.add_argument('--maintainer-urls', default=[""], nargs='+', help="URL of maintainers")
+    export_parser.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
+    export_parser.add_argument('--extra-traits', nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
+    export_parser.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : xxx")
     export_parser.set_defaults(func=export.run)
 
     ## VALIDATE.PY
