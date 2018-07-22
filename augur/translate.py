@@ -119,22 +119,20 @@ def translate_vcf_feature(sequences, ref, feature):
     ref_aa_seq = safe_translate(refNuc)
     prot['reference'] = ref_aa_seq
 
-    start = int(feature.location.start)
+    start = int(feature.location.start) #1 less than GFF file; Bio 'pythons' the numbering
     end = int(feature.location.end)
 
     for seqk in sequences.keys():
         varSite = np.array(list(sequences[seqk].keys()))  #get positions where nuc diffs
-        if feature.strand == -1:    #reduce to only those within current gene
-            geneVarSites = np.logical_and(varSite > start, varSite <= end)
-        else:
-            geneVarSites = np.logical_and(varSite >= start, varSite < end)
+        #reduce to only those within current gene
+        geneVarSites = np.logical_and(varSite >= start, varSite < end)
         nucVarSites = varSite[geneVarSites] #translate this back to nuc position
         genNucSites = nucVarSites-start #get it in position within the gene to ensure in frame
 
         #Translate just the codon this nuc diff is in, and find out which AA loc
         #But need numbering to be w/in protin, not whole genome
         if feature.strand == -1:
-            aaRepLocs = {(end-start-i)//3:safe_translate( str_reverse_comp( "".join([sequences[seqk][key+start]
+            aaRepLocs = {(end-start-i-1)//3:safe_translate( str_reverse_comp( "".join([sequences[seqk][key+start]
                                     if key+start in sequences[seqk].keys() else ref[key+start]
                                 for key in range(i-i%3,i+3-i%3)]) ))
                             for i in genNucSites}
