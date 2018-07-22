@@ -85,170 +85,185 @@ def read_in_translate_vcf(vcf_file, ref_file):
 
 def read_in_AA(drm_file):
     '''
-    Reads in and stores position, ref & alt base, drug, AA change
-    of drug resistance mutations (DRMs)
-    This reads in the file-format below - don't know if standardized!
+    Reads in and stores position, alt AA, drug, and gene
+    of mutations such as drug resistance mutations
 
-    GENOMIC_POSITION	ALT_BASE	AA	DRUG
-    6505	T	D461N	FQ
-    6505	C	D461N	FQ
-    760314	T	V170F	RIF
-    760882	C	V359A	RIF
+    GENE	SITE	ALT_AA	DRUG
+    gyrB	461	N	Fluoroquinolones
+    gyrB	499	D	Fluoroquinolones
+    rpoB	170	F	Rifampicin
+    rpoB	359	A	Rifampicin
 
     '''
     import pandas as pd
 
-    DRMs = defaultdict()
+    MUTs = defaultdict()
 
     df = pd.read_csv(drm_file, sep='\t')
     for mi, m in df.iterrows():
-        pos = int(m.SITE)
+        pos = int(m.SITE)-1 #store in python numbering
 
-        if m.GENE in DRMs:
-            if pos not in DRMs[m.GENE]:
-                DRMs[m.GENE][pos] = {}
-                DRMs[m.GENE][pos]['base'] = [m.ALT_AA]
-                DRMs[m.GENE][pos]['drug'] = m.DRUG
+        if m.GENE in MUTs:
+            if pos not in MUTs[m.GENE]:
+                MUTs[m.GENE][pos] = {}
+                MUTs[m.GENE][pos]['base'] = [m.ALT_AA]
+                MUTs[m.GENE][pos]['drug'] = m.DRUG
             else: 
-                DRMs[m.GENE][pos]['base'].append(m.ALT_AA)
-            
-        #if (m.GENE,pos) in DRMs:
-        #    DRMs[(m.GENE,pos)]['base'].append(m.ALT_AA)
+                MUTs[m.GENE][pos]['base'].append(m.ALT_AA)
         else:
-            DRMs[m.GENE] = {}
-            DRMs[m.GENE][pos] = {}
-            DRMs[m.GENE][pos]['base'] = [m.ALT_AA]
-            DRMs[m.GENE][pos]['drug'] = m.DRUG
+            MUTs[m.GENE] = {}
+            MUTs[m.GENE][pos] = {}
+            MUTs[m.GENE][pos]['base'] = [m.ALT_AA]
+            MUTs[m.GENE][pos]['drug'] = m.DRUG
 
-    DRM_info = DRMs
+    site_info = MUTs
 
-    return DRM_info
+    return site_info
 
 
-def read_in_DRMs(drm_file):
+def read_in_nucs(drm_file):
     '''
-    Reads in and stores position, ref & alt base, drug, AA change
-    of drug resistance mutations (DRMs)
-    This reads in the file-format below - don't know if standardized!
+    Reads in and stores position, alt base, drug, AA change (optional)
+    of mutations such as drug-resistance mutations
+
+    Format:
 
     GENOMIC_POSITION	ALT_BASE	AA	DRUG
-    6505	T	D461N	FQ
-    6505	C	D461N	FQ
-    760314	T	V170F	RIF
-    760882	C	V359A	RIF
+    6505	T	D461N	Fluoroquinolones
+    6505	C	D461N	Fluoroquinolones
+    760314	T	V170F	Rifampicin
+    760882	C	V359A	Rifampicin
+
+    or:
+
+    GENOMIC_POSITION	ALT_BASE	DRUG
+    6505	T	Fluoroquinolones
+    6505	C	Fluoroquinolones
+    760314	T	Rifampicin
+    760882	C	Rifampicin
 
     '''
     import pandas as pd
 
-    DRMs = {}
-    drmPositions = []
+    MUTs = {}
+    mutPositions = []
 
     df = pd.read_csv(drm_file, sep='\t')
     for mi, m in df.iterrows():
         pos = m.GENOMIC_POSITION-1 #put in python numbering
-        drmPositions.append(pos)
+        mutPositions.append(pos)
 
-        if pos in DRMs:
-            DRMs[pos]['base'].append(m.ALT_BASE)
+        if pos in MUTs:
+            MUTs[pos]['base'].append(m.ALT_BASE)
             if hasattr(m, "AA"):
-                DRMs[pos]['AA'].append(m.AA)
+                MUTs[pos]['AA'].append(m.AA)
         else:
-            DRMs[pos] = {}
-            DRMs[pos]['base'] = [m.ALT_BASE]
-            DRMs[pos]['drug'] = m.DRUG
+            MUTs[pos] = {}
+            MUTs[pos]['base'] = [m.ALT_BASE]
+            MUTs[pos]['drug'] = m.DRUG
             if hasattr(m, "AA"):
-                DRMs[pos]['AA'] = [m.AA]
+                MUTs[pos]['AA'] = [m.AA]
 
-    drmPositions = np.array(drmPositions)
-    drmPositions = np.unique(drmPositions)
-    drmPositions = np.sort(drmPositions)
+    mutPositions = np.array(mutPositions)
+    mutPositions = np.unique(mutPositions)
+    mutPositions = np.sort(mutPositions)
 
-    DRM_info = {'DRMs': DRMs,
-                'drmPositions': drmPositions}
+    site_info = {'MUTs': MUTs,
+                'mutPositions': mutPositions}
 
-    return DRM_info
+    return site_info
 
-def find_aa_drm(DRM_info, prots):
-    seqDRM = {}
+def find_aa(site_info, prots):
+    '''
+    Looks for DRM mutations which match in position and alt base in
+    the translated protein dict
 
-    for gene, val in DRM_info.items():
+    '''
+    seqMuts = {}
+
+    for gene, val in site_info.items():
         for pos, info in val.items():
             if gene in prots and pos in prots[gene]['positions']:
-                #import ipdb; ipdb.set_trace()
                 for seq, muts in prots[gene]['sequences'].items():
-                    if pos-1 in muts and muts[pos-1] in info['base']:
-                        if seq not in seqDRM:
-                            seqDRM[seq] = {}
-                        refB = prots[gene]['reference'][pos-1]
-                        seqDRM[seq][refB+str(pos)+muts[pos-1]] = info['drug']
+                    if pos in muts and muts[pos] in info['base']:
+                        if seq not in seqMuts:
+                            seqMuts[seq] = {}
+                        refB = prots[gene]['reference'][pos]
+                        seqMuts[seq][gene+": "+refB+str(pos+1)+muts[pos]] = info['drug']
+                        #seqMuts[seq][refB+str(pos+1)+muts[pos]] = info['drug']  #if don't want to show genes
+    return seqMuts
 
-    #import ipdb; ipdb.set_trace()
-    return seqDRM
-    #why isn't finding katG 315 INH
 
-def find_drms(DRM_info, sequences, ref):
+def find_sites(site_info, sequences, ref):
     '''
     Looks for DRM mutations which match in position and alt base in
     the sequence dict
 
     '''
-    drmPositions = DRM_info['drmPositions']
-    DRMs = DRM_info['DRMs']
-    seqDRM = {}
-    for key in drmPositions:
+    mutPositions = site_info['mutPositions']
+    MUTs = site_info['MUTs']
+    seqMuts = {}
+    for key in mutPositions:
         for seq,v in sequences.items():
             try:
                 base = sequences[seq][key]
-                if base in DRMs[key]['base']:
-                    if seq not in seqDRM:
-                        seqDRM[seq] = {}
+                if base in MUTs[key]['base']:
+                    if seq not in seqMuts:
+                        seqMuts[seq] = {}
                     i=0
-                    while base != DRMs[key]['base'][i]:
+                    while base != MUTs[key]['base'][i]:
                         i+=1
-                    if "AA" in DRMs[key]:
-                        seqDRM[seq][DRMs[key]['AA'][i]] = DRMs[key]['drug']
+                    if "AA" in MUTs[key]:
+                        seqMuts[seq][MUTs[key]['AA'][i]] = MUTs[key]['drug']
                     else:
-                        seqDRM[seq][ ref[key]+str(key+1)+DRMs[key]['base'][i] ] = DRMs[key]['drug']
+                        seqMuts[seq][ ref[key]+str(key+1)+MUTs[key]['base'][i] ] = MUTs[key]['drug']
 
             except KeyError:
                 continue
-    return seqDRM
+    return seqMuts
 
 
-def attach_drms(seqDRM, sequences):
+def attach_muts(seqMuts, sequences, label, count):
     '''
-    'Attaches' DRMs to nodes so format is correct to output as json
-    Also collects up all DRM options that colours will need to be generated for
+    'Attaches' muts to nodes so format is correct to output as json
     '''
-    drm_meta = defaultdict(lambda: {"Drug_Resistance": '0' })
+    mut_meta = defaultdict(lambda: {label: '0' })
 
-    drugMuts = {}
-    drugMuts["Drug_Resistance"] = ['0'] #strings because makes it easier to work elsewhere
+    #Strings are used here because 0's dont work in auspice at moment
+    #TODO change to ints when they do
+
+    traitMuts = {}
+    traitMuts[label] = ['0'] 
     for seq in sequences.keys():
-        if seq in seqDRM:
-            for mut,drug in seqDRM[seq].items():
+        if seq in seqMuts:
+            muts = 0
+            for mut,drug in seqMuts[seq].items():
                 drugs = drug.split(' ')
                 for drug in drugs:
+                    muts += 1
                     trDrug = drug
-                    if trDrug in drm_meta[seq]:
-                        drm_meta[seq][trDrug] = ",".join([drm_meta[seq][trDrug],mut])
+                    if trDrug in mut_meta[seq]:
+                        mut_meta[seq][trDrug] = ",".join([mut_meta[seq][trDrug],mut])
                     else:
-                        drm_meta[seq][trDrug] = mut
+                        mut_meta[seq][trDrug] = mut
 
-                    if trDrug in drugMuts:
-                        if drm_meta[seq][trDrug] not in drugMuts[trDrug]:
-                            drugMuts[trDrug].append(drm_meta[seq][trDrug])
+                    if trDrug in traitMuts:
+                        if mut_meta[seq][trDrug] not in traitMuts[trDrug]:
+                            traitMuts[trDrug].append(mut_meta[seq][trDrug])
                     else:
-                        drugMuts[trDrug] = [ drm_meta[seq][trDrug] ]
+                        traitMuts[trDrug] = [ mut_meta[seq][trDrug] ]
 
-            numResist = str(len(set(drm_meta[seq].keys()))-1)
-            drm_meta[seq]["Drug_Resistance"] = numResist
-            if numResist not in drugMuts["Drug_Resistance"]:
-                drugMuts["Drug_Resistance"].append(numResist)
+            if count == "traits":
+                numResist = str(len(set(mut_meta[seq].keys()))-1)
+            else:
+                numResist = str(muts)
+            mut_meta[seq][label] = numResist
+            if numResist not in traitMuts[label]:
+                traitMuts[label].append(numResist)
         else:
-            drm_meta[seq]["Drug_Resistance"] = '0'
+            mut_meta[seq][label] = '0'
 
-    return drm_meta, drugMuts
+    return mut_meta, traitMuts
 
 def run(args):
     '''
@@ -272,21 +287,20 @@ def run(args):
 
     #if give nucleotide positions:
     if args.nucleotide:
-        DRM_info = read_in_DRMs(args.nucleotide)
+        site_info = read_in_nucs(args.nucleotide)
 
-        #Find the DRMs and store them
-        seqDRM = find_drms(DRM_info, sequences, ref)
+        #Find the MUTs and store them
+        seqMuts = find_sites(site_info, sequences, ref)
 
     elif args.amino_acid:
-        DRM_info = read_in_AA(args.amino_acid)
+        site_info = read_in_AA(args.amino_acid)
 
         prots = read_in_translate_vcf(args.translate_vcf, args.translate_ref)
-        seqDRM = find_aa_drm(DRM_info, prots)
-        import ipdb; ipdb.set_trace()
+        seqMuts = find_aa(site_info, prots)
 
     #Get json format; collect all unique options to generate colours for
-    drm_meta, drugMuts = attach_drms(seqDRM, sequences)
+    mut_meta, traitMuts = attach_muts(seqMuts, sequences, args.label, args.count)
 
     #write out json
     with open(args.output, 'w') as results:
-        json.dump({"nodes":drm_meta}, results, indent=1)
+        json.dump({"nodes":mut_meta}, results, indent=1)

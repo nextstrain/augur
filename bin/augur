@@ -141,6 +141,8 @@ if __name__=="__main__":
     map_parser.add_argument('--amino-acid', type=str, help='file that includes sites to identify in tab-delimited format "GENE SITE ALT_AA DRUG"')
     map_parser.add_argument('--translate-vcf', type=str, help='VCF file of protein translations')
     map_parser.add_argument('--translate-ref', type=str, help='fasta file of protein translation references')
+    map_parser.add_argument('--count', type=str, choices=['traits','mutations'], default='traits', help='Whether to count traits (ex: # drugs resistant to) or mutations')
+    map_parser.add_argument('--label', type=str, default="# Traits", help='How to label the counts (ex: Drug_Resistance)')
     map_parser.add_argument('--output', '-o', type=str, help='output json with DRM information')
     map_parser.set_defaults(func=mapping.run)
 
