@@ -226,6 +226,7 @@ def collect_strain_info(node_data, tsv_path):
     """
     strain_info = node_data["nodes"]
     meta_tsv, _ = read_metadata(tsv_path)
+
     for strain, node in strain_info.items():
         if strain in meta_tsv:
             for field in meta_tsv[strain]:
@@ -362,6 +363,15 @@ def add_metadata_to_tree(node, metadata):
         for child in node["children"]:
             add_metadata_to_tree(child, metadata)
 
+def get_traits(node_data):
+    entries = ['branch_length', 'num_date', 'raw_date', 'numdate', 'clock_length', 'mutation_length', 'date', 'muts', 'aa_muts']
+    traits = []
+    for seq, val in node_data['nodes'].items():
+        newT = [t for t in list(val.keys()) if t not in traits and t not in entries ]
+        traits.extend(newT)
+    traits = [x for x in traits if '_confidence' not in x and '_entropy' not in x]
+
+    return traits
 
 def run(args):
     T = Phylo.read(args.tree, 'newick')
@@ -415,25 +425,24 @@ def run(args):
     unified['maintainers'] = [{'name': name, 'href':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
     unified["version"] = "2.0"
 
+    # get traits to colour by etc - do here before node_data is modified below
+    # this ensures we get traits even if they are not on every node
+    traits = get_traits(node_data)
+
     raw_strain_info = collect_strain_info(node_data, args.metadata)
     unified["tree"], strains = convert_tree_to_json_structure(T.root, raw_strain_info)
 
-    # collect traits to transfer to the nodes (i.e. properties of node.traits)
-    # is safe to assume all nodes have same traits that have been mapped to tree??
-    all_traits = next(iter(node_data['nodes'].values()))
-    all_traits = list(all_traits.keys())
-    if args.extra_traits:
-        all_traits.extend(args.extra_traits)
-    entries = ['branch_length', 'num_date', 'numdate', 'clock_length', 'mutation_length', 'date', 'muts']
-    traits = [x for x in all_traits if x not in entries]
-    traits = [x for x in traits if '_confidence' not in x and '_entropy' not in x]
-
     node_metadata = transfer_metadata_to_strains(strains, raw_strain_info, traits)
     unified["author_info"] = construct_author_info_and_make_keys(node_metadata, raw_strain_info)
-    add_metadata_to_tree(unified["tree"], node_metadata)
 
-    #Is this ok if there's no author data? (I imagine not)
-    unified['filters'] = traits + ['authors']
+    # This check allows validation to complete ok - but check auspice can handle having no author info! (it can in v1 schema)
+    if len(unified["author_info"]) == 0:    # if no author data supplied
+        del unified["author_info"]
+        unified['filters'] = traits
+    else:
+        unified['filters'] = traits + ['authors']
+
+    add_metadata_to_tree(unified["tree"], node_metadata)
 
     color_mapping = read_colors(args.colors)
     unified["colorings"] = process_colorings(traits, color_mapping, node_metadata=node_metadata)
