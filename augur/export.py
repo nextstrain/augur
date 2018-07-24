@@ -364,11 +364,11 @@ def add_metadata_to_tree(node, metadata):
             add_metadata_to_tree(child, metadata)
 
 def get_traits(node_data):
-    entries = ['branch_length', 'num_date', 'raw_date', 'numdate', 'clock_length', 
+    exclude = ['branch_length', 'num_date', 'raw_date', 'numdate', 'clock_length',
                'mutation_length', 'date', 'muts', 'aa_muts', 'sequence']
     traits = []
     for seq, val in node_data['nodes'].items():
-        newT = [t for t in list(val.keys()) if t not in traits and t not in entries ]
+        newT = [t for t in list(val.keys()) if t not in traits and t not in exclude]
         traits.extend(newT)
     traits = [x for x in traits if '_confidence' not in x and '_entropy' not in x]
 
