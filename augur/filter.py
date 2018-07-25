@@ -80,6 +80,22 @@ def run(args):
             to_exclude = set([line.strip() for line in ifile if line[0]!=comment_char])
         seq_keep = [s for s in seq_keep if s not in to_exclude]
 
+    if args.exclude_where:
+        to_exclude = []
+        for ex in args.exclude_where:
+            col, val = ex.split("=")
+            print(col, val)
+            for seq_name in seq_keep:
+                group = []
+                if seq_name not in meta_dict:
+                    print("WARNING: no metadata for %s, skipping"%seq_name)
+                    continue
+                else:
+                    m = meta_dict[seq_name]
+                    if m[col] == val:
+                        to_exclude.append(seq_name)
+        seq_keep = [s for s in seq_keep if s not in set(to_exclude)]
+
     if is_vcf and args.min_length: #doesn't make sense for VCF, ignore.
         print("WARNING: Cannot use min_length for VCF files. Ignoring...")
     elif (not is_vcf) and args.min_length:
@@ -151,6 +167,22 @@ def run(args):
             if s not in seq_subsample:
                 seq_subsample.append(s)
 
+    if args.include_where:
+        to_include = []
+        for ex in args.include_where:
+            col, val = ex.split("=")
+            for seq_name in all_seq:
+                group = []
+                if seq_name not in meta_dict:
+                    print("WARNING: no metadata for %s, skipping"%seq_name)
+                    continue
+                else:
+                    m = meta_dict[seq_name]
+                    if m[col] == val:
+                        to_include.append(seq_name)
+        for s in to_include:
+            if s not in seq_subsample:
+                seq_subsample.append(s)
 
     ####Write out files
 
