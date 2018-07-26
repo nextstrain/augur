@@ -41,6 +41,8 @@ def run_live(lineages = None, resolutions = None, system="local",
             if system == "rhino":
                 concat = '"' + ' '.join( ['python'] + call ) + '"'
                 call = ['sbatch', '-n', '1', '-c', '2', '--mem', '16192', '--time', '12:00:00', '--wrap', concat]
+            elif system == "sbatch":
+                call = ['sbatch', 'submit_flu.sh'] + call
             elif system == "local":
                 call = ['python'] + call
             print(' '.join(call))
@@ -95,6 +97,8 @@ def run_who(builds = None, lineages = None, resolutions = None, system="local",
                         if system == "rhino":
                             concat = '"' + ' '.join( ['python'] + call ) + '"'
                             call = ['sbatch', '-n', '1', '-c', '2', '--mem', '16192', '--time', '12:00:00', '--wrap', concat]
+                        elif system == "sbatch":
+                            call = ['sbatch', 'submit_flu.sh'] + call
                         elif system == "local":
                             call = ['python'] + call
                         print(' '.join(call))
@@ -105,7 +109,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Run flu builds')
     parser.add_argument('-v', '--version', type = str, default = 'live', help='version to run, live or who')
-    parser.add_argument('-s', '--system', type = str, default = 'local', help='where to run, local or rhino')
+    parser.add_argument('-s', '--system', type = str, default = 'local', help='where to run, local, rhino or sbatch')
     parser.add_argument('-b', '--builds', nargs='+', type = str,  help ="flu builds to include")
     parser.add_argument('-l', '--lineages', nargs='+', type = str,  help ="flu lineages to include")
     parser.add_argument('-r', '--resolutions', nargs='+', type = str,  help ="flu resolutions to include")
