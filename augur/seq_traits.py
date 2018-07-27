@@ -13,6 +13,21 @@ def read_in_translate_vcf(vcf_file, ref_file):
 
     Returns a nested dict in the same format as is *input* in "write_VCF_translation" below,
     with a nested dict for each gene, which contains 'sequences', 'positions', and 'reference'
+
+    Parameters
+    ----------
+    vcf_file : str
+        name of the vcf file to be read, can be gzipped
+
+    ref_file : str
+        name of the fasta file with the reference sequence
+
+    Returns
+    -------
+    dict
+        dictionary of dictionaries with mutations of each strain for each sequence
+        relative to the reference
+
     """
     from Bio import SeqIO
     import numpy as np
@@ -81,21 +96,31 @@ def read_in_features(drm_file):
     Reads in and stores position, alt base, feature, AA change (optional)
     of mutations such as drug-resistance mutations
 
-    Format:
+    Format
+    ------
+    SITE    ALT    DISPLAY_NAME    FEATURE
+    6505    T    D461N    Fluoroquinolones
+    6505    C    D461N    Fluoroquinolones
+    760314    T    V170F    Rifampicin
+    760882    C    V359A    Rifampicin
 
-    SITE	ALT	DISPLAY_NAME	FEATURE
-    6505	T	D461N	Fluoroquinolones
-    6505	C	D461N	Fluoroquinolones
-    760314	T	V170F	Rifampicin
-    760882	C	V359A	Rifampicin
+    or
+    --
+    SITE    ALT    FEATURE
+    6505    T    Fluoroquinolones
+    6505    C    Fluoroquinolones
+    760314    T    Rifampicin
+    760882    C    Rifampicin
 
-    or:
+    Parameters
+    ----------
+    drm_file : str
+        file defining sequence features to be used for annotations
 
-    SITE	ALT	FEATURE
-    6505	T	Fluoroquinolones
-    6505	C	Fluoroquinolones
-    760314	T	Rifampicin
-    760882	C	Rifampicin
+    Returns
+    -------
+    dict
+        dict of dict with sequence features index by gene name, position, and character state
 
     '''
     import pandas as pd
@@ -121,6 +146,21 @@ def read_in_features(drm_file):
 
 
 def annotate_strains_by_gene(annotations, features, sequences, gene='nuc'):
+    """Sort through all potential features and link them up with mutations to
+    produce an annotation
+
+    Parameters
+    ----------
+    annotations : dict
+        dictionary of sequence features as read in by `read_in_features`.
+        This is modified in place
+    features : dict
+        dictionary of features in one gene
+    sequences : dict
+        sequences of that gene
+    gene : str, optional
+        name of the gene
+    """
     for pos, info in features.items():   # annotated positions in gene
         # is the site mutated anywhere in the dataset?
         if pos in sequences['positions']:
@@ -145,6 +185,18 @@ def annotate_strains(all_features, all_sequences):
     Looks for DRM mutations which match in position and alt base in
     the translated protein dict
 
+    Parameters
+    ----------
+    all_features : dict
+        dict of all features in all genes, will be processed gene by gene
+    all_sequences : dict
+        sequence dict of all genes
+
+    Returns
+    -------
+    dict
+        annotations based on the strains for each feature
+
     '''
     annotations = defaultdict(dict)
     for gene, features in all_features.items(): # loop over genes
@@ -155,9 +207,27 @@ def annotate_strains(all_features, all_sequences):
     return annotations
 
 
-def attach_features(annotations, sequences, label, count):
+def attach_features(annotations, label, count):
     '''
-    'Attaches' muts to nodes so format is correct to output as json
+    'Attaches' features to nodes and lists the corresponding mutations
+    as values, that is
+    >>>
+        {nodename:{"Resistance 1":"mut1,mut2", "Resistance 2":"mut1"}}
+
+    Parameters
+    ----------
+    annotations : dict
+        annotations fo stgrains as globed together by `annotate_strains`
+    label : label
+        label of the feature set as specified by as command line argument
+    count : str
+        if equal to traits, will count the number of distinct features that
+        occur in the annotation, otherwise will count the total number of mutations
+
+    Returns
+    -------
+    dict
+        json/dict to export
     '''
 
     #Strings are used here because 0's dont work in auspice at moment
@@ -207,7 +277,7 @@ def run(args):
     features = read_in_features(args.features)
     annotations = annotate_strains(features, compress_seq)
     #convert the annotations into string label that auspice can display
-    seq_features = attach_features(annotations, compress_seq, args.label, args.count)
+    seq_features = attach_features(annotations, args.label, args.count)
 
     #write out json
     with open(args.output, 'w') as results:
