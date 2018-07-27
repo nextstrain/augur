@@ -84,7 +84,6 @@ def run(args):
         to_exclude = []
         for ex in args.exclude_where:
             col, val = ex.split("=")
-            print(col, val)
             for seq_name in seq_keep:
                 group = []
                 if seq_name not in meta_dict:
@@ -92,7 +91,7 @@ def run(args):
                     continue
                 else:
                     m = meta_dict[seq_name]
-                    if m[col] == val:
+                    if m.get(col) == val:
                         to_exclude.append(seq_name)
         seq_keep = [s for s in seq_keep if s not in set(to_exclude)]
 
@@ -178,7 +177,7 @@ def run(args):
                     continue
                 else:
                     m = meta_dict[seq_name]
-                    if m[col] == val:
+                    if m.get(col) == val:
                         to_include.append(seq_name)
         for s in to_include:
             if s not in seq_subsample:
