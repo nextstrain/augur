@@ -2,7 +2,7 @@
 import sys
 from augur import parse, filter, align, tree, refine, ancestral
 from augur import traits, translate, mask, titers, export
-from augur import validate, mapping
+from augur import validate, seq_traits
 
 if __name__=="__main__":
     import argparse
@@ -142,7 +142,7 @@ if __name__=="__main__":
     map_parser.add_argument('--count', type=str, choices=['traits','mutations'], default='traits', help='Whether to count traits (ex: # drugs resistant to) or mutations')
     map_parser.add_argument('--label', type=str, default="# Traits", help='How to label the counts (ex: Drug_Resistance)')
     map_parser.add_argument('--output', '-o', type=str, help='output json with sequence features')
-    map_parser.set_defaults(func=mapping.run)
+    map_parser.set_defaults(func=seq_traits.run)
 
     ## TITERS.PY
     titers_parser = subparsers.add_parser('titers', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
