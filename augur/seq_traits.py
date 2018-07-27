@@ -159,38 +159,29 @@ def attach_features(annotations, sequences, label, count):
     '''
     'Attaches' muts to nodes so format is correct to output as json
     '''
-    mut_meta = defaultdict(lambda: {label: '0' })
 
     #Strings are used here because 0's dont work in auspice at moment
     #TODO change to ints when they do
+    seq_feature_dict = defaultdict(lambda: {label: '0' })
 
-    traitMuts = {label:['0']}
     for seq, anno in annotations.items():
         muts = 0
         for mut, features in anno.items():
             for feat in features:
                 muts += 1
-                if feat in mut_meta[seq]:
-                    mut_meta[seq][feat] += ","+str(mut)
+                if feat in seq_feature_dict[seq]:
+                    seq_feature_dict[seq][feat] += ","+str(mut)
                 else:
-                    mut_meta[seq][feat] = mut
-
-                if feat in traitMuts:
-                    if mut_meta[seq][feat] not in traitMuts[feat]:
-                        traitMuts[feat].append(mut_meta[seq][feat])
-                else:
-                    traitMuts[feat] = [ mut_meta[seq][feat] ]
+                    seq_feature_dict[seq][feat] = mut
 
         if count == "traits":
-            numResist = str(len(set(mut_meta[seq].keys()))-1)
+            numResist = str(len(set(seq_feature_dict[seq].keys()))-1)
         else:
             numResist = str(muts)
 
-        mut_meta[seq][label] = numResist
-        if numResist not in traitMuts[label]:
-            traitMuts[label].append(numResist)
+        seq_feature_dict[seq][label] = numResist
 
-    return mut_meta, traitMuts
+    return seq_feature_dict
 
 
 def run(args):
@@ -215,9 +206,9 @@ def run(args):
 
     features = read_in_features(args.features)
     annotations = annotate_strains(features, compress_seq)
-    #Get json format; collect all unique options to generate colours for
-    mut_meta, traitMuts = attach_features(annotations, compress_seq, args.label, args.count)
+    #convert the annotations into string label that auspice can display
+    seq_features = attach_features(annotations, compress_seq, args.label, args.count)
 
     #write out json
     with open(args.output, 'w') as results:
-        json.dump({"nodes":mut_meta}, results, indent=1)
+        json.dump({"nodes":seq_features}, results, indent=1)
