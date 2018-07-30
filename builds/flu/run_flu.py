@@ -1,12 +1,8 @@
 import os
 
-def run_live(
-    lineages = None, resolutions = None,
-    system="local",
-    frequencies="complete",
-    process_na=False,
-    no_prepare=False
-    ):
+def run_live(lineages = None, resolutions = None, system="local",
+             frequencies="complete", process_na=False, no_prepare=False):
+
     lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
     resolutions = ['2y', '3y', '6y', '12y'] if resolutions is None else resolutions
     segments = ['ha', 'na']
@@ -18,13 +14,13 @@ def run_live(
 
             if not (process_na or no_prepare):
                 call = ['python',
-                    'flu.prepare.py',
-                    '--lineage', lineage,
-                    '--resolution', resolution,
-                    '--segments', " ".join(segments),
-                    '--sequences', seq_files,
-                    '--titers', '../../../fauna/data/%s_public_hi_cell_titers.tsv'%(lineage),
-                    '--file_prefix', 'flu_seasonal_%s_*segment*_%s'%(lineage, resolution)]
+                        'flu.prepare.py',
+                        '--lineage', lineage,
+                        '--resolution', resolution,
+                        '--segments', " ".join(segments),
+                        '--sequences', seq_files,
+                        '--titers', '../../../fauna/data/%s_public_hi_cell_titers.tsv'%(lineage),
+                        '--file_prefix', 'flu_seasonal_%s_*segment*_%s'%(lineage, resolution)]
                 if frequencies == "complete":
                     call = call + ['--complete_frequencies']
                 print(' '.join(call))
@@ -42,25 +38,19 @@ def run_live(
                     'flu.process.py',
                     '--json', 'prepared/flu_seasonal_%s_na_%s.json'%(lineage, resolution)
                 ]
-            if (system == "qsub"):
-                call = ['qsub', 'submit_script.sh'] + call
-            elif (system == "rhino"):
+            if system == "rhino":
                 concat = '"' + ' '.join( ['python'] + call ) + '"'
                 call = ['sbatch', '-n', '1', '-c', '2', '--mem', '16192', '--time', '12:00:00', '--wrap', concat]
-            elif (system == "sbatch"):
+            elif system == "sbatch":
                 call = ['sbatch', 'submit_flu.sh'] + call
-            elif (system == "local"):
+            elif system == "local":
                 call = ['python'] + call
             print(' '.join(call))
             os.system(' '.join(call))
 
-def run_who(
-    builds = None, lineages = None, resolutions = None,
-    system="local",
-    frequencies="complete",
-    process_na=False,
-    no_prepare = False
-    ):
+def run_who(builds = None, lineages = None, resolutions = None, system="local",
+            frequencies="complete", process_na=False, no_prepare = False):
+
     builds = ['cdc', 'crick', 'niid', 'vidrl', 'who'] if builds is None else builds
     lineages = ['h3n2', 'h1n1pdm', 'vic', 'yam'] if lineages is None else lineages
     resolutions = ['2y', '6y'] if resolutions is None else resolutions
@@ -79,13 +69,13 @@ def run_who(
 
                         if not (process_na or no_prepare):
                             call = ['python',
-                                'flu.prepare.py',
-                                '--lineage', lineage,
-                                '--resolution', resolution,
-                                '--segments', " ".join(segments),
-                                '--sequences', seq_files,
-                                '--titers', '../../../fauna/data/%s_%s_%s_%s_titers.tsv'%(lineage, build, assay, passage),
-                                '--file_prefix', 'flu_%s_%s_*segment*_%s_%s_%s'%(build, lineage, resolution, passage, assay)]
+                                    'flu.prepare.py',
+                                    '--lineage', lineage,
+                                    '--resolution', resolution,
+                                    '--segments', " ".join(segments),
+                                    '--sequences', seq_files,
+                                    '--titers', '../../../fauna/data/%s_%s_%s_%s_titers.tsv'%(lineage, build, assay, passage),
+                                    '--file_prefix', 'flu_%s_%s_*segment*_%s_%s_%s'%(build, lineage, resolution, passage, assay)]
                             if frequencies == "complete":
                                 call = call + ['--complete_frequencies']
                             print(' '.join(call))
@@ -104,14 +94,12 @@ def run_who(
                                 '--titers_export'
                             ]
 
-                        if (system == "qsub"):
-                            call = ['qsub', 'submit_script.sh'] + call
-                        elif (system == "rhino"):
+                        if system == "rhino":
                             concat = '"' + ' '.join( ['python'] + call ) + '"'
                             call = ['sbatch', '-n', '1', '-c', '2', '--mem', '16192', '--time', '12:00:00', '--wrap', concat]
-                        elif (system == "sbatch"):
+                        elif system == "sbatch":
                             call = ['sbatch', 'submit_flu.sh'] + call
-                        elif (system == "local"):
+                        elif system == "local":
                             call = ['python'] + call
                         print(' '.join(call))
                         os.system(' '.join(call))
@@ -121,7 +109,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Run flu builds')
     parser.add_argument('-v', '--version', type = str, default = 'live', help='version to run, live or who')
-    parser.add_argument('-s', '--system', type = str, default = 'local', help='where to run, local, qsub or sbatch')
+    parser.add_argument('-s', '--system', type = str, default = 'local', help='where to run, local, rhino or sbatch')
     parser.add_argument('-b', '--builds', nargs='+', type = str,  help ="flu builds to include")
     parser.add_argument('-l', '--lineages', nargs='+', type = str,  help ="flu lineages to include")
     parser.add_argument('-r', '--resolutions', nargs='+', type = str,  help ="flu resolutions to include")
