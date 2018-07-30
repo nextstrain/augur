@@ -361,6 +361,11 @@ class fitness_model(object):
         for time in self.timepoints:
             values = self.predictor_arrays[time]
             weights = self.freq_arrays[time]
+
+            # Do not calculate weighted summary statistics when all frequencies at the current timepoint are zero.
+            if weights.sum() == 0:
+                weights = None
+
             means = np.average(values, weights=weights, axis=0)
             variances = np.average((values-means)**2, weights=weights, axis=0)
             sds = np.sqrt(variances)
