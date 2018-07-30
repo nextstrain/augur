@@ -204,7 +204,8 @@ class process(object):
         # for name, msa in self.seqs.translations.iteritems():
         #     SeqIO.write(msa, self.output_path + "_aligned_" + name + ".mfa", "fasta")
 
-    def get_time_interval_as_floats(self):
+    @staticmethod
+    def get_time_interval_as_floats(time_interval):
         """
         Converts the current process's datetime interval to start and end floats.
 
@@ -214,15 +215,8 @@ class process(object):
             start_date (float): the start of the current process's time interval
             end_date (float): the end of the current process's time interval
         """
-        try:
-            time_interval = self.info["time_interval"]
-            start_date = time_interval[1].year + (time_interval[1].month - 1) / 12.0
-            end_date = time_interval[0].year + time_interval[0].month / 12.0
-        except KeyError:
-            self.log.fatal("Cannot space pivots without a time interval in the prepared JSON")
-            start_date = None
-            end_date = None
-
+        start_date = time_interval[1].year + (time_interval[1].month - 1) / 12.0
+        end_date = time_interval[0].year + time_interval[0].month / 12.0
         return start_date, end_date
 
     def get_pivots_via_spacing(self):
@@ -231,7 +225,13 @@ class process(object):
         except AssertionError:
             self.log.fatal("Cannot space pivots without providing \"pivot_spacing\" in the config")
 
-        start_date, end_date = self.get_time_interval_as_floats()
+        try:
+            time_interval = self.info["time_interval"]
+            start_date, end_date = self.get_time_interval_as_floats(time_interval)
+        except KeyError:
+            self.log.fatal("Cannot space pivots without a time interval in the prepared JSON")
+            start_date = end_date = None
+
         return np.arange(start_date,
                          end_date,
                          self.config["pivot_spacing"])

@@ -542,7 +542,7 @@ if __name__=="__main__":
 
         # estimate KDE tip frequencies
         if runner.config["estimate_kde_frequencies"]:
-            start_date, end_date = runner.get_time_interval_as_floats()
+            start_date, end_date = runner.get_time_interval_as_floats(runner.info["time_interval"])
 
             kde_frequencies = KdeFrequencies(
                 pivot_frequency=runner.config["pivot_spacing"],

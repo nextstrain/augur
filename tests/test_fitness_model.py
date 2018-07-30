@@ -15,6 +15,7 @@ except ImportError:
 
 from base.fitness_model import fitness_model
 from base.frequencies import KdeFrequencies
+from base.process import process
 
 #
 # Fixtures
@@ -87,38 +88,44 @@ def real_tree(multiple_sequence_alignment):
 
 @pytest.fixture
 def simple_fitness_model(simple_tree):
+    time_interval = (
+        datetime.date(2015, 1, 1),
+        datetime.date(2012, 1, 1)
+    )
+    start_date, end_date = process.get_time_interval_as_floats(time_interval)
+
     return fitness_model(
         tree=simple_tree,
         frequencies=KdeFrequencies(
-            start_date=2012.0,
-            end_date=2015.0,
+            start_date=start_date,
+            end_date=end_date,
             include_internal_nodes=True
         ),
         predictor_input=["random"],
         pivot_spacing=1.0 / 12,
-        time_interval=(
-            datetime.date(2015, 1, 1),
-            datetime.date(2012, 1, 1)
-        ),
+        time_interval=time_interval,
         epitope_masks_fname="builds/flu/metadata/ha_masks.tsv",
         epitope_mask_version="wolf"
     )
 
 @pytest.fixture
 def real_fitness_model(real_tree, multiple_sequence_alignment):
+    time_interval = (
+        datetime.date(2017, 6, 1),
+        datetime.date(2014, 6, 1)
+    )
+    start_date, end_date = process.get_time_interval_as_floats(time_interval)
+
     model = fitness_model(
         tree=real_tree,
         frequencies=KdeFrequencies(
-            start_date=2014.5,
-            end_date=2017.5,
+            start_date=start_date,
+            end_date=end_date,
             include_internal_nodes=True
         ),
         predictor_input=["random"],
         pivot_spacing=1.0 / 12,
-        time_interval=(
-            datetime.date(2017, 6, 1),
-            datetime.date(2014, 6, 1)
-        ),
+        time_interval=time_interval,
         epitope_masks_fname="builds/flu/metadata/ha_masks.tsv",
         epitope_mask_version="wolf"
     )
@@ -132,19 +139,22 @@ def precalculated_fitness_model(simple_tree):
     """Provides a simple fitness model with precalculated model parameters such that
     the model skips learning new parameters.
     """
+    time_interval = (
+        datetime.date(2015, 1, 1),
+        datetime.date(2012, 1, 1)
+    )
+    start_date, end_date = process.get_time_interval_as_floats(time_interval)
+
     return fitness_model(
         tree=simple_tree,
         frequencies=KdeFrequencies(
-            start_date=2012.0,
-            end_date=2015.0,
+            start_date=start_date,
+            end_date=end_date,
             include_internal_nodes=True
         ),
         predictor_input={"random": MODEL_PARAMS},
         pivot_spacing=1.0 / 12,
-        time_interval=(
-            datetime.date(2015, 1, 1),
-            datetime.date(2012, 1, 1)
-        ),
+        time_interval=time_interval,
         epitope_masks_fname="builds/flu/metadata/ha_masks.tsv",
         epitope_mask_version="wolf"
     )
