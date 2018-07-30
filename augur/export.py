@@ -248,7 +248,7 @@ def construct_author_info_nexflu(metadata, tree, nodes):
     author_info = defaultdict(lambda: {"n": 0})
     for strain, data in metadata.items():
         if "authors" not in data:
-            print("Error - {} had no authors".format(n))
+            print("Error - {} had no authors".format(strain))
             continue
         if data["authors"] not in authorsInTree:
             continue

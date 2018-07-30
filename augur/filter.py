@@ -37,6 +37,21 @@ def write_vcf(compressed, input_file, output_file, dropped_samps):
     except OSError:
         pass
 
+def read_priority_scores(fname):
+    priorities = defaultdict(float)
+    if not os.path.isfile(fname):
+        print("ERROR: priority file %s doesn't exist"%fname)
+        return priorities
+
+    with open(fname) as pfile:
+        for l in pfile:
+            f = l.strip().split()
+            try:
+                priorities[f[0]] = float(f[1])
+            except:
+                print("ERROR: malformatted priority:",l)
+
+    return priorities
 
 
 def run(args):
@@ -66,43 +81,64 @@ def run(args):
     meta_dict, meta_columns = read_metadata(args.metadata)
 
 
-    ####Filtering steps
+    #####################################
+    #Filtering steps
+    #####################################
+
+    # remove sequences without meta data
     tmp = [ ]
-    for s in seq_keep:
-        if s in meta_dict:
-            tmp.append(s)
+    for seq_name in seq_keep:
+        if seq_name in meta_dict:
+            tmp.append(seq_name)
         else:
-            print("No meta data for",s)
+            print("No meta data for %s, excluding from all further analysis."%seq_name)
     seq_keep = tmp
 
+    # remove strains explicitly excluded by name
+    # read list of strains to exclude from file and prune seq_keep
     if args.exclude and os.path.isfile(args.exclude):
         with open(args.exclude, 'r') as ifile:
             to_exclude = set([line.strip() for line in ifile if line[0]!=comment_char])
-        seq_keep = [s for s in seq_keep if s not in to_exclude]
+        seq_keep = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
 
-    if is_vcf and args.min_length: #doesn't make sense for VCF, ignore.
-        print("WARNING: Cannot use min_length for VCF files. Ignoring...")
-    elif (not is_vcf) and args.min_length:
-        seq_keep = [s for s in seq_keep if len(seqs[s])>=args.min_length]
+    # exclude strain my metadata field like 'host=camel'
+    if args.exclude_where:
+        for ex in args.exclude_where:
+            try:
+                col, val = ex.split("=")
+            except (ValueError,TypeError):
+                print("invalid exclude clause %s, should be of from property=value"%ex)
+            else:
+                seq_keep = [seq_name for seq_name in seq_keep
+                            if meta_dict[seq_name].get(col,'unknown')!=val]
 
+    # filter by sequence length
+    if args.min_length:
+        if is_vcf: #doesn't make sense for VCF, ignore.
+            print("WARNING: Cannot use min_length for VCF files. Ignoring...")
+        else:
+            seq_keep = [s for s in seq_keep if len(seqs[s])>=args.min_length]
+
+    # filter by date
     if (args.min_date or args.max_date) and 'date' in meta_columns:
         dates = get_numerical_dates(meta_dict, fmt="%Y-%m-%d")
         if args.min_date:
-            seq_keep = [s for s in seq_keep if dates[s] and np.min(dates[s])>args.min_date]
+            seq_keep = [s for s in seq_keep if dates[s] and np.max(dates[s])>args.min_date]
         if args.max_date:
             seq_keep = [s for s in seq_keep if dates[s] and np.min(dates[s])<args.max_date]
 
+    # subsampling. This will sort sequences into groups by meta data fields
+    # specified in --group-by and then take at most --sequences-per-group
+    # from each group. Within each group, sequences are optionally sorted
+    # by a priority score specified in a file --priority
     if args.group_by and args.sequences_per_group:
         spg = args.sequences_per_group
         seq_names_by_group = defaultdict(list)
 
         for seq_name in seq_keep:
             group = []
-            if seq_name not in meta_dict:
-                print("WARNING: no metadata for %s, skipping"%seq_name)
-                continue
-            else:
-                m = meta_dict[seq_name]
+            m = meta_dict[seq_name]
+            # collect group specifiers
             for c in args.group_by:
                 if c in m:
                     group.append(m[c])
@@ -120,50 +156,71 @@ def run(args):
                         group.append((year, month))
                     else:
                         group.append(year)
+                else:
+                    group.append('unknown')
             seq_names_by_group[tuple(group)].append(seq_name)
 
-        if args.priority and os.path.isfile(args.priority):
-            priorities = defaultdict(float)
-            with open(args.priority) as pfile:
-                for l in pfile:
-                    f = l.strip().split()
-                    try:
-                        priorities[f[0]] = float(f[1])
-                    except:
-                        print("ERROR: malformatted priority:",l)
+        if args.priority: # read priorities
+            priorities = read_priority_scores(args.priority)
 
+        # subsample each groups, either by taking the spg highest priority strains or
+        # sampling at random from the sequences in the group
         seq_subsample = []
-        for group, s in seq_names_by_group.items():
-            tmp_seqs = [seq_name for seq_name in s]
-            if args.priority:
-                seq_subsample.extend(sorted(tmp_seqs, key=lambda x:priorities[x], reverse=True)[:spg])
+        for group, sequences_in_group in seq_names_by_group.items():
+            if args.priority: #sort descending by priority
+                seq_subsample.extend(sorted(sequences_in_group, key=lambda x:priorities[x], reverse=True)[:spg])
             else:
-                seq_subsample.extend(tmp_seqs if len(s)<=spg
-                                     else random.sample(tmp_seqs, spg))
-    else:
-        seq_subsample = seq_keep
+                seq_subsample.extend(sequences_in_group if len(sequences_in_group)<=spg
+                                     else random.sample(sequences_in_group, spg))
 
+        seq_keep = seq_subsample
+
+    # force include sequences specified in file.
+    # Note that this might re-add previously excluded sequences
+    # Note that we are also not checking for existing meta data here
     if args.include and os.path.isfile(args.include):
         with open(args.include, 'r') as ifile:
             to_include = set([line.strip() for line in ifile if line[0]!=comment_char])
 
         for s in to_include:
-            if s not in seq_subsample:
-                seq_subsample.append(s)
+            if s not in seq_keep:
+                seq_keep.append(s)
 
+    # add sequences with particular meta data attributes
+    if args.include_where:
+        to_include = []
+        for ex in args.include_where:
+            try:
+                col, val = ex.split("=")
+            except (ValueError,TypeError):
+                print("invalid include clause %s, should be of from property=value"%ex)
+                continue
+
+            # loop over all sequences and re-add sequences
+            for seq_name in all_seq:
+                if seq_name in meta_dict:
+                    if meta_dict[seq_name].get(col)==val:
+                        to_include.append(seq_name)
+                else:
+                    print("WARNING: no metadata for %s, skipping"%seq_name)
+                    continue
+
+        for s in to_include:
+            if s not in seq_keep:
+                seq_keep.append(s)
 
     ####Write out files
 
     if is_vcf:
         #get the samples to be deleted, not to keep, for VCF
-        dropped_samps = list(set(all_seq) - set(seq_subsample))
+        dropped_samps = list(set(all_seq) - set(seq_keep))
         if len(dropped_samps) == len(all_seq): #All samples have been dropped! Stop run, warn user.
             print("ERROR: All samples have been dropped! Check filter rules and metadata file format.")
             return -1
         write_vcf(is_compressed, args.sequences, args.output, dropped_samps)
 
     else:
-        seq_to_keep = [seq for id,seq in seqs.items() if id in seq_subsample]
+        seq_to_keep = [seq for id,seq in seqs.items() if id in seq_keep]
         if len(seq_to_keep) == 0:
             print("ERROR: All samples have been dropped! Check filter rules and metadata file format.")
             return -1
