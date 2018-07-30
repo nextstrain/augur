@@ -10,7 +10,7 @@ from base.io_util import write_json
 from base.frequencies import KdeFrequencies
 from flu_titers import HI_model, HI_export, vaccine_distance
 from base.scores import calculate_sequence_scores, calculate_metadata_scores, calculate_phylogenetic_scores
-from flu_info import clade_designations, lineage_to_epitope_mask, lineage_to_glyc_mask, resolution_to_pivot_spacing, vaccine_choices
+from flu_info import clade_designations, lineage_to_epitope_mask, lineage_to_na_epitope_mask, lineage_to_glyc_mask, resolution_to_pivot_spacing, vaccine_choices
 import argparse
 import numpy as np
 from pprint import pprint
@@ -98,7 +98,13 @@ def make_config(prepared_json, args):
 # set defaults when command line parameter is None based on lineage, segment and resolution
 def set_config_defaults(runner):
     if runner.config["epitope_mask_version"] is None and runner.info["lineage"] in lineage_to_epitope_mask:
-        runner.config["epitope_mask_version"] = lineage_to_epitope_mask[runner.info["lineage"]]
+        if runner.info["segment"] == "ha":
+            runner.config["epitope_mask_version"] = lineage_to_epitope_mask[runner.info["lineage"]]
+        elif runner.info["segment"] == "na":
+            runner.config["epitope_mask_version"] = lineage_to_na_epitope_mask[runner.info["lineage"]]
+        else:
+            # No epitope masks are defined for other segments.
+            pass
     if runner.config["glyc_mask_version"] is None and runner.info["lineage"] in lineage_to_glyc_mask:
         runner.config["glyc_mask_version"] = lineage_to_glyc_mask[runner.info["lineage"]]
     if runner.config["pivot_spacing"] is None and runner.info["resolution"] in resolution_to_pivot_spacing:
