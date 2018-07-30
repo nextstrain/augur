@@ -640,15 +640,14 @@ class process(object):
         """Run the fitness prediction model and annotate the tree's nodes with fitness
         values. Returns the resulting fitness model instance.
         """
-        if not hasattr(self, "tree_frequencies"):
-            self.log.warn("Could not find tree frequencies.")
+        if not hasattr(self, "kde_frequencies"):
+            self.log.warn("Could not find KDE frequencies.")
             return
 
         kwargs = {
             "tree": self.tree.tree,
-            "frequencies": self.tree_frequencies,
-            "time_interval": self.info["time_interval"],
-            "pivots": np.around(self.pivots, 2)
+            "frequencies": self.kde_frequencies,
+            "time_interval": self.info["time_interval"]
         }
 
         if "predictors" in self.config:

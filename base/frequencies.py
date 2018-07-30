@@ -697,11 +697,13 @@ class KdeFrequencies(object):
             pivot_start = start_date
             pivot_end = end_date
 
-        return np.arange(
+        pivots = np.arange(
             pivot_start,
             pivot_end,
             pivot_frequency
         )
+
+        return np.around(pivots, 2)
 
     @classmethod
     def get_density_for_observation(cls, mu, pivots, sigma_narrow=1/12.0, sigma_wide=3/12.0, proportion_wide=0.2):
