@@ -722,9 +722,14 @@ class fitness_model(object):
 
         correlation_null, correlation_raw, correlation_rel = self.get_correlation()
 
+        # Do not try to export titer data if it was provided to the model.
+        predictor_kwargs = self.predictor_kwargs.copy()
+        if "titers" in predictor_kwargs:
+            del predictor_kwargs["titers"]
+
         data = {
             "params": params_df.to_dict(orient="records"),
-            "predictor_kwargs": self.predictor_kwargs,
+            "predictor_kwargs": predictor_kwargs,
             "data": self.pred_vs_true_df.to_dict(orient="records"),
             "accuracy": {
                 "clade_error": self.clade_fit(self.model_params),
