@@ -137,7 +137,7 @@ if __name__=="__main__":
     traits_parser.add_argument('--output', '-o', default='traits.json', help='')
     traits_parser.set_defaults(func=traits.run)
 
-    ## MAPPING.PY
+    ## SEQ_TRAITS.PY
     map_parser = subparsers.add_parser('sequence-traits', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     map_parser.add_argument('--alignment', '-a', required=True, help="alignment to search for DRMs in (can include ancestral seqs)")
     map_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')

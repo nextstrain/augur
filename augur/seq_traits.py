@@ -93,19 +93,28 @@ def read_in_translate_vcf(vcf_file, ref_file):
 
 def read_in_features(drm_file):
     '''
-    Reads in and stores position, alt base, feature, AA change (optional)
-    of mutations such as drug-resistance mutations
+    Reads in and stores position, alt base/AA, feature, gene,
+    and 'display name' (optional) of mutations such 
+    as drug-resistance mutations
 
-    Format
-    ------
+    Format to map by AA site:
+    -------------------------
+    GENE	SITE	ALT	FEATURE
+    gyrB	461	N	Fluoroquinolones
+    gyrB	499	D	Fluoroquinolones
+    rpoB	170	F	Rifampicin
+    rpoB	359	A	Rifampicin
+
+    Format to map by nucleotide site:
+    -----------------------------------
     SITE    ALT    DISPLAY_NAME    FEATURE
     6505    T    D461N    Fluoroquinolones
     6505    C    D461N    Fluoroquinolones
     760314    T    V170F    Rifampicin
     760882    C    V359A    Rifampicin
 
-    or
-    --
+    or (to display mutations)
+    -------------------------
     SITE    ALT    FEATURE
     6505    T    Fluoroquinolones
     6505    C    Fluoroquinolones
