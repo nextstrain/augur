@@ -187,6 +187,10 @@ def annotate_strains_by_gene(annotations, features, sequences, gene='nuc'):
                     else:
                         label = gene+": "+anc+str(pos+1)+der
                     annotations[seq_name][label] = feat
+    #need to record those with no mutations so they can be given zero counts later
+    for seq_name in sequences['sequences'].keys():
+        if seq_name not in annotations:
+            annotations[seq_name] = {}
 
 
 def annotate_strains(all_features, all_sequences):
