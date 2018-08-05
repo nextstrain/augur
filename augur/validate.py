@@ -182,15 +182,28 @@ def verifyMetaAndOrTreeJSONsAreInternallyConsistent(meta, tree):
                 for geoValue in mj["geo"][geoName]:
                     if geoValue not in treeAttrs[geoName]["values"]:
                         warn("\"{}\", a value of the geographic resolution \"{}\", does not appear as a value of attr->{} on any tree nodes.".format(geoValue, geoName, geoName))
+                for geoValue in treeAttrs[geoName]["values"]:
+                    if geoValue not in mj["geo"][geoName]:
+                        error("\"{}\", a value of the geographic resolution \"{}\", appears in the tree but not in the metadata.".format(geoValue, geoName))
+                        error("\tThis will cause transmissions & demes involving this location not to be displayed in Auspice")
+
 
     if "color_options" in mj:
         for colorBy in [x for x in mj["color_options"] if x != "gt"]:
             if colorBy not in treeAttrs:
                 error("The color_option \"{}\" does not appear as an attr on any tree nodes.".format(colorBy))
             elif "color_map" in mj["color_options"][colorBy]:
+                # if there's a color_map, then check that there are no values which aren't seen on the tree
                 for (value, hex) in mj["color_options"][colorBy]["color_map"]:
                     if value not in treeAttrs[colorBy]["values"]:
                         warn("Color option \"{}\" specifies a hex code for \"{}\" but this isn't ever seen on the tree nodes.".format(colorBy, value))
+                # inversely, check for values on the tree not defined in the color_map
+                for value in treeAttrs[colorBy]["values"]:
+                    color_map_values = [x[0] for x in mj["color_options"][colorBy]["color_map"]]
+                    if value not in color_map_values:
+                        warn("Color option \"{}\", which contains a color_map, is missing \"{}\"".format(colorBy, value))
+
+
 
     if "filters" in mj:
         for filter in mj["filters"]:
@@ -254,6 +267,10 @@ def verifyMainJSONIsInternallyConsistent(main):
                 for geoValue in data["geographic_info"][geoName]:
                     if geoValue not in treeTraits[geoName]["values"]:
                         warn("\"{}\", a value of the geographic resolution \"{}\", does not appear as a value of attr->{} on any tree nodes.".format(geoValue, geoName, geoName))
+                for geoValue in treeTraits[geoName]["values"]:
+                    if geoValue not in data["geographic_info"][geoName]:
+                        error("\"{}\", a value of the geographic resolution \"{}\", appears in the tree but not in the metadata.".format(geoValue, geoName))
+                        error("\tThis will cause transmissions & demes involving this location not to be displayed in Auspice")
     else:
         if "map" in data["panels"]:
             error("Map panel was requested but no geographic_info was provided")
@@ -276,8 +293,12 @@ def verifyMainJSONIsInternallyConsistent(main):
             if "domain" in data["colorings"][colorBy]:
                 domain = data["colorings"][colorBy]["domain"]
                 if data["colorings"][colorBy]["type"] in ["ordinal", "categorical"]:
-                    if len([val for val in domain if val not in treeTraits[colorBy]["values"]]):
-                        warn("Domain for {} defined values which are not present on the tree...".format(colorBy))
+                    inMetaNotInTree = [val for val in domain if val not in treeTraits[colorBy]["values"]]
+                    if len(inMetaNotInTree):
+                        warn("Domain for {} defined the following values which are not present on the tree: {}".format(colorBy, inMetaNotInTree.join(", ")))
+                    inTreeNotInMeta = [val for val in treeTraits[colorBy]["values"] if val not in domain]
+                    if len(inTreeNotInMeta):
+                        warn("Tree defined values for {} which were not in the domain: {}".format(colorBy, inTreeNotInMeta.join(", ")))
                 elif data["colorings"][colorBy]["type"] == "boolean":
                     error("Cannot povide a domain for a boolean coloring ({})".format(colorBy))
     else:
@@ -352,7 +373,7 @@ def run(args):
     else:
         if "main" in datasets:
             return_status = verifyMainJSONIsInternallyConsistent(datasets["main"]) | return_status
+
     if not return_status:
         print("SUCCESS")
-
     return return_status
