@@ -2,7 +2,7 @@
 import sys
 from augur import parse, filter, align, tree, refine, ancestral
 from augur import traits, translate, mask, titers, export
-from augur import validate, seq_traits
+from augur import validate, sequence_traits
 
 if __name__=="__main__":
     import argparse
@@ -33,9 +33,9 @@ if __name__=="__main__":
     filter_parser.add_argument('--priority', type=str, help="file with list priority scores for sequences (strain\tpriority)")
     filter_parser.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     filter_parser.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
-    filter_parser.add_argument('--exclude-where', nargs='+', 
+    filter_parser.add_argument('--exclude-where', nargs='+',
                                 help="Exclude samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be excluded), not AND")
-    filter_parser.add_argument('--include-where', nargs='+', 
+    filter_parser.add_argument('--include-where', nargs='+',
                                 help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND")
     filter_parser.add_argument('--output', '-o', help="output file")
     filter_parser.set_defaults(func=filter.run)
@@ -138,16 +138,16 @@ if __name__=="__main__":
     traits_parser.add_argument('--output', '-o', default='traits.json', help='')
     traits_parser.set_defaults(func=traits.run)
 
-    ## SEQ_TRAITS.PY
+    ## SEQUENCE_TRAITS.PY
     map_parser = subparsers.add_parser('sequence-traits', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    map_parser.add_argument('--alignment', '-a', required=True, help="alignment to search for DRMs in (can include ancestral seqs)")
+    map_parser.add_argument('--alignment', '-a', required=True, help="alignment to search for sequence traits in (can include ancestral sequences)")
     map_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     map_parser.add_argument('--amino-acid', '-aa', action='store_true', help='indicate amino acid alignment')
     map_parser.add_argument('--features', type=str, help='file that specifies sites defining the features in a tab-delimited format "GENOMIC_POSITION ALT_BASE DRUG AA(optional)"')
     map_parser.add_argument('--count', type=str, choices=['traits','mutations'], default='traits', help='Whether to count traits (ex: # drugs resistant to) or mutations')
     map_parser.add_argument('--label', type=str, default="# Traits", help='How to label the counts (ex: Drug_Resistance)')
     map_parser.add_argument('--output', '-o', type=str, help='output json with sequence features')
-    map_parser.set_defaults(func=seq_traits.run)
+    map_parser.set_defaults(func=sequence_traits.run)
 
     ## TITERS.PY
     titers_parser = subparsers.add_parser('titers', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
