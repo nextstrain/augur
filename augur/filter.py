@@ -123,9 +123,9 @@ def run(args):
     if (args.min_date or args.max_date) and 'date' in meta_columns:
         dates = get_numerical_dates(meta_dict, fmt="%Y-%m-%d")
         if args.min_date:
-            seq_keep = [s for s in seq_keep if dates[s] and np.max(dates[s])>args.min_date]
+            seq_keep = [s for s in seq_keep if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s])>args.min_date]
         if args.max_date:
-            seq_keep = [s for s in seq_keep if dates[s] and np.min(dates[s])<args.max_date]
+            seq_keep = [s for s in seq_keep if (np.isscalar(dates[s]) or all(dates[s])) and np.min(dates[s])<args.max_date]
 
     # subsampling. This will sort sequences into groups by meta data fields
     # specified in --group-by and then take at most --sequences-per-group
