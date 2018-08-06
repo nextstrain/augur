@@ -97,6 +97,14 @@ def read_in_features(drm_file):
     and 'display name' (optional) of mutations such 
     as drug-resistance mutations
 
+    Format to map by both nucleotide and AA sites:
+    ----------------------------------------------
+    GENE	SITE	ALT	DISPLAY_NAME	FEATURE
+    gyrB	461	N		Fluoroquinolones
+    nuc	1472358	T	rrs: C513T	Streptomycin
+    nuc	1673425	T	fabG1: C-15T	Isoniazid Ethionamide
+    ethA	175	T		Ethionamide
+
     Format to map by AA site:
     -------------------------
     GENE	SITE	ALT	FEATURE
@@ -113,8 +121,8 @@ def read_in_features(drm_file):
     760314    T    V170F    Rifampicin
     760882    C    V359A    Rifampicin
 
-    or (to display mutations)
-    -------------------------
+    or to map by nucleotide site and display mutations:
+    ---------------------------------------------------
     SITE    ALT    FEATURE
     6505    T    Fluoroquinolones
     6505    C    Fluoroquinolones
@@ -145,7 +153,7 @@ def read_in_features(drm_file):
 
         mutPositions[gene].append(pos)
         MUTs[gene][pos][m.ALT] = {'feature':m.FEATURE.split()}
-        if hasattr(m, "DISPLAY_NAME"):
+        if hasattr(m, "DISPLAY_NAME") and not m.isnull().DISPLAY_NAME:
             MUTs[gene][pos][m.ALT]['display_name'] = m.DISPLAY_NAME
 
     for gene in mutPositions:
@@ -274,15 +282,18 @@ def run(args):
 
     ## check file format and read in sequences
     is_vcf = False
-    if any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
-        if not args.vcf_reference:
+    if ( (args.ancestral_sequences and any([args.ancestral_sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])) or
+        (args.translations and any([args.translations.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])) ):
+        if ((args.ancestral_sequences and not args.vcf_reference) or
+            (args.translations and not args.vcf_aa_reference)):
             print("ERROR: a reference Fasta is required with VCF-format alignments")
             return 1
         is_vcf = True
-        if args.amino_acid:
-            compress_seq = read_in_translate_vcf(args.alignment, args.vcf_reference)
-        else:
-            compress_seq = {"nuc": read_vcf(args.alignment, args.vcf_reference)}
+        compress_seq = defaultdict(dict)
+        if args.translations:
+            compress_seq = read_in_translate_vcf(args.translations, args.vcf_aa_reference)
+        if args.ancestral_sequences:
+            compress_seq["nuc"] = read_vcf(args.ancestral_sequences, args.vcf_reference)
     else:
         # TO-DO fill in fasta-format processing
         aln = args.alignment

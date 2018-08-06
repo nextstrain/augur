@@ -141,7 +141,9 @@ rule seqtraits:
         label = "Drug_Resistance"
     shell:
         """
-        augur sequence-traits --alignment {input.align} --vcf-reference {input.ref} \
+        augur sequence-traits \
+            --ancestral-sequences {input.align} \
+            --vcf-reference {input.ref} \
             --features {input.drms} --output {output.drm_data} \
             --count {params.count} --label {params.label}
         """

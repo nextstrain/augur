@@ -140,9 +140,10 @@ if __name__=="__main__":
 
     ## SEQUENCE_TRAITS.PY
     map_parser = subparsers.add_parser('sequence-traits', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    map_parser.add_argument('--alignment', '-a', required=True, help="alignment to search for sequence traits in (can include ancestral sequences)")
-    map_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    map_parser.add_argument('--amino-acid', '-aa', action='store_true', help='indicate amino acid alignment')
+    map_parser.add_argument('--ancestral-sequences', type=str, help="nucleotide alignment to search for sequence traits in")
+    map_parser.add_argument('--translations', type=str, help="AA alignment to search for sequence traits in (can include ancestral sequences)")
+    map_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the nucleotide VCF was mapped to')
+    map_parser.add_argument('--vcf-translate-reference', type=str, help='fasta file of the sequence the translated VCF was mapped to')
     map_parser.add_argument('--features', type=str, help='file that specifies sites defining the features in a tab-delimited format "GENOMIC_POSITION ALT_BASE DRUG AA(optional)"')
     map_parser.add_argument('--count', type=str, choices=['traits','mutations'], default='traits', help='Whether to count traits (ex: # drugs resistant to) or mutations')
     map_parser.add_argument('--label', type=str, default="# Traits", help='How to label the counts (ex: Drug_Resistance)')
