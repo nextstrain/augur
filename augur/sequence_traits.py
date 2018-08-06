@@ -279,19 +279,19 @@ def run(args):
     '''
     This should be modified to work on Fasta-input files!!
     '''
-
+    print("This method may change in future! Please use 'augur sequence-traits -h' to check the latest options.")
     ## check file format and read in sequences
     is_vcf = False
     if ( (args.ancestral_sequences and any([args.ancestral_sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])) or
         (args.translations and any([args.translations.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])) ):
         if ((args.ancestral_sequences and not args.vcf_reference) or
-            (args.translations and not args.vcf_aa_reference)):
+            (args.translations and not args.vcf_translate_reference)):
             print("ERROR: a reference Fasta is required with VCF-format alignments")
             return 1
         is_vcf = True
         compress_seq = defaultdict(dict)
         if args.translations:
-            compress_seq = read_in_translate_vcf(args.translations, args.vcf_aa_reference)
+            compress_seq = read_in_translate_vcf(args.translations, args.vcf_translate_reference)
         if args.ancestral_sequences:
             compress_seq["nuc"] = read_vcf(args.ancestral_sequences, args.vcf_reference)
     else:
