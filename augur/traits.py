@@ -7,6 +7,35 @@ TINY = 1e-12
 
 def mugration_inference(tree=None, seq_meta=None, field='country', confidence=True,
                         infer_gtr=True, root_state=None, missing='?'):
+    """
+    Infer likely ancestral states of a discrete character assuming a time reversible model.
+
+    Parameters
+    ----------
+    tree : str
+        name of tree file
+    seq_meta : dict
+        meta data associated with sequences
+    field : str, optional
+        meta data field to use
+    confidence : bool, optional
+        calculate confidence values for inferences
+    infer_gtr : bool, optional
+        infer a GTR model for trait transitions (otherwises uses a flat model with rate 1)
+    root_state : None, optional
+        force the state of the root node (currently not implemented)
+    missing : str, optional
+        character that is to be interpreted as missing data, default='?'
+
+    Returns
+    -------
+    T : Phylo.Tree
+        Biophyton tree
+    gtr : treetime.GTR
+        GTR model
+    alphabet : dict
+        mapping of character states to
+    """
     from treetime import GTR
     from Bio.Align import MultipleSeqAlignment
     from Bio.SeqRecord import SeqRecord
@@ -30,12 +59,17 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
     if nc>180:
         print("ERROR: geo_inference: can't have more than 180 places!", file=sys.stderr)
         return None,None
-    elif nc==1:
-        print("WARNING: geo_inference: only one place found -- set every internal node to %s!"%places[0], file=sys.stderr)
-        return None,None
     elif nc==0:
         print("ERROR: geo_inference: list of places is empty!", file=sys.stderr)
         return None,None
+    elif nc==1:
+        print("WARNING: geo_inference: only one place found -- set every internal node to %s!"%places[0], file=sys.stderr)
+        alphabet = {'A':places[0]}
+        alphabet_values = ['A']
+        gtr = None
+        for node in T.find_clades():
+            node.sequence=['A']
+            node.marginal_profile=np.array([[1.0]])
     else:
         # set up model
         alphabet = {chr(65+i):place for i,place in enumerate(places)}
@@ -62,41 +96,52 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
         tt.use_mutation_length=False
         tt.infer_ancestral_sequences(infer_gtr=infer_gtr, store_compressed=False, pc=5.0,
                                      marginal=True, normalized_rate=False)
+        T=tt.tree
+        gtr = tt.gtr
+        alphabet_values = tt.gtr.alphabet
 
-        # attach inferred states as e.g. node.region = 'africa'
-        for node in tt.tree.find_clades():
-            node.__setattr__(field, alphabet[node.sequence[0]])
 
-        # if desired, attach entropy and confidence as e.g. node.region_entropy = 0.03
-        if confidence:
-            for node in tt.tree.find_clades():
-                pdis = node.marginal_profile[0]
-                S = -np.sum(pdis*np.log(pdis+TINY))
+    # attach inferred states as e.g. node.region = 'africa'
+    for node in T.find_clades():
+        node.__setattr__(field, alphabet[node.sequence[0]])
 
-                marginal = [(alphabet[tt.gtr.alphabet[i]], pdis[i]) for i in range(len(tt.gtr.alphabet))]
-                marginal.sort(key=lambda x: x[1], reverse=True) # sort on likelihoods
-                marginal = [(a, b) for a, b in marginal if b > 0.001][:4] #only take stuff over .1% and the top 4 elements
-                conf = {a:b for a,b in marginal}
-                node.__setattr__(field + "_entropy", S)
-                node.__setattr__(field + "_confidence", conf)
+    # if desired, attach entropy and confidence as e.g. node.region_entropy = 0.03
+    if confidence:
+        for node in T.find_clades():
+            pdis = node.marginal_profile[0]
+            S = -np.sum(pdis*np.log(pdis+TINY))
 
-        return tt, alphabet
+            marginal = [(alphabet[alphabet_values[i]], pdis[i]) for i in range(len(alphabet_values))]
+            marginal.sort(key=lambda x: x[1], reverse=True) # sort on likelihoods
+            marginal = [(a, b) for a, b in marginal if b > 0.001][:4] #only take stuff over .1% and the top 4 elements
+            conf = {a:b for a,b in marginal}
+            node.__setattr__(field + "_entropy", S)
+            node.__setattr__(field + "_confidence", conf)
+
+    return T, gtr, alphabet
 
 
 
 def run(args):
+    """run mugration inference
+
+    Parameters
+    ----------
+    args : namespace
+        command line arguments are parsed by argparse
+    """
     tree_fname = args.tree
     traits, columns = read_metadata(args.metadata)
 
     mugration_states = defaultdict(dict)
     for column in args.columns:
-        tt, alphabet = mugration_inference(tree=tree_fname, seq_meta=traits,
+        T, gtr, alphabet = mugration_inference(tree=tree_fname, seq_meta=traits,
                             field=column, confidence=args.confidence)
-        if tt is None: # something went wrong
+        if T is None: # something went wrong
             continue
 
 
-        for node in tt.tree.find_clades():
+        for node in T.find_clades():
             mugration_states[node.name][column] = node.__getattribute__(column)
             if args.confidence:
                 mugration_states[node.name][column+'_confidence'] = node.__getattribute__(column+'_confidence')
@@ -104,13 +149,14 @@ def run(args):
 
         #if args.output is default (no dir), including '/' messes up writing
         prefix = os.path.dirname(args.output)+'/' if len(os.path.dirname(args.output)) != 0 else ''
-        with open(prefix+'%s.mugration_model.txt'%column, 'w') as ofile:
-            ofile.write('Map from character to field name\n')
-            for k,v in alphabet.items():
-                ofile.write(k+':\t'+str(v)+'\n')
-            ofile.write('\n\n')
+        if gtr:
+            with open(prefix+'%s.mugration_model.txt'%column, 'w') as ofile:
+                ofile.write('Map from character to field name\n')
+                for k,v in alphabet.items():
+                    ofile.write(k+':\t'+str(v)+'\n')
+                ofile.write('\n\n')
 
-            ofile.write(str(tt.gtr))
+                ofile.write(str(gtr))
 
     with open(args.output, 'w') as results:
         json.dump({"nodes":mugration_states}, results, indent=1)
