@@ -167,6 +167,17 @@ def run(args):
                 print("Note that using 'year' or 'year month' requires a column called 'date'.")
             print("\n")
         else:
+            # Check to see if some categories are missing to warn the user
+            group_by = set([cat if cat not in ['year','month'] else 'date' for cat in args.group_by])
+            missing_cats = [cat for cat in group_by if cat not in meta_columns]
+            if missing_cats:
+                print("WARNING:")
+                if any([cat != 'date' for cat in missing_cats]):
+                    print("\tSome of the specified group-by categories couldn't be found: %s"%[cat for cat in missing_cats if cat != 'date'])
+                if any([cat == 'date' for cat in missing_cats]):
+                    print("\tA 'date' column could not be found to group-by year or month.")
+                print("\tFiltering by group may behave differently than expected!\n")
+
             if args.priority: # read priorities
                 priorities = read_priority_scores(args.priority)
 
