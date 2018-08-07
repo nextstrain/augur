@@ -162,19 +162,22 @@ def run(args):
             seq_names_by_group[tuple(group)].append(seq_name)
 
         #If didnt find any categories specified, all seqs will be in 'unknown' - but don't sample this!
-        if (len(seq_names_by_group) == 1 and 'unknown' in list(seq_names_by_group.keys())[0]):
-            print("WARNING: The specified group-by categories (%s) were not found. No sequences-per-group sampling will be done."%args.group_by)
+        if len(seq_names_by_group)==1 and 'unknown' in seq_names_by_group:
+            print("WARNING: The specified group-by categories (%s) were not found."%args.group_by,
+                  "No sequences-per-group sampling will be done.")
             if any([x in args.group_by for x in ['year','month']]):
                 print("Note that using 'year' or 'year month' requires a column called 'date'.")
             print("\n")
         else:
             # Check to see if some categories are missing to warn the user
-            group_by = set([cat if cat not in ['year','month'] else 'date' for cat in args.group_by])
+            group_by = set(['date' if cat in ['year','month'] else cat
+                            for cat in args.group_by])
             missing_cats = [cat for cat in group_by if cat not in meta_columns]
             if missing_cats:
                 print("WARNING:")
                 if any([cat != 'date' for cat in missing_cats]):
-                    print("\tSome of the specified group-by categories couldn't be found: %s"%[cat for cat in missing_cats if cat != 'date'])
+                    print("\tSome of the specified group-by categories couldn't be found: ",
+                          ", ".join([str(cat) for cat in missing_cats if cat != 'date']))
                 if any([cat == 'date' for cat in missing_cats]):
                     print("\tA 'date' column could not be found to group-by year or month.")
                 print("\tFiltering by group may behave differently than expected!\n")
