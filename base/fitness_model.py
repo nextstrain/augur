@@ -235,8 +235,8 @@ class fitness_model(object):
 
         for node in self.nodes:
             interpolation = interp1d(self.rootnode.pivots, node.freq[region], kind='linear', bounds_error=True)
-            node.timepoint_freqs = defaultdict(float)
-            node.delta_freqs = defaultdict(float)
+            node.timepoint_freqs = {}
+            node.delta_freqs = {}
             for time in self.timepoints:
                 node.timepoint_freqs[time] = np.asscalar(interpolation(time))
             for time in self.timepoints[:-1]:
