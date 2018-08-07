@@ -122,6 +122,7 @@ def run(args):
     # filter by date
     if (args.min_date or args.max_date) and 'date' in meta_columns:
         dates = get_numerical_dates(meta_dict, fmt="%Y-%m-%d")
+        seq_keep = [s for s in seq_keep if dates[s] is not None]
         if args.min_date:
             seq_keep = [s for s in seq_keep if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s])>args.min_date]
         if args.max_date:
