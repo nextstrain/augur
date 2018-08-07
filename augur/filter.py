@@ -160,20 +160,27 @@ def run(args):
                     group.append('unknown')
             seq_names_by_group[tuple(group)].append(seq_name)
 
-        if args.priority: # read priorities
-            priorities = read_priority_scores(args.priority)
+        #If didnt find any categories specified, all seqs will be in 'unknown' - but don't sample this!
+        if (len(seq_names_by_group) == 1 and 'unknown' in list(seq_names_by_group.keys())[0]):
+            print("WARNING: The specified group-by categories (%s) were not found. No sequences-per-group sampling will be done."%args.group_by)
+            if any([x in args.group_by for x in ['year','month']]):
+                print("Note that using 'year' or 'year month' requires a column called 'date'.")
+            print("\n")
+        else:
+            if args.priority: # read priorities
+                priorities = read_priority_scores(args.priority)
 
-        # subsample each groups, either by taking the spg highest priority strains or
-        # sampling at random from the sequences in the group
-        seq_subsample = []
-        for group, sequences_in_group in seq_names_by_group.items():
-            if args.priority: #sort descending by priority
-                seq_subsample.extend(sorted(sequences_in_group, key=lambda x:priorities[x], reverse=True)[:spg])
-            else:
-                seq_subsample.extend(sequences_in_group if len(sequences_in_group)<=spg
-                                     else random.sample(sequences_in_group, spg))
+            # subsample each groups, either by taking the spg highest priority strains or
+            # sampling at random from the sequences in the group
+            seq_subsample = []
+            for group, sequences_in_group in seq_names_by_group.items():
+                if args.priority: #sort descending by priority
+                    seq_subsample.extend(sorted(sequences_in_group, key=lambda x:priorities[x], reverse=True)[:spg])
+                else:
+                    seq_subsample.extend(sequences_in_group if len(sequences_in_group)<=spg
+                                         else random.sample(sequences_in_group, spg))
 
-        seq_keep = seq_subsample
+            seq_keep = seq_subsample
 
     # force include sequences specified in file.
     # Note that this might re-add previously excluded sequences
