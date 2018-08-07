@@ -304,7 +304,7 @@ def run(args):
             fileEndings = -1
             if args.alignment_output.lower().endswith('.gz'):
                 fileEndings = -2
-            vcf_out_ref = '.'.join(args.alignment_output.split('.')[:fileEndings]) + '_reference.fasta'
+            vcf_out_ref = args.vcf_reference_output or '.'.join(args.alignment_output.split('.')[:fileEndings]) + '_reference.fasta'
             write_VCF_translation(translations, args.alignment_output, vcf_out_ref)
         else:
             ## write fasta-style output if requested
