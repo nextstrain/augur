@@ -141,7 +141,7 @@ class fitness_model(object):
             sys.stderr.write("Recalculating frequencies\n")
             frequency_params = self.frequencies.get_params()
             frequency_params["include_internal_nodes"] = True
-            self.frequencies = type(self.frequencies)(**frequency_params)
+            self.frequencies = KdeFrequencies(**frequency_params)
             self.frequencies.estimate(self.tree)
 
         # Pivots should be defined by frequencies.
@@ -254,7 +254,7 @@ class fitness_model(object):
                 # Censor frequencies by omitting all tips sampled after the current timepoint.
                 sys.stderr.write("Calculating censored frequencies for %s\n" % time)
                 frequency_parameters["max_date"] = time
-                frequency_estimator = type(self.frequencies)(**frequency_parameters)
+                frequency_estimator = KdeFrequencies(**frequency_parameters)
                 frequencies = frequency_estimator.estimate(self.tree)
 
                 # Determine the frequency of each tip at the given timepoint.
@@ -297,7 +297,7 @@ class fitness_model(object):
             frequency_parameters["start_date"] = time_interval[0]
             frequency_parameters["end_date"] = time_interval[1]
             frequency_parameters["max_date"] = time_interval[1]
-            frequency_estimator = type(self.frequencies)(**frequency_parameters)
+            frequency_estimator = KdeFrequencies(**frequency_parameters)
             frequencies = frequency_estimator.estimate(self.tree)
 
             # Annotate censored frequencies on nodes.
