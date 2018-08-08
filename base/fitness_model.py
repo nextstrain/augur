@@ -409,9 +409,12 @@ class fitness_model(object):
         self.pred_vs_true = []
         pred_vs_true_values = []
         for time in self.timepoints[:-1]:
+            # Project all tip frequencies forward by the specific delta time.
+            all_pred_freq = self.projection(params, self.predictor_arrays[time], self.freq_arrays[time], self.delta_time)
+            assert all_pred_freq.shape == self.freq_arrays[time].shape
 
             # normalization factor for predicted tip frequencies
-            total_pred_freq = np.sum(self.projection(params, self.predictor_arrays[time], self.freq_arrays[time], self.delta_time))
+            total_pred_freq = np.sum(all_pred_freq)
 
             # project clades forward according to strain makeup
             clade_errors = []
@@ -421,13 +424,11 @@ class fitness_model(object):
                 obs_final_freq = clade.observed_final_freqs[time]
 
                 # The initial frequency is calculated from the sum of each clade's censored tip frequencies.
-                pred = self.predictor_arrays[time][clade.tips]
-                freqs = self.freq_arrays[time][clade.tips]
-                initial_freq = freqs.sum(axis=0)
+                initial_freq = self.freq_arrays[time][clade.tips].sum(axis=0)
 
                 # The predicted final frequency is also calculated from each clade's censored tip frequencies modified
                 # by the fitness and model parameters.
-                pred_final_freq = np.sum(self.projection(params, pred, freqs, self.delta_time)) / total_pred_freq
+                pred_final_freq = np.sum(all_pred_freq[clade.tips]) / total_pred_freq
 
                 tmp_pred_vs_true.append((initial_freq, obs_final_freq, pred_final_freq))
                 pred_vs_true_values.append((time, clade.clade, len(clade.tips), initial_freq, obs_final_freq, pred_final_freq))
