@@ -392,11 +392,14 @@ class fitness_model(object):
         for time in self.timepoints[:-1]:
             self.fit_clades[time] = []
             for node in self.nodes:
+                # Only select clades for fitting if their censored frequencies are within the specified thresholds.
                 node_freq = self.freq_arrays[time][node.tips].sum(axis=0)
-                if (node_freq >= self.min_freq and
-                    node_freq <= self.max_freq and
-                    node_freq < self.node_parents[node].timepoint_freqs[time]):
-                    self.fit_clades[time].append(node)
+
+                if self.min_freq <= node_freq <= self.max_freq:
+                    # Exclude subclades whose frequency is identical to their parent clade.
+                    parent_node_freq = self.freq_arrays[time][self.node_parents[node].tips].sum(axis=0)
+                    if node_freq < parent_node_freq:
+                        self.fit_clades[time].append(node)
 
 
     def clade_fit(self, params):
