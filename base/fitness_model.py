@@ -84,11 +84,25 @@ def matthews_correlation_coefficient(tp, tn, fp, fn):
     return float(numerator) / denominator
 
 
+def sum_of_squared_errors(observed_freq, predicted_freq):
+    """
+    Calculates the sum of squared errors for observed and predicted frequencies.
+
+    Args:
+        observed_freq (numpy.ndarray): observed frequencies
+        predicted_freq (numpy.ndarray): predicted frequencies
+
+    Returns:
+        float: sum of squared errors between observed and predicted frequencies
+    """
+    return np.sum((observed_freq - predicted_freq) ** 2)
+
+
 class fitness_model(object):
 
     def __init__(self, tree, frequencies, time_interval, predictor_input, censor_frequencies=True,
                  pivot_spacing=1.0 / 12, verbose=0, enforce_positive_predictors=True, predictor_kwargs=None,
-                 **kwargs):
+                 cost_function=sum_of_squared_errors, **kwargs):
         """
 
         Args:
@@ -101,6 +115,7 @@ class fitness_model(object):
             verbose:
             enforce_positive_predictors:
             predictor_kwargs:
+            cost_function (callable): a function that takes observed and predicted frequencies and returns a single error value
             **kwargs:
         """
         self.tree = tree
@@ -112,6 +127,7 @@ class fitness_model(object):
         self.estimate_coefficients = True
         self.min_freq = kwargs.get("min_freq", 0.1)
         self.max_freq = kwargs.get("max_freq", 0.99)
+        self.cost_function = cost_function
 
         if predictor_kwargs is None:
             self.predictor_kwargs = {}
@@ -433,10 +449,6 @@ class fitness_model(object):
                 tmp_pred_vs_true.append((initial_freq, obs_final_freq, pred_final_freq))
                 pred_vs_true_values.append((time, clade.clade, len(clade.tips), initial_freq, obs_final_freq, pred_final_freq))
 
-                # The model minimizes the sum of squared errors.
-                clade_errors.append((pred_final_freq - obs_final_freq) ** 2)
-
-            timepoint_errors.append(np.sum(clade_errors))
             self.pred_vs_true.append(np.array(tmp_pred_vs_true))
 
         # Prepare a data frame with all initial, observed, and predicted frequencies by time and clade.
@@ -445,9 +457,13 @@ class fitness_model(object):
             columns=("timepoint", "clade", "clade_size", "initial_freq", "observed_freq", "predicted_freq")
         )
 
-        training_error = np.sum(timepoint_errors)
-        if any(np.isnan(timepoint_errors)+np.isinf(timepoint_errors)):
+        training_error = self.cost_function(
+            self.pred_vs_true_df["observed_freq"],
+            self.pred_vs_true_df["predicted_freq"]
+        )
+        if np.isnan(training_error) or np.isinf(training_error):
             training_error = 1e10
+
         self.last_fit = training_error
         if self.verbose>2: print(params, self.last_fit)
         penalty = regularization*np.sum(params**2)
