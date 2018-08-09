@@ -362,6 +362,11 @@ lineage_to_epitope_mask = {
     "h1n1pdm": "canton"
 }
 
+# Map lineages to specific NA masks
+lineage_to_na_epitope_mask = {
+    "h3n2": "bhatt"
+}
+
 lineage_to_glyc_mask = {
     "h3n2": "ha1_h3n2",
     "h1n1pdm": "ha1_globular_head_h1n1pdm"
