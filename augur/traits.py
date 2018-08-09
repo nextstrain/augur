@@ -58,10 +58,10 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
     nc = len(places)
     if nc>180:
         print("ERROR: geo_inference: can't have more than 180 places!", file=sys.stderr)
-        return None,None
+        return None,None,None
     elif nc==0:
         print("ERROR: geo_inference: list of places is empty!", file=sys.stderr)
-        return None,None
+        return None,None,None
     elif nc==1:
         print("WARNING: geo_inference: only one place found -- set every internal node to %s!"%places[0], file=sys.stderr)
         alphabet = {'A':places[0]}
