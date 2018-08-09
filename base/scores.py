@@ -100,10 +100,23 @@ def mask_sites(aa, mask):
     return aa[mask[:len(aa)]]
 
 def mask_distance(aaA, aaB, mask):
-    """Return distance of sequences aaA and aaB by comparing sites in the given binary mask."""
+    """Return distance of sequences aaA and aaB by comparing sites in the given binary mask.
+
+    >>> aaA = np.array(["A", "B", "C"], dtype="S1")
+    >>> aaB = np.array(["A", "B", "D"], dtype="S1")
+    >>> mask = np.array([0, 1, 1], dtype=np.bool)
+    >>> mask_distance(aaA, aaB, mask)
+    1
+    >>> aaB = np.array(["A", "B", "X"], dtype="S1")
+    >>> mask_distance(aaA, aaB, mask)
+    0
+    """
     sites_A = mask_sites(aaA, mask)
     sites_B = mask_sites(aaB, mask)
-    distance = np.sum(sites_A != sites_B)
+
+    # Count sites that differ between sequences excluding undetermined residues.
+    distance = np.sum((sites_A != sites_B) & (sites_A != "X") & (sites_B != "X"))
+
     return distance
 
 def glycosylation_count(total_aa_seq, glyc_mask):
