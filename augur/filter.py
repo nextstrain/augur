@@ -3,7 +3,7 @@ import pandas as pd
 from collections import defaultdict
 import random,os
 import numpy as np
-from .utils import read_metadata, get_numerical_dates
+from .utils import read_metadata, get_numerical_dates, run_shell_command
 
 comment_char = '#'
 
@@ -30,7 +30,7 @@ def write_vcf(compressed, input_file, output_file, dropped_samps):
 
     print("Filtering samples using VCFTools with the call:")
     print(" ".join(call))
-    os.system(" ".join(call))
+    run_shell_command(" ".join(call), raise_errors = True)
     # remove vcftools log file
     try:
         os.remove('out.log')

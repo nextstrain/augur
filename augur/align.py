@@ -2,6 +2,7 @@ import os,sys,argparse
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq
 from shutil import copyfile
+from .utils import run_shell_command
 
 def make_gaps_ambiguous(aln):
     '''
@@ -56,12 +57,14 @@ def run(args):
     # align
     if args.method=='mafft':
         cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2> %s.log"%(args.nthreads, seq_fname, output, output)
-        os.system(cmd)
         print("\nusing mafft to align via:\n\t" + cmd +
               " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"
               "\n\thttps://doi.org/10.1093%2Fnar%2Fgkf436\n")
     else:
         print('ERROR: alignment method not implemented')
+        return -1
+
+    if not run_shell_command(cmd):
         return -1
 
     # after aligning, make a copy of the data that the aligner produced (useful for debugging)
