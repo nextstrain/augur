@@ -266,35 +266,41 @@ reference_viruses = {
         'A/Montana/28/2015', 'A/Alaska/232/2015', 'A/Alaska/240/2015', 'A/Singapore/Infimh-16-0019/2016',
         'A/Texas/88/2016', 'A/Idaho/33/2016', 'A/NorthCarolina/4/2016', 'A/Delaware/32/2016',
         'A/Nevada/22/2016', 'A/Brisbane/321/2016', 'A/Newcastle/30/2016', 'A/Norway/3806/2016',
+        'A/Canberra/7/2016', 'A/Washington/106/2016', 'A/Brisbane/318/2016', 'A/Oregon/19/2016',
         'A/Antananarivo/1067/2016', 'A/Florida/23/2017', 'A/Washington/16/2017', 'A/NorthCarolina/4/2017',
         'A/SouthCarolina/4/2017', 'A/Texas/71/2017', 'A/Wisconsin/327/2017', 'A/Texas/68/2017',
-        'A/Brisbane/29/2017',
+        'A/Brisbane/29/2017', 'A/Nebraska/2/2017',
         'A/Texas/50/2012-egg', 'A/Switzerland/9715293/2013-egg', 'A/HongKong/7127/2014-egg',
         'A/NewCaledonia/71/2014-egg', 'A/HongKong/4801/2014-egg', 'A/Saitama/103/2014-egg',
-        'A/Singapore/Infimh-16-0019/2016-egg', 'A/Norway/3806/2016-egg',
+        'A/Alaska/232/2015-egg', 'A/Singapore/Infimh-16-0019/2016-egg', 'A/Norway/3806/2016-egg',
+        'A/Idaho/33/2016-egg', 'A/Antananarivo/1067/2016-egg', 'A/HongKong/50/2016-egg',
+        'A/Norway/4465/2016-egg', 'A/Wisconsin/19/2017-egg', 'A/Greece/4/2017-egg',
+        'A/HongKong/2286/2017-egg', 'A/Victoria/653/2017-egg'
     ],
     'h1n1pdm':[
         'A/California/7/2009', 'A/Bangladesh/2021/2012', 'A/Victoria/367/2012', 'A/Brisbane/96/2012',
         'A/SouthAfrica/3626/2013', 'A/Brisbane/28/2013', 'A/Bolivia/559/2013', 'A/Florida/62/2014',
         'A/Newcaledonia/58/2014', 'A/Tasmania/24/2014', 'A/Florida/62/2014', 'A/Michigan/45/2015',
         'A/Perth/103/2015', 'A/Brisbane/181/2015', 'A/Singapore/GP1908/2015', 'A/Iowa/53/2015',
-        'A/StPetersburg/61/2015', 'A/Minnesota/32/2015', 'A/Bangladesh/3002/2015', 'A/Indiana/21/2016',
-        'A/Victoria/503/2016'
+        'A/StPetersburg/61/2015', 'A/Minnesota/32/2015', 'A/Bangladesh/3002/2015', 'A/Israel/Q-504/2015',
+        'A/Indiana/21/2016', 'A/Victoria/503/2016', 'A/Fiji/3/2016', 'A/Panama/318595/2016',
+        'A/Montana/50/2016', 'A/Michigan/272/2017'
     ],
     'vic':[
         'B/Shangdong/7/1997', 'B/HongKong/330/2001', 'B/Malaysia/2506/2004', 'B/Ohio/1/2005',
         'B/Brisbane/60/2008', 'B/Utah/8/2012', 'B/Montana/5/2012', 'B/Texas/2/2013', 'B/Florida/33/2014',
-        'B/Indiana/25/2015', 'B/Florida/78/2015', 'B/Colorado/6/2017'
+        'B/Indiana/25/2015', 'B/Florida/78/2015', 'B/Iceland/56/2015', 'B/Missouri/9/2016',
+        'B/Ireland/3154/2016', 'B/StPetersburg/293/2016', 'B/Maryland/15/2016', 'B/Colorado/6/2017',
+        'B/Kazakhstan/128/2017', 'B/HongKong/286/2017', 'B/Bangladesh/3004/2017'
     ],
     'yam':[
         'B/Beijing/184/1993', 'B/Sichuan/379/1999', 'B/Shanghai/361/2002', 'B/Florida/4/2006',
         'B/Wisconsin/1/2010', 'B/Massachusetts/2/2012', 'B/Phuket/3073/2013', 'B/Utah/9/2014',
         'B/Brisbane/9/2014', 'B/Guangdong-Liwan/1133/2014', 'B/California/12/2015', 'B/Arizona/10/2015',
-        'B/NewHampshire/1/2016'
+        'B/Sapporo/2/2015', 'B/Hyogo/3210/2015', 'B/NewHampshire/1/2016', 'B/Texas/81/2016'
     ]
 }
 
-# vaccine choices copied from https://github.com/blab/nextflu/tree/de1c8323f75b0fbac9cf26451380d2758288290e/auspice/_includes feb 1 2018
 vaccine_choices = {
     "h3n2": {
         'A/Sydney/5/1997': "1997-09-25",
