@@ -398,7 +398,8 @@ def run(args):
             {"key": "aa_muts", "is_attr": False}
         ]
         traits_via_node_metadata = {k for node in nodes.values() for k in node.keys()}
-        traits_via_node_metadata -= {'sequence', 'mutation_length', 'branch_length', 'numdate', 'mutations', 'muts', 'aa_muts'}
+        traits_via_node_metadata -= {'sequence', 'mutation_length', 'branch_length', 'numdate',
+                                     'mutations', 'muts', 'aa_muts', 'aa_sequences'}
         for trait in traits_via_node_metadata:
             tree_decorations.append({"key": trait, "is_attr": True})
 
@@ -415,6 +416,11 @@ def run(args):
         meta_json["geo"] = process_geographic_info(meta_json, lat_long_mapping, nodes=nodes, nextflu=True)
         meta_json["annotations"] = process_annotations(node_data)
         meta_json["panels"] = process_panels(None, meta_json, nextflu=True)
+        meta_json["ancestral_sequences"] = {}
+        if T.root.name in nodes and "sequence" in nodes[T.root.name]:
+            meta_json["ancestral_sequences"]["nuc"] = nodes[T.root.name]["sequence"]
+        if T.root.name in nodes and "aa_sequences" in nodes[T.root.name]:
+            meta_json["ancestral_sequences"].update(nodes[T.root.name]["aa_sequences"])
 
         write_json(meta_json, args.output_meta, indent=2)
         return 0
