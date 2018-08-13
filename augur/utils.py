@@ -1,5 +1,6 @@
 import os, json, sys
 import pandas as pd
+import subprocess
 from treetime.utils import numeric_date
 from collections import defaultdict
 from pkg_resources import resource_stream
@@ -371,4 +372,32 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
         #must temporarily remove .gz ending, or gzip won't zip it!
         os.rename(vcf_file_name, vcf_file_name[:-3])
         call = ["gzip", vcf_file_name[:-3]]
-        os.system(" ".join(call))
+        run_shell_command(" ".join(call), raise_errors = True)
+
+
+def run_shell_command(cmd, raise_errors = False):
+    """
+    Run the given command string via the shell with error checking.
+
+    Returns True if the command exits normally.  Returns False if the command
+    exits with failure and "raise_errors" is False (the default).  When
+    "raise_errors" is True, exceptions are rethrown.
+    """
+    try:
+        # Use check_call() instead of run() since the latter was added only in Python 3.5.
+        subprocess.check_call(cmd, shell = True)
+    except subprocess.CalledProcessError as error:
+        print(
+            "ERROR: {program} exited {returncode}, invoked as: {cmd}".format(
+                program    = cmd.split()[0],
+                returncode = error.returncode,
+                cmd        = cmd,
+            ),
+            file = sys.stderr
+        )
+        if raise_errors:
+            raise
+        else:
+            return False
+    else:
+        return True

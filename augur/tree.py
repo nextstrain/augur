@@ -2,6 +2,7 @@ import os, shutil, time
 from Bio import Phylo
 from treetime.vcf_utils import read_vcf
 import numpy as np
+from .utils import run_shell_command
 
 def find_executable(names, default = None):
     """
@@ -48,8 +49,8 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=2):
     print("Building a tree via:\n\t" + cmd +
           "\n\tStamatakis, A: RAxML Version 8: A tool for Phylogenetic Analysis and Post-Analysis of Large Phylogenies."
           "\n\tIn Bioinformatics, 2014\n")
-    os.system(cmd)
     try:
+        run_shell_command(cmd, raise_errors = True)
         shutil.copy('RAxML_bestTree.tre', out_file)
         T = Phylo.read(out_file, 'newick')
         if clean_up:
@@ -82,8 +83,8 @@ def build_fasttree(aln_file, out_file, clean_up=True):
     print("Building a tree via:\n\t" + cmd +
           "\n\tPrice et al: FastTree 2 - Approximately Maximum-Likelihood Trees for Large Alignments." +
           "\n\tPLoS ONE 5(3): e9490. https://doi.org/10.1371/journal.pone.0009490\n")
-    os.system(cmd)
     try:
+        run_shell_command(cmd, raise_errors = True)
         T = Phylo.read(out_file, 'newick')
         if clean_up:
             os.remove(log_file)
@@ -140,10 +141,10 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
           "\n\tMol. Biol. Evol., 32:268-274. https://doi.org/10.1093/molbev/msu300\n")
     if substitution_model.lower() == "none":
         print("Conducting a model test... see iqtree.log for the result. You can specify this with --substitution-model in future runs.")
-    os.system(cmd)
 
     # Check result
     try:
+        run_shell_command(cmd, raise_errors = True)
         T = Phylo.read(aln_file+".treefile", 'newick')
         shutil.copyfile(aln_file+".treefile", out_file)
         #this allows the user to check intermediate output, as tree.nwk will be

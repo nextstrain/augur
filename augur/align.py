@@ -1,12 +1,19 @@
 import os,sys,argparse
+from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq
-from shutil import copyfile
+from .utils import run_shell_command
 
 def make_gaps_ambiguous(aln):
     '''
     replace all gaps by 'N' in all sequences in the alignment. TreeTime will treat them
-    as fully ambiguous and replace then with the most likely state
+    as fully ambiguous and replace then with the most likely state. This modifies the
+    alignment in place.
+
+    Parameters
+    ----------
+    aln : MultipleSeqAlign
+        Biopython Alignment
     '''
     for seq in aln:
         seq_array = np.array(seq)
@@ -16,6 +23,17 @@ def make_gaps_ambiguous(aln):
 
 
 def run(args):
+    '''
+    Parameters
+    ----------
+    args : namespace
+        arguments passed in via the command-line from augur
+
+    Returns
+    -------
+    int
+        returns 0 for success, 1 for general error
+    '''
     seq_fname = args.sequences
     ref_name = args.reference_name
     ref_fname = args.reference_sequence
@@ -28,7 +46,7 @@ def run(args):
         seqs = {s.id:s for s in SeqIO.parse(seq_fname, 'fasta')}
     except:
         print("Cannot read sequences -- make sure the file %s exists and contains sequences in fasta format"%seq_fname)
-        return -1
+        return 1
 
     if ref_name and (ref_name not in seqs):
         print("Specified reference name %s is not in the sequence sample. Will not trim."%ref_name)
@@ -56,13 +74,16 @@ def run(args):
     # align
     if args.method=='mafft':
         cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2> %s.log"%(args.nthreads, seq_fname, output, output)
-        os.system(cmd)
         print("\nusing mafft to align via:\n\t" + cmd +
               " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"
               "\n\thttps://doi.org/10.1093%2Fnar%2Fgkf436\n")
     else:
         print('ERROR: alignment method not implemented')
-        return -1
+        return 1
+
+    success = run_shell_command(cmd)
+    if not success: # return error if aligner errored
+        return 1
 
     # after aligning, make a copy of the data that the aligner produced (useful for debugging)
     copyfile(output, output+".post_aligner.fasta")
@@ -88,6 +109,21 @@ def strip_non_reference(alignment_fname, reference, keep_reference=False):
     '''
     return sequences that have all insertions relative to the reference
     removed. The alignment is read from file and returned as list of sequences.
+
+    Parameters
+    ----------
+    alignment_fname : str
+        alignment file name, file needs to be fasta format
+    reference : str
+        name of reference sequence, assumed to be part of the alignment
+    keep_reference : bool, optional
+        by default, the reference sequence is removed after stripping
+        non-reference sequence. To keep the reference, use keep_reference=True
+
+    Returns
+    -------
+    list
+        list of trimmed sequences, effectively a multiple alignment
     '''
     aln = AlignIO.read(alignment_fname, 'fasta')
     seqs = {s.name:s for s in aln}
