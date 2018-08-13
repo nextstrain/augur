@@ -142,7 +142,6 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     if substitution_model.lower() == "none":
         print("Conducting a model test... see iqtree.log for the result. You can specify this with --substitution-model in future runs.")
 
-    # Check result
     try:
         run_shell_command(cmd, raise_errors = True)
         T = Phylo.read(aln_file+".treefile", 'newick')
