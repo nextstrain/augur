@@ -7,7 +7,13 @@ from .utils import run_shell_command
 def make_gaps_ambiguous(aln):
     '''
     replace all gaps by 'N' in all sequences in the alignment. TreeTime will treat them
-    as fully ambiguous and replace then with the most likely state
+    as fully ambiguous and replace then with the most likely state. This modifies the
+    alignment in place.
+
+    Parameters
+    ----------
+    aln : MultipleSeqAlign
+        Biopython Alignment
     '''
     for seq in aln:
         seq_array = np.array(seq)
@@ -64,7 +70,8 @@ def run(args):
         print('ERROR: alignment method not implemented')
         return -1
 
-    if not run_shell_command(cmd):
+    success = run_shell_command(cmd)
+    if not success: # return error if aligner errored
         return -1
 
     # after aligning, make a copy of the data that the aligner produced (useful for debugging)
@@ -91,6 +98,21 @@ def strip_non_reference(alignment_fname, reference, keep_reference=False):
     '''
     return sequences that have all insertions relative to the reference
     removed. The alignment is read from file and returned as list of sequences.
+
+    Parameters
+    ----------
+    alignment_fname : str
+        alignment file name, file needs to be fasta format
+    reference : str
+        name of reference sequence, assumed to be part of the alignment
+    keep_reference : bool, optional
+        by default, the reference sequence is removed after stripping
+        non-reference sequence. To keep the reference, use keep_reference=True
+
+    Returns
+    -------
+    list
+        list of trimmed sequences, effectively a multiple alignment
     '''
     aln = AlignIO.read(alignment_fname, 'fasta')
     seqs = {s.name:s for s in aln}
