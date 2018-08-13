@@ -1,7 +1,7 @@
 import os,sys,argparse
+from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq
-from shutil import copyfile
 from .utils import run_shell_command
 
 def make_gaps_ambiguous(aln):
@@ -23,6 +23,17 @@ def make_gaps_ambiguous(aln):
 
 
 def run(args):
+    '''
+    Parameters
+    ----------
+    args : namespace
+        arguments passed in via the command-line from augur
+
+    Returns
+    -------
+    int
+        returns 0 for success, 1 for general error
+    '''
     seq_fname = args.sequences
     ref_name = args.reference_name
     ref_fname = args.reference_sequence
@@ -35,7 +46,7 @@ def run(args):
         seqs = {s.id:s for s in SeqIO.parse(seq_fname, 'fasta')}
     except:
         print("Cannot read sequences -- make sure the file %s exists and contains sequences in fasta format"%seq_fname)
-        return -1
+        return 1
 
     if ref_name and (ref_name not in seqs):
         print("Specified reference name %s is not in the sequence sample. Will not trim."%ref_name)
@@ -68,11 +79,11 @@ def run(args):
               "\n\thttps://doi.org/10.1093%2Fnar%2Fgkf436\n")
     else:
         print('ERROR: alignment method not implemented')
-        return -1
+        return 1
 
     success = run_shell_command(cmd)
     if not success: # return error if aligner errored
-        return -1
+        return 1
 
     # after aligning, make a copy of the data that the aligner produced (useful for debugging)
     copyfile(output, output+".post_aligner.fasta")
