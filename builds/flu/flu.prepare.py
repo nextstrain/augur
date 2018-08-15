@@ -100,7 +100,7 @@ def make_config(lineage, resolution, params):
                 (s.name in fixed_references and s.attributes['date']>reference_cutoff)
             ),
             ("invalid chars", lambda s: sum([s.seq.count(c) for c in "EFIJKLOPQXYZ"])==0),
-            ("Sequence Length", lambda s: len(s.seq)>=900),
+            ("Sequence Length", lambda s: len(s.seq)>=800),
             # what's the order of evaluation here I wonder?
             ("Dropped Strains", lambda s: s.id not in fixed_outliers),
             ("Bad geo info", lambda s: s.attributes["country"]!= "?" and s.attributes["region"]!= "?" ),
