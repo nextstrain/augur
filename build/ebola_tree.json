@@ -1,0 +1,1255 @@
+{
+ "attr": {
+  "country": "guinea", 
+  "div": 0, 
+  "num_date": 2014.078362782004, 
+  "division": "gueckedou"
+ }, 
+ "tvalue": 0.0, 
+ "clade": 0, 
+ "strain": "NODE_0000020", 
+ "children": [
+  {
+   "xvalue": 5e-05, 
+   "muts": [
+    "T800C", 
+    "C8928A"
+   ], 
+   "clade": 1, 
+   "strain": "NODE_0000003", 
+   "aa_muts": {
+    "GP": [], 
+    "sGP": [], 
+    "L": [], 
+    "VP40": [], 
+    "NP": [
+     "C111R"
+    ], 
+    "VP30": [], 
+    "VP24": [], 
+    "VP35": []
+   }, 
+   "tvalue": 0.05344, 
+   "children": [
+    {
+     "xvalue": 0.00026, 
+     "muts": [
+      "C4116T", 
+      "G14703A", 
+      "C16866T", 
+      "A18637G"
+     ], 
+     "clade": 2, 
+     "strain": "EM_079685", 
+     "aa_muts": {
+      "GP": [], 
+      "sGP": [], 
+      "L": [], 
+      "VP40": [], 
+      "NP": [], 
+      "VP30": [], 
+      "VP24": [], 
+      "VP35": [
+       "L330F"
+      ]
+     }, 
+     "tvalue": 0.27756, 
+     "yvalue": 20.0, 
+     "attr": {
+      "division": "gueckedou", 
+      "num_date": 2014.3559207291573, 
+      "url": "https://www.ncbi.nlm.nih.gov/nuccore/KR817209", 
+      "country": "guinea", 
+      "region": "subsaharan_africa", 
+      "db": "genbank", 
+      "accession": "KR817209", 
+      "raw_date": "2014-05-11", 
+      "strain": "EM_079685", 
+      "authors": "Carroll et al", 
+      "date": "2014-05-11", 
+      "div": 0.00026390216189967655
+     }
+    }, 
+    {
+     "xvalue": 0.00016, 
+     "muts": [
+      "A2124G", 
+      "T6909A"
+     ], 
+     "clade": 3, 
+     "strain": "NODE_0000004", 
+     "aa_muts": {
+      "GP": [
+       "W291R"
+      ], 
+      "sGP": [
+       "W291R"
+      ], 
+      "L": [], 
+      "VP40": [], 
+      "NP": [
+       "E552G"
+      ], 
+      "VP30": [], 
+      "VP24": [], 
+      "VP35": []
+     }, 
+     "tvalue": 0.10824, 
+     "children": [
+      {
+       "xvalue": 0.00021, 
+       "muts": [
+        "G2185A"
+       ], 
+       "clade": 4, 
+       "strain": "Gueckedou-C05", 
+       "aa_muts": {
+        "GP": [], 
+        "sGP": [], 
+        "L": [], 
+        "VP40": [], 
+        "NP": [], 
+        "VP30": [], 
+        "VP24": [], 
+        "VP35": []
+       }, 
+       "tvalue": 0.13245, 
+       "yvalue": 19.0, 
+       "attr": {
+        "division": "gueckedou", 
+        "num_date": 2014.2108146374394, 
+        "url": "https://www.ncbi.nlm.nih.gov/nuccore/KJ660348", 
+        "country": "guinea", 
+        "region": "subsaharan_africa", 
+        "db": "genbank", 
+        "accession": "KJ660348", 
+        "raw_date": "2014-03-19", 
+        "strain": "Gueckedou-C05", 
+        "authors": "Baize et al", 
+        "date": "2014-03-19", 
+        "div": 0.00021110962912083785
+       }
+      }, 
+      {
+       "xvalue": 0.00021, 
+       "muts": [
+        "A213G"
+       ], 
+       "clade": 5, 
+       "strain": "EM_079517", 
+       "aa_muts": {
+        "GP": [], 
+        "sGP": [], 
+        "L": [], 
+        "VP40": [], 
+        "NP": [], 
+        "VP30": [], 
+        "VP24": [], 
+        "VP35": []
+       }, 
+       "tvalue": 0.19542, 
+       "yvalue": 18.0, 
+       "attr": {
+        "division": "gueckedou", 
+        "num_date": 2014.2737852055434, 
+        "url": "https://www.ncbi.nlm.nih.gov/nuccore/KR817198", 
+        "country": "guinea", 
+        "region": "subsaharan_africa", 
+        "db": "genbank", 
+        "accession": "KR817198", 
+        "raw_date": "2014-04-11", 
+        "strain": "EM_079517", 
+        "authors": "Carroll et al", 
+        "date": "2014-04-11", 
+        "div": 0.00021110874278908553
+       }
+      }
+     ], 
+     "yvalue": 18.5, 
+     "attr": {
+      "country": "guinea", 
+      "div": 0.00015833396255525428, 
+      "num_date": 2014.1866029819375, 
+      "division": "gueckedou"
+     }
+    }
+   ], 
+   "yvalue": 19.25, 
+   "attr": {
+    "country": "guinea", 
+    "div": 5.277540850105756e-05, 
+    "num_date": 2014.131805026074, 
+    "division": "gueckedou"
+   }
+  }, 
+  {
+   "xvalue": 0.00037, 
+   "muts": [
+    "T1849C", 
+    "C6283T", 
+    "A13856G", 
+    "T15660C", 
+    "G15963A", 
+    "T17142C"
+   ], 
+   "clade": 6, 
+   "strain": "NODE_0000002", 
+   "aa_muts": {
+    "GP": [
+     "A82V"
+    ], 
+    "sGP": [
+     "A82V"
+    ], 
+    "L": [
+     "D759G"
+    ], 
+    "VP40": [], 
+    "NP": [], 
+    "VP30": [], 
+    "VP24": [], 
+    "VP35": []
+   }, 
+   "tvalue": 0.35934, 
+   "children": [
+    {
+     "xvalue": 0.00069, 
+     "muts": [
+      "T1367C", 
+      "T4389A", 
+      "T4661C", 
+      "G15313C", 
+      "T16173C", 
+      "T18363C"
+     ], 
+     "clade": 7, 
+     "strain": "EM_076610", 
+     "aa_muts": {
+      "GP": [], 
+      "sGP": [], 
+      "L": [
+       "E1245Q"
+      ], 
+      "VP40": [], 
+      "NP": [], 
+      "VP30": [], 
+      "VP24": [], 
+      "VP35": []
+     }, 
+     "tvalue": 0.75942, 
+     "yvalue": 17.0, 
+     "attr": {
+      "division": "nzerekore", 
+      "num_date": 2014.8377824676927, 
+      "url": "https://www.ncbi.nlm.nih.gov/nuccore/KR817153", 
+      "country": "guinea", 
+      "region": "subsaharan_africa", 
+      "db": "genbank", 
+      "accession": "KR817153", 
+      "raw_date": "2014-11-03", 
+      "strain": "EM_076610", 
+      "authors": "Carroll et al", 
+      "date": "2014-11-03", 
+      "div": 0.000686222241658819
+     }
+    }, 
+    {
+     "xvalue": 0.00058, 
+     "muts": [
+      "A6056C", 
+      "C10315T", 
+      "C14253T", 
+      "G16514A"
+     ], 
+     "clade": 8, 
+     "strain": "NODE_0000001", 
+     "aa_muts": {
+      "GP": [], 
+      "sGP": [], 
+      "L": [
+       "S1645N"
+      ], 
+      "VP40": [], 
+      "NP": [], 
+      "VP30": [], 
+      "VP24": [], 
+      "VP35": []
+     }, 
+     "tvalue": 0.45955, 
+     "children": [
+      {
+       "xvalue": 0.00084, 
+       "muts": [
+        "G5226A", 
+        "T7400C", 
+        "A9264G", 
+        "G10099A", 
+        "A12790G"
+       ], 
+       "clade": 9, 
+       "strain": "EM_078656", 
+       "aa_muts": {
+        "GP": [], 
+        "sGP": [], 
+        "L": [
+         "I404V"
+        ], 
+        "VP40": [
+         "V250I"
+        ], 
+        "NP": [], 
+        "VP30": [], 
+        "VP24": [], 
+        "VP35": []
+       }, 
+       "tvalue": 0.85798, 
+       "yvalue": 16.0, 
+       "attr": {
+        "division": "kouroussa", 
+        "num_date": 2014.9363450960293, 
+        "url": "https://www.ncbi.nlm.nih.gov/nuccore/KR817168", 
+        "country": "guinea", 
+        "region": "subsaharan_africa", 
+        "db": "genbank", 
+        "accession": "KR817168", 
+        "raw_date": "2014-12-09", 
+        "strain": "EM_078656", 
+        "authors": "Carroll et al", 
+        "date": "2014-12-09", 
+        "div": 0.0008445460636371775
+       }
+      }, 
+      {
+       "xvalue": 0.00074, 
+       "muts": [
+        "A12223G", 
+        "G17151A", 
+        "T18033C"
+       ], 
+       "clade": 10, 
+       "strain": "EM_074821", 
+       "aa_muts": {
+        "GP": [], 
+        "sGP": [], 
+        "L": [
+         "T215A"
+        ], 
+        "VP40": [], 
+        "NP": [], 
+        "VP30": [], 
+        "VP24": [], 
+        "VP35": []
+       }, 
+       "tvalue": 0.54587, 
+       "yvalue": 15.0, 
+       "attr": {
+        "division": "lofa", 
+        "num_date": 2014.6242301062962, 
+        "url": "https://www.ncbi.nlm.nih.gov/nuccore/KR817127", 
+        "country": "liberia", 
+        "region": "subsaharan_africa", 
+        "db": "genbank", 
+        "accession": "KR817127", 
+        "raw_date": "2014-08-17", 
+        "strain": "EM_074821", 
+        "authors": "Carroll et al", 
+        "date": "2014-08-17", 
+        "div": 0.000738972459987194
+       }
+      }
+     ], 
+     "yvalue": 15.5, 
+     "attr": {
+      "country": "guinea", 
+      "div": 0.0005806358225069643, 
+      "num_date": 2014.537914015271, 
+      "division": "lofa"
+     }
+    }, 
+    {
+     "xvalue": 0.00042, 
+     "muts": [
+      "G10218A"
+     ], 
+     "clade": 11, 
+     "strain": "NODE_0000005", 
+     "aa_muts": {
+      "GP": [], 
+      "sGP": [], 
+      "L": [], 
+      "VP40": [], 
+      "NP": [], 
+      "VP30": [], 
+      "VP24": [], 
+      "VP35": []
+     }, 
+     "tvalue": 0.37204, 
+     "children": [
+      {
+       "xvalue": 0.00058, 
+       "muts": [
+        "A5160G", 
+        "G10752A", 
+        "G15920A"
+       ], 
+       "clade": 12, 
+       "strain": "G4416.1", 
+       "aa_muts": {
+        "GP": [], 
+        "sGP": [], 
+        "L": [
+         "G1447E"
+        ], 
+        "VP40": [
+         "S228G"
+        ], 
+        "NP": [], 
+        "VP30": [], 
+        "VP24": [
+         "M136I"
+        ], 
+        "VP35": []
+       }, 
+       "tvalue": 0.46373, 
+       "yvalue": 14.0, 
+       "attr": {
+        "division": "bo", 
+        "num_date": 2014.5420945826822, 
+        "url": "https://www.ncbi.nlm.nih.gov/nuccore/KR105248", 
+        "country": "sierra_leone", 
+        "region": "subsaharan_africa", 
+        "db": "genbank", 
+        "accession": "KR105248", 
+        "raw_date": "2014-07-18", 
+        "strain": "G4416.1", 
+        "authors": "Goba et al", 
+        "date": "2014-07-18", 
+        "div": 0.0005806206161674135
+       }
+      }, 
+      {
+       "xvalue": 0.00042, 
+       "muts": [
+        "T6563-", 
+        "C7298-"
+       ], 
+       "clade": 13, 
+       "strain": "NODE_0000021", 
+       "aa_muts": {
+        "GP": [], 
+        "sGP": [], 
+        "L": [], 
+        "VP40": [], 
+        "NP": [], 
+        "VP30": [], 
+        "VP24": [], 
+        "VP35": []
+       }, 
+       "tvalue": 0.39503, 
+       "children": [
+        {
+         "xvalue": 0.00079, 
+         "muts": [
+          "T4258C", 
+          "A5542G", 
+          "A7148G", 
+          "T8523C", 
+          "T10025-", 
+          "C12633T", 
+          "A17445G", 
+          "C18162T"
+         ], 
+         "clade": 14, 
+         "strain": "75731_EMLH", 
+         "aa_muts": {
+          "GP": [], 
+          "sGP": [], 
+          "L": [], 
+          "VP40": [], 
+          "NP": [], 
+          "VP30": [], 
+          "VP24": [], 
+          "VP35": []
+         }, 
+         "tvalue": 0.96271, 
+         "yvalue": 13.0, 
+         "attr": {
+          "division": "western_urban", 
+          "num_date": 2015.0410678886371, 
+          "url": "https://www.ncbi.nlm.nih.gov/nuccore/KU296564", 
+          "country": "sierra_leone", 
+          "region": "subsaharan_africa", 
+          "db": "genbank", 
+          "accession": "KU296564", 
+          "raw_date": "2015-01-16", 
+          "strain": "75731_EMLH", 
+          "authors": "Arias et al", 
+          "date": "2015-01-16", 
+          "div": 0.0007918371686765552
+         }
+        }, 
+        {
+         "xvalue": 0.00084, 
+         "muts": [
+          "T5566G", 
+          "T8835C", 
+          "T9803C", 
+          "T9925C", 
+          "T16409C", 
+          "C16476T", 
+          "A16889G", 
+          "C18354T", 
+          "A18399-", 
+          "A18400-"
+         ], 
+         "clade": 15, 
+         "strain": "NODE_0000008", 
+         "aa_muts": {
+          "GP": [], 
+          "sGP": [], 
+          "L": [
+           "F1610S", 
+           "Q1770R"
+          ], 
+          "VP40": [], 
+          "NP": [], 
+          "VP30": [], 
+          "VP24": [], 
+          "VP35": []
+         }, 
+         "tvalue": 1.19827, 
+         "children": [
+          {
+           "xvalue": 0.00084, 
+           "muts": [], 
+           "clade": 16, 
+           "strain": "15000_EMLK", 
+           "aa_muts": {
+            "GP": [], 
+            "sGP": [], 
+            "L": [], 
+            "VP40": [], 
+            "NP": [], 
+            "VP30": [], 
+            "VP24": [], 
+            "VP35": []
+           }, 
+           "tvalue": 1.28303, 
+           "yvalue": 12.0, 
+           "attr": {
+            "division": "kambia", 
+            "num_date": 2015.3613964307317, 
+            "url": "https://www.ncbi.nlm.nih.gov/nuccore/KU296504", 
+            "country": "sierra_leone", 
+            "region": "subsaharan_africa", 
+            "db": "genbank", 
+            "accession": "KU296504", 
+            "raw_date": "2015-05-13", 
+            "strain": "15000_EMLK", 
+            "authors": "Arias et al", 
+            "date": "2015-05-13", 
+            "div": 0.0008446853088042483
+           }
+          }, 
+          {
+           "xvalue": 0.00137, 
+           "muts": [
+            "T323C", 
+            "T1487C", 
+            "A2166G", 
+            "A3029T", 
+            "T3701C", 
+            "A8606G", 
+            "G9790A", 
+            "A11576G", 
+            "A13000G", 
+            "A18611C"
+           ], 
+           "clade": 17, 
+           "strain": "20525_EMLK", 
+           "aa_muts": {
+            "GP": [], 
+            "sGP": [], 
+            "L": [
+             "I474V"
+            ], 
+            "VP40": [], 
+            "NP": [
+             "Y340H", 
+             "N566S"
+            ], 
+            "VP30": [
+             "E33G"
+            ], 
+            "VP24": [], 
+            "VP35": []
+           }, 
+           "tvalue": 1.60062, 
+           "yvalue": 11.0, 
+           "attr": {
+            "division": "kambia", 
+            "num_date": 2015.678987122039, 
+            "url": "https://www.ncbi.nlm.nih.gov/nuccore/KU296487", 
+            "country": "sierra_leone", 
+            "region": "subsaharan_africa", 
+            "db": "genbank", 
+            "accession": "KU296487", 
+            "raw_date": "2015-09-06", 
+            "strain": "20525_EMLK", 
+            "authors": "Arias et al", 
+            "date": "2015-09-06", 
+            "div": 0.0013726693415067773
+           }
+          }, 
+          {
+           "xvalue": 0.00106, 
+           "muts": [
+            "C1106A", 
+            "-6563T", 
+            "A8321G", 
+            "T10025-", 
+            "C15677T", 
+            "A16677T"
+           ], 
+           "clade": 18, 
+           "strain": "PL9192", 
+           "aa_muts": {
+            "GP": [], 
+            "sGP": [], 
+            "L": [
+             "T1366I"
+            ], 
+            "VP40": [], 
+            "NP": [
+             "L213I"
+            ], 
+            "VP30": [], 
+            "VP24": [], 
+            "VP35": []
+           }, 
+           "tvalue": 1.45004, 
+           "yvalue": 10.0, 
+           "attr": {
+            "division": "port_loko", 
+            "num_date": 2015.5284053287467, 
+            "url": "https://www.ncbi.nlm.nih.gov/nuccore/KU296401", 
+            "country": "sierra_leone", 
+            "region": "subsaharan_africa", 
+            "db": "genbank", 
+            "accession": "KU296401", 
+            "raw_date": "2015-07-13", 
+            "strain": "PL9192", 
+            "authors": "Arias et al", 
+            "date": "2015-07-13", 
+            "div": 0.0010558586623011209
+           }
+          }
+         ], 
+         "yvalue": 11.0, 
+         "attr": {
+          "country": "sierra_leone", 
+          "div": 0.0008446787536087395, 
+          "num_date": 2015.2766290524867, 
+          "division": "kambia"
+         }
+        }
+       ], 
+       "yvalue": 12.0, 
+       "attr": {
+        "country": "sierra_leone", 
+        "div": 0.0004222886452791491, 
+        "num_date": 2014.4733971313792, 
+        "division": "western_urban"
+       }
+      }, 
+      {
+       "xvalue": 0.00048, 
+       "muts": [
+        "T14019C"
+       ], 
+       "clade": 19, 
+       "strain": "NODE_0000010", 
+       "aa_muts": {
+        "GP": [], 
+        "sGP": [], 
+        "L": [], 
+        "VP40": [], 
+        "NP": [], 
+        "VP30": [], 
+        "VP24": [], 
+        "VP35": []
+       }, 
+       "tvalue": 0.38433, 
+       "children": [
+        {
+         "xvalue": 0.00048, 
+         "muts": [], 
+         "clade": 20, 
+         "strain": "G3889.1", 
+         "aa_muts": {
+          "GP": [], 
+          "sGP": [], 
+          "L": [], 
+          "VP40": [], 
+          "NP": [], 
+          "VP30": [], 
+          "VP24": [], 
+          "VP35": []
+         }, 
+         "tvalue": 0.38433, 
+         "yvalue": 9.0, 
+         "attr": {
+          "division": "kenema", 
+          "num_date": 2014.462697036686, 
+          "url": "https://www.ncbi.nlm.nih.gov/nuccore/KR105205", 
+          "country": "sierra_leone", 
+          "region": "subsaharan_africa", 
+          "db": "genbank", 
+          "accession": "KR105205", 
+          "raw_date": "2014-06-19", 
+          "strain": "G3889.1", 
+          "authors": "Goba et al", 
+          "date": "2014-06-19", 
+          "div": 0.0004750634740413687
+         }
+        }, 
+        {
+         "xvalue": 0.00079, 
+         "muts": [
+          "T3008C", 
+          "T3011C", 
+          "A4208G", 
+          "T4434C", 
+          "T5276C", 
+          "A16958G"
+         ], 
+         "clade": 21, 
+         "strain": "J0111", 
+         "aa_muts": {
+          "GP": [], 
+          "sGP": [], 
+          "L": [
+           "Q1793R"
+          ], 
+          "VP40": [], 
+          "NP": [], 
+          "VP30": [], 
+          "VP24": [], 
+          "VP35": []
+         }, 
+         "tvalue": 0.74847, 
+         "yvalue": 8.0, 
+         "attr": {
+          "division": "western_urban", 
+          "num_date": 2014.826831064544, 
+          "url": "https://www.ncbi.nlm.nih.gov/nuccore/KP759595", 
+          "country": "sierra_leone", 
+          "region": "subsaharan_africa", 
+          "db": "genbank", 
+          "accession": "KP759595", 
+          "raw_date": "2014-10-30", 
+          "strain": "J0111", 
+          "authors": "Tong et al", 
+          "date": "2014-10-30", 
+          "div": 0.0007917461410021065
+         }
+        }, 
+        {
+         "xvalue": 0.00074, 
+         "muts": [
+          "G96A", 
+          "A347G", 
+          "A1602G", 
+          "G2373A", 
+          "T13776C"
+         ], 
+         "clade": 22, 
+         "strain": "NODE_0000013", 
+         "aa_muts": {
+          "GP": [], 
+          "sGP": [], 
+          "L": [], 
+          "VP40": [], 
+          "NP": [
+           "N378S", 
+           "R635K"
+          ], 
+          "VP30": [], 
+          "VP24": [], 
+          "VP35": []
+         }, 
+         "tvalue": 0.74336, 
+         "children": [
+          {
+           "xvalue": 0.00143, 
+           "muts": [
+            "C781T", 
+            "G3003A", 
+            "A3213G", 
+            "A3623G", 
+            "A5022T", 
+            "C10173T", 
+            "C11294T", 
+            "A14364G", 
+            "C15032T", 
+            "A16473G", 
+            "A16761G", 
+            "A17419G", 
+            "A18195G"
+           ], 
+           "clade": 23, 
+           "strain": "EM_FORE_2015_2781", 
+           "aa_muts": {
+            "GP": [], 
+            "sGP": [], 
+            "L": [
+             "P1151L", 
+             "I1947V"
+            ], 
+            "VP40": [
+             "I182F"
+            ], 
+            "NP": [], 
+            "VP30": [], 
+            "VP24": [], 
+            "VP35": [
+             "I29V"
+            ]
+           }, 
+           "tvalue": 1.70192, 
+           "yvalue": 7.0, 
+           "attr": {
+            "division": "forecariah", 
+            "num_date": 2015.7802876011629, 
+            "url": "https://github.com/nickloman/ebov/", 
+            "country": "guinea", 
+            "region": "subsaharan_africa", 
+            "db": "minion", 
+            "accession": "EM_FORE_2015_2781", 
+            "raw_date": "2015-10-13", 
+            "strain": "EM_FORE_2015_2781", 
+            "authors": "Quick et al", 
+            "date": "2015-10-13", 
+            "div": 0.0014252850589261405
+           }
+          }, 
+          {
+           "xvalue": 0.00116, 
+           "muts": [
+            "C2153G", 
+            "T2154C", 
+            "C3593T", 
+            "C5930T", 
+            "C7298-", 
+            "G8949A", 
+            "T10025-", 
+            "C10860T", 
+            "T17157C", 
+            "T18813C"
+           ], 
+           "clade": 24, 
+           "strain": "PL6158", 
+           "aa_muts": {
+            "GP": [], 
+            "sGP": [], 
+            "L": [], 
+            "VP40": [], 
+            "NP": [
+             "L562A"
+            ], 
+            "VP30": [], 
+            "VP24": [], 
+            "VP35": []
+           }, 
+           "tvalue": 1.2009, 
+           "yvalue": 6.0, 
+           "attr": {
+            "division": "kambia", 
+            "num_date": 2015.2792609071178, 
+            "url": "https://www.ncbi.nlm.nih.gov/nuccore/KU296308", 
+            "country": "sierra_leone", 
+            "region": "subsaharan_africa", 
+            "db": "genbank", 
+            "accession": "KU296308", 
+            "raw_date": "2015-04-13", 
+            "strain": "PL6158", 
+            "authors": "Arias et al", 
+            "date": "2015-04-13", 
+            "div": 0.0011613209875435773
+           }
+          }
+         ], 
+         "yvalue": 6.5, 
+         "attr": {
+          "country": "sierra_leone", 
+          "div": 0.000738964203988036, 
+          "num_date": 2014.8217276152268, 
+          "division": "western_urban"
+         }
+        }, 
+        {
+         "xvalue": 0.00053, 
+         "muts": [
+          "T5849C", 
+          "C7298-"
+         ], 
+         "clade": 25, 
+         "strain": "NODE_0000014", 
+         "aa_muts": {
+          "GP": [], 
+          "sGP": [], 
+          "L": [], 
+          "VP40": [], 
+          "NP": [], 
+          "VP30": [], 
+          "VP24": [], 
+          "VP35": []
+         }, 
+         "tvalue": 0.46061, 
+         "children": [
+          {
+           "xvalue": 0.00058, 
+           "muts": [
+            "C10291T"
+           ], 
+           "clade": 26, 
+           "strain": "G5529.1", 
+           "aa_muts": {
+            "GP": [], 
+            "sGP": [], 
+            "L": [], 
+            "VP40": [], 
+            "NP": [], 
+            "VP30": [], 
+            "VP24": [], 
+            "VP35": []
+           }, 
+           "tvalue": 0.59789, 
+           "yvalue": 5.0, 
+           "attr": {
+            "division": "kono", 
+            "num_date": 2014.676249271252, 
+            "url": "https://www.ncbi.nlm.nih.gov/nuccore/KR105309", 
+            "country": "sierra_leone", 
+            "region": "subsaharan_africa", 
+            "db": "genbank", 
+            "accession": "KR105309", 
+            "raw_date": "2014-09-05", 
+            "strain": "G5529.1", 
+            "authors": "Goba et al", 
+            "date": "2014-09-05", 
+            "div": 0.000580612029086585
+           }
+          }, 
+          {
+           "xvalue": 0.00058, 
+           "muts": [
+            "C11407T"
+           ], 
+           "clade": 27, 
+           "strain": "NODE_0000015", 
+           "aa_muts": {
+            "GP": [], 
+            "sGP": [], 
+            "L": [], 
+            "VP40": [], 
+            "NP": [], 
+            "VP30": [], 
+            "VP24": [], 
+            "VP35": []
+           }, 
+           "tvalue": 0.52836, 
+           "children": [
+            {
+             "xvalue": 0.00095, 
+             "muts": [
+              "A1950T", 
+              "A5548G", 
+              "T6563-", 
+              "A7267T", 
+              "T9426C", 
+              "A10273G", 
+              "C15048T", 
+              "A16894G"
+             ], 
+             "clade": 28, 
+             "strain": "PL4570", 
+             "aa_muts": {
+              "GP": [
+               "E410V"
+              ], 
+              "sGP": [], 
+              "L": [
+               "T1772A"
+              ], 
+              "VP40": [], 
+              "NP": [
+               "D494V"
+              ], 
+              "VP30": [], 
+              "VP24": [], 
+              "VP35": []
+             }, 
+             "tvalue": 1.10781, 
+             "yvalue": 4.0, 
+             "attr": {
+              "division": "port_loko", 
+              "num_date": 2015.186173980355, 
+              "url": "https://www.ncbi.nlm.nih.gov/nuccore/KU296451", 
+              "country": "sierra_leone", 
+              "region": "subsaharan_africa", 
+              "db": "genbank", 
+              "accession": "KU296451", 
+              "raw_date": "2015-03-10", 
+              "strain": "PL4570", 
+              "authors": "Arias et al", 
+              "date": "2015-03-10", 
+              "div": 0.0009501558078317735
+             }
+            }, 
+            {
+             "xvalue": 0.00079, 
+             "muts": [
+              "T5512C", 
+              "C8044T", 
+              "A10466G", 
+              "T15226C"
+             ], 
+             "clade": 29, 
+             "strain": "NODE_0000016", 
+             "aa_muts": {
+              "GP": [
+               "S669F"
+              ], 
+              "sGP": [], 
+              "L": [], 
+              "VP40": [], 
+              "NP": [], 
+              "VP30": [], 
+              "VP24": [
+               "Y41C"
+              ], 
+              "VP35": []
+             }, 
+             "tvalue": 0.73899, 
+             "children": [
+              {
+               "xvalue": 0.00095, 
+               "muts": [
+                "G5824A", 
+                "G6429A", 
+                "A10352G"
+               ], 
+               "clade": 30, 
+               "strain": "14687_EMLK", 
+               "aa_muts": {
+                "GP": [
+                 "G131S"
+                ], 
+                "sGP": [
+                 "G131S"
+                ], 
+                "L": [], 
+                "VP40": [], 
+                "NP": [], 
+                "VP30": [], 
+                "VP24": [
+                 "K3R"
+                ], 
+                "VP35": []
+               }, 
+               "tvalue": 1.06127, 
+               "yvalue": 3.0, 
+               "attr": {
+                "division": "western_urban", 
+                "num_date": 2015.139630516974, 
+                "url": "https://www.ncbi.nlm.nih.gov/nuccore/KU296443", 
+                "country": "sierra_leone", 
+                "region": "subsaharan_africa", 
+                "db": "genbank", 
+                "accession": "KU296443", 
+                "raw_date": "2015-02-21", 
+                "strain": "14687_EMLK", 
+                "authors": "Arias et al", 
+                "date": "2015-02-21", 
+                "div": 0.0009500849819737845
+               }
+              }, 
+              {
+               "xvalue": 0.00148, 
+               "muts": [
+                "C2370T", 
+                "G2771T", 
+                "A4384T", 
+                "C5034A", 
+                "A5544G", 
+                "C5880T", 
+                "T10133-", 
+                "C10431T", 
+                "A12622G", 
+                "T13350C", 
+                "G13557A", 
+                "T18078C", 
+                "T18319C", 
+                "A18478G"
+               ], 
+               "clade": 31, 
+               "strain": "NODE_0000017", 
+               "aa_muts": {
+                "GP": [], 
+                "sGP": [], 
+                "L": [
+                 "I348V"
+                ], 
+                "VP40": [
+                 "L186M"
+                ], 
+                "NP": [
+                 "A634V"
+                ], 
+                "VP30": [], 
+                "VP24": [], 
+                "VP35": []
+               }, 
+               "tvalue": 1.37413, 
+               "children": [
+                {
+                 "xvalue": 0.00153, 
+                 "muts": [
+                  "C2834T"
+                 ], 
+                 "clade": 32, 
+                 "strain": "PL8486", 
+                 "aa_muts": {
+                  "GP": [], 
+                  "sGP": [], 
+                  "L": [], 
+                  "VP40": [], 
+                  "NP": [], 
+                  "VP30": [], 
+                  "VP24": [], 
+                  "VP35": []
+                 }, 
+                 "tvalue": 1.40076, 
+                 "yvalue": 2.0, 
+                 "attr": {
+                  "division": "sierra_leone", 
+                  "num_date": 2015.4791240145782, 
+                  "url": "https://www.ncbi.nlm.nih.gov/nuccore/KU296446", 
+                  "country": "sierra_leone", 
+                  "region": "subsaharan_africa", 
+                  "db": "genbank", 
+                  "accession": "KU296446", 
+                  "raw_date": "2015-06-25", 
+                  "strain": "PL8486", 
+                  "authors": "Arias et al", 
+                  "date": "2015-06-25", 
+                  "div": 0.0015309811531858614
+                 }
+                }, 
+                {
+                 "xvalue": 0.00153, 
+                 "muts": [
+                  "T3641C", 
+                  "T6563-", 
+                  "C7646-", 
+                  "A8767-"
+                 ], 
+                 "clade": 33, 
+                 "strain": "MK10173", 
+                 "aa_muts": {
+                  "GP": [], 
+                  "sGP": [], 
+                  "L": [], 
+                  "VP40": [], 
+                  "NP": [], 
+                  "VP30": [
+                   "K87X"
+                  ], 
+                  "VP24": [], 
+                  "VP35": []
+                 }, 
+                 "tvalue": 1.50206, 
+                 "yvalue": 1.0, 
+                 "attr": {
+                  "division": "tonkolili", 
+                  "num_date": 2015.5804244937021, 
+                  "url": "https://www.ncbi.nlm.nih.gov/nuccore/KU296313", 
+                  "country": "sierra_leone", 
+                  "region": "subsaharan_africa", 
+                  "db": "genbank", 
+                  "accession": "KU296313", 
+                  "raw_date": "2015-08-01", 
+                  "strain": "MK10173", 
+                  "authors": "Arias et al", 
+                  "date": "2015-08-01", 
+                  "div": 0.0015309888967796562
+                 }
+                }
+               ], 
+               "yvalue": 1.5, 
+               "attr": {
+                "country": "sierra_leone", 
+                "div": 0.0014782025669234512, 
+                "num_date": 2015.4524935729078, 
+                "division": "sierra_leone"
+               }
+              }
+             ], 
+             "yvalue": 2.25, 
+             "attr": {
+              "country": "sierra_leone", 
+              "div": 0.000791742481957319, 
+              "num_date": 2014.8173551171683, 
+              "division": "western_urban"
+             }
+            }
+           ], 
+           "yvalue": 3.125, 
+           "attr": {
+            "country": "sierra_leone", 
+            "div": 0.000580612029086585, 
+            "num_date": 2014.6067276504239, 
+            "division": "western_urban"
+           }
+          }
+         ], 
+         "yvalue": 4.0625, 
+         "attr": {
+          "country": "sierra_leone", 
+          "div": 0.0005278344738868732, 
+          "num_date": 2014.5389722135799, 
+          "division": "western_urban"
+         }
+        }
+       ], 
+       "yvalue": 6.89063, 
+       "attr": {
+        "country": "sierra_leone", 
+        "div": 0.0004750569188458599, 
+        "num_date": 2014.4626969098556, 
+        "division": "western_urban"
+       }
+      }
+     ], 
+     "yvalue": 10.96354, 
+     "attr": {
+      "country": "sierra_leone", 
+      "div": 0.00042228209008364037, 
+      "num_date": 2014.4504048587617, 
+      "division": "western_urban"
+     }
+    }
+   ], 
+   "yvalue": 14.48785, 
+   "attr": {
+    "country": "guinea", 
+    "div": 0.0003695074403932156, 
+    "num_date": 2014.437697811326, 
+    "division": "western_urban"
+   }
+  }
+ ], 
+ "yvalue": 16.86892, 
+ "xvalue": 0.0
+}
