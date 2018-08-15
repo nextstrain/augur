@@ -40,7 +40,7 @@ def run_live(
                 call = call + ['--annotate_fitness', '--predictors', 'cTiterSub', '--predictors_params', '1.13', '--predictors_sds', '0.72']
 
             if process_segment != "ha":
-                import pdb; pdb.set_trace()
+                # import pdb; pdb.set_trace()
                 call = [
                     'flu.process.py',
                     '--json', 'prepared/flu_seasonal_%s_%s_%s.json'%(lineage, process_segment, resolution)
