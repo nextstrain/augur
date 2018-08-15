@@ -394,15 +394,21 @@ class process(object):
             gl_freqs, gl_counts, gl_confidence = {}, {}, {}
             all_muts = set()
             for region in acronyms: # list all unique mutations
-                all_muts.update(self.mutation_frequencies[(region, prot)].keys())
+                try:
+                    all_muts.update(self.mutation_frequencies[(region, prot)].keys())
+                except KeyError:
+                    pass
             for mut in all_muts: # compute the weighted average
-                gl_freqs[mut] = np.sum([self.mutation_frequencies[(region, prot)][mut]*weights[region] for region in acronyms
+                try:
+                    gl_freqs[mut] = np.sum([self.mutation_frequencies[(region, prot)][mut]*weights[region] for region in acronyms
                                         if mut in self.mutation_frequencies[(region, prot)]], axis=0)/total_weight
-                gl_confidence[mut] = np.sqrt(np.sum([self.mutation_frequency_confidence[(region, prot)][mut]**2*weights[region]
+                    gl_confidence[mut] = np.sqrt(np.sum([self.mutation_frequency_confidence[(region, prot)][mut]**2*weights[region]
                                                      for region in acronyms
                                             if mut in self.mutation_frequencies[(region, prot)]], axis=0)/total_weight)
-            gl_counts = np.sum([self.mutation_frequency_counts[region] for region in acronyms
+                    gl_counts = np.sum([self.mutation_frequency_counts[region] for region in acronyms
                                         if mut in self.mutation_frequencies[(region, prot)]], axis=0)
+                except KeyError:
+                    pass
             # save in mutation_frequency data structure
             self.mutation_frequencies[("global", prot)] = gl_freqs
             self.mutation_frequency_counts["global"] = gl_counts
@@ -751,7 +757,10 @@ class process(object):
                 self.tree.geo_inference(geo_attr, **kwargs)
 
         # SAVE MUGRATION RESULTS:
-        attrs = set(self.tree.mugration_attrs)
+        try:
+            attrs = set(self.tree.mugration_attrs)
+        except AttributeError:
+            attrs = set()
         try:
             data = {}
             for node in self.tree.tree.find_clades():
