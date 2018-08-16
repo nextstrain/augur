@@ -170,6 +170,17 @@ def construct_mut(start, pos, end):
 def assign_aa_vcf(tree, translations):
     aa_muts = {}
 
+    #get mutations on the root
+    root = tree.get_nonterminals()[0]
+    aa_muts[root.name]={"aa_muts":{}}
+    for fname, prot in translations.items():
+        root_muts = prot['sequences'][root.name]
+        tmp = []
+        for pos in prot['positions']:
+            if pos in root_muts:
+                tmp.append(construct_mut(prot['reference'][pos], int(pos+1), root_muts[pos]))
+        aa_muts[root.name]["aa_muts"][fname] = tmp
+
     for n in tree.get_nonterminals():
         for c in n:
             aa_muts[c.name]={"aa_muts":{}}
@@ -282,6 +293,11 @@ def run(args):
         aa_muts = assign_aa_vcf(tree, translations)
     else:
         aa_muts = {}
+
+        #fasta input shouldn't have mutations on root, so give empty entry
+        root = tree.get_nonterminals()[0]
+        aa_muts[root.name]={"aa_muts":{}}
+
         for n in tree.get_nonterminals():
             for c in n:
                 aa_muts[c.name]={"aa_muts":{}}
