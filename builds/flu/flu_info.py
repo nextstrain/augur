@@ -343,7 +343,7 @@ LBI_params = {
     '2y': {"tau": 0.3, "time_window": 0.5},
     '3y': {"tau": 0.4, "time_window": 0.6},
     '6y': {"tau": 0.25, "time_window": 0.75},
-    '12y': {"tau": 0.0005, "time_window": 0.5}
+    '12y': {"tau": 0.25, "time_window": 0.75}
 }
 
 # Frequency Params
