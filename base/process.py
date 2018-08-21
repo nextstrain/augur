@@ -646,8 +646,7 @@ class process(object):
 
         kwargs = {
             "tree": self.tree.tree,
-            "frequencies": self.kde_frequencies,
-            "time_interval": self.info["time_interval"]
+            "frequencies": self.kde_frequencies
         }
 
         if "predictors" in self.config:
