@@ -60,7 +60,7 @@ class TestKdeFrequencies(object):
         assert isinstance(pivots, np.ndarray)
         assert pivots[1] - pivots[0] == pivot_frequency
         assert pivots[0] == start_date
-        assert pivots[-1] != end_date
+        assert pivots[-1] == end_date
         assert pivots[-1] >= end_date - pivot_frequency
 
     def test_estimate(self, tree):

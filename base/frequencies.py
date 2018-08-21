@@ -699,7 +699,7 @@ class KdeFrequencies(object):
 
         pivots = np.arange(
             pivot_start,
-            pivot_end,
+            pivot_end + 0.0001,
             pivot_frequency
         )
 
