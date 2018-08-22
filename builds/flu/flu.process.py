@@ -565,8 +565,8 @@ if __name__=="__main__":
         if runner.info["segment"]=='ha':
             if runner.info["lineage"]=='h3n2':
                 clades = ['3c2.A', 'A1', 'A1b/135K', 'A2', 'A3']
-                virus_clades = ['A1', 'A1a', 'A1b/135K', 'A1b/135N', 'A2', 'A3']
-                serum_clades = ['3c2.A', 'A1', 'A1a', 'A1b', 'A1b/135K', 'A1b/135N', 'A2', 'A3']
+                virus_clades = ['A1', 'A1a', 'A1b/135K', 'A1b/135N', 'A2', 'A2/re', 'A3', '3c3.A']
+                serum_clades = ['3c2.A' 'A1', 'A1a', 'A1b/135K', 'A1b/135N', 'A2', 'A2/re', 'A3', '3c3.A']
             elif runner.info["lineage"]=='h1n1pdm':
                 clades = ['6b.1', '6b.2', '164T']
                 virus_clades = clades
