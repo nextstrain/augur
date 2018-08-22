@@ -119,7 +119,7 @@ def rising_mutations(freqs, counts, genes, region='NA', dn=5, offset=0, baseline
     npoints = counts[region].shape[0]
     ind = np.arange(npoints)[-(dn+offset):npoints-offset]
     for gene in genes:
-        for mut,f  in freqs[(region, gene)].iteritems():
+        for mut,f  in freqs[(region, gene)].items():
             c = np.sum(counts[region][ind]*f[ind])
             tmp_x = f[ind].mean()
             tmp_dx = f[npoints-1-offset] - f[-dn-offset]

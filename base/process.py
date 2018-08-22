@@ -118,7 +118,7 @@ class process(object):
             # Convert titer dictionary indices from JSON-compatible strings back
             # to tuples.
             self.titers = {eval(key): value
-                           for key, value in data["titers"].iteritems()}
+                           for key, value in data["titers"].items()}
 
         ## usefull flag to set (from pathogen run file) to disable restoring
         self.try_to_restore = True
@@ -130,7 +130,7 @@ class process(object):
         '''
         self.log.warn("unsure if dump() works")
         from Bio import Phylo
-        for attr_name, fname in self.file_dumps.iteritems():
+        for attr_name, fname in self.file_dumps.items():
             if hasattr(self,attr_name):
                 print("dumping",attr_name)
                 #if attr_name=='seqs': self.seqs.all_seqs = None
@@ -148,7 +148,7 @@ class process(object):
         reconstruct instance from files
         '''
         self.log.warn("unsure if load() works")
-        for attr_name, fname in self.file_dumps.iteritems():
+        for attr_name, fname in self.file_dumps.items():
             if attr_name=='tree':
                 continue
             if os.path.isfile(fname):
@@ -201,7 +201,7 @@ class process(object):
 
         self.seqs.translate() # creates self.seqs.translations
         # save additional translations - disabled for now
-        # for name, msa in self.seqs.translations.iteritems():
+        # for name, msa in self.seqs.translations.items():
         #     SeqIO.write(msa, self.output_path + "_aligned_" + name + ".mfa", "fasta")
 
     @staticmethod
@@ -314,7 +314,7 @@ class process(object):
             return
 
         # loop over different alignment types
-        for prot, aln in [('nuc',self.seqs.aln)] + self.seqs.translations.items():
+        for prot, aln in [('nuc',self.seqs.aln)] + list(self.seqs.translations.items()):
             if (region_name,prot) in self.mutation_frequencies:
                 self.log.notify("Skipping Frequency Estimation for region \"{}\", protein \"{}\"".format(region_name, prot))
                 continue
@@ -373,7 +373,7 @@ class process(object):
         if average_global==False:
             self.estimate_mutation_frequencies(pivots=pivots, min_freq=min_freq,
                                                  inertia=np.exp(-inertia), stiffness=stiffness)
-            for region in region_groups.iteritems():
+            for region in region_groups.items():
                 self.estimate_mutation_frequencies(region=region, min_freq=min_freq,
                                                      inertia=np.exp(-inertia), stiffness=stiffness)
             return
@@ -384,12 +384,12 @@ class process(object):
         # determine sites whose frequencies need to be computed in all regions
         self.seqs.diversity_statistics()
         include_set = {}
-        for prot in ['nuc'] + self.seqs.translations.keys():
+        for prot in ['nuc'] + list(self.seqs.translations.keys()):
             include_set[prot] = np.where(np.sum(self.seqs.af[prot][:-2]**2, axis=0)
                                                 <np.sum(self.seqs.af[prot][:-2], axis=0)**2-min_freq)[0]
 
         # estimate frequencies in individual regions
-        for region in region_groups.iteritems():
+        for region in region_groups.items():
             self.estimate_mutation_frequencies(pivots=pivots, region=region, min_freq=min_freq, include_set=include_set,
                                                  inertia=np.exp(-inertia), stiffness=stiffness)
 
@@ -407,7 +407,7 @@ class process(object):
         total_weight = np.sum([weights[region] for region in acronyms],axis=0)
 
         # average regional frequencies to calculate global
-        for prot in ['nuc'] + self.seqs.translations.keys():
+        for prot in ['nuc'] + list(self.seqs.translations.keys()):
             gl_freqs, gl_counts, gl_confidence = {}, {}, {}
             all_muts = set()
             for region in acronyms: # list all unique mutations
@@ -614,7 +614,7 @@ class process(object):
         ## Label root nodes for each clade as clade_annotation via clades_to_nodes
         ## NOTE clades_to_nodes is used in the (full) frequencies export
         self.clades_to_nodes = {}
-        for clade_name, genotype in clades.iteritems():
+        for clade_name, genotype in clades.items():
             matching_nodes = filter(lambda x:match(x,genotype), self.tree.tree.get_nonterminals())
             matching_nodes.sort(key=lambda x:x.numdate if hasattr(x,'numdate') else x.dist2root)
             if len(matching_nodes):

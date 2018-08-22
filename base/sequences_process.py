@@ -165,7 +165,7 @@ class sequence_set(object):
             out_seqs = self.seqs.values()
         else:
             self.log.notify("Adding reference for alignment step")
-            out_seqs = self.seqs.values() + [self.reference_seq]
+            out_seqs = list(self.seqs.values()) + [self.reference_seq]
 
         SeqIO.write(out_seqs, "temp_in.fasta", "fasta")
         self.log.notify("Running alignment")
