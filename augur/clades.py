@@ -9,7 +9,7 @@ def read_in_clade_definitions(clade_file):
     Reads in tab-seperated file that defines clades by amino-acid.
 
     Format:
-    clade	gene	site	aa
+    clade	gene	site	alt
     Clade_2	embC	940	S
     Clade_2	Rv3463	192	K
     Clade_3	Rv2209	432	I
@@ -20,7 +20,7 @@ def read_in_clade_definitions(clade_file):
 
     df = pd.read_csv(clade_file, sep='\t' if clade_file.endswith('.tsv') else ',')
     for mi, m in df.iterrows():
-        clades[m.clade][m.gene].append((m.site,m.aa))
+        clades[m.clade][m.gene].append((m.site,m.alt))
 
     return clades
 
