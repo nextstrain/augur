@@ -130,7 +130,7 @@ if __name__=="__main__":
     ## CLADES.PY
     clades_parser = subparsers.add_parser('clades', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     clades_parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
-    clades_parser.add_argument('--amino-acids', type=str, help='JSON containing ancestral and tip amino-acid mutations (from translate)')
+    clades_parser.add_argument('--mutations', nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
     clades_parser.add_argument('--clades', type=str, help='TSV file containing clade definitions by amino-acid')
     clades_parser.add_argument('--output', type=str, help="name of JSON files for clades")
     clades_parser.set_defaults(func=clades.run)
