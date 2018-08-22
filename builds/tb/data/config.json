@@ -13,9 +13,13 @@
    "type": "continuous", 
    "key": "num_date"
   },
-  "location": {
+  "clade_membership": {
+   "menuItem": "Clade",
+   "legendTitle": "Clade",
+   "type": "discrete",
+   "key": "clade_membership"
   },
-  "cluster": {
+  "location": {
   }
  },
  "geo": [
@@ -23,7 +27,7 @@
  ],
  "filters": [
   "location", 
-  "cluster", 
+  "clade_membership",
   "authors"
  ],
   "maintainer": [
