@@ -6,7 +6,7 @@ from .utils import read_metadata
 TINY = 1e-12
 
 def mugration_inference(tree=None, seq_meta=None, field='country', confidence=True,
-                        infer_gtr=True, root_state=None, missing='?'):
+                        infer_gtr=True, root_state=None, missing='?', bias=None):
     """
     Infer likely ancestral states of a discrete character assuming a time reversible model.
 
@@ -94,8 +94,14 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
         from treetime import TreeAnc
         tt = TreeAnc(tree=tree, aln=aln, gtr=model, convert_upper=False, verbose=0)
         tt.use_mutation_length=False
-        tt.infer_ancestral_sequences(infer_gtr=infer_gtr, store_compressed=False, pc=5.0,
+        tt.infer_ancestral_sequences(infer_gtr=infer_gtr, store_compressed=False, pc=1.0,
                                      marginal=True, normalized_rate=False)
+
+        if bias:
+            tt.gtr.mu*=bias
+            tt.infer_ancestral_sequences(infer_gtr=False, store_compressed=False,
+                                         marginal=True, normalized_rate=False)
+
         T=tt.tree
         gtr = tt.gtr
         alphabet_values = tt.gtr.alphabet
@@ -136,7 +142,7 @@ def run(args):
     mugration_states = defaultdict(dict)
     for column in args.columns:
         T, gtr, alphabet = mugration_inference(tree=tree_fname, seq_meta=traits,
-                            field=column, confidence=args.confidence)
+                            field=column, confidence=args.confidence, bias=args.bias)
         if T is None: # something went wrong
             continue
 

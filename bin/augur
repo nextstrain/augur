@@ -135,6 +135,12 @@ if __name__=="__main__":
                         help='metadata fields to perform discrete reconstruction on')
     traits_parser.add_argument('--confidence',action="store_true",
                         help='record the distribution of subleading mugration states')
+    traits_parser.add_argument('--bias', type=float,
+                               help='a rough estimate of how many more events would have been observed'
+                                    ' if sequences represented an even sample. This should be'
+                                    ' roughly the (1-sum_i p_i^2)/(1-sum_i t_i^2), where p_i'
+                                    ' are the equilibrium frequencies and t_i are apparent ones.'
+                                    '(or rather the time spent in a particular state on the tree)')
     traits_parser.add_argument('--output', '-o', default='traits.json', help='')
     traits_parser.set_defaults(func=traits.run)
 
