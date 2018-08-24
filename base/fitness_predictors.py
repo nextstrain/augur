@@ -10,7 +10,7 @@ try:
 except ImportError:
     pass
 
-from .scores import calculate_LBI
+from .scores import calculate_LBI, select_nodes_in_season
 from .titer_model import SubstitutionModel, TiterCollection, TreeModel
 
 # all fitness predictors should be designed to give a positive sign, ie.
@@ -36,10 +36,11 @@ class fitness_predictors(object):
         return "".join(node.translations.values())
 
     def setup_predictor(self, tree, pred, timepoint, **kwargs):
-        if pred == 'lb':
-           calculate_LBI(tree, **kwargs)
-        # if pred == 'ep':
-        #     self.calc_epitope_distance(tree)
+        if pred == 'lbi':
+            select_nodes_in_season(tree, timepoint, time_window=kwargs["time_window"])
+            calculate_LBI(tree, **kwargs)
+        if pred == 'ep':
+            self.calc_epitope_distance(tree)
         if pred == 'ep_x':
             self.calc_epitope_cross_immunity(tree, timepoint)
         #if pred == 'ne':
@@ -52,7 +53,7 @@ class fitness_predictors(object):
             self.calc_tolerance(tree, preferences_file='metadata/2017-12-07-H3N2-preferences-rescaled.csv', attr = pred, use_epitope_mask=True)
         if pred == 'dms':
             if not hasattr(tree.root, pred):
-                self.calc_dms(tree, preferences_file='metadata/2017-12-07-H3N2-preferences-rescaled.csv')
+                self.calc_dms(tree, kwargs.get("preferences_file"))
         if pred == 'tol_ne':
             self.calc_tolerance(tree, epitope_mask = self.tolerance_mask, attr = 'tol_ne')
         if pred == 'null':
@@ -153,33 +154,50 @@ class fitness_predictors(object):
             node.__setattr__(attr, self.fast_epitope_distance(node.np_ep, ref.np_ep))
 
     def calc_epitope_cross_immunity(self, tree, timepoint, window = 2.0, attr='ep_x'):
-        '''
-        calculates the distance at epitope sites to contemporaneous viruses
+        """Calculates the distance at epitope sites to contemporaneous viruses
         this should capture cross-immunity of circulating viruses
         meant to be used in conjunction with epitope_distance that focuses
-        on escape from previous human immunity
-        tree   --   dendropy tree
-        attr   --   the attribute name used to save the result
-        '''
+        on escape from previous human immunity.
+        """
         comparison_nodes = []
-        for node in tree.find_clades(order="postorder"):
-            if node.is_leaf():
-                if node.attr['num_date'] < timepoint and node.attr['num_date'] > timepoint - window:
-                    comparison_nodes.append(node)
+        for node in tree.get_terminals():
+            if node.attr['num_date'] < timepoint and node.attr['num_date'] > timepoint - window:
+                comparison_nodes.append(node)
+
             if not hasattr(node, 'np_ep'):
                 if not hasattr(node, 'aa'):
                     node.aa = self._translate(node)
                 node.np_ep = np.array(list(self.epitope_sites(node.aa)))
-        print("calculating cross-immunity to " + str(len(comparison_nodes)) + " comparison nodes")
-        for node in tree.find_clades(order="postorder"):
-            mean_distance = 0
-            count = 0
+
+            # Initialize all tips to 0 distance.
+            setattr(node, attr, 0)
+
+            # Store distances in nodes by clade id.
+            if not hasattr(node, "pairwise_distances"):
+                node.pairwise_distances = {}
+
+        count = float(len(comparison_nodes))
+        print("calculating cross-immunity to %s comparison nodes" % count)
+
+        for node in comparison_nodes:
+            distance = 0
             for comp_node in comparison_nodes:
-                mean_distance += self.fast_epitope_distance(node.np_ep, comp_node.np_ep)
-                count += 1
-            if count > 0:
-                mean_distance /= float(count)
-            node.__setattr__(attr, mean_distance)
+                if node.clade == comp_node.clade:
+                    continue
+
+                if comp_node.clade not in node.pairwise_distances:
+                    if node.clade in comp_node.pairwise_distances:
+                        pair_distance = comp_node.pairwise_distances[node.clade]
+                    else:
+                        node.pairwise_distances[comp_node.clade] = self.fast_epitope_distance(node.np_ep, comp_node.np_ep)
+                        pair_distance = node.pairwise_distances[comp_node.clade]
+                else:
+                    pair_distance = node.pairwise_distances[comp_node.clade]
+
+                distance += pair_distance
+
+            mean_distance = np.uint8(int(distance / count))
+            setattr(node, attr, mean_distance)
 
     def calc_rbs_distance(self, tree, attr='rb', ref = None):
         '''

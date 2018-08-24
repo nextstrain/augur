@@ -139,6 +139,9 @@ def json_to_tree(json_dict, root=True):
     node.numdate = node.attr.get("num_date")
     node.branch_length = node.attr.get("div")
 
+    if "translations" in node.attr:
+        node.translations = node.attr["translations"]
+
     if root:
         node = annotate_parents(node)
 
