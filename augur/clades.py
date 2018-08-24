@@ -6,13 +6,14 @@ from collections import defaultdict
 
 def read_in_clade_definitions(clade_file):
     '''
-    Reads in tab-seperated file that defines clades by amino-acid.
+    Reads in tab-seperated file that defines clades by amino-acid or nucleotide
 
     Format:
     clade	gene	site	alt
     Clade_2	embC	940	S
     Clade_2	Rv3463	192	K
     Clade_3	Rv2209	432	I
+    Clade_4	nuc	27979	G
     '''
     import pandas as pd
 
@@ -29,18 +30,23 @@ def is_node_in_clade(clade_mutations, node_muts):
     '''
     Determines whether a node contains all mutations that define a clade
     '''
-    isClade = False
-    for gene, muts in clade_mutations.items():
-        if (gene in node_muts and node_muts[gene] != []):
-            prs_muts = [(int(tu[1:-1]), tu[-1]) for tu in node_muts[gene]] #get mutations in right format
-            if all([mut in prs_muts for mut in muts]):
-                isClade = True
+    is_clade = False
+    # cycle through each gene in the clade definition and see if this node has the specified mutations
+    for gene, defining_mutations in clade_mutations.items():
+        #check the node has the gene in question and that it contains any mutations
+        if (gene in node_muts and node_muts[gene]):
+            # mutations are stored on nodes in format 'R927H', but in clade defining_mutations as (927, 'H')
+            # So convert node mutations ('mutation') to format (927, 'H') here, for easy comparison
+            formatted_mutations = [(int(mutation[1:-1]), mutation[-1]) for mutation in node_muts[gene]] 
+            # If all of the clade-defining mutations are in the node mutations, it's part of this clade.
+            if all([mut in formatted_mutations for mut in defining_mutations]):
+                is_clade = True
             else:
                 return False
         else:
             return False
 
-    return isClade
+    return is_clade
 
 
 def assign_clades(clade_designations, muts, tree):
@@ -77,7 +83,7 @@ def run(args):
     node_data = read_node_data(args.mutations, args.tree)
     if node_data is None:
         print("ERROR: could not read node data (incl sequences)")
-        return -1
+        return 1
 
     clade_designations = read_in_clade_definitions(args.clades)
 

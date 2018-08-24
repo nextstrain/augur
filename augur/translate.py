@@ -171,7 +171,7 @@ def assign_aa_vcf(tree, translations):
     aa_muts = {}
 
     #get mutations on the root
-    root = tree.get_nonterminals()[0]
+    root = tree.root
     aa_muts[root.name]={"aa_muts":{}}
     for fname, prot in translations.items():
         root_muts = prot['sequences'][root.name]
@@ -236,7 +236,7 @@ def run(args):
     if any([args.ancestral_sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
         if not args.vcf_reference:
             print("ERROR: a reference Fasta is required with VCF-format input")
-            return -1
+            return 1
         compress_seq = read_vcf(args.ancestral_sequences, args.vcf_reference)
         sequences = compress_seq['sequences']
         ref = compress_seq['reference']
@@ -245,7 +245,7 @@ def run(args):
         node_data = read_node_data(args.ancestral_sequences, args.tree)
         if node_data is None:
             print("ERROR: could not read node data (incl sequences)")
-            return -1
+            return 1
         # extract sequences from node meta data
         sequences = {}
         for k,v in node_data['nodes'].items():
@@ -257,7 +257,7 @@ def run(args):
     print("Read in {} features from reference sequence file".format(len(features)))
     if features is None:
         print("ERROR: could not read features of reference sequence file")
-        return -1
+        return 1
 
     ### translate every feature - but not 'nuc'!
     translations = {}
