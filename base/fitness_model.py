@@ -379,7 +379,7 @@ class fitness_model(object):
             select_nodes_in_season(self.tree, time, self.time_window)
             self.calc_predictors(time)
 
-            for node in self.nodes:
+            for node in self.tips:
                 if 'dfreq' in [x for x in self.predictors]: node.dfreq = node.freq_slope[time]
 
                 predictors_at_time = []
@@ -418,7 +418,7 @@ class fitness_model(object):
             self.global_sds = np.mean(self.predictor_sds.values(), axis=0)
 
         for time in self.timepoints:
-            for node in self.nodes:
+            for node in self.tips:
                 if node.predictors[time] is not None and (self.global_sds == 0).sum() == 0:
                     node.predictors[time] = (node.predictors[time]-self.predictor_means[time]) / self.global_sds
             self.predictor_arrays[time][:,self.to_standardize] -= self.predictor_means[time][self.to_standardize]
@@ -605,7 +605,7 @@ class fitness_model(object):
         if self.verbose: print("calculating predictors for the final timepoint")
         final_timepoint = self.timepoints[-1]
 
-        for node in self.nodes:
+        for node in self.tips:
             if node.predictors[final_timepoint] is not None:
                 node.fitness = self.fitness(self.model_params, node.predictors[final_timepoint])
             else:
