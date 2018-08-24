@@ -100,7 +100,7 @@ def sum_of_squared_errors(observed_freq, predicted_freq):
 
 class fitness_model(object):
 
-    def __init__(self, tree, frequencies, time_interval, predictor_input, censor_frequencies=True,
+    def __init__(self, tree, frequencies, predictor_input, censor_frequencies=True,
                  pivot_spacing=1.0 / 12, verbose=0, enforce_positive_predictors=True, predictor_kwargs=None,
                  cost_function=sum_of_squared_errors, **kwargs):
         """
@@ -108,7 +108,6 @@ class fitness_model(object):
         Args:
             tree (Bio.Phylo): an annotated tree for which a fitness model is to be determined
             frequencies (KdeFrequencies): a frequency estimator and its parameters
-            time_interval:
             predictor_input: a list of predictors to fit or dict of predictors to coefficients / std deviations
             censor_frequencies (bool): whether frequencies should censor future data or not
             pivot_spacing:
@@ -136,13 +135,6 @@ class fitness_model(object):
 
         self.time_window = kwargs.get("time_window", 6.0 / 12.0)
 
-        # Convert datetime date interval to floating point interval from
-        # earliest to latest.
-        self.time_interval = (
-            time_interval[1].year + (time_interval[1].month) / 12.0,
-            time_interval[0].year + (time_interval[0].month - 1) / 12.0
-        )
-
         if isinstance(predictor_input, dict):
             predictor_names = predictor_input.keys()
             self.estimate_coefficients = False
@@ -164,6 +156,7 @@ class fitness_model(object):
         self.pivots = self.frequencies.pivots
 
         # final timepoint is end of interval and is only projected forward, not tested
+        self.time_interval = (self.frequencies.start_date, self.frequencies.end_date)
         self.timepoint_step_size = 0.5      # amount of time between timepoints chosen for fitting
         self.delta_time = 1.0               # amount of time projected forward to do fitting
         self.timepoints = np.around(
