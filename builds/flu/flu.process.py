@@ -35,6 +35,7 @@ def parse_args():
     parser.add_argument('--epitope_mask_version', help="name of the epitope mask that defines epitope mutations")
     parser.add_argument('--tolerance_mask_version', help="name of the tolerance mask that defines non-epitope mutations")
     parser.add_argument('--glyc_mask_version', help="name of the mask that defines putative glycosylation sites")
+    parser.add_argument('--export_translations', action='store_true', help="export amino acid translations as node attributes in the auspice tree JSON")
 
     parser.set_defaults(
         json="prepared/flu.json"
@@ -50,7 +51,7 @@ def make_config(prepared_json, args):
         args.predictors_sds
     )
 
-    return {
+    config = {
         "dir": "flu",
         "in": prepared_json,
         "geo_inference": ['region'],
@@ -94,6 +95,12 @@ def make_config(prepared_json, args):
             "method": args.tree_method
         }
     }
+
+    # Export amino acid translations.
+    if args.export_translations:
+        config["auspice"]["extra_attr"].append("translations")
+
+    return config
 
 # set defaults when command line parameter is None based on lineage, segment and resolution
 def set_config_defaults(runner):
