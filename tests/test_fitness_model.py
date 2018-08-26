@@ -257,9 +257,9 @@ class TestFitnessModel(object):
         real_fitness_model.standardize_predictors()
         real_fitness_model.select_clades_for_fitting()
         real_fitness_model.learn_parameters(niter=1, fit_func="clade")
-        assert not any([hasattr(node, "fitness") for node in real_fitness_model.tree.find_clades()])
+        assert not any([hasattr(node, "fitness") for node in real_fitness_model.tree.get_terminals()])
         real_fitness_model.assign_fitness()
-        assert all([hasattr(node, "fitness") for node in real_fitness_model.tree.find_clades()])
+        assert all([hasattr(node, "fitness") for node in real_fitness_model.tree.get_terminals()])
 
     def test_assign_fitness_with_precalculated_params(self, precalculated_fitness_model):
         # The fitness model should have model parameters assigned by the user.
