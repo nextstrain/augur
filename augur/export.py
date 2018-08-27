@@ -216,7 +216,7 @@ def add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json, extra_fields=['authors
         if strain not in meta_tsv:
             continue
         for field in fields:
-            if field not in node and field in meta_tsv[strain]:
+            if field not in node and field in meta_tsv[strain] and meta_tsv[strain][field]:
                 node[field] = meta_tsv[strain][field]
 
 
@@ -347,7 +347,7 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
 
         # TRANSFER TRAITS (INCLUDING CONFIDENCE & ENTROPY) #
         for trait in traits:
-            if trait in raw_data:
+            if trait in raw_data and raw_data[trait]:
                 node["traits"][trait] = {"value": raw_data[trait]}
                 if trait+"_confidence" in raw_data:
                     node["traits"][trait]["confidence"] = raw_data[trait+"_confidence"]
@@ -429,6 +429,8 @@ def run(args):
     # get traits to colour by etc - do here before node_data is modified below
     # this ensures we get traits even if they are not on every node
     traits = get_traits(node_data)
+    if args.extra_traits:
+        traits.extend(args.extra_traits)
 
     raw_strain_info = collect_strain_info(node_data, args.metadata)
     unified["tree"], strains = convert_tree_to_json_structure(T.root, raw_strain_info)
