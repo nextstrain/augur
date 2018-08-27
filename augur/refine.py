@@ -6,7 +6,7 @@ from treetime.vcf_utils import read_vcf, write_vcf
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
              confidence=False, resolve_polytomies=True, max_iter=2,
              infer_gtr=True, Tc=0.01, reroot=None, use_marginal=False, fixed_pi=None,
-             clock_rate=None, clock_filter_iqd=None, verbosity=1, **kwarks):
+             clock_rate=None, clock_std=None, clock_filter_iqd=None, verbosity=1, **kwarks):
     from treetime import TreeTime
 
     try: #Tc could be a number or  'opt' or 'skyline'. TreeTime expects a float or int if a number.
@@ -51,9 +51,11 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
     else:
         marginal = confidence
 
+    vary_rate = (clock_std if clock_std else False) if clock_rate else True
     tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
            branch_length_mode=branch_length_inference, resolve_polytomies=resolve_polytomies,
            max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
+           vary_rate=vary_rate,
            **kwarks)
 
     if confidence:
@@ -148,7 +150,8 @@ def run(args):
                       Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
                       use_marginal = args.date_inference == 'marginal',
                       branch_length_inference = args.branch_length_inference or 'auto',
-                      clock_rate=args.clock_rate, clock_filter_iqd=args.clock_filter_iqd)
+                      clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
+                      clock_filter_iqd=args.clock_filter_iqd)
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
