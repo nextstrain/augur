@@ -25,5 +25,19 @@ cluster	Mj-V.c	#6a3d9a
 cluster	Mj-VI	#fdbf6f
 cluster	Mn	#ff7f00
 
+clade_membership	Mj-I	#a6cee3
+clade_membership	Mj-II	#fb9a99
+clade_membership	Mj-III.a	#b15928
+clade_membership	Mj-III.b	#ffff99
+clade_membership	Mj-III.c	#00441b
+clade_membership	Mj-IV.a	#e31a1c
+clade_membership	Mj-IV.b	#33a02c
+clade_membership	Mj-IV.c	#cab2d6
+clade_membership	Mj-V.a	#1f78b4
+clade_membership	Mj-V.b	#67001f
+clade_membership	Mj-V.d	#b2df8a
+clade_membership	Mj-V.c	#6a3d9a
+clade_membership	Mj-VI	#fdbf6f
+clade_membership	Unassigned	#AAAAAA
 
 

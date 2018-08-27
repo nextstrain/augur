@@ -19,7 +19,8 @@ rule config:
         genes = "data/genes.txt",
         colors = "data/color.tsv",
         config = "data/config.json",
-        geo_info = "data/lat_longs.tsv"
+        geo_info = "data/lat_longs.tsv",
+        clades = "data/clades.tsv"
 
 config = rules.config.params #so we can use config.x rather than rules.config.params.x
 #end of config definition
@@ -117,6 +118,21 @@ rule translate:
             --alignment-output {output.vcf_out}
         """
 
+rule clades:
+    input:
+        tree = rules.refine.output.tree,
+        aa_muts = rules.translate.output.aa_data,
+        nuc_muts = rules.ancestral.output.nt_data,
+        clades = config.clades
+    output:
+        clade_data = "results/clades.json"
+    shell:
+        """
+        augur clades --tree {input.tree} \
+            --mutations {input.nuc_muts} {input.aa_muts} \
+            --output {output.clade_data} --clades {input.clades}
+        """
+
 rule traits:
     input:
         tree = rules.refine.output.tree,
@@ -124,7 +140,7 @@ rule traits:
     output:
         "results/traits.json"
     params:
-        traits = 'location cluster'
+        traits = 'location'
     shell:
         'augur traits --tree {input.tree} --metadata {input.meta}'
         ' --columns {params.traits} --output {output}'
@@ -159,7 +175,8 @@ rule export:
         drms = rules.seqtraits.output.drm_data,
         color_defs = config.colors,
         config = config.config,
-        geo_info = config.geo_info
+        geo_info = config.geo_info,
+        clades = rules.clades.output.clade_data
     output:
         tree = rules.all.input.auspice_tree,
         meta = rules.all.input.auspice_meta
@@ -168,7 +185,7 @@ rule export:
         augur export \
             --tree {input.tree} \
             --metadata {input.metadata} \
-            --node-data {input.branch_lengths} {input.traits} {input.drms} {input.aa_muts} {input.nt_muts} \
+            --node-data {input.branch_lengths} {input.traits} {input.drms} {input.aa_muts} {input.nt_muts} {input.clades} \
             --auspice-config {input.config} \
             --colors {input.color_defs} \
             --output-tree {output.tree} \

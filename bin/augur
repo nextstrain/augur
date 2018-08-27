@@ -2,7 +2,7 @@
 import sys
 from augur import parse, filter, align, tree, refine, ancestral
 from augur import traits, translate, mask, titers, export
-from augur import validate, sequence_traits
+from augur import validate, sequence_traits, clades
 
 if __name__=="__main__":
     import argparse
@@ -126,6 +126,14 @@ if __name__=="__main__":
     translate_parser.add_argument('--vcf-reference-output', type=str, help="fasta file where reference sequence translations for VCF input will be written")
     translate_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     translate_parser.set_defaults(func=translate.run)
+
+    ## CLADES.PY
+    clades_parser = subparsers.add_parser('clades', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    clades_parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
+    clades_parser.add_argument('--mutations', nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
+    clades_parser.add_argument('--clades', type=str, help='TSV file containing clade definitions by amino-acid')
+    clades_parser.add_argument('--output', type=str, help="name of JSON files for clades")
+    clades_parser.set_defaults(func=clades.run)
 
     ## TRAITS.PY
     traits_parser = subparsers.add_parser('traits', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
