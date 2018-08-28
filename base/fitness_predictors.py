@@ -387,8 +387,7 @@ class fitness_predictors(object):
         """
         # Filter titers by date from the root node to the current timepoint.
         node_lookup = {node.name: node for node in tree.get_terminals()}
-        date_range = [tree.root.numdate, timepoint]
-        filtered_titers = TiterCollection.subset_to_date(titers, node_lookup, date_range)
+        filtered_titers = TiterCollection.subset_to_date(titers, node_lookup, tree.root.numdate, timepoint)
 
         # Set titer model parameters.
         kwargs = {

@@ -151,7 +151,7 @@ class TiterCollection(object):
                 if key[0] in strains and key[1][0] in strains}
 
     @classmethod
-    def subset_to_date(cls, titers, node_lookup, date_range):
+    def subset_to_date(cls, titers, node_lookup, start_date, end_date):
         """Subset the given titers to the given date range based on the dates annotated
         on each node.
         """
@@ -160,12 +160,12 @@ class TiterCollection(object):
         filtered_strains = set([
             node_name
             for node_name, node in node_lookup.items()
-            if node.numdate <= date_range[1] and node.numdate >= date_range[0]
+            if start_date <= node.numdate < end_date
         ])
         filtered_titers = cls.filter_strains(titers, filtered_strains)
         original_counts = sum(cls.count_strains(titers).values())
         filtered_counts = sum(cls.count_strains(filtered_titers).values())
-        sys.stderr.write("Filtered from %i to %i titers between %s and %s\n" % (original_counts, filtered_counts, date_range[0], date_range[1]))
+        sys.stderr.write("Filtered from %i to %i titers between %s and %s\n" % (original_counts, filtered_counts, start_date, end_date))
 
         return filtered_titers
 
