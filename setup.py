@@ -1,8 +1,16 @@
 from setuptools import setup
+from pathlib    import Path
+
+base_dir     = Path(__file__).parent.resolve()
+version_file = base_dir / "augur/__version__.py"
+
+# Eval the version file to get __version__; avoids importing our own package
+with version_file.open() as f:
+    exec(f.read())
 
 setup(
         name = "augur",
-        version = "0.1.0",
+        version = __version__,
         author = "nextstrain developers",
         author_email = "trevor@bedford.io, richard.neher@unibas.ch",
         description = ("Pipelines for real-time phylogenetic analysis"),
