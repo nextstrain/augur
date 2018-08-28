@@ -19,6 +19,7 @@ setup(
         url = "https://github.com/nextstrain/augur",
         packages=['augur'],
         package_data={'augur': ['data/*']},
+        python_requires = '>=3.4',
         install_requires = [
             "bcbio-gff >=0.6.4, ==0.6.*",
             "biopython >=1.69, ==1.*",
@@ -42,6 +43,12 @@ setup(
             "Development Status :: 3 - Alpha",
             "Topic :: Science",
             "License :: OSI Approved :: MIT License",
+
+            # Python 3 only; pathlib is >=3.4
+            "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3.4",
+            "Programming Language :: Python :: 3.5",
+            "Programming Language :: Python :: 3.6",
             ],
         scripts=['bin/augur']
         )
