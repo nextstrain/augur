@@ -2,7 +2,7 @@
 import sys
 from augur import parse, filter, align, tree, refine, ancestral
 from augur import traits, translate, mask, titers, export
-from augur import validate, sequence_traits, clades
+from augur import validate, sequence_traits, clades, metacheck
 
 if __name__=="__main__":
     import argparse
@@ -20,6 +20,21 @@ if __name__=="__main__":
     parse_parser.add_argument('--fix-dates', choices=['dayfirst', 'monthfirst'],
                                 help="attempt to parse non-standard dates and output them in standard YYYY-MM-DD format")
     parse_parser.set_defaults(func=parse.run)
+
+    ## METACHECK.PY --
+    check_parser = subparsers.add_parser('metacheck', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    check_parser.add_argument('--input', type=str, help="tsv file containing metadata associated with sequences")
+    check_parser.add_argument('--geo_regions', type=str, help="geo_regions file")
+    check_parser.add_argument('--geo_info', type=str, help="geo_lat_long file from Fauna")
+    check_parser.add_argument('--host_tone', type=str, help="host colors file")
+    check_parser.add_argument('--host_list', type=str, help="host info file")
+    check_parser.add_argument('--region_colors', type=str, help="region colors file")
+    check_parser.add_argument('--synonyms', type=str, help="file with misspellings and alterative geo names")
+    check_parser.add_argument('--output_color', type=str, help="color file with generated colors")
+    check_parser.add_argument('--output_meta', type=str, help="meta file with country/region/host")
+    check_parser.add_argument('--input_fasta', type=str, help="fasta file to exclude bad samples")
+    check_parser.add_argument('--output_fasta', type=str, help="output fasta file")
+    check_parser.set_defaults(func=metacheck.run)
 
     ### FILTER.PY -- filter and subsample an sequence set
     filter_parser = subparsers.add_parser('filter', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
