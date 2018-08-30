@@ -9,7 +9,7 @@ with version_file.open() as f:
     exec(f.read())
 
 setup(
-        name = "augur",
+        name = "nextstrain-augur",
         version = __version__,
         author = "nextstrain developers",
         author_email = "trevor@bedford.io, richard.neher@unibas.ch",
