@@ -322,6 +322,19 @@ def run(args):
                 fileEndings = -2
             vcf_out_ref = args.vcf_reference_output or '.'.join(args.alignment_output.split('.')[:fileEndings]) + '_reference.fasta'
             write_VCF_translation(translations, args.alignment_output, vcf_out_ref)
+        elif args.alignment_output.endswith(".json"):
+            # Translations are grouped by feature name and then by node name.
+            # For JSON output, they need to be grouped by node name, a
+            # descriptive name like "translations", and then by feature.
+            translations_json = {}
+            for feature_name, sequences in translations.items():
+                for sequence_name, sequence in sequences.items():
+                    if sequence_name not in translations_json:
+                        translations_json[sequence_name] = {"translations": {}}
+
+                    translations_json[sequence_name]["translations"][feature_name] = sequence
+
+            write_json({'annotations': annotations, 'nodes': translations_json}, args.alignment_output)
         else:
             ## write fasta-style output if requested
             if '%GENE' in args.alignment_output:
