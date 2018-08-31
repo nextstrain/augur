@@ -50,3 +50,6 @@ Thumbs.db
 # IDE #
 #######
 *sublime*
+
+# slurm logs
+builds/flu/slurm_log/*
