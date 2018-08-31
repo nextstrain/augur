@@ -127,6 +127,15 @@ need [a PyPi account][] and [twine][] installed to do the latter.
 [a PyPi account]: https://pypi.org/account/register/
 [twine]: https://pypi.org/project/twine
 
+### Travis CI
+
+Branches and PRs are tested by Travis CI jobs configured in `.travis.yml`.
+
+New releases, via pushes to the `release` branch, trigger a new [docker-base][]
+build to keep the Docker image up-to-date.
+
+[docker-base]: https://github.com/nextstrain/docker-base
+
 
 ## License and copyright
 

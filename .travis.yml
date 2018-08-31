@@ -31,6 +31,6 @@ script:
   - if [ $TRAVIS_PYTHON_VERSION = "3.6" ]; then (cd tests/builds/zika/; snakemake); fi
   - if [ $TRAVIS_PYTHON_VERSION = "3.6" ]; then (cd tests/builds/tb/; snakemake); fi
 after_success:
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "3.6" && "$TRAVIS_PULL_REQUEST" == "false" && $TRAVIS_BRANCH = "master" ]]; then
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "3.6" && "$TRAVIS_PULL_REQUEST" == "false" && $TRAVIS_BRANCH = "release" ]]; then
       ./devel/travis-rebuild-docker-image;
     fi
