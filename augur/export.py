@@ -417,7 +417,7 @@ def get_root_sequence(root_node, ref=None, translations=None):
             root_sequence[gene.id] = str(gene.seq)
     else:
         root_sequence["nuc"] = root_node["sequence"]
-        root_sequence.update(root_node["aa_sequences"])
+        root_sequence.update(root_node["translations"])
 
     return root_sequence
 
