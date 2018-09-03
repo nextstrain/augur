@@ -609,6 +609,26 @@ class KdeFrequencies(object):
         self.max_date = max_date
         self.include_internal_nodes = include_internal_nodes
 
+    def get_params(self):
+        """
+        Returns the parameters used to define the current instance.
+
+        Returns:
+            dict: parameters that define the current instance and that can be used to create a new instance
+        """
+        return {
+            "sigma_narrow": self.sigma_narrow,
+            "sigma_wide": self.sigma_wide,
+            "proportion_wide": self.proportion_wide,
+            "pivot_frequency": self.pivot_frequency,
+            "start_date": self.start_date,
+            "end_date": self.end_date,
+            "weights": self.weights,
+            "weights_attribute": self.weights_attribute,
+            "max_date": self.max_date,
+            "include_internal_nodes": self.include_internal_nodes
+        }
+
     @classmethod
     def from_json(cls, json_dict):
         """Returns an instance populated with parameters and data from the given JSON dictionary.
@@ -630,18 +650,7 @@ class KdeFrequencies(object):
         """Returns a dictionary for the current instance that can be serialized in a JSON file.
         """
         frequencies_json = {
-            "params": {
-                "sigma_narrow": self.sigma_narrow,
-                "sigma_wide": self.sigma_wide,
-                "proportion_wide": self.proportion_wide,
-                "pivot_frequency": self.pivot_frequency,
-                "start_date": self.start_date,
-                "end_date": self.end_date,
-                "weights": self.weights,
-                "weights_attribute": self.weights_attribute,
-                "max_date": self.max_date,
-                "include_internal_nodes": self.include_internal_nodes
-            }
+            "params": self.get_params()
         }
 
         # If frequencies have been estimated, export them along with the pivots as data.
@@ -688,11 +697,13 @@ class KdeFrequencies(object):
             pivot_start = start_date
             pivot_end = end_date
 
-        return np.arange(
+        pivots = np.arange(
             pivot_start,
-            pivot_end,
+            pivot_end + 0.0001,
             pivot_frequency
         )
+
+        return np.around(pivots, 2)
 
     @classmethod
     def get_density_for_observation(cls, mu, pivots, sigma_narrow=1/12.0, sigma_wide=3/12.0, proportion_wide=0.2):

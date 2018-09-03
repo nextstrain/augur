@@ -31,20 +31,6 @@ def HI_model(process):
     process.HI_subs.train(**kwargs)
 
     for node in process.tree.tree.find_clades():
-        dTiterSub = 0
-
-        if hasattr(node, "aa_muts"):
-            for gene, mutations in node.aa_muts.iteritems():
-                for mutation in mutations:
-                    dTiterSub += process.HI_subs.substitution_effect.get((gene, mutation), 0)
-
-        node.dTiterSub = dTiterSub
-
-        if node.up is not None:
-            node.cTiterSub = node.up.cTiterSub + dTiterSub
-        else:
-            node.cTiterSub = 0
-
         node.attr["cTiterSub"] = node.cTiterSub
         node.attr["dTiterSub"] = node.dTiterSub
 

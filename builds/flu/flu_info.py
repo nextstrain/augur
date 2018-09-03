@@ -67,7 +67,9 @@ outliers = {
         "A/London/16U363140-91_S43_L001/2016", "A/Catalonia/NSVH100533399/2017",
         "A/Catalonia/NSVH100560486/2017", "A/Piaui/494713/2017", "A/SaoPaulo/554097/2017",
         "A/Ireland/61451/2017", "A/Ireland/53051/2017", "A/Ireland/62518/2017", "A/Ireland/52590/2017",
-        "A/Ireland/61097/2017", "A/Shanghai-Minxing/1482/2017", "A/Asaka/2/2017"
+        "A/Ireland/61097/2017", "A/Shanghai-Minxing/1482/2017", "A/Asaka/2/2017", "A/Ohio/80/2012",
+        "A/Wisconsin/31/2012", "A/Wisconsin/30/2012", "A/Ohio/74/2012", "A/Wisconsin/28/2012",
+        "A/Ohio/85/2012", "A/Wisconsin/35/2012", "A/Maryland/28/2012", "A/Indiana/27/2018"
     ],
     'h1n1pdm': [
         "A/Wisconsin/87/2005", "A/Iowa/1/2006", "A/Iowa/1/2006-egg", "A/Ohio/1/2007", "A/Ohio/2/2007",
@@ -291,7 +293,8 @@ reference_viruses = {
         'B/Brisbane/60/2008', 'B/Utah/8/2012', 'B/Montana/5/2012', 'B/Texas/2/2013', 'B/Florida/33/2014',
         'B/Indiana/25/2015', 'B/Florida/78/2015', 'B/Iceland/56/2015', 'B/Missouri/9/2016',
         'B/Ireland/3154/2016', 'B/StPetersburg/293/2016', 'B/Maryland/15/2016', 'B/Colorado/6/2017',
-        'B/Kazakhstan/128/2017', 'B/HongKong/286/2017', 'B/Bangladesh/3004/2017'
+        'B/Kazakhstan/128/2017', 'B/HongKong/286/2017', 'B/Bangladesh/3004/2017',
+        'B/Vologda/CRIE-323/2016', 'B/NewJersey/4/2017', 'B/Indiana/25/2015', 'B/Singapore/TT1243/2015', 'B/Brisbane/312/2015'
     ],
     'yam':[
         'B/Beijing/184/1993', 'B/Sichuan/379/1999', 'B/Shanghai/361/2002', 'B/Florida/4/2006',
@@ -343,7 +346,7 @@ LBI_params = {
     '2y': {"tau": 0.3, "time_window": 0.5},
     '3y': {"tau": 0.4, "time_window": 0.6},
     '6y': {"tau": 0.25, "time_window": 0.75},
-    '12y': {"tau": 0.0005, "time_window": 0.5}
+    '12y': {"tau": 0.25, "time_window": 0.75}
 }
 
 # Frequency Params
@@ -380,7 +383,7 @@ lineage_to_glyc_mask = {
 
 clade_designations = {
     "h3n2": {
-        '3b':   [('HA2',158,'N'), ('HA1',198,'S'), ('HA1',312,'S'), ('HA1',223,'I'), ('HA1',145,'S')],
+        '3b':   [('HA1',48,'T'), ('HA2',158,'N'), ('HA1',198,'S'), ('HA1',312,'S'), ('HA1',223,'I'), ('HA1',145,'S')],
         '3c':   [('HA1',45,'N'), ('HA1',48,'I'), ('nuc',456,'T'), ('HA1',198,'S'), ('HA1',312,'S'),
                  ('HA1',223,'I')],
         '3c3':  [('nuc',285,'T'), ('nuc',430,'G'), ('nuc',472,'G'), ('nuc',1296,'A')],
