@@ -13,6 +13,12 @@
    "type": "continuous", 
    "key": "num_date"
   },
+  "clade_membership": {
+   "menuItem": "Clade",
+   "legendTitle": "Clade",
+   "type": "discrete",
+   "key": "clade_membership"
+  },
   "location": {
   },
   "cluster": {

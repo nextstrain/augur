@@ -4,11 +4,12 @@ import numpy as np
 import os
 import pandas as pd
 from scipy.interpolate import interp1d
-from scipy.stats import linregress, spearmanr
+from scipy.stats import linregress, pearsonr
+import sys
 
 from .io_util import write_json
 from .scores import select_nodes_in_season
-from .frequencies import logit_transform, tree_frequencies
+from .frequencies import logit_transform, KdeFrequencies
 from .fitness_predictors import fitness_predictors
 
 try:
@@ -83,23 +84,49 @@ def matthews_correlation_coefficient(tp, tn, fp, fn):
     return float(numerator) / denominator
 
 
+def sum_of_squared_errors(observed_freq, predicted_freq):
+    """
+    Calculates the sum of squared errors for observed and predicted frequencies.
+
+    Args:
+        observed_freq (numpy.ndarray): observed frequencies
+        predicted_freq (numpy.ndarray): predicted frequencies
+
+    Returns:
+        float: sum of squared errors between observed and predicted frequencies
+    """
+    return np.sum((observed_freq - predicted_freq) ** 2)
+
+
 class fitness_model(object):
 
-    def __init__(self, tree, frequencies, time_interval, predictor_input = ['ep', 'lb', 'dfreq'], pivots = None, pivot_spacing = 1.0 / 12, verbose = 0, enforce_positive_predictors = True, predictor_kwargs=None, **kwargs):
-        '''
-        parameters:
-        tree -- tree of sequences for which a fitness model is to be determined
-        frequencies -- dictionary of precalculated clade frequencies indexed by region (e.g., "global")
-        predictor_input -- list of predictors to fit or dict of predictors to coefficients / std deviations
-        '''
+    def __init__(self, tree, frequencies, predictor_input, censor_frequencies=True,
+                 pivot_spacing=1.0 / 12, verbose=0, enforce_positive_predictors=True, predictor_kwargs=None,
+                 cost_function=sum_of_squared_errors, **kwargs):
+        """
+
+        Args:
+            tree (Bio.Phylo): an annotated tree for which a fitness model is to be determined
+            frequencies (KdeFrequencies): a frequency estimator and its parameters
+            predictor_input: a list of predictors to fit or dict of predictors to coefficients / std deviations
+            censor_frequencies (bool): whether frequencies should censor future data or not
+            pivot_spacing:
+            verbose:
+            enforce_positive_predictors:
+            predictor_kwargs:
+            cost_function (callable): a function that takes observed and predicted frequencies and returns a single error value
+            **kwargs:
+        """
         self.tree = tree
         self.frequencies = frequencies
+        self.censor_frequencies = censor_frequencies
         self.pivot_spacing = pivot_spacing
         self.verbose = verbose
         self.enforce_positive_predictors = enforce_positive_predictors
         self.estimate_coefficients = True
         self.min_freq = kwargs.get("min_freq", 0.1)
         self.max_freq = kwargs.get("max_freq", 0.99)
+        self.cost_function = cost_function
 
         if predictor_kwargs is None:
             self.predictor_kwargs = {}
@@ -107,13 +134,6 @@ class fitness_model(object):
             self.predictor_kwargs = predictor_kwargs
 
         self.time_window = kwargs.get("time_window", 6.0 / 12.0)
-
-        # Convert datetime date interval to floating point interval from
-        # earliest to latest.
-        self.time_interval = (
-            time_interval[1].year + (time_interval[1].month) / 12.0,
-            time_interval[0].year + (time_interval[0].month - 1) / 12.0
-        )
 
         if isinstance(predictor_input, dict):
             predictor_names = predictor_input.keys()
@@ -124,17 +144,19 @@ class fitness_model(object):
             if kwargs["estimate_fitness_model"]:
                 self.estimate_coefficients = True
 
-        # If pivots have not been calculated yet, calculate them here.
-        if pivots is not None:
-            self.pivots = pivots
-        else:
-            self.pivots = make_pivots(
-                self.time_interval[0],
-                self.time_interval[1],
-                1 / self.pivot_spacing
-            )
+        # Reestimate frequencies if they have not already been estimated or if internal nodes were excluded.
+        if not hasattr(self.frequencies, "frequencies") or not self.frequencies.include_internal_nodes:
+            sys.stderr.write("Recalculating frequencies\n")
+            frequency_params = self.frequencies.get_params()
+            frequency_params["include_internal_nodes"] = True
+            self.frequencies = KdeFrequencies(**frequency_params)
+            self.frequencies.estimate(self.tree)
+
+        # Pivots should be defined by frequencies.
+        self.pivots = self.frequencies.pivots
 
         # final timepoint is end of interval and is only projected forward, not tested
+        self.time_interval = (self.frequencies.start_date, self.frequencies.end_date)
         self.timepoint_step_size = 0.5      # amount of time between timepoints chosen for fitting
         self.delta_time = 1.0               # amount of time projected forward to do fitting
         self.timepoints = np.around(
@@ -144,6 +166,10 @@ class fitness_model(object):
             ),
             2
         )
+
+        # Exclude the first timepoint from fitness model as censored frequencies there will be have a probability mass
+        # less than 1.
+        self.timepoints = self.timepoints[1:]
 
         self.predictors = predictor_names
 
@@ -205,43 +231,55 @@ class fitness_model(object):
         goes over all nodes and calculates frequencies at timepoints based on previously calculated frequency trajectories
         '''
         region = "global"
+        frequencies = self.frequencies.frequencies
 
-        # Calculate global tree/clade frequencies if they have not been calculated already.
-        if region not in self.frequencies or self.rootnode.clade not in self.frequencies["global"]:
-            print("calculating global node frequencies")
-            tree_freqs = tree_frequencies(self.tree, self.pivots, method="SLSQP", verbose=1)
-            tree_freqs.estimate_clade_frequencies()
-            self.frequencies[region] = tree_freqs.frequencies
-        else:
-            print("found existing global node frequencies")
-
-        # Annotate frequencies on nodes.
-        # TODO: replace node-based annotation with dicts indexed by node name.
+        # Annotate frequencies on nodes using all available data regardless of tip frequency censoring status.
         for node in self.nodes:
             node.freq = {
-                region: self.frequencies[region][node.clade]
+                region: frequencies[node.clade]
             }
             node.logit_freq = {
-                region: logit_transform(self.frequencies[region][node.clade], 1e-4)
+                region: logit_transform(frequencies[node.clade], 1e-4)
             }
 
         for node in self.nodes:
             interpolation = interp1d(self.rootnode.pivots, node.freq[region], kind='linear', bounds_error=True)
-            node.timepoint_freqs = defaultdict(float)
-            node.delta_freqs = defaultdict(float)
+            node.timepoint_freqs = {}
+            node.observed_final_freqs = {}
             for time in self.timepoints:
                 node.timepoint_freqs[time] = np.asscalar(interpolation(time))
             for time in self.timepoints[:-1]:
-                node.delta_freqs[time] = np.asscalar(interpolation(time + self.delta_time))
+                node.observed_final_freqs[time] = np.asscalar(interpolation(time + self.delta_time))
 
+        # Estimate frequencies for tips at specific timepoints.
+        # Censor future tips from estimations unless these data are explicitly allowed.
         # freq_arrays list *all* tips for each initial timepoint
         self.freq_arrays={}
+        frequency_parameters = self.frequencies.get_params()
         for time in self.timepoints:
             tmp_freqs = []
-            for tip in self.tips:
-                tmp_freqs.append(tip.timepoint_freqs[time])
-            self.freq_arrays[time] = np.array(tmp_freqs)
 
+            if self.censor_frequencies:
+                # Censor frequencies by omitting all tips sampled after the current timepoint.
+                sys.stderr.write("Calculating censored frequencies for %s\n" % time)
+                frequency_parameters["max_date"] = time
+                frequency_estimator = KdeFrequencies(**frequency_parameters)
+                frequencies = frequency_estimator.estimate(self.tree)
+
+                # Determine the frequency of each tip at the given timepoint.
+                for tip in self.tips:
+                    interpolation = interp1d(
+                        self.pivots,
+                        frequencies[tip.clade],
+                        kind="linear",
+                        bounds_error=True
+                    )
+                    tmp_freqs.append(np.asscalar(interpolation(time)))
+            else:
+                for tip in self.tips:
+                    tmp_freqs.append(tip.timepoint_freqs[time])
+
+            self.freq_arrays[time] = np.array(tmp_freqs)
 
     def calc_predictors(self, timepoint):
         for pred in self.predictors:
@@ -253,9 +291,7 @@ class fitness_model(object):
         print("fitting time censored tree frequencies")
         # this doesn't interfere with the previous freq estimates via difference in region: global_censored vs global
         region = "global_censored"
-        if not region in self.frequencies:
-            self.frequencies[region] = {}
-
+        frequency_parameters = self.frequencies.get_params()
         freq_cutoff = 25.0
         pivots_fit = 6
         freq_window = 1.0
@@ -264,27 +300,23 @@ class fitness_model(object):
             node.freq_slope = {}
         for time in self.timepoints:
             time_interval = [time - freq_window, time]
-            pivots = make_pivots(
-                time_interval[0],
-                time_interval[1],
-                1 / self.pivot_spacing
-            )
             node_filter_func = lambda node: node.attr['num_date'] >= time_interval[0] and node.attr['num_date'] < time_interval[1]
 
-            # Recalculate tree frequencies for the given time interval and its
-            # corresponding pivots.
-            tree_freqs = tree_frequencies(self.tree, pivots, node_filter=node_filter_func, method="SLSQP")
-            tree_freqs.estimate_clade_frequencies()
-            self.frequencies[region][time] = tree_freqs.frequencies
+            # Recalculate  frequencies for the given time interval and its corresponding pivots.
+            frequency_parameters["start_date"] = time_interval[0]
+            frequency_parameters["end_date"] = time_interval[1]
+            frequency_parameters["max_date"] = time_interval[1]
+            frequency_estimator = KdeFrequencies(**frequency_parameters)
+            frequencies = frequency_estimator.estimate(self.tree)
 
             # Annotate censored frequencies on nodes.
             # TODO: replace node-based annotation with dicts indexed by node name.
             for node in self.nodes:
                 node.freq = {
-                    region: self.frequencies[region][time][node.clade]
+                    region: frequencies[node.clade]
                 }
                 node.logit_freq = {
-                    region: logit_transform(self.frequencies[region][time][node.clade], 1e-4)
+                    region: logit_transform(frequencies[node.clade], 1e-4)
                 }
 
             for node in self.nodes:
@@ -297,9 +329,6 @@ class fitness_model(object):
                     node.freq_slope[time] = slope
                 except:
                     import ipdb; ipdb.set_trace()
-
-        # Clean up frequencies.
-        del self.frequencies[region]
 
         # reset pivots in tree to global pivots
         self.rootnode.pivots = self.pivots
@@ -316,10 +345,19 @@ class fitness_model(object):
             if self.verbose: print("calculating predictors for time", time)
             select_nodes_in_season(self.tree, time, self.time_window)
             self.calc_predictors(time)
+
             for node in self.nodes:
                 if 'dfreq' in [x for x in self.predictors]: node.dfreq = node.freq_slope[time]
-                node.predictors[time] = np.array([hasattr(node, pred) and getattr(node, pred) or node.attr[pred]
-                                                  for pred in self.predictors])
+
+                predictors_at_time = []
+                for pred in self.predictors:
+                    if hasattr(node, pred):
+                        predictors_at_time.append(getattr(node, pred))
+                    else:
+                        predictors_at_time.append(node.attr[pred])
+
+                node.predictors[time] = np.array(predictors_at_time)
+
             tmp_preds = []
             for tip in self.tips:
                 tmp_preds.append(tip.predictors[time])
@@ -332,6 +370,11 @@ class fitness_model(object):
         for time in self.timepoints:
             values = self.predictor_arrays[time]
             weights = self.freq_arrays[time]
+
+            # Do not calculate weighted summary statistics when all frequencies at the current timepoint are zero.
+            if weights.sum() == 0:
+                weights = None
+
             means = np.average(values, weights=weights, axis=0)
             variances = np.average((values-means)**2, weights=weights, axis=0)
             sds = np.sqrt(variances)
@@ -343,10 +386,12 @@ class fitness_model(object):
 
         for time in self.timepoints:
             for node in self.nodes:
-                if node.predictors[time] is not None:
+                if node.predictors[time] is not None and (self.global_sds == 0).sum() == 0:
                     node.predictors[time] = (node.predictors[time]-self.predictor_means[time]) / self.global_sds
             self.predictor_arrays[time][:,self.to_standardize] -= self.predictor_means[time][self.to_standardize]
-            self.predictor_arrays[time][:,self.to_standardize] /= self.global_sds[self.to_standardize]
+
+            if (self.global_sds == 0).sum() == 0:
+                self.predictor_arrays[time][:,self.to_standardize] /= self.global_sds[self.to_standardize]
 
 
     def select_clades_for_fitting(self):
@@ -356,10 +401,14 @@ class fitness_model(object):
         for time in self.timepoints[:-1]:
             self.fit_clades[time] = []
             for node in self.nodes:
-                if  node.timepoint_freqs[time] >= self.min_freq and \
-                    node.timepoint_freqs[time] <= self.max_freq and \
-                    node.timepoint_freqs[time] < self.node_parents[node].timepoint_freqs[time]:
-                    self.fit_clades[time].append(node)
+                # Only select clades for fitting if their censored frequencies are within the specified thresholds.
+                node_freq = self.freq_arrays[time][node.tips].sum(axis=0)
+
+                if self.min_freq <= node_freq <= self.max_freq:
+                    # Exclude subclades whose frequency is identical to their parent clade.
+                    parent_node_freq = self.freq_arrays[time][self.node_parents[node].tips].sum(axis=0)
+                    if node_freq < parent_node_freq:
+                        self.fit_clades[time].append(node)
 
 
     def clade_fit(self, params):
@@ -369,23 +418,30 @@ class fitness_model(object):
         self.pred_vs_true = []
         pred_vs_true_values = []
         for time in self.timepoints[:-1]:
+            # Project all tip frequencies forward by the specific delta time.
+            all_pred_freq = self.projection(params, self.predictor_arrays[time], self.freq_arrays[time], self.delta_time)
+            assert all_pred_freq.shape == self.freq_arrays[time].shape
 
             # normalization factor for predicted tip frequencies
-            total_pred_freq = np.sum(self.projection(params, self.predictor_arrays[time], self.freq_arrays[time], self.delta_time))
+            total_pred_freq = np.sum(all_pred_freq)
 
             # project clades forward according to strain makeup
             clade_errors = []
             tmp_pred_vs_true = []
             for clade in self.fit_clades[time]:
-                initial_freq = clade.timepoint_freqs[time]
-                obs_final_freq = clade.delta_freqs[time]
-                pred = self.predictor_arrays[time][clade.tips]
-                freqs = self.freq_arrays[time][clade.tips]
-                pred_final_freq = np.sum(self.projection(params, pred, freqs, self.delta_time)) / total_pred_freq
+                # The observed final frequency is calculated for each clade from all available data.
+                obs_final_freq = clade.observed_final_freqs[time]
+
+                # The initial frequency is calculated from the sum of each clade's censored tip frequencies.
+                initial_freq = self.freq_arrays[time][clade.tips].sum(axis=0)
+
+                # The predicted final frequency is also calculated from each clade's censored tip frequencies modified
+                # by the fitness and model parameters.
+                pred_final_freq = np.sum(all_pred_freq[clade.tips]) / total_pred_freq
+
                 tmp_pred_vs_true.append((initial_freq, obs_final_freq, pred_final_freq))
                 pred_vs_true_values.append((time, clade.clade, len(clade.tips), initial_freq, obs_final_freq, pred_final_freq))
-                clade_errors.append(np.absolute(pred_final_freq - obs_final_freq))
-            timepoint_errors.append(np.mean(clade_errors))
+
             self.pred_vs_true.append(np.array(tmp_pred_vs_true))
 
         # Prepare a data frame with all initial, observed, and predicted frequencies by time and clade.
@@ -394,17 +450,21 @@ class fitness_model(object):
             columns=("timepoint", "clade", "clade_size", "initial_freq", "observed_freq", "predicted_freq")
         )
 
-        mean_error = np.mean(timepoint_errors)
-        if any(np.isnan(timepoint_errors)+np.isinf(timepoint_errors)):
-            mean_error = 1e10
-        self.last_fit = mean_error
+        training_error = self.cost_function(
+            self.pred_vs_true_df["observed_freq"],
+            self.pred_vs_true_df["predicted_freq"]
+        )
+        if np.isnan(training_error) or np.isinf(training_error):
+            training_error = 1e10
+
+        self.last_fit = training_error
         if self.verbose>2: print(params, self.last_fit)
         penalty = regularization*np.sum(params**2)
         if self.enforce_positive_predictors:
             for param in params:
                 if param < 0:
                     penalty += 1
-        return mean_error + penalty
+        return training_error + penalty
 
     def weighted_af(self, seqs, weights):
         af = np.zeros((4, seqs.shape[1]))
@@ -546,10 +606,10 @@ class fitness_model(object):
 
     def get_correlation(self):
         tmp = np.vstack(self.pred_vs_true)
-        rho_null = spearmanr(tmp[:,0], tmp[:,1])
-        rho_raw = spearmanr(tmp[:,1], tmp[:,2])
-        rho_rel = spearmanr(tmp[:,1]/tmp[:,0],
-                            tmp[:,2]/tmp[:,0])
+        rho_null = pearsonr(tmp[:, 0], tmp[:, 1])
+        rho_raw = pearsonr(tmp[:, 1], tmp[:, 2])
+        rho_rel = pearsonr(tmp[:, 1] / tmp[:, 0],
+                           tmp[:, 2] / tmp[:, 0])
 
         return rho_null, rho_raw, rho_rel
 
@@ -586,9 +646,9 @@ class fitness_model(object):
         print("Abs clade error:", abs_clade_error)
 
         rho_null, rho_raw, rho_rel = self.get_correlation()
-        print("Spearman's rho, null:", rho_null)
-        print("Spearman's rho, raw:", rho_raw)
-        print("Spearman's rho, rel:", rho_rel)
+        print("Pearson's R, null:", rho_null)
+        print("Pearson's R, raw:", rho_raw)
+        print("Pearson's R, rel:", rho_rel)
 
         # pred_vs_true is initial, observed, predicted
         tmp = np.vstack(self.pred_vs_true)
@@ -673,14 +733,20 @@ class fitness_model(object):
             "global_sd": self.global_sds.tolist()
         })
 
-        rho_null, rho_raw, rho_rel = self.get_correlation()
+        correlation_null, correlation_raw, correlation_rel = self.get_correlation()
+
+        # Do not try to export titer data if it was provided to the model.
+        predictor_kwargs = self.predictor_kwargs.copy()
+        if "titers" in predictor_kwargs:
+            del predictor_kwargs["titers"]
 
         data = {
             "params": params_df.to_dict(orient="records"),
+            "predictor_kwargs": predictor_kwargs,
             "data": self.pred_vs_true_df.to_dict(orient="records"),
             "accuracy": {
                 "clade_error": self.clade_fit(self.model_params),
-                "rho_rel": rho_rel[0]
+                "correlation_rel": correlation_rel[0]
             }
         }
         write_json(data, filename)

@@ -7,6 +7,7 @@ from collections import defaultdict
 from .io_util import myopen
 import pandas as pd
 from pprint import pprint
+import sys
 
 try:
     import itertools.izip as zip
@@ -148,6 +149,25 @@ class TiterCollection(object):
         """
         return {key: value for key, value in titers.iteritems()
                 if key[0] in strains and key[1][0] in strains}
+
+    @classmethod
+    def subset_to_date(cls, titers, node_lookup, start_date, end_date):
+        """Subset the given titers to the given date range based on the dates annotated
+        on each node.
+        """
+        # Filter titers from the future by keeping titers associated with
+        # strains from the given timepoint or earlier.
+        filtered_strains = set([
+            node_name
+            for node_name, node in node_lookup.items()
+            if start_date <= node.numdate < end_date
+        ])
+        filtered_titers = cls.filter_strains(titers, filtered_strains)
+        original_counts = sum(cls.count_strains(titers).values())
+        filtered_counts = sum(cls.count_strains(filtered_titers).values())
+        sys.stderr.write("Filtered from %i to %i titers between %s and %s\n" % (original_counts, filtered_counts, start_date, end_date))
+
+        return filtered_titers
 
     def __init__(self, titers, **kwargs):
         """Accepts the name of a file containing titers to load or a preloaded titers
@@ -340,21 +360,6 @@ class TiterModel(object):
                 c.up = node
 
 
-    def subset_to_date(self, date_range):
-        # if data is to censored by date, subset the data set and
-        # reassign sera, reference strains, and test viruses
-        self.train_titers = {key:val for key,val in self.train_titers.iteritems()
-                            if self.node_lookup[key[0]].num_date>=date_range[0] and
-                               self.node_lookup[key[1][0]].num_date>=date_range[0] and
-                               self.node_lookup[key[0]].num_date<date_range[1] and
-                               self.node_lookup[key[1][0]].num_date<date_range[1]}
-
-        self.sera, self.ref_strains, self.test_strains = self.titers.strain_census(self.train_titers)
-
-        print("Reduced training data to date range", date_range)
-        self.titer_stats()
-
-
     def make_training_set(self, training_fraction=1.0, subset_strains=False, **kwargs):
         if training_fraction<1.0: # validation mode, set aside a fraction of measurements to validate the fit
             self.test_titers, self.train_titers = {}, {}
@@ -393,10 +398,7 @@ class TiterModel(object):
         self.lam_pot = lam_pot
         self.lam_avi = lam_avi
         self.lam_drop = lam_drop
-        if len(self.train_titers)==0:
-            print('no titers to train')
-            self.model_params = np.zeros(self.genetic_params+len(self.sera)+len(self.test_strains))
-        else:
+        if len(self.train_titers) > 1:
             if method=='l1reg':  # l1 regularized fit, no constraint on sign of effect
                 self.model_params = self.fit_l1reg()
             elif method=='nnls':  # non-negative least square, not regularized
@@ -407,6 +409,9 @@ class TiterModel(object):
                 self.model_params = self.fit_nnl1reg()
 
             print('rms deviation on training set=',np.sqrt(self.fit_func()))
+        else:
+            print('no titers to train')
+            self.model_params = np.zeros(self.genetic_params+len(self.sera)+len(self.test_strains))
 
         # extract and save the potencies and virus effects. The genetic parameters
         # are subclass specific and need to be process by the subclass
@@ -825,7 +830,8 @@ class SubstitutionModel(TiterModel):
     """
     def __init__(self, *args, **kwargs):
         super(SubstitutionModel, self).__init__(*args, **kwargs)
-        self.proteins = self.tree.root.translations.keys()
+        if hasattr(self.tree.root, "translations"):
+            self.proteins = self.tree.root.translations.keys()
 
     def prepare(self, **kwargs):
         self.make_training_set(**kwargs)
@@ -850,11 +856,15 @@ class SubstitutionModel(TiterModel):
         between as tuples (protein, mutation) e.g. (HA1, 159F)
         '''
         muts = []
+
+        # Use available information about proteins and amino acid translations
+        # on nodes to find pairwise amino acid mutations.
         for prot in self.proteins:
             seq1 = node1.translations[prot]
             seq2 = node2.translations[prot]
             muts.extend([(prot, aa1+str(pos+1)+aa2) for pos, (aa1, aa2)
                         in enumerate(zip(seq1, seq2)) if aa1!=aa2])
+
         return muts
 
 
@@ -969,6 +979,19 @@ class SubstitutionModel(TiterModel):
         for mi, mut in enumerate(self.relevant_muts):
             self.substitution_effect[mut] = self.model_params[mi]
 
+        # Annotate branch-specific and cumulative antigenic evolution scores.
+        for node in self.tree.find_clades():
+            dTiterSub = 0
+            if hasattr(node, "aa_muts"):
+                for gene, mutations in node.aa_muts.iteritems():
+                    for mutation in mutations:
+                        dTiterSub += self.substitution_effect.get((gene, mutation), 0)
+
+            node.dTiterSub = dTiterSub
+            if node.up is not None:
+                node.cTiterSub = node.up.cTiterSub + dTiterSub
+            else:
+                node.cTiterSub = 0
 
     def predict_titer(self, virus, serum, cutoff=0.0):
         muts= self.get_mutations(serum[0], virus)

@@ -132,7 +132,7 @@ def json_to_tree(json_dict, root=True):
         node.clades = [json_to_tree(child, root=False) for child in json_dict["children"]]
 
     # Assign all non-children attributes.
-    for attr, value in json_dict.iteritems():
+    for attr, value in json_dict.items():
         if attr != "children":
             setattr(node, attr, value)
 
@@ -170,7 +170,7 @@ def json_to_clade_frequencies(json_dict):
     """
     frequencies = {}
 
-    for key, values in json_dict.iteritems():
+    for key, values in json_dict.items():
         # Skip non-clade frequencies.
         if not "_clade:" in key:
             continue

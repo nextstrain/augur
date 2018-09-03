@@ -45,7 +45,10 @@ def convert_tree_to_json_structure(node, metadata, div=0, nextflu_schema=False, 
     if node.clades:
         node_struct["children"] = []
         for child in node.clades:
-            cdiv = div + metadata[child.name]['mutation_length']
+            if 'mutation_length' in metadata[child.name]:
+                cdiv = div + metadata[child.name]['mutation_length']
+            elif 'branch_length' in metadata[child.name]:
+                cdiv = div + metadata[child.name]['branch_length']
             node_struct["children"].append(convert_tree_to_json_structure(child, metadata, div=cdiv, nextflu_schema=nextflu_schema, strains=strains)[0])
 
     return (node_struct, strains)
@@ -174,13 +177,13 @@ def process_geographic_info(jsn, lat_long_mapping, nextflu=False, node_metadata=
 
 def process_annotations(node_data):
     # treetime adds "annotations" to node_data
-    if "annotations" not in node_data: #if haven't run tree through treetime
-        return {}
+    if "annotations" not in node_data: # if haven't run tree through treetime
+        return None
     return node_data["annotations"]
 
-def process_panels(user_panels, j, nextflu=False):
+def process_panels(user_panels, meta_json, nextflu=False):
     try:
-        panels = j["panels"]
+        panels = meta_json["panels"]
     except KeyError:
         panels = ["tree", "map", "entropy"]
 
@@ -188,11 +191,23 @@ def process_panels(user_panels, j, nextflu=False):
         panels = user_panels
 
     if nextflu:
-        geoTraits = j["geo"].keys()
-        annotations = j["annotations"].keys()
+        if "geo" in meta_json:
+            geoTraits = meta_json["geo"].keys()
+        else:
+            geoTraits = []
+        if "annotations" in meta_json:
+            annotations = meta_json["annotations"].keys()
+        else:
+            annotations = []
     else:
-        geoTraits = j["geographic_info"].keys()
-        annotations = j["genome_annotations"].keys()
+        if "geographic_info" in meta_json:
+            geoTraits = meta_json["geographic_info"].keys()
+        else:
+            geoTraits = []
+        if "genome_annotations" in meta_json:
+            annotations = meta_json["genome_annotations"].keys()
+        else:
+            annotations = []
 
     if "entropy" in panels and len(annotations) == 0:
         panels.remove("entropy")
@@ -210,13 +225,15 @@ def add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json, extra_fields=['authors
     * the relevent fields are found by scanning the meta json
     together with the extra_fields param
     """
-    fields = [x for x in meta_json["color_options"].keys() if x != "gt"] + meta_json["geo"] + extra_fields
+    fields = [x for x in meta_json["color_options"].keys() if x != "gt"] + extra_fields
+    if "geo" in meta_json:
+        fields += meta_json["geo"]
 
     for strain, node in nodes.items():
         if strain not in meta_tsv:
             continue
         for field in fields:
-            if field not in node and field in meta_tsv[strain]:
+            if field not in node and field in meta_tsv[strain] and meta_tsv[strain][field]:
                 node[field] = meta_tsv[strain][field]
 
 
@@ -347,7 +364,7 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
 
         # TRANSFER TRAITS (INCLUDING CONFIDENCE & ENTROPY) #
         for trait in traits:
-            if trait in raw_data:
+            if trait in raw_data and raw_data[trait]:
                 node["traits"][trait] = {"value": raw_data[trait]}
                 if trait+"_confidence" in raw_data:
                     node["traits"][trait]["confidence"] = raw_data[trait+"_confidence"]
@@ -413,7 +430,9 @@ def run(args):
         meta_json["author_info"] = construct_author_info_nexflu(meta_tsv, T, nodes)
         meta_json["color_options"] = process_colorings(meta_json, color_mapping, nodes=nodes, nextflu=True)
         meta_json["geo"] = process_geographic_info(meta_json, lat_long_mapping, nodes=nodes, nextflu=True)
-        meta_json["annotations"] = process_annotations(node_data)
+        annotations = process_annotations(node_data)
+        if annotations:
+            meta_json["annotations"] = annotations
         meta_json["panels"] = process_panels(None, meta_json, nextflu=True)
 
         write_json(meta_json, args.output_meta, indent=2)
@@ -429,6 +448,8 @@ def run(args):
     # get traits to colour by etc - do here before node_data is modified below
     # this ensures we get traits even if they are not on every node
     traits = get_traits(node_data)
+    if args.extra_traits:
+        traits.extend(args.extra_traits)
 
     raw_strain_info = collect_strain_info(node_data, args.metadata)
     unified["tree"], strains = convert_tree_to_json_structure(T.root, raw_strain_info)
