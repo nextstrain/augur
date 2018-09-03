@@ -391,9 +391,49 @@ def get_traits(node_data):
 
     return traits
 
+
+def get_root_sequence(root_node, ref=None, translations=None):
+    '''
+    create a json structure that contains the sequence of the root, both as
+    nucleotide and as translations. This allows look-up of the sequence for
+    all states, including those that are not variable.
+
+    Parameters
+    ----------
+    T : Phylo.Tree
+        Tree with sequences attached to nodes
+
+    Returns
+    -------
+    dict
+        dict of nucleotide sequence and translations
+    '''
+    root_sequence = {}
+    if ref and translations:
+        from Bio import SeqIO
+        refseq = SeqIO.read(ref, 'fasta')
+        root_sequence['nuc']=str(refseq.seq)
+        for gene in SeqIO.parse(translations, 'fasta'):
+            root_sequence[gene.id] = str(gene.seq)
+    else:
+        root_sequence["nuc"] = root_node["sequence"]
+        root_sequence.update(root_node["aa_sequences"])
+
+    return root_sequence
+
+
 def run(args):
     T = Phylo.read(args.tree, 'newick')
     node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
+    nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
+
+    if args.output_sequence:
+        if T.root.name in nodes:
+            root_sequence = get_root_sequence(nodes[T.root.name], ref=args.reference, translations=args.reference_translations)
+        else:
+            root_sequence = {}
+
+        write_json(root_sequence, args.output_sequence)
 
     if not args.new_schema:
         # This schema is deprecated. It remains because:
@@ -401,7 +441,6 @@ def run(args):
         # export the tree JSON first
         meta_json = read_config(args.auspice_config)
         meta_tsv, _ = read_metadata(args.metadata)
-        nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
         add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json)
 
         tree_layout(T)
@@ -435,11 +474,6 @@ def run(args):
         if annotations:
             meta_json["annotations"] = annotations
         meta_json["panels"] = process_panels(None, meta_json, nextflu=True)
-        meta_json["ancestral_sequences"] = {}
-        if T.root.name in nodes and "sequence" in nodes[T.root.name]:
-            meta_json["ancestral_sequences"]["nuc"] = nodes[T.root.name]["sequence"]
-        if T.root.name in nodes and "aa_sequences" in nodes[T.root.name]:
-            meta_json["ancestral_sequences"].update(nodes[T.root.name]["aa_sequences"])
 
         write_json(meta_json, args.output_meta, indent=2)
         return 0
