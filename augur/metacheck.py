@@ -9,7 +9,9 @@ import geopy
 from geopy.geocoders import Nominatim
 from datetime import datetime
 from matplotlib import cm
+from io import TextIOWrapper
 from .utils import ambiguous_date_to_date_range, read_lat_longs
+from collections import defaultdict
 
 forbidden_characters_noFasta = [(' ',''), ('(','_'),(')','_'),(':','_'),(',','_'),(';','_'),('\\','_')]
 forbidden_characters = [(' ',''), ('(','_'),(')','_'),(':','_'),(',','_'),(';','_'),('\\','_'),('-','_')]
@@ -23,9 +25,9 @@ def determine_standard_columns(columns):
         print(i, j)
     print(i+1, 'none of them')
     take = {}
-    for field, explanation in [("strain",  "(matches sequence names)"), ("accession",""),
+    for field, explanation in [("strain",  " (matches sequence names)"), ("accession",""),
                                ("date",""), ("country","")]:
-        ti = int(input('Which one of your columns is "%s"%s?'%(field, explanation)))
+        ti = int(input('Which one of your columns is "%s"%s? '%(field, explanation)))
         print()
         if ti<len(columns):
             take[field] = columns[ti]
@@ -80,7 +82,7 @@ def parse_date(datein, fmt, minmax):
 def adjust_date(strains):
     import random
     dropped_strains = []
-    print("sample of date specs:")
+    print("\nSample of date format:")
     for x in random.sample(list(strains.values()), 10):
         print(x['date'])
 
@@ -149,10 +151,11 @@ def read_region_info(region_file=None):
     else:
         from pkg_resources import resource_stream
         with resource_stream(__package__, "data/geo_regions.tsv") as stream:
-            for line in stream:
-                entries = line.strip().split()
-                if entries:
-                    region_map[entries[0]] = entries[1]
+            with TextIOWrapper(stream, "utf-8") as defaults:
+                for line in defaults:
+                    entries = line.strip().split()
+                    if entries:
+                        region_map[entries[0]] = entries[1]
     return region_map
 
 
@@ -180,13 +183,13 @@ def get_synonyms(syn_path):
 def region_questionnaire(sample, region_dict, regions):
 
     if sample['country'] in region_dict:
-        sample['region'] = region_dict[country]
+        sample['region'] = region_dict[sample['country']]
     else:
-        print("Available regions are:")
+        print("\nWhat region does %s belong to? Available regions are:"%sample['country'])
         for i, j in enumerate(regions):
             print(i, j)
 
-        print("Unknown location:", sample['country'])
+        #print("Unknown location:", sample['country'])
         reg_no = input("Type the region number to specify which region the country belongs to: ")
         sample['region'] = regions[int(reg_no)]
 
@@ -222,7 +225,8 @@ def geo_color_generator(countries_current, countries_by_region, region_dict, reg
         html_col.append(html_col_g)
         html_col.append(html_col_b)
         c_c = "#"+"".join("%02hx"%x for x in html_col)
-        colors.append((place, c_c))
+        #colors.append((place, c_c)) # how currently written out, won't work with place already attached..
+        colors.append(c_c)
 
     return colors
 
@@ -255,9 +259,9 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms):
         answer = 'n'
     else:
         new_loc = (location.address).lower().replace(' ','_')
-        print("the unknown location is: ", place_name)
+        print("\nAn unknown location has been found: ", place_name)
         print("GeoPy suggests using:", new_loc)
-        answer = input("Is this the right country name? y or n: ")
+        answer = input("Is this the right country name, and the name you want to use? y or n: ")
 
     if answer.lower() == 'y':
         sample['country'] = new_loc
@@ -272,7 +276,7 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms):
         # Here we let the user try to type something else to find in synonyms or geoPy
         redo = True
         while redo == True:
-            print(place_name)
+            # print(place_name)
             new_loc = (input("Type the correct country name or 'n' if unknown: ")).lower().replace(' ','_')
             if new_loc in ['n', 'na']:
                 indicators_for_unknown.append(place_name)
@@ -414,13 +418,13 @@ def run(args):
             locate_place(v, coordinates, geolocator,region_dict, region_colors.keys(), synonyms)
 
             print(wrong_name)
-            s_add = input("Was this country misspelled (should it be added to synonyms)? y or n: ")
+            s_add = input("\nWas this country (%s) misspelled (should it be added to synonyms)? y or n: " % wrong_name)
             if s_add.lower() == 'y':
                 synonyms[wrong_name] = v['country']
 
 
-    countries_current = {v['country'] for v in samples.values()}
-    regions_current = {v['region'] for v in samples.values()}
+    countries_current = {v['country'] for v in samples.values() if v['country']}
+    regions_current = {v['region'] for v in samples.values() if v['country']}
     countries_by_region = defaultdict(list)
     for v in samples.values():
         countries_by_region[v['region']].append(v['country'])
@@ -442,7 +446,7 @@ def run(args):
     # ...
     mat_reg = region_colors.as_matrix()
     data = np.array([["region"]*len(region_colors.columns)+[""]+["country"]*len(countries_current),
-                    list(region_colors.columns)+[""]+countries_current, list(mat_reg[0])+[""]+geo_color])
+                    list(region_colors.columns)+[""]+list(countries_current), list(mat_reg[0])+[""]+geo_color])
 
 
     #write out colours
@@ -453,9 +457,7 @@ def run(args):
         outfile.write(color_info)
 
     #write out meta
-    meta_str = new_meta.to_csv(sep='\t', index=False)
-    with open(args.output_meta, 'w') as outfile:
-       outfile.write(meta_str)
+    (pd.DataFrame.from_dict(data=samples, orient='index').to_csv(args.output_meta, sep='\t', header=True, index_label=False, index=False))
 
     # ...
     # update files: geo_info/geo_lat_long/properties_info/synonyms
@@ -463,15 +465,17 @@ def run(args):
     #geo_regions
     (pd.DataFrame.from_dict(data=region_dict, orient='index').to_csv(args.geo_regions, sep='\t', header=False))
 
+    #synonyms
+    write_synonyms(synonyms, args.synonyms)
+
     #lat-long
     #TODO: Need to decide if we want to update the augur lat-long, or just a local version?
     #Does this not do anything??
     with open(args.geo_info, 'w') as outfile:
-        outfile.write(coor.to_csv(sep='\t', index=False, header=coor.columns))
+        outfile.write(coordinates.to_csv(sep='\t', index=False, header=coordinates.columns))
 
     #if include hosts/properties someday, do here
 
-    #synonyms
-    write_synonyms(synonyms, args.synonyms)
+
 
     #filtering and writing fasta would go here if included.
