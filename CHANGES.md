@@ -1,6 +1,15 @@
 # __NEXT__
 
 
+# 3.0.0.dev3 (4 September 2018)
+
+## Development
+
+* Use an allowed Topic classifier so we can upload to PyPi
+
+* Ignore distribution egg-info build files
+
+
 # 3.0.0.dev2 (4 September 2018)
 
 ## Features
