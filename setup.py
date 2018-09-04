@@ -41,7 +41,7 @@ setup(
         },
         classifiers=[
             "Development Status :: 3 - Alpha",
-            "Topic :: Science",
+            "Topic :: Scientific/Engineering :: Bio-Informatics",
             "License :: OSI Approved :: MIT License",
 
             # Python 3 only; pathlib is >=3.4
