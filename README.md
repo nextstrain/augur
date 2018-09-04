@@ -8,7 +8,7 @@ Resulting data and inferences are available live at the website [nextstrain.org]
 
 *Definition: One held to foretell events by omens.*
 
-Augur is the bioinformatic processing pipeline to track evolution from sequence and serological data. Documentation for augur is available at [nextstrain.org/docs/bioinformatics-pipeline](https://nextstrain.org/docs/bioinformatics-pipeline).
+Augur is the bioinformatic processing pipeline to track evolution from sequence and serological data. Documentation for augur is available at [nextstrain.org/docs/bioinformatics](https://nextstrain.org/docs/bioinformatics).
 
 ## Install
 
