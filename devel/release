@@ -1,0 +1,177 @@
+#!/bin/bash
+#
+# Prepares a new version release locally, leaving you ready to either:
+#
+#   A. Push and upload it if you're satisfied with the state of git and the
+#      built distributions, or…
+#
+#   B. Rewind the process if you're not (via devel/rewind-release or
+#      manually).
+#
+# You will need to have GPG and git's user.signingKey option configured in
+# order for this script to complete.
+#
+# The script will prompt you for the new version if you do not provide it as
+# the sole argument.
+#
+set -euo pipefail
+
+devel="$(dirname $0)"
+repo="$devel/.."
+version_file="$repo/augur/__version__.py"
+changes_file="$repo/CHANGES.md"
+
+main() {
+    assert-clean-working-dir
+    assert-changelog-has-additions
+
+    if [[ $# -gt 0 ]]; then
+        version="$1"
+    else
+        version=$(next-version)
+    fi
+
+    assert-version-is-new $version
+    update-version $version
+    update-changelog $version
+    commit-and-tag $version
+    merge-to-release-branch $version
+    build-dist
+    remind-to-push $version
+}
+
+assert-clean-working-dir() {
+    local status="$(git status --porcelain --untracked-files=no | grep -vwF "$(basename "$changes_file")" || true)"
+
+    if [[ -n $status ]]; then
+        echo "Please commit all changes before releasing:" >&2
+        echo >&2
+        echo "$status" >&2
+        echo >&2
+        echo "Only $(basename "$changes_file") is allowed to have uncommitted changes." >&2
+        exit 1
+    fi
+}
+
+assert-changelog-has-additions() {
+    local current_version="$(read-version)"
+    local numstat="$(git diff --numstat "$current_version" -- "$changes_file")"
+    local insertions deletions rest
+
+    if [[ -z $numstat ]]; then
+        insertions=0
+        deletions=0
+    else
+        read -r insertions deletions rest <<<"$numstat"
+    fi
+
+    local net_changed=$(($insertions - $deletions))
+
+    if [[ $net_changed -lt 1 ]]; then
+        echo "It doesn't look like $(basename "$changes_file") was updated; only $insertions - $deletions = $net_changed line(s) were changed." >&2
+        exit 1
+    fi
+}
+
+assert-version-is-new() {
+    local current_version="$(read-version)"
+    local new_version="$1"
+
+    if [[ -z $new_version || $new_version == $current_version ]]; then
+        echo "You must provide a new version!" >&2
+        exit 1
+    elif ! version-is-gt $current_version $new_version; then
+        echo "You must provide a new version greater than the last!" >&2
+        exit 1
+    fi
+}
+
+version-is-gt() {
+    python3 /dev/stdin "$1" "$2" <<<"$(cut -c 9- <<<'
+        from sys import argv, exit
+        from pkg_resources import parse_version
+
+        version = list(map(parse_version, argv[1:3]))
+
+        gt = version[1] > version[0]
+
+        exit(int(not gt))
+    ')"
+}
+
+next-version() {
+    local current_version="$(read-version)"
+
+    read -e -p "Current version is $current_version."$'\n'"New version? " -i "$current_version" new_version
+
+    echo "$new_version"
+}
+
+update-version() {
+    local new_version="$1"
+    local current_version="$(read-version)"
+
+    perl -pi -e "s/(?<=^__version__ = ')(.*)(?='$)/$new_version/" "$version_file"
+
+    if [[ $new_version != $(read-version) ]]; then
+        echo "Failed to update $version_file!" >&2
+        exit 1
+    fi
+}
+
+update-changelog() {
+    local new_version="$1"
+    local today="$(date +"%d %B %Y")"
+
+    # Remove leading zero from day if present
+    today="${today#0}"
+
+    # Add the new version heading immediately after the __NEXT__ heading,
+    # preserving the __NEXT__ heading itself.
+    perl -pi -e "s/(?<=^# __NEXT__$)/\n\n\n# $new_version ($today)/" "$changes_file"
+}
+
+commit-and-tag() {
+    local version="$1"
+
+    git commit -m "version $version" "$version_file" "$changes_file"
+    git tag -sm "version $version" "$version"
+}
+
+merge-to-release-branch() {
+    local version="$1"
+
+    git checkout release
+    git pull --ff-only
+    git merge --ff-only "$version"
+    git checkout -
+}
+
+build-dist() {
+    rm -rfv dist augur.egg-info
+    python3 setup.py clean
+    python3 setup.py sdist bdist_wheel
+}
+
+remind-to-push() {
+    local version="$1"
+
+    echo
+    echo
+    echo "Version updated, committed, and tagged!"
+    echo
+    echo "Please remember to push, including tags:"
+    echo
+    echo "   git push origin master release tag $version"
+    echo
+    echo "You'll also want to upload the built releases to PyPi:"
+    echo
+    echo "   twine upload dist/*"
+    echo
+}
+
+read-version() {
+    python3 -c "exec(open('''$version_file''').read()); print(__version__)"
+}
+
+main "$@"

@@ -100,6 +100,43 @@ to make module "editable" and install dev dependencies.
 
 Each virus build consists of a `prepare.py` and `process.py` file. Currently supported builds are listed in the [builds directory](builds/).
 
+
+## Development
+
+Development of `augur` happens at <https://github.com/nextstrain/augur>.
+
+We currently target compatibility with Python 3.4 and higher.  This may be
+increased to in the future.
+
+Versions for this project from 3.0.0 onwards aim to follow the [Semantic
+Versioning rules](https://semver.org).
+
+### Releasing
+
+New releases are tagged in git using a [_signed_ tag][].  The `release` branch
+should always point to the latest release tag.  Source and wheel (binary)
+distributions are uploaded to [the nextstrain-augur project on
+PyPi](https://pypi.org/project/nextstrain-augur).
+
+There is a `./devel/release` script which will prepare a new release from your
+local repository.  It ends with instructions for you on how to push the release
+commit/tag/branch and how to upload the built distributions to PyPi.  You'll
+need [a PyPi account][] and [twine][] installed to do the latter.
+
+[_signed_ tag]: https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work
+[a PyPi account]: https://pypi.org/account/register/
+[twine]: https://pypi.org/project/twine
+
+### Travis CI
+
+Branches and PRs are tested by Travis CI jobs configured in `.travis.yml`.
+
+New releases, via pushes to the `release` branch, trigger a new [docker-base][]
+build to keep the Docker image up-to-date.
+
+[docker-base]: https://github.com/nextstrain/docker-base
+
+
 ## License and copyright
 
 Copyright 2014-2018 Trevor Bedford and Richard Neher.
