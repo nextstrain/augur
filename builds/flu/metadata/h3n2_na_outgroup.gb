@@ -44,7 +44,7 @@ FEATURES             Location/Qualifiers
                      /db_xref="IRD:NIGSP_CEIRS_CIP047_RFH3_00116.NA"
      gene            4..1413
                      /gene="NA"
-     CDS             4..1413
+     CDS             4..1410
                      /codon_start=1
                      /gene="NA"
                      /product="neuraminidase"
