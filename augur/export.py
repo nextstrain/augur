@@ -349,6 +349,10 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
             if "num_date_confidence" in raw_data:
                 node["num_date"]["confidence"] = raw_data["num_date_confidence"]
 
+        # TRANSFER ROOT TRANSLATIONS #
+        if "aa_sequences" in raw_data:
+            node["aa_sequences"] = raw_data["aa_sequences"]
+
         # TRANSFER VACCINE INFO #
 
         # TRANSFER LABELS #
@@ -382,7 +386,7 @@ def add_metadata_to_tree(node, metadata):
 
 def get_traits(node_data):
     exclude = ['branch_length', 'num_date', 'raw_date', 'numdate', 'clock_length',
-               'mutation_length', 'date', 'muts', 'aa_muts', 'sequence']
+               'mutation_length', 'date', 'muts', 'aa_muts', 'sequence', 'aa_sequences']
     traits = []
     for seq, val in node_data['nodes'].items():
         newT = [t for t in list(val.keys()) if t not in traits and t not in exclude]
@@ -417,7 +421,7 @@ def get_root_sequence(root_node, ref=None, translations=None):
             root_sequence[gene.id] = str(gene.seq)
     else:
         root_sequence["nuc"] = root_node["sequence"]
-        root_sequence.update(root_node["translations"])
+        root_sequence.update(root_node["aa_sequences"])
 
     return root_sequence
 
@@ -496,6 +500,10 @@ def run(args):
 
     node_metadata = transfer_metadata_to_strains(strains, raw_strain_info, traits)
     unified["author_info"] = construct_author_info_and_make_keys(node_metadata, raw_strain_info)
+
+    # If present in node metadata (was written in json - fasta input), then write root sequence out
+    if 'sequence' in nodes[T.root.name]:
+        node_metadata[T.root.name]['sequence'] = nodes[T.root.name]['sequence']
 
     # This check allows validation to complete ok - but check auspice can handle having no author info! (it can in v1 schema)
     if len(unified["author_info"]) == 0:    # if no author data supplied
