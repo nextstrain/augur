@@ -35,16 +35,13 @@ if __name__ == "__main__":
         data["info"]["date_format"]
     )
 
-    # Add the reference to output sequences if it isn't already included.
-    output_sequences = sequences.seqs.values()
-    if not sequences.reference_in_dataset:
-        output_sequences.append(sequences.reference_seq)
-
     # Write sequences to standard out.
+    output_sequences = sequences.seqs.values()
     Bio.SeqIO.write(output_sequences, sys.stdout, "fasta")
 
     # Prepare metadata if it has been requested.
     if args.metadata:
         metadata = [sequences.seqs[seq].attributes for seq in sequences.seqs]
         metadata_df = pd.DataFrame(metadata)
+        metadata_df = metadata_df.rename(columns={"num_date": "prepared_num_date"})
         metadata_df.to_csv(args.metadata, sep="\t", index=False)
