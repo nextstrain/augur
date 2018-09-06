@@ -271,9 +271,9 @@ def run(args):
         print("Cannot specify model unless using IQTree. Model specification ignored.")
 
     if args.method=='raxml':
-        T = build_raxml(fasta, tree_fname, args.nthreads)
+        T = build_raxml(fasta, tree_fname, nthreads=args.nthreads)
     elif args.method=='iqtree':
-        T = build_iqtree(fasta, tree_fname, args.substitution_model, args.nthreads)
+        T = build_iqtree(fasta, tree_fname, args.substitution_model, nthreads=args.nthreads)
     else: #use fasttree - if add more options, put another check here
         T = build_fasttree(fasta, tree_fname)
     end = time.time()
