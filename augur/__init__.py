@@ -32,7 +32,10 @@ COMMANDS = [
 
 
 def run(argv):
-    parser = argparse.ArgumentParser(prog = "augur", description = "Augur: Real-Time Phylogenetic analysis.")
+    parser = argparse.ArgumentParser(
+        prog        = "augur",
+        description = "Augur: A bioinformatics toolkit for phylogenetic analysis.")
+
     subparsers = parser.add_subparsers()
 
     add_default_command(parser)
