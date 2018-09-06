@@ -349,10 +349,6 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
             if "num_date_confidence" in raw_data:
                 node["num_date"]["confidence"] = raw_data["num_date_confidence"]
 
-        # TRANSFER ROOT TRANSLATIONS #
-        if "aa_sequences" in raw_data:
-            node["aa_sequences"] = raw_data["aa_sequences"]
-
         # TRANSFER VACCINE INFO #
 
         # TRANSFER LABELS #
@@ -488,6 +484,7 @@ def run(args):
     unified['title'] = args.title
     unified['maintainers'] = [{'name': name, 'href':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
     unified["version"] = "2.0"
+    unified["sequences"] ={}
 
     # get traits to colour by etc - do here before node_data is modified below
     # this ensures we get traits even if they are not on every node
@@ -503,7 +500,9 @@ def run(args):
 
     # If present in node metadata (was written in json - fasta input), then write root sequence out
     if 'sequence' in nodes[T.root.name]:
-        node_metadata[T.root.name]['sequence'] = nodes[T.root.name]['sequence']
+        unified['sequences']['nuc_sequence'] = nodes[T.root.name]['sequence']
+    if "aa_sequences" in nodes[T.root.name]:
+        unified['sequences']["aa_sequences"] = nodes[T.root.name]["aa_sequences"]
 
     # This check allows validation to complete ok - but check auspice can handle having no author info! (it can in v1 schema)
     if len(unified["author_info"]) == 0:    # if no author data supplied
