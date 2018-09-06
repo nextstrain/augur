@@ -1,3 +1,7 @@
+"""
+Build a tree using a variety of methods.
+"""
+
 import os, shutil, time
 from Bio import Phylo
 from treetime.vcf_utils import read_vcf

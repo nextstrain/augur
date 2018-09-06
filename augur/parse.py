@@ -1,3 +1,7 @@
+"""
+Parse delimited fields from FASTA sequence names into a TSV and FASTA file.
+"""
+
 from Bio import SeqIO
 import pandas as pd
 

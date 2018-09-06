@@ -1,3 +1,7 @@
+"""
+Infer ancestral traits based on a tree.
+"""
+
 import numpy as np
 from collections import defaultdict
 import json, os, sys

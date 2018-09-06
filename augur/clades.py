@@ -1,3 +1,7 @@
+"""
+Assign clades to nodes in a tree based on amino-acid or nucleotide signatures.
+"""
+
 import os, sys
 import numpy as np
 from Bio import SeqIO, SeqFeature, Seq, SeqRecord, Phylo

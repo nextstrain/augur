@@ -1,3 +1,7 @@
+"""
+Export JSON files suitable for visualization with auspice.
+"""
+
 import os
 import re
 import time

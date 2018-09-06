@@ -1,3 +1,7 @@
+"""
+Validate a set of JSON files intended for visualization in auspice.
+"""
+
 import jsonschema
 import os, sys
 import json

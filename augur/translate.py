@@ -1,3 +1,7 @@
+"""
+Translate gene regions from nucleotides to amino acids.
+"""
+
 import os, sys
 import numpy as np
 from Bio import SeqIO, SeqFeature, Seq, SeqRecord, Phylo

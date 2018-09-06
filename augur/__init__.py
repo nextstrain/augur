@@ -9,6 +9,7 @@ from types import SimpleNamespace
 from . import parse, filter, align, tree, refine, ancestral
 from . import traits, translate, mask, titers, export
 from . import validate, sequence_traits, clades, version
+from .utils import first_line
 
 
 COMMANDS = [
@@ -39,7 +40,10 @@ def run(argv):
 
     for command in COMMANDS:
         # Add a subparser for each command.
-        subparser = subparsers.add_parser(command_name(command))
+        subparser = subparsers.add_parser(
+            command_name(command),
+            help        = first_line(command.__doc__),
+            description = command.__doc__)
 
         subparser.set_defaults(__command__ = command)
 

@@ -1,3 +1,7 @@
+"""
+Mask specified sites from a VCF file.
+"""
+
 from Bio import SeqIO
 import pandas as pd
 import os

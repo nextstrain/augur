@@ -1,3 +1,7 @@
+"""
+Refine an initial tree using sequence metadata.
+"""
+
 import os, shutil, time, sys
 from Bio import Phylo
 from .utils import read_metadata, get_numerical_dates, write_json

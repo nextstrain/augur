@@ -1,3 +1,7 @@
+"""
+Filter and subsample a sequence set.
+"""
+
 from Bio import SeqIO
 import pandas as pd
 from collections import defaultdict

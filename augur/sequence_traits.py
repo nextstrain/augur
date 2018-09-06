@@ -1,3 +1,7 @@
+"""
+Annotate sequences based on amino-acid or nucleotide signatures.
+"""
+
 import numpy as np
 from treetime.vcf_utils import read_vcf
 from collections import defaultdict

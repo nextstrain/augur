@@ -1,3 +1,7 @@
+"""
+Align multiple sequences from FASTA or VCF.
+"""
+
 import os,sys,argparse
 from shutil import copyfile
 import numpy as np

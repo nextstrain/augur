@@ -1,5 +1,5 @@
 """
-Prints the version of augur.
+Print the version of augur.
 """
 
 from .__version__ import __version__

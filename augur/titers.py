@@ -1,3 +1,7 @@
+"""
+Annotate a tree with actual and inferred titer measurements.
+"""
+
 import numpy as np
 from collections import defaultdict
 import json, os

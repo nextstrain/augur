@@ -1,3 +1,7 @@
+"""
+Infer ancestral sequences based on a tree.
+"""
+
 import os, shutil, time, json, sys
 from Bio import Phylo
 from .utils import write_json
