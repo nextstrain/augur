@@ -237,6 +237,18 @@ def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
     return fasta_file
 
 
+def register_arguments(parser):
+    parser.add_argument('--alignment', '-a', required=True, help="alignment in fasta or VCF format")
+    parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
+    parser.add_argument('--output', '-o', type=str, help='file name to write tree to')
+    parser.add_argument('--substitution-model', default="GTR", choices=["HKY", "GTR", "HKY+G", "GTR+G"],
+                                help='substitution model to use. Specify \'none\' to run ModelTest. Currently, only available for IQTREE.')
+    parser.add_argument('--nthreads', type=int, default=2,
+                             help="number of threads used")
+    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    parser.add_argument('--exclude-sites', type=str, help='file name of sites to exclude for raw tree building (VCF only)')
+
+
 def run(args):
     # check alignment type, set flags, read in if VCF
     is_vcf = False

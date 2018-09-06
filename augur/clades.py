@@ -77,6 +77,13 @@ def assign_clades(clade_designations, muts, tree):
     return clades
 
 
+def register_arguments(parser):
+    parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
+    parser.add_argument('--mutations', nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
+    parser.add_argument('--clades', type=str, help='TSV file containing clade definitions by amino-acid')
+    parser.add_argument('--output', type=str, help="name of JSON files for clades")
+
+
 def run(args):
     ## read tree and data, if reading data fails, return with error code
     tree = Phylo.read(args.tree, 'newick')

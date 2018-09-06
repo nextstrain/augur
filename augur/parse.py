@@ -23,6 +23,16 @@ def fix_dates(d, dayfirst=True):
         return d
 
 
+def register_arguments(parser):
+    parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
+    parser.add_argument('--output-sequences', help="output sequences file")
+    parser.add_argument('--output-metadata', help="output metadata file")
+    parser.add_argument('--fields', nargs='+', help="fields in fasta header")
+    parser.add_argument('--separator', default='|', help="separator of fasta header")
+    parser.add_argument('--fix-dates', choices=['dayfirst', 'monthfirst'],
+                                help="attempt to parse non-standard dates and output them in standard YYYY-MM-DD format")
+
+
 def run(args):
     '''
     parse a fasta file and turn information in the header into

@@ -4,6 +4,15 @@ import json, os
 from Bio import Phylo
 from .utils import read_metadata, read_node_data, write_json
 
+
+def register_arguments(parser):
+    parser.add_argument('--titers', required=True, type=str, help="file with titer measurements")
+    parser.add_argument('--tree', '-t', type=str, required=True, help="tree to perform fit titer model to")
+    parser.add_argument('--titer-model', default='substitution', choices=["substitution", "tree"],
+                                help="titer model to use, see Neher et al. 2016 for details")
+    parser.add_argument('--output', '-o', type=str, help='JSON file to save titer model')
+
+
 def run(args):
     T = Phylo.read(args.tree, 'newick')
 

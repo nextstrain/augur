@@ -332,6 +332,9 @@ def verifyMainJSONIsInternallyConsistent(main):
     return return_status
 
 
+def register_arguments(parser):
+    parser.add_argument('--json', required=True, nargs='+', help="JSONs to validate")
+    parser.add_argument('--new-schema', action="store_true", help="use nexflu JSON schema")
 
 
 def run(args):
