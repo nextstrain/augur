@@ -3,6 +3,8 @@ The top-level augur command which dispatches to subcommands.
 """
 
 import argparse
+from sys import exit
+from types import SimpleNamespace
 from . import parse, filter, align, tree, refine, ancestral
 from . import traits, translate, mask, titers, export
 from . import validate, sequence_traits, clades, version
@@ -11,6 +13,8 @@ from . import validate, sequence_traits, clades, version
 def run(argv):
     parser = argparse.ArgumentParser(prog = "augur", description = "Augur: Real-Time Phylogenetic analysis.")
     subparsers = parser.add_subparsers()
+
+    add_version_alias(parser)
 
     ### PARSE.PY -- produce a pair of tsv/fasta files from a single fasta file
     parse_parser = subparsers.add_parser('parse', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -208,3 +212,23 @@ def run(argv):
 
     args = parser.parse_args(argv)
     return args.func(args)
+
+
+def add_version_alias(parser):
+    """
+    Add --version as a (hidden) alias for the version command.
+
+    It's not uncommon to blindly run a command with --version as the sole
+    argument, so its useful to make that Just Work.
+    """
+
+    class run_version_command(argparse.Action):
+        def __call__(self, *args, **kwargs):
+            opts = SimpleNamespace()
+            exit( version.run(opts) )
+
+    return parser.add_argument(
+        "--version",
+        nargs  = 0,
+        help   = argparse.SUPPRESS,
+        action = run_version_command)
