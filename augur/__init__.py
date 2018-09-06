@@ -14,6 +14,7 @@ def run(argv):
     parser = argparse.ArgumentParser(prog = "augur", description = "Augur: Real-Time Phylogenetic analysis.")
     subparsers = parser.add_subparsers()
 
+    add_default_command(parser)
     add_version_alias(parser)
 
     ### PARSE.PY -- produce a pair of tsv/fasta files from a single fasta file
@@ -212,6 +213,17 @@ def run(argv):
 
     args = parser.parse_args(argv)
     return args.func(args)
+
+
+def add_default_command(parser):
+    """
+    Sets the default command to run when none is provided.
+    """
+    def run(args):
+        parser.print_help()
+        return 2
+
+    parser.set_defaults(func = run)
 
 
 def add_version_alias(parser):
