@@ -176,6 +176,32 @@ class TestKdeFrequencies(object):
                     for tip in tree.get_terminals()
                     if tip.attr["num_date"] <= max_date])
 
+    def test_node_filter(self, tree):
+        """Test frequency estimation with specific nodes omitted by setting their
+        frequencies to zero at all pivots.
+        """
+        # Filter nodes to just those in Europe.
+        regions = ["china"]
+        kde_frequencies = KdeFrequencies(
+            node_filters={"region": regions}
+        )
+        frequencies = kde_frequencies.estimate(tree)
+
+        # Verify that all tips have frequency estimates regardless of node
+        # filter.
+        assert all([tip.clade in frequencies
+                    for tip in tree.get_terminals()])
+
+        # Verify that all tips from the requested region have non-zero frequencies.
+        assert all([frequencies[tip.clade].sum() > 0
+                    for tip in tree.get_terminals()
+                    if tip.attr["region"] in regions])
+
+        # Verify that all tips not from the requested region have zero frequencies.
+        assert all([frequencies[tip.clade].sum() == 0
+                    for tip in tree.get_terminals()
+                    if tip.attr["region"] not in regions])
+
     def test_export_with_frequencies(self, tree):
         """Test frequencies export to JSON when frequencies have been estimated.
         """
@@ -199,6 +225,7 @@ class TestKdeFrequencies(object):
 
         assert "params" in frequencies_json
         assert kde_frequencies.pivot_frequency == frequencies_json["params"]["pivot_frequency"]
+        assert "node_filters" in frequencies_json["params"]
         assert "data" not in frequencies_json
 
     def test_import(self, tree, tmpdir):
