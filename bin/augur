@@ -2,7 +2,7 @@
 import sys
 from augur import parse, filter, align, tree, refine, ancestral
 from augur import traits, translate, mask, titers, export
-from augur import validate, sequence_traits, clades
+from augur import validate, sequence_traits, clades, version
 
 if __name__=="__main__":
     import argparse
@@ -199,6 +199,14 @@ if __name__=="__main__":
     validate_parser.add_argument('--json', required=True, nargs='+', help="JSONs to validate")
     validate_parser.add_argument('--new-schema', action="store_true", help="use nexflu JSON schema")
     validate_parser.set_defaults(func=validate.run)
+
+    ## VERSION.PY
+    version_parser = subparsers.add_parser(
+        "version",
+        description     = version.__doc__,
+        formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+
+    version_parser.set_defaults(func=version.run)
 
     args = parser.parse_args()
     return_code = args.func(args)
