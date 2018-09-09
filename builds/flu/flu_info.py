@@ -286,7 +286,8 @@ reference_viruses = {
         'A/Perth/103/2015', 'A/Brisbane/181/2015', 'A/Singapore/GP1908/2015', 'A/Iowa/53/2015',
         'A/StPetersburg/61/2015', 'A/Minnesota/32/2015', 'A/Bangladesh/3002/2015', 'A/Israel/Q-504/2015',
         'A/Indiana/21/2016', 'A/Victoria/503/2016', 'A/Fiji/3/2016', 'A/Panama/318595/2016',
-        'A/Montana/50/2016', 'A/Michigan/272/2017'
+        'A/Montana/50/2016', 'A/Texas/157/2016', 'A/Michigan/272/2017', 'A/Perth/10/2017',
+        'A/Arizona/33/2017', 'A/Brisbane/37/2017', 'A/Oman/3192/2017'
     ],
     'vic':[
         'B/Shangdong/7/1997', 'B/HongKong/330/2001', 'B/Malaysia/2506/2004', 'B/Ohio/1/2005',
