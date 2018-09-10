@@ -393,7 +393,7 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
             plt.close()
 
 # only use with normalized titers (so arithmetric mean)
-def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clades=None, fname=None, title=None, potency=False, minDate=2016, minMeasurements=30, minRows=2, maxSeraPerClade=5):
+def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clades=None, fname=None, title=None, potency=False, minDate=2016.833, minMeasurements=30, minRows=3, maxSeraPerClade=5):
     from collections import defaultdict
     import matplotlib
     # important to use a non-interactive backend, otherwise will crash on cluster
@@ -483,7 +483,7 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
 
     if len(rows) > 0:
         import seaborn as sns
-        plt.figure(figsize=(7, 0.6*len(rows)+1))
+        plt.figure(figsize=(7.5, 0.6*len(rows)+1))
         if title is not None:
             title = title.replace("flu_seasonal_", "").replace("_ha_", "_").replace("_2y_", "_")
             title = title.replace("h3n2", "H3N2").replace("h1n1pdm", "H1N1pdm").replace("vic", "Vic").replace("yam", "Yam")
@@ -572,16 +572,16 @@ if __name__=="__main__":
         if runner.info["segment"]=='ha':
             if runner.info["lineage"]=='h3n2':
                 clades = ['3c2.A', 'A1', 'A1b/135K', 'A2', 'A3']
-                virus_clades = ['A1', 'A1a', 'A1b/135K', 'A1b/135N', 'A2', 'A2/re', 'A3', '3c3.A']
-                serum_clades = ['3c2.A' 'A1', 'A1a', 'A1b/135K', 'A1b/135N', 'A2', 'A2/re', 'A3', '3c3.A']
+                virus_clades = ['A1b/135K', 'A1b/135N', 'A2', 'A2/re', 'A3', '3c3.A']
+                serum_clades = ['3c2.A', 'A1', 'A1a', 'A1b', 'A1b/135K', 'A1b/135N', 'A2', 'A2/re', 'A3', '3c3.A']
             elif runner.info["lineage"]=='h1n1pdm':
                 clades = ['6b.1', '6b.2', '164T']
                 virus_clades = clades
                 serum_clades = clades
             elif runner.info["lineage"]=='vic':
                 clades = ['1A', '117V', 'DV']
-                virus_clades = clades
-                serum_clades = clades
+                virus_clades = ['117V', 'DV']
+                serum_clades = ['1A', '117V', 'DV']
             elif runner.info["lineage"]=='yam':
                 clades = ['2', '3', '172Q']
                 virus_clades = clades
