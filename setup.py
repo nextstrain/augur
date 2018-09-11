@@ -16,9 +16,9 @@ with readme_file.open(encoding = "utf-8") as f:
 setup(
         name = "nextstrain-augur",
         version = __version__,
-        author = "nextstrain developers",
+        author = "Nextstrain developers",
         author_email = "trevor@bedford.io, richard.neher@unibas.ch",
-        description = ("Pipelines for real-time phylogenetic analysis"),
+        description = "A bioinformatics toolkit for phylogenetic analysis.",
         long_description = long_description,
         long_description_content_type = "text/markdown",
         keywords = "nextstrain, molecular epidemiology",
