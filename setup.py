@@ -23,6 +23,11 @@ setup(
         long_description_content_type = "text/markdown",
         keywords = "nextstrain, molecular epidemiology",
         url = "https://github.com/nextstrain/augur",
+        project_urls = {
+            "Bug Reports": "https://github.com/nextstrain/augur/issues",
+            "Change Log":  "https://github.com/nextstrain/augur/blob/master/CHANGES.md#next",
+            "Source":      "https://github.com/nextstrain/augur",
+        },
         packages=['augur'],
         package_data={'augur': ['data/*']},
         data_files = [("", ["LICENSE.txt"])],
