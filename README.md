@@ -1,104 +1,89 @@
-## Introduction
+# Introduction
 
-Nextstrain is an open-source project to harness the scientific and public health potential of pathogen genome data. We provide a continually-updated view of publicly available data with powerful analytics and visualizations showing pathogen evolution and epidemic spread. Our goal is to aid epidemiological understanding and improve outbreak response.
+Nextstrain is an open-source project to harness the scientific and public health potential of pathogen genome data.
+We provide a continually-updated view of publicly available data with powerful analytics and visualizations showing pathogen evolution and epidemic spread.
+Our goal is to aid epidemiological understanding and improve outbreak response.
 
-Resulting data and inferences are available live at the website [nextstrain.org](https://nextstrain.org). Documentation is available at [nextstrain.org/docs](https://nextstrain.org/docs).
+Resulting data and inferences are available live at the website [nextstrain.org](https://nextstrain.org).
+Documentation is available at [nextstrain.org/docs](https://nextstrain.org/docs).
 
-## Augur
+
+# Augur
 
 *Definition: One held to foretell events by omens.*
 
-Augur is the bioinformatic processing pipeline to track evolution from sequence and serological data. Documentation for augur is available at [nextstrain.org/docs/bioinformatics](https://nextstrain.org/docs/bioinformatics).
+Augur is the bioinformatics toolkit we use to track evolution from sequence and serological data.
+It provides a collection of commands which are designed to be composable into larger processing pipelines.
+Documentation for augur is available at [nextstrain.org/docs/bioinformatics](https://nextstrain.org/docs/bioinformatics).
 
-## Install
 
-There are currently two parallel but separate versions of augur: __original
-augur__ (or old augur) and __modular augur__ (or new augur).  They can be used
-at the same time, but we're actively migrating pathogens to use the new,
-modular augur and eventually old augur will be removed.  Currently, both
-versions live inside this git repository, which can get pretty confusing.
-These are the files associated with new, modular augur:
+## Installation
 
-    augur/
-      __init__.py
-      align.py
-      export.py
-      ...
-    bin/
-      augur
-    setup.py
+Augur is written in Python 3 and requires at least Python 3.4.
+It's published on [PyPi](https://pypi.org) as [nextstrain-augur](https://pypi.org/project/nextstrain-augur), so you can install it with `pip` (or `pip3`) like so:
 
-and these are the files associated with the old augur:
+    pip install nextstrain-augur
 
-    __init__.py
-    base/
-      auspice_export.py
-      colorLogging.py
-      config.py
-      ...
-    requirements.txt
-    requirements-locked.txt
-    scripts/
-      beast-to-auspice-jsons-proof-of-principle.py
-      json_tree_to_nexus.py
-      plot_msa.py
+You can also install from a git clone or other copy of the source code by running:
 
-New, modular augur is setup as a standard Python package with several modules
-that are runnable from the command-line using the `augur` command.  Old augur
-requires writing Python scripts which import functions and classes from the
-`base/` directory.
+    pip install .
 
-Note that old augur requires Python 2.7 while new, modular augur requires
-Python 3.
+If your system has both Python 2 and Python 3 installed side-by-side, you may need to use `pip3` or `python3 -m pip` instead of just `pip` (which often defaults to Python 2 when both Python versions are installed).
 
-To install either version of augur, first clone the git repository:
+Augur uses some common external bioinformatics programs which you'll need to install to have a fully functioning toolkit:
+
+* `augur align` requires [mafft](https://mafft.cbrc.jp/alignment/software/)
+
+* `augur tree` requires at least one of:
+   - [RAxML](https://sco.h-its.org/exelixis/web/software/raxml/index.html) (used by default)
+   - [FastTree](http://www.microbesonline.org/fasttree/) (optional alternative)
+   - [IQ-TREE](http://www.iqtree.org/) (optional alternative)
+
+* Bacterial data (or any VCF usage) requires [vcftools](https://vcftools.github.io/)
+
+
+## Usage
+
+All of Augur's commands are accessed through the `augur` program.
+For example, to infer ancestral sequences from a tree, you'd run `augur ancestral`.
+If you've installed the `nextstrain-augur` package, you can just run `augur`.
+Otherwise, you can run `./bin/augur` from a copy of the source code.
 
 ```
-git clone https://github.com/nextstrain/augur.git
-cd augur
+usage: augur [-h] {parse,filter,mask,align,tree,refine,ancestral,translate,clades,traits,sequence-traits,titers,export,validate,version} ...
+
+Augur: A bioinformatics toolkit for phylogenetic analysis.
+
+positional arguments:
+  {parse,filter,mask,align,tree,refine,ancestral,translate,clades,traits,sequence-traits,titers,export,validate,version}
+    parse               Parse delimited fields from FASTA sequence names into
+                        a TSV and FASTA file.
+    filter              Filter and subsample a sequence set.
+    mask                Mask specified sites from a VCF file.
+    align               Align multiple sequences from FASTA or VCF.
+    tree                Build a tree using a variety of methods.
+    refine              Refine an initial tree using sequence metadata.
+    ancestral           Infer ancestral sequences based on a tree.
+    translate           Translate gene regions from nucleotides to amino
+                        acids.
+    clades              Assign clades to nodes in a tree based on amino-acid
+                        or nucleotide signatures.
+    traits              Infer ancestral traits based on a tree.
+    sequence-traits     Annotate sequences based on amino-acid or nucleotide
+                        signatures.
+    titers              Annotate a tree with actual and inferred titer
+                        measurements.
+    export              Export JSON files suitable for visualization with
+                        auspice.
+    validate            Validate a set of JSON files intended for
+                        visualization in auspice.
+    version             Print the version of augur.
+
+optional arguments:
+  -h, --help            show this help message and exit
 ```
 
-Both versions of augur have a number of Python dependencies.  The dependencies
-of old augur are listed in `requirements.txt` and are best installed via a
-package manager like conda or pip.  You may choose to use
-`requirements-locked.txt` if you'd like a fixed set of known-good packages.
-
-```
-pip install -r requirements.txt
-```
-
-The dependencies of new, modular augur are specified in `setup.py`, which is
-the standard location for Python packages.  You can install modular augur,
-including the `augur` command, and all its dependencies using pip3:
-
-```
-pip3 install .
-```
-
-In addition, both versions of augur need working installations of
-[mafft](https://mafft.cbrc.jp/alignment/software/) and one of the following
-tree builders:
-
-* DEFAULT: [RAxML](https://sco.h-its.org/exelixis/web/software/raxml/index.html)
-* OPTIONAL: [FastTree](http://www.microbesonline.org/fasttree/)
-* OPTIONAL: [IQ-TREE](http://www.iqtree.org/)
-
-Additionally, bacterial builds require a working installation of [vcftools](https://vcftools.github.io/).
-
-## Dev install
-
-If you're going to be editing augur source code rather than just running augur from command line, it's recommended to install with
-
-```
-pip3 install -e .[dev]
-```
-
-to make module "editable" and install dev dependencies.
-
-
-## Virus builds
-
-Each virus build consists of a `prepare.py` and `process.py` file. Currently supported builds are listed in the [builds directory](builds/).
+For more information on a specific command, you can run it with the `--help` option, for example, `augur tree --help`.
 
 
 ## Development
@@ -110,6 +95,17 @@ increased to in the future.
 
 Versions for this project from 3.0.0 onwards aim to follow the [Semantic
 Versioning rules](https://semver.org).
+
+### Running with local changes
+
+From within a clone of the git repository you can run `./bin/augur` to test your local changes without installing them.
+(Note that `./bin/augur` is not the script that gets installed by pip as `augur`; that script is generated by the `entry_points` configuration in `setup.py`.)
+
+You can also install augur from source as an "editable" package so that your global `augur` command always uses your local source code copy:
+
+    pip install -e .[dev]
+
+This is not recommended if you want to be able to compare output from a stable version of augur to a development version (e.g. comparing output of `augur` installed with pip and `./bin/augur` from your local source code).
 
 ### Releasing
 
@@ -135,6 +131,55 @@ New releases, via pushes to the `release` branch, trigger a new [docker-base][]
 build to keep the Docker image up-to-date.
 
 [docker-base]: https://github.com/nextstrain/docker-base
+
+
+## Older version (original, non-modular)
+
+The older, original version of Augur is non-modular and doesn't use the `augur` command.
+It is a set of Python 2 modules which can be used in scripts.
+Currently, it's still lightly maintained to support older pathogen pipelines for Nextstrain that we have yet to move to the newest version of Augur.
+However, we're actively migrating our pipelines to use the newest Augur and eventually old Augur will be removed.
+For the time being, both versions live inside this git repository, which can be confusing.
+
+These are the files associated with new, modular Augur:
+
+    augur/
+      __init__.py
+      align.py
+      export.py
+      ...
+    bin/
+      augur
+    setup.py
+
+and these are the files associated with the old Augur:
+
+    __init__.py
+    base/
+      auspice_export.py
+      colorLogging.py
+      config.py
+      ...
+    builds/
+      flu/
+      avian/
+      ...
+    requirements.txt
+    requirements-locked.txt
+    scripts/
+      beast-to-auspice-jsons-proof-of-principle.py
+      json_tree_to_nexus.py
+      plot_msa.py
+
+Old Augur requires writing Python scripts which import functions and classes from the `base/` directory.
+Examples of this are in some of our old pipelines in the `builds/` directory; see the `prepare.py` and `process.py` scripts.
+
+Running old Augur requires Python 2.7, unlike the latest version of Augur, and dependencies are listed in `requirements.txt`.
+You can install them with a package manager like conda or pip:
+
+    pip install -r requirements.txt
+
+You may choose to use `requirements-locked.txt` instead if you'd like a fixed set of known-good packages.
 
 
 ## License and copyright
