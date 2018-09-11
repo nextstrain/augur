@@ -18,6 +18,7 @@ setup(
         url = "https://github.com/nextstrain/augur",
         packages=['augur'],
         package_data={'augur': ['data/*']},
+        data_files = [("", ["LICENSE.txt"])],
         python_requires = '>=3.4',
         install_requires = [
             "bcbio-gff >=0.6.4, ==0.6.*",
