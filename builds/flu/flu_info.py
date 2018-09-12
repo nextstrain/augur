@@ -15,7 +15,7 @@ regions = [
     ('south_asia',        "AS", 1.45),
     ('japan_korea',       "AS", 0.20),
     ('oceania',           "OC", 0.04),
-    ('south_america',     "",   0.41),
+    ('south_america',     "SA", 0.41),
     ('southeast_asia',    "AS", 0.62),
     ('west_asia',         "AS", 0.75)
 ]
