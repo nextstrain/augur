@@ -13,7 +13,7 @@ regions = [
     ('north_america',     "NA", 0.54),
     ('china',             "AS", 1.36),
     ('south_asia',        "AS", 1.45),
-    ('japan_korea',       "AS", 0.20),
+    ('japan_korea',       "JK", 0.20),
     ('oceania',           "OC", 0.04),
     ('south_america',     "SA", 0.41),
     ('southeast_asia',    "AS", 0.62),
@@ -287,7 +287,8 @@ reference_viruses = {
         'A/StPetersburg/61/2015', 'A/Minnesota/32/2015', 'A/Bangladesh/3002/2015', 'A/Israel/Q-504/2015',
         'A/Indiana/21/2016', 'A/Victoria/503/2016', 'A/Fiji/3/2016', 'A/Panama/318595/2016',
         'A/Montana/50/2016', 'A/Texas/157/2016', 'A/Michigan/272/2017', 'A/Perth/10/2017',
-        'A/Arizona/33/2017', 'A/Brisbane/37/2017', 'A/Oman/3192/2017'
+        'A/Arizona/33/2017', 'A/Brisbane/37/2017', 'A/Oman/3192/2017', 'A/AbuDhabi/18/2017',
+        'A/India/3405/2017', 'A/India/322/2017', 'A/Navarra/1985/2017', 'A/Kazakhstan/581/2018'
     ],
     'vic':[
         'B/Shangdong/7/1997', 'B/HongKong/330/2001', 'B/Malaysia/2506/2004', 'B/Ohio/1/2005',
