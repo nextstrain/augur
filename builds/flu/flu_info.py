@@ -13,7 +13,7 @@ regions = [
     ('north_america',     "NA", 0.54),
     ('china',             "AS", 1.36),
     ('south_asia',        "AS", 1.45),
-    ('japan_korea',       "JK", 0.20),
+    ('japan_korea',       "AS", 0.20),
     ('oceania',           "OC", 0.04),
     ('south_america',     "SA", 0.41),
     ('southeast_asia',    "AS", 0.62),
