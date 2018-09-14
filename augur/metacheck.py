@@ -82,6 +82,7 @@ def parse_date(datein, fmt, minmax):
 # ...
 # changing date format to %Y-%m-%d
 # ...
+# TODO: check if it's %Y-%m-%d already and don't ask questions if it is...
 def adjust_date(strains):
     import random
     dropped_strains = []
@@ -278,6 +279,7 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, count
     loc_name = 'country' if country else 'location'
     place_name = sample[loc_name]
     location = geolocator.geocode((place_name).replace('_',' '), language='en', addressdetails=True)
+
     if str(location) == 'None':
         print("The location as formatted couldn't be found in GeoPy")
         answer = 'n'
