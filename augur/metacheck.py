@@ -268,11 +268,18 @@ def get_field_to_use(location):
         print("'City' not found in the GeoPy results. Available fields:")
         avail_fields = {}
         for i, j in enumerate(location.raw['address']):
-            print(i, j)
+            print(i, j, "(",location.raw['address'][j], ")")
             avail_fields[i] = j
         field_no = input("Type what to use for 'city': ")
         field_to_use = avail_fields[int(field_no)]
     return field_to_use
+
+def add_to_coor(location, name, place_type, coor):
+    new_key = (place_type, name)
+    if new_key not in coor:
+        lon = location.longitude
+        lat = location.latitude
+        coor[new_key] = {'latitude': lat, 'longitude': lon}
 
 
 def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, country):
@@ -291,7 +298,7 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, count
             answer = input("Is this the right country name, and the name you want to use? y or n: ")
         else:
             field_to_use = get_field_to_use(location)
-            new_loc = location.raw['address'][field_to_use].lower()
+            new_loc = location.raw['address'][field_to_use].lower().replace(' ', '_')
             countryVal = location.raw['address']['country'].lower()
             print("GeoPy suggests using: %s with country: %s"%(new_loc, countryVal))
             answer = input("Is this the right location and country, and the location name you'd like to use? y or n: ")
@@ -300,16 +307,11 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, count
         sample['country'] = new_loc if country else countryVal
         if not country:
             sample['location'] = new_loc
-        if new_loc not in coor:
-            lon = location.longitude
-            lat = location.latitude
-            coor[new_loc] = [new_loc, 'XX', lat, lon]
-        if not country and countryVal not in coor:
+        #add to coordinates if not there
+        add_to_coor(location, new_loc, loc_name, coor)
+        if not country: #add country if not country
             country_latlong = geolocator.geocode(countryVal, language='en', addressdetails=True)
-            lon = country_latlong.longitude
-            lat = country_latlong.latitude
-            country_code = location.raw['address']['country_code'].upper()
-            coor[new_loc] = [new_loc, country_code, lat, lon]
+            add_to_coor(country_latlong, countryVal, 'country', coor)
 
         region_questionnaire(sample, region_dict, regions)
 
@@ -337,11 +339,11 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, count
                     sample['region'] = region_dict[new_loc]
                     redo = False
                 else:
-                    if new_loc != 'n' and new_loc in coor:
+                    if new_loc != 'n' and (loc_name, new_loc) in coor:
                         region_questionnaire(sample, region_dict, regions)
                         redo = False
 
-                    elif new_loc != 'n' and new_loc not in coor:
+                    elif new_loc != 'n' and (loc_name, new_loc) not in coor:
                         location = geolocator.geocode((new_loc).replace('_',' '), language='en', addressdetails=True)
                         coord_text = "coordinates" if country else "coordinates/country"
                         print('Would you like to: \n1. Use the %s for this location?'%(coord_text), location.address)
@@ -349,9 +351,6 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, count
                         print('3. Type the location again')
                         loc_ok = input('1, 2, or 3: ')
                         if loc_ok == '1':
-                            lon = location.longitude
-                            lat = location.latitude
-                            coor[new_loc] = [new_loc, 'XX', lat, lon]
                             redo = False
                         elif loc_ok == '2':
                             if not country:
@@ -374,8 +373,16 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, count
                             if name_loc == '2':
                                 sample[loc_name] = new_name
                                 new_loc = sample[loc_name]
+
+                            #add to coordinates, using the found location
+                            add_to_coor(location, new_loc, loc_name, coor)
                             if not country:
+                                countryVal = location.raw['address']['country'].lower()
+                                country_latlong = geolocator.geocode(countryVal, language='en', addressdetails=True)
+                                add_to_coor(country_latlong, countryVal, 'country', coor)
+                                #and add contry info
                                 sample['country'] = location.raw['address']['country'].lower()
+
                             region_questionnaire(sample, region_dict, regions)
 
 
@@ -464,6 +471,7 @@ def run(args):
     # Get lat-longs - needs to be adapted to new format!!
     #coor = pd.read_csv(args.geo_info, sep='\t')
     coordinates = read_lat_longs()  # should use this instead! But needs adapting
+    orig_coordinate_length = len(coordinates)
 
     #go through table...
     countries_current = [] #this keeps track for generating colours later...
@@ -554,15 +562,19 @@ def run(args):
         geo_file_name = args.geo_regions.split("/")[-1]
         location_file = args.geo_regions.replace(geo_file_name, "location_country.tsv")
         (pd.DataFrame.from_dict(data=location_country, orient='index').to_csv(location_file, sep='\t', header=False))
+        print("Location/country data written out to %s"%(location_file))
 
-    #lat-long
-    #TODO: Need to decide if we want to update the augur lat-long, or just a local version?
-    #Does this not do anything??
-    #with open(args.geo_info, 'w') as outfile:
-    #    outfile.write(coordinates.to_csv(sep='\t', index=False, header=coordinates.columns))
+    #Print out lat-long file if user wants it - and if new coordinates have been added
+    if len(coordinates) != orig_coordinate_length:
+        print("\nNew location lat/long values were found.")
+        write_out_coord = input("Would you like to write them out to a file? [y] or n: ")
+        if write_out_coord != 'n':
+            geo_file_name = args.geo_regions.split("/")[-1]
+            location_file = args.geo_regions.replace(geo_file_name, "lat_longs.tsv")
+            pd.DataFrame.from_dict(data=coordinates, orient='index').to_csv(location_file, sep='\t', header=False)
+            print("Lat/long data written out to %s"%(location_file))
+
 
     #if include hosts/properties someday, do here
-
-
 
     #filtering and writing fasta would go here if included.
