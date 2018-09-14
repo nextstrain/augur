@@ -116,6 +116,12 @@ def translate_vcf_feature(sequences, ref, feature):
     prot['positions'] = []
 
     refNuc = str(feature.extract( SeqRecord(seq=Seq(ref)) ).seq)
+    if feature.strand != -1 and len(refNuc)%3 != 0:
+        #Doing this here for + strand prevents keyError for mutations near end of gene
+        #This can result in lots of printing if doing all TB genes. Better way?
+        print("Gene length is not a multiple of 3. Adding trailing N's before translating.", file=sys.stderr)
+        while len(refNuc)%3 != 0:
+            refNuc += "N"
     ref_aa_seq = safe_translate(refNuc)
     prot['reference'] = ref_aa_seq
 
