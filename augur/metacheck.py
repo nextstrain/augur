@@ -18,14 +18,14 @@ forbidden_characters = [(' ',''), ('(','_'),(')','_'),(':','_'),(',','_'),(';','
 indicators_for_unknown = ['', '?', 'unknown', 'na', 'nan', '-n/a-', '-']
 default_unknown = ''
 
-def determine_standard_columns(columns, country):
+def determine_standard_columns(columns, location_to_use):
     #force user to keep required columns
     print('\n\nPlease identify columns containing required meta data. \nThese are the available columns:')
     for i, j in enumerate(columns):
         print(i, j)
     print(i+1, 'none of them')
     take = {}
-    last_column = ("country", "") if country else ("location", "")
+    last_column = (location_to_use, "") 
     standard_columns = [("strain",  " (matches sequence names)"), ("accession",""),
                                ("date",""), last_column]
 
@@ -148,7 +148,7 @@ def adjust_date(strains):
 def read_region_info(region_file=None):
     region_map = {}
     if region_file:
-        with open(args.geo_regions, mode='r') as f:
+        with open(region_file, mode='r') as f:
             for line in f:
                 entries = line.strip().split('\t')
                 region_map[entries[0]] = entries[1]
@@ -262,16 +262,16 @@ def write_synonyms(synonyms, syn_path):
     with open(syn_path, 'w') as the_file:
         the_file.write("\n".join(syn_write))
 
-def get_field_to_use(location):
-    field_to_use = 'city'
-    if 'city' not in location.raw['address']:
-        print("'City' not found in the GeoPy results. Available fields:")
+def get_field_to_use(location, location_to_use):
+    field_to_use = location_to_use
+    if field_to_use not in location.raw['address']:
+        print("'%s' not found in the GeoPy results. Available fields:"%(field_to_use))
         avail_fields = {}
         for i, j in enumerate(location.raw['address']):
             print(i, j, "(",location.raw['address'][j], ")")
             avail_fields[i] = j
         print("If the place is wrong, select any - you can reject this location in a moment.")
-        field_no = input("Type what to use for 'city': ")
+        field_no = input("Type what to use for '%s': "%(field_to_use))
         field_to_use = avail_fields[int(field_no)]
     return field_to_use
 
@@ -283,8 +283,8 @@ def add_to_coor(location, name, place_type, coor):
         coor[new_key] = {'latitude': lat, 'longitude': lon}
 
 
-def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, country):
-    loc_name = 'country' if country else 'location'
+def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, location_to_use):
+    loc_name = location_to_use
     place_name = sample[loc_name]
     location = geolocator.geocode((place_name).replace('_',' '), language='en', addressdetails=True)
 
@@ -293,24 +293,24 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, count
         answer = 'n'
     else:
         print("\nAn unknown location has been found: ", place_name)
-        if country:
+        if loc_name == 'country':
             new_loc = (location.address).lower().replace(' ','_')
             print("GeoPy suggests using:", new_loc)
             answer = input("Is this the right country name, and the name you want to use? y or n: ")
         else:
-            field_to_use = get_field_to_use(location)
+            field_to_use = get_field_to_use(location, loc_name)
             new_loc = location.raw['address'][field_to_use].lower().replace(' ', '_')
             countryVal = location.raw['address']['country'].lower()
             print("GeoPy suggests using: %s with country: %s"%(new_loc, countryVal))
             answer = input("Is this the right location and country, and the location name you'd like to use? y or n: ")
 
     if answer.lower() == 'y':
-        sample['country'] = new_loc if country else countryVal
-        if not country:
-            sample['location'] = new_loc
+        sample['country'] = new_loc if loc_name == 'country' else countryVal
+        if loc_name != 'country':
+            sample[loc_name] = new_loc
         #add to coordinates if not there
         add_to_coor(location, new_loc, loc_name, coor)
-        if not country: #add country if not country
+        if loc_name != 'country': #add country if not country
             country_latlong = geolocator.geocode(countryVal, language='en', addressdetails=True)
             add_to_coor(country_latlong, countryVal, 'country', coor)
 
@@ -324,8 +324,8 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, count
             new_loc = (input("Type the correct name or 'n' if unknown: ")).lower().replace(' ','_')
             if new_loc in ['n', 'na']:
                 indicators_for_unknown.append(place_name)
-                if not country:
-                    sample['location'] = default_unknown
+                if loc_name != 'country':
+                    sample[loc_name] = default_unknown
                 sample['country'] = default_unknown
                 sample['region'] = default_unknown
 
@@ -349,7 +349,7 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, count
                         if str(location) == 'None':
                             print("The location as formatted couldn't be found in GeoPy: %s"%(new_loc))
                         else:
-                            coord_text = "coordinates" if country else "coordinates/country"
+                            coord_text = "coordinates" if loc_name=='country' else "coordinates/country"
                             print('Would you like to: \n1. Use the %s for this location?'%(coord_text), location.address)
                             print('2. Enter %s manually in the file after this run'%(coord_text))
                             print('3. Type the location again')
@@ -357,7 +357,7 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, count
                             if loc_ok == '1':
                                 redo = False
                             elif loc_ok == '2':
-                                if not country:
+                                if loc_name != 'country':
                                     new_country = input("Please type the country you'd like to use: ")
                                     sample['country'] = new_country
                                 region_questionnaire(sample, region_dict, regions)
@@ -367,8 +367,8 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, count
 
                             if loc_ok != '3':
                                 new_name = (location.address).lower().replace(' ','_')
-                                if not country:
-                                    field_to_use = get_field_to_use(location)
+                                if loc_name != 'country':
+                                    field_to_use = get_field_to_use(location, loc_name)
                                     new_name = location.raw['address'][field_to_use].lower().replace(' ','_')
                                 print('What name would you like to use?')
                                 print('1: ', new_loc)
@@ -380,7 +380,7 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, count
 
                                 #add to coordinates, using the found location
                                 add_to_coor(location, new_loc, loc_name, coor)
-                                if not country:
+                                if loc_name != 'country':
                                     countryVal = location.raw['address']['country'].lower()
                                     country_latlong = geolocator.geocode(countryVal, language='en', addressdetails=True)
                                     add_to_coor(country_latlong, countryVal, 'country', coor)
@@ -398,17 +398,27 @@ def run(args):
     #Read in meta-data provided by user
     orig_meta = pd.read_csv(args.input, sep="\t" if args.input.endswith('.tsv') else r'\s*,\s*')
 
-    country = True
+    location_to_use = 'country'
     #See if they want to do by Country or smaller location
     print('Would you like to identify geography by country or more specific location?')
     print('1. Country')
     print('2. More specific (city, county, state)')
     ti = int(input('Type your choice (default 1): '))
     if ti==2:
-        country = False
+        print('What are your locations?')
+        print('1. City')
+        print('2. County')
+        print('3. State')
+        print('If another division, select "city" and you can choose for each location')
+        ti = int(input('Type your choice (default 1): '))
+        location_to_use = 'city'
+        if ti==2:
+            location_to_use = 'county'
+        elif ti==3:
+            location_to_use = 'state'
 
     #Get user to identify columns, select those to keep
-    column_map = determine_standard_columns(orig_meta.columns, country)
+    column_map = determine_standard_columns(orig_meta.columns, location_to_use)
 
     #Pick other columns to keep
     columns_to_keep = determine_columns_to_keep([c for c in orig_meta.columns if c not in column_map.keys()])
@@ -420,7 +430,7 @@ def run(args):
 
     new_meta = orig_meta.loc[:, column_map.keys()].rename(index=str, columns=column_map)
     new_meta['region'] = 0
-    if not country:
+    if location_to_use != 'country':
         new_meta['country'] = 0
     samples = {}
     for ri, r in new_meta.iterrows():
@@ -467,14 +477,14 @@ def run(args):
         synonyms = {}
 
     #if available, read in file linking location to country
-    if not country:
+    if location_to_use != 'country':
         location_country = {}
         if args.location_country:
             location_country = read_location_info(args.location_country)
 
     # Get lat-longs - needs to be adapted to new format!!
     #coor = pd.read_csv(args.geo_info, sep='\t')
-    coordinates = read_lat_longs()  # should use this instead! But needs adapting
+    coordinates = read_lat_longs(overrides=args.geo_info) 
     orig_coordinate_length = len(coordinates)
 
     #go through table...
@@ -482,7 +492,7 @@ def run(args):
 
     for s,v in samples.items():
         wrong_name = ""
-        loc_name = 'country' if country else 'location'
+        loc_name = location_to_use
         #country = v['country']
 
         if type(v[loc_name]) == str:
@@ -495,25 +505,30 @@ def run(args):
         elif v[loc_name] in indicators_for_unknown:
             v[loc_name] = default_unknown
             v[loc_name] = default_unknown
-        elif not country and v[loc_name] in location_country:
+        elif location_to_use != 'country' and v[loc_name] in location_country:
             v['country'] = location_country[v[loc_name]]
             v['region'] = region_dict[v['country']]
+            #import ipdb; ipdb.set_trace()
         elif v[loc_name] in synonyms:
             v[loc_name] = synonyms[v[loc_name]] #if country else location_country[synonyms[v[loc_name]]]
-            if not country:
+            if location_to_use != 'country':
                 v['country'] =  location_country[v[loc_name]]
-            v['region'] = region_dict[v[loc_name]] if country else region_dict[v['country']]
+            v['region'] = region_dict[v[loc_name]] if location_to_use == 'country' else region_dict[v['country']]
         else: # country not the region dict nor in list of synonyms nor unknown
             wrong_name = v[loc_name]
-            locate_place(v, coordinates, geolocator,region_dict, region_colors.keys(), synonyms, country)
+            locate_place(v, coordinates, geolocator,region_dict, region_colors.keys(), synonyms, location_to_use)
 
             #print(wrong_name)
             if wrong_name != v[loc_name]: #don't offer to add to synonyms if identical...
                 s_add = input("Was this location (%s) misspelled (should it be added to synonyms)? y or n: " % wrong_name)
                 if s_add.lower() == 'y':
                     synonyms[wrong_name] = v[loc_name]
-            if not country:
+            if location_to_use != 'country':
                 location_country[v[loc_name]] = v['country']
+
+        #location may be found, but check have coordinates. If not, locate the place... 
+        if (loc_name, v[loc_name]) not in coordinates:
+            locate_place(v, coordinates, geolocator,region_dict, region_colors.keys(), synonyms, location_to_use)
 
     countries_current = {v['country'] for v in samples.values() if v['country']}
     regions_current = {v['region'] for v in samples.values() if v['country']}
@@ -552,7 +567,7 @@ def run(args):
     (pd.DataFrame.from_dict(data=samples, orient='index').to_csv(args.output_meta, sep='\t', header=True, index_label=False, index=False))
 
     # ...
-    # update files: geo_info/geo_lat_long/properties_info/synonyms
+    # update files: geo_lat_long/properties_info/synonyms
     # ...
     #geo_regions
     (pd.DataFrame.from_dict(data=region_dict, orient='index').to_csv(args.geo_regions, sep='\t', header=False))

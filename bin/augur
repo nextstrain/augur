@@ -27,8 +27,6 @@ if __name__=="__main__":
     check_parser.add_argument('--geo-regions', type=str, help="geo_regions file")
     check_parser.add_argument('--geo-info', type=str, help="geo_lat_long file from Fauna")
     check_parser.add_argument('--location-country', type=str, help="file linking locations (cities, counties, etc) with country, if available")
-    check_parser.add_argument('--host-tone', type=str, help="host colors file")
-    check_parser.add_argument('--host-list', type=str, help="host info file")
     check_parser.add_argument('--region-colors', type=str, help="region colors file")
     check_parser.add_argument('--synonyms', type=str, help="file with misspellings and alterative geo names")
     check_parser.add_argument('--output-color', type=str, help="color file with generated colors")
