@@ -288,7 +288,7 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, count
     location = geolocator.geocode((place_name).replace('_',' '), language='en', addressdetails=True)
 
     if str(location) == 'None':
-        print("The location as formatted couldn't be found in GeoPy")
+        print("\nThe location as formatted couldn't be found in GeoPy: %s"%(place_name))
         answer = 'n'
     else:
         print("\nAn unknown location has been found: ", place_name)
@@ -345,45 +345,48 @@ def locate_place(sample, coor, geolocator, region_dict, regions, synonyms, count
 
                     elif new_loc != 'n' and (loc_name, new_loc) not in coor:
                         location = geolocator.geocode((new_loc).replace('_',' '), language='en', addressdetails=True)
-                        coord_text = "coordinates" if country else "coordinates/country"
-                        print('Would you like to: \n1. Use the %s for this location?'%(coord_text), location.address)
-                        print('2. Enter %s manually in the file after this run'%(coord_text))
-                        print('3. Type the location again')
-                        loc_ok = input('1, 2, or 3: ')
-                        if loc_ok == '1':
-                            redo = False
-                        elif loc_ok == '2':
-                            if not country:
-                                new_country = input("Please type the country you'd like to use: ")
-                                sample['country'] = new_country
-                            region_questionnaire(sample, region_dict, regions)
-                            print('Please update the new longitude and latitude manually in the geo_long_lat file')
-                            redo = False
-                        #else 3, allow user to type again
+                        if str(location) == 'None':
+                            print("The location as formatted couldn't be found in GeoPy: %s"%(new_loc))
+                        else:
+                            coord_text = "coordinates" if country else "coordinates/country"
+                            print('Would you like to: \n1. Use the %s for this location?'%(coord_text), location.address)
+                            print('2. Enter %s manually in the file after this run'%(coord_text))
+                            print('3. Type the location again')
+                            loc_ok = input('1, 2, or 3: ')
+                            if loc_ok == '1':
+                                redo = False
+                            elif loc_ok == '2':
+                                if not country:
+                                    new_country = input("Please type the country you'd like to use: ")
+                                    sample['country'] = new_country
+                                region_questionnaire(sample, region_dict, regions)
+                                print('Please update the new longitude and latitude manually in the geo_long_lat file')
+                                redo = False
+                            #else 3, allow user to type again
 
-                        if loc_ok != '3':
-                            new_name = (location.address).lower().replace(' ','_')
-                            if not country:
-                                field_to_use = get_field_to_use(location)
-                                new_name = location.raw['address'][field_to_use].lower().replace(' ','_')
-                            print('What name would you like to use?')
-                            print('1: ', new_loc)
-                            print('2: ', new_name)
-                            name_loc = input('1 or 2: ')
-                            if name_loc == '2':
-                                sample[loc_name] = new_name
-                                new_loc = sample[loc_name]
+                            if loc_ok != '3':
+                                new_name = (location.address).lower().replace(' ','_')
+                                if not country:
+                                    field_to_use = get_field_to_use(location)
+                                    new_name = location.raw['address'][field_to_use].lower().replace(' ','_')
+                                print('What name would you like to use?')
+                                print('1: ', new_loc)
+                                print('2: ', new_name)
+                                name_loc = input('1 or 2: ')
+                                if name_loc == '2':
+                                    sample[loc_name] = new_name
+                                    new_loc = sample[loc_name]
 
-                            #add to coordinates, using the found location
-                            add_to_coor(location, new_loc, loc_name, coor)
-                            if not country:
-                                countryVal = location.raw['address']['country'].lower()
-                                country_latlong = geolocator.geocode(countryVal, language='en', addressdetails=True)
-                                add_to_coor(country_latlong, countryVal, 'country', coor)
-                                #and add contry info
-                                sample['country'] = location.raw['address']['country'].lower()
+                                #add to coordinates, using the found location
+                                add_to_coor(location, new_loc, loc_name, coor)
+                                if not country:
+                                    countryVal = location.raw['address']['country'].lower()
+                                    country_latlong = geolocator.geocode(countryVal, language='en', addressdetails=True)
+                                    add_to_coor(country_latlong, countryVal, 'country', coor)
+                                    #and add contry info
+                                    sample['country'] = location.raw['address']['country'].lower()
 
-                            region_questionnaire(sample, region_dict, regions)
+                                region_questionnaire(sample, region_dict, regions)
 
 
 
