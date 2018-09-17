@@ -270,6 +270,7 @@ def get_field_to_use(location):
         for i, j in enumerate(location.raw['address']):
             print(i, j, "(",location.raw['address'][j], ")")
             avail_fields[i] = j
+        print("If the place is wrong, select any - you can reject this location in a moment.")
         field_no = input("Type what to use for 'city': ")
         field_to_use = avail_fields[int(field_no)]
     return field_to_use
