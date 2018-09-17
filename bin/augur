@@ -121,8 +121,9 @@ if __name__=="__main__":
     translate_parser.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
     translate_parser.add_argument('--output', type=str, help="name of JSON files for aa mutations")
     translate_parser.add_argument('--alignment-output', type=str, help="write out translated gene alignments. "
-                                   "If a VCF-input, a .vcf or .vcf.gz will be output here (depending on file ending). If fasta-input, specify the file name "
-                                   "like so: 'my_alignment_%GENE.fasta', where '%GENE' will be replaced by the name of the gene")
+                                   "If a VCF-input, a .vcf or .vcf.gz will be output here (depending on file ending). "
+                                   "If fasta-input, specify the file name like so: 'my_alignment_%%GENE.fasta', where '%%GENE' will be replaced by the name of the gene. "
+                                   "If the alignment output file name ends with .json, the amino acid translations for all genes will be exported in a single node-data JSON file.")
     translate_parser.add_argument('--vcf-reference-output', type=str, help="fasta file where reference sequence translations for VCF input will be written")
     translate_parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     translate_parser.set_defaults(func=translate.run)
