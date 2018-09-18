@@ -38,9 +38,8 @@ def safe_translate(sequence, report_exceptions=False):
         if len(sequence)%3 != 0:
             #This gives messy BiopythonWarning, so avoid.
             #But can result in lots of printing if doing all TB genes. Better way?
-            print("Gene length is not a multiple of 3. Adding trailing N's before translating.", file=sys.stderr)
-            while len(sequence)%3 != 0:
-                sequence += "N"
+            print("Sequence is not a multiple of 3. Adding trailing N's before translating.", file=sys.stderr)
+            sequence += "N"*(3-len(sequence)%3)
         translated_sequence = str(Seq.Seq(sequence).translate(gap='-'))
     except TranslationError:
         translation_exception = True
@@ -116,12 +115,12 @@ def translate_vcf_feature(sequences, ref, feature):
     prot['positions'] = []
 
     refNuc = str(feature.extract( SeqRecord(seq=Seq(ref)) ).seq)
-    if feature.strand != -1 and len(refNuc)%3 != 0:
+    # Need to get ref translation to store. Pad with N for safe_translate if not mult of 3
+    if len(refNuc)%3 != 0:
         #Doing this here for + strand prevents keyError for mutations near end of gene
-        #This can result in lots of printing if doing all TB genes. Better way?
-        print("Gene length is not a multiple of 3. Adding trailing N's before translating.", file=sys.stderr)
-        while len(refNuc)%3 != 0:
-            refNuc += "N"
+        #This can result in lots of printing if doing all bacterial genes. Better way?
+        print("Gene length of {} is not a multiple of 3. Adding trailing N's before translating.".format(feature.qualifiers['Name'][0]), file=sys.stderr)
+        refNuc += "N"*(3-len(refNuc)%3)
     ref_aa_seq = safe_translate(refNuc)
     prot['reference'] = ref_aa_seq
 
@@ -144,7 +143,7 @@ def translate_vcf_feature(sequences, ref, feature):
                             for i in genNucSites}
         else:
             aaRepLocs = {i//3:safe_translate( "".join([sequences[seqk][key+start]
-                                if key+start in sequences[seqk].keys() else refNuc[key]
+                                if key+start in sequences[seqk].keys() else ref[key+start]
                             for key in range(i-i%3,i+3-i%3)]) )
                         for i in genNucSites}
 
