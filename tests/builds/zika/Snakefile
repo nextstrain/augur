@@ -3,8 +3,8 @@ rule all:
         auspice_tree = "auspice/zika_tree.json",
         auspice_meta = "auspice/zika_meta.json",
         auspice_seq = "auspice/zika_seq.json",
+        auspice_seq_v2 = "auspice/zika_seq_v2.json",
         auspice_main = "auspice/zika.json"
-
 rule files:
     params:
         input_fasta = "data/zika.fasta",
@@ -210,7 +210,8 @@ rule exportv2:
         aa_muts = rules.translate.output.node_data,
         colors = files.colors,
     output:
-        auspice_main = rules.all.input.auspice_main
+        auspice_main = rules.all.input.auspice_main,
+        auspice_seq = rules.all.input.auspice_seq_v2
     shell:
         """
         augur export \
@@ -219,7 +220,8 @@ rule exportv2:
             --metadata {input.metadata} \
             --node-data {input.branch_lengths} {input.traits} {input.nt_muts} {input.aa_muts} \
             --colors {input.colors} \
-            --output-main {output.auspice_main}
+            --output-main {output.auspice_main} \
+            --output-sequence {output.auspice_seq}
         augur validate --new-schema --json {output.auspice_main}
         """
 
