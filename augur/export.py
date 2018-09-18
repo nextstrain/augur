@@ -400,8 +400,12 @@ def get_root_sequence(root_node, ref=None, translations=None):
 
     Parameters
     ----------
-    T : Phylo.Tree
-        Tree with sequences attached to nodes
+    root_node : dict
+    	data associated with the node
+    ref : str, optional
+        filename of the root sequence
+    translations : str, optional
+        file name of translations
 
     Returns
     -------
@@ -427,9 +431,14 @@ def run(args):
     node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
     nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
 
+    # export reference sequence data including translations. This is either the
+    # inferred sequence of the root, or the reference sequence with respect to
+    # which mutations are made on the tree (including possible mutations leading
+    # to the root of the tree -- typical case for vcf input data).
     if args.output_sequence:
         if T.root.name in nodes:
-            root_sequence = get_root_sequence(nodes[T.root.name], ref=args.reference, translations=args.reference_translations)
+            root_sequence = get_root_sequence(nodes[T.root.name], ref=args.reference,
+            								  translations=args.reference_translations)
         else:
             root_sequence = {}
 
@@ -484,7 +493,6 @@ def run(args):
     unified['title'] = args.title
     unified['maintainers'] = [{'name': name, 'href':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
     unified["version"] = "2.0"
-    unified["sequences"] ={}
 
     # get traits to colour by etc - do here before node_data is modified below
     # this ensures we get traits even if they are not on every node
@@ -497,12 +505,6 @@ def run(args):
 
     node_metadata = transfer_metadata_to_strains(strains, raw_strain_info, traits)
     unified["author_info"] = construct_author_info_and_make_keys(node_metadata, raw_strain_info)
-
-    # If present in node metadata (was written in json - fasta input), then write root sequence out
-    if 'sequence' in nodes[T.root.name]:
-        unified['sequences']['nuc_sequence'] = nodes[T.root.name]['sequence']
-    if "aa_sequences" in nodes[T.root.name]:
-        unified['sequences']["aa_sequences"] = nodes[T.root.name]["aa_sequences"]
 
     # This check allows validation to complete ok - but check auspice can handle having no author info! (it can in v1 schema)
     if len(unified["author_info"]) == 0:    # if no author data supplied
