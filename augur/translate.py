@@ -32,21 +32,21 @@ def safe_translate(sequence, report_exceptions=False):
     from Bio.Seq import CodonTable
     translation_exception = False
 
+    #sequences not mod 3 give messy BiopythonWarning, so avoid by padding.
+    if len(sequence)%3:
+        sequence_padded = sequence + "N"*(3-len(sequence)%3)
+    else:
+        sequence_padded = sequence
     try:
         # Attempt translation by extracting the sequence according to the
         # BioPhython SeqFeature in frame gaps of three will translate as '-'
-        if len(sequence)%3 != 0:
-            #This gives messy BiopythonWarning, so avoid.
-            #But can result in lots of printing if doing all TB genes. Better way?
-            print("Sequence is not a multiple of 3. Adding trailing N's before translating.", file=sys.stderr)
-            sequence += "N"*(3-len(sequence)%3)
-        translated_sequence = str(Seq.Seq(sequence).translate(gap='-'))
+        translated_sequence = str(Seq.Seq(sequence_padded).translate(gap='-'))
     except TranslationError:
         translation_exception = True
         # Any other codon like '-AA' or 'NNT' etc will fail. Translate codons
         # one by one.
         codon_table  = CodonTable.ambiguous_dna_by_name['Standard'].forward_table
-        str_seq = str(sequence)
+        str_seq = str(sequence_padded)
         codons = np.fromstring(str_seq[:len(str_seq) - len(str_seq) % 3], dtype='S3').astype('U')
         assert len(codons) > 0
         aas = []
@@ -115,12 +115,11 @@ def translate_vcf_feature(sequences, ref, feature):
     prot['positions'] = []
 
     refNuc = str(feature.extract( SeqRecord(seq=Seq(ref)) ).seq)
-    # Need to get ref translation to store. Pad with N for safe_translate if not mult of 3
-    if len(refNuc)%3 != 0:
-        #Doing this here for + strand prevents keyError for mutations near end of gene
-        #This can result in lots of printing if doing all bacterial genes. Better way?
-        print("Gene length of {} is not a multiple of 3. Adding trailing N's before translating.".format(feature.qualifiers['Name'][0]), file=sys.stderr)
-        refNuc += "N"*(3-len(refNuc)%3)
+    # Need to get ref translation to store. check if multiple of 3 for sanity.
+    # will be padded in safe_translate if not
+    if len(refNuc)%3:
+        print("Gene length of {} is not a multiple of 3. will pad with N".format(feature.qualifiers['Name'][0]), file=sys.stderr)
+
     ref_aa_seq = safe_translate(refNuc)
     prot['reference'] = ref_aa_seq
 
