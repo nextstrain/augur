@@ -159,7 +159,8 @@ rule traits:
     output:
         node_data = "results/traits.json",
     params:
-        columns = "region country"
+        columns = "region country",
+        bias = 3
     shell:
         """
         augur traits \
@@ -167,6 +168,7 @@ rule traits:
             --metadata {input.metadata} \
             --output {output.node_data} \
             --columns {params.columns} \
+            --bias {params.bias} \
             --confidence
         """
 
