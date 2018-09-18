@@ -25,6 +25,10 @@ main() {
 
     assert-clean-working-dir
 
+    git checkout release
+    git reset --hard "release@{1}"
+    git checkout master
+
     git reset "$version~"
     git tag -d "$version"
     git checkout "$version_file"

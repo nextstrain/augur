@@ -14,11 +14,11 @@ setup(
         author = "nextstrain developers",
         author_email = "trevor@bedford.io, richard.neher@unibas.ch",
         description = ("Pipelines for real-time phylogenetic analysis"),
-        license = "MIT",
         keywords = "nextstrain, molecular epidemiology",
         url = "https://github.com/nextstrain/augur",
         packages=['augur'],
         package_data={'augur': ['data/*']},
+        data_files = [("", ["LICENSE.txt"])],
         python_requires = '>=3.4',
         install_requires = [
             "bcbio-gff >=0.6.4, ==0.6.*",
@@ -42,7 +42,7 @@ setup(
         classifiers=[
             "Development Status :: 3 - Alpha",
             "Topic :: Scientific/Engineering :: Bio-Informatics",
-            "License :: OSI Approved :: MIT License",
+            "License :: OSI Approved :: GNU Affero General Public License v3",
 
             # Python 3 only; pathlib is >=3.4
             "Programming Language :: Python :: 3",

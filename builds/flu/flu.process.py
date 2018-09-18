@@ -393,12 +393,15 @@ def plot_titer_matrix(titer_model, titers, clades=None, fname=None, title=None, 
             plt.close()
 
 # only use with normalized titers (so arithmetric mean)
-def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clades=None, fname=None, title=None, potency=False, minDate=2016.833, minMeasurements=30, minRows=3, maxSeraPerClade=5):
+def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clades=None, fname=None, title=None, potency=False, minDate=2016.833, minMeasurements=30, minRows=3, maxSeraPerClade=5, minHomologousTiter=80):
     from collections import defaultdict
     import matplotlib
     # important to use a non-interactive backend, otherwise will crash on cluster
     matplotlib.use('agg')
     import matplotlib.pyplot as plt
+
+    normalized_titers = titers.titers_normalized
+    raw_titers = titers.consensus_titers_raw
 
     symb = ['o', 's', 'd', 'v', '<', '>', '+']
     cols = ['C'+str(i) for i in range(10)]
@@ -406,10 +409,10 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
     grouped_titers = defaultdict(list)
 
     autologous_exists = {}
-    for (test, (ref, serum)), val in titers.items():
+    for (test, (ref, serum)), val in normalized_titers.items():
         autologous_exists[ref] = False
 
-    for (test, (ref, serum)), val in titers.items():
+    for (test, (ref, serum)), val in normalized_titers.items():
         if potency:
             val -= titer_model.serum_potency[(ref, serum)]
         if test not in titer_model.node_lookup:
@@ -423,12 +426,15 @@ def plot_titer_matrix_grouped(titer_model, titers, virus_clades=None, serum_clad
             clade = 'unassigned'
         if ref!=test:
             if date >= minDate and "-egg" not in test: # only keep measurements to cell antigens, egg sera are already normalized
-                if np.isscalar(val):
-                    grouped_titers[(ref, clade)].append(val)
-                else:
-                    grouped_titers[(ref, clade)].append(np.mean(val))
+                if (ref, (ref, serum)) in raw_titers:
+                    if raw_titers[(ref, (ref, serum))] > minHomologousTiter: # only keep sera with homologous titer greater than min
+                        if np.isscalar(val):
+                            grouped_titers[(ref, clade)].append(val)
+                        else:
+                            grouped_titers[(ref, clade)].append(np.mean(val))
         else:
-            autologous_exists[ref] = True
+            if np.isscalar(val):
+                autologous_exists[ref] = True
 
     titer_means = defaultdict(list)
     ntiters = defaultdict(int)
@@ -579,9 +585,9 @@ if __name__=="__main__":
                 virus_clades = clades
                 serum_clades = clades
             elif runner.info["lineage"]=='vic':
-                clades = ['1A', '117V', 'DV']
-                virus_clades = ['117V', 'DV']
-                serum_clades = ['1A', '117V', 'DV']
+                clades = ['1A', 'V1A', 'V1A.1', 'V1A/165N']
+                virus_clades = ['V1A', 'V1A.1', 'V1A/165N']
+                serum_clades = ['1A', 'V1A', 'V1A.1', 'V1A/165N']
             elif runner.info["lineage"]=='yam':
                 clades = ['2', '3', '172Q']
                 virus_clades = clades
@@ -759,10 +765,10 @@ if __name__=="__main__":
                 plot_titer_matrix(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
                             fname='processed/%s_normalized_with_potency_titer_matrix.png'%runner.info["prefix"],
                             title = runner.info["prefix"], mean='arithmetric', clades=clades, normalized=True, potency=True)
-                plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers,
                             fname='processed/%s_grouped_titer_matrix.png'%runner.info["prefix"],
                             title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=False)
-                plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers.titers_normalized,
+                plot_titer_matrix_grouped(runner.HI_subs, runner.HI_subs.titers,
                             fname='processed/%s_grouped_with_potency_titer_matrix.png'%runner.info["prefix"],
                             title = runner.info["prefix"], virus_clades=virus_clades, serum_clades=serum_clades, potency=True)
 
