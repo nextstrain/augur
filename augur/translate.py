@@ -32,22 +32,21 @@ def safe_translate(sequence, report_exceptions=False):
     from Bio.Seq import CodonTable
     translation_exception = False
 
+    #sequences not mod 3 give messy BiopythonWarning, so avoid by padding.
+    if len(sequence)%3:
+        sequence_padded = sequence + "N"*(3-len(sequence)%3)
+    else:
+        sequence_padded = sequence
     try:
         # Attempt translation by extracting the sequence according to the
         # BioPhython SeqFeature in frame gaps of three will translate as '-'
-        if len(sequence)%3 != 0:
-            #This gives messy BiopythonWarning, so avoid.
-            #But can result in lots of printing if doing all TB genes. Better way?
-            print("Gene length is not a multiple of 3. Adding trailing N's before translating.", file=sys.stderr)
-            while len(sequence)%3 != 0:
-                sequence += "N"
-        translated_sequence = str(Seq.Seq(sequence).translate(gap='-'))
+        translated_sequence = str(Seq.Seq(sequence_padded).translate(gap='-'))
     except TranslationError:
         translation_exception = True
         # Any other codon like '-AA' or 'NNT' etc will fail. Translate codons
         # one by one.
         codon_table  = CodonTable.ambiguous_dna_by_name['Standard'].forward_table
-        str_seq = str(sequence)
+        str_seq = str(sequence_padded)
         codons = np.fromstring(str_seq[:len(str_seq) - len(str_seq) % 3], dtype='S3').astype('U')
         assert len(codons) > 0
         aas = []
@@ -116,6 +115,11 @@ def translate_vcf_feature(sequences, ref, feature):
     prot['positions'] = []
 
     refNuc = str(feature.extract( SeqRecord(seq=Seq(ref)) ).seq)
+    # Need to get ref translation to store. check if multiple of 3 for sanity.
+    # will be padded in safe_translate if not
+    if len(refNuc)%3:
+        print("Gene length of {} is not a multiple of 3. will pad with N".format(feature.qualifiers['Name'][0]), file=sys.stderr)
+
     ref_aa_seq = safe_translate(refNuc)
     prot['reference'] = ref_aa_seq
 
@@ -138,7 +142,7 @@ def translate_vcf_feature(sequences, ref, feature):
                             for i in genNucSites}
         else:
             aaRepLocs = {i//3:safe_translate( "".join([sequences[seqk][key+start]
-                                if key+start in sequences[seqk].keys() else refNuc[key]
+                                if key+start in sequences[seqk].keys() else ref[key+start]
                             for key in range(i-i%3,i+3-i%3)]) )
                         for i in genNucSites}
 

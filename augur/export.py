@@ -90,6 +90,8 @@ def recursively_decorate_tree_json_nextflu_schema(node, node_metadata, decoratio
             if "is_attr" in data and data["is_attr"]:
                 node["attr"][insert_key] = val
             else:
+                if insert_key == 'aa_muts':
+                    val = {k:v for k,v in val.items() if len(v) }
                 node[insert_key] = val
 
     if "children" in node:
