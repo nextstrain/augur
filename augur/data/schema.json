@@ -238,30 +238,6 @@
                 }
             }
         },
-        "sequences": {
-            "description": "Root node sequences",
-            "$comment": "Nucleotide and amino-acid sequences for the root",
-            "type": "object",
-            "properties": {
-                "nuc_sequence": {
-                    "description": "Root node nucleotide sequence",
-                    "$comment": "Full nucleotide sequence of the root node",
-                    "type": "string",
-                    "pattern": "[ATCGN-]+"
-                },
-                "aa_sequences": {
-                    "description": "Root node translations",
-                    "$comment": "Translation for each gene on the root node",
-                    "type": "object",
-                    "patternProperties": {
-                        "^.+$": {
-                            "type": "string",
-                            "pattern": "^.+$"
-                        }
-                    }
-                }
-            }
-        },
         "tree": {
             "type" : "object",
             "$comment": "The phylogeny in a nested JSON structure",
