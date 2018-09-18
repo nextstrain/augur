@@ -2,7 +2,7 @@
 import sys
 from augur import parse, filter, align, tree, refine, ancestral
 from augur import traits, translate, mask, titers, export
-from augur import validate, sequence_traits, clades, metacheck
+from augur import validate, sequence_traits, clades, metacheck, version
 
 if __name__=="__main__":
     import argparse
@@ -183,6 +183,8 @@ if __name__=="__main__":
     export_parser =  subparsers.add_parser("export", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     export_parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
     export_parser.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
+    export_parser.add_argument('--reference', required=False, help="reference sequence for export to browser, only vcf")
+    export_parser.add_argument('--reference-translations', required=False, help="reference translations for export to browser, only vcf")
     export_parser.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
     export_parser.add_argument('--auspice-config', help="file with auspice configuration")
     export_parser.add_argument('--colors', help="file with color definitions")
@@ -190,6 +192,7 @@ if __name__=="__main__":
     export_parser.add_argument('--new-schema', action="store_true", help="export JSONs using nexflu schema")
     export_parser.add_argument('--output-main', help="Main JSON file name that is passed on to auspice (e.g., zika.json).")
     export_parser.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json). Only used with --nextflu-schema")
+    export_parser.add_argument('--output-sequence', help="JSON file name that is passed on to auspice (e.g., zika_seq.json). Only used with --nextflu-schema")
     export_parser.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json). Only used with --nextflu-schema")
     export_parser.add_argument('--title', default="Analysis", help="Title to be displayed by auspice")
     export_parser.add_argument('--maintainers', default=[""], nargs='+', help="Analysis maintained by")
@@ -204,6 +207,14 @@ if __name__=="__main__":
     validate_parser.add_argument('--json', required=True, nargs='+', help="JSONs to validate")
     validate_parser.add_argument('--new-schema', action="store_true", help="use nexflu JSON schema")
     validate_parser.set_defaults(func=validate.run)
+
+    ## VERSION.PY
+    version_parser = subparsers.add_parser(
+        "version",
+        description     = version.__doc__,
+        formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+
+    version_parser.set_defaults(func=version.run)
 
     args = parser.parse_args()
     return_code = args.func(args)

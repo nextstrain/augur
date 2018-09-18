@@ -1,17 +1,25 @@
-import os
 from setuptools import setup
+from pathlib    import Path
+
+base_dir     = Path(__file__).parent.resolve()
+version_file = base_dir / "augur/__version__.py"
+
+# Eval the version file to get __version__; avoids importing our own package
+with version_file.open() as f:
+    exec(f.read())
 
 setup(
-        name = "augur",
-        version = "0.1.0",
+        name = "nextstrain-augur",
+        version = __version__,
         author = "nextstrain developers",
         author_email = "trevor@bedford.io, richard.neher@unibas.ch",
         description = ("Pipelines for real-time phylogenetic analysis"),
-        license = "MIT",
         keywords = "nextstrain, molecular epidemiology",
         url = "https://github.com/nextstrain/augur",
         packages=['augur'],
         package_data={'augur': ['data/*']},
+        data_files = [("", ["LICENSE.txt"])],
+        python_requires = '>=3.4',
         install_requires = [
             "bcbio-gff >=0.6.4, ==0.6.*",
             "biopython >=1.69, ==1.*",
@@ -33,8 +41,14 @@ setup(
         },
         classifiers=[
             "Development Status :: 3 - Alpha",
-            "Topic :: Science",
-            "License :: OSI Approved :: MIT License",
+            "Topic :: Scientific/Engineering :: Bio-Informatics",
+            "License :: OSI Approved :: GNU Affero General Public License v3",
+
+            # Python 3 only; pathlib is >=3.4
+            "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3.4",
+            "Programming Language :: Python :: 3.5",
+            "Programming Language :: Python :: 3.6",
             ],
         scripts=['bin/augur']
         )

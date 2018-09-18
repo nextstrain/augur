@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# Rewinds the changes made by an immediately prior run of devel/release.  This
+# is only useful if a) you've spotted a mistake after running devel/release but
+# before pushing, or b) you're testing changes to the devel/release script and
+# want to run it repeatedly with the same input.
+#
+set -euo pipefail
+
+devel="$(dirname $0)"
+repo="$devel/.."
+version_file="$repo/augur/__version__.py"
+changes_file="$repo/CHANGES.md"
+
+main() {
+    local version="$(git describe --exact-match)"
+
+    if [[ -z $version ]]; then
+        echo >&2
+        echo "The current HEAD doesn't match any tag.  This script can only be" >&2
+        echo "run immediately after devel/release." >&2
+        echo >&2
+        exit 1
+    fi
+
+    assert-clean-working-dir
+
+    git checkout release
+    git reset --hard "release@{1}"
+    git checkout master
+
+    git reset "$version~"
+    git tag -d "$version"
+    git checkout "$version_file"
+    remove-changelog-header "$version"
+}
+
+assert-clean-working-dir() {
+    local status="$(git status --porcelain --untracked-files=no)"
+
+    if [[ -n $status ]]; then
+        echo >&2
+        echo "Please commit all changes before releasing:" >&2
+        echo >&2
+        echo "$status" >&2
+        echo >&2
+        exit 1
+    fi
+}
+
+remove-changelog-header() {
+    local version="$1"
+    perl -0pi -e "s/(?<=^# __NEXT__\n\n)\n# \Q$version\E .+\n\n//m" "$changes_file"
+}
+
+main "$@"

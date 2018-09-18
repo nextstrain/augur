@@ -2,6 +2,7 @@ rule all:
     input:
         auspice_tree = "auspice/zika_tree.json",
         auspice_meta = "auspice/zika_meta.json",
+        auspice_seq = "auspice/zika_seq.json",
         auspice_main = "auspice/zika.json"
 
 rule files:
@@ -182,7 +183,8 @@ rule export:
         auspice_config = files.auspice_config
     output:
         auspice_tree = rules.all.input.auspice_tree,
-        auspice_meta = rules.all.input.auspice_meta
+        auspice_meta = rules.all.input.auspice_meta,
+        auspice_seq = rules.all.input.auspice_seq
     shell:
         """
         augur export \
@@ -192,7 +194,8 @@ rule export:
             --colors {input.colors} \
             --auspice-config {input.auspice_config} \
             --output-tree {output.auspice_tree} \
-            --output-meta {output.auspice_meta}
+            --output-meta {output.auspice_meta} \
+            --output-sequence {output.auspice_seq}
         augur validate --json {output.auspice_tree} {output.auspice_meta}
         """
 

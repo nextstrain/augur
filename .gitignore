@@ -20,6 +20,7 @@ dist/
 *.pyc
 .cache/
 augur.egg-info/
+nextstrain_augur.egg-info/
 env/
 .pytest_cache
 
@@ -50,3 +51,6 @@ Thumbs.db
 # IDE #
 #######
 *sublime*
+
+# slurm logs
+builds/flu/slurm_log/*
