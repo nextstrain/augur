@@ -309,6 +309,12 @@ def run(args):
                         aa_muts[c.name]["aa_muts"][fname] = tmp
                     else:
                         print("no sequence pair for nodes %s-%s"%(c.name, n.name))
+            if n==tree.root:
+                aa_muts[n.name]={"aa_muts":{}, "aa_sequences":{}}
+                for fname, aln in translations.items():
+                    if n.name in aln:
+                        aa_muts[n.name]["aa_sequences"][fname] = "".join(aln[n.name])
+
 
     write_json({'annotations':annotations, 'nodes':aa_muts}, args.output)
     print("amino acid mutations written to",args.output, file=sys.stdout)

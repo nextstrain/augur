@@ -382,7 +382,7 @@ def add_metadata_to_tree(node, metadata):
 
 def get_traits(node_data):
     exclude = ['branch_length', 'num_date', 'raw_date', 'numdate', 'clock_length',
-               'mutation_length', 'date', 'muts', 'aa_muts', 'sequence']
+               'mutation_length', 'date', 'muts', 'aa_muts', 'sequence', 'aa_sequences']
     traits = []
     for seq, val in node_data['nodes'].items():
         newT = [t for t in list(val.keys()) if t not in traits and t not in exclude]
@@ -391,9 +391,58 @@ def get_traits(node_data):
 
     return traits
 
+
+def get_root_sequence(root_node, ref=None, translations=None):
+    '''
+    create a json structure that contains the sequence of the root, both as
+    nucleotide and as translations. This allows look-up of the sequence for
+    all states, including those that are not variable.
+
+    Parameters
+    ----------
+    root_node : dict
+    	data associated with the node
+    ref : str, optional
+        filename of the root sequence
+    translations : str, optional
+        file name of translations
+
+    Returns
+    -------
+    dict
+        dict of nucleotide sequence and translations
+    '''
+    root_sequence = {}
+    if ref and translations:
+        from Bio import SeqIO
+        refseq = SeqIO.read(ref, 'fasta')
+        root_sequence['nuc']=str(refseq.seq)
+        for gene in SeqIO.parse(translations, 'fasta'):
+            root_sequence[gene.id] = str(gene.seq)
+    else:
+        root_sequence["nuc"] = root_node["sequence"]
+        root_sequence.update(root_node["aa_sequences"])
+
+    return root_sequence
+
+
 def run(args):
     T = Phylo.read(args.tree, 'newick')
     node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
+    nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
+
+    # export reference sequence data including translations. This is either the
+    # inferred sequence of the root, or the reference sequence with respect to
+    # which mutations are made on the tree (including possible mutations leading
+    # to the root of the tree -- typical case for vcf input data).
+    if args.output_sequence:
+        if T.root.name in nodes:
+            root_sequence = get_root_sequence(nodes[T.root.name], ref=args.reference,
+            								  translations=args.reference_translations)
+        else:
+            root_sequence = {}
+
+        write_json(root_sequence, args.output_sequence)
 
     if not args.new_schema:
         # This schema is deprecated. It remains because:
@@ -401,7 +450,6 @@ def run(args):
         # export the tree JSON first
         meta_json = read_config(args.auspice_config)
         meta_tsv, _ = read_metadata(args.metadata)
-        nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
         add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json)
 
         tree_layout(T)
@@ -415,7 +463,8 @@ def run(args):
             {"key": "aa_muts", "is_attr": False}
         ]
         traits_via_node_metadata = {k for node in nodes.values() for k in node.keys()}
-        traits_via_node_metadata -= {'sequence', 'mutation_length', 'branch_length', 'numdate', 'mutations', 'muts', 'aa_muts'}
+        traits_via_node_metadata -= {'sequence', 'mutation_length', 'branch_length', 'numdate',
+                                     'mutations', 'muts', 'aa_muts', 'aa_sequences'}
         for trait in traits_via_node_metadata:
             tree_decorations.append({"key": trait, "is_attr": True})
 
