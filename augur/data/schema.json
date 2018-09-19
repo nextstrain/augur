@@ -318,6 +318,7 @@
                     "$comment": "same numbering scheme as used by the meta.JSON -> annotations",
                     "$comment": "combining nuc + AAs parallels the metadata -> annotations structure",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties":  {
                         "nuc": {
                             "description": "nucelotide mutations",
