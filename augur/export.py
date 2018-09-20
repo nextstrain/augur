@@ -91,7 +91,7 @@ def recursively_decorate_tree_json_nextflu_schema(node, node_metadata, decoratio
                 node["attr"][insert_key] = val
             else:
                 if insert_key == 'aa_muts':
-                    val = {k:v for k,v in val.items() if len(v) }
+                    val = {re.sub("_|-", "", k):v for k,v in val.items() if len(v) }
                 node[insert_key] = val
 
     if "children" in node:
@@ -181,7 +181,8 @@ def process_annotations(node_data):
     # treetime adds "annotations" to node_data
     if "annotations" not in node_data: # if haven't run tree through treetime
         return None
-    return node_data["annotations"]
+    annotations = {re.sub("_|-", "", k):v for k,v in node_data['annotations'].items()}
+    return annotations  # node_data["annotations"]
 
 def process_panels(user_panels, meta_json, nextflu=False):
     try:
@@ -340,7 +341,7 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
             if "muts" in raw_data and len(raw_data["muts"]):
                 node["mutations"]["nuc"] = raw_data["muts"]
             if "aa_muts" in raw_data:
-                aa = {gene:data for gene, data in raw_data["aa_muts"].items() if len(data)}
+                aa = {re.sub("_|-", "", gene):data for gene, data in raw_data["aa_muts"].items() if len(data)}
                 node["mutations"].update(aa)
 
         # TRANSFER NODE DATES #
@@ -420,7 +421,7 @@ def get_root_sequence(root_node, ref=None, translations=None):
         refseq = SeqIO.read(ref, 'fasta')
         root_sequence['nuc']=str(refseq.seq)
         for gene in SeqIO.parse(translations, 'fasta'):
-            root_sequence[gene.id] = str(gene.seq)
+            root_sequence[re.sub("_|-", "", gene.id)] = str(gene.seq)
     else:
         root_sequence["nuc"] = root_node["sequence"]
         root_sequence.update(root_node["aa_sequences"])
