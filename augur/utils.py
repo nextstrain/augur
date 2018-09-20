@@ -167,7 +167,7 @@ def load_features(reference, feature_names=None):
             from BCBio import GFF #Package name is confusing - tell user exactly what they need!
         except ImportError:
             print("ERROR: Package BCBio.GFF not found! Please install using \'pip install bcbio-gff\' before re-running.")
-            return -1
+            return None
         limit_info = dict( gff_type = ['gene'] )
 
         with open(reference) as in_handle:
