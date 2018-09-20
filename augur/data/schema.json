@@ -318,6 +318,7 @@
                     "$comment": "same numbering scheme as used by the meta.JSON -> annotations",
                     "$comment": "combining nuc + AAs parallels the metadata -> annotations structure",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties":  {
                         "nuc": {
                             "description": "nucelotide mutations",
@@ -332,7 +333,7 @@
                         }
                     },
                     "patternProperties": {
-                        "^[a-zA-Z0-9]+$": {
+                        "^[a-zA-Z0-9_]+$": {
                             "description": "Amino acid mutations for this gene (or annotated region)",
                             "$comment": "properties must exist in the meta.JSON -> annotation object",
                             "type": "array",

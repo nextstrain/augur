@@ -166,7 +166,7 @@ def verifyMetaAndOrTreeJSONsAreInternallyConsistent(meta, tree):
     mj = meta["json"]
 
     if "panels" in mj and "entropy" in mj["panels"] and "annotations" not in mj:
-        error("\tERROR: The entropy panel has been specified but annotations don't exist.", file=sys.stderr)
+        error("\tERROR: The entropy panel has been specified but annotations don't exist.")
 
     if not tree:
         return return_status
@@ -320,13 +320,13 @@ def verifyMainJSONIsInternallyConsistent(main):
                 if author not in data["author_info"]:
                     error("Author \"{}\" defined on a tree node but not in \"author_info\".".format(author))
 
-    genes_with_mutations = collectMutationGenes(data)
+    genes_with_mutations = collectMutationGenes(data['tree'])
     if len(genes_with_mutations):
-        if "annotations" not in data:
-            error("The tree defined mutations on genes {}, but annotations aren't defined in the meta JSON.".format(", ".join(genes_with_aa_muts)))
+        if "genome_annotations" not in data:
+            error("The tree defined mutations on genes {}, but annotations aren't defined in the meta JSON.".format(", ".join(genes_with_mutations)))
         else:
             for gene in genes_with_mutations:
-                if gene not in data["annotations"]:
+                if gene not in data["genome_annotations"]:
                     error("The tree defined mutations on gene {} which doesn't appear in the metadata annotations object.".format(gene))
 
     return return_status
