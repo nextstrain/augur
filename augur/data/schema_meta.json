@@ -80,7 +80,7 @@
                 }
             },
             "patternProperties": {
-                "^[a-zA-Z0-9*]+$": {"$ref": "#/properties/annotations/properties/nuc"}
+                "^[a-zA-Z0-9*_]+$": {"$ref": "#/properties/annotations/properties/nuc"}
             }
         },
         "maintainer": {
