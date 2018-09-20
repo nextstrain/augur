@@ -375,17 +375,25 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
         run_shell_command(" ".join(call), raise_errors = True)
 
 
-def run_shell_command(cmd, raise_errors = False):
+def run_shell_command(cmd, raise_errors = False, extra_env = None):
     """
     Run the given command string via the shell with error checking.
 
     Returns True if the command exits normally.  Returns False if the command
     exits with failure and "raise_errors" is False (the default).  When
     "raise_errors" is True, exceptions are rethrown.
+
+    If an *extra_env* mapping is passed, the provided keys and values are
+    overlayed onto the default subprocess environment.
     """
+    env = os.environ.copy()
+
+    if extra_env:
+        env.update(extra_env)
+
     try:
         # Use check_call() instead of run() since the latter was added only in Python 3.5.
-        subprocess.check_call(cmd, shell = True)
+        subprocess.check_call(cmd, shell = True, env = env)
     except subprocess.CalledProcessError as error:
         print(
             "ERROR: {program} exited {returncode}, invoked as: {cmd}".format(

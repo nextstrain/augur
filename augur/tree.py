@@ -65,7 +65,7 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=2):
 
     return T
 
-def build_fasttree(aln_file, out_file, clean_up=True):
+def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1):
     '''
     build tree using fasttree with parameters "-nt"
     '''
@@ -82,13 +82,24 @@ def build_fasttree(aln_file, out_file, clean_up=True):
         "fasttree"
     ])
 
+    # By default FastTree with OpenMP support uses all available cores.
+    # However, it respects the standard OpenMP environment variable controlling
+    # this as described at <http://www.microbesonline.org/fasttree/#OpenMP>.
+    #
+    # We always set it, regardless of it the found FastTree executable contains
+    # "MP" in the name, because the generic "FastTree" or "fasttree" variants
+    # might be OpenMP-enabled too.
+    extra_env = {
+        "OMP_NUM_THREADS": str(nthreads),
+    }
+
     call = [fasttree, "-nosupport", "-nt", aln_file, "1>", out_file, "2>", log_file]
     cmd = " ".join(call)
     print("Building a tree via:\n\t" + cmd +
           "\n\tPrice et al: FastTree 2 - Approximately Maximum-Likelihood Trees for Large Alignments." +
           "\n\tPLoS ONE 5(3): e9490. https://doi.org/10.1371/journal.pone.0009490\n")
     try:
-        run_shell_command(cmd, raise_errors = True)
+        run_shell_command(cmd, raise_errors = True, extra_env = extra_env)
         T = Phylo.read(out_file, 'newick')
         if clean_up:
             os.remove(log_file)
@@ -291,7 +302,7 @@ def run(args):
     elif args.method=='iqtree':
         T = build_iqtree(fasta, tree_fname, args.substitution_model, nthreads=args.nthreads)
     elif args.method=='fasttree':
-        T = build_fasttree(fasta, tree_fname)
+        T = build_fasttree(fasta, tree_fname, nthreads=args.nthreads)
     else:
         print("ERROR: unknown tree builder provided to --method: %s" % args.method, file = sys.stderr)
         return 1
