@@ -244,7 +244,7 @@ def run(args):
     if any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
         if not args.vcf_reference:
             print("ERROR: a reference Fasta is required with VCF-format alignments")
-            return -1
+            return 1
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
         sequences = compress_seq['sequences']
         ref = compress_seq['reference']
@@ -283,4 +283,4 @@ def run(args):
         import json
         tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
     else:
-        return -1
+        return 1

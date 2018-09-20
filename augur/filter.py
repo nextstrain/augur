@@ -238,12 +238,12 @@ def run(args):
         dropped_samps = list(set(all_seq) - set(seq_keep))
         if len(dropped_samps) == len(all_seq): #All samples have been dropped! Stop run, warn user.
             print("ERROR: All samples have been dropped! Check filter rules and metadata file format.")
-            return -1
+            return 1
         write_vcf(is_compressed, args.sequences, args.output, dropped_samps)
 
     else:
         seq_to_keep = [seq for id,seq in seqs.items() if id in seq_keep]
         if len(seq_to_keep) == 0:
             print("ERROR: All samples have been dropped! Check filter rules and metadata file format.")
-            return -1
+            return 1
         SeqIO.write(seq_to_keep, args.output, 'fasta')

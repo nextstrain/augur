@@ -53,12 +53,12 @@ def run(args):
             pass
     if T is None:
         print("ERROR: reading tree from %s failed."%args.tree)
-        return -1
+        return 1
 
     if any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
         if not args.vcf_reference:
             print("ERROR: a reference Fasta is required with VCF-format alignments")
-            return -1
+            return 1
 
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
         aln = compress_seq['sequences']
