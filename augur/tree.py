@@ -6,7 +6,7 @@ import os, shutil, sys, time
 from Bio import Phylo
 from treetime.vcf_utils import read_vcf
 import numpy as np
-from .utils import run_shell_command
+from .utils import run_shell_command, nthreads_value
 
 def find_executable(names, default = None):
     """
@@ -26,7 +26,7 @@ def find_executable(names, default = None):
     return exe
 
 
-def build_raxml(aln_file, out_file, clean_up=True, nthreads=2):
+def build_raxml(aln_file, out_file, clean_up=True, nthreads=1):
     '''
     build tree using RAxML with parameters '-f d -m GTRCAT -c 25 -p 235813 -n tre"
     '''
@@ -110,7 +110,7 @@ def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1):
     return T
 
 
-def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nthreads=2):
+def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nthreads=1):
     '''
     build tree using IQ-Tree with parameters "-fast"
     arguments:
@@ -258,8 +258,8 @@ def register_arguments(parser):
     parser.add_argument('--output', '-o', type=str, help='file name to write tree to')
     parser.add_argument('--substitution-model', default="GTR", choices=["HKY", "GTR", "HKY+G", "GTR+G"],
                                 help='substitution model to use. Specify \'none\' to run ModelTest. Currently, only available for IQTREE.')
-    parser.add_argument('--nthreads', type=int, default=2,
-                             help="number of threads used")
+    parser.add_argument('--nthreads', type=nthreads_value, default=1,
+                                help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--exclude-sites', type=str, help='file name of sites to exclude for raw tree building (VCF only)')
 

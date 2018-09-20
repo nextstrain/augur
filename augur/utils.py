@@ -1,3 +1,4 @@
+import argparse
 import os, json, sys
 import pandas as pd
 import subprocess
@@ -417,3 +418,41 @@ def first_line(text):
     whitespace.
     """
     return text.strip().splitlines()[0]
+
+
+def available_cpu_cores(fallback: int = 1) -> int:
+    """
+    Returns the number (an int) of CPU cores available to this **process**, if
+    determinable, otherwise the number of CPU cores available to the
+    **computer**, if determinable, otherwise the *fallback* number (which
+    defaults to 1).
+    """
+    try:
+        # Note that this is the correct function to use, not os.cpu_count(), as
+        # described in the latter's documentation.
+        #
+        # The reason, which the documentation does not detail, is that
+        # processes may be pinned or restricted to certain CPUs by setting
+        # their "affinity".  This is not typical except in high-performance
+        # computing environments, but if it is done, then a computer with say
+        # 24 total cores may only allow our process to use 12.  If we tried to
+        # naively use all 24, we'd end up with two threads across the 12 cores.
+        # This would degrade performance rather than improve it!
+        return len(os.sched_getaffinity(0))
+    except:
+        # cpu_count() returns None if the value is indeterminable.
+        return os.cpu_count() or fallback
+
+
+def nthreads_value(value):
+    """
+    Argument value validation and casting function for --nthreads.
+    """
+
+    if value.lower() == 'auto':
+        return available_cpu_cores()
+
+    try:
+        return int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError("'%s' is not an integer or the word 'auto'" % value) from None
