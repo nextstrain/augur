@@ -2,7 +2,7 @@
 Build a tree using a variety of methods.
 """
 
-import os, shutil, time
+import os, shutil, sys, time
 from Bio import Phylo
 from treetime.vcf_utils import read_vcf
 import numpy as np
@@ -290,8 +290,12 @@ def run(args):
         T = build_raxml(fasta, tree_fname, nthreads=args.nthreads)
     elif args.method=='iqtree':
         T = build_iqtree(fasta, tree_fname, args.substitution_model, nthreads=args.nthreads)
-    else: #use fasttree - if add more options, put another check here
+    elif args.method=='fasttree':
         T = build_fasttree(fasta, tree_fname)
+    else:
+        print("ERROR: unknown tree builder provided to --method: %s" % args.method, file = sys.stderr)
+        return 1
+
     end = time.time()
     print("Building original tree took {} seconds".format(str(end-start)))
 
