@@ -35,9 +35,9 @@ Augur uses some common external bioinformatics programs which you'll need to ins
 * `augur align` requires [mafft](https://mafft.cbrc.jp/alignment/software/)
 
 * `augur tree` requires at least one of:
-   - [RAxML](https://sco.h-its.org/exelixis/web/software/raxml/index.html) (used by default)
+   - [IQ-TREE](http://www.iqtree.org/) (used by default)
+   - [RAxML](https://sco.h-its.org/exelixis/web/software/raxml/) (optional alternative)
    - [FastTree](http://www.microbesonline.org/fasttree/) (optional alternative)
-   - [IQ-TREE](http://www.iqtree.org/) (optional alternative)
 
 * Bacterial data (or any VCF usage) requires [vcftools](https://vcftools.github.io/)
 
