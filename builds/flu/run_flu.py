@@ -30,8 +30,8 @@ def run_live(lineages = None, resolutions = None, system="local",
                 'flu.process.py',
                 '--json', 'prepared/flu_seasonal_%s_ha_%s.json'%(lineage, resolution)
             ]
-            if lineage == "h3n2":
-                call = call + ['--annotate_fitness', '--predictors', 'cTiterSub', '--predictors_params', '1.13', '--predictors_sds', '0.72']
+            # if lineage == "h3n2":
+            #     call = call + ['--annotate_fitness', '--predictors', 'cTiterSub', '--predictors_params', '1.13', '--predictors_sds', '0.72']
 
             if process_na:
                 call = [
