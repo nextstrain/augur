@@ -70,7 +70,8 @@ outliers = {
         "A/Ireland/61097/2017", "A/Shanghai-Minxing/1482/2017", "A/Asaka/2/2017", "A/Ohio/80/2012",
         "A/Wisconsin/31/2012", "A/Wisconsin/30/2012", "A/Ohio/74/2012", "A/Wisconsin/28/2012",
         "A/Ohio/85/2012", "A/Wisconsin/35/2012", "A/Maryland/28/2012", "A/Indiana/27/2018",
-        "A/SriLanka/35/2018", "A/Zhejiang-Nanxun/12/2018", "A/SouthAustralia/22/2018"
+        "A/SriLanka/35/2018", "A/Zhejiang-Nanxun/12/2018", "A/SouthAustralia/22/2018",
+        "A/Maryland/50/2017", "A/Maryland/55/2017", "A/Maryland/64/2017"
     ],
     'h1n1pdm': [
         "A/Wisconsin/87/2005", "A/Iowa/1/2006", "A/Iowa/1/2006-egg", "A/Ohio/1/2007", "A/Ohio/2/2007",
