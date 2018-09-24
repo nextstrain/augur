@@ -29,7 +29,7 @@ setup(
             "jsonschema ==3.0.0a1",
             "matplotlib >=2.0, ==2.*",
             "pandas >=0.17.1",
-            "phylo-treetime >=0.5.1",
+            "phylo-treetime >=0.4.1, ==0.4.*",
             "seaborn >=0.6.0, ==0.6.*",
             "snakemake >=5.1.5, ==5.*"
         ],
