@@ -262,7 +262,8 @@ def construct_author_info_nexflu(metadata, tree, nodes):
     author info maps the "authors" property present on tree nodes
     to further information about the paper etc
     """
-
+    if not metadata:
+        return {}
     authorsInTree = set()
     for node in tree.find_clades(order='postorder'):
         if node.is_terminal and node.name in nodes and "authors" in nodes[node.name]:
@@ -483,8 +484,11 @@ def run(args):
         # (1) auspice can't use schema 2.0 yet, (2) nexflu doesn't use schema 2.0
         # export the tree JSON first
         meta_json = read_config(args.auspice_config)
-        meta_tsv, _ = read_metadata(args.metadata)
-        add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json)
+        if args.metadata:
+            meta_tsv, _ = read_metadata(args.metadata)
+            add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json)
+        else:
+            meta_tsv = None
 
         tree_layout(T)
         tree_json, _ = convert_tree_to_json_structure(T.root, nodes, nextflu_schema=True)
