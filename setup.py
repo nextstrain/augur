@@ -3,19 +3,31 @@ from pathlib    import Path
 
 base_dir     = Path(__file__).parent.resolve()
 version_file = base_dir / "augur/__version__.py"
+readme_file  = base_dir / "README.md"
 
 # Eval the version file to get __version__; avoids importing our own package
 with version_file.open() as f:
     exec(f.read())
 
+# Get the long description from the README file
+with readme_file.open(encoding = "utf-8") as f:
+    long_description = f.read()
+
 setup(
         name = "nextstrain-augur",
         version = __version__,
-        author = "nextstrain developers",
+        author = "Nextstrain developers",
         author_email = "trevor@bedford.io, richard.neher@unibas.ch",
-        description = ("Pipelines for real-time phylogenetic analysis"),
+        description = "A bioinformatics toolkit for phylogenetic analysis.",
+        long_description = long_description,
+        long_description_content_type = "text/markdown",
         keywords = "nextstrain, molecular epidemiology",
         url = "https://github.com/nextstrain/augur",
+        project_urls = {
+            "Bug Reports": "https://github.com/nextstrain/augur/issues",
+            "Change Log":  "https://github.com/nextstrain/augur/blob/master/CHANGES.md#next",
+            "Source":      "https://github.com/nextstrain/augur",
+        },
         packages=['augur'],
         package_data={'augur': ['data/*']},
         data_files = [("", ["LICENSE.txt"])],
