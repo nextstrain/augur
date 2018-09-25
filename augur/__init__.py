@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from . import parse, filter, align, tree, refine, ancestral
 from . import traits, translate, mask, titers, frequencies, export
 from . import validate, sequence_traits, clades, version
-from . import reconstruct_sequences, lbi, distance
+from . import reconstruct_sequences, lbi, distance, import_beast
 from .utils import first_line
 
 
@@ -33,6 +33,7 @@ COMMANDS = [
     export,
     validate,
     version,
+    import_beast
 ]
 
 
