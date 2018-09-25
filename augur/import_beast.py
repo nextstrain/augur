@@ -265,13 +265,16 @@ def collect_node_data(tree, root_date_offset, most_recent_tip_date):
     data = {}
     root_date = most_recent_tip_date - root_date_offset
     for n in tree.find_clades():
-        numeric_date = root_date + n.dist2root
+        data[n.name] = {attr: n.attrs[attr] for attr in n.attrs if 'length' not in attr and 'height' not in attr} ## add all beast tree traits other than lengths and heights
 
-        data[n.name] = {
-            "branch_length": numeric_date,
-            "numdate": numeric_date,
-            "clock_length": numeric_date,
-        }
+        numeric_date = root_date + n.dist2root ## convert from tree height to absolute time
+        data[n.name]['num_date'] = numeric_date ## num_date is decimal date of node
+        data[n.name]['clock_length'] = n.branch_length ## assign beast branch length as regular branch length
+        data[n.name]['branch_length'] = n.branch_length
+        if n.is_terminal()==False:
+            data[n.name]['num_date_confidence'] = [most_recent_tip_date - height for height in n.attrs['height_confidence']] ## convert beast 95% HPDs into decimal date confidences
+        else:
+            data[n.name]['posterior'] = 1.0 ## assign posterior of 1.0 to every tip (for aesthetics)
 
     return data
 
