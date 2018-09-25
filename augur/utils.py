@@ -401,3 +401,11 @@ def run_shell_command(cmd, raise_errors = False):
             return False
     else:
         return True
+
+
+def first_line(text):
+    """
+    Returns the first line of the given text, ignoring leading and trailing
+    whitespace.
+    """
+    return text.strip().splitlines()[0]

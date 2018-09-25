@@ -1,3 +1,7 @@
+"""
+Parse delimited fields from FASTA sequence names into a TSV and FASTA file.
+"""
+
 from Bio import SeqIO
 import pandas as pd
 
@@ -21,6 +25,16 @@ def fix_dates(d, dayfirst=True):
     except Exception as e:
         print("WARNING: unable to parse %s as date"%d, e)
         return d
+
+
+def register_arguments(parser):
+    parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
+    parser.add_argument('--output-sequences', help="output sequences file")
+    parser.add_argument('--output-metadata', help="output metadata file")
+    parser.add_argument('--fields', nargs='+', help="fields in fasta header")
+    parser.add_argument('--separator', default='|', help="separator of fasta header")
+    parser.add_argument('--fix-dates', choices=['dayfirst', 'monthfirst'],
+                                help="attempt to parse non-standard dates and output them in standard YYYY-MM-DD format")
 
 
 def run(args):

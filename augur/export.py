@@ -1,3 +1,7 @@
+"""
+Export JSON files suitable for visualization with auspice.
+"""
+
 import os
 import re
 import time
@@ -426,6 +430,28 @@ def get_root_sequence(root_node, ref=None, translations=None):
         root_sequence.update(root_node["aa_sequences"])
 
     return root_sequence
+
+
+def register_arguments(parser):
+    parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
+    parser.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
+    parser.add_argument('--reference', required=False, help="reference sequence for export to browser, only vcf")
+    parser.add_argument('--reference-translations', required=False, help="reference translations for export to browser, only vcf")
+    parser.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
+    parser.add_argument('--auspice-config', help="file with auspice configuration")
+    parser.add_argument('--colors', help="file with color definitions")
+    parser.add_argument('--lat-longs', help="file latitudes and longitudes, overrides built in mappings")
+    parser.add_argument('--new-schema', action="store_true", help="export JSONs using nexflu schema")
+    parser.add_argument('--output-main', help="Main JSON file name that is passed on to auspice (e.g., zika.json).")
+    parser.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json). Only used with --nextflu-schema")
+    parser.add_argument('--output-sequence', help="JSON file name that is passed on to auspice (e.g., zika_seq.json). Only used with --nextflu-schema")
+    parser.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json). Only used with --nextflu-schema")
+    parser.add_argument('--title', default="Analysis", help="Title to be displayed by auspice")
+    parser.add_argument('--maintainers', default=[""], nargs='+', help="Analysis maintained by")
+    parser.add_argument('--maintainer-urls', default=[""], nargs='+', help="URL of maintainers")
+    parser.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
+    parser.add_argument('--extra-traits', nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
+    parser.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : xxx")
 
 
 def run(args):

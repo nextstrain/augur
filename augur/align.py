@@ -1,3 +1,7 @@
+"""
+Align multiple sequences from FASTA or VCF.
+"""
+
 import os,sys,argparse
 from shutil import copyfile
 import numpy as np
@@ -20,6 +24,19 @@ def make_gaps_ambiguous(aln):
         gaps = seq_array=='-'
         seq_array[gaps]='N'
         seq.seq = Seq.Seq("".join(seq_array))
+
+
+def register_arguments(parser):
+    parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
+    parser.add_argument('--output', '-o', help="output file")
+    parser.add_argument('--nthreads', type=int, default=2,
+                                help="number of threads used")
+    parser.add_argument('--method', default='mafft', choices=["mafft"],
+                                help="alignment program to use")
+    parser.add_argument('--reference-name', type=str, help="strip insertions relative to reference sequence; use if the reference is already in the input sequences")
+    parser.add_argument('--reference-sequence', type=str, help="strip insertions relative to reference sequence; use if the reference is NOT already in the input sequences")
+    parser.add_argument('--remove-reference', action="store_true", default=False, help="remove reference sequence from the alignment")
+    parser.add_argument('--fill-gaps', action="store_true", default=False, help="if gaps represent missing data rather than true indels, replace by N after aligning")
 
 
 def run(args):

@@ -50,5 +50,12 @@ setup(
             "Programming Language :: Python :: 3.5",
             "Programming Language :: Python :: 3.6",
             ],
-        scripts=['bin/augur']
+
+        # Install an "augur" program which calls augur.__main__.main()
+        #   https://setuptools.readthedocs.io/en/latest/setuptools.html#automatic-script-creation
+        entry_points = {
+            "console_scripts": [
+                "augur = augur.__main__:main",
+            ],
+        },
         )

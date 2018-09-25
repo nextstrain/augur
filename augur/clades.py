@@ -1,3 +1,7 @@
+"""
+Assign clades to nodes in a tree based on amino-acid or nucleotide signatures.
+"""
+
 import os, sys
 import numpy as np
 from Bio import SeqIO, SeqFeature, Seq, SeqRecord, Phylo
@@ -75,6 +79,13 @@ def assign_clades(clade_designations, muts, tree):
             clades[c.name]={"clade_membership": clades[n.name]["clade_membership"] }
 
     return clades
+
+
+def register_arguments(parser):
+    parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
+    parser.add_argument('--mutations', nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
+    parser.add_argument('--clades', type=str, help='TSV file containing clade definitions by amino-acid')
+    parser.add_argument('--output', type=str, help="name of JSON files for clades")
 
 
 def run(args):

@@ -1,3 +1,7 @@
+"""
+Mask specified sites from a VCF file.
+"""
+
 from Bio import SeqIO
 import pandas as pd
 import os
@@ -37,6 +41,12 @@ def get_mask_sites(vcf_file, mask_file):
         the_file.write("\n".join(exclude))
 
     return tempMaskFile
+
+
+def register_arguments(parser):
+    parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF format")
+    parser.add_argument('--mask', required=True, help="locations to be masked in BED file format")
+    parser.add_argument('--output', '-o', help="output file")
 
 
 def run(args):

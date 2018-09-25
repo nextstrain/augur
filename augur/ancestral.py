@@ -1,3 +1,7 @@
+"""
+Infer ancestral sequences based on a tree.
+"""
+
 import os, shutil, time, json, sys
 from Bio import Phylo
 from .utils import write_json
@@ -38,6 +42,17 @@ def collect_sequences_and_mutations(T, is_vcf=False):
                 data[n.name]['sequence'] = ''
 
     return data
+
+
+def register_arguments(parser):
+    parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
+    parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
+    parser.add_argument('--output', '-o', type=str, help='file name to save mutations and ancestral sequences to')
+    parser.add_argument('--inference', default='joint', choices=["joint", "marginal"],
+                                    help="calculate joint or marginal maximum likelihood ancestral sequence states")
+    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    parser.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
+
 
 def run(args):
     # check alignment type, set flags, read in if VCF

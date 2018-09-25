@@ -1,3 +1,7 @@
+"""
+Annotate sequences based on amino-acid or nucleotide signatures.
+"""
+
 import numpy as np
 from treetime.vcf_utils import read_vcf
 from collections import defaultdict
@@ -273,6 +277,17 @@ def attach_features(annotations, label, count):
         seq_feature_dict[seq][label] = numResist
 
     return seq_feature_dict
+
+
+def register_arguments(parser):
+    parser.add_argument('--ancestral-sequences', type=str, help="nucleotide alignment to search for sequence traits in")
+    parser.add_argument('--translations', type=str, help="AA alignment to search for sequence traits in (can include ancestral sequences)")
+    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the nucleotide VCF was mapped to')
+    parser.add_argument('--vcf-translate-reference', type=str, help='fasta file of the sequence the translated VCF was mapped to')
+    parser.add_argument('--features', type=str, help='file that specifies sites defining the features in a tab-delimited format "GENOMIC_POSITION ALT_BASE DRUG AA(optional)"')
+    parser.add_argument('--count', type=str, choices=['traits','mutations'], default='traits', help='Whether to count traits (ex: # drugs resistant to) or mutations')
+    parser.add_argument('--label', type=str, default="# Traits", help='How to label the counts (ex: Drug_Resistance)')
+    parser.add_argument('--output', '-o', type=str, help='output json with sequence features')
 
 
 def run(args):

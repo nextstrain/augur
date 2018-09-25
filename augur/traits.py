@@ -1,3 +1,7 @@
+"""
+Infer ancestral traits based on a tree.
+"""
+
 import numpy as np
 from collections import defaultdict
 import json, os, sys
@@ -120,6 +124,15 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
 
     return T, gtr, alphabet
 
+
+def register_arguments(parser):
+    parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
+    parser.add_argument('--metadata', required=True, help="tsv/csv table with meta data")
+    parser.add_argument('--columns', required=True, nargs='+',
+                        help='metadata fields to perform discrete reconstruction on')
+    parser.add_argument('--confidence',action="store_true",
+                        help='record the distribution of subleading mugration states')
+    parser.add_argument('--output', '-o', default='traits.json', help='')
 
 
 def run(args):

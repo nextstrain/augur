@@ -1,3 +1,7 @@
+"""
+Refine an initial tree using sequence metadata.
+"""
+
 import os, shutil, time, sys
 from Bio import Phylo
 from .utils import read_metadata, get_numerical_dates, write_json
@@ -72,6 +76,32 @@ def collect_node_data(T, attributes):
         data[n.name] = {attr:n.__getattribute__(attr)
                         for attr in attributes if hasattr(n,attr)}
     return data
+
+
+def register_arguments(parser):
+    parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
+    parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
+    parser.add_argument('--metadata', type=str, help="tsv/csv table with meta data for sequences")
+    parser.add_argument('--output-tree', type=str, help='file name to write tree to')
+    parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
+    parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")
+    parser.add_argument('--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
+    parser.add_argument('--clock-rate', type=float, help="fixed clock rate")
+    parser.add_argument('--root', nargs="+", help="rooting mechanism ('best', 'residual', 'rsq', 'min_dev') "
+                                "OR node to root by OR two nodes indicating a monophyletic group to root by")
+    parser.add_argument('--date-format', default="%Y-%m-%d", help="date format")
+    parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
+    parser.add_argument('--date-inference', default='joint', choices=["joint", "marginal"],
+                                help="assign internal nodes to their marginally most likely dates, not jointly most likely")
+    parser.add_argument('--branch-length-inference', default='auto', choices = ['auto', 'joint', 'marginal', 'input'],
+                                help='branch length mode of treetime to use')
+    parser.add_argument('--clock-filter-iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
+                                'interquartile ranges from the root-to-tip vs time regression')
+    parser.add_argument('--nthreads', type=int, default=2,
+                                help="number of threads used")
+    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    parser.add_argument('--year-bounds', type=int, nargs='+', help='specify min or max & min prediction bounds for samples with XX in year')
+
 
 def run(args):
     # check alignment type, set flags, read in if VCF
