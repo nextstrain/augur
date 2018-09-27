@@ -17,29 +17,37 @@ def convert_tree_to_json_structure(node, metadata, div=0, nextflu_schema=False, 
     Creates the strain property & divergence on each node
     input
         node -- node for which top level dict is produced.
-        div  -- cumulative divergence (root = 0)
+        div  -- cumulative divergence (root = 0). False means no divergence will be exported.
         nextflu_schema -- use nexflu schema (e.g. node["attr"]). This is deprecated.
 
     returns
         tree in JSON structure
         list of strains
     """
+
+    # Does the tree have divergence? (BEAST trees may not)
+    # only calculate this for the root node!
+    if div == 0:
+        if 'mutation_length' not in metadata[node.name] and 'branch_length' not in metadata[node.name]:
+            div = False
+
     if nextflu_schema:
         node_struct = {
-            'attr': {"div": div},
+            'attr': {},
             'strain': node.name,
             'clade': node.clade
         }
+        if div is not False:
+            node_struct["attr"]["div"] = div
         for attr in ['branch_length', 'tvalue', 'yvalue', 'xvalue']:
             try:
                 node_struct[attr] = node.__getattribute__(attr)
             except AttributeError:
                 pass
     else:
-        node_struct = {
-            'strain': node.name,
-            'div': div
-        }
+        node_struct = {'strain': node.name}
+        if div is not False:
+            node_struct["div"] = div;
 
     if strains is None:
         strains = [node_struct["strain"]]
@@ -49,10 +57,13 @@ def convert_tree_to_json_structure(node, metadata, div=0, nextflu_schema=False, 
     if node.clades:
         node_struct["children"] = []
         for child in node.clades:
-            if 'mutation_length' in metadata[child.name]:
-                cdiv = div + metadata[child.name]['mutation_length']
-            elif 'branch_length' in metadata[child.name]:
-                cdiv = div + metadata[child.name]['branch_length']
+            if div is False:
+                cdiv = False
+            else:
+                if 'mutation_length' in metadata[child.name]:
+                    cdiv = div + metadata[child.name]['mutation_length']
+                elif 'branch_length' in metadata[child.name]:
+                    cdiv = div + metadata[child.name]['branch_length']
             node_struct["children"].append(convert_tree_to_json_structure(child, metadata, div=cdiv, nextflu_schema=nextflu_schema, strains=strains)[0])
 
     return (node_struct, strains)

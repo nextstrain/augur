@@ -270,7 +270,6 @@ def collect_node_data(tree, root_date_offset, most_recent_tip_date):
         numeric_date = root_date + n.dist2root ## convert from tree height to absolute time
         data[n.name]['num_date'] = numeric_date ## num_date is decimal date of node
         data[n.name]['clock_length'] = n.branch_length ## assign beast branch length as regular branch length
-        data[n.name]['branch_length'] = n.branch_length
         if n.is_terminal()==False:
             data[n.name]['num_date_confidence'] = [most_recent_tip_date - height for height in n.attrs['height_confidence']] ## convert beast 95% HPDs into decimal date confidences
         else:
