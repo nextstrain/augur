@@ -239,7 +239,7 @@ def register_arguments(parser):
     parser.add_argument('--output', type=str, help="name of JSON files for aa mutations")
     parser.add_argument('--alignment-output', type=str, help="write out translated gene alignments. "
                                    "If a VCF-input, a .vcf or .vcf.gz will be output here (depending on file ending). If fasta-input, specify the file name "
-                                   "like so: 'my_alignment_%GENE.fasta', where '%GENE' will be replaced by the name of the gene")
+                                   "like so: 'my_alignment_%%GENE.fasta', where '%%GENE' will be replaced by the name of the gene")
     parser.add_argument('--vcf-reference-output', type=str, help="fasta file where reference sequence translations for VCF input will be written")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
 
