@@ -1,6 +1,13 @@
 # __NEXT__
 
 
+# 3.0.2.dev1 (27 September 2018)
+
+## Bug fixes
+
+* translate: Fix broken `--help` message
+
+
 # 3.0.1.dev1 (27 September 2018)
 
 ## Features
