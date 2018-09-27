@@ -6,7 +6,7 @@ import os,sys,argparse
 from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq
-from .utils import run_shell_command
+from .utils import run_shell_command, nthreads_value
 
 def make_gaps_ambiguous(aln):
     '''
@@ -29,8 +29,8 @@ def make_gaps_ambiguous(aln):
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
     parser.add_argument('--output', '-o', help="output file")
-    parser.add_argument('--nthreads', type=int, default=2,
-                                help="number of threads used")
+    parser.add_argument('--nthreads', type=nthreads_value, default=1,
+                                help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--method', default='mafft', choices=["mafft"],
                                 help="alignment program to use")
     parser.add_argument('--reference-name', type=str, help="strip insertions relative to reference sequence; use if the reference is already in the input sequences")

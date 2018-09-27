@@ -97,8 +97,6 @@ def register_arguments(parser):
                                 help='branch length mode of treetime to use')
     parser.add_argument('--clock-filter-iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
                                 'interquartile ranges from the root-to-tip vs time regression')
-    parser.add_argument('--nthreads', type=int, default=2,
-                                help="number of threads used")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--year-bounds', type=int, nargs='+', help='specify min or max & min prediction bounds for samples with XX in year')
 

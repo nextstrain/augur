@@ -1,3 +1,4 @@
+import argparse
 import os, json, sys
 import pandas as pd
 import subprocess
@@ -375,17 +376,25 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
         run_shell_command(" ".join(call), raise_errors = True)
 
 
-def run_shell_command(cmd, raise_errors = False):
+def run_shell_command(cmd, raise_errors = False, extra_env = None):
     """
     Run the given command string via the shell with error checking.
 
     Returns True if the command exits normally.  Returns False if the command
     exits with failure and "raise_errors" is False (the default).  When
     "raise_errors" is True, exceptions are rethrown.
+
+    If an *extra_env* mapping is passed, the provided keys and values are
+    overlayed onto the default subprocess environment.
     """
+    env = os.environ.copy()
+
+    if extra_env:
+        env.update(extra_env)
+
     try:
         # Use check_call() instead of run() since the latter was added only in Python 3.5.
-        subprocess.check_call(cmd, shell = True)
+        subprocess.check_call(cmd, shell = True, env = env)
     except subprocess.CalledProcessError as error:
         print(
             "ERROR: {program} exited {returncode}, invoked as: {cmd}".format(
@@ -409,3 +418,41 @@ def first_line(text):
     whitespace.
     """
     return text.strip().splitlines()[0]
+
+
+def available_cpu_cores(fallback: int = 1) -> int:
+    """
+    Returns the number (an int) of CPU cores available to this **process**, if
+    determinable, otherwise the number of CPU cores available to the
+    **computer**, if determinable, otherwise the *fallback* number (which
+    defaults to 1).
+    """
+    try:
+        # Note that this is the correct function to use, not os.cpu_count(), as
+        # described in the latter's documentation.
+        #
+        # The reason, which the documentation does not detail, is that
+        # processes may be pinned or restricted to certain CPUs by setting
+        # their "affinity".  This is not typical except in high-performance
+        # computing environments, but if it is done, then a computer with say
+        # 24 total cores may only allow our process to use 12.  If we tried to
+        # naively use all 24, we'd end up with two threads across the 12 cores.
+        # This would degrade performance rather than improve it!
+        return len(os.sched_getaffinity(0))
+    except:
+        # cpu_count() returns None if the value is indeterminable.
+        return os.cpu_count() or fallback
+
+
+def nthreads_value(value):
+    """
+    Argument value validation and casting function for --nthreads.
+    """
+
+    if value.lower() == 'auto':
+        return available_cpu_cores()
+
+    try:
+        return int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError("'%s' is not an integer or the word 'auto'" % value) from None
