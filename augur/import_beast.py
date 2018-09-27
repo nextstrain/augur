@@ -11,13 +11,17 @@ from treetime import TreeAnc
 import json
 from .utils import write_json
 import sys
+import datetime as dt
 
 def register_arguments(parser):
     parser.add_argument('--mcc', required=True, help="BEAST MCC tree")
-    parser.add_argument('--most-recent-tip-date', required=True, type=float, help='file name to write tree to')
+    # parser.add_argument('--date-format', type=str, default="%Y-%m-%d", help='date format if regex is being used to parse dates from tip names')
     parser.add_argument('--time-units', default="years", type=str, help='not yet implemented. Default = years')
+    parser.add_argument('--most-recent-tip-date-fmt', default="regex", choices=['regex','decimal'], required=True, help='method for finding the most recent tip date. Use "decimal" if the decimal date will be supplied or "regex" (default) if tip dates are encoded in tip names')
+    parser.add_argument('--tip-date', help='decimal date of most recent tip or regular expression for date (if no value is given defaults to "[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$") if dates can be parsed out of tip names')
     parser.add_argument('--output-tree', required=True, type=str, help='file name to write tree to')
     parser.add_argument('--output-node-data', required=True, type=str, help='file name to write (temporal) branch lengths as node data')
+
 
 def parse_beast_tree(data, tipMap, verbose=False):
     """
@@ -149,7 +153,6 @@ def parse_beast_tree(data, tipMap, verbose=False):
         if nodeLabel is not None:
             if verbose==True:
                 print('old school comment found: %s'%(nodeLabel.group(1)))
-            #ll.cur_node.traits['label']=cerberus.group(1)
             cur_node.name=nodeLabel.group(1)
             i+=len(nodeLabel.group(1))
 
@@ -157,14 +160,12 @@ def parse_beast_tree(data, tipMap, verbose=False):
         if branchLength is not None:
             if verbose==True:
                 print('adding branch length (%d) %.6f'%(i,float(branchLength.group(2))))
-            #ll.cur_node.length=float(microcerberus.group(2)) ## set branch length of current node
             setattr(cur_node,'branch_length',float(branchLength.group(2)))
             i+=len(branchLength.group()) ## advance in tree string by however many characters it took to encode branch length
 
         if data[i] == ',' or data[i] == ')': ## look for bifurcations or clade ends
             i+=1 ## advance in tree string
             cur_node = cur_node.up
-            #ll.cur_node=ll.cur_node.parent
 
         if data[i] == ';': ## look for string end
             return cur_node
@@ -248,6 +249,34 @@ def get_root_date_offset(tree):
             greatest_dist2root = leaf.dist2root;
     return greatest_dist2root
 
+def decimalDate(date,date_fmt="%Y-%m-%d",variable=False,dateDelimiter='-'):
+    """ Converts calendar dates in specified format to decimal date. """
+    if variable==True: ## if date is variable - extract what is available
+        dateL=len(date.split(dateDelimiter))
+        if dateL==2:
+            date_fmt=dateDelimiter.join(date_fmt.split(dateDelimiter)[:-1])
+        elif dateL==1:
+            date_fmt=dateDelimiter.join(date_fmt.split(dateDelimiter)[:-2])
+
+    adatetime=dt.datetime.strptime(date,date_fmt) ## convert to datetime object
+    year = adatetime.year ## get year
+    boy = dt.datetime(year, 1, 1) ## get beginning of the year
+    eoy = dt.datetime(year + 1, 1, 1) ## get beginning of next year
+    return year + ((adatetime - boy).total_seconds() / ((eoy - boy).total_seconds())) ## return fractional year
+
+def find_most_recent_tip(tree,regex="[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$",date_fmt="%Y-%m-%d",dateDelimiter='-'):
+    """
+    Search tip names using a regex (default: hyphen delimited numbers at the end of tip name) to identify dates, parse them as decimal dates and return the highest oneself.
+    Can specify custom date formats in datetime notation (default: %Y-%m-%d), and different date delimiters (default: '-').
+    """
+    leaf_names=[leaf.name for leaf in tree.get_terminals()] ## get names of tips
+    date_regex=re.compile(regex) ## regex pattern
+    regex_matches=[date_regex.search(leaf) for leaf in leaf_names] ## search tips with regex
+    assert regex_matches.count(None)==0,'These tip dates were not captured by regex %s: %s'%(regex,', '.join([leaf for leaf in leaf_names if date_regex.search(leaf)==None])) ## number of tips should match number of regex matches
+    decimal_dates=[decimalDate(date_regex.search(leaf).group(),date_fmt=date_fmt,variable=True,dateDelimiter=dateDelimiter) for leaf in leaf_names] ## convert tip calendar dates to decimal dates
+
+    return max(decimal_dates) ## return highest tip date
+
 def collect_node_data(tree, root_date_offset, most_recent_tip_date):
     """
     A "normal" treetime example adds these traits:
@@ -265,6 +294,7 @@ def collect_node_data(tree, root_date_offset, most_recent_tip_date):
     data = {}
     root_date = most_recent_tip_date - root_date_offset
     for n in tree.find_clades():
+
         data[n.name] = {attr: n.attrs[attr] for attr in n.attrs if 'length' not in attr and 'height' not in attr} ## add all beast tree traits other than lengths and heights
 
         numeric_date = root_date + n.dist2root ## convert from tree height to absolute time
@@ -276,6 +306,29 @@ def collect_node_data(tree, root_date_offset, most_recent_tip_date):
             data[n.name]['posterior'] = 1.0 ## assign posterior of 1.0 to every tip (for aesthetics)
 
     return data
+
+def computeEntropies(tree):
+    """
+    Computes entropies for discrete traits.
+    """
+    alphabets={} ## store alphabets
+    for clade in tree.find_clades(): ## iterate over branches
+        for attr in [key for key in clade.attrs if isinstance(clade.attrs[key],dict)]: ## iterate over branch attributes
+            if attr in alphabets: ## if attr seen before
+                for val in clade.attrs[attr]: ## iterate over attribute values of the node
+                    if val not in alphabets[attr]: ## not seen this attribute value before
+                        alphabets[attr].append(val)
+            else:
+                alphabets[attr]=[] ## not seen trait before - start a list of its values
+                for val in clade.attrs[attr]: ## iterate over trait values for this branch
+                    alphabets[attr].append(val)
+
+    for clade in tree.find_clades(): ## iterate over branches
+        for trait in alphabets: ## iterate over traits
+            if trait in clade.attrs: ## branch has trait (in case there's a leaf-node difference in trait presence)
+                trait_name=trait.split('_')[0] ## extract trait name root
+                pdis=np.array([clade.attrs[trait][state] if state in clade.attrs[trait] else 0.0 for state in alphabets[trait]]) ## create state profile
+                clade.attrs['%s_entropy'%(trait_name)] = -np.sum(pdis*np.log(pdis+1e-10)) ## compute entropy for trait
 
 
 
@@ -307,10 +360,18 @@ def run(args):
     root_date_offset = get_root_date_offset(tree)
     print("root_date_offset:", root_date_offset, args.time_units)
 
+    print(args.most_recent_tip_date_fmt)
+    if args.most_recent_tip_date_fmt=='regex':
+        if args.tip_date:
+            most_recent_tip = find_most_recent_tip(tree,regex=args.tip_date)
+        else:
+            most_recent_tip = find_most_recent_tip(tree)
+    elif args.most_recent_tip_date_fmt=='decimal':
+        most_recent_tip = float(args.tip_date)
 
-    # extract the relevant data from nodes to be written to JSON for further augur processing
-    node_data['nodes'] = collect_node_data(tree, root_date_offset, args.most_recent_tip_date)
-
+    # compute/extract the relevant data from nodes to be written to JSON for further augur processing
+    computeEntropies(tree) ## compute entropies for discrete trait
+    node_data['nodes'] = collect_node_data(tree, root_date_offset, most_recent_tip)
 
     # export very similarly to refine.py
     tree_success = Phylo.write(tree, args.output_tree, 'newick', format_branch_length='%1.8f')
