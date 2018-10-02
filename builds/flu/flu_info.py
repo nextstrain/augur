@@ -280,7 +280,7 @@ reference_viruses = {
         'A/Idaho/33/2016-egg', 'A/Antananarivo/1067/2016-egg', 'A/HongKong/50/2016-egg',
         'A/Norway/4465/2016-egg', 'A/Wisconsin/19/2017-egg', 'A/Greece/4/2017-egg',
         'A/HongKong/2286/2017-egg', 'A/Victoria/653/2017-egg', 'A/Norway/4465/2017', 'A/Norway/4465/2017-egg',
-        'A/Switzerland/8060/2017-egg', 'A/Bretagne/1565/2017-egg', 'A/Norway/4436/2016'
+        'A/Switzerland/8060/2017-egg', 'A/Bretagne/1565/2017-egg', 'A/Norway/4436/2016', 'A/Switzerland/8060/2017'
     ],
     'h1n1pdm':[
         'A/California/7/2009', 'A/Bangladesh/2021/2012', 'A/Victoria/367/2012', 'A/Brisbane/96/2012',
@@ -322,7 +322,8 @@ vaccine_choices = {
         'A/Texas/50/2012': "2013-09-25",
         'A/Switzerland/9715293/2013': "2014-09-25",
         'A/HongKong/4801/2014': "2015-09-24",
-        'A/Singapore/Infimh-16-0019/2016': "2017-09-28"
+        'A/Singapore/Infimh-16-0019/2016': "2017-09-28",
+        'A/Switzerland/8060/2017': "2018-09-27"
     },
     "vic": {
         'B/Shangdong/7/1997': "1999-09-25",
