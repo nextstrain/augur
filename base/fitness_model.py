@@ -436,23 +436,40 @@ class fitness_model(object):
             if (self.global_sds == 0).sum() == 0:
                 self.predictor_arrays[time][:,self.to_standardize] /= self.global_sds[self.to_standardize]
 
-
     def select_clades_for_fitting(self):
-        # for each time point, select clades that are within the specified frequency window
-        # keep track in the dict fit_clades that maps timepoint to clade list
+        """For each timepoint, identify clades that originated at or after the previous
+        timepoint and whose frequencies at the current timepoint are within a
+        specified range.
+        """
         self.fit_clades = {}
-        for time in self.timepoints[:-1]:
-            self.fit_clades[time] = []
-            for node in self.nodes:
-                # Only select clades for fitting if their censored frequencies are within the specified thresholds.
-                node_freq = self.freq_arrays[time][node.tips].sum(axis=0)
 
-                if self.min_freq <= node_freq <= self.max_freq:
-                    # Exclude subclades whose frequency is identical to their parent clade.
-                    parent_node_freq = self.freq_arrays[time][self.node_parents[node].tips].sum(axis=0)
-                    if node_freq < parent_node_freq:
-                        self.fit_clades[time].append(node)
+        for timepoint in self.timepoints[:-1]:
+            total_freq = 0.0
+            self.fit_clades[timepoint] = []
 
+            # Reset attribute on nodes.
+            for clade in self.tree.find_clades():
+                if "clade_group" in clade.attr:
+                    del clade.attr["clade_group"]
+
+            # Identify non-overlapping clades from the previous timepoint until now.
+            clade_group = 0
+            for clade in self.tree.find_clades():
+                if clade.attr["num_date"] >= timepoint - self.timepoint_step_size:
+                    if "clade_group" in clade.up.attr:
+                        clade.attr["clade_group"] = clade.up.attr["clade_group"]
+                    elif not clade.is_terminal():
+                        clade_group += 1
+                        clade.attr["clade_group"] = clade_group
+
+                        # Filter clades by minimum and maximum summed frequency
+                        # of their tips at the current timepoint.
+                        node_freq = self.freq_arrays[timepoint][clade.tips].sum(axis=0)
+                        if self.min_freq <= node_freq <= self.max_freq:
+                            total_freq += node_freq
+                            self.fit_clades[timepoint].append(clade)
+
+            print("Found %i clades at timepoint %s with total frequency of %.3f" % (len(self.fit_clades[timepoint]), timepoint, total_freq))
 
     def clade_fit(self, params):
         # walk through initial/final timepoint pairs
