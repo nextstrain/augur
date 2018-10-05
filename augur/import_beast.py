@@ -296,7 +296,6 @@ def collect_node_data(tree, root_date_offset, most_recent_tip_date):
     for n in tree.find_clades():
 
         data[n.name] = {attr: n.attrs[attr] for attr in n.attrs if 'length' not in attr and 'height' not in attr} ## add all beast tree traits other than lengths and heights
-
         numeric_date = root_date + n.dist2root ## convert from tree height to absolute time
         data[n.name]['num_date'] = numeric_date ## num_date is decimal date of node
         data[n.name]['clock_length'] = n.branch_length ## assign beast branch length as regular branch length
@@ -330,7 +329,26 @@ def computeEntropies(tree):
                 pdis=np.array([clade.attrs[trait][state] if state in clade.attrs[trait] else 0.0 for state in alphabets[trait]]) ## create state profile
                 clade.attrs['%s_entropy'%(trait_name)] = -np.sum(pdis*np.log(pdis+1e-10)) ## compute entropy for trait
 
+def print_suggested_config(nodes):
+    def include_key(k):
+        exclude_list = ["clock_length"]
+        return (not k.endswith("_confidence") and not k.endswith("_entropy") and k not in exclude_list)
+    attrs = set()
+    for node in nodes:
+        attrs.update({k for k in nodes[node].keys() if include_key(k)})
 
+    print("\nA number of traits (node annotations) have been parsed. \
+    The config file provided to `augur export` needs these added. \
+    Here is a template block:")
+    print("---------------------------------------------------------")
+    def make_block(attr):
+        if attr == "num_date":
+            menuItem = "Sampling Date"
+        else:
+            menuItem = attr
+        return {"menuItem": menuItem, "legendTitle": menuItem, "type": "continuous"}
+    print(json.dumps({"color_options": {attr: make_block(attr) for attr in attrs}}, indent=2))
+    print("---------------------------------------------------------")
 
 def run(args):
     '''
@@ -378,4 +396,7 @@ def run(args):
     json_success = write_json(node_data, args.output_node_data)
     print("node attributes written to", args.output_node_data, file=sys.stdout)
     # import pdb; pdb.set_trace()
+
+    print_suggested_config(node_data['nodes'])
+
     return 0 if (tree_success and json_success) else 1
