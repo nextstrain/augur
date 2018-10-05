@@ -84,6 +84,30 @@ def matthews_correlation_coefficient(tp, tn, fp, fn):
     return float(numerator) / denominator
 
 
+def get_matthews_correlation_coefficient_for_data_frame(freq_df):
+        """Calculate Matthew's correlation coefficient from a given pandas data frame
+        with columns for initial, observed, and predicted frequencies.
+        """
+        observed_growth = (freq_df["observed_freq"] > freq_df["initial_freq"])
+        predicted_growth = (freq_df["predicted_freq"] > freq_df["initial_freq"])
+        true_positives = ((observed_growth) & (predicted_growth)).sum()
+        false_positives= ((~observed_growth) & (predicted_growth)).sum()
+
+        observed_decline = (freq_df["observed_freq"] <= freq_df["initial_freq"])
+        predicted_decline = (freq_df["predicted_freq"] <= freq_df["initial_freq"])
+        true_negatives = ((observed_decline) & (predicted_decline)).sum()
+        false_negatives = ((~observed_decline) & (predicted_decline)).sum()
+
+        mcc = matthews_correlation_coefficient(
+            true_positives,
+            true_negatives,
+            false_positives,
+            false_negatives
+        )
+
+        return mcc
+
+
 def sum_of_squared_errors(observed_freq, predicted_freq):
     """
     Calculates the sum of squared errors for observed and predicted frequencies.
@@ -102,7 +126,7 @@ class fitness_model(object):
 
     def __init__(self, tree, frequencies, predictor_input, censor_frequencies=True,
                  pivot_spacing=1.0 / 12, verbose=0, enforce_positive_predictors=True, predictor_kwargs=None,
-                 cost_function=sum_of_squared_errors, **kwargs):
+                 cost_function=sum_of_squared_errors, delta_time=1.0, end_date=None, step_size=0.5, **kwargs):
         """
 
         Args:
@@ -127,6 +151,7 @@ class fitness_model(object):
         self.min_freq = kwargs.get("min_freq", 0.1)
         self.max_freq = kwargs.get("max_freq", 0.99)
         self.cost_function = cost_function
+        self.end_date = end_date
 
         if predictor_kwargs is None:
             self.predictor_kwargs = {}
@@ -157,8 +182,8 @@ class fitness_model(object):
 
         # final timepoint is end of interval and is only projected forward, not tested
         self.time_interval = (self.frequencies.start_date, self.frequencies.end_date)
-        self.timepoint_step_size = 0.5      # amount of time between timepoints chosen for fitting
-        self.delta_time = 1.0               # amount of time projected forward to do fitting
+        self.timepoint_step_size = step_size # amount of time between timepoints chosen for fitting
+        self.delta_time = delta_time         # amount of time projected forward to do fitting
         self.timepoints = np.around(
             np.append(
                 make_pivots(self.time_interval[0], self.time_interval[1]-self.delta_time+0.0001, 1 / self.timepoint_step_size),
@@ -170,6 +195,14 @@ class fitness_model(object):
         # Exclude the first timepoint from fitness model as censored frequencies there will be have a probability mass
         # less than 1.
         self.timepoints = self.timepoints[1:]
+
+        # If an end date was provided, exclude all timepoints after that date.
+        if self.end_date:
+            original_number_of_timepoints = len(self.timepoints)
+            self.timepoints = [time for time in self.timepoints
+                               if time < self.end_date]
+            filtered_number_of_timepoints = len(self.timepoints)
+            sys.stderr.write("Fit model up to %s (filtered from %s to %s timepoints)\n" % (self.end_date, original_number_of_timepoints, filtered_number_of_timepoints))
 
         self.predictors = predictor_names
 
@@ -346,7 +379,7 @@ class fitness_model(object):
             select_nodes_in_season(self.tree, time, self.time_window)
             self.calc_predictors(time)
 
-            for node in self.nodes:
+            for node in self.tips:
                 if 'dfreq' in [x for x in self.predictors]: node.dfreq = node.freq_slope[time]
 
                 predictors_at_time = []
@@ -385,7 +418,7 @@ class fitness_model(object):
             self.global_sds = np.mean(self.predictor_sds.values(), axis=0)
 
         for time in self.timepoints:
-            for node in self.nodes:
+            for node in self.tips:
                 if node.predictors[time] is not None and (self.global_sds == 0).sum() == 0:
                     node.predictors[time] = (node.predictors[time]-self.predictor_means[time]) / self.global_sds
             self.predictor_arrays[time][:,self.to_standardize] -= self.predictor_means[time][self.to_standardize]
@@ -440,14 +473,14 @@ class fitness_model(object):
                 pred_final_freq = np.sum(all_pred_freq[clade.tips]) / total_pred_freq
 
                 tmp_pred_vs_true.append((initial_freq, obs_final_freq, pred_final_freq))
-                pred_vs_true_values.append((time, clade.clade, len(clade.tips), initial_freq, obs_final_freq, pred_final_freq))
+                pred_vs_true_values.append((time, time + self.delta_time, clade.clade, len(clade.tips), initial_freq, obs_final_freq, pred_final_freq))
 
             self.pred_vs_true.append(np.array(tmp_pred_vs_true))
 
         # Prepare a data frame with all initial, observed, and predicted frequencies by time and clade.
         self.pred_vs_true_df = pd.DataFrame(
             pred_vs_true_values,
-            columns=("timepoint", "clade", "clade_size", "initial_freq", "observed_freq", "predicted_freq")
+            columns=("timepoint", "projected_timepoint", "clade", "clade_size", "initial_freq", "observed_freq", "predicted_freq")
         )
 
         training_error = self.cost_function(
@@ -572,7 +605,7 @@ class fitness_model(object):
         if self.verbose: print("calculating predictors for the final timepoint")
         final_timepoint = self.timepoints[-1]
 
-        for node in self.nodes:
+        for node in self.tips:
             if node.predictors[final_timepoint] is not None:
                 node.fitness = self.fitness(self.model_params, node.predictors[final_timepoint])
             else:
@@ -660,17 +693,14 @@ class fitness_model(object):
         correct_decline = decline_list.count(True)
         total_decline = float(len(decline_list))
 
-        trajectory_mcc = matthews_correlation_coefficient(
-            correct_growth,
-            correct_decline,
-            total_growth - correct_growth,
-            total_decline - correct_decline
-        )
+        trajectory_mcc = get_matthews_correlation_coefficient_for_data_frame(self.pred_vs_true_df)
 
         print("Correct at predicting growth: %s (%s / %s)" % ((correct_growth / total_growth), correct_growth, total_growth))
         print("Correct at predicting decline: %s (%s / %s)" % ((correct_decline / total_decline), correct_decline, total_decline))
         print("Correct classification:",  (correct_growth+correct_decline) / (total_growth+total_decline))
         print("Matthew's correlation coefficient: %s" % trajectory_mcc)
+        print("Params:")
+        print(zip(self.predictors, self.model_params))
 
         pred_data = []
         for time, pred_vs_true in zip(self.timepoints[:-1], self.pred_vs_true):
@@ -722,6 +752,79 @@ class fitness_model(object):
                 ax.plot(tmp['time'], tmp['obs'], ls='-', c=cols[ci%6])
                 ax.plot(tmp['time'], tmp['pred'], ls='--', c=cols[ci%6])
 
+    def to_data_frame(self):
+        """Return a data frame representing the fitness model's inputs for each tip.
+
+        Inputs include tip metadata, frequencies, and standardized predictor values.
+        """
+        records = []
+
+        # Include only timepoints used to fit the model itself (excluding the last timepoint).
+        for timepoint in self.timepoints[:-1]:
+            # Create a record for each clade fit by the model despite nesting of clades.
+            for clade in self.fit_clades[timepoint]:
+                # Store information for each tip in the current clade despite
+                # redundancy of information. This enables refitting the model
+                # with the same data later.
+                for tip_index in clade.tips:
+                    tip = self.tips[tip_index]
+                    record = {
+                        "timepoint": timepoint,
+                        "clade_name": clade.name,
+                        "name": tip.name,
+                        "frequency": self.freq_arrays[timepoint][tip_index]
+                    }
+
+                    # Store standardized predictor values using a column name
+                    # prefix that enables downstream analyses to easily identify
+                    # predictor columns.
+                    for predictor_index, predictor in enumerate(self.predictors):
+                        record["predictor:%s" % predictor] = self.predictor_arrays[timepoint][tip_index][predictor_index]
+
+                    records.append(record)
+
+        return pd.DataFrame(records)
+
+    @classmethod
+    def from_json(cls, tree, frequencies, json_dict):
+        """Return an instance of the fitness model defined by the given tree, frequencies, and model JSON.
+
+        The JSON input is expected to be the output of the `to_json` method of the fitness model class.
+        """
+        predictors = {record["predictor"]: [round(record["param"], 2), round(record["global_sd"], 2)]
+                      for record in json_dict["params"]}
+        predictors_key = "-".join(sorted([record["predictor"] for record in json_dict["params"]]))
+        predictor_kwargs = json_dict["predictor_kwargs"]
+
+        model = cls(
+            tree,
+            frequencies,
+            predictors,
+            epitope_masks_fname="%s/builds/flu/metadata/ha_masks.tsv" % augur_path,
+            epitope_mask_version="wolf",
+            tolerance_mask_version="HA1",
+            min_freq=0.1,
+            predictor_kwargs=predictor_kwargs,
+            delta_time=json_dict["delta_time"],
+            step_size=json_dict["step_size"]
+        )
+        model.prep_nodes()
+
+        predictor_arrays = {}
+        for key in json_dict["predictor_arrays"]:
+            predictor_arrays[float(key)] = np.array(json_dict["predictor_arrays"][key])
+
+        model.predictor_arrays = predictor_arrays
+
+        freq_arrays = {}
+        for key in json_dict["freq_arrays"]:
+            freq_arrays[float(key)] = np.array(json_dict["freq_arrays"][key])
+
+        model.freq_arrays = freq_arrays
+        model.select_clades_for_fitting()
+
+        return model
+
     def to_json(self, filename):
         """Export fitness model parameters, data, and accuracy statistics to JSON.
         """
@@ -734,9 +837,13 @@ class fitness_model(object):
         })
 
         correlation_null, correlation_raw, correlation_rel = self.get_correlation()
+        mcc = get_matthews_correlation_coefficient_for_data_frame(self.pred_vs_true_df)
 
         # Do not try to export titer data if it was provided to the model.
         predictor_kwargs = self.predictor_kwargs.copy()
+        if "transform" in predictor_kwargs:
+            predictor_kwargs["transform"] = str(predictor_kwargs["transform"])
+
         if "titers" in predictor_kwargs:
             del predictor_kwargs["titers"]
 
@@ -746,9 +853,26 @@ class fitness_model(object):
             "data": self.pred_vs_true_df.to_dict(orient="records"),
             "accuracy": {
                 "clade_error": self.clade_fit(self.model_params),
-                "correlation_rel": correlation_rel[0]
-            }
+                "correlation_rel": correlation_rel[0],
+                "mcc": mcc
+            },
+            "delta_time": self.delta_time,
+            "step_size": self.timepoint_step_size,
+            "end_date": self.end_date
         }
+
+        predictor_arrays = {}
+        for key in self.predictor_arrays:
+            predictor_arrays[key] = self.predictor_arrays[key].tolist()
+
+        data["predictor_arrays"] = predictor_arrays
+
+        freq_arrays = {}
+        for key in self.freq_arrays:
+            freq_arrays[key] = self.freq_arrays[key].tolist()
+
+        data["freq_arrays"] = freq_arrays
+
         write_json(data, filename)
 
 
