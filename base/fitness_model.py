@@ -84,7 +84,7 @@ def matthews_correlation_coefficient(tp, tn, fp, fn):
     return float(numerator) / denominator
 
 
-def get_matthews_correlation_coefficient_for_data_frame(freq_df):
+def get_matthews_correlation_coefficient_for_data_frame(freq_df, return_confusion_matrix=False):
         """Calculate Matthew's correlation coefficient from a given pandas data frame
         with columns for initial, observed, and predicted frequencies.
         """
@@ -105,7 +105,17 @@ def get_matthews_correlation_coefficient_for_data_frame(freq_df):
             false_negatives
         )
 
-        return mcc
+        if return_confusion_matrix:
+            confusion_matrix = {
+                "tp": true_positives,
+                "tn": true_negatives,
+                "fp": false_positives,
+                "fn": false_negatives
+            }
+
+            return mcc, confusion_matrix
+        else:
+            return mcc
 
 
 def sum_of_squared_errors(observed_freq, predicted_freq):
@@ -638,11 +648,10 @@ class fitness_model(object):
         self.assign_predicted_frequency()
 
     def get_correlation(self):
-        tmp = np.vstack(self.pred_vs_true)
-        rho_null = pearsonr(tmp[:, 0], tmp[:, 1])
-        rho_raw = pearsonr(tmp[:, 1], tmp[:, 2])
-        rho_rel = pearsonr(tmp[:, 1] / tmp[:, 0],
-                           tmp[:, 2] / tmp[:, 0])
+        rho_null = pearsonr(self.pred_vs_true_df["initial_freq"], self.pred_vs_true_df["observed_freq"])
+        rho_raw = pearsonr(self.pred_vs_true_df["observed_freq"], self.pred_vs_true_df["predicted_freq"])
+        rho_rel = pearsonr((self.pred_vs_true_df["observed_freq"] / self.pred_vs_true_df["initial_freq"]),
+                           (self.pred_vs_true_df["predicted_freq"] / self.pred_vs_true_df["initial_freq"]))
 
         return rho_null, rho_raw, rho_rel
 
@@ -683,24 +692,21 @@ class fitness_model(object):
         print("Pearson's R, raw:", rho_raw)
         print("Pearson's R, rel:", rho_rel)
 
-        # pred_vs_true is initial, observed, predicted
-        tmp = np.vstack(self.pred_vs_true)
-
-        growth_list = [pred > initial for (initial, obs, pred) in tmp if obs > initial]
-        correct_growth = growth_list.count(True)
-        total_growth = float(len(growth_list))
-        decline_list = [pred < initial for (initial, obs, pred) in tmp if obs < initial]
-        correct_decline = decline_list.count(True)
-        total_decline = float(len(decline_list))
-
-        trajectory_mcc = get_matthews_correlation_coefficient_for_data_frame(self.pred_vs_true_df)
+        trajectory_mcc, confusion_matrix = get_matthews_correlation_coefficient_for_data_frame(
+            self.pred_vs_true_df,
+            return_confusion_matrix=True
+        )
+        correct_growth = confusion_matrix["tp"]
+        correct_decline = confusion_matrix["tn"]
+        total_growth = correct_growth + confusion_matrix["fn"]
+        total_decline = correct_decline + confusion_matrix["fp"]
 
         print("Correct at predicting growth: %s (%s / %s)" % ((correct_growth / total_growth), correct_growth, total_growth))
         print("Correct at predicting decline: %s (%s / %s)" % ((correct_decline / total_decline), correct_decline, total_decline))
         print("Correct classification:",  (correct_growth+correct_decline) / (total_growth+total_decline))
         print("Matthew's correlation coefficient: %s" % trajectory_mcc)
         print("Params:")
-        print(zip(self.predictors, self.model_params))
+        print(zip(self.predictors, np.around(self.model_params, 2)))
 
         pred_data = []
         for time, pred_vs_true in zip(self.timepoints[:-1], self.pred_vs_true):
