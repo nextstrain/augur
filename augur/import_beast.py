@@ -46,10 +46,10 @@ def parse_beast_tree(data, tipMap, verbose=False):
         stored_i=i ## store i for later
 
         if data[i] == '(': ## look for new nodes
-            if verbose==True:
-                print('%d adding node'%(i))
             node = Bio.Phylo.Newick.Clade() ## new object
             node.name = 'NODE_%07d'%(node_count) ## node name
+            if verbose==True:
+                print('%d adding node %s'%(i, node.name))
             node.branch = 0.0 ## new node's branch length 0.0 for now
             node.up = cur_node ## new node's parent is current node
             node.clades = [] ## new node will have children
@@ -61,10 +61,13 @@ def parse_beast_tree(data, tipMap, verbose=False):
 
         numericalTip=re.match('(\(|,)([0-9]+)(\[|\:)',data[i-1:i+100]) ## look for tips in BEAST format (integers).
         if numericalTip is not None:
-            if verbose==True:
-                print('%d adding leaf (BEAST) %s'%(i,numericalTip.group(2)))
             node = Bio.Phylo.Newick.Clade() ## new object
-            node.name = tipMap[numericalTip.group(2)] ## assign decoded name
+            if tipMap:
+                node.name = tipMap[numericalTip.group(2)] ## assign decoded name
+            else:
+                node.name = str(numericalTip.group(2)); ## use the integer as the name if tipMap isn't set
+            if verbose==True:
+                print('%d adding leaf (BEAST) %s (%s)'%(i,numericalTip.group(2), node.name))
             node.up = cur_node ## leaf's parent is cur_node
             node.attrs = {} ## initiate attrs dictionary
             cur_node.clades.append(node) ## assign leaf to children of parent
