@@ -19,10 +19,12 @@ def register_arguments(parser):
     parser.add_argument('--time-units', default="years", type=str, help='not yet implemented. Default = years')
     parser.add_argument('--most-recent-tip-date-fmt', default="regex", choices=['regex','decimal'], required=True, help='method for finding the most recent tip date. Use "decimal" if the decimal date will be supplied or "regex" (default) if tip dates are encoded in tip names')
     parser.add_argument('--tip-date', help='decimal date of most recent tip or regular expression for date (if no value is given defaults to "[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$") if dates can be parsed out of tip names')
+    parser.add_argument('--verbose', action="store_true")
+    parser.add_argument('--recursion-limit', default=False, type=int, help="Set a custom recursion limit (dangerous!)")
     parser.add_argument('--output-tree', required=True, type=str, help='file name to write tree to')
     parser.add_argument('--output-node-data', required=True, type=str, help='file name to write (temporal) branch lengths as node data')
 
-
+    
 def parse_beast_tree(data, tipMap, verbose=False):
     """
     data is a tree string, tipMap is a dict parsed from the nexus file
@@ -356,6 +358,10 @@ def run(args):
     '''
     print("importing from BEAST MCC tree", args.mcc)
 
+    if args.recursion_limit:
+        print("Setting recursion limit to %d"%(args.recursion_limit))
+        sys.setrecursionlimit(args.recursion_limit)
+
     # node data is the dict that will be exported as json
     node_data = {
         'comment': "Imported from a BEAST MCC tree",
@@ -363,7 +369,7 @@ def run(args):
     }
 
     # parse the BEAST MCC tree
-    tree = parse_nexus(tree_path=args.mcc, verbose=True)
+    tree = parse_nexus(tree_path=args.mcc, verbose=args.verbose)
     # Phylo.draw_ascii(tree)
 
     # the following commands are lifted from refine.py and mock it's behaviour when not calling treetime
