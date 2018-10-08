@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, date
 from base.utils import fix_names
 from pprint import pprint
 from pdb import set_trace
-from flu_info import regions, outliers, reference_maps, reference_viruses, segments, frequency_params, LBI_params, vaccine_choices
+from flu_info import regions, reference_maps, reference_viruses, segments, frequency_params, LBI_params, vaccine_choices
 from flu_subsampling import flu_subsampling
 
 import logging
@@ -57,7 +57,12 @@ def make_config(lineage, resolution, params):
     else:
         time_interval = [datetime.today().date(), (datetime.today()  - timedelta(days=365.25 * years_back)).date()]
     reference_cutoff = date(year = time_interval[1].year - 4, month=1, day=1)
-    fixed_outliers = [fix_names(x) for x in outliers[lineage]]
+
+    # Load and prepare outliers for the given lineage.
+    with open("metadata/%s_outliers.txt" % lineage, "r") as fh:
+        outliers = [outlier.rstrip() for outlier in fh]
+
+    fixed_outliers = [fix_names(x) for x in outliers]
     fixed_references = [fix_names(x) for x in reference_viruses[lineage]]
 
     if params.titers is not None:
