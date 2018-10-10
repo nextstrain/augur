@@ -456,8 +456,8 @@ class fitness_model(object):
             clade_group = 0
             for clade in self.tree.find_clades():
                 if clade.attr["num_date"] >= timepoint - self.timepoint_step_size:
-                    if "clade_group" in clade.up.attr:
-                        clade.attr["clade_group"] = clade.up.attr["clade_group"]
+                    if clade in self.node_parents and "clade_group" in self.node_parents[clade].attr:
+                        clade.attr["clade_group"] = self.node_parents[clade].attr["clade_group"]
                     elif not clade.is_terminal():
                         clade_group += 1
                         clade.attr["clade_group"] = clade_group
