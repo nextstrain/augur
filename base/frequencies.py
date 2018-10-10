@@ -772,9 +772,9 @@ class KdeFrequencies(object):
         clade_frequencies = {}
 
         # Collect dates for tips.
-        tips = [(tip.clade, tip.attr["num_date"]) for tip in tree.get_terminals()]
+        tips = [(tip.name, tip.attr["num_date"]) for tip in tree.get_terminals()]
         tips = np.array(sorted(tips, key=lambda row: row[1]))
-        clades = tips[:, 0].astype(int)
+        clades = tips[:, 0]
         tip_dates = tips[:, 1].astype(float)
 
         # Map clade ids to their corresponding frequency matrix row index.
@@ -797,7 +797,7 @@ class KdeFrequencies(object):
         if self.include_internal_nodes:
             for node in tree.find_clades(order="postorder"):
                 if not node.is_terminal():
-                    clade_frequencies[node.clade] = np.array([clade_frequencies[child.clade]
+                    clade_frequencies[node.name] = np.array([clade_frequencies[child.name]
                                                               for child in node.clades]).sum(axis=0)
 
         return clade_frequencies
@@ -813,11 +813,11 @@ class KdeFrequencies(object):
 
         for (weight_key, proportion) in zip(weight_keys, proportions):
             # Find tips with the current weight attribute.
-            tips = [(tip.clade, tip.attr["num_date"])
+            tips = [(tip.name, tip.attr["num_date"])
                     for tip in tree.get_terminals()
                     if tip.attr[self.weights_attribute] == weight_key]
             tips = np.array(sorted(tips, key=lambda row: row[1]))
-            clades = tips[:, 0].astype(int)
+            clades = tips[:, 0]
             tip_dates = tips[:, 1].astype(float)
 
             # Map clade ids to their corresponding frequency matrix row index.
@@ -840,8 +840,8 @@ class KdeFrequencies(object):
         if self.include_internal_nodes:
             for node in tree.find_clades(order="postorder"):
                 if not node.is_terminal():
-                    clade_frequencies[node.clade] = np.array(
-                        [clade_frequencies[child.clade] for child in node.clades]
+                    clade_frequencies[node.name] = np.array(
+                        [clade_frequencies[child.name] for child in node.clades]
                     ).sum(axis=0)
 
         return clade_frequencies
