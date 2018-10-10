@@ -469,7 +469,7 @@ class fitness_model(object):
                             total_freq += node_freq
                             self.fit_clades[timepoint].append(clade)
 
-            print("Found %i clades at timepoint %s with total frequency of %.3f" % (len(self.fit_clades[timepoint]), timepoint, total_freq))
+            print("Found %i clades at timepoint %s with total frequency of %.3f (%i total clades)" % (len(self.fit_clades[timepoint]), timepoint, total_freq, clade_group))
 
     def clade_fit(self, params):
         # walk through initial/final timepoint pairs
