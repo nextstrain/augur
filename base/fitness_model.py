@@ -715,8 +715,8 @@ class fitness_model(object):
         )
         correct_growth = confusion_matrix["tp"]
         correct_decline = confusion_matrix["tn"]
-        total_growth = correct_growth + confusion_matrix["fn"]
-        total_decline = correct_decline + confusion_matrix["fp"]
+        total_growth = float(correct_growth + confusion_matrix["fn"])
+        total_decline = float(correct_decline + confusion_matrix["fp"])
 
         print("Correct at predicting growth: %s (%s / %s)" % ((correct_growth / total_growth), correct_growth, total_growth))
         print("Correct at predicting decline: %s (%s / %s)" % ((correct_decline / total_decline), correct_decline, total_decline))
