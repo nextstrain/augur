@@ -795,7 +795,10 @@ class fitness_model(object):
                         "timepoint": timepoint,
                         "clade_name": clade.name,
                         "name": tip.name,
-                        "frequency": self.freq_arrays[timepoint][tip_index]
+                        "num_date": tip.attr["num_date"],
+                        "observed_frequency": tip.timepoint_freqs[timepoint],
+                        "censored_frequency": self.freq_arrays[timepoint][tip_index],
+                        "future_frequency": tip.observed_final_freqs[timepoint]
                     }
 
                     # Store standardized predictor values using a column name
