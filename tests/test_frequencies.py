@@ -106,10 +106,11 @@ class TestKdeFrequencies(object):
         unweighted_kde_frequencies = KdeFrequencies()
         unweighted_frequencies = unweighted_kde_frequencies.estimate(tree)
 
-        # The any non-root node of the tree should have different frequencies with or without weighting.
+        # Any non-root node of the tree should have different frequencies with or without weighting.
+        non_root_node = tree.root.clades[0]
         assert not np.array_equal(
-            frequencies[1],
-            unweighted_frequencies[1]
+            frequencies[non_root_node.name],
+            unweighted_frequencies[non_root_node.name]
         )
 
     def test_only_tip_estimates(self, tree):
@@ -122,10 +123,10 @@ class TestKdeFrequencies(object):
         frequencies = kde_frequencies.estimate(tree)
 
         # Verify that all tips have frequency estimates and none of the internal nodes do.
-        assert all([tip.clade in frequencies
+        assert all([tip.name in frequencies
                     for tip in tree.get_terminals()])
 
-        assert not any([node.clade in frequencies
+        assert not any([node.name in frequencies
                         for node in tree.get_nonterminals()])
 
         # Estimate weighted frequencies.
@@ -138,10 +139,10 @@ class TestKdeFrequencies(object):
         frequencies = kde_frequencies.estimate(tree)
 
         # Verify that all tips have frequency estimates and none of the internal nodes do.
-        assert all([tip.clade in frequencies
+        assert all([tip.name in frequencies
                     for tip in tree.get_terminals()])
 
-        assert not any([node.clade in frequencies
+        assert not any([node.name in frequencies
                         for node in tree.get_nonterminals()])
 
     def test_tip_and_internal_node_estimates(self, tree):
@@ -154,7 +155,7 @@ class TestKdeFrequencies(object):
         frequencies = kde_frequencies.estimate(tree)
 
         # Verify that all tips and internal nodes have frequency estimates.
-        assert all([tip.clade in frequencies
+        assert all([tip.name in frequencies
                     for tip in tree.find_clades()])
 
     def test_censored_frequencies(self, tree):
@@ -167,12 +168,12 @@ class TestKdeFrequencies(object):
         frequencies = kde_frequencies.estimate(tree)
 
         # Confirm that tips sampled after the max date have zero frequencies.
-        assert all([frequencies[tip.clade].sum() == 0
+        assert all([frequencies[tip.name].sum() == 0
                     for tip in tree.get_terminals()
                     if tip.attr["num_date"] > max_date])
 
         # Confirm that one or more tips sampled before the max date have nonzero frequencies.
-        assert any([frequencies[tip.clade].sum() > 0
+        assert any([frequencies[tip.name].sum() > 0
                     for tip in tree.get_terminals()
                     if tip.attr["num_date"] <= max_date])
 

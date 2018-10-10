@@ -642,7 +642,7 @@ class KdeFrequencies(object):
 
             instance.frequencies = {}
             for clade in frequencies:
-                instance.frequencies[int(clade)] = np.array(frequencies[clade])
+                instance.frequencies[clade] = np.array(frequencies[clade])
 
         return instance
 

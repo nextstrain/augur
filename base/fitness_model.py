@@ -279,10 +279,10 @@ class fitness_model(object):
         # Annotate frequencies on nodes using all available data regardless of tip frequency censoring status.
         for node in self.nodes:
             node.freq = {
-                region: frequencies[node.clade]
+                region: frequencies[node.name]
             }
             node.logit_freq = {
-                region: logit_transform(frequencies[node.clade], 1e-4)
+                region: logit_transform(frequencies[node.name], 1e-4)
             }
 
         for node in self.nodes:
@@ -313,7 +313,7 @@ class fitness_model(object):
                 for tip in self.tips:
                     interpolation = interp1d(
                         self.pivots,
-                        frequencies[tip.clade],
+                        frequencies[tip.name],
                         kind="linear",
                         bounds_error=True
                     )
@@ -356,10 +356,10 @@ class fitness_model(object):
             # TODO: replace node-based annotation with dicts indexed by node name.
             for node in self.nodes:
                 node.freq = {
-                    region: frequencies[node.clade]
+                    region: frequencies[node.name]
                 }
                 node.logit_freq = {
-                    region: logit_transform(frequencies[node.clade], 1e-4)
+                    region: logit_transform(frequencies[node.name], 1e-4)
                 }
 
             for node in self.nodes:
@@ -500,7 +500,7 @@ class fitness_model(object):
                 pred_final_freq = np.sum(all_pred_freq[clade.tips]) / total_pred_freq
 
                 tmp_pred_vs_true.append((initial_freq, obs_final_freq, pred_final_freq))
-                pred_vs_true_values.append((time, time + self.delta_time, clade.clade, len(clade.tips), initial_freq, obs_final_freq, pred_final_freq))
+                pred_vs_true_values.append((time, time + self.delta_time, clade.name, len(clade.tips), initial_freq, obs_final_freq, pred_final_freq))
 
             self.pred_vs_true.append(np.array(tmp_pred_vs_true))
 
