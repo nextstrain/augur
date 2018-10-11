@@ -101,6 +101,8 @@ class fitness_predictors(object):
             self.calc_titer_model("tree", tree, timepoint, **kwargs)
         if pred == 'cTiterSub':
             self.calc_titer_model("substitution", tree, timepoint, **kwargs)
+        if pred == 'future_fitness':
+            self.calc_future_fitness(tree, timepoint, **kwargs)
 
     def setup_epitope_mask(self, epitope_masks_fname = 'metadata/ha_masks.tsv', epitope_mask_version = 'wolf', tolerance_mask_version = 'ha1'):
         sys.stderr.write("setup " + str(epitope_mask_version) + " epitope mask and " + str(tolerance_mask_version) + " tolerance mask\n")
@@ -458,3 +460,19 @@ class fitness_predictors(object):
 
         model.prepare(**kwargs)
         model.train(**kwargs)
+
+    def calc_future_fitness(self, tree, timepoint, attr="future_fitness", **kwargs):
+        """Calculate the known future frequency of each tip at the given timepoint.
+
+        This predictor is a positive control for the model that should always
+        predict the correct future frequencies since it is borrowing that
+        information from the future without any censoring.
+        """
+        for node in tree.get_terminals():
+            # Try to use the known future frequency of a node and fallback to
+            # the current timepoint frequency when we don't know the
+            # future. This should only be true for the last timepoint.
+            if timepoint in node.observed_final_freqs:
+                setattr(node, attr, node.observed_final_freqs[timepoint])
+            else:
+                setattr(node, attr, node.timepoint_freqs[timepoint])
