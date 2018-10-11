@@ -437,6 +437,22 @@ class fitness_model(object):
                 self.predictor_arrays[time][:,self.to_standardize] /= self.global_sds[self.to_standardize]
 
     def select_clades_for_fitting(self):
+        # for each time point, select clades that are within the specified frequency window
+        # keep track in the dict fit_clades that maps timepoint to clade list
+        self.fit_clades = {}
+        for time in self.timepoints[:-1]:
+            self.fit_clades[time] = []
+            for node in self.nodes:
+                # Only select clades for fitting if their censored frequencies are within the specified thresholds.
+                node_freq = self.freq_arrays[time][node.tips].sum(axis=0)
+
+                if self.min_freq <= node_freq <= self.max_freq:
+                    # Exclude subclades whose frequency is identical to their parent clade.
+                    parent_node_freq = self.freq_arrays[time][self.node_parents[node].tips].sum(axis=0)
+                    if node_freq < parent_node_freq:
+                        self.fit_clades[time].append(node)
+
+    def select_nonoverlapping_clades_for_fitting(self):
         """For each timepoint, identify clades that originated at or after the previous
         timepoint and whose frequencies at the current timepoint are within a
         specified range.
