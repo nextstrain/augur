@@ -17,6 +17,22 @@ from .titer_model import SubstitutionModel, TiterCollection, TreeModel
 # number of epitope mutations
 # -1 * number of non-epitope mutations
 
+def inverse_cross_immunity_amplitude(d_ep, d_init):
+    """Return the inverse cross-immunity amplitude corresponding to the given
+    epitope distance between two amino acid sequences and a predetermined
+    scaling parameter that controls the time period across which cross-immunity
+    decays.
+
+    Note that this implementation differs from Luksza and Lassig in that
+    decaying cross-immunity is measured on a scale of 0 - 1 where no epitope
+    differences correspond to a cross-immunity of 1 and more mutations decrease
+    the cross-immunity score. These values are subtracted from 1 such that the
+    fitness predictor in the model has positive, increasing values as
+    cross-immunity wanes.
+    """
+    return 1 - np.exp(-d_ep / float(d_init))
+
+
 class fitness_predictors(object):
 
     def __init__(self, predictor_names = ['ep', 'lb', 'dfreq'], **kwargs):
@@ -61,7 +77,7 @@ class fitness_predictors(object):
         if pred == 'ep':
             self.calc_epitope_distance(tree)
         if pred == 'ep_x':
-            self.calc_epitope_cross_immunity(tree, timepoint)
+            self.calc_epitope_cross_immunity(tree, timepoint, **kwargs)
         #if pred == 'ne':
         #    self.calc_nonepitope_distance(tree)
         if pred == 'ne_star':
@@ -172,51 +188,51 @@ class fitness_predictors(object):
         for node in tree.find_clades(order="postorder"):
             node.__setattr__(attr, self.fast_epitope_distance(node.np_ep, ref.np_ep))
 
-    def calc_epitope_cross_immunity(self, tree, timepoint, window = 2.0, attr='ep_x'):
+    def calc_epitope_cross_immunity(self, tree, timepoint, step_size, d_init = 14, attr='ep_x', **kwargs):
         """Calculates the distance at epitope sites to contemporaneous viruses
         this should capture cross-immunity of circulating viruses
         meant to be used in conjunction with epitope_distance that focuses
         on escape from previous human immunity.
         """
-        comparison_nodes = []
+        # Find all strains sampled between the previous timepoint and the
+        # current timepoint. We will calculate cross-immunity for each of these
+        # strains. Additionally, find all strains sampled prior to the previous
+        # timepoint. We will compare the current timepoint's strains to these
+        # past strains.
+        previous_timepoint = timepoint - step_size
+        current_nodes = []
+        past_nodes = []
         for node in tree.get_terminals():
-            if node.attr['num_date'] < timepoint and node.attr['num_date'] > timepoint - window:
-                comparison_nodes.append(node)
+            if node.attr['num_date'] < previous_timepoint:
+                past_nodes.append(node)
+            elif previous_timepoint <= node.attr['num_date'] < timepoint:
+                current_nodes.append(node)
 
+            # Annotate an array of amino acids at epitope sites to each node.
             if not hasattr(node, 'np_ep'):
                 if not hasattr(node, 'aa'):
                     node.aa = self._translate(node)
                 node.np_ep = np.array(list(self.epitope_sites(node.aa)))
 
             # Initialize all tips to 0 distance.
-            setattr(node, attr, 0)
+            if not hasattr(node, attr):
+                setattr(node, attr, 0.0)
 
             # Store distances in nodes by clade id.
             if not hasattr(node, "pairwise_distances"):
                 node.pairwise_distances = {}
 
-        count = float(len(comparison_nodes))
-        print("calculating cross-immunity to %s comparison nodes" % count)
+        print("calculating cross-immunity at %s between %s current nodes and %s past nodes" % (timepoint, len(current_nodes), len(past_nodes)))
 
-        for node in comparison_nodes:
-            distance = 0
-            for comp_node in comparison_nodes:
-                if node.clade == comp_node.clade:
-                    continue
+        for node in current_nodes:
+            distances = []
+            for comp_node in past_nodes:
+                distances.append(self.fast_epitope_distance(node.np_ep, comp_node.np_ep))
 
-                if comp_node.clade not in node.pairwise_distances:
-                    if node.clade in comp_node.pairwise_distances:
-                        pair_distance = comp_node.pairwise_distances[node.clade]
-                    else:
-                        node.pairwise_distances[comp_node.clade] = self.fast_epitope_distance(node.np_ep, comp_node.np_ep)
-                        pair_distance = node.pairwise_distances[comp_node.clade]
-                else:
-                    pair_distance = node.pairwise_distances[comp_node.clade]
-
-                distance += pair_distance
-
-            mean_distance = np.uint8(int(distance / count))
-            setattr(node, attr, mean_distance)
+            # Calculate inverse cross-immunity amplitude once from all distances to the current strain.
+            # This is an increasingly positive value for strains that are increasingly distant from previous strains.
+            cross_immunity = inverse_cross_immunity_amplitude(np.array(distances), d_init).sum()
+            setattr(node, attr, cross_immunity)
 
     def calc_rbs_distance(self, tree, attr='rb', ref = None):
         '''
