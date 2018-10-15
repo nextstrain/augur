@@ -22,27 +22,27 @@ country united_kingdom	#E69136
 country usa	#E4632E
 country canada	#DC2F24
 
-division	new_hampshire	#511EA8
-division	massachusetts	#4928B4
-division	new_york	#4334BF
-division	new_jersey	#3F50CC
-division	pennsylvania	#3F5ED0
-division	virginia	#416CCE
-division	georgia	#4784C7
-division	ohio	#5098B9
-division	michigan	#5CA7A4
-division	indiana	#6BB18E
-division	illinois	#7CB878
-division	ontario	#A4BE56
-division	kansas	#B9BC4A
-division	arkansas	#C2BA46
-division	louisiana	#CCB742
-division	texas	#DAAC3D
-division	manitoba	#E39B39
-division	north_dakota	#E68234
-division	montana	#E67431
-division	california	#E1512A
-division	washington	#DF4027
+division	california	#511EA8
+division	new_york	#4928B4
+division	massachusetts	#4334BF
+division	virginia	#3F50CC
+division	manitoba	#3F5ED0
+division	ontario	#416CCE
+division	arkansas	#4784C7
+division	north_dakota	#5098B9
+division	louisiana	#5CA7A4
+division	georgia	#6BB18E
+division	texas	#7CB878
+division	indiana	#A4BE56
+division	michigan	#B9BC4A
+division	montana	#C2BA46
+division	new_hampshire	#CCB742
+division	ohio	#DAAC3D
+division	washington	#E39B39
+division	illinois	#E68234
+division	kansas	#E67431
+division	pennsylvania	#E1512A
+division	new_jersey	#DF4027
 division	british_columbia	#DC2F24
 
 MuV_genotype	A	#69B091
@@ -55,3 +55,18 @@ MuV_genotype	G	#462EB9
 #MuV_genotype	H	#DC2F24
 MuV_genotype	K	#DC2F24
 MuV_genotype	?	#bebebe
+
+county  thurston  #4042C7
+county  skagit  #5199B7
+county  pierce #88BB6C
+county  king #CEB541
+county  spokane #E56C2F
+
+vaccination_status  yes  #4042C7
+vaccination_status  no  #5199B7
+
+marshallese_descent  marshallese  #4042C7
+marshallese_descent  not_marshallese  #E39B39
+
+eastern_western 	eastern_washington	#DAAC3D
+eastern_western	western_washington	#3F5ED0
