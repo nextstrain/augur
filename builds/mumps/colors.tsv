@@ -55,18 +55,3 @@ MuV_genotype	G	#462EB9
 #MuV_genotype	H	#DC2F24
 MuV_genotype	K	#DC2F24
 MuV_genotype	?	#bebebe
-
-county  thurston  #4042C7
-county  skagit  #5199B7
-county  pierce #88BB6C
-county  king #CEB541
-county  spokane #E56C2F
-
-vaccination_status  yes  #4042C7
-vaccination_status  no  #5199B7
-
-marshallese_descent  marshallese  #4042C7
-marshallese_descent  not_marshallese  #E39B39
-
-eastern_western 	eastern_washington	#DAAC3D
-eastern_western	western_washington	#3F5ED0
