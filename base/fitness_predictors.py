@@ -217,23 +217,22 @@ class fitness_predictors(object):
                 node.np_ep = np.array(list(self.epitope_sites(node.aa)))
 
             # Initialize all tips to 0 distance.
-            if not hasattr(node, attr):
-                setattr(node, attr, 0.0)
-
-            # Store distances in nodes by clade id.
-            if not hasattr(node, "pairwise_distances"):
-                node.pairwise_distances = {}
+            setattr(node, attr, 0.0)
 
         print("calculating cross-immunity at %s between %s current nodes and %s past nodes" % (timepoint, len(current_nodes), len(past_nodes)))
 
         for node in current_nodes:
+            frequencies = []
             distances = []
             for comp_node in past_nodes:
+                # Track the frequency of each past node and its distance from the current node.
+                # Cross-immunity is scaled by the maximum frequency that the past node ever obtained.
+                frequencies.append(max(comp_node.censored_freqs.values()))
                 distances.append(self.fast_epitope_distance(node.np_ep, comp_node.np_ep))
 
             # Calculate inverse cross-immunity amplitude once from all distances to the current strain.
             # This is an increasingly positive value for strains that are increasingly distant from previous strains.
-            cross_immunity = inverse_cross_immunity_amplitude(np.array(distances), d_init).sum()
+            cross_immunity = (np.array(frequencies) * inverse_cross_immunity_amplitude(np.array(distances), d_init)).sum()
             setattr(node, attr, cross_immunity)
 
     def calc_rbs_distance(self, tree, attr='rb', ref = None):

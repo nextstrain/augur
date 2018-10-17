@@ -317,7 +317,13 @@ class fitness_model(object):
                         kind="linear",
                         bounds_error=True
                     )
-                    tmp_freqs.append(np.asscalar(interpolation(time)))
+                    censored_frequency = np.asscalar(interpolation(time))
+
+                    if not hasattr(tip, "censored_freqs"):
+                        tip.censored_freqs = {}
+
+                    tip.censored_freqs[time] = censored_frequency
+                    tmp_freqs.append(censored_frequency)
             else:
                 for tip in self.tips:
                     tmp_freqs.append(tip.timepoint_freqs[time])
