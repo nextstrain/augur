@@ -304,7 +304,9 @@ class fitness_model(object):
 
             if self.censor_frequencies:
                 # Censor frequencies by omitting all tips sampled after the current timepoint.
-                sys.stderr.write("Calculating censored frequencies for %s\n" % time)
+                if self.verbose:
+                    sys.stderr.write("Calculating censored frequencies for %s\n" % time)
+
                 frequency_parameters["max_date"] = time
                 frequency_estimator = KdeFrequencies(**frequency_parameters)
                 frequencies = frequency_estimator.estimate(self.tree)
@@ -491,7 +493,8 @@ class fitness_model(object):
                             total_freq += node_freq
                             self.fit_clades[timepoint].append(clade)
 
-            print("Found %i clades at timepoint %s with total frequency of %.3f (%i total clades)" % (len(self.fit_clades[timepoint]), timepoint, total_freq, clade_group))
+            if self.verbose:
+                sys.stderr.write("%s: %s clades totalling %.2f (%s nested)\n" % (timepoint, len(self.fit_clades[timepoint]), total_freq, nested))
 
     def clade_fit(self, params):
         # walk through initial/final timepoint pairs
