@@ -81,7 +81,7 @@ class fitness_predictors(object):
         #if pred == 'ne':
         #    self.calc_nonepitope_distance(tree)
         if pred == 'ne_star':
-            self.calc_nonepitope_star_distance(tree)
+            self.calc_nonepitope_star_distance(tree, timepoint, **kwargs)
         if pred == 'tol':
             self.calc_tolerance(tree, preferences_file='metadata/2017-12-07-H3N2-preferences-rescaled.csv', attr = 'tol')
         if pred == 'tol_mask':
@@ -234,6 +234,39 @@ class fitness_predictors(object):
             # This is an increasingly positive value for strains that are increasingly distant from previous strains.
             cross_immunity = (np.array(frequencies) * inverse_cross_immunity_amplitude(np.array(distances), d_init)).sum()
             setattr(node, attr, cross_immunity)
+
+    def calc_nonepitope_star_distance(self, tree, timepoint, step_size, attr='ne_star', **kwargs):
+        """Calculate the non-epitope mutation distance between each node in the current
+        timepoint interval and its closest ancestor in the previous timepoint
+        interval.
+        """
+        # First, find all nodes sampled in this timepoint interval and the
+        # previous one and annotate non-epitope mutations to each node.
+        previous_timepoint = timepoint - step_size
+        current_nodes = []
+        for node in tree.find_clades():
+            if not hasattr(node, 'np_ne'):
+                if not hasattr(node, 'aa'):
+                    node.aa = self._translate(node)
+                node.np_ne = np.array(list(self.nonepitope_sites(node.aa)))
+
+            if node.is_terminal():
+                # Initialize predictor to zero.
+                if not hasattr(node, attr):
+                    setattr(node, attr, 0.0)
+
+                if previous_timepoint <= node.attr['num_date'] < timepoint:
+                    current_nodes.append(node)
+
+        # Next, find the first ancestor of each current node that was sampled in
+        # the previous time interval.
+        for node in current_nodes:
+            parent = node.up
+            while parent.attr["num_date"] > previous_timepoint:
+                parent = parent.up
+
+            # Calculate the non-epitope distance to the ancestor.
+            setattr(node, attr, -1 * self.fast_epitope_distance(node.np_ne, parent.np_ne))
 
     def calc_rbs_distance(self, tree, attr='rb', ref = None):
         '''
@@ -395,33 +428,6 @@ class fitness_predictors(object):
                 node.aa = self._translate(node)
             distance = self.nonepitope_distance(node.aa, ref)
             node.__setattr__(attr, -1 * distance)
-
-    def calc_nonepitope_star_distance(self, tree, attr='ne_star', seasons = []):
-        '''
-        calculates the distance at nonepitope sites of any tree node to ref
-        tree   --   dendropy tree
-        attr   --   the attribute name used to save the result
-        '''
-        for node in tree.find_clades(order="postorder"):
-            if len(node.season_tips) and node!=tree.root:
-                if not hasattr(node, 'aa'):
-                    node.aa = self._translate(node)
-                tmp_node = node.parent_node
-                cur_season = min(node.season_tips.keys())
-                prev_season = seasons[max(0,seasons.index(cur_season)-1)]
-                while True:
-                    if tmp_node!=tree.root:
-                        if prev_season in tmp_node.season_tips and len(tmp_node.season_tips[prev_season])>0:
-                            break
-                        else:
-                            tmp_node=tmp_node.parent_node
-                    else:
-                        break
-                if not hasattr(tmp_node, 'aa'):
-                    tmp_node.aa = self._translate(tmp_node)
-                node.__setattr__(attr, self.nonepitope_distance(node.aa, tmp_node.aa))
-            else:
-                node.__setattr__(attr, np.nan)
 
     def calc_null_predictor(self, tree, attr="null"):
         """Assign a zero value to each node as a control representing a null predictor.
