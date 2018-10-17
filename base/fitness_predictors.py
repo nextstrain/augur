@@ -190,7 +190,7 @@ class fitness_predictors(object):
         for node in tree.find_clades(order="postorder"):
             node.__setattr__(attr, self.fast_epitope_distance(node.np_ep, ref.np_ep))
 
-    def calc_epitope_cross_immunity(self, tree, timepoint, step_size, d_init = 14, attr='ep_x', **kwargs):
+    def calc_epitope_cross_immunity(self, tree, timepoint, step_size, d_init=14, attr='ep_x', **kwargs):
         """Calculates the distance at epitope sites to contemporaneous viruses
         this should capture cross-immunity of circulating viruses
         meant to be used in conjunction with epitope_distance that focuses
