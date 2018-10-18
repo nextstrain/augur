@@ -266,7 +266,7 @@ class fitness_predictors(object):
                 parent = parent.up
 
             # Calculate the non-epitope distance to the ancestor.
-            setattr(node, attr, -1 * self.fast_epitope_distance(node.np_ne, parent.np_ne))
+            setattr(node, attr, self.fast_epitope_distance(node.np_ne, parent.np_ne))
 
     def calc_rbs_distance(self, tree, attr='rb', ref = None):
         '''
