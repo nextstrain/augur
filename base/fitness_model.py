@@ -202,10 +202,6 @@ class fitness_model(object):
             2
         )
 
-        # Exclude the first timepoint from fitness model as censored frequencies there will be have a probability mass
-        # less than 1.
-        self.timepoints = self.timepoints[1:]
-
         # If an end date was provided, exclude all timepoints after that date.
         if self.end_date:
             original_number_of_timepoints = len(self.timepoints)
@@ -468,6 +464,7 @@ class fitness_model(object):
         self.fit_clades = {}
 
         for timepoint in self.timepoints[:-1]:
+            previous_timepoint = timepoint - self.timepoint_step_size
             total_freq = 0.0
             self.fit_clades[timepoint] = []
 
@@ -478,23 +475,31 @@ class fitness_model(object):
 
             # Identify non-overlapping clades from the previous timepoint until now.
             clade_group = 0
+            clade_group_freq = 0.0
+            nested = 0
             for clade in self.tree.find_clades():
-                if clade.attr["num_date"] >= timepoint - self.timepoint_step_size:
+                # Determine whether the current clade is alive or not at this timepoint.
+                if previous_timepoint <= clade.attr["num_date"] < timepoint:
+                    # If this clade already has a group assigned, it is a nested
+                    # clade. Otherwise, it is an ancestral clade in this
+                    # timepoint and needs a clade group.
                     if clade in self.node_parents and "clade_group" in self.node_parents[clade].attr:
                         clade.attr["clade_group"] = self.node_parents[clade].attr["clade_group"]
-                    elif not clade.is_terminal():
+                        nested += 1
+                    else:
                         clade_group += 1
                         clade.attr["clade_group"] = clade_group
 
-                        # Filter clades by minimum and maximum summed frequency
-                        # of their tips at the current timepoint.
+                        # Filter clades by minimum and maximum summed censored
+                        # frequency of their tips at the current timepoint.
                         node_freq = self.freq_arrays[timepoint][clade.tips].sum(axis=0)
+                        clade_group_freq += node_freq
                         if self.min_freq <= node_freq <= self.max_freq:
                             total_freq += node_freq
                             self.fit_clades[timepoint].append(clade)
 
             if self.verbose:
-                sys.stderr.write("%s: %s clades totalling %.2f (%s nested)\n" % (timepoint, len(self.fit_clades[timepoint]), total_freq, nested))
+                sys.stderr.write("%s: %s clades totalling %.2f (%s nested, %s clade groups at %.2f)\n" % (timepoint, len(self.fit_clades[timepoint]), total_freq, nested, clade_group, clade_group_freq))
 
     def clade_fit(self, params):
         # walk through initial/final timepoint pairs
@@ -683,7 +688,7 @@ class fitness_model(object):
         self.calc_node_frequencies()
         self.calc_all_predictors(estimate_frequencies = estimate_frequencies)
         self.standardize_predictors()
-        self.select_clades_for_fitting()
+        self.select_nonoverlapping_clades_for_fitting()
         if self.estimate_coefficients:
             self.learn_parameters(niter = niter, fit_func = "clade")
         self.assign_fitness()
