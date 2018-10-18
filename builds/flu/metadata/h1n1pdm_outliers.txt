@@ -26,6 +26,7 @@ A/Iowa/1/2006
 A/Iowa/1/2006-egg
 A/Iowa/2/2009
 A/Iowa/2/2009-egg
+A/Iowa/5/2007
 A/Iowa/39/2015
 A/Kenya/264/2012
 A/Malaysia/2142295/2009
