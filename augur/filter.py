@@ -139,7 +139,13 @@ def run(args):
         if is_vcf: #doesn't make sense for VCF, ignore.
             print("WARNING: Cannot use min_length for VCF files. Ignoring...")
         else:
-            seq_keep = [s for s in seq_keep if len(seqs[s])>=args.min_length]
+            seq_keep_by_length = []
+            for seq_name in seq_keep:
+                sequence = seqs[seq_name].seq
+                length = sum(map(lambda x: sequence.count(x), ["a", "t", "g", "c", "A", "T", "G", "C"]))
+                if length >= args.min_length:
+                    seq_keep_by_length.append(seq_name)
+            seq_keep = seq_keep_by_length
 
     # filter by date
     if (args.min_date or args.max_date) and 'date' in meta_columns:
