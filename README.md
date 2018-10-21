@@ -41,6 +41,13 @@ Augur uses some common external bioinformatics programs which you'll need to ins
 
 * Bacterial data (or any VCF usage) requires [vcftools](https://vcftools.github.io/)
 
+Alternatively, all these dependencies (as well as augur itself) can be installed via Conda by running:
+
+    conda env create -f environment.yml
+
+Once installed, Conda the enviroment need to be activated whenever augur is to be used, by running:
+
+    conda activate augur
 
 ## Usage
 
