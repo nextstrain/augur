@@ -120,7 +120,12 @@ def run(args):
     # read list of strains to exclude from file and prune seq_keep
     if args.exclude and os.path.isfile(args.exclude):
         with open(args.exclude, 'r') as ifile:
-            to_exclude = set([line.strip() for line in ifile if line[0]!=comment_char])
+            to_exclude = set()
+            for line in ifile:
+                if line[0] != comment_char:
+                    # strip whitespace and remove all text following comment character
+                    outlier = line.split(comment_char)[0].strip()
+                    to_exclude.add(outlier)
         seq_keep = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
 
     # exclude strain my metadata field like 'host=camel'
