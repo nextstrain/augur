@@ -124,11 +124,12 @@ def run(args):
             for line in ifile:
                 if line[0] != comment_char:
                     # strip whitespace and remove all text following comment character
-                    outlier = line.split(comment_char)[0].strip()
-                    to_exclude.add(outlier)
+                    exclude_name = line.split(comment_char)[0].strip()
+                    to_exclude.add(exclude_name)
         seq_keep = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
 
     # exclude strain my metadata field like 'host=camel'
+    # match using lowercase
     if args.exclude_where:
         for ex in args.exclude_where:
             try:
@@ -136,8 +137,11 @@ def run(args):
             except (ValueError,TypeError):
                 print("invalid exclude clause %s, should be of from property=value"%ex)
             else:
-                seq_keep = [seq_name for seq_name in seq_keep
-                            if meta_dict[seq_name].get(col,'unknown')!=val]
+                to_exclude = set()
+                for seq_name in seq_keep:
+                    if meta_dict[seq_name].get(col,'unknown').lower() == val.lower():
+                        to_exclude.add(seq_name)
+                seq_keep = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
 
     # filter by sequence length
     if args.min_length:
