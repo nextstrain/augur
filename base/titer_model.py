@@ -8,6 +8,7 @@ from .io_util import myopen
 import pandas as pd
 from pprint import pprint
 import sys
+from builtins import range
 
 try:
     import itertools.izip as zip
@@ -147,7 +148,7 @@ class TiterCollection(object):
         >>> len(TiterCollection.filter_strains(measurements, []))
         0
         """
-        return {key: value for key, value in titers.iteritems()
+        return {key: value for key, value in titers.items()
                 if key[0] in strains and key[1][0] in strains}
 
     @classmethod
@@ -211,7 +212,7 @@ class TiterCollection(object):
         '''
         autologous = defaultdict(list)
         all_titers_per_serum = defaultdict(list)
-        for (test, ref), val in self.titers.iteritems():
+        for (test, ref), val in self.titers.items():
             all_titers_per_serum[ref].append(val)
             if ref[0]==test:
                 autologous[ref].append(val)
@@ -246,14 +247,14 @@ class TiterCollection(object):
         self.titers_normalized = {}
         self.consensus_titers_raw = {}
         self.measurements_per_serum = defaultdict(int)
-        for (test, ref), val in self.titers.iteritems():
+        for (test, ref), val in self.titers.items():
             if ref in self.autologous_titers: # use only titers for which estimates of the autologous titer exists
                 self.titers_normalized[(test, ref)] = self.normalize(ref, val)
                 self.consensus_titers_raw[(test, ref)] = np.median(val)
                 self.measurements_per_serum[ref]+=1
             else:
                 pass
-                #print "no homologous titer found:", ref
+                #print("no homologous titer found:", ref)
 
     def strain_census(self, titers):
         """
@@ -371,13 +372,13 @@ class TiterModel(object):
                 for tmpstrain in self.ref_strains:      # add all reference viruses to the training set
                     if tmpstrain not in training_strains:
                         training_strains.append(tmpstrain)
-                for key, val in self.titers.titers_normalized.iteritems():
+                for key, val in self.titers.titers_normalized.items():
                     if key[0] in training_strains:
                         self.train_titers[key]=val
                     else:
                         self.test_titers[key]=val
             else: # simply use a fraction of all measurements for testing
-                for key, val in self.titers.titers_normalized.iteritems():
+                for key, val in self.titers.titers_normalized.items():
                     if np.random.uniform()>training_fraction:
                         self.test_titers[key]=val
                     else:
@@ -438,7 +439,7 @@ class TiterModel(object):
         if validation_set is None:
             validation_set=self.test_titers
         validation = {}
-        for key, val in validation_set.iteritems():
+        for key, val in validation_set.items():
             pred_titer = self.predict_titer(key[0], key[1], cutoff=cutoff)
             validation[key] = (val, pred_titer)
 
@@ -503,7 +504,7 @@ class TiterModel(object):
             return defaultdict(dict)
         titer_json = defaultdict(dstruct)
 
-        for key, val in self.titers.titers_normalized.iteritems():
+        for key, val in self.titers.titers_normalized.items():
             test_vir, (ref_vir, serum) = key
             test_clade = self.node_lookup[test_vir.upper()].clade
             ref_clade = self.node_lookup[ref_vir.upper()].clade
@@ -519,7 +520,7 @@ class TiterModel(object):
         the structure is organized by [ref][serum]
         '''
         potency_json = defaultdict(dict)
-        for (ref_vir, serum), val in self.serum_potency.iteritems():
+        for (ref_vir, serum), val in self.serum_potency.items():
             ref_clade = self.node_lookup[ref_vir.upper()].clade
             potency_json[ref_clade][serum] = np.round(val,TITER_ROUND)
 
@@ -527,7 +528,7 @@ class TiterModel(object):
         # to the exported data structure
         self.reference_virus_statistic()
         mean_potency = defaultdict(int)
-        for (ref_vir, serum), val in self.serum_potency.iteritems():
+        for (ref_vir, serum), val in self.serum_potency.items():
             mean_potency[ref_vir] += self.titer_counts[ref_vir][serum]*val
         for ref_vir in self.ref_strains:
             ref_clade = self.node_lookup[ref_vir.upper()].clade
@@ -540,7 +541,7 @@ class TiterModel(object):
         '''
         compile a json structure containing virus_effects for visualization
         '''
-        return {self.node_lookup[test_vir.upper()].clade:np.round(val,TITER_ROUND) for test_vir, val in self.virus_effect.iteritems()}
+        return {self.node_lookup[test_vir.upper()].clade:np.round(val,TITER_ROUND) for test_vir, val in self.virus_effect.items()}
 
 
     ##########################################################################################
@@ -560,9 +561,9 @@ class TiterModel(object):
         # and the l2-regulatization of the avidities and potencies
         P1 = np.zeros((n_params+n_genetic,n_params+n_genetic))
         P1[:n_params, :n_params] = self.TgT
-        for ii in xrange(n_genetic, n_genetic+n_sera):
+        for ii in range(n_genetic, n_genetic+n_sera):
             P1[ii,ii]+=self.lam_pot
-        for ii in xrange(n_genetic+n_sera, n_params):
+        for ii in range(n_genetic+n_sera, n_params):
             P1[ii,ii]+=self.lam_avi
         P = matrix(P1)
 
@@ -612,9 +613,9 @@ class TiterModel(object):
         # and the l2-regulatization of the avidities and potencies
         P1 = np.zeros((n_params,n_params))
         P1[:n_params, :n_params] = self.TgT
-        for ii in xrange(n_genetic, n_genetic+n_sera):
+        for ii in range(n_genetic, n_genetic+n_sera):
             P1[ii,ii]+=self.lam_pot
-        for ii in xrange(n_genetic+n_sera, n_params):
+        for ii in range(n_genetic+n_sera, n_params):
             P1[ii,ii]+=self.lam_avi
         P = matrix(P1)
 
@@ -742,8 +743,8 @@ class TreeModel(TiterModel):
                 node.titer_branch_index=None
 
         self.genetic_params = self.titer_split_count
-        print ("# of reference strains:",len(self.sera))
-        print ("# of eligible branches with titer constraints", self.titer_split_count)
+        print("# of reference strains:",len(self.sera))
+        print("# of eligible branches with titer constraints", self.titer_split_count)
 
 
     def make_treegraph(self):
@@ -758,7 +759,7 @@ class TreeModel(TiterModel):
         weights = []
         # mark HI splits have to have been run before, assigning self.titer_split_count
         n_params = self.titer_split_count + len(self.sera) + len(self.test_strains)
-        for (test, ref), val in self.train_titers.iteritems():
+        for (test, ref), val in self.train_titers.items():
             if not np.isnan(val):
                 try:
                     if ref[0] in self.node_lookup and test in self.node_lookup:
@@ -787,14 +788,14 @@ class TreeModel(TiterModel):
         self.titer_dist =  np.array(titer_dist)*self.weights
         self.design_matrix = (np.array(tree_graph).T*self.weights).T
         self.TgT = np.dot(self.design_matrix.T, self.design_matrix)
-        print ("Found", self.design_matrix.shape, "measurements x parameters")
+        print("Found", self.design_matrix.shape, "measurements x parameters")
 
     def train(self,**kwargs):
         self._train(**kwargs)
         for node in self.tree.find_clades(order='postorder'):
             node.dTiter=0 # reset branch properties -- only neede for tree model
             node.cTiter=0
-        for titer_split, branches in self.titer_split_to_branch.iteritems():
+        for titer_split, branches in self.titer_split_to_branch.items():
             likely_branch = branches[np.argmax([b.branch_length for b in branches])]
             likely_branch.dTiter = self.model_params[titer_split]
             likely_branch.constraints = self.design_matrix[:,titer_split].sum()
@@ -871,7 +872,7 @@ class SubstitutionModel(TiterModel):
     def determine_relevant_mutations(self, min_count=10):
         # count how often each mutation separates a reference test virus pair
         self.mutation_counter = defaultdict(int)
-        for (test, ref), val in self.train_titers.iteritems():
+        for (test, ref), val in self.train_titers.items():
             muts = self.get_mutations(ref[0], test)
             if muts is None:
                 continue
@@ -880,7 +881,7 @@ class SubstitutionModel(TiterModel):
 
         # make a list of mutations deemed relevant via frequency thresholds
         relevant_muts = []
-        for mut, count in self.mutation_counter.iteritems():
+        for mut, count in self.mutation_counter.items():
             gene = mut[0]
             pos = int(mut[1][1:-1])-1
             aa1, aa2 = mut[1][0],mut[1][-1]
@@ -905,7 +906,7 @@ class SubstitutionModel(TiterModel):
         n_params = self.genetic_params + len(self.sera) + len(self.test_strains)
         # loop over all measurements and encode the HI model as [0,1,0,1,0,0..] vector:
         # 1-> mutation present, 0 not present, same for serum and virus effects
-        for (test, ref), val in self.train_titers.iteritems():
+        for (test, ref), val in self.train_titers.items():
             if not np.isnan(val):
                 try:
                     muts = self.get_mutations(ref[0], test)
@@ -937,7 +938,7 @@ class SubstitutionModel(TiterModel):
         if colin_thres is not None and self.genetic_params > 0:
             self.collapse_colinear_mutations(colin_thres)
         self.TgT = np.dot(self.design_matrix.T, self.design_matrix)
-        print ("Found", self.design_matrix.shape, "measurements x parameters")
+        print("Found", self.design_matrix.shape, "measurements x parameters")
 
 
     def collapse_colinear_mutations(self, colin_thres):
@@ -983,7 +984,7 @@ class SubstitutionModel(TiterModel):
         for node in self.tree.find_clades():
             dTiterSub = 0
             if hasattr(node, "aa_muts"):
-                for gene, mutations in node.aa_muts.iteritems():
+                for gene, mutations in node.aa_muts.items():
                     for mutation in mutations:
                         dTiterSub += self.substitution_effect.get((gene, mutation), 0)
 
@@ -1009,7 +1010,7 @@ class SubstitutionModel(TiterModel):
         compile a flat json of substitution effects for visualization, prune mutation without effect
         '''
         return {mut[0]+':'+mut[1]:np.round(val,int(-np.log10(cutoff)))
-                for mut, val in self.substitution_effect.iteritems() if val>cutoff}
+                for mut, val in self.substitution_effect.items() if val>cutoff}
 
 
 if __name__=="__main__":

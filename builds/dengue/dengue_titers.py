@@ -1,3 +1,5 @@
+from builtins import range
+
 def tree_additivity_symmetry(titer_model):
     '''
     The titer model makes two major assumptions:
@@ -68,7 +70,7 @@ def tree_additivity_symmetry(titer_model):
     n_quartets = 1000
     for clique in C:
         if len(clique)>8:
-            for i in xrange(n_quartets):
+            for i in range(n_quartets):
                 Q = sample(clique, 4)
                 dists = []
                 for (a,b) in [((0,1), (2,3)),((0,2), (1,3)), ((0,3), (1,2))]:

@@ -2,6 +2,7 @@ import json
 from pprint import pprint
 import pdb
 import os
+from builtins import range
 
 metaFiles = ['build/flu_H7N9_HA_meta.json', 'build/flu_H7N9_NA_meta.json'];
 for metaFile in metaFiles:
@@ -13,8 +14,8 @@ for metaFile in metaFiles:
     # print what we've got so far...
     for key in data["color_options"]:
         if "color_map" in data["color_options"][key]:
-            print key
-            print "\t" + "\n\t".join([x[0] for x in data["color_options"][key]["color_map"]])
+            print(key)
+            print("\t" + "\n\t".join([x[0] for x in data["color_options"][key]["color_map"]]))
 
     cmap = {
         "country": {
@@ -60,8 +61,8 @@ for metaFile in metaFiles:
 
     for key in data["color_options"]:
         if "color_map" in data["color_options"][key] and key in cmap:
-            print "changing color for " + key
-            for idx in xrange(0, len(data["color_options"][key]["color_map"])):
+            print("changing color for " + key)
+            for idx in range(0, len(data["color_options"][key]["color_map"])):
                 if (data["color_options"][key]["color_map"][idx][0] in cmap[key]):
                     data["color_options"][key]["color_map"][idx][1] = cmap[key][data["color_options"][key]["color_map"][idx][0]]
 

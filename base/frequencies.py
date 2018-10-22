@@ -173,7 +173,7 @@ class frequency_estimator(object):
         # instantiate an interpolation object based on the optimal frequency pivots
         self.frequency_estimate = interp1d(self.pivots, self.pivot_freq, kind=self.interpolation_type, bounds_error=False)
 
-        if self.verbose: print ("neg logLH using",len(self.pivots),"pivots:", self.logLH(self.pivot_freq))
+        if self.verbose: print("neg logLH using",len(self.pivots),"pivots:", self.logLH(self.pivot_freq))
 
 
 class freq_est_clipped(object):
@@ -259,7 +259,7 @@ class nested_frequencies(object):
         self.kwargs = kwargs
 
     def calc_freqs(self):
-        sorted_obs = sorted(self.obs.items(), key=lambda x:x[1].sum(), reverse=True)
+        sorted_obs = sorted(list(self.obs.items()), key=lambda x:x[1].sum(), reverse=True)
         self.remaining_freq = np.ones_like(self.pivots)
 
         self.frequencies = {}
@@ -367,7 +367,7 @@ class tree_frequencies(object):
 
                 ne = nested_frequencies(node_tps, obs_to_estimate, self.pivots, pc=self.pc, **self.kwargs)
                 freq_est = ne.calc_freqs()
-                for clade, tmp_freq in freq_est.iteritems():
+                for clade, tmp_freq in freq_est.items():
                     if clade != "other":
                         self.frequencies[clade] = self.frequencies[node.clade] * tmp_freq
 
@@ -404,7 +404,7 @@ class tree_frequencies(object):
         useful approximation in most cases
         '''
         self.confidence = {}
-        for key, freq in self.frequencies.iteritems():
+        for key, freq in self.frequencies.items():
             # add a pseudo count 1/(n+1) and normalize to n+1
             self.confidence[key] = np.sqrt((1.0/(1+self.counts)+freq*(1-freq))/(1.0+self.counts))
         return self.confidence
@@ -489,8 +489,7 @@ class alignment_frequencies(object):
             if len(obs)==0:
                 obs[(pos, muts[0])] = column==muts[0]
             elif len(obs)!=len(nis):
-                tmp = ~np.any(obs.values(), axis=0) # pull out sequences not yet assigned
-
+                tmp = ~np.any(list(obs.values()), axis=0) # pull out sequences not yet assigned
                 if any(tmp):
                     if len(obs)==len(nis)-1: # if only category left, assign it
                         obs[(pos, muts[-1])] = tmp
@@ -499,7 +498,7 @@ class alignment_frequencies(object):
 
             print("Estimating frequencies of position: {}".format(pos), end="\r")
             sys.stdout.flush()
-            # print("Variants found at frequency:", [(k,o.mean()) for k,o in obs.iteritems()])
+            # print("Variants found at frequency:", [(k,o.mean()) for k,o in obs.items()])
 
             # calculate frequencies, which will be added to the frequencies dict with (pos, mut) as key
             ne = nested_frequencies(tps, obs, self.pivots, **self.kwargs)
@@ -508,7 +507,7 @@ class alignment_frequencies(object):
 
     def calc_confidence(self):
         self.confidence = {}
-        for key, freq in self.frequencies.iteritems():
+        for key, freq in self.frequencies.items():
             # add a pseudo count 1/(n+1) and normalize to n+1
             self.confidence[key] = np.sqrt((1.0/(1+self.counts)+freq*(1-freq))/(1.0+self.counts))
 
@@ -564,7 +563,7 @@ def test_nested_estimator():
 
     if plot:
         plt.figure()
-        for k,o in obs.iteritems():
+        for k,o in obs.items():
             plt.plot(tps, o, 'o')
             plt.plot(fe.pivots,fe.frequencies[k], 'o')
 

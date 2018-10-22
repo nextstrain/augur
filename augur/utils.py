@@ -353,7 +353,7 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
             #Now convert these calls to #/# (VCF format)
             calls = [ j+"/"+j if j!='.' else '.' for j in pattern ]
             if len(uniques)==0:
-                print ("UNEXPECTED ERROR WHILE CONVERTING TO VCF AT POSITION {}".format(str(pi)))
+                print("UNEXPECTED ERROR WHILE CONVERTING TO VCF AT POSITION {}".format(str(pi)))
                 break
 
             #put it all together and write it out

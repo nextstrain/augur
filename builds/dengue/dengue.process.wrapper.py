@@ -19,6 +19,6 @@ while True:
 
 		while len(running) < 2:
 			proc = subprocess.Popen(cmds[job_id].split())
-			print 'STARTING JOB ID %d'%job_id
+			print('STARTING JOB ID %d'%job_id)
 			job_id += 1
 			running.append(proc)
