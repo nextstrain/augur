@@ -120,10 +120,16 @@ def run(args):
     # read list of strains to exclude from file and prune seq_keep
     if args.exclude and os.path.isfile(args.exclude):
         with open(args.exclude, 'r') as ifile:
-            to_exclude = set([line.strip() for line in ifile if line[0]!=comment_char])
+            to_exclude = set()
+            for line in ifile:
+                if line[0] != comment_char:
+                    # strip whitespace and remove all text following comment character
+                    exclude_name = line.split(comment_char)[0].strip()
+                    to_exclude.add(exclude_name)
         seq_keep = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
 
     # exclude strain my metadata field like 'host=camel'
+    # match using lowercase
     if args.exclude_where:
         for ex in args.exclude_where:
             try:
@@ -131,15 +137,24 @@ def run(args):
             except (ValueError,TypeError):
                 print("invalid exclude clause %s, should be of from property=value"%ex)
             else:
-                seq_keep = [seq_name for seq_name in seq_keep
-                            if meta_dict[seq_name].get(col,'unknown')!=val]
+                to_exclude = set()
+                for seq_name in seq_keep:
+                    if meta_dict[seq_name].get(col,'unknown').lower() == val.lower():
+                        to_exclude.add(seq_name)
+                seq_keep = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
 
     # filter by sequence length
     if args.min_length:
         if is_vcf: #doesn't make sense for VCF, ignore.
             print("WARNING: Cannot use min_length for VCF files. Ignoring...")
         else:
-            seq_keep = [s for s in seq_keep if len(seqs[s])>=args.min_length]
+            seq_keep_by_length = []
+            for seq_name in seq_keep:
+                sequence = seqs[seq_name].seq
+                length = sum(map(lambda x: sequence.count(x), ["a", "t", "g", "c", "A", "T", "G", "C"]))
+                if length >= args.min_length:
+                    seq_keep_by_length.append(seq_name)
+            seq_keep = seq_keep_by_length
 
     # filter by date
     if (args.min_date or args.max_date) and 'date' in meta_columns:
