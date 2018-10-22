@@ -70,12 +70,15 @@ rule refine:
         tree = "results/tree.nwk",
         node_data = "results/branch_lengths.json",
     params:
-        root = 'residual'
+        root = 'min_dev',
+        clock_rate = 1e-7,
+        clock_std = 3e-8
     shell:
         """
         augur refine --tree {input.tree} --alignment {input.aln} --metadata {input.metadata} \
             --output-tree {output.tree} --output-node-data {output.node_data} --vcf-reference {input.ref} \
-            --timetree --root {params.root} --coalescent 0.0001
+            --timetree --root {params.root} --coalescent 0.0001 \
+            --clock-rate {params.clock_rate} --clock-std-dev {params.clock_std}
         """
 
 rule ancestral:
@@ -147,7 +150,7 @@ rule seqtraits:
             --features {input.drms} --output {output.drm_data} \
             --count {params.count} --label {params.label}
         """
-        
+
 rule export:
     message: "Exporting data files for for auspice using nextflu compatible schema"
     input:
