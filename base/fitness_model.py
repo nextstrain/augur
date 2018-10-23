@@ -308,6 +308,7 @@ class fitness_model(object):
                 frequencies = frequency_estimator.estimate(self.tree)
 
                 # Determine the frequency of each tip at the given timepoint.
+                total_freq = 0.0
                 for tip in self.tips:
                     interpolation = interp1d(
                         self.pivots,
@@ -316,12 +317,19 @@ class fitness_model(object):
                         bounds_error=True
                     )
                     censored_frequency = np.asscalar(interpolation(time))
+                    total_freq += censored_frequency
 
                     if not hasattr(tip, "censored_freqs"):
                         tip.censored_freqs = {}
 
                     tip.censored_freqs[time] = censored_frequency
                     tmp_freqs.append(censored_frequency)
+
+                # Normalize tip frequencies interpolated from pivots at timepoints.
+                tmp_freqs = [tmp_freq / total_freq for tmp_freq in tmp_freqs]
+
+                for tip in self.tips:
+                    tip.censored_freqs[time] /= total_freq
             else:
                 for tip in self.tips:
                     tmp_freqs.append(tip.timepoint_freqs[time])
