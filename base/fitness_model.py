@@ -287,11 +287,8 @@ class fitness_model(object):
         for node in self.nodes:
             interpolation = interp1d(self.rootnode.pivots, node.freq[region], kind='linear', bounds_error=True)
             node.timepoint_freqs = {}
-            node.observed_final_freqs = {}
             for time in self.timepoints:
                 node.timepoint_freqs[time] = np.asscalar(interpolation(time))
-            for time in self.timepoints[:-1]:
-                node.observed_final_freqs[time] = np.asscalar(interpolation(time + self.delta_time))
 
         # Estimate frequencies for tips at specific timepoints.
         # Censor future tips from estimations unless these data are explicitly allowed.
@@ -338,6 +335,13 @@ class fitness_model(object):
                     tmp_freqs.append(tip.timepoint_freqs[time])
 
             self.freq_arrays[time] = np.array(tmp_freqs)
+
+        # Assign observed final frequencies to clades based on the sum of their respective tip frequencies.
+        # This allows clade frequencies to be censored at future timepoints if tip frequencies are too.
+        for node in self.nodes:
+            node.observed_final_freqs = {}
+            for i in range(len(self.timepoints) - 1):
+                node.observed_final_freqs[self.timepoints[i]] = self.freq_arrays[self.timepoints[i + 1]][node.tips].sum(axis=0)
 
     def calc_predictors(self, timepoint):
         for pred in self.predictors:
