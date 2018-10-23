@@ -223,32 +223,27 @@ def read_config(fname):
 
 def read_lat_longs(overrides=None, use_defaults=True):
     coordinates = {}
+    def add_line_to_coordinates(line):
+        if line.startswith('#'): 
+            return
+        fields = line.strip().split()
+        if len(fields) == 4:
+            geo_field, loc = fields[0].lower(), fields[1].lower()
+            lat, long = float(fields[2]), float(fields[3])
+            coordinates[(geo_field, loc)] = {
+                "latitude": lat,
+                "longitude": long
+            }
     if use_defaults:
         with resource_stream(__package__, "data/lat_longs.tsv") as stream:
             with TextIOWrapper(stream, "utf-8") as defaults:
                 for line in defaults:
-                    if line.startswith('#'): continue
-                    fields = line.strip().split()
-                    if len(fields) == 4:
-                        geo_field, loc = fields[0].lower(), fields[1].lower()
-                        lat, long = float(fields[2]), float(fields[3])
-                        coordinates[(geo_field, loc)] = {
-                            "latitude": lat,
-                            "longitude": long
-                        }
+                    add_line_to_coordinates(line)
     if overrides:
         if os.path.isfile(overrides):
             with open(overrides) as ifile:
                 for line in ifile:
-                    if line.startswith('#'): continue
-                    fields = line.strip().split()
-                    if len(fields) == 4:
-                        geo_field, loc = fields[0], fields[1]
-                        lat, long = float(fields[2]), float(fields[3])
-                        coordinates[(geo_field, loc)] = {
-                            "latitude": lat,
-                            "longitude": long
-                        }
+                    add_line_to_coordinates(line)
         else:
             print("WARNING: input lat/long file %s not found." % overrides)
     return coordinates
