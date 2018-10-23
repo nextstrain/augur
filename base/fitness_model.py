@@ -486,7 +486,7 @@ class fitness_model(object):
                     if clade in self.node_parents and "clade_group" in self.node_parents[clade].attr:
                         clade.attr["clade_group"] = self.node_parents[clade].attr["clade_group"]
                         nested += 1
-                    else:
+                    elif not clade.is_terminal():
                         clade_group += 1
                         clade.attr["clade_group"] = clade_group
 
