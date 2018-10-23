@@ -202,6 +202,9 @@ class fitness_model(object):
             2
         )
 
+        # Exclude the first timepoint when there are no viruses sampled yet.
+        self.timepoints = self.timepoints[1:]
+
         # If an end date was provided, exclude all timepoints after that date.
         if self.end_date:
             original_number_of_timepoints = len(self.timepoints)
