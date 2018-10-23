@@ -481,37 +481,73 @@ class fitness_model(object):
         for timepoint in self.timepoints[:-1]:
             previous_timepoint = timepoint - self.timepoint_step_size
             total_freq = 0.0
+            candidate_clades = []
             self.fit_clades[timepoint] = []
+
+            tips_in_window = {}
+            for node in self.tree.find_clades():
+                if node.is_terminal() and node.censored_freqs[timepoint] > 0.0: #(previous_timepoint <= node.attr["num_date"] < timepoint):
+                    tips_in_window[node.name] = node
+
+            if self.verbose:
+                sys.stderr.write("Tips in window sum to frequency of %.2f\n" % sum([node.censored_freqs[timepoint]
+                                                                                    for node in tips_in_window.values()]))
+
+            # Order tips by the date of their parents.
+            # This preferentially adds parents that represent more tips.
+            tip_names = [key for key, value in sorted(tips_in_window.items(), key=lambda item: item[1].up.attr["num_date"])]
+
+            for tip_name in tip_names:
+                if tip_name in tips_in_window:
+                    tip = tips_in_window[tip_name]
+
+                    # Test whether the tip's parent contains any other tips in this window.
+                    parent = tip.up
+                    while parent:
+                        tips_added_by_parent = 0
+                        for child in parent.get_terminals():
+                            if child.name in tips_in_window:
+                                # Note that this parent accounts for other tips in this window.
+                                tips_added_by_parent += 1
+                                del tips_in_window[child.name]
+
+                        # Stop adding parents, if doing so provides no new tips.
+                        # Save the current parent, otherwise.
+                        if tips_added_by_parent == 0:
+                            break
+                        else:
+                            candidate_clades.append(parent)
+
+                        # Stop adding parents, if we have moved outside of the current window.
+                        # Otherwise, keep traversing upward.
+                        if parent.attr["num_date"] < previous_timepoint:
+                            break
+                        else:
+                            parent = parent.up
 
             # Reset attribute on nodes.
             for clade in self.tree.find_clades():
                 if "clade_group" in clade.attr:
                     del clade.attr["clade_group"]
 
-            # Identify non-overlapping clades from the previous timepoint until now.
             clade_group = 0
             clade_group_freq = 0.0
             nested = 0
             for clade in self.tree.find_clades():
-                # Determine whether the current clade is alive or not at this timepoint.
-                if previous_timepoint <= clade.attr["num_date"] < timepoint:
-                    # If this clade already has a group assigned, it is a nested
-                    # clade. Otherwise, it is an ancestral clade in this
-                    # timepoint and needs a clade group.
-                    if clade in self.node_parents and "clade_group" in self.node_parents[clade].attr:
-                        clade.attr["clade_group"] = self.node_parents[clade].attr["clade_group"]
-                        nested += 1
-                    elif not clade.is_terminal():
-                        clade_group += 1
-                        clade.attr["clade_group"] = clade_group
+                if clade.up and "clade_group" in clade.up.attr:
+                    clade.attr["clade_group"] = clade.up.attr["clade_group"]
+                    nested += 1
+                elif clade in candidate_clades:
+                    clade_group += 1
+                    clade.attr["clade_group"] = clade_group
 
-                        # Filter clades by minimum and maximum summed censored
-                        # frequency of their tips at the current timepoint.
-                        node_freq = self.freq_arrays[timepoint][clade.tips].sum(axis=0)
-                        clade_group_freq += node_freq
-                        if self.min_freq <= node_freq <= self.max_freq:
-                            total_freq += node_freq
-                            self.fit_clades[timepoint].append(clade)
+                    # Filter clades by minimum and maximum summed censored
+                    # frequency of their tips at the current timepoint.
+                    node_freq = self.freq_arrays[timepoint][clade.tips].sum(axis=0)
+                    clade_group_freq += node_freq
+                    if self.min_freq <= node_freq <= self.max_freq:
+                        total_freq += node_freq
+                        self.fit_clades[timepoint].append(clade)
 
             if self.verbose:
                 sys.stderr.write("%s: %s clades totalling %.2f (%s nested, %s clade groups at %.2f)\n" % (timepoint, len(self.fit_clades[timepoint]), total_freq, nested, clade_group, clade_group_freq))
