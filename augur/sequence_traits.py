@@ -320,4 +320,4 @@ def run(args):
 
     #write out json
     with open(args.output, 'w') as results:
-        json.dump({"nodes":seq_features}, results, indent=1)
+        json.dump({"nodes":seq_features}, results, indent=1, sort_keys = True)
