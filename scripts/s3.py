@@ -254,7 +254,10 @@ def sync(source_bucket_name, destination_bucket_name, prefixes=None, dryrun=Fals
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Upload files to a (nextstrain) S3 bucket and perform cloudfront invalidation",
+        epilog="P.S. run \"s3.py <cmd> -h\" to see the help specific to that command"
+    )
     parser.add_argument("--verbose", "-v", action="store_const", dest="loglevel", const=logging.INFO, help="Enable verbose logging")
     parser.add_argument("--debug", "-d", action="store_const", dest="loglevel", const=logging.DEBUG, help="Enable debugging logging")
     parser.add_argument("--dryrun", "-n", action="store_true", help="Perform a dryrun without uploading or downloading any files")
