@@ -328,10 +328,11 @@ class fitness_model(object):
                     tmp_freqs.append(censored_frequency)
 
                 # Normalize tip frequencies interpolated from pivots at timepoints.
-                tmp_freqs = [tmp_freq / total_freq for tmp_freq in tmp_freqs]
+                if total_freq > 0:
+                    tmp_freqs = [tmp_freq / total_freq for tmp_freq in tmp_freqs]
 
-                for tip in self.tips:
-                    tip.censored_freqs[time] /= total_freq
+                    for tip in self.tips:
+                        tip.censored_freqs[time] /= total_freq
             else:
                 for tip in self.tips:
                     tmp_freqs.append(tip.timepoint_freqs[time])
