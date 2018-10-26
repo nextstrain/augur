@@ -124,6 +124,7 @@ class fitness_predictors(object):
         """Returns amino acids from the given protein sequence corresponding to sites in
         a predefined epitope mask.
         """
+        assert len(aa) == len(self.epitope_mask), "Sequence length: %s long, mask length: %s" % (len(aa), len(self.epitope_mask))
         sites = []
         for a, m in zip(aa, self.epitope_mask):
             if m == '1':
