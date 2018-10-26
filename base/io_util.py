@@ -216,7 +216,9 @@ def reconstruct_sequences_from_tree_and_root(tree, root_sequences, ordered_genes
 
             # Merge mutations into a single data structure that can be iterated over once.
             mutation_sets = child.aa_muts.copy()
-            mutation_sets["nuc"] = child.muts
+
+            if "nuc" in ordered_genes:
+                mutation_sets["nuc"] = child.muts
 
             # Reconstruct amino acid sequences.
             for gene, mutations in mutation_sets.items():
