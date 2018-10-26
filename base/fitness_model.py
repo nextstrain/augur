@@ -136,7 +136,8 @@ class fitness_model(object):
 
     def __init__(self, tree, frequencies, predictor_input, censor_frequencies=True,
                  pivot_spacing=1.0 / 12, verbose=0, enforce_positive_predictors=True, predictor_kwargs=None,
-                 cost_function=sum_of_squared_errors, delta_time=1.0, end_date=None, step_size=0.5, **kwargs):
+                 cost_function=sum_of_squared_errors, delta_time=1.0, end_date=None, step_size=0.5, min_tip_freq=1e-3,
+                 **kwargs):
         """
 
         Args:
@@ -160,6 +161,7 @@ class fitness_model(object):
         self.estimate_coefficients = True
         self.min_freq = kwargs.get("min_freq", 0.1)
         self.max_freq = kwargs.get("max_freq", 0.99)
+        self.min_tip_freq = min_tip_freq
         self.cost_function = cost_function
         self.end_date = end_date
 
@@ -486,7 +488,9 @@ class fitness_model(object):
 
             tips_in_window = {}
             for node in self.tree.find_clades():
-                if node.is_terminal() and node.censored_freqs[timepoint] > 0.0: #(previous_timepoint <= node.attr["num_date"] < timepoint):
+                # Select all tips that are likely sampled from this timepoint
+                # based on a minimum frequency.
+                if node.is_terminal() and node.censored_freqs[timepoint] > self.min_tip_freq:
                     tips_in_window[node.name] = node
 
             if self.verbose:
