@@ -48,11 +48,16 @@ def simple_tree():
     sequences = (root, leaf_a, leaf_b)
     dates = (2012.5, 2013.25, 2014.8)
     index = 0
+    tree.root.up = None
     for node in tree.find_clades(order="preorder"):
         node.clade = index
         node.aa = sequences[index]
         node.attr = {"num_date": dates[index]}
         index += 1
+
+        # Assign parent links.
+        for child in node.clades:
+            child.up = node
 
     return tree
 
