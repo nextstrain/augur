@@ -579,7 +579,7 @@ class KdeFrequencies(object):
     """
     def __init__(self, sigma_narrow=1 / 12.0, sigma_wide=3 / 12.0, proportion_wide=0.2,
                  pivot_frequency=1 / 12.0, start_date=None, end_date=None, weights=None, weights_attribute=None,
-                 max_date=None, include_internal_nodes=False):
+                 node_filters=None, max_date=None, include_internal_nodes=False):
         """Define parameters for KDE-based frequency estimation.
 
         Args:
@@ -591,6 +591,7 @@ class KdeFrequencies(object):
             end_date (float): end of the pivots interval
             weights (dict): Numerical weights indexed by attribute values and applied to individual tips
             weights_attribute (str): Attribute annotated on tips of a tree to use for weighting
+            node_filters (dict): Mapping of node attribute names (keys) to a list of valid values to keep
             max_date (float): Maximum year beyond which tips are excluded from frequency estimation and are assigned
                               frequencies of zero
             include_internal_nodes (bool): Whether internal (non-tip) nodes should have their frequencies estimated
@@ -606,6 +607,7 @@ class KdeFrequencies(object):
         self.end_date = end_date
         self.weights = weights
         self.weights_attribute = weights_attribute
+        self.node_filters = node_filters
         self.max_date = max_date
         self.include_internal_nodes = include_internal_nodes
 
@@ -626,7 +628,8 @@ class KdeFrequencies(object):
             "weights": self.weights,
             "weights_attribute": self.weights_attribute,
             "max_date": self.max_date,
-            "include_internal_nodes": self.include_internal_nodes
+            "include_internal_nodes": self.include_internal_nodes,
+            "node_filters": self.node_filters
         }
 
     @classmethod
@@ -766,13 +769,24 @@ class KdeFrequencies(object):
 
         return normalized_freq_matrix
 
+    def tip_passes_filters(self, tip):
+        """Returns a boolean indicating whether a given tip passes the node filters
+defined for the current instance.
+
+        If no filters are defined, returns True.
+        """
+        return (self.node_filters is None or
+                all([tip.attr[key] in values for key, values in self.node_filters.items()]))
+
     def estimate_frequencies_for_tree(self, tree):
         """Estimate frequencies for all nodes in a tree across the given pivots.
         """
         clade_frequencies = {}
 
         # Collect dates for tips.
-        tips = [(tip.clade, tip.attr["num_date"]) for tip in tree.get_terminals()]
+        tips = [(tip.clade, tip.attr["num_date"])
+                for tip in tree.get_terminals()
+                if self.tip_passes_filters(tip)]
         tips = np.array(sorted(tips, key=lambda row: row[1]))
         clades = tips[:, 0].astype(int)
         tip_dates = tips[:, 1].astype(float)
@@ -793,6 +807,11 @@ class KdeFrequencies(object):
 
         for clade in clades:
             clade_frequencies[clade] = normalized_freq_matrix[clade_to_index[clade]]
+
+        # Assign zero frequencies to any tips that were filtered out of the frequency estimation.
+        for tip in tree.get_terminals():
+            if not tip.clade in clade_frequencies:
+                clade_frequencies[tip.clade] = np.zeros_like(self.pivots)
 
         if self.include_internal_nodes:
             for node in tree.find_clades(order="postorder"):
@@ -815,7 +834,13 @@ class KdeFrequencies(object):
             # Find tips with the current weight attribute.
             tips = [(tip.clade, tip.attr["num_date"])
                     for tip in tree.get_terminals()
-                    if tip.attr[self.weights_attribute] == weight_key]
+                    if tip.attr[self.weights_attribute] == weight_key and self.tip_passes_filters(tip)]
+
+            # If none of the tips pass the given node filters, do not try to
+            # normalize tip frequencies.
+            if len(tips) == 0:
+                continue
+
             tips = np.array(sorted(tips, key=lambda row: row[1]))
             clades = tips[:, 0].astype(int)
             tip_dates = tips[:, 1].astype(float)
@@ -836,6 +861,11 @@ class KdeFrequencies(object):
 
             for clade in clades:
                 clade_frequencies[clade] = normalized_freq_matrix[clade_to_index[clade]]
+
+        # Assign zero frequencies to any tips that were filtered out of the frequency estimation.
+        for tip in tree.get_terminals():
+            if not tip.clade in clade_frequencies:
+                clade_frequencies[tip.clade] = np.zeros_like(self.pivots)
 
         if self.include_internal_nodes:
             for node in tree.find_clades(order="postorder"):
