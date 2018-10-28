@@ -147,7 +147,7 @@ def write_json(data, file_name, indent=1):
     except IOError:
         raise
     else:
-        json.dump(data, handle, indent=indent)
+        json.dump(data, handle, indent=indent, sort_keys = True)
         handle.close()
         success=True
 

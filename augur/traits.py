@@ -172,7 +172,7 @@ def run(args):
                 ofile.write(str(gtr))
 
     with open(args.output, 'w') as results:
-        json.dump({"nodes":mugration_states}, results, indent=1)
+        json.dump({"nodes":mugration_states}, results, indent=1, sort_keys = True)
 
     print("\nInferred ancestral states of discrete character using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
