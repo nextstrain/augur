@@ -10,7 +10,7 @@ from .utils import read_metadata
 TINY = 1e-12
 
 def mugration_inference(tree=None, seq_meta=None, field='country', confidence=True,
-                        infer_gtr=True, root_state=None, missing='?'):
+                        infer_gtr=True, root_state=None, missing='?', sampling_bias_correction=None):
     """
     Infer likely ancestral states of a discrete character assuming a time reversible model.
 
@@ -97,10 +97,16 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
         # set up treetime and infer
         from treetime import TreeAnc
         tt = TreeAnc(tree=tree, aln=aln, gtr=model, convert_upper=False, verbose=0)
-        tt.use_mutation_length=False
-        tt.infer_ancestral_sequences(infer_gtr=infer_gtr, store_compressed=False, pc=5.0,
+        tt.use_mutation_length = False
+        tt.infer_ancestral_sequences(infer_gtr=infer_gtr, store_compressed=False, pc=1.0,
                                      marginal=True, normalized_rate=False)
-        T=tt.tree
+
+        if sampling_bias_correction:
+            tt.gtr.mu *= sampling_bias_correction
+            tt.infer_ancestral_sequences(infer_gtr=False, store_compressed=False,
+                                         marginal=True, normalized_rate=False)
+
+        T = tt.tree
         gtr = tt.gtr
         alphabet_values = tt.gtr.alphabet
 
@@ -132,6 +138,12 @@ def register_arguments(parser):
                         help='metadata fields to perform discrete reconstruction on')
     parser.add_argument('--confidence',action="store_true",
                         help='record the distribution of subleading mugration states')
+    parser.add_argument('--sampling-bias-correction', type=float,
+                        help='a rough estimate of how many more events would have been observed'
+                             ' if sequences represented an even sample. This should be'
+                             ' roughly the (1-sum_i p_i^2)/(1-sum_i t_i^2), where p_i'
+                             ' are the equilibrium frequencies and t_i are apparent ones.'
+                             '(or rather the time spent in a particular state on the tree)')
     parser.add_argument('--output', '-o', default='traits.json', help='')
 
 
@@ -149,7 +161,7 @@ def run(args):
     mugration_states = defaultdict(dict)
     for column in args.columns:
         T, gtr, alphabet = mugration_inference(tree=tree_fname, seq_meta=traits,
-                            field=column, confidence=args.confidence)
+                                               field=column, confidence=args.confidence, sampling_bias_correction=args.sampling_bias_correction)
         if T is None: # something went wrong
             continue
 
