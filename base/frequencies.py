@@ -259,18 +259,16 @@ class nested_frequencies(object):
         self.kwargs = kwargs
 
     def calc_freqs(self):
-        sorted_obs = sorted(list(self.obs.items()), key=lambda x:x[1].sum(), reverse=True)
+        sorted_obs = sorted(self.obs.items(), key=lambda x: np.array(list(x[1])).sum(), reverse=True)
         self.remaining_freq = np.ones_like(self.pivots)
 
         self.frequencies = {}
         valid_tps = np.ones_like(self.tps, dtype=bool)
         for mut, obs in sorted_obs[:-1]:
-            # print(mut,'...')
             fe = freq_est_clipped(self.tps[valid_tps], obs[valid_tps], self.pivots, **self.kwargs)
             if fe.valid==False:
                 self.frequencies[mut] = np.zeros_like(self.remaining_freq)
                 break
-
             fe.learn()
             self.frequencies[mut] = self.remaining_freq * fe.pivot_freq
             self.remaining_freq *= (1.0-fe.pivot_freq)
@@ -363,7 +361,7 @@ class tree_frequencies(object):
                     if len(small_clades)==1:
                         obs_to_estimate.update(remainder)
                     else:
-                        obs_to_estimate['other'] = np.any(remainder.values(), axis=0)
+                        obs_to_estimate['other'] = np.any(np.array(list(remainder.values())), axis=0)
 
                 ne = nested_frequencies(node_tps, obs_to_estimate, self.pivots, pc=self.pc, **self.kwargs)
                 freq_est = ne.calc_freqs()

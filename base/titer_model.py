@@ -110,7 +110,7 @@ class TiterCollection(object):
         2
         """
         counts = defaultdict(int)
-        for key in titers.iterkeys():
+        for key in titers.keys():
             measurements = len(titers[key])
             counts[key[0]] += measurements
 
