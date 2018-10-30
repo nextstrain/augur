@@ -191,7 +191,7 @@ class fitness_predictors(object):
         for node in tree.find_clades(order="postorder"):
             node.__setattr__(attr, self.fast_epitope_distance(node.np_ep, ref.np_ep))
 
-    def calc_epitope_cross_immunity(self, tree, timepoint, step_size, d_init=14, attr='ep_x', **kwargs):
+    def calc_epitope_cross_immunity(self, tree, timepoint, step_size, d_init=14, attr='ep_x', years_to_wane=5, **kwargs):
         """Calculates the distance at epitope sites to contemporaneous viruses
         this should capture cross-immunity of circulating viruses
         meant to be used in conjunction with epitope_distance that focuses
@@ -223,18 +223,37 @@ class fitness_predictors(object):
         print("calculating cross-immunity at %s between %s current nodes and %s past nodes" % (timepoint, len(current_nodes), len(past_nodes)))
 
         for node in current_nodes:
+            waning_effects = []
             frequencies = []
             distances = []
             for comp_node in past_nodes:
-                # Track the frequency of each past node and its distance from the current node.
-                # Cross-immunity is scaled by the maximum frequency that the past node ever obtained.
-                frequencies.append(max(comp_node.censored_freqs.values()))
-                distances.append(self.fast_epitope_distance(node.np_ep, comp_node.np_ep))
+                # Consider only past viruses that were sampled while immunity
+                # had not waned relative to the current virus.
+                if node.attr["num_date"] - comp_node.attr["num_date"] < years_to_wane:
+                    # Calculate the effect of linear waning immunity on the
+                    # overall cross-immunity amplitude as a proportion of the
+                    # years between the two viruses and the overall waning
+                    # period.
+                    waning_effect = 1 - ((node.attr["num_date"] - comp_node.attr["num_date"]) / years_to_wane)
+                    waning_effects.append(waning_effect)
+
+                    # Track the frequency of each past node and its distance from the current node.
+                    # Cross-immunity is scaled by the maximum frequency that the past node ever obtained.
+                    frequencies.append(max(comp_node.censored_freqs.values()))
+
+                    # Calculate the number of epitope mutations between viruses.
+                    distances.append(self.fast_epitope_distance(node.np_ep, comp_node.np_ep))
 
             # Calculate inverse cross-immunity amplitude once from all distances to the current strain.
             # This is an increasingly positive value for strains that are increasingly distant from previous strains.
-            cross_immunity = (np.array(frequencies) * inverse_cross_immunity_amplitude(np.array(distances), d_init)).sum()
-            setattr(node, attr, cross_immunity)
+            cross_immunity_amplitudes = inverse_cross_immunity_amplitude(np.array(distances), d_init)
+
+            # Scale cross-immunity by waning effects and past strain frequencies
+            # and sum across all past viruses.
+            waning_effects = np.array(waning_effects)
+            frequencies = np.array(frequencies)
+            total_cross_immunity = (waning_effects * frequencies * cross_immunity_amplitudes).sum()
+            setattr(node, attr, total_cross_immunity)
 
     def calc_nonepitope_star_distance(self, tree, timepoint, step_size, attr='ne_star', **kwargs):
         """Calculate the non-epitope mutation distance between each node in the current
