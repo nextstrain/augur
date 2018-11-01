@@ -19,6 +19,8 @@ except ImportError:
 # Fixtures
 #
 
+from .fixtures import json_tree
+
 @pytest.fixture
 def fitness_predictor():
     from base.fitness_predictors import fitness_predictors
@@ -193,3 +195,16 @@ class TestFitnessPredictors(object):
         # All nodes should have a random value between 0 and 1.
         for node in nodes:
             assert getattr(node, attr) >= 0 and getattr(node, attr) < 1
+
+    def test_calc_epitope_immunity(self, fitness_predictor, json_tree):
+        timepoint = 2016.0
+        step_size = 0.5
+        attr = "ep_x"
+        nodes = [node for node in json_tree.find_clades(order="preorder")]
+        for node in nodes:
+            assert not hasattr(node, attr)
+
+        fitness_predictor.calc_epitope_cross_immunity(json_tree, timepoint, step_size, attr=attr)
+
+        # One or more nodes should have non-zero values.
+        assert any([getattr(node, attr) for node in nodes])
