@@ -202,15 +202,13 @@ def reconstruct_sequences_from_tree_and_root(tree, root_sequences, ordered_genes
     coordinates such that the annotated translations are stored in coordinate
     order.
     """
-    annotated_tree = copy.deepcopy(tree)
-
     # Annotate root translations using gene order information.
-    annotated_tree.root.translations = OrderedDict()
+    tree.root.translations = OrderedDict()
     for gene in ordered_genes:
-        annotated_tree.root.translations[gene] = root_sequences[gene]
+        tree.root.translations[gene] = root_sequences[gene]
 
     # Reconstruct sequences for all other nodes in the tree.
-    for node in annotated_tree.find_clades():
+    for node in tree.find_clades():
         for child in node.clades:
             child_sequences = node.translations.copy()
 
@@ -242,7 +240,7 @@ def reconstruct_sequences_from_tree_and_root(tree, root_sequences, ordered_genes
             # Assign child sequences to child node.
             child.translations = child_sequences
 
-    return annotated_tree
+    return tree
 
 
 def reconstruct_sequences_from_mutations(tree, nuc_mutations, aa_mutations):
