@@ -809,7 +809,7 @@ class fitness_model(object):
         print("Correct classification:",  (correct_growth+correct_decline) / (total_growth+total_decline))
         print("Matthew's correlation coefficient: %s" % trajectory_mcc)
         print("Params:")
-        print(zip(self.predictors, np.around(self.model_params, 2)))
+        print(zip(self.predictors, np.around(self.model_params, 4)))
 
         pred_data = []
         for time, pred_vs_true in zip(self.timepoints[:-1], self.pred_vs_true):
