@@ -35,6 +35,7 @@ A/Delaware/3/2011
 A/Guam/AF2771/2011
 A/Hawaii/3/2012
 A/Helsinki/942/2013
+A/HoChiMinh/4596/2010
 A/HongKong/H090-781-V10/2009
 A/HongKong/HK1/2008
 A/HongKong/HK10/2008
@@ -140,6 +141,7 @@ A/Indiana/8/2013
 A/Indiana/9/2012
 A/Indiana/93/2012
 A/Iowa/16/2009
+A/Iowa/9/2011
 A/Iowa/4/2013
 A/Iran/140/2014
 A/Iran/227/2014
@@ -272,6 +274,7 @@ A/StPetersburg/5/2009
 A/StPetersburg/5/2009-egg
 A/Sydney/53/2015
 A/Taiwan/937/2009
+A/WestVirginia/6/2011
 A/WestVirginia/9/2012
 A/Wisconsin/12/2010
 A/Wisconsin/24/2014
