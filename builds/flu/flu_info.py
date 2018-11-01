@@ -175,7 +175,7 @@ reference_maps["yam"]["na"]["metadata"] = reference_maps["yam"]["ha"]["metadata"
 reference_viruses = {
     'h3n2':[
         'A/Wisconsin/67/2005', 'A/Brisbane/10/2007', 'A/Perth/16/2009', 'A/Victoria/361/2011',
-        'A/Texas/50/2012', 'A/Southauckland/7/2012' 'A/Singapore/22/2012', 'A/Christchurch/516/2012',
+        'A/Texas/50/2012', 'A/Southauckland/7/2012', 'A/Singapore/22/2012', 'A/Christchurch/516/2012',
         'A/Hawaii/22/2012', 'A/Switzerland/9715293/2013', 'A/Victoria/505/2013', 'A/Victoria/506/2013',
         'A/Almaty/2958/2013', 'A/HongKong/4801/2014', 'A/Hawaii/47/2014', 'A/Tasmania/11/2014',
         'A/Newcastle/22/2014', 'A/Sidney/7/2014', 'A/Netherlands/524/2014', 'A/Norway/466/2014',
