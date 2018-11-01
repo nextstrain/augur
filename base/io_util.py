@@ -192,6 +192,20 @@ def json_to_clade_frequencies(json_dict):
     return frequencies
 
 
+def get_ordered_genes_from_metadata(metadata_json):
+    """Get gene names in order of their genomic coordinates. Annotations are stored
+    in the metadata as a dictionary of start/end coordinates and strand indexed
+    by gene name.
+    """
+    sorted_gene_annotations = sorted(
+        metadata_json["annotations"].items(),
+        key=lambda item: item[1]["start"]
+    )
+    ordered_genes = [gene for gene, annotations in sorted_gene_annotations]
+
+    return ordered_genes
+
+
 def reconstruct_sequences_from_tree_and_root(tree, root_sequences, ordered_genes):
     """Returns a tree for which each node is annotated with that node's
     corresponding nucleotide and amino acid sequences as reconstructed from the
