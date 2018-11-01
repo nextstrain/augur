@@ -37,7 +37,6 @@ A/Hawaii/3/2012
 A/Helsinki/942/2013
 A/HoChiMinh/4596/2010
 A/HongKong/H090-781-V10/2009
-A/HongKong/HK1/2008
 A/HongKong/HK10/2008
 A/HongKong/HK10MA21-1/2008
 A/HongKong/HK10MA21-2/2008
@@ -48,6 +47,7 @@ A/HongKong/HK11MA21-1/2008
 A/HongKong/HK11MA21-2/2008
 A/HongKong/HK11MA21-3/2008
 A/HongKong/HK11MA21-4/2008
+A/HongKong/HK1/2008
 A/HongKong/HK12/2008
 A/HongKong/HK12MA21-1/2008
 A/HongKong/HK12MA21-2/2008
@@ -99,6 +99,7 @@ A/India/6352/2012
 A/India/D0512577/2005
 A/Indiana/06/2013
 A/Indiana/08/2012
+A/Indiana/10/2011
 A/Indiana/10/2011-egg
 A/Indiana/103/2012
 A/Indiana/11/2013
@@ -112,8 +113,8 @@ A/Indiana/132/2012
 A/Indiana/14/2012
 A/Indiana/14/2013
 A/Indiana/149/2012
-A/Indiana/15/2012
 A/Indiana/150/2012
+A/Indiana/15/2012
 A/Indiana/16/2012
 A/Indiana/17/2013
 A/Indiana/19/2012
@@ -141,8 +142,9 @@ A/Indiana/8/2013
 A/Indiana/9/2012
 A/Indiana/93/2012
 A/Iowa/16/2009
-A/Iowa/9/2011
 A/Iowa/4/2013
+A/Iowa/7/2011
+A/Iowa/9/2011
 A/Iran/140/2014
 A/Iran/227/2014
 A/Iran/234/2014
@@ -201,7 +203,6 @@ A/Minnesota/9/2010
 A/Nanjing/1/2010
 A/Nepal/142/2011
 A/NewJersey/53/2015
-A/OSAKA/31/2005
 A/Ohio/13/2012-egg
 A/Ohio/14/2012
 A/Ohio/15/2012
@@ -209,9 +210,9 @@ A/Ohio/16/2012
 A/Ohio/18/2012
 A/Ohio/18/2012-egg
 A/Ohio/19/2012
-A/Ohio/2/2014
 A/Ohio/20/2012
 A/Ohio/20/2012-egg
+A/Ohio/2/2014
 A/Ohio/23/2012
 A/Ohio/23/2012-egg
 A/Ohio/24/2012
@@ -247,6 +248,7 @@ A/Ohio/88/2012
 A/Ohio/90/2012
 A/Ontario/1252/2007
 A/Ontario/RV1273/2005
+A/OSAKA/31/2005
 A/Paris/89/2015
 A/Pennsylvania/09/2011
 A/Pennsylvania/11/2011
