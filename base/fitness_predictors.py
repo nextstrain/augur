@@ -49,7 +49,7 @@ class fitness_predictors(object):
         protein translations concatenated in genomic order (e.g., SigPep, HA1,
         and HA2 for flu's HA protein).
         """
-        return "".join(node.translations.values())
+        return "".join([value for key, value in node.translations.items() if key != "nuc"])
 
     def setup_predictor(self, tree, pred, timepoint, **kwargs):
         if pred == 'lbi':
