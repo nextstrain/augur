@@ -132,6 +132,58 @@ def sum_of_squared_errors(observed_freq, predicted_freq):
     return np.sum((observed_freq - predicted_freq) ** 2)
 
 
+def project_clade_frequencies_by_delta_from_time(tree, model, time, delta, delta_steps_per_year=12):
+    """
+    Project clade frequencies from a given time to the future by a given delta.
+    """
+    # Calculate the steps between the projection date and delta time into the
+    # future. First, find the frequency pivot that is closest to the requested
+    # projection date.
+    max_date = model.timepoints[np.searchsorted(model.timepoints, time)]
+    future_date = max_date + delta
+
+    # Then, calculate a fixed number of steps between that pivot and delta time
+    # into the future.
+    projected_pivots = np.linspace(max_date, future_date, int(delta_steps_per_year * delta))
+    deltas = projected_pivots - max_date
+
+    # Identify tip predictors and frequencies at the current time point.
+    all_pred = model.predictor_arrays[max_date]
+    all_freqs = model.freq_arrays[max_date]
+
+    # For each requested delta, project current tip frequencies using the model
+    # and calculate the corresponding projected clade frequencies.
+    projected_clade_frequencies = defaultdict(list)
+
+    for delta in deltas:
+        # Project all tip frequencies.
+        pred_freq = model.projection(model.model_params, all_pred, all_freqs, delta)
+
+        # Normalize projected frequencies.
+        pred_freq = pred_freq / pred_freq.sum()
+
+        # Store projected frequencies by clade id.
+        for i, tip in enumerate(model.tips):
+            projected_clade_frequencies[tip.name].append(pred_freq[i])
+
+        # Calculate projected frequencies for internal nodes and store by clade it.
+        for node in tree.find_clades(order="postorder"):
+            if not node.is_terminal():
+                projected_clade_frequencies[node.name].append(pred_freq[node.tips].sum())
+
+    projected_frequencies = {
+        "params": {
+            "max_date": max_date
+        },
+        "data": {
+            "pivots": projected_pivots.tolist(),
+            "frequencies": projected_clade_frequencies
+        }
+    }
+
+    return projected_frequencies
+
+
 class fitness_model(object):
 
     def __init__(self, tree, frequencies, predictor_input, censor_frequencies=True,
