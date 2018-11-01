@@ -861,12 +861,13 @@ class fitness_model(object):
                 ax.plot(tmp['time'], tmp['obs'], ls='-', c=cols[ci%6])
                 ax.plot(tmp['time'], tmp['pred'], ls='--', c=cols[ci%6])
 
-    def to_data_frame(self):
-        """Return a data frame representing the fitness model's inputs for each tip.
+    def to_data_frames(self):
+        """Return data frames representing the fitness model's inputs for each tip and clade, respectively.
 
         Inputs include tip metadata, frequencies, and standardized predictor values.
         """
-        records = []
+        tip_records = []
+        clade_records = []
 
         # Include only timepoints used to fit the model itself (excluding the last timepoint).
         for timepoint in self.timepoints[:-1]:
@@ -875,27 +876,38 @@ class fitness_model(object):
                 # Store information for each tip in the current clade despite
                 # redundancy of information. This enables refitting the model
                 # with the same data later.
+                total_clade_tips = 0
                 for tip_index in clade.tips:
-                    tip = self.tips[tip_index]
-                    record = {
-                        "timepoint": timepoint,
-                        "clade_name": clade.name,
-                        "name": tip.name,
-                        "num_date": tip.attr["num_date"],
-                        "observed_frequency": tip.timepoint_freqs[timepoint],
-                        "censored_frequency": self.freq_arrays[timepoint][tip_index],
-                        "future_frequency": tip.observed_final_freqs[timepoint]
-                    }
+                    if self.freq_arrays[timepoint][tip_index] > 0.0:
+                        total_clade_tips += 1
+                        tip = self.tips[tip_index]
+                        tip_record = {
+                            "timepoint": timepoint,
+                            "clade_name": clade.name,
+                            "name": tip.name,
+                            "num_date": tip.attr["num_date"],
+                            "observed_frequency": tip.timepoint_freqs[timepoint],
+                            "censored_frequency": self.freq_arrays[timepoint][tip_index]
+                        }
 
-                    # Store standardized predictor values using a column name
-                    # prefix that enables downstream analyses to easily identify
-                    # predictor columns.
-                    for predictor_index, predictor in enumerate(self.predictors):
-                        record["predictor:%s" % predictor] = self.predictor_arrays[timepoint][tip_index][predictor_index]
+                        # Store standardized predictor values using a column name
+                        # prefix that enables downstream analyses to easily identify
+                        # predictor columns.
+                        for predictor_index, predictor in enumerate(self.predictors):
+                            tip_record["predictor:%s" % predictor] = self.predictor_arrays[timepoint][tip_index][predictor_index]
 
-                    records.append(record)
+                        tip_records.append(tip_record)
 
-        return pd.DataFrame(records)
+                clade_record = {
+                    "timepoint": timepoint,
+                    "clade_name": clade.name,
+                    "initial_frequency": self.freq_arrays[timepoint][clade.tips].sum(axis=0),
+                    "final_frequency": clade.observed_final_freqs[timepoint],
+                    "total_tips": total_clade_tips
+                }
+                clade_records.append(clade_record)
+
+        return pd.DataFrame(tip_records), pd.DataFrame(clade_records)
 
     @classmethod
     def from_json(cls, tree, frequencies, json_dict):
