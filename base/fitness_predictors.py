@@ -77,7 +77,31 @@ class fitness_predictors(object):
         if pred == 'ep':
             self.calc_epitope_distance(tree)
         if pred == 'ep_x':
-            self.calc_epitope_cross_immunity(tree, timepoint, **kwargs)
+            def epitope_distance(node_1, node_2):
+                return self.fast_epitope_distance(node_1.np_ep, node_2.np_ep)
+
+            self.calc_cross_immunity(
+                tree,
+                timepoint,
+                attr=pred,
+                distance_function=epitope_distance,
+                d_init=14,
+                **kwargs
+            )
+        if pred == 'cTiterSub_x':
+            titer_model = self.calc_titer_model("substitution", tree, timepoint, **kwargs)
+
+            def titer_distance(node_1, node_2):
+                return titer_model.predict_titer(node_1.name, (node_2.name, None))
+
+            self.calc_cross_immunity(
+                tree,
+                timepoint,
+                attr=pred,
+                distance_function=titer_distance,
+                d_init=8,
+                **kwargs
+            )
         #if pred == 'ne':
         #    self.calc_nonepitope_distance(tree)
         if pred == 'ne_star':
@@ -193,11 +217,12 @@ class fitness_predictors(object):
         for node in tree.find_clades(order="postorder"):
             node.__setattr__(attr, self.fast_epitope_distance(node.np_ep, ref.np_ep))
 
-    def calc_epitope_cross_immunity(self, tree, timepoint, step_size, d_init=14, attr='ep_x', years_to_wane=5, **kwargs):
-        """Calculates the distance at epitope sites to contemporaneous viruses
-        this should capture cross-immunity of circulating viruses
-        meant to be used in conjunction with epitope_distance that focuses
-        on escape from previous human immunity.
+    def calc_cross_immunity(self, tree, timepoint, step_size, distance_function, d_init=14, attr='ep_x', years_to_wane=5, **kwargs):
+        """Calculates the distance at epitope sites to contemporaneous viruses.
+
+        This should capture cross-immunity of circulating viruses and is meant
+        to be used in conjunction with epitope_distance that focuses on escape
+        from previous human immunity.
         """
         # Find all strains sampled between the previous timepoint and the
         # current timepoint. We will calculate cross-immunity for each of these
@@ -244,17 +269,24 @@ class fitness_predictors(object):
                     frequencies.append(max(comp_node.censored_freqs.values()))
 
                     # Calculate the number of epitope mutations between viruses.
-                    distances.append(self.fast_epitope_distance(node.np_ep, comp_node.np_ep))
+                    distance = distance_function(node, comp_node)
+                    if distance is not None:
+                        distances.append(distance)
+
+            # Skip this node if it has no valid distance values to other nodes.
+            if len(distances) == 0:
+                continue
 
             # Calculate inverse cross-immunity amplitude once from all distances to the current strain.
             # This is an increasingly positive value for strains that are increasingly distant from previous strains.
-            cross_immunity_amplitudes = inverse_cross_immunity_amplitude(np.array(distances), d_init)
+            distances = np.array(distances)
+            cross_immunity_amplitudes = inverse_cross_immunity_amplitude(distances, d_init)
 
             # Scale cross-immunity by waning effects and past strain frequencies
             # and sum across all past viruses.
             waning_effects = np.array(waning_effects)
             frequencies = np.array(frequencies)
-            total_cross_immunity = (waning_effects * frequencies * cross_immunity_amplitudes).sum()
+            total_cross_immunity = (frequencies * cross_immunity_amplitudes).sum()
             setattr(node, attr, total_cross_immunity)
 
     def calc_nonepitope_star_distance(self, tree, timepoint, step_size, attr='ne_star', **kwargs):
