@@ -463,7 +463,7 @@ class fitness_predictors(object):
         for node in tree.find_clades():
             setattr(node, attr, np.random.random())
 
-    def calc_titer_model(self, model, tree, timepoint, titers, lam_avi, lam_pot, lam_drop, **kwargs):
+    def calc_titer_model(self, model_name, tree, timepoint, titers, lam_avi, lam_pot, lam_drop, **kwargs):
         """Calculates the requested titer model for the given tree using only titers
         associated with strains sampled prior to the given timepoint.
         """
@@ -480,13 +480,15 @@ class fitness_predictors(object):
         }
 
         # Run the requested model and annotate results to nodes.
-        if model == "tree":
+        if model_name == "tree":
             model = TreeModel(tree, filtered_titers, **kwargs)
-        elif model == "substitution":
+        elif model_name == "substitution":
             model = SubstitutionModel(tree, filtered_titers, **kwargs)
 
         model.prepare(**kwargs)
         model.train(**kwargs)
+
+        return model
 
     def calc_future_fitness(self, tree, timepoint, attr="future_fitness", **kwargs):
         """Calculate the known future frequency of each tip at the given timepoint.
