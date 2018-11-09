@@ -4,11 +4,25 @@ from collections import defaultdict
 from scipy.interpolate import interp1d
 from scipy.stats import norm
 import time
+import pandas as pd
 import numpy as np
 import sys
 
 debug = False
 log_thres = 10.0
+
+def float_to_datestring(time):
+    """Convert a floating point date to a date string
+    """
+    year = int(time)
+    month = int(((time - year) * 12) + 1)
+    day = 1
+    return "-".join(map(str, (year, month, day)))
+
+def timestamp_to_float(time):
+    """Convert a pandas timestamp to a floating point date.
+    """
+    return time.year + ((time.month - 1) / 12.0)
 
 def make_pivots(pivots, tps):
     '''
@@ -578,7 +592,7 @@ class KdeFrequencies(object):
     each clade in the tree.
     """
     def __init__(self, sigma_narrow=1 / 12.0, sigma_wide=3 / 12.0, proportion_wide=0.2,
-                 pivot_frequency=1 / 12.0, start_date=None, end_date=None, weights=None, weights_attribute=None,
+                 pivot_frequency=1, start_date=None, end_date=None, weights=None, weights_attribute=None,
                  max_date=None, include_internal_nodes=False):
         """Define parameters for KDE-based frequency estimation.
 
@@ -586,7 +600,7 @@ class KdeFrequencies(object):
             sigma_narrow (float): Bandwidth for first of two Gaussians composing the KDEs
             sigma_wide (float): Bandwidth for second of two Gaussians composing the KDEs
             proportion_wide (float): Proportion of the second Gaussian to include in each KDE
-            pivot_frequency (float): Frequency at which pivots should occur in fractions of a year
+            pivot_frequency (int): Number of months between pivots
             start_date (float): start of the pivots interval
             end_date (float): end of the pivots interval
             weights (dict): Numerical weights indexed by attribute values and applied to individual tips
@@ -679,7 +693,7 @@ class KdeFrequencies(object):
         are mutually exclusive. If all arguments are provided, the start and end dates will be preferred over the tree.
 
         Args:
-            pivot_frequency (float): frequency pivots should occur by fraction of a year
+            pivot_frequency (int): number of months between pivots
             tree (Bio.Phylo): an annotated tree
             start_date (float): start of the pivots interval
             end_date (float): end of the pivots interval
@@ -697,11 +711,12 @@ class KdeFrequencies(object):
             pivot_start = start_date
             pivot_end = end_date
 
-        pivots = np.arange(
-            pivot_start,
-            pivot_end + 0.0001,
-            pivot_frequency
+        pivots = pd.date_range(
+            float_to_datestring(pivot_start),
+            float_to_datestring(pivot_end),
+            freq="%sMS" % pivot_frequency
         )
+        pivots = np.array([timestamp_to_float(pivot) for pivot in pivots])
 
         return np.around(pivots, 2)
 

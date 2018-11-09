@@ -44,24 +44,23 @@ class TestKdeFrequencies(object):
     def test_calculate_pivots_from_tree_only(self, tree):
         """Test pivot calculations.
         """
-        pivot_frequency = 0.25
+        pivot_frequency = 3
         pivots = KdeFrequencies.calculate_pivots(pivot_frequency, tree=tree)
         assert isinstance(pivots, np.ndarray)
-        assert pivots[1] - pivots[0] == pivot_frequency
+        assert pivots[1] - pivots[0] == (pivot_frequency / 12.0)
 
     def test_calculate_pivots_from_start_and_end_date(self):
         """
         Test pivot calculation from a given start and end date instead of a given tree.
         """
-        pivot_frequency = 0.25
+        pivot_frequency = 3
         start_date = 2015.5
         end_date = 2018.5
         pivots = KdeFrequencies.calculate_pivots(pivot_frequency, start_date=start_date, end_date=end_date)
         assert isinstance(pivots, np.ndarray)
-        assert pivots[1] - pivots[0] == pivot_frequency
+        assert pivots[1] - pivots[0] == (pivot_frequency / 12.0)
         assert pivots[0] == start_date
         assert pivots[-1] == end_date
-        assert pivots[-1] >= end_date - pivot_frequency
 
     def test_estimate(self, tree):
         """Test frequency estimation with default parameters.
