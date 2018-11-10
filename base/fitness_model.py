@@ -564,7 +564,7 @@ class fitness_model(object):
 
         for timepoint in self.fit_timepoints:
             previous_timepoint = timepoint - self.timepoint_step_size
-            total_freq = 0.0
+            total_freq = []
             candidate_clades = []
             self.fit_clades[timepoint] = []
 
@@ -617,7 +617,7 @@ class fitness_model(object):
                     del clade.attr["clade_group"]
 
             clade_group = 0
-            clade_group_freq = 0.0
+            clade_group_freq = []
             nested = 0
             for clade in self.tree.find_clades():
                 if clade.up and "clade_group" in clade.up.attr:
@@ -630,13 +630,14 @@ class fitness_model(object):
                     # Filter clades by minimum and maximum summed censored
                     # frequency of their tips at the current timepoint.
                     node_freq = self.freq_arrays[timepoint][clade.tips].sum(axis=0)
-                    clade_group_freq += node_freq
+                    clade_group_freq.append(node_freq)
                     if self.min_freq <= node_freq <= self.max_freq:
-                        total_freq += node_freq
+                        total_freq.append(node_freq)
                         self.fit_clades[timepoint].append(clade)
 
             if self.verbose:
-                sys.stderr.write("%s: %s clades totalling %.2f (%s nested, %s clade groups at %.2f)\n" % (timepoint, len(self.fit_clades[timepoint]), total_freq, nested, clade_group, clade_group_freq))
+                sys.stderr.write("%s: %s clades totalling %.2f (%s nested, %s clade groups at %.2f)\n" % (timepoint, len(self.fit_clades[timepoint]), sum(total_freq), nested, clade_group, sum(clade_group_freq)))
+                sys.stderr.write("%s\n" % sorted(clade_group_freq))
 
     def clade_fit(self, params):
         # walk through initial/final timepoint pairs
