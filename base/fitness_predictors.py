@@ -77,6 +77,14 @@ class fitness_predictors(object):
         if pred == 'ep':
             self.calc_epitope_distance(tree)
         if pred == 'ep_x':
+            # Annotate an array of amino acids at epitope sites to each node.
+            for node in tree.get_terminals():
+                if not hasattr(node, 'np_ep'):
+                    if not hasattr(node, 'aa'):
+                        node.aa = self._translate(node)
+
+                    node.np_ep = np.array(list(self.epitope_sites(node.aa)))
+
             def epitope_distance(node_1, node_2):
                 return self.fast_epitope_distance(node_1.np_ep, node_2.np_ep)
 
@@ -237,12 +245,6 @@ class fitness_predictors(object):
                 past_nodes.append(node)
             elif previous_timepoint <= node.attr['num_date'] < timepoint:
                 current_nodes.append(node)
-
-            # Annotate an array of amino acids at epitope sites to each node.
-            if not hasattr(node, 'np_ep'):
-                if not hasattr(node, 'aa'):
-                    node.aa = self._translate(node)
-                node.np_ep = np.array(list(self.epitope_sites(node.aa)))
 
             # Initialize all tips to 0 distance.
             setattr(node, attr, 0.0)
