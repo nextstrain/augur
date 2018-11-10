@@ -196,7 +196,7 @@ class TestFitnessPredictors(object):
         for node in nodes:
             assert getattr(node, attr) >= 0 and getattr(node, attr) < 1
 
-    def test_calc_epitope_immunity(self, fitness_predictor, json_tree):
+    def test_calc_cross_immunity(self, fitness_predictor, json_tree):
         timepoint = 2016.0
         step_size = 0.5
         attr = "ep_x"
@@ -204,7 +204,17 @@ class TestFitnessPredictors(object):
         for node in nodes:
             assert not hasattr(node, attr)
 
-        fitness_predictor.calc_epitope_cross_immunity(json_tree, timepoint, step_size, attr=attr)
+        def pseudo_distance(node_1, node_2):
+            return np.abs(node_1.attr["num_date"] - node_2.attr["num_date"])
+
+        fitness_predictor.calc_cross_immunity(
+            json_tree,
+            timepoint,
+            step_size,
+            attr=attr,
+            distance_function=pseudo_distance,
+            d_init=1
+        )
 
         # One or more nodes should have non-zero values.
         assert any([getattr(node, attr) for node in nodes])
