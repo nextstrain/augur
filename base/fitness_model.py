@@ -199,10 +199,10 @@ def project_clade_frequencies_by_delta_from_time(tree, model, time, delta, delta
 
 class fitness_model(object):
 
-    def __init__(self, tree, frequencies, predictor_input, censor_frequencies=True,
+    def __init__(self, tree, frequencies, predictor_input, cross_validate=False, censor_frequencies=True,
                  pivot_spacing=1.0 / 12, verbose=0, enforce_positive_predictors=True, predictor_kwargs=None,
                  cost_function=sum_of_squared_errors, delta_time=1.0, end_date=None, step_size=0.5, min_tip_freq=1e-3,
-                 **kwargs):
+                 min_training_window=4.0, **kwargs):
         """
 
         Args:
@@ -219,6 +219,7 @@ class fitness_model(object):
         """
         self.tree = tree
         self.frequencies = frequencies
+        self.cross_validate = cross_validate
         self.censor_frequencies = censor_frequencies
         self.pivot_spacing = pivot_spacing
         self.verbose = verbose
@@ -229,6 +230,7 @@ class fitness_model(object):
         self.min_tip_freq = min_tip_freq
         self.cost_function = cost_function
         self.end_date = end_date
+        self.min_training_window = min_training_window
 
         if predictor_kwargs is None:
             self.predictor_kwargs = {}
@@ -641,13 +643,20 @@ class fitness_model(object):
                 sys.stderr.write("%s: %s clades totalling %.2f (%s nested, %s clade groups at %.2f)\n" % (timepoint, len(self.fit_clades[timepoint]), sum(total_freq), nested, clade_group, sum(clade_group_freq)))
                 sys.stderr.write("%s\n" % sorted(clade_group_freq))
 
-    def clade_fit(self, params):
+    def clade_fit(self, params, test=False):
         # walk through initial/final timepoint pairs
         # tested that the sum of frequencies of tips within a clade is equal to the direct clade frequency
         timepoint_errors = []
         self.pred_vs_true = []
         pred_vs_true_values = []
-        for time in self.fit_timepoints:
+
+        if test:
+            timepoints = self.test_timepoints
+            print("Testing fit parameters")
+        else:
+            timepoints = self.train_timepoints
+
+        for time in timepoints:
             # Project all tip frequencies forward by the specific delta time.
             all_pred_freq = self.projection(params, self.predictor_arrays[time], self.freq_arrays[time], self.delta_time)
             assert all_pred_freq.shape == self.freq_arrays[time].shape
@@ -823,16 +832,95 @@ class fitness_model(object):
             node.predicted_freq /= total_freq
             node.attr["predicted_freq"] = node.predicted_freq
 
+    def split_timepoints(self):
+        """Split timepoints into train/test sets for cross-validation.
+        """
+        # Split valid timepoint index values into all possible train/test sets.
+        train_test_splits = []
+        total_timepoints = len(self.projection_timepoints)
+
+        for i in range(total_timepoints):
+            # Skip training intervals that are smaller than the minimum.
+            if self.projection_timepoints[i] - self.projection_timepoints[0] < self.min_training_window:
+                continue
+
+            train = np.arange(i + 1)
+
+            # Since timepoints occur more frequently than the prediction interval (delta t),
+            # the test index for any given set of training indices must be at least delta t
+            # into the future from the last training index to prevent training the model
+            # on data overlapping with the test time intervals.
+            found_test_index = False
+            for test_index in range(i + 1, total_timepoints):
+                if self.projection_timepoints[train[-1]] + self.delta_time <= self.projection_timepoints[test_index]:
+                    found_test_index = True
+                    break
+
+            # If we found a valid test index, add to the existing train/test splits.
+            # Otherwise, we have no more timepoints to consider.
+            if found_test_index:
+                test = np.array([test_index])
+                train_test_splits.append([train, test])
+            else:
+                break
+
+        return train_test_splits
+
     def predict(self, niter = 10, estimate_frequencies = True):
         self.prep_nodes()
         self.calc_node_frequencies()
         self.calc_all_predictors(estimate_frequencies = estimate_frequencies)
         self.standardize_predictors()
-        self.select_nonoverlapping_clades_for_fitting()
+        #self.select_nonoverlapping_clades_for_fitting()
+        self.select_clades_for_fitting()
+
+        validation_df = None
         if self.estimate_coefficients:
-            self.learn_parameters(niter = niter, fit_func = "clade")
+            # If cross-validation was requested, identify train/test timepoints.
+            # Otherwise, just learn parameters for all timepoints.
+            if self.cross_validate:
+                train_test_splits = self.split_timepoints()
+                results = []
+                for train, test in train_test_splits:
+                    print("train: %s, test: %s" % (train, test))
+                    self.train_timepoints = self.projection_timepoints[train]
+                    self.test_timepoints = self.projection_timepoints[test]
+                    self.learn_parameters(niter = niter, fit_func = "clade")
+                    training_error = self.clade_fit(self.model_params, test=False)
+                    training_correlation = self.get_correlation()
+                    training_mcc = get_matthews_correlation_coefficient_for_data_frame(self.pred_vs_true_df)
+
+                    testing_error = self.clade_fit(self.model_params, test=True)
+                    testing_correlation = self.get_correlation()
+                    testing_mcc, testing_matrix = get_matthews_correlation_coefficient_for_data_frame(self.pred_vs_true_df, return_confusion_matrix=True)
+
+                    result = {
+                        "last_training_timepoint": self.projection_timepoints[train[-1]],
+                        "test_timepoint": self.projection_timepoints[test[0]],
+                        "training_windows": len(train),
+                        "training_accuracy": training_mcc,
+                        "training_correlation": training_correlation[-1][0],
+                        "testing_accuracy": testing_mcc,
+                        "testing_correlation": testing_correlation[-1][0],
+                        "mae": mean_absolute_error(self.pred_vs_true_df["observed_freq"], self.pred_vs_true_df["predicted_freq"])
+                    }
+                    for predictor, parameter in zip(self.predictors, self.model_params):
+                        result["parameter-%s" % predictor] = parameter
+
+                    result.update(testing_matrix)
+                    results.append(result)
+                    print("train error: %s, test error: %s" % (training_error, testing_error))
+
+                validation_df = pd.DataFrame(results)
+                validation_df["predictors"] = "-".join(self.predictors)
+            else:
+                self.train_timepoints = self.projection_timepoints
+                self.learn_parameters(niter = niter, fit_func = "clade")
+
         self.assign_fitness()
         self.assign_predicted_frequency()
+
+        return validation_df
 
     def get_correlation(self):
         rho_null = pearsonr(self.pred_vs_true_df["initial_freq"], self.pred_vs_true_df["observed_freq"])
@@ -842,7 +930,10 @@ class fitness_model(object):
 
         return rho_null, rho_raw, rho_rel
 
-    def validate_prediction(self, plot=False):
+    def validate_prediction(self, plot=False, test=False):
+        test = test and self.cross_validate
+        abs_clade_error = self.clade_fit(self.model_params, test=test)
+
         if plot:
             import matplotlib.pyplot as plt
 
@@ -871,7 +962,6 @@ class fitness_model(object):
             axs[3].set_xlabel('initial')
             axs[3].set_yscale('log')
 
-        abs_clade_error = self.clade_fit(self.model_params)
         print("Abs clade error:", abs_clade_error)
 
         rho_null, rho_raw, rho_rel = self.get_correlation()
