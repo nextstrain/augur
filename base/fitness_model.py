@@ -267,18 +267,18 @@ class fitness_model(object):
         delta_time_months = pd.DateOffset(months=int(delta_time * 12))
 
         # Calculate timepoints with a date/time-aware range method.
+        # Exclude the first timepoint when there are no viruses sampled yet.
+        # Somewhat counterintuitively, this requires the closed attribute to be "right", below.
         timepoints = pd.date_range(
             float_to_datestring(self.frequencies.start_date),
             float_to_datestring(self.frequencies.end_date),
-            freq="%sMS" % months_step_size
+            freq="%sMS" % months_step_size,
+            closed="right"
         )
 
         # Convert date range to floats for consistency with downstream functions.
         timepoints = map(timestamp_to_float, timepoints)
-        self.timepoints = timepoints
-
-        # Exclude the first timepoint when there are no viruses sampled yet.
-        self.timepoints = self.timepoints[1:]
+        self.timepoints = np.array(timepoints)
 
         # If an end date was provided, exclude all timepoints after that date.
         if self.end_date:
@@ -288,13 +288,15 @@ class fitness_model(object):
             filtered_number_of_timepoints = len(self.timepoints)
             sys.stderr.write("Fit model up to %s (filtered from %s to %s timepoints)\n" % (self.end_date, original_number_of_timepoints, filtered_number_of_timepoints))
 
-        # Determine the set of timepoints to fit the model to. This will filter
-        # out timepoints for which we need to estimate frequencies because they
-        # are an endpoint of a projection but which cannot be used themselves to
-        # project forward by delta time.
-        self.fit_timepoints = [timepoint
-                               for timepoint in self.timepoints
-                               if timepoint + self.delta_time <= self.timepoints[-1]]
+        # Determine the set of timepoints the model can project from. This will
+        # filter out timepoints for which we need to estimate frequencies
+        # because they are an endpoint of a projection but which cannot be used
+        # themselves to project forward by delta time.
+        self.projection_timepoints = np.array([
+            timepoint
+            for timepoint in self.timepoints
+            if timepoint + self.delta_time <= self.timepoints[-1]
+        ])
 
         self.predictors = predictor_names
 
@@ -424,7 +426,7 @@ class fitness_model(object):
         # This allows clade frequencies to be censored at future timepoints if tip frequencies are too.
         for node in self.nodes:
             node.observed_final_freqs = {}
-            for time in self.fit_timepoints:
+            for time in self.projection_timepoints:
                 node.observed_final_freqs[time] = self.freq_arrays[time + self.delta_time][node.tips].sum(axis=0)
 
     def calc_predictors(self, timepoint):
@@ -543,7 +545,7 @@ class fitness_model(object):
         # for each time point, select clades that are within the specified frequency window
         # keep track in the dict fit_clades that maps timepoint to clade list
         self.fit_clades = {}
-        for time in self.fit_timepoints:
+        for time in self.projection_timepoints:
             self.fit_clades[time] = []
             for node in self.nodes:
                 # Only select clades for fitting if their censored frequencies are within the specified thresholds.
@@ -562,7 +564,7 @@ class fitness_model(object):
         """
         self.fit_clades = {}
 
-        for timepoint in self.fit_timepoints:
+        for timepoint in self.projection_timepoints:
             previous_timepoint = timepoint - self.timepoint_step_size
             total_freq = []
             candidate_clades = []
@@ -845,7 +847,7 @@ class fitness_model(object):
             import matplotlib.pyplot as plt
 
             fig, axs = plt.subplots(1,4, figsize=(10,5))
-            for time, pred_vs_true in zip(self.fit_timepoints, self.pred_vs_true):
+            for time, pred_vs_true in zip(self.projection_timepoints, self.pred_vs_true):
                 # 0: initial, 1: observed, 2: predicted
                 axs[0].scatter(pred_vs_true[:,1], pred_vs_true[:,2])
                 axs[1].scatter(pred_vs_true[:,1]/pred_vs_true[:,0],
@@ -894,7 +896,7 @@ class fitness_model(object):
         print(zip(self.predictors, np.around(self.model_params, 4)))
 
         pred_data = []
-        for time, pred_vs_true in zip(self.fit_timepoints, self.pred_vs_true):
+        for time, pred_vs_true in zip(self.projection_timepoints, self.pred_vs_true):
             for entry in pred_vs_true:
                 pred_data.append(np.append(entry, time))
         pred_vs_true_df = pd.DataFrame(pred_data, columns=['initial', 'obs', 'pred', 'time'])
@@ -910,7 +912,7 @@ class fitness_model(object):
         '''
         self.trajectory_data = []
         series = 0
-        for time in self.fit_timepoints:
+        for time in self.projection_timepoints:
             all_pred = self.predictor_arrays[time]
             all_freqs = self.freq_arrays[time]
             for clade in self.fit_clades[time]:
@@ -935,7 +937,7 @@ class fitness_model(object):
         import matplotlib.pyplot as plt
         cols = sns.color_palette(n_colors=6)
         fig, axs = plt.subplots(6,4, sharey=True)
-        for tp, ax in zip(self.fit_timepoints, axs.flatten()):
+        for tp, ax in zip(self.projection_timepoints, axs.flatten()):
             traj = self.trajectory_data_df[self.trajectory_data_df.initial_time == tp]
             clades = np.unique(traj['series'])
             for ci in clades:
@@ -952,7 +954,7 @@ class fitness_model(object):
         clade_records = []
 
         # Include only timepoints used to fit the model itself (excluding the last timepoint).
-        for timepoint in self.fit_timepoints:
+        for timepoint in self.projection_timepoints:
             # Create a record for each clade fit by the model despite nesting of clades.
             for clade in self.fit_clades[timepoint]:
                 # Store information for each tip in the current clade despite
