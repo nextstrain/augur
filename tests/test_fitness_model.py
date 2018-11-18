@@ -210,6 +210,7 @@ class TestFitnessModel(object):
         real_fitness_model.calc_all_predictors()
         real_fitness_model.standardize_predictors()
         real_fitness_model.select_clades_for_fitting()
+        real_fitness_model.train_timepoints = real_fitness_model.projection_timepoints
         assert not hasattr(real_fitness_model, "last_fit")
         real_fitness_model.learn_parameters(niter=1, fit_func="clade")
         assert hasattr(real_fitness_model, "last_fit")
@@ -220,6 +221,7 @@ class TestFitnessModel(object):
         real_fitness_model.calc_all_predictors()
         real_fitness_model.standardize_predictors()
         real_fitness_model.select_clades_for_fitting()
+        real_fitness_model.train_timepoints = real_fitness_model.projection_timepoints
         real_fitness_model.learn_parameters(niter=1, fit_func="clade")
         assert not any([hasattr(node, "fitness") for node in real_fitness_model.tree.get_terminals()])
         real_fitness_model.assign_fitness()
@@ -235,5 +237,6 @@ class TestFitnessModel(object):
         assert np.array_equal(precalculated_fitness_model.model_params, np.array([MODEL_PARAMS[0]]))
 
         # Recalculate fitness model parameters which should be different from those given.
+        precalculated_fitness_model.train_timepoints = precalculated_fitness_model.projection_timepoints
         precalculated_fitness_model.learn_parameters(niter=1, fit_func="clade")
         assert not np.array_equal(precalculated_fitness_model.model_params, np.array([MODEL_PARAMS[0]]))
