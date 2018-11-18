@@ -145,6 +145,20 @@ def sum_of_squared_errors(observed_freq, predicted_freq):
     return np.sum((observed_freq - predicted_freq) ** 2)
 
 
+def mean_absolute_error(observed_freq, predicted_freq):
+    """
+    Calculates the mean absolute error between observed and predicted frequencies.
+
+    Args:
+        observed_freq (numpy.ndarray): observed frequencies
+        predicted_freq (numpy.ndarray): predicted frequencies
+
+    Returns:
+        float: mean absolute error between observed and predicted frequencies
+    """
+    return np.mean(np.abs(observed_freq - predicted_freq))
+
+
 def project_clade_frequencies_by_delta_from_time(tree, model, time, delta, delta_steps_per_year=12):
     """
     Project clade frequencies from a given time to the future by a given delta.
