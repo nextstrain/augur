@@ -265,3 +265,22 @@ class TestKdeFrequencies(object):
         params = kde_frequencies.get_params()
         for param in initial_params:
             assert params[param] == initial_params[param]
+
+    def test_censored_frequencies(self, tree):
+        """Test frequency estimation with future observations censored at each pivot.
+        """
+        # Calculate uncensored frequencies.
+        kde_frequencies = KdeFrequencies()
+        frequencies = kde_frequencies.estimate(tree)
+
+        # Calculate censored frequencies for the same tree.
+        kde_frequencies = KdeFrequencies(censored=True)
+        censored_frequencies = kde_frequencies.estimate(tree)
+
+        # Censored frequencies should not be identical to uncensored frequencies.
+        # Censored frequencies should also overestimate actual frequencies since
+        # they are unaware of future observations that would reduce the
+        # frequency of tips at each pivot.
+        assert not all([censored_frequencies[key][i] == frequencies[key][i]
+                        for key in frequencies.keys()
+                        for i in range(len(kde_frequencies.pivots))])

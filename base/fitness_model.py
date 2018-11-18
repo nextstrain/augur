@@ -385,7 +385,7 @@ class fitness_model(object):
         for time in self.timepoints:
             tmp_freqs = []
 
-            if self.censor_frequencies:
+            if self.censor_frequencies and not frequency_parameters["censored"]:
                 # Censor frequencies by omitting all tips sampled after the current timepoint.
                 if self.verbose:
                     sys.stderr.write("Calculating censored frequencies for %s\n" % time)
@@ -420,6 +420,7 @@ class fitness_model(object):
                         tip.censored_freqs[time] /= total_freq
             else:
                 for tip in self.tips:
+                    tip.censored_freqs = tip.timepoint_freqs
                     tmp_freqs.append(tip.timepoint_freqs[time])
 
             self.freq_arrays[time] = np.array(tmp_freqs)

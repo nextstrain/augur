@@ -593,7 +593,7 @@ class KdeFrequencies(object):
     """
     def __init__(self, sigma_narrow=1 / 12.0, sigma_wide=3 / 12.0, proportion_wide=0.2,
                  pivot_frequency=1, start_date=None, end_date=None, weights=None, weights_attribute=None,
-                 max_date=None, include_internal_nodes=False):
+                 max_date=None, include_internal_nodes=False, censored=False):
         """Define parameters for KDE-based frequency estimation.
 
         Args:
@@ -608,6 +608,7 @@ class KdeFrequencies(object):
             max_date (float): Maximum year beyond which tips are excluded from frequency estimation and are assigned
                               frequencies of zero
             include_internal_nodes (bool): Whether internal (non-tip) nodes should have their frequencies estimated
+            censored (bool): Whether future observations should be censored at each pivot
 
         Returns:
             KdeFrequencies
@@ -622,6 +623,7 @@ class KdeFrequencies(object):
         self.weights_attribute = weights_attribute
         self.max_date = max_date
         self.include_internal_nodes = include_internal_nodes
+        self.censored = censored
 
     def get_params(self):
         """
@@ -640,7 +642,8 @@ class KdeFrequencies(object):
             "weights": self.weights,
             "weights_attribute": self.weights_attribute,
             "max_date": self.max_date,
-            "include_internal_nodes": self.include_internal_nodes
+            "include_internal_nodes": self.include_internal_nodes,
+            "censored": self.censored
         }
 
     @classmethod
@@ -721,7 +724,7 @@ class KdeFrequencies(object):
         return np.around(pivots, 2)
 
     @classmethod
-    def get_density_for_observation(cls, mu, pivots, sigma_narrow=1/12.0, sigma_wide=3/12.0, proportion_wide=0.2):
+    def get_density_for_observation(cls, mu, pivots, sigma_narrow=1/12.0, sigma_wide=3/12.0, proportion_wide=0.2, **kwargs):
         """Build a normal distribution centered across the given floating point date,
         mu, with a standard deviation based on the given sigma value and return
         the probability mass at each pivot. These mass values per pivot will form the
@@ -770,11 +773,30 @@ class KdeFrequencies(object):
         return normalized_freq_matrix
 
     @classmethod
-    def estimate_frequencies(cls, tip_dates, pivots, normalize_to=1.0, **kwargs):
+    def estimate_frequencies(cls, tip_dates, pivots, normalize_to=1.0, max_date=None, **kwargs):
         """Estimate frequencies of the given observations across the given pivots.
         """
         # Calculate base frequencies from observations.
-        density_matrix = cls.get_densities_for_observations(tip_dates, pivots, **kwargs)
+        if kwargs.get("censored"):
+            # Calculate censored frequencies at each pivot. If a maximum date
+            # has already been requested, only calculate censored frequencies up
+            # to that point.
+            if max_date is None:
+                max_date = pivots[-1]
+
+            pivots_to_censor = [pivot for pivot in pivots if pivot <= max_date]
+            density_matrix = None
+            for i, pivot in enumerate(pivots_to_censor):
+                # Censor observations from the future using the smallest value
+                # of either the current pivot or the requested max date.
+                censored_matrix = cls.get_densities_for_observations(tip_dates, pivots, max_date=min(pivot, max_date), **kwargs)
+
+                if density_matrix is None:
+                    density_matrix = censored_matrix
+                else:
+                    density_matrix[:, i] = censored_matrix[:, i]
+        else:
+            density_matrix = cls.get_densities_for_observations(tip_dates, pivots, max_date=max_date, **kwargs)
 
         # Normalize frequencies to sum to 1.
         normalized_freq_matrix = cls.normalize_to_frequencies(density_matrix, normalize_to=normalize_to)
@@ -803,7 +825,8 @@ class KdeFrequencies(object):
             sigma_narrow=self.sigma_narrow,
             sigma_wide=self.sigma_wide,
             proportion_wide=self.proportion_wide,
-            max_date=self.max_date
+            max_date=self.max_date,
+            censored=self.censored
         )
 
         for clade in clades:
@@ -846,7 +869,8 @@ class KdeFrequencies(object):
                 sigma_narrow=self.sigma_narrow,
                 sigma_wide=self.sigma_wide,
                 proportion_wide=self.proportion_wide,
-                max_date=self.max_date
+                max_date=self.max_date,
+                censored=self.censored
             )
 
             for clade in clades:
