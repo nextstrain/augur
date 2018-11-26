@@ -71,7 +71,6 @@ def running_average(obs, ws):
             tmp_vals[:ws//2]*=float(ws)/np.arange(ws//2+1,ws)
             tmp_vals[-ws//2:]*=float(ws)/np.arange(ws,ws//2,-1.0)
     except:
-        import ipdb; ipdb.set_trace()
         tmp_vals = 0.5*np.ones_like(obs, dtype=float)
     return tmp_vals
 
@@ -314,23 +313,21 @@ class nested_frequencies(object):
     """
     estimates frequencies of mutually exclusive events such as mutations
     at a particular genomic position or subclades in a tree
-
-    Attributes
-    ----------
-    frequencies : dict
-        Description
-    kwargs : TYPE
-        Description
-    obs : TYPE
-        Description
-    pivots : TYPE
-        Description
-    remaining_freq : TYPE
-        Description
-    tps : TYPE
-        Description
     """
     def __init__(self, tps, obs, pivots,  **kwargs):
+        """Summary
+
+        Parameters
+        ----------
+        tps : np.array
+            array of numerical dates
+        obs : np.array(bool)
+            array of true/false observations
+        pivots : np.array
+            pivot values
+        **kwargs
+            Description
+        """
         super(nested_frequencies, self).__init__()
         self.tps = tps
         self.obs = obs
@@ -365,54 +362,25 @@ class tree_frequencies(object):
     to be named with an attribute clade, of root doesn't have such an attribute, clades
     will be numbered in preorder. Each node is assumed to have an attribute `attr` with a
     key "num_date".
-
-    Attributes
-    ----------
-    confidence : dict
-        Description
-    counts : TYPE
-        Description
-    frequencies : TYPE
-        Description
-    kwargs : TYPE
-        Description
-    min_clades : int
-        Description
-    node_filter : TYPE
-        Description
-    pc : TYPE
-        Description
-    pivots : TYPE
-        Description
-    tps : TYPE
-        Description
-    tree : TYPE
-        Description
-    verbose : TYPE
-        Description
     '''
     def __init__(self, tree, pivots, node_filter=None, min_clades = 20, verbose=0, pc=1e-4, **kwargs):
         '''
         set up the internal tree, the pivots and cutoffs
-        node_filter -- a function that can be used to exclude terminals nodes
-                       from the estimation. primarily meant for estimating region
-                       specific frequencues and training fitness models
-        min_clades  -- smallest clades for which frequencies are estimated.
 
         Parameters
         ----------
-        tree : TYPE
-            Description
-        pivots : TYPE
-            Description
-        node_filter : None, optional
-            Description
+        tree : Bio.Phylo.calde
+            Biopython tree
+        pivots : int/array
+            number or list of pivots
+        node_filter : callable, optional
+            function that evaluates to true/false to filter nodes
         min_clades : int, optional
-            Description
+            minimal size of clades to estimate proper frequencies
         verbose : int, optional
-            Description
+            verbosity
         pc : float, optional
-            Description
+            pseudo-counts/lower cutoff to drive estimates away from 0/1
         **kwargs
             Description
         '''
@@ -442,7 +410,7 @@ class tree_frequencies(object):
         for node in self.tree.find_clades(order='postorder'):
             if node.is_terminal():
                 if self.node_filter(node):
-                    tps.append(node.attr["num_date"])
+                    tps.append(node.num_date)
                     node.leafs = np.array([leaf_count], dtype=int)
                     leaf_count+=1
                 else:
@@ -484,11 +452,11 @@ class tree_frequencies(object):
                     if len(small_clades)==1:
                         obs_to_estimate.update(remainder)
                     else:
-                        obs_to_estimate['other'] = np.any(remainder.values(), axis=0)
+                        obs_to_estimate['other'] = np.any(list(remainder.values()), axis=0)
 
                 ne = nested_frequencies(node_tps, obs_to_estimate, self.pivots, pc=self.pc, **self.kwargs)
                 freq_est = ne.calc_freqs()
-                for clade, tmp_freq in freq_est.iteritems():
+                for clade, tmp_freq in freq_est.items():
                     if clade != "other":
                         self.frequencies[clade] = self.frequencies[node.clade] * tmp_freq
 
@@ -530,7 +498,7 @@ class tree_frequencies(object):
             Description
         '''
         self.confidence = {}
-        for key, freq in self.frequencies.iteritems():
+        for key, freq in self.frequencies.items():
             # add a pseudo count 1/(n+1) and normalize to n+1
             self.confidence[key] = np.sqrt((1.0/(1+self.counts)+freq*(1-freq))/(1.0+self.counts))
         return self.confidence
@@ -645,7 +613,7 @@ class alignment_frequencies(object):
 
             print("Estimating frequencies of position: {}".format(pos), end="\r")
             sys.stdout.flush()
-            # print("Variants found at frequency:", [(k,o.mean()) for k,o in obs.iteritems()])
+            # print("Variants found at frequency:", [(k,o.mean()) for k,o in obs.items()])
 
             # calculate frequencies, which will be added to the frequencies dict with (pos, mut) as key
             ne = nested_frequencies(tps, obs, self.pivots, **self.kwargs)
@@ -663,7 +631,7 @@ class alignment_frequencies(object):
             dictionary of standard deviations for each estimated trajectory
         """
         self.confidence = {}
-        for key, freq in self.frequencies.iteritems():
+        for key, freq in self.frequencies.items():
             # add a pseudo count 1/(n+1) and normalize to n+1
             self.confidence[key] = np.sqrt((1.0/(1+self.counts)+freq*(1-freq))/(1.0+self.counts))
 
@@ -719,7 +687,7 @@ def test_nested_estimator():
 
     if plot:
         plt.figure()
-        for k,o in obs.iteritems():
+        for k,o in obs.items():
             plt.plot(tps, o, 'o')
             plt.plot(fe.pivots,fe.frequencies[k], 'o')
 
@@ -731,35 +699,6 @@ class KdeFrequencies(object):
     normal distributions from timestamped tips in the tree and building a kernel
     density estimate across discrete time points from these tip observations for
     each clade in the tree.
-
-    Attributes
-    ----------
-    end_date : TYPE
-        Description
-    frequencies : TYPE
-        Description
-    include_internal_nodes : TYPE
-        Description
-    max_date : TYPE
-        Description
-    node_filters : TYPE
-        Description
-    pivot_frequency : TYPE
-        Description
-    pivots : TYPE
-        Description
-    proportion_wide : TYPE
-        Description
-    sigma_narrow : TYPE
-        Description
-    sigma_wide : TYPE
-        Description
-    start_date : TYPE
-        Description
-    weights : TYPE
-        Description
-    weights_attribute : TYPE
-        Description
     """
     def __init__(self, sigma_narrow=1 / 12.0, sigma_wide=3 / 12.0, proportion_wide=0.2,
                  pivot_frequency=1 / 12.0, start_date=None, end_date=None, weights=None, weights_attribute=None,

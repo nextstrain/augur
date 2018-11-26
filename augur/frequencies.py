@@ -18,6 +18,10 @@ def register_arguments(parser):
                         help="alignment to estimate mutations frequencies for")
     parser.add_argument('--gene-names', nargs='+', type=str,
                         help="names of the sequences in the alignment, same order assumed")
+    parser.add_argument('--region', type=str, default='global',
+                        help="region to subsample to")
+    parser.add_argument('--min-date', type=float,
+                        help="minimal pivot value")
     parser.add_argument('--pivots-per-year', type=int, default=4,
                         help="number of pivots per year")
     parser.add_argument('--minimal-frequency', type=float, default=0.05,
@@ -34,14 +38,39 @@ def run(args):
 
     metadata, columns = read_metadata(args.metadata)
     dates = get_numerical_dates(metadata, fmt='%Y-%m-%d')
-
+    region = args.region
     dt = 1.0/args.pivots_per_year
+    stiffness = 0.1
 
     if args.tree:
-        T = Phylo.read(args.tree, 'newick')
+        from .frequency_estimators import tree_frequencies
+        tree = Phylo.read(args.tree, 'newick')
+        tps = []
+        for x in tree.get_terminals():
+            x.num_date = np.mean(dates[x.name])
+            tps.append(x.num_date)
+            x.region = metadata[x.name]["region"]
+
+        first_pivot = args.min_date if args.min_date else np.floor(np.min(tps)/dt)*dt
+        pivots = np.arange(first_pivot, np.ceil(np.max(tps)/dt)*dt, dt)
         # estimate tree frequencies
+        # Omit strains sampled prior to the first pivot from frequency calculations.
+        if region=='global':
+            node_filter_func = lambda node: node.num_date >= first_pivot
+        else:
+            node_filter_func = lambda node: (node.region == region
+                                            and node.num_date >= first_pivot)
+
+        tree_freqs = tree_frequencies(tree, pivots, method='SLSQP',
+                                      node_filter = node_filter_func,
+                                      ws = max(2, tree.count_terminals()//10),
+                                      stiffness = stiffness)
+
+        tree_freqs.estimate_clade_frequencies()
+        json_success = write_json({x:list(val) for x, val in tree_freqs.frequencies.items()}, args.output)
+        print("tree frequencies written to", args.output, file=sys.stdout)
+
     elif args.alignments:
-        # estimate alignment frequencies
         from .frequency_estimators import alignment_frequencies
         frequencies = {}
         for gene, fname in zip(args.gene_names, args.alignments):
