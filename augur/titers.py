@@ -12,7 +12,7 @@ from .utils import read_metadata, read_node_data, write_json
 def register_arguments(parser):
     parser.add_argument('--titers', required=True, type=str, help="file with titer measurements")
     parser.add_argument('--tree', '-t', type=str, required=True, help="tree to perform fit titer model to")
-    parser.add_argument('--sequences', nargs='+', type=str, help="sequence to be used in the substitution model, supplied as fasta files")
+    parser.add_argument('--alignment', nargs='+', type=str, help="sequence to be used in the substitution model, supplied as fasta files")
     parser.add_argument('--gene-names', nargs='+', type=str, help="names of the sequences in the alignment, same order assumed")
     parser.add_argument('--titer-model', default='substitution', choices=["substitution", "tree"],
                                 help="titer model to use, see Neher et al. 2016 for details")
@@ -56,11 +56,11 @@ def run(args):
 
     if args.titer_model == "substitution":
         from .titer_model import SubstitutionModel
-        if not args.sequences:
-            print('ERROR: substitution model requires an alignment. Please specify via --sequences')
+        if not args.alignment:
+            print('ERROR: substitution model requires an alignment. Please specify via --alignment')
             sys.exit(1)
 
-        attach_sequences(T, args.sequences, args.gene_names)
+        attach_sequences(T, args.alignment, args.gene_names)
 
         TM_subs = SubstitutionModel(T, args.titers)
         TM_subs.prepare()

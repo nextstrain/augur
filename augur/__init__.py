@@ -7,7 +7,7 @@ import re
 from sys import exit
 from types import SimpleNamespace
 from . import parse, filter, align, tree, refine, ancestral
-from . import traits, translate, mask, titers, export
+from . import traits, translate, mask, titers, frequencies, export
 from . import validate, sequence_traits, clades, version
 from .utils import first_line
 
@@ -25,6 +25,7 @@ COMMANDS = [
     traits,
     sequence_traits,
     titers,
+    frequencies,
     export,
     validate,
     version,
