@@ -1,6 +1,17 @@
 # __NEXT__
 
 
+# 3.0.4.dev1 (26 November 2018)
+
+## Bug fixes
+
+* validate: Fix regression for gene names containing an asterisk.
+
+## Development
+
+* Fix Travis CI tests which were silently not running.
+
+
 # 3.0.3.dev1 (26 November 2018)
 
 ## Features
