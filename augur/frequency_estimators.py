@@ -21,7 +21,6 @@ def make_pivots(pivots, tps):
         (will be cast to array and returned)
     tps : np.array
         observation time points. Will generate pivots spanning min/max
-    -----------
 
     Returns
     -------
@@ -49,15 +48,15 @@ def running_average(obs, ws):
 
     Parameters
     ----------
-    obs : TYPE
-        Description
-    ws : TYPE
-        Description
+    obs : list/np.array(bool)
+        observations
+    ws : int
+        window size as measured in number of consecutive points
 
     Returns
     -------
-    TYPE
-        Description
+    np.array(float)
+        running average of the boolean observations
     '''
     ws=int(ws)
     try:
@@ -78,18 +77,19 @@ def running_average(obs, ws):
 def fix_freq(freq, pc):
     '''
     restricts frequencies to the interval [pc, 1-pc]
+    removes np.nan values and avoids taking logarithms of 0 or divisions by 0
 
     Parameters
     ----------
-    freq : TYPE
-        Description
-    pc : TYPE
-        Description
+    freq : np.array
+        frequency trajectory to be thresholded
+    pc : float
+        threshold value
 
     Returns
     -------
-    TYPE
-        Description
+    np.array
+        thresholded frequency trajectory
     '''
     freq[np.isnan(freq)]=pc
     return np.minimum(1-pc, np.maximum(pc,freq))
@@ -425,7 +425,6 @@ class tree_frequencies(object):
             self.node_filter = lambda x:True
         else:
             self.node_filter = node_filter
-        print("filter func", self.node_filter)
         self.prepare()
 
 
@@ -456,6 +455,7 @@ class tree_frequencies(object):
             self.frequencies = {self.tree.root.clade:np.ones_like(self.pivots)}
 
         self.counts = count_observations(self.pivots, self.tps)
+
 
     def estimate_clade_frequencies(self):
         for node in self.tree.get_nonterminals(order='preorder'):

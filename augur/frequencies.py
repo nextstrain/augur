@@ -18,7 +18,7 @@ def register_arguments(parser):
                         help="alignment to estimate mutations frequencies for")
     parser.add_argument('--gene-names', nargs='+', type=str,
                         help="names of the sequences in the alignment, same order assumed")
-    parser.add_argument('--region', type=str, default='global',
+    parser.add_argument('--regions', type=str, nargs='+', default=['global'],
                         help="region to subsample to")
     parser.add_argument('--min-date', type=float,
                         help="minimal pivot value")
@@ -30,6 +30,9 @@ def register_arguments(parser):
                         help='JSON file to save estimated frequencies to')
 
 
+def format_frequencies(freq):
+    return list(freq)
+
 def run(args):
 
     if args.metadata is None:
@@ -38,9 +41,8 @@ def run(args):
 
     metadata, columns = read_metadata(args.metadata)
     dates = get_numerical_dates(metadata, fmt='%Y-%m-%d')
-    region = args.region
     dt = 1.0/args.pivots_per_year
-    stiffness = 0.1
+    stiffness = 5.0
 
     if args.tree:
         from .frequency_estimators import tree_frequencies
@@ -53,21 +55,27 @@ def run(args):
 
         first_pivot = args.min_date if args.min_date else np.floor(np.min(tps)/dt)*dt
         pivots = np.arange(first_pivot, np.ceil(np.max(tps)/dt)*dt, dt)
+        frequency_dict = {"pivots":format_frequencies(pivots)}
+
         # estimate tree frequencies
         # Omit strains sampled prior to the first pivot from frequency calculations.
-        if region=='global':
-            node_filter_func = lambda node: node.num_date >= first_pivot
-        else:
-            node_filter_func = lambda node: (node.region == region
-                                            and node.num_date >= first_pivot)
+        for region in args.regions:
+            if region=='global':
+                node_filter_func = lambda node: node.num_date >= first_pivot
+            else:
+                node_filter_func = lambda node: (node.region == region
+                                                and node.num_date >= first_pivot)
 
-        tree_freqs = tree_frequencies(tree, pivots, method='SLSQP',
-                                      node_filter = node_filter_func,
-                                      ws = max(2, tree.count_terminals()//10),
-                                      stiffness = stiffness)
+            tree_freqs = tree_frequencies(tree, pivots, method='SLSQP',
+                                          node_filter = node_filter_func,
+                                          ws = max(2, tree.count_terminals()//10),
+                                          stiffness = stiffness)
 
-        tree_freqs.estimate_clade_frequencies()
-        json_success = write_json({x:list(val) for x, val in tree_freqs.frequencies.items()}, args.output)
+            tree_freqs.estimate_clade_frequencies()
+            for x,val in tree_freqs.frequencies.items():
+                frequency_dict["%s_clade:%d"%(region,x)] = format_frequencies(val)
+
+        json_success = write_json(frequency_dict, args.output)
         print("tree frequencies written to", args.output, file=sys.stdout)
 
     elif args.alignments:
@@ -84,7 +92,7 @@ def run(args):
             pivots = np.arange(np.floor(tps.min()/dt)*dt, np.ceil(tps.max()/dt)*dt, dt)
             freqs = alignment_frequencies(aln, tps, pivots)
             freqs.mutation_frequencies(min_freq = args.minimal_frequency)
-            frequencies.update({"%s:%d%s"%(gene, pos+1, state):list(val)
+            frequencies.update({"%s:%d%s"%(gene, pos+1, state):format_frequencies(val)
                                 for (pos, state), val in freqs.frequencies.items()})
 
         json_success = write_json(frequencies, args.output)
