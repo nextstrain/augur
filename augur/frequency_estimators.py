@@ -118,7 +118,38 @@ class frequency_estimator(object):
     '''
 
     def __init__(self, tps, obs, pivots, stiffness = 20.0,
-                inertia = 0.0,  tol=1e-3, pc=1e-4, ws=100, method='powell', **kwargs):
+                inertia = 0.0,  tol=1e-3, pc=1e-4, ws=100,
+                method='powell', **kwargs):
+        """basic frequency estimator class
+
+        Parameters
+        ----------
+        tps : list/np.array(float)
+            array with numerical dates
+        obs : list/np.array(bool)
+            array with boolean observations
+        pivots : int/np.array(float)
+            either integer specifying the number of pivot values,
+            or list of explicity pivots
+        stiffness : float, optional
+            parameter determining how much rapid changes in frequency
+            are penalized
+        inertia : float, optional
+            parameter specifying the prior for the frequency derivitative.
+            if intertia=1, the prior is that the slope doesn't change.
+            if intertia=0, the prior is that the slope is zero
+        tol : float, optional
+            optimization tolerance
+        pc : float, optional
+            pseudo-count/minimal frequency
+        ws : int, optional
+            window size used to estimate the initial guess for the
+            frequency trajectory
+        method : str, optional
+            optimization method passed down to scipy.minimize
+        **kwargs
+            Description
+        """
         tmp_obs = np.array(sorted(zip(tps, obs), key=lambda x:x[0]))
         self.tps = tmp_obs[:,0]
         self.obs = np.array(tmp_obs[:,1], dtype=bool)
@@ -494,8 +525,8 @@ class tree_frequencies(object):
 
         Returns
         -------
-        TYPE
-            Description
+        dict
+            dictionary with estimated confidence intervals
         '''
         self.confidence = {}
         for key, freq in self.frequencies.items():
@@ -512,6 +543,20 @@ class alignment_frequencies(object):
 
     '''
     def __init__(self, aln, tps, pivots, **kwargs):
+        """Create an instance of the alignment frequency estimate
+
+        Parameters
+        ----------
+        aln : Bio.Align.MultipleSeqAlignment
+            alignment
+        tps : np.array(float)
+            Array of numerical dates, one for each sequence in the
+            alignment in the SAME ORDER!
+        pivots : np.array(float)
+            pivot values for which frequencies are estimated
+        **kwargs
+            Description
+        """
         self.aln = np.array(aln)
         self.tps = np.array(tps)
         self.kwargs = kwargs
