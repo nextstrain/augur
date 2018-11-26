@@ -300,10 +300,12 @@ def run(args):
         print("{} genes had no mutations and so have been be excluded.".format(len(deleted)))
 
     ## glob the annotations for later auspice export
+    #
+    # Note that both our JSON schema and BioPython FeatureLocations use
+    # "Pythonic" coordinates: [zero-origin, half-open).
     annotations = {}
     for fname, feat in features.items():
-        increment = 0 if feat.type != 'source' else 1 #'nuc' goes to 0, unsure why - make 1
-        annotations[fname] = {'start':int(feat.location.start)+increment,
+        annotations[fname] = {'start':int(feat.location.start),
                               'end':int(feat.location.end),
                               'strand': feat.location.strand}
     if is_vcf: #need to add our own nuc

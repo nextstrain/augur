@@ -80,11 +80,11 @@
                     "$comment": "I imagine this can get more complex at some point",
                     "properties": {
                         "start": {
-                            "description": "Gene start position (one-based)",
+                            "description": "Gene start position (zero-based, i.e. BED format)",
                             "type": "number"
                         },
                         "end": {
-                            "description": "Gene end position (one-based)",
+                            "description": "Gene end position (one-based, i.e. zero-based exclusive or BED format)",
                             "type": "number"
                         },
                         "strand": {
