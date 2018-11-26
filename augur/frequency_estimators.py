@@ -558,13 +558,14 @@ class alignment_frequencies(object):
 
         Parameters
         ----------
-        gt : TYPE
-            Description
+        gt : list
+            a list of (position, state) tuples specifying the genotype
+            whose frequency is to be estimated
 
         Returns
         -------
-        TYPE
-            Description
+        np.array
+            frequency trajectory
         '''
         match = []
         for pos, state in gt:
@@ -578,19 +579,18 @@ class alignment_frequencies(object):
 
     def mutation_frequencies(self, min_freq=0.01, include_set=None, ignore_char=''):
         '''
-        estimate frequencies of single site mutations for each alignment column
-        params
-            min_freq:       the minimal minor allele frequency for a column to be included
-            include_set:    a set of sites that is to be included regardless of frequencies
+        estimate frequencies of single site mutations for each alignment column.
+        This function populates a dictionary class.frequencies with the frequency
+        trajectories.
 
         Parameters
         ----------
         min_freq : float, optional
-            Description
-        include_set : None, optional
-            Description
+            minimal all-time frequency for an aligment column to be considered
+        include_set : list/set, optional
+            set of alignment column that will be used regardless of variation
         ignore_char : str, optional
-            Description
+            ignore this character in an alignment column (missing data)
         '''
         if include_set is None:
             include_set=[]
@@ -653,6 +653,15 @@ class alignment_frequencies(object):
 
 
     def calc_confidence(self):
+        """calculate a crude binomial sampling confidence interval
+        of the frequency estimate. This ignores autocorrelation of the
+        trajectory and returns one standard deviation (68%).
+
+        Returns
+        -------
+        dict
+            dictionary of standard deviations for each estimated trajectory
+        """
         self.confidence = {}
         for key, freq in self.frequencies.iteritems():
             # add a pseudo count 1/(n+1) and normalize to n+1

@@ -132,6 +132,13 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
 
 
 def register_arguments(parser):
+    """Add subcommand specific arguments
+
+    Parameters
+    ----------
+    parser : argparse
+        subcommand argument parser
+    """
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
     parser.add_argument('--metadata', required=True, help="tsv/csv table with meta data")
     parser.add_argument('--columns', required=True, nargs='+',
