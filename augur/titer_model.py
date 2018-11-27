@@ -948,7 +948,7 @@ class SubstitutionModel(TiterModel):
         if len(self.train_titers)>1:
             self.make_seqgraph()
         else:
-            print('subsitution model: no titers to train')
+            print('substitution model: no titers to train')
 
 
     def get_mutations(self, strain1, strain2):
