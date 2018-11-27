@@ -19,24 +19,18 @@ def register_arguments(parser):
     parser.add_argument('--output', '-o', type=str, help='JSON file to save titer model')
 
 
-def attach_sequences(tree, sequence_files, gene_names):
+def load_alignments(sequence_files, gene_names):
     from Bio import AlignIO
-    node_lookup = {node.name:node for node in tree.find_clades()}
+    alignments = {}
     for fname, gene in zip(sequence_files, gene_names):
-        aln = {seq.id:seq for seq in AlignIO.read(fname, 'fasta')}
-        for name, seq in aln.items():
-            if name in node_lookup:
-                n = node_lookup[name]
-                if not hasattr(n, 'translations'):
-                    n.translations = {}
-                n.translations[gene] = str(seq.seq)
-
+        alignments[gene] = AlignIO.read(fname, 'fasta')
+    return alignments
 
 def run(args):
-    T = Phylo.read(args.tree, 'newick')
 
     TM_tree, TM_subs = None, None
     if args.titer_model == "tree":
+        T = Phylo.read(args.tree, 'newick')
         from .titer_model import TreeModel
         TM_tree = TreeModel(T, args.titers)
         TM_tree.prepare()
@@ -60,9 +54,9 @@ def run(args):
             print('ERROR: substitution model requires an alignment. Please specify via --alignment')
             sys.exit(1)
 
-        attach_sequences(T, args.alignment, args.gene_names)
+        alignments = load_alignments(args.alignment, args.gene_names)
 
-        TM_subs = SubstitutionModel(T, args.titers)
+        TM_subs = SubstitutionModel(alignments, args.titers)
         TM_subs.prepare()
         TM_subs.train()
 
