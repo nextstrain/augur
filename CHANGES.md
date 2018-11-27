@@ -1,6 +1,19 @@
 # __NEXT__
 
 
+# 3.0.5.dev1 (26 November 2018)
+
+## Bug fixes
+
+* translate: Nucleotide ("nuc") annotation for non-bacterial builds starts at 0
+  again, not 1, fixing a regression.
+
+## Documentation
+
+* Schemas: Correct coordinate system description for genome start/end
+  annotations.
+
+
 # 3.0.4.dev1 (26 November 2018)
 
 ## Bug fixes
