@@ -1,6 +1,71 @@
 # __NEXT__
 
 
+# 3.0.5.dev1 (26 November 2018)
+
+## Bug fixes
+
+* translate: Nucleotide ("nuc") annotation for non-bacterial builds starts at 0
+  again, not 1, fixing a regression.
+
+## Documentation
+
+* Schemas: Correct coordinate system description for genome start/end
+  annotations.
+
+
+# 3.0.4.dev1 (26 November 2018)
+
+## Bug fixes
+
+* validate: Fix regression for gene names containing an asterisk.
+
+## Development
+
+* Fix Travis CI tests which were silently not running.
+
+
+# 3.0.3.dev1 (26 November 2018)
+
+## Features
+
+* refine: Add a `--clock-std-dev` option
+
+* traits: Add a `--sampling-bias-correction` option for mugration model
+
+* validate: Gene names in tree annotations may now contain hyphens.  Compatible
+  with Auspice version 1.33.0 and later.
+
+* All JSON is now emitted with sorted keys, making it easier to diff and run
+  other textual comparisons against output.
+
+## Bug fixes
+
+* filter: Only consider A, T, C, and G when calculating sequence length for the
+  `--min-length` option.
+
+* filter: Allow comments in files passed to `--exclude`.
+
+* filter: Ignore case when matching trait values against excluded values.
+
+* Normalize custom geographic names to lower case for consistent matching.
+
+## Data
+
+* Fix typo in geographic entry for `netherlands`.
+
+* Schemas: Reconcile naming patterns used in gene definitions and tree
+  annotations.
+
+## Development
+
+* Upgrade TreeTime dependency to 0.5.x and at least 0.5.1.
+
+* Add an `environment.yml` file for use with `conda env create`.
+
+* Stop testing under Python 2.7 on Travis CI.
+
+
 # 3.0.2.dev1 (27 September 2018)
 
 ## Bug fixes

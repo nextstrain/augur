@@ -146,7 +146,7 @@
             "type": "object",
             "additionalProperties": false,
             "patternProperties": {
-                "^[a-zA-Z0-9]+$": {
+                "^[a-zA-Z0-9*_-]+$": {
                     "description": "Mutations for this gene (or annotated region)",
                     "type": "array",
                     "items": {

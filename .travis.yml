@@ -14,10 +14,10 @@ before_install:
   - conda env create -f environment.yml
   - source activate augur
 install:
-  - pip3 install --process-dependency-links -e .[dev]
+  - pip3 install -e .[dev]
 script:
-  - cd tests/builds/zika/; snakemake
-  - cd tests/builds/tb/; snakemake
+  - (cd tests/builds/zika/; snakemake)
+  - (cd tests/builds/tb/; snakemake)
 after_success:
   - if [[ "$TRAVIS_PULL_REQUEST" == "false" && $TRAVIS_BRANCH = "release" ]]; then
       ./devel/travis-rebuild-docker-image;
