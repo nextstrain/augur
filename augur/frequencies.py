@@ -75,6 +75,8 @@ def run(args):
             for x,val in tree_freqs.frequencies.items():
                 frequency_dict["%s_clade:%d"%(region,x)] = format_frequencies(val)
 
+            frequency_dict["%s:counts"%region] = [int(x) for x in tree_freqs.counts]
+
         json_success = write_json(frequency_dict, args.output)
         print("tree frequencies written to", args.output, file=sys.stdout)
 
@@ -97,6 +99,7 @@ def run(args):
             freqs.mutation_frequencies(min_freq = args.minimal_frequency)
             frequencies.update({"%s:%d%s"%(gene, pos+1, state):format_frequencies(val)
                                 for (pos, state), val in freqs.frequencies.items()})
+            frequencies["%s:counts"%gene] = [int(x) for x in freqs.counts]
 
         json_success = write_json(frequencies, args.output)
         print("mutation frequencies written to", args.output, file=sys.stdout)
