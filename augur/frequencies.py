@@ -80,7 +80,7 @@ def run(args):
 
     elif args.alignments:
         from .frequency_estimators import alignment_frequencies
-        frequencies = {}
+        frequencies = None
         for gene, fname in zip(args.gene_names, args.alignments):
             if not os.path.isfile(fname):
                 print("ERROR: alignment file not found")
@@ -89,7 +89,10 @@ def run(args):
             aln = MultipleSeqAlignment([seq for seq in AlignIO.read(fname, 'fasta')
                                         if not seq.name.startswith('NODE_')])
             tps = np.array([np.mean(dates[x.name]) for x in aln])
-            pivots = np.arange(np.floor(tps.min()/dt)*dt, np.ceil(tps.max()/dt)*dt, dt)
+            if frequencies is None:
+                pivots = np.arange(np.floor(tps.min()/dt)*dt, np.ceil(tps.max()/dt)*dt, dt)
+                frequencies = {"pivots":format_frequencies(pivots)}
+
             freqs = alignment_frequencies(aln, tps, pivots)
             freqs.mutation_frequencies(min_freq = args.minimal_frequency)
             frequencies.update({"%s:%d%s"%(gene, pos+1, state):format_frequencies(val)
