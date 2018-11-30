@@ -65,12 +65,13 @@ def run(args):
 
         # estimate tree frequencies
         # Omit strains sampled prior to the first pivot from frequency calculations.
+        # (these tend to be reference strains included for phylogenetic context)
         for region in args.regions:
             if region=='global':
-                node_filter_func = lambda node: node.num_date >= first_pivot
+                node_filter_func = lambda node: node.num_date >= pivots[0]
             else:
                 node_filter_func = lambda node: (node.region == region
-                                                and node.num_date >= first_pivot)
+                                                and node.num_date >= pivots[0])
 
             tree_freqs = tree_frequencies(tree, pivots, method='SLSQP',
                                           node_filter = node_filter_func,
