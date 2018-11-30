@@ -22,6 +22,8 @@ def register_arguments(parser):
                         help="region to subsample to")
     parser.add_argument('--min-date', type=float,
                         help="minimal pivot value")
+    parser.add_argument('--max-date', type=float,
+                        help="maximal pivot value")
     parser.add_argument('--pivots-per-year', type=int, default=4,
                         help="number of pivots per year")
     parser.add_argument('--minimal-frequency', type=float, default=0.05,
@@ -32,6 +34,11 @@ def register_arguments(parser):
 
 def format_frequencies(freq):
     return list(freq)
+
+def get_pivots(tps, dt,min_date, max_date):
+    first_pivot = min_date if min_date else np.floor(np.min(tps)/dt)*dt
+    last_pivot = max_date if max_date else np.ceil(np.max(tps)/dt)*dt
+    return np.arange(first_pivot, last_pivot, dt)
 
 def run(args):
 
@@ -53,8 +60,7 @@ def run(args):
             tps.append(x.num_date)
             x.region = metadata[x.name]["region"]
 
-        first_pivot = args.min_date if args.min_date else np.floor(np.min(tps)/dt)*dt
-        pivots = np.arange(first_pivot, np.ceil(np.max(tps)/dt)*dt, dt)
+        pivots = get_pivots(tps, dt, args.min_date, args.max_date)
         frequency_dict = {"pivots":format_frequencies(pivots)}
 
         # estimate tree frequencies
@@ -92,11 +98,11 @@ def run(args):
                                         if not seq.name.startswith('NODE_')])
             tps = np.array([np.mean(dates[x.name]) for x in aln])
             if frequencies is None:
-                pivots = np.arange(np.floor(tps.min()/dt)*dt, np.ceil(tps.max()/dt)*dt, dt)
+                pivots = get_pivots(tps, dt, args.min_date, args.max_date)
                 frequencies = {"pivots":format_frequencies(pivots)}
 
             freqs = alignment_frequencies(aln, tps, pivots)
-            freqs.mutation_frequencies(min_freq = args.minimal_frequency)
+            freqs.mutation_frequencies(min_freq = args.minimal_frequency, ignore_char='-')
             frequencies.update({"%s:%d%s"%(gene, pos+1, state):format_frequencies(val)
                                 for (pos, state), val in freqs.frequencies.items()})
             frequencies["%s:counts"%gene] = [int(x) for x in freqs.counts]
