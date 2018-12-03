@@ -122,7 +122,21 @@ rule translate:
         """
         augur translate --tree {input.tree} --genes {input.genes} --vcf-reference {input.ref} \
             --ancestral-sequences {input.vcf} --output {output.aa_data} --reference-sequence {input.gene_ref} \
-            --alignment-output {output.vcf_out}
+            --alignment-output {output.vcf_out} --vcf-reference-output {output.fasta_out}
+        """
+
+rule reconstruct:
+    input:
+        tree = rules.refine.output.tree,
+        aa_muts = rules.translate.output.aa_data,
+        vcf_translate_ref = rules.translate.output.fasta_out
+    params:
+        genes = "cycA esxU rpoC Rv2752c",
+        output = "results/translate_%GENE.fasta"
+    shell:
+        """
+        augur reconstruct-sequences --tree {input.tree} --genes {params.genes} --mutations {input.aa_muts} \
+            --vcf-aa-reference {input.vcf_translate_ref} --output {params.output}
         """
 
 rule clades:
