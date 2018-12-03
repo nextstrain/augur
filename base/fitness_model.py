@@ -6,6 +6,7 @@ import pandas as pd
 from scipy.interpolate import interp1d
 from scipy.stats import linregress, pearsonr
 import sys
+from builtins import range
 
 from .io_util import write_json
 from .scores import select_nodes_in_season
@@ -585,7 +586,7 @@ class fitness_model(object):
         minimize_error()
         params_stack.append((self.last_fit, self.model_params))
 
-        for ii in xrange(niter):
+        for ii in range(niter):
             if self.verbose:
                 print("iteration:", ii+1)
             self.model_params = np.random.rand(len(self.predictors)) #0*np.ones(len(self.predictors))  # initial values

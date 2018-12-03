@@ -40,5 +40,5 @@ if __name__=="__main__":
     except KeyError:
         pass
 
-    for seq, val in data["sequences"].iteritems():
+    for seq, val in data["sequences"].items():
         print("{}\t{}".format(seq, get_trait(val["attributes"], params.trait, params.date_format)))

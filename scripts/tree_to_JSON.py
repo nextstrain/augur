@@ -296,7 +296,7 @@ if __name__=="__main__":
             if node.name in meta:
                 if not hasattr(node, "attr"): # confusing!
                     setattr(node, "attr", {})
-                for key, value in meta[node.name].iteritems():
+                for key, value in meta[node.name].items():
                     if value == "":
                         continue
                     node.attr[key] = value

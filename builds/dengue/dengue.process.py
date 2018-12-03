@@ -157,7 +157,7 @@ genotypes = {
  }
 
 for i in ['denv1', 'denv2', 'denv3', 'denv4']:
-    for k,v in genotypes[i].iteritems():
+    for k,v in genotypes[i].items():
         genotypes['all'][i.upper()+'_'+k] = v
 
 # Label named clades based on mutations/genotypes at defining sites

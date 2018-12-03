@@ -615,7 +615,7 @@ class process(object):
         ## NOTE clades_to_nodes is used in the (full) frequencies export
         self.clades_to_nodes = {}
         for clade_name, genotype in clades.items():
-            matching_nodes = filter(lambda x:match(x,genotype), self.tree.tree.get_nonterminals())
+            matching_nodes = list(filter(lambda x:match(x,genotype), self.tree.tree.get_nonterminals()))
             matching_nodes.sort(key=lambda x:x.numdate if hasattr(x,'numdate') else x.dist2root)
             if len(matching_nodes):
                 self.clades_to_nodes[clade_name] = matching_nodes[0]
@@ -623,7 +623,7 @@ class process(object):
             else:
                 print('matchClades: no match found for ', clade_name, genotype)
                 for allele in genotype:
-                    partial_matches = filter(lambda x:match(x,[allele]), self.tree.tree.get_nonterminals())
+                    partial_matches = list(filter(lambda x:match(x,[allele]), self.tree.tree.get_nonterminals()))
                     print('Found %d partial matches for allele '%len(partial_matches), allele)
 
         ## Now preorder traverse the tree with state replacement to set the clade_membership via clade_annotation

@@ -28,7 +28,7 @@ def calculate_metadata_scores(tree):
 
     for node in tree.get_terminals():
         node.tip_count=1.0
-        if ('age' in node.attr) and type(node.attr['age']) in [str, unicode]:
+        if ('age' in node.attr) and type(node.attr['age']) in [str]:
             tmp_age = node.attr['age']
             if tmp_age[-1] in ['y', 'm']:
                 node.attr['age'] = int(tmp_age[:-1])
@@ -86,7 +86,7 @@ def calculate_metadata_scores(tree):
     # gender seems not to be a relevant quantity as of now...
     for node in tree.get_terminals():
         node.tip_count=1.0
-        if ('gender' in node.attr) and type(node.attr['gender']) in [str, unicode]:
+        if ('gender' in node.attr) and type(node.attr['gender']) in [str]:
             g = node.attr["gender"]
             node.attr["num_gender"] = -1 if g=='male' else (1 if g=='female' else 0)
         else:

@@ -22,7 +22,7 @@ def resolve_polytomies(tree):
 
     def assign_attrs(node, source):
         # Assign all non-children attributes.
-        for attr, value in source.__dict__.iteritems():
+        for attr, value in source.__dict__.items():
             if attr != "children":
                 setattr(node, attr, value)
         # node.xvalue = 0

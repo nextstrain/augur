@@ -225,7 +225,7 @@ class TiterCollection(object):
                 self.measurements_per_serum[ref]+=1
             else:
                 pass
-                #print "no homologous titer found:", ref
+                #print("no homologous titer found:", ref)
 
     def strain_census(self, titers):
         """
@@ -729,8 +729,8 @@ class TreeModel(TiterModel):
                 node.titer_branch_index=None
 
         self.genetic_params = self.titer_split_count
-        print ("# of reference strains:",len(self.sera))
-        print ("# of eligible branches with titer constraints", self.titer_split_count)
+        print("# of reference strains:",len(self.sera))
+        print("# of eligible branches with titer constraints", self.titer_split_count)
 
 
     def make_treegraph(self):
@@ -774,7 +774,7 @@ class TreeModel(TiterModel):
         self.titer_dist =  np.array(titer_dist)*self.weights
         self.design_matrix = (np.array(tree_graph).T*self.weights).T
         self.TgT = np.dot(self.design_matrix.T, self.design_matrix)
-        print ("Found", self.design_matrix.shape, "measurements x parameters")
+        print("Found", self.design_matrix.shape, "measurements x parameters")
 
     def train(self,**kwargs):
         self._train(**kwargs)
@@ -919,7 +919,7 @@ class SubstitutionModel(TiterModel):
         if colin_thres is not None and self.genetic_params > 0:
             self.collapse_colinear_mutations(colin_thres)
         self.TgT = np.dot(self.design_matrix.T, self.design_matrix)
-        print ("Found", self.design_matrix.shape, "measurements x parameters")
+        print("Found", self.design_matrix.shape, "measurements x parameters")
 
 
     def collapse_colinear_mutations(self, colin_thres):

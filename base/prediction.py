@@ -3,8 +3,12 @@ import numpy as np
 import time
 from collections import defaultdict
 from .io_util import myopen
-from itertools import izip
 import pandas as pd
+
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass
 
 def LBI(tree, tau=0.001, attr='lbi'):
     '''
@@ -111,4 +115,3 @@ class tree_predictor(object):
             LBI(self.tree, tau=tau, attr='lbi')
             for node in self.tree.find_clades():
                 node.LBI[tint] = node.lbi/tau
-
