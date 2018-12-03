@@ -14,11 +14,11 @@ build/
 dist/
 .snakemake
 *stderr
-base/__pycache__/
 
 # For Python #
 ##############
 *.pyc
+__pycache__/
 .cache/
 augur.egg-info/
 nextstrain_augur.egg-info/
