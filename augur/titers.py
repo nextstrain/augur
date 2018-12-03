@@ -20,6 +20,7 @@ def register_arguments(parser):
 def run(args):
     T = Phylo.read(args.tree, 'newick')
 
+    assert all([n.name is not None for n in T.find_clades()]), 'Oops: each tree node must have a pre-assigned name'
     TM_tree, TM_subs = None, None
     if args.titer_model == "tree":
         from .titer_model import TreeModel
