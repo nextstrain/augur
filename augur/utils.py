@@ -6,6 +6,8 @@ from treetime.utils import numeric_date
 from collections import defaultdict
 from pkg_resources import resource_stream
 from io import TextIOWrapper
+from inspect import isfunction
+from pathlib import Path
 
 def myopen(fname, mode):
     if fname.endswith('.gz'):
@@ -451,3 +453,50 @@ def nthreads_value(value):
         return int(value)
     except ValueError:
         raise argparse.ArgumentTypeError("'%s' is not an integer or the word 'auto'" % value) from None
+
+
+def load_function(name, filename):
+    """
+    Runs the Python code in *filename* and returns the function named *name*.
+
+    This is used for commands to load arbitrary user-supplied functions from
+    files specified on the command-line.
+    """
+    # Read the whole file into a string
+    with Path(filename).open(encoding = "utf-8") as file:
+        source = file.read()
+
+    # Compile the source string for exec(), without inheriting any __future__
+    # flags from our own context.
+    try:
+        code = compile(source, filename, "exec", dont_inherit = True)
+
+    except (SyntaxError, ValueError) as error:
+        print("Error loading %s() from %s: %s" % (name, filename, error),
+            end  = "\n\n",
+            file = sys.stderr)
+        raise error from None
+
+    # Execute the code in an isolated scope, which we'll inspect afterwards.
+    scope = {}
+
+    try:
+        exec(code, scope)
+
+    except Exception as error:
+        print("Error loading %s() from %s: %s" % (name, filename, error),
+            end  = "\n\n",
+            file = sys.stderr)
+        raise error from None
+
+    # Extract the function we desire.
+    try:
+        function = scope[name]
+
+    except KeyError:
+        raise RuntimeError("No function named %s in %s" % (name, filename)) from None
+
+    assert isfunction(function), \
+        "%s is a not a function" % function
+
+    return function

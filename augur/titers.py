@@ -6,7 +6,8 @@ import json, os, sys
 import numpy as np
 from collections import defaultdict
 from Bio import Phylo
-from .utils import read_metadata, read_node_data, write_json
+from functools import partial
+from .utils import read_metadata, read_node_data, write_json, load_function
 
 
 def register_arguments(parser):
@@ -14,9 +15,11 @@ def register_arguments(parser):
     sub_model = subparsers.add_parser('sub', help='substitution model')
     tree_model = subparsers.add_parser('tree', help='tree model')
 
+    branch_filter = partial(load_function, "branch_filter")
 
     tree_model.add_argument('--titers', required=True, type=str, help="file with titer measurements")
     tree_model.add_argument('--tree', '-t', type=str, required=True, help="tree to perform fit titer model to")
+    tree_model.add_argument('--branch-filter', type=branch_filter, help="an optional file containing a Python function named branch_filter which takes a tree node and returns a boolean indicating if the branch leading to the node should be included in the model (e.g. a branch may want to be excluded if amino acid mutations map to the branch)")
     tree_model.add_argument('--output', '-o', type=str, help='JSON file to save titer model')
     tree_model.set_defaults(model = 'tree')
 
@@ -71,7 +74,7 @@ def infer_tree_model(args):
     T = Phylo.read(args.tree, 'newick')
     from .titer_model import TreeModel
     TM_tree = TreeModel(T, args.titers)
-    TM_tree.prepare()
+    TM_tree.prepare(criterium = args.branch_filter)
     TM_tree.train()
 
     # export the tree model
