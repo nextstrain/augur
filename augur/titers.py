@@ -6,6 +6,7 @@ import json, os, sys
 import numpy as np
 from collections import defaultdict
 from Bio import Phylo
+from .reconstruct_sequences import load_alignments
 from .utils import read_metadata, read_node_data, write_json
 
 
@@ -25,14 +26,6 @@ def register_arguments(parser):
     sub_model.add_argument('--gene-names', nargs='+', type=str, help="names of the sequences in the alignment, same order assumed")
     sub_model.add_argument('--output', '-o', type=str, help='JSON file to save titer model')
     sub_model.set_defaults(model = 'sub')
-
-
-def load_alignments(sequence_files, gene_names):
-    from Bio import AlignIO
-    alignments = {}
-    for fname, gene in zip(sequence_files, gene_names):
-        alignments[gene] = AlignIO.read(fname, 'fasta')
-    return alignments
 
 
 def run(args):

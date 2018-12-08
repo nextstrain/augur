@@ -47,6 +47,14 @@ def get_sequence(pseq, muts):
     return "".join(pseq_list)
 
 
+def load_alignments(sequence_files, gene_names):
+    from Bio import AlignIO
+    alignments = {}
+    for fname, gene in zip(sequence_files, gene_names):
+        alignments[gene] = AlignIO.read(fname, 'fasta')
+    return alignments
+
+
 def run(args):
     ## read tree and data, if reading data fails, return with error code
     tree = Phylo.read(args.tree, 'newick')
