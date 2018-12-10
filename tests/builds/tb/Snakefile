@@ -131,12 +131,14 @@ rule reconstruct:
         aa_muts = rules.translate.output.aa_data,
         vcf_translate_ref = rules.translate.output.fasta_out
     params:
-        genes = "cycA esxU rpoC Rv2752c",
-        output = "results/translate_%GENE.fasta"
+        gene = "Rv2752c"
+    output:
+        "results/translate_Rv2752c.fasta"
     shell:
         """
-        augur reconstruct-sequences --tree {input.tree} --genes {params.genes} --mutations {input.aa_muts} \
-            --vcf-aa-reference {input.vcf_translate_ref} --output {params.output}
+        augur reconstruct-sequences --tree {input.tree} --gene {params.gene} \
+            --mutations {input.aa_muts} \
+            --vcf-aa-reference {input.vcf_translate_ref} --output {output}
         """
 
 rule clades:
