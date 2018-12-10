@@ -125,21 +125,27 @@ rule translate:
             --alignment-output {output.vcf_out} --vcf-reference-output {output.fasta_out}
         """
 
+#To get alignments for these genes, run 'snakemake reconstruct_all'
+genes = ["cycA", "esxU", "rpoC", "Rv2752c"]
 rule reconstruct:
     input:
         tree = rules.refine.output.tree,
         aa_muts = rules.translate.output.aa_data,
         vcf_translate_ref = rules.translate.output.fasta_out
     params:
-        gene = "Rv2752c"
+        gene = "{gene}"
     output:
-        "results/translate_Rv2752c.fasta"
+        "results/translate_{gene}.fasta"
     shell:
         """
         augur reconstruct-sequences --tree {input.tree} --gene {params.gene} \
             --mutations {input.aa_muts} \
             --vcf-aa-reference {input.vcf_translate_ref} --output {output}
         """
+
+rule reconstruct_all:
+    input:
+        expand(["results/translate_{gene}.fasta"], gene=genes)
 
 rule clades:
     input:
