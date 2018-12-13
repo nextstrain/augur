@@ -41,7 +41,7 @@ def is_node_in_clade(clade_mutations, node_muts):
         if (gene in node_muts and node_muts[gene]):
             # mutations are stored on nodes in format 'R927H', but in clade defining_mutations as (927, 'H')
             # So convert node mutations ('mutation') to format (927, 'H') here, for easy comparison
-            formatted_mutations = [(int(mutation[1:-1]), mutation[-1]) for mutation in node_muts[gene]] 
+            formatted_mutations = [(int(mutation[1:-1]), mutation[-1]) for mutation in node_muts[gene]]
             # If all of the clade-defining mutations are in the node mutations, it's part of this clade.
             if all([mut in formatted_mutations for mut in defining_mutations]):
                 is_clade = True
@@ -69,7 +69,7 @@ def assign_clades(clade_designations, muts, tree):
             n_muts['nuc'] = muts[n.name]['muts'] # Put nuc mutations in with 'nuc' as the 'gene' so all can be searched together
 
         if n.name not in clades: # This ensures every node gets an entry - otherwise auspice doesn't display nicely
-            clades[n.name]={"clade_membership": "Unassigned"}
+            clades[n.name]={"clade_membership": "unassigned"}
         for clade, definition in clade_designations.items():
             if is_node_in_clade(definition, n_muts):
                 clades[n.name] = {"clade_annotation":clade, "clade_membership": clade}
