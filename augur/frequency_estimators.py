@@ -742,15 +742,28 @@ def test_nested_estimator():
 
 def float_to_datestring(time):
     """Convert a floating point date to a date string
+
+    >>> float_to_datestring(2010.75)
+    '2010-10-01'
+    >>> float_to_datestring(2011.25)
+    '2011-04-01'
     """
     year = int(time)
     month = int(((time - year) * 12) + 1)
     day = 1
-    return "-".join(map(str, (year, month, day)))
+    return "%s-%02d-%02d" % (year, month, day)
 
 
 def timestamp_to_float(time):
     """Convert a pandas timestamp to a floating point date.
+
+    >>> import datetime
+    >>> time = datetime.date(2010, 10, 1)
+    >>> timestamp_to_float(time)
+    2010.75
+    >>> time = datetime.date(2011, 4, 1)
+    >>> timestamp_to_float(time)
+    2011.25
     """
     return time.year + ((time.month - 1) / 12.0)
 
@@ -880,8 +893,8 @@ class KdeFrequencies(object):
         if start_date is None or end_date is None:
             # Determine pivot start and end dates from the range of tip dates in the given tree.
             tip_dates = [tip.attr["num_date"] for tip in tree.get_terminals()]
-            pivot_start = min(tip_dates)  # type: float
-            pivot_end = max(tip_dates)    # type: float
+            pivot_start = np.floor(min(tip_dates))  # type: float
+            pivot_end = np.ceil(max(tip_dates))     # type: float
         else:
             # Use the explicitly provided start and end dates.
             pivot_start = start_date

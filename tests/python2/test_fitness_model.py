@@ -11,7 +11,7 @@ import sys
 import os
 
 # we assume (and assert) that this script is running from the tests/ directory
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 try:
     from StringIO import StringIO

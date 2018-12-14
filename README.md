@@ -114,6 +114,18 @@ You can also install augur from source as an "editable" package so that your glo
 
 This is not recommended if you want to be able to compare output from a stable version of augur to a development version (e.g. comparing output of `augur` installed with pip and `./bin/augur` from your local source code).
 
+### Testing
+
+Run doctests and unit tests for augur from Python 3 with pytest from the top-level of the augur repository.
+
+    pytest -c pytest.python3.ini
+
+Or, run tests for augur from Python 2.
+
+    pytest -c pytest.python2.ini
+
+As tests run on the development code in the augur repository, your environment should not have an existing augur installation that could cause a conflict in pytest.
+
 ### Releasing
 
 New releases are tagged in git using a [_signed_ tag][].  The `release` branch
