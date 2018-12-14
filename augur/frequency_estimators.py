@@ -994,6 +994,8 @@ class KdeFrequencies(object):
 
         return normalized_freq_matrix
 
+
+class TreeKdeFrequencies(KdeFrequencies):
     def tip_passes_filters(self, tip):
         """Returns a boolean indicating whether a given tip passes the node filters
         defined for the current instance.
@@ -1009,15 +1011,23 @@ class KdeFrequencies(object):
         return (self.node_filters is None or
                 all([tip.attr[key] in values for key, values in self.node_filters.items()]))
 
-    def estimate_frequencies_for_tree(self, tree):
-        """Estimate frequencies for all nodes in a tree across the given pivots.
+    def estimate_tip_frequencies_to_proportion(self, tips, proportion):
+        """Estimate frequencies for a given set of tips up to a given proportion of total frequencies.
+
+        Args:
+            tips (list): a list of Bio.Phylo terminals annotated with attributes in `tip.attr`
+            proportion (float): the proportion of the total frequency that the given tips should represent
+
+        Returns:
+            dict: frequencies of given tips indexed by tip name
         """
         clade_frequencies = {}
 
-        # Collect dates for tips.
-        tips = [(tip.name, tip.attr["num_date"])
-                for tip in tree.get_terminals()
-                if self.tip_passes_filters(tip)]
+        # If none of the tips pass the given node filters, do not try to
+        # normalize tip frequencies.
+        if len(tips) == 0:
+            return clade_frequencies
+
         tips = np.array(sorted(tips, key=lambda row: row[1]))
         clades = tips[:, 0]
         tip_dates = tips[:, 1].astype(float)
@@ -1029,7 +1039,7 @@ class KdeFrequencies(object):
         normalized_freq_matrix = self.estimate_frequencies(
             tip_dates,
             self.pivots,
-            normalize_to=1.0,
+            normalize_to=proportion,
             sigma_narrow=self.sigma_narrow,
             sigma_wide=self.sigma_wide,
             proportion_wide=self.proportion_wide,
@@ -1040,84 +1050,20 @@ class KdeFrequencies(object):
         for clade in clades:
             clade_frequencies[clade] = normalized_freq_matrix[clade_to_index[clade]]
 
-        # Assign zero frequencies to any tips that were filtered out of the frequency estimation.
-        for tip in tree.get_terminals():
-            if not tip.name in clade_frequencies:
-                clade_frequencies[tip.name] = np.zeros_like(self.pivots)
-
-        if self.include_internal_nodes:
-            for node in tree.find_clades(order="postorder"):
-                if not node.is_terminal():
-                    clade_frequencies[node.name] = np.array([clade_frequencies[child.name]
-                                                              for child in node.clades]).sum(axis=0)
-
-        return clade_frequencies
-
-    def estimate_weighted_frequencies_for_tree(self, tree):
-        """Estimate frequencies for all nodes in a tree across the given pivots. Frequencies represent a
-        weighted mean across the values in attribute defined by `self.weights_attribute`.
-        """
-        clade_frequencies = {}
-
-        weight_keys, weight_values = zip(*sorted(self.weights.items()))
-        proportions = np.array(weight_values) / np.array(weight_values).sum(axis=0)
-
-        for (weight_key, proportion) in zip(weight_keys, proportions):
-            # Find tips with the current weight attribute.
-            tips = [(tip.name, tip.attr["num_date"])
-                    for tip in tree.get_terminals()
-                    if tip.attr[self.weights_attribute] == weight_key and self.tip_passes_filters(tip)]
-
-            # If none of the tips pass the given node filters, do not try to
-            # normalize tip frequencies.
-            if len(tips) == 0:
-                continue
-
-            tips = np.array(sorted(tips, key=lambda row: row[1]))
-            clades = tips[:, 0]
-            tip_dates = tips[:, 1].astype(float)
-
-            # Map clade ids to their corresponding frequency matrix row index.
-            clade_to_index = {clades[i]: i for i in range(len(clades))}
-
-            # Calculate tip frequencies and normalize.
-            normalized_freq_matrix = self.estimate_frequencies(
-                tip_dates,
-                self.pivots,
-                normalize_to=proportion,
-                sigma_narrow=self.sigma_narrow,
-                sigma_wide=self.sigma_wide,
-                proportion_wide=self.proportion_wide,
-                max_date=self.max_date,
-                censored=self.censored
-            )
-
-            for clade in clades:
-                clade_frequencies[clade] = normalized_freq_matrix[clade_to_index[clade]]
-
-        # Assign zero frequencies to any tips that were filtered out of the frequency estimation.
-        for tip in tree.get_terminals():
-            if not tip.name in clade_frequencies:
-                clade_frequencies[tip.name] = np.zeros_like(self.pivots)
-
-        if self.include_internal_nodes:
-            for node in tree.find_clades(order="postorder"):
-                if not node.is_terminal():
-                    clade_frequencies[node.name] = np.array(
-                        [clade_frequencies[child.name] for child in node.clades]
-                    ).sum(axis=0)
-
         return clade_frequencies
 
     def estimate(self, tree):
-        """
-        Estimate frequencies for a given tree using the parameters defined for this instance.
+        """Estimate frequencies for a given tree using the parameters defined for this instance.
+
+        If weights are defined, frequencies represent a weighted mean across the
+        values in attribute defined by `self.weights_attribute`.
 
         Args:
             tree (Bio.Phylo): annotated tree whose nodes all have an `attr` attribute with at least  "num_date" key
 
         Returns:
             frequencies (dict): node frequencies by clade
+
         """
         # Calculate pivots for the given tree.
         self.pivots = self.calculate_pivots(
@@ -1127,12 +1073,38 @@ class KdeFrequencies(object):
             end_date=self.end_date
         )
 
-        if self.weights is None:
-            # Estimate unweighted frequencies for the given tree.
-            frequencies = self.estimate_frequencies_for_tree(tree)
+        # If weights are defined, calculate frequencies for all tips by their
+        # weight attribute values such that the total frequency of all tips with
+        # a given value sums to the proportion of tips that have that value.
+        # If weights are not defined, estimate frequencies such that they sum to 1.
+        if self.weights:
+            weight_keys, weight_values = zip(*sorted(self.weights.items()))
+            proportions = np.array(weight_values) / np.array(weight_values).sum(axis=0)
+            frequencies = {}
+
+            for (weight_key, proportion) in zip(weight_keys, proportions):
+                # Find tips with the current weight attribute.
+                tips = [(tip.name, tip.attr["num_date"])
+                        for tip in tree.get_terminals()
+                        if tip.attr[self.weights_attribute] == weight_key and self.tip_passes_filters(tip)]
+                frequencies.update(self.estimate_tip_frequencies_to_proportion(tips, proportion))
         else:
-            # Estimate weighted frequencies.
-            frequencies = self.estimate_weighted_frequencies_for_tree(tree)
+            tips = [(tip.name, tip.attr["num_date"])
+                    for tip in tree.get_terminals()
+                    if self.tip_passes_filters(tip)]
+            frequencies = self.estimate_tip_frequencies_to_proportion(tips, proportion=1.0)
+
+        # Assign zero frequencies to any tips that were filtered out of the frequency estimation.
+        for tip in tree.get_terminals():
+            if not tip.name in frequencies:
+                frequencies[tip.name] = np.zeros_like(self.pivots)
+
+        if self.include_internal_nodes:
+            for node in tree.find_clades(order="postorder"):
+                if not node.is_terminal():
+                    frequencies[node.name] = np.array(
+                        [frequencies[child.name] for child in node.clades]
+                    ).sum(axis=0)
 
         # Store frequencies in the current instance for simplified exporting.
         self.frequencies = frequencies

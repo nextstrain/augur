@@ -7,7 +7,7 @@ from collections import defaultdict
 from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
 
-from .frequency_estimators import alignment_frequencies, KdeFrequencies, tree_frequencies
+from .frequency_estimators import alignment_frequencies, TreeKdeFrequencies, tree_frequencies
 from .utils import read_metadata, read_node_data, write_json, get_numerical_dates
 
 
@@ -132,7 +132,7 @@ def run(args):
                 weights_attribute = None
 
             # Estimate frequencies.
-            kde_frequencies = KdeFrequencies(
+            kde_frequencies = TreeKdeFrequencies(
                 sigma_narrow=args.narrow_bandwidth,
                 sigma_wide=args.wide_bandwidth,
                 proportion_wide=args.proportion_wide,
