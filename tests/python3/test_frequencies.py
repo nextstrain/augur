@@ -1,6 +1,7 @@
 """
 Unit tests for frequency estimation
 """
+import Bio
 import json
 import numpy as np
 from pathlib import Path
@@ -11,7 +12,7 @@ import os
 # we assume (and assert) that this script is running from the tests/ directory
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from augur.frequency_estimators import TreeKdeFrequencies
+from augur.frequency_estimators import TreeKdeFrequencies, AlignmentKdeFrequencies
 from base.io_util import json_to_tree
 
 # Define regions to use for testing weighted frequencies.
@@ -27,6 +28,14 @@ REGIONS = [
     ('southeast_asia', 0.62),
     ('west_asia', 0.75)
 ]
+
+@pytest.fixture
+def alignment():
+    """Returns a multiple sequence alignment containing a small test set of H3N2
+    sequences.
+    """
+    msa = Bio.AlignIO.read("tests/data/aa-seq_h3n2_ha_2y_HA1.fasta", "fasta")
+    return msa
 
 @pytest.fixture
 def tree():
@@ -47,7 +56,8 @@ class TestTreeKdeFrequencies(object):
         """
         # Define pivot frequency in months.
         pivot_frequency = 3
-        pivots = TreeKdeFrequencies.calculate_pivots(pivot_frequency, tree=tree)
+        observations = [tip.attr["num_date"] for tip in tree.get_terminals()]
+        pivots = TreeKdeFrequencies.calculate_pivots(pivot_frequency, observations=observations)
         assert isinstance(pivots, np.ndarray)
 
         # Floating point pivot values should be separated by the given number of
@@ -299,3 +309,32 @@ class TestTreeKdeFrequencies(object):
         params = kde_frequencies.get_params()
         for param in initial_params:
             assert params[param] == initial_params[param]
+
+
+class TestAlignmentKdeFrequencies(object):
+    """Tests KDE-based frequency estimation methods for multiple sequence alignments
+    """
+    def test_estimate(self, alignment):
+        # Generate random dates for each sequence in the alignment.
+        np.random.seed(1)
+        observations = np.random.choice([2010.0, 2011.0], size=len(alignment)) + np.random.random(len(alignment))
+
+        # Estimate frequencies for the alignment.
+        kde_frequencies = AlignmentKdeFrequencies()
+        frequencies = kde_frequencies.estimate(alignment, observations)
+
+        assert hasattr(kde_frequencies, "pivots")
+        assert np.around(kde_frequencies.pivots[1] - kde_frequencies.pivots[0], 2) == np.around(1 / 12.0, 2)
+        assert hasattr(kde_frequencies, "frequencies")
+        assert list(frequencies.values())[0].shape == kde_frequencies.pivots.shape
+
+        # Find a position with frequencies estimated for multiple bases.
+        position = list(frequencies.keys())[0].split(":")[0]
+        position_frequencies = np.zeros_like(kde_frequencies.pivots)
+        expected_position_frequencies = np.ones_like(kde_frequencies.pivots)
+        for key in frequencies:
+            if key.startswith("%s:" % position):
+                position_frequencies += frequencies[key]
+
+        # Confirm that the frequencies at this position sum to 1 at all timepoints.
+        assert np.allclose(position_frequencies, expected_position_frequencies)

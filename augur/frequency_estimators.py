@@ -871,34 +871,36 @@ class KdeFrequencies(object):
         return frequencies_json
 
     @classmethod
-    def calculate_pivots(cls, pivot_frequency, tree=None, start_date=None, end_date=None):
-        """
-        Calculate pivots for a given pivot frequency and either a tree or a start and end date.
+    def calculate_pivots(cls, pivot_frequency, observations=None, start_date=None, end_date=None):
+        """Calculate pivots for a given pivot frequency and either a list of observation
+        dates or a start and end date.
 
-        If a tree is given, the start and end interval for these pivots is determined by the earliest and latest strain
-        date in the tree.
+        If a list of observations is given, the start and end interval for these
+        pivots is determined by the earliest and latest strain date in the list.
 
-        If a start and end date are given, those values determine the range of the pivots. These values and the tree
-        are mutually exclusive. If all arguments are provided, the start and end dates will be preferred over the tree.
+        If a start and end date are given, those values determine the range of
+        the pivots. These values and the list of observations are mutually
+        exclusive. If all arguments are provided, the start and end dates will
+        be preferred over the list of observations.
 
         Args:
             pivot_frequency (int): number of months between pivots
-            tree (Bio.Phylo): an annotated tree
+            observations (list): a list of observed floating point dates per sample
             start_date (float): start of the pivots interval
             end_date (float): end of the pivots interval
 
         Returns:
-            pivots (numpy array): pivots spanning the given the dates represented by the tree's tips
+            pivots (numpy array): pivots spanning the given the dates
+
         """
-        if start_date is None or end_date is None:
-            # Determine pivot start and end dates from the range of tip dates in the given tree.
-            tip_dates = [tip.attr["num_date"] for tip in tree.get_terminals()]
-            pivot_start = np.floor(min(tip_dates))  # type: float
-            pivot_end = np.ceil(max(tip_dates))     # type: float
-        else:
+        if start_date and end_date:
             # Use the explicitly provided start and end dates.
             pivot_start = start_date
             pivot_end = end_date
+        else:
+            # Determine pivot start and end dates from the given list of observed dates.
+            pivot_start = np.floor(min(observations))  # type: float
+            pivot_end = np.ceil(max(observations))     # type: float
 
         pivots = pd.date_range(
             float_to_datestring(pivot_start),
@@ -996,6 +998,12 @@ class KdeFrequencies(object):
 
 
 class TreeKdeFrequencies(KdeFrequencies):
+    """KDE frequency estimator for phylogenetic trees
+
+    Estimates frequencies for samples provided as annotated tips on a given
+    tree and optionally reports clade-level frequencies based on the sum of each
+    clade's respective tips.
+    """
     def tip_passes_filters(self, tip):
         """Returns a boolean indicating whether a given tip passes the node filters
         defined for the current instance.
@@ -1068,7 +1076,7 @@ class TreeKdeFrequencies(KdeFrequencies):
         # Calculate pivots for the given tree.
         self.pivots = self.calculate_pivots(
             self.pivot_frequency,
-            tree=tree,
+            observations=[tip.attr["num_date"] for tip in tree.get_terminals()],
             start_date=self.start_date,
             end_date=self.end_date
         )
@@ -1107,6 +1115,67 @@ class TreeKdeFrequencies(KdeFrequencies):
                     ).sum(axis=0)
 
         # Store frequencies in the current instance for simplified exporting.
+        self.frequencies = frequencies
+
+        return frequencies
+
+
+class AlignmentKdeFrequencies(KdeFrequencies):
+    """KDE frequency estimator for multiple sequence alignments
+
+    Estimates frequencies for samples provided as sequences in a multiple
+    sequence alignment and corresponding observation dates for each sequence.
+    """
+    def estimate(self, alignment, observations):
+        """Estimate frequencies of bases/residues at each site in a given multiple sequence
+        alignment based on the observation dates associated with each sequence
+        in the alignment.
+        """
+        # Calculate pivots for the given tree.
+        self.pivots = self.calculate_pivots(
+            self.pivot_frequency,
+            observations=observations,
+            start_date=self.start_date,
+            end_date=self.end_date
+        )
+
+        # Pair alignment sequence indices with observation dates.
+        samples = zip(range(len(alignment)), observations)
+
+        # Sort samples by date and extract sequence indices and dates.
+        samples = np.array(sorted(samples, key=lambda row: row[1]))
+        sample_indices = samples[:, 0]
+        sample_dates = samples[:, 1].astype(float)
+
+        # Map sample alignment indices to their corresponding frequency matrix row indices.
+        sample_to_index = {sample_indices[i]: i for i in range(len(samples))}
+
+        # Calculate tip frequencies and normalize.
+        normalized_freq_matrix = self.estimate_frequencies(
+            sample_dates,
+            self.pivots,
+            sigma_narrow=self.sigma_narrow,
+            sigma_wide=self.sigma_wide,
+            proportion_wide=self.proportion_wide,
+            max_date=self.max_date,
+            censored=self.censored
+        )
+
+        # Calculate frequencies per site and base/residue from the estimated
+        # frequencies per sample.
+        frequencies = {}
+        for position in range(alignment.get_alignment_length()):
+            # Only estimate frequencies at sites with variation.
+            if len(set(alignment[:, position])) > 1:
+                for sample, base in enumerate(alignment[:, position]):
+                    # Estimate frequencies by current position and base/residue
+                    # at the position for each sample.
+                    key = "%s:%s" % (position, base.upper())
+                    if key not in frequencies:
+                        frequencies[key] = np.zeros_like(self.pivots)
+
+                    frequencies[key] += normalized_freq_matrix[sample_to_index[sample], :]
+
         self.frequencies = frequencies
 
         return frequencies
