@@ -7,7 +7,7 @@ from collections import defaultdict
 from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
 
-from .frequency_estimators import alignment_frequencies, TreeKdeFrequencies, tree_frequencies
+from .frequency_estimators import get_pivots, alignment_frequencies, TreeKdeFrequencies, tree_frequencies
 from .utils import read_metadata, read_node_data, write_json, get_numerical_dates
 
 
@@ -19,8 +19,8 @@ def register_arguments(parser):
                         help="tab-delimited metadata including dates for given samples")
     parser.add_argument('--regions', type=str, nargs='+', default=['global'],
                         help="region to subsample to")
-    parser.add_argument('--pivots-per-year', type=int, default=4,
-                        help="number of pivots per year")
+    parser.add_argument("--pivot-interval", type=int, default=3,
+                        help="number of months between pivots")
     parser.add_argument('--min-date', type=float,
                         help="minimal pivot value")
     parser.add_argument('--max-date', type=float,
@@ -58,15 +58,10 @@ def register_arguments(parser):
 def format_frequencies(freq):
     return list(freq)
 
-def get_pivots(tps, dt,min_date, max_date):
-    first_pivot = min_date if min_date else np.floor(np.min(tps)/dt)*dt
-    last_pivot = max_date if max_date else np.ceil(np.max(tps)/dt)*dt
-    return np.arange(first_pivot, last_pivot, dt)
 
 def run(args):
     metadata, columns = read_metadata(args.metadata)
     dates = get_numerical_dates(metadata, fmt='%Y-%m-%d')
-    dt = 1.0/args.pivots_per_year
     stiffness = 5.0
 
     if args.tree:
@@ -83,7 +78,7 @@ def run(args):
 
         if args.method == "diffusion":
             # estimate tree frequencies
-            pivots = get_pivots(tps, dt, args.min_date, args.max_date)
+            pivots = get_pivots(tps, args.pivot_interval, args.min_date, args.max_date)
             frequency_dict = {"pivots":format_frequencies(pivots)}
 
             for region in args.regions:
@@ -136,7 +131,7 @@ def run(args):
                 sigma_narrow=args.narrow_bandwidth,
                 sigma_wide=args.wide_bandwidth,
                 proportion_wide=args.proportion_wide,
-                pivot_frequency=int(12.0 / args.pivots_per_year),
+                pivot_frequency=args.pivot_interval,
                 start_date=args.min_date,
                 end_date=args.max_date,
                 weights=weights,
@@ -170,7 +165,7 @@ def run(args):
                                         if not seq.name.startswith('NODE_')])
             tps = np.array([np.mean(dates[seq.name]) for seq in aln])
             if frequencies is None:
-                pivots = get_pivots(tps, dt, args.min_date, args.max_date)
+                pivots = get_pivots(tps, args.pivot_interval, args.min_date, args.max_date)
                 frequencies = {"pivots":format_frequencies(pivots)}
 
             freqs = alignment_frequencies(aln, tps, pivots)

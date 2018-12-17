@@ -11,6 +11,47 @@ import time
 debug = False
 log_thres = 10.0
 
+
+def get_pivots(observations, pivot_interval, start_date=None, end_date=None):
+    """Calculate pivots for a given list of floating point observation dates and
+    interval between pivots.
+
+    Start and end pivots will be based on the range of given observed dates,
+    unless a start or end date are provided to override these defaults.
+
+    Parameters
+    ----------
+    observations : list
+        a list of observed floating point dates per sample
+    pivot_interval : int
+        number of months between pivots
+    start_date : float
+        optional start of the pivots interval
+    end_date : float
+        optional end of the pivots interval
+
+    Returns
+    -------
+    pivots : ndarray
+        floating point pivots spanning the given the dates
+
+    """
+    # Convert months between pivots to pivot frequency.
+    pivot_frequency = pivot_interval / 12.0
+
+    pivot_start = start_date if start_date else np.floor(np.min(observations) / pivot_frequency) * pivot_frequency
+    pivot_end = end_date if end_date else np.ceil(np.max(observations) / pivot_frequency) * pivot_frequency
+
+    datetime_pivots = pd.date_range(
+        float_to_datestring(pivot_start),
+        float_to_datestring(pivot_end),
+        freq="%sMS" % pivot_interval
+    )
+    pivots = np.array([timestamp_to_float(pivot) for pivot in datetime_pivots])
+
+    return np.around(pivots, 2)
+
+
 def make_pivots(pivots, tps):
     '''
     if pivots is a scalar, make a grid of pivot points covering the entire range
@@ -747,10 +788,32 @@ def float_to_datestring(time):
     '2010-10-01'
     >>> float_to_datestring(2011.25)
     '2011-04-01'
+    >>> float_to_datestring(2011.0)
+    '2011-01-01'
+    >>> float_to_datestring(2011.0 + 11.0 / 12)
+    '2011-12-01'
+
+    In some cases, the given float value can be truncated leading to unexpected
+    conversion between floating point and integer values. This function should
+    account for these errors by rounding months to the nearest integer.
+
+    >>> float_to_datestring(2011.9166666666665)
+    '2011-12-01'
+    >>> float_to_datestring(2016.9609856262834)
+    '2016-12-01'
     """
     year = int(time)
-    month = int(((time - year) * 12) + 1)
+
+    # After accounting for the current year, extract the remainder and convert
+    # it to a month using the inverse of the logic used to create the floating
+    # point date. If the float date is sufficiently close to the end of the
+    # year, rounding can produce a 13th month.
+    month = min(int(np.rint(((time - year) * 12) + 1)), 12)
+
+    # Floating point dates do not encode day information, so we always assume
+    # they refer to the start of a given month.
     day = 1
+
     return "%s-%02d-%02d" % (year, month, day)
 
 
@@ -764,6 +827,10 @@ def timestamp_to_float(time):
     >>> time = datetime.date(2011, 4, 1)
     >>> timestamp_to_float(time)
     2011.25
+    >>> timestamp_to_float(datetime.date(2011, 1, 1))
+    2011.0
+    >>> timestamp_to_float(datetime.date(2011, 12, 1)) == (2011.0 + 11.0 / 12)
+    True
     """
     return time.year + ((time.month - 1) / 12.0)
 
@@ -869,47 +936,6 @@ class KdeFrequencies(object):
             }
 
         return frequencies_json
-
-    @classmethod
-    def calculate_pivots(cls, pivot_frequency, observations=None, start_date=None, end_date=None):
-        """Calculate pivots for a given pivot frequency and either a list of observation
-        dates or a start and end date.
-
-        If a list of observations is given, the start and end interval for these
-        pivots is determined by the earliest and latest strain date in the list.
-
-        If a start and end date are given, those values determine the range of
-        the pivots. These values and the list of observations are mutually
-        exclusive. If all arguments are provided, the start and end dates will
-        be preferred over the list of observations.
-
-        Args:
-            pivot_frequency (int): number of months between pivots
-            observations (list): a list of observed floating point dates per sample
-            start_date (float): start of the pivots interval
-            end_date (float): end of the pivots interval
-
-        Returns:
-            pivots (numpy array): pivots spanning the given the dates
-
-        """
-        if start_date and end_date:
-            # Use the explicitly provided start and end dates.
-            pivot_start = start_date
-            pivot_end = end_date
-        else:
-            # Determine pivot start and end dates from the given list of observed dates.
-            pivot_start = np.floor(min(observations))  # type: float
-            pivot_end = np.ceil(max(observations))     # type: float
-
-        pivots = pd.date_range(
-            float_to_datestring(pivot_start),
-            float_to_datestring(pivot_end),
-            freq="%sMS" % pivot_frequency
-        )
-        pivots = np.array([timestamp_to_float(pivot) for pivot in pivots])
-
-        return np.around(pivots, 2)
 
     @classmethod
     def get_density_for_observation(cls, mu, pivots, sigma_narrow=1/12.0, sigma_wide=3/12.0, proportion_wide=0.2, **kwargs):
@@ -1074,9 +1100,10 @@ class TreeKdeFrequencies(KdeFrequencies):
 
         """
         # Calculate pivots for the given tree.
-        self.pivots = self.calculate_pivots(
+        observations = [tip.attr["num_date"] for tip in tree.get_terminals()]
+        self.pivots = get_pivots(
+            observations,
             self.pivot_frequency,
-            observations=[tip.attr["num_date"] for tip in tree.get_terminals()],
             start_date=self.start_date,
             end_date=self.end_date
         )
@@ -1132,9 +1159,9 @@ class AlignmentKdeFrequencies(KdeFrequencies):
         in the alignment.
         """
         # Calculate pivots for the given tree.
-        self.pivots = self.calculate_pivots(
+        self.pivots = get_pivots(
+            observations,
             self.pivot_frequency,
-            observations=observations,
             start_date=self.start_date,
             end_date=self.end_date
         )

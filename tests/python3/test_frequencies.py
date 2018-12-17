@@ -12,7 +12,7 @@ import os
 # we assume (and assert) that this script is running from the tests/ directory
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from augur.frequency_estimators import TreeKdeFrequencies, AlignmentKdeFrequencies
+from augur.frequency_estimators import get_pivots, TreeKdeFrequencies, AlignmentKdeFrequencies
 from base.io_util import json_to_tree
 
 # Define regions to use for testing weighted frequencies.
@@ -47,37 +47,45 @@ def tree():
     tree = json_to_tree(json_tree)
     return tree
 
+#
+# Test pivot calculations
+#
+
+def test_get_pivots_from_tree_only(tree):
+    """Test pivot calculations.
+    """
+    # Define pivot frequency in months.
+    pivot_frequency = 3
+    observations = [tip.attr["num_date"] for tip in tree.get_terminals()]
+    pivots = get_pivots(observations, pivot_frequency)
+    assert isinstance(pivots, np.ndarray)
+
+    # Floating point pivot values should be separated by the given number of
+    # months divided by number of months in a year.
+    assert pivots[1] - pivots[0] == pivot_frequency / 12.0
+
+def test_get_pivots_from_start_and_end_date():
+    """
+    Test pivot calculation from a given start and end date instead of a given tree.
+    """
+    pivot_frequency = 3
+    start_date = 2015.5
+    end_date = 2018.5
+    observations = []
+    pivots = get_pivots(observations, pivot_frequency, start_date=start_date, end_date=end_date)
+    assert isinstance(pivots, np.ndarray)
+    assert pivots[1] - pivots[0] == pivot_frequency / 12.0
+    assert pivots[0] == start_date
+    assert pivots[-1] == end_date
+    assert pivots[-1] >= end_date - pivot_frequency
+
+#
+# Test KDE frequency estimation for trees
+#
 
 class TestTreeKdeFrequencies(object):
     """Tests KDE-based frequency estimation methods for trees
     """
-    def test_calculate_pivots_from_tree_only(self, tree):
-        """Test pivot calculations.
-        """
-        # Define pivot frequency in months.
-        pivot_frequency = 3
-        observations = [tip.attr["num_date"] for tip in tree.get_terminals()]
-        pivots = TreeKdeFrequencies.calculate_pivots(pivot_frequency, observations=observations)
-        assert isinstance(pivots, np.ndarray)
-
-        # Floating point pivot values should be separated by the given number of
-        # months divided by number of months in a year.
-        assert pivots[1] - pivots[0] == pivot_frequency / 12.0
-
-    def test_calculate_pivots_from_start_and_end_date(self):
-        """
-        Test pivot calculation from a given start and end date instead of a given tree.
-        """
-        pivot_frequency = 3
-        start_date = 2015.5
-        end_date = 2018.5
-        pivots = TreeKdeFrequencies.calculate_pivots(pivot_frequency, start_date=start_date, end_date=end_date)
-        assert isinstance(pivots, np.ndarray)
-        assert pivots[1] - pivots[0] == pivot_frequency / 12.0
-        assert pivots[0] == start_date
-        assert pivots[-1] == end_date
-        assert pivots[-1] >= end_date - pivot_frequency
-
     def test_estimate(self, tree):
         """Test frequency estimation with default parameters.
         """
@@ -310,6 +318,9 @@ class TestTreeKdeFrequencies(object):
         for param in initial_params:
             assert params[param] == initial_params[param]
 
+#
+# Test KDE frequency estimation for multiple sequence alignments
+#
 
 class TestAlignmentKdeFrequencies(object):
     """Tests KDE-based frequency estimation methods for multiple sequence alignments
