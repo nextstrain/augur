@@ -1133,6 +1133,38 @@ class SubstitutionModel(TiterModel):
         return {mut[0]+':'+mut[1]:np.round(val,int(-np.log10(cutoff)))
                 for mut, val in self.substitution_effect.items() if val>cutoff}
 
+    def annotate_tree(self, tree):
+        """Annotates antigenic advance attributes to nodes of a given tree built from
+        the same sequences used to train the model.
+
+        Parameters
+        ----------
+        tree : Bio.Phylo
+
+        Returns
+        -------
+        Bio.Phylo
+            input tree instance with nodes annotated by per-branch and
+            cumulative antigenic advance attributes `dTiterSub` and
+            `cTiterSub`
+        """
+        tree.root.dTiterSub = 0
+        tree.root.cTiterSub = 0
+        for node in tree.find_clades():
+            for child in node.clades:
+                # Get mutations between the current node and its parent.
+                mutations = self.get_mutations(child.name, node.name)
+
+                # Calculate titer drop on the branch to the current node.
+                child.dTiterSub = 0
+                for gene, mutation in mutations:
+                    child.dTiterSub += self.substitution_effect.get((gene, mutation), 0)
+
+                # Calculate the cumulative titer drop from the root to the current node.
+                child.cTiterSub = node.cTiterSub + child.dTiterSub
+
+        return tree
+
 
 if __name__=="__main__":
     # test tree model (assumes there is a tree called flu in memory...)

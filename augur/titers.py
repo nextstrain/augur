@@ -53,33 +53,16 @@ class infer_substitution_model():
         # Annotate nodes with inferred titer drops, if a tree is given.
         if args.tree:
             tree = Phylo.read(args.tree, 'newick')
-            tree.root.cTiterSub = 0
+            annotated_tree = TM_subs.annotate_tree(tree)
+
+            # Store annotations for export to JSON.
             nodes = {
-                tree.root.name: {
-                    "dTiterSub": 0,
-                    "cTiterSub": 0
+                node.name: {
+                    "dTiterSub": node.dTiterSub,
+                    "cTiterSub": node.cTiterSub
                 }
+                for node in tree.find_clades()
             }
-
-            for node in tree.find_clades():
-                for child in node.clades:
-                    # Get mutations between the current node and its parent.
-                    mutations = TM_subs.get_mutations(child.name, node.name)
-
-                    # Calculate titer drop on the branch to the current node.
-                    dTiterSub = 0
-                    for gene, mutation in mutations:
-                        dTiterSub += TM_subs.substitution_effect.get((gene, mutation), 0)
-
-                    # Calculate the cumulative titer drop from the root to the current node.
-                    child.cTiterSub = node.cTiterSub + dTiterSub
-
-                    # Store annotations for export to JSON.
-                    nodes[child.name] = {
-                        "dTiterSub": dTiterSub,
-                        "cTiterSub": child.cTiterSub
-                    }
-
             subs_model["nodes"] = nodes
 
         # export the substitution model
