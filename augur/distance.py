@@ -42,7 +42,7 @@ def mask_distance(aaA, aaB, mask):
     sites_B = mask_sites(aaB, mask)
 
     # Count sites that differ between sequences excluding undetermined residues.
-    distance = int(np.sum((sites_A != sites_B) & (sites_A != "X") & (sites_B != "X")))
+    distance = int(np.sum((sites_A != sites_B) & (sites_A != b"X") & (sites_B != b"X")))
 
     return distance
 

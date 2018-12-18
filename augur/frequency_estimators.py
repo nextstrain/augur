@@ -1,14 +1,56 @@
 # estimates clade frequencies
 from __future__ import division, print_function
 from collections import defaultdict
+import numpy as np
+import pandas as pd
 from scipy.interpolate import interp1d
 from scipy.stats import norm
-import time
-import numpy as np
 import sys
+import time
 
 debug = False
 log_thres = 10.0
+
+
+def get_pivots(observations, pivot_interval, start_date=None, end_date=None):
+    """Calculate pivots for a given list of floating point observation dates and
+    interval between pivots.
+
+    Start and end pivots will be based on the range of given observed dates,
+    unless a start or end date are provided to override these defaults.
+
+    Parameters
+    ----------
+    observations : list
+        a list of observed floating point dates per sample
+    pivot_interval : int
+        number of months between pivots
+    start_date : float
+        optional start of the pivots interval
+    end_date : float
+        optional end of the pivots interval
+
+    Returns
+    -------
+    pivots : ndarray
+        floating point pivots spanning the given the dates
+
+    """
+    # Convert months between pivots to pivot frequency.
+    pivot_frequency = pivot_interval / 12.0
+
+    pivot_start = start_date if start_date else np.floor(np.min(observations) / pivot_frequency) * pivot_frequency
+    pivot_end = end_date if end_date else np.ceil(np.max(observations) / pivot_frequency) * pivot_frequency
+
+    datetime_pivots = pd.date_range(
+        float_to_datestring(pivot_start),
+        float_to_datestring(pivot_end),
+        freq="%sMS" % pivot_interval
+    )
+    pivots = np.array([timestamp_to_float(pivot) for pivot in datetime_pivots])
+
+    return np.around(pivots, 2)
+
 
 def make_pivots(pivots, tps):
     '''
@@ -440,7 +482,7 @@ class tree_frequencies(object):
         for node in self.tree.find_clades(order='postorder'):
             if node.is_terminal():
                 if self.node_filter(node):
-                    tps.append(node.num_date)
+                    tps.append(node.attr["num_date"])
                     node.leafs = np.array([leaf_count], dtype=int)
                     leaf_count+=1
                 else:
@@ -739,6 +781,60 @@ def test_nested_estimator():
     return nested_freq
 
 
+def float_to_datestring(time):
+    """Convert a floating point date to a date string
+
+    >>> float_to_datestring(2010.75)
+    '2010-10-01'
+    >>> float_to_datestring(2011.25)
+    '2011-04-01'
+    >>> float_to_datestring(2011.0)
+    '2011-01-01'
+    >>> float_to_datestring(2011.0 + 11.0 / 12)
+    '2011-12-01'
+
+    In some cases, the given float value can be truncated leading to unexpected
+    conversion between floating point and integer values. This function should
+    account for these errors by rounding months to the nearest integer.
+
+    >>> float_to_datestring(2011.9166666666665)
+    '2011-12-01'
+    >>> float_to_datestring(2016.9609856262834)
+    '2016-12-01'
+    """
+    year = int(time)
+
+    # After accounting for the current year, extract the remainder and convert
+    # it to a month using the inverse of the logic used to create the floating
+    # point date. If the float date is sufficiently close to the end of the
+    # year, rounding can produce a 13th month.
+    month = min(int(np.rint(((time - year) * 12) + 1)), 12)
+
+    # Floating point dates do not encode day information, so we always assume
+    # they refer to the start of a given month.
+    day = 1
+
+    return "%s-%02d-%02d" % (year, month, day)
+
+
+def timestamp_to_float(time):
+    """Convert a pandas timestamp to a floating point date.
+
+    >>> import datetime
+    >>> time = datetime.date(2010, 10, 1)
+    >>> timestamp_to_float(time)
+    2010.75
+    >>> time = datetime.date(2011, 4, 1)
+    >>> timestamp_to_float(time)
+    2011.25
+    >>> timestamp_to_float(datetime.date(2011, 1, 1))
+    2011.0
+    >>> timestamp_to_float(datetime.date(2011, 12, 1)) == (2011.0 + 11.0 / 12)
+    True
+    """
+    return time.year + ((time.month - 1) / 12.0)
+
+
 class KdeFrequencies(object):
     """Methods to estimate clade frequencies for phylogenetic trees by creating
     normal distributions from timestamped tips in the tree and building a kernel
@@ -746,39 +842,27 @@ class KdeFrequencies(object):
     each clade in the tree.
     """
     def __init__(self, sigma_narrow=1 / 12.0, sigma_wide=3 / 12.0, proportion_wide=0.2,
-                 pivot_frequency=1 / 12.0, start_date=None, end_date=None, weights=None, weights_attribute=None,
-                 node_filters=None, max_date=None, include_internal_nodes=False):
+                 pivot_frequency=1, start_date=None, end_date=None, weights=None, weights_attribute=None,
+                 node_filters=None, max_date=None, include_internal_nodes=False, censored=False):
         """Define parameters for KDE-based frequency estimation.
 
-        Parameters
-        ----------
-        sigma_narrow : float
-            Bandwidth for first of two Gaussians composing the KDEs
-        sigma_wide : float
-            Bandwidth for second of two Gaussians composing the KDEs
-        proportion_wide : float
-            Proportion of the second Gaussian to include in each KDE
-        pivot_frequency : float
-            Frequency at which pivots should occur in fractions of a year
-        start_date : float
-            start of the pivots interval
-        end_date : float
-            end of the pivots interval
-        weights : dict
-            Numerical weights indexed by attribute values and applied to individual tips
-        weights_attribute : str
-            Attribute annotated on tips of a tree to use for weighting
-        node_filters : dict
-            Mapping of node attribute names (keys) to a list of valid values to keep
-        max_date : float
-            Maximum year beyond which tips are excluded from frequency estimation and are assigned
-            frequencies of zero
-        include_internal_nodes : bool
-            Whether internal (non-tip) nodes should have their frequencies estimated
+        Args:
+            sigma_narrow (float): Bandwidth for first of two Gaussians composing the KDEs
+            sigma_wide (float): Bandwidth for second of two Gaussians composing the KDEs
+            proportion_wide (float): Proportion of the second Gaussian to include in each KDE
+            pivot_frequency (int): Number of months between pivots
+            start_date (float): start of the pivots interval
+            end_date (float): end of the pivots interval
+            weights (dict): Numerical weights indexed by attribute values and applied to individual tips
+            weights_attribute (str): Attribute annotated on tips of a tree to use for weighting
+            node_filters (dict): Mapping of node attribute names (keys) to a list of valid values to keep
+            max_date (float): Maximum year beyond which tips are excluded from frequency estimation and are assigned
+                              frequencies of zero
+            include_internal_nodes (bool): Whether internal (non-tip) nodes should have their frequencies estimated
+            censored (bool): Whether future observations should be censored at each pivot
 
-        No Longer Returned
-        ------------------
-        KdeFrequencies
+        Returns:
+            KdeFrequencies
         """
         self.sigma_narrow = sigma_narrow
         self.sigma_wide = sigma_wide
@@ -791,15 +875,14 @@ class KdeFrequencies(object):
         self.node_filters = node_filters
         self.max_date = max_date
         self.include_internal_nodes = include_internal_nodes
+        self.censored = censored
 
     def get_params(self):
         """
         Returns the parameters used to define the current instance.
 
-        Returns
-        -------
-        dict
-            parameters that define the current instance and that can be used to create a new instance
+        Returns:
+            dict: parameters that define the current instance and that can be used to create a new instance
         """
         return {
             "sigma_narrow": self.sigma_narrow,
@@ -812,22 +895,13 @@ class KdeFrequencies(object):
             "weights_attribute": self.weights_attribute,
             "max_date": self.max_date,
             "include_internal_nodes": self.include_internal_nodes,
-            "node_filters": self.node_filters
+            "node_filters": self.node_filters,
+            "censored": self.censored
         }
 
     @classmethod
     def from_json(cls, json_dict):
         """Returns an instance populated with parameters and data from the given JSON dictionary.
-
-        Parameters
-        ----------
-        json_dict : TYPE
-            Description
-
-        Returns
-        -------
-        TYPE
-            Description
         """
         params = json_dict["params"]
         instance = cls(**params)
@@ -838,17 +912,12 @@ class KdeFrequencies(object):
 
             instance.frequencies = {}
             for clade in frequencies:
-                instance.frequencies[int(clade)] = np.array(frequencies[clade])
+                instance.frequencies[clade] = np.array(frequencies[clade])
 
         return instance
 
     def to_json(self):
         """Returns a dictionary for the current instance that can be serialized in a JSON file.
-
-        Returns
-        -------
-        TYPE
-            Description
         """
         frequencies_json = {
             "params": self.get_params()
@@ -869,82 +938,11 @@ class KdeFrequencies(object):
         return frequencies_json
 
     @classmethod
-    def calculate_pivots(cls, pivot_frequency, tree=None, start_date=None, end_date=None):
-        """
-        Calculate pivots for a given pivot frequency and either a tree or a start and end date.
-
-        If a tree is given, the start and end interval for these pivots is
-        determined by the earliest and latest strain date in the tree.
-
-        If a start and end date are given, those values determine the range
-        of the pivots. These values and the tree are mutually exclusive.
-        If all arguments are provided, the start and end dates will be
-        preferred over the tree.
-
-        Parameters
-        ----------
-        pivot_frequency
-            float
-            frequency pivots should occur by fraction of a year
-        tree
-            Bio.Phylo
-            an annotated tree
-        start_date
-            float
-            start of the pivots interval
-        end_date
-            float
-            end of the pivots interval
-        -----------
-
-        Returns
-        -------
-        --------
-            pivots (numpy array): pivots spanning the given the dates represented
-            by the tree's tips
-        """
-        if start_date is None or end_date is None:
-            # Determine pivot start and end dates from the range of tip dates in the given tree.
-            tip_dates = [tip.attr["num_date"] for tip in tree.get_terminals()]
-            pivot_start = min(tip_dates)  # type: float
-            pivot_end = max(tip_dates)    # type: float
-        else:
-            # Use the explicitly provided start and end dates.
-            pivot_start = start_date
-            pivot_end = end_date
-
-        pivots = np.arange(
-            pivot_start,
-            pivot_end + 0.0001,
-            pivot_frequency
-        )
-
-        return np.around(pivots, 2)
-
-    @classmethod
-    def get_density_for_observation(cls, mu, pivots, sigma_narrow=1/12.0, sigma_wide=3/12.0, proportion_wide=0.2):
+    def get_density_for_observation(cls, mu, pivots, sigma_narrow=1/12.0, sigma_wide=3/12.0, proportion_wide=0.2, **kwargs):
         """Build a normal distribution centered across the given floating point date,
         mu, with a standard deviation based on the given sigma value and return
         the probability mass at each pivot. These mass values per pivot will form the
         input for a kernel density estimate across multiple observations.
-
-        Parameters
-        ----------
-        mu : TYPE
-            Description
-        pivots : TYPE
-            Description
-        sigma_narrow : TYPE, optional
-            Description
-        sigma_wide : TYPE, optional
-            Description
-        proportion_wide : float, optional
-            Description
-
-        Returns
-        -------
-        TYPE
-            Description
         """
         return ((1-proportion_wide) * norm.pdf(pivots, loc=mu, scale=sigma_narrow) +
                 proportion_wide * norm.pdf(pivots, loc=mu, scale=sigma_wide))
@@ -956,22 +954,6 @@ class KdeFrequencies(object):
 
         Observations can be optionally filtered by a maximum date such that all
         densities are estimated to be zero after that date.
-
-        Parameters
-        ----------
-        observations : TYPE
-            Description
-        pivots : TYPE
-            Description
-        max_date : None, optional
-            Description
-        **kwargs
-            Description
-
-        Returns
-        -------
-        TYPE
-            Description
         """
         density_matrix = np.zeros((len(observations), len(pivots)))
         for i, obs in enumerate(observations):
@@ -992,18 +974,6 @@ class KdeFrequencies(object):
         """Normalize the values of a given density matrix to 1 across all columns
         (time points) with non-zero sums. This converts kernal PDF mass into a
         frequency estimate.
-
-        Parameters
-        ----------
-        density_matrix : TYPE
-            Description
-        normalize_to : float, optional
-            Description
-
-        Returns
-        -------
-        TYPE
-            Description
         """
         normalized_freq_matrix = density_matrix.copy()
 
@@ -1017,73 +987,83 @@ class KdeFrequencies(object):
         return normalized_freq_matrix
 
     @classmethod
-    def estimate_frequencies(cls, tip_dates, pivots, normalize_to=1.0, **kwargs):
+    def estimate_frequencies(cls, tip_dates, pivots, normalize_to=1.0, max_date=None, **kwargs):
         """Estimate frequencies of the given observations across the given pivots.
-
-        Parameters
-        ----------
-        tip_dates : TYPE
-            Description
-        pivots : TYPE
-            Description
-        normalize_to : float, optional
-            Description
-        **kwargs
-            Description
-
-        Returns
-        -------
-        TYPE
-            Description
         """
         # Calculate base frequencies from observations.
-        density_matrix = cls.get_densities_for_observations(tip_dates, pivots, **kwargs)
+        if kwargs.get("censored"):
+            # Calculate censored frequencies at each pivot. If a maximum date
+            # has already been requested, only calculate censored frequencies up
+            # to that point.
+            if max_date is None:
+                max_date = pivots[-1]
+
+            pivots_to_censor = [pivot for pivot in pivots if pivot <= max_date]
+            density_matrix = None
+            for i, pivot in enumerate(pivots_to_censor):
+                # Censor observations from the future using the smallest value
+                # of either the current pivot or the requested max date.
+                censored_matrix = cls.get_densities_for_observations(
+                    tip_dates,
+                    pivots,
+                    max_date=min(pivot, max_date),
+                    **kwargs
+                )
+
+                if density_matrix is None:
+                    density_matrix = censored_matrix
+                else:
+                    density_matrix[:, i] = censored_matrix[:, i]
+        else:
+            density_matrix = cls.get_densities_for_observations(tip_dates, pivots, max_date=max_date, **kwargs)
 
         # Normalize frequencies to sum to 1.
         normalized_freq_matrix = cls.normalize_to_frequencies(density_matrix, normalize_to=normalize_to)
 
         return normalized_freq_matrix
 
+
+class TreeKdeFrequencies(KdeFrequencies):
+    """KDE frequency estimator for phylogenetic trees
+
+    Estimates frequencies for samples provided as annotated tips on a given
+    tree and optionally reports clade-level frequencies based on the sum of each
+    clade's respective tips.
+    """
     def tip_passes_filters(self, tip):
         """Returns a boolean indicating whether a given tip passes the node filters
         defined for the current instance.
 
-                If no filters are defined, returns True.
+        If no filters are defined, returns True.
 
-        Parameters
-        ----------
-        tip : TYPE
-            Description
+        Args:
+            tip (Bio.Phylo): tip from a Bio.Phylo tree annotated with attributes in `tip.attr`
 
-        Returns
-        -------
-        TYPE
-            Description
+        Returns:
+            bool: whether the given tip passes the defined filters or not
         """
         return (self.node_filters is None or
                 all([tip.attr[key] in values for key, values in self.node_filters.items()]))
 
-    def estimate_frequencies_for_tree(self, tree):
-        """Estimate frequencies for all nodes in a tree across the given pivots.
+    def estimate_tip_frequencies_to_proportion(self, tips, proportion):
+        """Estimate frequencies for a given set of tips up to a given proportion of total frequencies.
 
-        Parameters
-        ----------
-        tree : TYPE
-            Description
+        Args:
+            tips (list): a list of Bio.Phylo terminals annotated with attributes in `tip.attr`
+            proportion (float): the proportion of the total frequency that the given tips should represent
 
-        Returns
-        -------
-        TYPE
-            Description
+        Returns:
+            dict: frequencies of given tips indexed by tip name
         """
         clade_frequencies = {}
 
-        # Collect dates for tips.
-        tips = [(tip.clade, tip.attr["num_date"])
-                for tip in tree.get_terminals()
-                if self.tip_passes_filters(tip)]
+        # If none of the tips pass the given node filters, do not try to
+        # normalize tip frequencies.
+        if len(tips) == 0:
+            return clade_frequencies
+
         tips = np.array(sorted(tips, key=lambda row: row[1]))
-        clades = tips[:, 0].astype(int)
+        clades = tips[:, 0]
         tip_dates = tips[:, 1].astype(float)
 
         # Map clade ids to their corresponding frequency matrix row index.
@@ -1093,127 +1073,136 @@ class KdeFrequencies(object):
         normalized_freq_matrix = self.estimate_frequencies(
             tip_dates,
             self.pivots,
-            normalize_to=1.0,
+            normalize_to=proportion,
             sigma_narrow=self.sigma_narrow,
             sigma_wide=self.sigma_wide,
             proportion_wide=self.proportion_wide,
-            max_date=self.max_date
+            max_date=self.max_date,
+            censored=self.censored
         )
 
         for clade in clades:
             clade_frequencies[clade] = normalized_freq_matrix[clade_to_index[clade]]
 
-        # Assign zero frequencies to any tips that were filtered out of the frequency estimation.
-        for tip in tree.get_terminals():
-            if not tip.clade in clade_frequencies:
-                clade_frequencies[tip.clade] = np.zeros_like(self.pivots)
-
-        if self.include_internal_nodes:
-            for node in tree.find_clades(order="postorder"):
-                if not node.is_terminal():
-                    clade_frequencies[node.clade] = np.array([clade_frequencies[child.clade]
-                                                              for child in node.clades]).sum(axis=0)
-
-        return clade_frequencies
-
-    def estimate_weighted_frequencies_for_tree(self, tree):
-        """Estimate frequencies for all nodes in a tree across the given pivots. Frequencies represent a
-        weighted mean across the values in attribute defined by `self.weights_attribute`.
-
-        Parameters
-        ----------
-        tree : TYPE
-            Description
-
-        Returns
-        -------
-        TYPE
-            Description
-        """
-        clade_frequencies = {}
-
-        weight_keys, weight_values = zip(*sorted(self.weights.items()))
-        proportions = np.array(weight_values) / np.array(weight_values).sum(axis=0)
-
-        for (weight_key, proportion) in zip(weight_keys, proportions):
-            # Find tips with the current weight attribute.
-            tips = [(tip.clade, tip.attr["num_date"])
-                    for tip in tree.get_terminals()
-                    if tip.attr[self.weights_attribute] == weight_key and self.tip_passes_filters(tip)]
-
-            # If none of the tips pass the given node filters, do not try to
-            # normalize tip frequencies.
-            if len(tips) == 0:
-                continue
-
-            tips = np.array(sorted(tips, key=lambda row: row[1]))
-            clades = tips[:, 0].astype(int)
-            tip_dates = tips[:, 1].astype(float)
-
-            # Map clade ids to their corresponding frequency matrix row index.
-            clade_to_index = {clades[i]: i for i in range(len(clades))}
-
-            # Calculate tip frequencies and normalize.
-            normalized_freq_matrix = self.estimate_frequencies(
-                tip_dates,
-                self.pivots,
-                normalize_to=proportion,
-                sigma_narrow=self.sigma_narrow,
-                sigma_wide=self.sigma_wide,
-                proportion_wide=self.proportion_wide,
-                max_date=self.max_date
-            )
-
-            for clade in clades:
-                clade_frequencies[clade] = normalized_freq_matrix[clade_to_index[clade]]
-
-        # Assign zero frequencies to any tips that were filtered out of the frequency estimation.
-        for tip in tree.get_terminals():
-            if not tip.clade in clade_frequencies:
-                clade_frequencies[tip.clade] = np.zeros_like(self.pivots)
-
-        if self.include_internal_nodes:
-            for node in tree.find_clades(order="postorder"):
-                if not node.is_terminal():
-                    clade_frequencies[node.clade] = np.array(
-                        [clade_frequencies[child.clade] for child in node.clades]
-                    ).sum(axis=0)
-
         return clade_frequencies
 
     def estimate(self, tree):
-        """
-        Estimate frequencies for a given tree using the parameters defined for this instance.
+        """Estimate frequencies for a given tree using the parameters defined for this instance.
 
-        Parameters
-        ----------
-        tree
-            (Bio.Phylo)
-            annotated tree whose nodes all have an `attr` attribute with at
-            least  "num_date" key
+        If weights are defined, frequencies represent a weighted mean across the
+        values in attribute defined by `self.weights_attribute`.
 
-        Returns
-        -------
-        frequencies
-            dict
-            node frequencies by clade
+        Args:
+            tree (Bio.Phylo): annotated tree whose nodes all have an `attr` attribute with at least  "num_date" key
+
+        Returns:
+            frequencies (dict): node frequencies by clade
+
         """
         # Calculate pivots for the given tree.
-        self.pivots = self.calculate_pivots(
+        observations = [tip.attr["num_date"] for tip in tree.get_terminals()]
+        self.pivots = get_pivots(
+            observations,
             self.pivot_frequency,
-            tree=tree,
             start_date=self.start_date,
             end_date=self.end_date
         )
 
-        if self.weights is None:
-            # Estimate unweighted frequencies for the given tree.
-            frequencies = self.estimate_frequencies_for_tree(tree)
+        # If weights are defined, calculate frequencies for all tips by their
+        # weight attribute values such that the total frequency of all tips with
+        # a given value sums to the proportion of tips that have that value.
+        # If weights are not defined, estimate frequencies such that they sum to 1.
+        if self.weights:
+            weight_keys, weight_values = zip(*sorted(self.weights.items()))
+            proportions = np.array(weight_values) / np.array(weight_values).sum(axis=0)
+            frequencies = {}
+
+            for (weight_key, proportion) in zip(weight_keys, proportions):
+                # Find tips with the current weight attribute.
+                tips = [(tip.name, tip.attr["num_date"])
+                        for tip in tree.get_terminals()
+                        if tip.attr[self.weights_attribute] == weight_key and self.tip_passes_filters(tip)]
+                frequencies.update(self.estimate_tip_frequencies_to_proportion(tips, proportion))
         else:
-            # Estimate weighted frequencies.
-            frequencies = self.estimate_weighted_frequencies_for_tree(tree)
+            tips = [(tip.name, tip.attr["num_date"])
+                    for tip in tree.get_terminals()
+                    if self.tip_passes_filters(tip)]
+            frequencies = self.estimate_tip_frequencies_to_proportion(tips, proportion=1.0)
+
+        # Assign zero frequencies to any tips that were filtered out of the frequency estimation.
+        for tip in tree.get_terminals():
+            if not tip.name in frequencies:
+                frequencies[tip.name] = np.zeros_like(self.pivots)
+
+        if self.include_internal_nodes:
+            for node in tree.find_clades(order="postorder"):
+                if not node.is_terminal():
+                    frequencies[node.name] = np.array(
+                        [frequencies[child.name] for child in node.clades]
+                    ).sum(axis=0)
 
         # Store frequencies in the current instance for simplified exporting.
+        self.frequencies = frequencies
+
+        return frequencies
+
+
+class AlignmentKdeFrequencies(KdeFrequencies):
+    """KDE frequency estimator for multiple sequence alignments
+
+    Estimates frequencies for samples provided as sequences in a multiple
+    sequence alignment and corresponding observation dates for each sequence.
+    """
+    def estimate(self, alignment, observations):
+        """Estimate frequencies of bases/residues at each site in a given multiple sequence
+        alignment based on the observation dates associated with each sequence
+        in the alignment.
+        """
+        # Calculate pivots for the given tree.
+        self.pivots = get_pivots(
+            observations,
+            self.pivot_frequency,
+            start_date=self.start_date,
+            end_date=self.end_date
+        )
+
+        # Pair alignment sequence indices with observation dates.
+        samples = zip(range(len(alignment)), observations)
+
+        # Sort samples by date and extract sequence indices and dates.
+        samples = np.array(sorted(samples, key=lambda row: row[1]))
+        sample_indices = samples[:, 0]
+        sample_dates = samples[:, 1].astype(float)
+
+        # Map sample alignment indices to their corresponding frequency matrix row indices.
+        sample_to_index = {sample_indices[i]: i for i in range(len(samples))}
+
+        # Calculate tip frequencies and normalize.
+        normalized_freq_matrix = self.estimate_frequencies(
+            sample_dates,
+            self.pivots,
+            sigma_narrow=self.sigma_narrow,
+            sigma_wide=self.sigma_wide,
+            proportion_wide=self.proportion_wide,
+            max_date=self.max_date,
+            censored=self.censored
+        )
+
+        # Calculate frequencies per site and base/residue from the estimated
+        # frequencies per sample.
+        frequencies = {}
+        for position in range(alignment.get_alignment_length()):
+            # Only estimate frequencies at sites with variation.
+            if len(set(alignment[:, position])) > 1:
+                for sample, base in enumerate(alignment[:, position]):
+                    # Estimate frequencies by current position and base/residue
+                    # at the position for each sample.
+                    key = "%s:%s" % (position, base.upper())
+                    if key not in frequencies:
+                        frequencies[key] = np.zeros_like(self.pivots)
+
+                    frequencies[key] += normalized_freq_matrix[sample_to_index[sample], :]
+
         self.frequencies = frequencies
 
         return frequencies

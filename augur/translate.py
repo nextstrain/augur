@@ -26,7 +26,7 @@ def safe_translate(sequence, report_exceptions=False):
     >>> safe_translate("")
     ''
     >>> safe_translate("ATGT")
-    'M'
+    'MX'
     >>> safe_translate("ATG", report_exceptions=True)
     ('M', False)
     >>> safe_translate("ATGA-G", report_exceptions=True)
@@ -51,7 +51,7 @@ def safe_translate(sequence, report_exceptions=False):
         # one by one.
         codon_table  = CodonTable.ambiguous_dna_by_name['Standard'].forward_table
         str_seq = str(sequence_padded)
-        codons = np.fromstring(str_seq[:len(str_seq) - len(str_seq) % 3], dtype='S3').astype('U')
+        codons = np.frombuffer(str_seq[:len(str_seq) - len(str_seq) % 3].encode(), dtype='S3').astype("U")
         assert len(codons) > 0
         aas = []
 
@@ -362,5 +362,3 @@ def run(args):
                                  args.alignment_output.replace('%GENE', fname), 'fasta')
             else:
                 print("ERROR: alignment output file does not contain '%GENE', so will not be written.")
-
-

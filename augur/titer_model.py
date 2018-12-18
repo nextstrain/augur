@@ -5,6 +5,8 @@ import time
 from collections import defaultdict
 import pandas as pd
 from pprint import pprint
+import sys
+
 from .utils import myopen
 
 TITER_ROUND=4
@@ -32,7 +34,7 @@ class TiterCollection(object):
 
         >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv")
         >>> type(measurements)
-        <type 'dict'>
+        <class 'dict'>
         >>> len(measurements)
         11
         >>> measurements[("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10"))]
@@ -73,10 +75,10 @@ class TiterCollection(object):
                     except:
                         print(line.strip())
 
-        print("Read titers from %s, found:" % filename)
-        print(" --- %i strains" % len(strains))
-        print(" --- %i data sources" % len(sources))
-        print(" --- %i total measurements" % sum([len(x) for x in measurements.values()]))
+        print("Read titers from %s, found:" % filename, file=sys.stderr)
+        print(" --- %i strains" % len(strains), file=sys.stderr)
+        print(" --- %i data sources" % len(sources), file=sys.stderr)
+        print(" --- %i total measurements" % sum([len(x) for x in measurements.values()]), file=sys.stderr)
 
         return dict(measurements), list(strains), list(sources)
 
