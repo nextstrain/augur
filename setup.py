@@ -49,6 +49,7 @@ setup(
             'dev': [
                 "pylint >=1.7.6, ==1.7.*",
                 "pytest >=3.2.1, ==3.*",
+                "wheel >=0.32.3, ==0.32.*"
             ]
         },
         classifiers=[
