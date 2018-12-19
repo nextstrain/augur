@@ -1,6 +1,21 @@
 # __NEXT__
 
 
+# 3.1.0 (18 December 2018)
+
+## Features
+
+* reconstruct-sequences: Include `augur reconstruct-sequences` module that reconstructs
+  alignments from mutations inferred on the tree
+* distance: Include `augur distance` module that calculates the distance between amino
+  acid sequences across entire genes or at a predefined subset of sites
+* lbi: Include `augur lbi` module that calculates local branching index (LBI) for a
+  given tree and one or more sets of parameters.
+* frequencies: Include `--method kde` as option to `augur frequencies`, separate from the
+  existing `--method diffusion` logic. KDE frequencies are faster and better for smaller
+  clades but don't extrapolate as well as diffusion frequencies.
+* titers: Enable annotation of nodes in a tree from the substitution model
+
 # 3.0.5.dev1 (26 November 2018)
 
 ## Bug fixes
