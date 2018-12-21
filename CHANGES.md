@@ -1,6 +1,16 @@
 # __NEXT__
 
 
+# 3.1.1 (21 December 2018)
+
+## Bug fixes
+
+* filter: Fix `--include-where`. Adds an `all_seq` variable needed by the logic to
+  include records by value. This was previously working for VCF but threw an exception
+  for sequences in FASTA format.
+* Update flu reference viruses and lat longs.
+* Update dependencies
+
 # 3.1.0 (18 December 2018)
 
 ## Features
