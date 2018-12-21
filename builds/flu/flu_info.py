@@ -195,7 +195,9 @@ reference_viruses = {
         'A/Idaho/33/2016-egg', 'A/Antananarivo/1067/2016-egg', 'A/HongKong/50/2016-egg',
         'A/Norway/4465/2016-egg', 'A/Wisconsin/19/2017-egg', 'A/Greece/4/2017-egg',
         'A/HongKong/2286/2017-egg', 'A/Victoria/653/2017-egg', 'A/Norway/4465/2017', 'A/Norway/4465/2017-egg',
-        'A/Switzerland/8060/2017-egg', 'A/Bretagne/1565/2017-egg', 'A/Norway/4436/2016', 'A/Switzerland/8060/2017'
+        'A/Switzerland/8060/2017-egg', 'A/Bretagne/1565/2017-egg', 'A/Norway/4436/2016', 'A/Switzerland/8060/2017',
+        'A/Brisbane/32/2017', 'A/Singapore/TT1374/2016', 'A/SouthAustralia/135/2016', 'A/Afghanistan/616/2017',
+        'A/Sapporo/71/2015', 'A/Arizona/67/2016', 'A/Maryland/23/2016', 'A/California/179/2016'
     ],
     'h1n1pdm':[
         'A/California/7/2009', 'A/Bangladesh/2021/2012', 'A/Victoria/367/2012', 'A/Brisbane/96/2012',
@@ -214,7 +216,8 @@ reference_viruses = {
         'B/Indiana/25/2015', 'B/Florida/78/2015', 'B/Iceland/56/2015', 'B/Missouri/9/2016',
         'B/Ireland/3154/2016', 'B/StPetersburg/293/2016', 'B/Maryland/15/2016', 'B/Colorado/6/2017',
         'B/Kazakhstan/128/2017', 'B/HongKong/286/2017', 'B/Bangladesh/3004/2017',
-        'B/Vologda/CRIE-323/2016', 'B/NewJersey/4/2017', 'B/Indiana/25/2015', 'B/Singapore/TT1243/2015', 'B/Brisbane/312/2015'
+        'B/Vologda/CRIE-323/2016', 'B/NewJersey/4/2017', 'B/Indiana/25/2015', 'B/Singapore/TT1243/2015', 'B/Brisbane/312/2015',
+        'B/Lao/798/2016', 'B/Uganda/2263/2016', 'B/Yokohama/109/2016', 'B/India/9051/2016'
     ],
     'yam':[
         'B/Beijing/184/1993', 'B/Sichuan/379/1999', 'B/Shanghai/361/2002', 'B/Florida/4/2006',
