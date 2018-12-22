@@ -15,10 +15,13 @@ country	algeria	28.0000272	2.9999825
 country	american_samoa	-14.27806	-170.7025
 country	angola	-11.8775767	17.5691241
 country	argentina	-34.0	-64.0
+country	armenia	40.18111	44.51361
 country	australia	-24.7761085	134.755
 country	austria	47.2000338	13.199959
 country	azerbaijan	40.37767	49.89201
+country	bahamas	25.04082	-77.37122
 country	bahrain	26.22787	50.58565
+country	belarus	53.0	28.0
 country	bali	-8.3304976	115.0906401
 country	bangladesh	24.4768783	90.2932426
 country	belgium	50.6407351	4.66696
@@ -44,7 +47,9 @@ country	croatia	45.16667	15.5
 country	cuba	22.0	-79.5
 country	cyprus	35.0	33.0
 country	czech_republic	49.8175	15.4730
+country	denmark	56.0	10.0
 country	djibouti	11.58901	43.14503
+country	dominica	15.5	-61.33333
 country	dominican_republic	18.50012	-69.98857
 country	ecuador	-1.3397667	-79.3666964
 country	egypt	26.2540493	29.2675469
@@ -52,6 +57,7 @@ country	el_salvador	13.68935	-89.18718
 country	eritrea	15.9500319	37.9999668
 country	ethiopia	9.0	39.5
 country	fiji	-18.1239695	179.0122737
+country	finland	63.2467777	25.9209164
 country	france	46.603354	1.8883335
 country	french_guiana	4.93333	-52.33333
 country	french_polynesia	-17.6797	-149.4068
@@ -74,6 +80,7 @@ country	indonesia	-5.0	120.0
 country	iran	32.0	53.0
 country	iraq	33.0	44.0
 country	ireland	52.865196	-7.9794598
+country	israel	31.5	34.75
 country	italy	42.6384261	12.674297
 country	jamaica	18.16667	-77.25
 country	japan	35.68536	139.75309
@@ -86,6 +93,8 @@ country	laos	20.0171109	103.378253
 country	latvia	57.0	25.0
 country	lebanon	33.88894	35.49442
 country	liberia	5.7499721	-9.3658523
+country	lithuania	55.41667	24.0
+country	luxembourg	49.61167	6.13
 country	macedonia	41.66667	21.75
 country	madagascar	-20.0	47.0
 country	malawi	-13.550995	34.124594
@@ -96,12 +105,15 @@ country	marshall_islands	7.1315	171.1845
 country	martinique	14.6415	-61.0242
 country	mauritania	20.25	-10.5
 country	mauritius	-20.3	57.58333
+country	mayotte	-12.821908	45.143906
 country	mexico	19.4325301	-99.1332101
 country	micronesia	6.924	158.162
 country	mongolia	46.8250388	103.8499736
+country	montenegro	43.0285558	19.291739
 country	morocco	31.1728192	-7.3366042
 country	mozambique	-18.25	35.0
 country	myanmar	21.0	96.0
+country	nepal	28.0	84.0
 country	netherlands	52.3702	4.8952
 country	new_caledonia	-20.9043	165.6180
 country	new_zealand	-41.500083	172.8344077
@@ -123,6 +135,8 @@ country	romania	46.0	25.0
 country	russia	64.6863136	97.7453061
 country	rwanda	-2.0	30.0
 country	saint_barthelemy	17.9049171	-62.847207
+country	saint_lucia	13.88333	-60.96667
+country	saint_vincent_and_the_grenadines	12.9843	-61.2872
 country	saudi_arabia	25.0	45.0
 country	senegal	14.5	-14.25
 country	serbia	44.1534121	20.55144
@@ -150,6 +164,8 @@ country	trinidad_and_tobago	10.8677845	-60.9821066
 country	tunisia	36.81897	10.16579
 country	turkey	39.0	35.0
 country	turkmenistan	39.3763807	59.3924609
+country	turks_and_caicos	21.73333	-71.58333
+country	uruguay	-33.0	-56.0
 country	uganda	1.5333554	32.2166578
 country	ukraine	49.4871968	31.2718321
 country	united_arab_emirates	24.0002488	53.9994829
@@ -174,6 +190,7 @@ division	bombali	9.2388372	-12.1148023
 division	bomi	6.7177856	-10.7881765
 division	bong	6.9622195	-9.7134458
 division	bonthe	7.5292766	-12.5131865
+division	british_columbia	49.24966	-123.11934
 division	california	36.7014631	-118.7559973
 division	colorado	38.7251776	-105.6077166
 division	conakry	9.5171253	-13.6999234
@@ -194,6 +211,8 @@ division	grand_kru	4.84932	-8.3308844
 division	gueckedou	8.5616487	-10.1328211
 division	hawaii	21.2160437	-157.9752029
 division	idaho	43.6447642	-114.015407
+division	illinois	40.0796319	-89.4339808
+division	indiana	40.3270127	-86.1746932
 division	iowa	41.9216734	-93.3122704
 division	kailahun	8.2769105	-10.5737535
 division	kambia	9.1246846	-12.9189133
@@ -212,6 +231,7 @@ division	lola	8.0166961	-8.30784246327
 division	louisiana	30.8703881	-92.0071259
 division	macenta	8.5458459	-9.4679199
 division	maine	45.709097	-68.85902
+division	manitoba	49.8844	-97.14704
 division	margibi	6.6053676	-10.1758428
 division	maryland	39.5162234	-76.9382068
 division	massachusetts	42.3788774	-72.0323659
@@ -227,13 +247,13 @@ division	new_hampshire	43.4718339	-71.6182147
 division	new_mexico	34.5708167	-105.9930069
 division	new_york	40.7642499	-73.9545249
 division	nimba	6.8088813	-8.7461447
-division	new_jersey	40.0583	74.4057
+division	new_jersey	40.0757384	-74.4041621
 division	north_carolina	35.6729639	-79.0392918
 division	north_dakota	47.6201461	-100.5407369
 division	nzerekore	7.7579345	-8.8176067
 division	ohio	40.2253569	-82.6881394
 division	oklahoma	34.9550817	-97.2684062
-division	ontario	51.2538	85.3232
+division	ontario	50.0000002	-86.0
 division	oregon	43.9792797	-120.7372569
 division	pennsylvania	40.9699889	-77.727883
 division	port_loko	8.7638892	-12.7799026
