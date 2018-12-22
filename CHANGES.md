@@ -1,6 +1,12 @@
 # __NEXT__
 
 
+# 3.1.2 (21 December 2018)
+
+## Bug fixes
+
+* Update dependencies
+
 # 3.1.1 (21 December 2018)
 
 ## Bug fixes
