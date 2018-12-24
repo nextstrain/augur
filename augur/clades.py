@@ -2,83 +2,105 @@
 Assign clades to nodes in a tree based on amino-acid or nucleotide signatures.
 """
 
-import os, sys
-import numpy as np
-from Bio import SeqIO, SeqFeature, Seq, SeqRecord, Phylo
+import sys
+from Bio import Phylo
+import pandas as pd
 from .utils import read_node_data, write_json
-from collections import defaultdict
 
 def read_in_clade_definitions(clade_file):
     '''
-    Reads in tab-seperated file that defines clades by amino-acid or nucleotide
+    Reads in tab-seperated file that defines clades by amino acid or nucleotide mutations
 
     Format:
-    clade	gene	site	alt
-    Clade_2	embC	940	S
-    Clade_2	Rv3463	192	K
-    Clade_3	Rv2209	432	I
-    Clade_4	nuc	27979	G
+    clade	gene	mutation
+    Clade_1	ctpE	G81D
+    Clade_2	nuc	C30642T
+    Clade_3	nuc	C444296A
+    Clade_4	pks8	A634T
     '''
-    import pandas as pd
 
-    clades = defaultdict(lambda:defaultdict(list))
+    clades = {}
 
     df = pd.read_csv(clade_file, sep='\t' if clade_file.endswith('.tsv') else ',')
-    for mi, m in df.iterrows():
-        clades[m.clade][m.gene].append((m.site,m.alt))
-
+    for index, row in df.iterrows():
+        pair = (row.gene, row.mutation)
+        if row.clade in clades:
+            clades[row.clade].append(pair)
+        else:
+            clades[row.clade] = [pair]
     return clades
 
+def all_parents(tree):
+    '''
+    Return dictionary mapping child node names to parent node names
+    '''
+    parents = {}
+    for clade in tree.find_clades(order='level'):
+        for child in clade:
+            parents[child.name] = clade.name
+    return parents
 
-def is_node_in_clade(clade_mutations, node_muts):
+def get_node_mutations(node_name, muts, parents):
+    '''
+    Retrieve the set of mutations leading to a node
+    This includes node-specific mutations as well as mutations
+    along its full line of descent
+    '''
+    node_muts = []
+    focal_node = node_name
+    while focal_node is not None:
+        if 'aa_muts' in muts[focal_node]:
+            for gene in muts[focal_node]['aa_muts']:
+                for mut in muts[focal_node]['aa_muts'][gene]:
+                    pair = (gene, mut)
+                    node_muts.append(pair)
+        if 'muts' in muts[focal_node]:
+            for mut in muts[focal_node]['muts']:
+                pair = ('nuc', mut)
+                node_muts.append(pair)
+        focal_node = parents.get(focal_node, None)
+    return node_muts
+
+def is_node_in_clade(clade_muts, node_muts):
     '''
     Determines whether a node contains all mutations that define a clade
     '''
     is_clade = False
-    # cycle through each gene in the clade definition and see if this node has the specified mutations
-    for gene, defining_mutations in clade_mutations.items():
-        #check the node has the gene in question and that it contains any mutations
-        if (gene in node_muts and node_muts[gene]):
-            # mutations are stored on nodes in format 'R927H', but in clade defining_mutations as (927, 'H')
-            # So convert node mutations ('mutation') to format (927, 'H') here, for easy comparison
-            formatted_mutations = [(int(mutation[1:-1]), mutation[-1]) for mutation in node_muts[gene]]
-            # If all of the clade-defining mutations are in the node mutations, it's part of this clade.
-            if all([mut in formatted_mutations for mut in defining_mutations]):
-                is_clade = True
-            else:
-                return False
-        else:
-            return False
-
+    # mutations are stored on nodes in format 'R927H' matching the clade definitions
+    # if all of the clade-defining mutations are in the node mutations, it's part of this clade
+    if all([ clade_mut in node_muts for clade_mut in clade_muts ]):
+        is_clade = True
     return is_clade
 
-
-def assign_clades(clade_designations, muts, tree):
+def assign_clades(clade_designations, all_muts, tree):
     '''
     Ensures all nodes have an entry (or auspice doesn't display nicely), tests each node
     to see if it's the first member of a clade (assigns 'clade_annotation'), and sets
     all nodes's clade_membership to the value of their parent. This will change if later found to be
     the first member of a clade.
     '''
-    clades = {}
-    for n in tree.get_nonterminals(order = 'preorder'):
-        n_muts = {}
-        if 'aa_muts' in muts[n.name]:
-            n_muts = muts[n.name]['aa_muts']
-        if 'muts' in muts[n.name]:
-            n_muts['nuc'] = muts[n.name]['muts'] # Put nuc mutations in with 'nuc' as the 'gene' so all can be searched together
+    clade_membership = {}
+    # first pass to set all nodes to unassigned
+    for node in tree.get_nonterminals(order = 'preorder'):
+        clade_membership[node.name] = {"clade_membership": "unassigned"}
 
-        if n.name not in clades: # This ensures every node gets an entry - otherwise auspice doesn't display nicely
-            clades[n.name]={"clade_membership": "unassigned"}
-        for clade, definition in clade_designations.items():
-            if is_node_in_clade(definition, n_muts):
-                clades[n.name] = {"clade_annotation":clade, "clade_membership": clade}
+    parents = all_parents(tree)
 
-        # Ensures each node is set to membership of their parent initially (unless changed later in tree traversal)
-        for c in n:
-            clades[c.name]={"clade_membership": clades[n.name]["clade_membership"] }
+    for clade_name, clade_muts in clade_designations.items():
+        first_instance_of_clade = True
+        for node in tree.get_nonterminals(order = 'preorder'):
+            node_muts = get_node_mutations(node.name, all_muts, parents)
+            if is_node_in_clade(clade_muts, node_muts):
+                if first_instance_of_clade:
+                    clade_membership[node.name] = {"clade_annotation": clade_name, "clade_membership": clade_name}
+                    first_instance_of_clade = False
+                else:
+                    clade_membership[node.name] = {"clade_membership": clade_name}
+                # Ensures each node is set to membership of their parent initially (unless changed later in tree traversal)
+                for c in node:
+                    clade_membership[c.name] = {"clade_membership": clade_name}
 
-    return clades
+    return clade_membership
 
 
 def register_arguments(parser):
@@ -95,12 +117,11 @@ def run(args):
     if node_data is None:
         print("ERROR: could not read node data (incl sequences)")
         return 1
+    all_muts = node_data['nodes']
 
     clade_designations = read_in_clade_definitions(args.clades)
 
-    muts = node_data['nodes']
+    clade_membership = assign_clades(clade_designations, all_muts, tree)
 
-    clades = assign_clades(clade_designations, muts, tree)
-
-    write_json({'nodes':clades}, args.output)
+    write_json({'nodes': clade_membership}, args.output)
     print("clades written to", args.output, file=sys.stdout)
