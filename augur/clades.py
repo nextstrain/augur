@@ -12,22 +12,23 @@ def read_in_clade_definitions(clade_file):
     Reads in tab-seperated file that defines clades by amino acid or nucleotide mutations
 
     Format:
-    clade	gene	mutation
-    Clade_1	ctpE	G81D
-    Clade_2	nuc	C30642T
-    Clade_3	nuc	C444296A
-    Clade_4	pks8	A634T
+    clade	gene	site alt
+    Clade_1	ctpE    81  D
+    Clade_2	nuc 30642   T
+    Clade_3	nuc 444296  A
+    Clade_4	pks8    634 T
     '''
 
     clades = {}
 
     df = pd.read_csv(clade_file, sep='\t' if clade_file.endswith('.tsv') else ',')
     for index, row in df.iterrows():
-        pair = (row.gene, row.mutation)
+        allele = (row.gene, row.site, row.alt)
         if row.clade in clades:
-            clades[row.clade].append(pair)
+            clades[row.clade].append(allele)
         else:
-            clades[row.clade] = [pair]
+            clades[row.clade] = [allele]
+
     return clades
 
 def all_parents(tree):
@@ -40,35 +41,42 @@ def all_parents(tree):
             parents[child.name] = clade.name
     return parents
 
-def get_node_mutations(node_name, muts, parents):
+def get_node_alleles(node_name, muts, parents):
     '''
     Retrieve the set of mutations leading to a node
     This includes node-specific mutations as well as mutations
     along its full line of descent
     '''
-    node_muts = []
+    node_alleles = []
+    sites_encountered = set()
     focal_node = node_name
     while focal_node is not None:
         if 'aa_muts' in muts[focal_node]:
             for gene in muts[focal_node]['aa_muts']:
                 for mut in muts[focal_node]['aa_muts'][gene]:
-                    pair = (gene, mut)
-                    node_muts.append(pair)
+                    site = (gene, int(mut[1:-1]))
+                    if site not in sites_encountered:
+                        sites_encountered.add(site)
+                        allele = (gene, int(mut[1:-1]), mut[-1])
+                        node_alleles.append(allele)
         if 'muts' in muts[focal_node]:
             for mut in muts[focal_node]['muts']:
-                pair = ('nuc', mut)
-                node_muts.append(pair)
+                site = (gene, int(mut[1:-1]))
+                if site not in sites_encountered:
+                    sites_encountered.add(site)
+                    allele = ('nuc', int(mut[1:-1]), mut[-1])
+                    node_alleles.append(allele)
         focal_node = parents.get(focal_node, None)
-    return node_muts
+    return node_alleles
 
-def is_node_in_clade(clade_muts, node_muts):
+def is_node_in_clade(clade_alleles, node_alleles):
     '''
     Determines whether a node contains all mutations that define a clade
     '''
     is_clade = False
     # mutations are stored on nodes in format 'R927H' matching the clade definitions
     # if all of the clade-defining mutations are in the node mutations, it's part of this clade
-    if all([ clade_mut in node_muts for clade_mut in clade_muts ]):
+    if all([ clade_allele in node_alleles for clade_allele in clade_alleles ]):
         is_clade = True
     return is_clade
 
@@ -86,11 +94,11 @@ def assign_clades(clade_designations, all_muts, tree):
 
     parents = all_parents(tree)
 
-    for clade_name, clade_muts in clade_designations.items():
+    for clade_name, clade_alleles in clade_designations.items():
         first_instance_of_clade = True
         for node in tree.get_nonterminals(order = 'preorder'):
-            node_muts = get_node_mutations(node.name, all_muts, parents)
-            if is_node_in_clade(clade_muts, node_muts):
+            node_alleles = get_node_alleles(node.name, all_muts, parents)
+            if is_node_in_clade(clade_alleles, node_alleles):
                 if first_instance_of_clade:
                     clade_membership[node.name] = {"clade_annotation": clade_name, "clade_membership": clade_name}
                     first_instance_of_clade = False
