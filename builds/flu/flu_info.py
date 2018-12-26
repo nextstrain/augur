@@ -131,18 +131,18 @@ reference_maps = {
     },
     "h1n1pdm": {
         "ha": {
-            "path": "metadata/h1n1pdm_outgroup.gb",
+            "path": "metadata/h1n1pdm_ha_outgroup.gb",
             "metadata": {
-                'strain': "A/Swine/Indiana/P12439/00",
-                'isolate_id': "AF455680",
-                'date': "unknown",
+                'strain': "A/California/07/2009",
+                'isolate_id': "CY121680",
+                'date': "2009-04-09",
                 'region': "north america",
                 'country': "USA",
                 "city": "unknown",
-                "passage": "unknown",
+                "passage": "egg",
                 'lab': "unknown",
-                'age': "unknown",
-                'gender': "unknown"
+                'age': "54",
+                'gender': "male"
             },
             "include": 0,
             "genes": ["SigPep", "HA1", "HA2"]
@@ -150,16 +150,16 @@ reference_maps = {
         "na": {
             "path": "metadata/h1n1pdm_na_outgroup.gb",
             "metadata": {
-                'strain': "A/Swine/Indiana/P12439/00",
-                'isolate_id': "AF455680",
-                'date': "unknown",
+                'strain': "A/California/07/2009",
+                'isolate_id': "CY121682",
+                'date': "2009-04-09",
                 'region': "north america",
                 'country': "USA",
                 "city": "unknown",
-                "passage": "unknown",
+                "passage": "egg",
                 'lab': "unknown",
-                'age': "unknown",
-                'gender': "unknown"
+                'age': "54",
+                'gender': "male"
             },
             "include": 0,
             "genes": ["NA"]

@@ -107,7 +107,7 @@ def set_config_defaults(runner):
     if runner.config["epitope_mask_version"] is None and runner.info["lineage"] in lineage_to_epitope_mask:
         if runner.info["segment"] == "ha":
             runner.config["epitope_mask_version"] = lineage_to_epitope_mask[runner.info["lineage"]]
-        elif runner.info["segment"] == "na":
+        elif runner.info["segment"] == "na" and runner.info["lineage"] in lineage_to_na_epitope_mask:
             runner.config["epitope_mask_version"] = lineage_to_na_epitope_mask[runner.info["lineage"]]
         else:
             # No epitope masks are defined for other segments.

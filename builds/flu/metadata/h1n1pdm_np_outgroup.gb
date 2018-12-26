@@ -1,74 +1,89 @@
-LOCUS       AF455704                1497 bp    DNA              VRL 14-MAR-2002
-DEFINITION  Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2)) nucleoprotein
+LOCUS       CY121683                1541 bp    cRNA    linear   VRL 20-JUN-2012
+DEFINITION  Influenza A virus (A/California/07/2009(H1N1)) nucleocapsid protein
             (NP) gene, complete cds.
-ACCESSION   AF455704
-VERSION     AF455704.1
+ACCESSION   CY121683
+VERSION     CY121683.1
+DBLINK      BioProject: PRJNA37813
 KEYWORDS    .
-SOURCE      Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2))
-  ORGANISM  Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2))
+SOURCE      Influenza A virus (A/California/07/2009(H1N1))
+  ORGANISM  Influenza A virus (A/California/07/2009(H1N1))
             Viruses; ssRNA viruses; ssRNA negative-strand viruses;
             Orthomyxoviridae; Influenzavirus A.
-REFERENCE   1  (bases 1 to 1497)
-  AUTHORS   Karasin,A.I., Landgraf,J., Swenson,S., Erickson,G., Goyal,S.,
-            Woodruff,M., Scherba,G., Anderson,G. and Olsen,C.W.
-  TITLE     Genetic characterization of H1N2 influenza A viruses isolated from
-            pigs throughout the United States
-  JOURNAL   J. Clin. Microbiol. 40 (3), 1073-1079 (2002)
-   PUBMED   11880444
-REFERENCE   2  (bases 1 to 1497)
-  AUTHORS   Karasin,A.I., Landgraf,J., Swenson,S., Erickson,G., Goyal,S.,
-            Woodruff,M., Scherba,G., Anderson,G. and Olsen,C.W.
+REFERENCE   1  (bases 1 to 1541)
+  AUTHORS   Wentworth,D.E., Dugan,V., Halpin,R., Lin,X., Bera,J., Ghedin,E.,
+            Fedorova,N., Overton,L., Tsitrin,T., Stockwell,T., Amedeo,P.,
+            Bishop,B., Chen,H., Edworthy,P., Gupta,N., Katzel,D., Li,K.,
+            Schobel,S., Shrivastava,S., Thovarai,V., Wang,S., Ramanunninair,M.,
+            Silverman,J., Devis,R., Phan,L., Le,J., Pokorny,B.A., Onodera,S.,
+            Fulvini,A.A., He,Y., Kilbourne,E.D., Bucher,D., Bao,Y., Sanders,R.,
+            Dernovoy,D., Kiryutin,B., Lipman,D.J. and Tatusova,T.
+  TITLE     The NIAID Influenza Genome Sequencing Project
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 1541)
+  CONSRTM   The NIAID Influenza Genome Sequencing Consortium
   TITLE     Direct Submission
-  JOURNAL   Submitted (05-DEC-2001) Department of Pathobiological Sciences,
-            School of Veterinary Medicine, University of Wisconsin-Madison, 2015
-            Linden Drive West, Madison, WI 53706, USA
+  JOURNAL   Submitted (20-JUN-2012) on behalf of JCVI/New York Medical
+            College/NCBI, National Center for Biotechnology Information, NIH,
+            Bethesda, MD 20894, USA
+COMMENT     This work was supported by the National Institute of Allergy and
+            Infectious Diseases (NIAID), Genome Sequencing Centers for
+            Infectious Diseases (GSCID) program.
 FEATURES             Location/Qualifiers
-     source          1..1497
-                     /db_xref="taxon:187166"
-                     /mol_type="genomic RNA"
-                     /organism="Influenza A virus (A/Swine/Indiana/P12439/00
-                     (H1N2))"
-                     /strain="A/Swine/Indiana/P12439/00"
-     gene            1..1497
+     source          1..1541
+                     /organism="Influenza A virus (A/California/07/2009(H1N1))"
+                     /mol_type="viral cRNA"
+                     /strain="A/California/07/2009"
+                     /serotype="H1N1"
+                     /host="Homo sapiens"
+                     /db_xref="taxon:641809"
+                     /segment="5"
+                     /lab_host="Egg passage(s)"
+                     /country="USA: California"
+                     /collection_date="2009"
+     misc_feature    1..1541
+                     /db_xref="IRD:NIGSP_BUCA_00080.NP"
+     gene            34..1530
                      /gene="NP"
-     CDS             1..1497
+     CDS             34..1530
+                     /gene="NP"
                      /codon_start=1
-                     /gene="NP"
-                     /product="nucleoprotein"
-                     /protein_id="AAL87894.1"
-                     /translation="MASQGTKRSYEQMETGGERQDATEIRASVGRMIGGIGRFYIQMCT
-                     ELKLSDYEGRLIQNSITLERMVLSAFDERRNKYLEEHPSAGKDPKKTGGPIYRRVDGKW
-                     MRELILYDKDEIRRVWRQANNGEDATAGLTHIMIWHSNLNDATYQRTRALVRTGMDPRM
-                     CSLMQGSTLPRRSGAAGAAVKGVGTIAMELIRMIKRGINDRNFWRGENGRRTRIAYERM
-                     CNILKGKFQTAAQRAMMDQVRESRNPGNAEIEDLIFLARSALILRGSVAHKSCLPACVY
-                     GLAVASGHDFEREGYSLVGIDPFKLLQNSQVFSLIRPNENPAHKSQLVWMACHSAAFED
-                     LRVSSFIRGKKVIPRGKLSTRGVQIASNENVEAMDSNTLELRSRYWAIRTRSGGNTNQQ
-                     KASAGQISVQPTFSVQRNLPFERATVMAAFSGNNEGRTSDMRTEVIRMMESAKPEDLSF
-                     QGRGVFELSDEKATSPIVPSFDMSNEGSYFFEDNAEEYDS"
-ORIGIN
-        1 atggcgtctc aaggcaccaa acgatcatat gaacaaatgg agactggtgg ggaacgccag
-       61 gatgccacag aaatcagagc atctgtcgga agaatgattg gtggaatcgg gagattctac
-      121 atccaaatgt gcactgaact caaactcagt gactatgagg gacgactaat ccaaaatagc
-      181 ataacattag agagaatggt gctctctgct tttgatgaga gaagaaataa atacctagaa
-      241 gagcatccca gtgctgggaa ggatcctaag aaaactggag gacccatata tagaagagta
-      301 gacggaaagt ggatgagaga actcatcctt tatgacaaag atgaaataag gagagtttgg
-      361 cgccaagcaa acaatggtga agatgcaaca gctggtctta ctcatatcat gatttggcat
-      421 tccaatctga atgatgccac gtatcagaga acaagagcgc ttgttcgcac cggaatggat
-      481 cccagaatgt gctctctaat gcaaggttca acacttccca gaaggtctgg ggccgcaggt
-      541 gctgcagtga aaggagttgg aacaatagca atggagttaa tcagaatgat caaacgtgga
-      601 atcaatgacc gaaacttctg gaggggtgaa aatggacgaa ggacaaggat tgcatatgaa
-      661 agaatgtgca atattctcaa aggaaaattt cagacagctg cccagagagc aatgatggat
-      721 caagtgagag aaagtcggaa cccaggaaac gctgagattg aagatctcat tttcctggca
-      781 cggtcagcac ttattctaag gggatcagtt gcacataagt cttgcctgcc tgcttgtgtg
-      841 tatgggcttg cagtagcaag tgggcatgac tttgaaaggg aagggtattc actggtcggg
-      901 atagacccat ttaaattact ccaaaacagt caagtgttca gcctgataag accaaatgaa
-      961 aacccagctc acaagagtca attggtgtgg atggcatgcc actctgctgc attcgaggat
-     1021 ttaagagtat caagtttcat aagagggaag aaagtgattc caagaggaaa gctttccaca
-     1081 agaggggttc agattgcttc aaatgagaat gtggaagcca tggactccaa taccctagaa
-     1141 ctgagaagca gatactgggc cataaggacc aggagtggag gaaataccaa tcaacagaag
-     1201 gcctccgcgg gccagatcag tgtgcaacct acattctcag tgcaacggaa tctccctttt
-     1261 gaaagagcaa ccgttatggc agctttcagc gggaacaatg aaggacggac atccgacatg
-     1321 cgaacagaag ttataaggat gatggaaagt gcaaagccag aagatttgtc cttccagggg
-     1381 cggggagtct tcgagctctc agacgaaaag gcaacgagcc cgatcgtgcc ttcctttgac
-     1441 atgagtaatg aagggtctta tttcttcgaa gacaatgcag aggagtatga cagttga
+                     /product="nucleocapsid protein"
+                     /protein_id="AFM72836.1"
+                     /translation="MASQGTKRSYEQMETGGERQDATEIRASVGRMIGGIGRFYIQMC
+                     TELKLSDYDGRLIQNSITIERMVLSAFDERRNKYLEEHPSAGKDPKKTGGPIYRRVGG
+                     KWMRELILYDKEEIRRVWRQANNGEDATAGLTHIMIWHSNLNDATYQRTRALVRTGMD
+                     PRMCSLMQGSTLPRRSGAAGAAVKGVGTIAMELIRMIKRGINDRNFWRGENGRRTRVA
+                     YERMCNILKGKFQTAAQRAMMDQVRESRNPGNAEIEDLIFLARSALILRGSVAHKSCL
+                     PACVYGLAVASGHDFEREGYSLVGIDPFKLLQNSQVVSLMRPNENPAHKSQLVWMACH
+                     SAAFEDLRVSSFIRGKKVIPRGKLSTRGVQIASNENVETMDSNTLELRSRYWAIRTRS
+                     GGNTNQQKASAGQISVQPTFSVQRNLPFERATVMAAFSGNNEGRTSDMRTEVIRMMES
+                     AKPEDLSFQGRGVFELSDEKATNPIVPSFDMSNEGSYFFGDNAEEYDS"
+ORIGIN      
+        1 gtagataatc actcaatgag tgacatcgaa gccatggcgt ctcaaggcac caaacgatca
+       61 tatgaacaaa tggagactgg tggggagcgc caggatgcca cagaaatcag agcatctgtc
+      121 ggaagaatga ttggtggaat cgggagattc tacatccaaa tgtgcactga actcaaactc
+      181 agtgattatg atggacgact aatccagaat agcataacaa tagagaggat ggtgctttct
+      241 gcttttgatg agagaagaaa taaataccta gaagagcatc ccagtgctgg gaaggaccct
+      301 aagaaaacag gaggacccat atatagaaga gtaggcggaa agtggatgag agaactcatc
+      361 ctttatgaca aagaagaaat aaggagagtt tggcgccaag caaacaatgg cgaagatgca
+      421 acagcaggtc ttactcatat catgatttgg cattccaacc tgaatgatgc cacatatcag
+      481 agaacaagag cgcttgttcg caccggaatg gatcccagaa tgtgctctct aatgcaaggt
+      541 tcaacacttc ccagaaggtc tggtgccgca ggtgctgcgg tgaaaggagt tggaacaata
+      601 gcaatggagt taatcagaat gatcaaacgt ggaatcaatg accgaaattt ctggaggggt
+      661 gaaaatggac gaaggacaag ggttgcttat gaaagaatgt gcaatatcct caaaggaaaa
+      721 tttcaaacag ctgcccagag ggcaatgatg gatcaagtaa gagaaagtcg aaacccagga
+      781 aacgctgaga ttgaagacct cattttcctg gcacggtcag cactcattct gaggggatca
+      841 gttgcacata aatcctgcct gcctgcttgt gtgtatgggc ttgcagtagc aagtgggcat
+      901 gactttgaaa gggaagggta ctcactggtc gggatagacc cattcaaatt actccaaaac
+      961 agccaagtgg tcagcctgat gagaccaaat gaaaacccag ctcacaagag tcaattggtg
+     1021 tggatggcat gccactctgc tgcatttgaa gatttaagag tatcaagttt cataagagga
+     1081 aagaaagtga ttccaagagg aaagctttcc acaagagggg tccagattgc ttcaaatgag
+     1141 aatgtggaaa ccatggactc caataccctg gaactgagaa gcagatactg ggccataagg
+     1201 accaggagtg gaggaaatac caatcaacaa aaggcatccg caggccagat cagtgtgcag
+     1261 cctacattct cagtgcagcg gaatctccct tttgaaagag caaccgttat ggcagcattc
+     1321 agcgggaaca atgaaggacg gacatccgac atgcgaacag aagttataag aatgatggaa
+     1381 agtgcaaagc cagaagattt gtccttccag gggcggggag tcttcgagct ctcggacgaa
+     1441 aaggcaacga acccgatcgt gccttccttt gacatgagta atgaagggtc ttatttcttc
+     1501 ggagacaatg cagaggagta tgacagttga ggaaaaatac c
 //
+
