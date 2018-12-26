@@ -87,26 +87,31 @@ def assign_clades(clade_designations, all_muts, tree):
     all nodes's clade_membership to the value of their parent. This will change if later found to be
     the first member of a clade.
     '''
-    clade_membership = {}
-    # first pass to set all nodes to unassigned
-    for node in tree.get_nonterminals(order = 'preorder'):
-        clade_membership[node.name] = {"clade_membership": "unassigned"}
 
+    clade_membership = {}
     parents = all_parents(tree)
 
+    # first pass to set all nodes to unassigned as precaution to ensure attribute is set
+    for node in tree.find_clades(order = 'preorder'):
+        clade_membership[node.name] = {'clade_membership': 'unassigned'}
+
+    # second pass to assign 'clade_annotation' to basal nodes within each clade
     for clade_name, clade_alleles in clade_designations.items():
         first_instance_of_clade = True
-        for node in tree.get_nonterminals(order = 'preorder'):
-            node_alleles = get_node_alleles(node.name, all_muts, parents)
-            if is_node_in_clade(clade_alleles, node_alleles):
-                if first_instance_of_clade:
-                    clade_membership[node.name] = {"clade_annotation": clade_name, "clade_membership": clade_name}
+        for node in tree.find_clades(order = 'preorder'):
+            # only the first instance of clade is annotated
+            if first_instance_of_clade:
+                node_alleles = get_node_alleles(node.name, all_muts, parents)
+                if is_node_in_clade(clade_alleles, node_alleles):
+                    clade_membership[node.name] = {'clade_annotation': clade_name, 'clade_membership': clade_name}
                     first_instance_of_clade = False
-                else:
-                    clade_membership[node.name] = {"clade_membership": clade_name}
-                # Ensures each node is set to membership of their parent initially (unless changed later in tree traversal)
-                for c in node:
-                    clade_membership[c.name] = {"clade_membership": clade_name}
+
+    # third pass to propagate 'clade_membership'
+    # don't propagate if encountering 'clade_annotation'
+    for node in tree.find_clades(order = 'preorder'):
+        for child in node:
+            if 'clade_annotation' not in clade_membership[child.name]:
+                clade_membership[child.name]['clade_membership'] = clade_membership[node.name]['clade_membership']
 
     return clade_membership
 
