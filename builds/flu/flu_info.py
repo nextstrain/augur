@@ -131,18 +131,18 @@ reference_maps = {
     },
     "h1n1pdm": {
         "ha": {
-            "path": "metadata/h1n1pdm_outgroup.gb",
+            "path": "metadata/h1n1pdm_ha_outgroup.gb",
             "metadata": {
-                'strain': "A/Swine/Indiana/P12439/00",
-                'isolate_id': "AF455680",
-                'date': "unknown",
+                'strain': "A/California/07/2009",
+                'isolate_id': "CY121680",
+                'date': "2009-04-09",
                 'region': "north america",
                 'country': "USA",
                 "city": "unknown",
-                "passage": "unknown",
+                "passage": "egg",
                 'lab': "unknown",
-                'age': "unknown",
-                'gender': "unknown"
+                'age': "54",
+                'gender': "male"
             },
             "include": 0,
             "genes": ["SigPep", "HA1", "HA2"]
@@ -150,16 +150,16 @@ reference_maps = {
         "na": {
             "path": "metadata/h1n1pdm_na_outgroup.gb",
             "metadata": {
-                'strain': "A/Swine/Indiana/P12439/00",
-                'isolate_id': "AF455680",
-                'date': "unknown",
+                'strain': "A/California/07/2009",
+                'isolate_id': "CY121682",
+                'date': "2009-04-09",
                 'region': "north america",
                 'country': "USA",
                 "city": "unknown",
-                "passage": "unknown",
+                "passage": "egg",
                 'lab': "unknown",
-                'age': "unknown",
-                'gender': "unknown"
+                'age': "54",
+                'gender': "male"
             },
             "include": 0,
             "genes": ["NA"]
@@ -352,13 +352,13 @@ clade_designations = {
                      ('HA1',152,'T'), ('HA2',174,'E')],
         '6b1.A':    [('HA1',84,'N'), ('HA1',162,'N'), ('HA1',74,'R'), ('HA1',164,'T'), ('HA1',295,'V')],
         '6b1.A1':   [('HA1',84,'N'), ('HA1',162,'N'), ('HA1',74,'R'), ('HA1',164,'T'), ('HA1',295,'V'),
-                     ('nuc',364,'C'), ('nuc',990,'G'), ('HA1',183,'P')],
+                     ('nuc',384,'C'), ('nuc',1010,'G'), ('HA1',183,'P')],
         '6b1.A2':   [('HA1',84,'N'), ('HA1',162,'N'), ('HA1',74,'R'), ('HA1',164,'T'), ('HA1',295,'V'),
-                     ('nuc',1344,'C'), ('nuc',1467,'C'), ('HA1',183,'P')],
+                     ('nuc',1364,'C'), ('nuc',1487,'C'), ('HA1',183,'P')],
         '6b1.A3':   [('HA1',84,'N'), ('HA1',162,'N'), ('HA1',74,'R'), ('HA1',164,'T'), ('HA1',295,'V'),
-                     ('nuc',351,'A'), ('nuc',492,'T'), ('nuc',1206,'A'), ('HA1',120,'A')],
+                     ('nuc',371,'A'), ('nuc',512,'T'), ('nuc',1226,'A'), ('HA1',120,'A')],
         '6b1.A4':   [('HA1',84,'N'), ('HA1',162,'N'), ('HA1',74,'R'), ('HA1',164,'T'), ('HA1',295,'V'),
-                     ('nuc',1344,'T'), ('nuc',990,'A'), ('HA1',183,'P')],
+                     ('nuc',1364,'T'), ('nuc',1010,'A'), ('HA1',183,'P')],
         '6b1.A5':   [('HA1',84,'N'), ('HA1',162,'N'), ('HA1',74,'R'), ('HA1',164,'T'), ('HA1',295,'V'),
                      ('HA1',161,'I'), ('HA2',77,'M')],
     },

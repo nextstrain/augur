@@ -1,64 +1,88 @@
-LOCUS       AF455712                 838 bp    DNA              VRL 14-MAR-2002
-DEFINITION  Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2)) nonstructural
-            protein 1 and nonstructural protein 2 genes, complete cds.
-ACCESSION   AF455712
-VERSION     AF455712.1
+LOCUS       CY121684                 865 bp    cRNA    linear   VRL 20-JUN-2012
+DEFINITION  Influenza A virus (A/California/07/2009(H1N1)) nuclear export
+            protein (NEP) and nonstructural protein 1 (NS1) genes, complete
+            cds.
+ACCESSION   CY121684
+VERSION     CY121684.1
+DBLINK      BioProject: PRJNA37813
 KEYWORDS    .
-SOURCE      Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2))
-  ORGANISM  Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2))
+SOURCE      Influenza A virus (A/California/07/2009(H1N1))
+  ORGANISM  Influenza A virus (A/California/07/2009(H1N1))
             Viruses; ssRNA viruses; ssRNA negative-strand viruses;
             Orthomyxoviridae; Influenzavirus A.
-REFERENCE   1  (bases 1 to 838)
-  AUTHORS   Karasin,A.I., Landgraf,J., Swenson,S., Erickson,G., Goyal,S.,
-            Woodruff,M., Scherba,G., Anderson,G. and Olsen,C.W.
-  TITLE     Genetic characterization of H1N2 influenza A viruses isolated from
-            pigs throughout the United States
-  JOURNAL   J. Clin. Microbiol. 40 (3), 1073-1079 (2002)
-   PUBMED   11880444
-REFERENCE   2  (bases 1 to 838)
-  AUTHORS   Karasin,A.I., Landgraf,J., Swenson,S., Erickson,G., Goyal,S.,
-            Woodruff,M., Scherba,G., Anderson,G. and Olsen,C.W.
+REFERENCE   1  (bases 1 to 865)
+  AUTHORS   Wentworth,D.E., Dugan,V., Halpin,R., Lin,X., Bera,J., Ghedin,E.,
+            Fedorova,N., Overton,L., Tsitrin,T., Stockwell,T., Amedeo,P.,
+            Bishop,B., Chen,H., Edworthy,P., Gupta,N., Katzel,D., Li,K.,
+            Schobel,S., Shrivastava,S., Thovarai,V., Wang,S., Ramanunninair,M.,
+            Silverman,J., Devis,R., Phan,L., Le,J., Pokorny,B.A., Onodera,S.,
+            Fulvini,A.A., He,Y., Kilbourne,E.D., Bucher,D., Bao,Y., Sanders,R.,
+            Dernovoy,D., Kiryutin,B., Lipman,D.J. and Tatusova,T.
+  TITLE     The NIAID Influenza Genome Sequencing Project
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 865)
+  CONSRTM   The NIAID Influenza Genome Sequencing Consortium
   TITLE     Direct Submission
-  JOURNAL   Submitted (05-DEC-2001) Department of Pathobiological Sciences,
-            School of Veterinary Medicine, University of Wisconsin-Madison, 2015
-            Linden Drive West, Madison, WI 53706, USA
+  JOURNAL   Submitted (20-JUN-2012) on behalf of JCVI/New York Medical
+            College/NCBI, National Center for Biotechnology Information, NIH,
+            Bethesda, MD 20894, USA
+COMMENT     This work was supported by the National Institute of Allergy and
+            Infectious Diseases (NIAID), Genome Sequencing Centers for
+            Infectious Diseases (GSCID) program.
 FEATURES             Location/Qualifiers
-     source          1..838
-                     /db_xref="taxon:187166"
-                     /mol_type="genomic RNA"
-                     /organism="Influenza A virus (A/Swine/Indiana/P12439/00
-                     (H1N2))"
-                     /strain="A/Swine/Indiana/P12439/00"
-     CDS             join(1..30,503..838)
+     source          1..865
+                     /organism="Influenza A virus (A/California/07/2009(H1N1))"
+                     /mol_type="viral cRNA"
+                     /strain="A/California/07/2009"
+                     /serotype="H1N1"
+                     /host="Homo sapiens"
+                     /db_xref="taxon:641809"
+                     /segment="8"
+                     /lab_host="Egg passage(s)"
+                     /country="USA: California"
+                     /collection_date="2009"
+     misc_feature    1..865
+                     /db_xref="IRD:NIGSP_BUCA_00080.NS"
+     gene            15..852
+                     /gene="NEP"
+                     /gene_synonym="NS2"
+     CDS             join(15..44,517..852)
+                     /gene="NEP"
+                     /gene_synonym="NS2"
+                     /note="nonstructural protein 2"
                      /codon_start=1
-                     /note="NS2"
-                     /product="nonstructural protein 2"
-                     /protein_id="AAL87908.1"
-                     /translation="MDSNTVSSFQDILMRMSKMQLESSSEDLNGMVTRFESLKVYRDSL
-                     GETVMRMGDLHYLQSRNEKWREQLGQKFEEIRWLIEEVRHRLKATENSFEQITFMQALQ
-                     LLLEVEQEIRTFSFQLI"
-     CDS             1..660
+                     /product="nuclear export protein"
+                     /protein_id="AFM72838.1"
+                     /translation="MDSNTMSSFQDILMRMSKMQLGSSSEDLNGMVTRFESLKIYRDS
+                     LGETVMRMGDLHYLQSRNEKWREQLGQKFEEIRWLIEEMRHRLKATENSFEQITFMQA
+                     LQLLLEVEQEIRAFSFQLI"
+     gene            15..674
+                     /gene="NS1"
+     CDS             15..674
+                     /gene="NS1"
                      /codon_start=1
-                     /note="NS1"
                      /product="nonstructural protein 1"
-                     /protein_id="AAL87907.1"
-                     /translation="MDSNTVSSFQVDCFLWHIRKRFADNGLGDAPFLDRLRRDQKSLKG
-                     RGNTLGLDIETATLVGKQIVEWILKEESSETLKMTIASVPNSRYLADMTLEEMSRDWFM
-                     LMPRQKIIRSLCVRMDQAIMEKNIILKANFSVIFNRLETLILLRAFTEEGAIIGEISPL
-                     PSLPGHTDEDVKNAVGVLIGGLEWNGNTVRVSESLQRFAWRNRNEDGRPSLPPEQK"
-ORIGIN
-        1 atggactcca acactgtgtc aagctttcag gtagactgtt tcctttggca tatccgcaaa
-       61 cggtttgcag acaatggatt gggtgatgcc ccattccttg atcggctccg ccgagatcaa
-      121 aaatccctaa agggaagagg caacaccctt ggcctcgaca tcgaaacagc cactcttgtt
-      181 gggaaacaaa ttgtggagtg gattttgaaa gaggaatcca gcgagacact taagatgacc
-      241 attgcatctg tacctaattc gcgctaccta gctgacatga ccctcgagga aatgtcacga
-      301 gactggttca tgctcatgcc taggcaaaag ataatccgct ctctttgtgt gcgaatggac
-      361 caggcgatca tggaaaagaa tatcatactg aaagcgaact tcagtgtgat ctttaaccga
-      421 ttagagactt tgatactact aagggctttc actgaggagg gagcaatcat tggagaaatt
-      481 tcaccattac cttctcttcc aggacatact gatgaggatg tcaaaaatgc agttggagtc
-      541 ctcatcggag gacttgaatg gaatggtaac acggttcgag tctctgaaag tctacagaga
-      601 ttcgcttgga gaaaccgtaa tgaggatggg agaccttcac tacctccaga gcagaaatga
-      661 aaagtggcga gagcaattgg gacagaaatt tgaggaaata agatggttaa ttgaagaagt
-      721 gcggcacaga ttgaaagcga cagagaatag tttcgaacaa attacattta tgcaagcttt
-      781 acaactactg cttgaagtag aacaagagat aagaactttc tcgtttcagc ttatttaa
+                     /protein_id="AFM72837.1"
+                     /translation="MDSNTMSSFQVDCFLWHIRKRFADNGLGDAPFLDRLRRDQKSLK
+                     GRGNTLGLDIETATLVGKQIVEWILKEESSETLRMTIASVPTSRYLSDMTLEEMSRDW
+                     FMLMPRQKIIGPLCVRLDQAIMEKNIVLKANFSVIFNRLETLILLRAFTEEGAIVGEI
+                     SPLPSLPGHTYEDVKNAVGVLIGGLEWNGNTVRVSENIQRFAWRNCDENGRPSLPPEQ
+                     K"
+ORIGIN      
+        1 gtgacaaaaa cataatggac tccaacacca tgtcaagctt tcaggtagac tgtttccttt
+       61 ggcatatccg caagcgattt gcagacaatg gattgggtga tgccccattc cttgatcggc
+      121 tccgccgaga tcaaaagtcc ttaaaaggaa gaggcaacac ccttggcctc gatatcgaaa
+      181 cagccactct tgttgggaaa caaatcgtgg aatggatctt gaaagaggaa tccagcgaga
+      241 cacttagaat gacaattgca tctgtaccta cttcgcgcta cctttctgac atgaccctcg
+      301 aggaaatgtc acgagactgg ttcatgctca tgcctaggca aaagataata ggccctcttt
+      361 gcgtgcgatt ggaccaggcg atcatggaaa agaacatagt actgaaagcg aacttcagtg
+      421 taatctttaa ccgattagag accttgatac tactaagggc tttcactgag gagggagcaa
+      481 tagttggaga aatttcacca ttaccttctc ttccaggaca tacttatgag gatgtcaaaa
+      541 atgcagttgg ggtcctcatc ggaggacttg aatggaatgg taacacggtt cgagtctctg
+      601 aaaatataca gagattcgct tggagaaact gtgatgagaa tgggagacct tcactacctc
+      661 cagagcagaa atgaaaagtg gcgagagcaa ttgggacaga aatttgagga aataaggtgg
+      721 ttaattgaag aaatgcggca cagattgaaa gcgacagaga atagtttcga acaaataaca
+      781 tttatgcaag ccttacaact actgcttgaa gtagaacaag agataagagc tttctcgttt
+      841 cagcttattt aatgataaaa aaccc
 //
+

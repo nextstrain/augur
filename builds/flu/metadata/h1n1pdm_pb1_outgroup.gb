@@ -1,92 +1,112 @@
-LOCUS       AF455728                2274 bp    DNA              VRL 14-MAR-2002
-DEFINITION  Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2)) polymerase
-            subunit (PB1) gene, complete cds.
-ACCESSION   AF455728
-VERSION     AF455728.1
+LOCUS       CY121686                2317 bp    cRNA    linear   VRL 20-JUN-2012
+DEFINITION  Influenza A virus (A/California/07/2009(H1N1)) polymerase PB1 (PB1)
+            gene, complete cds; and PB1-F2 gene, complete sequence.
+ACCESSION   CY121686
+VERSION     CY121686.1
+DBLINK      BioProject: PRJNA37813
 KEYWORDS    .
-SOURCE      Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2))
-  ORGANISM  Influenza A virus (A/Swine/Indiana/P12439/00 (H1N2))
+SOURCE      Influenza A virus (A/California/07/2009(H1N1))
+  ORGANISM  Influenza A virus (A/California/07/2009(H1N1))
             Viruses; ssRNA viruses; ssRNA negative-strand viruses;
             Orthomyxoviridae; Influenzavirus A.
-REFERENCE   1  (bases 1 to 2274)
-  AUTHORS   Karasin,A.I., Landgraf,J., Swenson,S., Erickson,G., Goyal,S.,
-            Woodruff,M., Scherba,G., Anderson,G. and Olsen,C.W.
-  TITLE     Genetic characterization of H1N2 influenza A viruses isolated from
-            pigs throughout the United States
-  JOURNAL   J. Clin. Microbiol. 40 (3), 1073-1079 (2002)
-   PUBMED   11880444
-REFERENCE   2  (bases 1 to 2274)
-  AUTHORS   Karasin,A.I., Landgraf,J., Swenson,S., Erickson,G., Goyal,S.,
-            Woodruff,M., Scherba,G., Anderson,G. and Olsen,C.W.
+REFERENCE   1  (bases 1 to 2317)
+  AUTHORS   Wentworth,D.E., Dugan,V., Halpin,R., Lin,X., Bera,J., Ghedin,E.,
+            Fedorova,N., Overton,L., Tsitrin,T., Stockwell,T., Amedeo,P.,
+            Bishop,B., Chen,H., Edworthy,P., Gupta,N., Katzel,D., Li,K.,
+            Schobel,S., Shrivastava,S., Thovarai,V., Wang,S., Ramanunninair,M.,
+            Silverman,J., Devis,R., Phan,L., Le,J., Pokorny,B.A., Onodera,S.,
+            Fulvini,A.A., He,Y., Kilbourne,E.D., Bucher,D., Bao,Y., Sanders,R.,
+            Dernovoy,D., Kiryutin,B., Lipman,D.J. and Tatusova,T.
+  TITLE     The NIAID Influenza Genome Sequencing Project
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 2317)
+  CONSRTM   The NIAID Influenza Genome Sequencing Consortium
   TITLE     Direct Submission
-  JOURNAL   Submitted (05-DEC-2001) Department of Pathobiological Sciences,
-            School of Veterinary Medicine, University of Wisconsin-Madison, 2015
-            Linden Drive West, Madison, WI 53706, USA
+  JOURNAL   Submitted (20-JUN-2012) on behalf of JCVI/New York Medical
+            College/NCBI, National Center for Biotechnology Information, NIH,
+            Bethesda, MD 20894, USA
+COMMENT     This work was supported by the National Institute of Allergy and
+            Infectious Diseases (NIAID), Genome Sequencing Centers for
+            Infectious Diseases (GSCID) program.
 FEATURES             Location/Qualifiers
-     source          1..2274
-                     /db_xref="taxon:187166"
-                     /mol_type="genomic RNA"
-                     /organism="Influenza A virus (A/Swine/Indiana/P12439/00
-                     (H1N2))"
-                     /strain="A/Swine/Indiana/P12439/00"
-     gene            1..2274
+     source          1..2317
+                     /organism="Influenza A virus (A/California/07/2009(H1N1))"
+                     /mol_type="viral cRNA"
+                     /strain="A/California/07/2009"
+                     /serotype="H1N1"
+                     /host="Homo sapiens"
+                     /db_xref="taxon:641809"
+                     /segment="2"
+                     /lab_host="Egg passage(s)"
+                     /country="USA: California"
+                     /collection_date="2009"
+     misc_feature    1..2317
+                     /db_xref="IRD:NIGSP_BUCA_00080.PB1"
+     gene            13..2286
                      /gene="PB1"
-     CDS             1..2274
+     CDS             13..2286
+                     /gene="PB1"
                      /codon_start=1
-                     /gene="PB1"
-                     /product="polymerase subunit"
-                     /protein_id="AAL87926.1"
-                     /translation="MDVNPTLLFLKVPAQNAISTTFPYTGDPPYSHGTGTGYTMDTVNR
-                     THQYSKKGKWTTNTETGAPQLNPIDGPLPEDNEPSGYAQTDCVLEAMAFLEESHPGIFE
-                     NSCLETMEVVQQTRVDKLTQGRQTYDWTLNRNQPAATALANTIEVFRSNGLTANESGRL
-                     IDFLKDVMESMDKEEIEITTHFQRKRRVRDNMTKKMVTQRTIGKKKQRVNKRGYLIRAL
-                     TLNTMTKDAERGKLKRRAIATPGMQIRGFVYFVETLARSICEKLEQSGLPVGGNEKKAK
-                     LANVVRKMMTNSQDTELSFTITGDNTKWNENQNPRMFLAMITYITRNQPEWFRNILSMA
-                     PIMFSNKMARLGKGYMFESKRMKLRTQIPAEMLASIDLKYFNESTRKKIEKIRPLLIDG
-                     TASLSPGMMMGMFNMLSTVLGVSILNLGQKKYTRTTYWWDGLQSSDDFALIVNAPNHEG
-                     IQAGVDRFYRTCKLVGINMSKKKSYINKTGTFELTSFFYRYGFVANFSMELPSFGVSGV
-                     NESADMSIGVTVIKNNMINNDLGPATAQMALQLFIKDYRYTYRCHRGDTQIQTRRSFEL
-                     KKLWDQTQSKAGLLVSDGGPNLYNIRNLHIPEVCLKWELMDEDYRGRLCNPLNPFVSHK
-                     EIDSVNNAVVMPAHGPAKSMEYDAVATTHSWIPKRNRSIINTSQRGILEDEQMYQKCCN
-                     LFEKFFPSSSYRRPVGISSMVEAMVSRARIDARIDFESGRIKKEEFSEIMKICSTIEEL
-                     RRQK"
-ORIGIN
-        1 atggatgtca atccgactct acttttccta aaggttccag cgcaaaatgc cataagcacc
-       61 acattccctt atactggaga tcctccatac agccatggaa caggaacagg atacaccatg
-      121 gacacagtca acagaacaca ccaatattca aaaaaaggga agtggacgac aaacacagag
-      181 actggggcac cccagctcaa tccgattgat ggaccactac ctgaggataa tgaaccaagt
-      241 ggatatgcac aaacagactg tgttctggag gccatggctt tccttgaaga atcccaccca
-      301 gggatatttg agaattcatg ccttgaaaca atggaagttg ttcaacaaac aagggtggat
-      361 aaactaactc aaggtcgcca gacttatgat tggacattaa acagaaatca accggcagca
-      421 actgcattgg ccaacaccat agaagttttt agatcgaatg gtctaacagc taatgagtca
-      481 ggaaggctaa tagatttcct aaaggatgta atggaatcaa tggataaaga ggaaatagag
-      541 ataacaacac actttcaaag aaaaaggaga gtaagagaca acatgaccaa gaagatggtc
-      601 acacaaagaa caataggaaa gaaaaaacaa agagtgaata agagaggtta tctaataaga
-      661 gcactgacat tgaatacgat gaccaaagat gcagagagag gcaaattaaa aagaagggct
-      721 atcgcaacac ctgggatgca aattagaggg tttgtgtact ttgttgaaac tttagctaga
-      781 agcatttgcg aaaagctgga acagtctgga ctcccagtag ggggcaatga aaagaaggcc
-      841 aaattggcaa atgttgtgag aaagatgatg actaattcac aagacacaga gctttctttc
-      901 acaatcactg gggacaacac taaatggaat gaaaatcaaa atcctcgaat gttcctggca
-      961 atgattacat atatcaccag aaatcaaccc gagtggttca gaaacatcct gagcatggca
-     1021 cccataatgt tctcaaacaa aatggcaaga ctaggaaaag ggtacatgtt cgagagtaaa
-     1081 agaatgaagc tccgaacaca aataccagca gaaatgctag caagcattga cctgaagtat
-     1141 ttcaatgaat caacaaggaa gaaaattgag aaaataaggc ctcttctaat agatggcaca
-     1201 gcatcattga gccctggaat gatgatgggc atgttcaaca tgctaagtac ggttttggga
-     1261 gtctcgatac tgaatcttgg acaaaagaaa tacaccagga caacatactg gtgggatggg
-     1321 ctccaatcct ccgatgattt tgccctcata gtgaatgcac caaatcatga gggaatacaa
-     1381 gcaggagtgg atagattcta caggacctgc aagttagtgg gaatcaacat gagcaaaaag
-     1441 aagtcctata taaataagac agggacattt gaactcacaa gcttttttta tcgctatgga
-     1501 tttgtggcta attttagcat ggagctgccc agttttggag tgtctggagt aaatgaatca
-     1561 gctgatatga gtattggagt aacagtgata aagaacaaca tgataaacaa tgaccttggg
-     1621 cccgcaacag cccagatggc ccttcaactg ttcatcaaag actacagata cacatatagg
-     1681 tgccatagag gagacacaca aattcagacg agaagatcat tcgagctaaa gaagctgtgg
-     1741 gaccaaaccc aatcaaaggc aggactatta gtatctgatg gagggccaaa cttatacaat
-     1801 atccggaatc ttcacattcc tgaagtctgc ttaaaatggg agctaatgga tgaggattat
-     1861 cggggaagac tttgtaatcc cctgaatccc tttgtcagcc ataaagagat tgattctgta
-     1921 aacaatgctg tggtgatgcc agcccatggt ccagccaaaa gcatggaata tgatgccgtt
-     1981 gcgactacac actcctggat tcccaagagg aaccgctcta ttatcaacac aagccaaagg
-     2041 ggaattcttg aggatgaaca gatgtaccag aagtgctgca acctgttcga gaaatttttc
-     2101 cctagtagtt catacaggag accggttgga atttctagca tggtggaggc catggtgtct
-     2161 agggcccgga ttgatgccag gattgacttc gagtctggac ggattaagaa agaagagttc
-     2221 tctgagatca tgaagatctg ttccaccatt gaagaactca gacggcaaaa ataa
+                     /product="polymerase PB1"
+                     /protein_id="AFM72840.1"
+                     /translation="MDVNPTLLFLKIPAQNAISTTFPYTGDPPYSHGTGTGYTMDTVN
+                     RTHQYSEKGKWTTNTETGAPQLNPIDGPLPEDNEPSGYAQTDCVLEAMAFLEESHPGI
+                     FENSCLETMEVVQQTRVDKLTQGRQTYDWTLNRNQPAATALANTIEVFRSNGLTANES
+                     GRLIDFLKDVMESMNKEEIEITTHFQRKRRVRDNMTKKMVTQRTIGKKKQRLNKRGYL
+                     IRALTLNTMTKDAERGKLKRRAIATPGMQIRGFVYFVETLARSICEKLEQSGLPVGGN
+                     EKKAKLANVVRKMMTNSQDTEISFTITGDNTKWNENQNPRMFLAMITYITRNQPEWFR
+                     NILSMAPIMFSNKMARLGKGYMFESKRMKIRTQIPAEMLASIDLKYFNESTKKKIEKI
+                     RPLLIDGTASLSPGMMMGMFNMLSTVLGVSILNLGQKKYTKTIYWWDGLQSSDDFALI
+                     VNAPNHEGIQAGVDRFYRTCKLVGINMSKKKSYINKTGTFEFTSFFYRYGFVANFSME
+                     LPSFGVSGVNESADMSIGVTVIKNNMINNDLGPATAQMALQLFIKDYRYTYRCHRGDT
+                     QIQTRRSFELKKLWDQTQSKVGLLVSDGGPNLYNIRNLHIPEVCLKWELMDDDYRGRL
+                     CNPLNPFVSHKEIDSVNNAVVMPAHGPAKSMEYDAVATTHSWIPKRNRSILNTSQRGI
+                     LEDEQMYQKCCNLFEKFFPSSSYRRPVGISSMVEAMVSRARIDARVDFESGRIKKEEF
+                     SEIMKICSTIEELRRQK"
+     gene            107..379
+                     /gene="PB1-F2"
+     misc_feature    107..379
+                     /gene="PB1-F2"
+                     /note="nonfunctional PB1-F2 protein due to mutation"
+ORIGIN      
+        1 caaaccattt gaatggatgt caatccgact ctacttttcc taaaaattcc agcgcaaaat
+       61 gccataagca ccacattccc ttatactgga gatcctccat acagccatgg aacaggaaca
+      121 ggatacacca tggacacagt aaacagaaca caccaatact cagaaaaggg aaagtggacg
+      181 acaaacacag agactggtgc accccagctc aacccgattg atggaccact acctgaggat
+      241 aatgaaccaa gtgggtatgc acaaacagac tgtgttctag aggctatggc tttccttgaa
+      301 gaatcccacc caggaatatt tgagaattca tgccttgaaa caatggaagt tgttcaacaa
+      361 acaagggtag ataaactaac tcaaggtcgc cagacttatg attggacatt aaacagaaat
+      421 caaccggcag caactgcatt ggccaacacc atagaagtct ttagatcgaa tggcctaaca
+      481 gctaatgagt caggaaggct aatagatttc ttaaaggatg taatggaatc aatgaacaaa
+      541 gaggaaatag agataacaac ccactttcaa agaaaaagga gagtaagaga caacatgacc
+      601 aagaagatgg tcacgcaaag aacaataggg aagaaaaaac aaagactgaa taagagaggc
+      661 tatctaataa gagcactgac attaaatacg atgaccaaag atgcagagag aggcaagtta
+      721 aaaagaaggg ctatcgcaac acctgggatg cagattagag gtttcgtata ctttgttgaa
+      781 actttagcta ggagcatttg cgaaaagctt gaacagtctg ggctcccagt agggggcaat
+      841 gaaaagaagg ccaaactggc aaatgttgtg agaaagatga tgactaattc acaagacaca
+      901 gagatttctt tcacaatcac tggggacaac actaagtgga atgaaaatca aaatcctcga
+      961 atgttcctgg cgatgattac atatatcacc agaaatcaac ccgagtggtt cagaaacatc
+     1021 ctgagcatgg cacccataat gttctcaaac aaaatggcaa gactagggaa agggtacatg
+     1081 ttcgagagta aaagaatgaa gattcgaaca caaataccag cagaaatgct agcaagcatt
+     1141 gacctgaagt acttcaatga atcaacaaag aagaaaattg agaaaataag gcctcttcta
+     1201 atagatggca cagcatcact gagtcctggg atgatgatgg gcatgttcaa catgctaagt
+     1261 acggtcttgg gagtctcgat actgaatctt ggacaaaaga aatacaccaa gacaatatac
+     1321 tggtgggatg ggctccaatc atccgacgat tttgctctca tagtgaatgc accaaaccat
+     1381 gagggaatac aagcaggagt ggacagattc tacaggacct gcaagttagt gggaatcaac
+     1441 atgagcaaaa agaagtccta tataaataag acagggacat ttgaattcac aagctttttt
+     1501 tatcgctatg gatttgtggc taattttagc atggagctac ccagctttgg agtgtctgga
+     1561 gtaaatgaat cagctgacat gagtattgga gtaacagtga taaagaacaa catgataaac
+     1621 aatgaccttg gacctgcaac ggcccagatg gctcttcaat tgttcatcaa agactacaga
+     1681 tacacatata ggtgccatag gggagacaca caaattcaga cgagaagatc atttgagtta
+     1741 aagaagctgt gggatcaaac ccaatcaaag gtagggctat tagtatcaga tggaggacca
+     1801 aacttataca atatacggaa tcttcacatt cctgaagtct gcttaaaatg ggagctaatg
+     1861 gatgatgatt atcggggaag actttgtaat cccctgaatc cctttgtcag tcataaagag
+     1921 attgattctg taaacaatgc tgtggtaatg ccagcccatg gtccagccaa aagcatggaa
+     1981 tatgatgccg ttgcaactac acattcctgg attcccaaga ggaatcgttc tattctcaac
+     2041 acaagccaaa ggggaattct tgaggatgaa cagatgtacc agaagtgctg caatctattc
+     2101 gagaaatttt tccctagcag ttcatatagg agaccggttg gaatttctag catggtggag
+     2161 gccatggtgt ctagggcccg gattgatgcc agggtcgact tcgagtctgg acggatcaag
+     2221 aaagaagagt tctctgagat catgaagatc tgttccacca ttgaagaact cagacggcaa
+     2281 aaataatgaa tttaacttgt ccttcatgaa aaaatgc
 //
+
