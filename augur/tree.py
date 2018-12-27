@@ -122,6 +122,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
 
     # IQ-tree messes with taxon names. Hence remove offending characters, reinstaniate later
     aln_file = aln_file.replace(".fasta", "-delim.fasta")
+    log_file = aln_file.replace(".fasta", ".iqtree.log")
     with open(aln_file, 'w') as ofile:
         for line in tmp_seqs:
             ofile.write(line.replace('/', '_X_X_').replace('|','_Y_Y_'))
@@ -147,7 +148,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", aln_file, "-m", substitution_model,
             ">", "iqtree.log"]
     else:
-        call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", aln_file, ">", "iqtree.log"]
+        call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", aln_file, ">", log_file]
 
     cmd = " ".join(call)
 
@@ -161,18 +162,21 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         run_shell_command(cmd, raise_errors = True)
         T = Phylo.read(aln_file+".treefile", 'newick')
         shutil.copyfile(aln_file+".treefile", out_file)
+        for n in T.get_terminals():
+            n.name = n.name.replace('_X_X_','/').replace('_Y_Y_','|')
         #this allows the user to check intermediate output, as tree.nwk will be
         if clean_up:
             #allow user to see chosen model if modeltest was run
             if substitution_model.lower() == 'none':
-                shutil.copyfile('iqtree.log', out_file.replace(out_file.split('/')[-1],"iqtree.log"))
-            os.remove('iqtree.log')
-            os.remove(aln_file)
+                shutil.copyfile(log_file, out_file.replace(out_file.split('/')[-1],"iqtree.log"))
+
+            for f in [log_file, aln_file]:
+                if os.path.isfile(f):
+                    os.remove(f)
+
             for ext in [".bionj",".ckp.gz",".iqtree",".log",".mldist",".model.gz",".treefile",".uniqueseq.phy",".model"]:
                 if os.path.isfile(aln_file + ext):
                     os.remove(aln_file + ext)
-            for n in T.get_terminals():
-                n.name = n.name.replace('_X_X_','/').replace('_Y_Y_','|')
     except:
         print("TREE BUILDING FAILED")
         T=None
