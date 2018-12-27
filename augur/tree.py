@@ -121,7 +121,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         tmp_seqs = ifile.readlines()
 
     # IQ-tree messes with taxon names. Hence remove offending characters, reinstaniate later
-    aln_file = "temp_iqtree.fasta"
+    aln_file = aln_file.replace(".fasta", "-delim.fasta")
     with open(aln_file, 'w') as ofile:
         for line in tmp_seqs:
             ofile.write(line.replace('/', '_X_X_').replace('|','_Y_Y_'))
