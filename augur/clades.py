@@ -96,15 +96,18 @@ def assign_clades(clade_designations, all_muts, tree):
         clade_membership[node.name] = {'clade_membership': 'unassigned'}
 
     # second pass to assign 'clade_annotation' to basal nodes within each clade
+    # if multiple nodes match, assign annotation to largest
+    # otherwise occasional unwanted cousin nodes get assigned the annotation
     for clade_name, clade_alleles in clade_designations.items():
-        first_instance_of_clade = True
+        node_counts = {}
         for node in tree.find_clades(order = 'preorder'):
-            # only the first instance of clade is annotated
-            if first_instance_of_clade:
-                node_alleles = get_node_alleles(node.name, all_muts, parents)
-                if is_node_in_clade(clade_alleles, node_alleles):
-                    clade_membership[node.name] = {'clade_annotation': clade_name, 'clade_membership': clade_name}
-                    first_instance_of_clade = False
+            node_alleles = get_node_alleles(node.name, all_muts, parents)
+            if is_node_in_clade(clade_alleles, node_alleles):
+                node_counts[node.name] = node.count_terminals()
+        sorted_nodes = list(sorted(node_counts.items(), key=lambda x: x[1], reverse=True))
+        if len(sorted_nodes) > 0:
+            target_node = sorted_nodes[0][0]
+            clade_membership[target_node] = {'clade_annotation': clade_name, 'clade_membership': clade_name}
 
     # third pass to propagate 'clade_membership'
     # don't propagate if encountering 'clade_annotation'
