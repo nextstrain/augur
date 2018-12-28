@@ -64,6 +64,7 @@ def register_arguments(parser):
     parser.add_argument('--min-date', type=float, help="minimal cutoff for numerical date")
     parser.add_argument('--max-date', type=float, help="maximal cutoff for numerical date")
     parser.add_argument('--min-length', type=int, help="minimal length of the sequences")
+    parser.add_argument('--non-nucleotide', action='store_true', help="exclude sequences that contain illegal characters")
     parser.add_argument('--exclude', type=str, help="file with list of strains that are to be excluded")
     parser.add_argument('--include', type=str, help="file with list of strains that are to be included regardless of priorities or subsampling")
     parser.add_argument('--priority', type=str, help="file with list priority scores for sequences (strain\tpriority)")
@@ -165,6 +166,11 @@ def run(args):
             seq_keep = [s for s in seq_keep if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s])>args.min_date]
         if args.max_date:
             seq_keep = [s for s in seq_keep if (np.isscalar(dates[s]) or all(dates[s])) and np.min(dates[s])<args.max_date]
+
+    # exclude sequences with non-nucleotide characters
+    if args.non_nucleotide:
+        good_chars = {'A', 'C', 'G', 'T', '-', 'N', 'R', 'Y', 'S', 'W', 'K', 'M', 'D', 'H', 'B', 'V'}
+        seq_keep = [s for s in seq_keep if len(set(str(seqs[s].seq).upper()).difference(good_chars))==0]
 
     # subsampling. This will sort sequences into groups by meta data fields
     # specified in --group-by and then take at most --sequences-per-group
