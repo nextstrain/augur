@@ -26,6 +26,7 @@ country	bali	-8.3304976	115.0906401
 country	bangladesh	24.4768783	90.2932426
 country	belgium	50.6407351	4.66696
 country	benin	9.668764	2.284078
+country	bermuda		32.2949	-64.78303
 country	bhutan	27.5142	90.4336
 country	bolivia	-17.0	-65.0
 country	bosnia_herzegovina	43.84864	18.35644
@@ -69,6 +70,7 @@ country	germany	51.0834196	10.4234469
 country	ghana	8.0300284	-1.080027
 country	greece	39.0	22.0
 country	guadeloupe	16.2650	-61.5510
+country	guam	13.51777	144.8391
 country	guatemala	15.6356088	-89.8988086
 country	guinea	10.7226226	-10.7083586
 country	guinea_bissau	12.042637	-14.949526
@@ -122,9 +124,11 @@ country	new_zealand	-41.500083	172.8344077
 country	nicaragua	13.0	-85.0
 country	niger	18.0	9.0
 country	nigeria	10.0	8.0
+country	northern_mariana_islands	15.21233	145.7545
 country	norway	64.574131	11.5270102892
 country	oman	21.0000287	57.0036901
 country	pakistan	30.0	70.0
+country	palau	7.33978	134.47326
 country	palestine	31.5	34.46667
 country	panama	8.3096067	-81.3066245
 country	papua_new_guinea	-6.0	147.0
