@@ -80,6 +80,7 @@ def run(args):
             # estimate tree frequencies
             pivots = get_pivots(tps, args.pivot_interval, args.min_date, args.max_date)
             frequency_dict = {"pivots":format_frequencies(pivots)}
+            frequency_dict["counts"] = {}
 
             for region in args.regions:
                 # Omit strains sampled prior to the first pivot from frequency calculations.
@@ -97,19 +98,20 @@ def run(args):
 
                 tree_freqs.estimate_clade_frequencies()
 
+                frequency_dict["counts"][region] = [int(x) for x in tree_freqs.counts]
                 if args.output_format == "nextflu":
                     # Export frequencies in nextflu-format by region and clade id.
                     for clade_id, clade_frequencies in tree_freqs.frequencies.items():
                         frequency_dict["%s_clade:%d" % (region, clade_id)] = format_frequencies(clade_frequencies)
 
-                    frequency_dict["%s:counts"%region] = [int(x) for x in tree_freqs.counts]
                 else:
                     # Export frequencies in auspice-format by strain name.
                     for node in tree.find_clades():
                         if node.is_terminal() or args.include_internal_nodes:
-                            frequency_dict[node.name] = {
-                                "frequencies": format_frequencies(tree_freqs.frequencies[node.clade])
-                            }
+                            if node.name not in frequency_dict:
+                                frequency_dict[node.name] = {}
+                            frequency_dict[node.name][region] = format_frequencies(tree_freqs.frequencies[node.clade])
+
         elif args.method == "kde":
             if args.output_format == "nextflu":
                 print("ERROR: nextflu format is not supported for KDE frequencies", file=sys.stderr)
