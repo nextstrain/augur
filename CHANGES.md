@@ -1,6 +1,25 @@
 # __NEXT__
 
 
+# 3.1.3 (29 December 2018)
+
+## Features
+
+* filter: Add `--non-nucleotide` option to remove sequences with non-conforming nucleotide characters.
+
+## Bug fixes
+
+* Revise treatment of `-`, ` ` in `augur parse` to leave `-` as is and remove white space. Also delimit `[` and `]` to `_`.
+* Fix bug in naming of temp IQTREE fixes to prevent conflicts from simultaneous builds.
+
+## Data
+
+* Include additional country lat/longs in base data
+
+## Development
+
+* Remove non-modular measles build in favor of [nextstrain/measles](https://github.com/nextstrain/measles) repo.
+
 # 3.1.2 (21 December 2018)
 
 ## Bug fixes
