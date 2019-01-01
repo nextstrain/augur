@@ -1,15 +1,28 @@
 # __NEXT__
 
 
+# 3.1.4 (1 January 2019)
+
+## Bug fixes
+
+* frequencies: Include `counts` in `augur frequencies` output JSON to support
+  downstream plotting.
+
+## Data
+
+* Include additional country lat/longs in base data
+
 # 3.1.3 (29 December 2018)
 
 ## Features
 
-* filter: Add `--non-nucleotide` option to remove sequences with non-conforming nucleotide characters.
+* filter: Add `--non-nucleotide` option to remove sequences with non-conforming
+  nucleotide characters.
 
 ## Bug fixes
 
-* Revise treatment of `-`, ` ` in `augur parse` to leave `-` as is and remove white space. Also delimit `[` and `]` to `_`.
+* Revise treatment of `-`, ` ` in `augur parse` to leave `-` as is and remove white
+  space. Also delimit `[` and `]` to `_`.
 * Fix bug in naming of temp IQTREE fixes to prevent conflicts from simultaneous builds.
 
 ## Data
