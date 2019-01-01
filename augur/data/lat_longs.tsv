@@ -25,6 +25,7 @@ country	belarus	53.0	28.0
 country	bali	-8.3304976	115.0906401
 country	bangladesh	24.4768783	90.2932426
 country	belgium	50.6407351	4.66696
+country	belize	17.49952	-88.19756
 country	benin	9.668764	2.284078
 country	bermuda		32.2949	-64.78303
 country	bhutan	27.5142	90.4336
@@ -42,6 +43,7 @@ country	central_african_republic	7.0	21.0
 country	chile	-31.7613364	-71.3187696
 country	china	35.000074	104.999927
 country	colombia	2.893108	-73.7845142
+country	cook_islands	-21.24842	-159.78516
 country	congo	-0.7264326	15.6419155
 country	costa_rica	10.0	-84.0
 country	cote_d_ivoire	7.9897371	-5.5679457
@@ -69,6 +71,7 @@ country	gambia	13.5	-15.5
 country	germany	51.0834196	10.4234469
 country	ghana	8.0300284	-1.080027
 country	greece	39.0	22.0
+country	grenada	12.11667	-61.66667
 country	guadeloupe	16.2650	-61.5510
 country	guam	13.51777	144.8391
 country	guatemala	15.6356088	-89.8988086
@@ -117,6 +120,7 @@ country	montenegro	43.0285558	19.291739
 country	morocco	31.1728192	-7.3366042
 country	mozambique	-18.25	35.0
 country	myanmar	21.0	96.0
+country	nauru	-0.517	166.933
 country	nepal	28.0	84.0
 country	netherlands	52.3702	4.8952
 country	new_caledonia	-20.9043	165.6180
@@ -148,6 +152,7 @@ country	saint_vincent_and_the_grenadines	12.9843	-61.2872
 country	saudi_arabia	25.0	45.0
 country	senegal	14.5	-14.25
 country	serbia	44.1534121	20.55144
+country	seychelles	-4.58333	55.66667
 country	sierra_leone	8.5	-11.5
 country	singapore	1.2904527	103.852038
 country	slovakia	48.66667	19.5
@@ -183,6 +188,7 @@ country	usvi	18.3378801	-64.8982827
 country	vanuatu	-17.734818	168.3220
 country	venezuela	8.0	-66.0
 country	vietnam	16.16667	107.83333
+country	wallis_and_futuna	-13.28163	-176.17453
 country	yemen	16.3471243	47.8915271
 country	zambia	-14.33333	28.5
 country	zimbabwe	-19.307486	29.7968377
