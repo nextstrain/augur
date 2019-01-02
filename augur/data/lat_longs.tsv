@@ -12,6 +12,7 @@ region	west_asia	34.000094	48.732280
 country	afghanistan	33.0	66.0
 country	albania	41.0	20.0
 country	algeria	28.0000272	2.9999825
+country	anguilla	18.21704	-63.05783
 country	american_samoa	-14.27806	-170.7025
 country	angola	-11.8775767	17.5691241
 country	argentina	-34.0	-64.0
@@ -21,6 +22,7 @@ country	austria	47.2000338	13.199959
 country	azerbaijan	40.37767	49.89201
 country	bahamas	25.04082	-77.37122
 country	bahrain	26.22787	50.58565
+country	barbados	13.16667	-59.53333
 country	belarus	53.0	28.0
 country	bali	-8.3304976	115.0906401
 country	bangladesh	24.4768783	90.2932426
@@ -44,6 +46,7 @@ country	chile	-31.7613364	-71.3187696
 country	china	35.000074	104.999927
 country	colombia	2.893108	-73.7845142
 country	cook_islands	-21.24842	-159.78516
+country	comoros	-12.2045175	44.2832964
 country	congo	-0.7264326	15.6419155
 country	costa_rica	10.0	-84.0
 country	cote_d_ivoire	7.9897371	-5.5679457
@@ -55,6 +58,7 @@ country	denmark	56.0	10.0
 country	djibouti	11.58901	43.14503
 country	dominica	15.5	-61.33333
 country	dominican_republic	18.50012	-69.98857
+country	east_timor	-8.5151978	125.8375756
 country	ecuador	-1.3397667	-79.3666964
 country	egypt	26.2540493	29.2675469
 country	el_salvador	13.68935	-89.18718
@@ -77,6 +81,7 @@ country	guam	13.51777	144.8391
 country	guatemala	15.6356088	-89.8988086
 country	guinea	10.7226226	-10.7083586
 country	guinea_bissau	12.042637	-14.949526
+country	guyana	5.0	-59.0
 country	haiti	19.1399952	-72.3570971
 country	honduras	15.0610686	-84.5978533
 country	hong_kong	22.3964	114.1095
@@ -147,6 +152,7 @@ country	romania	46.0	25.0
 country	russia	64.6863136	97.7453061
 country	rwanda	-2.0	30.0
 country	saint_barthelemy	17.9049171	-62.847207
+country	saint_kitts	17.29484	-62.7261
 country	saint_lucia	13.88333	-60.96667
 country	saint_vincent_and_the_grenadines	12.9843	-61.2872
 country	saudi_arabia	25.0	45.0
