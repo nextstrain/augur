@@ -16,7 +16,7 @@ class TiterCollection(object):
     Container for raw titer values and methods for analyzing these values.
     """
     @staticmethod
-    def load_from_file(filename, excluded_sources=None):
+    def load_from_file(filenames, excluded_sources=None):
         """Load titers from a tab-delimited file.
 
         Parameters
@@ -55,27 +55,33 @@ class TiterCollection(object):
         measurements = defaultdict(list)
         strains = set()
         sources = set()
+        titer_files = [filenames] if type(filenames)==str else filenames
 
-        with myopen(filename, 'r') as infile:
-            for line in infile:
-                entries = line.strip().split('\t')
-                try:
-                    val = float(entries[4])
-                except:
-                    continue
-                test, ref_virus, serum, src_id = (entries[0], entries[1],entries[2],
-                                                  entries[3])
+        for fname in titer_files:
+            if not os.path.isfile(fname):
+                print("ERROR: titer file %s does not exist!"%fname)
+                continue
 
-                ref = (ref_virus, serum)
-                if src_id not in excluded_sources:
+            with myopen(fname, 'r') as infile:
+                for line in infile:
+                    entries = line.strip().split('\t')
                     try:
-                        measurements[(test, (ref_virus, serum))].append(val)
-                        strains.update([test, ref_virus])
-                        sources.add(src_id)
+                        val = float(entries[4])
                     except:
-                        print(line.strip())
+                        continue
+                    test, ref_virus, serum, src_id = (entries[0], entries[1],entries[2],
+                                                      entries[3])
 
-        print("Read titers from %s, found:" % filename, file=sys.stderr)
+                    ref = (ref_virus, serum)
+                    if src_id not in excluded_sources:
+                        try:
+                            measurements[(test, (ref_virus, serum))].append(val)
+                            strains.update([test, ref_virus])
+                            sources.add(src_id)
+                        except:
+                            print(line.strip())
+
+        print("Read titers from %s, found:" % ' '.join(titer_files), file=sys.stderr)
         print(" --- %i strains" % len(strains), file=sys.stderr)
         print(" --- %i data sources" % len(sources), file=sys.stderr)
         print(" --- %i total measurements" % sum([len(x) for x in measurements.values()]), file=sys.stderr)
@@ -167,7 +173,8 @@ class TiterCollection(object):
             Description
         """
         # Assign titers and prepare list of strains.
-        if isinstance(titers, str) and os.path.isfile(titers):
+        if (isinstance(titers, str) and os.path.isfile(titers))\
+            or isinstance(titers, list):
             self.read_titers(titers)
         else:
             self.titers = titers
@@ -331,7 +338,8 @@ class TiterModel(object):
     def assign_titers(self, titers, strains):
         # Load titer measurements from a file or from a given dictionary of
         # measurements.
-        if isinstance(titers, str) and os.path.isfile(titers):
+        if (isinstance(titers, str) and os.path.isfile(titers))\
+            or isinstance(titers, list):
             titer_measurements, strains, sera = TiterCollection.load_from_file(titers)
         else:
             titer_measurements = titers
