@@ -5,7 +5,7 @@ Assign clades to nodes in a tree based on amino-acid or nucleotide signatures.
 import sys
 from Bio import Phylo
 import pandas as pd
-from .utils import read_node_data, write_json
+from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json
 
 def read_in_clade_definitions(clade_file):
     '''
@@ -30,16 +30,6 @@ def read_in_clade_definitions(clade_file):
             clades[row.clade] = [allele]
 
     return clades
-
-def all_parents(tree):
-    '''
-    Return dictionary mapping child node names to parent node names
-    '''
-    parents = {}
-    for clade in tree.find_clades(order='level'):
-        for child in clade:
-            parents[child.name] = clade.name
-    return parents
 
 def get_node_alleles(node_name, muts, parents):
     '''
@@ -66,7 +56,9 @@ def get_node_alleles(node_name, muts, parents):
                     sites_encountered.add(site)
                     allele = ('nuc', int(mut[1:-1]), mut[-1])
                     node_alleles.append(allele)
-        focal_node = parents.get(focal_node, None)
+
+        focal_node = parents.get(focal_node)
+
     return node_alleles
 
 def is_node_in_clade(clade_alleles, node_alleles):
@@ -89,7 +81,7 @@ def assign_clades(clade_designations, all_muts, tree):
     '''
 
     clade_membership = {}
-    parents = all_parents(tree)
+    parents = get_parent_name_by_child_name_for_tree(tree)
 
     # first pass to set all nodes to unassigned as precaution to ensure attribute is set
     for node in tree.find_clades(order = 'preorder'):
