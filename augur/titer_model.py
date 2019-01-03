@@ -48,6 +48,11 @@ class TiterCollection(object):
         5
         >>> measurements.get(("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10")))
         >>>
+        >>> output = TiterCollection.load_from_file("tests/data/titer_model/missing.tsv")
+        Traceback (most recent call last):
+          File "<ipython-input-2-0ea96a90d45d>", line 1, in <module>
+            open("tests/data/titer_model/missing.tsv", "r")
+        FileNotFoundError: [Errno 2] No such file or directory: 'tests/data/titer_model/missing.tsv'
         """
         if excluded_sources is None:
             excluded_sources = []
@@ -58,10 +63,6 @@ class TiterCollection(object):
         titer_files = [filenames] if type(filenames)==str else filenames
 
         for fname in titer_files:
-            if not os.path.isfile(fname):
-                print("ERROR: titer file %s does not exist!"%fname)
-                continue
-
             with myopen(fname, 'r') as infile:
                 for line in infile:
                     entries = line.strip().split('\t')
