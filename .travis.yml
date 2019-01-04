@@ -16,6 +16,7 @@ before_install:
 install:
   - pip3 install -e .[dev]
 script:
+  - (pytest -c pytest.python3.ini)
   - (cd tests/builds/zika/; snakemake)
   - (cd tests/builds/tb/; snakemake)
 after_success:
