@@ -42,7 +42,7 @@ setup(
             "matplotlib >=2.0, ==2.*",
             "pandas >=0.23.4, ==0.23.*",
             "phylo-treetime >=0.5.2, ==0.5.*",
-            "seaborn >=0.6.0, ==0.6.*",
+            "seaborn >=0.9.0, ==0.9.*",
             "snakemake >=5.1.5, ==5.*"
         ],
         extras_require={
