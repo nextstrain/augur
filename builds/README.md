@@ -2,9 +2,10 @@
 
 ### Modular builds
 
+* [dengue virus](https://github.com/nextstrain/dengue)
 * [Ebola virus](https://github.com/nextstrain/ebola)
-* [seasonal influenza virus](https://github.com/nextstrain/seasonal-flu) _in progress_
-* [avian influenza virus](https://github.com/nextstrain/avian-flu) _in progress_
+* [seasonal influenza virus](https://github.com/nextstrain/seasonal-flu)
+* [avian influenza virus](https://github.com/nextstrain/avian-flu)
 * [Lassa virus](https://github.com/nextstrain/lassa)
 * [measles virus](https://github.com/nextstrain/measles/)
 * [mumps virus](https://github.com/nextstrain/mumps)
@@ -14,10 +15,7 @@
 
 ### Legacy (non-modular) builds
 
-These are housed in the augur repo, but will be migrated to their own repositories.
+These remaining builds are still within the augur repo in order to have access to code, but will be deleted once fully migrated.
 
-For old (non-modular) augur.  New builds are in their own repositories.
-
-* [dengue virus](dengue/)
+* [dengue](dengue/)
 * [seasonal influenza virus](flu/)
-* [avian influenza H7N9](avian/)

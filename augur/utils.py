@@ -1,4 +1,6 @@
 import argparse
+import Bio
+import Bio.Phylo
 import os, json, sys
 import pandas as pd
 import subprocess
@@ -453,3 +455,73 @@ def nthreads_value(value):
         return int(value)
     except ValueError:
         raise argparse.ArgumentTypeError("'%s' is not an integer or the word 'auto'" % value) from None
+
+
+def get_parent_name_by_child_name_for_tree(tree):
+    '''
+    Return dictionary mapping child node names to parent node names
+    '''
+    parents = {}
+    for clade in tree.find_clades(order='level'):
+        for child in clade:
+            parents[child.name] = clade.name
+    return parents
+
+
+def annotate_parents_for_tree(tree):
+    """Annotate each node in the given tree with its parent.
+    """
+    tree.parent = None
+    for node in tree.find_clades(order="level"):
+        for child in node.clades:
+            child.parent = node
+
+    # Return the tree.
+    return tree
+
+
+def json_to_tree(json_dict, root=True):
+    """Returns a Bio.Phylo tree corresponding to the given JSON dictionary exported
+    by `tree_to_json`.
+
+    Assigns links back to parent nodes for the root of the tree.
+
+    >>> import json
+    >>> json_fh = open("tests/data/json_tree_to_nexus/flu_h3n2_ha_3y_tree.json", "r")
+    >>> json_dict = json.load(json_fh)
+    >>> tree = json_to_tree(json_dict)
+    >>> tree.name
+    'NODE_0002020'
+    >>> len(tree.clades)
+    2
+    >>> tree.clades[0].name
+    'NODE_0001489'
+    >>> hasattr(tree, "attr")
+    True
+    >>> "dTiter" in tree.attr
+    True
+    >>> tree.clades[0].parent.name
+    'NODE_0002020'
+    """
+    node = Bio.Phylo.Newick.Clade()
+    node.name = json_dict["strain"]
+
+    if "children" in json_dict:
+        # Recursively add children to the current node.
+        node.clades = [json_to_tree(child, root=False) for child in json_dict["children"]]
+
+    # Assign all non-children attributes.
+    for attr, value in json_dict.items():
+        if attr != "children":
+            setattr(node, attr, value)
+
+    node.numdate = node.attr.get("num_date")
+    node.branch_length = node.attr.get("div")
+
+    if "translations" in node.attr:
+        node.translations = node.attr["translations"]
+
+    if root:
+        node = annotate_parents_for_tree(node)
+
+    return node

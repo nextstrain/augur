@@ -48,6 +48,11 @@ def register_arguments(parser):
     parser.add_argument("--weights-attribute", help="name of the attribute on each tip whose values map to the given weights dictionary")
     parser.add_argument("--censored", action="store_true", help="calculate censored frequencies at each pivot")
 
+    # Diffusion frequency specific arguments
+    parser.add_argument("--stiffness", type=float, default=10.0, help="parameter penalizing curvature of the frequency trajectory")
+    parser.add_argument("--inertia", type=float, default=0.0, help="determines how frequencies continue "
+                        "in absense of data (inertia=0 -> go flat, inertia=1.0 -> continue current trend)")
+
     # Output arguments
     parser.add_argument('--output-format', default='auspice', choices=['auspice', 'nextflu'],
                         help="format to export frequencies JSON depending on the viewing interface")
@@ -62,7 +67,8 @@ def format_frequencies(freq):
 def run(args):
     metadata, columns = read_metadata(args.metadata)
     dates = get_numerical_dates(metadata, fmt='%Y-%m-%d')
-    stiffness = 5.0
+    stiffness = args.stiffness
+    inertia = args.inertia
 
     if args.tree:
         tree = Phylo.read(args.tree, 'newick')
@@ -94,7 +100,7 @@ def run(args):
                 tree_freqs = tree_frequencies(tree, pivots, method='SLSQP',
                                               node_filter = node_filter_func,
                                               ws = max(2, tree.count_terminals()//10),
-                                              stiffness = stiffness)
+                                              stiffness = stiffness, inertia=inertia)
 
                 tree_freqs.estimate_clade_frequencies()
 
@@ -170,7 +176,7 @@ def run(args):
                 pivots = get_pivots(tps, args.pivot_interval, args.min_date, args.max_date)
                 frequencies = {"pivots":format_frequencies(pivots)}
 
-            freqs = alignment_frequencies(aln, tps, pivots)
+            freqs = alignment_frequencies(aln, tps, pivots, stiffness=stiffness, inertia=inertia, method='SLSQP')
             freqs.mutation_frequencies(min_freq = args.minimal_frequency, ignore_char='-')
             frequencies.update({"%s:%d%s" % (gene, pos+1, state): format_frequencies(mutation_frequencies)
                                 for (pos, state), mutation_frequencies in freqs.frequencies.items()})
