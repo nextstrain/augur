@@ -18,7 +18,7 @@ def register_arguments(parser):
     add_default_command(parser)
 
     tree_model = subparsers.add_parser('tree', help='tree model')
-    tree_model.add_argument('--titers', type=str, required=True, help="file with titer measurements")
+    tree_model.add_argument('--titers', nargs='+', type=str, required=True, help="file with titer measurements")
     tree_model.add_argument('--tree', '-t', type=str, required=True, help="tree to perform fit titer model to")
     tree_model.add_argument('--output', '-o', type=str, required=True, help='JSON file to save titer model')
     tree_model.set_defaults(
@@ -26,7 +26,7 @@ def register_arguments(parser):
     )
 
     sub_model = subparsers.add_parser('sub', help='substitution model')
-    sub_model.add_argument('--titers', type=str, required=True, help="file with titer measurements")
+    sub_model.add_argument('--titers', nargs='+', type=str, required=True, help="file with titer measurements")
     sub_model.add_argument('--alignment', nargs='+', type=str, required=True, help="sequence to be used in the substitution model, supplied as fasta files")
     sub_model.add_argument('--gene-names', nargs='+', type=str, required=True, help="names of the sequences in the alignment, same order assumed")
     sub_model.add_argument('--tree', '-t', type=str, help="optional tree to annotate fit titer model to")
