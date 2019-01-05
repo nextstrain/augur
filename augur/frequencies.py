@@ -31,6 +31,8 @@ def register_arguments(parser):
                         help="tree to estimate clade frequencies for")
     parser.add_argument("--include-internal-nodes", action="store_true",
                         help="calculate frequencies for internal nodes as well as tips")
+    parser.add_argument('--minimal-clade-size', type=int, default=0,
+                        help="minimal size of a clade to have frequencies estimated")
 
     # Alignment-specific arguments
     parser.add_argument('--alignments', type=str, nargs='+',
@@ -61,7 +63,7 @@ def register_arguments(parser):
 
 
 def format_frequencies(freq):
-    return list(freq)
+    return [round(x,6) for x in freq]
 
 
 def run(args):
@@ -112,8 +114,13 @@ def run(args):
 
                 else:
                     # Export frequencies in auspice-format by strain name.
-                    for node in tree.find_clades():
-                        if node.is_terminal() or args.include_internal_nodes:
+                    for node in tree.find_clades(order='postorder'):
+                        if node.is_terminal():
+                            node.tipcount=1
+                        else:
+                            node.tipcount = np.sum([c.tipcount for c in node])
+
+                        if (node.is_terminal() or args.include_internal_nodes) and node.tipcount>args.minimal_clade_size:
                             if node.name not in frequency_dict:
                                 frequency_dict[node.name] = {}
                             frequency_dict[node.name][region] = format_frequencies(tree_freqs.frequencies[node.clade])
