@@ -39,6 +39,8 @@ def register_arguments(parser):
                         help="alignments to estimate mutations frequencies for")
     parser.add_argument('--gene-names', nargs='+', type=str,
                         help="names of the sequences in the alignment, same order assumed")
+    parser.add_argument('--ignore-char', type=str, default='',
+                        help="character to be ignored in frequency calculations")
     parser.add_argument('--minimal-frequency', type=float, default=0.05,
                         help="minimal all-time frequencies for a trajectory to be estimates")
 
@@ -184,7 +186,7 @@ def run(args):
                 frequencies = {"pivots":format_frequencies(pivots)}
 
             freqs = alignment_frequencies(aln, tps, pivots, stiffness=stiffness, inertia=inertia, method='SLSQP')
-            freqs.mutation_frequencies(min_freq = args.minimal_frequency, ignore_char='-')
+            freqs.mutation_frequencies(min_freq = args.minimal_frequency, ignore_char=args.ignore_char)
             frequencies.update({"%s:%d%s" % (gene, pos+1, state): format_frequencies(mutation_frequencies)
                                 for (pos, state), mutation_frequencies in freqs.frequencies.items()})
             frequencies["%s:counts" % gene] = [int(observations_per_pivot)
