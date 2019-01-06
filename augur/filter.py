@@ -169,7 +169,7 @@ def run(args):
 
     # exclude sequences with non-nucleotide characters
     if args.non_nucleotide:
-        good_chars = {'A', 'C', 'G', 'T', '-', 'N', 'R', 'Y', 'S', 'W', 'K', 'M', 'D', 'H', 'B', 'V'}
+        good_chars = {'A', 'C', 'G', 'T', '-', 'N', 'R', 'Y', 'S', 'W', 'K', 'M', 'D', 'H', 'B', 'V', '?'}
         seq_keep = [s for s in seq_keep if len(set(str(seqs[s].seq).upper()).difference(good_chars))==0]
 
     # subsampling. This will sort sequences into groups by meta data fields
