@@ -2,7 +2,11 @@
 Build a tree using a variety of methods.
 """
 
-import os, shutil, sys, time
+import os
+import shutil
+import sys
+import time
+import uuid
 from Bio import Phylo
 from treetime.vcf_utils import read_vcf
 import numpy as np
@@ -48,17 +52,26 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=1):
         "raxmlHPC",
     ])
 
-    call = [raxml,"-T",str(nthreads)," -f d -m GTRCAT -c 25 -p 235813 -n tre -s",aln_file,"> raxml.log"]
+    # RAxML outputs files appended with this random string:
+    # RAxML_bestTree.4ed91a, RAxML_info.4ed91a, RAxML_parsimonyTree.4ed91a, RAxML_result.4ed91a
+    random_string = uuid.uuid4().hex[0:6]
+
+    call = [raxml,"-T",str(nthreads)," -f d -m GTRCAT -c 25 -p 235813 -n %s -s"%(random_string), aln_file, "> RAxML_log.%s"%(random_string)]
     cmd = " ".join(call)
     print("Building a tree via:\n\t" + cmd +
           "\n\tStamatakis, A: RAxML Version 8: A tool for Phylogenetic Analysis and Post-Analysis of Large Phylogenies."
           "\n\tIn Bioinformatics, 2014\n")
     try:
         run_shell_command(cmd, raise_errors = True)
-        shutil.copy('RAxML_bestTree.tre', out_file)
+        shutil.copy("RAxML_bestTree.%s"%(random_string), out_file)
         T = Phylo.read(out_file, 'newick')
         if clean_up:
-            os.remove('raxml.log')
+            os.remove("RAxML_bestTree.%s"%(random_string))
+            os.remove("RAxML_info.%s"%(random_string))
+            os.remove("RAxML_log.%s"%(random_string))
+            os.remove("RAxML_parsimonyTree.%s"%(random_string))
+            os.remove("RAxML_result.%s"%(random_string))
+
     except:
         print("TREE BUILDING FAILED, please inspect the raxml.log file\n")
         T=None
