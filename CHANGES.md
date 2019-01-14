@@ -1,6 +1,24 @@
 # __NEXT__
 
 
+# 3.1.5 (13 January 2019)
+
+## Features
+
+* frequencies: Add `--ignore-char` and `--minimal-clade-size` as options.
+* frequencies: Include `--stiffness` and `--inertia` as options.
+* titers: Allow multiple titer date files in `--titers` import.
+
+## Bug fixes
+
+* filter: Fix `--non-nucleotide` call to include `?` as allowed character.
+* tree: Fix `--method raxml` to properly delimit interim RAxML output so that
+  simultaneous builds don't conflict.
+
+## Data
+
+* Include additional country lat/longs in base data  
+
 # 3.1.4 (1 January 2019)
 
 ## Bug fixes
