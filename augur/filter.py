@@ -5,7 +5,7 @@ Filter and subsample a sequence set.
 from Bio import SeqIO
 import pandas as pd
 from collections import defaultdict
-import random,os
+import random, os, re
 import numpy as np
 from .utils import read_metadata, get_numerical_dates, run_shell_command
 
@@ -71,9 +71,9 @@ def register_arguments(parser):
     parser.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     parser.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
     parser.add_argument('--exclude-where', nargs='+',
-                                help="Exclude samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be excluded), not AND")
+                                help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
     parser.add_argument('--include-where', nargs='+',
-                                help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND")
+                                help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND. This rule is applied last and ensures any sequences matching these rules will be included.")
     parser.add_argument('--output', '-o', help="output file")
 
 
@@ -135,14 +135,18 @@ def run(args):
     if args.exclude_where:
         for ex in args.exclude_where:
             try:
-                col, val = ex.split("=")
+                col, val = re.split(r'!?=', ex)
             except (ValueError,TypeError):
-                print("invalid exclude clause %s, should be of from property=value"%ex)
+                print("invalid --exclude-where clause \"%s\", should be of from property=value or property!=value"%ex)
             else:
                 to_exclude = set()
                 for seq_name in seq_keep:
-                    if meta_dict[seq_name].get(col,'unknown').lower() == val.lower():
-                        to_exclude.add(seq_name)
+                    if "!=" in ex: # i.e. property!=value requested
+                        if meta_dict[seq_name].get(col,'unknown').lower() != val.lower():
+                            to_exclude.add(seq_name)
+                    else: # i.e. property=value requested
+                        if meta_dict[seq_name].get(col,'unknown').lower() == val.lower():
+                            to_exclude.add(seq_name)
                 seq_keep = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
 
     # filter by sequence length
