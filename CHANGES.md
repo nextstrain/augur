@@ -1,6 +1,20 @@
 # __NEXT__
 
 
+# 3.1.6 (29 January 2019)
+
+## Features
+
+* filter: Allow negative matches to `--exclude-where`. For example,
+ `--exclude-where country!=usa` would exclude all samples where metadata `country` does
+ not equal `usa`.
+* tree: Allow `--exclude-sites` to work with FASTA input. Ensure that indexing of input
+ sites is one-based.
+
+## Bug fixes
+* fix loading of strains when loading titers from file, previously strains had not been
+ filtered to match the tree appropriately
+
 # 3.1.5 (13 January 2019)
 
 ## Features
