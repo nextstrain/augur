@@ -341,7 +341,7 @@ class TiterModel(object):
         # measurements.
         if (isinstance(titers, str) and os.path.isfile(titers))\
             or isinstance(titers, list):
-            titer_measurements, strains, sera = TiterCollection.load_from_file(titers)
+            titer_measurements, in_strains, sera = TiterCollection.load_from_file(titers)
         else:
             titer_measurements = titers
 
