@@ -730,8 +730,9 @@ class KdeFrequencies(object):
         the probability mass at each pivot. These mass values per pivot will form the
         input for a kernel density estimate across multiple observations.
         """
-        return ((1-proportion_wide) * norm.pdf(pivots, loc=mu, scale=sigma_narrow) +
-                proportion_wide * norm.pdf(pivots, loc=mu, scale=sigma_wide))
+        initial_density = norm.pdf(pivots[0], loc=mu, scale=sigma_narrow)
+        density = np.array([initial_density] + list(np.diff(norm.cdf(pivots, loc=mu, scale=sigma_narrow))))
+        return density
 
     @classmethod
     def get_densities_for_observations(cls, observations, pivots, max_date=None, **kwargs):
