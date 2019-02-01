@@ -591,8 +591,11 @@ class fitness_model(object):
 
                 if self.min_freq <= node_freq <= self.max_freq:
                     # Exclude subclades whose frequency is identical to their parent clade.
-                    parent_node_freq = self.freq_arrays[time][self.node_parents[node].tips].sum(axis=0)
-                    if node_freq < parent_node_freq:
+                    if node in self.node_parents:
+                        parent_node_freq = self.freq_arrays[time][self.node_parents[node].tips].sum(axis=0)
+                        if node_freq < parent_node_freq:
+                            self.fit_clades[time].append(node)
+                    else:
                         self.fit_clades[time].append(node)
 
     def select_nonoverlapping_clades_for_fitting(self):
