@@ -730,7 +730,8 @@ class fitness_model(object):
 
         training_error = self.cost_function(
             self.pred_vs_true_df["observed_freq"],
-            self.pred_vs_true_df["predicted_freq"]
+            self.pred_vs_true_df["predicted_freq"],
+            data=self.pred_vs_true_df
         )
         if np.isnan(training_error) or np.isinf(training_error):
             training_error = 1e10
@@ -919,6 +920,7 @@ class fitness_model(object):
             # Otherwise, just learn parameters for all timepoints.
             if self.cross_validate:
                 train_test_splits = self.split_timepoints()
+                self.test_data = []
                 results = []
                 for train, test in train_test_splits:
                     print("train: %s, test: %s" % (train, test))
@@ -950,6 +952,11 @@ class fitness_model(object):
 
                     result.update(testing_matrix)
                     results.append(result)
+
+                    # Track the observed and predicted values per clade for export to JSON.
+                    # There should be one entry per clade across all timepoints.
+                    self.test_data.extend(self.pred_vs_true_df.to_dict(orient="records"))
+
                     print("train error: %s, test error: %s" % (training_error, testing_error))
 
                 validation_df = pd.DataFrame(results)
@@ -1199,6 +1206,10 @@ class fitness_model(object):
             "step_size": self.timepoint_step_size,
             "end_date": self.end_date
         }
+
+        # Include data from cross-validation test intervals, if they are available.
+        if self.cross_validate and hasattr(self, "test_data"):
+            data["test_data"] = self.test_data
 
         predictor_arrays = {}
         for key in self.predictor_arrays:
