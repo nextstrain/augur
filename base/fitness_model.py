@@ -130,8 +130,15 @@ def get_matthews_correlation_coefficient_for_data_frame(freq_df, return_confusio
         else:
             return mcc
 
+def mcc_cost_function(observed_freq, predicted_freq, **kwargs):
+    """Calculates MCC for a data frame as a cost function.
+    """
+    mcc = get_matthews_correlation_coefficient_for_data_frame(kwargs["data"])
+    cost = 1.0 - (mcc ** 2)
+    print("MCC: %s, cost: %s" % (mcc, cost))
+    return cost
 
-def sum_of_squared_errors(observed_freq, predicted_freq):
+def sum_of_squared_errors(observed_freq, predicted_freq, **kwargs):
     """
     Calculates the sum of squared errors for observed and predicted frequencies.
 
@@ -145,7 +152,7 @@ def sum_of_squared_errors(observed_freq, predicted_freq):
     return np.sum((observed_freq - predicted_freq) ** 2)
 
 
-def mean_absolute_error(observed_freq, predicted_freq):
+def mean_absolute_error(observed_freq, predicted_freq, **kwargs):
     """
     Calculates the mean absolute error between observed and predicted frequencies.
 
@@ -157,6 +164,20 @@ def mean_absolute_error(observed_freq, predicted_freq):
         float: mean absolute error between observed and predicted frequencies
     """
     return np.mean(np.abs(observed_freq - predicted_freq))
+
+
+def sum_of_absolute_error(observed_freq, predicted_freq, **kwargs):
+    """
+    Calculates the sum of absolute error between observed and predicted frequencies.
+
+    Args:
+        observed_freq (numpy.ndarray): observed frequencies
+        predicted_freq (numpy.ndarray): predicted frequencies
+
+    Returns:
+        float: sum of absolute error between observed and predicted frequencies
+    """
+    return np.sum(np.abs(observed_freq - predicted_freq))
 
 
 def project_clade_frequencies_by_delta_from_time(tree, model, time, delta, delta_steps_per_year=12):
@@ -917,7 +938,9 @@ class fitness_model(object):
                         "training_correlation": training_correlation[-1][0],
                         "testing_accuracy": testing_mcc,
                         "testing_correlation": testing_correlation[-1][0],
-                        "mae": mean_absolute_error(self.pred_vs_true_df["observed_freq"], self.pred_vs_true_df["predicted_freq"])
+                        "sae": sum_of_absolute_error(self.pred_vs_true_df["observed_freq"], self.pred_vs_true_df["predicted_freq"]),
+                        "sse": sum_of_squared_errors(self.pred_vs_true_df["observed_freq"], self.pred_vs_true_df["predicted_freq"]),
+                        "n_samples": self.pred_vs_true_df.shape[0]
                     }
                     for predictor, parameter in zip(self.predictors, self.model_params):
                         result["parameter-%s" % predictor] = parameter
