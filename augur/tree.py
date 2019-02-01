@@ -349,7 +349,7 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
 
     # Write out the new alignment FASTA to disk.
     alignment_file_path = Path(alignment_file)
-    masked_alignment_file = str(alignment_file_path.parent / f"masked_{alignment_file_path.name}")
+    masked_alignment_file = str(alignment_file_path.parent / ("masked_%s" % alignment_file_path.name))
     with open(masked_alignment_file, "w") as oh:
         Bio.AlignIO.write(final_alignment, oh, "fasta")
 
