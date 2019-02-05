@@ -323,35 +323,31 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
     str
         path to the new FASTA file from which sites have been excluded
     """
-    # Load alignment.
-    alignment = Bio.AlignIO.read(alignment_file, "fasta")
-
     # Load zero-based excluded sites.
-    excluded_sites = load_excluded_sites(excluded_sites_file)
+    excluded_sites = load_excluded_sites(excluded_sites_file).tolist()
 
     # Return the original alignment file, if no excluded sites were found.
     if len(excluded_sites) == 0:
         return alignment_file
 
-    # Find sites to include in the final alignment.
-    sites = np.arange(alignment.get_alignment_length())
-    included_sites = np.setdiff1d(sites, excluded_sites)
+    # Load alignment as FASTA generator to prevent loading the whole alignment
+    # into memory.
+    alignment = Bio.SeqIO.parse(alignment_file, "fasta")
 
-    # Build the final alignment by slicing.
-    alignment_sites = [alignment[:, site:site+1] for site in included_sites]
-    final_alignment = alignment_sites[0]
-    for alignment_site in alignment_sites[1:]:
-        final_alignment += alignment_site
-
-    # Confirm that the final alignment is shorter than the original, if there
-    # were sites to exclude.
-    assert len(excluded_sites) == 0 or (final_alignment.get_alignment_length() < alignment.get_alignment_length())
-
-    # Write out the new alignment FASTA to disk.
+    # Write the masked alignment to disk one record at a time.
     alignment_file_path = Path(alignment_file)
     masked_alignment_file = str(alignment_file_path.parent / ("masked_%s" % alignment_file_path.name))
     with open(masked_alignment_file, "w") as oh:
-        Bio.AlignIO.write(final_alignment, oh, "fasta")
+        for record in alignment:
+            # Convert to a mutable sequence to enable masking with Ns.
+            sequence = record.seq.tomutable()
+
+            # Replace all excluded sites with Ns.
+            for site in excluded_sites:
+                sequence[site] = "N"
+
+            record.seq = sequence
+            Bio.SeqIO.write(record, oh, "fasta")
 
     # Return the new alignment FASTA filename.
     return masked_alignment_file
