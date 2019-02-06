@@ -27,7 +27,7 @@ def float_to_datestring(time):
     """Convert a floating point date to a date string
     """
     year = int(time)
-    month = int(((time - year) * 12) + 1)
+    month = int(np.round((time - year) * 12)) + 1
     day = 1
     return "-".join(map(str, (year, month, day)))
 
@@ -315,7 +315,7 @@ class fitness_model(object):
 
         # Convert date range to floats for consistency with downstream functions.
         timepoints = map(timestamp_to_float, timepoints)
-        self.timepoints = np.array(timepoints)
+        self.timepoints = np.around(timepoints, 2)
 
         # If an end date was provided, exclude all timepoints after that date.
         if self.end_date:

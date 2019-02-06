@@ -15,7 +15,7 @@ def float_to_datestring(time):
     """Convert a floating point date to a date string
     """
     year = int(time)
-    month = int(((time - year) * 12) + 1)
+    month = int(np.around((time - year) * 12)) + 1
     day = 1
     return "-".join(map(str, (year, month, day)))
 
