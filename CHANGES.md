@@ -1,6 +1,14 @@
 # __NEXT__
 
 
+# 3.1.7 (5 February 2019)
+
+## Bug fixes
+
+* Update to TreeTime 0.5.3
+* tree: Fix bug in printing causing errors in Python versions <3.6
+* tree: Alter site masking to not be so memory intensive
+
 # 3.1.6 (29 January 2019)
 
 ## Features
@@ -12,6 +20,7 @@
  sites is one-based.
 
 ## Bug fixes
+
 * fix loading of strains when loading titers from file, previously strains had not been
  filtered to match the tree appropriately
 
