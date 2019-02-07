@@ -947,8 +947,14 @@ class fitness_model(object):
                         "sse": sum_of_squared_errors(self.pred_vs_true_df["observed_freq"], self.pred_vs_true_df["predicted_freq"]),
                         "n_samples": self.pred_vs_true_df.shape[0]
                     }
+
+                    # Store parameters per predictor.
                     for predictor, parameter in zip(self.predictors, self.model_params):
                         result["parameter-%s" % predictor] = parameter
+
+                    # Store predictor value mean SDs (i.e., "global_SDS").
+                    for predictor, sd in zip(self.predictors, self.global_sds):
+                        result["global_sd-%s" % predictor] = sd
 
                     result.update(testing_matrix)
                     results.append(result)
