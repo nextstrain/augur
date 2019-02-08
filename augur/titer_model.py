@@ -578,8 +578,8 @@ class TiterModel(object):
         mean_potency = defaultdict(int)
         for (ref_vir, serum), val in self.serum_potency.items():
             mean_potency[ref_vir] += self.titer_counts[ref_vir][serum]*val
-        for ref_clade in self.ref_strains:
-            potency_json[ref_clade]['mean_potency'] = 1.0*mean_potency[ref_vir]/np.sum(list(self.titer_counts[ref_vir].values()))
+        for ref_vir in self.ref_strains:
+            potency_json[ref_vir]['mean_potency'] = 1.0*mean_potency[ref_vir]/np.sum(list(self.titer_counts[ref_vir].values()))
 
         return potency_json
 
