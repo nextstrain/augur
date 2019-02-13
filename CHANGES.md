@@ -1,6 +1,12 @@
 # __NEXT__
 
 
+# 3.1.8 (13 February 2019)
+
+## Bug fixes
+
+* titers: fix calculation of `mean_potentency` for model export
+
 # 3.1.7 (5 February 2019)
 
 ## Bug fixes
