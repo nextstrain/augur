@@ -10,7 +10,7 @@ from treetime.vcf_utils import read_vcf, write_vcf
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
              confidence=False, resolve_polytomies=True, max_iter=2,
              infer_gtr=True, Tc=0.01, reroot=None, use_marginal=False, fixed_pi=None,
-             clock_rate=None, clock_std=None, clock_filter_iqd=None, verbosity=1, **kwarks):
+             clock_rate=None, clock_std=None, clock_filter_iqd=None, verbosity=1, covariance=True, **kwarks):
     from treetime import TreeTime
 
     try: #Tc could be a number or  'opt' or 'skyline'. TreeTime expects a float or int if a number.
@@ -38,7 +38,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
     # conditionally run clock-filter and remove bad tips
     if clock_filter_iqd:
         # treetime clock filter will mark, but not remove bad tips
-        tt.clock_filter(reroot='best', n_iqd=clock_filter_iqd, plot=False)
+        tt.clock_filter(reroot=reroot, n_iqd=clock_filter_iqd, plot=False) #use whatever was specified
         # remove them explicitly
         leaves = [x for x in tt.tree.get_terminals()]
         for n in leaves:
@@ -64,7 +64,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
     tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
            branch_length_mode=branch_length_inference, resolve_polytomies=resolve_polytomies,
            max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
-           vary_rate=vary_rate, **kwarks)
+           vary_rate=vary_rate, use_covariation=covariance, **kwarks)
 
     if confidence:
         for n in tt.tree.find_clades():
@@ -94,8 +94,15 @@ def register_arguments(parser):
     parser.add_argument('--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
     parser.add_argument('--clock-rate', type=float, help="fixed clock rate")
     parser.add_argument('--clock-std-dev', type=float, help="standard deviation of the fixed clock_rate estimate")
-    parser.add_argument('--root', nargs="+", help="rooting mechanism ('best', 'residual', 'rsq', 'min_dev') "
-                                "OR node to root by OR two nodes indicating a monophyletic group to root by")
+    parser.add_argument('--root', nargs="+", default='best', help="rooting mechanism ('best', least-squares', 'min_dev', 'oldest') "
+                                "OR node to root by OR two nodes indicating a monophyletic group to root by. "
+                                "Run treetime -h for definitions of rooting methods.")
+    parser.add_argument('--keep-root', action="store_true", help="do not reroot the tree; use it as-is. "
+                                "Overrides anything specified by --root.")
+    parser.add_argument('--covariance', dest='covariance', action='store_true', help="Account for covariation when estimating "
+                                "rates and/or rerooting. "
+                                "Use --no-covariance to turn off.")
+    parser.add_argument('--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!                         
     parser.add_argument('--date-format', default="%Y-%m-%d", help="date format")
     parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
     parser.add_argument('--date-inference', default='joint', choices=["joint", "marginal"],
@@ -106,7 +113,7 @@ def register_arguments(parser):
                                 'interquartile ranges from the root-to-tip vs time regression')
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--year-bounds', type=int, nargs='+', help='specify min or max & min prediction bounds for samples with XX in year')
-
+    parser.set_defaults(covariance=True)
 
 def run(args):
     # check alignment type, set flags, read in if VCF
@@ -177,14 +184,17 @@ def run(args):
 
         if args.root and len(args.root) == 1: #if anything but a list of seqs, don't send as a list
             args.root = args.root[0]
+        if args.keep_root:  # This flag overrides anything specified by 'root'
+            args.root = None
 
         tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
-                    reroot=args.root or 'best',
+                    reroot=args.root, # or 'best', # We now have a default in param spec - this just adds confusion.
                     Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
                     use_marginal = args.date_inference == 'marginal',
                     branch_length_inference = args.branch_length_inference or 'auto',
                     clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
-                    clock_filter_iqd=args.clock_filter_iqd)
+                    clock_filter_iqd=args.clock_filter_iqd,
+                    covariance=args.covariance)
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
