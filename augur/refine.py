@@ -8,7 +8,7 @@ from .utils import read_metadata, get_numerical_dates, write_json
 from treetime.vcf_utils import read_vcf, write_vcf
 
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
-             confidence=False, resolve_polytomies=True, max_iter=2,
+             confidence=False, resolve_polytomies=True, max_iter=2, aa=False,
              infer_gtr=True, Tc=0.01, reroot=None, use_marginal=False, fixed_pi=None,
              clock_rate=None, clock_std=None, clock_filter_iqd=None, verbosity=1, **kwarks):
     from treetime import TreeTime
@@ -33,7 +33,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
 
     #send ref, if is None, does no harm
     tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates,
-                  verbose=verbosity, gtr='JC69')
+                  verbose=verbosity, gtr='JC69', alphabet='aa' if aa else 'nuc')
 
     # conditionally run clock-filter and remove bad tips
     if clock_filter_iqd:
@@ -86,6 +86,7 @@ def collect_node_data(T, attributes):
 
 def register_arguments(parser):
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
+    parser.add_argument('--aa', action='store_true', help="interpret as amino acid alignment")
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     parser.add_argument('--metadata', type=str, help="tsv/csv table with meta data for sequences")
     parser.add_argument('--output-tree', type=str, help='file name to write tree to')
@@ -180,6 +181,7 @@ def run(args):
 
         tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                     reroot=args.root or 'best',
+                    aa=args.aa,
                     Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
                     use_marginal = args.date_inference == 'marginal',
                     branch_length_inference = args.branch_length_inference or 'auto',
@@ -195,7 +197,7 @@ def run(args):
     else:
         from treetime import TreeAnc
         # instantiate treetime for the sole reason to name internal nodes
-        tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=1)
+        tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', alphabet='aa' if args.aa else 'nuc', verbose=1)
 
     node_data['nodes'] = collect_node_data(T, attributes)
 

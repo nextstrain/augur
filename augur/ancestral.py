@@ -9,9 +9,9 @@ from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
 
 def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
-                                 marginal=False):
+                                 marginal=False, aa=False):
     from treetime import TreeAnc
-    tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69', verbose=1)
+    tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69', alphabet = 'aa' if aa else 'nuc', verbose=1)
 
     # convert marginal (from args.inference) from 'joint' or 'marginal' to True or False
     bool_marginal = (marginal == "marginal")
@@ -47,6 +47,7 @@ def collect_sequences_and_mutations(T, is_vcf=False):
 def register_arguments(parser):
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
+    parser.add_argument('--aa', action='store_true', help="interpret as amino acid alignment")
     parser.add_argument('--output', '-o', type=str, help='file name to save mutations and ancestral sequences to')
     parser.add_argument('--inference', default='joint', choices=["joint", "marginal"],
                                     help="calculate joint or marginal maximum likelihood ancestral sequence states")
@@ -82,7 +83,7 @@ def run(args):
     else:
         aln = args.alignment
 
-    tt = ancestral_sequence_inference(tree=T, aln=aln, ref=ref, marginal=args.inference)
+    tt = ancestral_sequence_inference(tree=T, aln=aln, ref=ref, marginal=args.inference,aa=args.aa)
 
     if is_vcf:
         # TreeTime overwrites ambig sites on tips during ancestral reconst.
