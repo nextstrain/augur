@@ -55,11 +55,13 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
     else:
         marginal = confidence
 
-    vary_rate = False
-    if clock_rate and clock_std:
-        vary_rate = clock_std
+    # uncertainty of the the clock rate is relevant if confidence intervals are estimated
+    if confidence and clock_std:
+        vary_rate = clock_std # if standard devivation of clock is specified, use that
+    elif confidence and covariance:
+        vary_rate = True      # if run in covariance mode, standard deviation can be estimated
     else:
-        vary_rate = True
+        vary_rate = False     # otherwise, rate uncertainty will be ignored
 
     tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
            branch_length_mode=branch_length_inference, resolve_polytomies=resolve_polytomies,
@@ -102,7 +104,7 @@ def register_arguments(parser):
     parser.add_argument('--covariance', dest='covariance', action='store_true', help="Account for covariation when estimating "
                                 "rates and/or rerooting. "
                                 "Use --no-covariance to turn off.")
-    parser.add_argument('--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!                         
+    parser.add_argument('--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!
     parser.add_argument('--date-format', default="%Y-%m-%d", help="date format")
     parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
     parser.add_argument('--date-inference', default='joint', choices=["joint", "marginal"],
