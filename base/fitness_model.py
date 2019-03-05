@@ -869,7 +869,9 @@ class fitness_model(object):
             total_freq += node.predicted_freq
 
         for node in self.tree.get_terminals():
-            node.predicted_freq /= total_freq
+            if total_freq > 0:
+                node.predicted_freq /= total_freq
+
             node.attr["predicted_freq"] = node.predicted_freq
 
     def split_timepoints(self):
