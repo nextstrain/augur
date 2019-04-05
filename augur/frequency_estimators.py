@@ -1197,7 +1197,7 @@ class AlignmentKdeFrequencies(KdeFrequencies):
                 for sample, base in enumerate(alignment[:, position]):
                     # Estimate frequencies by current position and base/residue
                     # at the position for each sample.
-                    key = "%s:%s" % (position, base.upper())
+                    key = "%s:%s" % (position + 1, base.upper())
                     if key not in frequencies:
                         frequencies[key] = np.zeros_like(self.pivots)
 
