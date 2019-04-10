@@ -452,12 +452,18 @@ def register_arguments(parser):
     parser.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
     parser.add_argument('--extra-traits', nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
     parser.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : xxx")
+    parser.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
 
 
 def run(args):
     T = Phylo.read(args.tree, 'newick')
     node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
     nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
+
+    if args.minify_json:
+        json_indent = None
+    else:
+        json_indent = 2
 
     # export reference sequence data including translations. This is either the
     # inferred sequence of the root, or the reference sequence with respect to
@@ -497,7 +503,7 @@ def run(args):
             tree_decorations.append({"key": trait, "is_attr": True})
 
         recursively_decorate_tree_json_nextflu_schema(tree_json, nodes, decorations=tree_decorations)
-        write_json(tree_json, args.output_tree, indent=2)
+        write_json(tree_json, args.output_tree, indent=json_indent)
 
         # Export the metadata JSON
         lat_long_mapping = read_lat_longs(args.lat_longs)
@@ -512,7 +518,7 @@ def run(args):
             meta_json["annotations"] = annotations
         meta_json["panels"] = process_panels(None, meta_json, nextflu=True)
 
-        write_json(meta_json, args.output_meta, indent=2)
+        write_json(meta_json, args.output_meta, indent=json_indent)
         return 0
 
     ## SCHEMA v2.0 ##
@@ -553,5 +559,4 @@ def run(args):
     unified["genome_annotations"] = process_annotations(node_data)
     unified["panels"] = process_panels(args.panels, unified)
 
-
-    write_json(unified, args.output_main, indent=2)
+    write_json(unified, args.output_main, indent=json_indent)
