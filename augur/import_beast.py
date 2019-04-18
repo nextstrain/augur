@@ -274,7 +274,30 @@ def parse_nexus(tree_path, treestring_regex='tree [A-Za-z\_]+([0-9]+)', verbose=
         print("Recursion limit reached. You can try raising this with the `--recursion-limit` option")
         print("(Be careful with this). Your current limit is set to {}".format(sys.getrecursionlimit()))
         sys.exit(2)
+
+
+
+def summarise_parsed_traits(tree):
+    """
+    Parameters
+    ----------
+    tree : <class 'Bio.Phylo.BaseTree.Tree'>
+    """
+    traits = {}
+    for node in tree.find_clades():
+        for attr in node.attrs:
+            if attr not in traits:
+                traits[attr] = [0, 0]
+            if node.is_terminal():
+                traits[attr][1] += 1
+            else:
+                traits[attr][0] += 1
     
+    print("\nParsed BEAST traits:")
+    print("{: <20}{: <12}{: <12}".format("name", "n(internal)", "n(terminal)"))
+    for trait in traits:
+        print("{: <20}{: <12}{: <12}".format(trait, traits[trait][0], traits[trait][1]))
+    print("\n")
 
 
 
@@ -549,14 +572,15 @@ def run(args):
     }
 
     tree = parse_nexus(tree_path=args.mcc, verbose=args.verbose)
+    summarise_parsed_traits(tree)
     # Phylo.draw_ascii(tree)
     # instantiate treetime for the sole reason to name internal nodes (!)
     # note that tt.tree = tree, and this is modified in-place by this function
     tt = TreeAnc(tree=tree, aln=fake_alignment(tree), ref=None, gtr='JC69', verbose=1)
 
+
     # extract date information from the tree
     root_date_offset, most_recent_tip = calc_tree_dates(tree, args.time_units, args.tip_date, args.most_recent_tip_date_fmt)
-
     compute_entropies_for_discrete_traits(tree)
     
     node_data['nodes'] = collect_node_data(tree, root_date_offset, most_recent_tip)
