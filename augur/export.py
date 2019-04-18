@@ -509,7 +509,8 @@ def run(args):
         tree_decorations = [
             {"key": "num_date", "lookup_key": "numdate", "is_attr": True},
             {"key": "muts", "is_attr": False},
-            {"key": "aa_muts", "is_attr": False}
+            {"key": "aa_muts", "is_attr": False},
+            {"key": "hidden", "is_attr": False}
         ]
         traits_via_node_metadata = {k for node in nodes.values() for k in node.keys()}
         traits_via_node_metadata -= {'sequence', 'mutation_length', 'branch_length', 'numdate',
