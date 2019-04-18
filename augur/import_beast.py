@@ -266,7 +266,15 @@ def parse_nexus(tree_path, treestring_regex='tree [A-Za-z\_]+([0-9]+)', verbose=
     assert tree,'Tree not captured by regex'
     assert tree.count_terminals()==tipNum,'Not all tips have been parsed.'
     print("Success parsing BEAST nexus")
-    return Phylo.BaseTree.Tree.from_clade(tree)
+
+    try:
+        return Phylo.BaseTree.Tree.from_clade(tree)
+    except RecursionError as err:
+        print("FATAL ERROR")
+        print("Recursion limit reached. You can try raising this with the `--recursion-limit` option")
+        print("(Be careful with this). Your current limit is set to {}".format(sys.getrecursionlimit()))
+        sys.exit(2)
+    
 
 
 
