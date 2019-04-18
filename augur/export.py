@@ -446,7 +446,7 @@ def get_root_sequence(root_node, ref=None, translations=None):
 
 def register_arguments(parser):
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
-    parser.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
+    parser.add_argument('--metadata', required=False, help="tsv file with sequence meta data")
     parser.add_argument('--reference', required=False, help="reference sequence for export to browser, only vcf")
     parser.add_argument('--reference-translations', required=False, help="reference translations for export to browser, only vcf")
     parser.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
