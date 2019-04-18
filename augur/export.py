@@ -186,8 +186,14 @@ def process_geographic_info(jsn, lat_long_mapping, nextflu=False, node_metadata=
         else:
             demes_in_tree = {data["traits"][trait]["value"] for name, data in node_metadata.items()}
         for deme in demes_in_tree:
+            # deme may be numeric, or string
             try:
-                geo[trait][deme] = lat_long_mapping[(trait.lower(),deme.lower())]
+                demeSearchValue = deme.lower()
+            except AttributeError:
+                demeSearchValue = str(deme)
+            
+            try:
+                geo[trait][deme] = lat_long_mapping[(trait.lower(),demeSearchValue)]
             except KeyError:
                 print("Error. {}->{} did not have an associated lat/long value (matching performed in lower case)".format(trait, deme))
     return geo
