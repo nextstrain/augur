@@ -1,21 +1,21 @@
 """
-Import BEAST MCC tree
+Parse a BEAST MCC tree for further analysis in augur or
+export for auspice (using `augur export`).
 """
 
-from Bio import SeqIO
-import re
-import Bio.Phylo
-from Bio import Phylo
+from Bio import SeqIO, Phylo
+import re, sys, json
 import numpy as np
-from treetime import TreeAnc
-import json
-from .utils import write_json
-import sys
 import datetime as dt
+from treetime import TreeAnc
+from .utils import write_json
+
 
 def register_arguments(parser):
+    """
+    Arguments available to `augur import-beast` -- see `__init__.py`
+    """
     parser.add_argument('--mcc', required=True, help="BEAST MCC tree")
-    # parser.add_argument('--date-format', type=str, default="%Y-%m-%d", help='date format if regex is being used to parse dates from tip names')
     parser.add_argument('--time-units', default="years", type=str, help='not yet implemented. Default = years')
     parser.add_argument('--most-recent-tip-date-fmt', default="regex", choices=['regex','decimal'], required=True, help='method for finding the most recent tip date. Use "decimal" if the decimal date will be supplied or "regex" (default) if tip dates are encoded in tip names')
     parser.add_argument('--tip-date', help='decimal date of most recent tip or regular expression for date (if no value is given defaults to "[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$") if dates can be parsed out of tip names')
@@ -24,16 +24,33 @@ def register_arguments(parser):
     parser.add_argument('--output-tree', required=True, type=str, help='file name to write tree to')
     parser.add_argument('--output-node-data', required=True, type=str, help='file name to write (temporal) branch lengths as node data')
 
-    
+
+
 def parse_beast_tree(data, tipMap, verbose=False):
     """
-    data is a tree string, tipMap is a dict parsed from the nexus file
+    Parses the BEAST tree (and attributes etc) as encoded in NEXUS.
+
+    Parameters
+    ----------
+    data : string
+        The (really long) line in the NEXUS file beginning with "tree", pruned
+        to start at the first "(" character. See 
+    tipMap : dict
+        Mapping of tips (as encoded in `data`) to their names
+    verbose : bool, optional (default: false)
+        Should output be printed?
+
+    Returns
+    -------
+    <class 'Bio.Phylo.Newick.Clade'>
+
     Author: Gytis Dudas
     """
+
     i=0 ## is an adjustable index along the tree string, it is incremented to advance through the string
     stored_i=None ## store the i at the end of the loop, to make sure we haven't gotten stuck somewhere in an infinite loop
 
-    cur_node = Bio.Phylo.Newick.Clade() ## new branch
+    cur_node = Phylo.Newick.Clade() ## new branch
     cur_node.name = 'root' ## start with root
     cur_node.clades = [] ## list of children
     node_count=0 ## node counter
@@ -46,7 +63,7 @@ def parse_beast_tree(data, tipMap, verbose=False):
         stored_i=i ## store i for later
 
         if data[i] == '(': ## look for new nodes
-            node = Bio.Phylo.Newick.Clade() ## new object
+            node = Phylo.Newick.Clade() ## new object
             node.name = 'NODE_%07d'%(node_count) ## node name
             if verbose==True:
                 print('%d adding node %s'%(i, node.name))
@@ -61,7 +78,7 @@ def parse_beast_tree(data, tipMap, verbose=False):
 
         numericalTip=re.match('(\(|,)([0-9]+)(\[|\:)',data[i-1:i+100]) ## look for tips in BEAST format (integers).
         if numericalTip is not None:
-            node = Bio.Phylo.Newick.Clade() ## new object
+            node = Phylo.Newick.Clade() ## new object
             if tipMap:
                 node.name = tipMap[numericalTip.group(2)] ## assign decoded name
             else:
@@ -79,7 +96,7 @@ def parse_beast_tree(data, tipMap, verbose=False):
         if alphaTip is not None:
             if verbose==True:
                 print('%d adding leaf (non-BEAST) %s'%(i,alphaTip.group(3)))
-            node = Bio.Phylo.Newick.Clade() ## new object
+            node = Phylo.Newick.Clade() ## new object
             node.name = alphaTip.group(3) ## assign name
             node.up = cur_node ## leaf's parent is cur_node
             node.attrs = {} ## initiate attrs dictionary
@@ -120,14 +137,14 @@ def parse_beast_tree(data, tipMap, verbose=False):
                 if 'prob' not in tr:
                     cur_node.attrs[tr]=float(val) ## assign float to attrs
 
-#             for val in treelist:  ### enables parsing of complete history logger output from posterior trees
-#                 tr,val=val.split('=')
-#                 tr=tr[1:]
-#                 completeHistoryLogger=re.findall('{([0-9]+,[0-9\.\-e]+,[A-Z]+,[A-Z]+)}',val)
-#                 setattr(cur_node,'muts',[])
-#                 for val in completeHistoryLogger:
-#                     codon,timing,start,end=val.split(',')
-#                     cur_node.muts.append('%s%s%s'%(start,codon,end))
+            # for val in treelist:  ### enables parsing of complete history logger output from posterior trees
+            #     tr,val=val.split('=')
+            #     tr=tr[1:]
+            #     completeHistoryLogger=re.findall('{([0-9]+,[0-9\.\-e]+,[A-Z]+,[A-Z]+)}',val)
+            #     setattr(cur_node,'muts',[])
+            #     for val in completeHistoryLogger:
+            #         codon,timing,start,end=val.split(',')
+            #         cur_node.muts.append('%s%s%s'%(start,codon,end))
 
             states={} ## credible sets will be stored here
             for vals in sorted(sets,key=lambda s:'.set.prob' in s.split('=')[0]): ## sort comments so sets come before set probabilities
@@ -176,14 +193,32 @@ def parse_beast_tree(data, tipMap, verbose=False):
             return cur_node
             break ## end loop
 
-def parse_nexus(
-    tree_path,
-    # tip_regex='\|([0-9]+\-[0-9]+\-[0-9]+)',
-    # date_fmt='%Y-%m-%d',
-    treestring_regex='tree [A-Za-z\_]+([0-9]+)',
-    verbose=False
-):
+
+
+def parse_nexus(tree_path, treestring_regex='tree [A-Za-z\_]+([0-9]+)', verbose=False):
     """
+    Parses the BEAST MCC tree (NEXUS format)
+
+    Parameters
+    ----------
+    tree_path : string or file handle open for reading
+        The nexus tree file
+    treestring_regex : string
+        The regex to match the tree string in the nexus file (the really long
+        string which typically starts with "tree" and looks similar to a newick tree)
+    verbose : bool, optional (default: False)
+        Should output be printed?
+
+    Raises
+    ------
+    AssertionError
+        If the tree was not correctly parsed
+
+    Returns
+    -------
+    <class 'Bio.Phylo.BaseTree.Tree'>
+        A tree with BEAST attrs set on each node (as applicable)
+
     Author: Gytis Dudas
     """
 
@@ -203,14 +238,15 @@ def parse_nexus(
         nTaxa=re.search('dimensions ntax=([0-9]+);',l.lower()) ## get number of tips that should be in tree
         if nTaxa is not None:
             tipNum=int(nTaxa.group(1))
-            if verbose==True:
+            if verbose:
                 print('File should contain %d taxa'%(tipNum))
 
         treeString=re.search(treestring_regex,l) ## search for line with the tree
         if treeString is not None:
             treeString_start=l.index('(') ## find index of where tree string starts
-            tree=parse_beast_tree(l[treeString_start:],tipMap=tips,verbose=verbose) ## parse tree string
-            if verbose==True:
+            tree=parse_beast_tree(l[treeString_start:], tipMap=tips, verbose=verbose) ## parse tree string
+
+            if verbose:
                 print('Identified tree string')
 
         if tipFlag==True: ## going through tip encoding block
@@ -232,10 +268,20 @@ def parse_nexus(
     print("Success parsing BEAST nexus")
     return Phylo.BaseTree.Tree.from_clade(tree)
 
+
+
 def fake_alignment(T):
     """
-    fake alignment to appease treetime when only using it for naming nodes...
-    This is lifted from refine.py and should be imported?
+    Fake alignment to appease treetime when only using it for naming nodes...
+    This is lifted from refine.py and ideally could be imported
+
+    Parameters
+    -------
+    T : <class 'Bio.Phylo.BaseTree.Tree'>
+
+    Returns
+    -------
+    <class 'Bio.Align.MultipleSeqAlignment'>
     """
     from Bio import SeqRecord, Seq, Align
     seqs = []
@@ -244,6 +290,8 @@ def fake_alignment(T):
     aln = Align.MultipleSeqAlignment(seqs)
     return aln
 
+
+
 def get_root_date_offset(tree):
     """
     years from most recent tip of the root
@@ -251,29 +299,57 @@ def get_root_date_offset(tree):
     greatest_dist2root = 0
     for leaf in tree.get_terminals():
         if leaf.dist2root > greatest_dist2root:
-            greatest_dist2root = leaf.dist2root;
+            greatest_dist2root = leaf.dist2root
     return greatest_dist2root
 
-def decimalDate(date,date_fmt="%Y-%m-%d",variable=False,dateDelimiter='-'):
-    """ Converts calendar dates in specified format to decimal date. """
-    if variable==True: ## if date is variable - extract what is available
-        dateL=len(date.split(dateDelimiter))
-        if dateL==2:
-            date_fmt=dateDelimiter.join(date_fmt.split(dateDelimiter)[:-1])
-        elif dateL==1:
-            date_fmt=dateDelimiter.join(date_fmt.split(dateDelimiter)[:-2])
 
-    adatetime=dt.datetime.strptime(date,date_fmt) ## convert to datetime object
-    year = adatetime.year ## get year
-    boy = dt.datetime(year, 1, 1) ## get beginning of the year
-    eoy = dt.datetime(year + 1, 1, 1) ## get beginning of next year
-    return year + ((adatetime - boy).total_seconds() / ((eoy - boy).total_seconds())) ## return fractional year
 
-def find_most_recent_tip(tree,regex="[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$",date_fmt="%Y-%m-%d",dateDelimiter='-'):
+def find_most_recent_tip(tree, regex="[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$", date_fmt="%Y-%m-%d", dateDelimiter='-'):
     """
-    Search tip names using a regex (default: hyphen delimited numbers at the end of tip name) to identify dates, parse them as decimal dates and return the highest oneself.
-    Can specify custom date formats in datetime notation (default: %Y-%m-%d), and different date delimiters (default: '-').
+    Find the most recent tip in the tree
+
+    Parameters
+    --------
+    tree : <class 'Bio.Phylo.BaseTree.Tree'>
+    regex : string
+        The regex used to extract the date (e.g. isolate collection date
+        from each tip in the string.
+        default: hyphen delimited numbers at the end of tip name
+    date_fmt : string
+        The format of the extracted date. 
+        (default: "%Y-%m-%d", e.g. "2012-10-30")
+    dateDelimeter : string
+        The delimeter in `date_fmt`
+
+    Raises
+    ------
+    AssertionError
+        If any tips were not matched by the regex
+
+    Returns
+    -------
+    float
+        The date of the most recent tip in the tree in decimal format
+
+    See also: `decimalDate()`
+    Author: Gytis Dudas
     """
+
+    def decimalDate(date, date_fmt="%Y-%m-%d", variable=False, dateDelimiter='-'):
+        """ Converts calendar dates in specified format to decimal date. """
+        if variable==True: ## if date is variable - extract what is available
+            dateL=len(date.split(dateDelimiter))
+            if dateL==2:
+                date_fmt=dateDelimiter.join(date_fmt.split(dateDelimiter)[:-1])
+            elif dateL==1:
+                date_fmt=dateDelimiter.join(date_fmt.split(dateDelimiter)[:-2])
+
+        adatetime=dt.datetime.strptime(date,date_fmt) ## convert to datetime object
+        year = adatetime.year ## get year
+        boy = dt.datetime(year, 1, 1) ## get beginning of the year
+        eoy = dt.datetime(year + 1, 1, 1) ## get beginning of next year
+        return year + ((adatetime - boy).total_seconds() / ((eoy - boy).total_seconds())) ## return fractional year
+
     leaf_names=[leaf.name for leaf in tree.get_terminals()] ## get names of tips
     date_regex=re.compile(regex) ## regex pattern
     regex_matches=[date_regex.search(leaf) for leaf in leaf_names] ## search tips with regex
@@ -282,42 +358,109 @@ def find_most_recent_tip(tree,regex="[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$",date_f
 
     return max(decimal_dates) ## return highest tip date
 
+
+
+def calc_tree_dates(tree, time_units, tip_date, most_recent_tip_date_fmt):
+    """
+    Extract date information from the tree
+
+    Parameters
+    --------
+    tree : <class 'Bio.Phylo.BaseTree.Tree'>
+    time_units : string
+    tip_date : null | string
+    most_recent_tip_data_fmt : string {"regex" | "decimal"}
+
+    Returns
+    --------
+    tuple
+        [0] : float
+            The root date offset
+        [1] : float
+            The date of the most recent tip in the tree
+    """
+
+    # time units need to be adjusted by the most recent tip date
+    root_date_offset = get_root_date_offset(tree)
+    print("Root date offset:", root_date_offset, time_units)
+
+    print(most_recent_tip_date_fmt)
+    if most_recent_tip_date_fmt=='regex':
+        if tip_date:
+            most_recent_tip = find_most_recent_tip(tree, regex=tip_date)
+        else:
+            most_recent_tip = find_most_recent_tip(tree)
+    elif most_recent_tip_date_fmt=='decimal':
+        most_recent_tip = float(tip_date)
+
+    return (root_date_offset, most_recent_tip)
+
+
+
 def collect_node_data(tree, root_date_offset, most_recent_tip_date):
     """
-    A "normal" treetime example adds these traits:
-        "branch_length": 0.0032664876882838745,
-        "numdate": 2015.3901042843218,
-        "clock_length": 0.0032664876882838745,
-        "mutation_length": 0.003451507603103053,
-        "date": "2015-05-23",
-        "num_date_confidence": [
-            2015.0320257687615,
-            2015.6520676488697
-        ]
+    Collect & summarise the BEAST traits included on the tree in a format
+    applicable for augur to use (i.e. the "node_data.json" file).
+
+    Parameters
+    --------
+    tree : <class 'Bio.Phylo.BaseTree.Tree'>
+    root_date_offset : float
+    most_recent_tip_date : float
+
+    Returns
+    --------
+    dict
+        the keys are dependent on the content of the BEAST input
     """
 
-    data = {}
+    # Example of a typical tree time export which we need to emulate:
+    # "branch_length": 0.0032664876882838745,
+    # "numdate": 2015.3901042843218,
+    # "clock_length": 0.0032664876882838745,
+    # "mutation_length": 0.003451507603103053,
+    # "date": "2015-05-23",
+    # "num_date_confidence": [2015.032, 2015.6520]
+
+    def exclude_trait(name):
+        if 'length' in name or 'height' in name:
+            return True
+        return False
+
+
+    node_data = {}
     root_date = most_recent_tip_date - root_date_offset
     for n in tree.find_clades():
-
-        data[n.name] = {attr: n.attrs[attr] for attr in n.attrs if 'length' not in attr and 'height' not in attr} ## add all beast tree traits other than lengths and heights
-        numeric_date = root_date + n.dist2root ## convert from tree height to absolute time
-        data[n.name]['num_date'] = numeric_date ## num_date is decimal date of node
-        data[n.name]['clock_length'] = n.branch_length ## assign beast branch length as regular branch length
-        if n.is_terminal()==False:
-            data[n.name]['num_date_confidence'] = [most_recent_tip_date - height for height in n.attrs['height_confidence']] ## convert beast 95% HPDs into decimal date confidences
+        node_data[n.name] = {attr: n.attrs[attr] for attr in n.attrs if not exclude_trait(attr)} ## add all "valid" beast tree traits
+        node_data[n.name]['num_date'] = root_date + n.dist2root ## num_date is decimal date of node
+        node_data[n.name]['clock_length'] = n.branch_length ## assign BEAST branch length as regular branch length
+        if n.is_terminal():
+            node_data[n.name]['posterior'] = 1.0 ## assign posterior of 1.0 to every tip (for aesthetics)
         else:
-            data[n.name]['posterior'] = 1.0 ## assign posterior of 1.0 to every tip (for aesthetics)
+            node_data[n.name]['num_date_confidence'] = [most_recent_tip_date - height for height in n.attrs['height_confidence']] ## convert beast 95% HPDs into decimal date confidences
 
-    return data
+    return node_data
 
-def computeEntropies(tree):
+
+
+def compute_entropies_for_discrete_traits(tree):
     """
     Computes entropies for discrete traits.
+    Discrete traits are assumed to be those where the value is
+    a dictionary.
+    This will set a "entropy" value for each identified discrete trait
+    on all applicable nodes in the tree.
+
+    Properties
+    -------
+    tree : <class 'Bio.Phylo.BaseTree.Tree'>
+        BEAST traits are set as key-value pairs on node.attrs
+
+    Author: James Hadfield
     """
     alphabets={} ## store alphabets
     for clade in tree.find_clades(): ## iterate over branches
-        for attr in [key for key in clade.attrs if isinstance(clade.attrs[key],dict)]: ## iterate over branch attributes
+        for attr in [key for key in clade.attrs if isinstance(clade.attrs[key], dict)]: ## iterate over branch attributes
             if attr in alphabets: ## if attr seen before
                 for val in clade.attrs[attr]: ## iterate over attribute values of the node
                     if val not in alphabets[attr]: ## not seen this attribute value before
@@ -334,7 +477,15 @@ def computeEntropies(tree):
                 pdis=np.array([clade.attrs[trait][state] if state in clade.attrs[trait] else 0.0 for state in alphabets[trait]]) ## create state profile
                 clade.attrs['%s_entropy'%(trait_name)] = -np.sum(pdis*np.log(pdis+1e-10)) ## compute entropy for trait
 
-def print_suggested_config(nodes):
+
+
+def print_what_to_do_next(nodes, mcc_path, tree_path, node_data_path):
+    """
+    Print a suggested `auspice_config.json` file, which the user will have to configure
+    and provide to `augur export`. There is not enough information in a MCC tree to do
+    this automatically.
+    """
+
     def include_key(k):
         exclude_list = ["clock_length"]
         return (not k.endswith("_confidence") and not k.endswith("_entropy") and k not in exclude_list)
@@ -342,23 +493,41 @@ def print_suggested_config(nodes):
     for node in nodes:
         attrs.update({k for k in nodes[node].keys() if include_key(k)})
 
-    print("\nA number of traits (node annotations) have been parsed. \
-    The config file provided to `augur export` needs these added. \
-    Here is a template block:")
-    print("---------------------------------------------------------")
-    def make_block(attr):
+    def make_color_block(attr):
         if attr == "num_date":
             menuItem = "Sampling Date"
         else:
             menuItem = attr
         return {"menuItem": menuItem, "legendTitle": menuItem, "type": "continuous"}
-    print(json.dumps({"color_options": {attr: make_block(attr) for attr in attrs}}, indent=2))
+
+    auspice_config = {
+        "title": "Title for auspice to display",
+        "color_options": {attr: make_color_block(attr) for attr in attrs},
+        "defaults": {"colorBy": "num_date"},
+        "maintainer": ["author names (displayed in footer)", "author URL"],
+        "panels": ["tree"],
+        # "updated": "date (displayed in footer)",
+    }
+
+
+    print("\n---------------------------------------------------------")
+    print("Successfully parsed BEAST MCC tree {}".format(mcc_path))
+    print("Files produced:\n\t{}\n\t{}".format(tree_path, node_data_path))
+    print("\n")
+    print("For `augur export` you will need to provide a `auspice_config.json` file, which we cannot automatically generate. This file is typically placed in `config/auspice_config.json`. Here is a template:\n")
+    print(json.dumps(auspice_config, indent=4))
+    print("\nYou can continue further analysis using augur, or export JSONs for auspice.")
+    print("Here is an example of the command to export the data without further analysis (see `augur export -h` for more options)")
+    print("\n`augur export --tree {tree} --node-data {nd} --auspice-config config/auspice_config.json --output-tree auspice/<dataset_name>_tree.json --output-meta auspice/<dataset_name>_meta.json`".format(tree=tree_path, nd=node_data_path))
     print("---------------------------------------------------------")
+
+
 
 def run(args):
     '''
     BEAST MCC tree to newick and node-data JSON for further augur processing / export
     '''
+    verbose = args.verbose
     print("importing from BEAST MCC tree", args.mcc)
 
     if args.recursion_limit:
@@ -367,45 +536,26 @@ def run(args):
 
     # node data is the dict that will be exported as json
     node_data = {
-        'comment': "Imported from a BEAST MCC tree",
+        'comment': "Imported from a BEAST MCC tree using `augur import-beast`",
         'mcc_file': args.mcc
     }
 
-    # parse the BEAST MCC tree
     tree = parse_nexus(tree_path=args.mcc, verbose=args.verbose)
     # Phylo.draw_ascii(tree)
+    # instantiate treetime for the sole reason to name internal nodes (!)
+    # note that tt.tree = tree, and this is modified in-place by this function
+    tt = TreeAnc(tree=tree, aln=fake_alignment(tree), ref=None, gtr='JC69', verbose=1)
 
-    # the following commands are lifted from refine.py and mock it's behaviour when not calling treetime
-    # importing from there may help prevent code divergence
-    aln = fake_alignment(tree)
-    # instantiate treetime for the sole reason to name internal nodes
-    # note that tt.tree = T and this is modified in-place by this function
-    tt = TreeAnc(tree=tree, aln=aln, ref=None, gtr='JC69', verbose=1)
+    # extract date information from the tree
+    root_date_offset, most_recent_tip = calc_tree_dates(tree, args.time_units, args.tip_date, args.most_recent_tip_date_fmt)
 
-
-    # time units need to be adjusted by the most recent tip date
-    root_date_offset = get_root_date_offset(tree)
-    print("root_date_offset:", root_date_offset, args.time_units)
-
-    print(args.most_recent_tip_date_fmt)
-    if args.most_recent_tip_date_fmt=='regex':
-        if args.tip_date:
-            most_recent_tip = find_most_recent_tip(tree,regex=args.tip_date)
-        else:
-            most_recent_tip = find_most_recent_tip(tree)
-    elif args.most_recent_tip_date_fmt=='decimal':
-        most_recent_tip = float(args.tip_date)
-
-    # compute/extract the relevant data from nodes to be written to JSON for further augur processing
-    computeEntropies(tree) ## compute entropies for discrete trait
+    compute_entropies_for_discrete_traits(tree)
+    
     node_data['nodes'] = collect_node_data(tree, root_date_offset, most_recent_tip)
 
-    # export very similarly to refine.py
     tree_success = Phylo.write(tree, args.output_tree, 'newick', format_branch_length='%1.8f')
     json_success = write_json(node_data, args.output_node_data)
-    print("node attributes written to", args.output_node_data, file=sys.stdout)
-    # import pdb; pdb.set_trace()
 
-    print_suggested_config(node_data['nodes'])
+    print_what_to_do_next(nodes=node_data['nodes'], mcc_path=args.mcc, tree_path=args.output_tree, node_data_path=args.output_node_data)
 
     return 0 if (tree_success and json_success) else 1
