@@ -16,13 +16,14 @@ def register_arguments(parser):
     Arguments available to `augur import-beast` -- see `__init__.py`
     """
     parser.add_argument('--mcc', required=True, help="BEAST MCC tree")
-    parser.add_argument('--time-units', default="years", type=str, help='not yet implemented. Default = years')
-    parser.add_argument('--most-recent-tip-date-fmt', default="regex", choices=['regex','decimal'], required=True, help='method for finding the most recent tip date. Use "decimal" if the decimal date will be supplied or "regex" (default) if tip dates are encoded in tip names')
-    parser.add_argument('--tip-date', help='decimal date of most recent tip or regular expression for date (if no value is given defaults to "[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$") if dates can be parsed out of tip names')
-    parser.add_argument('--verbose', action="store_true")
+    parser.add_argument('--most-recent-tip-date', default=0, type=float, help='Numeric date of most recent tip in tree (--tip-date-regex, --tip-date-format and --tip-date-delimeter are ignored if this is set)')
+    parser.add_argument('--tip-date-regex', default=r'[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$', type=str, help='regex to extract dates from tip names')
+    parser.add_argument('--tip-date-format', default="%Y-%m-%d", type=str, help='Format of date (if extracted by regex)')
+    parser.add_argument('--tip-date-delimeter', default="-", type=str, help='delimeter used in tip-date-format. Used to match partial dates.')
+    parser.add_argument('--verbose', action="store_true", help="Display verbose output. Only useful for debugging.")
     parser.add_argument('--recursion-limit', default=False, type=int, help="Set a custom recursion limit (dangerous!)")
     parser.add_argument('--output-tree', required=True, type=str, help='file name to write tree to')
-    parser.add_argument('--output-node-data', required=True, type=str, help='file name to write (temporal) branch lengths as node data')
+    parser.add_argument('--output-node-data', required=True, type=str, help='file name to write (temporal) branch lengths & BEAST traits as node data')
 
 
 
@@ -34,7 +35,7 @@ def parse_beast_tree(data, tipMap, verbose=False):
     ----------
     data : string
         The (really long) line in the NEXUS file beginning with "tree", pruned
-        to start at the first "(" character. See 
+        to start at the first "(" character.
     tipMap : dict
         Mapping of tips (as encoded in `data`) to their names
     verbose : bool, optional (default: false)
@@ -335,22 +336,22 @@ def get_root_date_offset(tree):
 
 
 
-def find_most_recent_tip(tree, regex="[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$", date_fmt="%Y-%m-%d", dateDelimiter='-'):
+def find_most_recent_tip(tree, tip_date_regex, tip_date_format, tip_date_delimeter):
     """
     Find the most recent tip in the tree
 
     Parameters
     --------
     tree : <class 'Bio.Phylo.BaseTree.Tree'>
-    regex : string
+    tip_date_regex : string
         The regex used to extract the date (e.g. isolate collection date
         from each tip in the string.
         default: hyphen delimited numbers at the end of tip name
-    date_fmt : string
+    tip_date_format : string
         The format of the extracted date. 
-        (default: "%Y-%m-%d", e.g. "2012-10-30")
-    dateDelimeter : string
-        The delimeter in `date_fmt`
+        (e.g. "%Y-%m-%d" goes with "2012-10-30")
+    tip_date_delimeter : string
+        The delimeter in `tip_date_format`
 
     Raises
     ------
@@ -362,18 +363,17 @@ def find_most_recent_tip(tree, regex="[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$", date
     float
         The date of the most recent tip in the tree in decimal format
 
-    See also: `decimalDate()`
     Author: Gytis Dudas
     """
 
-    def decimalDate(date, date_fmt="%Y-%m-%d", variable=False, dateDelimiter='-'):
+    def decimalDate(date, date_fmt, variable=False):
         """ Converts calendar dates in specified format to decimal date. """
         if variable==True: ## if date is variable - extract what is available
-            dateL=len(date.split(dateDelimiter))
+            dateL=len(date.split(tip_date_delimeter))
             if dateL==2:
-                date_fmt=dateDelimiter.join(date_fmt.split(dateDelimiter)[:-1])
+                date_fmt=tip_date_delimeter.join(date_fmt.split(tip_date_delimeter)[:-1])
             elif dateL==1:
-                date_fmt=dateDelimiter.join(date_fmt.split(dateDelimiter)[:-2])
+                date_fmt=tip_date_delimeter.join(date_fmt.split(tip_date_delimeter)[:-2])
 
         adatetime=dt.datetime.strptime(date,date_fmt) ## convert to datetime object
         year = adatetime.year ## get year
@@ -381,26 +381,31 @@ def find_most_recent_tip(tree, regex="[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$", date
         eoy = dt.datetime(year + 1, 1, 1) ## get beginning of next year
         return year + ((adatetime - boy).total_seconds() / ((eoy - boy).total_seconds())) ## return fractional year
 
+
     leaf_names=[leaf.name for leaf in tree.get_terminals()] ## get names of tips
-    date_regex=re.compile(regex) ## regex pattern
+    date_regex=re.compile(tip_date_regex) ## regex pattern
     regex_matches=[date_regex.search(leaf) for leaf in leaf_names] ## search tips with regex
-    assert regex_matches.count(None)==0,'These tip dates were not captured by regex %s: %s'%(regex,', '.join([leaf for leaf in leaf_names if date_regex.search(leaf)==None])) ## number of tips should match number of regex matches
-    decimal_dates=[decimalDate(date_regex.search(leaf).group(),date_fmt=date_fmt,variable=True,dateDelimiter=dateDelimiter) for leaf in leaf_names] ## convert tip calendar dates to decimal dates
+    assert regex_matches.count(None)==0,'These tip dates were not captured by regex %s: %s'%(tip_date_regex,', '.join([leaf for leaf in leaf_names if date_regex.search(leaf)==None])) ## number of tips should match number of regex matches
+    decimal_dates=[decimalDate(date_regex.search(leaf).group(), date_fmt=tip_date_format, variable=True) for leaf in leaf_names] ## convert tip calendar dates to decimal dates
 
     return max(decimal_dates) ## return highest tip date
 
 
 
-def calc_tree_dates(tree, time_units, tip_date, most_recent_tip_date_fmt):
+def calc_tree_dates(tree, most_recent_tip_date, tip_date_regex, tip_date_format, tip_date_delimeter):
     """
     Extract date information from the tree
 
     Parameters
     --------
     tree : <class 'Bio.Phylo.BaseTree.Tree'>
-    time_units : string
-    tip_date : null | string
-    most_recent_tip_data_fmt : string {"regex" | "decimal"}
+    # time_units : string
+    # tip_date : null | string
+    # most_recent_tip_data_fmt : string {"regex" | "decimal"}
+    most_recent_tip_date: numeric
+    tip_date_regex: string
+    tip_date_format: string
+    tip_date_delimeter: string
 
     Returns
     --------
@@ -409,20 +414,21 @@ def calc_tree_dates(tree, time_units, tip_date, most_recent_tip_date_fmt):
             The root date offset
         [1] : float
             The date of the most recent tip in the tree
+
+    TODO: Time units are taken as years, but days are also common for BEAST analysis
     """
+
+    if most_recent_tip_date:
+        most_recent_tip = float(most_recent_tip_date)
+        print("Using {:.2f} as the most recent tip date".format(most_recent_tip))
+    else:
+        most_recent_tip = find_most_recent_tip(tree, tip_date_regex, tip_date_format, tip_date_delimeter)
+        print("Inferred {:.2f} as the most recent tip date".format(most_recent_tip))
 
     # time units need to be adjusted by the most recent tip date
     root_date_offset = get_root_date_offset(tree)
-    print("Root date offset:", root_date_offset, time_units)
-
-    print(most_recent_tip_date_fmt)
-    if most_recent_tip_date_fmt=='regex':
-        if tip_date:
-            most_recent_tip = find_most_recent_tip(tree, regex=tip_date)
-        else:
-            most_recent_tip = find_most_recent_tip(tree)
-    elif most_recent_tip_date_fmt=='decimal':
-        most_recent_tip = float(tip_date)
+    print("Tree root is {:.2f} years prior to most recent tip".format(root_date_offset))
+    print("Temporal phylogeny spans {:.2f} - {:.2f}".format(most_recent_tip-root_date_offset, most_recent_tip))
 
     return (root_date_offset, most_recent_tip)
 
@@ -555,7 +561,7 @@ def print_what_to_do_next(nodes, mcc_path, tree_path, node_data_path):
     print(json.dumps(auspice_config, indent=4))
     print("\nYou can continue further analysis using augur, or export JSONs for auspice.")
     print("Here is an example of the command to export the data without further analysis (see `augur export -h` for more options)")
-    print("\n`augur export --tree {tree} --node-data {nd} --auspice-config config/auspice_config.json --output-tree auspice/<dataset_name>_tree.json --output-meta auspice/<dataset_name>_meta.json`".format(tree=tree_path, nd=node_data_path))
+    print("\n`augur export --tree {tree} --node-data {nd} --auspice-config <config_path> --output-tree auspice/<dataset_name>_tree.json --output-meta auspice/<dataset_name>_meta.json`".format(tree=tree_path, nd=node_data_path))
     print("---------------------------------------------------------")
 
 
@@ -586,7 +592,7 @@ def run(args):
 
 
     # extract date information from the tree
-    root_date_offset, most_recent_tip = calc_tree_dates(tree, args.time_units, args.tip_date, args.most_recent_tip_date_fmt)
+    root_date_offset, most_recent_tip = calc_tree_dates(tree, args.most_recent_tip_date, args.tip_date_regex, args.tip_date_format, args.tip_date_delimeter)
     compute_entropies_for_discrete_traits(tree)
     
     node_data['nodes'] = collect_node_data(tree, root_date_offset, most_recent_tip)
