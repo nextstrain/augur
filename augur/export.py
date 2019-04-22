@@ -453,6 +453,7 @@ def register_arguments(parser):
     parser.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
     parser.add_argument('--extra-traits', nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
     parser.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : xxx")
+    parser.add_argument('--tree-name', default=False, help="Tree name (needed for tangle tree functionality)")
     parser.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
 
 
@@ -559,5 +560,11 @@ def run(args):
     unified["updated"] = time.strftime('%Y-%m-%d')
     unified["genome_annotations"] = process_annotations(node_data)
     unified["panels"] = process_panels(args.panels, unified)
+
+    if args.tree_name:
+        if not re.search("(^|_|/){}(_|.json)".format(args.tree_name), str(args.output_main)):
+            print("Error: tree name {} must be found as part of the output string".format(args.tree_name))
+            sys.exit(2)
+        unified["tree_name"] = args.tree_name
 
     write_json(unified, args.output_main, indent=json_indent)
