@@ -209,7 +209,7 @@
                 },
                 "color_by": {
                     "description": "Default color by",
-                    "$comment": "The value here must be present in the color_options object (see above)",
+                    "$comment": "The value here must be present in the colorings object (see above)",
                     "type": "string"
                 },
                 "distance_measure": {
@@ -222,6 +222,13 @@
                     "type": "boolean"
                 }
             }
+        },
+        "tree_name" : {
+          "description": "The name of the tree (e.g. segment name), if applicable",
+          "$comment": "This is required if you want to view two trees side-by-side",
+          "$comment": "It should match a field in the JSON filename after splitting on '_'",
+          "$comment": "e.g. `flu_h3n2_ha_3y` has a tree name of `ha`",
+          "type": "string"
         },
         "tree": {
             "type" : "object",
