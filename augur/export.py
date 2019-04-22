@@ -527,7 +527,7 @@ def run(args):
     unified = {}
 
     unified['title'] = args.title
-    unified['maintainers'] = [{'name': name, 'href':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
+    unified['maintainers'] = [{'name': name, 'url':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
     unified["version"] = "2.0"
 
     # get traits to colour by etc - do here before node_data is modified below
