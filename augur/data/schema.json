@@ -364,7 +364,7 @@
                     "$comment": "Obviously only for terminal nodes",
                     "$comment": "If not known/available, don't include this as a property of the node",
                     "type": "string",
-                    "pattern": "^[0-9A-Za-z-]+$"
+                    "pattern": "^[0-9A-Za-z-_]+$"
                 },
                 "traits": {
                     "description": "Inferred Attributes / traits decorations on the nodes",
