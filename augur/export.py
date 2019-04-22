@@ -2,7 +2,7 @@
 Export JSON files suitable for visualization with auspice.
 """
 
-import os
+import os, sys
 import re
 import time
 import numpy as np
@@ -524,6 +524,12 @@ def run(args):
 
     ## SCHEMA v2.0 ##
     unified = {}
+
+    if args.auspice_config:
+        print("ERROR: Version 2 JSONs do not use the auspice config JSON")
+        print("you must supply all configuration as command line arguments")
+        sys.exit(2)
+
 
     unified['title'] = args.title
     unified['maintainers'] = [{'name': name, 'url':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
