@@ -55,6 +55,10 @@
                             "description": "Publication title",
                             "type": "string"
                         },
+                        "year": {
+                            "description": "Publication year",
+                            "type": "number"
+                        },
                         "journal": {
                             "description": "Journal title",
                             "type": "string"
