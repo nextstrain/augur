@@ -404,6 +404,13 @@
                                 }
                             }
                         }
+                    },
+                    "not": {
+                        "required": [
+                            "authors",
+                            "num_date",
+                            "div"
+                        ]
                     }
                 },
                 "children": {
