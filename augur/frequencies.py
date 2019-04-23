@@ -165,7 +165,7 @@ def run(args):
                     "frequencies": format_frequencies(frequencies[node_name])
                 }
 
-        json_success = write_json(frequency_dict, args.output)
+        write_json(frequency_dict, args.output)
         print("tree frequencies written to", args.output, file=sys.stdout)
     elif args.alignments:
         if args.method == "kde":
@@ -192,5 +192,5 @@ def run(args):
             frequencies["%s:counts" % gene] = [int(observations_per_pivot)
                                                for observations_per_pivot in freqs.counts]
 
-        json_success = write_json(frequencies, args.output)
+        write_json(frequencies, args.output)
         print("mutation frequencies written to", args.output, file=sys.stdout)

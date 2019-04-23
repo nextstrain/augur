@@ -96,7 +96,7 @@ def run(args):
     else:
         anc_seqs_fname = '.'.join(args.alignment.split('.')[:-1]) + '.anc_seqs.json'
 
-    anc_seqs_success = write_json(anc_seqs, anc_seqs_fname)
+    write_json(anc_seqs, anc_seqs_fname)
     print("ancestral sequences written to",anc_seqs_fname, file=sys.stdout)
 
     # If VCF, output VCF including new ancestral seqs
@@ -108,7 +108,4 @@ def run(args):
         write_vcf(tt.get_tree_dict(keep_var_ambigs=True), vcf_fname)
         print("ancestral sequences as vcf-file written to",vcf_fname, file=sys.stdout)
 
-    if anc_seqs_success:
-        return 0
-    else:
-        return 1
+    return 0

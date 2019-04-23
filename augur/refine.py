@@ -208,7 +208,7 @@ def run(args):
     else:
         node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data.json'
 
-    json_success = write_json(node_data, node_data_fname)
+    write_json(node_data, node_data_fname)
     print("node attributes written to",node_data_fname, file=sys.stdout)
 
-    return 0 if (tree_success and json_success) else 1
+    return 0 if tree_success else 1
