@@ -5,6 +5,7 @@ import Bio.Phylo
 from collections import defaultdict
 import json
 import numpy as np
+from .utils import write_json
 
 
 def select_nodes_in_season(tree, timepoint, time_window=0.6, **kwargs):
@@ -120,5 +121,4 @@ def run(args):
             lbi_by_node[node.name][attribute_name] = node.attr[attribute_name]
 
     # Export LBI to JSON.
-    with open(args.output, "w") as oh:
-        json.dump({"nodes": lbi_by_node}, oh, indent=1, sort_keys=True)
+    write_json({"nodes": lbi_by_node}, args.output)

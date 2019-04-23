@@ -4,9 +4,9 @@ Infer ancestral traits based on a tree.
 
 import numpy as np
 from collections import defaultdict
-import json, os, sys
+import os, sys
 import pandas as pd
-from .utils import read_metadata
+from .utils import read_metadata, write_json
 TINY = 1e-12
 
 def mugration_inference(tree=None, seq_meta=None, field='country', confidence=True,
@@ -190,8 +190,7 @@ def run(args):
 
                 ofile.write(str(gtr))
 
-    with open(args.output, 'w') as results:
-        json.dump({"nodes":mugration_states}, results, indent=1, sort_keys = True)
+    write_json({"nodes":mugration_states}, args.output)
 
     print("\nInferred ancestral states of discrete character using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
