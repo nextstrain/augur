@@ -1,6 +1,26 @@
 # __NEXT__
 
 
+# 4.0.0 (24 April 2019)
+
+## Features
+
+* distance: New interface for specifying distances between sequences.  This is
+  a backwards incompatible change.  Refer to `augur distance --help` for all
+  the details.
+
+* export: Add a --minify-json flag to omit indentation in Auspice JSONs.
+
+## Bug fixes
+
+* frequencies: Emit one-based coordinates (instead of zero-based) for KDE-based
+  mutation frequencies
+
+## Data
+
+* Include additional country lat/longs in base data
+
+
 # 3.1.8 (13 February 2019)
 
 ## Bug fixes
