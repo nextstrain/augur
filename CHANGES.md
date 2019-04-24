@@ -6,10 +6,10 @@
 ## Features
 
 * distance: New interface for specifying distances between sequences.  This is
-  a backwards incompatible change.  Refer to `augur distance --help` for all
-  the details.
+  a **backwards-incompatible** change.  Refer to `augur distance --help` for
+  all the details.
 
-* export: Add a --minify-json flag to omit indentation in Auspice JSONs.
+* export: Add a `--minify-json` flag to omit indentation in Auspice JSONs.
 
 ## Bug fixes
 
