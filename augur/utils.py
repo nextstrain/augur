@@ -133,11 +133,16 @@ def read_node_data(fnames, tree=None):
     return node_data
 
 
-def write_json(data, file_name, indent=1):
-    import json, os
-    success = False
+def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 1)):
+    """
+    Write *data* as JSON to the given *file_name*, creating parent directories
+    if necessary.
 
-    #in case auspice folder does not exist yet
+    By default, an *indent* of 1 is passed to :func:`json.dumps`.  If the
+    environment variable ``AUGUR_MINIFY_JSON`` is defined with a truthy value,
+    the default *indent* is instead ``None``.
+    """
+    #in case parent folder does not exist yet
     parent_directory = os.path.dirname(file_name)
     if parent_directory and not os.path.exists(parent_directory):
         try:
@@ -146,16 +151,8 @@ def write_json(data, file_name, indent=1):
             if not os.path.isdir(parent_directory):
                 raise
 
-    try:
-        handle = open(file_name, 'w')
-    except IOError:
-        raise
-    else:
+    with open(file_name, 'w') as handle:
         json.dump(data, handle, indent=indent, sort_keys = True)
-        handle.close()
-        success=True
-
-    return success
 
 
 def load_features(reference, feature_names=None):

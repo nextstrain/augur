@@ -142,7 +142,7 @@ import sys
 
 from .frequency_estimators import timestamp_to_float
 from .reconstruct_sequences import load_alignments
-from .utils import annotate_parents_for_tree, read_node_data
+from .utils import annotate_parents_for_tree, read_node_data, write_json
 
 
 def read_distance_map(map_file):
@@ -566,5 +566,4 @@ def run(args):
     }
 
     # Export distances to JSON.
-    with open(args.output, "w") as oh:
-        json.dump({"params": params, "nodes": final_distances_by_node}, oh, indent=1, sort_keys=True)
+    write_json({"params": params, "nodes": final_distances_by_node}, args.output)
