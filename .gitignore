@@ -14,6 +14,7 @@ build/
 dist/
 .snakemake
 *stderr
+/docs/_build/
 
 # For Python #
 ##############
