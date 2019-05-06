@@ -52,7 +52,8 @@ def register_arguments(parser):
                                     help="calculate joint or marginal maximum likelihood ancestral sequence states")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
-
+    parser.add_argument('--keep-ambiguous', action="store_true", default=False, 
+                                help='do not infer nucleotides at N sites on tip sequences (leave as N). Always true for VCF input.')
 
 def run(args):
     # check alignment type, set flags, read in if VCF
@@ -82,9 +83,19 @@ def run(args):
     else:
         aln = args.alignment
 
+    # Only allow recovery of ambig sites for Fasta-input if TreeTime is version 0.5.6 or newer
+    # Otherwise it returns nonsense.
+    from distutils.version import StrictVersion
+    import treetime
+    if args.keep_ambiguous and not is_vcf and StrictVersion(treetime.version) < StrictVersion('0.5.6'):
+        print("ERROR: Keeping ambiguous sites for Fasta-input requires TreeTime version 0.5.6 or newer."+
+                "\nYour version is "+treetime.version+
+                "\nUpdate TreeTime or run without the --keep-ambiguous flag.")
+        return 1
+
     tt = ancestral_sequence_inference(tree=T, aln=aln, ref=ref, marginal=args.inference)
 
-    if is_vcf:
+    if is_vcf or args.keep_ambiguous:
         # TreeTime overwrites ambig sites on tips during ancestral reconst.
         # Put these back in tip sequences now, to avoid misleading
         tt.recover_var_ambigs()
