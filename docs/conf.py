@@ -17,8 +17,10 @@
 
 # -- Project information -----------------------------------------------------
 
+from datetime import date
+
 project = 'augur'
-copyright = '2019, James Hadfield, John Huddleston, Emma Hodcroft, Tom Sibley, Barney Potter, Trevor Bedford, Richard Neher'
+copyright = '2014–%d Trevor Bedford and Richard Neher' % (date.today().year)
 author = 'James Hadfield, John Huddleston, Emma Hodcroft, Tom Sibley, Barney Potter, Trevor Bedford, Richard Neher'
 
 
