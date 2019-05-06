@@ -36,7 +36,7 @@ COMMANDS = [
 ]
 
 
-def run(argv):
+def make_parser():
     parser = argparse.ArgumentParser(
         prog        = "augur",
         description = "Augur: A bioinformatics toolkit for phylogenetic analysis.")
@@ -62,7 +62,11 @@ def run(argv):
         # Set here to avoid repeating it in every command's register_parser().
         subparser.formatter_class = argparse.ArgumentDefaultsHelpFormatter
 
-    args = parser.parse_args(argv)
+    return parser
+
+
+def run(argv):
+    args = make_parser().parse_args(argv)
     return args.__command__.run(args)
 
 

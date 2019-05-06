@@ -14,7 +14,7 @@ Welcome to augur's documentation!
    installation
    quickstart
    tutorials
-   command_line_tools
+   commands
    APIdoc
 
 
