@@ -16,6 +16,7 @@ Welcome to augur's documentation!
    tutorials
    commands
    APIdoc
+   authors
 
 
 

@@ -18,10 +18,34 @@
 # -- Project information -----------------------------------------------------
 
 from datetime import date
+import subprocess
+
+def git_authors():
+    result = subprocess.run(
+        ["git", "shortlog", "--summary"],
+        stdout = subprocess.PIPE,
+        check  = True)
+
+    names = [
+        line.strip().split("\t")[1]
+            for line in result.stdout.decode("utf-8").splitlines()
+    ]
+
+    return names
+
+def prose_list(items):
+    if not items:
+        return ""
+    if len(items) == 1:
+        return items[0]
+    elif len(items) == 2:
+        return " and ".join(items)
+    else:
+        return ", ".join([*items[0:-1], "and " + items[-1]])
 
 project = 'augur'
 copyright = '2014–%d Trevor Bedford and Richard Neher' % (date.today().year)
-author = 'James Hadfield, John Huddleston, Emma Hodcroft, Tom Sibley, Barney Potter, Trevor Bedford, Richard Neher'
+author = prose_list(git_authors())
 
 
 # -- General configuration ---------------------------------------------------
@@ -38,6 +62,13 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+
+# A string of reStructuredText that will be included at the end of every source
+# file that is read. This is a possible place to add substitutions that should
+# be available in every file.
+rst_epilog = f"""
+.. |authors| replace:: {author}
+"""
 
 
 # -- Options for HTML output -------------------------------------------------
