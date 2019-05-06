@@ -12,12 +12,3 @@ Tutorials
 
    zika-tutorial
    tb-tutorial
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
