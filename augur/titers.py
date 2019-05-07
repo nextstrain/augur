@@ -80,15 +80,24 @@ class infer_tree_model():
         T = Phylo.read(args.tree, 'newick')
         TM_tree = TreeModel(T, args.titers)
         TM_tree.prepare()
-        TM_tree.train()
+        try:
+            TM_tree.train()
+            tree_model = {'titers':TM_tree.compile_titers(),
+                          'potency':TM_tree.compile_potencies(),
+                          'avidity':TM_tree.compile_virus_effects(),
+                          'nodes':{n.name:{"dTiter": n.dTiter, "cTiter":n.cTiter}
+                                      for n in T.find_clades()}}
+        except:
+            print("Unable to train tree model.")
+            tree_model = {'titers':TM_tree.compile_titers(),
+                          'potency':{},
+                          'avidity':{},
+                          'nodes':{n.name:{"dTiter": n.dTiter, "cTiter":n.cTiter}
+                                      for n in T.find_clades()}}
+            pass
 
-        # export the tree model
-        tree_model = {'titers':TM_tree.compile_titers(),
-                      'potency':TM_tree.compile_potencies(),
-                      'avidity':TM_tree.compile_virus_effects(),
-                      'nodes':{n.name:{"dTiter": n.dTiter, "cTiter":n.cTiter}
-                                  for n in T.find_clades()}}
-        write_json(tree_model, args.output)
+            # export the tree model
+            write_json(tree_model, args.output)
         print("\nInferred titer model of type 'TreeModel' using augur:"
               "\n\tNeher et al. Prediction, dynamics, and visualization of antigenic phenotypes of seasonal influenza viruses."
               "\n\tPNAS, vol 113, 10.1073/pnas.1525578113\n")
