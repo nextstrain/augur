@@ -189,8 +189,6 @@ def run(args):
             if n.name in metadata and 'date' in metadata[n.name]:
                 n.raw_date = metadata[n.name]['date']
 
-        
-
         tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                     reroot=args.root, # or 'best', # We now have a default in param spec - this just adds confusion.
                     Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
@@ -210,7 +208,11 @@ def run(args):
         from treetime import TreeAnc
         # instantiate treetime for the sole reason to name internal nodes
         if args.root:
+        	if args.root in ['best', 'least-squares', 'min_dev', 'oldest']:
+        		raise TypeError("The rooting option '%s' is only available when inferring a timetree. Please specify an explicit outgroup."%args.root)
+
             T.root_with_outgroup(args.root)
+
         tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=1)
 
     node_data['nodes'] = collect_node_data(T, attributes)
