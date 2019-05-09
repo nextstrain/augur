@@ -264,6 +264,10 @@ def read_colors(overrides=None, use_defaults=True):
         if not hex_code.startswith("#") or len(hex_code) != 7:
             print("WARNING: Color map file contained this invalid hex code: ", hex_code)
             return
+        # If was already added, delete entirely so order can change to order in user-specified file
+        # (even though dicts shouldn't be relied on to have order)
+        if (trait, trait_value) in colors:
+            del colors[(trait, trait_value)]
         colors[(trait, trait_value)] = hex_code
 
 
@@ -283,6 +287,7 @@ def read_colors(overrides=None, use_defaults=True):
     color_map = defaultdict(list)
     for (trait, trait_value), hex_code in colors.items():
         color_map[trait].append((trait_value, hex_code))
+
     return color_map
 
 def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
