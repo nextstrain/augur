@@ -507,7 +507,7 @@ def run(args):
 
         # Export the metadata JSON
         lat_long_mapping = read_lat_longs(args.lat_longs)
-        color_mapping = read_colors(args.colors)
+        color_mapping = read_colors(args.colors, use_defaults=False)
         meta_json["updated"] = time.strftime("%d %b %Y")
         meta_json["virus_count"] = len(list(T.get_terminals()))
         meta_json["author_info"] = construct_author_info_nexflu(meta_tsv, T, nodes)
