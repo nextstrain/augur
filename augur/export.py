@@ -53,6 +53,8 @@ def convert_tree_to_json_structure(node, metadata, div=0, nextflu_schema=False, 
                 cdiv = div + metadata[child.name]['mutation_length']
             elif 'branch_length' in metadata[child.name]:
                 cdiv = div + metadata[child.name]['branch_length']
+            else:
+                print("ERROR: Cannot find branch length information for %s"%(child.name))
             node_struct["children"].append(convert_tree_to_json_structure(child, metadata, div=cdiv, nextflu_schema=nextflu_schema, strains=strains)[0])
 
     return (node_struct, strains)
@@ -77,7 +79,7 @@ def recursively_decorate_tree_json_nextflu_schema(node, node_metadata, decoratio
         metadata = node_metadata[node["strain"]]
         metadata["strain"] = node["strain"]
     except KeyError:
-        raise Exception("ERROR: node %s is not found in the node metadata."%n.name)
+        raise Exception("ERROR: node %s is not found in the node metadata."%node.name)
 
     for data in decorations:
         val = None

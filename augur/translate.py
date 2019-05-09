@@ -181,7 +181,15 @@ def assign_aa_vcf(tree, translations):
     #get mutations on the root
     root = tree.root
     aa_muts[root.name]={"aa_muts":{}}
+    #If has no root node name, exit with error
+    if root.name is None:
+        print("\n*** Can't find node name for the tree root!")
+        return "missing"
+    
     for fname, prot in translations.items():
+        if root.name not in prot['sequences']:
+            print("\n*** Can't find %s in the alignment provided!"%(root.name))
+            return "mismatch"
         root_muts = prot['sequences'][root.name]
         tmp = []
         for pos in prot['positions']:
@@ -193,9 +201,15 @@ def assign_aa_vcf(tree, translations):
         for c in n:
             aa_muts[c.name]={"aa_muts":{}}
         for fname, prot in translations.items():
+            if n.name not in prot['sequences']:
+                print("\n*** Can't find %s in the alignment provided!"%(root.name))
+                return "mismatch"
             n_muts = prot['sequences'][n.name]
             for c in n:
                 tmp = []
+                if c.name is None:
+                    print("\n*** Internal node missing a node name!")
+                    return "missing"
                 c_muts = prot['sequences'][c.name]
                 for pos in prot['positions']:
                     #if pos in both, check if same
@@ -208,6 +222,39 @@ def assign_aa_vcf(tree, translations):
                         tmp.append(construct_mut(prot['reference'][pos], int(pos+1), c_muts[pos]))
 
                 aa_muts[c.name]["aa_muts"][fname] = tmp
+
+    return aa_muts
+
+def assign_aa_fasta(tree, translations):
+    aa_muts = {}
+
+    #fasta input shouldn't have mutations on root, so give empty entry
+    root = tree.get_nonterminals()[0]
+    aa_muts[root.name]={"aa_muts":{}}
+
+    for n in tree.get_nonterminals():
+        if n.name is None:
+            print("\n*** Tree is missing node names!")
+            return "missing"
+        for c in n:
+            aa_muts[c.name]={"aa_muts":{}}
+        for fname, aln in translations.items():
+            for c in n:
+                if c.name in aln and n.name in aln:
+                    tmp = [construct_mut(a, int(pos+1), d) for pos, (a,d) in
+                            enumerate(zip(aln[n.name], aln[c.name])) if a!=d]
+                    aa_muts[c.name]["aa_muts"][fname] = tmp
+                elif c.name not in aln and n.name not in aln:
+                    print("\n*** Can't find %s OR %s in the alignment provided!"%(c.name, n.name))
+                   # return "mismatch"
+                else:
+                    print("no sequence pair for nodes %s-%s"%(c.name, n.name))
+
+        if n==tree.root:
+            aa_muts[n.name]={"aa_muts":{}, "aa_sequences":{}}
+            for fname, aln in translations.items():
+                if n.name in aln:
+                    aa_muts[n.name]["aa_sequences"][fname] = "".join(aln[n.name])
 
     return aa_muts
 
@@ -317,29 +364,22 @@ def run(args):
     if is_vcf:
         aa_muts = assign_aa_vcf(tree, translations)
     else:
-        aa_muts = {}
+        aa_muts = assign_aa_fasta(tree, translations)
 
-        #fasta input shouldn't have mutations on root, so give empty entry
-        root = tree.get_nonterminals()[0]
-        aa_muts[root.name]={"aa_muts":{}}
 
-        for n in tree.get_nonterminals():
-            for c in n:
-                aa_muts[c.name]={"aa_muts":{}}
-            for fname, aln in translations.items():
-                for c in n:
-                    if c.name in aln and n.name in aln:
-                        tmp = [construct_mut(a, int(pos+1), d) for pos, (a,d) in
-                                enumerate(zip(aln[n.name], aln[c.name])) if a!=d]
-                        aa_muts[c.name]["aa_muts"][fname] = tmp
-                    else:
-                        print("no sequence pair for nodes %s-%s"%(c.name, n.name))
-            if n==tree.root:
-                aa_muts[n.name]={"aa_muts":{}, "aa_sequences":{}}
-                for fname, aln in translations.items():
-                    if n.name in aln:
-                        aa_muts[n.name]["aa_sequences"][fname] = "".join(aln[n.name])
 
+    if type(aa_muts) is str:
+        if aa_muts is "missing":
+            print("\n*** ERROR: Some/all nodes have no node names!") 
+            print("*** Please check you are providing the tree output by 'augur refine'.")
+            print("*** If you haven't run 'augur refine', please add node names to your tree by running:")
+            print("*** augur refine --tree %s --output-tree <filename>.nwk"%(args.tree) )
+            print("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'")
+        elif aa_muts is "mismatch":
+            print("\n*** ERROR: Mismatch between node names in %s and in %s"%(args.tree, args.ancestral_sequences))
+            print("*** Ensure you are using the same tree you used to run 'ancestral' as input here.")
+            print("*** Or, re-run 'ancestral' using %s, then use the new %s as input here."%(args.tree, args.ancestral_sequences))
+        return 1
 
     write_json({'annotations':annotations, 'nodes':aa_muts}, args.output)
     print("amino acid mutations written to",args.output, file=sys.stdout)

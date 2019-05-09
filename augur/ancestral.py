@@ -70,6 +70,16 @@ def run(args):
         print("ERROR: reading tree from %s failed."%args.tree)
         return 1
 
+    import numpy as np
+    missing_internal_node_names = [n.name is None for n in T.get_nonterminals()]
+    if np.all(missing_internal_node_names):
+        print("\n*** WARNING: Tree has no internal node names!")
+        print("*** Without internal node names, ancestral sequences can't be linked up to the correct node later.")
+        print("*** If you want to use 'augur export' or `augur translate` later, re-run this command with the output of 'augur refine'.")
+        print("*** If you haven't run 'augur refine', you can add node names to your tree by running:")
+        print("*** augur refine --tree %s --output-tree <filename>.nwk"%(args.tree) )
+        print("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'")
+
     if any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
         if not args.vcf_reference:
             print("ERROR: a reference Fasta is required with VCF-format alignments")
