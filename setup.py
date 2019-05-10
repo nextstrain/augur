@@ -52,6 +52,7 @@ setup(
                 "recommonmark >=0.5.0",
                 "Sphinx >=2.0.1",
                 "sphinx-argparse >=0.2.5",
+                "sphinx-rtd-theme >=0.4.3",
                 "wheel >=0.32.3, ==0.32.*",
             ]
         },
