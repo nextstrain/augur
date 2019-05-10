@@ -129,6 +129,7 @@ def run(args):
                     exclude_name = line.split(comment_char)[0].strip()
                     to_exclude.add(exclude_name)
         seq_keep = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
+        num_excluded_by_name = len(to_exclude)
 
     # exclude strain my metadata field like 'host=camel'
     # match using lowercase
@@ -295,3 +296,6 @@ def run(args):
             print("ERROR: All samples have been dropped! Check filter rules and metadata file format.")
             return 1
         SeqIO.write(seq_to_keep, args.output, 'fasta')
+
+    print("\n%i sequences were dropped during filtering. %i of these were dropped because they were in %s"%(len(all_seq)-len(seq_keep), num_excluded_by_name, args.exclude))
+    print("%i sequences have been written out to %s"%(len(seq_keep), args.output))
