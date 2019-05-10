@@ -10,7 +10,7 @@ If you haven't already worked through the [Quickstart](quickstart), you may want
 
 If you have the [Nextstrain command-line interface (CLI) tool](https://github.com/nextstrain/cli) installed from following the [Quickstart](quickstart), then you're all set!
 
-Otherwise, you'll need to either [install the CLI](quickstart#set-up-your-computer) or [install the Nextstrain components](../getting-started/installation) individually.
+Otherwise, you'll need to either [install the CLI](quickstart.html#set-up-your-computer) or [install the Nextstrain components](installation) individually.
 
 ## Build steps
 
@@ -39,7 +39,7 @@ Note the dot (`.`) as the last argument; it is important and indicates that your
 Your command prompt will change to indicate you are in the build environment.
 (If you want to leave the build environment, run the command `exit`.)
 
-If instead you installed Nextstrain components [using Conda](../getting-started/installation#install-augur-with-conda), remember to activate your environment by running:
+If instead you installed Nextstrain components [using Conda](installation.html#install-augur-with-conda), remember to activate your environment by running:
 
 ```
 conda activate nextstrain
@@ -292,9 +292,9 @@ If you want to force a re-run of the whole build, first remove any previous outp
 
 ## Next steps
 
-* Learn more about [augur commands](../bioinformatics).
+* Learn more about [augur commands](commands).
 
-* Learn more about [auspice visualizations](../visualisation).
+* Learn more about [auspice visualizations](https://nextstrain.github.io/auspice/).
 
 * Learn more about [creating and modifying snakemake files](../pathogen-builds/snakemake).
 

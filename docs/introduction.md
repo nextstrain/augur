@@ -24,18 +24,18 @@ Our model for data analysis and sharing is for scientists to store the code used
 
 ### Moving Parts
 
-1. _Bioinformatics via Augur:_ Sequence analysis is performed by running a series of [augur commands](../bioinformatics) in discrete steps.
+1. _Bioinformatics via Augur:_ Sequence analysis is performed by running a series of [augur commands](commands) in discrete steps.
 It's possible to customize which steps are run and to add your own, whether they use augur or not.
 These steps can include subsampling, alignment, tree-inference, node dating etc.
-[See here](/docs/bioinformatics/introduction) for more details.
+
 2. _Visualization via Auspice:_ Visualization is via a JavaScript-based web app, which is what you see when you access datasets such as [nextstrain.org/zika](https://www.nextstrain.org/zika).
 This can be installed locally, and as long as your data is in the correct format it can be visualized.
-[See here](/docs/visualisation/introduction) for more details.
+See the [auspice documentation](https://nextstrain.github.io/auspice/) for more details.
 
 ### How to get started
 
-* If you would like to investigate live datasets, [head back to the splash page](/) and click on any of the tiles.
-* If you would like to use Nextstrain to process and visualise your own data, you can either start with the [Quickstart](/docs/getting-started/quickstart) which uses a Docker container to run the builds automatically, or follow the [Zika Tutorial](/docs/getting-started/zika-tutorial) which provides a more hands-on approach to processing the data.
+* If you would like to investigate live datasets, [visit nextstrain.org](https://nextstrain.org/) and click on any of the tiles.
+* If you would like to use Nextstrain to process and visualise your own data, you can either start with the [Quickstart](quickstart) which uses a Docker container to run the builds automatically, or follow the [Zika Tutorial](zika-tutorial) which provides a more hands-on approach to processing the data.
 * If you have data generated from other sources (e.g. BEAST, RAxML, etc...) then please watch this space -- we'll add tutorials for these soon!
 
 ### Contact us

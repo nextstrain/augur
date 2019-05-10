@@ -95,7 +95,7 @@ After unzipping the snapshot, you'll need to rename the resulting `zika-tutorial
 
 ## Run the build
 
-Nextstrain builds use the [augur bioinformatics toolkit](/docs/bioinformatics) to subsample data, align sequences, build a phylogeny, estimate phylogeographic patterns, and save the results in a format suitable for [visualization with auspice](/docs/visualisation).
+Augur provides tools to subsample data, align sequences, build a phylogeny, estimate phylogeographic patterns, and save the results in a format suitable for [visualization with auspice](https://nextstrain.github.io/auspice/).
 
 Run `nextstrain build zika-tutorial/` to run the build:
 

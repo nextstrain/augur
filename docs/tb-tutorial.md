@@ -9,13 +9,13 @@ Then we will see how to automate this stepwise process by defining a pathogen bu
 If you haven't already worked through the [Quickstart](quickstart), you may want to back up and begin there before continuing with this tutorial.
 
 Note that we will not use all the bioinformatics commands possible with Nextstrain.
-After running this tutorial, you may want to read more about the [bioinformatics commands offered by Nextstrain](/docs/bioinformatics).
+After running this tutorial, you may want to read more about the [commands offered by augur](commands).
 
 ## Setup
 
 If you have the [Nextstrain command-line interface (CLI) tool](https://github.com/nextstrain/cli) installed from following the [Quickstart](quickstart), then you're all set!
 
-Otherwise, you'll need to either [install the CLI](quickstart#set-up-your-computer) or [install the Nextstrain components](../getting-started/installation) individually.
+Otherwise, you'll need to either [install the CLI](quickstart.html#set-up-your-computer) or [install the Nextstrain components](installation) individually.
 
 ## Build steps
 Nextstrain builds typically require the following steps:
@@ -67,7 +67,7 @@ Note the dot (`.`) as the last argument; it is important and indicates that your
 Your command prompt will change to indicate you are in the build environment.
 (If you want to leave the build environment, run the command `exit`.)
 
-If instead you installed Nextstrain components [using Conda](../getting-started/installation#install-augur-with-conda), remember to activate your environment by running:
+If instead you installed Nextstrain components [using Conda](installation#install-augur-with-conda), remember to activate your environment by running:
 
 ```
 conda activate nextstrain
@@ -95,7 +95,7 @@ All the data you need to make the TB build is in the `data` and `config` folders
 
 Sometimes you may want to exclude certain sequences from analysis.
 You may also wish to downsample your data based on certain criteria. `filter` lets you do this.
-For more information on all the ways you can filter data, see [the bioinformatics commands reference](/docs/bioinformatics/commands#filter).
+For more information on all the ways you can filter data, see [the commands reference](commands.html#filter).
 
 For this example, we'll just exclude sequences in the file `dropped_strains.txt`.
 
@@ -373,9 +373,9 @@ If you want to force a re-run of the whole build, first remove any previous outp
 
 ## Next steps
 
-* Learn more about [augur commands](../bioinformatics).
+* Learn more about [augur commands](commands).
 
-* Learn more about [auspice visualizations](../visualisation).
+* Learn more about [auspice visualizations](https://nextstrain.github.io/auspice/).
 
 * Learn more about [creating and modifying snakemake files](../pathogen-builds/snakemake).
 
