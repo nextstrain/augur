@@ -9,9 +9,34 @@ from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
 
 def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
-                                 marginal=False):
+                                 marginal=False, fill_overhangs=True):
+    """infer ancestral sequences using TreeTime
+
+    Parameters
+    ----------
+    tree : Bio.Phylo tree or str
+        tree or filename of tree
+    aln : Bio.Align.MultipleSeqAlignment or str
+        alignment or filename of alignment
+    infer_gtr : bool, optional
+        Description
+    marginal : bool, optional
+        Description
+    fill_overhangs : bool
+       In some cases, the missing data on both ends of the alignment is
+       filled with the gap character ('-'). If set to True, these end-gaps are
+       converted to "ambiguous" characters ('N' for nucleotides, 'X' for
+       aminoacids). Otherwise, the alignment is treated as-is
+
+    Returns
+    -------
+    TreeAnc
+        treetime.TreeAnc instance
+    """
+
     from treetime import TreeAnc
-    tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69', verbose=1)
+    tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69',
+                 fill_overhangs=fill_overhangs, verbose=1)
 
     # convert marginal (from args.inference) from 'joint' or 'marginal' to True or False
     bool_marginal = (marginal == "marginal")
@@ -26,6 +51,21 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
     return tt
 
 def collect_sequences_and_mutations(T, is_vcf=False):
+    """iterates of the tree and produces dictionaries with
+    mutations and sequences for each node.
+
+    Parameters
+    ----------
+    T : Bio.Phylo.Tree
+        Phylogenetic tree decorated with sequences and mutations as output by treetime.
+    is_vcf : bool, optional
+        specifies whether input alignment was vcf type (implying long genomes)
+
+    Returns
+    -------
+    dict
+        dictionary of mutations and sequences
+    """
     data = defaultdict(dict)
     inc = 1 # convert python numbering to start-at-1
     for n in T.find_clades():
@@ -52,7 +92,8 @@ def register_arguments(parser):
                                     help="calculate joint or marginal maximum likelihood ancestral sequence states")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
-
+    parser.add_argument('--keep-ambiguous', action="store_true", default=False,
+                                help='do not infer nucleotides at ambiguous (N) sites on tip sequences (leave as N). Always true for VCF input.')
 
 def run(args):
     # check alignment type, set flags, read in if VCF
@@ -82,9 +123,20 @@ def run(args):
     else:
         aln = args.alignment
 
-    tt = ancestral_sequence_inference(tree=T, aln=aln, ref=ref, marginal=args.inference)
+    # Only allow recovery of ambig sites for Fasta-input if TreeTime is version 0.5.6 or newer
+    # Otherwise it returns nonsense.
+    from distutils.version import StrictVersion
+    import treetime
+    if args.keep_ambiguous and not is_vcf and StrictVersion(treetime.version) < StrictVersion('0.5.6'):
+        print("ERROR: Keeping ambiguous sites for Fasta-input requires TreeTime version 0.5.6 or newer."+
+                "\nYour version is "+treetime.version+
+                "\nUpdate TreeTime or run without the --keep-ambiguous flag.")
+        return 1
 
-    if is_vcf:
+    tt = ancestral_sequence_inference(tree=T, aln=aln, ref=ref, marginal=args.inference,
+                                      fill_overhangs = True)
+
+    if is_vcf or args.keep_ambiguous:
         # TreeTime overwrites ambig sites on tips during ancestral reconst.
         # Put these back in tip sequences now, to avoid misleading
         tt.recover_var_ambigs()
