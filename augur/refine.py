@@ -168,6 +168,11 @@ def run(args):
     else:
         tree_fname = '.'.join(args.alignment.split('.')[:-1]) + '_tt.nwk'
 
+    if args.root and len(args.root) == 1: #if anything but a list of seqs, don't send as a list
+        args.root = args.root[0]
+    if args.keep_root:  # This flag overrides anything specified by 'root'
+        args.root = None
+
     if args.timetree:
         # load meta data and covert dates to numeric
         if args.metadata is None:
@@ -183,11 +188,6 @@ def run(args):
         for n in T.get_terminals():
             if n.name in metadata and 'date' in metadata[n.name]:
                 n.raw_date = metadata[n.name]['date']
-
-        if args.root and len(args.root) == 1: #if anything but a list of seqs, don't send as a list
-            args.root = args.root[0]
-        if args.keep_root:  # This flag overrides anything specified by 'root'
-            args.root = None
 
         tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                     reroot=args.root, # or 'best', # We now have a default in param spec - this just adds confusion.
@@ -207,6 +207,12 @@ def run(args):
     else:
         from treetime import TreeAnc
         # instantiate treetime for the sole reason to name internal nodes
+        if args.root:
+            if args.root in ['best', 'least-squares', 'min_dev', 'oldest']:
+                raise TypeError("The rooting option '%s' is only available when inferring a timetree. Please specify an explicit outgroup."%args.root)
+
+            T.root_with_outgroup(args.root)
+
         tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=1)
 
     node_data['nodes'] = collect_node_data(T, attributes)
