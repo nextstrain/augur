@@ -8,6 +8,12 @@ from Bio import SeqIO, SeqFeature, Seq, SeqRecord, Phylo
 from .utils import read_node_data, load_features, write_json, write_VCF_translation
 from treetime.vcf_utils import read_vcf
 
+class MissingNodeError(Exception):
+    pass
+
+class MismatchNodeError(Exception):
+    pass
+
 def safe_translate(sequence, report_exceptions=False):
     """Returns an amino acid translation of the given nucleotide sequence accounting
     for gaps in the given sequence.
@@ -184,12 +190,12 @@ def assign_aa_vcf(tree, translations):
     #If has no root node name, exit with error
     if root.name is None:
         print("\n*** Can't find node name for the tree root!")
-        return "missing"
+        raise MissingNodeError()
     
     for fname, prot in translations.items():
         if root.name not in prot['sequences']:
             print("\n*** Can't find %s in the alignment provided!"%(root.name))
-            return "mismatch"
+            raise MismatchNodeError()
         root_muts = prot['sequences'][root.name]
         tmp = []
         for pos in prot['positions']:
@@ -203,13 +209,13 @@ def assign_aa_vcf(tree, translations):
         for fname, prot in translations.items():
             if n.name not in prot['sequences']:
                 print("\n*** Can't find %s in the alignment provided!"%(root.name))
-                return "mismatch"
+                raise MismatchNodeError()
             n_muts = prot['sequences'][n.name]
             for c in n:
                 tmp = []
                 if c.name is None:
                     print("\n*** Internal node missing a node name!")
-                    return "missing"
+                    raise MissingNodeError()
                 c_muts = prot['sequences'][c.name]
                 for pos in prot['positions']:
                     #if pos in both, check if same
@@ -235,7 +241,7 @@ def assign_aa_fasta(tree, translations):
     for n in tree.get_nonterminals():
         if n.name is None:
             print("\n*** Tree is missing node names!")
-            return "missing"
+            raise MissingNodeError()
         for c in n:
             aa_muts[c.name]={"aa_muts":{}}
         for fname, aln in translations.items():
@@ -246,7 +252,7 @@ def assign_aa_fasta(tree, translations):
                     aa_muts[c.name]["aa_muts"][fname] = tmp
                 elif c.name not in aln and n.name not in aln:
                     print("\n*** Can't find %s OR %s in the alignment provided!"%(c.name, n.name))
-                   # return "mismatch"
+                    raise MismatchNodeError()
                 else:
                     print("no sequence pair for nodes %s-%s"%(c.name, n.name))
 
@@ -361,24 +367,22 @@ def run(args):
                               'strand': 1}
 
     ## determine amino acid mutations for each node
-    if is_vcf:
-        aa_muts = assign_aa_vcf(tree, translations)
-    else:
-        aa_muts = assign_aa_fasta(tree, translations)
-
-
-
-    if type(aa_muts) is str:
-        if aa_muts is "missing":
-            print("\n*** ERROR: Some/all nodes have no node names!") 
-            print("*** Please check you are providing the tree output by 'augur refine'.")
-            print("*** If you haven't run 'augur refine', please add node names to your tree by running:")
-            print("*** augur refine --tree %s --output-tree <filename>.nwk"%(args.tree) )
-            print("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'")
-        elif aa_muts is "mismatch":
-            print("\n*** ERROR: Mismatch between node names in %s and in %s"%(args.tree, args.ancestral_sequences))
-            print("*** Ensure you are using the same tree you used to run 'ancestral' as input here.")
-            print("*** Or, re-run 'ancestral' using %s, then use the new %s as input here."%(args.tree, args.ancestral_sequences))
+    try:
+        if is_vcf:
+            aa_muts = assign_aa_vcf(tree, translations)
+        else:
+            aa_muts = assign_aa_fasta(tree, translations)
+    except MissingNodeError as err:
+        print("\n*** ERROR: Some/all nodes have no node names!") 
+        print("*** Please check you are providing the tree output by 'augur refine'.")
+        print("*** If you haven't run 'augur refine', please add node names to your tree by running:")
+        print("*** augur refine --tree %s --output-tree <filename>.nwk"%(args.tree) )
+        print("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'")
+        return 1
+    except MismatchNodeError as err:
+        print("\n*** ERROR: Mismatch between node names in %s and in %s"%(args.tree, args.ancestral_sequences))
+        print("*** Ensure you are using the same tree you used to run 'ancestral' as input here.")
+        print("*** Or, re-run 'ancestral' using %s, then use the new %s as input here."%(args.tree, args.ancestral_sequences))
         return 1
 
     write_json({'annotations':annotations, 'nodes':aa_muts}, args.output)
