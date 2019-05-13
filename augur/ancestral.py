@@ -94,6 +94,8 @@ def register_arguments(parser):
     parser.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
     parser.add_argument('--keep-ambiguous', action="store_true", default=False,
                                 help='do not infer nucleotides at ambiguous (N) sites on tip sequences (leave as N). Always true for VCF input.')
+    parser.add_argument('--keep-overhangs', action="store_true", default=False,
+                                help='do not infer nucleotides for gaps (-) on either side of the alignment')
 
 def run(args):
     # check alignment type, set flags, read in if VCF
@@ -134,7 +136,7 @@ def run(args):
         return 1
 
     tt = ancestral_sequence_inference(tree=T, aln=aln, ref=ref, marginal=args.inference,
-                                      fill_overhangs = True)
+                                      fill_overhangs = not(args.keep_overhangs))
 
     if is_vcf or args.keep_ambiguous:
         # TreeTime overwrites ambig sites on tips during ancestral reconst.
