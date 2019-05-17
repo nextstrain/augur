@@ -11,6 +11,9 @@ from .utils import myopen
 
 TITER_ROUND=4
 
+class InsufficientDataException(Exception):
+    pass
+
 class TiterCollection(object):
     """
     Container for raw titer values and methods for analyzing these values.
@@ -425,8 +428,7 @@ class TiterModel(object):
         self.lam_avi = lam_avi
         self.lam_drop = lam_drop
         if len(self.train_titers)==0:
-            print('no titers to train')
-            self.model_params = np.zeros(self.genetic_params+len(self.sera)+len(self.test_strains))
+            raise InsufficientDataException("Error: No titers in training set.")
         else:
             if method=='l1reg':  # l1 regularized fit, no constraint on sign of effect
                 self.model_params = self.fit_l1reg()
@@ -774,7 +776,7 @@ class TreeModel(TiterModel):
         if len(self.train_titers)>1:
             self.make_treegraph()
         else:
-            print("TreeModel: no titers in training set")
+            raise InsufficientDataException("TreeModel: Not enough titers in training set, found {}".format(len(self.train_titers)))
 
     def get_path_no_terminals(self, v1, v2):
         '''
@@ -959,7 +961,7 @@ class SubstitutionModel(TiterModel):
         if len(self.train_titers)>1:
             self.make_seqgraph()
         else:
-            print('substitution model: no titers to train')
+            raise InsufficientDataException("SubstitutionModel: Not enough titers in training set, found {}".format(len(self.train_titers)))
 
 
     def get_mutations(self, strain1, strain2):
