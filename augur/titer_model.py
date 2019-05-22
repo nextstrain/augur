@@ -947,6 +947,7 @@ class SubstitutionModel(TiterModel):
         super(SubstitutionModel, self).__init__(*args, **kwargs)
         self.sequences = defaultdict(dict)
         self.proteins = list(alignments.keys())
+        self.substitution_effect={}
         for gene, aln in alignments.items():
             for x in aln:
                 self.sequences[x.name][gene] = str(x.seq)
@@ -1113,7 +1114,6 @@ class SubstitutionModel(TiterModel):
             Description
         '''
         self._train(**kwargs)
-        self.substitution_effect={}
         for mi, mut in enumerate(self.relevant_muts):
             self.substitution_effect[mut] = self.model_params[mi]
 
