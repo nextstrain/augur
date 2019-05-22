@@ -116,8 +116,8 @@ class infer_tree_model():
                 print("Exiting.")
                 sys.exit(1)
 
-            # export the tree model
-            write_json(tree_model, args.output)
+        # export the tree model
+        write_json(tree_model, args.output)
         print("\nInferred titer model of type 'TreeModel' using augur:"
               "\n\tNeher et al. Prediction, dynamics, and visualization of antigenic phenotypes of seasonal influenza viruses."
               "\n\tPNAS, vol 113, 10.1073/pnas.1525578113\n")
