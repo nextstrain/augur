@@ -1,5 +1,5 @@
 """
-Align multiple sequences from FASTA or VCF.
+Align multiple sequences from FASTA.
 """
 
 import os,sys,argparse
