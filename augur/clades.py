@@ -79,7 +79,6 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
     tree.root.sequences = {'nuc':{}}
     tree.root.sequences.update({gene:{} for gene in all_muts[tree.root.name]['aa_muts']})
 
-
     # attach sequences to all nodes
     for node in tree.find_clades(order='preorder'):
         if node.up:
@@ -87,10 +86,13 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
         for mut in all_muts[node.name]['muts']:
             a, pos, d = mut[0], int(mut[1:-1])-1, mut[-1]
             node.sequences['nuc'][pos] = d
-        if hasattr(node, 'aa_sequences'):
-            for gene in all_muts[node.name]['aa_muts'][gene]:
+        if 'aa_muts' in all_muts[node.name]:
+            for gene in all_muts[node.name]['aa_muts']:
                 for mut in all_muts[node.name]['aa_muts'][gene]:
                     a, pos, d = mut[0], int(mut[1:-1])-1, mut[-1]
+
+                    if gene not in node.sequences:
+                        node.sequences[gene]={}
                     node.sequences[gene][pos] = d
 
 
@@ -103,10 +105,8 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
             if is_node_in_clade(clade_alleles, node, ref):
                 node_counts.append(node)
         sorted_nodes = sorted(node_counts, key=lambda x: x.leaf_count, reverse=True)
-        print(clade_name, clade_alleles, len(sorted_nodes))
         if len(sorted_nodes) > 0:
             target_node = sorted_nodes[0]
-            print(target_node.name, clade_name)
             clade_membership[target_node.name] = {'clade_annotation': clade_name, 'clade_membership': clade_name}
 
     # third pass to propagate 'clade_membership'
@@ -136,7 +136,6 @@ def get_reference_sequence_from_root_node(all_muts, root_name):
     return ref
 
 
-
 def register_arguments(parser):
     parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
     parser.add_argument('--mutations', nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
@@ -155,7 +154,8 @@ def run(args):
     all_muts = node_data['nodes']
 
     if args.reference:
-        pass
+        # PLACE HOLDER FOR vcf WORKFLOW.
+        ref = None
     else:
         ref = get_reference_sequence_from_root_node(all_muts, tree.root.name)
 
