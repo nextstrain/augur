@@ -1,85 +1,48 @@
 # Installation
 
-Nextstrain consists of a bioinformatics pipeline utility, `augur`, and a web application for data visualization, `auspice`.
-The following instructions describe how to install augur and auspice on Mac OS X or an Ubuntu-style Linux distribution.
-If you are using Windows, we have instructions for [installing a Linux subsystem](/docs/getting-started/windows-help) to get Nexstrain running.
+Augur is written in Python 3 and requires at least Python 3.4.
+It's published on [PyPi](https://pypi.org) as [nextstrain-augur](https://pypi.org/project/nextstrain-augur), so you can install it with `pip` like so:
 
-Install the following dependencies, before you begin:
+    python -m pip install nextstrain-augur
 
-* [git](https://git-scm.com/downloads)
-* [Python 3](https://www.python.org/downloads/)
+You can also install from a git clone or other copy of the source code by running:
 
-### Install augur and auspice with Docker
+    python -m pip install .
 
-TBD.
+If your system has both Python 2 and Python 3 installed side-by-side, you may need to use `python3` instead of just `python` (which often defaults to Python 2 when both Python versions are installed).
 
-### Install augur with Python
+Augur uses some common external bioinformatics programs which you'll need to install to have a fully functioning toolkit:
 
-Install augur.
+* `augur align` requires [mafft](https://mafft.cbrc.jp/alignment/software/)
 
-```
-pip3 install git+https://github.com/nextstrain/augur@master
-```
+* `augur tree` requires at least one of:
+   - [IQ-TREE](http://www.iqtree.org/) (used by default)
+   - [RAxML](https://sco.h-its.org/exelixis/web/software/raxml/) (optional alternative)
+   - [FastTree](http://www.microbesonline.org/fasttree/) (optional alternative)
 
-Test your installation.
+* Bacterial data (or any VCF usage) requires [vcftools](https://vcftools.github.io/)
 
-```
-augur -h
-```
+On macOS, you can install these external programs using [Homebrew](https://brew.sh/) with:
 
-To run augur, you also need to install the following dependencies.
+    brew install mafft iqtree raxml fasttree vcftools
 
-#### Install augur dependencies on Mac OS X
+On Debian/Ubuntu, you can install them via:
 
-If you do not have the `brew` command, [download and install the latest version of Homebrew](https://brew.sh/).
-
-```
-brew install fasttree iqtree mafft raxml vcftools
-```
-
-#### Install augur dependencies on Linux
-
-On Ubuntu, you can use `apt` to install the required packages:
-
-```
-sudo apt install fasttree iqtree mafft raxml vcftools
-```
+    sudo apt install mafft iqtree raxml fasttree vcftools
 
 Other Linux distributions will likely have the same packages available, although the names may differ slightly.
 
-### Install augur with Conda
+## With Conda
 
-If you do not have the `conda` command, [download and install the latest version of Miniconda](https://conda.io/miniconda.html) for Python 3.
+Alternatively, augur itself and all of its dependencies can be installed into a [Conda](https://conda.io/miniconda.html) environment:
 
-Install augur and its dependencies in a new `nextstrain` environment.
+    conda env create -f environment.yml
 
-```
-curl -L https://tinyurl.com/y9dmtc2k > nextstrain.yaml
-conda env create -n nextstrain -f nextstrain.yaml
-```
+When that finishes, the enviroment needs to be activated whenever you want to use augur:
 
-Test your installation.
+    conda activate augur
 
-```
-conda activate nextstrain
-augur -h
-```
+## Testing if it worked
 
-### Install auspice
-
-[Install Node.js](https://nodesource.com/blog/installing-node-js-tutorial-using-nvm-on-mac-os-x-and-ubuntu/) and then install auspice and its dependencies.
-
-```
-# Download auspice.
-git clone https://github.com/nextstrain/auspice
-cd auspice
-
-# Install auspice dependencies.
-npm install
-```
-
-Test your auspice installation by starting the server.
-
-```
-npm run dev
-```
+If installation worked, you should be able to run `augur --help` and see
+augur's primary help output.
