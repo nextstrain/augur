@@ -14,8 +14,8 @@ Augur originated as part of `Nextstrain <https://nextstrain.org>`__, an open-sou
    :caption: Table of contents
 
    installation
+   usage
    quickstart
    tutorials
-   commands
    APIdoc
    authors
