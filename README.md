@@ -153,18 +153,15 @@ build to keep the Docker image up-to-date.
 
 ### Building documentation
 
-[Documentation](https://nextstrain-augur.readthedocs.io) is built using
-[Sphinx](http://sphinx-doc.org/) and hosted on [Read The
-Docs](https://readthedocs.org/).  Versions of the documentation for each augur
-release and git branch are available and preserved.
+[Documentation](https://nextstrain-augur.readthedocs.io) is built using [Sphinx](http://sphinx-doc.org/) and hosted on [Read The Docs](https://readthedocs.org/).
+Versions of the documentation for each augur release and git branch are available and preserved.
 
-Building the documentation locally is useful to test changes.  First, make sure
-you have the development dependencies of augur installed:
+Building the documentation locally is useful to test changes.
+First, make sure you have the development dependencies of augur installed:
 
     pip install '.[dev]'
 
-This installs packages listed in the `dev` section of `extras_require` in
-_setup.py_ (in addition to any normal augur dependencies if necessary).
+This installs packages listed in the `dev` section of `extras_require` in _setup.py_ (in addition to any normal augur dependencies if necessary).
 
 Then build the HTML output format by running:
 
