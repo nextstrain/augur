@@ -1,6 +1,6 @@
-=====
-Usage
-=====
+==================
+Command-line usage
+==================
 
 All of Augur's commands are accessed through the ``augur`` program.
 For example, to infer ancestral sequences from a tree, you'd run ``augur ancestral``.
