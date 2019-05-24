@@ -174,6 +174,10 @@ You can see other available formats by running:
 
     make -C docs help
 
+To update the API documentation after adding or removing an augur submodule, autogenerate a new API file as follows.
+
+    sphinx-apidoc -T -f -o docs augur
+
 ## License and copyright
 
 Copyright 2014-2019 Trevor Bedford and Richard Neher.
