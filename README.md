@@ -175,6 +175,10 @@ To update the API documentation after adding or removing an augur submodule, aut
 
     sphinx-apidoc -T -f -o docs augur
 
+Sphinx caches built documentation by default, which is generally great, but can cause the sidebar of pages to be stale.  You can clean out the cache with:
+
+    make -C docs clean
+
 ## License and copyright
 
 Copyright 2014-2019 Trevor Bedford and Richard Neher.
