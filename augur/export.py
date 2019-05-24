@@ -153,7 +153,7 @@ def process_colorings(jsn, color_mapping, nodes=None, node_metadata=None, nextfl
                 values_in_tree = {node[trait] for node in nodes.values() if trait in node}
             else:
                 values_in_tree = {data["traits"][trait]["value"] for name, data in node_metadata.items()}
-            case_map = {val.lower(): val for val in values_in_tree}
+            case_map = {str(val).lower(): val for val in values_in_tree}
 
             if nextflu:
                 options["color_map"] = [(case_map[m[0]], m[1]) for m in color_mapping[trait.lower()] if m[0] in case_map]
