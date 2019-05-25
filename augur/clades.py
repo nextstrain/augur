@@ -12,12 +12,23 @@ def read_in_clade_definitions(clade_file):
     '''
     Reads in tab-seperated file that defines clades by amino acid or nucleotide mutations
 
-    Format:
-    clade	gene	site alt
-    Clade_1	ctpE    81  D
-    Clade_2	nuc 30642   T
-    Clade_3	nuc 444296  A
-    Clade_4	pks8    634 T
+    Format
+    ------
+    clade    gene    site alt
+    Clade_1    ctpE    81  D
+    Clade_2    nuc 30642   T
+    Clade_3    nuc 444296  A
+    Clade_4    pks8    634 T
+
+    Parameters
+    ----------
+    clade_file : str
+        meta data file
+
+    Returns
+    -------
+    dict
+        clade definitions as :code:`{clade_name:[(gene, site, allele),...]}`
     '''
 
     clades = {}
@@ -35,10 +46,25 @@ def read_in_clade_definitions(clade_file):
 
 def is_node_in_clade(clade_alleles, node, ref):
     '''
-    Determines whether a node contains all mutations that define a clade
+    Determines whether a node matches the clade definition based on sequence
+    For any condition, will first look in mutations stored in node.sequences,
+    then check whether a reference sequence is available, and other reports 'non-match'
+
+    Parameters
+    ----------
+    clade_alleles : list
+        list of clade defining alleles
+    node : Phylo.Node
+        node to check, assuming sequences (as mutations) are attached to node
+    ref : str/list
+        positions
+
+    Returns
+    -------
+    bool
+        True if in clade
+
     '''
-    # mutations are stored on nodes in format 'R927H' matching the clade definitions
-    # if all of the clade-defining mutations are in the node mutations, it's part of this clade
     conditions = []
     for gene, pos, clade_state in clade_alleles:
         if gene in node.sequences and pos in node.sequences[gene]:
@@ -59,6 +85,22 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
     to see if it's the first member of a clade (assigns 'clade_annotation'), and sets
     all nodes's clade_membership to the value of their parent. This will change if later found to be
     the first member of a clade.
+
+    Parameters
+    ----------
+    clade_designations :     dict
+        clade definitions as :code:`{clade_name:[(gene, site, allele),...]}`
+    all_muts : dict
+        mutations in each node
+    tree : Phylo.Tree
+        phylogenetic tree to process
+    ref : str/list, optional
+        reference sequence to look up state when not mutated
+
+    Returns
+    -------
+    dict
+        mapping of node to clades
     '''
 
     clade_membership = {}
@@ -125,13 +167,13 @@ def get_reference_sequence_from_root_node(all_muts, root_name):
     try:
         ref['nuc'] = list(all_muts[root_name]["sequence"])
     except:
-        print("augur.clades: nucleotide mutation json does not contain full sequences for the root node.")
+        print("WARNING in augur.clades: nucleotide mutation json does not contain full sequences for the root node.")
 
     if "aa_muts" in all_muts[root_name]:
         try:
             ref.update({gene:list(seq) for gene, seq in all_muts[root_name]["aa_sequences"].items()})
         except:
-            print("augur.clades: amino acid mutation json does not contain full sequences for the root node.")
+            print("WARNING in augur.clades: amino acid mutation json does not contain full sequences for the root node.")
 
     return ref
 
@@ -155,8 +197,12 @@ def run(args):
 
     if args.reference:
         # PLACE HOLDER FOR vcf WORKFLOW.
+        # Works without a reference for now but can be added if clade defs contain positions
+        # that are monomorphic across reference and sequence sample.
         ref = None
     else:
+        # extract reference sequences from the root node entry in the mutation json
+        # if this doesn't exist, it will complain but not error.
         ref = get_reference_sequence_from_root_node(all_muts, tree.root.name)
 
     clade_designations = read_in_clade_definitions(args.clades)
