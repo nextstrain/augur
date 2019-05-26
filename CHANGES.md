@@ -1,12 +1,63 @@
 # __NEXT__
 
 
+# 5.0.0 (26 May 2019)
+
+## Features
+
+* ancestral: New option to `--keep-ambiguous`, which will not infer nucleotides at
+  ambiguous (N) sites on tip sequences and instead leave as 'N'
+  [See PR 280.](https://github.com/nextstrain/augur/pull/280)
+* ancestral: New option to `--keep-overhangs`, which will not infer nucleotides for
+  gaps on either side of the alignment and instead leave as '-'.
+  [See PR 286.](https://github.com/nextstrain/augur/pull/286)
+* clades: This module has been reconfigured to identify clade defining mutations on
+  top of a reference rather than identifying mutations along the tree. The command
+  line arguments are the same except for the addition of `--reference`, which
+  explicitly passes in a reference sequence. If `--reference` is not defined, then
+  reference will be drawn from the root node of the phylogeny by looking for
+  `sequence` attribute attached to root node of `--tree`.
+  [See PR 288.](https://github.com/nextstrain/augur/pull/288)
+* refine: Revise rooting behavior. Previously `--root` took 'best', 'residual', 'rsq'
+  and 'min_dev' as options. In this update `--root` takes 'best', least-squares',
+  'min_dev' and 'oldest' as rooting options. This eliminates 'residual' and 'rsq'
+  as options. This is a **backwards-incompatible** change. This requires updating
+  TreeTime to version 0.5.4 or above.
+  [See PR 263.](https://github.com/nextstrain/augur/pull/263)
+* refine: Add `--keep-root` option that overrides `--root` specification to preserve
+  tree rooting.
+  [See PR 263.](https://github.com/nextstrain/augur/pull/263)  
+* refine: Add `--covariance` and `--no-covariance` options that specify TreeTime
+  behavior.
+  [See PR 263.](https://github.com/nextstrain/augur/pull/263)
+* titers: This command now throws an `InsufficientDataException` if there are not
+  sufficient titers to infer a model. This is paired with a new `--allow-empty-model`
+  flag that proceeds past the `InsufficientDataException` and writes out a model
+  JSON corresponding to an 'empty' model.
+  [See PR 281.](https://github.com/nextstrain/augur/pull/281)
+* By default JSONs are written with `index=1` to give a pretty-printed JSON. However,
+  this adds significant file size to large tree JSONs. If the environment variable
+  `AUGUR_MINIFY_JSON` is set then minified JSONs are printed instead. This mirror the
+  explicit `--minify-json` argument available to `augur export`.
+  [See PR 278.](https://github.com/nextstrain/augur/pull/278)
+
+## Bug fixes
+
+* export: Cast numeric values to strings for export.
+  [See issue 287.](https://github.com/nextstrain/augur/issues/287)
+* export: Legend order preserves ordering passed in by user for traits that have
+  default colorings ('country' and 'region').
+  [See PR 284.](https://github.com/nextstrain/augur/pull/284)
+* refine: Previously, the `--root` argument was silently ignored when no timetree
+  was inferred. Re-rooting with an outgroup is sensible even without a timetree.
+  [See PR 282.](https://github.com/nextstrain/augur/pull/282)
+
 # 4.0.0 (24 April 2019)
 
 ## Features
 
-* distance: New interface for specifying distances between sequences.  This is
-  a **backwards-incompatible** change.  Refer to `augur distance --help` for
+* distance: New interface for specifying distances between sequences. This is
+  a **backwards-incompatible** change. Refer to `augur distance --help` for
   all the details.
 
 * export: Add a `--minify-json` flag to omit indentation in Auspice JSONs.
