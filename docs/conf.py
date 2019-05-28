@@ -22,7 +22,7 @@ import subprocess
 
 def git_authors():
     result = subprocess.run(
-        ["git", "shortlog", "--summary"],
+        ["git", "shortlog", "--summary", "HEAD"],
         stdout = subprocess.PIPE,
         check  = True)
 
