@@ -1,6 +1,17 @@
 # __NEXT__
 
 
+# 5.1.0 (29 May 2019)
+
+## Documentation
+
+* Documentation is now available online for the augur CLI and Python API via
+  Read The Docs: <https://nextstrain-augur.readthedocs.io>.  The _latest_
+  version on RTD points to the git master branch, and the _stable_ version to
+  the most recent tagged release.  Instructions for building the docs locally
+  are in the README.
+
+
 # 5.0.0 (26 May 2019)
 
 ## Features
