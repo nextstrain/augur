@@ -80,12 +80,21 @@ def safe_translate(sequence, report_exceptions=False):
 
 def translate_feature(aln, feature):
     '''
-    translates a subsequence of input nucleotide sequences
-    input:
-        aln -- dictionary of sequences indexed by node name
-        feature -- Biopython sequence feature
-    returns:
-        dictionary of translated sequences indexed by node name
+    Translates a subsequence of input nucleotide sequences.
+
+    Parameters
+    ----------
+    aln : dict
+        sequences indexed by node name
+
+    feature : Bio.Seq.Seq
+        BioPython sequence feature
+
+    Returns
+    -------
+    dict :
+        translated sequences indexed by node name
+
     '''
     translations = {}
     for sname, seq in aln.items():
@@ -96,16 +105,25 @@ def translate_feature(aln, feature):
 
 
 def translate_vcf_feature(sequences, ref, feature):
-    '''
-    translates a subsequence of input nucleotide sequences
-    input:
-        sequences -- TreeTime format dictionary from VCF-input of sequences
-                        indexed by node name
-        ref -- reference alignment the VCF was mapped to
-        feature -- Biopython sequence feature
-    returns:
-        dictionary giving the translated reference gene, positions of AA differences,
-        and AA differences indexed by node name
+    '''Translates a subsequence of input nucleotide sequences.
+
+    Parameters
+    ----------
+    sequences : dict
+        TreeTime format dictionary from VCF-input of sequences indexed by node name
+
+    ref :
+        reference alignment the VCF was mapped to
+
+    feature : Bio.Seq.Seq
+        BioPython sequence feature
+
+    Returns
+    -------
+    dict :
+        translated reference gene, positions of AA differences, and AA
+        differences indexed by node name
+
     '''
     def str_reverse_comp(str_seq):
         #gets reverse-compliment of a string and returns it as a string

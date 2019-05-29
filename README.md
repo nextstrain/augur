@@ -151,6 +151,34 @@ build to keep the Docker image up-to-date.
 
 [docker-base]: https://github.com/nextstrain/docker-base
 
+### Building documentation
+
+[Documentation](https://nextstrain-augur.readthedocs.io) is built using [Sphinx](http://sphinx-doc.org/) and hosted on [Read The Docs](https://readthedocs.org/).
+Versions of the documentation for each augur release and git branch are available and preserved.
+
+Building the documentation locally is useful to test changes.
+First, make sure you have the development dependencies of augur installed:
+
+    pip install '.[dev]'
+
+This installs packages listed in the `dev` section of `extras_require` in _setup.py_ (in addition to any normal augur dependencies if necessary).
+
+Then build the HTML output format by running:
+
+    make -C docs html
+
+You can see other available formats by running:
+
+    make -C docs help
+
+To update the API documentation after adding or removing an augur submodule, autogenerate a new API file as follows.
+
+    sphinx-apidoc -T -f -MeT -o docs augur
+
+Sphinx caches built documentation by default, which is generally great, but can cause the sidebar of pages to be stale.  You can clean out the cache with:
+
+    make -C docs clean
+
 ## License and copyright
 
 Copyright 2014-2019 Trevor Bedford and Richard Neher.

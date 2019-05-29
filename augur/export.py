@@ -15,6 +15,7 @@ def convert_tree_to_json_structure(node, metadata, div=0, nextflu_schema=False, 
     converts the Biopython tree structure to a dictionary that can
     be written to file as a json. This is called recursively.
     Creates the strain property & divergence on each node
+
     input
         node -- node for which top level dict is produced.
         div  -- cumulative divergence (root = 0)

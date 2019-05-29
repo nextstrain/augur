@@ -98,40 +98,52 @@ def read_in_translate_vcf(vcf_file, ref_file):
 def read_in_features(drm_file):
     '''
     Reads in and stores position, alt base/AA, feature, gene,
-    and 'display name' (optional) of mutations such 
+    and 'display name' (optional) of mutations such
     as drug-resistance mutations
 
     Format to map by both nucleotide and AA sites:
-    ----------------------------------------------
-    GENE	SITE	ALT	DISPLAY_NAME	FEATURE
-    gyrB	461	N		Fluoroquinolones
-    nuc	1472358	T	rrs: C513T	Streptomycin
-    nuc	1673425	T	fabG1: C-15T	Isoniazid Ethionamide
-    ethA	175	T		Ethionamide
+
+    ====  =======  ===  ============  =====================
+    GENE  SITE     ALT  DISPLAY_NAME  FEATURE
+    ====  =======  ===  ============  =====================
+    gyrB  461      N                  Fluoroquinolones
+    nuc   1472358  T    rrs: C513T    Streptomycin
+    nuc   1673425  T    fabG1: C-15T  Isoniazid Ethionamide
+    ethA  175      T                  Ethionamide
+    ====  =======  ===  ============  =====================
 
     Format to map by AA site:
-    -------------------------
-    GENE	SITE	ALT	FEATURE
-    gyrB	461	N	Fluoroquinolones
-    gyrB	499	D	Fluoroquinolones
-    rpoB	170	F	Rifampicin
-    rpoB	359	A	Rifampicin
+
+    ====  ====  ===  ================
+    GENE  SITE  ALT  FEATURE
+    ====  ====  ===  ================
+    gyrB  461   N    Fluoroquinolones
+    gyrB  499   D    Fluoroquinolones
+    rpoB  170   F    Rifampicin
+    rpoB  359   A    Rifampicin
+    ====  ====  ===  ================
 
     Format to map by nucleotide site:
-    -----------------------------------
-    SITE    ALT    DISPLAY_NAME    FEATURE
-    6505    T    D461N    Fluoroquinolones
-    6505    C    D461N    Fluoroquinolones
-    760314    T    V170F    Rifampicin
-    760882    C    V359A    Rifampicin
 
-    or to map by nucleotide site and display mutations:
-    ---------------------------------------------------
-    SITE    ALT    FEATURE
+    ======  ===  ============  ================
+    SITE    ALT  DISPLAY_NAME  FEATURE
+    ======  ===  ============  ================
+    6505    T    D461N         Fluoroquinolones
+    6505    C    D461N         Fluoroquinolones
+    760314  T    V170F         Rifampicin
+    760882  C    V359A         Rifampicin
+    ======  ===  ============  ================
+
+    Or to map by nucleotide site and display mutations:
+
+    ======  ===  ================
+    SITE    ALT  FEATURE
+    ======  ===  ================
     6505    T    Fluoroquinolones
     6505    C    Fluoroquinolones
-    760314    T    Rifampicin
-    760882    C    Rifampicin
+    760314  T    Rifampicin
+    760882  C    Rifampicin
+    ======  ===  ================
 
     Parameters
     ----------
@@ -235,8 +247,8 @@ def annotate_strains(all_features, all_sequences):
 def attach_features(annotations, label, count):
     '''
     'Attaches' features to nodes and lists the corresponding mutations
-    as values, that is
-    >>>
+    as values, that is:
+
         {nodename:{"Resistance 1":"mut1,mut2", "Resistance 2":"mut1"}}
 
     Parameters
