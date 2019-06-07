@@ -37,9 +37,7 @@ setup(
             "biopython >=1.73, ==1.*",
             "boto >=2.38, ==2.*",
             "cvxopt >=1.1.9, ==1.1.*",
-            "ipdb >=0.10.1",
             "jsonschema ==3.0.0a3",
-            "matplotlib >=2.0, ==2.*",
             "pandas >=0.23.4",
             "phylo-treetime >=0.5.6, ==0.5.*",
             "seaborn >=0.9.0",
@@ -54,6 +52,7 @@ setup(
                 "sphinx-argparse >=0.2.5",
                 "sphinx-rtd-theme >=0.4.3",
                 "wheel >=0.32.3, ==0.32.*",
+                "ipdb >=0.10.1",
             ]
         },
         classifiers=[
