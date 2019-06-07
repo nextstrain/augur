@@ -40,7 +40,6 @@ setup(
             "jsonschema ==3.0.0a3",
             "pandas >=0.23.4",
             "phylo-treetime >=0.5.6, ==0.5.*",
-            "seaborn >=0.9.0",
             "snakemake >=5.1.5, ==5.*"
         ],
         extras_require={
@@ -52,7 +51,7 @@ setup(
                 "sphinx-argparse >=0.2.5",
                 "sphinx-rtd-theme >=0.4.3",
                 "wheel >=0.32.3, ==0.32.*",
-                "ipdb >=0.10.1",
+                "ipdb >=0.10.1"
             ]
         },
         classifiers=[
