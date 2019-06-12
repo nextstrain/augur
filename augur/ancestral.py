@@ -3,7 +3,9 @@ Infer ancestral sequences based on a tree.
 """
 
 import os, shutil, time, json, sys
-from Bio import Phylo
+from Bio import Phylo, SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 from .utils import write_json
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
@@ -87,7 +89,9 @@ def collect_sequences_and_mutations(T, is_vcf=False):
 def register_arguments(parser):
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
-    parser.add_argument('--output', '-o', type=str, help='file name to save mutations and ancestral sequences to')
+    parser.add_argument('--output', '-o', type=str, help='name of JSON file to save mutations and ancestral sequences to')
+    parser.add_argument('--output-node-data', type=str, help='name of JSON file to save mutations and ancestral sequences to')
+    parser.add_argument('--output-sequences', type=str, help='name of FASTA file to save ancestral sequences to (FASTA alignments only)')
     parser.add_argument('--inference', default='joint', choices=["joint", "marginal"],
                                     help="calculate joint or marginal maximum likelihood ancestral sequence states")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
@@ -147,11 +151,25 @@ def run(args):
 
     if args.output:
         anc_seqs_fname = args.output
+        print("WARNING: the --output flag will be deprecated in the next major augur release. Use --output-node-data instead.", file=sys.stderr)
+    elif args.output_node_data:
+        anc_seqs_fname = args.output_node_data
     else:
         anc_seqs_fname = '.'.join(args.alignment.split('.')[:-1]) + '.anc_seqs.json'
 
     write_json(anc_seqs, anc_seqs_fname)
-    print("ancestral sequences written to",anc_seqs_fname, file=sys.stdout)
+    print("ancestral mutations and sequences JSON written to",anc_seqs_fname, file=sys.stdout)
+
+    if args.output_sequences:
+        if args.output_vcf:
+            print("WARNING: augur only supports sequence output for FASTA alignments and not for VCFs.", file=sys.stderr)
+        else:
+            records = [
+                SeqRecord(Seq(node_data["sequence"]), id=node_name, description="")
+                for node_name, node_data in anc_seqs["nodes"].items()
+            ]
+            SeqIO.write(records, args.output_sequences, "fasta")
+            print("ancestral sequences FASTA written to", args.output_sequences, file=sys.stdout)
 
     # If VCF, output VCF including new ancestral seqs
     if is_vcf:
