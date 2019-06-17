@@ -7,6 +7,7 @@ import pandas as pd
 from collections import defaultdict
 import random, os, re
 import numpy as np
+import sys
 from .utils import read_metadata, get_numerical_dates, run_shell_command
 
 comment_char = '#'
@@ -74,7 +75,7 @@ def register_arguments(parser):
                                 help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
     parser.add_argument('--include-where', nargs='+',
                                 help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND. This rule is applied last and ensures any sequences matching these rules will be included.")
-    parser.add_argument('--output', '-o', help="output file")
+    parser.add_argument('--output', '-o', help="output file", required=True)
 
 
 def run(args):
@@ -120,20 +121,22 @@ def run(args):
 
     # remove strains explicitly excluded by name
     # read list of strains to exclude from file and prune seq_keep
-    if args.exclude and os.path.isfile(args.exclude):
-        with open(args.exclude, 'r') as ifile:
-            to_exclude = set()
-            for line in ifile:
-                if line[0] != comment_char:
-                    # strip whitespace and remove all text following comment character
-                    exclude_name = line.split(comment_char)[0].strip()
-                    to_exclude.add(exclude_name)
-        tmp = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
-        num_excluded_by_name = len(seq_keep) - len(tmp)
-        seq_keep = tmp
-
-    elif not os.path.isfile(args.exclude):
-        raise FileNotFoundError("The list of dropped strains %s can not be opened"%s)
+    num_excluded_by_name = 0
+    if args.exclude:
+        try:
+            with open(args.exclude, 'r') as ifile:
+                to_exclude = set()
+                for line in ifile:
+                    if line[0] != comment_char:
+                        # strip whitespace and remove all text following comment character
+                        exclude_name = line.split(comment_char)[0].strip()
+                        to_exclude.add(exclude_name)
+            tmp = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
+            num_excluded_by_name = len(seq_keep) - len(tmp)
+            seq_keep = tmp
+        except FileNotFoundError as e:
+            print("ERROR: Could not open file of excluded strains '%s'" % args.exclude, file=sys.stderr)
+            sys.exit(1)
 
     # exclude strain my metadata field like 'host=camel'
     # match using lowercase
@@ -301,5 +304,8 @@ def run(args):
             return 1
         SeqIO.write(seq_to_keep, args.output, 'fasta')
 
-    print("\n%i sequences were dropped during filtering. %i of these were dropped because they were in %s"%(len(all_seq)-len(seq_keep), num_excluded_by_name, args.exclude))
-    print("%i sequences have been written out to %s"%(len(seq_keep), args.output))
+    print("\n%i sequences were dropped during filtering" % (len(all_seq) - len(seq_keep),))
+    if args.exclude:
+        print("%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
+
+    print("%i sequences have been written out to %s" % (len(seq_keep), args.output))
