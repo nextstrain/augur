@@ -359,6 +359,11 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
             if "aa_muts" in raw_data:
                 aa = {gene:data for gene, data in raw_data["aa_muts"].items() if len(data)}
                 node["mutations"].update(aa)
+                #convert mutations into a label
+                if aa:
+                    aa_lab = '; '.join("{!s}: {!s}".format(key,', '.join(val)) for (key,val) in aa.items())
+                    node["labels"] = { "aa": aa_lab }
+
 
         # TRANSFER NODE DATES #
         if "numdate" in raw_data or "num_date" in raw_data: # it's ok not to have temporal information
@@ -372,9 +377,10 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
 
         # TRANSFER LABELS #
         if "clade_annotation" in raw_data:
-            node["labels"] = {
-                "clade": raw_data["clade_annotation"]
-            }
+            if 'labels' in node:
+                node['labels']['clade'] = raw_data["clade_annotation"]
+            else:
+                node["labels"] = { "clade": raw_data["clade_annotation"] }
 
         # TRANSFER NODE_HIDDEN PROPS #
 
