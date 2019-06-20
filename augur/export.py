@@ -542,7 +542,12 @@ def run(args):
     traits = get_traits(node_data)
     if args.extra_traits:
         traits.extend(args.extra_traits)
-    if "clade_annotation" in traits:
+    # Automatically add any specified geo traits - otherwise won't work!
+    if args.geography_traits:
+        traits.extend(args.geography_traits)
+        traits = list(set(traits)) #ensure no duplicates
+    # Clade annotation is label, not colorby!
+    if "clade_annotation" in traits: 
         traits.remove("clade_annotation")
 
     raw_strain_info = collect_strain_info(node_data, args.metadata)
