@@ -152,18 +152,26 @@ def process_colorings(jsn, color_mapping, nodes=None, node_metadata=None, nextfl
             if "type" not in options:
                 raise Exception("coloring {} missing type...".format(trait))
 
+
+        if nodes:
+            values_in_tree = {node[trait] for node in nodes.values() if trait in node}
+        else:
+            values_in_tree = {data["traits"][trait]["value"] for name, data in node_metadata.items() if trait in data['traits']}
+
         if trait.lower() in color_mapping:
             # remember that the color maps (from the TSV) are in lower case, but this is not how they should be exported
-            if nodes:
-                values_in_tree = {node[trait] for node in nodes.values() if trait in node}
-            else:
-                values_in_tree = {data["traits"][trait]["value"] for name, data in node_metadata.items() if trait in data['traits']}
             case_map = {str(val).lower(): val for val in values_in_tree}
-
             if nextflu:
                 options["color_map"] = [(case_map[m[0]], m[1]) for m in color_mapping[trait.lower()] if m[0] in case_map]
             else:
                 options["scale"] = {case_map[m[0]]: m[1] for m in color_mapping[trait.lower()] if m[0] in case_map}
+        else:
+            # TODO detect other types (ordinal, boolean)
+            if not nextflu and options['type'] == 'categorical':
+                #if its int or float and no colours supplied - set continuous.
+                # TODO this should maybe be expanded to long and scientific notation (?)
+                if all([ isinstance(n, float) if isinstance(n, float) else isinstance(n, int) for n in values_in_tree ]):
+                    options['type'] = "continuous"
 
     return data
 
