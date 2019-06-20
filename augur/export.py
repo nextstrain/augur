@@ -144,7 +144,11 @@ def process_colorings(jsn, color_mapping, nodes=None, node_metadata=None, nextfl
             if "menuItem" not in options: options["menuItem"] = trait
             if "key" not in options: options["key"] = trait
         else:
-            if "title" not in options: options["title"] = trait
+            if "title" not in options: 
+                if trait == 'clade_membership':
+                    options["title"] = "Clade"
+                else:
+                    options["title"] = trait
             if "type" not in options:
                 raise Exception("coloring {} missing type...".format(trait))
 
@@ -359,6 +363,10 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
         # TRANSFER VACCINE INFO #
 
         # TRANSFER LABELS #
+        if "clade_annotation" in raw_data:
+            node["labels"] = {
+                "clade": raw_data["clade_annotation"]
+            }
 
         # TRANSFER NODE_HIDDEN PROPS #
 
@@ -541,6 +549,8 @@ def run(args):
     traits = get_traits(node_data)
     if args.extra_traits:
         traits.extend(args.extra_traits)
+    if "clade_annotation" in traits:
+        traits.remove("clade_annotation")
 
     raw_strain_info = collect_strain_info(node_data, args.metadata)
     unified["tree"], strains = convert_tree_to_json_structure(T.root, raw_strain_info)
