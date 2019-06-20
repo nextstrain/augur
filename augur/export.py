@@ -153,7 +153,7 @@ def process_colorings(jsn, color_mapping, nodes=None, node_metadata=None, nextfl
             if nodes:
                 values_in_tree = {node[trait] for node in nodes.values() if trait in node}
             else:
-                values_in_tree = {data["traits"][trait]["value"] for name, data in node_metadata.items()}
+                values_in_tree = {data["traits"][trait]["value"] for name, data in node_metadata.items() if trait in data['traits']}
             case_map = {str(val).lower(): val for val in values_in_tree}
 
             if nextflu:
@@ -174,7 +174,7 @@ def process_geographic_info(jsn, lat_long_mapping, nextflu=False, node_metadata=
         if nextflu:
             demes_in_tree = {node[trait] for node in nodes.values() if trait in node}
         else:
-            demes_in_tree = {data["traits"][trait]["value"] for name, data in node_metadata.items()}
+            demes_in_tree = {data["traits"][trait]["value"] for name, data in node_metadata.items() if trait in data['traits']}
         for deme in demes_in_tree:
             try:
                 geo[trait][deme] = lat_long_mapping[(trait.lower(),deme.lower())]
@@ -307,7 +307,7 @@ def construct_author_info_and_make_keys(node_metadata, raw_strain_info):
         if "journal" in raw_strain_info[strain]:
             data["journal"] = raw_strain_info[strain]["journal"].strip()
         if "url" in raw_strain_info[strain]:
-            data["url"] = raw_strain_info[strain]["paper_url"].strip()
+            data["url"] = raw_strain_info[strain]["url"].strip()
 
         # make unique key...
         key = authors.split()[0].lower()
