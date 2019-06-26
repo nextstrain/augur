@@ -2,7 +2,7 @@
 Export JSON files suitable for visualization with auspice.
 """
 
-import os
+import os, sys
 import re
 import time
 import numpy as np
@@ -475,6 +475,7 @@ def register_arguments(parser):
     parser.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
     parser.add_argument('--extra-traits', nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
     parser.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : xxx")
+    parser.add_argument('--tree-name', default=False, help="Tree name (needed for tangle tree functionality)")
     parser.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
 
 
@@ -547,8 +548,14 @@ def run(args):
     ## SCHEMA v2.0 ##
     unified = {}
 
+    if args.auspice_config:
+        print("ERROR: Version 2 JSONs do not use the auspice config JSON")
+        print("you must supply all configuration as command line arguments")
+        sys.exit(2)
+
+
     unified['title'] = args.title
-    unified['maintainers'] = [{'name': name, 'href':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
+    unified['maintainers'] = [{'name': name, 'url':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
     unified["version"] = "2.0"
 
     # get traits to colour by etc - do here before node_data is modified below
@@ -588,5 +595,11 @@ def run(args):
     unified["updated"] = time.strftime('%Y-%m-%d')
     unified["genome_annotations"] = process_annotations(node_data)
     unified["panels"] = process_panels(args.panels, unified)
+
+    if args.tree_name:
+        if not re.search("(^|_|/){}(_|.json)".format(args.tree_name), str(args.output_main)):
+            print("Error: tree name {} must be found as part of the output string".format(args.tree_name))
+            sys.exit(2)
+        unified["tree_name"] = args.tree_name
 
     write_json(unified, args.output_main, indent=json_indent)
