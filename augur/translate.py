@@ -323,13 +323,13 @@ def run(args):
     # "Pythonic" coordinates: [zero-origin, half-open).
     annotations = {}
     for fname, feat in features.items():
-        annotations[fname] = {'seqid':ref.id,
+        annotations[fname] = {'seqid':args.reference_sequence,
                               'type':feat.type,
                               'start':int(feat.location.start)+1,
                               'end':int(feat.location.end),
                               'strand': '+' if feat.location.strand else '-'}
     if is_vcf: #need to add our own nuc
-        annotations['nuc'] = {'seqid':"reference",
+        annotations['nuc'] = {'seqid':args.reference_sequence,
                               'type':ref.id,
                               'start': 1,
                               'end': len(ref),
