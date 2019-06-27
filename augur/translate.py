@@ -323,13 +323,17 @@ def run(args):
     # "Pythonic" coordinates: [zero-origin, half-open).
     annotations = {}
     for fname, feat in features.items():
-        annotations[fname] = {'start':int(feat.location.start),
+        annotations[fname] = {'seqid':ref.id,
+                              'type':feat.type,
+                              'start':int(feat.location.start)+1,
                               'end':int(feat.location.end),
-                              'strand': feat.location.strand}
+                              'strand': '+' if feat.location.strand else '-'}
     if is_vcf: #need to add our own nuc
-        annotations['nuc'] = {'start': 0,
+        annotations['nuc'] = {'seqid':"reference",
+                              'type':ref.id,
+                              'start': 1,
                               'end': len(ref),
-                              'strand': 1}
+                              'strand': '+'}
 
     ## determine amino acid mutations for each node
     if is_vcf:
