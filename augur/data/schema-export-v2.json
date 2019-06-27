@@ -45,19 +45,27 @@
                     "type": "object",
                     "$comment": "I imagine this can get more complex at some point",
                     "properties": {
+                        "seqid":{
+                            "description": "Sequence on which the coordinates below are valid. Could be viral segment, bacterial contig, etc",
+                            "type": "str",
+                        },
+                        "type": {
+                            "description": "Type of the feature. could be mRNA, CDS, or similar",
+                            "type": "str",
+                        },
                         "start": {
-                            "description": "Gene start position (zero-based, i.e. BED format)",
+                            "description": "Gene start position (one-based, following GFF format)",
                             "type": "number"
                         },
                         "end": {
-                            "description": "Gene end position (one-based, i.e. zero-based exclusive or BED format)",
+                            "description": "Gene end position (one-based, last position of feature, following GFF format)",
                             "type": "number"
                         },
                         "strand": {
                             "description": "Positive or negative strand",
+                            "type": "str",
                             "$comment": "not yet used by Auspice",
-                            "type": "number",
-                            "enum": [-1, 1]
+                            "enum": ["-","+"]
                         }
                     }
                 }
