@@ -330,7 +330,7 @@ def run(args):
                               'strand': '+' if feat.location.strand else '-'}
     if is_vcf: #need to add our own nuc
         annotations['nuc'] = {'seqid':args.reference_sequence,
-                              'type':ref.id,
+                              'type':feat.type,
                               'start': 1,
                               'end': len(ref),
                               'strand': '+'}
