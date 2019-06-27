@@ -168,7 +168,7 @@ def construct_author_info_and_make_keys(node_metadata, raw_strain_info):
             continue # internal node / terminal node without authors
 
         data = {
-            "authors": authors
+            "author": authors
         }
         if "title" in raw_strain_info[strain]:
             data["title"] = raw_strain_info[strain]["title"].strip()
@@ -187,7 +187,7 @@ def construct_author_info_and_make_keys(node_metadata, raw_strain_info):
         if "title" in data:
             key += raw_strain_info[strain]["title"].strip().split()[0].lower()
 
-        node["authors"] = key
+        node["citekey"] = key
 
         if key not in author_info:
             author_info[key] = data

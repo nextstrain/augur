@@ -46,7 +46,7 @@
                     "additionalProperties": false,
                     "$comment": "Unknown properties should simply be excluded",
                     "properties": {
-                        "authors": {
+                        "author": {
                             "description": "Authors",
                             "$comment": "Case is respected by auspice",
                             "type": "string"
@@ -342,7 +342,7 @@
                     "type": "string",
                     "pattern": "^https?://.+$"
                 },
-                "authors": {
+                "citekey": {
                     "description": "Author lookup key for the relevant publication / credit",
                     "$comment": "Must have a corresponding entry in the #/author_info property",
                     "$comment": "Keys are first authors last name + year of publication + first word of title, all in lowercase. E.g. \"white2015isolation\"",
