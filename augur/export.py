@@ -8,6 +8,7 @@ import time
 import numpy as np
 from Bio import Phylo
 from collections import defaultdict
+from argparse import SUPPRESS
 from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
 
 def convert_tree_to_json_structure(node, metadata, div=0, nextflu_schema=False, strains=None):
@@ -455,31 +456,60 @@ def get_root_sequence(root_node, ref=None, translations=None):
     return root_sequence
 
 
+def add_core_args(parser):
+    core = parser.add_argument_group("REQUIRED")
+    core.add_argument('--tree','-t', required=True, help="tree to perform trait reconstruction on")
+    core.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
+    core.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
+    return core
+
+
+def add_config_args(parser):
+    config = parser.add_argument_group("CONFIG OPTIONS")
+    # XXX TODO: make clear either use auspice-config or additional config options
+    config.add_argument('--auspice-config', help="file with auspice configuration")
+    config.add_argument('--title', default="Analysis", help="Title to be displayed by auspice")
+    config.add_argument('--maintainers', default=[""], nargs='+', help="Analysis maintained by")
+    config.add_argument('--maintainer-urls', default=[""], nargs='+', help="URL of maintainers")
+    config.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
+    config.add_argument('--extra-traits', nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
+    config.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : xxx")
+    return config
+
+def add_option_args(parser):
+    options = parser.add_argument_group("OPTIONS")
+    options.add_argument('--colors', help="file with color definitions")
+    options.add_argument('--lat-longs', help="file latitudes and longitudes, overrides built in mappings")
+    options.add_argument('--tree-name', default=False, help="Tree name (needed for tangle tree functionality)")
+    options.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
+    return options
+
+
 def register_arguments(parser):
-    parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
-    parser.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
-    parser.add_argument('--reference', required=False, help="reference sequence for export to browser, only vcf")
-    parser.add_argument('--reference-translations', required=False, help="reference translations for export to browser, only vcf")
-    parser.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
-    parser.add_argument('--auspice-config', help="file with auspice configuration")
-    parser.add_argument('--colors', help="file with color definitions")
-    parser.add_argument('--lat-longs', help="file latitudes and longitudes, overrides built in mappings")
-    parser.add_argument('--new-schema', action="store_true", help="export JSONs using nexflu schema")
-    parser.add_argument('--output-main', help="Main JSON file name that is passed on to auspice (e.g., zika.json).")
-    parser.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json). Only used with --nextflu-schema")
-    parser.add_argument('--output-sequence', help="JSON file name that is passed on to auspice (e.g., zika_seq.json). Only used with --nextflu-schema")
-    parser.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json). Only used with --nextflu-schema")
-    parser.add_argument('--title', default="Analysis", help="Title to be displayed by auspice")
-    parser.add_argument('--maintainers', default=[""], nargs='+', help="Analysis maintained by")
-    parser.add_argument('--maintainer-urls', default=[""], nargs='+', help="URL of maintainers")
-    parser.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
-    parser.add_argument('--extra-traits', nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
-    parser.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : xxx")
-    parser.add_argument('--tree-name', default=False, help="Tree name (needed for tangle tree functionality)")
-    parser.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
+    subparsers = parser.add_subparsers()
+    default = subparsers.add_parser("default", help="The latest version of export")
+    core = add_core_args(default)
+    config = add_config_args(default)
+    options = add_option_args(default)
+    core.add_argument('--output-main', help="Main JSON file name that is passed on to auspice (e.g., zika.json).")
+
+    # V1 sub-command
+    v1 = subparsers.add_parser('v1', help="Version 1 of export")
+    v1_core = add_core_args(v1)
+    v1_config = v1.add_argument_group("CONFIG OPTIONS")
+    v1_config.add_argument('--auspice-config', help="file with auspice configuration")
+    v1_core_options = add_option_args(v1)
+    v1_options = v1.add_argument_group("V1 OPTIONS")
+    v1_options.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json). Only used with --nextflu-schema")
+    v1_options.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json). Only used with --nextflu-schema")
+    v1_options.add_argument('--output-sequence', help="JSON file name that is passed on to auspice (e.g., zika_seq.json). Only used with --nextflu-schema")
+    v1_options.add_argument('--reference', required=False, help="reference sequence for export to browser, only vcf")
+    v1_options.add_argument('--reference-translations', required=False, help="reference translations for export to browser, only vcf")
+    v1.add_argument("--v1", help=SUPPRESS, default=True)
 
 
 def run(args):
+    print(args)
     T = Phylo.read(args.tree, 'newick')
     node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
     nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
