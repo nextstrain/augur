@@ -47,34 +47,38 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
     return (node_struct, strains)
 
 
-def process_colorings(jsn, color_mapping, nodes=None, node_metadata=None):
-    #if "colorings" not in jsn:
-    if jsn is None or len(jsn)==0:
+def process_colorings(json: list, color_mapping, nodes=None, node_metadata: dict=None) -> dict:
+    if not json:
         print("WARNING: no colorings were defined")
         return
-    data = {k: {'type': 'categorical'} for k in jsn}
+
+    data = {k: {'type': 'categorical'} for k in json}
     #Always add in genotype and date to colour by
     data['gt'] = {'title': 'Genotype', 'type': 'ordinal'}
     #figure out how to see if num_date is there? Is it possible to not have?
     data['num_date']  = {'title': 'Sampling date', 'type': 'continuous'}
 
-    for trait, options in data.items():
-        if "title" not in options:
-            if trait == 'clade_membership':
-                options["title"] = "Clade"
-            else:
-                options["title"] = trait
+    if 'clade_membership' in data and 'title' not in data['clade_membership']:
+        data['clade_membership']['title'] = 'Clade'
 
+    for trait, options in data.items():
         if "type" not in options:
             raise Exception("coloring {} missing type...".format(trait))
+
+        if "title" not in options:
+            options["title"] = trait
 
         if nodes:
             values_in_tree = {node[trait] for node in nodes.values() if trait in node}
         else:
-            values_in_tree = {data["traits"][trait]["value"] for name, data in node_metadata.items() if trait in data['traits']}
+            values_in_tree = set()
+            for name, values in node_metadata.items():
+                if trait in values['traits']:
+                    values_in_tree.add(values['traits'][trait]['value'])
 
         if trait.lower() in color_mapping:
-            # remember that the color maps (from the TSV) are in lower case, but this is not how they should be exported
+            # remember that the color maps (from the TSV) are in lower case, but
+            # this is not how they should be exported
             case_map = {str(val).lower(): val for val in values_in_tree}
             options["scale"] = {case_map[m[0]]: m[1] for m in color_mapping[trait.lower()] if m[0] in case_map}
 
