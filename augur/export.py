@@ -270,9 +270,13 @@ def get_traits(node_data):
                'mutation_length', 'date', 'muts', 'aa_muts', 'sequence', 'aa_sequences']
     traits = []
     for seq, val in node_data['nodes'].items():
-        newT = [t for t in list(val.keys()) if t not in traits and t not in exclude]
-        traits.extend(newT)
-    traits = [x for x in traits if '_confidence' not in x and '_entropy' not in x]
+        for t in val.keys():
+
+            if '_confidence' in t or '_entropy' in t:
+                continue
+
+            if t not in traits and t not in exclude:
+                traits.append(t)
 
     return traits
 
