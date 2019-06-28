@@ -84,10 +84,11 @@ def process_colorings(json: list, color_mapping, nodes=None, node_metadata: dict
 
         else:
             # TODO detect other types (ordinal, boolean)
-            if options['type'] == 'categorical':
+            if options['type'] == 'categorical' and options['title'] != 'authors':
                 #if its int or float and no colours supplied - set continuous.
                 # TODO this should maybe be expanded to long and scientific notation (?)
                 if all([ isinstance(n, float) if isinstance(n, float) else isinstance(n, int) for n in values_in_tree ]):
+
                     options['type'] = "continuous"
 
     return data
@@ -315,6 +316,17 @@ def get_root_sequence(root_node, ref=None, translations=None):
     return root_sequence
 
 
+def convert_camel_to_snake_case(string):
+    """
+    Converts a string from camel case to snake case.
+
+    This is used to allow existing `auspice-config` files for various builds
+    to work with the v2 export schema.
+    """
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+
 def add_core_args(parser):
     core = parser.add_argument_group("REQUIRED")
     core.add_argument('--tree','-t', required=True, help="tree to perform trait reconstruction on")
@@ -387,15 +399,7 @@ def run(args):
 
     ## SCHEMA v2.0 ##
     unified = {}
-
-    if args.auspice_config:
-        print("ERROR: Version 2 JSONs do not use the auspice config JSON")
-        print("you must supply all configuration as command line arguments")
-        sys.exit(2)
-
-
-    unified['title'] = args.title
-    unified['maintainers'] = [{'name': name, 'url':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
+    config = {}
     unified["version"] = "2.0"
 
     # get traits to colour by etc - do here before node_data is modified below
@@ -417,20 +421,53 @@ def run(args):
     node_metadata = transfer_metadata_to_strains(strains, raw_strain_info, traits)
     unified["author_info"] = construct_author_info_and_make_keys(node_metadata, raw_strain_info)
 
-    # This check allows validation to complete ok - but check auspice can handle having no author info! (it can in v1 schema)
-    if len(unified["author_info"]) == 0:    # if no author data supplied
-        del unified["author_info"]
-        unified['filters'] = traits
+    if args.auspice_config:
+        config = read_config(args.auspice_config)
+        unified["title"] = config["title"]
+        unified["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
+        # Set up display defaults
+        if config.get("defaults"):
+
+            for key in config["defaults"]:
+                new_key = convert_camel_to_snake_case(key)
+                config["defaults"][new_key] = config["defaults"].pop(key)
+
+            unified["display_defaults"] = config["defaults"]
+
     else:
-        unified['filters'] = traits + ['authors']
+        unified['title'] = args.title
+        unified['maintainers'] = [{'name': name, 'url':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
+
+    # Set up filters
+    if config.get('filters'):
+        unified['filters'] = config['filters']
+    else:
+        # This check allows validation to complete ok - but check auspice can handle having no author info! (it can in v1 schema)
+        if len(unified["author_info"]) == 0:    # if no author data supplied
+            del unified["author_info"]
+            unified['filters'] = traits
+        else:
+            unified['filters'] = traits + ['authors']
 
     add_metadata_to_tree(unified["tree"], node_metadata)
 
+    # Set up colorings
+    if config.get("color_options"):
+        color_config = config["color_options"]
+    else:
+        color_config = traits
+
     color_mapping = read_colors(args.colors)
-    unified["colorings"] = process_colorings(traits, color_mapping, node_metadata=node_metadata)
+    unified["colorings"] = process_colorings(color_config, color_mapping, node_metadata=node_metadata)
+
+    # Set up geographic info
+    if config.get("geo"):
+        geo_config = config["geo"]
+    else:
+        geo_config = args.geography_traits
 
     lat_long_mapping = read_lat_longs(args.lat_longs)
-    unified["geographic_info"] = process_geographic_info(args.geography_traits, lat_long_mapping, node_metadata=node_metadata)
+    unified["geographic_info"] = process_geographic_info(geo_config, lat_long_mapping, node_metadata=node_metadata)
 
     unified["updated"] = time.strftime('%Y-%m-%d')
     unified["genome_annotations"] = process_annotations(node_data)
