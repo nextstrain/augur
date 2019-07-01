@@ -141,7 +141,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     log_file = tmp_aln_file.replace(".fasta", ".iqtree.log")
     with open(tmp_aln_file, 'w') as ofile:
         for line in tmp_seqs:
-            ofile.write(line.replace('/', '_X_X_').replace('|','_Y_Y_'))
+            ofile.write(line.replace('/', '_X_X_').replace('|','_Y_Y_').replace("(","_X_Y_").replace(")","_Y_X_"))
 
     # For compat with older versions of iqtree, we avoid the newish -fast
     # option alias and instead spell out its component parts:
@@ -179,7 +179,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         T = Phylo.read(tmp_aln_file+".treefile", 'newick')
         shutil.copyfile(tmp_aln_file+".treefile", out_file)
         for n in T.get_terminals():
-            n.name = n.name.replace('_X_X_','/').replace('_Y_Y_','|')
+            n.name = n.name.replace('_X_X_','/').replace('_Y_Y_','|').replace("_X_Y_","(").replace("_Y_X_",")")
         #this allows the user to check intermediate output, as tree.nwk will be
         if clean_up:
             #allow user to see chosen model if modeltest was run
