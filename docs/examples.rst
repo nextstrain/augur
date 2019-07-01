@@ -1,6 +1,6 @@
-=======================
-Examples of using Augur
-=======================
+=============================
+Examples of Augur in the wild
+=============================
 
 We really enjoy hearing about people using Augur.  If you use Augur to do your
 work, we'd love to add it to this page!  Let us know about it by `opening an
