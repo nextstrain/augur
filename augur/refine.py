@@ -134,9 +134,10 @@ def run(args):
             node_data['input_tree'] = args.tree
             break
         except:
-            pass
+            print("\n\nERROR: reading tree from %s failed."%args.tree)
+            return 1
     if T is None:
-        print("ERROR: reading tree from %s failed."%args.tree)
+        print("\n\nERROR: reading tree from %s failed."%args.tree)
         return 1
 
     if not args.alignment:
