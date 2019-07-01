@@ -1,6 +1,35 @@
 # __NEXT__
 
 
+# 5.1.1 (1 July 2019)
+
+## Features
+
+* tree: Add support for the GTR+R10 substitution model.
+* tree: Support parentheses in node names when using IQ-TREE.
+
+## Bug fixes
+
+* Use the center of the UK for its coordinates instead of London.
+* filter: Mark `--output` required, which it always was but wasn't marked.
+* filter: Avoid error when no excluded strains file is provided.
+* export: Fix for preliminary version 2 schema support.
+* refine: Correct error handling when the tree file is missing or empty.
+
+## Documentation
+
+* Add examples of Augur usage in the wild.
+* Rename and reorganize CLI and Python API pages a little bit to make "where do
+  I start learning to use Augur?" clearer to non-devs.
+
+## Development
+
+* Relax version requirements of pandas and seaborn.  The hope is this will make
+  installation smoother (particularly alongside other packages which require
+  newer pandas versions) while not encountering breaking changes in newer
+  versions ourselves.
+
+
 # 5.1.0 (29 May 2019)
 
 ## Documentation
