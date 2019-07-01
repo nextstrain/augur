@@ -133,8 +133,8 @@ def run(args):
             T = Phylo.read(args.tree, fmt)
             node_data['input_tree'] = args.tree
             break
-        except:
-            print("\n\nERROR: reading tree from %s failed."%args.tree)
+        except Exception as error:
+            print("\n\nERROR: reading tree from %s failed: %s" % (args.tree, error))
             return 1
     if T is None:
         print("\n\nERROR: reading tree from %s failed."%args.tree)
