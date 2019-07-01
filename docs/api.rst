@@ -1,6 +1,6 @@
-==========
-Python API
-==========
+========================
+Development (Python API)
+========================
 
 .. toctree::
    :maxdepth: 4
