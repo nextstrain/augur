@@ -7,3 +7,4 @@ Using Augur
 
    cli
    examples
+   envvars
