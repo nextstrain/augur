@@ -726,7 +726,12 @@ class alignment_frequencies(object):
 
 
 def test_simple_estimator():
-    import matplotlib.pyplot as plt
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        plot=False
+        print("Plotting requires a working matplotlib installation.")
+
     tps = np.sort(100 * np.random.uniform(size=500))
     freq_traj = [0.1]
     stiffness=100
@@ -755,7 +760,12 @@ def test_simple_estimator():
     return fe
 
 def test_nested_estimator():
-    import matplotlib.pyplot as plt
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        plot=False
+        print("Plotting requires a working matplotlib installation.")
+
     tps = np.sort(100 * np.random.uniform(size=2000))
     freq_traj = [0.1]
     stiffness=1000
