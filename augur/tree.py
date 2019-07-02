@@ -178,7 +178,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         run_shell_command(cmd, raise_errors = True)
         T = Phylo.read(tmp_aln_file+".treefile", 'newick')
         shutil.copyfile(tmp_aln_file+".treefile", out_file)
-        for n in T.get_terminals():
+        for n in T.find_clades(terminal=True):
             n.name = n.name.replace('_X_X_','/').replace('_Y_Y_','|').replace("_X_Y_","(").replace("_Y_X_",")")
         #this allows the user to check intermediate output, as tree.nwk will be
         if clean_up:

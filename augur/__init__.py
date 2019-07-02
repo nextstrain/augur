@@ -3,8 +3,7 @@ The top-level augur command which dispatches to subcommands.
 """
 
 import argparse
-import re
-from sys import exit
+import re, os, sys
 from types import SimpleNamespace
 from . import parse, filter, align, tree, refine, ancestral
 from . import traits, translate, mask, titers, frequencies, export
@@ -12,6 +11,9 @@ from . import validate, sequence_traits, clades, version
 from . import reconstruct_sequences, lbi, distance
 from .utils import first_line
 
+recursion_limit = os.environ.get("AUGUR_RECURSION_LIMIT")
+if recursion_limit:
+    sys.setrecursionlimit(int(recursion_limit))
 
 COMMANDS = [
     parse,
@@ -93,7 +95,7 @@ def add_version_alias(parser):
     class run_version_command(argparse.Action):
         def __call__(self, *args, **kwargs):
             opts = SimpleNamespace()
-            exit( version.run(opts) )
+            sys.exit( version.run(opts) )
 
     return parser.add_argument(
         "--version",
