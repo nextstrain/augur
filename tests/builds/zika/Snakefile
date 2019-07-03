@@ -198,7 +198,7 @@ rule export:
             --output-tree {output.auspice_tree} \
             --output-meta {output.auspice_meta} \
             --output-sequence {output.auspice_seq}
-        augur validate --json {output.auspice_tree} {output.auspice_meta}
+        augur validate v1 --json {output.auspice_tree} {output.auspice_meta}
         """
 
 rule exportv2:
@@ -223,7 +223,7 @@ rule exportv2:
             --colors {input.colors} \
             --output-main {output.auspice_main} \
             --output-sequence {output.auspice_seq}
-        augur validate --new-schema --json {output.auspice_main}
+        augur validate v2 --json {output.auspice_main}
         """
 
 rule clean:
