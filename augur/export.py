@@ -8,10 +8,10 @@ import time
 import numpy as np
 from Bio import Phylo
 from collections import defaultdict
-from argparse import SUPPRESS
 from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
+from .export_v1 import run_v1, register_arguments_v1
 
-def convert_tree_to_json_structure(node, metadata, div=0, nextflu_schema=False, strains=None):
+def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
     """
     converts the Biopython tree structure to a dictionary that can
     be written to file as a json. This is called recursively.
@@ -20,28 +20,15 @@ def convert_tree_to_json_structure(node, metadata, div=0, nextflu_schema=False, 
     input
         node -- node for which top level dict is produced.
         div  -- cumulative divergence (root = 0)
-        nextflu_schema -- use nexflu schema (e.g. node["attr"]). This is deprecated.
 
     returns
         tree in JSON structure
         list of strains
     """
-    if nextflu_schema:
-        node_struct = {
-            'attr': {"div": div},
-            'strain': node.name,
-            'clade': node.clade
-        }
-        for attr in ['branch_length', 'tvalue', 'yvalue', 'xvalue']:
-            try:
-                node_struct[attr] = node.__getattribute__(attr)
-            except AttributeError:
-                pass
-    else:
-        node_struct = {
-            'strain': node.name,
-            'div': div
-        }
+    node_struct = {
+        'strain': node.name,
+        'div': div
+    }
 
     if strains is None:
         strains = [node_struct["strain"]]
@@ -55,104 +42,31 @@ def convert_tree_to_json_structure(node, metadata, div=0, nextflu_schema=False, 
                 cdiv = div + metadata[child.name]['mutation_length']
             elif 'branch_length' in metadata[child.name]:
                 cdiv = div + metadata[child.name]['branch_length']
-            node_struct["children"].append(convert_tree_to_json_structure(child, metadata, div=cdiv, nextflu_schema=nextflu_schema, strains=strains)[0])
+            node_struct["children"].append(convert_tree_to_json_structure(child, metadata, div=cdiv, strains=strains)[0])
 
     return (node_struct, strains)
 
 
-def recursively_decorate_tree_json_nextflu_schema(node, node_metadata, decorations):
-    """
-    This function is deprecated and is used to produce the nextflu-compatable JSON format
-
-    For given decorations, add information from node_metadata to
-    each node in the tree.
-    * decorations must have property "key" which is the key used to insert
-    into the node and the default key used to access node_metadata
-    * if decorations has property "lookup_key", this is used to access
-    node meta_data instead
-    * if decorations has property "is_attr" (and it's value is True)
-    then the result is inserted into node["attr"]
-
-    returns Null
-    """
-    try:
-        metadata = node_metadata[node["strain"]]
-        metadata["strain"] = node["strain"]
-    except KeyError:
-        raise Exception("ERROR: node %s is not found in the node metadata."%n.name)
-
-    for data in decorations:
-        val = None
-        insert_key = data["key"]
-        try:
-            if "lookup_key" in data:
-                val = metadata[data["lookup_key"]]
-            else:
-                val = metadata[insert_key]
-        except KeyError:
-            pass
-
-        if val is not None:
-            if "is_attr" in data and data["is_attr"]:
-                node["attr"][insert_key] = val
-            else:
-                if insert_key == 'aa_muts':
-                    val = {k:v for k,v in val.items() if len(v) }
-                node[insert_key] = val
-
-    if "children" in node:
-        for child in node["children"]:
-            recursively_decorate_tree_json_nextflu_schema(child, node_metadata, decorations)
-
-
-def tree_layout(T):
-    """
-    calculate tree layout.
-    This function is deprecated, and only used for the nextflu JSON format
-    """
-    yval=T.count_terminals()
-    clade = 0;
-    for n in T.find_clades(order='postorder'):
-        n.clade=clade; clade+=1;
-        if n.is_terminal():
-            n.yvalue=yval
-            yval-=1
-        else:
-            child_yvalues = [c.yvalue for c in n]
-            n.yvalue=0.5*(np.min(child_yvalues)+np.max(child_yvalues))
-
-
-def process_colorings(jsn, color_mapping, nodes=None, node_metadata=None, nextflu=False):
-    if nextflu:
-        if "color_options" not in jsn:
-            print("WARNING: no color options were defined")
-            return
-        data = jsn["color_options"]
-    else:
-        #if "colorings" not in jsn:
-        if jsn is None or len(jsn)==0:
-            print("WARNING: no colorings were defined")
-            return
-        data = {k: {'type': 'categorical'} for k in jsn}
-        #Always add in genotype and date to colour by
-        data['gt'] = {'title': 'Genotype', 'type': 'ordinal'}
-        #figure out how to see if num_date is there? Is it possible to not have?
-        data['num_date']  = {'title': 'Sampling date', 'type': 'continuous'}
+def process_colorings(jsn, color_mapping, nodes=None, node_metadata=None):
+    #if "colorings" not in jsn:
+    if jsn is None or len(jsn)==0:
+        print("WARNING: no colorings were defined")
+        return
+    data = {k: {'type': 'categorical'} for k in jsn}
+    #Always add in genotype and date to colour by
+    data['gt'] = {'title': 'Genotype', 'type': 'ordinal'}
+    #figure out how to see if num_date is there? Is it possible to not have?
+    data['num_date']  = {'title': 'Sampling date', 'type': 'continuous'}
 
     for trait, options in data.items():
-        if nextflu:
-            if "legendTitle" not in options: options["legendTitle"] = trait
-            if "menuItem" not in options: options["menuItem"] = trait
-            if "key" not in options: options["key"] = trait
-        else:
-            if "title" not in options: 
-                if trait == 'clade_membership':
-                    options["title"] = "Clade"
-                else:
-                    options["title"] = trait
-            if "type" not in options:
-                raise Exception("coloring {} missing type...".format(trait))
+        if "title" not in options:
+            if trait == 'clade_membership':
+                options["title"] = "Clade"
+            else:
+                options["title"] = trait
 
+        if "type" not in options:
+            raise Exception("coloring {} missing type...".format(trait))
 
         if nodes:
             values_in_tree = {node[trait] for node in nodes.values() if trait in node}
@@ -162,13 +76,11 @@ def process_colorings(jsn, color_mapping, nodes=None, node_metadata=None, nextfl
         if trait.lower() in color_mapping:
             # remember that the color maps (from the TSV) are in lower case, but this is not how they should be exported
             case_map = {str(val).lower(): val for val in values_in_tree}
-            if nextflu:
-                options["color_map"] = [(case_map[m[0]], m[1]) for m in color_mapping[trait.lower()] if m[0] in case_map]
-            else:
-                options["scale"] = {case_map[m[0]]: m[1] for m in color_mapping[trait.lower()] if m[0] in case_map}
+            options["scale"] = {case_map[m[0]]: m[1] for m in color_mapping[trait.lower()] if m[0] in case_map}
+
         else:
             # TODO detect other types (ordinal, boolean)
-            if not nextflu and options['type'] == 'categorical':
+            if options['type'] == 'categorical':
                 #if its int or float and no colours supplied - set continuous.
                 # TODO this should maybe be expanded to long and scientific notation (?)
                 if all([ isinstance(n, float) if isinstance(n, float) else isinstance(n, int) for n in values_in_tree ]):
@@ -176,18 +88,15 @@ def process_colorings(jsn, color_mapping, nodes=None, node_metadata=None, nextfl
 
     return data
 
-def process_geographic_info(jsn, lat_long_mapping, nextflu=False, node_metadata=None, nodes=None):
-    if (nextflu and "geo" not in jsn) or (not nextflu and (jsn is None or len(jsn)==0)):
+def process_geographic_info(jsn, lat_long_mapping, node_metadata=None, nodes=None):
+    if jsn is None or len(jsn)==0 :
         return {}
     geo = defaultdict(dict)
 
-    traits = jsn["geo"] if nextflu else jsn #jsn["geographic_info"]
+    traits = jsn #jsn["geographic_info"]
 
     for trait in traits:
-        if nextflu:
-            demes_in_tree = {node[trait] for node in nodes.values() if trait in node}
-        else:
-            demes_in_tree = {data["traits"][trait]["value"] for name, data in node_metadata.items() if trait in data['traits']}
+        demes_in_tree = {data["traits"][trait]["value"] for name, data in node_metadata.items() if trait in data['traits']}
         for deme in demes_in_tree:
             try:
                 geo[trait][deme] = lat_long_mapping[(trait.lower(),deme.lower())]
@@ -201,7 +110,7 @@ def process_annotations(node_data):
         return None
     return node_data["annotations"]
 
-def process_panels(user_panels, meta_json, nextflu=False):
+def process_panels(user_panels, meta_json):
     try:
         panels = meta_json["panels"]
     except KeyError:
@@ -210,24 +119,15 @@ def process_panels(user_panels, meta_json, nextflu=False):
     if user_panels is not None and len(user_panels) != 0:
         panels = user_panels
 
-    if nextflu:
-        if "geo" in meta_json:
-            geoTraits = meta_json["geo"].keys()
-        else:
-            geoTraits = []
-        if "annotations" in meta_json:
-            annotations = meta_json["annotations"].keys()
-        else:
-            annotations = []
+    if "geographic_info" in meta_json:
+        geoTraits = meta_json["geographic_info"].keys()
     else:
-        if "geographic_info" in meta_json:
-            geoTraits = meta_json["geographic_info"].keys()
-        else:
-            geoTraits = []
-        if "genome_annotations" in meta_json:
-            annotations = meta_json["genome_annotations"].keys()
-        else:
-            annotations = []
+        geoTraits = []
+
+    if "genome_annotations" in meta_json:
+        annotations = meta_json["genome_annotations"].keys()
+    else:
+        annotations = []
 
     if "entropy" in panels and len(annotations) == 0:
         panels.remove("entropy")
@@ -235,26 +135,6 @@ def process_panels(user_panels, meta_json, nextflu=False):
         panels.remove("map")
 
     return panels
-
-def add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json, extra_fields=['authors', 'url', 'accession']):
-    """
-    Only used for nextflu schema compatability
-
-    Add the relevent fields from meta_tsv to the nodes
-    (both are dictionaries keyed off of strain names)
-    * the relevent fields are found by scanning the meta json
-    together with the extra_fields param
-    """
-    fields = [x for x in meta_json["color_options"].keys() if x != "gt"] + extra_fields
-    if "geo" in meta_json:
-        fields += meta_json["geo"]
-
-    for strain, node in nodes.items():
-        if strain not in meta_tsv:
-            continue
-        for field in fields:
-            if field not in node and field in meta_tsv[strain] and meta_tsv[strain][field]:
-                node[field] = meta_tsv[strain][field]
 
 
 def collect_strain_info(node_data, tsv_path):
@@ -270,35 +150,6 @@ def collect_strain_info(node_data, tsv_path):
                 node[field] = meta_tsv[strain][field]
     return strain_info
 
-
-def construct_author_info_nexflu(metadata, tree, nodes):
-    """
-    author info maps the "authors" property present on tree nodes
-    to further information about the paper etc
-    """
-
-    authorsInTree = set()
-    for node in tree.find_clades(order='postorder'):
-        if node.is_terminal and node.name in nodes and "authors" in nodes[node.name]:
-            authorsInTree.add(nodes[node.name]["authors"])
-
-    author_info = defaultdict(lambda: {"n": 0})
-    for strain, data in metadata.items():
-        if "authors" not in data:
-            print("Error - {} had no authors".format(strain))
-            continue
-        if data["authors"] not in authorsInTree:
-            continue
-        authors = data["authors"]
-        author_info[authors]["n"] += 1
-        # add in extra attributes if they're present in the meta TSV (for this strain...)
-        for attr in ["title", "journal", "paper_url"]:
-            if attr in data:
-                if attr in author_info[authors] and data[attr].strip() != author_info[authors][attr].strip():
-                    print("Error - {} had contradictory {}(s): {} vs {}".format(authors, attr, data[attr], author_info[authors][attr]))
-                author_info[authors][attr] = data[attr].strip()
-
-    return author_info
 
 def construct_author_info_and_make_keys(node_metadata, raw_strain_info):
     """
@@ -482,34 +333,27 @@ def add_option_args(parser):
     options.add_argument('--lat-longs', help="file latitudes and longitudes, overrides built in mappings")
     options.add_argument('--tree-name', default=False, help="Tree name (needed for tangle tree functionality)")
     options.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
+    options.add_argument('--output-sequence', help="JSON file name that is passed on to auspice (e.g., zika_seq.json).")
+    options.add_argument('--reference', required=False, help="reference sequence for export to browser, only vcf")
+    options.add_argument('--reference-translations', required=False, help="reference translations for export to browser, only vcf")
     return options
 
 
 def register_arguments(parser):
     subparsers = parser.add_subparsers()
-    default = subparsers.add_parser("default", help="The latest version of export")
-    core = add_core_args(default)
-    config = add_config_args(default)
-    options = add_option_args(default)
+    v2 = subparsers.add_parser("v2", help="Export version 2 JSON schema")
+    core = add_core_args(v2)
+    config = add_config_args(v2)
+    options = add_option_args(v2)
     core.add_argument('--output-main', help="Main JSON file name that is passed on to auspice (e.g., zika.json).")
-
-    # V1 sub-command
-    v1 = subparsers.add_parser('v1', help="Version 1 of export")
-    v1_core = add_core_args(v1)
-    v1_config = v1.add_argument_group("CONFIG OPTIONS")
-    v1_config.add_argument('--auspice-config', help="file with auspice configuration")
-    v1_core_options = add_option_args(v1)
-    v1_options = v1.add_argument_group("V1 OPTIONS")
-    v1_options.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json). Only used with --nextflu-schema")
-    v1_options.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json). Only used with --nextflu-schema")
-    v1_options.add_argument('--output-sequence', help="JSON file name that is passed on to auspice (e.g., zika_seq.json). Only used with --nextflu-schema")
-    v1_options.add_argument('--reference', required=False, help="reference sequence for export to browser, only vcf")
-    v1_options.add_argument('--reference-translations', required=False, help="reference translations for export to browser, only vcf")
-    v1.add_argument("--v1", help=SUPPRESS, default=True)
+    # Register v1 arguments
+    register_arguments_v1(subparsers)
 
 
 def run(args):
-    print(args)
+    if "v1" in args:
+        return run_v1(args)
+
     T = Phylo.read(args.tree, 'newick')
     node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
     nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
@@ -526,54 +370,12 @@ def run(args):
     if args.output_sequence:
         if T.root.name in nodes:
             root_sequence = get_root_sequence(nodes[T.root.name], ref=args.reference,
-            								  translations=args.reference_translations)
+                                                translations=args.reference_translations)
         else:
             root_sequence = {}
 
         write_json(root_sequence, args.output_sequence)
 
-    if not args.new_schema:
-        # This schema is deprecated. It remains because:
-        # (1) auspice can't use schema 2.0 yet, (2) nexflu doesn't use schema 2.0
-        # export the tree JSON first
-        meta_json = read_config(args.auspice_config)
-        meta_tsv, _ = read_metadata(args.metadata)
-        add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json)
-
-        tree_layout(T)
-        tree_json, _ = convert_tree_to_json_structure(T.root, nodes, nextflu_schema=True)
-
-        # now the messy bit about what decorations (e.g. "country", "aa_muts") do we want to add to the tree?
-        # see recursively_decorate_tree_json to understand the tree_decorations structure
-        tree_decorations = [
-            {"key": "num_date", "lookup_key": "numdate", "is_attr": True},
-            {"key": "muts", "is_attr": False},
-            {"key": "aa_muts", "is_attr": False}
-        ]
-        traits_via_node_metadata = {k for node in nodes.values() for k in node.keys()}
-        traits_via_node_metadata -= {'sequence', 'mutation_length', 'branch_length', 'numdate',
-                                     'mutations', 'muts', 'aa_muts', 'aa_sequences'}
-        for trait in traits_via_node_metadata:
-            tree_decorations.append({"key": trait, "is_attr": True})
-
-        recursively_decorate_tree_json_nextflu_schema(tree_json, nodes, decorations=tree_decorations)
-        write_json(tree_json, args.output_tree, indent=json_indent)
-
-        # Export the metadata JSON
-        lat_long_mapping = read_lat_longs(args.lat_longs)
-        color_mapping = read_colors(args.colors)
-        meta_json["updated"] = time.strftime("%d %b %Y")
-        meta_json["virus_count"] = len(list(T.get_terminals()))
-        meta_json["author_info"] = construct_author_info_nexflu(meta_tsv, T, nodes)
-        meta_json["color_options"] = process_colorings(meta_json, color_mapping, nodes=nodes, nextflu=True)
-        meta_json["geo"] = process_geographic_info(meta_json, lat_long_mapping, nodes=nodes, nextflu=True)
-        annotations = process_annotations(node_data)
-        if annotations:
-            meta_json["annotations"] = annotations
-        meta_json["panels"] = process_panels(None, meta_json, nextflu=True)
-
-        write_json(meta_json, args.output_meta, indent=json_indent)
-        return 0
 
     ## SCHEMA v2.0 ##
     unified = {}
@@ -598,7 +400,7 @@ def run(args):
         traits.extend(args.geography_traits)
         traits = list(set(traits)) #ensure no duplicates
     # Clade annotation is label, not colorby!
-    if "clade_annotation" in traits: 
+    if "clade_annotation" in traits:
         traits.remove("clade_annotation")
 
     raw_strain_info = collect_strain_info(node_data, args.metadata)
