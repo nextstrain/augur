@@ -396,25 +396,6 @@ def run_v2(args):
     config = {}
     auspice_json["version"] = "2.0"
 
-    # get traits to colour by etc - do here before node_data is modified below
-    # this ensures we get traits even if they are not on every node
-    traits = get_traits(node_data)
-    if args.extra_traits:
-        traits.extend(args.extra_traits)
-    # Automatically add any specified geo traits - otherwise won't work!
-    if args.geography_traits:
-        traits.extend(args.geography_traits)
-        traits = list(set(traits)) #ensure no duplicates
-    # Clade annotation is label, not colorby!
-    if "clade_annotation" in traits:
-        traits.remove("clade_annotation")
-
-    raw_strain_info = collect_strain_info(node_data, args.metadata)
-    auspice_json["tree"], strains = convert_tree_to_json_structure(T.root, raw_strain_info)
-
-    node_metadata = transfer_metadata_to_strains(strains, raw_strain_info, traits)
-    auspice_json["author_info"] = construct_author_info_and_make_keys(node_metadata, raw_strain_info)
-
     if args.auspice_config:
         config = read_config(args.auspice_config)
         auspice_json["title"] = config["title"]
@@ -431,6 +412,27 @@ def run_v2(args):
     else:
         auspice_json['title'] = args.title
         auspice_json['maintainers'] = [{'name': name, 'url':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
+
+    # get traits to colour by etc - do here before node_data is modified below
+    # this ensures we get traits even if they are not on every node
+    traits = get_traits(node_data)
+    if config.get('color_options'):
+        traits.extend(config['color_options'].keys())
+    if args.extra_traits:
+        traits.extend(args.extra_traits)
+    # Automatically add any specified geo traits - otherwise won't work!
+    if args.geography_traits:
+        traits.extend(args.geography_traits)
+        traits = list(set(traits)) #ensure no duplicates
+    # Clade annotation is label, not colorby!
+    if "clade_annotation" in traits:
+        traits.remove("clade_annotation")
+
+    raw_strain_info = collect_strain_info(node_data, args.metadata)
+    auspice_json["tree"], strains = convert_tree_to_json_structure(T.root, raw_strain_info)
+
+    node_metadata = transfer_metadata_to_strains(strains, raw_strain_info, traits)
+    auspice_json["author_info"] = construct_author_info_and_make_keys(node_metadata, raw_strain_info)
 
     # Set up filters
     if config.get('filters'):
