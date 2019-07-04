@@ -189,7 +189,7 @@ rule export:
         auspice_seq = rules.all.input.auspice_seq
     shell:
         """
-        augur export \
+        augur export v1 \
             --tree {input.tree} \
             --metadata {input.metadata} \
             --node-data {input.branch_lengths} {input.traits} {input.nt_muts} {input.aa_muts} \
@@ -198,7 +198,7 @@ rule export:
             --output-tree {output.auspice_tree} \
             --output-meta {output.auspice_meta} \
             --output-sequence {output.auspice_seq}
-        augur validate --json {output.auspice_tree} {output.auspice_meta}
+        augur validate v1 --json {output.auspice_tree} {output.auspice_meta}
         """
 
 rule exportv2:
@@ -216,15 +216,14 @@ rule exportv2:
         auspice_seq = rules.all.input.auspice_seq_v2
     shell:
         """
-        augur export \
-            --new-schema \
+        augur export v2 \
             --tree {input.tree} \
             --metadata {input.metadata} \
             --node-data {input.branch_lengths} {input.traits} {input.nt_muts} {input.aa_muts} \
             --colors {input.colors} \
             --output-main {output.auspice_main} \
             --output-sequence {output.auspice_seq}
-        augur validate --new-schema --json {output.auspice_main}
+        augur validate v2 --json {output.auspice_main}
         """
 
 rule clean:

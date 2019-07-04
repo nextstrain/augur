@@ -55,6 +55,10 @@
                             "description": "Publication title",
                             "type": "string"
                         },
+                        "year": {
+                            "description": "Publication year",
+                            "type": "number"
+                        },
                         "journal": {
                             "description": "Journal title",
                             "type": "string"
@@ -174,38 +178,19 @@
                             "type": "string",
                             "enum": ["continuous", "ordinal", "categorical", "boolean"]
                         },
-                        "domain": {
-                            "description": "Color scale domain",
-                            "$comment": "if type is continuous, this defines the domain of the color scale. If numItems > 2, then this also defines the legend entries",
-                            "$comment": "if type is ordinal / categorical, this defines the ordering (to be displayed in the legend, and to which a color scale will be applied)",
-                            "$comment": "not available for boolean types",
-                            "type": "array",
-                            "minItems": 2
-                        },
                         "scale": {
-                            "description": "Used to calculate the colour scale",
-                            "oneOf": [
-                                {
-                                    "description": "Provided mapping between trait values & hex values",
-                                    "$comment": "If type is continuous or ordinal, values between those provided here are interpolated",
-                                    "$comment": "If type is categorical, values not present here are grey",
-                                    "$comment": "If type is boolean, use \"1\" (true) and \"0\" (false) as properties",
-                                    "type": "object",
-                                    "patternProperties": {
-                                        "^.+$": {
-                                            "description": "color hex value",
-                                            "type": "string",
-                                            "pattern": "^#[0-9A-Fa-f]{6}$"
-                                        }
-                                    }
-                                },
-                                {
-                                    "description": "Name of a color scale to use",
-                                    "$comment": "Not yet implemented in Auspice",
-                                    "type": "string"
+                            "description": "Provided mapping between trait values & hex values",
+                            "$comment": "If type is continuous or ordinal, values between those provided here are interpolated",
+                            "$comment": "If type is categorical, values not present here are grey",
+                            "$comment": "If type is boolean, use \"1\" (true) and \"0\" (false) as properties",
+                            "type": "object",
+                            "patternProperties": {
+                                "^.+$": {
+                                    "description": "color hex value",
+                                    "type": "string",
+                                    "pattern": "^#[0-9A-Fa-f]{6}$"
                                 }
-                            ]
-
+                            }
                         }
                     }
                 }
@@ -224,7 +209,7 @@
                 },
                 "color_by": {
                     "description": "Default color by",
-                    "$comment": "The value here must be present in the color_options object (see above)",
+                    "$comment": "The value here must be present in the colorings object (see above)",
                     "type": "string"
                 },
                 "distance_measure": {
@@ -237,6 +222,13 @@
                     "type": "boolean"
                 }
             }
+        },
+        "tree_name" : {
+          "description": "The name of the tree (e.g. segment name), if applicable",
+          "$comment": "This is required if you want to view two trees side-by-side",
+          "$comment": "It should match a field in the JSON filename after splitting on '_'",
+          "$comment": "e.g. `flu_h3n2_ha_3y` has a tree name of `ha`",
+          "type": "string"
         },
         "tree": {
             "type" : "object",
@@ -364,7 +356,7 @@
                     "$comment": "Obviously only for terminal nodes",
                     "$comment": "If not known/available, don't include this as a property of the node",
                     "type": "string",
-                    "pattern": "^[0-9A-Za-z-]+$"
+                    "pattern": "^[0-9A-Za-z-_]+$"
                 },
                 "traits": {
                     "description": "Inferred Attributes / traits decorations on the nodes",
@@ -412,6 +404,13 @@
                                 }
                             }
                         }
+                    },
+                    "not": {
+                        "required": [
+                            "authors",
+                            "num_date",
+                            "div"
+                        ]
                     }
                 },
                 "children": {
