@@ -165,6 +165,17 @@ def run(args):
     tree_fname = args.tree
     traits, columns = read_metadata(args.metadata)
 
+    from Bio import Phylo
+    T = Phylo.read(tree_fname, 'newick')
+    missing_internal_node_names = [n.name is None for n in T.get_nonterminals()]
+    if np.all(missing_internal_node_names):
+        print("\n*** WARNING: Tree has no internal node names!")
+        print("*** Without internal node names, ancestral traits can't be linked up to the correct node later.")
+        print("*** If you want to use 'augur export' later, re-run this command with the output of 'augur refine'.")
+        print("*** If you haven't run 'augur refine', you can add node names to your tree by running:")
+        print("*** augur refine --tree %s --output-tree <filename>.nwk"%(tree_fname) )
+        print("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'")
+
     mugration_states = defaultdict(dict)
     for column in args.columns:
         T, gtr, alphabet = mugration_inference(tree=tree_fname, seq_meta=traits,

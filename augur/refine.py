@@ -128,6 +128,7 @@ def run(args):
     attributes = ['branch_length']
 
     # check if tree is provided an can be read
+    T = None #otherwise get 'referenced before assignment' error if reading fails
     for fmt in ["newick", "nexus"]:
         try:
             T = Phylo.read(args.tree, fmt)
@@ -166,8 +167,10 @@ def run(args):
     # if not specified, construct default output file name with suffix _tt.nwk
     if args.output_tree:
         tree_fname = args.output_tree
-    else:
+    elif args.alignment:
         tree_fname = '.'.join(args.alignment.split('.')[:-1]) + '_tt.nwk'
+    else:
+        tree_fname = '.'.join(args.tree.split('.')[:-1]) + '_tt.nwk'
 
     if args.root and len(args.root) == 1: #if anything but a list of seqs, don't send as a list
         args.root = args.root[0]
@@ -222,10 +225,13 @@ def run(args):
     import json
     tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
     print("updated tree written to",tree_fname, file=sys.stdout)
+
     if args.output_node_data:
         node_data_fname = args.output_node_data
-    else:
+    elif args.alignment:
         node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data.json'
+    else:
+        node_data_fname = '.'.join(args.tree.split('.')[:-1]) + '.node_data.json'
 
     write_json(node_data, node_data_fname)
     print("node attributes written to",node_data_fname, file=sys.stdout)
