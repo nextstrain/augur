@@ -93,6 +93,64 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, m
 
     return numerical_dates
 
+
+class InvalidTreeError(Exception):
+    """Represents an error loading a phylogenetic tree from a filename.
+    """
+    pass
+
+
+def read_tree(fname, min_terminals=3):
+    """Safely load a tree from a given filename or raise an error if the file does
+    not contain a valid tree.
+
+    Parameters
+    ----------
+    fname : str
+        name of a file containing a phylogenetic tree
+
+    min_terminals : int
+        minimum number of terminals required for the parsed tree as a sanity
+        check on the tree
+
+    Raises
+    ------
+    InvalidTreeError
+        If the given file exists but does not seem to contain a valid tree format.
+
+    Returns
+    -------
+    Bio.Phylo :
+        BioPython tree instance
+
+    """
+    T = None
+    supported_tree_formats = ["newick", "nexus"]
+    for fmt in supported_tree_formats:
+        try:
+            T = Bio.Phylo.read(fname, fmt)
+
+            # Check the sanity of the parsed tree to handle cases when non-tree
+            # data are still successfully parsed by BioPython. Too few terminals
+            # in a tree indicates that the input is not valid.
+            if T.count_terminals() < min_terminals:
+                T = None
+            else:
+                break
+        except ValueError:
+            # We cannot open the tree in the current format, so we will try
+            # another.
+            pass
+
+    # If the tree cannot be loaded, raise an error to that effect.
+    if T is None:
+        raise InvalidTreeError(
+            "Could not read the given tree %s using the following supported formats: %s" % (fname, ", ".join(supported_tree_formats))
+        )
+
+    return T
+
+
 def read_node_data(fnames, tree=None):
     """parse the "nodes" field of the given JSONs and join the data together"""
     if type(fnames) is str:

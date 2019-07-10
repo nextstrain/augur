@@ -6,7 +6,7 @@ import os, shutil, time, json, sys
 from Bio import Phylo, SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from .utils import write_json
+from .utils import read_tree, InvalidTreeError, write_json
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
 
@@ -106,15 +106,11 @@ def run(args):
     is_vcf = False
     ref = None
     anc_seqs = {}
-    # check if tree is provided and can be read
-    for fmt in ["newick", "nexus"]:
-        try:
-            T = Phylo.read(args.tree, fmt)
-            break
-        except:
-            pass
-    if T is None:
-        print("ERROR: reading tree from %s failed."%args.tree)
+
+    try:
+        T = read_tree(args.tree)
+    except (FileNotFoundError, InvalidTreeError) as error:
+        print("ERROR: %s" % error, file=sys.stderr)
         return 1
 
     import numpy as np

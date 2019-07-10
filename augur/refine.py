@@ -4,8 +4,9 @@ Refine an initial tree using sequence metadata.
 
 import os, shutil, time, sys
 from Bio import Phylo
-from .utils import read_metadata, get_numerical_dates, write_json
+from .utils import read_metadata, read_tree, get_numerical_dates, write_json, InvalidTreeError
 from treetime.vcf_utils import read_vcf, write_vcf
+
 
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
              confidence=False, resolve_polytomies=True, max_iter=2,
@@ -127,18 +128,11 @@ def run(args):
     # list of node attributes that are to be exported, will grow
     attributes = ['branch_length']
 
-    # check if tree is provided an can be read
-    T = None #otherwise get 'referenced before assignment' error if reading fails
-    for fmt in ["newick", "nexus"]:
-        try:
-            T = Phylo.read(args.tree, fmt)
-            node_data['input_tree'] = args.tree
-            break
-        except Exception as error:
-            print("\n\nERROR: reading tree from %s failed: %s" % (args.tree, error))
-            return 1
-    if T is None:
-        print("\n\nERROR: reading tree from %s failed."%args.tree)
+    try:
+        T = read_tree(args.tree)
+        node_data['input_tree'] = args.tree
+    except (FileNotFoundError, InvalidTreeError) as error:
+        print("ERROR: %s" % error, file=sys.stderr)
         return 1
 
     if not args.alignment:
