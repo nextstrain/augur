@@ -11,5 +11,6 @@ dependencies:
 - iqtree
 - vcftools
 - snakemake
+- pip
 - pip:
   - .
