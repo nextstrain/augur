@@ -445,14 +445,22 @@ def run_v2(args):
                   "'colorings'.")
             config["colorings"] = config["color_options"]
 
-        # Set up display defaults
+        # v2 schema uses 'display_defaults' not 'defaults' (v1). Tolerate this but
+        # give a warning and fix.
         if config.get("defaults"):
+            print("CONFIG FILE WARNING: 'defaults' is depreciated. Please use 'display_defaults' in your "
+                  "config file instead. The run will proceed, treating 'defaults' as "
+                  "'display_defaults'.")
+            config["display_defaults"] = config["defaults"]
 
-            for key in config["defaults"]:
+        # Set up display defaults
+        if config.get("display_defaults"):
+
+            for key in config["display_defaults"]:
                 new_key = convert_camel_to_snake_case(key)
-                config["defaults"][new_key] = config["defaults"].pop(key)
+                config["display_defaults"][new_key] = config["display_defaults"].pop(key)
 
-            auspice_json["display_defaults"] = config["defaults"]
+            auspice_json["display_defaults"] = config["display_defaults"]
 
     # Get title - config file overwrites command-line args.
     # Error currently doesn't print because of defaults in args.
