@@ -156,9 +156,16 @@ def collect_strain_info(node_data, tsv_path):
 
 
 def construct_author_info_and_make_keys(node_metadata, raw_strain_info):
-    """
-    For each node, gather the relevant author information (returned)
-    and create a unique key inside node_metadata
+    """Gather the authors which appear in the metadata and assign them
+    to nodes on the tree. Produce a mapping of seen authors and the
+    metadata associated with them.
+
+    :param node_metadata:
+    :type node_metadata: dict
+    :param raw_strain_info:
+    :type raw_strain_info: dict
+    :returns: author information. See JSON schema for format.
+    :rtype: dict
     """
     author_info = {}
     for strain, node in node_metadata.items():
@@ -424,9 +431,12 @@ def run_v2(args):
     if args.geography_traits:
         traits.extend(args.geography_traits)
         traits = list(set(traits)) #ensure no duplicates
-    # Clade annotation is label, not colorby!
-    if "clade_annotation" in traits:
-        traits.remove("clade_annotation")
+    # remove keys which may look like traits but are not
+    excluded_traits = [
+      "clade_annotation", # Clade annotation is label, not colorby!
+      "authors" # authors are set as a node property, not a trait property
+    ]
+    traits = [t for t in traits if t not in excluded_traits]
 
     raw_strain_info = collect_strain_info(node_data, args.metadata)
     auspice_json["tree"], strains = convert_tree_to_json_structure(T.root, raw_strain_info)
