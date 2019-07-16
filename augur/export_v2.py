@@ -436,6 +436,15 @@ def run_v2(args):
 
     if args.auspice_config:
         config = read_config(args.auspice_config)
+
+        # v2 schema uses 'colorings' not 'color_options' (v1). Tolerate this but
+        # give a warning and fix.
+        if config.get("color_options"):
+            print("CONFIG FILE WARNING: 'color_options' is depreciated. Please use 'colorings' in your "
+                  "config file instead. The run will proceed, treating 'color_options' as "
+                  "'colorings'.")
+            config["colorings"] = config["color_options"]
+
         # Set up display defaults
         if config.get("defaults"):
 
@@ -473,8 +482,8 @@ def run_v2(args):
     # get traits to colour by etc - do here before node_data is modified below
     # this ensures we get traits even if they are not on every node
     traits = get_traits(node_data)
-    if config.get('color_options'):
-        traits.extend(config['color_options'].keys())
+    if config.get('colorings'):
+        traits.extend(config['colorings'].keys())
     if args.extra_traits:
         traits.extend(args.extra_traits)
     # Automatically add any specified geo traits - otherwise won't work!
@@ -505,11 +514,11 @@ def run_v2(args):
     add_metadata_to_tree(auspice_json["tree"], node_metadata)
 
     # Set up colorings
-    if config.get("color_options"):
-        color_config = config["color_options"]
+    if config.get("colorings"):
+        color_config = config["colorings"]
         # If have passed in clade info this will appear on branch labels
         # Treat as 'all-or-nothing' - must also have as color-by. Or exclude from --node-data
-        if 'clade_membership' in traits and 'clade_membership' not in config['color_options']:
+        if 'clade_membership' in traits and 'clade_membership' not in config['colorings']:
             color_config['clade_membership'] = {}
     else:
         color_config = traits
