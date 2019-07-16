@@ -63,8 +63,8 @@
                             "description": "Journal title",
                             "type": "string"
                         },
-                        "url": {
-                            "description": "URL link to paper or NCBI genome.",
+                        "paper_url": {
+                            "description": "URL link to paper (if available)",
                             "type": "string",
                             "pattern": "^https?://.+$"
                         }

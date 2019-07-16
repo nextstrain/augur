@@ -181,8 +181,8 @@ def construct_author_info_and_make_keys(node_metadata, raw_strain_info):
             data["title"] = raw_strain_info[strain]["title"].strip()
         if "journal" in raw_strain_info[strain]:
             data["journal"] = raw_strain_info[strain]["journal"].strip()
-        if "url" in raw_strain_info[strain]:
-            data["url"] = raw_strain_info[strain]["url"].strip()
+        if "paper_url" in raw_strain_info[strain]:
+            data["paper_url"] = raw_strain_info[strain]["paper_url"].strip()
 
         # make unique key...
         key = authors.split()[0].lower()
