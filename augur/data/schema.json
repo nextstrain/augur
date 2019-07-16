@@ -157,9 +157,10 @@
         },
         "colorings": {
             "description": "Available colorBys for Auspice",
-            "$comment": "The property names are found on node->traits, where the value there defines the deme for that node",
-            "$comment": "There are a few exceptions - a property of 'numDate', 'gt' (genotype) or 'authors' are interpreted differently by Auspice as they are defined on the node itself, not node->traits",
-            "$comment": "Property strings are not themselves displayed in auspice.",
+            "$comment": "Property names here match those found on node.traits, where node.traits[propertyName] defines the value of that coloring for that node",
+            "$comment": "Property names are not displayed by auspice - use 'title' for this",
+            "$comment": "Exceptions: property names 'num_date', 'gt' (genotype), 'authors' or 'citekey'",
+            "$comment": "as their info is defined as a prop on the node itself (not node.traits)",
             "type": "object",
             "additionalProperties": false,
             "patternProperties": {

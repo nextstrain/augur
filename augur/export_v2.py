@@ -46,51 +46,70 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
     return (node_struct, strains)
 
 
-def process_colorings(json: list, color_mapping, nodes=None, node_metadata: dict=None) -> dict:
-    if not json:
-        print("WARNING: no colorings were defined")
-        return
+def get_colorings(config, traits, provided_colors, node_metadata, mutations_present):
+    def _get_values(key):
+        values_in_tree = set()
+        for node_properties in node_metadata.values():
+            # beware of special cases!
+            if key == "citekey":
+                values_in_tree.add(node_properties.get(key))
+            elif key == "num_date":
+                if key in node_properties:
+                    values_in_tree.add(node_properties.get(key).get("value"))
+            elif key in node_properties['traits']:
+                values_in_tree.add(node_properties['traits'][key]['value'])
+        return values_in_tree
 
-    data = {k: {'type': 'categorical'} for k in json}
-    #Always add in genotype and date to colour by
-    data['gt'] = {'title': 'Genotype', 'type': 'ordinal'}
-    #figure out how to see if num_date is there? Is it possible to not have?
-    data['num_date']  = {'title': 'Sampling date', 'type': 'continuous'}
+    def _guess_type(key, values):
+        # TODO detect other types (ordinal, boolean)
+        if all([ isinstance(n, float) if isinstance(n, float) else isinstance(n, int) for n in values ]):
+            return "continuous"
+        return "categorical"
 
-    if 'clade_membership' in data and 'title' not in data['clade_membership']:
-        data['clade_membership']['title'] = 'Clade'
+    def _guess_title(key):
+        if key == "clade_membership":
+            return "Clade"
+        return key
 
-    for trait, options in data.items():
-        if "type" not in options:
-            raise Exception("coloring {} missing type...".format(trait))
+    # NOTE: Emma -- currently if "country" is defined as a command-line trait
+    # but there is a "color_options" in the config without it, then "country"
+    # won't be a color-by. Not sure what behavior is desired here.
+    if config.get("color_options"):
+        color_config = config["color_options"]
+    else:
+        color_config = traits
 
-        if "title" not in options:
-            options["title"] = trait
+    colorings = {}
+    # handle special cases
+    if mutations_present:
+        colorings["gt"] = config.get("gt") if config.get("citekey") else {'title': 'Genotype', 'type': 'ordinal'}
+    if _get_values("citekey"): # check if any citekeys (authors) are set on the tree
+        colorings["citekey"] = config.get("citekey") if config.get("citekey") else {'title': 'Authors', 'type': 'categorical'}
+    if _get_values("num_date"): # TODO: check if tree has temporal inference (possible to not have)
+        colorings['num_date'] = config.get("num_date") if config.get("num_date") else {'title': 'Sampling date', 'type': 'continuous'}
+    # remove keys which may exist but are special cases and/or have been handled above
+    color_config.pop("gt", None)
+    color_config.pop("citekey", None)
+    color_config.pop("authors", None) # this was v1 syntax
+    color_config.pop("num_date", None)
 
-        if nodes:
-            values_in_tree = {node[trait] for node in nodes.values() if trait in node}
-        else:
-            values_in_tree = set()
-            for name, values in node_metadata.items():
-                if trait in values['traits']:
-                    values_in_tree.add(values['traits'][trait]['value'])
 
-        if trait.lower() in color_mapping:
-            # remember that the color maps (from the TSV) are in lower case, but
-            # this is not how they should be exported
-            case_map = {str(val).lower(): val for val in values_in_tree}
-            options["scale"] = {case_map[m[0]]: m[1] for m in color_mapping[trait.lower()] if m[0] in case_map}
+    for key, data in color_config.items():
+        trait_values = _get_values(key) # e.g. list of countries, list of citekeys etc
+        if not trait_values:
+            print("WARNING - you asked for a color by for '{}' but it has no values on the tree => Ignoring.".format(key))
+            continue
+        colorings[key] = {
+            "title": data.get("title") if data.get("title") else _guess_title(key),
+            "type": data.get("type") if data.get("type") else _guess_type(key, trait_values)
+        }
+        # set color maps if provided in the config (FYI - color maps are in lower case)
+        if key.lower() in provided_colors:
+            values_lower = {str(val).lower(): val for val in trait_values}
+            colorings[key]["scale"] = {values_lower[m[0]]: m[1] for m in provided_colors[key.lower()] if m[0] in values_lower}
 
-        else:
-            # TODO detect other types (ordinal, boolean)
-            if options['type'] == 'categorical' and options['title'] != 'authors':
-                #if its int or float and no colours supplied - set continuous.
-                # TODO this should maybe be expanded to long and scientific notation (?)
-                if all([ isinstance(n, float) if isinstance(n, float) else isinstance(n, int) for n in values_in_tree ]):
+    return colorings
 
-                    options['type'] = "continuous"
-
-    return data
 
 def process_geographic_info(jsn, lat_long_mapping, node_metadata=None, nodes=None):
     if jsn is None or len(jsn)==0 :
@@ -457,14 +476,14 @@ def run_v2(args):
 
     add_metadata_to_tree(auspice_json["tree"], node_metadata)
 
-    # Set up colorings
-    if config.get("color_options"):
-        color_config = config["color_options"]
-    else:
-        color_config = traits
 
-    color_mapping = read_colors(args.colors)
-    auspice_json["colorings"] = process_colorings(color_config, color_mapping, node_metadata=node_metadata)
+    auspice_json["colorings"] = get_colorings(
+        config=config,
+        traits=traits,
+        provided_colors=read_colors(args.colors),
+        node_metadata=node_metadata,
+        mutations_present=True # TODO
+    )
 
     # Set up geographic info
     if config.get("geo"):
