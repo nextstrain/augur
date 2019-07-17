@@ -152,7 +152,7 @@ rule seqtraits:
         """
 
 rule export:
-    message: "Exporting data files for for auspice using nextflu compatible schema"
+    message: "Exporting data files for for auspice v1"
     input:
         tree = rules.refine.output.tree,
         metadata = config.meta,
@@ -169,7 +169,7 @@ rule export:
         meta = rules.all.input.auspice_meta
     shell:
         """
-        augur export \
+        augur export v1 \
             --tree {input.tree} \
             --metadata {input.metadata} \
             --node-data {input.branch_lengths} {input.drms} {input.traits} {input.aa_muts} {input.nt_muts} \
@@ -178,12 +178,12 @@ rule export:
             --lat-longs {input.geo_info} \
             --output-tree {output.tree} \
             --output-meta {output.meta}
-        augur validate --json {output.tree} {output.meta}
+        augur validate v1 --json {output.tree} {output.meta}
         """
 
 
 rule exportv2:
-    message: "Exporting data files for for auspice using nextstrain schema v2"
+    message: "Exporting data files for for auspice v2"
     input:
         tree = rules.refine.output.tree,
         metadata = config.meta,
@@ -205,8 +205,7 @@ rule exportv2:
         # panels = 'tree map entropy frequencies'
     shell:
         """
-        augur export \
-            --new-schema \
+        augur export v2 \
             --tree {input.tree} \
             --metadata {input.metadata} \
             --node-data {input.branch_lengths} {input.drms} {input.traits} {input.aa_muts} {input.nt_muts} \
@@ -217,7 +216,7 @@ rule exportv2:
             --maintainers {params.auth} \
             --maintainer-urls {params.url} \
             --geography-traits {params.geo}
-        augur validate --new-schema --json {output.main}
+        augur validate v2 --json {output.main}
         """
 
 rule clean:
