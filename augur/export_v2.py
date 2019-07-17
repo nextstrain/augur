@@ -376,9 +376,9 @@ def add_config_args(parser):
     config = parser.add_argument_group("CONFIG OPTIONS")
     # XXX TODO: make clear either use auspice-config or additional config options
     config.add_argument('--auspice-config', help="file with auspice configuration")
-    config.add_argument('--title', default="Analysis", help="Title to be displayed by auspice")
-    config.add_argument('--maintainers', default=[""], nargs='+', help="Analysis maintained by")
-    config.add_argument('--maintainer-urls', default=[""], nargs='+', help="URL of maintainers")
+    config.add_argument('--title', help="Title to be displayed by auspice")
+    config.add_argument('--maintainers', nargs='+', help="Analysis maintained by")
+    config.add_argument('--maintainer-urls', nargs='+', help="URL of maintainers")
     config.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
     config.add_argument('--extra-traits', nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
     config.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : xxx")
@@ -463,7 +463,6 @@ def run_v2(args):
             auspice_json["display_defaults"] = config["display_defaults"]
 
     # Get title - config file overwrites command-line args.
-    # Error currently doesn't print because of defaults in args.
     if config.get("title"):
         auspice_json['title'] = config['title']
     elif args.title:
@@ -475,7 +474,6 @@ def run_v2(args):
 
     # Get maintainers. Config file overwrites command-line args.
     # Recognises and implements v1-style config spec without warnings.
-    # Error currently doesn't print because of defaults in args.
     if config.get("maintainer"): #v1-type specification
         auspice_json["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
     elif config.get("maintainers"): #v2-type specification (proposed by Emma)
