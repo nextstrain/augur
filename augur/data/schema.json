@@ -34,44 +34,6 @@
                 }
             }
         },
-        "author_info": {
-            "description": "Used to display information about terminal nodes & for filtering by author (if \"authors\" is in \"filters\", see below)",
-            "$comment": "Keys are ideally first authors last name + year of publication + first word of title, all in lowercase. E.g. \"white2015isolation\"",
-            "$comment": "Keys must exist in the attrs object of at least one terminal node of the tree",
-            "type": "object",
-            "additionalProperties": false,
-            "patternProperties": {
-                "^[0-9A-Za-z-]+$": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "$comment": "Unknown properties should simply be excluded",
-                    "properties": {
-                        "author": {
-                            "description": "Authors",
-                            "$comment": "Case is respected by auspice",
-                            "type": "string"
-                        },
-                        "title": {
-                            "description": "Publication title",
-                            "type": "string"
-                        },
-                        "year": {
-                            "description": "Publication year",
-                            "type": "number"
-                        },
-                        "journal": {
-                            "description": "Journal title",
-                            "type": "string"
-                        },
-                        "paper_url": {
-                            "description": "URL link to paper (if available)",
-                            "type": "string",
-                            "pattern": "^https?://.+$"
-                        }
-                    }
-                }
-            }
-        },
         "genome_annotations": {
             "description": "Genome annotations (e.g. genes), relative to the reference genome",
             "$comment": "Required for the entropy panel",
@@ -338,24 +300,37 @@
                 },
                 "url": {
                     "description": "URL of the sequence (usually https://www.ncbi.nlm.nih.gov/nuccore/...)",
-                    "$comment": "Obviously only for terminal nodes",
-                    "$comment": "If not known/available, don't include this as a property of the node",
+                    "$comment": "terminal nodes only",
                     "type": "string",
                     "pattern": "^https?://.+$"
                 },
-                "citekey": {
-                    "description": "Author lookup key for the relevant publication / credit",
-                    "$comment": "Must have a corresponding entry in the #/author_info property",
-                    "$comment": "Keys are first authors last name + year of publication + first word of title, all in lowercase. E.g. \"white2015isolation\"",
-                    "$comment": "Only for terminal nodes",
-                    "$comment": "If not known/available, don't include this as a property of the node",
-                    "type": "string",
-                    "pattern": "^[0-9A-Za-z-]+$"
+                "author": {
+                    "description": "Author information (terminal nodes only)",
+                    "type": "object",
+                    "required": ["value"],
+                    "properties": {
+                        "value": {
+                            "description": "unique value for this publication. Displayed as-is by auspice.",
+                            "type": "string"
+                        },
+                        "title": {
+                          "description": "Publication title",
+                          "type": "string"
+                        },
+                        "journal": {
+                            "description": "Journal title (including year, if applicable)",
+                            "type": "string"
+                        },
+                        "paper_url": {
+                            "description": "URL link to paper (if available)",
+                            "type": "string",
+                            "pattern": "^https?://.+$"
+                        }
+                    }
                 },
                 "accession": {
                     "description": "Sequence accession number",
-                    "$comment": "Obviously only for terminal nodes",
-                    "$comment": "If not known/available, don't include this as a property of the node",
+                    "$comment": "terminal nodes only",
                     "type": "string",
                     "pattern": "^[0-9A-Za-z-_]+$"
                 },

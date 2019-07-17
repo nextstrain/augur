@@ -51,11 +51,8 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
         values_in_tree = set()
         for node_properties in node_metadata.values():
             # beware of special cases!
-            if key == "citekey":
-                values_in_tree.add(node_properties.get(key))
-            elif key == "num_date":
-                if key in node_properties:
-                    values_in_tree.add(node_properties.get(key).get("value"))
+            if key in ["num_date", "author"]:
+                values_in_tree.add(node_properties.get(key, {}).get("value"))
             elif key in node_properties['traits']:
                 values_in_tree.add(node_properties['traits'][key]['value'])
         return values_in_tree
@@ -77,25 +74,25 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
     if config.get("color_options"):
         color_config = config["color_options"]
     else:
-        color_config = traits
+        color_config = {t: {} for t in traits}
 
     colorings = {}
     # handle special cases
     if mutations_present:
-        colorings["gt"] = config.get("gt") if config.get("citekey") else {'title': 'Genotype', 'type': 'ordinal'}
-    if _get_values("citekey"): # check if any citekeys (authors) are set on the tree
-        colorings["citekey"] = config.get("citekey") if config.get("citekey") else {'title': 'Authors', 'type': 'categorical'}
+        colorings["gt"] = config.get("gt") if config.get("gt") else {'title': 'Genotype', 'type': 'ordinal'}
+    if _get_values("author"): # check if any nodes have author set
+        colorings["author"] = config.get("author") if config.get("author") else {'title': 'Authors', 'type': 'categorical'}
     if _get_values("num_date"): # TODO: check if tree has temporal inference (possible to not have)
         colorings['num_date'] = config.get("num_date") if config.get("num_date") else {'title': 'Sampling date', 'type': 'continuous'}
     # remove keys which may exist but are special cases and/or have been handled above
     color_config.pop("gt", None)
-    color_config.pop("citekey", None)
     color_config.pop("authors", None) # this was v1 syntax
+    color_config.pop("author", None)
     color_config.pop("num_date", None)
 
 
     for key, data in color_config.items():
-        trait_values = _get_values(key) # e.g. list of countries, list of citekeys etc
+        trait_values = _get_values(key) # e.g. list of countries, list of authors etc
         if not trait_values:
             print("WARNING - you asked for a color by for '{}' but it has no values on the tree => Ignoring.".format(key))
             continue
@@ -174,54 +171,52 @@ def collect_strain_info(node_data, tsv_path):
     return strain_info
 
 
-def construct_author_info_and_make_keys(node_metadata, raw_strain_info):
+def set_author_on_nodes(node_metadata, raw_strain_info):
     """Gather the authors which appear in the metadata and assign them
-    to nodes on the tree. Produce a mapping of seen authors and the
-    metadata associated with them.
+    to nodes on the tree.
 
     :param node_metadata:
     :type node_metadata: dict
     :param raw_strain_info:
     :type raw_strain_info: dict
-    :returns: author information. See JSON schema for format.
-    :rtype: dict
+    :returns: None
+    :rtype: None
     """
     author_info = {}
+    seen = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+
     for strain, node in node_metadata.items():
-        try:
-            authors = raw_strain_info[strain]["authors"]
-        except KeyError:
+        author = raw_strain_info[strain].get("author")
+        if not author:
+            author = raw_strain_info[strain].get("authors")
+        if not author:
             continue # internal node / terminal node without authors
 
-        data = {
-            "author": authors
-        }
+        node["author"] = {"author": author}        
         if "title" in raw_strain_info[strain]:
-            data["title"] = raw_strain_info[strain]["title"].strip()
+            node["author"]["title"] = raw_strain_info[strain]["title"].strip()
         if "journal" in raw_strain_info[strain]:
-            data["journal"] = raw_strain_info[strain]["journal"].strip()
-        if "paper_url" in raw_strain_info[strain]:
-            data["paper_url"] = raw_strain_info[strain]["paper_url"].strip()
+            node["author"]["journal"] = raw_strain_info[strain]["journal"].strip()
+        if "paper_url" in raw_strain_info[strain] and not raw_strain_info[strain]["paper_url"].strip("/").endswith("pubmed"):
+            node["author"]["paper_url"] = raw_strain_info[strain]["paper_url"].strip()
 
-        # make unique key...
-        key = authors.split()[0].lower()
-        if "journal" in data:
-            # extract the year out of the journal
-            matches = re.findall(r'\([0-9A-Z-]*(\d{4})\)', data["journal"])
-            if matches:
-                key += matches[-1]
-        if "title" in data:
-            key += raw_strain_info[strain]["title"].strip().split()[0].lower()
+        # add to `seen` which will later be used to create the unique value which auspice will display
+        year_matches = re.findall(r'\([0-9A-Z-]*(\d{4})\)', node["author"].get("journal", ""))
+        year = str(year_matches[-1]) if year_matches else "unknown"
+        seen[author][year][node["author"].get("title", "unknown")].append(node)
 
-        node["citekey"] = key
-
-        if key not in author_info:
-            author_info[key] = data
-        elif author_info[key] != data:
-            print("WARNING: Contradictory author information: {} vs {}".format(author_info[key], data))
-
-    return author_info
-
+    # turn "seen" into a unique "nice" string for auspice to display
+    for author in seen.keys():
+        for year in seen[author].keys():
+            titles = sorted(seen[author][year].keys())
+            for idx, title in enumerate(titles):
+                value = author.split()[0].lower().capitalize()
+                if year != "unknown":
+                    value += " ({})".format(year)
+                if len(titles) > 1:
+                    value += " {}".format("abcdefghij"[idx])
+                for node in seen[author][year][title]:
+                    node["author"]["value"] = value
 
 def transfer_metadata_to_strains(strains, raw_strain_info, traits):
     node_metadata = {}
@@ -461,18 +456,14 @@ def run_v2(args):
     auspice_json["tree"], strains = convert_tree_to_json_structure(T.root, raw_strain_info)
 
     node_metadata = transfer_metadata_to_strains(strains, raw_strain_info, traits)
-    auspice_json["author_info"] = construct_author_info_and_make_keys(node_metadata, raw_strain_info)
+    set_author_on_nodes(node_metadata, raw_strain_info)
 
     # Set up filters
     if config.get('filters'):
         auspice_json['filters'] = config['filters']
-    else:
-        # This check allows validation to complete ok - but check auspice can handle having no author info! (it can in v1 schema)
-        if len(auspice_json["author_info"]) == 0:    # if no author data supplied
-            del auspice_json["author_info"]
-            auspice_json['filters'] = traits
-        else:
-            auspice_json['filters'] = traits + ['authors']
+        if "authors" in auspice_json['filters']:
+            del auspice_json['filters'][auspice_json['filters'].index("authors")]
+            auspice_json['filters'].append("author")
 
     add_metadata_to_tree(auspice_json["tree"], node_metadata)
 
