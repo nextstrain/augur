@@ -467,10 +467,6 @@ def run_v2(args):
         auspice_json['title'] = config['title']
     elif args.title:
         auspice_json['title'] = ' '.join(args.title)
-    else:
-        print("ERROR: 'title' is required. Please specify one using the --title argument or "
-              "the 'title' field in a config file.")
-        sys.exit(2)
 
     # Get maintainers. Config file overwrites command-line args.
     # Recognises and implements v1-style config spec without warnings.
