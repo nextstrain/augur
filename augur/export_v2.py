@@ -381,7 +381,7 @@ def add_config_args(parser):
     config.add_argument('--maintainer-urls', nargs='+', help="URL of maintainers")
     config.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
     config.add_argument('--extra-traits', nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
-    config.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : xxx")
+    config.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : tree, map, entropy, frequencies")
     return config
 
 def add_option_args(parser):
@@ -543,7 +543,13 @@ def run_v2(args):
 
     auspice_json["updated"] = time.strftime('%Y-%m-%d')
     auspice_json["genome_annotations"] = process_annotations(node_data)
-    auspice_json["panels"] = process_panels(args.panels, auspice_json)
+
+    # Set up panels for both config and command-line
+    if config.get("panels"):
+        panels = config["panels"]
+    else:
+        panels = args.panels
+    auspice_json["panels"] = process_panels(panels, auspice_json)
 
     if args.tree_name:
         if not re.search("(^|_|/){}(_|.json)".format(args.tree_name), str(args.output_main)):
