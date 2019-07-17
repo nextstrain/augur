@@ -476,10 +476,6 @@ def run_v2(args):
         auspice_json['maintainers'] = [{'name': n[0], 'url': n[1]} for n in config['maintainers']]
     elif args.maintainers and args.maintainer_urls:
         auspice_json['maintainers'] = [{'name': name, 'url':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
-    else:
-        print("ERROR: Maintainer information is required. Please specify using the --maintainer " 
-              " and --maintainer_urls arguments, or in a config file.")
-        sys.exit(2)
 
     # get traits to colour by etc - do here before node_data is modified below
     # this ensures we get traits even if they are not on every node
