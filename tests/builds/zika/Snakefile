@@ -1,10 +1,10 @@
 rule all:
     input:
-        auspice_tree = "auspice/zika_tree.json",
-        auspice_meta = "auspice/zika_meta.json",
-        auspice_seq = "auspice/zika_seq.json",
-        auspice_seq_v2 = "auspice/zika_seq_v2.json",
-        auspice_main = "auspice/zika.json"
+        auspice_v1_tree = "auspice/zika_v1_tree.json",
+        auspice_v1_meta = "auspice/zika_v1_meta.json",
+        auspice_v1_seq = "auspice/zika_v1_seq.json",
+        auspice_v2_seq = "auspice/zika_v2_seq.json",
+        auspice_v2 = "auspice/zika_v2.json"
 rule files:
     params:
         input_fasta = "data/zika.fasta",
@@ -172,7 +172,7 @@ rule traits:
             --confidence
         """
 
-rule export:
+rule export_v1:
     message: "Exporting data files for for auspice using nextflu compatible schema"
     input:
         tree = rules.refine.output.tree,
@@ -184,9 +184,9 @@ rule export:
         colors = files.colors,
         auspice_config = files.auspice_config
     output:
-        auspice_tree = rules.all.input.auspice_tree,
-        auspice_meta = rules.all.input.auspice_meta,
-        auspice_seq = rules.all.input.auspice_seq
+        auspice_tree = rules.all.input.auspice_v1_tree,
+        auspice_meta = rules.all.input.auspice_v1_meta,
+        auspice_seq = rules.all.input.auspice_v1_seq
     shell:
         """
         augur export v1 \
@@ -201,7 +201,7 @@ rule export:
         augur validate v1 --json {output.auspice_tree} {output.auspice_meta}
         """
 
-rule exportv2:
+rule export_v2:
     message: "Exporting data files for for auspice using nextstrain schema v2"
     input:
         tree = rules.refine.output.tree,
@@ -212,8 +212,8 @@ rule exportv2:
         aa_muts = rules.translate.output.node_data,
         colors = files.colors,
     output:
-        auspice_main = rules.all.input.auspice_main,
-        auspice_seq = rules.all.input.auspice_seq_v2
+        auspice_main = rules.all.input.auspice_v2,
+        auspice_seq = rules.all.input.auspice_v2_seq
     shell:
         """
         augur export v2 \

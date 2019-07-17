@@ -1,10 +1,10 @@
 rule all:
     input:
-        auspice_tree = "auspice/tb_tree.json",
-        auspice_meta = "auspice/tb_meta.json",
-        auspice_seq = "auspice/tb_seq.json",
-        auspice_seq_v2 = "auspice/tb_seq_v2.json",
-        auspice_main = "auspice/tb.json"
+        auspice_v1_tree = "auspice/tb_v1_tree.json",
+        auspice_v1_meta = "auspice/tb_v1_meta.json",
+        auspice_v1_seq = "auspice/tb_v1_seq.json",
+        auspice_v2_seq = "auspice/tb_v2_seq.json",
+        auspice_v2 = "auspice/tb_v2.json"
 
 # Config variables to be used by rules
 # Parameters are defined within their own rules
@@ -174,7 +174,7 @@ rule traits:
         'augur traits --tree {input.tree} --metadata {input.meta}'
         ' --columns {params.traits} --output {output}'
 
-rule export:
+rule export_v1:
     message: "Exporting data files for for auspice using nextflu compatible schema"
     input:
         tree = rules.refine.output.tree,
@@ -190,9 +190,9 @@ rule export:
         ref = config.ref,
         translations = rules.translate.output.fasta_out
     output:
-        tree = rules.all.input.auspice_tree,
-        meta = rules.all.input.auspice_meta,
-        seq = rules.all.input.auspice_seq
+        tree = rules.all.input.auspice_v1_tree,
+        meta = rules.all.input.auspice_v1_meta,
+        seq = rules.all.input.auspice_v1_seq
     shell:
         """
         augur export v1 \
@@ -210,7 +210,7 @@ rule export:
         """
 
 
-rule exportv2:
+rule export_v2:
     message: "Exporting data files for for auspice using nextstrain schema v2"
     input:
         tree = rules.refine.output.tree,
@@ -225,8 +225,8 @@ rule exportv2:
         ref = config.ref,
         translations = rules.translate.output.fasta_out
     output:
-        main = rules.all.input.auspice_main,
-        seq = rules.all.input.auspice_seq_v2
+        main = rules.all.input.auspice_v2,
+        seq = rules.all.input.auspice_v2_seq
     params:
         title = '\'TB outbreak in Nunavik, Canada\'',
         auth = "'Emma Hodcroft' 'John Brown'",

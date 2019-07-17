@@ -1,8 +1,8 @@
 rule all:
     input:
-        auspice_tree = "auspice/tbdrm_tree.json",
-        auspice_meta = "auspice/tbdrm_meta.json",
-        auspice_main = "auspice/tbdrm.json"
+        auspice_tree = "auspice/tbdrm_v1_tree.json",
+        auspice_meta = "auspice/tbdrm_v1_meta.json",
+        auspice_main = "auspice/tbdrm_v2.json"
 
 # Config variables to be used by rules
 # Parameters are defined within their own rules
