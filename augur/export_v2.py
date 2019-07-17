@@ -18,16 +18,21 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
 
     input
         node -- node for which top level dict is produced.
-        div  -- cumulative divergence (root = 0)
+        div  -- cumulative divergence (root = 0). False → divergence won't be exported.
 
     returns
         tree in JSON structure
         list of strains
     """
-    node_struct = {
-        'strain': node.name,
-        'div': div
-    }
+
+    # Does the tree have divergence? (BEAST trees may not)
+    # only calculate this for the root node!
+    if div == 0 and 'mutation_length' not in metadata[node.name] and 'branch_length' not in metadata[node.name]:
+        div = False
+
+    node_struct = {'strain': node.name}
+    if div is not False: # div=0 is ok
+        node_struct["div"] = div
 
     if strains is None:
         strains = [node_struct["strain"]]
@@ -37,10 +42,13 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
     if node.clades:
         node_struct["children"] = []
         for child in node.clades:
-            if 'mutation_length' in metadata[child.name]:
-                cdiv = div + metadata[child.name]['mutation_length']
-            elif 'branch_length' in metadata[child.name]:
-                cdiv = div + metadata[child.name]['branch_length']
+            if div is False:
+                cdiv=False
+            else:                
+                if 'mutation_length' in metadata[child.name]:
+                    cdiv = div + metadata[child.name]['mutation_length']
+                elif 'branch_length' in metadata[child.name]:
+                    cdiv = div + metadata[child.name]['branch_length']
             node_struct["children"].append(convert_tree_to_json_structure(child, metadata, div=cdiv, strains=strains)[0])
 
     return (node_struct, strains)
@@ -102,8 +110,14 @@ def process_geographic_info(jsn, lat_long_mapping, node_metadata=None, nodes=Non
     for trait in traits:
         demes_in_tree = {data["traits"][trait]["value"] for name, data in node_metadata.items() if trait in data['traits']}
         for deme in demes_in_tree:
+            # deme may be numeric, or string
             try:
-                geo[trait][deme] = lat_long_mapping[(trait.lower(),deme.lower())]
+                deme_search_value = deme.lower()
+            except AttributeError:
+                deme_search_value = str(deme)
+
+            try:
+                geo[trait][deme] = lat_long_mapping[(trait.lower(), deme_search_value)]
             except KeyError:
                 print("Error. {}->{} did not have an associated lat/long value (matching performed in lower case)".format(trait, deme))
     return geo
@@ -127,8 +141,7 @@ def process_panels(user_panels, meta_json):
         geoTraits = meta_json["geographic_info"].keys()
     else:
         geoTraits = []
-
-    if "genome_annotations" in meta_json:
+    if meta_json.get("genome_annotations", None):
         annotations = meta_json["genome_annotations"].keys()
     else:
         annotations = []
@@ -146,12 +159,13 @@ def collect_strain_info(node_data, tsv_path):
     Integrate TSV metadata to the per-node metadata structure
     """
     strain_info = node_data["nodes"]
-    meta_tsv, _ = read_metadata(tsv_path)
+    if tsv_path:
+        meta_tsv, _ = read_metadata(tsv_path) # meta_tsv={} if file isn't read / doeesn't exist
 
-    for strain, node in strain_info.items():
-        if strain in meta_tsv:
-            for field in meta_tsv[strain]:
-                node[field] = meta_tsv[strain][field]
+        for strain, node in strain_info.items():
+            if strain in meta_tsv:
+                for field in meta_tsv[strain]:
+                    node[field] = meta_tsv[strain][field]
     return strain_info
 
 
@@ -329,7 +343,6 @@ def convert_camel_to_snake_case(string):
 def add_core_args(parser):
     core = parser.add_argument_group("REQUIRED")
     core.add_argument('--tree','-t', required=True, help="tree to perform trait reconstruction on")
-    core.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
     core.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
     return core
 
@@ -348,6 +361,7 @@ def add_config_args(parser):
 
 def add_option_args(parser):
     options = parser.add_argument_group("OPTIONS")
+    options.add_argument('--metadata', metavar="TSV", help="tsv file with sequence metadata")
     options.add_argument('--colors', help="file with color definitions")
     options.add_argument('--lat-longs', help="file latitudes and longitudes, overrides built in mappings")
     options.add_argument('--tree-name', default=False, help="Tree name (needed for tangle tree functionality)")

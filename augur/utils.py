@@ -50,6 +50,9 @@ def ambiguous_date_to_date_range(mydate, fmt, min_max_year=None):
     return (lower_bound, upper_bound if upper_bound<today else today)
 
 def read_metadata(fname):
+    if not fname:
+        print("ERROR: read_metadata called without a filename")
+        return {}, []
     if os.path.isfile(fname):
         metadata = pd.read_csv(fname, sep='\t' if fname[-3:]=='tsv' else ',',
                              skipinitialspace=True).fillna('')
