@@ -376,7 +376,7 @@ def add_config_args(parser):
     config = parser.add_argument_group("CONFIG OPTIONS")
     # XXX TODO: make clear either use auspice-config or additional config options
     config.add_argument('--auspice-config', help="file with auspice configuration")
-    config.add_argument('--title', help="Title to be displayed by auspice")
+    config.add_argument('--title', nargs='+', help="Title to be displayed by auspice")
     config.add_argument('--maintainers', nargs='+', help="Analysis maintained by")
     config.add_argument('--maintainer-urls', nargs='+', help="URL of maintainers")
     config.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
@@ -466,7 +466,7 @@ def run_v2(args):
     if config.get("title"):
         auspice_json['title'] = config['title']
     elif args.title:
-        auspice_json['title'] = args.title
+        auspice_json['title'] = ' '.join(args.title)
     else:
         print("ERROR: 'title' is required. Please specify one using the --title argument or "
               "the 'title' field in a config file.")
