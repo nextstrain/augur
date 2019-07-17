@@ -303,7 +303,8 @@
                 },
                 "hidden": {
                     "$comment": "If true, Auspice hides the branches from this node to it's children",
-                    "type": "boolean"
+                    "type": "string",
+                    "enum": ["always", "timetree", "divtree"]
                 },
                 "mutations": {
                     "description": "Mutations occuring between the parent and this node",

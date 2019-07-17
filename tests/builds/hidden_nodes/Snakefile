@@ -1,0 +1,31 @@
+rule all:
+    input:
+        auspice = "auspice/hidden-nodes_v2.json"
+
+rule export:
+    message: "Exporting data files for for auspice using nextstrain schema v2"
+    input:
+        tree = "data/tree.nwk",
+        branch_lengths = "data/branch_lengths.json",
+        hidden_nodes = "data/hidden_nodes.json",
+        metadata = "data/metadata.tsv",
+        colors = "config/colors.tsv",
+        config = "config/auspice_config.json"
+    output:
+        auspice = rules.all.input.auspice,
+    shell:
+        """
+        augur export v2 \
+            --tree {input.tree} \
+            --node-data {input.branch_lengths} {input.hidden_nodes} \
+            --metadata {input.metadata} \
+            --colors {input.colors} \
+            --auspice-config {input.config} \
+            --output-main {output.auspice};
+        augur validate v2 --json {output.auspice}
+        """
+
+rule clean:
+    message: "Removing auspice directory"
+    shell:
+        "rm -rfv auspice"

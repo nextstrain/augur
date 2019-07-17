@@ -252,7 +252,15 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
             else:
                 node["labels"] = { "clade": raw_data["clade_annotation"] }
 
-        # TRANSFER NODE_HIDDEN PROPS #
+        # TRANSFER NODE.HIDDEN PROPS #
+        hidden = raw_data.get("hidden", None)
+        if hidden:
+            if hidden in ["always", "divtree", "timetree"]:
+                node["hidden"] = hidden
+            elif hidden is True or str(hidden) == "1": # interpret this as hidden in both div + time tree
+                node["hidden"] = "always"
+            else:
+                print("WARNING: Hidden node trait of {} is invalid. Ignoring.".format(hidden))
 
         # TRANSFER AUTHORS #
 
@@ -281,7 +289,8 @@ def add_metadata_to_tree(node, metadata):
 
 def get_traits(node_data):
     exclude = ['branch_length', 'num_date', 'raw_date', 'numdate', 'clock_length',
-               'mutation_length', 'date', 'muts', 'aa_muts', 'sequence', 'aa_sequences']
+               'mutation_length', 'date', 'muts', 'aa_muts', 'sequence', 'aa_sequences',
+               'hidden']
     traits = []
     for seq, val in node_data['nodes'].items():
         for t in val.keys():
