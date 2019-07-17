@@ -17,8 +17,7 @@ install:
   - pip3 install -e .[dev]
 script:
   - (pytest -c pytest.python3.ini)
-  - (cd tests/builds/zika/; snakemake)
-  - (cd tests/builds/tb/; snakemake)
+  - (bash tests/builds/runner.sh)
 after_success:
   - if [[ "$TRAVIS_PULL_REQUEST" == "false" && $TRAVIS_BRANCH = "release" ]]; then
       ./devel/travis-rebuild-docker-image;
