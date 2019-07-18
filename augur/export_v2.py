@@ -73,7 +73,7 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
         for child in node.clades:
             if div is False:
                 cdiv=False
-            else:                
+            else:
                 if 'mutation_length' in metadata[child.name]:
                     cdiv = div + metadata[child.name]['mutation_length']
                 elif 'branch_length' in metadata[child.name]:
@@ -129,7 +129,7 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
             if "title" in info:
                 return info["title"]
             if "menuItem" in info:
-                deprecated("[config file] 'meunItem' has been replaced with 'title' (coloring '{}')".format(key))
+                deprecated("[config file] 'menuItem' has been replaced with 'title' (coloring '{}')".format(key))
                 return info["menuItem"]
             if "legendTitle" in info:
                 deprecated("[config file] 'legendTitle' has been replaced with 'title' (coloring '{}')".format(key))
@@ -284,7 +284,7 @@ def set_author_on_nodes(node_metadata, raw_strain_info):
         if not author:
             continue # internal node / terminal node without authors
 
-        node["author"] = {"author": author}        
+        node["author"] = {"author": author}
         if "title" in raw_strain_info[strain]:
             node["author"]["title"] = raw_strain_info[strain]["title"].strip()
         if "journal" in raw_strain_info[strain]:
@@ -491,7 +491,7 @@ def register_arguments_v2(subparsers):
         title="OPTIONAL OUTPUTS"
     )
     optional_outputs.add_argument('--output-sequence', metavar="JSON", help="(reconstructed) sequences for each node")
-    
+
     return v2
 
 
