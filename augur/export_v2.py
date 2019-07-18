@@ -9,9 +9,35 @@ import numpy as np
 from Bio import Phylo
 from collections import defaultdict
 from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
+import warnings
+
+# Set up warnings & exceptions
+warn = warnings.warn
+deprecationWarningsEmitted = False
+
+def deprecated(message):
+    warn(message, DeprecationWarning, stacklevel=2)
+    global deprecationWarningsEmitted
+    deprecationWarningsEmitted=True
+
+
+def fatal(message):
+    print("FATAL ERROR: {}".format(message))
+    sys.exit(2)
 
 class InvalidOption(Exception):
     pass
+
+def customformatwarning(message, category, filename, lineno, line=None):
+    if category.__name__ == "UserWarning":
+        return "WARNING: {}\n\n".format(message)
+    if category.__name__ == "DeprecationWarning":
+        return "DEPRECATED: {}\n\n".format(message)
+    return "{}\n".format(message)
+
+warnings.formatwarning = customformatwarning
+warnings.simplefilter("default") # show DeprecationWarnings by default
+
 
 def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
     """
@@ -59,11 +85,13 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
 
 def get_colorings(config, traits, provided_colors, node_metadata, mutations_present):
     def _rename_authors_key(color_config):
-        if color_config.get("authors"):
-            print("Both 'author' and 'authors' supplied as coloring options. Using 'author'.")
+        if not color_config.get("authors"):
+            return
+        if color_config.get("author"):
+            warn("[config file] Both 'author' and 'authors' supplied as coloring options. Using 'author'.")
+        deprecated("[config file] The 'authors' key is now called 'author'")
         color_config["author"] = color_config["authors"]
         del color_config["authors"]
-        # print deprecated warning
 
     def _get_values(key):
         values_in_tree = set()
@@ -80,17 +108,19 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
             t = config_data.get("type")
             allowedTypes = ["continuous", "ordinal", "categorical", "boolean"]
             if t == "discrete":
-                print("Deprecation warning. A coloring type of 'discrete' is depreciated. Please use one of {} instead".format(", ".join(allowedTypes)))
+                deprecated("[config file] Coloring types of 'discrete' are no longer valid. Please use one of {} instead. {} has been automatically set as 'categorical'".format(", ".join(allowedTypes), key))
                 return "categorical"
             if t not in allowedTypes:
-                print("CONFIG FILE ERROR: {} (for trait '{}') is not a recognised trait type! Please choose from {}.".format(options["type"], trait, ", ".join(allowedTypes)))
-                print("                   Trait '{}' will be exclude from export. Please run again with a valid trait type to include it.".format(trait))
+                warn("[config file] {}'s type: '{}' is not valid. Please choose from {}. This has been excluded!".format(key, t, ", ".join(allowedTypes)))
                 raise InvalidOption()
             return t
         # no type supplied => try to guess
         if all([ isinstance(n, float) if isinstance(n, float) else isinstance(n, int) for n in trait_values ]):
-            return "continuous" # TODO - print warning
-        return "categorical" # TODO - print warning
+            t = "continuous"
+        else:
+            t = "categorical"
+        warn("[config file] {} was missing type information. We've guessed '{}'.".format(key, t))
+        return t
 
     def _get_title(key, color_config):
         # preferentially get the title from the color_config if set
@@ -99,10 +129,10 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
             if "title" in info:
                 return info["title"]
             if "menuItem" in info:
-                # TODO deprecated
+                deprecated("[config file] 'meunItem' has been replaced with 'title' (coloring '{}')".format(key))
                 return info["menuItem"]
             if "legendTitle" in info:
-                # TODO deprecated
+                deprecated("[config file] 'legendTitle' has been replaced with 'title' (coloring '{}')".format(key))
                 return info["legendTitle"]
         # hardcoded fallbacks:
         if key == "clade_membership":
@@ -121,9 +151,7 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
         color_config = config["colorings"]
     elif config.get("color_options"):
         color_config = config["color_options"]
-        print("CONFIG FILE WARNING: 'color_options' is depreciated. Please use 'colorings' in your "
-                  "config file instead. The run will proceed, treating 'color_options' as "
-                  "'colorings'.")
+        deprecated("[config file] 'color_options' has been replaced with 'colorings'")
     else:
         color_config = {t: {} for t in traits}
 
@@ -132,8 +160,7 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
         color_config['clade_membership'] = {}
 
     # handle deprecated keys by updating to their new ones where possible
-    if color_config.get("authors"):
-        _rename_authors_key(color_config)
+    _rename_authors_key(color_config)
 
     colorings = {}
     # handle special cases
@@ -153,7 +180,7 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
     for key, config_data in color_config.items():
         trait_values = _get_values(key) # e.g. list of countries, regions etc
         if not trait_values:
-            print("WARNING - you asked for a color by for '{}' but it has no values on the tree => Ignoring.".format(key))
+            warn("you asked for a color by for '{}' but it has no values on the tree => Ignoring.".format(key))
             continue
         try:
             colorings[key] = {"title": _get_title(key, color_config), "type": _get_type(key, config_data, trait_values)}
@@ -186,7 +213,7 @@ def process_geographic_info(jsn, lat_long_mapping, node_metadata=None, nodes=Non
             try:
                 geo[trait][deme] = lat_long_mapping[(trait.lower(), deme_search_value)]
             except KeyError:
-                print("Error. {}->{} did not have an associated lat/long value (matching performed in lower case)".format(trait, deme))
+                warn("{}->{} did not have an associated lat/long value (matching performed in lower case). Auspice won't be able to display this deme.".format(trait, deme))
     return geo
 
 def process_annotations(node_data):
@@ -332,7 +359,7 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
             elif hidden is True or str(hidden) == "1": # interpret this as hidden in both div + time tree
                 node["hidden"] = "always"
             else:
-                print("WARNING: Hidden node trait of {} is invalid. Ignoring.".format(hidden))
+                warn("Hidden node trait of {} is invalid. Ignoring.".format(hidden))
 
         # TRANSFER AUTHORS #
 
@@ -494,12 +521,9 @@ def run_v2(args):
     if args.auspice_config:
         config = read_config(args.auspice_config)
 
-        # v2 schema uses 'display_defaults' not 'defaults' (v1). Tolerate this but
-        # give a warning and fix.
+        # v2 schema uses 'display_defaults' not 'defaults' (v1).
         if config.get("defaults"):
-            print("CONFIG FILE WARNING: 'defaults' is depreciated. Please use 'display_defaults' in your "
-                  "config file instead. The run will proceed, treating 'defaults' as "
-                  "'display_defaults'.")
+            deprecated("[config file] 'defaults' has been replaced with 'display_defaults'")
             config["display_defaults"] = config["defaults"]
 
         # Set up display defaults
@@ -588,8 +612,13 @@ def run_v2(args):
 
     if args.tree_name:
         if not re.search("(^|_|/){}(_|.json)".format(args.tree_name), str(args.output_main)):
-            print("Error: tree name {} must be found as part of the output string".format(args.tree_name))
-            sys.exit(2)
+            fatal("tree name {} must be found as part of the output string".format(args.tree_name))
         auspice_json["tree_name"] = args.tree_name
 
     write_json(auspice_json, args.output_main, indent=json_indent)
+
+    if deprecationWarningsEmitted:
+        print("------------------------")
+        print("There were deprecation warnings displayed. They have been fixed but these will likely become breaking errors in a future version of augur.")
+        print("------------------------")
+    print("")
