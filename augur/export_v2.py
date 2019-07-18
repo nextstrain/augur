@@ -20,24 +20,26 @@ def deprecated(message):
     global deprecationWarningsEmitted
     deprecationWarningsEmitted=True
 
-
 def fatal(message):
     print("FATAL ERROR: {}".format(message))
     sys.exit(2)
 
+def configure_warnings():
+    # we must only set these when someone runs `augur export v2` (i.e. run_v2() is called)
+    # else they will apply to _all_ augur commands due to the way all commands are pulled
+    # in by the augur runner (augur/__init__.py)
+    def customformatwarning(message, category, filename, lineno, line=None):
+        if category.__name__ == "UserWarning":
+            return "WARNING: {}\n\n".format(message)
+        if category.__name__ == "DeprecationWarning":
+            return "DEPRECATED: {}\n\n".format(message)
+        return "{}\n".format(message)
+
+    warnings.formatwarning = customformatwarning
+    warnings.simplefilter("default") # show DeprecationWarnings by default
+
 class InvalidOption(Exception):
     pass
-
-def customformatwarning(message, category, filename, lineno, line=None):
-    if category.__name__ == "UserWarning":
-        return "WARNING: {}\n\n".format(message)
-    if category.__name__ == "DeprecationWarning":
-        return "DEPRECATED: {}\n\n".format(message)
-    return "{}\n".format(message)
-
-warnings.formatwarning = customformatwarning
-warnings.simplefilter("default") # show DeprecationWarnings by default
-
 
 def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
     """
@@ -508,6 +510,7 @@ def register_arguments_v2(subparsers):
 
 
 def run_v2(args):
+    configure_warnings()
     T = Phylo.read(args.tree, 'newick')
     node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
     nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
