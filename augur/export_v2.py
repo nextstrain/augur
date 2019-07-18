@@ -448,45 +448,52 @@ def convert_camel_to_snake_case(string):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
-def add_core_args(parser):
-    core = parser.add_argument_group("REQUIRED")
-    core.add_argument('--tree','-t', required=True, help="tree to perform trait reconstruction on")
-    core.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
-    return core
-
-
-def add_config_args(parser):
-    config = parser.add_argument_group("CONFIG OPTIONS")
-    # XXX TODO: make clear either use auspice-config or additional config options
-    config.add_argument('--auspice-config', help="file with auspice configuration")
-    config.add_argument('--title', nargs='+', help="Title to be displayed by auspice")
-    config.add_argument('--maintainers', nargs='+', help="Analysis maintained by")
-    config.add_argument('--maintainer-urls', nargs='+', help="URL of maintainers")
-    config.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
-    config.add_argument('--extra-traits', nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
-    config.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : tree, map, entropy, frequencies")
-    return config
-
-def add_option_args(parser):
-    options = parser.add_argument_group("OPTIONS")
-    options.add_argument('--metadata', metavar="TSV", help="tsv file with sequence metadata")
-    options.add_argument('--colors', help="file with color definitions")
-    options.add_argument('--lat-longs', help="file latitudes and longitudes, overrides built in mappings")
-    options.add_argument('--tree-name', default=False, help="Tree name (needed for tangle tree functionality)")
-    options.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
-    options.add_argument('--output-sequence', help="JSON file name that is passed on to auspice (e.g., zika_seq.json).")
-    options.add_argument('--reference', required=False, help="reference sequence for export to browser, only vcf")
-    options.add_argument('--reference-translations', required=False, help="reference translations for export to browser, only vcf")
-    return options
-
-
 def register_arguments_v2(subparsers):
     v2 = subparsers.add_parser("v2", help="Export version 2 JSON schema")
-    core = add_core_args(v2)
-    config = add_config_args(v2)
-    options = add_option_args(v2)
-    core.add_argument('--output-main', help="Main JSON file name that is passed on to auspice (e.g., zika.json).")
+
+    required = v2.add_argument_group(
+        title="REQUIRED"
+    )
+    required.add_argument('--tree','-t', metavar="newick", required=True, help="Phylogenetic tree, usually output from `augur refine`")
+    required.add_argument('--node-data', metavar="JSON", required=True, nargs='+', help="JSON files containing metadata for nodes in the tree")
+    required.add_argument('--output-main', metavar="JSON", required=True, help="Ouput file for auspice")
+
+    config = v2.add_argument_group(
+        title="CONFIG OPTIONS",
+        description="These control the display settings for auspice. \
+            You can supply a config JSON (which has all available options) or command line arguments (which are more limited but great to get started). \
+            Supplying both is fine too -- command line args will overrule what was set in the config file!"
+    )
+    config.add_argument('--auspice-config', metavar="JSON", help="Auspice configuration")
+    config.add_argument('--title', nargs='+', help="Title to be displayed by auspice")
+    config.add_argument('--maintainers', metavar="name", nargs='+', help="Analysis maintained by")
+    config.add_argument('--maintainer-urls', metavar="url", nargs='+', help="URL of maintainers")
+    config.add_argument('--geography-traits', metavar="trait", nargs='+', help="What location traits are used to plot on map")
+    config.add_argument('--extra-traits', metavar="trait", nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
+    config.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="Restrict panel display in auspice. Options are %(default)s. Ignore this option to display all available panels.")
+
+    optional_inputs = v2.add_argument_group(
+        title="OPTIONAL INPUTS"
+    )
+    optional_inputs.add_argument('--metadata', metavar="TSV", help="Additional metadata for strains in the tree")
+    optional_inputs.add_argument('--colors', metavar="TSV", help="Custom color definitions")
+    optional_inputs.add_argument('--lat-longs', metavar="TSV", help="Latitudes and longitudes for geography traits (overrides built in mappings)")
+    optional_inputs.add_argument('--reference', metavar="JSON", required=False, help="reference sequence for export to browser, only vcf")
+    optional_inputs.add_argument('--reference-translations', metavar="???", required=False, help="reference translations for export to browser, only vcf")
+
+    optional_settings = v2.add_argument_group(
+        title="OPTIONAL SETTINGS"
+    )
+    optional_settings.add_argument('--tree-name', metavar="name", default=False, help="Tree name (needed for tangle tree functionality)")
+    optional_settings.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
+
+    optional_outputs = v2.add_argument_group(
+        title="OPTIONAL OUTPUTS"
+    )
+    optional_outputs.add_argument('--output-sequence', metavar="JSON", help="(reconstructed) sequences for each node")
+    
     return v2
+
 
 
 def run_v2(args):
