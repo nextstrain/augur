@@ -59,7 +59,11 @@ def process_colorings(json: list, color_mapping, nodes=None, node_metadata: dict
         print("WARNING: no colorings were defined")
         return
 
-    data = {k: {'type': 'categorical'} for k in json}
+    #if json is a dict, it can be starting point. Should this be a copy?
+    data = json
+    if isinstance(json, list): #if a list, convert to a dict.
+        data = {k: {'type': 'categorical'} for k in json}
+
     #Always add in genotype and date to colour by
     data['gt'] = {'title': 'Genotype', 'type': 'ordinal'}
     #figure out how to see if num_date is there? Is it possible to not have?
@@ -68,12 +72,44 @@ def process_colorings(json: list, color_mapping, nodes=None, node_metadata: dict
     if 'clade_membership' in data and 'title' not in data['clade_membership']:
         data['clade_membership']['title'] = 'Clade'
 
+    keys_to_remove = []
     for trait, options in data.items():
+
+        # if not set, set default type to 'categorical' (used to happen above)
+        # Below, it will be checked to see if it could be 'continuous' instead (in future, check for others)
         if "type" not in options:
-            raise Exception("coloring {} missing type...".format(trait))
+            options["type"] = "categorical"
+        else:
+            # check it matches available options. Give warnings/errors as appropriate
+            # could we make this read directly from data/schema.json so it's always up-to-date?
+            if options["type"] not in ["continuous", "ordinal", "categorical", "boolean"]:
+                if options["type"] == "discrete":
+                    print("CONFIG FILE WARNING: 'discrete' is depreciated. Please use 'categorical'.")
+                    print("                     Trait '{}' will be converted to type 'categorical'.".format(trait))
+                    options["type"] = "categorical"
+                else:
+                    print("CONFIG FILE ERROR: {} (for trait '{}') is not a recognised trait type! Please choose from 'continuous', "
+                          "'ordinal', 'categorical', or 'boolean'.".format(options["type"], trait))
+                    print("                   Trait '{}' will be exclude from export. Please run again "
+                          "with a valid trait type to include it.".format(trait))
+                    keys_to_remove.append(trait)
 
         if "title" not in options:
             options["title"] = trait
+        #convert and remove old v1 option specifications
+        if "menuItem" in options or "legendTitle" in options:
+            print("CONFIG FILE WARNING: 'menuItem' and 'legendTitle' (for trait '{}') are depreciated. "
+                  "Please use 'title'.".format(trait))
+            if "menuItem" in options:
+                options["title"] = options["menuItem"]
+                print("                     'menuItem' value ({}) will be used as the "
+                     "trait 'title'.".format(options["title"]))
+            elif "legendTitle" in options:
+                options["title"] = options["legendTitle"]
+                print("                     'legendTitle' value ({}) will be used as the "
+                      "trait 'title'.".format(options["title"]))
+            options.pop("menuItem", None)
+            options.pop("legendTitle", None)
 
         if nodes:
             values_in_tree = {node[trait] for node in nodes.values() if trait in node}
@@ -98,6 +134,8 @@ def process_colorings(json: list, color_mapping, nodes=None, node_metadata: dict
 
                     options['type'] = "continuous"
 
+    for k in keys_to_remove:
+        data.pop(k, None)
     return data
 
 def process_geographic_info(jsn, lat_long_mapping, node_metadata=None, nodes=None):
@@ -360,12 +398,12 @@ def add_config_args(parser):
     config = parser.add_argument_group("CONFIG OPTIONS")
     # XXX TODO: make clear either use auspice-config or additional config options
     config.add_argument('--auspice-config', help="file with auspice configuration")
-    config.add_argument('--title', default="Analysis", help="Title to be displayed by auspice")
-    config.add_argument('--maintainers', default=[""], nargs='+', help="Analysis maintained by")
-    config.add_argument('--maintainer-urls', default=[""], nargs='+', help="URL of maintainers")
+    config.add_argument('--title', nargs='+', help="Title to be displayed by auspice")
+    config.add_argument('--maintainers', nargs='+', help="Analysis maintained by")
+    config.add_argument('--maintainer-urls', nargs='+', help="URL of maintainers")
     config.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
     config.add_argument('--extra-traits', nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
-    config.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : xxx")
+    config.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : tree, map, entropy, frequencies")
     return config
 
 def add_option_args(parser):
@@ -421,26 +459,52 @@ def run_v2(args):
 
     if args.auspice_config:
         config = read_config(args.auspice_config)
-        auspice_json["title"] = config["title"]
-        auspice_json["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
-        # Set up display defaults
+
+        # v2 schema uses 'colorings' not 'color_options' (v1). Tolerate this but
+        # give a warning and fix.
+        if config.get("color_options"):
+            print("CONFIG FILE WARNING: 'color_options' is depreciated. Please use 'colorings' in your "
+                  "config file instead. The run will proceed, treating 'color_options' as "
+                  "'colorings'.")
+            config["colorings"] = config["color_options"]
+
+        # v2 schema uses 'display_defaults' not 'defaults' (v1). Tolerate this but
+        # give a warning and fix.
         if config.get("defaults"):
+            print("CONFIG FILE WARNING: 'defaults' is depreciated. Please use 'display_defaults' in your "
+                  "config file instead. The run will proceed, treating 'defaults' as "
+                  "'display_defaults'.")
+            config["display_defaults"] = config["defaults"]
 
-            for key in config["defaults"]:
+        # Set up display defaults
+        if config.get("display_defaults"):
+
+            for key in config["display_defaults"]:
                 new_key = convert_camel_to_snake_case(key)
-                config["defaults"][new_key] = config["defaults"].pop(key)
+                config["display_defaults"][new_key] = config["display_defaults"].pop(key)
 
-            auspice_json["display_defaults"] = config["defaults"]
+            auspice_json["display_defaults"] = config["display_defaults"]
 
-    else:
-        auspice_json['title'] = args.title
+    # Get title - config file overwrites command-line args.
+    if config.get("title"):
+        auspice_json['title'] = config['title']
+    elif args.title:
+        auspice_json['title'] = ' '.join(args.title)
+
+    # Get maintainers. Config file overwrites command-line args.
+    # Recognises and implements v1-style config spec without warnings.
+    if config.get("maintainer"): #v1-type specification
+        auspice_json["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
+    elif config.get("maintainers"): #v2-type specification (proposed by Emma)
+        auspice_json['maintainers'] = [{'name': n[0], 'url': n[1]} for n in config['maintainers']]
+    elif args.maintainers and args.maintainer_urls:
         auspice_json['maintainers'] = [{'name': name, 'url':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
 
     # get traits to colour by etc - do here before node_data is modified below
     # this ensures we get traits even if they are not on every node
     traits = get_traits(node_data)
-    if config.get('color_options'):
-        traits.extend(config['color_options'].keys())
+    if config.get('colorings'):
+        traits.extend(config['colorings'].keys())
     if args.extra_traits:
         traits.extend(args.extra_traits)
     # Automatically add any specified geo traits - otherwise won't work!
@@ -471,8 +535,12 @@ def run_v2(args):
     add_metadata_to_tree(auspice_json["tree"], node_metadata)
 
     # Set up colorings
-    if config.get("color_options"):
-        color_config = config["color_options"]
+    if config.get("colorings"):
+        color_config = config["colorings"]
+        # If have passed in clade info this will appear on branch labels
+        # Treat as 'all-or-nothing' - must also have as color-by. Or exclude from --node-data
+        if 'clade_membership' in traits and 'clade_membership' not in config['colorings']:
+            color_config['clade_membership'] = {}
     else:
         color_config = traits
 
@@ -490,7 +558,13 @@ def run_v2(args):
 
     auspice_json["updated"] = time.strftime('%Y-%m-%d')
     auspice_json["genome_annotations"] = process_annotations(node_data)
-    auspice_json["panels"] = process_panels(args.panels, auspice_json)
+
+    # Set up panels for both config and command-line
+    if config.get("panels"):
+        panels = config["panels"]
+    else:
+        panels = args.panels
+    auspice_json["panels"] = process_panels(panels, auspice_json)
 
     if args.tree_name:
         if not re.search("(^|_|/){}(_|.json)".format(args.tree_name), str(args.output_main)):
