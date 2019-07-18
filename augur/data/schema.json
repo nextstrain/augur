@@ -34,44 +34,6 @@
                 }
             }
         },
-        "author_info": {
-            "description": "Used to display information about terminal nodes & for filtering by author (if \"authors\" is in \"filters\", see below)",
-            "$comment": "Keys are ideally first authors last name + year of publication + first word of title, all in lowercase. E.g. \"white2015isolation\"",
-            "$comment": "Keys must exist in the attrs object of at least one terminal node of the tree",
-            "type": "object",
-            "additionalProperties": false,
-            "patternProperties": {
-                "^[0-9A-Za-z-]+$": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "$comment": "Unknown properties should simply be excluded",
-                    "properties": {
-                        "authors": {
-                            "description": "Authors",
-                            "$comment": "Case is respected by auspice",
-                            "type": "string"
-                        },
-                        "title": {
-                            "description": "Publication title",
-                            "type": "string"
-                        },
-                        "year": {
-                            "description": "Publication year",
-                            "type": "number"
-                        },
-                        "journal": {
-                            "description": "Journal title",
-                            "type": "string"
-                        },
-                        "url": {
-                            "description": "URL link to paper or NCBI genome.",
-                            "type": "string",
-                            "pattern": "^https?://.+$"
-                        }
-                    }
-                }
-            }
-        },
         "genome_annotations": {
             "description": "Genome annotations (e.g. genes), relative to the reference genome",
             "$comment": "Required for the entropy panel",
@@ -157,9 +119,10 @@
         },
         "colorings": {
             "description": "Available colorBys for Auspice",
-            "$comment": "The property names are found on node->traits, where the value there defines the deme for that node",
-            "$comment": "There are a few exceptions - a property of 'numDate', 'gt' (genotype) or 'authors' are interpreted differently by Auspice as they are defined on the node itself, not node->traits",
-            "$comment": "Property strings are not themselves displayed in auspice.",
+            "$comment": "Property names here match those found on node.traits, where node.traits[propertyName] defines the value of that coloring for that node",
+            "$comment": "Property names are not displayed by auspice - use 'title' for this",
+            "$comment": "Exceptions: property names 'num_date', 'gt' (genotype), 'authors' or 'citekey'",
+            "$comment": "as their info is defined as a prop on the node itself (not node.traits)",
             "type": "object",
             "additionalProperties": false,
             "patternProperties": {
@@ -338,24 +301,37 @@
                 },
                 "url": {
                     "description": "URL of the sequence (usually https://www.ncbi.nlm.nih.gov/nuccore/...)",
-                    "$comment": "Obviously only for terminal nodes",
-                    "$comment": "If not known/available, don't include this as a property of the node",
+                    "$comment": "terminal nodes only",
                     "type": "string",
                     "pattern": "^https?://.+$"
                 },
-                "authors": {
-                    "description": "Author lookup key for the relevant publication / credit",
-                    "$comment": "Must have a corresponding entry in the #/author_info property",
-                    "$comment": "Keys are first authors last name + year of publication + first word of title, all in lowercase. E.g. \"white2015isolation\"",
-                    "$comment": "Only for terminal nodes",
-                    "$comment": "If not known/available, don't include this as a property of the node",
-                    "type": "string",
-                    "pattern": "^[0-9A-Za-z-]+$"
+                "author": {
+                    "description": "Author information (terminal nodes only)",
+                    "type": "object",
+                    "required": ["value"],
+                    "properties": {
+                        "value": {
+                            "description": "unique value for this publication. Displayed as-is by auspice.",
+                            "type": "string"
+                        },
+                        "title": {
+                          "description": "Publication title",
+                          "type": "string"
+                        },
+                        "journal": {
+                            "description": "Journal title (including year, if applicable)",
+                            "type": "string"
+                        },
+                        "paper_url": {
+                            "description": "URL link to paper (if available)",
+                            "type": "string",
+                            "pattern": "^https?://.+$"
+                        }
+                    }
                 },
                 "accession": {
                     "description": "Sequence accession number",
-                    "$comment": "Obviously only for terminal nodes",
-                    "$comment": "If not known/available, don't include this as a property of the node",
+                    "$comment": "terminal nodes only",
                     "type": "string",
                     "pattern": "^[0-9A-Za-z-_]+$"
                 },
