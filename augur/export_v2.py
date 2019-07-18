@@ -104,14 +104,17 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
         return values_in_tree
 
     def _get_type(key, config_data, trait_values):
+        # for clade_membership, we know what it is - anything else breaks Auspice
+        if key == "clade_membership":
+            return "categorical"
         if config_data.get("type"):
             t = config_data.get("type")
             allowedTypes = ["continuous", "ordinal", "categorical", "boolean"]
             if t == "discrete":
-                deprecated("[config file] Coloring types of 'discrete' are no longer valid. Please use one of {} instead. {} has been automatically set as 'categorical'".format(", ".join(allowedTypes), key))
+                deprecated("[config file] Coloring type 'discrete' is no longer valid. Please use one of: '{}' instead. Trait {} has been automatically set as 'categorical'.".format(", ".join(allowedTypes), key))
                 return "categorical"
             if t not in allowedTypes:
-                warn("[config file] {}'s type: '{}' is not valid. Please choose from {}. This has been excluded!".format(key, t, ", ".join(allowedTypes)))
+                warn("[config file] In trait {}, coloring type '{}' is not valid. Please choose from: '{}'. This trait has been excluded!".format(key, t, ", ".join(allowedTypes)))
                 raise InvalidOption()
             return t
         # no type supplied => try to guess
@@ -119,7 +122,12 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
             t = "continuous"
         else:
             t = "categorical"
-        warn("[config file] {} was missing type information. We've guessed '{}'.".format(key, t))
+        #Don't warn if command-line - no way to specify
+        #treat country and region differently
+        if config:
+            warn("[config file] Trait {} is missing type information. We've guessed '{}'.".format(key, t))
+        elif key != "country" and key != "region":
+            print("Trait {} was guessed as being type '{}'. Use a 'config' file if you'd like to set this yourself.".format(key, t))
         return t
 
     def _get_title(key, color_config):
@@ -128,11 +136,14 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
             info = color_config.get(key)
             if "title" in info:
                 return info["title"]
+            oldFields = "' and '".join([a for a in info.keys() if a in ['menuItem', 'legendTitle']])
             if "menuItem" in info:
-                deprecated("[config file] 'menuItem' has been replaced with 'title' (coloring '{}')".format(key))
+                deprecated("[config file] '{}' has been replaced with 'title'. "
+                           "Using 'menuItem' as 'title' for coloring '{}'.".format(oldFields, key))
                 return info["menuItem"]
             if "legendTitle" in info:
-                deprecated("[config file] 'legendTitle' has been replaced with 'title' (coloring '{}')".format(key))
+                deprecated("[config file] '{}' has been replaced with 'title'. "
+                           "Using 'legendTitle' as 'title' for coloring '{}'.".format(oldFields, key))
                 return info["legendTitle"]
         # hardcoded fallbacks:
         if key == "clade_membership":
@@ -146,7 +157,7 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
         # fallthrough
         return key
 
-    # TODO: sort out how command line arguements play with colof_config, if defined
+    # TODO: sort out how command line arguments play with colof_config, if defined
     if config.get("colorings"):
         color_config = config["colorings"]
     elif config.get("color_options"):
@@ -180,7 +191,7 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
     for key, config_data in color_config.items():
         trait_values = _get_values(key) # e.g. list of countries, regions etc
         if not trait_values:
-            warn("you asked for a color by for '{}' but it has no values on the tree => Ignoring.".format(key))
+            warn("You asked for a color-by for trait '{}', but it has no values on the tree. It has been ignored.".format(key))
             continue
         try:
             colorings[key] = {"title": _get_title(key, color_config), "type": _get_type(key, config_data, trait_values)}
@@ -213,7 +224,7 @@ def process_geographic_info(jsn, lat_long_mapping, node_metadata=None, nodes=Non
             try:
                 geo[trait][deme] = lat_long_mapping[(trait.lower(), deme_search_value)]
             except KeyError:
-                warn("{}->{} did not have an associated lat/long value (matching performed in lower case). Auspice won't be able to display this deme.".format(trait, deme))
+                warn("{}->{} did not have an associated lat/long value (matching performed in lower case). Auspice won't be able to display this location.".format(trait, deme))
     return geo
 
 def process_annotations(node_data):
@@ -462,9 +473,9 @@ def register_arguments_v2(subparsers):
         title="CONFIG OPTIONS",
         description="These control the display settings for auspice. \
             You can supply a config JSON (which has all available options) or command line arguments (which are more limited but great to get started). \
-            Supplying both is fine too -- command line args will overrule what was set in the config file!"
+            Supplying both is fine too -- command line args will overrule what is set in the config file!"
     )
-    config.add_argument('--auspice-config', metavar="JSON", help="Auspice configuration")
+    config.add_argument('--auspice-config', metavar="JSON", help="Auspice configuration file")
     config.add_argument('--title', nargs='+', help="Title to be displayed by auspice")
     config.add_argument('--maintainers', metavar="name", nargs='+', help="Analysis maintained by")
     config.add_argument('--maintainer-urls', metavar="url", nargs='+', help="URL of maintainers")
