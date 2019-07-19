@@ -37,7 +37,7 @@ setup(
             "biopython >=1.73, ==1.*",
             "jsonschema ==3.0.0a3",
             "pandas >=0.23.4",
-            "phylo-treetime >=0.5.6, ==0.*",
+            "phylo-treetime >=0.5.6, =<0.7.0",
             "snakemake >=5.1.5, ==5.*"
         ],
         extras_require={
