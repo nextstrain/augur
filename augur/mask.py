@@ -57,6 +57,20 @@ def run(args):
 
     If users don't specify output, will overwrite the input file.
     '''
+    # Check files exist and are not empty
+    if not os.path.isfile(args.sequences):
+        print("ERROR: File {} does not exist!".format(args.sequences))
+        return 1
+    if not os.path.isfile(args.mask):
+        print("ERROR: File {} does not exist!".format(args.mask))
+        return 1
+    if os.path.getsize(args.sequences) == 0:
+        print("ERROR: {} is empty. Please check how this file was produced. "
+              "Did an error occur in an earlier step?".format(args.sequences))
+        return 1
+    if os.path.getsize(args.mask) == 0:
+        print("ERROR: {} is an empty file.".format(args.mask))
+        return 1
 
     tempMaskFile = get_mask_sites(args.sequences, args.mask)
 

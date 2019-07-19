@@ -90,6 +90,14 @@ def run(args):
         if args.sequences.lower().endswith('.gz'):
             is_compressed = True
 
+    ### Check users has vcftools. If they don't, a one-blank-line file is created which
+    #   allows next step to run but error very badly.
+    if is_vcf:
+        from shutil import which
+        if which("vcftools") is None:
+            print("ERROR: 'vcftools' is not installed! This is required for VCF data. "
+                  "Please see the augur install instructions to install it.")
+            return 1
 
     ####Read in files
 
