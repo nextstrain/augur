@@ -35,11 +35,9 @@ setup(
         install_requires = [
             "bcbio-gff >=0.6.4, ==0.6.*",
             "biopython >=1.73, ==1.*",
-            "boto >=2.38, ==2.*",
-            "cvxopt >=1.1.9, ==1.1.*",
             "jsonschema ==3.0.0a3",
             "pandas >=0.23.4",
-            "phylo-treetime >=0.5.6, ==0.5.*",
+            "phylo-treetime >=0.5.6, ==0.*",
             "snakemake >=5.1.5, ==5.*"
         ],
         extras_require={
