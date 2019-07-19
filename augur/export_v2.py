@@ -103,6 +103,8 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
                 values_in_tree.add(node_properties.get(key, {}).get("value"))
             elif key in node_properties['traits']:
                 values_in_tree.add(node_properties['traits'][key]['value'])
+        if len(values_in_tree)==1 and None in values_in_tree:
+            return None
         return values_in_tree
 
     def _get_type(key, config_data, trait_values):
@@ -181,7 +183,7 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
         colorings["gt"] = {'title': _get_title("gt", color_config), 'type': 'ordinal'}
     if _get_values("author"): # check if any nodes have author set
         colorings["author"] = {'title': _get_title("author", color_config), 'type': 'categorical'}
-    if _get_values("num_date"): # TODO: check if tree has temporal inference (possible to not have)
+    if _get_values("num_date"): # TODO: check if tree has temporal inference (possible to not have) - EBH: I think this is done now?
         colorings['num_date'] = {'title': _get_title("num_date", color_config), 'type': 'continuous'}
     # remove these keys so they're not processed below
     color_config.pop("gt", None)
