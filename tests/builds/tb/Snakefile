@@ -1,10 +1,10 @@
 rule all:
     input:
-        auspice_v1_tree = "auspice/tb_v1_tree.json",
-        auspice_v1_meta = "auspice/tb_v1_meta.json",
-        auspice_v1_seq = "auspice/tb_v1_seq.json",
-        auspice_v2_seq = "auspice/tb_v2_seq.json",
-        auspice_v2 = "auspice/tb_v2.json"
+        auspice_v1_tree = "auspice/v1_tb_tree.json",
+        auspice_v1_meta = "auspice/v1_tb_meta.json",
+        auspice_v1_seq = "auspice/v1_tb_seq.json",
+        auspice_v2_seq = "auspice/v2_tb_seq.json",
+        auspice_v2 = "auspice/v2_tb.json"
 
 # Config variables to be used by rules
 # Parameters are defined within their own rules

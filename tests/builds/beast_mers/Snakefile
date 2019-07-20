@@ -1,6 +1,6 @@
 rule all:
     input:
-        auspice = "auspice/mers-cov_v2.json"
+        auspice = "auspice/v2_mers-cov.json"
 rule files:
     params:
         input_mcc = "data/MERS_CoV_274_mcc.tree",
