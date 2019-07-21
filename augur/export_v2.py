@@ -199,11 +199,22 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
             colorings[key] = {"title": _get_title(key, color_config), "type": _get_type(key, config_data, trait_values)}
         except InvalidOption:
             continue # a warning message will have been printed before this is thrown
-        # set color maps if provided in the config (FYI - color maps are in lower case)
+        # set color maps if provided in the config (FYI - color maps are interpreted in lower case)
+        # we preserve the ordering of the provided colour maps
         if key.lower() in provided_colors:
-            values_lower = {str(val).lower(): val for val in trait_values}
-            colorings[key]["scale"] = {values_lower[m[0]]: m[1] for m in provided_colors[key.lower()] if m[0] in values_lower}
-
+            scale = []
+            trait_values = {str(val).lower(): val for val in trait_values}
+            trait_values_unseen = {k for k in trait_values}
+            for provided_key, provided_color in provided_colors[key.lower()]:
+                if provided_key.lower() in trait_values:
+                    scale.append([trait_values[provided_key.lower()], provided_color])
+                    trait_values_unseen.discard(provided_key.lower())
+            if len(scale):
+                colorings[key]["scale"] = scale
+                if len(trait_values_unseen):
+                    warn("These values for trait {} were not specified in your provided color scale: {}. Auspice will create colors for them.".format(key, ", ".join(trait_values_unseen)))
+            else:
+                warn("You've specified a color scale for {} but none of the values found on the tree had associated colors. Auspice will generate its own color scale for this trait.".format(key))
     return colorings
 
 
