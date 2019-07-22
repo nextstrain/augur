@@ -568,14 +568,20 @@ def run_v2(args):
     elif args.title:
         auspice_json['title'] = ' '.join(args.title)
 
-    # Get maintainers. Config file overwrites command-line args.
-    # Recognises and implements v1-style config spec without warnings.
-    if config.get("maintainer"): #v1-type specification
+    # Get maintainers. Command-line args overwrite the config file.
+    if args.maintainers:
+        if args.maintainer_urls:
+            if len(args.maintainers) == len(args.maintainer_urls):
+                auspice_json['maintainers'] = [{'name': name, 'url':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
+            else:
+                warn("you provided --maintainer_urls but not the same number as --maintainers! Ignoring the URLs")
+                auspice_json['maintainers'] = [{'name': name} for name in args.maintainers]
+        else:
+            auspice_json['maintainers'] = [{'name': name} for name in args.maintainers]
+    elif config.get("maintainer"): #v1-type specification
         auspice_json["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
     elif config.get("maintainers"): #v2-type specification (proposed by Emma)
         auspice_json['maintainers'] = [{'name': n[0], 'url': n[1]} for n in config['maintainers']]
-    elif args.maintainers and args.maintainer_urls:
-        auspice_json['maintainers'] = [{'name': name, 'url':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
 
     # get traits to colour by etc - do here before node_data is modified below
     # this ensures we get traits even if they are not on every node
