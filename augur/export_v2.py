@@ -478,7 +478,7 @@ def register_arguments_v2(subparsers):
             Supplying both is fine too -- command line args will overrule what is set in the config file!"
     )
     config.add_argument('--auspice-config', metavar="JSON", help="Auspice configuration file")
-    config.add_argument('--title', nargs='+', help="Title to be displayed by auspice")
+    config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
     config.add_argument('--maintainers', metavar="name", nargs='+', help="Analysis maintained by")
     config.add_argument('--maintainer-urls', metavar="url", nargs='+', help="URL of maintainers")
     config.add_argument('--geography-traits', metavar="trait", nargs='+', help="What location traits are used to plot on map")
@@ -556,11 +556,11 @@ def run_v2(args):
 
             auspice_json["display_defaults"] = config["display_defaults"]
 
-    # Get title - config file overwrites command-line args.
-    if config.get("title"):
+    # Get title - command-line arg will overwrite the supplied config file.
+    if args.title:
+        auspice_json['title'] = str(args.title)
+    elif config.get("title"):
         auspice_json['title'] = config['title']
-    elif args.title:
-        auspice_json['title'] = ' '.join(args.title)
 
     # Get maintainers. Config file overwrites command-line args.
     # Recognises and implements v1-style config spec without warnings.

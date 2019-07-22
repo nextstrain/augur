@@ -222,7 +222,8 @@ rule export_v2:
             --node-data {input.branch_lengths} {input.traits} {input.nt_muts} {input.aa_muts} \
             --colors {input.colors} \
             --output-main {output.auspice_main} \
-            --output-sequence {output.auspice_seq}
+            --output-sequence {output.auspice_seq} \
+            --title "Real-time tracking of Zika virus evolution"
         augur validate v2 --json {output.auspice_main}
         """
 
