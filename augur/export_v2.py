@@ -112,7 +112,7 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
             elif key in node_properties['traits']:
                 values_in_tree.add(node_properties['traits'][key]['value'])
         if len(values_in_tree)==1 and None in values_in_tree:
-            return None
+            return {}
         return values_in_tree
 
     def _get_type(key, config_data, trait_values):
@@ -613,16 +613,12 @@ def run_v2(args):
 
     add_metadata_to_tree(auspice_json["tree"], node_metadata)
 
-    mutations_present = False
-    if check_muts(node_metadata):
-        mutations_present = True
-
     auspice_json["colorings"] = get_colorings(
         config=config,
         traits=traits,
         provided_colors=read_colors(args.colors),
         node_metadata=node_metadata,
-        mutations_present=mutations_present # TODO EBH - think this is done now?
+        mutations_present=bool(check_muts(node_metadata))
     )
 
     # Set up geographic info
