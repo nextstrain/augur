@@ -11,7 +11,8 @@ rule files:
         dropped_strains = "config/dropped_strains.txt",
         reference = "config/zika_outgroup.gb",
         colors = "config/colors.tsv",
-        auspice_config = "config/auspice_config.json",
+        auspice_config_v1 = "config/auspice_config_v1.json",
+        auspice_config_v2 = "config/auspice_config_v2.json"
 
 files = rules.files.params
 
@@ -182,7 +183,7 @@ rule export_v1:
         nt_muts = rules.ancestral.output.node_data,
         aa_muts = rules.translate.output.node_data,
         colors = files.colors,
-        auspice_config = files.auspice_config
+        auspice_config = files.auspice_config_v1
     output:
         auspice_tree = rules.all.input.auspice_v1_tree,
         auspice_meta = rules.all.input.auspice_v1_meta,
@@ -211,6 +212,7 @@ rule export_v2:
         nt_muts = rules.ancestral.output.node_data,
         aa_muts = rules.translate.output.node_data,
         colors = files.colors,
+        auspice_config = files.auspice_config_v2
     output:
         auspice_main = rules.all.input.auspice_v2,
         auspice_seq = rules.all.input.auspice_v2_seq
@@ -221,6 +223,7 @@ rule export_v2:
             --metadata {input.metadata} \
             --node-data {input.branch_lengths} {input.traits} {input.nt_muts} {input.aa_muts} \
             --colors {input.colors} \
+            --auspice-config {input.auspice_config} \
             --output-main {output.auspice_main} \
             --output-sequence {output.auspice_seq}
         augur validate v2 --json {output.auspice_main}

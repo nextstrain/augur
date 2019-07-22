@@ -85,6 +85,16 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
     return (node_struct, strains)
 
 
+def get_values_in_tree(node_metadata, key):
+    values_in_tree = set()
+    for node_properties in node_metadata.values():
+        # beware of special cases!
+        if key in ["num_date", "author"]:
+            values_in_tree.add(node_properties.get(key, {}).get("value"))
+        elif key in node_properties['traits']:
+            values_in_tree.add(node_properties['traits'][key]['value'])
+    return values_in_tree
+
 def get_colorings(config, traits, provided_colors, node_metadata, mutations_present):
     def _rename_authors_key(color_config):
         if not color_config.get("authors"):
@@ -94,16 +104,6 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
         deprecated("[config file] The 'authors' key is now called 'author'")
         color_config["author"] = color_config["authors"]
         del color_config["authors"]
-
-    def _get_values(key):
-        values_in_tree = set()
-        for node_properties in node_metadata.values():
-            # beware of special cases!
-            if key in ["num_date", "author"]:
-                values_in_tree.add(node_properties.get(key, {}).get("value"))
-            elif key in node_properties['traits']:
-                values_in_tree.add(node_properties['traits'][key]['value'])
-        return values_in_tree
 
     def _get_type(key, config_data, trait_values):
         # for clade_membership, we know what it is - anything else breaks Auspice
@@ -179,9 +179,9 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
     # handle special cases
     if mutations_present:
         colorings["gt"] = {'title': _get_title("gt", color_config), 'type': 'ordinal'}
-    if _get_values("author"): # check if any nodes have author set
+    if get_values_in_tree(node_metadata, "author"): # check if any nodes have author set
         colorings["author"] = {'title': _get_title("author", color_config), 'type': 'categorical'}
-    if _get_values("num_date"): # TODO: check if tree has temporal inference (possible to not have)
+    if get_values_in_tree(node_metadata, "num_date"): # TODO: check if tree has temporal inference (possible to not have)
         colorings['num_date'] = {'title': _get_title("num_date", color_config), 'type': 'continuous'}
     # remove these keys so they're not processed below
     color_config.pop("gt", None)
@@ -191,7 +191,7 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
 
     # loop through provided colorings not handled above
     for key, config_data in color_config.items():
-        trait_values = _get_values(key) # e.g. list of countries, regions etc
+        trait_values = get_values_in_tree(node_metadata, key) # e.g. list of countries, regions etc
         if not trait_values:
             warn("You asked for a color-by for trait '{}', but it has no values on the tree. It has been ignored.".format(key))
             continue
@@ -207,15 +207,21 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
     return colorings
 
 
-def process_geographic_info(jsn, lat_long_mapping, node_metadata=None, nodes=None):
-    if jsn is None or len(jsn)==0 :
+def process_geographic_info(config, command_line_traits, lat_long_mapping, node_metadata):
+    if command_line_traits:
+        # straight overwrite -- not an extension of those which may be provided in the config
+        traits = command_line_traits
+    elif config.get("geographic_info"):
+        traits = config.get("geographic_info")
+    elif config.get("geo"):
+        traits = config.get("geo")
+        deprecated("[config file] 'geo' has been replaced with 'geographic_info'")
+    else:
         return {}
-    geo = defaultdict(dict)
 
-    traits = jsn #jsn["geographic_info"]
-
+    geographic_info = defaultdict(dict)
     for trait in traits:
-        demes_in_tree = {data["traits"][trait]["value"] for name, data in node_metadata.items() if trait in data['traits']}
+        demes_in_tree = get_values_in_tree(node_metadata, trait)
         for deme in demes_in_tree:
             # deme may be numeric, or string
             try:
@@ -224,10 +230,10 @@ def process_geographic_info(jsn, lat_long_mapping, node_metadata=None, nodes=Non
                 deme_search_value = str(deme)
 
             try:
-                geo[trait][deme] = lat_long_mapping[(trait.lower(), deme_search_value)]
+                geographic_info[trait][deme] = lat_long_mapping[(trait.lower(), deme_search_value)]
             except KeyError:
                 warn("{}->{} did not have an associated lat/long value (matching performed in lower case). Auspice won't be able to display this location.".format(trait, deme))
-    return geo
+    return geographic_info
 
 def process_annotations(node_data):
     # treetime adds "annotations" to node_data
@@ -584,8 +590,8 @@ def run_v2(args):
         traits = list(set(traits)) #ensure no duplicates
     # remove keys which may look like traits but are not
     excluded_traits = [
-      "clade_annotation", # Clade annotation is label, not colorby!
-      "authors" # authors are set as a node property, not a trait property
+        "clade_annotation", # Clade annotation is label, not colorby!
+        "authors" # authors are set as a node property, not a trait property
     ]
     traits = [t for t in traits if t not in excluded_traits]
 
@@ -612,14 +618,7 @@ def run_v2(args):
         mutations_present=True # TODO
     )
 
-    # Set up geographic info
-    if config.get("geo"):
-        geo_config = config["geo"]
-    else:
-        geo_config = args.geography_traits
-
-    lat_long_mapping = read_lat_longs(args.lat_longs)
-    auspice_json["geographic_info"] = process_geographic_info(geo_config, lat_long_mapping, node_metadata=node_metadata)
+    auspice_json["geographic_info"] = process_geographic_info(config, args.geography_traits, read_lat_longs(args.lat_longs), node_metadata)
 
     auspice_json["updated"] = time.strftime('%Y-%m-%d')
     auspice_json["genome_annotations"] = process_annotations(node_data)

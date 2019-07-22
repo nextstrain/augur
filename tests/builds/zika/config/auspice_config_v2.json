@@ -9,7 +9,7 @@
       "title": "Sampling date",
       "type": "continuous"
     },
-    "authors": {
+    "author": {
       "title": "Authors",
       "type": "categorical"
     },
@@ -25,10 +25,7 @@
     "region"
   ],
   "maintainers": [
-    {
-      "name": "Trevor Bedford",
-      "href": "http://bedford.io/team/trevor-bedford/"
-    }
+    ["Trevor Bedford", "http://bedford.io/team/trevor-bedford/"]
   ],
   "filters": [
     "country",
