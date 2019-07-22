@@ -130,7 +130,10 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
                 raise InvalidOption()
             return t
         # no type supplied => try to guess
-        if all([ isinstance(n, float) if isinstance(n, float) else isinstance(n, int) for n in trait_values ]):
+        # import pdb; pdb.set_trace()
+        if all([all([str(x).lower() in ["false", "true", "1", "0", "yes", "no"] for x in trait_values])]):
+            t = "boolean"
+        elif all([ isinstance(n, float) if isinstance(n, float) else isinstance(n, int) for n in trait_values ]):
             t = "continuous"
         else:
             t = "categorical"
@@ -334,6 +337,23 @@ def set_author_on_nodes(node_metadata, raw_strain_info):
                     node["author"]["value"] = value
 
 def transfer_metadata_to_strains(strains, raw_strain_info, traits):
+    '''
+    Assign desired metadata / trait data onto nodes
+
+    Parameters
+    ----------
+    strains : list
+        list of node name (strain name) -- including non-terminal nodes
+    raw_strain_info : dict
+        keys: strain names. values: dict with keys -> traits, values -> data of various shapes
+    traits : list
+        trait names desired from export (both from config & CL)
+
+    Returns
+    -------
+    dict :
+        node data in correct shape for auspice
+    '''
     node_metadata = {}
     for strain_name in strains:
         node = {"traits":{}}
@@ -393,7 +413,7 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
 
         # TRANSFER TRAITS (INCLUDING CONFIDENCE & ENTROPY) #
         for trait in traits:
-            if trait in raw_data and raw_data[trait]:
+            if raw_data.get(trait, None) is not None:
                 node["traits"][trait] = {"value": raw_data[trait]}
                 if trait+"_confidence" in raw_data:
                     node["traits"][trait]["confidence"] = raw_data[trait+"_confidence"]

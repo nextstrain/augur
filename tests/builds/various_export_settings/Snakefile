@@ -4,11 +4,13 @@ rule all:
     input:
         hidden_nodes = "auspice/v2_hidden-nodes.json",
         time_only = "auspice/v2_time-only-tree.json",
-        div_only = "auspice/v2_div-only-tree.json"
+        div_only = "auspice/v2_div-only-tree.json",
+        bool_metadata = "auspice/v2_boolean-metadata.json"
 
 rule files:
     params:
-        hidden_nodes = "data/hidden_nodes.json"
+        hidden_nodes = "data/hidden_nodes.json",
+        boolean_metadata = "data/metadata_boolean.tsv"
 files = rules.files.params
 
 rule refine_with_temporal_information:
@@ -138,6 +140,29 @@ rule export_time_only_tree:
             --colors {input.colors} \
             --auspice-config {input.config} \
             --title "Temporal-only tree" \
+            --output-main {output.auspice};
+        augur validate v2 --json {output.auspice}
+        """
+
+rule export_with_boolean_metadata:
+    message: "Exporting tree with boolean metadata"
+    input:
+        tree = {rules.refine_with_temporal_information.output.tree},
+        branch_lengths = {rules.make_node_data_time_only.output.node_data},
+        metadata = {files.boolean_metadata},
+        colors = {base_files.colors},
+        config = {base_files.auspice_config}
+    output:
+        auspice = rules.all.input.bool_metadata
+    shell:
+        """
+        augur export v2 \
+            --tree {input.tree} \
+            --node-data {input.branch_lengths} \
+            --metadata {input.metadata} \
+            --extra-traits top_half_True_False top_half_1_0 top_half_yes_no \
+            --colors {input.colors} \
+            --title "Boolean metadata traits" \
             --output-main {output.auspice};
         augur validate v2 --json {output.auspice}
         """

@@ -347,7 +347,7 @@
                             "required": ["value"],
                             "properties": {
                                 "value": {
-                                    "type": ["string", "number"]
+                                    "type": ["string", "number", "boolean"]
                                 },
                                 "confidence": {
                                     "description": "Confidence of the trait date",
