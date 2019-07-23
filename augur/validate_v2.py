@@ -172,14 +172,14 @@ def verifyMainJSONIsInternallyConsistent(main):
                 error("The coloring \"{}\" does not appear as an attr on any tree nodes.".format(colorBy))
             if "scale" in data["colorings"][colorBy]:
                 scale = data["colorings"][colorBy]["scale"]
-                if isinstance(scale, dict):
-                    for value, hex in scale.items():
+                if isinstance(scale, list):
+                    for value, hex in scale:
                         if value not in treeTraits[colorBy]["values"]:
                             warn("Color option \"{}\" specifies a hex code for \"{}\" but this isn't ever seen on the tree nodes.".format(colorBy, value))
-                elif isinstance(scale, list):
-                    error("List colour scales are invalid")
-                else:
+                elif isinstance(scale, str):
                     error("String colour scales are not yet implemented")
+                else:
+                    error("Invalid color scale (for trait \"{}\")".format(colorBy))
             if "domain" in data["colorings"][colorBy]:
                 domain = data["colorings"][colorBy]["domain"]
                 if data["colorings"][colorBy]["type"] in ["ordinal", "categorical"]:
