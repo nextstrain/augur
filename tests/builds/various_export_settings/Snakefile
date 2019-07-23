@@ -1,0 +1,148 @@
+include: "base.snakefile"
+
+rule all:
+    input:
+        hidden_nodes = "auspice/v2_hidden-nodes.json",
+        time_only = "auspice/v2_time-only-tree.json",
+        div_only = "auspice/v2_div-only-tree.json"
+
+rule files:
+    params:
+        hidden_nodes = "data/hidden_nodes.json"
+files = rules.files.params
+
+rule refine_with_temporal_information:
+    message: "Refining tree with temporal information"
+    input:
+        tree = rules.tree.output.tree,
+        alignment = rules.align.output,
+        metadata = rules.parse.output.metadata
+    output:
+        tree = "results/tree_temporal.nwk",
+        node_data = "results/temporal_branch_lengths.json"
+    shell:
+        """
+        augur refine \
+            --tree {input.tree} \
+            --alignment {input.alignment} \
+            --metadata {input.metadata} \
+            --output-tree {output.tree} \
+            --output-node-data {output.node_data} \
+            --timetree \
+            --coalescent opt \
+            --date-confidence \
+            --date-inference marginal \
+            --clock-filter-iqd 4
+        """
+
+rule refine_without_temporal_information:
+    message: "Refining tree with temporal information"
+    input:
+        tree = rules.tree.output.tree,
+        alignment = rules.align.output,
+        metadata = rules.parse.output.metadata
+    output:
+        tree = "results/tree_div_only.nwk",
+        node_data = "results/div_only_branch_lengths.json"
+    shell:
+        """
+        augur refine \
+            --tree {input.tree} \
+            --alignment {input.alignment} \
+            --metadata {input.metadata} \
+            --output-tree {output.tree} \
+            --output-node-data {output.node_data} \
+            --keep-root
+        """
+
+rule export_with_hidden_nodes:
+    message: "Exporting (v2) temporal tree for auspice with hidden nodes"
+    input:
+        tree = {rules.refine_with_temporal_information.output.tree},
+        branch_lengths = {rules.refine_with_temporal_information.output.node_data},
+        hidden_nodes = {files.hidden_nodes},
+        metadata = {rules.parse.output.metadata},
+        colors = {base_files.colors},
+        config = {base_files.auspice_config_v2}
+    output:
+        auspice = rules.all.input.hidden_nodes,
+    shell:
+        """
+        augur export v2 \
+            --tree {input.tree} \
+            --node-data {input.branch_lengths} {input.hidden_nodes} \
+            --metadata {input.metadata} \
+            --colors {input.colors} \
+            --auspice-config {input.config} \
+            --title "Tree with hidden nodes (both div + temporal)" \
+            --output-main {output.auspice};
+        augur validate v2 --json {output.auspice}
+        """
+
+rule make_node_data_time_only:
+    message: "Removing divergence information from {input.branch_lengths}"
+    input:
+        branch_lengths = {rules.refine_with_temporal_information.output.node_data}
+    output:
+        node_data = "results/time_only_branch_lengths.json"
+    run:
+        import json
+        with open(input.branch_lengths[0]) as f:
+            data = json.load(f)
+        for d in data["nodes"].values():
+            d.pop("branch_length", None)
+            d.pop("clock_length", None)
+            d.pop("mutation_length", None)
+        with open(output.node_data, 'w') as f:
+            json.dump(data, f, indent=2, sort_keys=True)
+
+rule export_div_only_tree:
+    message: "Exporting (v2) div-only tree"
+    input:
+        tree = {rules.refine_without_temporal_information.output.tree},
+        branch_lengths = {rules.refine_without_temporal_information.output.node_data},
+        metadata = {rules.parse.output.metadata},
+        colors = {base_files.colors},
+        config = {base_files.auspice_config_v2}
+    output:
+        auspice = rules.all.input.div_only,
+    shell:
+        """
+        augur export v2 \
+            --tree {input.tree} \
+            --node-data {input.branch_lengths} \
+            --metadata {input.metadata} \
+            --colors {input.colors} \
+            --auspice-config {input.config} \
+            --title "Divergence-only tree" \
+            --output-main {output.auspice};
+        augur validate v2 --json {output.auspice}
+        """
+
+rule export_time_only_tree:
+    message: "Exporting (v2) temporal-only tree"
+    input:
+        tree = {rules.refine_with_temporal_information.output.tree},
+        branch_lengths = {rules.make_node_data_time_only.output.node_data},
+        metadata = {rules.parse.output.metadata},
+        colors = {base_files.colors},
+        config = {base_files.auspice_config_v2}
+    output:
+        auspice = rules.all.input.time_only,
+    shell:
+        """
+        augur export v2 \
+            --tree {input.tree} \
+            --node-data {input.branch_lengths} \
+            --metadata {input.metadata} \
+            --colors {input.colors} \
+            --auspice-config {input.config} \
+            --title "Temporal-only tree" \
+            --output-main {output.auspice};
+        augur validate v2 --json {output.auspice}
+        """
+
+rule clean:
+    message: "Removing auspice directory"
+    shell:
+        "rm -rfv auspice results"

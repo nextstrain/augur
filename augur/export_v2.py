@@ -84,6 +84,14 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
 
     return (node_struct, strains)
 
+def check_muts(node_metadata):
+    values_in_tree = 0 
+    for node_properties in node_metadata.values():
+        if "mutations" in node_properties:
+            values_in_tree+=1
+    if values_in_tree == 0:
+        return None
+    return values_in_tree
 
 def get_values_in_tree(node_metadata, key):
     values_in_tree = set()
@@ -93,6 +101,8 @@ def get_values_in_tree(node_metadata, key):
             values_in_tree.add(node_properties.get(key, {}).get("value"))
         elif key in node_properties['traits']:
             values_in_tree.add(node_properties['traits'][key]['value'])
+    if len(values_in_tree)==1 and None in values_in_tree:
+        return {}
     return values_in_tree
 
 def get_colorings(config, traits, provided_colors, node_metadata, mutations_present):
@@ -174,7 +184,6 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
 
     # handle deprecated keys by updating to their new ones where possible
     _rename_authors_key(color_config)
-
     colorings = {}
     # handle special cases
     if mutations_present:
@@ -626,13 +635,12 @@ def run_v2(args):
 
     add_metadata_to_tree(auspice_json["tree"], node_metadata)
 
-
     auspice_json["colorings"] = get_colorings(
         config=config,
         traits=traits,
         provided_colors=read_colors(args.colors),
         node_metadata=node_metadata,
-        mutations_present=True # TODO
+        mutations_present=bool(check_muts(node_metadata))
     )
 
     auspice_json["geographic_info"] = process_geographic_info(config, args.geography_traits, read_lat_longs(args.lat_longs), node_metadata)
