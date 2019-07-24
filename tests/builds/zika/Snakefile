@@ -229,7 +229,6 @@ rule export_v2:
             --output-main {output.auspice_main} \
             --output-sequence {output.auspice_seq} \
             --title {params.title:q}
-        augur validate export-v2 {output.auspice_main}
         """
 
 rule clean:
