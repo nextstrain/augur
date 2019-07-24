@@ -71,6 +71,11 @@ def validate(jsonToValidate, schema):
     else:
         print("Validation succeeded")
 
+def auspice_config_v2(config_json, **kwargs):
+    schema = load_json_schema("schema-auspice-config-v2.json")
+    jsonToValidate = load_json(config_json)
+    validate(jsonToValidate, schema)
+
 def export_v2(json_v2, **kwargs):
     # validationWarnings = ValidationWarnings()
     # validationErrors = ValidationErrors()
@@ -105,6 +110,10 @@ def register_arguments(parser):
     export_v1 = subparsers.add_parser("export-v1", help="validate tree+meta JSONs intended for auspice v1")
     export_v1.add_argument('meta_json', metavar='META-JSON', help="exported (v1) meta JSON")
     export_v1.add_argument('tree_json', metavar='TREE-JSON', help="exported (v1) tree JSON")
+
+    subparsers.add_parser("auspice-config-v2", help="validate auspice config intended for `augur export v2`") \
+        .add_argument('config_json', metavar='JSON', help="auspice config JSON")
+
 
 def run(args):
     try:
