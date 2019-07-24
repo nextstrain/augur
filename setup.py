@@ -38,7 +38,7 @@ setup(
             "jsonschema ==3.0.0a3",
             "pandas >=0.23.4",
             "phylo-treetime >=0.6.2, ==0.6.*",
-            "snakemake >=5.1.5, ==5.*"
+            "snakemake >=5.5.4, ==5.*"
         ],
         extras_require={
             'dev': [
