@@ -40,7 +40,12 @@ setup(
             "phylo-treetime >=0.6.2, ==0.6.*",
             "snakemake >=5.5.4, ==5.*"
         ],
-        extras_require={
+        extras_require = {
+            'full': [
+                "cvxopt >=1.1.9, ==1.1.*",
+                "matplotlib >=2.0, ==2.*",
+                "seaborn >=0.9.0, ==0.9.*"
+            ],
             'dev': [
                 "pylint >=1.7.6, ==1.7.*",
                 "pytest >=3.2.1, ==3.*",

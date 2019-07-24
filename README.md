@@ -30,6 +30,11 @@ You can also install from a git clone or other copy of the source code by runnin
 
 If your system has both Python 2 and Python 3 installed side-by-side, you may need to use `pip3` or `python3 -m pip` instead of just `pip` (which often defaults to Python 2 when both Python versions are installed).
 
+This install depends on a fairly minimal set of external Python libraries. There are some
+functions in augur that require a larger set of dependencies. These can be installed via:
+
+    pip install .[full]
+
 Augur uses some common external bioinformatics programs which you'll need to install to have a fully functioning toolkit:
 
 * `augur align` requires [mafft](https://mafft.cbrc.jp/alignment/software/)
