@@ -648,7 +648,9 @@ def run_v2(args):
     auspice_json["geographic_info"] = process_geographic_info(config, args.geography_traits, read_lat_longs(args.lat_longs), node_metadata)
 
     auspice_json["updated"] = time.strftime('%Y-%m-%d')
-    auspice_json["genome_annotations"] = process_annotations(node_data)
+    genome_annotations = process_annotations(node_data)
+    if genome_annotations:
+        auspice_json["genome_annotations"] = genome_annotations
 
     # Set up panels for both config and command-line
     if config.get("panels"):
