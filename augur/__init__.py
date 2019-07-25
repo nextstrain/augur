@@ -69,7 +69,11 @@ def make_parser():
 
 def run(argv):
     args = make_parser().parse_args(argv)
-    return args.__command__.run(args)
+    try:
+        return args.__command__.run(args)
+    except RecursionError:
+        print("FATAL: Maximum recursion depth reached. You can set the env variable AUGUR_RECURSION_LIMIT to adjust this (current limit: {})".format(sys.getrecursionlimit()))
+        sys.exit(2)
 
 
 def add_default_command(parser):
