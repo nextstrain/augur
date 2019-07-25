@@ -615,7 +615,10 @@ class TiterModel(object):
         TYPE
             Description
         '''
-        from cvxopt import matrix, solvers
+        try:
+            from cvxopt import matrix, solvers
+        except ImportError:
+            raise ImportError("To infer titer models, you need a working installation of cvxopt")
         n_params = self.design_matrix.shape[1]
         n_genetic = self.genetic_params
         n_sera = len(self.sera)
@@ -655,7 +658,10 @@ class TiterModel(object):
 
 
     def fit_nnl2reg(self):
-        from cvxopt import matrix, solvers
+        try:
+            from cvxopt import matrix, solvers
+        except ImportError:
+            raise ImportError("To infer titer models, you need a working installation of cvxopt")
         n_params = self.design_matrix.shape[1]
         P = matrix(np.dot(self.design_matrix.T, self.design_matrix) + self.lam_drop*np.eye(n_params))
         q = matrix( -np.dot( self.titer_dist, self.design_matrix))
@@ -673,7 +679,10 @@ class TiterModel(object):
         TYPE
             Description
         '''
-        from cvxopt import matrix, solvers
+        try:
+            from cvxopt import matrix, solvers
+        except ImportError:
+            raise ImportError("To infer titer models, you need a working installation of cvxopt")
         n_params = self.design_matrix.shape[1]
         n_genetic = self.genetic_params
         n_sera = len(self.sera)
