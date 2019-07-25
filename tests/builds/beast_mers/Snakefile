@@ -38,7 +38,6 @@ rule export:
             --node-data {input.beast_data} \
             --auspice-config {input.config} \
             --output-main {output.auspice};
-        augur validate v2 --json {output.auspice}
         """
 
 rule clean:
