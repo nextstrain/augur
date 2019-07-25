@@ -7,7 +7,7 @@ and refactored over time.
 import sys
 from collections import defaultdict
 
-def collectTreeAttrsV2(root):
+def collectTreeAttrsV2(root, warn):
     """
     Collect all keys specified on node->attr (or node->traits) throughout the tree
     If the values of these keys are strings, then also collect the values
@@ -26,10 +26,12 @@ def collectTreeAttrsV2(root):
             value = node["traits"][property]["value"]
             if isinstance(value, str):
                 seen[property]["values"].add(value)
-
-        if "authors" in node:
-            seen["authors"]["count"] += 1
-            seen["authors"]["values"].add(node["authors"].lower())
+        if node.get("author", None):
+            if not node.get("author", {}).get("value", None):
+                warn("Author property defined on node {} but structure is wrong (no \"value\" property)".format(node.get("strain")))
+            else:
+                seen["author"]["count"] += 1
+                seen["author"]["values"].add(node.get("author").get("value"))
         if "num_date" in node:
             seen["num_date"]["count"] += 1
             seen["num_date"]["values"].add(node["num_date"]["value"])
@@ -76,7 +78,7 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
     if "entropy" in data["panels"] and "genome_annotations" not in data:
         warn("The entropy panel has been specified but annotations don't exist.")
 
-    treeTraits, _ = collectTreeAttrsV2(data["tree"])
+    treeTraits, _ = collectTreeAttrsV2(data["tree"], warn)
 
     if "geographic_info" in data:
         for geoName in data["geographic_info"]:
@@ -127,17 +129,6 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
         for filter in data["filters"]:
             if filter not in treeTraits:
                 warn("The filter \"{}\" does not appear as a property on any tree nodes.".format(filter))
-
-    if "author_info" in data:
-        if "authors" not in treeTraits:
-            warn("\"author_info\" exists in the metadata JSON but \"authors\" are never defined on a tree node attr.")
-        else:
-            for author in data["author_info"]:
-                if author not in treeTraits["authors"]["values"]:
-                    warn("Author \"{}\" defined in \"author_info\" but does not appear on any tree node.".format(author))
-            for author in treeTraits["authors"]["values"]:
-                if author not in data["author_info"]:
-                    warn("Author \"{}\" defined on a tree node but not in \"author_info\".".format(author))
 
     genes_with_mutations = collectMutationGenes(data['tree'])
     if len(genes_with_mutations):
@@ -248,16 +239,6 @@ def verifyMetaAndOrTreeJSONsAreInternallyConsistent(meta_json, tree_json, Valida
             if filter not in treeAttrs:
                 warn("The filter \"{}\" does not appear on any tree nodes.".format(filter))
 
-    if "author_info" in mj:
-        if "authors" not in treeAttrs:
-            warn("\"author_info\" exists in the metadata JSON but \"authors\" are never defined on a tree node attr.")
-        else:
-            for author in mj["author_info"]:
-                if author not in treeAttrs["authors"]["values"]:
-                    warn("Author \"{}\" defined in \"author_info\" but does not appear on any tree node.".format(author))
-            for author in treeAttrs["authors"]["values"]:
-                if author not in mj["author_info"]:
-                    warn("Author \"{}\" defined on a tree node but not in \"author_info\".".format(author))
 
     if "virus_count" in mj and mj["virus_count"] != num_terminal_nodes:
         raise ValidateError("Meta JSON virus_count ({}) differs from the number of nodes in the tree ({})".format(mj["virus_count"], num_terminal_nodes))
