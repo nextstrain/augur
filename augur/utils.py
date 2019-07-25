@@ -54,8 +54,13 @@ def read_metadata(fname):
         print("ERROR: read_metadata called without a filename")
         return {}, []
     if os.path.isfile(fname):
-        metadata = pd.read_csv(fname, sep='\t' if fname[-3:]=='tsv' else ',',
-                             skipinitialspace=True).fillna('')
+        try:
+            metadata = pd.read_csv(fname, sep='\t' if fname[-3:]=='tsv' else ',',
+                                    skipinitialspace=True).fillna('')
+        except pd.errors.ParserError as e:
+            print("Error reading metadata file {}".format(fname))
+            print(e)
+            sys.exit(2)
         meta_dict = {}
         for ii, val in metadata.iterrows():
             if hasattr(val, "strain"):

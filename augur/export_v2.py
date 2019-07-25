@@ -105,6 +105,10 @@ def get_values_in_tree(node_metadata, key):
         return {}
     return values_in_tree
 
+def isValueValid(value):
+    invalid = ["undefined", "unknown", "?", "nan", "na", "n/a", 'none', '', 'not known']
+    return False if str(value).strip('\"').strip("'").strip().lower() in invalid else True
+
 def get_colorings(config, traits, provided_colors, node_metadata, mutations_present):
     def _rename_authors_key(color_config):
         if not color_config.get("authors"):
@@ -130,7 +134,10 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
                 raise InvalidOption()
             return t
         # no type supplied => try to guess
-        if all([ isinstance(n, float) if isinstance(n, float) else isinstance(n, int) for n in trait_values ]):
+        # import pdb; pdb.set_trace()
+        if all([all([str(x).lower() in ["false", "true", "1", "0", "yes", "no"] for x in trait_values])]):
+            t = "boolean"
+        elif all([ isinstance(n, float) if isinstance(n, float) else isinstance(n, int) for n in trait_values ]):
             t = "continuous"
         else:
             t = "categorical"
@@ -350,6 +357,23 @@ def set_author_on_nodes(node_metadata, raw_strain_info):
                     node["author"]["value"] = value
 
 def transfer_metadata_to_strains(strains, raw_strain_info, traits):
+    '''
+    Assign desired metadata / trait data onto nodes
+
+    Parameters
+    ----------
+    strains : list
+        list of node name (strain name) -- including non-terminal nodes
+    raw_strain_info : dict
+        keys: strain names. values: dict with keys -> traits, values -> data of various shapes
+    traits : list
+        trait names desired from export (both from config & CL)
+
+    Returns
+    -------
+    dict :
+        node data in correct shape for auspice
+    '''
     node_metadata = {}
     for strain_name in strains:
         node = {"traits":{}}
@@ -374,17 +398,18 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
 
 
         # TRANSFER NODE DATES #
-        if "numdate" in raw_data or "num_date" in raw_data: # it's ok not to have temporal information
-            node["num_date"] = {
-                "value": raw_data["num_date"] if "num_date" in raw_data else raw_data["numdate"]
-            }
-            if "num_date_confidence" in raw_data:
+        if raw_data.get("numdate", None) and not raw_data.get("num_date", None):
+            raw_data["num_date"] = raw_data["numdate"]
+            del raw_data["numdate"]
+        if isValueValid(raw_data.get("num_date", None)): # it's ok not to have temporal information
+            node["num_date"] = {"value": raw_data["num_date"]}
+            if isValueValid(raw_data.get("num_date_confidence", None)):
                 node["num_date"]["confidence"] = raw_data["num_date_confidence"]
 
         # TRANSFER VACCINE INFO #
 
         # TRANSFER LABELS #
-        if "clade_annotation" in raw_data:
+        if "clade_annotation" in raw_data and isValueValid(raw_data["clade_annotation"]):
             if 'labels' in node:
                 node['labels']['clade'] = raw_data["clade_annotation"]
             else:
@@ -404,16 +429,16 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
 
         # TRANSFER GENERIC PROPERTIES #
         for prop in ["url", "accession"]:
-            if prop in raw_data:
+            if isValueValid(raw_data.get(prop, None)):
                 node[prop] = raw_data[prop]
 
         # TRANSFER TRAITS (INCLUDING CONFIDENCE & ENTROPY) #
         for trait in traits:
-            if trait in raw_data and raw_data[trait]:
+            if isValueValid(raw_data.get(trait, None)):
                 node["traits"][trait] = {"value": raw_data[trait]}
-                if trait+"_confidence" in raw_data:
+                if isValueValid(raw_data.get(trait+"_confidence", None)):
                     node["traits"][trait]["confidence"] = raw_data[trait+"_confidence"]
-                if trait+"_entropy" in raw_data:
+                if isValueValid(raw_data.get(trait+"_entropy", None)):
                     node["traits"][trait]["entropy"] = raw_data[trait+"_entropy"]
 
         node_metadata[strain_name] = node
