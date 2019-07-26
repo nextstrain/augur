@@ -542,8 +542,6 @@ def register_arguments_v2(subparsers):
     optional_inputs.add_argument('--metadata', metavar="TSV", help="Additional metadata for strains in the tree")
     optional_inputs.add_argument('--colors', metavar="TSV", help="Custom color definitions")
     optional_inputs.add_argument('--lat-longs', metavar="TSV", help="Latitudes and longitudes for geography traits (overrides built in mappings)")
-    optional_inputs.add_argument('--reference', metavar="JSON", required=False, help="reference sequence for export to browser, only vcf")
-    optional_inputs.add_argument('--reference-translations', metavar="???", required=False, help="reference translations for export to browser, only vcf")
 
     optional_settings = v2.add_argument_group(
         title="OPTIONAL SETTINGS"
@@ -551,10 +549,16 @@ def register_arguments_v2(subparsers):
     optional_settings.add_argument('--tree-name', metavar="name", default=False, help="Tree name (needed for tangle tree functionality)")
     optional_settings.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
 
-    optional_outputs = v2.add_argument_group(
-        title="OPTIONAL OUTPUTS"
+
+    remove_pre_v6_release = v2.add_argument_group(
+        title="SOON TO BE REMOVED OPTIONS",
+        description="These options were available in augur v5 but are seemingly unused.\
+            Unless we discover otherwise, they will be removed before the v6 release. \
+            Note that they are still available via `augur export v1` to preserve the v5 behavior."
     )
-    optional_outputs.add_argument('--output-sequence', metavar="JSON", help="(reconstructed) sequences for each node")
+    remove_pre_v6_release.add_argument('--output-sequence', metavar="JSON", help="(reconstructed) sequences for each node")
+    remove_pre_v6_release.add_argument('--reference', metavar="JSON", required=False, help="reference sequence for export to browser, only vcf")
+    remove_pre_v6_release.add_argument('--reference-translations', metavar="???", required=False, help="reference translations for export to browser, only vcf")
 
     return v2
 
@@ -576,6 +580,7 @@ def run_v2(args):
     # which mutations are made on the tree (including possible mutations leading
     # to the root of the tree -- typical case for vcf input data).
     if args.output_sequence:
+        print("This option (--output-sequence) is due to be removed before the v6 release.")
         if T.root.name in nodes:
             root_sequence = get_root_sequence(nodes[T.root.name], ref=args.reference,
                                                 translations=args.reference_translations)
