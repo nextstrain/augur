@@ -1,19 +1,18 @@
 """
 Unit tests for frequency estimation
 """
-import Bio
 import json
-import numpy as np
-from pathlib import Path
-import pytest
 import sys
-import os
+from pathlib import Path
+import numpy as np
+import pytest
+import Bio
+
+from augur.frequency_estimators import get_pivots, TreeKdeFrequencies, AlignmentKdeFrequencies
+from augur.utils import json_to_tree
 
 # we assume (and assert) that this script is running from the tests/ directory
 sys.path.append(str(Path(__file__).parent.parent.parent))
-
-from augur.frequency_estimators import get_pivots, TreeKdeFrequencies, AlignmentKdeFrequencies
-from base.io_util import json_to_tree
 
 # Define regions to use for testing weighted frequencies.
 REGIONS = [
