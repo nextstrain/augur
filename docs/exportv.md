@@ -2,14 +2,12 @@
 
 <span style="color:blue">
 
-Emma's questions to be answered for this doc:
-* Do we actually support config files now? _(Ensure this is up-to-date before we go live)_
-* How do tip frequencies work in V2? Still separate file? Does 'panels' need to be specified to display this?
-* Does panel specification work as I've described it? If you don't include a panel, is it definitely excluded? (Or what panels does this work for?)
-* How do we specify default view, and does this work in `export v2`?
-* When specifying `--title` in V2, why do we need to use quotes inside quotes? Can we do this better?
-* How did (could?) we previously do multiple maintainers in old config file? (to include as comparison)
-
+TO DO:
+* **Update what's a colorby in CL to whatever we decide.**
+* Update filter behaviour and explanation
+* Explanation of config files and how/when overrides happen with CL. _Will be easier to write when we have resolved all questions ourselves_ (needs to include default view info)
+* Decide how best to explain `--title` and `--maintainers` so that works both for CL and with snakemake
+* Confirm all options for `display_defaults`
 * Do we need `--tree-name` (seems not always?)? In what circumstances? (Modify argument help description to reflect this)
 * Do we support any of: `--output-sequence` `--reference` `--reference-translations` yet? In export only? In Auspice? If not, can we comment these out for the time being?
 
@@ -22,7 +20,7 @@ The `augur export` function is getting an upgrade! This is tied to an upgrade to
 ### Why did we make this change?
 * **Compactness**: Tree and Meta JSON files are now combined, so you only have to worry about one output file
 * **Flexibility**: The new v2 JSONs allow us flexiblity to include more features and data, and will let us move towards getting in line with existing conventions like GFF and BibTex
-* **Ease of use**: Users commonly got confused by the 'config' file. For basic runs you can now specify everything you need to see your data right in the command-line - no 'config' file needed! For more advanced exports, you can still specify a config file with more detail. (See [bottom of the page](#how-do-i-use-a-config-file-in-v2)) _(coming soon)_
+* **Ease of use**: Users commonly got confused by the 'config' file. For basic runs you can now specify everything you need to see your data right in the command-line - no 'config' file needed! For more advanced exports, you can still specify a config file with more detail. (See [bottom of the page](#how-do-i-use-a-config-file-in-v2))
 
 ## **I just need my old run to work _right now_!**
 *When you upgrade to the latest version of `augur`, `augur export` will no longer work.* But we understand you may not have time to make the change right this second, and that there's nothing more frustrating than having a run break right before a presentation or deadline!
@@ -37,16 +35,16 @@ To use the new version, use `augur export v2`. You'll need to make a few changes
 ## Great! What do I need to do to move to `v2`?
 You can always get a full overview of the arguments for export v2 with `augur export v2 --help`.
 
-Here's how you can convert your v1 export and config file to  a **command-line-only** v2 export: 
-_(See [bottom of page](#how-do-i-use-a-config-file-in-v2) for using a config file in v2)_
+You can now choose between exporting using just the command-line or using a combination of the command-line and config file. Remember that **any command line options you use will override anything set in your config file**, if you are using both. 
+
+We'll first cover what's the same/almost the same as in `export v1`, which are all things that must be passed in via command-line. Then we'll cover how to use [command-line options](#command-line-options), and finally how to use a [config file](#how-do-i-use-a-config-file-in-v2).
 
 
 ### What's the same:
 
-You will still pass in your tree, metadata, and node-data files with `--tree`, `--metadata`, and `--node-data` - just like in `export v1`.
+You still pass in your tree, metadata, and node-data files with `--tree`, `--metadata`, and `--node-data` - just like in `export v1`.
 
-Also just like in export v1, you can pass in files containing colours and latitute and longitude data using `--colors` and `--lat-longs`, respectively.
-
+Also just like in export v1, you can pass in files containing colors and latitute and longitude data using `--colors` and `--lat-longs`, respectively.
 
 ### What's almost the same:
 
@@ -56,24 +54,29 @@ For example, if your old files were `auspice/virus_AB_tree.json` and `auspice/vi
 
 The URL for these, respectively, would be `...virus/AB` or `...virus/ABv2`.
 
-### What's different:
-* Specify the title of your run using `--title`. You'll need to use a bit of a strange quote system for this to work. For example: `--title '\'Phylodynamics of My Interesting Pathogen\''`  
+In your metadata file, any column called `url` will be considered a link to that unique sequence in an online database (like Genbank), and will be the link attached to the Accession number. Any column called `paper_url` will be taken as a link associated to that author/title/journal. 
+
+## Command-line Options
+
+ #### General Display
+
+* Specify the title of your run using `--title`. You'll need to use a bit of a strange quote system for this to work. For example: `--title '\'Phylodynamics of My Interesting Pathogen\''`  **TO DO**
 
   _(Previously the "title" field in your config file.)_
 <br>
 
-* You can now have more than one maintainer associated with your run! Specify the maintainers with `--maintainers`. Use double quotes for the  whole argument, and single-quotes to separate names (ex: `--maintainers "'Jane Doe' 'Ravi Kupra'"`)
+* You can now have more than one maintainer associated with your run! Specify the maintainers with `--maintainers`. Use double quotes for the  whole argument, and single-quotes to separate names (ex: `--maintainers "'Jane Doe' 'Ravi Kupra'"`) **TO DO**
 
    _(Previously the first part of the "maintainer" field in your config file.)_
 <br>
 
-* Specify the websites of maintainers with `--maintainer-urls`. Put them in the same order as the `--maintainers` so they link up with the right people! (ex: `--maintainer-urls 'www.janedoe.com www.ravikupra.co.uk'`)
+* Specify the websites of maintainers with `--maintainer-urls`. Put them in the same order as the `--maintainers` so they link up with the right people! (ex: `--maintainer-urls 'www.janedoe.com www.ravikupra.co.uk'`) **TO DO**
 
   _(Previously the second part of the "maintainer" field in your config file.)_
 <br>
 
 * If you want to specify what panels are visible, use `--panels`. By default, if the data is available, Auspice will show the tree, map, and entropy panels. 
-You can specify "tree", "map", "entropy", and "frequencies". _(???)_ (ex: `--panels "tree map entropy"`)
+You can specify "tree", "map", "entropy", and "frequencies". (ex: `--panels "tree map entropy"`) You must specify "frequencies" here _and_ supply a tip frequency file to `auspice` to display tip frequencies.
 
   _(Previously the "panels" field in the your config file.)_
 <br>
@@ -85,7 +88,7 @@ You can specify "tree", "map", "entropy", and "frequencies". _(???)_ (ex: `--pan
 
   #### Traits
 
-* Any traits that you have run with `augur traits` are now automatically included by `export v2` and available to color by! (These are often in a file called `traits_`(something)`.json`.)
+* Any traits that you have run with `augur traits` are now automatically included by `export v2` and available to color by! (These are often in a file called `traits_`(something)`.json`.) **TO DO**
 
   If you'd like to exclude any traits, you'll need to re-run `augur traits` without that trait. You can also do this with a config file (see [bottom of the page](#how-do-i-use-a-config-file-in-v2)).
 
@@ -101,12 +104,21 @@ spelling and capitalization!
   *(Previously, included traits were those things listed under "color_options" in your old config. `gt`, `num_date`, and `authors` don't need to be specified anymore - they'll be automatically included if present.)*
 <br>
 
-* `export v2` will set traits as 'discrete' unless they contain only numbers, in which case they will be 'continuous.' If you want to have more control over how your trait is interpreted, you should use a config file (see [bottom of the page](#how-do-i-use-a-config-file-in-v2))
+* If you don't provide a config file, `export v2` will try to 'guess' the type of the traits you include. Excluding missing data, if a trait contains only 'True', 'False', 'Yes', 'No', '0' or '1', it will be set to 'boolean.' If it contains only numbers (integers and/or decimals), it will be set to 'continuous.' Otherwise, it will be set as 'discrete.' If you want to have more control over how your trait is interpreted, you should use a config file (see [bottom of the page](#how-do-i-use-a-config-file-in-v2)).
 
 
 
-### What about filter?
-When using `export v2` with only command-line arguments, every trait (both those from `augur traits` and passed in with `--extra-traits`), geographical trait, and the authors will automatically be available to filter by. Without using a config file, you can't exclude any of these from being filter options.
+### What's not possible in command-line only:
+#### Default view
+It is not possible to set the default view options using only command-line arguments in `export v2`. If the data is available, `auspice` will display your tree in rectangle view with branch lengths in time, colored by country, and plotted on the map by country. If time data is not available, it will set the branch lengths by divergence. If country data is not available as a geography trait, it will cycle through other options you passed in via `--geography-traits`. If country data is not available as a coloring option, it will cycle through other available colouring options. _What about `layout` option?_
+
+If you would like to have more control over these options, you will need to include a config file (see [bottom of the page](#how-do-i-use-a-config-file-in-v2)). **TO DO** _Direct this link to a better place_
+
+  _(Previously the "defaults" field in your config file.)_
+<br>
+
+#### Filter
+When using `export v2` with only command-line arguments, every trait (both those from `augur traits` and passed in with `--extra-traits`), geographical trait, and the authors will automatically be available to filter by. Without using a config file, you can't exclude any of these from being filter options. **TO DO**
 
 
 <span style="color:red">
