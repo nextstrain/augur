@@ -6,7 +6,7 @@ TO DO:
 * **Update what's a colorby in CL to whatever we decide.**
 * Update filter behaviour and explanation
 * Explanation of config files and how/when overrides happen with CL. _Will be easier to write when we have resolved all questions ourselves_ (needs to include default view info)
-* Decide how best to explain `--title` and `--maintainers` so that works both for CL and with snakemake
+* Decide how best to explain `--title` and `--maintainers` so that works both for CL and with snakemake _Current explanataion ok?_
 * Confirm all options for `display_defaults`
 * Do we need `--tree-name` (seems not always?)? In what circumstances? (Modify argument help description to reflect this)
 * Do we support any of: `--output-sequence` `--reference` `--reference-translations` yet? In export only? In Auspice? If not, can we comment these out for the time being?
@@ -60,28 +60,41 @@ In your metadata file, any column called `url` will be considered a link to that
 
  #### General Display
 
-* Specify the title of your run using `--title`. You'll need to use a bit of a strange quote system for this to work. For example: `--title '\'Phylodynamics of My Interesting Pathogen\''`  **TO DO**
+* Specify the title of your run using `--title`. If running directly from the command line, put your title in quotes (ex: `--title "Phylodynamics of my Pathogen"`). If you are using snakemake and passing the value using `params`, you'll need to double-quote the title using single and double quotes. For example:
+  ```
+  params:
+    title = "'Phylodynamics of my Pathogen'"
+  shell:
+    "augur export v2 --title {params.title} ..."
+  ```
 
   _(Previously the "title" field in your config file.)_
 <br>
 
-* You can now have more than one maintainer associated with your run! Specify the maintainers with `--maintainers`. Use double quotes for the  whole argument, and single-quotes to separate names (ex: `--maintainers "'Jane Doe' 'Ravi Kupra'"`) **TO DO**
+* You can now have more than one maintainer associated with your run! Specify the maintainers with `--maintainers`. If running directly from the command line, put each maintainer in quotes (ex: `--maintainers "Jane Doe" "Ravi Kupra"`). If you are using snakemake and passing the value using `params`, you'll need to put the whole list in double quotes, and each person in single quotes. For example:
+  ```
+  params:
+    maints = "'Jane Doe' 'Ravi Kupra'"
+  shell:
+    "augur export v2 --maintainers {params.maints} ..."
+  ```
+  You will need to use quotes in the same way even if you only have one maintainer!
 
    _(Previously the first part of the "maintainer" field in your config file.)_
 <br>
 
-* Specify the websites of maintainers with `--maintainer-urls`. Put them in the same order as the `--maintainers` so they link up with the right people! (ex: `--maintainer-urls 'www.janedoe.com www.ravikupra.co.uk'`) **TO DO**
+* Specify the websites of maintainers with `--maintainer-urls`. Put them in the same order as the `--maintainers` so they link up with the right people! (ex: `--maintainer-urls www.janedoe.com www.ravikupra.co.uk`) **TO DO**
 
   _(Previously the second part of the "maintainer" field in your config file.)_
 <br>
 
 * If you want to specify what panels are visible, use `--panels`. By default, if the data is available, Auspice will show the tree, map, and entropy panels. 
-You can specify "tree", "map", "entropy", and "frequencies". (ex: `--panels "tree map entropy"`) You must specify "frequencies" here _and_ supply a tip frequency file to `auspice` to display tip frequencies.
+You can specify "tree", "map", "entropy", and "frequencies". (ex: `--panels tree map entropy`) You must specify "frequencies" here _and_ supply a tip frequency file to `auspice` to display tip frequencies.
 
   _(Previously the "panels" field in the your config file.)_
 <br>
 
-* Specify how you'd like to locate samples on the map using `--geography-traits`. For many users, these might be "country" and "region". (ex: `--geography-traits "country region"`)
+* Specify how you'd like to locate samples on the map using `--geography-traits`. For many users, these might be "country" and "region". (ex: `--geography-traits country region`)
 
   _(Previously the "geo" field in your config file.)_
 <br>
@@ -99,7 +112,7 @@ You can specify "tree", "map", "entropy", and "frequencies". (ex: `--panels "tre
 haven't run in `augur traits`, you can include it with `--extra-traits`.
 Ensure you use the name of the column in the metadata file with the same
 spelling and capitalization! 
-(ex: `--extra-traits "age host"`)
+(ex: `--extra-traits age host`)
 
   *(Previously, included traits were those things listed under "color_options" in your old config. `gt`, `num_date`, and `authors` don't need to be specified anymore - they'll be automatically included if present.)*
 <br>
@@ -131,13 +144,23 @@ _**TO DO**_
 ## How do I use a config file in `v2`?
 
 ### Why might I want to use a config file?
-* exclude filter options
-* make color-by traits pretty
-* specify trait type (what do we support so far? discrete, continuous...)
-* More advanced (flu?) options
+We have tried to make the command line options cover everything you need to get a run working in `augur` and `auspice`. However, there are still some features that offer more options or are only available when you use a config file. 
+
+If you use a config file, you can:
+* Specify exactly what you want as a filter option
+* Set the default display view
+* Give color-by traits more specific titles to display
+* Specify color-by trait type
+* _More advanced (flu?) options_ **TO DO**
 
 ### Config file priority
-* Which overrides what and how, what must be included
+It is important to remember that if you set an option both in the config file _and_ in the command line, the command line option will override the config file option. For example, if you set `"title"` in your config file as "A Title About Apples", and then import this config file using `--auspice-config` _and_ use `--title "Better Title Befitting Bears"`, the title displayed by `auspice` will be "Better Title Befitting Bears". To use the one in the config file, simply don't use `--title` in the command line!
+
+There are a couple of exceptions to this:
+* There is no way to set default display views using command line only, so using `"display_defaults"` in your config file will set this
+* There is no way to modify the default filters displayed when using command line only, so using `"filters"` in your config file will set this
+* **???** _INCLUDE HOW THIS AFFECTS TRAITS DEPENDING ON HOW WE DECIDE THIS IN CL_
+**TO DO**
 
 ### How one might start using a config
 * Example of using a partial config to do simple things like traits and panels or filters
