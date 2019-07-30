@@ -283,7 +283,7 @@ def read_config(fname):
 def read_lat_longs(overrides=None, use_defaults=True):
     coordinates = {}
     def add_line_to_coordinates(line):
-        if line.startswith('#'): 
+        if line.startswith('#'):
             return
         fields = line.strip().split()
         if len(fields) == 4:
