@@ -46,6 +46,8 @@ You still pass in your tree, metadata, and node-data files with `--tree`, `--met
 
 Also just like in export v1, you can pass in files containing colors and latitute and longitude data using `--colors` and `--lat-longs`, respectively.
 
+If you want to use a config file, you can pass this in with `--auspice-config`, just like in export v1.
+
 ### What's almost the same:
 
 Instead of specifying two output files (`--output-tree` and `--output-meta`) you now just need to specify one with `--output-main`. 
@@ -143,10 +145,10 @@ _**TO DO**_
 
 ## How do I use a config file in `v2`?
 
-### Why might I want to use a config file?
+### Why use a config file?
 We have tried to make the command line options cover everything you need to get a run working in `augur` and `auspice`. However, there are still some features that offer more options or are only available when you use a config file. 
 
-If you use a config file, you can:
+With a config file, you can:
 * Specify exactly what you want as a filter option
 * Set the default display view
 * Give color-by traits more specific titles to display
@@ -154,7 +156,7 @@ If you use a config file, you can:
 * _More advanced (flu?) options_ **TO DO**
 
 ### Config file priority
-It is important to remember that if you set an option both in the config file _and_ in the command line, the command line option will override the config file option. For example, if you set `"title"` in your config file as "A Title About Apples", and then import this config file using `--auspice-config` _and_ use `--title "Better Title Befitting Bears"`, the title displayed by `auspice` will be "Better Title Befitting Bears". To use the one in the config file, simply don't use `--title` in the command line!
+It is important to remember that if you set an option both in the config file _and_ in the command line, **the command line option will override the config file option**. For example, if you set `"title"` in your config file as "A Title About Apples", and then import this config file using `--auspice-config` _and_ use `--title "Better Title Befitting Bears"`, the title displayed by `auspice` will be "Better Title Befitting Bears". To use the one in the config file, simply don't use `--title` in the command line!
 
 There are a couple of exceptions to this:
 * There is no way to set default display views using command line only, so using `"display_defaults"` in your config file will set this
@@ -162,8 +164,41 @@ There are a couple of exceptions to this:
 * **???** _INCLUDE HOW THIS AFFECTS TRAITS DEPENDING ON HOW WE DECIDE THIS IN CL_
 **TO DO**
 
-### How one might start using a config
-* Example of using a partial config to do simple things like traits and panels or filters
+### Using a Config File
+You will always need to pass in some information, like your tree and metadata, via the command line. Jump back up to [What's the same](#what-s-the-same) and
+[What's almost the same](#what-s-almost-the-same) to see what these are.
+
+You'll also need to use `--auspice-config` to pass in the config file you'd like to use (this is the same as in export v1).
+
+**Remember:** You don't have to include every field in your config file if you specify it in the command line (or are happy with the default) instead.
+
+#### Config file format
+Just like in export v1, the config file is a JSON-format file. In general, this means that it's divided into sections that then include more options and/or information in the curly (`{}`) or square (`[]`) brackets that follow.
+
+**It is important that everything in your config file is enclosed in one pair of curly brackets.** These can be on a separate line at the very top and very bottom of your file. 
+
+Indenting is not required for JSON files, but it can help make it easier to read your file. Syntax is important - if you are getting errors, check your brackets and quotation marks match up! Everything inside brackets is essentially a list, so needs commas between each item - but not after the last one!
+
+_Export v2 config files are generally very simliar to export v1, but there are a few changes._ They are explained in detail below, or you can see [how to convert your v1 config to v2](#using-an-old-export-v1-config).
+
+#### General Display
+All of the options listed here go directly inside the main pair of curly brackets. See the [end of this section] for an example.
+
+* Specify the title of your run using `"title"`. (ex: `"title": "Phylodynamics of my Pathogen"`)
+
+  _(Same as the "title" field in your v1 config file.)_
+<br>
+
+* Specify the runs maintainers and their URLs using "maintainers".
+* Geography
+* filters
+* panels
+* display options
+
+* example
+
+
+#### Traits
 
 ### Using an old (`export v1`) config
 * Can this just go in as-is? Or what?
