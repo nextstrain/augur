@@ -10,6 +10,8 @@ from Bio import Phylo
 from collections import defaultdict
 from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
 import warnings
+from .validate import export_v2 as validate_v2
+from .validate import ValidateError
 
 # Set up warnings & exceptions
 warn = warnings.warn
@@ -676,7 +678,9 @@ def run_v2(args):
     auspice_json["geographic_info"] = process_geographic_info(config, args.geography_traits, read_lat_longs(args.lat_longs), node_metadata)
 
     auspice_json["updated"] = time.strftime('%Y-%m-%d')
-    auspice_json["genome_annotations"] = process_annotations(node_data)
+    genome_annotations = process_annotations(node_data)
+    if genome_annotations:
+        auspice_json["genome_annotations"] = genome_annotations
 
     # Set up panels for both config and command-line
     if config.get("panels"):
@@ -692,8 +696,18 @@ def run_v2(args):
 
     write_json(auspice_json, args.output_main, indent=json_indent)
 
-    if deprecationWarningsEmitted:
+    print("Validating produced JSON")
+    try:
+        validate_v2(json_v2=args.output_main)
+    except ValidateError as e:
+        print(e)
+        print("\n------------------------")
+        print("Validation of {} failed. Please check this in a local instance of `auspice` as we expect it to not to work in auspice. ".format(args.output_main))
         print("------------------------")
+
+
+    if deprecationWarningsEmitted:
+        print("\n------------------------")
         print("There were deprecation warnings displayed. They have been fixed but these will likely become breaking errors in a future version of augur.")
         print("------------------------")
     print("")

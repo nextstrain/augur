@@ -178,7 +178,7 @@ rule export:
             --lat-longs {input.geo_info} \
             --output-tree {output.tree} \
             --output-meta {output.meta}
-        augur validate v1 --json {output.tree} {output.meta}
+        augur validate export-v1 {output.meta} {output.tree}
         """
 
 
@@ -216,7 +216,6 @@ rule exportv2:
             --maintainers {params.auth} \
             --maintainer-urls {params.url} \
             --geography-traits {params.geo}
-        augur validate v2 --json {output.main}
         """
 
 rule clean:

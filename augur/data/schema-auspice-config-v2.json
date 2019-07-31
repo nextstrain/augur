@@ -1,0 +1,85 @@
+{
+    "type" : "object",
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "Auspice config file to be supplied to `augur export v2`",
+    "additionalProperties": false,
+    "required": [],
+    "properties" : {
+        "title": {
+            "description": "Title to be displayed in auspice",
+            "type" : "string"
+        },
+        "colorings": {
+            "description": "Set traits to be available as color-dropdown options",
+            "type" : "object",
+            "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [],
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": ["continuous", "ordinal", "categorical", "boolean"]
+                    }
+                }
+            }
+        },
+        "geographic_info": {
+            "description": "Traits to be interpreted as 'geo resolution' options -- i.e. associated with lat/longs & made points on the map",
+            "type": "array",
+            "uniqueItems": true,
+            "minItems": 1,
+            "items": {
+                "type": "string"
+            }
+        },
+        "maintainers": {
+            "type": "array",
+            "uniqueItems": true,
+            "minItems": 1,
+            "items": {
+                "type": "array",
+                "uniqueItems": true,
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "filters": {
+            "type": "array",
+            "uniqueItems": true,
+            "minItems": 1,
+            "items": {
+                "type": "string"
+            }
+        },
+        "defaults": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "map_triplicate": {
+                    "type": "boolean"
+                },
+                "geo_resolution": {
+                    "type": "string"
+                },
+                "colorBy": {
+                    "type": "string"
+                },
+                "distance_measure": {
+                    "type": "string",
+                    "enum": ["num_date", "div"]
+                },
+                "layout": {
+                    "type": "string",
+                    "enum": ["full", "grid"]
+                }
+            }
+        }
+    }
+}

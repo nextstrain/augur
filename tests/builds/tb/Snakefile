@@ -206,7 +206,7 @@ rule export_v1:
             --output-tree {output.tree} \
             --output-meta {output.meta} \
             --output-sequence {output.seq}
-        augur validate v1 --json {output.tree} {output.meta}
+        augur validate export-v1 {output.meta} {output.tree}
         """
 
 
@@ -249,7 +249,6 @@ rule export_v2:
             --maintainers {params.auth} \
             --maintainer-urls {params.url} \
             --geography-traits {params.geo}
-        augur validate v2 --json {output.main}
         """
 
 rule clean:
