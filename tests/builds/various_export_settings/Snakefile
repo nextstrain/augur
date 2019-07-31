@@ -5,8 +5,8 @@ rule all:
         hidden_nodes = "auspice/v2_hidden-nodes.json",
         time_only = "auspice/v2_time-only-tree.json",
         div_only = "auspice/v2_div-only-tree.json",
-        bool_metadata = "auspice/v2_boolean-metadata.json"
-
+        bool_metadata = "auspice/v2_boolean-metadata.json",
+        default_layout = "auspice/v2_default-layout.json"
 rule files:
     params:
         hidden_nodes = "data/hidden_nodes.json",
@@ -161,6 +161,27 @@ rule export_with_boolean_metadata:
             --colors {input.colors} \
             --title "Boolean metadata traits" \
             --output-main {output.auspice};
+        """
+
+rule export_with_default_layout:
+    message: "Exporting (v2) with default layout as clock"
+    input:
+        tree = {rules.refine_with_temporal_information.output.tree},
+        branch_lengths = {rules.refine_with_temporal_information.output.node_data},
+        metadata = {rules.parse.output.metadata},
+        colors = {base_files.colors},
+        config = "config/default-layout.json"
+    output:
+        auspice = rules.all.input.default_layout,
+    shell:
+        """
+        augur export v2 \
+            --tree {input.tree} \
+            --node-data {input.branch_lengths} \
+            --metadata {input.metadata} \
+            --colors {input.colors} \
+            --auspice-config {input.config} \
+            --output-main {output.auspice}
         """
 
 rule clean:

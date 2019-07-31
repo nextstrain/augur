@@ -180,6 +180,11 @@
                     "type": "string",
                     "enum": ["div", "num_date"]
                 },
+                "layout": {
+                  "description": "Default tree layout",
+                  "type": "string",
+                  "enum": ["rect", "radial", "unrooted", "clock"]
+              },
                 "map_triplicate": {
                     "description": "Should the map be extended / wrapped around. Useful if transmissions are worldwide.",
                     "type": "boolean"

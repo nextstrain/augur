@@ -1,0 +1,26 @@
+{
+  "title": "Default layout should be clock",
+  "colorings": {
+    "gt": {
+      "title": "Genotype",
+      "type": "categorical"
+    },
+    "num_date": {
+      "title": "Sampling date",
+      "type": "continuous"
+    },
+    "country": {
+      "type": "ordinal"
+    }
+  },
+  "panels": [
+    "tree"
+  ],
+  "maintainers": [
+    ["Trevor Bedford", "http://bedford.io/team/trevor-bedford/"]
+  ],
+  "filters": [],
+  "defaults": {
+    "layout": "clock"
+  }
+}

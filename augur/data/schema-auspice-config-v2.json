@@ -77,7 +77,7 @@
                 },
                 "layout": {
                     "type": "string",
-                    "enum": ["full", "grid"]
+                    "enum": ["rect", "radial", "unrooted", "clock"]
                 }
             }
         }
