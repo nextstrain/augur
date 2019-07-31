@@ -702,7 +702,7 @@ def run_v2(args):
     except ValidateError as e:
         print(e)
         print("\n------------------------")
-        print("Validation of {} failed. Please check this in a local instance of `auspice` as we expect it to not to work in auspice. ".format(args.output_main))
+        print("Validation of {} failed. Please check this in a local instance of `auspice`, as it is not expected to display correctly. ".format(args.output_main))
         print("------------------------")
 
 
