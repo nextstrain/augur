@@ -608,11 +608,12 @@ def run_v2(args):
         # Set up display defaults
         if config.get("display_defaults"):
 
+            display_options = {}
             for key in config["display_defaults"]:
                 new_key = convert_camel_to_snake_case(key)
-                config["display_defaults"][new_key] = config["display_defaults"].pop(key)
+                display_options[new_key] = config["display_defaults"][key]
 
-            auspice_json["display_defaults"] = config["display_defaults"]
+            auspice_json["display_defaults"] = display_options
 
     # Get title - command-line arg will overwrite the supplied config file.
     if args.title:
