@@ -96,7 +96,7 @@ You can specify "tree", "map", "entropy", and "frequencies". (ex: `--panels tree
   _(Previously the "panels" field in the your config file.)_
 <br>
 
-* Specify how you'd like to locate samples on the map using `--geography-traits`. For many users, these might be "country" and "region". (ex: `--geography-traits country region`)
+* Specify how you'd like to position samples on the map using `--geography-traits`. For many users, these might be "country" and "region". (ex: `--geography-traits country region`)
 
   _(Previously the "geo" field in your config file.)_
 <br>
@@ -189,10 +189,39 @@ All of the options listed here go directly inside the main pair of curly bracket
   _(Same as the "title" field in your v1 config file.)_
 <br>
 
-* Specify the runs maintainers and their URLs using "maintainers".
-* Geography
+* You can now have more than one maintainer associated with your run! Specify the runs maintainers and their websites using `"maintainers"` and listing the name and URL in pairs:
+  ```
+  "maintainers": [
+    ["Jane Doe", "www.janedoe.com"], 
+    ["Ravi Kupra","www.ravikupra.co.uk"]
+  ]
+  ```
+  If you only have one maintiner, you still need to use the same format of two sets of square brackets: `"maintainers": [["Hanna Kukk", "www.hkukk.ee"]]`
+
+  _(Previously the "maintainer" field in your v1 config file.)_
+<br>
+
+* To specify what panels are visible, use `"panels"`. By default, if the data is available, Auspice will show the tree, map, and entropy panels. 
+You can specify "tree", "map", "entropy", and "frequencies". You must specify "frequencies" _and_ supply a tip frequency file to `auspice` to display tip frequencies.
+
+  (ex: `"panels": ["tree", "map"]`) 
+
+  _(Same as the "panels" field in the your v1 config file.)_
+<br>
+
+* Specify how you'd like to position samples on the map using `"geo"`. For many users, these might be "country" and "region". (ex: `"geo": [ "country", "region"]`)
+
+  _(Same as the "geo" field in your v1 config file.)_
+<br>
+
+* Set what you would like to be able to filter by using `"filters"`. These must be traits present on your tree. (ex: `"filters": ["country", "region", "symptom", "age"]`)
+
+  If you don't include this option in your config file, all non-continuous traits that are coloring options will be included as filters. If you don't want any filter options, include `"filters"` with no options (ex: `"filters": []`).
+
+  _(Same as the "filters" field in your v1 config file.)_
+<br>
+
 * filters
-* panels
 * display options
 
 * example
