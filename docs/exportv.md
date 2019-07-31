@@ -133,7 +133,7 @@ If you would like to have more control over these options, you will need to incl
 <br>
 
 #### Filter
-When using `export v2` with only command-line arguments, every trait (both those from `augur traits` and passed in with `--extra-traits`), geographical trait, and the authors will automatically be available to filter by. Without using a config file, you can't exclude any of these from being filter options. **TO DO**
+When using `export v2` with only command-line arguments, every trait that's a coloring option and is either categorical or boolean will automatically be available to filter by. Without using a config file, you can't exclude any of these (or include others) as being filter options. **TO DO**
 
 
 <span style="color:red">
@@ -196,7 +196,7 @@ All of the options listed here go directly inside the main pair of curly bracket
     ["Ravi Kupra","www.ravikupra.co.uk"]
   ]
   ```
-  If you only have one maintiner, you still need to use the same format of two sets of square brackets: `"maintainers": [["Hanna Kukk", "www.hkukk.ee"]]`
+  If you only have one maintainer, you still need to use the same format of two sets of square brackets: `"maintainers": [["Hanna Kukk", "www.hkukk.ee"]]`
 
   _(Previously the "maintainer" field in your v1 config file.)_
 <br>
@@ -221,13 +221,58 @@ You can specify "tree", "map", "entropy", and "frequencies". You must specify "f
   _(Same as the "filters" field in your v1 config file.)_
 <br>
 
-* filters
-* display options
+* You can specify the default view that users will see when they load your road by using `"display_defaults"`. If you do not change the options here, `auspice` will revert to the defaults listed below. 
 
-* example
+  There are five options you can set here:
+  * `geo_resolution` - Sets which `geo` option is used to position data on the map. Default is `country` - if not available, other `geo` options will be tried.
+  * `color_by` - Sets what coloring trait the tree should be colored by. Must be an available coloring trait. Default is `country` - if not available, other coloring options will be tried.
+  * `distance_measure` - Sets whether tree branch lengths are in 'time' or 'divergence'. Default is `num_date` (time), if available. Options are `num_date` (time) or `div` (divergence).
+  * `layout` - Sets how the tree is visualized. Default is `rect` (rectangle). Options are `rect`, `radial`, `unrooted`, and `clock`, corresponding to the four options normally shown on the left in Auspice.
+  * `map_triplicate` - Sets whether the map is extended / wrapped around, which can be useful if transmissions are worldwide. Set to 'true' or 'false'.
+  <br>
 
+  _(Previously the "defaults" field in your config file.)_
+<br>
+
+* Here is an example of how all of the above options would fit into a config file _(Note this excludes trait color options, which is covered in the next section)_:
+  ```
+  {
+    "title": "Phylodynamics of my Pathogen",
+    "maintainers": [
+      ["Jane Doe", "www.janedoe.com"], 
+      ["Ravi Kupra","www.ravikupra.co.uk"]
+    ],
+    "panels": ["tree", "map"],
+    "geo": [ "country", "region"],
+    "filters": [
+      "country", "region", "symptom", "age"
+    ],
+    "display_defaults": {
+      "color_by": "symptom",
+      "geo_resolution": "region",
+      "distance_measure": "div",
+      "map_triplicate": "true"
+    }
+  }
+  ```
 
 #### Traits
+**CHECK THIS WHOLE BIT FOR HOW WE END UP MAKING CONFIG/CL WORK TOGETHER**
+
+In the export v1 config file, `"color_options"` was used to specify and describe traits that you wanted as colouring options. This is now replaced by `"colorings"`, and works in a very similar way.
+
+As in export v1, the `"colorings"` section of the config file will hold all the trait information within its curly brackets. You should provide traits using the column name you use in the metadata. 
+
+If you wish, you can provide more information about the trait using `"title"` (what should display in the drop-down menu in Auspice) and `"type"` (should the trait be treated as ordinal, boolean, continuous, or categorical). If you don't provide these, export v2 will simply use the trait name as provided and try to guess the type. The export v1 options `"legendTitle"` and `"key"` are no longer used.
+
+Unless you want to change the name displayed, you _no longer_ need to include `gt`, `num_date`, `clade_membership`, or `augur seqtraits` output (ex: drug resistance information) in your config file - if that information is present, it will automatically be included. 
+
+**TO DO**
+##### Config file only
+To specify coloring options using only a config file, **do not** use `--traits-to-color` in the command line. Then include all traits you want as coloring options in `"colorings"` in the config file. As mentioned above, you can include `"title"` and `"type"` information, or not.
+
+##### Config file and Command Line
+**Using `--traits-to-color` on the command line will override what's included in `"colorings"` in the config file to decide what will be a coloring option.** If a trait is listed in `--traits-to-color` and not in the config, it will be included. If a trait is in the config but not in `--traits-to-color` it will be excluded. _However_, if a trait is in both, but has `"title"` and `"type"` information in the config file, this _will_ be used by export v2.
 
 ### Using an old (`export v1`) config
 * Can this just go in as-is? Or what?
