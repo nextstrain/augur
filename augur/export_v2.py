@@ -137,7 +137,7 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
             return t
         # no type supplied => try to guess
         # import pdb; pdb.set_trace()
-        if all([all([str(x).lower() in ["false", "true", "1", "0", "yes", "no"] for x in trait_values])]):
+        if all([all([str(x).lower() in ["false", "true", "1.0", "0.0", "1", "0", "yes", "no"] for x in trait_values])]):
             t = "boolean"
         elif all([ isinstance(n, float) if isinstance(n, float) else isinstance(n, int) for n in trait_values ]):
             t = "continuous"
