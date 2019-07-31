@@ -69,7 +69,10 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
     Check all possible sources of conflict within the main (unified) JSON
     This function is only used for schema v2.0
     """
+    warnings = False
     def warn(msg):
+        nonlocal warnings
+        warnings = True
         print("\tWARNING: ", msg, file=sys.stderr)
 
 
@@ -139,6 +142,10 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
                 if gene not in data["genome_annotations"]:
                     warn("The tree defined mutations on gene {} which doesn't appear in the metadata annotations object.".format(gene))
 
+    if not warnings:
+        print("Validation succeeded")
+    else:
+        print("Validation failed")
 
 
 def collectTreeAttrsV1(root):
