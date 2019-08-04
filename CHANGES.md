@@ -1,6 +1,22 @@
 # __NEXT__
 
 
+# 5.2.1 (4 August 2019)
+
+## Bug fixes
+
+* Print more useful error message if Python recursion limit is reached. [See issue 328](https://github.com/nextstrain/augur/issues/328)
+
+* Print more useful error message if vcftools if missing. [See PR 312](https://github.com/nextstrain/augur/pull/321)
+
+## Development
+
+* Significantly relax version requirements specified in setup.py for biopython, pandas, etc... Additionally, move lesser used packages (cvxopt, matplotlib, seaborn) into an "extras_require" field. This should reduce conflicts with other pip installed packages. [See PR 323](https://github.com/nextstrain/augur/pull/323)
+
+## Data
+
+* Include additional country lat/longs in base data
+
 # 5.2.0 (23 July 2019)
 
 ## Features
