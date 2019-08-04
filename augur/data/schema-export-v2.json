@@ -308,7 +308,7 @@
                     "description": "URL of the sequence (usually https://www.ncbi.nlm.nih.gov/nuccore/...)",
                     "$comment": "terminal nodes only",
                     "type": "string",
-                    "pattern": "^https?://.+$"
+                    "pattern": "(^https?://.+$)|(^[?]$)"
                 },
                 "author": {
                     "description": "Author information (terminal nodes only)",
@@ -330,7 +330,7 @@
                         "paper_url": {
                             "description": "URL link to paper (if available)",
                             "type": "string",
-                            "pattern": "^https?://.+$"
+                            "pattern": "(^https?://.+$)|(^[?]$)"
                         }
                     }
                 },
