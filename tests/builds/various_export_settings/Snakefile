@@ -157,7 +157,7 @@ rule export_with_boolean_metadata:
             --tree {input.tree} \
             --node-data {input.branch_lengths} \
             --metadata {input.metadata} \
-            --extra-traits top_half_True_False top_half_1_0 top_half_yes_no all_missing \
+            --color-by-metadata top_half_True_False top_half_1_0 top_half_yes_no all_missing \
             --colors {input.colors} \
             --title "Boolean metadata traits" \
             --output-main {output.auspice};
