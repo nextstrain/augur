@@ -650,8 +650,10 @@ def run_v2(args):
     # Ensures we get all traits even if not on every node
     traits = get_traits(node_data)
     # Get first line of metdata to know metadata columns
-    with open(args.metadata) as f:
-        meta_cols = f.readline().strip().split('\t' if args.metadata[-3:]=='tsv' else ',')
+    meta_cols = []
+    if args.metadata:
+        with open(args.metadata) as f:
+            meta_cols = f.readline().strip().split('\t' if args.metadata[-3:]=='tsv' else ',')
 
     # remove keys which may look like traits but are not
     excluded_traits = [
