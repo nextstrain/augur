@@ -536,7 +536,7 @@ def register_arguments_v2(subparsers):
     config.add_argument('--maintainer-urls', metavar="url", nargs='+', help="URL of maintainers")
     config.add_argument('--geography-traits', metavar="trait", nargs='+', help="What location traits are used to plot on map")
     config.add_argument('--extra-traits', metavar="trait", nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
-    config.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="Restrict panel display in auspice. Options are %(default)s. Ignore this option to display all available panels.")
+    config.add_argument('--panels', metavar="panels", nargs='+', choices=['tree', 'map', 'entropy', 'frequencies'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
 
     optional_inputs = v2.add_argument_group(
         title="OPTIONAL INPUTS"
@@ -659,13 +659,6 @@ def run_v2(args):
     node_metadata = transfer_metadata_to_strains(strains, raw_strain_info, traits)
     set_author_on_nodes(node_metadata, raw_strain_info)
 
-    # Set up filters
-    if config.get('filters'):
-        auspice_json['filters'] = config['filters']
-        if "authors" in auspice_json['filters']:
-            del auspice_json['filters'][auspice_json['filters'].index("authors")]
-            auspice_json['filters'].append("author")
-
     add_metadata_to_tree(auspice_json["tree"], node_metadata)
 
     auspice_json["colorings"] = get_colorings(
@@ -676,6 +669,15 @@ def run_v2(args):
         mutations_present=bool(check_muts(node_metadata))
     )
 
+    # Set up filters - if in config but empty, no filters.
+    if config.get('filters') or config.get('filters') == []:
+        auspice_json['filters'] = config['filters']
+        if "authors" in auspice_json['filters']:
+            del auspice_json['filters'][auspice_json['filters'].index("authors")]
+            auspice_json['filters'].append("author")
+    else: # if not specified, include all boolean and categorical colorbys
+        auspice_json['filters'] = [key for key,value in auspice_json["colorings"].items() if value['type'] in ['categorical', 'boolean']]
+
     auspice_json["geographic_info"] = process_geographic_info(config, args.geography_traits, read_lat_longs(args.lat_longs), node_metadata)
 
     auspice_json["updated"] = time.strftime('%Y-%m-%d')
@@ -683,10 +685,11 @@ def run_v2(args):
     if genome_annotations:
         auspice_json["genome_annotations"] = genome_annotations
 
-    # Set up panels for both config and command-line
+    # Set up panels - command line overrides config
+    panels = None #if this remains, defaults will be set in process_panels
     if config.get("panels"):
         panels = config["panels"]
-    else:
+    if args.panels:
         panels = args.panels
     auspice_json["panels"] = process_panels(panels, auspice_json)
 
