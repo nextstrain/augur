@@ -111,7 +111,7 @@ def isValueValid(value):
     invalid = ["undefined", "unknown", "?", "nan", "na", "n/a", 'none', '', 'not known']
     return False if str(value).strip('\"').strip("'").strip().lower() in invalid else True
 
-def get_colorings(config, traits, provided_colors, node_metadata, mutations_present):
+def get_colorings(config, colorbys, provided_colors, node_metadata, mutations_present):
     def _rename_authors_key(color_config):
         if not color_config.get("authors"):
             return
@@ -179,17 +179,22 @@ def get_colorings(config, traits, provided_colors, node_metadata, mutations_pres
         return key
 
     # TODO: sort out how command line arguments play with colof_config, if defined
-    if config.get("colorings"):
-        color_config = config["colorings"]
-    elif config.get("color_options"):
-        color_config = config["color_options"]
-        deprecated("[config file] 'color_options' has been replaced with 'colorings'")
-    else:
-        color_config = {t: {} for t in traits}
 
+    # Get config file colorings - but may or may not be included.
+    config_colorings = {}
+    if config.get("colorings"):
+        config_colorings = config["colorings"]
+    elif config.get("color_options"):
+        config_colorings = config["color_options"]
+        deprecated("[config file] 'color_options' has been replaced with 'colorings'")
+   
+    # Only explicitly set colorbys are included!
+    color_config = {c: (config_colorings[c] if c in config_colorings.keys() else {}) for c in colorbys}
+
+    #TODO this should *not* be needed anymore, but test a bit more....
     # if the 'clade_membership' trait is defined then ensure it's also a coloring
-    if 'clade_membership' in traits and 'clade_membership' not in color_config:
-        color_config['clade_membership'] = {}
+    #if 'clade_membership' in traits and 'clade_membership' not in color_config:
+    #    color_config['clade_membership'] = {}
 
     # handle deprecated keys by updating to their new ones where possible
     _rename_authors_key(color_config)
@@ -535,7 +540,8 @@ def register_arguments_v2(subparsers):
     config.add_argument('--maintainers', metavar="name", nargs='+', help="Analysis maintained by")
     config.add_argument('--maintainer-urls', metavar="url", nargs='+', help="URL of maintainers")
     config.add_argument('--geography-traits', metavar="trait", nargs='+', help="What location traits are used to plot on map")
-    config.add_argument('--extra-traits', metavar="trait", nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
+    config.add_argument('--color-by-metadata', metavar="trait", nargs='+', help="Metadata columns to include as coloring options")
+    #config.add_argument('--extra-traits', metavar="trait", nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
     config.add_argument('--panels', metavar="panels", nargs='+', choices=['tree', 'map', 'entropy', 'frequencies'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
 
     optional_inputs = v2.add_argument_group(
@@ -636,23 +642,46 @@ def run_v2(args):
     elif config.get("maintainers"): #v2-type specification (proposed by Emma)
         auspice_json['maintainers'] = [{'name': n[0], 'url': n[1]} for n in config['maintainers']]
 
-    # get traits to colour by etc - do here before node_data is modified below
-    # this ensures we get traits even if they are not on every node
+    # TRAITS are data written to nodes on the tree
+    # COLORBYs are traits that are coloring options
+    # All colorbys are traits, but not all traits are colorbys
+
+    # Get TRAITS (before node_data modified)
+    # Ensures we get all traits even if not on every node
     traits = get_traits(node_data)
-    if config.get('colorings'):
-        traits.extend(config['colorings'].keys())
-    if args.extra_traits:
-        traits.extend(args.extra_traits)
-    # Automatically add any specified geo traits - otherwise won't work!
-    if args.geography_traits:
-        traits.extend(args.geography_traits)
-        traits = list(set(traits)) #ensure no duplicates
+    # Get first line of metdata to know metadata columns
+    with open(args.metadata) as f:
+        meta_cols = f.readline().strip().split('\t' if args.metadata[-3:]=='tsv' else ',')
+
     # remove keys which may look like traits but are not
     excluded_traits = [
         "clade_annotation", # Clade annotation is label, not colorby!
         "authors" # authors are set as a node property, not a trait property
     ]
+    # Remove traits that are in metadata - they must be explicitly specified to be colorbys
+    excluded_traits.extend(meta_cols)
     traits = [t for t in traits if t not in excluded_traits]
+
+    # Save any remaining (clades, seqtraits) to be colorbys automatically
+    auto_color_bys = traits.copy()
+
+    # Add any specified geo traits - otherwise won't work!
+    if args.geography_traits:
+        traits.extend(args.geography_traits)
+        traits = list(set(traits)) #ensure no duplicates
+
+    # GET COLORBYS
+    colorbys = auto_color_bys
+    if args.color_by_metadata:
+        colorbys.extend(args.color_by_metadata)
+    # Only include config colorings if no commandline!
+    elif config.get('colorings'):
+        colorbys.extend(config['colorings'].keys())
+    colorbys = list(set(colorbys)) #ensure no duplicates
+
+    # Add colorbys to traits
+    traits.extend(colorbys)
+    traits = list(set(traits)) #ensure no duplicates
 
     raw_strain_info = collect_strain_info(node_data, args.metadata)
     auspice_json["tree"], strains = convert_tree_to_json_structure(T.root, raw_strain_info)
@@ -663,7 +692,7 @@ def run_v2(args):
 
     auspice_json["colorings"] = get_colorings(
         config=config,
-        traits=traits,
+        colorbys=colorbys,
         provided_colors=read_colors(args.colors),
         node_metadata=node_metadata,
         mutations_present=bool(check_muts(node_metadata))
