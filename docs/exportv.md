@@ -3,9 +3,7 @@
 <span style="color:blue">
 
 TO DO:
-* **Update what's a colorby in CL to whatever we decide.**
-* Update filter behaviour and explanation
-* Explanation of config files and how/when overrides happen with CL. _Will be easier to write when we have resolved all questions ourselves_ (needs to include default view info)
+* Check CL and config override stuff
 * Decide how best to explain `--title` and `--maintainers` so that works both for CL and with snakemake _Current explanataion ok?_
 * Are we including 'advanced config' options...?
 
@@ -18,7 +16,7 @@ The `augur export` function is getting an upgrade! This is tied to an upgrade to
 ### Why did we make this change?
 * **Compactness**: Tree and Meta JSON files are now combined, so you only have to worry about one output file
 * **Flexibility**: The new v2 JSONs allow us flexiblity to include more features and data, and will let us move towards getting in line with existing conventions like GFF and BibTex
-* **Ease of use**: Users commonly got confused by the 'config' file. For basic runs you can now specify everything you need to see your data right in the command-line - no 'config' file needed! For more advanced exports, you can still specify a config file with more detail. (See [bottom of the page](#how-do-i-use-a-config-file-in-v2))
+* **Ease of use**: Users commonly got confused by the 'config' file. For basic runs you can now specify everything you need to see your data right in the command-line - no 'config' file needed! For more advanced exports, you can still specify a config file with more detail. (See [bottom of the page](#config-file-options))
 
 ## **I just need my old run to work _right now_!**
 *When you upgrade to the latest version of `augur`, `augur export` will no longer work.* But we understand you may not have time to make the change right this second, and that there's nothing more frustrating than having a run break right before a presentation or deadline!
@@ -33,9 +31,9 @@ To use the new version, use `augur export v2`. You'll need to make a few changes
 ## Great! What do I need to do to move to `v2`?
 You can always get a full overview of the arguments for export v2 with `augur export v2 --help`.
 
-You can now choose between exporting using just the command-line or using a combination of the command-line and config file. Remember that generally **any command line options you use will override the same option in your config file**. 
+You can now choose between exporting using just the command-line, or using a combination of the command-line and config file. Remember that generally **any command line options you use will override the same option in your config file**. 
 
-We'll first cover what's the same/almost the same as in `export v1`, which are all things that must be passed in via command-line. Then we'll cover how to use [command-line options](#command-line-options), and finally how to use a [config file](#how-do-i-use-a-config-file-in-v2).
+We'll first cover what's the same/almost the same as in `export v1`, which are all things that must be passed in via command-line. Then we'll cover how to use [command-line options](#command-line-options), and finally how to use a [config file](#config-file-options).
 
 
 ### What's the same:
@@ -51,12 +49,11 @@ Instead of specifying two output files (`--output-tree` and `--output-meta`) you
 For example, if your old files were `auspice/virus_AB_tree.json` and `auspice/virus_AB_meta.json`, you might want to call the single output `auspice/virus_AB.json` - or if you want to tell it apart from your v1 export, you might call it `auspice/virus_ABv2.json`. 
 
 ### How Coloring by Traits is Smarter
-**TO DO**
 Previously config files always had to include `gt` and `num_date` to allow coloring by genotype and date, respectively. If you had run `augur clades`, you had to remember to add `clade_membership` to the config file, and if you'd run `augur seqtraits` you had to add every resulting option. 
 
-We've made things a little smarter! You never have to include `gt` or `num_date` in command-line or config - if the right data is sent export v2, they'll automatically be included as a coloring option. The same is true for `augur clades` and `augur seqtraits` - if you pass the resulting JSON files in with `--node-data`, they'll be included as coloring options. 
+We've made things a little smarter! You never have to include `gt` or `num_date` in the command-line or config file - if the right data is sent to export v2, they'll automatically be included as a coloring option. The same is true for `augur clades` and `augur seqtraits` - if you pass the resulting JSON files in with `--node-data`, they'll be included as coloring options. _(If you don't want them as a coloring option, just don't pass in the files!)_
 
-_Everything else_ you want to have as a coloring option must be specified either by `--traits-to-color` or in the config file (what's specified in `--traits-to-color` will override what's in the config file).
+_Everything else_ you want to have as a coloring option must be specified either by `--metadata-color-by` or in the config file (what's specified in `--metadata-color-by` will override what's in the config file).
 
 ## Command-line Options
 Remember that generally **any command line options you use will override the same option in your config file**. 
@@ -90,7 +87,7 @@ Remember that generally **any command line options you use will override the sam
 ##### Maintainer Websites
 * Specify with `--maintainer-urls`. 
 * Put them in the same order as the `--maintainers` so they link up with the right people! (ex: `--maintainer-urls www.janedoe.com www.ravikupra.co.uk`) 
-* **TO DO**
+* **TO DO** _We ok with this?_
 * _(Previously the second part of the "maintainer" field in your v1 config file.)_
 
 ##### Panels
@@ -106,45 +103,34 @@ Remember that generally **any command line options you use will override the sam
 
 #### Traits
 
-**TO DO TO DO**
+* Genotype and date (if present) are always automatically included as coloring options - you don't need to include them.<br>  - _(Previously `gt` and `numdate` in your v1 config file)_
+  <br><br>
+* If you pass output from `augur clades` or `augur seqtraits` in using `--node-data`, that will also be automatically included as a coloring option <br>  - If you don't want them to be included, just don't pass the file in with `--node-data` <br>  - _(Previously things like `clade_membership`)_
+<br><br>
+* Pass in anything else from your metadata file you'd like to include with `--metadata-color-by` (ex: `--metadata-color-by country age host`) <br>  - _(Previously listed under "color_options" in your v1 config file)_
+<br><br>
+* You **can't** specify the title or type of a colouring option using just command-line - but `export v2` will make its best guess. <br>  - Excluding missing data, if a trait contains only 'True', 'False', 'Yes', 'No', '0' or '1', it will be set to 'boolean.' If it contains only numbers (integers and/or decimals), it will be set to 'continuous.' Otherwise, it will be set as 'discrete.' <br>  - If you want to have more control over how your trait is interpreted, you should use a config file (see [bottom of the page](#config-file-options)).
 
-* Any traits that you have run with `augur traits` are now automatically included by `export v2` and available to color by! (These are often in a file called `traits_`(something)`.json`.) **TO DO**
-
-  If you'd like to exclude any traits, you'll need to re-run `augur traits` without that trait. You can also do this with a config file (see [bottom of the page](#how-do-i-use-a-config-file-in-v2)).
-
-  `export v2` will also automatically include date, genotype, and author information (if available) - you don't have to specify them!
-<br>
-
-* If you have extra meta-data that you'd like to include to color by, but
-haven't run in `augur traits`, you can include it with `--extra-traits`.
-Ensure you use the name of the column in the metadata file with the same
-spelling and capitalization! 
-(ex: `--extra-traits age host`)
-
-  *(Previously, included traits were those things listed under "color_options" in your old config. `gt`, `num_date`, and `authors` don't need to be specified anymore - they'll be automatically included if present.)*
-<br>
-
-* If you don't provide a config file, `export v2` will try to 'guess' the type of the traits you include. Excluding missing data, if a trait contains only 'True', 'False', 'Yes', 'No', '0' or '1', it will be set to 'boolean.' If it contains only numbers (integers and/or decimals), it will be set to 'continuous.' Otherwise, it will be set as 'discrete.' If you want to have more control over how your trait is interpreted, you should use a config file (see [bottom of the page](#how-do-i-use-a-config-file-in-v2)).
 
 
 
 ### What's not possible in command-line only:
 #### Default view
-It is not possible to set the default view options using only command-line arguments in `export v2`.
+* It is not possible to set the default view options using only command-line arguments in `export v2`.
 
-By default, `auspice` will display your tree in rectangle view, with branch lengths, color, and map position based on the available data. You can read more about the defaults [here] **TO DO**.
+* By default, `auspice` will display your tree in rectangle view, with branch lengths, color, and map position based on the available data. You can read more about the defaults [here](#id6). 
 
-If you would like to have more control over these options, you will need to include a config file (see [bottom of the page](#how-do-i-use-a-config-file-in-v2)). **TO DO** _Direct this link to a better place_
+* If you would like to have more control over these options, you will need to include a config file. You can find more information [here](#id6). 
 
-  _(Previously the "defaults" field in your v1 config file.)_
+* _(Previously the "defaults" field in your v1 config file.)_
 <br>
 
 #### Filter
-When using `export v2` with only command-line arguments, every trait that's a coloring option and is either categorical or boolean will automatically be available to filter by. 
+* When using `export v2` with only command-line arguments, every trait that's a coloring option and is either categorical or boolean will automatically be available to filter by. 
 
-If you'd like to specify exactly what traits are listed as filters, you'll need to use a config file. You can find more information [here]. **TO DO**
+* If you'd like to specify exactly what traits are listed as filters, you'll need to use a config file. You can find more information [here](#filters). 
 
-  _(The same as the "filters" field in your v1 config file.)_
+*  _(The same as the "filters" field in your v1 config file.)_
 
 
 
@@ -156,7 +142,7 @@ We have tried to make the command line arguments cover everything you need to ge
 With a config file, you can:
 * Specify exactly what you want as a filter option
 * Set the default display view
-* Give color-by traits more specific titles to display
+* Give color-by traits more specific titles
 * Specify color-by trait type
 * _More advanced (flu?) options_ **TO DO**
 
@@ -166,16 +152,16 @@ It is important to remember that if you set an option both in the config file _a
 There are a couple of exceptions to this:
 * There is no way to set default display views using command line only, so using `"display_defaults"` in your config file will set this
 * There is no way to modify the default filters displayed when using command line only, so using `"filters"` in your config file will set this
-* **???** _INCLUDE HOW THIS AFFECTS TRAITS DEPENDING ON HOW WE DECIDE THIS IN CL_
-**TO DO**
+* If you set color-by options in command-line using `--metadata-color-by` _and_ pass in a config file, only the things listed in `--metadata-color-by` will be coloring options, but if they have a 'title' and 'type' set in the config file, these will be used.
+
 
 ### Using a Config File
-You will always need to pass in some information, like your tree and metadata, via the command line. Jump back up to [What's the same](#what-s-the-same) and
+* You will always need to pass in some information, like your tree and metadata, via the command line. Jump back up to [What's the same](#what-s-the-same) and
 [What's almost the same](#what-s-almost-the-same) to see what these are.
 
-You'll also need to use `--auspice-config` to pass in the config file you'd like to use (this is the same as in export v1).
+* You'll also need to use `--auspice-config` to pass in the config file you'd like to use (this is the same as in export v1).
 
-**Remember:** You don't have to include every field in your config file if you specify it in the command line (or are happy with the default) instead.
+* **Remember:** You don't have to include every field in your config file - you can specify it in the command line (or use the default default) instead, if you prefer.
 
 #### Config file format
 Just like in export v1, the config file is a JSON-format file. _It is important that everything in your config file is enclosed in one pair of curly brackets._ These can be on a separate line at the very top and very bottom of your file. 
@@ -185,7 +171,7 @@ Syntax is important - if you are getting errors, ensure all your brackets and qu
 _Export v2 config files are generally very simliar to export v1, but there are a few changes._ They are explained in detail below, or you can see [an example of converting a v1 config to v2](#using-an-old-export-v1-config).
 
 #### General Display
-All of the options listed here go directly inside the main pair of curly brackets. See the [end of this section] for an example.
+All of the options listed here go directly inside the main pair of curly brackets. See the [end of this section](#example) for an example.
 
 ##### Title
 * Specify the title of your run using `"title"`. 
@@ -260,24 +246,23 @@ Here is an example of how all of the above options would fit into a config file 
   ```
 
 #### Traits
-**CHECK THIS WHOLE BIT FOR HOW WE END UP MAKING CONFIG/CL WORK TOGETHER**
+**Remember that if you are using `--metadata-color-by` on the command-line, only the traits given there will be color-by options! To include everything in your config file, don't use `--metadata-color-by`.
 
 In the export v1 config file, `"color_options"` was used to specify and describe traits that you wanted as colouring options. This is now replaced by `"colorings"`, and works in a very similar way.
 
-As in export v1, the `"colorings"` section of the config file will hold all the trait information within its curly brackets (see [the example]). You should provide traits using the column name in the metadata. 
+As in export v1, the `"colorings"` section of the config file will hold all the trait information within its curly brackets (see [the example](#example)). You should provide traits using the column name in the metadata. 
 
 If you wish, you can provide more information about the trait using `"title"` (what should display in the drop-down menu in Auspice - previously `"menuItem"` in export v1) and `"type"` (should the trait be treated as ordinal, boolean, continuous, or categorical). If you don't provide these, export v2 will simply use the trait name as provided and try to guess the type. The export v1 options `"legendTitle"` and `"key"` are no longer used.
 
-Unless you want to change the name displayed, you _no longer_ need to include `gt`, `num_date`, `clade_membership`, or `augur seqtraits` output (ex: drug resistance information) in your config file - if that information is present, it will automatically be included. To exclude it, simply don't pass in the corresponding file to `--node-data`.
+Unless you want to change the name displayed, you _no longer_ need to include `gt`, `num_date`, `clade_membership`, or `augur seqtraits` output (like clade or drug resistance information) in your config file - if that information is present, it will automatically be included. To exclude it, simply don't pass in the corresponding file to `--node-data`.
 
-**TO DO**
 ##### Config file only
-To specify coloring options using only a config file, **do not** use `--traits-to-color` in the command line. Then include all traits you want as coloring options in `"colorings"` in the config file. As mentioned above, you can include `"title"` and `"type"` information, or not.
+To specify coloring options using only a config file, **do not** use `--metadata-color-by` in the command line. Then include all traits you want as coloring options in `"colorings"` in the config file. As mentioned above, you can include `"title"` and `"type"` information, or not.
 
 ##### Config file and Command Line
-**Using `--traits-to-color` on the command line will override what's included in `"colorings"` in the config file to decide what will be a coloring option.** If a trait is listed in `--traits-to-color` and not in the config, it will be included. If a trait is in the config but not in `--traits-to-color` it will be excluded. _However_, if a trait is in both, but has `"title"` and `"type"` information in the config file, this information _will_ be used by export v2.
+**Using `--metadata-color-by` on the command line will override what's included in `"colorings"` in the config file to decide what will be a coloring option.** If a trait is listed in `--metadata-color-by` and not in the config, it will be included. If a trait is in the config but not in `--metadata-color-by` it will be excluded. _However_, if a trait is in both, but has `"title"` and `"type"` information in the config file, this information _will_ be used by export v2.
 
-In short, if using a config file and the command line, ensure everything you want as a coloring option is in `--traits-to-color`. You only need to also include it `"colorings"` in the config file if you want to set the `"title"` and/or `"type"`.
+In short, if using a config file and the command line, ensure everything you want as a coloring option is in `--metadata-color-by`. You only need to also include it `"colorings"` in the config file if you want to set the `"title"` and/or `"type"`.
 
 ##### Example
 Here's an example of how display and trait options (for `age`, `hospitalized`, `country`, and `region`) might fit together in a config file:
