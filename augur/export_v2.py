@@ -698,9 +698,10 @@ def run_v2(args):
         mutations_present=bool(check_muts(node_metadata))
     )
 
-    # Set up filters - if in config but empty, no filters.
+    # Set up filters - if "filters" is in config but empty - no filters.
+    # Only allow filters that are actually in traits...
     if config.get('filters') or config.get('filters') == []:
-        auspice_json['filters'] = config['filters']
+        auspice_json['filters'] = [f for f in config['filters'] if f in traits]
         if "authors" in auspice_json['filters']:
             del auspice_json['filters'][auspice_json['filters'].index("authors")]
             auspice_json['filters'].append("author")
