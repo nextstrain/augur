@@ -334,11 +334,17 @@ def set_author_on_nodes(node_metadata, raw_strain_info):
 
         node["author"] = {"author": author}
         if "title" in raw_strain_info[strain]:
-            node["author"]["title"] = raw_strain_info[strain]["title"].strip()
+            title = raw_strain_info[strain]["title"].strip()
+            if isValueValid(title):
+                node["author"]["title"] = title
         if "journal" in raw_strain_info[strain]:
-            node["author"]["journal"] = raw_strain_info[strain]["journal"].strip()
-        if "paper_url" in raw_strain_info[strain] and not raw_strain_info[strain]["paper_url"].strip("/").endswith("pubmed"):
-            node["author"]["paper_url"] = raw_strain_info[strain]["paper_url"].strip()
+            journal = raw_strain_info[strain]["journal"].strip()
+            if isValueValid(journal):
+                node["author"]["journal"] = journal
+        if "paper_url" in raw_strain_info[strain]:
+            paper_url = raw_strain_info[strain]["paper_url"].strip()
+            if isValueValid(paper_url) and not paper_url.strip("/").endswith("pubmed"):
+                node["author"]["paper_url"] = paper_url
 
         # add to `seen` which will later be used to create the unique value which auspice will display
         year_matches = re.findall(r'\([0-9A-Z-]*(\d{4})\)', node["author"].get("journal", ""))
