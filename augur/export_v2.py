@@ -322,8 +322,8 @@ def set_author_on_nodes(node_metadata, raw_strain_info):
     :returns: None
     :rtype: None
     """
-    author_info = {}
-    seen = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+
+    author_to_unique_tuples = {}
 
     for strain, node in node_metadata.items():
         author = raw_strain_info[strain].get("author")
@@ -346,23 +346,38 @@ def set_author_on_nodes(node_metadata, raw_strain_info):
             if isValueValid(paper_url) and not paper_url.strip("/").endswith("pubmed"):
                 node["author"]["paper_url"] = paper_url
 
-        # add to `seen` which will later be used to create the unique value which auspice will display
-        year_matches = re.findall(r'\([0-9A-Z-]*(\d{4})\)', node["author"].get("journal", ""))
-        year = str(year_matches[-1]) if year_matches else "unknown"
-        seen[author][year][node["author"].get("title", "unknown")].append(node)
+        # use author_tuple to make a unique list of citations to disambiguate
+        # Hadfield et al A, Hadfield et al B, etc...
+        author_tuple = (
+            author,
+            node["author"].get("title", "unknown"),
+            node["author"].get("journal", "unknown")
+        )
 
-    # turn "seen" into a unique "nice" string for auspice to display
-    for author in seen.keys():
-        for year in seen[author].keys():
-            titles = sorted(seen[author][year].keys())
-            for idx, title in enumerate(titles):
-                value = author.split()[0].lower().capitalize()
-                if year != "unknown":
-                    value += " ({})".format(year)
-                if len(titles) > 1:
-                    value += " {}".format("abcdefghij"[idx])
-                for node in seen[author][year][title]:
-                    node["author"]["value"] = value
+        if author not in author_to_unique_tuples:
+            author_to_unique_tuples[author] = [author_tuple] # using a list here rather than a set because we don't want reordering
+        else:
+            if author_tuple not in author_to_unique_tuples[author]:
+                author_to_unique_tuples[author].append(author_tuple)
+
+    # second pass is necessary because we don't know if we need A, B, C
+    # without a complete first pass
+    for strain, node in node_metadata.items():
+        if not node.get("author"):
+            continue # internal node / terminal node without authors
+
+        author = node.get("author").get("author")
+        author_tuple = (
+            author,
+            node["author"].get("title", "unknown"),
+            node["author"].get("journal", "unknown")
+        )
+
+        if len(author_to_unique_tuples[author]) > 1:
+            index = author_to_unique_tuples[author].index(author_tuple)
+            node["author"]["value"] = author + " {}".format("ABCDEFGHIJKLMNOPQRSTUVWXYZ"[index])
+        else:
+            node["author"]["value"] = author
 
 def transfer_metadata_to_strains(strains, raw_strain_info, traits):
     '''
