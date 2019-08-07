@@ -296,7 +296,8 @@ def register_arguments(parser):
     parser.add_argument('--translations', type=str, help="AA alignment to search for sequence traits in (can include ancestral sequences)")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the nucleotide VCF was mapped to')
     parser.add_argument('--vcf-translate-reference', type=str, help='fasta file of the sequence the translated VCF was mapped to')
-    parser.add_argument('--features', type=str, help='file that specifies sites defining the features in a tab-delimited format "GENOMIC_POSITION ALT_BASE DRUG AA(optional)"')
+    parser.add_argument('--features', type=str, 
+        help='file that specifies sites defining the features in a tab-delimited format: "GENE SITE ALT DISPLAY_NAME FEATURE". For nucleotide sites, GENE can be "nuc" (or column excluded entirely for all-nuc sites). "DISPLAY_NAME" can be blank or excluded entirely.')
     parser.add_argument('--count', type=str, choices=['traits','mutations'], default='traits', help='Whether to count traits (ex: # drugs resistant to) or mutations')
     parser.add_argument('--label', type=str, default="# Traits", help='How to label the counts (ex: Drug_Resistance)')
     parser.add_argument('--output', '-o', type=str, help='output json with sequence features')
