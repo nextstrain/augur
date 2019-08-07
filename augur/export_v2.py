@@ -343,7 +343,7 @@ def set_author_on_nodes(node_metadata, raw_strain_info):
                 node["author"]["journal"] = journal
         if "paper_url" in raw_strain_info[strain]:
             paper_url = raw_strain_info[strain]["paper_url"].strip()
-            if isValueValid(paper_url) and not paper_url.strip("/").endswith("pubmed"):
+            if isValueValid(paper_url):
                 node["author"]["paper_url"] = paper_url
 
         # use author_tuple to make a unique list of citations to disambiguate
