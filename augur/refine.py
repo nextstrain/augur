@@ -106,6 +106,7 @@ def register_arguments(parser):
                                 "rates and/or rerooting. "
                                 "Use --no-covariance to turn off.")
     parser.add_argument('--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!
+    parser.add_argument('--keep-polytomies', action='store_true', help='Do not attempt to resolve polytomies')
     parser.add_argument('--date-format', default="%Y-%m-%d", help="date format")
     parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
     parser.add_argument('--date-inference', default='joint', choices=["joint", "marginal"],
@@ -194,7 +195,7 @@ def run(args):
                     branch_length_inference = args.branch_length_inference or 'auto',
                     clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
                     clock_filter_iqd=args.clock_filter_iqd,
-                    covariance=args.covariance)
+                    covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies))
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,

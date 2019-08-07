@@ -32,8 +32,7 @@ def find_executable(names, default = None):
 
     return exe
 
-
-def build_raxml(aln_file, out_file, clean_up=True, nthreads=1):
+def build_raxml(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args=""):
     '''
     build tree using RAxML with parameters '-f d -m GTRCAT -c 25 -p 235813 -n tre"
     '''
@@ -59,7 +58,7 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=1):
     # RAxML_bestTree.4ed91a, RAxML_info.4ed91a, RAxML_parsimonyTree.4ed91a, RAxML_result.4ed91a
     random_string = uuid.uuid4().hex[0:6]
 
-    call = [raxml,"-T",str(nthreads)," -f d -m GTRCAT -c 25 -p 235813 -n %s -s"%(random_string), aln_file, "> RAxML_log.%s"%(random_string)]
+    call = [raxml,"-T",str(nthreads)," -f d -m GTRCAT -c 25 -p 235813 -n %s -s"%(random_string), aln_file, tree_builder_args, "> RAxML_log.%s"%(random_string)]
     cmd = " ".join(call)
     print("Building a tree via:\n\t" + cmd +
           "\n\tStamatakis, A: RAxML Version 8: A tool for Phylogenetic Analysis and Post-Analysis of Large Phylogenies."
@@ -81,7 +80,7 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=1):
 
     return T
 
-def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1):
+def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args=""):
     '''
     build tree using fasttree with parameters "-nt"
     '''
@@ -109,7 +108,7 @@ def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1):
         "OMP_NUM_THREADS": str(nthreads),
     }
 
-    call = [fasttree, "-nosupport", "-nt", aln_file, "1>", out_file, "2>", log_file]
+    call = [fasttree, "-nosupport", "-nt", aln_file, tree_builder_args, "1>", out_file, "2>", log_file]
     cmd = " ".join(call)
     print("Building a tree via:\n\t" + cmd +
           "\n\tPrice et al: FastTree 2 - Approximately Maximum-Likelihood Trees for Large Alignments." +
@@ -126,7 +125,7 @@ def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1):
     return T
 
 
-def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nthreads=1):
+def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nthreads=1, tree_builder_args=""):
     '''
     build tree using IQ-Tree with parameters "-fast"
     arguments:
@@ -162,9 +161,9 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
 
     if substitution_model.lower() != "none":
         call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", tmp_aln_file,
-                "-m", substitution_model, ">", log_file]
+                "-m", substitution_model, tree_builder_args, ">", log_file]
     else:
-        call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", tmp_aln_file, ">", log_file]
+        call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", tmp_aln_file, tree_builder_args, ">", log_file]
 
     cmd = " ".join(call)
 
@@ -363,6 +362,7 @@ def register_arguments(parser):
                                 help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--exclude-sites', type=str, help='file name of one-based sites to exclude for raw tree building (BED format in .bed files, DRM format in tab-delimited files, or one position per line)')
+    parser.add_argument('--tree-builder-args', type=str, default='', help='extra arguments to be passed directly to the executable of the requested tree method (e.g., --tree-builder-args="-czb")')
 
 
 def run(args):
@@ -405,11 +405,11 @@ def run(args):
         print("Cannot specify model unless using IQTree. Model specification ignored.")
 
     if args.method=='raxml':
-        T = build_raxml(fasta, tree_fname, nthreads=args.nthreads)
+        T = build_raxml(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
     elif args.method=='iqtree':
-        T = build_iqtree(fasta, tree_fname, args.substitution_model, nthreads=args.nthreads)
+        T = build_iqtree(fasta, tree_fname, args.substitution_model, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
     elif args.method=='fasttree':
-        T = build_fasttree(fasta, tree_fname, nthreads=args.nthreads)
+        T = build_fasttree(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
     else:
         print("ERROR: unknown tree builder provided to --method: %s" % args.method, file = sys.stderr)
         return 1
