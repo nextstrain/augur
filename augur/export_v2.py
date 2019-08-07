@@ -87,7 +87,7 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
     return (node_struct, strains)
 
 def check_muts(node_metadata):
-    values_in_tree = 0 
+    values_in_tree = 0
     for node_properties in node_metadata.values():
         if "mutations" in node_properties:
             values_in_tree+=1
@@ -107,9 +107,9 @@ def get_values_in_tree(node_metadata, key):
         return {}
     return values_in_tree
 
-def isValueValid(value):
+def is_valid(value):
     invalid = ["undefined", "unknown", "?", "nan", "na", "n/a", 'none', '', 'not known']
-    return False if str(value).strip('\"').strip("'").strip().lower() in invalid else True
+    return str(value).strip('\"').strip("'").strip().lower() not in invalid
 
 def get_colorings(config, traits, provided_colors, node_metadata, mutations_present):
     def _rename_authors_key(color_config):
@@ -323,7 +323,17 @@ def set_author_on_nodes(node_metadata, raw_strain_info):
     :rtype: None
     """
 
-    author_to_unique_tuples = {}
+    def node_to_author_tuple(node):
+        # make a unique list of citations to disambiguate
+        # Hadfield et al A, Hadfield et al B, etc...
+        return (
+            node["author"].get("author", "unknown"),
+            node["author"].get("title", "unknown"),
+            node["author"].get("journal", "unknown")
+        )
+
+    # author_to_unique_tuples = {}
+    author_to_unique_tuples = defaultdict(list)
 
     for strain, node in node_metadata.items():
         author = raw_strain_info[strain].get("author")
@@ -335,30 +345,22 @@ def set_author_on_nodes(node_metadata, raw_strain_info):
         node["author"] = {"author": author}
         if "title" in raw_strain_info[strain]:
             title = raw_strain_info[strain]["title"].strip()
-            if isValueValid(title):
+            if is_valid(title):
                 node["author"]["title"] = title
         if "journal" in raw_strain_info[strain]:
             journal = raw_strain_info[strain]["journal"].strip()
-            if isValueValid(journal):
+            if is_valid(journal):
                 node["author"]["journal"] = journal
         if "paper_url" in raw_strain_info[strain]:
             paper_url = raw_strain_info[strain]["paper_url"].strip()
-            if isValueValid(paper_url):
+            if is_valid(paper_url):
                 node["author"]["paper_url"] = paper_url
 
-        # use author_tuple to make a unique list of citations to disambiguate
-        # Hadfield et al A, Hadfield et al B, etc...
-        author_tuple = (
-            author,
-            node["author"].get("title", "unknown"),
-            node["author"].get("journal", "unknown")
-        )
+        author_tuple = node_to_author_tuple(node)
 
-        if author not in author_to_unique_tuples:
-            author_to_unique_tuples[author] = [author_tuple] # using a list here rather than a set because we don't want reordering
-        else:
-            if author_tuple not in author_to_unique_tuples[author]:
-                author_to_unique_tuples[author].append(author_tuple)
+        # relies on defaultdict to initialize empty list
+        if author_tuple not in author_to_unique_tuples[author]:
+            author_to_unique_tuples[author].append(author_tuple)
 
     # second pass is necessary because we don't know if we need A, B, C
     # without a complete first pass
@@ -367,11 +369,7 @@ def set_author_on_nodes(node_metadata, raw_strain_info):
             continue # internal node / terminal node without authors
 
         author = node.get("author").get("author")
-        author_tuple = (
-            author,
-            node["author"].get("title", "unknown"),
-            node["author"].get("journal", "unknown")
-        )
+        author_tuple = node_to_author_tuple(node)
 
         if len(author_to_unique_tuples[author]) > 1:
             index = author_to_unique_tuples[author].index(author_tuple)
@@ -424,15 +422,15 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
         if raw_data.get("numdate", None) and not raw_data.get("num_date", None):
             raw_data["num_date"] = raw_data["numdate"]
             del raw_data["numdate"]
-        if isValueValid(raw_data.get("num_date", None)): # it's ok not to have temporal information
+        if is_valid(raw_data.get("num_date", None)): # it's ok not to have temporal information
             node["num_date"] = {"value": raw_data["num_date"]}
-            if isValueValid(raw_data.get("num_date_confidence", None)):
+            if is_valid(raw_data.get("num_date_confidence", None)):
                 node["num_date"]["confidence"] = raw_data["num_date_confidence"]
 
         # TRANSFER VACCINE INFO #
 
         # TRANSFER LABELS #
-        if "clade_annotation" in raw_data and isValueValid(raw_data["clade_annotation"]):
+        if "clade_annotation" in raw_data and is_valid(raw_data["clade_annotation"]):
             if 'labels' in node:
                 node['labels']['clade'] = raw_data["clade_annotation"]
             else:
@@ -452,16 +450,16 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
 
         # TRANSFER GENERIC PROPERTIES #
         for prop in ["url", "accession"]:
-            if isValueValid(raw_data.get(prop, None)):
+            if is_valid(raw_data.get(prop, None)):
                 node[prop] = raw_data[prop]
 
         # TRANSFER TRAITS (INCLUDING CONFIDENCE & ENTROPY) #
         for trait in traits:
-            if isValueValid(raw_data.get(trait, None)):
+            if is_valid(raw_data.get(trait, None)):
                 node["traits"][trait] = {"value": raw_data[trait]}
-                if isValueValid(raw_data.get(trait+"_confidence", None)):
+                if is_valid(raw_data.get(trait+"_confidence", None)):
                     node["traits"][trait]["confidence"] = raw_data[trait+"_confidence"]
-                if isValueValid(raw_data.get(trait+"_entropy", None)):
+                if is_valid(raw_data.get(trait+"_entropy", None)):
                     node["traits"][trait]["entropy"] = raw_data[trait+"_entropy"]
 
         node_metadata[strain_name] = node
