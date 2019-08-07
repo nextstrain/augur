@@ -87,7 +87,7 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
     return (node_struct, strains)
 
 def check_muts(node_metadata):
-    values_in_tree = 0 
+    values_in_tree = 0
     for node_properties in node_metadata.values():
         if "mutations" in node_properties:
             values_in_tree+=1
@@ -107,9 +107,9 @@ def get_values_in_tree(node_metadata, key):
         return {}
     return values_in_tree
 
-def isValueValid(value):
+def is_valid(value):
     invalid = ["undefined", "unknown", "?", "nan", "na", "n/a", 'none', '', 'not known']
-    return False if str(value).strip('\"').strip("'").strip().lower() in invalid else True
+    return str(value).strip('\"').strip("'").strip().lower() not in invalid
 
 def get_colorings(config, traits, provided_colors, node_metadata, mutations_present):
     def _rename_authors_key(color_config):
@@ -322,8 +322,18 @@ def set_author_on_nodes(node_metadata, raw_strain_info):
     :returns: None
     :rtype: None
     """
-    author_info = {}
-    seen = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+
+    def node_to_author_tuple(node):
+        # make a unique list of citations to disambiguate
+        # Hadfield et al A, Hadfield et al B, etc...
+        return (
+            node["author"].get("author", "unknown"),
+            node["author"].get("title", "unknown"),
+            node["author"].get("journal", "unknown")
+        )
+
+    # author_to_unique_tuples = {}
+    author_to_unique_tuples = defaultdict(list)
 
     for strain, node in node_metadata.items():
         author = raw_strain_info[strain].get("author")
@@ -334,29 +344,38 @@ def set_author_on_nodes(node_metadata, raw_strain_info):
 
         node["author"] = {"author": author}
         if "title" in raw_strain_info[strain]:
-            node["author"]["title"] = raw_strain_info[strain]["title"].strip()
+            title = raw_strain_info[strain]["title"].strip()
+            if is_valid(title):
+                node["author"]["title"] = title
         if "journal" in raw_strain_info[strain]:
-            node["author"]["journal"] = raw_strain_info[strain]["journal"].strip()
-        if "paper_url" in raw_strain_info[strain] and not raw_strain_info[strain]["paper_url"].strip("/").endswith("pubmed"):
-            node["author"]["paper_url"] = raw_strain_info[strain]["paper_url"].strip()
+            journal = raw_strain_info[strain]["journal"].strip()
+            if is_valid(journal):
+                node["author"]["journal"] = journal
+        if "paper_url" in raw_strain_info[strain]:
+            paper_url = raw_strain_info[strain]["paper_url"].strip()
+            if is_valid(paper_url):
+                node["author"]["paper_url"] = paper_url
 
-        # add to `seen` which will later be used to create the unique value which auspice will display
-        year_matches = re.findall(r'\([0-9A-Z-]*(\d{4})\)', node["author"].get("journal", ""))
-        year = str(year_matches[-1]) if year_matches else "unknown"
-        seen[author][year][node["author"].get("title", "unknown")].append(node)
+        author_tuple = node_to_author_tuple(node)
 
-    # turn "seen" into a unique "nice" string for auspice to display
-    for author in seen.keys():
-        for year in seen[author].keys():
-            titles = sorted(seen[author][year].keys())
-            for idx, title in enumerate(titles):
-                value = author.split()[0].lower().capitalize()
-                if year != "unknown":
-                    value += " ({})".format(year)
-                if len(titles) > 1:
-                    value += " {}".format("abcdefghij"[idx])
-                for node in seen[author][year][title]:
-                    node["author"]["value"] = value
+        # relies on defaultdict to initialize empty list
+        if author_tuple not in author_to_unique_tuples[author]:
+            author_to_unique_tuples[author].append(author_tuple)
+
+    # second pass is necessary because we don't know if we need A, B, C
+    # without a complete first pass
+    for strain, node in node_metadata.items():
+        if not node.get("author"):
+            continue # internal node / terminal node without authors
+
+        author = node.get("author").get("author")
+        author_tuple = node_to_author_tuple(node)
+
+        if len(author_to_unique_tuples[author]) > 1:
+            index = author_to_unique_tuples[author].index(author_tuple)
+            node["author"]["value"] = author + " {}".format("ABCDEFGHIJKLMNOPQRSTUVWXYZ"[index])
+        else:
+            node["author"]["value"] = author
 
 def transfer_metadata_to_strains(strains, raw_strain_info, traits):
     '''
@@ -403,15 +422,15 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
         if raw_data.get("numdate", None) and not raw_data.get("num_date", None):
             raw_data["num_date"] = raw_data["numdate"]
             del raw_data["numdate"]
-        if isValueValid(raw_data.get("num_date", None)): # it's ok not to have temporal information
+        if is_valid(raw_data.get("num_date", None)): # it's ok not to have temporal information
             node["num_date"] = {"value": raw_data["num_date"]}
-            if isValueValid(raw_data.get("num_date_confidence", None)):
+            if is_valid(raw_data.get("num_date_confidence", None)):
                 node["num_date"]["confidence"] = raw_data["num_date_confidence"]
 
         # TRANSFER VACCINE INFO #
 
         # TRANSFER LABELS #
-        if "clade_annotation" in raw_data and isValueValid(raw_data["clade_annotation"]):
+        if "clade_annotation" in raw_data and is_valid(raw_data["clade_annotation"]):
             if 'labels' in node:
                 node['labels']['clade'] = raw_data["clade_annotation"]
             else:
@@ -431,16 +450,16 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
 
         # TRANSFER GENERIC PROPERTIES #
         for prop in ["url", "accession"]:
-            if isValueValid(raw_data.get(prop, None)):
+            if is_valid(raw_data.get(prop, None)):
                 node[prop] = raw_data[prop]
 
         # TRANSFER TRAITS (INCLUDING CONFIDENCE & ENTROPY) #
         for trait in traits:
-            if isValueValid(raw_data.get(trait, None)):
+            if is_valid(raw_data.get(trait, None)):
                 node["traits"][trait] = {"value": raw_data[trait]}
-                if isValueValid(raw_data.get(trait+"_confidence", None)):
+                if is_valid(raw_data.get(trait+"_confidence", None)):
                     node["traits"][trait]["confidence"] = raw_data[trait+"_confidence"]
-                if isValueValid(raw_data.get(trait+"_entropy", None)):
+                if is_valid(raw_data.get(trait+"_entropy", None)):
                     node["traits"][trait]["entropy"] = raw_data[trait+"_entropy"]
 
         node_metadata[strain_name] = node
