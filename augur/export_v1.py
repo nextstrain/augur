@@ -27,7 +27,7 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
         list of strains
     """
     node_struct = {
-        'attr': {"div": div},
+        'attr': {},
         'strain': node.name,
         'clade': node.clade
     }
@@ -48,6 +48,8 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
         for child in node.clades:
             if 'mutation_length' in metadata[child.name]:
                 cdiv = div + metadata[child.name]['mutation_length']
+            elif 'clock_length' in metadata[child.name]:
+                cdiv = div + metadata[child.name]['clock_length']
             elif 'branch_length' in metadata[child.name]:
                 cdiv = div + metadata[child.name]['branch_length']
             node_struct["children"].append(convert_tree_to_json_structure(child, metadata, div=cdiv, strains=strains)[0])
@@ -76,6 +78,10 @@ def recursively_decorate_tree_json_v1_schema(node, node_metadata, decorations):
         metadata["strain"] = node["strain"]
     except KeyError:
         raise Exception("ERROR: node %s is not found in the node metadata."%n.name)
+
+    if "hidden" in metadata:
+        node["hidden"] = metadata["hidden"]
+        del metadata["hidden"]
 
     for data in decorations:
         val = None
@@ -153,10 +159,19 @@ def process_geographic_info(jsn, lat_long_mapping, node_metadata=None, nodes=Non
         demes_in_tree = {node[trait] for node in nodes.values() if trait in node}
 
         for deme in demes_in_tree:
+
+
+            # deme may be numeric, or string
             try:
-                geo[trait][deme] = lat_long_mapping[(trait.lower(),deme.lower())]
+                deme_search_value = deme.lower()
+            except AttributeError:
+                deme_search_value = str(deme)
+
+            try:
+                geo[trait][deme] = lat_long_mapping[(trait.lower(), deme_search_value)]
             except KeyError:
-                print("Error. {}->{} did not have an associated lat/long value (matching performed in lower case)".format(trait, deme))
+                print("warning. {}->{} did not have an associated lat/long value (matching performed in lower case). Auspice won't be able to display this location.".format(trait, deme))
+
     return geo
 
 
