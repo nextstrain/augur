@@ -171,6 +171,8 @@ def get_colorings(config, colorbys, provided_colors, node_metadata, mutations_pr
             return "Clade"
         if key == "gt":
             return "Genotype"
+        if key == "author":
+            return "Authors"
         if key == "authors":
             return "Authors"
         if key == 'num_date':
@@ -187,6 +189,9 @@ def get_colorings(config, colorbys, provided_colors, node_metadata, mutations_pr
     elif config.get("color_options"):
         config_colorings = config["color_options"]
         deprecated("[config file] 'color_options' has been replaced with 'colorings'")
+    # standardize to 'author'
+    if 'authors' in config_colorings:
+        config_colorings['author'] = config_colorings.pop('authors')
    
     # Only explicitly set colorbys are included!
     color_config = {c: (config_colorings[c] if c in config_colorings.keys() else {}) for c in colorbys}
@@ -202,7 +207,7 @@ def get_colorings(config, colorbys, provided_colors, node_metadata, mutations_pr
     # handle special cases
     if mutations_present:
         colorings["gt"] = {'title': _get_title("gt", color_config), 'type': 'ordinal'}
-    if get_values_in_tree(node_metadata, "author"): # check if any nodes have author set
+    if get_values_in_tree(node_metadata, "author") and "author" in color_config: # check if any nodes have author set
         colorings["author"] = {'title': _get_title("author", color_config), 'type': 'categorical'}
     if get_values_in_tree(node_metadata, "num_date"): # TODO: check if tree has temporal inference (possible to not have)
         colorings['num_date'] = {'title': _get_title("num_date", color_config), 'type': 'continuous'}
@@ -679,7 +684,13 @@ def run_v2(args):
     # Only include config colorings if no commandline!
     elif config.get('colorings'):
         colorbys.extend(config['colorings'].keys())
+    elif config.get("color_options"): # quiet here - warning will be displayed later
+        colorbys.extend(config['color_options'].keys())
     colorbys = list(set(colorbys)) #ensure no duplicates
+    # standardize to 'author'
+    if 'authors' in colorbys:
+        colorbys.remove('authors')
+        colorbys.append('author')
 
     # Add colorbys to traits
     traits.extend(colorbys)
@@ -703,10 +714,10 @@ def run_v2(args):
     # Set up filters - if "filters" is in config but empty - no filters.
     # Only allow filters that are actually in traits...
     if config.get('filters') or config.get('filters') == []:
+        if "authors" in config['filters']:
+            del config['filters'][config['filters'].index("authors")]
+            config['filters'].append("author")
         auspice_json['filters'] = [f for f in config['filters'] if f in traits]
-        if "authors" in auspice_json['filters']:
-            del auspice_json['filters'][auspice_json['filters'].index("authors")]
-            auspice_json['filters'].append("author")
     else: # if not specified, include all boolean and categorical colorbys
         auspice_json['filters'] = [key for key,value in auspice_json["colorings"].items() if value['type'] in ['categorical', 'boolean']]
 
