@@ -8,6 +8,7 @@ from treetime.utils import numeric_date
 from collections import defaultdict
 from pkg_resources import resource_stream
 from io import TextIOWrapper
+from textwrap import dedent
 
 def myopen(fname, mode):
     if fname.endswith('.gz'):
@@ -437,7 +438,7 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
 
 def run_shell_command(cmd, raise_errors = False, extra_env = None):
     """
-    Run the given command string via the shell with error checking.
+    Run the given command string via Bash with error checking.
 
     Returns True if the command exits normally.  Returns False if the command
     exits with failure and "raise_errors" is False (the default).  When
@@ -453,22 +454,50 @@ def run_shell_command(cmd, raise_errors = False, extra_env = None):
 
     try:
         # Use check_call() instead of run() since the latter was added only in Python 3.5.
-        subprocess.check_call(cmd, shell = True, env = env)
+        subprocess.check_call(
+            "set -euo pipefail; " + cmd,
+            shell = True,
+            executable = "/bin/bash",
+            env = env)
+
     except subprocess.CalledProcessError as error:
-        print(
-            "ERROR: {program} exited {returncode}, invoked as: {cmd}".format(
-                program    = cmd.split()[0],
-                returncode = error.returncode,
-                cmd        = cmd,
-            ),
-            file = sys.stderr
+        print_error(
+            "shell exited {rc} when running: {cmd}{extra}",
+            rc  = error.returncode,
+            cmd = cmd,
+            extra = "\nAre you sure this program is installed?" if error.returncode==127 else "",
         )
         if raise_errors:
             raise
         else:
             return False
+
+    except FileNotFoundError as error:
+        print_error(
+            """
+            Unable to run shell commands using {shell}!
+
+            Augur requires {shell} to be installed.  Please open an issue on GitHub
+            <https://github.com/nextstrain/augur/issues/new> if you need assistance.
+            """,
+            shell = error.filename
+        )
+        if raise_errors:
+            raise
+        else:
+            return False
+
     else:
         return True
+
+
+def print_error(message, **kwargs):
+    """
+    Formats *message* with *kwargs* using :meth:`str.format` and
+    :func:`textwrap.dedent` and uses it to print an error message to
+    ``sys.stderr``.
+    """
+    print("\nERROR: " + dedent(message.format(**kwargs)).lstrip("\n")+"\n", file = sys.stderr)
 
 
 def first_line(text):

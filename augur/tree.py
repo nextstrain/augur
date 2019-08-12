@@ -27,7 +27,7 @@ def find_executable(names, default = None):
 
     if exe is None:
         print("Unable to find any of %s in PATH=%s" % (names, os.environ["PATH"]))
-        print("Hint: You can install the missing program using conda or homebrew or apt-get.")
+        print("\nHint: You can install the missing program using conda or homebrew or apt-get.\n")
         raise Exception
 
     return exe
