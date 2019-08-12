@@ -202,9 +202,9 @@
             "type" : "object",
             "$comment": "The phylogeny in a nested JSON structure",
             "additionalProperties": false,
-            "required": ["strain"],
+            "required": ["name"],
             "properties": {
-                "strain": {
+                "name": {
                     "description": "Strain name. Must be unique. No spaces",
                     "type": "string"
                 },

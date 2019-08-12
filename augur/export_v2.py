@@ -47,7 +47,7 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
     """
     converts the Biopython tree structure to a dictionary that can
     be written to file as a json. This is called recursively.
-    Creates the strain property & divergence on each node
+    Creates the name property & divergence on each node
 
     input
         node -- node for which top level dict is produced.
@@ -63,14 +63,14 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
     if div == 0 and 'mutation_length' not in metadata[node.name] and 'branch_length' not in metadata[node.name]:
         div = False
 
-    node_struct = {'strain': node.name}
+    node_struct = {'name': node.name}
     if div is not False: # div=0 is ok
         node_struct["div"] = div
 
     if strains is None:
-        strains = [node_struct["strain"]]
+        strains = [node_struct["name"]]
     else:
-        strains.append(node_struct["strain"])
+        strains.append(node_struct["name"])
 
     if node.clades:
         node_struct["children"] = []
@@ -466,7 +466,7 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
     return node_metadata
 
 def add_metadata_to_tree(node, metadata):
-    node.update(metadata[node["strain"]])
+    node.update(metadata[node["name"]])
     if "children" in node:
         for child in node["children"]:
             add_metadata_to_tree(child, metadata)
