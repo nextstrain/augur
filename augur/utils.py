@@ -464,7 +464,7 @@ def run_shell_command(cmd, raise_errors = False, extra_env = None):
         print_error(
             "shell exited {rc} when running: {cmd}{extra}",
             rc  = error.returncode,
-            cmd = error.cmd.replace("set -euo pipefail; ",""),
+            cmd = cmd,
             extra = "\nAre you sure this program is installed?" if error.returncode==127 else "",
         )
         if raise_errors:
