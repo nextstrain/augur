@@ -462,9 +462,10 @@ def run_shell_command(cmd, raise_errors = False, extra_env = None):
 
     except subprocess.CalledProcessError as error:
         print_error(
-            "shell exited {rc} when running: {cmd}",
+            "shell exited {rc} when running: {cmd}{extra}",
             rc  = error.returncode,
-            cmd = error.cmd,
+            cmd = error.cmd.replace("set -euo pipefail; ",""),
+            extra = "\nAre you sure this program is installed?" if error.returncode==127 else "",
         )
         if raise_errors:
             raise
@@ -496,7 +497,7 @@ def print_error(message, **kwargs):
     :func:`textwrap.dedent` and uses it to print an error message to
     ``sys.stderr``.
     """
-    print("ERROR: " + dedent(message.format(**kwargs)).lstrip("\n"), file = sys.stderr)
+    print("\nERROR: " + dedent(message.format(**kwargs)).lstrip("\n")+"\n", file = sys.stderr)
 
 
 def first_line(text):
