@@ -47,11 +47,11 @@
                     "properties": {
                         "seqid":{
                             "description": "Sequence on which the coordinates below are valid. Could be viral segment, bacterial contig, etc",
-                            "type": "str",
+                            "type": "string"
                         },
                         "type": {
                             "description": "Type of the feature. could be mRNA, CDS, or similar",
-                            "type": "str",
+                            "type": "string"
                         },
                         "start": {
                             "description": "Gene start position (one-based, following GFF format)",
@@ -63,7 +63,7 @@
                         },
                         "strand": {
                             "description": "Positive or negative strand",
-                            "type": "str",
+                            "type": "string",
                             "$comment": "not yet used by Auspice",
                             "enum": ["-","+"]
                         }
