@@ -319,8 +319,9 @@ def run(args):
 
     ## glob the annotations for later auspice export
     #
-    # Note that both our JSON schema and BioPython FeatureLocations use
-    # "Pythonic" coordinates: [zero-origin, half-open).
+    # Note that BioPython FeatureLocations use
+    # "Pythonic" coordinates: [zero-origin, half-open)
+    # Starting with v2 JSONs, we use coordinates: [one-origin, inclusive]
     annotations = {}
     for fname, feat in features.items():
         annotations[fname] = {'seqid':args.reference_sequence,
