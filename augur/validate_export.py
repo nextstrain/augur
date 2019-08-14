@@ -78,34 +78,34 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
 
     print("Validating that the JSON is internally consistent")
 
-    if "entropy" in data["panels"] and "genome_annotations" not in data:
+    if "entropy" in data["meta"]["panels"] and "genome_annotations" not in data["meta"]:
         warn("The entropy panel has been specified but annotations don't exist.")
 
     treeTraits, _ = collectTreeAttrsV2(data["tree"], warn)
 
-    if "geographic_info" in data:
-        for geoName in data["geographic_info"]:
+    if "geographic_info" in data["meta"]:
+        for geoName in data["meta"]["geographic_info"]:
             if geoName not in treeTraits:
                 warn("The geographic resolution \"{}\" does not appear as an attr on any tree nodes.".format(geoName))
             else:
-                for geoValue in data["geographic_info"][geoName]:
+                for geoValue in data["meta"]["geographic_info"][geoName]:
                     if geoValue not in treeTraits[geoName]["values"]:
                         warn("\"{}\", a value of the geographic resolution \"{}\", does not appear as a value of attr->{} on any tree nodes.".format(geoValue, geoName, geoName))
                 for geoValue in treeTraits[geoName]["values"]:
-                    if geoValue not in data["geographic_info"][geoName]:
+                    if geoValue not in data["meta"]["geographic_info"][geoName]:
                         warn("\"{}\", a value of the geographic resolution \"{}\", appears in the tree but not in the metadata.".format(geoValue, geoName))
                         warn("\tThis will cause transmissions & demes involving this location not to be displayed in Auspice")
     else:
-        if "map" in data["panels"]:
+        if "map" in data["meta"]["panels"]:
             warn("Map panel was requested but no geographic_info was provided")
 
 
-    if "colorings" in data:
-        for colorBy in [x for x in data["colorings"] if x != "gt"]:
+    if "colorings" in data["meta"]:
+        for colorBy in [x for x in data["meta"]["colorings"] if x != "gt"]:
             if colorBy not in treeTraits:
                 warn("The coloring \"{}\" does not appear as an attr on any tree nodes.".format(colorBy))
-            if "scale" in data["colorings"][colorBy]:
-                scale = data["colorings"][colorBy]["scale"]
+            if "scale" in data["meta"]["colorings"][colorBy]:
+                scale = data["meta"]["colorings"][colorBy]["scale"]
                 if isinstance(scale, list):
                     for value, hex in scale:
                         if value not in treeTraits[colorBy]["values"]:
@@ -114,32 +114,32 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
                     raise ValidateError("String colour scales are not yet implemented")
                 else:
                     raise ValidateError("Invalid color scale (for trait \"{}\")".format(colorBy))
-            if "domain" in data["colorings"][colorBy]:
-                domain = data["colorings"][colorBy]["domain"]
-                if data["colorings"][colorBy]["type"] in ["ordinal", "categorical"]:
+            if "domain" in data["meta"]["colorings"][colorBy]:
+                domain = data["meta"]["colorings"][colorBy]["domain"]
+                if data["meta"]["colorings"][colorBy]["type"] in ["ordinal", "categorical"]:
                     inMetaNotInTree = [val for val in domain if val not in treeTraits[colorBy]["values"]]
                     if len(inMetaNotInTree):
                         warn("Domain for {} defined the following values which are not present on the tree: {}".format(colorBy, inMetaNotInTree.join(", ")))
                     inTreeNotInMeta = [val for val in treeTraits[colorBy]["values"] if val not in domain]
                     if len(inTreeNotInMeta):
                         warn("Tree defined values for {} which were not in the domain: {}".format(colorBy, inTreeNotInMeta.join(", ")))
-                elif data["colorings"][colorBy]["type"] == "boolean":
+                elif data["meta"]["colorings"][colorBy]["type"] == "boolean":
                     raise ValidateError("Cannot povide a domain for a boolean coloring ({})".format(colorBy))
     else:
         warn("No colourings were provided")
 
-    if "filters" in data:
-        for filter in data["filters"]:
+    if "filters" in data["meta"]:
+        for filter in data["meta"]["filters"]:
             if filter not in treeTraits:
                 warn("The filter \"{}\" does not appear as a property on any tree nodes.".format(filter))
 
     genes_with_mutations = collectMutationGenes(data['tree'])
     if len(genes_with_mutations):
-        if "genome_annotations" not in data:
+        if "genome_annotations" not in data["meta"]:
             warn("The tree defined mutations on genes {}, but annotations aren't defined in the meta JSON.".format(", ".join(genes_with_mutations)))
         else:
             for gene in genes_with_mutations:
-                if gene not in data["genome_annotations"]:
+                if gene not in data["meta"]["genome_annotations"]:
                     warn("The tree defined mutations on gene {} which doesn't appear in the metadata annotations object.".format(gene))
 
     if not warnings:

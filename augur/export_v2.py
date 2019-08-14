@@ -615,6 +615,7 @@ def run_v2(args):
     auspice_json = {}
     config = {}
     auspice_json["version"] = "2.0"
+    auspice_json["meta"] = {}
 
     if args.auspice_config:
         config = read_config(args.auspice_config)
@@ -632,28 +633,28 @@ def run_v2(args):
                 new_key = convert_camel_to_snake_case(key)
                 display_options[new_key] = config["display_defaults"][key]
 
-            auspice_json["display_defaults"] = display_options
+            auspice_json['meta']["display_defaults"] = display_options
 
     # Get title - command-line arg will overwrite the supplied config file.
     if args.title:
-        auspice_json['title'] = str(args.title)
+        auspice_json['meta']['title'] = str(args.title)
     elif config.get("title"):
-        auspice_json['title'] = config['title']
+        auspice_json['meta']['title'] = config['title']
 
     # Get maintainers. Command-line args overwrite the config file.
     if args.maintainers:
         if args.maintainer_urls:
             if len(args.maintainers) == len(args.maintainer_urls):
-                auspice_json['maintainers'] = [{'name': name, 'url':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
+                auspice_json['meta']['maintainers'] = [{'name': name, 'url':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
             else:
                 warn("you provided --maintainer_urls but not the same number as --maintainers! Ignoring the URLs")
-                auspice_json['maintainers'] = [{'name': name} for name in args.maintainers]
+                auspice_json['meta']['maintainers'] = [{'name': name} for name in args.maintainers]
         else:
-            auspice_json['maintainers'] = [{'name': name} for name in args.maintainers]
+            auspice_json['meta']['maintainers'] = [{'name': name} for name in args.maintainers]
     elif config.get("maintainer"): #v1-type specification
-        auspice_json["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
+        auspice_json['meta']["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
     elif config.get("maintainers"): #v2-type specification (proposed by Emma)
-        auspice_json['maintainers'] = [{'name': n[0], 'url': n[1]} for n in config['maintainers']]
+        auspice_json['meta']['maintainers'] = [{'name': n[0], 'url': n[1]} for n in config['maintainers']]
 
     # get traits to colour by etc - do here before node_data is modified below
     # this ensures we get traits even if they are not on every node
@@ -680,7 +681,7 @@ def run_v2(args):
 
     add_metadata_to_tree(auspice_json["tree"], node_metadata)
 
-    auspice_json["colorings"] = get_colorings(
+    auspice_json['meta']["colorings"] = get_colorings(
         config=config,
         traits=traits,
         provided_colors=read_colors(args.colors),
@@ -690,19 +691,19 @@ def run_v2(args):
 
     # Set up filters - if in config but empty, no filters.
     if config.get('filters') or config.get('filters') == []:
-        auspice_json['filters'] = config['filters']
-        if "authors" in auspice_json['filters']:
-            del auspice_json['filters'][auspice_json['filters'].index("authors")]
-            auspice_json['filters'].append("author")
+        auspice_json['meta']['filters'] = config['filters']
+        if "authors" in auspice_json['meta']['filters']:
+            del auspice_json['meta']['filters'][auspice_json['meta']['filters'].index("authors")]
+            auspice_json['meta']['filters'].append("author")
     else: # if not specified, include all boolean and categorical colorbys
-        auspice_json['filters'] = [key for key,value in auspice_json["colorings"].items() if value['type'] in ['categorical', 'boolean']]
+        auspice_json['meta']['filters'] = [key for key,value in auspice_json['meta']["colorings"].items() if value['type'] in ['categorical', 'boolean']]
 
-    auspice_json["geographic_info"] = process_geographic_info(config, args.geography_traits, read_lat_longs(args.lat_longs), node_metadata)
+    auspice_json['meta']["geographic_info"] = process_geographic_info(config, args.geography_traits, read_lat_longs(args.lat_longs), node_metadata)
 
-    auspice_json["updated"] = time.strftime('%Y-%m-%d')
+    auspice_json['meta']["updated"] = time.strftime('%Y-%m-%d')
     genome_annotations = process_annotations(node_data)
     if genome_annotations:
-        auspice_json["genome_annotations"] = genome_annotations
+        auspice_json['meta']["genome_annotations"] = genome_annotations
 
     # Set up panels - command line overrides config
     panels = None #if this remains, defaults will be set in process_panels
@@ -710,12 +711,12 @@ def run_v2(args):
         panels = config["panels"]
     if args.panels:
         panels = args.panels
-    auspice_json["panels"] = process_panels(panels, auspice_json)
+    auspice_json['meta']["panels"] = process_panels(panels, auspice_json["meta"])
 
     if args.tree_name:
         if not re.search("(^|_|/){}(_|.json)".format(args.tree_name), str(args.output_main)):
             fatal("tree name {} must be found as part of the output string".format(args.tree_name))
-        auspice_json["tree_name"] = args.tree_name
+        auspice_json['meta']["tree_name"] = args.tree_name
 
     write_json(auspice_json, args.output_main, indent=json_indent)
 
