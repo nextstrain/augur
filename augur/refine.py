@@ -207,10 +207,13 @@ def run(args):
         from treetime import TreeAnc
         # instantiate treetime for the sole reason to name internal nodes
         if args.root:
-            if args.root in ['best', 'least-squares', 'min_dev', 'oldest']:
+            if args.root == 'best':
+                print("Warning: To root without inferring a timetree, you must specify an explicit outgroup.")
+                print("\tProceeding without re-rooting. To suppress this message, use '--keep-root'.\n")
+            elif args.root in ['least-squares', 'min_dev', 'oldest']:
                 raise TypeError("The rooting option '%s' is only available when inferring a timetree. Please specify an explicit outgroup."%args.root)
-
-            T.root_with_outgroup(args.root)
+            else:
+                T.root_with_outgroup(args.root)
 
         tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=1)
 
