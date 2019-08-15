@@ -47,25 +47,28 @@
                     "required": ["nuc"],
                     "additionalProperties": false,
                     "properties": {
-                        "nuc": {
-                            "type": "object",
-                            "$comment": "I imagine this can get more complex at some point",
-                            "properties": {
-                                "start": {
-                                    "description": "Gene start position (zero-based, i.e. BED format)",
-                                    "type": "number"
-                                },
-                                "end": {
-                                    "description": "Gene end position (one-based, i.e. zero-based exclusive or BED format)",
-                                    "type": "number"
-                                },
-                                "strand": {
-                                    "description": "Positive or negative strand",
-                                    "$comment": "not yet used by Auspice",
-                                    "type": "number",
-                                    "enum": [-1, 1]
-                                }
-                            }
+                        "seqid":{
+                            "description": "Sequence on which the coordinates below are valid. Could be viral segment, bacterial contig, etc",
+                            "$comment": "currently unused by Auspice",
+                            "type": "string"
+                        },
+                        "type": {
+                            "description": "Type of the feature. could be mRNA, CDS, or similar",
+                            "$comment": "currently unused by Auspice",
+                            "type": "string"
+                        },
+                        "start": {
+                            "description": "Gene start position (one-based, following GFF format)",
+                            "type": "number"
+                        },
+                        "end": {
+                            "description": "Gene end position (one-based closed, last position of feature, following GFF format)",
+                            "type": "number"
+                        },
+                        "strand": {
+                            "description": "Positive or negative strand",
+                            "type": "string",
+                            "enum": ["-","+"]
                         }
                     },
                     "patternProperties": {

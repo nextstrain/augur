@@ -161,10 +161,20 @@ def process_geographic_info(jsn, lat_long_mapping, node_metadata=None, nodes=Non
 
 
 def process_annotations(node_data):
-    # treetime adds "annotations" to node_data
-    if "annotations" not in node_data: # if haven't run tree through treetime
+    # `augur translate` adds "annotations" to node_data
+    if "annotations" not in node_data:
         return None
-    return node_data["annotations"]
+    # starting with augur v6 the node data JSONs use GFF like syntax, i.e.
+    # [one-origin, inclusive], strand: "+" / "-"
+    # however v1 JSONs used [zero-origin, half-open), strand: "1" / "-1"
+    annotations = {}
+    for name, info in node_data["annotations"].items():
+        annotations[name] = {
+            "start": info["start"]-1,
+            "end": info["end"],
+            "strand": 0 if info["strand"] == "-" else 1
+        }
+    return annotations
 
 def process_panels(user_panels, meta_json):
     try:

@@ -68,7 +68,7 @@
                             "type": "number"
                         },
                         "end": {
-                            "description": "Gene end position (one-based, i.e. zero-based exclusive or BED format)",
+                            "description": "Gene end position (zero-based half open, i.e. BED format)",
                             "type": "number"
                         },
                         "strand": {
