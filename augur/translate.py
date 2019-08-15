@@ -321,7 +321,7 @@ def run(args):
     #
     # Note that BioPython FeatureLocations use
     # "Pythonic" coordinates: [zero-origin, half-open)
-    # Starting with v2 JSONs, we use coordinates: [one-origin, inclusive]
+    # Starting with augur v6 we use GFF coordinates: [one-origin, inclusive]
     annotations = {}
     for fname, feat in features.items():
         annotations[fname] = {'seqid':args.reference_sequence,
