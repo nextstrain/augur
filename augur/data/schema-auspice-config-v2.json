@@ -27,7 +27,7 @@
                 }
             }
         },
-        "geographic_info": {
+        "geo_resolutions": {
             "description": "Traits to be interpreted as 'geo resolution' options -- i.e. associated with lat/longs & made points on the map",
             "type": "array",
             "uniqueItems": true,

@@ -20,7 +20,7 @@
         "type": "ordinal"
     }
   },
-  "geographic_info": [
+  "geo_resolutions": [
     "country",
     "region"
   ],

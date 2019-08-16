@@ -83,18 +83,22 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
 
     treeTraits, _ = collectTreeAttrsV2(data["tree"], warn)
 
-    if "geographic_info" in data["meta"]:
-        for geoName in data["meta"]["geographic_info"]:
+    if "geo_resolutions" in data["meta"]:
+        for geo_res in data["meta"]["geo_resolutions"]:
+            geoName = geo_res["name"]
+            deme_to_lat_longs = geo_res["demes"]
             if geoName not in treeTraits:
-                warn("The geographic resolution \"{}\" does not appear as an attr on any tree nodes.".format(geoName))
-            else:
-                for geoValue in data["meta"]["geographic_info"][geoName]:
-                    if geoValue not in treeTraits[geoName]["values"]:
-                        warn("\"{}\", a value of the geographic resolution \"{}\", does not appear as a value of attr->{} on any tree nodes.".format(geoValue, geoName, geoName))
-                for geoValue in treeTraits[geoName]["values"]:
-                    if geoValue not in data["meta"]["geographic_info"][geoName]:
-                        warn("\"{}\", a value of the geographic resolution \"{}\", appears in the tree but not in the metadata.".format(geoValue, geoName))
-                        warn("\tThis will cause transmissions & demes involving this location not to be displayed in Auspice")
+                warn("The geographic resolution \"{}\" does not appear on any tree nodes.".format(geoName))
+                continue
+            # pass 1: check the demes in "geo_resolutions" are found on the tree
+            for geoValue in deme_to_lat_longs.keys():
+                if geoValue not in treeTraits[geoName]["values"]:
+                    warn("\"{}\", a value of the geographic resolution \"{}\", does not appear on any tree nodes.".format(geoValue, geoName))
+            # pass 1: check the demes across the tree are represented in "geo_resolutions"
+            for geoValue in treeTraits[geoName]["values"]:
+                if geoValue not in deme_to_lat_longs:
+                    warn("\"{}\", a value of the geographic resolution \"{}\", appears in the tree but not in the metadata.".format(geoValue, geoName))
+                    warn("\tThis will cause transmissions & demes involving this location not to be displayed in Auspice")
     else:
         if "map" in data["meta"]["panels"]:
             warn("Map panel was requested but no geographic_info was provided")

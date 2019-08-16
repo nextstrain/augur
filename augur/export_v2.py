@@ -246,33 +246,50 @@ def get_colorings(config, colorbys, provided_colors, node_metadata, mutations_pr
     return colorings
 
 
-def process_geographic_info(config, command_line_traits, lat_long_mapping, node_metadata):
+
+def process_geo_resolutions(config, command_line_traits, lat_long_mapping, node_metadata):
+    """
+    appropriately combine provided geo resolutions from command line & config files
+    and associate with lat/longs.
+    """
+
+    # step 1: get a list of resolutions
     if command_line_traits:
-        # straight overwrite -- not an extension of those which may be provided in the config
-        traits = command_line_traits
-    elif config.get("geographic_info"):
-        traits = config.get("geographic_info")
+        traits = command_line_traits # straight overwrite -- not an extension of those which may be provided in the config
+    elif config.get("geo_resolutions"):
+        traits = config.get("geo_resolutions")
     elif config.get("geo"):
         traits = config.get("geo")
-        deprecated("[config file] 'geo' has been replaced with 'geographic_info'")
+        deprecated("[config file] 'geo' has been replaced with 'geo_resolutions'")
     else:
-        return {}
+        return False
 
-    geographic_info = defaultdict(dict)
+    # step 2: for each resolution, create the map of deme name -> lat/long
+    geo_resolutions = []
     for trait in traits:
-        demes_in_tree = get_values_in_tree(node_metadata, trait)
-        for deme in demes_in_tree:
-            # deme may be numeric, or string
+        deme_to_lat_longs = {}
+        for deme in get_values_in_tree(node_metadata, trait):
+
+            # note: deme may be numeric, or string
             try:
                 deme_search_value = deme.lower()
             except AttributeError:
                 deme_search_value = str(deme)
 
             try:
-                geographic_info[trait][deme] = lat_long_mapping[(trait.lower(), deme_search_value)]
+                deme_to_lat_longs[deme] = lat_long_mapping[(trait.lower(), deme_search_value)]
             except KeyError:
                 warn("{}->{} did not have an associated lat/long value (matching performed in lower case). Auspice won't be able to display this location.".format(trait, deme))
-    return geographic_info
+
+        if deme_to_lat_longs:
+            geo_resolutions.append({"name": trait, "demes": deme_to_lat_longs})
+        else:
+            warn("Geo resolution \"{}\" had no demes with supplied lat/longs and will be excluded from the exported \"geo_resolutions\".".format(trait))
+
+    if not geo_resolutions:
+        return False
+    return geo_resolutions
+
 
 def process_annotations(node_data):
     # treetime adds "annotations" to node_data
@@ -289,10 +306,6 @@ def process_panels(user_panels, meta_json):
     if user_panels is not None and len(user_panels) != 0:
         panels = user_panels
 
-    if "geographic_info" in meta_json:
-        geoTraits = meta_json["geographic_info"].keys()
-    else:
-        geoTraits = []
     if meta_json.get("genome_annotations", None):
         annotations = meta_json["genome_annotations"].keys()
     else:
@@ -300,8 +313,11 @@ def process_panels(user_panels, meta_json):
 
     if "entropy" in panels and len(annotations) == 0:
         panels.remove("entropy")
-    if "map" in panels and len(geoTraits) == 0:
-        panels.remove("map")
+
+    # for map to be displayed, we need to have valid geo resolutions
+    if "map" in panels:
+        if "geo_resolutions" not in meta_json or not meta_json["geo_resolutions"]:
+            panels.remove("map")
 
     return panels
 
@@ -741,7 +757,9 @@ def run_v2(args):
     else: # if not specified, include all boolean and categorical colorbys
         auspice_json['meta']['filters'] = [key for key,value in auspice_json['meta']["colorings"].items() if value['type'] in ['categorical', 'boolean']]
 
-    auspice_json['meta']["geographic_info"] = process_geographic_info(config, args.geography_traits, read_lat_longs(args.lat_longs), node_metadata)
+    geo_resolutions = process_geo_resolutions(config, args.geography_traits, read_lat_longs(args.lat_longs), node_metadata)
+    if geo_resolutions:
+        auspice_json['meta']["geo_resolutions"] = geo_resolutions
 
     auspice_json['meta']["updated"] = time.strftime('%Y-%m-%d')
     genome_annotations = process_annotations(node_data)
