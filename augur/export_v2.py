@@ -579,7 +579,7 @@ def register_arguments_v2(subparsers):
     config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
     config.add_argument('--maintainers', metavar="name", nargs='+', help="Analysis maintained by")
     config.add_argument('--maintainer-urls', metavar="url", nargs='+', help="URL of maintainers")
-    config.add_argument('--geography-traits', metavar="trait", nargs='+', help="What location traits are used to plot on map")
+    config.add_argument('--geo-resolutions', metavar="trait", nargs='+', help="What location traits are used to plot on map")
     config.add_argument('--color-by-metadata', metavar="trait", nargs='+', help="Metadata columns to include as coloring options")
     #config.add_argument('--extra-traits', metavar="trait", nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
     config.add_argument('--panels', metavar="panels", nargs='+', choices=['tree', 'map', 'entropy', 'frequencies'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
@@ -709,8 +709,8 @@ def run_v2(args):
     auto_color_bys = traits.copy()
 
     # Add any specified geo traits - otherwise won't work!
-    if args.geography_traits:
-        traits.extend(args.geography_traits)
+    if args.geo_resolutions:
+        traits.extend(args.geo_resolutions)
         traits = list(set(traits)) #ensure no duplicates
 
     # GET COLORBYS
@@ -757,7 +757,7 @@ def run_v2(args):
     else: # if not specified, include all boolean and categorical colorbys
         auspice_json['meta']['filters'] = [key for key,value in auspice_json['meta']["colorings"].items() if value['type'] in ['categorical', 'boolean']]
 
-    geo_resolutions = process_geo_resolutions(config, args.geography_traits, read_lat_longs(args.lat_longs), node_metadata)
+    geo_resolutions = process_geo_resolutions(config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_metadata)
     if geo_resolutions:
         auspice_json['meta']["geo_resolutions"] = geo_resolutions
 
