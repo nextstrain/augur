@@ -75,7 +75,9 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args
             os.remove("RAxML_result.%s"%(random_string))
 
     except:
-        print("TREE BUILDING FAILED, please inspect the raxml.log file\n")
+        print("ERROR: TREE BUILDING FAILED")
+        if os.path.isfile("RAxML_log.%s"%(random_string)):
+            print("Please see the log file for more details: {}".format("RAxML_log.%s"%(random_string)))
         T=None
 
     return T
@@ -119,7 +121,9 @@ def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_a
         if clean_up:
             os.remove(log_file)
     except:
-        print("TREE BUILDING FAILED")
+        print("ERROR: TREE BUILDING FAILED")
+        if os.path.isfile(log_file):
+            print("Please see the log file for more details: {}".format(log_file))
         T=None
 
     return T
@@ -193,7 +197,9 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
                 if os.path.isfile(tmp_aln_file + ext):
                     os.remove(tmp_aln_file + ext)
     except:
-        print("TREE BUILDING FAILED")
+        print("ERROR: TREE BUILDING FAILED")
+        if os.path.isfile(log_file):
+            print("Please see the log file for more details: {}".format(log_file))
         T=None
     return T
 
@@ -415,7 +421,7 @@ def run(args):
         return 1
 
     end = time.time()
-    print("Building original tree took {} seconds".format(str(end-start)))
+    print("\nBuilding original tree took {} seconds".format(str(end-start)))
 
     if T:
         import json
