@@ -57,8 +57,12 @@ def read_metadata(fname):
         meta_dict = {}
         for ii, val in metadata.iterrows():
             if hasattr(val, "strain"):
+                if val.strain in meta_dict:
+                    raise ValueError("Duplicate strain '{}'".format(val.strain))
                 meta_dict[val.strain] = val.to_dict()
             elif hasattr(val, "name"):
+                if val.name in meta_dict:
+                    raise ValueError("Duplicate name '{}'".format(val.name))
                 meta_dict[val.name] = val.to_dict()
             else:
                 print("ERROR: meta data file needs 'name' or 'strain' column")

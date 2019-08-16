@@ -107,11 +107,21 @@ def run(args):
 
     #if Fasta, read in file to get sequence names and sequences
     else:
-        seqs = {seq.id:seq for seq in SeqIO.parse(args.sequences, 'fasta')}
+        try:
+            seqs = SeqIO.to_dict(SeqIO.parse(args.sequences, 'fasta'))
+        except ValueError as error:
+            print("ERROR: Problem reading in {}:".format(args.sequences))
+            print(error)
+            return 1
         seq_keep = list(seqs.keys())
         all_seq = seq_keep.copy()
 
-    meta_dict, meta_columns = read_metadata(args.metadata)
+    try:
+        meta_dict, meta_columns = read_metadata(args.metadata)
+    except ValueError as error:
+        print("ERROR: Problem reading in {}:".format(args.metadata))
+        print(error)
+        return 1
 
 
     #####################################
