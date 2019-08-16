@@ -85,7 +85,7 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
 
     if "geo_resolutions" in data["meta"]:
         for geo_res in data["meta"]["geo_resolutions"]:
-            geoName = geo_res["name"]
+            geoName = geo_res["key"]
             deme_to_lat_longs = geo_res["demes"]
             if geoName not in treeTraits:
                 warn("The geographic resolution \"{}\" does not appear on any tree nodes.".format(geoName))

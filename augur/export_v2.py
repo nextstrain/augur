@@ -255,20 +255,21 @@ def process_geo_resolutions(config, command_line_traits, lat_long_mapping, node_
 
     # step 1: get a list of resolutions
     if command_line_traits:
-        traits = command_line_traits # straight overwrite -- not an extension of those which may be provided in the config
+        # straight overwrite -- not an extension of those which may be provided in the config
+        traits = [{"key": x for x in command_line_traits}] 
     elif config.get("geo_resolutions"):
         traits = config.get("geo_resolutions")
     elif config.get("geo"):
-        traits = config.get("geo")
-        deprecated("[config file] 'geo' has been replaced with 'geo_resolutions'")
+        traits = [{"key": x} for x in config.get("geo")]
+        deprecated("[config file] 'geo' has been replaced with 'geo_resolutions' and the structure has changed")
     else:
         return False
 
     # step 2: for each resolution, create the map of deme name -> lat/long
     geo_resolutions = []
-    for trait in traits:
+    for trait_info in traits:
         deme_to_lat_longs = {}
-        for deme in get_values_in_tree(node_metadata, trait):
+        for deme in get_values_in_tree(node_metadata, trait_info["key"]):
 
             # note: deme may be numeric, or string
             try:
@@ -277,12 +278,15 @@ def process_geo_resolutions(config, command_line_traits, lat_long_mapping, node_
                 deme_search_value = str(deme)
 
             try:
-                deme_to_lat_longs[deme] = lat_long_mapping[(trait.lower(), deme_search_value)]
+                deme_to_lat_longs[deme] = lat_long_mapping[(trait_info["key"].lower(), deme_search_value)]
             except KeyError:
                 warn("{}->{} did not have an associated lat/long value (matching performed in lower case). Auspice won't be able to display this location.".format(trait, deme))
 
         if deme_to_lat_longs:
-            geo_resolutions.append({"name": trait, "demes": deme_to_lat_longs})
+            data = {"key": trait_info["key"], "demes": deme_to_lat_longs}
+            if "title" in trait_info:
+                data["title"] = trait_info["title"]
+            geo_resolutions.append(data)
         else:
             warn("Geo resolution \"{}\" had no demes with supplied lat/longs and will be excluded from the exported \"geo_resolutions\".".format(trait))
 

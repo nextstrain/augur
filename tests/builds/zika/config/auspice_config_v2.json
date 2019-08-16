@@ -21,8 +21,8 @@
     }
   },
   "geo_resolutions": [
-    "country",
-    "region"
+    {"key": "country", "title": "Country Custom Title"},
+    {"key": "region"}
   ],
   "maintainers": [
     ["Trevor Bedford", "http://bedford.io/team/trevor-bedford/"]

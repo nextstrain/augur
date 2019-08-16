@@ -17,7 +17,7 @@
   }
  },
  "geo_resolutions": [
-   "location"
+   {"key": "location"}
  ],
  "filters": [
   "location",

@@ -33,7 +33,20 @@
             "uniqueItems": true,
             "minItems": 1,
             "items": {
-                "type": "string"
+                "type": "object",
+                "description": "An indiviual geo resolution",
+                "additionalProperties": false,
+                "required": ["key"],
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "Trait key - must be specified on nodes (e.g. 'country')"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "The title to display in the geo resolution dropdown. Optional -- if not provided then `key` will be used."
+                    }
+                }
             }
         },
         "maintainers": {
