@@ -179,6 +179,15 @@ Sphinx caches built documentation by default, which is generally great, but can 
 
     make -C docs clean
 
+To view the generated documentation in your browser, Mac users should run:
+
+    open docs/_build/html/index.html
+
+Linux users can view the docs by running:
+
+    xdg-open docs/_build/html/index.html
+
+
 ## License and copyright
 
 Copyright 2014-2019 Trevor Bedford and Richard Neher.
