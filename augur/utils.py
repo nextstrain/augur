@@ -559,8 +559,18 @@ def get_parent_name_by_child_name_for_tree(tree):
 
 def annotate_parents_for_tree(tree):
     """Annotate each node in the given tree with its parent.
+
+    >>> import io
+    >>> tree = Bio.Phylo.read(io.StringIO("(A, (B, C))"), "newick")
+    >>> not any([hasattr(node, "parent") for node in tree.find_clades()])
+    True
+    >>> tree = annotate_parents_for_tree(tree)
+    >>> tree.root.parent is None
+    True
+    >>> all([hasattr(node, "parent") for node in tree.find_clades()])
+    True
     """
-    tree.parent = None
+    tree.root.parent = None
     for node in tree.find_clades(order="level"):
         for child in node.clades:
             child.parent = node
