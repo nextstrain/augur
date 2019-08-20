@@ -11,3 +11,12 @@ You can also run each command with the ``--help`` option, for example ``augur tr
    :ref: augur.make_parser
    :prog: augur
    :nodescription:
+   :nosubcommands:
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Sub-commands
+   :name: augur-commands
+   :glob:
+
+   cli/*
