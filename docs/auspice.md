@@ -30,14 +30,14 @@ But, we know that for a variety of reasons, you can't always do this straight aw
 
 ### `export` JSON versions
 
-| JSON Version | Produced by Aupice Version | Works with Auspice  |
+| JSON Version | Produced by Augur Version | Works with Auspice  |
 | -------------|---------------| --------------------|
 | v1           | 5.x (via `export`) <br> 6.0 (via `export v1`)| 1.x or 2.0 |
 | v2           | 6.0 (via `export v2`) | 2.0 |
 
 ### Auspice
 
-| Auspice Version | Takes JSON | Produced by Auspice Version  |
+| Auspice Version | Takes JSON | Produced by Augur Version  |
 | -------------|---------------| --------------------|
 | 1.x           | v1        | 5.x (via `export`) <br> 6.0 (via `export v1`) |
 | 2.0           | v1 <br> v2 | 5.x (via `export`) <br> 6.0 (via `export v1`) <br> 6.0 (via `export v2`) |
