@@ -12,9 +12,13 @@ Augur originated as part of `Nextstrain <https://nextstrain.org>`__, an open-sou
 .. toctree::
    :maxdepth: 2
    :caption: Table of contents
+   :name: mastertoc
+   :titlesonly:
 
    installation
-   usage
+   cli
+   Augur examples <examples>
+   envvars
    upgrading
-   api
+   Development API <api>
    authors
