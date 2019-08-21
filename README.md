@@ -162,7 +162,7 @@ Versions of the documentation for each augur release and git branch are availabl
 Building the documentation locally is useful to test changes.
 First, make sure you have the development dependencies of augur installed:
 
-    pip install '.[dev]'
+    pip install -e .[dev]
 
 This installs packages listed in the `dev` section of `extras_require` in _setup.py_ (in addition to any normal augur dependencies if necessary).
 
