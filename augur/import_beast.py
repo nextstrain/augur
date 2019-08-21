@@ -297,7 +297,7 @@ def summarise_parsed_traits(tree):
                 traits[attr][1] += 1
             else:
                 traits[attr][0] += 1
-    
+
     print("\nParsed BEAST traits:")
     print("{: <20}{: <12}{: <12}".format("name", "n(internal)", "n(terminal)"))
     for trait in traits:
@@ -352,7 +352,7 @@ def find_most_recent_tip(tree, tip_date_regex, tip_date_format, tip_date_delimet
         from each tip in the string.
         default: hyphen delimited numbers at the end of tip name
     tip_date_format : string
-        The format of the extracted date. 
+        The format of the extracted date.
         (e.g. "%Y-%m-%d" goes with "2012-10-30")
     tip_date_delimeter : string
         The delimeter in `tip_date_format`
@@ -499,7 +499,7 @@ def compute_entropies_for_discrete_traits(tree):
     on all applicable nodes in the tree.
 
     Properties
-    -------
+    ----------
     tree : <class 'Bio.Phylo.BaseTree.Tree'>
         BEAST traits are set as key-value pairs on node.attrs
 
@@ -598,7 +598,7 @@ def run(args):
     # extract date information from the tree
     root_date_offset, most_recent_tip = calc_tree_dates(tree, args.most_recent_tip_date, args.tip_date_regex, args.tip_date_format, args.tip_date_delimeter)
     compute_entropies_for_discrete_traits(tree)
-    
+
     node_data['nodes'] = collect_node_data(tree, root_date_offset, most_recent_tip)
 
     tree_success = Phylo.write(tree, args.output_tree, 'newick', format_branch_length='%1.8f')
