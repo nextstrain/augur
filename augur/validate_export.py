@@ -17,7 +17,7 @@ def collectTreeAttrsV2(root, warn):
     def recurse(node):
         nonlocal num_nodes, num_terminal
         num_nodes += 1
-        traits = node["traits"].keys()
+        traits = node.get("traits", {}).keys()
         for property in traits:
             # Process author info from node not traits
             if property == "authors":
