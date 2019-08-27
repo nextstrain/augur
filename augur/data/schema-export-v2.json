@@ -146,41 +146,40 @@
                 },
                 "colorings": {
                     "description": "Available colorBys for Auspice",
-                    "$comment": "Property names here match those found on node.traits, where node.traits[propertyName] defines the value of that coloring for that node",
-                    "$comment": "Property names are not displayed by auspice - use 'title' for this",
-                    "$comment": "Exceptions: property names 'num_date', 'gt' (genotype), 'authors' or 'citekey'",
-                    "$comment": "as their info is defined as a prop on the node itself (not node.traits)",
-                    "type": "object",
-                    "additionalProperties": false,
-                    "patternProperties": {
-                        "^[A-Za-z0-9_-]+$": {
-                            "type": "object",
-                            "required": ["title", "type"],
-                            "properties": {
-                                "title": {
-                                    "description": "Text to be displayed in the \"color by\" dropdown and the tree legend",
-                                    "$comment": "string is parsed unchanged by Auspice",
-                                    "type": "string"
-                                },
-                                "type": {
-                                    "description": "Dictates how the color scale should be constructed",
-                                    "$comment": "The trait values (defined on tree nodes) must be numeric for continuous types, True / False for boolean, string or numeric for ordinal / categorical",
-                                    "type": "string",
-                                    "enum": ["continuous", "ordinal", "categorical", "boolean"]
-                                },
-                                "scale": {
-                                    "description": "Provided mapping between trait values & hex values",
-                                    "$comment": "TODO: If type is continuous or ordinal, values between those provided here are interpolated",
-                                    "$comment": "If type is categorical, values not present here are grey",
-                                    "$comment": "TODO: If type is boolean, use \"1\" (true) and \"0\" (false) as properties",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "description": "Each object here is an indiviual coloring, which will populate the sidebar dropdown in auspice",
+                        "required": ["key", "type"],
+                        "properties": {
+                            "key": {
+                                "description": "They key used to access the value of this coloring on each node",
+                                "type": "string"
+                            },
+                            "title": {
+                                "description": "Text to be displayed in the \"color by\" dropdown and the tree legend",
+                                "$comment": "string is parsed unchanged by Auspice",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Dictates how the color scale should be constructed",
+                                "$comment": "The trait values (defined on tree nodes) must be numeric for continuous types, True / False for boolean, string or numeric for ordinal / categorical",
+                                "type": "string",
+                                "enum": ["continuous", "ordinal", "categorical", "boolean"]
+                            },
+                            "scale": {
+                                "description": "Provided mapping between trait values & hex values",
+                                "$comment": "TODO: If type is continuous or ordinal, values between those provided here are interpolated",
+                                "$comment": "If type is categorical, values not present here are grey",
+                                "$comment": "TODO: If type is boolean, use \"1\" (true) and \"0\" (false) as properties",
+                                "type": "array",
+                                "items": {
                                     "type": "array",
-                                    "items": {
-                                        "type": "array",
-                                        "items": [
-                                            {"type": "string", "description": "value of trait (should exist on >= 1 nodes)"},
-                                            {"type": "string", "description": "color hex value", "pattern": "^#[0-9A-Fa-f]{6}$"}
-                                        ]
-                                    }
+                                    "items": [
+                                        {"type": "string", "description": "value of trait (should exist on >= 1 nodes)"},
+                                        {"type": "string", "description": "color hex value", "pattern": "^#[0-9A-Fa-f]{6}$"}
+                                    ]
                                 }
                             }
                         }

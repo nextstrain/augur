@@ -117,14 +117,6 @@ def get_config_defined_colorings(config):
 
 
 def set_colorings(data_json, config, command_line_colorings, metadata_names, node_data_colorings, provided_colors, node_attrs):
-    def _rename_authors_key(colorings):
-        if not colorings.get("authors"):
-            return
-        if colorings.get("author"):
-            warn("[config file] Both 'author' and 'authors' supplied as coloring options. Using 'author'.")
-        deprecated("[config file] The 'authors' key is now called 'author'")
-        colorings["author"] = colorings["authors"]
-        del colorings["authors"]
 
     def _get_type(key, trait_values):
         # for some keys we know what the type must be
@@ -185,52 +177,13 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
             return "Genotype"
         if key == "author":
             return "Authors"
-        if key == "authors":
-            return "Authors"
         if key == 'num_date':
             return 'Sampling date'
         # fallthrough
         return key
-    
-    def get_colorings():
-        # which colorings are intended for this dataset?
-        colorings = {}
-        # start with the node_data_colorings, these are ALWAYS exported
-        for x in node_data_colorings:
-            colorings[x] = config[x] if x in config else {}
-        # if we have command line colorings set, add these in too,
-        # otherwise add in those from the config JSON if we have that
-        if command_line_colorings:
-            for x in command_line_colorings:
-                colorings[x] = config[x] if x in config else {}
-        elif config:
-            for x in config:
-                colorings[x] = config[x]
-        # handle deprecated keys by updating to their new ones where possible
-        _rename_authors_key(colorings)
-        # special cases, which are set if the data supports them
-        if are_mutations_defined(node_attrs):
-            colorings["gt"] = {}
 
-        return colorings
-
-
-
-    colorings = get_colorings()
-
-    # for each coloring, check it exists & set title & type
-    for key, info in list(colorings.items()):
-        trait_values = get_values_across_nodes(node_attrs, key) # e.g. list of countries, regions etc
-        if key != "gt" and not trait_values:
-            warn("You asked for a color-by for trait '{}', but it has no values on the tree. It has been ignored.".format(key))
-            del colorings[key]
-        try:
-            colorings[key] = {"title": _get_title(key), "type": _get_type(key, trait_values)}
-        except InvalidOption:
-            del colorings[key] # a warning message will have been printed before `InvalidOption` is raised
-
-    # for each coloring, if colors have been provided, match them against values observed in the tree
-    for key, info in colorings.items():
+    def _add_color_scale(coloring):
+        key = coloring["key"]
         if key.lower() in provided_colors:
             scale = []
             trait_values = {str(val).lower(): val for val in get_values_across_nodes(node_attrs, key)}
@@ -240,12 +193,84 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
                     scale.append([trait_values[provided_key.lower()], provided_color])
                     trait_values_unseen.discard(provided_key.lower())
             if len(scale):
-                colorings[key]["scale"] = scale
+                coloring["scale"] = scale
                 if len(trait_values_unseen):
                     warn("These values for trait {} were not specified in your provided color scale: {}. Auspice will create colors for them.".format(key, ", ".join(trait_values_unseen)))
             else:
                 warn("You've specified a color scale for {} but none of the values found on the tree had associated colors. Auspice will generate its own color scale for this trait.".format(key))
+        return coloring
 
+    def _add_title_and_type(coloring):
+        key = coloring["key"]
+        trait_values = get_values_across_nodes(node_attrs, key) # e.g. list of countries, regions etc
+        try:
+            coloring["title"] = _get_title(key)
+            coloring["type"] = _get_type(key, trait_values)
+        except InvalidOption:
+            return False # a warning message will have been printed before `InvalidOption` is raised
+        return coloring
+
+    def _create_coloring(colorings, key):
+        # handle deprecations
+        if key == "authors":
+            deprecated("[colorings] The 'authors' key is now called 'author'")
+            key = "author"
+        colorings[key] = {"key": key}
+
+    def _is_valid(coloring):
+        key = coloring["key"]
+        trait_values = get_values_across_nodes(node_attrs, key) # e.g. list of countries, regions etc
+        if key == "gt" and not are_mutations_defined(node_attrs):
+            warn("[colorings] You asked for mutations (\"gt\"), but none are defined on the tree. They cannot be used as a coloring.")
+            return False
+        if key != "gt" and not trait_values:
+            warn("You asked for a color-by for trait '{}', but it has no values on the tree. It has been ignored.".format(key))
+            return False
+        return True
+
+    def _get_colorings():
+        # which colorings are intended for this dataset?
+        # returns an array of dicts, where the order determines the order in auspice's dropdowns
+        # note that invalid options will be pruned out later
+        # it is here that we deal with the interplay between node-data "traits", command line colorings &
+        # config provided options
+
+        colorings = {}
+        # If we have command line colorings, it seems we (a) ignore any provided in the config file
+        # and (b) start with the node-data "traits". (Note that in a later function, the title and/or
+        # type will be accessed from the config file if available)
+        if command_line_colorings:
+            # start with node_data_colorings
+            for x in node_data_colorings:
+                _create_coloring(colorings, x)
+            # then add in command line colorings
+            for x in command_line_colorings:
+                _create_coloring(colorings, x)
+        else:
+            # if we have a config file, start with these (extra info, such as title&type, is added in later)
+            if config:
+                for x in config.keys():
+                    _create_coloring(colorings, x)
+            # then add in node-data "traits" irrespective of whether we have config-provided colorings
+            for x in node_data_colorings:
+                _create_coloring(colorings, x)
+
+        # add in genotype as a special case if (a) not already set and (b) the data supports it
+        if "gt" not in colorings and are_mutations_defined(node_attrs):
+            return [{"key": "gt"}, *colorings.values()] # insert genotype at front
+        else:
+            return [*colorings.values()]
+
+
+    # construct colorings from cmd line args, data, config file etc
+    colorings = _get_colorings()
+    # ensure the data supports each coloring & ignore if not
+    colorings = [c for c in colorings if _is_valid(c)]
+    # add the title / type from config or via predefined logic rules. Note this can return False on an error.
+    colorings = [x for x in [_add_title_and_type(coloring) for coloring in colorings] if x]
+    # for each coloring, if colors have been provided, save them as a "scale"
+    colorings = [_add_color_scale(coloring) for coloring in colorings]
+    # save them to the data json to be exported
     data_json['meta']["colorings"] = colorings
 
 
@@ -300,8 +325,8 @@ def set_annotations(data_json, node_data):
         data_json['meta']["genome_annotations"] = node_data["annotations"]
 
 def set_filters(data_json, config):
-    # NB set_colorings must have been run
-    potentials = {k for k,v in data_json['meta']["colorings"].items() if v["type"] != "continuous"}
+    # NB set_colorings() must have been run as we access those results
+    potentials = {coloring["key"] for coloring in data_json['meta']["colorings"] if coloring["type"] != "continuous"}
 
     if config.get('filters') == []:
         # an empty config section indicates no filters are to be exported
@@ -323,12 +348,6 @@ def validate_data_json(filename):
         print("Validation of {} failed. Please check this in a local instance of `auspice`, as it is not expected to display correctly. ".format(filename))
         print("------------------------")
 
-
-    if deprecationWarningsEmitted:
-        print("\n------------------------")
-        print("There were deprecation warnings displayed. They have been fixed but these will likely become breaking errors in a future version of augur.")
-        print("------------------------")
-    print("")
 
 def set_panels(data_json, config, cmd_line_panels):
 
@@ -477,18 +496,18 @@ def set_node_attrs_on_tree(data_json, node_attrs):
                 node[prop] = raw_data[prop]
 
     def _transfer_colorings(node, raw_data):
-        colors = data_json["meta"]["colorings"].keys()
         # exclude special cases already taken care of
-        colors = [x for x in colors if x not in ["gt", "num_date", "author"]]
-        for name in colors:
-            if is_valid(raw_data.get(name, None)):
+        colorings = [c for c in data_json["meta"]["colorings"] if c["key"] not in ["gt", "num_date", "author"]]
+        for coloring in colorings:
+            key = coloring["key"]
+            if is_valid(raw_data.get(key, None)):
                 if "traits" not in node:
                     node["traits"] = {}
-                node["traits"][name] = {"value": raw_data[name]}
-                if is_valid(raw_data.get(name+"_confidence", None)):
-                    node["traits"][name]["confidence"] = raw_data[name+"_confidence"]
-                if is_valid(raw_data.get(name+"_entropy", None)):
-                    node["traits"][name]["entropy"] = raw_data[name+"_entropy"]
+                node["traits"][key] = {"value": raw_data[key]}
+                if is_valid(raw_data.get(key+"_confidence", None)):
+                    node["traits"][key]["confidence"] = raw_data[key+"_confidence"]
+                if is_valid(raw_data.get(key+"_entropy", None)):
+                    node["traits"][key]["entropy"] = raw_data[key+"_entropy"]
 
     def _transfer_author_data(node):
         if node["name"] in author_data:
@@ -761,3 +780,9 @@ def run_v2(args):
 
     # validate outputs
     validate_data_json(args.output_main)
+
+    if deprecationWarningsEmitted:
+        print("\n------------------------")
+        print("There were deprecation warnings displayed. They have been fixed but these will likely become breaking errors in a future version of augur.")
+        print("------------------------")
+    print("")

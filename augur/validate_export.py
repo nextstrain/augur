@@ -66,7 +66,7 @@ def collectMutationGenes(root):
 
 def verifyMainJSONIsInternallyConsistent(data, ValidateError):
     """
-    Check all possible sources of conflict within the main (unified) JSON
+    Check possible sources of conflict within the main (unified) JSON
     This function is only used for schema v2.0
     """
     warnings = False
@@ -74,7 +74,6 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
         nonlocal warnings
         warnings = True
         print("\tWARNING: ", msg, file=sys.stderr)
-
 
     print("Validating that the JSON is internally consistent")
 
@@ -105,11 +104,14 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
 
 
     if "colorings" in data["meta"]:
-        for colorBy in [x for x in data["meta"]["colorings"] if x != "gt"]:
+        for coloring in data["meta"]["colorings"]:
+            colorBy = coloring["key"]
+            if colorBy == "gt":
+                continue
             if colorBy not in treeTraits:
                 warn("The coloring \"{}\" does not appear as an attr on any tree nodes.".format(colorBy))
-            if "scale" in data["meta"]["colorings"][colorBy]:
-                scale = data["meta"]["colorings"][colorBy]["scale"]
+            if "scale" in coloring:
+                scale = coloring["scale"]
                 if isinstance(scale, list):
                     for value, hex in scale:
                         if value not in treeTraits[colorBy]["values"]:
@@ -118,16 +120,16 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
                     raise ValidateError("String colour scales are not yet implemented")
                 else:
                     raise ValidateError("Invalid color scale (for trait \"{}\")".format(colorBy))
-            if "domain" in data["meta"]["colorings"][colorBy]:
-                domain = data["meta"]["colorings"][colorBy]["domain"]
-                if data["meta"]["colorings"][colorBy]["type"] in ["ordinal", "categorical"]:
+            if "domain" in coloring:
+                domain = coloring["domain"]
+                if coloring["type"] in ["ordinal", "categorical"]:
                     inMetaNotInTree = [val for val in domain if val not in treeTraits[colorBy]["values"]]
                     if len(inMetaNotInTree):
                         warn("Domain for {} defined the following values which are not present on the tree: {}".format(colorBy, inMetaNotInTree.join(", ")))
                     inTreeNotInMeta = [val for val in treeTraits[colorBy]["values"] if val not in domain]
                     if len(inTreeNotInMeta):
                         warn("Tree defined values for {} which were not in the domain: {}".format(colorBy, inTreeNotInMeta.join(", ")))
-                elif data["meta"]["colorings"][colorBy]["type"] == "boolean":
+                elif coloring["type"] == "boolean":
                     raise ValidateError("Cannot povide a domain for a boolean coloring ({})".format(colorBy))
     else:
         warn("No colourings were provided")
