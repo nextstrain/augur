@@ -16,8 +16,8 @@
     "type": "categorical"
   }
  },
- "geographic_info": [
-   "location"
+ "geo_resolutions": [
+   {"key": "location"}
  ],
  "filters": [
   "location",

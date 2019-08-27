@@ -98,32 +98,45 @@
                     "uniqueItems": true,
                     "minItems": 1
                 },
-                "geographic_info": {
+                "geo_resolutions": {
                     "description": "The available options for the geographic resolution dropdown, and their lat/long information",
-                    "$comment": "Properties here specify the values of the geographic resolution dropdown in Auspice. They must be specified on the tree via node -> traits -> X",
-                    "type": "object",
-                    "additionalProperties": false,
-                    "patternProperties": {
-                        "^[a-z]+$": {
-                            "description": "The deme names & lat/long info for this geographic resolution",
-                            "$comment": "Each value defined across the tree needs to be present here, else Auspice cannot display the deme appropriately",
-                            "type": "object",
-                            "patternProperties": {
-                                "^[a-z_]+$": {
-                                    "description": "Lat/long info for this deme",
-                                    "$comment": "one day this may define a shape / polygon",
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                        "latitude": {
-                                            "type": "number",
-                                            "minimum": -90,
-                                            "maximum": 90
-                                        },
-                                        "longitude": {
-                                            "type": "number",
-                                            "minimum": -180,
-                                            "maximum": 180
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "description": "Each object here is an indiviual geo resolution",
+                        "additionalProperties": false,
+                        "required": ["key", "demes"],
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "description": "Trait key - must be specified on nodes (e.g. 'country')"
+                            },
+                            "title": {
+                              "type": "string",
+                              "description": "The title to display in the geo resolution dropdown. Optional -- if not provided then `key` will be used."
+                            },
+                            "demes": {
+                                "type": "object",
+                                "description": "The deme names & lat/long info for this geographic resolution",
+                                "$comment": "Each value defined across the tree needs to be present here, else Auspice cannot display the deme appropriately",
+                                "patternProperties": {
+                                    "^[a-z_]+$": {
+                                        "description": "Lat/long info for this deme",
+                                        "$comment": "one day this may define a shape / polygon",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "properties": {
+                                            "latitude": {
+                                                "type": "number",
+                                                "minimum": -90,
+                                                "maximum": 90
+                                            },
+                                            "longitude": {
+                                                "type": "number",
+                                                "minimum": -180,
+                                                "maximum": 180
+                                            }
                                         }
                                     }
                                 }
@@ -133,41 +146,40 @@
                 },
                 "colorings": {
                     "description": "Available colorBys for Auspice",
-                    "$comment": "Property names here match those found on node.traits, where node.traits[propertyName] defines the value of that coloring for that node",
-                    "$comment": "Property names are not displayed by auspice - use 'title' for this",
-                    "$comment": "Exceptions: property names 'num_date', 'gt' (genotype), 'authors' or 'citekey'",
-                    "$comment": "as their info is defined as a prop on the node itself (not node.traits)",
-                    "type": "object",
-                    "additionalProperties": false,
-                    "patternProperties": {
-                        "^[A-Za-z0-9_-]+$": {
-                            "type": "object",
-                            "required": ["title", "type"],
-                            "properties": {
-                                "title": {
-                                    "description": "Text to be displayed in the \"color by\" dropdown and the tree legend",
-                                    "$comment": "string is parsed unchanged by Auspice",
-                                    "type": "string"
-                                },
-                                "type": {
-                                    "description": "Dictates how the color scale should be constructed",
-                                    "$comment": "The trait values (defined on tree nodes) must be numeric for continuous types, True / False for boolean, string or numeric for ordinal / categorical",
-                                    "type": "string",
-                                    "enum": ["continuous", "ordinal", "categorical", "boolean"]
-                                },
-                                "scale": {
-                                    "description": "Provided mapping between trait values & hex values",
-                                    "$comment": "TODO: If type is continuous or ordinal, values between those provided here are interpolated",
-                                    "$comment": "If type is categorical, values not present here are grey",
-                                    "$comment": "TODO: If type is boolean, use \"1\" (true) and \"0\" (false) as properties",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "description": "Each object here is an indiviual coloring, which will populate the sidebar dropdown in auspice",
+                        "required": ["key", "type"],
+                        "properties": {
+                            "key": {
+                                "description": "They key used to access the value of this coloring on each node",
+                                "type": "string"
+                            },
+                            "title": {
+                                "description": "Text to be displayed in the \"color by\" dropdown and the tree legend",
+                                "$comment": "string is parsed unchanged by Auspice",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Dictates how the color scale should be constructed",
+                                "$comment": "The trait values (defined on tree nodes) must be numeric for continuous types, True / False for boolean, string or numeric for ordinal / categorical",
+                                "type": "string",
+                                "enum": ["continuous", "ordinal", "categorical", "boolean"]
+                            },
+                            "scale": {
+                                "description": "Provided mapping between trait values & hex values",
+                                "$comment": "TODO: If type is continuous or ordinal, values between those provided here are interpolated",
+                                "$comment": "If type is categorical, values not present here are grey",
+                                "$comment": "TODO: If type is boolean, use \"1\" (true) and \"0\" (false) as properties",
+                                "type": "array",
+                                "items": {
                                     "type": "array",
-                                    "items": {
-                                        "type": "array",
-                                        "items": [
-                                            {"type": "string", "description": "value of trait (should exist on >= 1 nodes)"},
-                                            {"type": "string", "description": "color hex value", "pattern": "^#[0-9A-Fa-f]{6}$"}
-                                        ]
-                                    }
+                                    "items": [
+                                        {"type": "string", "description": "value of trait (should exist on >= 1 nodes)"},
+                                        {"type": "string", "description": "color hex value", "pattern": "^#[0-9A-Fa-f]{6}$"}
+                                    ]
                                 }
                             }
                         }

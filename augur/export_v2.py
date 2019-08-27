@@ -2,14 +2,13 @@
 Export JSON files suitable for visualization with auspice.
 """
 
-import os, sys
+import sys
 import re
 import time
-import numpy as np
-from Bio import Phylo
 from collections import defaultdict
-from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
 import warnings
+from Bio import Phylo
+from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
 from .validate import export_v2 as validate_v2
 from .validate import ValidateError
 
@@ -43,7 +42,7 @@ def configure_warnings():
 class InvalidOption(Exception):
     pass
 
-def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
+def convert_tree_to_json_structure(node, metadata, div=0):
     """
     converts the Biopython tree structure to a dictionary that can
     be written to file as a json. This is called recursively.
@@ -67,11 +66,6 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
     if div is not False: # div=0 is ok
         node_struct["div"] = div
 
-    if strains is None:
-        strains = [node_struct["name"]]
-    else:
-        strains.append(node_struct["name"])
-
     if node.clades:
         node_struct["children"] = []
         for child in node.clades:
@@ -82,51 +76,61 @@ def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
                     cdiv = div + metadata[child.name]['mutation_length']
                 elif 'branch_length' in metadata[child.name]:
                     cdiv = div + metadata[child.name]['branch_length']
-            node_struct["children"].append(convert_tree_to_json_structure(child, metadata, div=cdiv, strains=strains)[0])
+            node_struct["children"].append(convert_tree_to_json_structure(child, metadata, div=cdiv))
 
-    return (node_struct, strains)
+    return node_struct
 
-def check_muts(node_metadata):
-    values_in_tree = 0
-    for node_properties in node_metadata.values():
-        if "mutations" in node_properties:
-            values_in_tree+=1
-    if values_in_tree == 0:
-        return None
-    return values_in_tree
+def are_mutations_defined(node_attrs):
+    for node, data in node_attrs.items():
+        if data.get("aa_muts") or data.get("muts"):
+            return True
+    return False
 
-def get_values_in_tree(node_metadata, key):
-    values_in_tree = set()
-    for node_properties in node_metadata.values():
-        # beware of special cases!
-        if key in ["num_date", "author"]:
-            values_in_tree.add(node_properties.get(key, {}).get("value"))
-        elif key in node_properties['traits']:
-            values_in_tree.add(node_properties['traits'][key]['value'])
-    if len(values_in_tree)==1 and None in values_in_tree:
-        return {}
-    return values_in_tree
+def update_deprecated_names(name):
+    # correct deprecated keys
+    change = {
+        "authors": "author",
+        "numdate": "num_date"
+    }
+    return change.get(name, name)
+
+def get_values_across_nodes(node_attrs, key):
+    vals = set()
+    for data in node_attrs.values():
+        if data.get(key):
+            vals.add(data.get(key))
+    return vals
 
 def is_valid(value):
     invalid = ["undefined", "unknown", "?", "nan", "na", "n/a", 'none', '', 'not known']
     return str(value).strip('\"').strip("'").strip().lower() not in invalid
 
-def get_colorings(config, colorbys, provided_colors, node_metadata, mutations_present):
-    def _rename_authors_key(color_config):
-        if not color_config.get("authors"):
-            return
-        if color_config.get("author"):
-            warn("[config file] Both 'author' and 'authors' supplied as coloring options. Using 'author'.")
-        deprecated("[config file] The 'authors' key is now called 'author'")
-        color_config["author"] = color_config["authors"]
-        del color_config["authors"]
+def get_config_defined_colorings(config):
+    # extract the colorings information from the config JSON, if provided
+    config_colorings = {}
+    if config.get("colorings"):
+        config_colorings = config["colorings"]
+    elif config.get("color_options"):
+        config_colorings = config["color_options"]
+        deprecated("[config file] 'color_options' has been replaced with 'colorings'")
+    return config_colorings
 
-    def _get_type(key, config_data, trait_values):
-        # for clade_membership, we know what it is - anything else breaks Auspice
-        if key == "clade_membership":
-            return "categorical"
-        if config_data.get("type"):
-            t = config_data.get("type")
+
+def set_colorings(data_json, config, command_line_colorings, metadata_names, node_data_colorings, provided_colors, node_attrs):
+
+    def _get_type(key, trait_values):
+        # for some keys we know what the type must be
+        known_types = {
+            "clade_membership": "categorical",
+            "gt": "ordinal",
+            "author": "categorical",
+            "num_date": "continuous"
+        }
+        if key in known_types:
+            return known_types[key]
+
+        if config.get(key, {}).get("type"):
+            t = config.get(key).get("type")
             allowedTypes = ["continuous", "ordinal", "categorical", "boolean"]
             if t == "discrete":
                 deprecated("[config file] Coloring type 'discrete' is no longer valid. Please use one of: '{}' instead. Trait {} has been automatically set as 'categorical'.".format(", ".join(allowedTypes), key))
@@ -151,10 +155,10 @@ def get_colorings(config, colorbys, provided_colors, node_metadata, mutations_pr
             print("Trait {} was guessed as being type '{}'. Use a 'config' file if you'd like to set this yourself.".format(key, t))
         return t
 
-    def _get_title(key, color_config):
-        # preferentially get the title from the color_config if set
-        if color_config.get(key):
-            info = color_config.get(key)
+    def _get_title(key):
+        # preferentially get the title from the config if set
+        if config.get(key):
+            info = config.get(key)
             if "title" in info:
                 return info["title"]
             oldFields = "' and '".join([a for a in info.keys() if a in ['menuItem', 'legendTitle']])
@@ -173,200 +177,242 @@ def get_colorings(config, colorbys, provided_colors, node_metadata, mutations_pr
             return "Genotype"
         if key == "author":
             return "Authors"
-        if key == "authors":
-            return "Authors"
         if key == 'num_date':
             return 'Sampling date'
         # fallthrough
         return key
 
-    # TODO: sort out how command line arguments play with colof_config, if defined
-
-    # Get config file colorings - but may or may not be included.
-    config_colorings = {}
-    if config.get("colorings"):
-        config_colorings = config["colorings"]
-    elif config.get("color_options"):
-        config_colorings = config["color_options"]
-        deprecated("[config file] 'color_options' has been replaced with 'colorings'")
-    # standardize to 'author'
-    if 'authors' in config_colorings:
-        config_colorings['author'] = config_colorings.pop('authors')
-   
-    # Only explicitly set colorbys are included!
-    color_config = {c: (config_colorings[c] if c in config_colorings.keys() else {}) for c in colorbys}
-
-    #TODO this should *not* be needed anymore, but test a bit more....
-    # if the 'clade_membership' trait is defined then ensure it's also a coloring
-    #if 'clade_membership' in traits and 'clade_membership' not in color_config:
-    #    color_config['clade_membership'] = {}
-
-    # handle deprecated keys by updating to their new ones where possible
-    _rename_authors_key(color_config)
-    colorings = {}
-    # handle special cases
-    if mutations_present:
-        colorings["gt"] = {'title': _get_title("gt", color_config), 'type': 'ordinal'}
-    if get_values_in_tree(node_metadata, "author") and "author" in color_config: # check if any nodes have author set
-        colorings["author"] = {'title': _get_title("author", color_config), 'type': 'categorical'}
-    if get_values_in_tree(node_metadata, "num_date"): # TODO: check if tree has temporal inference (possible to not have)
-        colorings['num_date'] = {'title': _get_title("num_date", color_config), 'type': 'continuous'}
-    # remove these keys so they're not processed below
-    color_config.pop("gt", None)
-    color_config.pop("author", None)
-    color_config.pop("num_date", None)
-    color_config.pop("div", None) # makes no sense to have this
-
-    # loop through provided colorings not handled above
-    for key, config_data in color_config.items():
-        trait_values = get_values_in_tree(node_metadata, key) # e.g. list of countries, regions etc
-        if not trait_values:
-            warn("You asked for a color-by for trait '{}', but it has no values on the tree. It has been ignored.".format(key))
-            continue
-        try:
-            colorings[key] = {"title": _get_title(key, color_config), "type": _get_type(key, config_data, trait_values)}
-        except InvalidOption:
-            continue # a warning message will have been printed before this is thrown
-        # set color maps if provided in the config (FYI - color maps are interpreted in lower case)
-        # we preserve the ordering of the provided colour maps
+    def _add_color_scale(coloring):
+        key = coloring["key"]
         if key.lower() in provided_colors:
             scale = []
-            trait_values = {str(val).lower(): val for val in trait_values}
+            trait_values = {str(val).lower(): val for val in get_values_across_nodes(node_attrs, key)}
             trait_values_unseen = {k for k in trait_values}
             for provided_key, provided_color in provided_colors[key.lower()]:
                 if provided_key.lower() in trait_values:
                     scale.append([trait_values[provided_key.lower()], provided_color])
                     trait_values_unseen.discard(provided_key.lower())
             if len(scale):
-                colorings[key]["scale"] = scale
+                coloring["scale"] = scale
                 if len(trait_values_unseen):
                     warn("These values for trait {} were not specified in your provided color scale: {}. Auspice will create colors for them.".format(key, ", ".join(trait_values_unseen)))
             else:
                 warn("You've specified a color scale for {} but none of the values found on the tree had associated colors. Auspice will generate its own color scale for this trait.".format(key))
-    return colorings
+        return coloring
+
+    def _add_title_and_type(coloring):
+        key = coloring["key"]
+        trait_values = get_values_across_nodes(node_attrs, key) # e.g. list of countries, regions etc
+        try:
+            coloring["title"] = _get_title(key)
+            coloring["type"] = _get_type(key, trait_values)
+        except InvalidOption:
+            return False # a warning message will have been printed before `InvalidOption` is raised
+        return coloring
+
+    def _create_coloring(colorings, key):
+        # handle deprecations
+        if key == "authors":
+            deprecated("[colorings] The 'authors' key is now called 'author'")
+            key = "author"
+        colorings[key] = {"key": key}
+
+    def _is_valid(coloring):
+        key = coloring["key"]
+        trait_values = get_values_across_nodes(node_attrs, key) # e.g. list of countries, regions etc
+        if key == "gt" and not are_mutations_defined(node_attrs):
+            warn("[colorings] You asked for mutations (\"gt\"), but none are defined on the tree. They cannot be used as a coloring.")
+            return False
+        if key != "gt" and not trait_values:
+            warn("You asked for a color-by for trait '{}', but it has no values on the tree. It has been ignored.".format(key))
+            return False
+        return True
+
+    def _get_colorings():
+        # which colorings are intended for this dataset?
+        # returns an array of dicts, where the order determines the order in auspice's dropdowns
+        # note that invalid options will be pruned out later
+        # it is here that we deal with the interplay between node-data "traits", command line colorings &
+        # config provided options
+
+        colorings = {}
+        # If we have command line colorings, it seems we (a) ignore any provided in the config file
+        # and (b) start with the node-data "traits". (Note that in a later function, the title and/or
+        # type will be accessed from the config file if available)
+        if command_line_colorings:
+            # start with node_data_colorings
+            for x in node_data_colorings:
+                _create_coloring(colorings, x)
+            # then add in command line colorings
+            for x in command_line_colorings:
+                _create_coloring(colorings, x)
+        else:
+            # if we have a config file, start with these (extra info, such as title&type, is added in later)
+            if config:
+                for x in config.keys():
+                    _create_coloring(colorings, x)
+            # then add in node-data "traits" irrespective of whether we have config-provided colorings
+            for x in node_data_colorings:
+                _create_coloring(colorings, x)
+
+        # add in genotype as a special case if (a) not already set and (b) the data supports it
+        if "gt" not in colorings and are_mutations_defined(node_attrs):
+            return [{"key": "gt"}, *colorings.values()] # insert genotype at front
+        else:
+            return [*colorings.values()]
 
 
-def process_geographic_info(config, command_line_traits, lat_long_mapping, node_metadata):
+    # construct colorings from cmd line args, data, config file etc
+    colorings = _get_colorings()
+    # ensure the data supports each coloring & ignore if not
+    colorings = [c for c in colorings if _is_valid(c)]
+    # add the title / type from config or via predefined logic rules. Note this can return False on an error.
+    colorings = [x for x in [_add_title_and_type(coloring) for coloring in colorings] if x]
+    # for each coloring, if colors have been provided, save them as a "scale"
+    colorings = [_add_color_scale(coloring) for coloring in colorings]
+    # save them to the data json to be exported
+    data_json['meta']["colorings"] = colorings
+
+
+def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping, node_attrs):
+    """
+    appropriately combine provided geo resolutions from command line & config files
+    and associate with lat/longs.
+    """
+
+    # step 1: get a list of resolutions
     if command_line_traits:
         # straight overwrite -- not an extension of those which may be provided in the config
-        traits = command_line_traits
-    elif config.get("geographic_info"):
-        traits = config.get("geographic_info")
+        traits = [{"key": x for x in command_line_traits}] 
+    elif config.get("geo_resolutions"):
+        traits = config.get("geo_resolutions")
     elif config.get("geo"):
-        traits = config.get("geo")
-        deprecated("[config file] 'geo' has been replaced with 'geographic_info'")
+        traits = [{"key": x} for x in config.get("geo")]
+        deprecated("[config file] 'geo' has been replaced with 'geo_resolutions' and the structure has changed")
     else:
-        return {}
+        return False
 
-    geographic_info = defaultdict(dict)
-    for trait in traits:
-        demes_in_tree = get_values_in_tree(node_metadata, trait)
-        for deme in demes_in_tree:
-            # deme may be numeric, or string
+    # step 2: for each resolution, create the map of deme name -> lat/long
+    geo_resolutions = []
+    for trait_info in traits:
+        deme_to_lat_longs = {}
+        trait_values = get_values_across_nodes(node_attrs, trait_info["key"]) # e.g. list of countries, regions etc
+
+        for deme in trait_values: # note: deme may be numeric, or string
             try:
                 deme_search_value = deme.lower()
             except AttributeError:
                 deme_search_value = str(deme)
-
             try:
-                geographic_info[trait][deme] = lat_long_mapping[(trait.lower(), deme_search_value)]
+                deme_to_lat_longs[deme] = lat_long_mapping[(trait_info["key"].lower(), deme_search_value)]
             except KeyError:
                 warn("{}->{} did not have an associated lat/long value (matching performed in lower case). Auspice won't be able to display this location.".format(trait, deme))
-    return geographic_info
 
-def process_annotations(node_data):
-    # treetime adds "annotations" to node_data
-    if "annotations" not in node_data: # if haven't run tree through treetime
-        return None
-    return node_data["annotations"]
+        if deme_to_lat_longs:
+            data = {"key": trait_info["key"], "demes": deme_to_lat_longs}
+            if "title" in trait_info:
+                data["title"] = trait_info["title"]
+            geo_resolutions.append(data)
+        else:
+            warn("Geo resolution \"{}\" had no demes with supplied lat/longs and will be excluded from the exported \"geo_resolutions\".".format(trait))
 
-def process_panels(user_panels, meta_json):
+    if geo_resolutions:
+        data_json['meta']["geo_resolutions"] = geo_resolutions
+
+
+def set_annotations(data_json, node_data):
+    if "annotations" in node_data:
+        data_json['meta']["genome_annotations"] = node_data["annotations"]
+
+def set_filters(data_json, config):
+    # NB set_colorings() must have been run as we access those results
+    potentials = {coloring["key"] for coloring in data_json['meta']["colorings"] if coloring["type"] != "continuous"}
+
+    if config.get('filters') == []:
+        # an empty config section indicates no filters are to be exported
+        data_json['meta']['filters'] = []
+    elif config.get('filters'):
+        # set filters as long as they are not continuous
+        data_json['meta']['filters'] = [f for f in config['filters'] if f in potentials]
+    else:
+        # if not specified in the config, include all boolean and categorical colorbys
+        data_json['meta']['filters'] = list(potentials)
+
+def validate_data_json(filename):
+    print("Validating produced JSON")
     try:
-        panels = meta_json["panels"]
-    except KeyError:
+        validate_v2(json_v2=filename)
+    except ValidateError as e:
+        print(e)
+        print("\n------------------------")
+        print("Validation of {} failed. Please check this in a local instance of `auspice`, as it is not expected to display correctly. ".format(filename))
+        print("------------------------")
+
+
+def set_panels(data_json, config, cmd_line_panels):
+
+    # config set panels overrides cmd-line provided panels    
+    panels = config["panels"] if config.get("panels") else cmd_line_panels
+    
+    if not panels:
         panels = ["tree", "map", "entropy"]
 
-    if user_panels is not None and len(user_panels) != 0:
-        panels = user_panels
-
-    if "geographic_info" in meta_json:
-        geoTraits = meta_json["geographic_info"].keys()
-    else:
-        geoTraits = []
-    if meta_json.get("genome_annotations", None):
-        annotations = meta_json["genome_annotations"].keys()
+    if data_json["meta"].get("genome_annotations", None):
+        annotations = data_json["meta"]["genome_annotations"].keys()
     else:
         annotations = []
 
     if "entropy" in panels and len(annotations) == 0:
         panels.remove("entropy")
-    if "map" in panels and len(geoTraits) == 0:
-        panels.remove("map")
 
-    return panels
+    # for map to be displayed, we need to have valid geo resolutions
+    if "map" in panels:
+        if "geo_resolutions" not in data_json["meta"] or not data_json["meta"]["geo_resolutions"]:
+            panels.remove("map")
 
-
-def collect_strain_info(node_data, tsv_path):
-    """
-    Integrate TSV metadata to the per-node metadata structure
-    """
-    strain_info = node_data["nodes"]
-    if tsv_path:
-        meta_tsv, _ = read_metadata(tsv_path) # meta_tsv={} if file isn't read / doeesn't exist
-
-        for strain, node in strain_info.items():
-            if strain in meta_tsv:
-                for field in meta_tsv[strain]:
-                    node[field] = meta_tsv[strain][field]
-    return strain_info
+    data_json['meta']["panels"] = panels
 
 
-def set_author_on_nodes(node_metadata, raw_strain_info):
-    """Gather the authors which appear in the metadata and assign them
-    to nodes on the tree.
-
-    :param node_metadata:
-    :type node_metadata: dict
-    :param raw_strain_info:
-    :type raw_strain_info: dict
-    :returns: None
-    :rtype: None
+def create_author_data(node_attrs):
+    """Gather the authors which appear in the metadata and create the author
+    info structure with unique keys
     """
 
-    def node_to_author_tuple(node):
+    def node_to_author_tuple(data):
         # make a unique list of citations to disambiguate
         # Hadfield et al A, Hadfield et al B, etc...
         return (
-            node["author"].get("author", "unknown"),
-            node["author"].get("title", "unknown"),
-            node["author"].get("journal", "unknown")
+            data.get("author", "unknown"),
+            data.get("title", "unknown"),
+            data.get("journal", "unknown")
         )
 
-    # author_to_unique_tuples = {}
     author_to_unique_tuples = defaultdict(list)
+    node_author_info = {}
 
-    for strain, node in node_metadata.items():
-        author = raw_strain_info[strain].get("author")
+    # first pass:
+    for node_name, node_info in node_attrs.items():
+        author = node_info.get("author")
         if not author:
-            author = raw_strain_info[strain].get("authors")
+            author = node_info.get("authors")
         if not author:
             continue # internal node / terminal node without authors
 
-        node["author"] = {"author": author}
-        if "title" in raw_strain_info[strain]:
-            title = raw_strain_info[strain]["title"].strip()
+        node_author_info[node_name] = {"author": author}
+        if "title" in node_info:
+            title = node_info["title"].strip()
             if is_valid(title):
-                node["author"]["title"] = title
-        if "journal" in raw_strain_info[strain]:
-            journal = raw_strain_info[strain]["journal"].strip()
+                node_author_info[node_name]["title"] = title
+        if "journal" in node_info:
+            journal = node_info["journal"].strip()
             if is_valid(journal):
-                node["author"]["journal"] = journal
-        if "paper_url" in raw_strain_info[strain]:
-            paper_url = raw_strain_info[strain]["paper_url"].strip()
+                node_author_info[node_name]["journal"] = journal
+        if "paper_url" in node_info:
+            paper_url = node_info["paper_url"].strip()
             if is_valid(paper_url):
-                node["author"]["paper_url"] = paper_url
+                node_author_info[node_name]["paper_url"] = paper_url
 
-        author_tuple = node_to_author_tuple(node)
+        author_tuple = node_to_author_tuple(node_author_info[node_name])
 
         # relies on defaultdict to initialize empty list
         if author_tuple not in author_to_unique_tuples[author]:
@@ -374,47 +420,35 @@ def set_author_on_nodes(node_metadata, raw_strain_info):
 
     # second pass is necessary because we don't know if we need A, B, C
     # without a complete first pass
-    for strain, node in node_metadata.items():
-        if not node.get("author"):
+    for node_name, node_info in node_attrs.items():
+        if node_name not in node_author_info:
             continue # internal node / terminal node without authors
 
-        author = node.get("author").get("author")
-        author_tuple = node_to_author_tuple(node)
-
+        author_tuple = node_to_author_tuple(node_author_info[node_name])
+        author = node_author_info[node_name]["author"]
         if len(author_to_unique_tuples[author]) > 1:
             index = author_to_unique_tuples[author].index(author_tuple)
-            node["author"]["value"] = author + " {}".format("ABCDEFGHIJKLMNOPQRSTUVWXYZ"[index])
+            node_author_info[node_name]["value"] = author + " {}".format("ABCDEFGHIJKLMNOPQRSTUVWXYZ"[index])
         else:
-            node["author"]["value"] = author
+            node_author_info[node_name]["value"] = author
 
-def transfer_metadata_to_strains(strains, raw_strain_info, traits):
+    return node_author_info
+
+
+def set_node_attrs_on_tree(data_json, node_attrs):
     '''
-    Assign desired metadata / trait data onto nodes
+    Assign desired colorings, metadata etc to the tree structure
 
     Parameters
     ----------
-    strains : list
-        list of node name (strain name) -- including non-terminal nodes
-    raw_strain_info : dict
-        keys: strain names. values: dict with keys -> traits, values -> data of various shapes
-    traits : list
-        trait names desired from export (both from config & CL)
-
-    Returns
-    -------
-    dict :
-        node data in correct shape for auspice
+    data_json : dict
+    node_attrs: dict
+        keys: strain names. values: dict with keys -> all available metadata (even "excluded" keys), values -> data (string / numeric / bool)
     '''
-    node_metadata = {}
-    for strain_name in strains:
-        node = {"traits":{}}
+    
+    author_data = create_author_data(node_attrs)
 
-        try:
-            raw_data = raw_strain_info[strain_name]
-        except KeyError:
-            raise Exception("ERROR: {} is not found in the node_data[\"nodes\"]".format(strain_name))
-
-        # TRANSFER MUTATIONS #
+    def _transfer_mutations(node, raw_data):
         if "aa_muts" in raw_data or "muts" in raw_data:
             node["mutations"] = {}
             if "muts" in raw_data and len(raw_data["muts"]):
@@ -427,26 +461,17 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
                     aa_lab = '; '.join("{!s}: {!s}".format(key,', '.join(val)) for (key,val) in aa.items())
                     node["labels"] = { "aa": aa_lab }
 
+    def _transfer_vaccine_info(node, raw_data):
+        pass
 
-        # TRANSFER NODE DATES #
-        if raw_data.get("numdate", None) and not raw_data.get("num_date", None):
-            raw_data["num_date"] = raw_data["numdate"]
-            del raw_data["numdate"]
-        if is_valid(raw_data.get("num_date", None)): # it's ok not to have temporal information
-            node["num_date"] = {"value": raw_data["num_date"]}
-            if is_valid(raw_data.get("num_date_confidence", None)):
-                node["num_date"]["confidence"] = raw_data["num_date_confidence"]
-
-        # TRANSFER VACCINE INFO #
-
-        # TRANSFER LABELS #
+    def _transfer_labels(node, raw_data):
         if "clade_annotation" in raw_data and is_valid(raw_data["clade_annotation"]):
             if 'labels' in node:
                 node['labels']['clade'] = raw_data["clade_annotation"]
             else:
                 node["labels"] = { "clade": raw_data["clade_annotation"] }
 
-        # TRANSFER NODE.HIDDEN PROPS #
+    def _transfer_hidden_flag(node, raw_data):
         hidden = raw_data.get("hidden", None)
         if hidden:
             if hidden in ["always", "divtree", "timetree"]:
@@ -456,47 +481,84 @@ def transfer_metadata_to_strains(strains, raw_strain_info, traits):
             else:
                 warn("Hidden node trait of {} is invalid. Ignoring.".format(hidden))
 
-        # TRANSFER AUTHORS #
+    def _transfer_num_date(node, raw_data):
+        if raw_data.get("numdate", None) and not raw_data.get("num_date", None):
+            raw_data["num_date"] = raw_data["numdate"]
+            del raw_data["numdate"]
+        if is_valid(raw_data.get("num_date", None)): # it's ok not to have temporal information
+            node["num_date"] = {"value": raw_data["num_date"]}
+            if is_valid(raw_data.get("num_date_confidence", None)):
+                node["num_date"]["confidence"] = raw_data["num_date_confidence"]
 
-        # TRANSFER GENERIC PROPERTIES #
+    def _transfer_url_accession(node, raw_data):
         for prop in ["url", "accession"]:
             if is_valid(raw_data.get(prop, None)):
                 node[prop] = raw_data[prop]
 
-        # TRANSFER TRAITS (INCLUDING CONFIDENCE & ENTROPY) #
-        for trait in traits:
-            if is_valid(raw_data.get(trait, None)):
-                node["traits"][trait] = {"value": raw_data[trait]}
-                if is_valid(raw_data.get(trait+"_confidence", None)):
-                    node["traits"][trait]["confidence"] = raw_data[trait+"_confidence"]
-                if is_valid(raw_data.get(trait+"_entropy", None)):
-                    node["traits"][trait]["entropy"] = raw_data[trait+"_entropy"]
+    def _transfer_colorings(node, raw_data):
+        # exclude special cases already taken care of
+        colorings = [c for c in data_json["meta"]["colorings"] if c["key"] not in ["gt", "num_date", "author"]]
+        for coloring in colorings:
+            key = coloring["key"]
+            if is_valid(raw_data.get(key, None)):
+                if "traits" not in node:
+                    node["traits"] = {}
+                node["traits"][key] = {"value": raw_data[key]}
+                if is_valid(raw_data.get(key+"_confidence", None)):
+                    node["traits"][key]["confidence"] = raw_data[key+"_confidence"]
+                if is_valid(raw_data.get(key+"_entropy", None)):
+                    node["traits"][key]["entropy"] = raw_data[key+"_entropy"]
 
-        node_metadata[strain_name] = node
-    return node_metadata
+    def _transfer_author_data(node):
+        if node["name"] in author_data:
+            node["author"] = author_data[node["name"]]
 
-def add_metadata_to_tree(node, metadata):
-    node.update(metadata[node["name"]])
-    if "children" in node:
-        for child in node["children"]:
-            add_metadata_to_tree(child, metadata)
+    def _recursively_set_data(node):
+        # get all the available information for this particular node
+        raw_data = node_attrs[node["name"]]
+        # transfer "special cases"
+        _transfer_mutations(node, raw_data)
+        _transfer_vaccine_info(node, raw_data)
+        _transfer_labels(node, raw_data)
+        _transfer_hidden_flag(node, raw_data)
+        _transfer_num_date(node, raw_data)
+        _transfer_url_accession(node, raw_data)
+        _transfer_author_data(node)
+        # transfer colorings, including entropy & confidence if available
+        _transfer_colorings(node, raw_data)
 
-def get_traits(node_data):
-    exclude = ['branch_length', 'num_date', 'raw_date', 'numdate', 'clock_length',
-               'mutation_length', 'date', 'muts', 'aa_muts', 'sequence', 'aa_sequences',
-               'hidden']
-    traits = []
-    for seq, val in node_data['nodes'].items():
-        for t in val.keys():
+        for child in node.get("children", []):
+            _recursively_set_data(child)
 
-            if '_confidence' in t or '_entropy' in t:
-                continue
+    _recursively_set_data(data_json["tree"])
 
-            if t not in traits and t not in exclude:
-                traits.append(t)
-
-    return traits
-
+def is_name_valid_for_export(name):
+    # those traits / keys / attrs which are not "special" and can be exported
+    # as normal attributes on nodes
+    excluded = [
+        "clade_annotation", # Clade annotation is label, not colorby!
+        "authors",          # authors are set as a node property, not a trait property
+        "author",           # see above
+        'branch_length',
+        'num_date',
+        'raw_date',
+        'numdate',
+        'clock_length',
+        'mutation_length',
+        'date',
+        'muts',
+        'aa_muts',
+        'sequence',
+        'aa_sequences',
+        'hidden'
+    ]
+    if name in excluded:
+        return False
+    
+    if '_confidence' in name or '_entropy' in name:
+        return False
+    
+    return True
 
 def get_root_sequence(root_node, ref=None, translations=None):
     '''
@@ -563,9 +625,8 @@ def register_arguments_v2(subparsers):
     config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
     config.add_argument('--maintainers', metavar="name", nargs='+', help="Analysis maintained by")
     config.add_argument('--maintainer-urls', metavar="url", nargs='+', help="URL of maintainers")
-    config.add_argument('--geography-traits', metavar="trait", nargs='+', help="What location traits are used to plot on map")
+    config.add_argument('--geo-resolutions', metavar="trait", nargs='+', help="What location traits are used to plot on map")
     config.add_argument('--color-by-metadata', metavar="trait", nargs='+', help="Metadata columns to include as coloring options")
-    #config.add_argument('--extra-traits', metavar="trait", nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
     config.add_argument('--panels', metavar="panels", nargs='+', choices=['tree', 'map', 'entropy', 'frequencies'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
 
     optional_inputs = v2.add_argument_group(
@@ -595,183 +656,130 @@ def register_arguments_v2(subparsers):
     return v2
 
 
-
-def run_v2(args):
-    configure_warnings()
-    T = Phylo.read(args.tree, 'newick')
-    node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
-    nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
-
-    if args.minify_json:
-        json_indent = None
-    else:
-        json_indent = 2
-
+def write_root_sequence_to_json(T, nodes, reference, reference_translations, output_sequence):
     # export reference sequence data including translations. This is either the
     # inferred sequence of the root, or the reference sequence with respect to
     # which mutations are made on the tree (including possible mutations leading
     # to the root of the tree -- typical case for vcf input data).
-    if args.output_sequence:
-        print("This option (--output-sequence) is due to be removed before the v6 release.")
-        if T.root.name in nodes:
-            root_sequence = get_root_sequence(nodes[T.root.name], ref=args.reference,
-                                                translations=args.reference_translations)
-        else:
-            root_sequence = {}
+    print("This option (--output-sequence) is due to be removed before the v6 release.")
+    if T.root.name in nodes:
+        root_sequence = get_root_sequence(
+            nodes[T.root.name],
+            ref=reference,
+            translations=reference_translations
+        )
+    else:
+        # TODO - what's the point of writing out an empty file?!? (james aug 16)
+        root_sequence = {}
 
-        write_json(root_sequence, args.output_sequence)
+    write_json(root_sequence, output_sequence)
 
 
-    ## SCHEMA v2.0 ##
-    auspice_json = {}
-    config = {}
-    auspice_json["version"] = "2.0"
-    auspice_json["meta"] = {}
+def set_display_defaults(data_json, config):
+    # cannot be provided via command line args
+    if config.get("defaults"):
+        deprecated("[config file] 'defaults' has been replaced with 'display_defaults'")
+        config["display_defaults"] = config["defaults"]
 
-    if args.auspice_config:
-        config = read_config(args.auspice_config)
+    if config.get("display_defaults"):
+        display_options = {}
+        for key in config["display_defaults"]:
+            new_key = convert_camel_to_snake_case(key)
+            display_options[new_key] = config["display_defaults"][key]
+        data_json['meta']["display_defaults"] = display_options
 
-        # v2 schema uses 'display_defaults' not 'defaults' (v1).
-        if config.get("defaults"):
-            deprecated("[config file] 'defaults' has been replaced with 'display_defaults'")
-            config["display_defaults"] = config["defaults"]
 
-        # Set up display defaults
-        if config.get("display_defaults"):
 
-            display_options = {}
-            for key in config["display_defaults"]:
-                new_key = convert_camel_to_snake_case(key)
-                display_options[new_key] = config["display_defaults"][key]
-
-            auspice_json['meta']["display_defaults"] = display_options
-
-    # Get title - command-line arg will overwrite the supplied config file.
-    if args.title:
-        auspice_json['meta']['title'] = str(args.title)
-    elif config.get("title"):
-        auspice_json['meta']['title'] = config['title']
-
-    # Get maintainers. Command-line args overwrite the config file.
-    if args.maintainers:
-        if args.maintainer_urls:
-            if len(args.maintainers) == len(args.maintainer_urls):
-                auspice_json['meta']['maintainers'] = [{'name': name, 'url':url} for name, url in zip(args.maintainers, args.maintainer_urls)]
+def set_maintainers(data_json, config, cmd_line_maintainers, cmd_line_maintainer_urls):
+    # Command-line args overwrite the config file
+    if cmd_line_maintainers:
+        if cmd_line_maintainer_urls:
+            if len(cmd_line_maintainers) == len(cmd_line_maintainer_urls):
+                data_json['meta']['maintainers'] = [{'name': name, 'url':url} for name, url in zip(cmd_line_maintainers, cmd_line_maintainer_urls)]
             else:
                 warn("you provided --maintainer_urls but not the same number as --maintainers! Ignoring the URLs")
-                auspice_json['meta']['maintainers'] = [{'name': name} for name in args.maintainers]
+                data_json['meta']['maintainers'] = [{'name': name} for name in cmd_line_maintainers]
         else:
-            auspice_json['meta']['maintainers'] = [{'name': name} for name in args.maintainers]
+            data_json['meta']['maintainers'] = [{'name': name} for name in cmd_line_maintainers]
     elif config.get("maintainer"): #v1-type specification
-        auspice_json['meta']["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
+        data_json['meta']["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
     elif config.get("maintainers"): #v2-type specification (proposed by Emma)
-        auspice_json['meta']['maintainers'] = [{'name': n[0], 'url': n[1]} for n in config['maintainers']]
+        data_json['meta']['maintainers'] = [{'name': n[0], 'url': n[1]} for n in config['maintainers']]
 
-    # TRAITS are data written to nodes on the tree
-    # COLORBYs are traits that are coloring options
-    # All colorbys are traits, but not all traits are colorbys
+def set_title(data_json, config, cmd_line_title):
+    # title is not necessary. Cmd line args override any config settings
+    if cmd_line_title:
+        data_json['meta']['title'] = cmd_line_title
+    elif config.get("title"):
+        data_json['meta']['title'] = config.get("title")
 
-    # Get TRAITS (before node_data modified)
-    # Ensures we get all traits even if not on every node
-    traits = get_traits(node_data)
-    # Get first line of metdata to know metadata columns
-    meta_cols = []
-    if args.metadata:
-        with open(args.metadata) as f:
-            meta_cols = f.readline().strip().split('\t' if args.metadata[-3:]=='tsv' else ',')
 
-    # remove keys which may look like traits but are not
-    excluded_traits = [
-        "clade_annotation", # Clade annotation is label, not colorby!
-        "authors" # authors are set as a node property, not a trait property
-    ]
-    # Remove traits that are in metadata - they must be explicitly specified to be colorbys
-    excluded_traits.extend(meta_cols)
-    traits = [t for t in traits if t not in excluded_traits]
+def parse_node_data_and_metadata(T, args):
+    node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
+    metadata, _ = read_metadata(args.metadata) # metadata={} if file isn't read / doeesn't exist
+    node_data_names = set()
+    metadata_names = set()
 
-    # Save any remaining (clades, seqtraits) to be colorbys automatically
-    auto_color_bys = traits.copy()
+    # assign everything to node_attrs, exclusions considered later
+    node_attrs = {clade.name: {} for clade in T.root.find_clades()}
 
-    # Add any specified geo traits - otherwise won't work!
-    if args.geography_traits:
-        traits.extend(args.geography_traits)
-        traits = list(set(traits)) #ensure no duplicates
+    # first pass: metadata
+    for node in metadata.values():
+        if node["strain"] in node_attrs: # i.e. this node name is in the tree
+            for key, value in node.items():
+                corrected_key = update_deprecated_names(key)
+                node_attrs[node["strain"]][corrected_key] = value
+                metadata_names.add(corrected_key)
+    
+    # second pass: node data JSONs (overwrites keys of same name found in metadata)
+    for name, info in node_data['nodes'].items():
+        if name in node_attrs: # i.e. this node name is in the tree
+            for key, value in info.items():
+                corrected_key = update_deprecated_names(key)
+                node_attrs[name][corrected_key] = value
+                node_data_names.add(corrected_key)
 
-    # GET COLORBYS
-    colorbys = auto_color_bys
-    if args.color_by_metadata:
-        colorbys.extend(args.color_by_metadata)
-    # Only include config colorings if no commandline!
-    elif config.get('colorings'):
-        colorbys.extend(config['colorings'].keys())
-    elif config.get("color_options"): # quiet here - warning will be displayed later
-        colorbys.extend(config['color_options'].keys())
-    colorbys = list(set(colorbys)) #ensure no duplicates
-    # standardize to 'author'
-    if 'authors' in colorbys:
-        colorbys.remove('authors')
-        colorbys.append('author')
+    return (node_data, node_attrs, node_data_names, metadata_names)
 
-    # Add colorbys to traits
-    traits.extend(colorbys)
-    traits = list(set(traits)) #ensure no duplicates
 
-    raw_strain_info = collect_strain_info(node_data, args.metadata)
-    auspice_json["tree"], strains = convert_tree_to_json_structure(T.root, raw_strain_info)
-    node_metadata = transfer_metadata_to_strains(strains, raw_strain_info, traits)
-    set_author_on_nodes(node_metadata, raw_strain_info)
+def run_v2(args):
+    configure_warnings()
+    data_json = {"version": "2.0", "meta": {"updated": time.strftime('%Y-%m-%d')}}
 
-    add_metadata_to_tree(auspice_json["tree"], node_metadata)
+    # parse input files
+    T = Phylo.read(args.tree, 'newick')
+    node_data, node_attrs, node_data_names, metadata_names = parse_node_data_and_metadata(T, args)
+    config = read_config(args.auspice_config) if args.auspice_config else {}
 
-    auspice_json['meta']["colorings"] = get_colorings(
-        config=config,
-        colorbys=colorbys,
+    # set metadata data structures
+    set_title(data_json, config, args.title)
+    set_display_defaults(data_json, config)
+    set_maintainers(data_json, config, args.maintainers, args.maintainer_urls)
+    set_annotations(data_json, node_data)
+    set_colorings(
+        data_json=data_json,
+        config=get_config_defined_colorings(config),
+        command_line_colorings=args.color_by_metadata,
+        metadata_names=metadata_names,
+        node_data_colorings=[name for name in node_data_names if is_name_valid_for_export(name)],
         provided_colors=read_colors(args.colors),
-        node_metadata=node_metadata,
-        mutations_present=bool(check_muts(node_metadata))
+        node_attrs=node_attrs
     )
+    set_geo_resolutions(data_json, config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_attrs)
+    set_filters(data_json, config)
+    set_panels(data_json, config, args.panels)
 
-    # Set up filters - if "filters" is in config but empty - no filters.
-    # Only allow filters that are actually in traits...
-    if config.get('filters') or config.get('filters') == []:
-        if "authors" in config['filters']:
-            del config['filters'][config['filters'].index("authors")]
-            config['filters'].append("author")
-        auspice_json['meta']['filters'] = [f for f in config['filters'] if f in traits]
-    else: # if not specified, include all boolean and categorical colorbys
-        auspice_json['meta']['filters'] = [key for key,value in auspice_json['meta']["colorings"].items() if value['type'] in ['categorical', 'boolean']]
+    # set tree structure
+    data_json["tree"] = convert_tree_to_json_structure(T.root, node_attrs)
+    set_node_attrs_on_tree(data_json, node_attrs)
 
-    auspice_json['meta']["geographic_info"] = process_geographic_info(config, args.geography_traits, read_lat_longs(args.lat_longs), node_metadata)
+    # Write outputs
+    if args.output_sequence:
+        write_root_sequence_to_json(T, node_data["nodes"], args.reference, args.reference_translations, args.output_sequence)
+    write_json(data_json, args.output_main, indent=None if args.minify_json else 2)
 
-    auspice_json['meta']["updated"] = time.strftime('%Y-%m-%d')
-    genome_annotations = process_annotations(node_data)
-    if genome_annotations:
-        auspice_json['meta']["genome_annotations"] = genome_annotations
-
-    # Set up panels - command line overrides config
-    panels = None #if this remains, defaults will be set in process_panels
-    if config.get("panels"):
-        panels = config["panels"]
-    if args.panels:
-        panels = args.panels
-    auspice_json['meta']["panels"] = process_panels(panels, auspice_json["meta"])
-
-    if args.tree_name:
-        if not re.search("(^|_|/){}(_|.json)".format(args.tree_name), str(args.output_main)):
-            fatal("tree name {} must be found as part of the output string".format(args.tree_name))
-        auspice_json['meta']["tree_name"] = args.tree_name
-
-    write_json(auspice_json, args.output_main, indent=json_indent)
-
-    print("Validating produced JSON")
-    try:
-        validate_v2(json_v2=args.output_main)
-    except ValidateError as e:
-        print(e)
-        print("\n------------------------")
-        print("Validation of {} failed. Please check this in a local instance of `auspice`, as it is not expected to display correctly. ".format(args.output_main))
-        print("------------------------")
-
+    # validate outputs
+    validate_data_json(args.output_main)
 
     if deprecationWarningsEmitted:
         print("\n------------------------")

@@ -97,8 +97,8 @@ Remember that generally **any command line options you use will override the sam
 * _(Previously the "panels" field in the your v1 config file.)_
 
 ##### Geography
-* Specify how you'd like to position samples on the map using `--geography-traits`. 
-* For many users, these might be "country" and "region". (ex: `--geography-traits country region`)
+* Specify how you'd like to position samples on the map using `--geo-resolutions`. 
+* For many users, these might be "country" and "region". (ex: `--geo-resolutions country region`)
 * _(Previously the "geo" field in your v1 config file.)_
 
 #### Traits
