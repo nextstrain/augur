@@ -283,7 +283,7 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
     # step 1: get a list of resolutions
     if command_line_traits:
         # straight overwrite -- not an extension of those which may be provided in the config
-        traits = [{"key": x for x in command_line_traits}] 
+        traits = [{"key": x} for x in command_line_traits] 
     elif config.get("geo_resolutions"):
         traits = config.get("geo_resolutions")
     elif config.get("geo"):
