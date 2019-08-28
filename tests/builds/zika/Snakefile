@@ -1,10 +1,13 @@
 rule all:
     input:
+        auspice_tip_frequencies = "auspice/zika_tip-frequencies.json",
         auspice_v1_tree = "auspice/v1_zika_tree.json",
         auspice_v1_meta = "auspice/v1_zika_meta.json",
         auspice_v1_seq = "auspice/v1_zika_seq.json",
+        auspice_v1_tip_frequencies = "auspice/v1_zika_tip-frequencies.json",
         auspice_v2_seq = "auspice/v2_zika_seq.json",
-        auspice_v2 = "auspice/v2_zika.json"
+        auspice_v2 = "auspice/v2_zika.json",
+        auspice_v2_tip_frequencies = "auspice/v2_zika_tip-frequencies.json"
 rule files:
     params:
         input_fasta = "data/zika.fasta",
@@ -228,7 +231,38 @@ rule export_v2:
             --auspice-config {input.auspice_config} \
             --output-main {output.auspice_main} \
             --output-sequence {output.auspice_seq} \
-            --title {params.title:q}
+            --title {params.title:q} \
+            --panels tree map entropy frequencies
+        """
+
+rule tip_frequencies:
+    input:
+        tree = rules.refine.output.tree,
+        metadata = rules.parse.output.metadata
+    params:
+        pivot_interval = 3
+    output:
+        tip_freq = rules.all.input.auspice_tip_frequencies
+    shell:
+        """
+        augur frequencies \
+            --method kde \
+            --tree {input.tree} \
+            --metadata {input.metadata} \
+            --pivot-interval {params.pivot_interval} \
+            --output {output}
+        """
+
+rule copy_tip_frequencies:
+    input:
+        frequencies = rules.tip_frequencies.output.tip_freq
+    output:
+        v1 = rules.all.input.auspice_v1_tip_frequencies,
+        v2 = rules.all.input.auspice_v2_tip_frequencies
+    shell:
+        """
+        cp -f {input} {output.v1};
+        cp -f {input} {output.v2};
         """
 
 rule clean:
