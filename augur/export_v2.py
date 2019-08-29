@@ -594,17 +594,6 @@ def get_root_sequence(root_node, ref=None, translations=None):
     return root_sequence
 
 
-def convert_camel_to_snake_case(string):
-    """
-    Converts a string from camel case to snake case.
-
-    This is used to allow existing `auspice-config` files for various builds
-    to work with the v2 export schema.
-    """
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
-
-
 def register_arguments_v2(subparsers):
     v2 = subparsers.add_parser("v2", help="Export version 2 JSON schema")
 
@@ -676,18 +665,33 @@ def write_root_sequence_to_json(T, nodes, reference, reference_translations, out
 
 
 def set_display_defaults(data_json, config):
-    # cannot be provided via command line args
+    # Note: these cannot be provided via command line args
     if config.get("defaults"):
         deprecated("[config file] 'defaults' has been replaced with 'display_defaults'")
-        config["display_defaults"] = config["defaults"]
+        defaults = config["defaults"]
+    elif config.get("display_defaults"):
+        defaults = config["display_defaults"]
+    else:
+        return
 
-    if config.get("display_defaults"):
-        display_options = {}
-        for key in config["display_defaults"]:
-            new_key = convert_camel_to_snake_case(key)
-            display_options[new_key] = config["display_defaults"][key]
-        data_json['meta']["display_defaults"] = display_options
+    v1_v2_keys = [ # each item: [0] v2 key name. [1] deprecated v1 key name
+        ["geo_resolution", "geoResolution"],
+        ["color_by", "colorBy"],
+        ["distance_measure", "distanceMeasure"],
+        ["map_triplicate", "mapTriplicate"]
+    ]
 
+    display_defaults = {}
+
+    for [v2_key, v1_key] in v1_v2_keys:
+        if v2_key in defaults:
+            display_defaults[v2_key] = defaults[v2_key]
+        elif v1_key in defaults:
+            deprecated("[config file] '{}' has been replaced with '{}'".format(v1_key, v2_key))
+            display_defaults[v2_key] = defaults[v1_key]
+
+    if display_defaults:
+        data_json['meta']["display_defaults"] = display_defaults
 
 
 def set_maintainers(data_json, config, cmd_line_maintainers, cmd_line_maintainer_urls):

@@ -24,6 +24,10 @@
     {"key": "country", "title": "Country Custom Title"},
     {"key": "region"}
   ],
+  "display_defaults": {
+    "map_triplicate": true,
+    "color_by": "author"
+  },
   "maintainers": [
     ["Trevor Bedford", "http://bedford.io/team/trevor-bedford/"]
   ],
