@@ -306,7 +306,7 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
             try:
                 deme_to_lat_longs[deme] = lat_long_mapping[(trait_info["key"].lower(), deme_search_value)]
             except KeyError:
-                warn("{}->{} did not have an associated lat/long value (matching performed in lower case). Auspice won't be able to display this location.".format(trait, deme))
+                warn("{}->{} did not have an associated lat/long value (matching performed in lower case). Auspice won't be able to display this location.".format(trait_info["key"], deme))
 
         if deme_to_lat_longs:
             data = {"key": trait_info["key"], "demes": deme_to_lat_longs}
@@ -314,7 +314,7 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
                 data["title"] = trait_info["title"]
             geo_resolutions.append(data)
         else:
-            warn("Geo resolution \"{}\" had no demes with supplied lat/longs and will be excluded from the exported \"geo_resolutions\".".format(trait))
+            warn("Geo resolution \"{}\" had no demes with supplied lat/longs and will be excluded from the exported \"geo_resolutions\".".format(trait_info["key"]))
 
     if geo_resolutions:
         data_json['meta']["geo_resolutions"] = geo_resolutions
