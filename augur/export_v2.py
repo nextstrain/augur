@@ -718,9 +718,9 @@ def set_title(data_json, config, cmd_line_title):
         data_json['meta']['title'] = config.get("title")
 
 
-def parse_node_data_and_metadata(T, node_data, metadata):
-    node_data = read_node_data(node_data) # args.node_data is an array of multiple files (or a single file)
-    metadata, _ = read_metadata(metadata) # metadata={} if file isn't read / doeesn't exist
+def parse_node_data_and_metadata(T, node_data_files, metadata_file):
+    node_data = read_node_data(node_data_files) # node_data_files is an array of multiple files (or a single file)
+    metadata, _ = read_metadata(metadata_file) # metadata={} if file isn't read / doeesn't exist
     node_data_names = set()
     metadata_names = set()
 
