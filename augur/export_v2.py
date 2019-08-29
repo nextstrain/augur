@@ -718,9 +718,9 @@ def set_title(data_json, config, cmd_line_title):
         data_json['meta']['title'] = config.get("title")
 
 
-def parse_node_data_and_metadata(T, args):
-    node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
-    metadata, _ = read_metadata(args.metadata) # metadata={} if file isn't read / doeesn't exist
+def parse_node_data_and_metadata(T, node_data, metadata):
+    node_data = read_node_data(node_data) # args.node_data is an array of multiple files (or a single file)
+    metadata, _ = read_metadata(metadata) # metadata={} if file isn't read / doeesn't exist
     node_data_names = set()
     metadata_names = set()
 
@@ -752,7 +752,7 @@ def run_v2(args):
 
     # parse input files
     T = Phylo.read(args.tree, 'newick')
-    node_data, node_attrs, node_data_names, metadata_names = parse_node_data_and_metadata(T, args)
+    node_data, node_attrs, node_data_names, metadata_names = parse_node_data_and_metadata(T, args.node_data, args.metadata)
     config = read_config(args.auspice_config) if args.auspice_config else {}
 
     # set metadata data structures
