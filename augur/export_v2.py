@@ -708,6 +708,9 @@ def set_maintainers(data_json, config, cmd_line_maintainers, cmd_line_maintainer
         data_json['meta']["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
     elif config.get("maintainers"): #v2-type specification (proposed by Emma)
         data_json['meta']['maintainers'] = [{'name': n[0], 'url': n[1]} for n in config['maintainers']]
+    else:
+        data_json['meta']["maintainers"] = [{ "name": "unspecified", "url": "unspecified"}]
+
 
 def set_title(data_json, config, cmd_line_title):
     # title is not necessary. Cmd line args override any config settings
