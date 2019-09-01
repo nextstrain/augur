@@ -325,7 +325,9 @@ def set_annotations(data_json, node_data):
 
 def set_filters(data_json, config):
     # NB set_colorings() must have been run as we access those results
-    potentials = {coloring["key"] for coloring in data_json['meta']["colorings"] if coloring["type"] != "continuous"}
+    potentials = {coloring["key"] for coloring in data_json['meta']["colorings"]
+                  if coloring["type"] != "continuous" and
+                     coloring["key"] != 'gt'}
 
     if config.get('filters') == []:
         # an empty config section indicates no filters are to be exported
@@ -709,6 +711,7 @@ def set_maintainers(data_json, config, cmd_line_maintainers, cmd_line_maintainer
     elif config.get("maintainers"): #v2-type specification (proposed by Emma)
         data_json['meta']['maintainers'] = [{'name': n[0], 'url': n[1]} for n in config['maintainers']]
     else:
+        warn("you didn't provide information on who is maintaining this analysis.")
         data_json['meta']["maintainers"] = [{ "name": "unspecified", "url": "unspecified"}]
 
 
