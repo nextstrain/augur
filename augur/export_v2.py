@@ -3,7 +3,6 @@ Export JSON files suitable for visualization with auspice.
 """
 
 import sys
-import re
 import time
 from collections import defaultdict
 import warnings
@@ -62,9 +61,9 @@ def convert_tree_to_json_structure(node, metadata, div=0):
     if div == 0 and 'mutation_length' not in metadata[node.name] and 'branch_length' not in metadata[node.name]:
         div = False
 
-    node_struct = {'name': node.name}
+    node_struct = {'name': node.name, 'node_attrs': {}, 'branch_attrs': {}}
     if div is not False: # div=0 is ok
-        node_struct["div"] = div
+        node_struct["node_attrs"]["div"] = div
 
     if node.clades:
         node_struct["children"] = []
@@ -450,16 +449,16 @@ def set_node_attrs_on_tree(data_json, node_attrs):
 
     def _transfer_mutations(node, raw_data):
         if "aa_muts" in raw_data or "muts" in raw_data:
-            node["mutations"] = {}
+            node["branch_attrs"]["mutations"] = {}
             if "muts" in raw_data and len(raw_data["muts"]):
-                node["mutations"]["nuc"] = raw_data["muts"]
+                node["branch_attrs"]["mutations"]["nuc"] = raw_data["muts"]
             if "aa_muts" in raw_data:
                 aa = {gene:data for gene, data in raw_data["aa_muts"].items() if len(data)}
-                node["mutations"].update(aa)
+                node["branch_attrs"]["mutations"].update(aa)
                 #convert mutations into a label
                 if aa:
                     aa_lab = '; '.join("{!s}: {!s}".format(key,', '.join(val)) for (key,val) in aa.items())
-                    node["labels"] = { "aa": aa_lab }
+                    node["branch_attrs"]["labels"] = { "aa": aa_lab }
 
     def _transfer_vaccine_info(node, raw_data):
         pass
@@ -467,17 +466,17 @@ def set_node_attrs_on_tree(data_json, node_attrs):
     def _transfer_labels(node, raw_data):
         if "clade_annotation" in raw_data and is_valid(raw_data["clade_annotation"]):
             if 'labels' in node:
-                node['labels']['clade'] = raw_data["clade_annotation"]
+                node["branch_attrs"]["labels"]['clade'] = raw_data["clade_annotation"]
             else:
-                node["labels"] = { "clade": raw_data["clade_annotation"] }
+                node["branch_attrs"]["labels"] = { "clade": raw_data["clade_annotation"] }
 
     def _transfer_hidden_flag(node, raw_data):
         hidden = raw_data.get("hidden", None)
         if hidden:
             if hidden in ["always", "divtree", "timetree"]:
-                node["hidden"] = hidden
+                node["node_attrs"]["hidden"] = hidden
             elif hidden is True or str(hidden) == "1": # interpret this as hidden in both div + time tree
-                node["hidden"] = "always"
+                node["node_attrs"]["hidden"] = "always"
             else:
                 warn("Hidden node trait of {} is invalid. Ignoring.".format(hidden))
 
@@ -486,14 +485,14 @@ def set_node_attrs_on_tree(data_json, node_attrs):
             raw_data["num_date"] = raw_data["numdate"]
             del raw_data["numdate"]
         if is_valid(raw_data.get("num_date", None)): # it's ok not to have temporal information
-            node["num_date"] = {"value": raw_data["num_date"]}
+            node["node_attrs"]["num_date"] = {"value": raw_data["num_date"]}
             if is_valid(raw_data.get("num_date_confidence", None)):
-                node["num_date"]["confidence"] = raw_data["num_date_confidence"]
+                node["node_attrs"]["num_date"]["confidence"] = raw_data["num_date_confidence"]
 
     def _transfer_url_accession(node, raw_data):
         for prop in ["url", "accession"]:
             if is_valid(raw_data.get(prop, None)):
-                node[prop] = raw_data[prop]
+                node["node_attrs"][prop] = raw_data[prop]
 
     def _transfer_colorings(node, raw_data):
         # exclude special cases already taken care of
@@ -501,17 +500,15 @@ def set_node_attrs_on_tree(data_json, node_attrs):
         for coloring in colorings:
             key = coloring["key"]
             if is_valid(raw_data.get(key, None)):
-                if "traits" not in node:
-                    node["traits"] = {}
-                node["traits"][key] = {"value": raw_data[key]}
+                node["node_attrs"][key] = {"value": raw_data[key]}
                 if is_valid(raw_data.get(key+"_confidence", None)):
-                    node["traits"][key]["confidence"] = raw_data[key+"_confidence"]
+                    node["node_attrs"][key]["confidence"] = raw_data[key+"_confidence"]
                 if is_valid(raw_data.get(key+"_entropy", None)):
-                    node["traits"][key]["entropy"] = raw_data[key+"_entropy"]
+                    node["node_attrs"][key]["entropy"] = raw_data[key+"_entropy"]
 
     def _transfer_author_data(node):
         if node["name"] in author_data:
-            node["author"] = author_data[node["name"]]
+            node["node_attrs"]["author"] = author_data[node["name"]]
 
     def _recursively_set_data(node):
         # get all the available information for this particular node
@@ -666,11 +663,13 @@ def write_root_sequence_to_json(T, nodes, reference, reference_translations, out
 
 def set_display_defaults(data_json, config):
     # Note: these cannot be provided via command line args
-    if config.get("defaults"):
+    if config.get("display_defaults"):
+        defaults = config["display_defaults"]
+        if config.get("defaults"):
+            deprecated("[config file] both 'defaults' (deprecated) and 'display_defaults' provided. Ignoring the former.")
+    elif config.get("defaults"):
         deprecated("[config file] 'defaults' has been replaced with 'display_defaults'")
         defaults = config["defaults"]
-    elif config.get("display_defaults"):
-        defaults = config["display_defaults"]
     else:
         return
 
@@ -678,7 +677,8 @@ def set_display_defaults(data_json, config):
         ["geo_resolution", "geoResolution"],
         ["color_by", "colorBy"],
         ["distance_measure", "distanceMeasure"],
-        ["map_triplicate", "mapTriplicate"]
+        ["map_triplicate", "mapTriplicate"],
+        ["layout", "layout"]
     ]
 
     display_defaults = {}
@@ -692,7 +692,6 @@ def set_display_defaults(data_json, config):
 
     if display_defaults:
         data_json['meta']["display_defaults"] = display_defaults
-
 
 def set_maintainers(data_json, config, cmd_line_maintainers, cmd_line_maintainer_urls):
     # Command-line args overwrite the config file

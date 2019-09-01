@@ -9,33 +9,26 @@ from collections import defaultdict
 
 def collectTreeAttrsV2(root, warn):
     """
-    Collect all keys specified on node->attr (or node->traits) throughout the tree
-    If the values of these keys are strings, then also collect the values
+    Collect all keys specified on `node["node_attrs"]` throughout the tree
+    and the values associated with them. Note that this will only look at
+    attributes which are themselves objects with a `value` property.
+    I.e. a node attribute `node["node_attrs"]["div"] -> numeric` will not
+    be collected.
+    Returns a tuple.
+    return[0]: dict of `node_attr_property` -> x, where x is a dict with
+    keys `count` -> INT, `values` -> SET, `onAllNodes` -> BOOL.
+    return[1]: INT of number of terminal nodes in tree
     """
     seen = defaultdict(lambda: {"count": 0, "values": set(), "onAllNodes": False})
     num_nodes, num_terminal = (0, 0)
     def recurse(node):
         nonlocal num_nodes, num_terminal
         num_nodes += 1
-        traits = node.get("traits", {}).keys()
-        for property in traits:
-            # Process author info from node not traits
-            if property == "authors":
+        for prop, info in node.get("node_attrs", {}).items():
+            if not isinstance(info, dict) or "value" not in info:
                 continue
-            seen[property]["count"] += 1
-            value = node["traits"][property]["value"]
-            if isinstance(value, str):
-                seen[property]["values"].add(value)
-        if node.get("author", None):
-            if not node.get("author", {}).get("value", None):
-                warn("Author property defined on node {} but structure is wrong (no \"value\" property)".format(node.get("strain")))
-            else:
-                seen["author"]["count"] += 1
-                seen["author"]["values"].add(node.get("author").get("value"))
-        if "num_date" in node:
-            seen["num_date"]["count"] += 1
-            seen["num_date"]["values"].add(node["num_date"]["value"])
-
+            seen[prop]["count"] += 1
+            seen[prop]["values"].add(info["value"])
         if "children" in node:
             [recurse(child) for child in node["children"]]
         else:
@@ -55,8 +48,9 @@ def collectMutationGenes(root):
     """
     genes = set()
     def recurse(node):
-        if "mutations" in node:
-            genes.update(node["mutations"].keys())
+        mutations = node.get("branch_attrs", {}).get("mutations", False)
+        if mutations:
+            genes.update(mutations.keys())
         if "children" in node:
             [recurse(child) for child in node["children"]]
     recurse(root)
@@ -68,6 +62,9 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
     """
     Check possible sources of conflict within the main (unified) JSON
     This function is only used for schema v2.0
+    In an ideal world, the JSON schema would be able to validate this,
+    however this function performs tests which are not possible to
+    define in the schema (as of JSON schema v6).
     """
     warnings = False
     def warn(msg):
@@ -80,41 +77,40 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
     if "entropy" in data["meta"]["panels"] and "genome_annotations" not in data["meta"]:
         warn("The entropy panel has been specified but annotations don't exist.")
 
-    treeTraits, _ = collectTreeAttrsV2(data["tree"], warn)
+    tree_traits, _ = collectTreeAttrsV2(data["tree"], warn)
 
     if "geo_resolutions" in data["meta"]:
         for geo_res in data["meta"]["geo_resolutions"]:
-            geoName = geo_res["key"]
+            geo_name = geo_res["key"]
             deme_to_lat_longs = geo_res["demes"]
-            if geoName not in treeTraits:
-                warn("The geographic resolution \"{}\" does not appear on any tree nodes.".format(geoName))
+            if geo_name not in tree_traits:
+                warn("The geographic resolution \"{}\" does not appear on any tree nodes.".format(geo_name))
                 continue
             # pass 1: check the demes in "geo_resolutions" are found on the tree
             for geoValue in deme_to_lat_longs.keys():
-                if geoValue not in treeTraits[geoName]["values"]:
-                    warn("\"{}\", a value of the geographic resolution \"{}\", does not appear on any tree nodes.".format(geoValue, geoName))
+                if geoValue not in tree_traits[geo_name]["values"]:
+                    warn("\"{}\", a value of the geographic resolution \"{}\", does not appear on any tree nodes.".format(geoValue, geo_name))
             # pass 1: check the demes across the tree are represented in "geo_resolutions"
-            for geoValue in treeTraits[geoName]["values"]:
+            for geoValue in tree_traits[geo_name]["values"]:
                 if geoValue not in deme_to_lat_longs:
                     warn("\"{}\", a value of the geographic resolution \"{}\", appears in the tree but not in the metadata."
-                        "\n\t\tThis will cause transmissions & demes involving this location not to be displayed in Auspice".format(geoValue, geoName))
+                        "\n\t\tThis will cause transmissions & demes involving this location not to be displayed in Auspice".format(geoValue, geo_name))
     else:
         if "map" in data["meta"]["panels"]:
             warn("Map panel was requested but no geographic_info was provided")
-
 
     if "colorings" in data["meta"]:
         for coloring in data["meta"]["colorings"]:
             colorBy = coloring["key"]
             if colorBy == "gt":
                 continue
-            if colorBy not in treeTraits:
+            if colorBy not in tree_traits:
                 warn("The coloring \"{}\" does not appear as an attr on any tree nodes.".format(colorBy))
             if "scale" in coloring:
                 scale = coloring["scale"]
                 if isinstance(scale, list):
                     for value, hex in scale:
-                        if value not in treeTraits[colorBy]["values"]:
+                        if value not in tree_traits[colorBy]["values"]:
                             warn("Color option \"{}\" specifies a hex code for \"{}\" but this isn't ever seen on the tree nodes.".format(colorBy, value))
                 elif isinstance(scale, str):
                     raise ValidateError("String colour scales are not yet implemented")
@@ -123,10 +119,10 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
             if "domain" in coloring:
                 domain = coloring["domain"]
                 if coloring["type"] in ["ordinal", "categorical"]:
-                    inMetaNotInTree = [val for val in domain if val not in treeTraits[colorBy]["values"]]
+                    inMetaNotInTree = [val for val in domain if val not in tree_traits[colorBy]["values"]]
                     if len(inMetaNotInTree):
                         warn("Domain for {} defined the following values which are not present on the tree: {}".format(colorBy, inMetaNotInTree.join(", ")))
-                    inTreeNotInMeta = [val for val in treeTraits[colorBy]["values"] if val not in domain]
+                    inTreeNotInMeta = [val for val in tree_traits[colorBy]["values"] if val not in domain]
                     if len(inTreeNotInMeta):
                         warn("Tree defined values for {} which were not in the domain: {}".format(colorBy, inTreeNotInMeta.join(", ")))
                 elif coloring["type"] == "boolean":
@@ -136,7 +132,7 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
 
     if "filters" in data["meta"]:
         for filter in data["meta"]["filters"]:
-            if filter not in treeTraits:
+            if filter not in tree_traits:
                 warn("The filter \"{}\" does not appear as a property on any tree nodes.".format(filter))
 
     genes_with_mutations = collectMutationGenes(data['tree'])
