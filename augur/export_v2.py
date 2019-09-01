@@ -282,7 +282,7 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
     # step 1: get a list of resolutions
     if command_line_traits:
         # straight overwrite -- not an extension of those which may be provided in the config
-        traits = [{"key": x} for x in command_line_traits] 
+        traits = [{"key": x} for x in command_line_traits]
     elif config.get("geo_resolutions"):
         traits = config.get("geo_resolutions")
     elif config.get("geo"):
@@ -350,9 +350,9 @@ def validate_data_json(filename):
 
 def set_panels(data_json, config, cmd_line_panels):
 
-    # config set panels overrides cmd-line provided panels    
+    # config set panels overrides cmd-line provided panels
     panels = config["panels"] if config.get("panels") else cmd_line_panels
-    
+
     if not panels:
         panels = ["tree", "map", "entropy"]
 
@@ -444,7 +444,7 @@ def set_node_attrs_on_tree(data_json, node_attrs):
     node_attrs: dict
         keys: strain names. values: dict with keys -> all available metadata (even "excluded" keys), values -> data (string / numeric / bool)
     '''
-    
+
     author_data = create_author_data(node_attrs)
 
     def _transfer_mutations(node, raw_data):
@@ -492,7 +492,7 @@ def set_node_attrs_on_tree(data_json, node_attrs):
     def _transfer_url_accession(node, raw_data):
         for prop in ["url", "accession"]:
             if is_valid(raw_data.get(prop, None)):
-                node["node_attrs"][prop] = raw_data[prop]
+                node["node_attrs"][prop] = str(raw_data[prop])
 
     def _transfer_colorings(node, raw_data):
         # exclude special cases already taken care of
@@ -551,10 +551,10 @@ def is_name_valid_for_export(name):
     ]
     if name in excluded:
         return False
-    
+
     if '_confidence' in name or '_entropy' in name:
         return False
-    
+
     return True
 
 def get_root_sequence(root_node, ref=None, translations=None):
@@ -733,7 +733,7 @@ def parse_node_data_and_metadata(T, node_data_files, metadata_file):
                 corrected_key = update_deprecated_names(key)
                 node_attrs[node["strain"]][corrected_key] = value
                 metadata_names.add(corrected_key)
-    
+
     # second pass: node data JSONs (overwrites keys of same name found in metadata)
     for name, info in node_data['nodes'].items():
         if name in node_attrs: # i.e. this node name is in the tree
