@@ -60,9 +60,13 @@ def run(args):
         output = "aligment.fasta"
 
     try:
-        seqs = {s.id:s for s in SeqIO.parse(seq_fname, 'fasta')}
-    except:
-        print("Cannot read sequences -- make sure the file %s exists and contains sequences in fasta format"%seq_fname)
+        seqs = SeqIO.to_dict(SeqIO.parse(args.sequences, 'fasta'))
+    except FileNotFoundError:
+        print("\nCannot read sequences -- make sure the file %s exists and contains sequences in fasta format"%seq_fname)
+        return 1
+    except ValueError as error:
+        print("\nERROR: Problem reading in {}:".format(args.sequences))
+        print(error)
         return 1
 
     if ref_name and (ref_name not in seqs):
