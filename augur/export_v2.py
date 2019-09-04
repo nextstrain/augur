@@ -278,6 +278,14 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
     appropriately combine provided geo resolutions from command line & config files
     and associate with lat/longs.
     """
+    geo_resolutions = []
+
+    def _transfer_geo_data(node):
+        for g in geo_resolutions:
+            if g['key'] in n_attrs[node["name"]] and g['key'] not in node['node_attrs']:
+                node['node_attrs'] = n_attrs[node["name"]][g['key']]
+        for c in node.children:
+            _transfer_geo_data(c)
 
     # step 1: get a list of resolutions
     if command_line_traits:
@@ -292,7 +300,6 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
         return False
 
     # step 2: for each resolution, create the map of deme name -> lat/long
-    geo_resolutions = []
     for trait_info in traits:
         deme_to_lat_longs = {}
         trait_values = get_values_across_nodes(node_attrs, trait_info["key"]) # e.g. list of countries, regions etc
@@ -314,6 +321,9 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
             geo_resolutions.append(data)
         else:
             warn("Geo resolution \"{}\" had no demes with supplied lat/longs and will be excluded from the exported \"geo_resolutions\".".format(trait_info["key"]))
+
+    _transfer_geo_data(data_json['tree'])
+
 
     if geo_resolutions:
         data_json['meta']["geo_resolutions"] = geo_resolutions
