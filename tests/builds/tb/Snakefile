@@ -229,8 +229,7 @@ rule export_v2:
         seq = rules.all.input.auspice_v2_seq
     params:
         title = '\'TB outbreak in Nunavik, Canada\'',
-        auth = "'Emma Hodcroft' 'John Brown'",
-        url = 'https://neherlab.org/emma-hodcroft.html http://www.google.com',
+        maints = "'Emma Hodcroft <https://neherlab.org/emma-hodcroft.html>' 'John Brown <http://www.google.com>'",
         geo = 'location',
         # extra_traits = 'host',
         # panels = 'tree map entropy frequencies'
@@ -246,8 +245,7 @@ rule export_v2:
             --output-main {output.main} \
             --output-sequence {output.seq} \
             --title {params.title} \
-            --maintainers {params.auth} \
-            --maintainer-urls {params.url} \
+            --maintainers {params.maints} \
             --geo-resolutions {params.geo}
         """
 

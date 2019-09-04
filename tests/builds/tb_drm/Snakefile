@@ -198,8 +198,7 @@ rule exportv2:
         main = rules.all.input.auspice_main
     params:
         title = '\'TB with DRMs\'',
-        auth = "'Emma Hodcroft' 'John Brown'",
-        url = 'https://neherlab.org/emma-hodcroft.html http://www.google.com',
+        maints = "'Emma Hodcroft <https://neherlab.org/emma-hodcroft.html>' 'John Brown <http://www.google.com>'",
         geo = 'country',
         # extra_traits = 'host',
         # panels = 'tree map entropy frequencies'
@@ -213,8 +212,7 @@ rule exportv2:
             --lat-longs {input.geo_info} \
             --output-main {output.main} \
             --title {params.title} \
-            --maintainers {params.auth} \
-            --maintainer-urls {params.url} \
+            --maintainers {params.maints} \
             --geo-resolutions {params.geo}
         """
 
