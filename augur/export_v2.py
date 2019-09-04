@@ -10,6 +10,7 @@ from Bio import Phylo
 from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
 from .validate import export_v2 as validate_v2
 from .validate import ValidateError
+import re
 
 # Set up warnings & exceptions
 warn = warnings.warn
@@ -626,8 +627,7 @@ def register_arguments_v2(subparsers):
     )
     config.add_argument('--auspice-config', metavar="JSON", help="Auspice configuration file")
     config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
-    config.add_argument('--maintainers', metavar="name", nargs='+', help="Analysis maintained by")
-    config.add_argument('--maintainer-urls', metavar="url", nargs='+', help="URL of maintainers")
+    config.add_argument('--maintainers', metavar="name", action="append", nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>'")
     config.add_argument('--geo-resolutions', metavar="trait", nargs='+', help="What location traits are used to plot on map")
     config.add_argument('--color-by-metadata', metavar="trait", nargs='+', help="Metadata columns to include as coloring options")
     config.add_argument('--panels', metavar="panels", nargs='+', choices=['tree', 'map', 'entropy', 'frequencies'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
@@ -710,17 +710,23 @@ def set_display_defaults(data_json, config):
     if display_defaults:
         data_json['meta']["display_defaults"] = display_defaults
 
-def set_maintainers(data_json, config, cmd_line_maintainers, cmd_line_maintainer_urls):
+def set_maintainers(data_json, config, cmd_line_maintainers):
     # Command-line args overwrite the config file
+    # Command-line info could come in as multiple lists w/multiple values, ex:
+    #       [['Name1 <url1>'], ['Name2 <url2>', 'Name3 <url3>'], ['Name4 <url4>']]
+    # They may or may not all have URLs
     if cmd_line_maintainers:
-        if cmd_line_maintainer_urls:
-            if len(cmd_line_maintainers) == len(cmd_line_maintainer_urls):
-                data_json['meta']['maintainers'] = [{'name': name, 'url':url} for name, url in zip(cmd_line_maintainers, cmd_line_maintainer_urls)]
-            else:
-                warn("you provided --maintainer_urls but not the same number as --maintainers! Ignoring the URLs")
-                data_json['meta']['maintainers'] = [{'name': name} for name in cmd_line_maintainers]
-        else:
-            data_json['meta']['maintainers'] = [{'name': name} for name in cmd_line_maintainers]
+        maintainers = []
+        for arg_entry in cmd_line_maintainers:
+            for maint in arg_entry:
+                res = re.search('<(.*)>', maint)
+                url = res.group(1) if res else ''
+                name = maint.split("<")[0].strip()
+                tmp_dict = {'name': name}
+                if url:
+                    tmp_dict['url'] = url
+                maintainers.append(tmp_dict)
+        data_json['meta']['maintainers'] = maintainers
     elif config.get("maintainer"): #v1-type specification
         data_json['meta']["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
     elif config.get("maintainers"): #v2-type specification (proposed by Emma)
@@ -778,7 +784,7 @@ def run_v2(args):
     # set metadata data structures
     set_title(data_json, config, args.title)
     set_display_defaults(data_json, config)
-    set_maintainers(data_json, config, args.maintainers, args.maintainer_urls)
+    set_maintainers(data_json, config, args.maintainers) 
     set_annotations(data_json, node_data)
     set_colorings(
         data_json=data_json,
