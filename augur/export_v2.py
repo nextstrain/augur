@@ -272,11 +272,11 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         explicitly_defined_colorings = [x["key"] for x in colorings]
         # add in genotype as a special case if (a) not already set and (b) the data supports it
         if "gt" not in explicitly_defined_colorings and are_mutations_defined(node_attrs):
-            colorings.insert(0,{'key', 'gt'})
+            colorings.insert(0,{'key':'gt'})
         if "num_date" not in explicitly_defined_colorings and are_dates_defined(node_attrs):
-            colorings.insert(0,{'key', 'num_date'})
-        if "clades" not in explicitly_defined_colorings and are_clades_defined(node_attrs):
-            colorings.insert(0,{'key', 'clades'})
+            colorings.insert(0,{'key':'num_date'})
+        if "clade_membership" not in explicitly_defined_colorings and are_clades_defined(node_attrs):
+            colorings.insert(0,{'key':'clade_membership'})
 
         return colorings
 
