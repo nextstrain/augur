@@ -5,7 +5,6 @@ rule all:
         auspice_v1_meta = "auspice/v1_zika_meta.json",
         auspice_v1_seq = "auspice/v1_zika_seq.json",
         auspice_v1_tip_frequencies = "auspice/v1_zika_tip-frequencies.json",
-        auspice_v2_seq = "auspice/v2_zika_seq.json",
         auspice_v2 = "auspice/v2_zika.json",
         auspice_v2_tip_frequencies = "auspice/v2_zika_tip-frequencies.json"
 rule files:
@@ -219,8 +218,7 @@ rule export_v2:
     params:
         title = "Real-time tracking of Zika virus evolution -- v2 JSON"
     output:
-        auspice_main = rules.all.input.auspice_v2,
-        auspice_seq = rules.all.input.auspice_v2_seq
+        auspice_main = rules.all.input.auspice_v2
     shell:
         """
         augur export v2 \
@@ -230,7 +228,6 @@ rule export_v2:
             --colors {input.colors} \
             --auspice-config {input.auspice_config} \
             --output {output.auspice_main} \
-            --output-sequence {output.auspice_seq} \
             --title {params.title:q} \
             --panels tree map entropy frequencies
         """
