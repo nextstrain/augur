@@ -287,7 +287,8 @@ def construct_author_info_nexflu(metadata, tree, nodes):
                 if attr in author_info[authors] and data[attr].strip() != author_info[authors][attr].strip():
                     print("Error - {} had contradictory {}(s): {} vs {}".format(authors, attr, data[attr], author_info[authors][attr]))
                 author_info[authors][attr] = data[attr].strip()
-    print("Warning - {} samples did not have author information.".format(no_authors))
+    if no_authors:
+        print("Warning - {} samples did not have author information.".format(no_authors))
 
     return author_info
 
