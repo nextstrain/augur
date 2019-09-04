@@ -367,7 +367,7 @@ def run(args):
     if is_vcf:
         output_data['reference'] = {}
         for fname in translations:
-            output_data['fname'] = translations['fname']['reference']
+            output_data['reference'][fname] = translations[fname]['reference']
     else:
         output_data['reference'] = aa_muts[tree.root.name]['aa_sequences']
 
