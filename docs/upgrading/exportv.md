@@ -21,7 +21,7 @@ The `augur export` function is getting an upgrade! This is tied to an upgrade to
 ## **I just need my old run to work _right now_!**
 *When you upgrade to the latest version of `augur`, `augur export` will no longer work.* But we understand you may not have time to make the change right this second, and that there's nothing more frustrating than having a run break right before a presentation or deadline!
 
-If you want to keep using the old version _for now_, use `augur export v1` - everything else remains the same. 
+If you want to keep using the old version _for now_, use `augur export v1` - everything else remains the same.
 
 To use the new version, use `augur export v2`. You'll need to make a few changes, but they are pretty simple, and you'll be future-proofing your runs! _(Future you will thank past you!)_
 
@@ -31,7 +31,7 @@ To use the new version, use `augur export v2`. You'll need to make a few changes
 ## Great! What do I need to do to move to `v2`?
 You can always get a full overview of the arguments for export v2 with `augur export v2 --help`.
 
-You can now choose between exporting using just the command-line, or using a combination of the command-line and config file. Remember that generally **any command line options you use will override the same option in your config file**. 
+You can now choose between exporting using just the command-line, or using a combination of the command-line and config file. Remember that generally **any command line options you use will override the same option in your config file**.
 
 We'll first cover what's the same/almost the same as in `export v1`, which are all things that must be passed in via command-line. Then we'll cover how to use [command-line options](#command-line-options), and finally how to use a [config file](#config-file-options).
 
@@ -44,23 +44,23 @@ Similarly, you can pass in files containing colors and latitute and longitude da
 
 ### What's almost the same:
 
-Instead of specifying two output files (`--output-tree` and `--output-meta`) you now just need to specify one with `--output-main`. 
+Instead of specifying two output files (`--output-tree` and `--output-meta`) you now just need to specify one with `--output-main`.
 
-For example, if your old files were `auspice/virus_AB_tree.json` and `auspice/virus_AB_meta.json`, you might want to call the single output `auspice/virus_AB.json` - or if you want to tell it apart from your v1 export, you might call it `auspice/virus_ABv2.json`. 
+For example, if your old files were `auspice/virus_AB_tree.json` and `auspice/virus_AB_meta.json`, you might want to call the single output `auspice/virus_AB.json` - or if you want to tell it apart from your v1 export, you might call it `auspice/virus_ABv2.json`.
 
 ### How Coloring by Traits is Smarter
-Previously config files always had to include `gt` and `num_date` to allow coloring by genotype and date, respectively. If you had run `augur clades`, you had to remember to add `clade_membership` to the config file, and if you'd run `augur seqtraits` you had to add every resulting option. 
+Previously config files always had to include `gt` and `num_date` to allow coloring by genotype and date, respectively. If you had run `augur clades`, you had to remember to add `clade_membership` to the config file, and if you'd run `augur seqtraits` you had to add every resulting option.
 
 We've made things a little smarter! You never have to include `gt` or `num_date` in the command-line or config file - if the right data is sent to export v2, they'll automatically be included as a coloring option. The same is true for `augur clades` and `augur seqtraits` - if you pass the resulting JSON files in with `--node-data`, they'll be included as coloring options. _(If you don't want them as a coloring option, just don't pass in the files!)_
 
 _Everything else_ you want to have as a coloring option must be specified either by `--metadata-color-by` or in the config file (what's specified in `--metadata-color-by` will override what's in the config file).
 
 ## Command-line Options
-Remember that generally **any command line options you use will override the same option in your config file**. 
+Remember that generally **any command line options you use will override the same option in your config file**.
 
  #### General Display
 
-##### Title 
+##### Title
 * `--title` sets the title of your run
 * If running directly from the command line, put your title in quotes (ex: `--title "Phylodynamics of my Pathogen"`). If you are using snakemake and passing the value using `params`, you'll need to double-quote the title using single and double quotes. For example:
   ```
@@ -72,8 +72,8 @@ Remember that generally **any command line options you use will override the sam
 * _(Previously the "title" field in your v1 config file.)_
 
 ##### Maintainers
-* You can now have more than one maintainer associated with your run! 
-* Specify with `--maintainers`. 
+* You can now have more than one maintainer associated with your run!
+* Specify with `--maintainers`.
 * If running directly from the command line, put each maintainer in quotes (ex: `--maintainers "Jane Doe" "Ravi Kupra"`). If you are using snakemake and passing the value using `params`, you'll need to put the whole list in double quotes, and each person in single quotes. For example:
   ```
   params:
@@ -85,19 +85,19 @@ Remember that generally **any command line options you use will override the sam
 * _(Previously the first part of the "maintainer" field in your v1 config file.)_
 
 ##### Maintainer Websites
-* Specify with `--maintainer-urls`. 
-* Put them in the same order as the `--maintainers` so they link up with the right people! (ex: `--maintainer-urls www.janedoe.com www.ravikupra.co.uk`) 
+* Specify with `--maintainer-urls`.
+* Put them in the same order as the `--maintainers` so they link up with the right people! (ex: `--maintainer-urls www.janedoe.com www.ravikupra.co.uk`)
 * **TO DO** _We ok with this?_
 * _(Previously the second part of the "maintainer" field in your v1 config file.)_
 
 ##### Panels
-* `--panels` sets the visible panels. 
-* By default, if the data is available, Auspice will show the tree, map, and entropy panels. 
+* `--panels` sets the visible panels.
+* By default, if the data is available, Auspice will show the tree, map, and entropy panels.
 * Options are "tree", "map", "entropy", and "frequencies". (ex: `--panels tree map entropy`) You must specify "frequencies" here _and_ supply a tip frequency file to `auspice` to display tip frequencies.
 * _(Previously the "panels" field in the your v1 config file.)_
 
 ##### Geography
-* Specify how you'd like to position samples on the map using `--geo-resolutions`. 
+* Specify how you'd like to position samples on the map using `--geo-resolutions`.
 * For many users, these might be "country" and "region". (ex: `--geo-resolutions country region`)
 * _(Previously the "geo" field in your v1 config file.)_
 
@@ -118,17 +118,17 @@ Remember that generally **any command line options you use will override the sam
 #### Default view
 * It is not possible to set the default view options using only command-line arguments in `export v2`.
 
-* By default, `auspice` will display your tree in rectangle view, with branch lengths, color, and map position based on the available data. You can read more about the defaults [here](#id6). 
+* By default, `auspice` will display your tree in rectangle view, with branch lengths, color, and map position based on the available data. You can read more about the defaults [here](#id6).
 
-* If you would like to have more control over these options, you will need to include a config file. You can find more information [here](#id6). 
+* If you would like to have more control over these options, you will need to include a config file. You can find more information [here](#id6).
 
 * _(Previously the "defaults" field in your v1 config file.)_
 <br>
 
 #### Filter
-* When using `export v2` with only command-line arguments, every trait that's a coloring option and is either categorical or boolean will automatically be available to filter by. 
+* When using `export v2` with only command-line arguments, every trait that's a coloring option and is either categorical or boolean will automatically be available to filter by.
 
-* If you'd like to specify exactly what traits are listed as filters, you'll need to use a config file. You can find more information [here](#filters). 
+* If you'd like to specify exactly what traits are listed as filters, you'll need to use a config file. You can find more information [here](#filters).
 
 *  _(The same as the "filters" field in your v1 config file.)_
 
@@ -137,7 +137,7 @@ Remember that generally **any command line options you use will override the sam
 ## Config File Options
 
 ### Why use a config file?
-We have tried to make the command line arguments cover everything you need to get a run working in `augur` and `auspice`. However, there are still some features that offer more options or are only available when you use a config file. 
+We have tried to make the command line arguments cover everything you need to get a run working in `augur` and `auspice`. However, there are still some features that offer more options or are only available when you use a config file.
 
 With a config file, you can:
 * Specify exactly what you want as a filter option
@@ -164,7 +164,7 @@ There are a couple of exceptions to this:
 * **Remember:** You don't have to include every field in your config file - you can specify it in the command line (or use the default default) instead, if you prefer.
 
 #### Config file format
-Just like in export v1, the config file is a JSON-format file. _It is important that everything in your config file is enclosed in one pair of curly brackets._ These can be on a separate line at the very top and very bottom of your file. 
+Just like in export v1, the config file is a JSON-format file. _It is important that everything in your config file is enclosed in one pair of curly brackets._ These can be on a separate line at the very top and very bottom of your file.
 
 Syntax is important - if you are getting errors, ensure all your brackets and quotation marks match up, and that commas separate items in the same pair of brackets.
 
@@ -174,16 +174,16 @@ _Export v2 config files are generally very simliar to export v1, but there are a
 All of the options listed here go directly inside the main pair of curly brackets. See the [end of this section](#example) for an example.
 
 ##### Title
-* Specify the title of your run using `"title"`. 
+* Specify the title of your run using `"title"`.
 * Ex: `"title": "Phylodynamics of my Pathogen"`
 * _(Same as the "title" field in your v1 config file.)_
 
 ##### Maintainers
-* You can now have more than one maintainer associated with your run! 
+* You can now have more than one maintainer associated with your run!
 * Specify maintainers and their websites using `"maintainers"` and listing the name and URL in pairs:
   ```
   "maintainers": [
-    ["Jane Doe", "www.janedoe.com"], 
+    ["Jane Doe", "www.janedoe.com"],
     ["Ravi Kupra","www.ravikupra.co.uk"]
   ]
   ```
@@ -192,25 +192,25 @@ All of the options listed here go directly inside the main pair of curly bracket
 
 ##### Panels
 * Use `"panels"` to specify visible panels.
-* By default, if the data is available, Auspice will show the tree, map, and entropy panels. 
+* By default, if the data is available, Auspice will show the tree, map, and entropy panels.
 * Options are "tree", "map", "entropy", and "frequencies". You must specify "frequencies" _and_ supply a tip frequency file to `auspice` to display tip frequencies.
 * Ex: `"panels": ["tree", "map"]`
 * _(Same as the "panels" field in the your v1 config file.)_
 
 ##### Geography
-* Specify how you'd like to position samples on the map using `"geo"`. 
-* For many users, these might be "country" and "region". (ex: `"geo": [ "country", "region"]`)
-* _(Same as the "geo" field in your v1 config file.)_
+* Specify how you'd like to position samples on the map using `"geo_resolutions"`.
+* For many users, these might be "country" and "region". (ex: `"geo_resolutions": [ {"key": country"}, {"key": "region"}]`)
+* _(Almost the same as the "geo" field in your v1 config file.)_
 
 ##### Filters
 * Set what you would like to be able to filter by using `"filters"`.
-* These must be traits present on your tree. 
+* These must be traits present on your tree.
 * Ex: `"filters": ["country", "region", "symptom", "age"]`
 * If you don't include this option in your config file, all non-continuous traits that are coloring options will be included as filters. If you don't want any filter options, include `"filters"` with no options (ex: `"filters": []`).
 * _(Same as the "filters" field in your v1 config file.)_
 
 ##### Default View
-* You can specify the default view that users will see when they load your run by using `"display_defaults"`. 
+* You can specify the default view that users will see when they load your run by using `"display_defaults"`.
 * If you do not change the options here, `auspice` will revert to the defaults listed below:
 
   There are five options you can set here:
@@ -228,11 +228,11 @@ Here is an example of how all of the above options would fit into a config file 
   {
     "title": "Phylodynamics of my Pathogen",
     "maintainers": [
-      ["Jane Doe", "www.janedoe.com"], 
+      ["Jane Doe", "www.janedoe.com"],
       ["Ravi Kupra","www.ravikupra.co.uk"]
     ],
     "panels": ["tree", "map"],
-    "geo": [ "country", "region"],
+    "geo_resolutions": [ {"key":"country"}, {"key":"region"}],
     "filters": [
       "country", "region", "symptom", "age"
     ],
@@ -250,7 +250,7 @@ Here is an example of how all of the above options would fit into a config file 
 
 In the export v1 config file, `"color_options"` was used to specify and describe traits that you wanted as colouring options. This is now replaced by `"colorings"`, and works in a very similar way.
 
-As in export v1, the `"colorings"` section of the config file will hold all the trait information within its curly brackets (see [the example](#example)). You should provide traits using the column name in the metadata. 
+As in export v1, the `"colorings"` section of the config file will hold all the trait information within its curly brackets (see [the example](#example)). You should provide traits using the column name in the metadata.
 
 If you wish, you can provide more information about the trait using `"title"` (what should display in the drop-down menu in Auspice - previously `"menuItem"` in export v1) and `"type"` (should the trait be treated as ordinal, boolean, continuous, or categorical). If you don't provide these, export v2 will simply use the trait name as provided and try to guess the type. The export v1 options `"legendTitle"` and `"key"` are no longer used.
 
@@ -283,10 +283,10 @@ Here's an example of how display and trait options (for `age`, `hospitalized`, `
       }
     },
     "maintainers": [
-      ["Jane Doe", "www.janedoe.com"], 
+      ["Jane Doe", "www.janedoe.com"],
       ["Ravi Kupra","www.ravikupra.co.uk"]
     ],
-    "geo": [ "country", "region" ],
+    "geo_resolutions": [ {"key":"country"}, {"key":"region"}],
     "filters": [ "country", "region" ],
     "display_defaults": {
       "geo_resolution": "region",
@@ -295,7 +295,7 @@ Here's an example of how display and trait options (for `age`, `hospitalized`, `
   ```
 
 ### Using an old (`export v1`) config
-It's fairly easy to convert old export v1 config files to work with export v2. 
+It's fairly easy to convert old export v1 config files to work with export v2.
 
 Here's an export v1 config file on the left, and an export v2 config file on the right. We've tried to line them up to highlight the differences:
 
@@ -381,9 +381,10 @@ Export v2 config:
       "type": "categorical"
     }<br><br><br><br><br><br>
   },
-  "geo": [
-    "country", "region"
-  ],
+  "geo_resolutions": [
+      {"key":"country"},
+      {"key":"region"}
+    ],
   "maintainers": [
     ["Hanna Kukk", "http://vamuzlab.org"],
     ["Mohammad Fahir", "http://mfahir.co.uk"]
@@ -402,12 +403,13 @@ Export v2 config:
 
 #### What changed?
 
-* `title`, `geo` and `filters` are unchanged
+* `title` and `filters` are unchanged
 * `"color_options"` is now `"colorings"`. In this section:
   * `gt`, `num_date`, and `clade_membership` no longer have to be included - they are automatically included if the necessary information is present
   * `legendTitle` and `key` are gone
   * `menuItem` is now `title`
   * The type `discrete` is now `categorical`
+* `geo` is now `geo_resolutions` and uses a new format
 * `maintainer` is now `maintainers` and uses the new format
 * `defaults` is now `display_defaults` and within its options, `colorBy` is now `color_by`
 
@@ -416,7 +418,7 @@ Export v2 config:
 **TO DO**
 * I don't think this exists yet?
 _Are we doing this?_
- 
+
 
 
 
