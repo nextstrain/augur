@@ -148,6 +148,12 @@ def run(args):
         tt.recover_var_ambigs()
 
     anc_seqs['nodes'] = collect_sequences_and_mutations(T, is_vcf)
+    # add reference sequence to json structure. This is the sequence with
+    # respect to which mutations on the tree are defined.
+    if is_vcf:
+        anc_seqs['reference'] = {"nuc":compress_seq['reference']}
+    else:
+        anc_seqs['reference'] = {"nuc":"".join(T.root.sequence) if hasattr(T.root, 'sequence') else ''}
 
     if args.output:
         anc_seqs_fname = args.output

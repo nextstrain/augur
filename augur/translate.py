@@ -363,8 +363,15 @@ def run(args):
                     if n.name in aln:
                         aa_muts[n.name]["aa_sequences"][fname] = "".join(aln[n.name])
 
+    output_data = {'annotations':annotations, 'nodes':aa_muts}
+    if is_vcf:
+        output_data['reference'] = {}
+        for fname in translations:
+            output_data['fname'] = translations['fname']['reference']
+    else:
+        output_data['reference'] = aa_muts[tree.root.name]['aa_sequences']
 
-    write_json({'annotations':annotations, 'nodes':aa_muts}, args.output)
+    write_json(output_data, args.output)
     print("amino acid mutations written to",args.output, file=sys.stdout)
 
     ## write alignments to file is requested

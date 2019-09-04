@@ -679,25 +679,6 @@ def register_arguments_v2(subparsers):
     return v2
 
 
-def write_root_sequence_to_json(T, nodes, reference, reference_translations, output_sequence):
-    # export reference sequence data including translations. This is either the
-    # inferred sequence of the root, or the reference sequence with respect to
-    # which mutations are made on the tree (including possible mutations leading
-    # to the root of the tree -- typical case for vcf input data).
-    print("This option (--output-sequence) is due to be removed before the v6 release.")
-    if T.root.name in nodes:
-        root_sequence = get_root_sequence(
-            nodes[T.root.name],
-            ref=reference,
-            translations=reference_translations
-        )
-    else:
-        # TODO - what's the point of writing out an empty file?!? (james aug 16)
-        root_sequence = {}
-
-    write_json(root_sequence, output_sequence)
-
-
 def set_display_defaults(data_json, config):
     # Note: these cannot be provided via command line args
     if config.get("display_defaults"):
@@ -818,9 +799,12 @@ def run_v2(args):
     set_geo_resolutions(data_json, config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_attrs)
 
     # Write outputs
-    if args.output_sequence:
-        write_root_sequence_to_json(T, node_data["nodes"], args.reference, args.reference_translations, args.output_sequence)
     write_json(data_json, args.output_main, indent=None if args.minify_json else 2)
+
+    if 'reference' in node_data:
+        write_json(node_data['reference'], args.output_main[:-5]+'_root-sequence.json',
+                   indent=None if args.minify_json else 2)
+
 
     # validate outputs
     validate_data_json(args.output_main)
