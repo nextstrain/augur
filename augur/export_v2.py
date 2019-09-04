@@ -282,10 +282,12 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
 
     def _transfer_geo_data(node):
         for g in geo_resolutions:
-            if g['key'] in n_attrs[node["name"]] and g['key'] not in node['node_attrs']:
-                node['node_attrs'] = n_attrs[node["name"]][g['key']]
-        for c in node.children:
-            _transfer_geo_data(c)
+            if g['key'] in node_attrs[node["name"]] and g['key'] not in node['node_attrs']:
+                node['node_attrs'][g['key']] = {"value":node_attrs[node["name"]][g['key']]}
+
+        if "children" in node:
+            for c in node["children"]:
+                _transfer_geo_data(c)
 
     # step 1: get a list of resolutions
     if command_line_traits:
@@ -322,6 +324,7 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
         else:
             warn("Geo resolution \"{}\" had no demes with supplied lat/longs and will be excluded from the exported \"geo_resolutions\".".format(trait_info["key"]))
 
+    #
     _transfer_geo_data(data_json['tree'])
 
 
@@ -786,13 +789,13 @@ def run_v2(args):
         provided_colors=read_colors(args.colors),
         node_attrs=node_attrs
     )
-    set_geo_resolutions(data_json, config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_attrs)
     set_filters(data_json, config)
     set_panels(data_json, config, args.panels)
 
     # set tree structure
     data_json["tree"] = convert_tree_to_json_structure(T.root, node_attrs)
     set_node_attrs_on_tree(data_json, node_attrs)
+    set_geo_resolutions(data_json, config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_attrs)
 
     # Write outputs
     if args.output_sequence:
