@@ -85,6 +85,21 @@ def are_mutations_defined(node_attrs):
             return True
     return False
 
+
+def are_clades_defined(node_attrs):
+    for node, data in node_attrs.items():
+        if data.get("clade_membership") or data.get("clade_annotation"):
+            return True
+    return False
+
+
+def are_dates_defined(node_attrs):
+    for node, data in node_attrs.items():
+        if data.get("num_date"):
+            return True
+    return False
+
+
 def update_deprecated_names(name):
     # correct deprecated keys
     change = {
@@ -121,7 +136,7 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         # for some keys we know what the type must be
         known_types = {
             "clade_membership": "categorical",
-            "gt": "ordinal",
+            "gt": "categorical",
             "author": "categorical",
             "num_date": "continuous"
         }
@@ -209,12 +224,12 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
             return False # a warning message will have been printed before `InvalidOption` is raised
         return coloring
 
-    def _create_coloring(colorings, key):
+    def _create_coloring(key):
         # handle deprecations
         if key == "authors":
             deprecated("[colorings] The 'authors' key is now called 'author'")
             key = "author"
-        colorings[key] = {"key": key}
+        return {"key": key}
 
     def _is_valid(coloring):
         key = coloring["key"]
@@ -234,31 +249,36 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         # it is here that we deal with the interplay between node-data "traits", command line colorings &
         # config provided options
 
-        colorings = {}
+        colorings = []
         # If we have command line colorings, it seems we (a) ignore any provided in the config file
         # and (b) start with the node-data "traits". (Note that in a later function, the title and/or
         # type will be accessed from the config file if available)
         if command_line_colorings:
             # start with node_data_colorings
             for x in node_data_colorings:
-                _create_coloring(colorings, x)
+                colorings.append(_create_coloring(x))
             # then add in command line colorings
             for x in command_line_colorings:
-                _create_coloring(colorings, x)
+                colorings.append(_create_coloring(x))
         else:
             # if we have a config file, start with these (extra info, such as title&type, is added in later)
             if config:
                 for x in config.keys():
-                    _create_coloring(colorings, x)
+                    colorings.append(_create_coloring(x))
             # then add in node-data "traits" irrespective of whether we have config-provided colorings
             for x in node_data_colorings:
-                _create_coloring(colorings, x)
+                colorings.append(_create_coloring(x))
 
+        explicitly_defined_colorings = [x["key"] for x in colorings]
         # add in genotype as a special case if (a) not already set and (b) the data supports it
-        if "gt" not in colorings and are_mutations_defined(node_attrs):
-            return [{"key": "gt"}, *colorings.values()] # insert genotype at front
-        else:
-            return [*colorings.values()]
+        if "gt" not in explicitly_defined_colorings and are_mutations_defined(node_attrs):
+            colorings.insert(0,{'key', 'gt'})
+        if "num_date" not in explicitly_defined_colorings and are_dates_defined(node_attrs):
+            colorings.insert(0,{'key', 'num_date'})
+        if "clades" not in explicitly_defined_colorings and are_clades_defined(node_attrs):
+            colorings.insert(0,{'key', 'clades'})
+
+        return colorings
 
 
     # construct colorings from cmd line args, data, config file etc
