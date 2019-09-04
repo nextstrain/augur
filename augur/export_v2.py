@@ -287,7 +287,7 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
         traits = config.get("geo_resolutions")
     elif config.get("geo"):
         traits = [{"key": x} for x in config.get("geo")]
-        deprecated("[config file] 'geo' has been replaced with 'geo_resolutions' and the structure has changed")
+        deprecated("[config file] 'geo' has been replaced with 'geo_resolutions'. The field is now list of dicts each with format {'key':country}")
     else:
         return False
 
@@ -549,7 +549,9 @@ def is_name_valid_for_export(name):
         'aa_muts',
         'sequence',
         'aa_sequences',
-        'hidden'
+        'hidden',
+        'dTiter',
+        'dTiterSub'
     ]
     if name in excluded:
         return False
