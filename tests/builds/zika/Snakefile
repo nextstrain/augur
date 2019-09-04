@@ -229,7 +229,7 @@ rule export_v2:
             --node-data {input.branch_lengths} {input.traits} {input.nt_muts} {input.aa_muts} \
             --colors {input.colors} \
             --auspice-config {input.auspice_config} \
-            --output-main {output.auspice_main} \
+            --output {output.auspice_main} \
             --output-sequence {output.auspice_seq} \
             --title {params.title:q} \
             --panels tree map entropy frequencies

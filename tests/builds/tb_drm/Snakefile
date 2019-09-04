@@ -211,7 +211,7 @@ rule exportv2:
             --node-data {input.branch_lengths} {input.drms} {input.traits} {input.aa_muts} {input.nt_muts} \
             --colors {input.color_defs} \
             --lat-longs {input.geo_info} \
-            --output-main {output.main} \
+            --output {output.main} \
             --title {params.title} \
             --maintainers {params.auth} \
             --maintainer-urls {params.url} \

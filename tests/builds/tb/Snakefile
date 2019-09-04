@@ -241,7 +241,7 @@ rule export_v2:
             --reference {input.ref} --reference-translations {input.translations} \
             --colors {input.color_defs} \
             --lat-longs {input.geo_info} \
-            --output-main {output.main} \
+            --output {output.main} \
             --title {params.title} \
             --maintainers {params.auth} \
             --maintainer-urls {params.url} \
