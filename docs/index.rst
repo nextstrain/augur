@@ -16,9 +16,6 @@ Augur originated as part of `Nextstrain <https://nextstrain.org>`__, an open-sou
    :titlesonly:
 
    installation
-   cli
-   Augur examples <examples>
-   envvars
-   upgrading
-   Development API <api>
+   usage
+   api
    authors

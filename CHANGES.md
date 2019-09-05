@@ -1,6 +1,68 @@
 # __NEXT__
 
 
+# 5.2.1 (4 August 2019)
+
+## Bug fixes
+
+* Print more useful error message if Python recursion limit is reached. [See issue 328](https://github.com/nextstrain/augur/issues/328)
+
+* Print more useful error message if vcftools if missing. [See PR 312](https://github.com/nextstrain/augur/pull/321)
+
+## Development
+
+* Significantly relax version requirements specified in setup.py for biopython, pandas, etc... Additionally, move lesser used packages (cvxopt, matplotlib, seaborn) into an "extras_require" field. This should reduce conflicts with other pip installed packages. [See PR 323](https://github.com/nextstrain/augur/pull/323)
+
+## Data
+
+* Include additional country lat/longs in base data
+
+# 5.2.0 (23 July 2019)
+
+## Features
+
+* ancestral: Adds a new flag `--output-sequences` and logic to support saving
+  ancestral sequences and leaves from the given tree to a FASTA file. Also adds a
+  redundant, more specific flag `--output-node-data` that will replace the current
+  `--output` flag in the next major version release of augur. For now, we issue a
+  deprecation warning when the `--output` flag is used. Note that FASTA output is
+  only allowed for FASTA inputs and not for VCFs. We don't allow FASTA output for
+  VCFs anywhere else and, if we did here, the output files would be very large.
+  [See PR 293](https://github.com/nextstrain/augur/pull/293)
+
+* frequencies: Allow `--method kde` flag to compute frequencies via KDE kernels.
+  This complements existing method of `--method diffusion`. Generally, KDE
+  frequencies should be more robust and faster to run, but will not project as
+  well when forecasting frequencies into the future.
+  [See PR 271](https://github.com/nextstrain/augur/pull/271)
+
+## Bug fixes
+
+* ancestral, traits, translate: Print warning if supplied tree is missing internal
+  node names (normally provided by running `augur refine`).
+  [See PR 283](https://github.com/nextstrain/augur/pull/283)
+
+* Include pip in Conda enviroment file.
+  [See PR 309](https://github.com/nextstrain/augur/pull/309)
+
+## Documentation
+
+* Document environment variables respected by Augur
+
+## Development
+
+* Remove matplotlib and seaborn from `setup.py` install. These are still called a
+  few places in augur (like `titers.validate()`), but it was deemed rare enough
+  that remove this from `setup.py` would ease general install for most users.
+  Additionally, the ipdb debugger has been moved to dev dependencies.
+  [See PR 291](https://github.com/nextstrain/augur/pull/291)
+
+* Refactor logic to read trees from multiple formats into a function. Adds a new
+  function `read_tree` to the `utils` module that tries to safely handle reading
+  trees in multiple input formats.
+  [See PR 310](https://github.com/nextstrain/augur/pull/310)
+
+
 # 5.1.1 (1 July 2019)
 
 ## Features

@@ -10,7 +10,7 @@ forbidden_characters = [
     ('(','_'),
     (')','_'),
     ('[','_'),
-    (']','_'),    
+    (']','_'),
     (':','_'),
     (',','_'),
     (';','_'),
@@ -66,7 +66,7 @@ def run(args):
 
     # loop over sequences, parse fasta header of each sequence
     for seq in seqs:
-        fields = seq.description.split(args.separator)
+        fields = [x.strip() for x in seq.description.split(args.separator)]
         tmp_name = fields[strain_index]
         for x, y in forbidden_characters:
             tmp_name = tmp_name.replace(x, y)

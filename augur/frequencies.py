@@ -7,7 +7,8 @@ from collections import defaultdict
 from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
 
-from .frequency_estimators import get_pivots, alignment_frequencies, TreeKdeFrequencies, tree_frequencies
+from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
+from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies
 from .utils import read_metadata, read_node_data, write_json, get_numerical_dates
 
 
@@ -74,6 +75,17 @@ def run(args):
     stiffness = args.stiffness
     inertia = args.inertia
 
+    if args.method == "kde":
+        # Load weights if they have been provided.
+        if args.weights:
+            with open(args.weights, "r") as fh:
+                weights = json.load(fh)
+
+            weights_attribute = args.weights_attribute
+        else:
+            weights = None
+            weights_attribute = None
+
     if args.tree:
         tree = Phylo.read(args.tree, 'newick')
         tps = []
@@ -132,17 +144,6 @@ def run(args):
                 print("ERROR: nextflu format is not supported for KDE frequencies", file=sys.stderr)
                 return 1
 
-            # Estimate frequencies by KDE method.
-            # Load weights if they have been provided.
-            if args.weights:
-                with open(args.weights, "r") as fh:
-                    weights = json.load(fh)
-
-                weights_attribute = args.weights_attribute
-            else:
-                weights = None
-                weights_attribute = None
-
             # Estimate frequencies.
             kde_frequencies = TreeKdeFrequencies(
                 sigma_narrow=args.narrow_bandwidth,
@@ -168,10 +169,6 @@ def run(args):
         write_json(frequency_dict, args.output)
         print("tree frequencies written to", args.output, file=sys.stdout)
     elif args.alignments:
-        if args.method == "kde":
-            print("ERROR: mutation frequencies are not supported for KDE frequencies", file=sys.stderr)
-            return 1
-
         frequencies = None
         for gene, fname in zip(args.gene_names, args.alignments):
             if not os.path.isfile(fname):
@@ -181,16 +178,39 @@ def run(args):
             aln = MultipleSeqAlignment([seq for seq in AlignIO.read(fname, 'fasta')
                                         if not seq.name.startswith('NODE_')])
             tps = np.array([np.mean(dates[seq.name]) for seq in aln])
+
             if frequencies is None:
                 pivots = get_pivots(tps, args.pivot_interval, args.min_date, args.max_date)
                 frequencies = {"pivots":format_frequencies(pivots)}
 
-            freqs = alignment_frequencies(aln, tps, pivots, stiffness=stiffness, inertia=inertia, method='SLSQP')
-            freqs.mutation_frequencies(min_freq = args.minimal_frequency, ignore_char=args.ignore_char)
-            frequencies.update({"%s:%d%s" % (gene, pos+1, state): format_frequencies(mutation_frequencies)
-                                for (pos, state), mutation_frequencies in freqs.frequencies.items()})
-            frequencies["%s:counts" % gene] = [int(observations_per_pivot)
-                                               for observations_per_pivot in freqs.counts]
+            if args.method == "kde":
+                kde_frequencies = AlignmentKdeFrequencies(
+                    sigma_narrow=args.narrow_bandwidth,
+                    sigma_wide=args.wide_bandwidth,
+                    proportion_wide=args.proportion_wide,
+                    pivot_frequency=args.pivot_interval,
+                    start_date=args.min_date,
+                    end_date=args.max_date,
+                    weights=weights,
+                    weights_attribute=weights_attribute,
+                    include_internal_nodes=args.include_internal_nodes,
+                    censored=args.censored
+                )
+                kde_frequencies.estimate(
+                    aln,
+                    tps
+                )
+
+                for mutation, mutation_frequencies in kde_frequencies.frequencies.items():
+                    position, state = mutation.split(":")
+                    frequencies["%s:%s%s" % (gene, position, state)] = format_frequencies(mutation_frequencies)
+            else:
+                freqs = alignment_frequencies(aln, tps, pivots, stiffness=stiffness, inertia=inertia, method='SLSQP')
+                freqs.mutation_frequencies(min_freq = args.minimal_frequency, ignore_char=args.ignore_char)
+                frequencies.update({"%s:%d%s" % (gene, pos+1, state): format_frequencies(mutation_frequencies)
+                                    for (pos, state), mutation_frequencies in freqs.frequencies.items()})
+                frequencies["%s:counts" % gene] = [int(observations_per_pivot)
+                                                   for observations_per_pivot in freqs.counts]
 
         write_json(frequencies, args.output)
         print("mutation frequencies written to", args.output, file=sys.stdout)

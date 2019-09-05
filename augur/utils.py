@@ -8,6 +8,7 @@ from treetime.utils import numeric_date
 from collections import defaultdict
 from pkg_resources import resource_stream
 from io import TextIOWrapper
+from textwrap import dedent
 
 def myopen(fname, mode):
     if fname.endswith('.gz'):
@@ -64,8 +65,12 @@ def read_metadata(fname):
         meta_dict = {}
         for ii, val in metadata.iterrows():
             if hasattr(val, "strain"):
+                if val.strain in meta_dict:
+                    raise ValueError("Duplicate strain '{}'".format(val.strain))
                 meta_dict[val.strain] = val.to_dict()
             elif hasattr(val, "name"):
+                if val.name in meta_dict:
+                    raise ValueError("Duplicate name '{}'".format(val.name))
                 meta_dict[val.name] = val.to_dict()
             else:
                 print("ERROR: meta data file needs 'name' or 'strain' column")
@@ -100,6 +105,64 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, m
         numerical_dates = {k:float(v) for k,v in meta_dict.items()}
 
     return numerical_dates
+
+
+class InvalidTreeError(Exception):
+    """Represents an error loading a phylogenetic tree from a filename.
+    """
+    pass
+
+
+def read_tree(fname, min_terminals=3):
+    """Safely load a tree from a given filename or raise an error if the file does
+    not contain a valid tree.
+
+    Parameters
+    ----------
+    fname : str
+        name of a file containing a phylogenetic tree
+
+    min_terminals : int
+        minimum number of terminals required for the parsed tree as a sanity
+        check on the tree
+
+    Raises
+    ------
+    InvalidTreeError
+        If the given file exists but does not seem to contain a valid tree format.
+
+    Returns
+    -------
+    Bio.Phylo :
+        BioPython tree instance
+
+    """
+    T = None
+    supported_tree_formats = ["newick", "nexus"]
+    for fmt in supported_tree_formats:
+        try:
+            T = Bio.Phylo.read(fname, fmt)
+
+            # Check the sanity of the parsed tree to handle cases when non-tree
+            # data are still successfully parsed by BioPython. Too few terminals
+            # in a tree indicates that the input is not valid.
+            if T.count_terminals() < min_terminals:
+                T = None
+            else:
+                break
+        except ValueError:
+            # We cannot open the tree in the current format, so we will try
+            # another.
+            pass
+
+    # If the tree cannot be loaded, raise an error to that effect.
+    if T is None:
+        raise InvalidTreeError(
+            "Could not read the given tree %s using the following supported formats: %s" % (fname, ", ".join(supported_tree_formats))
+        )
+
+    return T
+
 
 def read_node_data(fnames, tree=None):
     """parse the "nodes" field of the given JSONs and join the data together"""
@@ -388,7 +451,7 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
 
 def run_shell_command(cmd, raise_errors = False, extra_env = None):
     """
-    Run the given command string via the shell with error checking.
+    Run the given command string via Bash with error checking.
 
     Returns True if the command exits normally.  Returns False if the command
     exits with failure and "raise_errors" is False (the default).  When
@@ -404,22 +467,50 @@ def run_shell_command(cmd, raise_errors = False, extra_env = None):
 
     try:
         # Use check_call() instead of run() since the latter was added only in Python 3.5.
-        subprocess.check_call(cmd, shell = True, env = env)
+        subprocess.check_call(
+            "set -euo pipefail; " + cmd,
+            shell = True,
+            executable = "/bin/bash",
+            env = env)
+
     except subprocess.CalledProcessError as error:
-        print(
-            "ERROR: {program} exited {returncode}, invoked as: {cmd}".format(
-                program    = cmd.split()[0],
-                returncode = error.returncode,
-                cmd        = cmd,
-            ),
-            file = sys.stderr
+        print_error(
+            "shell exited {rc} when running: {cmd}{extra}",
+            rc  = error.returncode,
+            cmd = cmd,
+            extra = "\nAre you sure this program is installed?" if error.returncode==127 else "",
         )
         if raise_errors:
             raise
         else:
             return False
+
+    except FileNotFoundError as error:
+        print_error(
+            """
+            Unable to run shell commands using {shell}!
+
+            Augur requires {shell} to be installed.  Please open an issue on GitHub
+            <https://github.com/nextstrain/augur/issues/new> if you need assistance.
+            """,
+            shell = error.filename
+        )
+        if raise_errors:
+            raise
+        else:
+            return False
+
     else:
         return True
+
+
+def print_error(message, **kwargs):
+    """
+    Formats *message* with *kwargs* using :meth:`str.format` and
+    :func:`textwrap.dedent` and uses it to print an error message to
+    ``sys.stderr``.
+    """
+    print("\nERROR: " + dedent(message.format(**kwargs)).lstrip("\n")+"\n", file = sys.stderr)
 
 
 def first_line(text):
@@ -481,8 +572,18 @@ def get_parent_name_by_child_name_for_tree(tree):
 
 def annotate_parents_for_tree(tree):
     """Annotate each node in the given tree with its parent.
+
+    >>> import io
+    >>> tree = Bio.Phylo.read(io.StringIO("(A, (B, C))"), "newick")
+    >>> not any([hasattr(node, "parent") for node in tree.find_clades()])
+    True
+    >>> tree = annotate_parents_for_tree(tree)
+    >>> tree.root.parent is None
+    True
+    >>> all([hasattr(node, "parent") for node in tree.find_clades()])
+    True
     """
-    tree.parent = None
+    tree.root.parent = None
     for node in tree.find_clades(order="level"):
         for child in node.clades:
             child.parent = node

@@ -16,6 +16,7 @@ def get_mask_sites(vcf_file, mask_file):
 
     #Need CHROM name from VCF file:
     import gzip
+    chromName = None
     opn = gzip.open if vcf_file.lower().endswith('.gz') else open
     with opn(vcf_file, mode='rt') as f: #'rt' necessary for gzip
         for line in f:
@@ -23,6 +24,11 @@ def get_mask_sites(vcf_file, mask_file):
                 header = line.strip().split('\t')
                 chromName = header[0]
                 break   # once chrom is found, no need to go through rest
+
+    if chromName is None or not chromName:
+        print("ERROR: Something went wrong reading your VCF file: a CHROM column could not be found. "
+              "Please check the file is valid VCF format.")
+        return None
 
     #Read in BED file - 2nd column always chromStart, 3rd always chromEnd
     #I timed this against sets/update/sorted; this is faster
@@ -57,8 +63,24 @@ def run(args):
 
     If users don't specify output, will overwrite the input file.
     '''
+    # Check files exist and are not empty
+    if not os.path.isfile(args.sequences):
+        print("ERROR: File {} does not exist!".format(args.sequences))
+        return 1
+    if not os.path.isfile(args.mask):
+        print("ERROR: File {} does not exist!".format(args.mask))
+        return 1
+    if os.path.getsize(args.sequences) == 0:
+        print("ERROR: {} is empty. Please check how this file was produced. "
+              "Did an error occur in an earlier step?".format(args.sequences))
+        return 1
+    if os.path.getsize(args.mask) == 0:
+        print("ERROR: {} is an empty file.".format(args.mask))
+        return 1
 
     tempMaskFile = get_mask_sites(args.sequences, args.mask)
+    if tempMaskFile is None:
+        return 1
 
     #Read in/write out according to file ending
     inCall = "--gzvcf" if args.sequences.lower().endswith('.gz') else "--vcf"

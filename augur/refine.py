@@ -4,8 +4,9 @@ Refine an initial tree using sequence metadata.
 
 import os, shutil, time, sys
 from Bio import Phylo
-from .utils import read_metadata, get_numerical_dates, write_json
+from .utils import read_metadata, read_tree, get_numerical_dates, write_json, InvalidTreeError
 from treetime.vcf_utils import read_vcf, write_vcf
+
 
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
              confidence=False, resolve_polytomies=True, max_iter=2,
@@ -105,6 +106,7 @@ def register_arguments(parser):
                                 "rates and/or rerooting. "
                                 "Use --no-covariance to turn off.")
     parser.add_argument('--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!
+    parser.add_argument('--keep-polytomies', action='store_true', help='Do not attempt to resolve polytomies')
     parser.add_argument('--date-format', default="%Y-%m-%d", help="date format")
     parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
     parser.add_argument('--date-inference', default='joint', choices=["joint", "marginal"],
@@ -127,17 +129,11 @@ def run(args):
     # list of node attributes that are to be exported, will grow
     attributes = ['branch_length']
 
-    # check if tree is provided an can be read
-    for fmt in ["newick", "nexus"]:
-        try:
-            T = Phylo.read(args.tree, fmt)
-            node_data['input_tree'] = args.tree
-            break
-        except Exception as error:
-            print("\n\nERROR: reading tree from %s failed: %s" % (args.tree, error))
-            return 1
-    if T is None:
-        print("\n\nERROR: reading tree from %s failed."%args.tree)
+    try:
+        T = read_tree(args.tree)
+        node_data['input_tree'] = args.tree
+    except (FileNotFoundError, InvalidTreeError) as error:
+        print("ERROR: %s" % error, file=sys.stderr)
         return 1
 
     if not args.alignment:
@@ -166,8 +162,10 @@ def run(args):
     # if not specified, construct default output file name with suffix _tt.nwk
     if args.output_tree:
         tree_fname = args.output_tree
-    else:
+    elif args.alignment:
         tree_fname = '.'.join(args.alignment.split('.')[:-1]) + '_tt.nwk'
+    else:
+        tree_fname = '.'.join(args.tree.split('.')[:-1]) + '_tt.nwk'
 
     if args.root and len(args.root) == 1: #if anything but a list of seqs, don't send as a list
         args.root = args.root[0]
@@ -197,7 +195,7 @@ def run(args):
                     branch_length_inference = args.branch_length_inference or 'auto',
                     clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
                     clock_filter_iqd=args.clock_filter_iqd,
-                    covariance=args.covariance)
+                    covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies))
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
@@ -225,10 +223,13 @@ def run(args):
     import json
     tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
     print("updated tree written to",tree_fname, file=sys.stdout)
+
     if args.output_node_data:
         node_data_fname = args.output_node_data
-    else:
+    elif args.alignment:
         node_data_fname = '.'.join(args.alignment.split('.')[:-1]) + '.node_data.json'
+    else:
+        node_data_fname = '.'.join(args.tree.split('.')[:-1]) + '.node_data.json'
 
     write_json(node_data, node_data_fname)
     print("node attributes written to",node_data_fname, file=sys.stdout)

@@ -30,12 +30,13 @@ country	bangladesh	24.4768783	90.2932426
 country	belgium	50.6407351	4.66696
 country	belize	17.49952	-88.19756
 country	benin	9.668764	2.284078
-country	bermuda		32.2949	-64.78303
+country	bermuda	32.2949	-64.78303
 country	bhutan	27.5142	90.4336
 country	bolivia	-17.0	-65.0
 country	bosnia_herzegovina	43.84864	18.35644
 country	botswana	-22.199114	24.017975
 country	brazil	-10.3333332	-53.1999999
+country	british_virgin_islands	18.437033	-64.616732
 country	brunei	4.5	114.66667
 country	bulgaria	42.6073975	25.4856617
 country	burkina_faso	12.5	-1.66667
@@ -74,6 +75,7 @@ country	french_guiana	4.93333	-52.33333
 country	french_polynesia	-17.6797	-149.4068
 country	gabon	-0.8999694	11.6899699
 country	gambia	13.5	-15.5
+country	georgia_country	41.775743	44.336896
 country	germany	51.0834196	10.4234469
 country	ghana	8.0300284	-1.080027
 country	greece	39.0	22.0
@@ -160,6 +162,7 @@ country	saint_barthelemy	17.9049171	-62.847207
 country	saint_kitts	17.29484	-62.7261
 country	saint_lucia	13.88333	-60.96667
 country	saint_vincent_and_the_grenadines	12.9843	-61.2872
+country	samoa	-13.598724	-172.454467
 country	saudi_arabia	25.0	45.0
 country	senegal	14.5	-14.25
 country	serbia	44.1534121	20.55144
@@ -178,6 +181,7 @@ country	sudan	16.0	30.0
 country	suriname	4.1413025	-56.0771186
 country	sweden	59.6749712	14.5208584
 country	switzerland	47.00016	8.01427
+country	syria	35.217054	38.372227
 country	taiwan	23.6978	120.9605
 country	tajikistan	39.0	71.0
 country	tanzania	-6.0	35.0

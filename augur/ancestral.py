@@ -6,7 +6,7 @@ import os, shutil, time, json, sys
 from Bio import Phylo, SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from .utils import write_json
+from .utils import read_tree, InvalidTreeError, write_json
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
 
@@ -106,16 +106,22 @@ def run(args):
     is_vcf = False
     ref = None
     anc_seqs = {}
-    # check if tree is provided and can be read
-    for fmt in ["newick", "nexus"]:
-        try:
-            T = Phylo.read(args.tree, fmt)
-            break
-        except:
-            pass
-    if T is None:
-        print("ERROR: reading tree from %s failed."%args.tree)
+
+    try:
+        T = read_tree(args.tree)
+    except (FileNotFoundError, InvalidTreeError) as error:
+        print("ERROR: %s" % error, file=sys.stderr)
         return 1
+
+    import numpy as np
+    missing_internal_node_names = [n.name is None for n in T.get_nonterminals()]
+    if np.all(missing_internal_node_names):
+        print("\n*** WARNING: Tree has no internal node names!")
+        print("*** Without internal node names, ancestral sequences can't be linked up to the correct node later.")
+        print("*** If you want to use 'augur export' or `augur translate` later, re-run this command with the output of 'augur refine'.")
+        print("*** If you haven't run 'augur refine', you can add node names to your tree by running:")
+        print("*** augur refine --tree %s --output-tree <filename>.nwk"%(args.tree) )
+        print("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'")
 
     if any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
         if not args.vcf_reference:
