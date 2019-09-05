@@ -215,9 +215,10 @@ def construct_author_info_v1(metadata, tree, nodes):
             authorsInTree.add(nodes[node.name]["authors"])
 
     author_info = defaultdict(lambda: {"n": 0})
+    no_authors = 0
     for strain, data in metadata.items():
         if "authors" not in data:
-            print("Error - {} had no authors".format(strain))
+            no_authors += 1
             continue
         if data["authors"] not in authorsInTree:
             continue
@@ -229,6 +230,8 @@ def construct_author_info_v1(metadata, tree, nodes):
                 if attr in author_info[authors] and data[attr].strip() != author_info[authors][attr].strip():
                     print("Error - {} had contradictory {}(s): {} vs {}".format(authors, attr, data[attr], author_info[authors][attr]))
                 author_info[authors][attr] = data[attr].strip()
+    if no_authors:
+        print("Warning - {} samples did not have author information.".format(no_authors))
 
     return author_info
 
