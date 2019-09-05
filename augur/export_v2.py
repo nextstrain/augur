@@ -76,6 +76,9 @@ def convert_tree_to_json_structure(node, metadata, div=0):
                     cdiv = div + metadata[child.name]['mutation_length']
                 elif 'branch_length' in metadata[child.name]:
                     cdiv = div + metadata[child.name]['branch_length']
+                else:
+                    print("ERROR: Cannot find branch length information for %s"%(child.name))
+
             node_struct["children"].append(convert_tree_to_json_structure(child, metadata, div=cdiv))
 
     return node_struct
@@ -785,7 +788,7 @@ def run_v2(args):
     # set metadata data structures
     set_title(data_json, config, args.title)
     set_display_defaults(data_json, config)
-    set_maintainers(data_json, config, args.maintainers) 
+    set_maintainers(data_json, config, args.maintainers)
     set_annotations(data_json, node_data)
     set_colorings(
         data_json=data_json,
