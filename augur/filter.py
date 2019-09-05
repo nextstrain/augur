@@ -158,6 +158,7 @@ def run(args):
 
     # exclude strain my metadata field like 'host=camel'
     # match using lowercase
+    num_excluded_by_metadata = 0
     if args.exclude_where:
         for ex in args.exclude_where:
             try:
@@ -173,9 +174,12 @@ def run(args):
                     else: # i.e. property=value requested
                         if meta_dict[seq_name].get(col,'unknown').lower() == val.lower():
                             to_exclude.add(seq_name)
-                seq_keep = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
+                tmp = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
+                num_excluded_by_metadata = len(seq_keep) - len(tmp)
+                seq_keep = tmp
 
     # filter by sequence length
+    num_excluded_by_length = 0
     if args.min_length:
         if is_vcf: #doesn't make sense for VCF, ignore.
             print("WARNING: Cannot use min_length for VCF files. Ignoring...")
@@ -186,26 +190,34 @@ def run(args):
                 length = sum(map(lambda x: sequence.count(x), ["a", "t", "g", "c", "A", "T", "G", "C"]))
                 if length >= args.min_length:
                     seq_keep_by_length.append(seq_name)
+            num_excluded_by_length = len(seq_keep) - len(seq_keep_by_length)
             seq_keep = seq_keep_by_length
 
     # filter by date
+    num_excluded_by_date = 0
     if (args.min_date or args.max_date) and 'date' in meta_columns:
         dates = get_numerical_dates(meta_dict, fmt="%Y-%m-%d")
-        seq_keep = [s for s in seq_keep if dates[s] is not None]
+        tmp = [s for s in seq_keep if dates[s] is not None]
         if args.min_date:
-            seq_keep = [s for s in seq_keep if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s])>args.min_date]
+            tmp = [s for s in tmp if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s])>args.min_date]
         if args.max_date:
-            seq_keep = [s for s in seq_keep if (np.isscalar(dates[s]) or all(dates[s])) and np.min(dates[s])<args.max_date]
+            tmp = [s for s in tmp if (np.isscalar(dates[s]) or all(dates[s])) and np.min(dates[s])<args.max_date]
+        num_excluded_by_date = len(seq_keep) - len(tmp)
+        seq_keep = tmp
 
     # exclude sequences with non-nucleotide characters
+    num_excluded_by_nuc = 0
     if args.non_nucleotide:
         good_chars = {'A', 'C', 'G', 'T', '-', 'N', 'R', 'Y', 'S', 'W', 'K', 'M', 'D', 'H', 'B', 'V', '?'}
-        seq_keep = [s for s in seq_keep if len(set(str(seqs[s].seq).upper()).difference(good_chars))==0]
+        tmp = [s for s in seq_keep if len(set(str(seqs[s].seq).upper()).difference(good_chars))==0]
+        num_excluded_by_nuc = len(seq_keep) - len(tmp)
+        seq_keep = tmp
 
     # subsampling. This will sort sequences into groups by meta data fields
     # specified in --group-by and then take at most --sequences-per-group
     # from each group. Within each group, sequences are optionally sorted
     # by a priority score specified in a file --priority
+    num_excluded_subsamp = 0
     if args.group_by and args.sequences_per_group:
         spg = args.sequences_per_group
         seq_names_by_group = defaultdict(list)
@@ -269,11 +281,13 @@ def run(args):
                     seq_subsample.extend(sequences_in_group if len(sequences_in_group)<=spg
                                          else random.sample(sequences_in_group, spg))
 
+            num_excluded_subsamp = len(seq_keep) - len(seq_subsample)
             seq_keep = seq_subsample
 
     # force include sequences specified in file.
     # Note that this might re-add previously excluded sequences
     # Note that we are also not checking for existing meta data here
+    num_included_by_name = 0
     if args.include and os.path.isfile(args.include):
         with open(args.include, 'r') as ifile:
             to_include = set([line.strip() for line in ifile if line[0]!=comment_char])
@@ -281,8 +295,10 @@ def run(args):
         for s in to_include:
             if s not in seq_keep:
                 seq_keep.append(s)
+                num_included_by_name += 1
 
     # add sequences with particular meta data attributes
+    num_included_by_metadata = 0
     if args.include_where:
         to_include = []
         for ex in args.include_where:
@@ -304,6 +320,7 @@ def run(args):
         for s in to_include:
             if s not in seq_keep:
                 seq_keep.append(s)
+                num_included_by_metadata += 1
 
     ####Write out files
 
@@ -324,6 +341,21 @@ def run(args):
 
     print("\n%i sequences were dropped during filtering" % (len(all_seq) - len(seq_keep),))
     if args.exclude:
-        print("%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
+        print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
+    if args.exclude_where:
+        print("\t%i of these were dropped because of '%s'" % (num_excluded_by_metadata, args.exclude_where))
+    if args.min_length:
+        print("\t%i of these were dropped because they were shorter than minimum length of %sbp" % (num_excluded_by_length, args.min_length))
+    if (args.min_date or args.max_date) and 'date' in meta_columns:
+        print("\t%i of these were dropped because of their date (or lack of date)" % (num_excluded_by_date))
+    if args.non_nucleotide:
+        print("\t%i of these were dropped because they had non-nucleotide characters" % (num_excluded_by_nuc))
+    if args.group_by and args.sequences_per_group:
+        print("\t%i of these were dropped because of subsampling criteria" % (num_excluded_subsamp))
+
+    if args.include and os.path.isfile(args.include):
+        print("\n\t%i sequences were added back because they were in %s" % (num_included_by_name, args.include))
+    if args.include_where:
+        print("\t%i sequences were added back because of '%s'" % (num_included_by_metadata, args.include_where))
 
     print("%i sequences have been written out to %s" % (len(seq_keep), args.output))
