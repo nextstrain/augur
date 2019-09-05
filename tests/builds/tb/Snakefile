@@ -3,7 +3,6 @@ rule all:
         auspice_v1_tree = "auspice/v1_tb_tree.json",
         auspice_v1_meta = "auspice/v1_tb_meta.json",
         auspice_v1_seq = "auspice/v1_tb_seq.json",
-        auspice_v2_seq = "auspice/v2_tb_seq.json",
         auspice_v2 = "auspice/v2_tb.json"
 
 # Config variables to be used by rules
@@ -225,8 +224,7 @@ rule export_v2:
         ref = config.ref,
         translations = rules.translate.output.fasta_out
     output:
-        main = rules.all.input.auspice_v2,
-        seq = rules.all.input.auspice_v2_seq
+        main = rules.all.input.auspice_v2
     params:
         title = '\'TB outbreak in Nunavik, Canada\'',
         maints = "'Emma Hodcroft <https://neherlab.org/emma-hodcroft.html>' 'John Brown <http://www.google.com>'",
@@ -242,8 +240,7 @@ rule export_v2:
             --reference {input.ref} --reference-translations {input.translations} \
             --colors {input.color_defs} \
             --lat-longs {input.geo_info} \
-            --output-main {output.main} \
-            --output-sequence {output.seq} \
+            --output {output.main} \
             --title {params.title} \
             --maintainers {params.maints} \
             --geo-resolutions {params.geo}

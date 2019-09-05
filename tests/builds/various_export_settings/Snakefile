@@ -77,7 +77,7 @@ rule export_with_hidden_nodes:
             --colors {input.colors} \
             --auspice-config {input.config} \
             --title "Tree with hidden nodes (both div + temporal)" \
-            --output-main {output.auspice}
+            --output {output.auspice}
         """
 
 rule make_node_data_time_only:
@@ -116,7 +116,7 @@ rule export_div_only_tree:
             --colors {input.colors} \
             --auspice-config {input.config} \
             --title "Divergence-only tree" \
-            --output-main {output.auspice}
+            --output {output.auspice}
         """
 
 rule export_time_only_tree:
@@ -138,7 +138,7 @@ rule export_time_only_tree:
             --colors {input.colors} \
             --auspice-config {input.config} \
             --title "Temporal-only tree" \
-            --output-main {output.auspice}
+            --output {output.auspice}
         """
 
 rule export_with_boolean_metadata:
@@ -160,7 +160,7 @@ rule export_with_boolean_metadata:
             --color-by-metadata top_half_True_False top_half_1_0 top_half_yes_no all_missing \
             --colors {input.colors} \
             --title "Boolean metadata traits" \
-            --output-main {output.auspice};
+            --output {output.auspice};
         """
 
 rule export_with_default_layout:
@@ -181,7 +181,7 @@ rule export_with_default_layout:
             --metadata {input.metadata} \
             --colors {input.colors} \
             --auspice-config {input.config} \
-            --output-main {output.auspice}
+            --output {output.auspice}
         """
 
 rule clean:

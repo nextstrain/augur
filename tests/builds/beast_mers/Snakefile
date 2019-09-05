@@ -37,7 +37,7 @@ rule export:
             --tree {input.tree} \
             --node-data {input.beast_data} \
             --auspice-config {input.config} \
-            --output-main {output.auspice};
+            --output {output.auspice};
         """
 
 rule clean:

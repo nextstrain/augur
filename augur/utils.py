@@ -119,6 +119,7 @@ def read_node_data(fnames, tree=None):
                             node_data["nodes"][n] = nv
                 elif k in node_data:
                     # will this recurse into nested dicts?!?!
+                    # No. Only top level merge here. TODO
                     node_data[k].update(v)
                 else:
                     node_data[k]=v
@@ -233,7 +234,7 @@ def read_config(fname):
 def read_lat_longs(overrides=None, use_defaults=True):
     coordinates = {}
     def add_line_to_coordinates(line):
-        if line.startswith('#'): 
+        if line.startswith('#'):
             return
         fields = line.strip().split()
         if len(fields) == 4:

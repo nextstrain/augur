@@ -44,7 +44,7 @@ Similarly, you can pass in files containing colors and latitute and longitude da
 
 ### What's almost the same:
 
-Instead of specifying two output files (`--output-tree` and `--output-meta`) you now just need to specify one with `--output-main`.
+Instead of specifying two output files (`--output-tree` and `--output-meta`) you now just need to specify one with `--output`.
 
 For example, if your old files were `auspice/virus_AB_tree.json` and `auspice/virus_AB_meta.json`, you might want to call the single output `auspice/virus_AB.json` - or if you want to tell it apart from your v1 export, you might call it `auspice/virus_ABv2.json`.
 

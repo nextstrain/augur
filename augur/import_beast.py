@@ -565,7 +565,7 @@ def print_what_to_do_next(nodes, mcc_path, tree_path, node_data_path):
     print(json.dumps(auspice_config, indent=4))
     print("\nYou can continue further analysis using augur, or export JSONs for auspice.")
     print("Here is an example of the command to export the data without further analysis (see `augur export -h` for more options)")
-    print("\n`augur export v2 --tree {tree} --node-data {nd} --auspice-config <config_path> --output-main auspice/<dataset_name>.json`".format(tree=tree_path, nd=node_data_path))
+    print("\n`augur export v2 --tree {tree} --node-data {nd} --auspice-config <config_path> --output auspice/<dataset_name>.json`".format(tree=tree_path, nd=node_data_path))
     print("---------------------------------------------------------")
 
 
