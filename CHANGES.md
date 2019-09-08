@@ -8,7 +8,7 @@
  * added option to switch of automatic polytomy resolution
  * better handling of rerooting options for trees without temporal information
 
-##Data
+## Data
 
  * small fixes in geographic coordinate file
 
