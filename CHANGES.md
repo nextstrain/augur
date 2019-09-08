@@ -2,28 +2,46 @@
 
 # 5.3.0 (9 September 2019)
 
-## Development
+## Features
 
- * improved error checking of shell commands
- * added option to switch of automatic polytomy resolution
- * better handling of rerooting options for trees without temporal information
+* export: Improve printing of error messages with missing or conflicting author
+  data. [See issue 274](https://github.com/nextstrain/augur/issues/274)
+* filter: Improve printing of dropped strains to include reasons why strains were
+  dropped. [See PR 367](https://github.com/nextstrain/augur/pull/367)
+* refine: Add support for command line flag `--keep-polytomies` to not resolve
+  polytomies when producing a time tree.
+  [See PR 345](https://github.com/nextstrain/augur/pull/345)
+
+## Bug fixes
+
+* Catch and throw error when there are duplicate strain names.
+  [See PR 356](https://github.com/nextstrain/augur/pull/356)
+* Fix missing annotation of "parent" attribute for the root node
+* Run shell commands with more robust error checking.
+  [See PR 350](https://github.com/nextstrain/augur/pull/350)
+* Better handling of rerooting options for trees without temporal information.
+  [See issue 348](https://github.com/nextstrain/augur/issues/348)
 
 ## Data
 
- * small fixes in geographic coordinate file
-
+* Small fixes in geographic coordinate file
 
 # 5.2.1 (4 August 2019)
 
 ## Bug fixes
 
-* Print more useful error message if Python recursion limit is reached. [See issue 328](https://github.com/nextstrain/augur/issues/328)
-
-* Print more useful error message if vcftools if missing. [See PR 312](https://github.com/nextstrain/augur/pull/321)
+* Print more useful error message if Python recursion limit is reached.
+  [See issue 328](https://github.com/nextstrain/augur/issues/328)
+* Print more useful error message if vcftools if missing.
+  [See PR 312](https://github.com/nextstrain/augur/pull/321)
 
 ## Development
 
-* Significantly relax version requirements specified in setup.py for biopython, pandas, etc... Additionally, move lesser used packages (cvxopt, matplotlib, seaborn) into an "extras_require" field. This should reduce conflicts with other pip installed packages. [See PR 323](https://github.com/nextstrain/augur/pull/323)
+* Significantly relax version requirements specified in setup.py for biopython,
+  pandas, etc... Additionally, move lesser used packages (cvxopt, matplotlib,
+  seaborn) into an "extras_require" field. This should reduce conflicts with
+  other pip installed packages.
+  [See PR 323](https://github.com/nextstrain/augur/pull/323)
 
 ## Data
 
