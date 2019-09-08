@@ -1,5 +1,17 @@
 # __NEXT__
 
+# 5.3.0 (9 September 2019)
+
+## Development
+
+ * improved error checking of shell commands
+ * added option to switch of automatic polytomy resolution
+ * better handling of rerooting options for trees without temporal information
+
+##Data
+
+ * small fixes in geographic coordinate file
+
 
 # 5.2.1 (4 August 2019)
 
@@ -128,7 +140,7 @@
   [See PR 263.](https://github.com/nextstrain/augur/pull/263)
 * refine: Add `--keep-root` option that overrides `--root` specification to preserve
   tree rooting.
-  [See PR 263.](https://github.com/nextstrain/augur/pull/263)  
+  [See PR 263.](https://github.com/nextstrain/augur/pull/263)
 * refine: Add `--covariance` and `--no-covariance` options that specify TreeTime
   behavior.
   [See PR 263.](https://github.com/nextstrain/augur/pull/263)
@@ -219,7 +231,7 @@
 
 ## Data
 
-* Include additional country lat/longs in base data  
+* Include additional country lat/longs in base data
 
 # 3.1.4 (1 January 2019)
 
