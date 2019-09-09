@@ -191,6 +191,7 @@ def run(args):
                 mugration_states[node.name][column+'_entropy'] = node.__getattribute__(column+'_entropy')
 
         # add gtr models to json structure for export
+        models[column]['rate'] = gtr.mu
         models[column]['alphabet'] = [alphabet[k] for k in sorted(alphabet.keys())]
         models[column]['equilibrium_probabilities'] = list(gtr.Pi)
         models[column]['transition_matrix'] = [list(x) for x in gtr.W]
