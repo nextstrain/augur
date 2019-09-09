@@ -297,7 +297,7 @@ def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
     seqNamesCorr = list(reversed(seqNames))
     toFasta = [ SeqRecord(id=seqNamesCorr[i], seq=Seq("".join(align[i])), description='') for i in range(len(sequences.keys()))]
 
-    fasta_file = '/'.join(alignment.split('/')[:-1]) + '/informative_sites.fasta'
+    fasta_file = os.path.join(os.path.dirname(alignment), 'informative_sites.fasta')
 
     #now output this as fasta to read into raxml or iqtree
     SeqIO.write(toFasta, fasta_file, 'fasta')
