@@ -177,18 +177,23 @@ def run(args):
         print("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'")
 
     mugration_states = defaultdict(dict)
+    models = defaultdict(dict)
     for column in args.columns:
         T, gtr, alphabet = mugration_inference(tree=tree_fname, seq_meta=traits,
                                                field=column, confidence=args.confidence, sampling_bias_correction=args.sampling_bias_correction)
         if T is None: # something went wrong
             continue
 
-
         for node in T.find_clades():
             mugration_states[node.name][column] = node.__getattribute__(column)
             if args.confidence:
                 mugration_states[node.name][column+'_confidence'] = node.__getattribute__(column+'_confidence')
                 mugration_states[node.name][column+'_entropy'] = node.__getattribute__(column+'_entropy')
+
+        # add gtr models to json structure for export
+        models[column]['alphabet'] = [alphabet[k] for k in sorted(alphabet.keys())]
+        models[column]['equilibrium_probabilities'] = list(gtr.Pi)
+        models[column]['transition_matrix'] = [list(x) for x in gtr.W]
 
         #if args.output is default (no dir), including '/' messes up writing
         prefix = os.path.dirname(args.output)+'/' if len(os.path.dirname(args.output)) != 0 else ''
@@ -201,7 +206,7 @@ def run(args):
 
                 ofile.write(str(gtr))
 
-    write_json({"nodes":mugration_states}, args.output)
+    write_json({"models":models, "nodes":mugration_states}, args.output)
 
     print("\nInferred ancestral states of discrete character using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
