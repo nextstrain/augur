@@ -252,14 +252,16 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         # note that invalid options will be pruned out later
         # it is here that we deal with the interplay between node-data "traits", command line colorings &
         # config provided options
+        auto_colorings = [name for name in node_data_colorings
+                          if is_name_valid_for_export(name) and name not in metadata_names]
 
         colorings = []
         # If we have command line colorings, it seems we (a) ignore any provided in the config file
         # and (b) start with the node-data "traits". (Note that in a later function, the title and/or
         # type will be accessed from the config file if available)
         if command_line_colorings:
-            # start with node_data_colorings
-            for x in node_data_colorings:
+            # start with auto_colorings (already validated to be included)
+            for x in auto_colorings:
                 colorings.append(_create_coloring(x))
             # then add in command line colorings
             for x in command_line_colorings:
@@ -269,8 +271,8 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
             if config:
                 for x in config.keys():
                     colorings.append(_create_coloring(x))
-            # then add in node-data "traits" irrespective of whether we have config-provided colorings
-            for x in node_data_colorings:
+            # then add in any auto-colorings already validated to include
+            for x in auto_colorings:
                 colorings.append(_create_coloring(x))
 
         explicitly_defined_colorings = [x["key"] for x in colorings]
@@ -573,6 +575,7 @@ def is_name_valid_for_export(name):
     # as normal attributes on nodes
     excluded = [
         "clade_annotation", # Clade annotation is label, not colorby!
+        "clade_membership", # will be auto-detected if it is available
         "authors",          # authors are set as a node property, not a trait property
         "author",           # see above
         'branch_length',
@@ -790,22 +793,23 @@ def run_v2(args):
     set_display_defaults(data_json, config)
     set_maintainers(data_json, config, args.maintainers)
     set_annotations(data_json, node_data)
+
     set_colorings(
         data_json=data_json,
         config=get_config_defined_colorings(config),
         command_line_colorings=args.color_by_metadata,
         metadata_names=metadata_names,
-        node_data_colorings=[name for name in node_data_names if is_name_valid_for_export(name)],
+        node_data_colorings=node_data_names,
         provided_colors=read_colors(args.colors),
         node_attrs=node_attrs
     )
     set_filters(data_json, config)
-    set_panels(data_json, config, args.panels)
 
     # set tree structure
     data_json["tree"] = convert_tree_to_json_structure(T.root, node_attrs)
     set_node_attrs_on_tree(data_json, node_attrs)
     set_geo_resolutions(data_json, config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_attrs)
+    set_panels(data_json, config, args.panels)
 
     # Write outputs
     write_json(data_json, args.output, indent=None if args.minify_json else 2)

@@ -190,11 +190,12 @@ def run(args):
                 mugration_states[node.name][column+'_confidence'] = node.__getattribute__(column+'_confidence')
                 mugration_states[node.name][column+'_entropy'] = node.__getattribute__(column+'_entropy')
 
-        # add gtr models to json structure for export
-        models[column]['rate'] = gtr.mu
-        models[column]['alphabet'] = [alphabet[k] for k in sorted(alphabet.keys())]
-        models[column]['equilibrium_probabilities'] = list(gtr.Pi)
-        models[column]['transition_matrix'] = [list(x) for x in gtr.W]
+        if gtr:
+            # add gtr models to json structure for export
+            models[column]['rate'] = gtr.mu
+            models[column]['alphabet'] = [alphabet[k] for k in sorted(alphabet.keys())]
+            models[column]['equilibrium_probabilities'] = list(gtr.Pi)
+            models[column]['transition_matrix'] = [list(x) for x in gtr.W]
 
         #if args.output is default (no dir), including '/' messes up writing
         prefix = os.path.dirname(args.output)+'/' if len(os.path.dirname(args.output)) != 0 else ''
