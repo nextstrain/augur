@@ -353,6 +353,7 @@ def run_v1(args):
 
     meta_json = read_config(args.auspice_config)
     meta_tsv, _ = read_metadata(args.metadata)
+    add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json)
 
     tree_layout(T)
     tree_json, _ = convert_tree_to_json_structure(T.root, nodes)
@@ -381,7 +382,6 @@ def run_v1(args):
     meta_json["author_info"] = construct_author_info_v1(meta_tsv, T, nodes)
     meta_json["color_options"] = process_colorings(meta_json, color_mapping, nodes=nodes)
     meta_json["geo"] = process_geographic_info(meta_json, lat_long_mapping, nodes=nodes)
-    add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json)
     annotations = process_annotations(node_data)
     if annotations:
         meta_json["annotations"] = annotations
