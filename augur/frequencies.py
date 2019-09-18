@@ -205,7 +205,7 @@ def run(args):
                     position, state = mutation.split(":")
                     frequencies["%s:%s%s" % (gene, position, state)] = format_frequencies(mutation_frequencies)
             else:
-                freqs = alignment_frequencies(aln, tps, pivots, stiffness=stiffness, inertia=inertia, method='SLSQP')
+                freqs = alignment_frequencies(aln, tps, pivots, stiffness=stiffness, inertia=inertia, method='SLSQP', dtps=2.0)
                 freqs.mutation_frequencies(min_freq = args.minimal_frequency, ignore_char=args.ignore_char)
                 frequencies.update({"%s:%d%s" % (gene, pos+1, state): format_frequencies(mutation_frequencies)
                                     for (pos, state), mutation_frequencies in freqs.frequencies.items()})
