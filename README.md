@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.com/nextstrain/augur.svg?branch=master)](https://travis-ci.com/nextstrain/augur)
+[![PyPI version](https://badge.fury.io/py/nextstrain-augur.svg)](https://pypi.org/project/nextstrain-augur/)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+
 # Introduction
 
 Nextstrain is an open-source project to harness the scientific and public health potential of pathogen genome data.
@@ -7,7 +11,6 @@ Our goal is to aid epidemiological understanding and improve outbreak response.
 Resulting data and inferences are available live at the website [nextstrain.org](https://nextstrain.org).
 Documentation is available at [nextstrain.org/docs](https://nextstrain.org/docs).
 
-
 # Augur
 
 *Definition: One held to foretell events by omens.*
@@ -15,7 +18,6 @@ Documentation is available at [nextstrain.org/docs](https://nextstrain.org/docs)
 Augur is the bioinformatics toolkit we use to track evolution from sequence and serological data.
 It provides a collection of commands which are designed to be composable into larger processing pipelines.
 Documentation for augur is available at [nextstrain.org/docs/bioinformatics](https://nextstrain.org/docs/bioinformatics).
-
 
 ## Installation
 

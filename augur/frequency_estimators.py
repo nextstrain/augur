@@ -328,7 +328,7 @@ class freq_est_clipped(object):
         if dtps==None:
             self.dtps = 6.0*pivot_dt
         else:
-            self.dtps = np.max(dtps, pivot_dt)
+            self.dtps = max(dtps, pivot_dt)
 
         cum_obs = np.diff(self.obs).cumsum()
         first_obs = max(pivots[0], self.tps[cum_obs.searchsorted(cum_obs[0]+1)])
