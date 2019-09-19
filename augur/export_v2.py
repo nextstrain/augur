@@ -320,10 +320,21 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
         # straight overwrite -- not an extension of those which may be provided in the config
         traits = [{"key": x} for x in command_line_traits]
     elif config.get("geo_resolutions"):
-        traits = config.get("geo_resolutions")
+        config_geo = config.get("geo_resolutions")
+        # If is set up correctly as dict with "key", take it as-is
+        if all( (isinstance(entry, dict) and "key" in entry.keys()) for entry in config_geo):
+            traits = config.get("geo_resolutions")
+        # If is a list of strings, or mix of strings and dicts with "key", we can do this!
+        elif all( (isinstance(entry, dict) and "key" in entry.keys()) or isinstance(entry, str) for entry in config_geo):
+            traits = [entry if isinstance(entry, dict) else {"key": entry} for entry in config_geo]
+        else:
+            print("WARNING: [config file] 'geo_resolutions' is not in an acceptible format. The field is now list of strings, or list of dicts each with format {\"key\":\"country\"}")
+            print("\t It is being ignored - this run will have no geo_resolutions.\n")
+            return False
+
     elif config.get("geo"):
         traits = [{"key": x} for x in config.get("geo")]
-        deprecated("[config file] 'geo' has been replaced with 'geo_resolutions'. The field is now list of dicts each with format {'key':country}")
+        deprecated("[config file] 'geo' has been replaced with 'geo_resolutions'. The field is now list of strings, or list of dicts each with format {\"key\":\"country\"}")
     else:
         return False
 
