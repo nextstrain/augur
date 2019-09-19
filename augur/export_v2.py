@@ -308,7 +308,8 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
 
     def _transfer_geo_data(node):
         for g in geo_resolutions:
-            if g['key'] in node_attrs[node["name"]] and g['key'] not in node['node_attrs']:
+            if g['key'] in node_attrs[node["name"]] and g['key'] not in node['node_attrs'] \
+                and is_valid(node_attrs[node["name"]][g['key']]): # don't add if not valid!
                 node['node_attrs'][g['key']] = {"value":node_attrs[node["name"]][g['key']]}
 
         if "children" in node:
@@ -331,7 +332,6 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
             print("WARNING: [config file] 'geo_resolutions' is not in an acceptible format. The field is now list of strings, or list of dicts each with format {\"key\":\"country\"}")
             print("\t It is being ignored - this run will have no geo_resolutions.\n")
             return False
-
     elif config.get("geo"):
         traits = [{"key": x} for x in config.get("geo")]
         deprecated("[config file] 'geo' has been replaced with 'geo_resolutions'. The field is now list of strings, or list of dicts each with format {\"key\":\"country\"}")
