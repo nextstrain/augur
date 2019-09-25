@@ -259,8 +259,8 @@ def add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json, extra_fields=['authors
         if strain not in meta_tsv:
             continue
         for field in fields:
-            # Allow fields to have value of 0!
-            if field not in node and field in meta_tsv[strain] and meta_tsv[strain][field] is not None:
+            # Allow fields to have value of 0! - but prevent from having value of "" (breaks auspice v1)
+            if field not in node and field in meta_tsv[strain] and (meta_tsv[strain][field] or meta_tsv[strain][field]==0):
                 node[field] = meta_tsv[strain][field]
 
 
