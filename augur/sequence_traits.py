@@ -267,9 +267,7 @@ def attach_features(annotations, label, count):
         json/dict to export
     '''
 
-    #Strings are used here because 0's dont work in auspice at moment
-    #TODO change to ints when they do
-    seq_feature_dict = defaultdict(lambda: {label: '0' })
+    seq_feature_dict = defaultdict(lambda: {label: 0 })
 
     for seq, anno in annotations.items():
         muts = 0
@@ -282,9 +280,9 @@ def attach_features(annotations, label, count):
                     seq_feature_dict[seq][feat] = mut
 
         if count == "traits":
-            numResist = str(len(set(seq_feature_dict[seq].keys()))-1)
+            numResist = len(set(seq_feature_dict[seq].keys()))-1
         else:
-            numResist = str(muts)
+            numResist = muts
 
         seq_feature_dict[seq][label] = numResist
 
