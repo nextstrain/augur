@@ -1,0 +1,36 @@
+{
+  "title": "TB with DRMs",
+  "colorings": {
+    "gt": {
+      "title": "Genotype",
+      "type": "categorical"
+    },
+    "num_date": {
+      "title": "Sampling date",
+      "type": "continuous"
+    },
+    "Drug_Resistance": {
+      "title": "Drug Resistance (ordinal)", 
+      "type": "ordinal"
+    },
+    "Ethambutol": {
+      "title": "Ethambutol Resistance (categorical)", 
+      "type": "categorical"
+    },
+    "Rifampicin": {
+      "title": "Rifampicin Resistance (ordinal)", 
+      "type": "ordinal"
+     },
+    "country": {
+      "type": "categorical"
+    }
+  },
+  "panels": ["tree", "map"],
+  "maintainers": [
+    ["Emma Hodcroft", "https://neherlab.org/emma-hodcroft.html"]
+  ],
+  "filters": [],
+  "display_defaults": {
+    "color_by": "Drug_Resistance"
+  }
+}
