@@ -69,7 +69,7 @@ def read_metadata(fname):
 
         return meta_dict, list(metadata.columns)
     else:
-        print("ERROR: file with states does not exist")
+        print("ERROR: meta data file ({}) does not exist".format(fname))
         return {}, []
 
 
