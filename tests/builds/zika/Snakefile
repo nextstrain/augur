@@ -25,14 +25,16 @@ rule parse:
         sequences = "results/sequences.fasta",
         metadata = "results/metadata.tsv"
     params:
-        fasta_fields = "strain virus accession date region country division city db segment authors url title journal paper_url"
+        fasta_fields = "strain virus accession date region country division city db segment authors url title journal paper_url",
+        prettify_fields = "region country division city"
     shell:
         """
         augur parse \
             --sequences {input.sequences} \
             --output-sequences {output.sequences} \
             --output-metadata {output.metadata} \
-            --fields {params.fasta_fields}
+            --fields {params.fasta_fields} \
+            --prettify-fields {params.prettify_fields}
         """
 
 rule filter:

@@ -102,7 +102,7 @@ def run(args):
         tmp_meta = {k:v for k,v in zip(args.fields, fields)}
 
         for field in args.prettify_fields:
-            tmp_meta[field] = prettify_fields(tmp_meta[field], camelCase=field!='author',
+            tmp_meta[field] = prettify(tmp_meta[field], camelCase=field!='author',
                                               etal='lower' if field=='author' else None)
 
         meta_data[seq.id] = tmp_meta
