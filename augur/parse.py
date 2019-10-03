@@ -36,12 +36,38 @@ def fix_dates(d, dayfirst=True):
         print("WARNING: unable to parse %s as date"%d, e)
         return d
 
+def prettify(x, trim=0, camelCase=False, etal=None, removeComma=False):
+    res = x
+    if (trim > 0 and len(x) > trim):
+        res = x[:trim] + "..."
+
+    if any(c in res for c in ["usvi", "usa", "uk"]):
+        res = res.upper()
+
+    words = res.split('_')
+
+    if (camelCase):
+        words = [w[0].upper()+w[1:] for w in words]
+
+    res = ' '.join(words)
+
+    if removeComma:
+        res.replace(',', '')
+
+    if etal=='lower':
+        res = res.replace('Et Al', 'et al')
+    elif etal=='strip':
+        res = res.replace('et al.', '').replace('Et Al.', '').replace('et al', '').replace('Et Al', '');
+
+    return res;
+
 
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
     parser.add_argument('--output-sequences', help="output sequences file")
     parser.add_argument('--output-metadata', help="output metadata file")
     parser.add_argument('--fields', nargs='+', help="fields in fasta header")
+    parser.add_argument('--prettify-fields', nargs='+', help="apply string prettifying operations (underscores to spaces, capitalization, etc) to specified metadata fields")
     parser.add_argument('--separator', default='|', help="separator of fasta header")
     parser.add_argument('--fix-dates', choices=['dayfirst', 'monthfirst'],
                                 help="attempt to parse non-standard dates and output them in standard YYYY-MM-DD format")
@@ -73,7 +99,13 @@ def run(args):
 
         seq.name = seq.id = tmp_name
         seq.description = ''
-        meta_data[seq.id] = {k:v for k,v in zip(args.fields, fields) }
+        tmp_meta = {k:v for k,v in zip(args.fields, fields)}
+
+        for field in args.prettify_fields:
+            tmp_meta[field] = prettify_fields(tmp_meta[field], camelCase=field!='author',
+                                              etal='lower' if field=='author' else None)
+
+        meta_data[seq.id] = tmp_meta
         meta_data[seq.id].pop('strain')
         # parse dates and convert to a canonical format
         if args.fix_dates and 'date' in args.fields:
