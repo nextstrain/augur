@@ -101,10 +101,11 @@ def run(args):
         seq.description = ''
         tmp_meta = {k:v for k,v in zip(args.fields, fields)}
 
-        for field in args.prettify_fields:
-            if field in tmp_meta and type(tmp_meta[field])==str:
-                tmp_meta[field] = prettify(tmp_meta[field], camelCase=(not field.startswith('author')),
-                                              etal='lower' if field.startswith('author') else None)
+        if args.prettify_fields:
+            for field in args.prettify_fields:
+                if field in tmp_meta and type(tmp_meta[field])==str:
+                    tmp_meta[field] = prettify(tmp_meta[field], camelCase=(not field.startswith('author')),
+                                                  etal='lower' if field.startswith('author') else None)
 
         meta_data[seq.id] = tmp_meta
         meta_data[seq.id].pop('strain')
