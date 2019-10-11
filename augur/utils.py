@@ -324,10 +324,11 @@ def read_lat_longs(overrides=None, use_defaults=True):
 
 def read_colors(overrides=None, use_defaults=True):
     colors = {}
+    # TODO: make parsing of tsv files more robust while allow for whitespace delimiting for backwards compatibility
     def add_line(line):
         if line.startswith('#'):
             return
-        fields = line.strip().split()
+        fields = line.strip().split() if not '\t' in line else line.strip().split('\t')
         if not fields:
             return # blank lines
         if len(fields) != 3:
