@@ -296,6 +296,7 @@ def read_config(fname):
 
 def read_lat_longs(overrides=None, use_defaults=True):
     coordinates = {}
+    # TODO: make parsing of tsv files more robust while allow for whitespace delimiting for backwards compatibility
     def add_line_to_coordinates(line):
         if line.startswith('#'):
             return
