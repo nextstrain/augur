@@ -308,6 +308,8 @@ def read_lat_longs(overrides=None, use_defaults=True):
                 "latitude": lat,
                 "longitude": long
             }
+        else:
+            print("WARNING: geo-coordinate file contains invalid line. Please make sure not to mix tabs and spaces as delimiters (use only tabs):",line)
     if use_defaults:
         with resource_stream(__package__, "data/lat_longs.tsv") as stream:
             with TextIOWrapper(stream, "utf-8") as defaults:
@@ -332,7 +334,7 @@ def read_colors(overrides=None, use_defaults=True):
         if not fields:
             return # blank lines
         if len(fields) != 3:
-            print("WARNING: Color map file contained this invalid line: ", line)
+            print("WARNING: Color map file contains invalid line. Please make sure not to mix tabs and spaces as delimiters (use only tabs):",line)
             return
         trait, trait_value, hex_code = fields[0].lower(), fields[1].lower(), fields[2]
         if not hex_code.startswith("#") or len(hex_code) != 7:
