@@ -8,31 +8,6 @@ issue <https://github.com/nextstrain/augur/issues/new?title=Augur%20in%20the%20w
 or `submitting a PR <https://github.com/nextstrain/augur/pulls>`__.
 
 
-Nextstrain tutorials
-====================
-
-There are three tutorials for getting started with Nextstrain that use Augur
-for all or part of the bioinformatics and analysis:
-
-The `Zika tutorial
-<https://nextstrain.org/docs/getting-started/zika-tutorial>`__ is a good
-starting point if you have FASTA files and some metadata about your sequences.
-The `accompanying build repository
-<https://github.com/nextstrain/zika-tutorial>`__ is a simplified version of the
-full Zika build.
-
-The `Tuberculosis tutorial
-<https://nextstrain.org/docs/getting-started/tb-tutorial>`__ is a good
-starting point if you have VCF files and some metadata about your sequences.
-It uses the `full Tuberculosis build repository
-<https://github.com/nextstrain/tb>`__.
-
-The `MERS / BEAST tutorial
-<https://github.com/nextstrain/mers-beast-tutorial>`__ is a good starting
-point if you have a `BEAST <https://beast.community/>`__ tree and want to use
-it with Augur and Auspice.
-
-
 Nextstrain pathogens
 ====================
 

@@ -8,5 +8,4 @@ Using Augur
    cli
    subcommands
    augur_snakemake
-   examples
    envvars

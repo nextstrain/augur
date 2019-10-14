@@ -31,5 +31,6 @@ The nextstrain team uses `snakemake <https://snakemake.readthedocs.io/en/stable/
    installation
    usage
    tutorials
+   examples
    api
    authors
