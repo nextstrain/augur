@@ -8,4 +8,5 @@ Using Augur
    cli
    subcommands
    augur_snakemake
+   json_format
    envvars
