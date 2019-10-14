@@ -1,4 +1,4 @@
-## Chaining of augur commands with snakemake.
+## Augur and snakemake.
 
 The output of one augur command serves as input to the next and hence these commands need to be executed in order.
 This is a common pattern in bioinformatics and multiple tools -- so called workflow managers -- exist to facilitate this.

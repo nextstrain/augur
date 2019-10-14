@@ -1,6 +1,6 @@
-==============
-Augur commands
-==============
+=======================
+Augur command structure
+=======================
 
 Augur consists of a number of tools that allow the user to filter and align sequences, build trees, and integrate the phylogenetic analysis with meta data.
 The different tools are meant to be composable and the output of one command will serve as the input of other commands.

@@ -1,5 +1,29 @@
 # Options of the ``refine`` command
 
+In the [Zika tutorial](zika_tutorial) we used the following basic rule to run the `refine` command:
+```python
+rule refine:
+    input:
+        tree = rules.tree.output.tree,
+        alignment = rules.align.output,
+        metadata = "data/metadata.tsv"
+    output:
+        tree = "results/tree.nwk",
+        node_data = "results/branch_lengths.json"
+    shell:
+        """
+        augur refine \
+            --tree {input.tree} \
+            --alignment {input.alignment} \
+            --metadata {input.metadata} \
+            --timetree \
+            --output-tree {output.tree} \
+            --output-node-data {output.node_data}
+        """
+```
+This rule will estimate the rate of the molecular clock, reroot the tree, and estimate a time tree.
+The paragraphs below will detail how to exert more control on each of these steps through additional options the refine command.
+
 ## Specify the evolutionary rate
 By default `augur` (through `treetime`) will estimate the rate of evolution from the data by regressing divergence vs sampling date.
 In some scenarios, however, there is insufficient temporal signal to reliably estimate the rate and the analysis will be more robust and reproducible if one fixes this rate explicitly.
