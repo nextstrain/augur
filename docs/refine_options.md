@@ -1,4 +1,4 @@
-# Options of the ``refine`` command
+# Options of the `refine` command
 
 In the [Zika tutorial](zika_tutorial) we used the following basic rule to run the `refine` command:
 ```python

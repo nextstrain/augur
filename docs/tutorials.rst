@@ -8,7 +8,5 @@ Tutorials
 
    zika_tutorial
    tb_tutorial
-   parse_meta
-   refine_options
    community_hosting
 
