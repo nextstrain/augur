@@ -436,7 +436,7 @@ class tree_frequencies(object):
     will be numbered in preorder. Each node is assumed to have an attribute `attr` with a
     key "num_date".
     '''
-    def __init__(self, tree, pivots, node_filter=None, min_clades = 20, verbose=0, pc=1e-4, **kwargs):
+    def __init__(self, tree, pivots, node_filter=None, min_clades=10, verbose=0, pc=1e-4, **kwargs):
         '''
         set up the internal tree, the pivots and cutoffs
 
@@ -458,7 +458,7 @@ class tree_frequencies(object):
             Description
         '''
         self.tree = tree
-        self.min_clades = 10 #min_clades
+        self.min_clades = min_clades
         self.pivots = pivots
         self.kwargs = kwargs
         self.verbose = verbose

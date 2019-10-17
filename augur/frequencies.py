@@ -32,8 +32,6 @@ def register_arguments(parser):
                         help="tree to estimate clade frequencies for")
     parser.add_argument("--include-internal-nodes", action="store_true",
                         help="calculate frequencies for internal nodes as well as tips")
-    parser.add_argument('--minimal-clade-size', type=int, default=0,
-                        help="minimal size of a clade to have frequencies estimated")
 
     # Alignment-specific arguments
     parser.add_argument('--alignments', type=str, nargs='+',
@@ -54,6 +52,12 @@ def register_arguments(parser):
     parser.add_argument("--censored", action="store_true", help="calculate censored frequencies at each pivot")
 
     # Diffusion frequency specific arguments
+    parser.add_argument('--minimal-clade-size', type=int, default=0,
+                        help="minimal number of tips a clade must have for its diffusion frequencies to be reported")
+    parser.add_argument('--minimal-clade-size-to-estimate', type=int, default=10,
+                        help="""minimal number of tips a clade must have for its diffusion frequencies to be estimated
+                                by the diffusion likelihood; all smaller clades will inherit frequencies from their
+                                parents""")
     parser.add_argument("--stiffness", type=float, default=10.0, help="parameter penalizing curvature of the frequency trajectory")
     parser.add_argument("--inertia", type=float, default=0.0, help="determines how frequencies continue "
                         "in absense of data (inertia=0 -> go flat, inertia=1.0 -> continue current trend)")
@@ -116,7 +120,8 @@ def run(args):
                 tree_freqs = tree_frequencies(tree, pivots, method='SLSQP',
                                               node_filter = node_filter_func,
                                               ws = max(2, tree.count_terminals()//10),
-                                              stiffness = stiffness, inertia=inertia)
+                                              stiffness = stiffness, inertia=inertia,
+                                              min_clades=args.minimal_clade_size_to_estimate)
 
                 tree_freqs.estimate_clade_frequencies()
 
