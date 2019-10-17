@@ -8,7 +8,7 @@ import numpy as np
 from .utils import write_json
 
 
-def select_nodes_in_season(tree, timepoint, time_window=0.6, **kwargs):
+def select_nodes_in_season(tree, timepoint, time_window=0.6):
     """Annotate a boolean to each node in the tree if it is alive at the given
     timepoint or prior to the timepoint by the given time window preceding.
 
@@ -24,7 +24,7 @@ def select_nodes_in_season(tree, timepoint, time_window=0.6, **kwargs):
             node.alive = any(ch.alive for ch in node.clades)
 
 
-def calculate_LBI(tree, attr="lbi", tau=0.4, transform=lambda x:x, **kwargs):
+def calculate_LBI(tree, attr="lbi", tau=0.4, transform=lambda x:x, normalize=True):
     '''
     traverses the tree in postorder and preorder to calculate the
     up and downstream tree length exponentially weighted by distance.
@@ -73,7 +73,9 @@ def calculate_LBI(tree, attr="lbi", tau=0.4, transform=lambda x:x, **kwargs):
 
     # Normalize LBI to range [0, 1].
     for node in tree.find_clades():
-        node.attr[attr] /= max_LBI
+        if normalize:
+            node.attr[attr] /= max_LBI
+
         setattr(node, attr, node.attr[attr])
 
 
@@ -84,6 +86,7 @@ def register_arguments(parser):
     parser.add_argument("--attribute-names", nargs="+", help="names to store distances associated with the corresponding masks", required=True)
     parser.add_argument("--tau", nargs="+", type=float, help="tau value(s) defining the neighborhood of each clade", required=True)
     parser.add_argument("--window", nargs="+", type=float, help="time window(s) to calculate LBI across", required=True)
+    parser.add_argument("--no-normalization", action="store_true", help="disable normalization of LBI by the maximum value")
 
 
 def run(args):
@@ -114,7 +117,7 @@ def run(args):
         select_nodes_in_season(tree, timepoint, window)
 
         # Calculate LBI.
-        calculate_LBI(tree, attribute_name, tau)
+        calculate_LBI(tree, attribute_name, tau, normalize=(not args.no_normalization))
 
         # Collect LBI values into a per-node JSON for export.
         for node in tree.find_clades():
