@@ -47,7 +47,7 @@ def prettify(x, trim=0, camelCase=False, etal=None, removeComma=False):
     words = res.split('_')
 
     if (camelCase):
-        words = [w[0].upper()+w[1:] for w in words]
+        words = [w[0].upper()+w[1:] for w in words if len(w)]
 
     res = ' '.join(words)
 
