@@ -184,7 +184,7 @@
                                     {
                                         "description": "value (tree nodes -> attrs -> propertyName)",
                                         "type": "string",
-                                        "pattern": "^[0-9A-Za-z_.-]+$"
+                                        "pattern": "^[ 0-9A-Za-z_.-]+$"
                                     },
                                     {
                                         "description": "color hex value",
