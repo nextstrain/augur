@@ -298,7 +298,7 @@ def read_lat_longs(overrides=None, use_defaults=True):
     coordinates = {}
     # TODO: make parsing of tsv files more robust while allow for whitespace delimiting for backwards compatibility
     def add_line_to_coordinates(line):
-        if line.startswith('#'):
+        if line.startswith('#') or line.strip() == "":
             return
         fields = line.strip().split() if not '\t' in line else line.strip().split('\t')
         if len(fields) == 4:
