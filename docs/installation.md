@@ -1,13 +1,19 @@
 # Installation
 
+## Using pip from PyPi
+
 Augur is written in Python 3 and requires at least Python 3.4.
 It's published on [PyPi](https://pypi.org) as [nextstrain-augur](https://pypi.org/project/nextstrain-augur), so you can install it with `pip` like so:
 
-    python -m pip install nextstrain-augur
+```bash
+pip install nextstrain-augur
+```
 
 You can also install from a git clone or other copy of the source code by running:
 
-    python -m pip install .
+```bash
+pip install .
+```
 
 If your system has both Python 2 and Python 3 installed side-by-side, you may need to use `python3` instead of just `python` (which often defaults to Python 2 when both Python versions are installed).
 
@@ -32,7 +38,7 @@ On Debian/Ubuntu, you can install them via:
 
 Other Linux distributions will likely have the same packages available, although the names may differ slightly.
 
-## With Conda
+## Using Conda
 
 Alternatively, augur itself and all of its dependencies can be installed into a [Conda](https://conda.io/miniconda.html) environment:
 

@@ -515,7 +515,7 @@ If you did have drug resistance information that you wanted to display, you woul
 
 First, you would want to add a color-by for the total number of drugs each node is resistant to.
 Since we gave the label 'Drug_Resistance' when we ran the rule, this will be the name of the option, and the `key`, but we can make the `menuItem` and `legendTitle` different if we wish:
-```json
+```
   "Drug_Resistance": {
    "menuItem": "Drug_Resistance",
    "legendTitle": "Drug Resistance",
@@ -527,7 +527,7 @@ If you had given a different label when you ran the rule, you would change this 
 
 You would then need an option for each drug where you have resistance information (or each FEATURE where you have information).
 For example, to show the mutations present that confer resistance to Streptomycin and Rifampicin:
-```json
+```
   "Streptomycin": {
    "menuItem": "Streptomycin",
    "legendTitle": "Streptomycin Resistance",

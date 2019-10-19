@@ -1,4 +1,4 @@
-# Parsing metadata from fasta-headers
+# `parse` metadata from fasta-headers
 
 If you download sequence data from data bases like GISAID or fludb, there often is an option to include meta data such as dates into the header of fasta files.
 This might for example look like this:
