@@ -6,5 +6,7 @@ Using Augur
    :maxdepth: 3
 
    cli
-   examples
+   subcommands
+   augur_snakemake
+   json_format
    envvars
