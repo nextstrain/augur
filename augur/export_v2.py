@@ -792,7 +792,7 @@ def parse_node_data_and_metadata(T, node_data_files, metadata_file):
 
 def run_v2(args):
     configure_warnings()
-    data_json = {"version": "2.0", "meta": {"updated": time.strftime('%Y-%m-%d')}}
+    data_json = {"version": "v2", "meta": {"updated": time.strftime('%Y-%m-%d')}}
 
     # parse input files
     T = Phylo.read(args.tree, 'newick')
