@@ -204,6 +204,15 @@ def process_panels(user_panels, meta_json):
 
     return panels
 
+def ensure_config_is_v1(config):
+    """
+    Check the provided config file is intended for `augur export v1` (not v2, v3 etc)
+    Side effects: may print a warning & exit
+    """
+    if config.get("maintainers") or config.get("geo_resolutions") or config.get("display_defaults") or config.get("colorings"):
+        print("ERROR. It appears that your provided config file is using a newer schema than required for `augur export v1`.")
+        # TODO: print documentation URL when we have one available
+        sys.exit(2)
 
 def construct_author_info_v1(metadata, tree, nodes):
     """
@@ -353,6 +362,7 @@ def run_v1(args):
         write_json(root_sequence, args.output_sequence)
 
     meta_json = read_config(args.auspice_config)
+    ensure_config_is_v1(meta_json)
     meta_tsv, _ = read_metadata(args.metadata)
     add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json)
 
