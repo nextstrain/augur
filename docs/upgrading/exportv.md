@@ -5,7 +5,6 @@
 TO DO:
 * Check CL and config override stuff
 * Decide how best to explain `--title` and `--maintainers` so that works both for CL and with snakemake _Current explanataion ok?_
-* Are we including 'advanced config' options...?
 
 </span>
 
@@ -74,21 +73,22 @@ Remember that generally **any command line options you use will override the sam
 ##### Maintainers
 * You can now have more than one maintainer associated with your run!
 * Specify with `--maintainers`.
-* If running directly from the command line, put each maintainer in quotes (ex: `--maintainers "Jane Doe" "Ravi Kupra"`). If you are using snakemake and passing the value using `params`, you'll need to put the whole list in double quotes, and each person in single quotes. For example:
-  ```
-  params:
-    maints = "'Jane Doe' 'Ravi Kupra'"
-  shell:
-    "augur export v2 --maintainers {params.maints} ..."
-  ```
-  You will need to use quotes in the same way even if you only have one maintainer!
-* _(Previously the first part of the "maintainer" field in your v1 config file.)_
+* If running directly from the command line, put each maintainer in quotes (ex: `--maintainers "Jane Doe" "Ravi Kupra"`). 
+If (and this is completely optional) you have a URL associated with a maintaner, then you can add them like so:
+```
+--maintainers "Jane Doe <mailto:jane.doe@...>" "Ravi Kupra <https://github.com/ravikupra"
+```
 
-##### Maintainer Websites
-* Specify with `--maintainer-urls`.
-* Put them in the same order as the `--maintainers` so they link up with the right people! (ex: `--maintainer-urls www.janedoe.com www.ravikupra.co.uk`)
-* **TO DO** _We ok with this?_
-* _(Previously the second part of the "maintainer" field in your v1 config file.)_
+If you are using snakemake and passing the value using `params`, you'll need to put the whole list in double quotes, and each person in single quotes. For example:
+```
+params:
+  maints = "'Jane Doe' 'Ravi Kupra'"
+shell:
+  "augur export v2 --maintainers {params.maints} ..."
+```
+You will need to use quotes in the same way even if you only have one maintainer!
+
+* _(Previously the first part of the "maintainer" field in your v1 config file.)_
 
 ##### Panels
 * `--panels` sets the visible panels.
@@ -144,7 +144,6 @@ With a config file, you can:
 * Set the default display view
 * Give color-by traits more specific titles
 * Specify color-by trait type
-* _More advanced (flu?) options_ **TO DO**
 
 ### Config file priority
 It is important to remember that if you set an option both in the config file _and_ in the command line, **the command line option will override the config file option**. For example, if you set `"title"` in your config file as "A Title About Apples", and then import this config file using `--auspice-config` _and_ use `--title "Better Title Befitting Bears"`, the title displayed by `auspice` will be "Better Title Befitting Bears". To use the one in the config file, simply don't use `--title` in the command line!
@@ -414,10 +413,6 @@ Export v2 config:
 * `defaults` is now `display_defaults` and within its options, `colorBy` is now `color_by`
 
 
-### Advanced use - second config file
-**TO DO**
-* I don't think this exists yet?
-_Are we doing this?_
 
 
 
