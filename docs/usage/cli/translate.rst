@@ -1,6 +1,6 @@
-=========
-translate
-=========
+===============
+augur translate
+===============
 
 .. argparse::
     :module: augur

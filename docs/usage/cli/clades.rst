@@ -1,6 +1,6 @@
-======
-clades
-======
+============
+augur clades
+============
 
 .. argparse::
     :module: augur

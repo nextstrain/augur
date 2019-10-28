@@ -1,6 +1,6 @@
-====
-tree
-====
+==========
+augur tree
+==========
 
 .. argparse::
     :module: augur

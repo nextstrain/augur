@@ -1,6 +1,6 @@
-========
-distance
-========
+==============
+augur distance
+==============
 
 .. argparse::
     :module: augur

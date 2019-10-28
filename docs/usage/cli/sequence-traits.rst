@@ -1,5 +1,5 @@
 ===========================
-sequence-traits
+augur sequence-traits
 ===========================
 
 .. argparse::

@@ -1,6 +1,6 @@
-=======
-version
-=======
+=============
+augur version
+=============
 
 .. argparse::
     :module: augur

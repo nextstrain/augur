@@ -1,6 +1,6 @@
-=====
-align
-=====
+===========
+augur align
+===========
 
 .. argparse::
     :module: augur

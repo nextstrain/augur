@@ -1,6 +1,6 @@
-====
-mask
-====
+==========
+augur mask
+==========
 
 .. argparse::
     :module: augur

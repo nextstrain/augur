@@ -1,6 +1,6 @@
-======
-traits
-======
+============
+augur traits
+============
 
 .. argparse::
     :module: augur

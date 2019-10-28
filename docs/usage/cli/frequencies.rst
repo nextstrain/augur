@@ -1,6 +1,6 @@
-===========
-frequencies
-===========
+=================
+augur frequencies
+=================
 
 .. argparse::
     :module: augur

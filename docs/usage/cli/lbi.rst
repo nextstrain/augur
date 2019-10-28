@@ -1,6 +1,6 @@
-===
-lbi
-===
+=========
+augur lbi
+=========
 
 .. argparse::
     :module: augur

@@ -1,6 +1,6 @@
-======
-titers
-======
+============
+augur titers
+============
 
 .. argparse::
     :module: augur

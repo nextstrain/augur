@@ -1,6 +1,6 @@
-===========================
-reconstruct-sequences
-===========================
+=============================
+augur reconstruct-sequences
+=============================
 
 .. argparse::
     :module: augur

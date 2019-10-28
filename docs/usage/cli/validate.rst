@@ -1,6 +1,6 @@
-========
-validate
-========
+==============
+augur validate
+==============
 
 .. argparse::
     :module: augur

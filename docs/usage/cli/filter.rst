@@ -1,6 +1,6 @@
-======
-filter
-======
+============
+augur filter
+============
 
 .. argparse::
     :module: augur

@@ -1,6 +1,6 @@
-=========
-ancestral
-=========
+===============
+augur ancestral
+===============
 
 .. argparse::
     :module: augur
