@@ -13,4 +13,4 @@ Python Development API
    :name: augur-api
    :glob:
 
-   api/*
+   *

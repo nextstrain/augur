@@ -1,5 +1,5 @@
 ==================
-Working with augur
+Introduction
 ==================
 
 Augur consists of a number of tools that allow the user to filter and align sequences, build trees, and integrate the phylogenetic analysis with meta data.

@@ -14,4 +14,6 @@ and learning what you need to change should be as pain-free as possible.
    :maxdepth: 2
    :glob:
 
-   upgrading/*
+   breaking
+   exportv
+   auspice

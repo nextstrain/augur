@@ -161,17 +161,43 @@ build to keep the Docker image up-to-date.
 
 ## Documentation
 
-### Building documentation
 
 [Documentation](https://nextstrain-augur.readthedocs.io) is built using [Sphinx](http://sphinx-doc.org/) and hosted on [Read The Docs](https://readthedocs.org/).
 Versions of the documentation for each augur release and git branch are available and preserved.
+
+
+Documentation is mostly written as [reStructuredText](http://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html) (.rst) files, but they can also be Markdown (.md) files.
+There are advantages to both formats:
+* reStructuredText enables python-generated text to fill your documentation as in the auto-importing of modules or usage of plugins like `sphinx-argparse` (see below).
+* Markdown is more intuitive to write and is widely used outside of python development.
+* If you don't need autogeneration of help documentaiton, then you may want to stick with writing Markdown.
+
+
+Sphinx, coupled with reStructuredText, can be tricky to learn. 
+Here's a [subset of reStructuredText worth committing to memory](https://simonwillison.net/2018/Aug/25/restructuredtext/) to help you get started writing these files.
+
+
+Many Sphinx reStructuredText files contain a [directive](http://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html) to add relations between single files in the documentation known as a Table of Contents Tree ([TOC Tree](https://documentation.help/Sphinx/toctree.html)).
+
+Human-readable augur and augur subcommand documentation is written using a Sphinx extension called [sphinx-argparse](https://sphinx-argparse.readthedocs.io/en/latest/index.html).
+
+
+### Folder structure
+
+The documentation source-files are located in `./docs`, with `./docs/index.rst` being the main entry point.
+Each subsection of the documentation is a subdirectory inside `./docs`.
+For instance, the tutorials are all found in `./docs/tutorials` and are included in the documentation website via the directive in `./docs/index.rst`.
+
+
+### Building documentation
 
 Building the documentation locally is useful to test changes.
 First, make sure you have the development dependencies of augur installed:
 
     pip install -e .[dev]
 
-This installs packages listed in the `dev` section of `extras_require` in _setup.py_ (in addition to any normal augur dependencies if necessary).
+(This installs packages listed in the `dev` section of `extras_require` in _setup.py_, in addition to any normal augur dependencies as necessary.)
+
 
 Then build the HTML output format by running:
 
@@ -197,23 +223,6 @@ Linux users can view the docs by running:
 
     xdg-open docs/_build/html/index.html
 
-### Contributing to the Augur Docs
-
-Sphinx, coupled with [reStructuredText](http://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html), can be tricky to learn.
-Here are a couple of pointers with linked resources to get you started.
-
-* Most Sphinx documents exist as [reStructuredText](http://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html) (.rst) files, but they can also be Markdown (.md) files.
-  There are advantages to both formats.
-  reStructuredText enables python-generated text to fill your documentation as in the auto-importing of modules or usage of plugins like `sphinx-argparse` (see below).
-  Markdown is more intuitive to write and is widely used outside of python development.
-  If you don't need a powerful set of tools behind your text document, then you may want to stick with writing Markdown.
-
-* If you do end up writing reStructuredSyntax, don't trouble yourself with learning all of its syntax.
-  Here's a [subset of reStructuredText worth committing to memory](https://simonwillison.net/2018/Aug/25/restructuredtext/).
-
-* Many Sphinx reStructuredText files contain a [directive](http://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html) to add relations between single files in the documentation known as a Table of Contents Tree ([TOC Tree](https://documentation.help/Sphinx/toctree.html)).
-
-* Human-readable augur and augur subcommand documentation is written using a Sphinx extension called [sphinx-argparse](https://sphinx-argparse.readthedocs.io/en/latest/index.html).
 
 
 ## License and copyright

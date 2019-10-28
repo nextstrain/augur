@@ -33,10 +33,10 @@ The nextstrain team uses `snakemake <https://snakemake.readthedocs.io/en/stable/
    :name: mastertoc
    :titlesonly:
 
-   installation
-   upgrading
-   usage
-   tutorials
-   examples
-   api
-   authors
+   installation/installation
+   upgrading/upgrading
+   usage/usage
+   tutorials/tutorials
+   examples/examples
+   api/api
+   authors/authors

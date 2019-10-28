@@ -5,10 +5,10 @@ Using Augur
 .. note:: We have just released version 6 of augur -- `check our upgrading guide <upgrading.html>`__
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
-   cli
-   subcommands
+   introduction
+   cli/cli
    augur_snakemake
    json_format
    envvars
