@@ -12,3 +12,4 @@ Tutorials
    tb_tutorial
    community_hosting
    clades
+   import-beast
