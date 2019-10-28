@@ -5,8 +5,15 @@
 TO DO:
 * Check CL and config override stuff
 * Decide how best to explain `--title` and `--maintainers` so that works both for CL and with snakemake _Current explanataion ok?_
+END TO DO
 
 </span>
+
+* [What is `augur export v2`?](#what-is-augur-export-v2)
+* [I just need my old run to work _right now_!](#i-just-need-my-old-run-to-work-right-now)
+* [Great! What do I need to do to move to `v2`?](#great-what-do-i-need-to-do-to-move-to-v2)
+* [Command-line Options](#command-line-options)
+* [Config File Options](#config-file-options)
 
 ## What is `augur export v2`?
 
@@ -17,7 +24,7 @@ The `augur export` function is getting an upgrade! This is tied to an upgrade to
 * **Flexibility**: The new v2 JSONs allow us flexiblity to include more features and data, and will let us move towards getting in line with existing conventions like GFF and BibTex
 * **Ease of use**: Users commonly got confused by the 'config' file. For basic runs you can now specify everything you need to see your data right in the command-line - no 'config' file needed! For more advanced exports, you can still specify a config file with more detail. (See [bottom of the page](#config-file-options))
 
-## **I just need my old run to work _right now_!**
+## I just need my old run to work _right now_!
 *When you upgrade to the latest version of `augur`, `augur export` will no longer work.* But we understand you may not have time to make the change right this second, and that there's nothing more frustrating than having a run break right before a presentation or deadline!
 
 If you want to keep using the old version _for now_, use `augur export v1` - everything else remains the same.
