@@ -2,6 +2,6 @@ augur.ancestral module
 ======================
 
 .. automodule:: augur.ancestral
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

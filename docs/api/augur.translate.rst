@@ -2,6 +2,6 @@ augur.translate module
 ======================
 
 .. automodule:: augur.translate
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

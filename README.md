@@ -183,7 +183,7 @@ You can see other available formats by running:
 
 To update the API documentation after adding or removing an augur submodule, autogenerate a new API file as follows.
 
-    sphinx-apidoc -T -f -MeT -o docs augur
+    sphinx-apidoc -T -f -MeT -o docs/api augur
 
 Sphinx caches built documentation by default, which is generally great, but can cause the sidebar of pages to be stale.  You can clean out the cache with:
 

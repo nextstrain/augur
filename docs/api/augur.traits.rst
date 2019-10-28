@@ -2,6 +2,6 @@ augur.traits module
 ===================
 
 .. automodule:: augur.traits
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
