@@ -285,12 +285,19 @@ def load_features(reference, feature_names=None):
     return features
 
 def read_config(fname):
-    if fname and os.path.isfile(fname):
+    if not (fname and os.path.isfile(fname)):
+        print("ERROR: config file %s not found."%fname)
+        return defaultdict(dict)
+
+    try:
         with open(fname) as ifile:
             config = json.load(ifile)
-    else:
-        print("ERROR: config file %s not found."%fname)
-        config = defaultdict(dict)
+    except json.decoder.JSONDecodeError as err:
+        print("FATAL ERROR:")
+        print("\tCouldn't parse the JSON file {}".format(fname))
+        print("\tError message: '{}'".format(err.msg))
+        print("\tYou must correct this file in order to proceed.")
+        sys.exit(2)
 
     return config
 
