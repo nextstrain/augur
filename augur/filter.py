@@ -158,7 +158,7 @@ def run(args):
 
     # exclude strain my metadata field like 'host=camel'
     # match using lowercase
-    num_excluded_by_metadata = 0
+    num_excluded_by_metadata = {}
     if args.exclude_where:
         for ex in args.exclude_where:
             try:
@@ -175,7 +175,7 @@ def run(args):
                         if meta_dict[seq_name].get(col,'unknown').lower() == val.lower():
                             to_exclude.add(seq_name)
                 tmp = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
-                num_excluded_by_metadata = len(seq_keep) - len(tmp)
+                num_excluded_by_metadata[ex] = len(seq_keep) - len(tmp)
                 seq_keep = tmp
 
     # filter by sequence length
@@ -343,7 +343,8 @@ def run(args):
     if args.exclude:
         print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
     if args.exclude_where:
-        print("\t%i of these were dropped because of '%s'" % (num_excluded_by_metadata, args.exclude_where))
+        for key,val in num_excluded_by_metadata.items():
+            print("\t%i of these were dropped because of '%s'" % (val, key))
     if args.min_length:
         print("\t%i of these were dropped because they were shorter than minimum length of %sbp" % (num_excluded_by_length, args.min_length))
     if (args.min_date or args.max_date) and 'date' in meta_columns:
