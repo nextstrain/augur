@@ -71,6 +71,7 @@ def register_arguments(parser):
     parser.add_argument('--priority', type=str, help="file with list priority scores for sequences (strain\tpriority)")
     parser.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     parser.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
+    parser.add_argument('--subsample-seed', help="seed to allow reproducible sub-sampling (with same input data). Can be number or string.")
     parser.add_argument('--exclude-where', nargs='+',
                                 help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
     parser.add_argument('--include-where', nargs='+',
@@ -221,6 +222,8 @@ def run(args):
     if args.group_by and args.sequences_per_group:
         spg = args.sequences_per_group
         seq_names_by_group = defaultdict(list)
+        if args.subsample_seed:
+            random.seed(args.subsample_seed)
 
         for seq_name in seq_keep:
             group = []
@@ -248,7 +251,7 @@ def run(args):
             seq_names_by_group[tuple(group)].append(seq_name)
 
         #If didnt find any categories specified, all seqs will be in 'unknown' - but don't sample this!
-        if len(seq_names_by_group)==1 and 'unknown' in seq_names_by_group:
+        if len(seq_names_by_group)==1 and ('unknown' in seq_names_by_group or ('unknown',) in seq_names_by_group):
             print("WARNING: The specified group-by categories (%s) were not found."%args.group_by,
                   "No sequences-per-group sampling will be done.")
             if any([x in args.group_by for x in ['year','month']]):
@@ -352,7 +355,8 @@ def run(args):
     if args.non_nucleotide:
         print("\t%i of these were dropped because they had non-nucleotide characters" % (num_excluded_by_nuc))
     if args.group_by and args.sequences_per_group:
-        print("\t%i of these were dropped because of subsampling criteria" % (num_excluded_subsamp))
+        seed_txt = ", using seed {}".format(args.subsample_seed) if args.subsample_seed else ""
+        print("\t%i of these were dropped because of subsampling criteria%s" % (num_excluded_subsamp, seed_txt))
 
     if args.include and os.path.isfile(args.include):
         print("\n\t%i sequences were added back because they were in %s" % (num_included_by_name, args.include))
