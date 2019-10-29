@@ -170,12 +170,25 @@ def process_annotations(node_data):
     # [one-origin, inclusive], strand: "+" / "-"
     # however v1 JSONs used [zero-origin, half-open), strand: "1" / "-1"
     annotations = {}
+    v5_type_file = False
     for name, info in node_data["annotations"].items():
-        annotations[name] = {
-            "start": info["start"]-1,
-            "end": info["end"],
-            "strand": 0 if info["strand"] == "-" else 1
-        }
+        if info['strand'] in [0,1]:
+            v5_type_file = True
+            annotations[name] = {
+                "start": info["start"],
+                "end": info["end"],
+                "strand": info["strand"]
+            }
+        else:
+            annotations[name] = {
+                "start": info["start"]-1,
+                "end": info["end"],
+                "strand": 0 if info["strand"] == "-" else 1
+            }
+    if v5_type_file:
+        print("\nWARNING - The supplied amino acid mutations file appears to have been made"
+            " in an older version of augur. We have attempted to convert it, but recommend re-running"
+            " the 'translate' step with this augur version, then running 'export' again.")
     return annotations
 
 def process_panels(user_panels, meta_json):
