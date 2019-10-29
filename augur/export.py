@@ -188,7 +188,23 @@ def process_annotations(node_data):
     # treetime adds "annotations" to node_data
     if "annotations" not in node_data: # if haven't run tree through treetime
         return None
-    return node_data["annotations"]
+    v6_type_file = False
+    annotations = {}
+    for name, info in node_data["annotations"].items():
+        if info['strand'] in ['+','-']:
+            v6_type_file = True
+            annotations[name] = {
+                "start": info["start"]-1,
+                "end": info["end"],
+                "strand": 0 if info["strand"] == "-" else 1
+            }
+    if v6_type_file:
+        print("\nWARNING - The supplied amino acid mutations file appears to have been made"
+            " in a NEWER version of augur. We have attempted to convert it, but recommend re-running"
+            " the 'translate' step with this augur version, then running 'export' again.")
+        return annotations
+    else:
+        return node_data["annotations"]
 
 def process_panels(user_panels, meta_json, nextflu=False):
     try:
