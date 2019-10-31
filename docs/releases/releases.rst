@@ -16,5 +16,5 @@ and learning what you need to change should be as pain-free as possible.
 
    Changelog <changelog>
    v6
-   v6-export
+   migrating-v5-v6
    auspice-compatibility

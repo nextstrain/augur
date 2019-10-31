@@ -5,7 +5,7 @@ This lines up with the version 2 release of `auspice` ([release notes](https://n
 
 We also recognise that we may need to adjust things again in the future. By setting up versions now, we'll be able to continue to expand `augur` and `auspice` while minimizing disruption to users.
 
-You can get more information on how to move to using `export v2` in `augur` 6.0 in our [handy guide](exportv.md).
+You can get more information on how to move to using `export v2` in `augur` 6.0 in our [handy guide](migrating-v5-v6.md).
 
 ## Why Does Compatibility Matter?
 

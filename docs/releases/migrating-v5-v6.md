@@ -1,10 +1,11 @@
-# Augur v6: exporting JSONs for auspice
+# Migrating from augur v5 to v6
 
 <span style="color:orange">
 
 TO DO:
 * Check CL and config override stuff, expecially around colorings
 * Decide how best to explain `--title` and `--maintainers` so that works both for CL and with snakemake _Current explanataion ok?_
+* Since this is now a "migrating" guide, we should mention string prettying
 
 </span>
 
@@ -25,6 +26,8 @@ This page details how `augur export v2` works & what you need to do to start usi
 * [Terminology](#terminology)
 * [Using command-line options to customise the visualisation](using-command-line-options-to-customise-the-visualisation)
 * [Using a config file to customise the visualisation](#using-a-config-file-to-customise-the-visualisation)
+* [Prettifying metadata fields](#prettifying-metadata-fields)
+
 ---
 
 ## Motivation behind changing JSON formats
@@ -465,3 +468,7 @@ Export v2 config:
     </pre></div></div>
     </div>
 </div>
+
+## Prettifying metadata fields
+
+TODO
