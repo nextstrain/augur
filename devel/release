@@ -128,7 +128,7 @@ update-changelog() {
 
     # Add the new version heading immediately after the __NEXT__ heading,
     # preserving the __NEXT__ heading itself.
-    perl -pi -e "s/(?<=^# __NEXT__$)/\n\n\n# $new_version ($today)/" "$changes_file"
+    perl -pi -e "s/(?<=^## __NEXT__$)/\n\n\n## $new_version ($today)/" "$changes_file"
 }
 
 commit-and-tag() {

@@ -14,6 +14,7 @@ and learning what you need to change should be as pain-free as possible.
    :maxdepth: 1
    :glob:
 
+   Changelog <changelog>
    v6
    exportv
    auspice
