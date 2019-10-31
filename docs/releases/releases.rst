@@ -1,6 +1,6 @@
-===============
-Upgrading Augur
-===============
+==========================
+Augur Releases & Upgrading
+==========================
 
 To make an omelette, you have to break some eggs.
 To keep improving and adding to ``augur`` and ``auspice``, we sometimes have
@@ -11,9 +11,9 @@ things that used to work suddenly don't. Finding out what went wrong
 and learning what you need to change should be as pain-free as possible.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :glob:
 
-   breaking
+   v6
    exportv
    auspice

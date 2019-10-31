@@ -1,4 +1,4 @@
-# How to Change 'Export' Versions
+# Understanding augur's new `export` commands
 
 <span style="color:blue">
 
