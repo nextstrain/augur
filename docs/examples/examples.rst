@@ -21,7 +21,7 @@ which uses `Snakemake <http://snakemake.readthedocs.io>`__ to define and run
 the pipeline of Augur commands.
 
 =============================================================   =======================================================================================
-Pathogen                                                        GitHub repository
+Pathogen  (link to Nextstrain)                                  GitHub repository
 =============================================================   =======================================================================================
 `Seasonal influenza <https://nextstrain.org/flu/seasonal>`__    `nextstrain/seasonal-flu <https://github.com/nextstrain/seasonal-flu>`__
 `West Nile Virus <https://nextstrain.org/WNV>`__                `nextstrain/WNV <https://github.com/nextstrain/WNV>`__
@@ -44,11 +44,5 @@ analysis or tweak it for your own needs and data.
 Nextstrain community
 ====================
 
-There are also some community-produced analyses on Nextstrain which use Augur:
-
-=================================================================================================   ==========================================================================
-Name                                                                                                GitHub repository
-=================================================================================================   ==========================================================================
-`Ebola epidemic in North Kivu, DRC <https://nextstrain.org/community/inrb-drc/ebola-nord-kivu>`__   `inrb-drc/ebola-nord-kivu <https://github.com/inrb-drc/ebola-nord-kivu>`__
-`Wheat yellow rust <https://nextstrain.org/community/SaundersLab/PST>`__                            `SaundersLab/PST <https://github.com/SaundersLab/PST>`__
-=================================================================================================   ==========================================================================
+Nextstrain also provides access to analyses by independent groups `stored and accessed via public GitHub repos <https://nextstrain.org/docs/contributing/community-builds>`__, all of which currently use augur.
+For the most up-to-date listing of these please see the `community section on the nextstrain front page. <https://nextstrain.org/#community>`__
