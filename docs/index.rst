@@ -36,6 +36,7 @@ The nextstrain team uses `snakemake <https://snakemake.readthedocs.io/en/stable/
    installation/installation
    usage/usage
    releases/releases
+   faq/faq
    tutorials/tutorials
    examples/examples
    api/api

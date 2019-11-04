@@ -7,7 +7,7 @@ Currently this is most useful for producing auspice-compatable output using `aug
 We have tested augur on a number of BEAST runs, using both BEAST & BEAST 2, however there may be issues with your particular run.
 Please [get in touch](mailto:hello@nextstrain.org) if you encounter any issues.
 
-## Steps
+### Steps
 1. Parse the BEAST tree using `augur import-beast`. Most of the options are explained below, but run with `--help` to see them all.
 This produces a newick tree file and a node-data JSON file containing BEAST traits as well as (temporal) branch lengths.
 
