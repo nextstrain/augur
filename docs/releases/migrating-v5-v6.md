@@ -3,8 +3,7 @@
 <span style="color:orange">
 
 TO DO:
-* Check CL and config override stuff, expecially around colorings
-* Decide how best to explain `--title` and `--maintainers` so that works both for CL and with snakemake _Current explanataion ok?_
+* Would be great to have more link options - can't link to many things b/c are just bold rather than 'titles'
 * Since this is now a "migrating" guide, we should mention string prettying
 
 </span>
