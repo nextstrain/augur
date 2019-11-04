@@ -256,12 +256,12 @@ Export v2 config files are generally very simliar to export v1, _but there are a
 Here are the top-level keys of the config JSON in plain English:
 
 
-#### Title
+#### title
 
 The title to be displayed by Auspice, unchanged from previous versions of the config file.
 E.g. `"title": "Phylodynamics of my Pathogen"`.
 
-#### Maintainers
+#### maintainers
 
 You can now have more than one maintainer associated with your run!
 Specify maintainers and their websites using `"maintainers"` and listing the name and URL in pairs:
@@ -276,7 +276,7 @@ Specify maintainers and their websites using `"maintainers"` and listing the nam
 If you only have one maintainer, you still need to use the same format of two sets of square brackets: `"maintainers": [["Hanna Kukk", "www.hkukk.ee"]]`.
 Previously this was the "maintainer" field in your v1 config file and used a different structure.
 
-#### Panels
+#### panels
 
 Optional & unchanged from previous versions of the config file, this defines the panels which auspice will display.
 If not set, auspice will by default try to show the tree, map, and entropy panels, if data is available.
@@ -284,7 +284,7 @@ Options are "tree", "map", "entropy", and "frequencies" (e.g: `"panels": ["tree"
 
 > If you want to display the frequencies panel, you must both specify "frequencies" here _and_ ensure a tip frequency file is available for `auspice` to access.
 
-#### Colorings
+#### colorings
 
 These are the traits which auspice should display as options to color the tree & map.
 In previous versions of the config file this was "color_options" and the current structure is very similar - but easier to understand!
@@ -307,7 +307,7 @@ _If a trait is in both, but has `"title"` and `"type"` information in the config
 In short, if using a config file and the command line, ensure everything you want as a coloring option is in `--metadata-color-by`.
 You only need to also include it `"colorings"` in the config file if you want to set the `"title"` and/or `"type"`.
 
-#### Geo_resolutions
+#### geo_resolutions
 
 This specifies the geographical traits you want auspice to use. You can pass this in the same way as in the v1 config file, or you can now specify a title to be displayed by option, using a slightly different structure.
 
@@ -316,7 +316,7 @@ For example, for many users, these might be "country" and "region", i.e. `"geo_r
 You can also mix the two, if you just want a title for one location: `"geo_resolutions": [ {"key": "country", "title": "Areas"}, "region"]`
 
 
-#### Filters
+#### filters
 
 This specifies which traits you can filter by in auspice.
 E.g. `"filters": ["country", "region", "symptom", "age"]`.
@@ -325,7 +325,7 @@ If you don't want any filter options, include this option with an empty list, i.
 This is the same as the "filters" field in previous config files, but the behavior has changed slightly.
 
 
-#### Display_defaults
+#### display_defaults
 
 This allows you to specify the default view that users will see when they visualise the data in auspice.
 There are five options you can set here -- note they are similar to those in the previous config files but we have now standardised them to snake_case:
