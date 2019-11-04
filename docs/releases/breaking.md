@@ -1,6 +1,6 @@
 # Breaking Changes to `augur`
 
-This is a list of known 'breaking changes' to `augur`. These are changes that require users to modify existing scripts or calls to `augur` functions because the old usage is no longer supported. 'Depreciated' changes, which work for the moment but will no longer be supported in future, are also included. 
+This is a list of known 'breaking changes' to `augur`. These are changes that require users to modify existing scripts or calls to `augur` functions because the old usage is no longer supported. 'Deprecated' changes, which work for the moment but will no longer be supported in future, are also included.
 
 _Note this list only includes changes to `augur` code and may not cover breaking changes introduced due to changes in dependancy packages. We try to support these too, so please [open an issue](https://github.com/nextstrain/augur/issues/new) if you think you've found something we didn't catch._
 
@@ -24,7 +24,7 @@ Click on the `augur` function that used to work, and we'll try to get you up and
   To specify the JSON file to write ancestral mutations/sequences to, use the argument `--output-node-data` instead of `--output`.<br><br>
 
 * **Explanation:**<br>
-  `ancestral` now supports outputting a Fasta file of reconstructed ancestral sequences (for Fasta-input runs - this was already supported in VCF-format for VCF-input runs). Users can ask for this output and specify a file name using `--output-sequences`. Since there are now two types of output from `ancestral`, the arguments have become more descriptive.<br><br>
+  `ancestral` now supports outputting a FASTA file of reconstructed ancestral sequences (for FASTA-input runs - this was already supported in VCF-format for VCF-input runs). Users can ask for this output and specify a file name using `--output-sequences`. Since there are now two types of output from `ancestral`, the arguments have become more descriptive.<br><br>
 
 
 ## export
