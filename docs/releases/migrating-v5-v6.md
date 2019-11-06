@@ -3,8 +3,7 @@
 <span style="color:orange">
 
 TO DO:
-* Would be great to have more link options - can't link to many things b/c are just bold rather than 'titles'
-* Since this is now a "migrating" guide, we should mention string prettying
+* Since this is now a "migrating" guide, we should expand on string prettying
 
 </span>
 
@@ -37,7 +36,7 @@ Augur v5 simply used `augur export` to produce two JSONs (tree + meta) for Auspi
 
 The new Augur (v6) can still create "v1" JSONS, but can also create JSONs that work with the latest [Auspice release](https://nextstrain.github.io/auspice/releases/v2) - Auspice v2. The new format combines the tree and metadata into one JSON, which we'll call a "v2" JSON.
 
-[This page](Auspice-compatibility) has the most up-to-date compatibility information between different Augur and Auspice versions.
+[This page](auspice-compatibility) has the most up-to-date compatibility information between different Augur and Auspice versions.
 
 > We understand how important backwards compatibility is - so for the time being "v1" JSONs will continue to work with Auspice v2.
 However, we recommend switching to v2 JSONs - they have more features, are easier to work with, and future versions of Auspice may not support v1 JSONs!
@@ -99,8 +98,7 @@ Previously, anything you wanted to color by had to be in the config file. You al
 
 We've made this smarter - `augur export v2` now automatically detects some traits and you can specify others on the command line. You can also control the color options in more detail using a config file.
 
-We'll cover how coloring works on the [command line]() and how it works in [config files]() in more detail below.
-<span style="color:red">TODO: Can't make link to 'Traits' (in command-line section) or 'Colorings' (in config section) work as it's just bold, not a heading!</span>
+We'll cover how coloring works on the [command line](#id1) and how it works in [config files](#colorings) in more detail below.
 
 ---
 ## Terminology
@@ -113,9 +111,7 @@ These may have been inferred for internal nodes by Augur functions like `augur t
 Certain traits have a geographic interpretation, e.g. "country".
 Auspice will attempt to display these traits on a map (and provide a drop-down to switch between them if there are more than one).
 
-> _Make sure that these have corresponding entry in the lat-longs TSV file supplied to `export`._
-
-<span style="color:red">_TODO: Have a link to 'how to add lat-long information'</span>
+> _Make sure that these have corresponding entry in the lat-longs TSV file supplied to `export`. See how to do this [here](/faq/lat_longs)._
 
 
 ---
@@ -212,10 +208,8 @@ However, there are still some features that offer more options or are only avail
 
 Currently, using command line arguments:
 
-* It is not possible to set the default view options using only command-line arguments in `export v2`. You can read more about the defaults (and how to change them using a config file) [here]().
-* When using `export v2` with only command-line arguments, every trait that's a coloring option and is either categorical or boolean will automatically be available to filter by. Find out how to specify what is a filter using a config file [here]().
-
-<span style="color:red">TODO: Can't link to 'display_defaults' or 'filters' (in config section) because it's just bold, not a header!</span>
+* It is not possible to set the default view options using only command-line arguments in `export v2`. You can read more about the defaults (and how to change them using a config file) [here](#display-defaults).
+* When using `export v2` with only command-line arguments, every trait that's a coloring option and is either categorical or boolean will automatically be available to filter by. Find out how to specify what is a filter using a config file [here](#filters).
 
 ---
 ## Using a config file to customise the visualisation
@@ -291,9 +285,7 @@ In previous versions of the config file this was "color_options" and the current
 
 For each trait you include, you can define:
 * An optional "title" which will shown by Auspice when referring to this trait -- for instance you may have a trait called "ab1" which you want to show as "Age bracket 1" in the drop-down menus, legend, and filter.
-* An optional, but recommended "type" which can be either 'ordinal', 'boolean', 'continuous', or 'categorical'. If you don't provide a type, augur will try to guess it (see how it guesses [here]()).
-
-<span style="color:red">TODO: Can't link to 'Traits' (in command-line section) (to show 'type' guessing rules) because it's just bold, not a header!</span>
+* An optional, but recommended "type" which can be either 'ordinal', 'boolean', 'continuous', or 'categorical'. If you don't provide a type, augur will try to guess it (see how it guesses [here](#id1)).
 
 Unless you want to change the name displayed, you _no longer_ need to include `gt`, `num_date`, `clade_membership`, or `Augur seqtraits` output (like clade or drug resistance information) in your config file - if that information is present, it will automatically be included. To exclude it, don't pass in the corresponding file to `--node-data`.
 
@@ -505,4 +497,4 @@ In Auspice v2, all values are now displayed exactly as they arrive, allowing use
 
 This also means we've become stricter about the format of the files that pass in color and lat-long information. Previously, it didn't matter if columns were separated by spaces or tabs - now, they must be separated by tabs.
 
-<span style="color:red">TODO: link to FAQ section on how to add colors and lat-long</span>
+You can find out more about how to add [custom coloring](/faq/colors) and [lat-long](/faq/lat_longs) values.
