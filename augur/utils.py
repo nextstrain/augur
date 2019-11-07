@@ -229,7 +229,7 @@ def read_node_data(fnames, tree=None):
     return node_data
 
 
-def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 1), include_version=True):
+def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 2), include_version=True):
     """
     Write ``data`` as JSON to the given ``file_name``, creating parent directories
     if necessary. The augur version is included as a top-level key "augur_version".

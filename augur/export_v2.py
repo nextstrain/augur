@@ -822,13 +822,11 @@ def run_v2(args):
     set_geo_resolutions(data_json, config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_attrs)
     set_panels(data_json, config, args.panels)
 
-    # Write outputs
-    write_json(data_json, args.output, indent=None if args.minify_json else 2)
-
+    # Write outputs - the (unified) dataset JSON intended for auspice & perhaps the ref root-sequence JSON
+    indent = {"indent": None} if args.minify_json else {}
+    write_json(data=data_json, file_name=args.output, include_version=False, **indent)
     if 'reference' in node_data:
-        write_json(node_data['reference'], args.output[:-5]+'_root-sequence.json',
-                   indent=None if args.minify_json else 2)
-
+        write_json(data=node_data['reference'], file_name=args.output[:-5]+'_root-sequence.json', include_version=False, **indent)
 
     # validate outputs
     validate_data_json(args.output)
