@@ -359,7 +359,7 @@ def run_v1(args):
         else:
             root_sequence = {}
 
-        write_json(root_sequence, args.output_sequence)
+        write_json(root_sequence, args.output_sequence, include_version=False)
 
     meta_json = read_config(args.auspice_config)
     ensure_config_is_v1(meta_json)
@@ -383,7 +383,7 @@ def run_v1(args):
         tree_decorations.append({"key": trait, "is_attr": True})
 
     recursively_decorate_tree_json_v1_schema(tree_json, nodes, decorations=tree_decorations)
-    write_json(tree_json, args.output_tree, indent=json_indent)
+    write_json(tree_json, args.output_tree, indent=json_indent, include_version=False)
 
     # Export the metadata JSON
     lat_long_mapping = read_lat_longs(args.lat_longs)
@@ -398,5 +398,5 @@ def run_v1(args):
         meta_json["annotations"] = annotations
     meta_json["panels"] = process_panels(None, meta_json)
 
-    write_json(meta_json, args.output_meta, indent=json_indent)
+    write_json(meta_json, args.output_meta, indent=json_indent, include_version=False)
     return 0
