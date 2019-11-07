@@ -10,6 +10,7 @@ from pkg_resources import resource_stream
 from io import TextIOWrapper
 from textwrap import dedent
 from .__version__ import __version__
+import packaging.version as packaging_version
 
 class AugurException(Exception):
     pass
@@ -193,8 +194,12 @@ def read_node_data(fnames, tree=None):
                             else:
                                 node_data["nodes"][n] = nv
                     elif k=="augur_version":
-                        pass
-                        # TODO
+                        # check that the version, if provided, is compatible.
+                        # Note that this key is _not_ part of the dict returned from this fn.
+                        if not is_augur_version_compatable(v):
+                            raise AugurException("Augur version incompatability detected -- the JSON {} specified augur {} which is "
+                                "incompatable with the current augur version ({}). We suggest you rerun the pipeline using the current "
+                                "version of augur.".format(fname, v, get_augur_version()))
                     elif k in node_data:
                         # Behavior as of 2019-11-07 is to do a top-level merge
                         # of dictionaries. If the value is not a dictionary, we
@@ -204,9 +209,9 @@ def read_node_data(fnames, tree=None):
                         if isinstance(node_data[k], dict) and isinstance(v, dict):
                             node_data[k].update(v)
                         else:
-                            raise AugurException("\"{}\" key found in multiple JSONs. This is not currently handled by augur, \
-                                unless all values are dictionaries. \
-                                Please check the source of these JSONs.".format(k))
+                            raise AugurException("\"{}\" key found in multiple JSONs. This is not currently handled by augur, "
+                                "unless all values are dictionaries. "
+                                "Please check the source of these JSONs.".format(k))
                     else:
                         node_data[k]=v
             except AugurException as e:
@@ -693,3 +698,22 @@ def get_augur_version():
     Returns a string of the current augur version.
     """
     return __version__
+
+def is_augur_version_compatable(version):
+    """
+    Checks if the provided **version** is the same major version
+    as the currently running version of augur.
+
+    Parameters
+    ----------
+    version : str
+        version to check against the current version
+
+    Returns
+    -------
+    Bool
+
+    """
+    current_version = packaging_version.parse(get_augur_version())
+    this_version = packaging_version.parse(version)
+    return this_version.release[0] == current_version.release[0]
