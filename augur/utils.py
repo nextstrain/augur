@@ -9,6 +9,10 @@ from collections import defaultdict
 from pkg_resources import resource_stream
 from io import TextIOWrapper
 from textwrap import dedent
+from .__version__ import __version__
+
+class AugurException(Exception):
+    pass
 
 def myopen(fname, mode):
     if fname.endswith('.gz'):
@@ -165,34 +169,55 @@ def read_tree(fname, min_terminals=3):
 
 
 def read_node_data(fnames, tree=None):
-    """parse the "nodes" field of the given JSONs and join the data together"""
-    if type(fnames) is str:
+    """
+    parses one or more "node-data" JSON files and combines them using custom logic.
+    Will exit with a (hopefully) helpful message if errors are detected.
+
+    For each JSON, we expect the top-level key "nodes" to be a dict.
+    """
+    if isinstance(fnames, str):
         fnames = [fnames]
     node_data = {"nodes": {}}
     for fname in fnames:
         if os.path.isfile(fname):
             with open(fname) as jfile:
                 tmp_data = json.load(jfile)
-            for k,v in tmp_data.items():
-                if k=="nodes":
-                    for n,nv in v.items():
-                        if n in node_data["nodes"]:
-                            node_data["nodes"][n].update(nv)
+            try:
+                for k,v in tmp_data.items():
+                    if k=="nodes":
+                        if not isinstance(v, dict):
+                            raise AugurException("\"nodes\" key in {} is not a dictionary. Please check the formatting of this JSON!".format(fname))
+                        for n,nv in v.items():
+                            if n in node_data["nodes"]:
+                                node_data["nodes"][n].update(nv)
+                            else:
+                                node_data["nodes"][n] = nv
+                    elif k=="augur_version":
+                        pass
+                        # TODO
+                    elif k in node_data:
+                        # Behavior as of 2019-11-07 is to do a top-level merge
+                        # of dictionaries. If the value is not a dictionary, we
+                        # now have a fatal error with a nice message (note that
+                        # before 2019-11-07 this was an unhandled error).
+                        # This should be revisited in the future. TODO.
+                        if isinstance(node_data[k], dict) and isinstance(v, dict):
+                            node_data[k].update(v)
                         else:
-                            node_data["nodes"][n] = nv
-                elif k in node_data:
-                    # will this recurse into nested dicts?!?!
-                    # No. Only top level merge here. TODO
-                    node_data[k].update(v)
-                else:
-                    node_data[k]=v
+                            raise AugurException("\"{}\" key found in multiple JSONs. This is not currently handled by augur, \
+                                unless all values are dictionaries. \
+                                Please check the source of these JSONs.".format(k))
+                    else:
+                        node_data[k]=v
+            except AugurException as e:
+                print(e)
+                sys.exit(2)
         else:
             print("ERROR: node_data JSON file %s not found. Attempting to proceed without it."%fname)
 
     if tree and os.path.isfile(tree):
-        from Bio import Phylo
         try:
-            T = Phylo.read(tree, 'newick')
+            T = Bio.Phylo.read(tree, 'newick')
         except:
             print("Failed to read tree from file "+tree, file=sys.stderr)
         else:
@@ -200,19 +225,30 @@ def read_node_data(fnames, tree=None):
             meta_node_names = set(node_data["nodes"].keys())
             if tree_node_names!=meta_node_names:
                 print("Names of nodes (including internal nodes) of tree %s don't"
-                      " match node names in the node data files."%tree, file=sys.stderr)
-
+                    " match node names in the node data files."%tree, file=sys.stderr)
     return node_data
 
 
-def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 1)):
+def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 1), include_version=True):
     """
-    Write *data* as JSON to the given *file_name*, creating parent directories
-    if necessary.
+    Write ``data`` as JSON to the given ``file_name``, creating parent directories
+    if necessary. The augur version is included as a top-level key "augur_version".
 
-    By default, an *indent* of 1 is passed to :func:`json.dumps`.  If the
-    environment variable ``AUGUR_MINIFY_JSON`` is defined with a truthy value,
-    the default *indent* is instead ``None``.
+    Parameters
+    ----------
+    data : dict
+        data to write out to JSON
+    file_name : str
+        file name to write to
+    indent : int or None, optional
+        JSON indentation level. Default is `None` if the environment variable `AUGUR_MINIFY_JSON`
+        is truthy, else 1
+    include_version : bool, optional
+        Include the augur version. Default: `True`.
+
+    Raises
+    ------
+    OSError
     """
     #in case parent folder does not exist yet
     parent_directory = os.path.dirname(file_name)
@@ -223,8 +259,11 @@ def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSO
             if not os.path.isdir(parent_directory):
                 raise
 
+    if include_version and not data.get("augur_version"):
+        data["augur_version"] = get_augur_version()
+
     with open(file_name, 'w') as handle:
-        json.dump(data, handle, indent=indent, sort_keys = True)
+        json.dump(data, handle, indent=indent, sort_keys=True)
 
 
 def load_features(reference, feature_names=None):
@@ -648,3 +687,9 @@ def json_to_tree(json_dict, root=True):
         node = annotate_parents_for_tree(node)
 
     return node
+
+def get_augur_version():
+    """
+    Returns a string of the current augur version.
+    """
+    return __version__
