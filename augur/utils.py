@@ -11,6 +11,7 @@ from io import TextIOWrapper
 from textwrap import dedent
 from .__version__ import __version__
 import packaging.version as packaging_version
+from .validate import validate, ValidateError, load_json_schema
 
 class AugurException(Exception):
     pass
@@ -183,6 +184,15 @@ def read_node_data(fnames, tree=None):
         if os.path.isfile(fname):
             with open(fname) as jfile:
                 tmp_data = json.load(jfile)
+            if fname.endswith("aa_muts.json"):
+                try:
+                    validate(tmp_data, load_json_schema("schema-translate.json"))
+                except ValidateError as err:
+                    print("{} seems to be an invalid JSON format. "
+                        "Was it produced by different version of augur the one you are currently using ({})? "
+                        "Please check the script / program which produced that JSON file.".format(fname, get_augur_version()))
+                    print(err)
+                    sys.exit(2)
             try:
                 for k,v in tmp_data.items():
                     if k=="nodes":

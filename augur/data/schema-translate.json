@@ -1,0 +1,87 @@
+{
+    "type" : "object",
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "JSON produced by `augur translate`",
+    "additionalProperties": true,
+    "required": [],
+    "properties" : {
+        "annotations": {
+            "description": "Coordinates etc of genes / genome",
+            "type" : "object",
+            "patternProperties": {
+                "^[a-zA-Z0-9*_-]+$": {
+                    "type": "object",
+                    "properties": {
+                        "seqid":{
+                            "description": "Sequence on which the coordinates below are valid. Could be viral segment, bacterial contig, etc",
+                            "$comment": "Unused by Auspice 2.0",
+                            "type": "string"
+                        },
+                        "type": {
+                            "description": "Type of the feature. could be mRNA, CDS, or similar",
+                            "$comment": "Unused by Auspice 2.0",
+                            "type": "string"
+                        },
+                        "start": {
+                            "description": "Gene start position (one-based, following GFF format)",
+                            "type": "number"
+                        },
+                        "end": {
+                            "description": "Gene end position (one-based closed, last position of feature, following GFF format)",
+                            "type": "number"
+                        },
+                        "strand": {
+                            "description": "Positive or negative strand",
+                            "type": "string",
+                            "enum": ["-","+"]
+                        }
+                    }
+                }
+            }
+        },
+        "reference": {
+            "description": "Reference (AA) sequences of genes",
+            "$comment": "Ideally we could enforce that these keys are present as keys in `annotations`",
+            "patternProperties": {
+                "^[a-zA-Z0-9*_-]+$": {
+                    "type": "string"
+                }
+            }
+        },
+        "nodes": {
+            "description": "Nodes (internal nodes or strain names)",
+            "type": "object",
+            "patternProperties": {
+                ".*": {
+                    "description": "gene (or annotated region)",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "aa_muts": {
+                            "type": "object",
+                            "patternProperties": {
+                                "^[a-zA-Z0-9*_-]+$": {
+                                    "description": "Amino acid mutations",
+                                    "$comment": "Ideally we could enforce that these keys are present as keys in `annotations`",
+                                    "type": "array",
+                                    "items": {
+                                      "pattern": "^[A-Z*-][0-9]+[A-Z*-]$"
+                                    }
+                                }
+                            }
+                        },
+                        "aa_sequences": {
+                            "type": "object",
+                            "patternProperties": {
+                                "^[a-zA-Z0-9*_-]+$": {
+                                    "description": "(AA) Sequence at this node",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
