@@ -1,0 +1,36 @@
+{
+    "type" : "object",
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "JSON object for the `annotations` key, typically produced by `augur translate`",
+    "description": "Coordinates etc of genes / genome",
+    "patternProperties": {
+        "^[a-zA-Z0-9*_-]+$": {
+            "type": "object",
+            "properties": {
+                "seqid":{
+                    "description": "Sequence on which the coordinates below are valid. Could be viral segment, bacterial contig, etc",
+                    "$comment": "Unused by Auspice 2.0",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "Type of the feature. could be mRNA, CDS, or similar",
+                    "$comment": "Unused by Auspice 2.0",
+                    "type": "string"
+                },
+                "start": {
+                    "description": "Gene start position (one-based, following GFF format)",
+                    "type": "number"
+                },
+                "end": {
+                    "description": "Gene end position (one-based closed, last position of feature, following GFF format)",
+                    "type": "number"
+                },
+                "strand": {
+                    "description": "Positive or negative strand",
+                    "type": "string",
+                    "enum": ["-","+"]
+                }
+            }
+        }
+    }
+}

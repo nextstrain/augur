@@ -184,11 +184,11 @@ def read_node_data(fnames, tree=None):
         if os.path.isfile(fname):
             with open(fname) as jfile:
                 tmp_data = json.load(jfile)
-            if fname.endswith("aa_muts.json"):
+            if tmp_data.get("annotations"):
                 try:
-                    validate(tmp_data, load_json_schema("schema-translate.json"))
+                    validate(tmp_data.get("annotations"), load_json_schema("schema-annotations.json"))
                 except ValidateError as err:
-                    print("{} seems to be an invalid JSON format. "
+                    print("{} contains an `annotations` block of an invalid JSON format. "
                         "Was it produced by different version of augur the one you are currently using ({})? "
                         "Please check the script / program which produced that JSON file.".format(fname, get_augur_version()))
                     print(err)
