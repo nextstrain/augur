@@ -2,7 +2,7 @@
 Export JSON files suitable for visualization with auspice.
 """
 
-import os
+import os, sys
 import re
 import time
 import numpy as np
@@ -454,30 +454,55 @@ def get_root_sequence(root_node, ref=None, translations=None):
     return root_sequence
 
 
-def register_arguments(parser):
-    parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
-    parser.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
+def _register_arguments(parser, v1_subcommand):
+    required = v1_subcommand # if `v1` subcommand then we _can_ require arguments to be present
+    parser.add_argument('--tree', '-t', required=required, help="tree to perform trait reconstruction on")
+    parser.add_argument('--metadata', required=required, help="tsv file with sequence meta data")
     parser.add_argument('--reference', required=False, help="reference sequence for export to browser, only vcf")
-    parser.add_argument('--reference-translations', required=False, help="reference translations for export to browser, only vcf")
-    parser.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
+    parser.add_argument('--reference-translations', help="reference translations for export to browser, only vcf")
+    parser.add_argument('--node-data', required=required, nargs='+', help="JSON files with meta data for each node")
     parser.add_argument('--auspice-config', help="file with auspice configuration")
     parser.add_argument('--colors', help="file with color definitions")
     parser.add_argument('--lat-longs', help="file latitudes and longitudes, overrides built in mappings")
-    parser.add_argument('--new-schema', action="store_true", help="export JSONs using nexflu schema")
-    parser.add_argument('--output-main', help="Main JSON file name that is passed on to auspice (e.g., zika.json).")
-    parser.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json). Only used with --nextflu-schema")
-    parser.add_argument('--output-sequence', help="JSON file name that is passed on to auspice (e.g., zika_seq.json). Only used with --nextflu-schema")
-    parser.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json). Only used with --nextflu-schema")
-    parser.add_argument('--title', default="Analysis", help="Title to be displayed by auspice")
-    parser.add_argument('--maintainers', default=[""], nargs='+', help="Analysis maintained by")
-    parser.add_argument('--maintainer-urls', default=[""], nargs='+', help="URL of maintainers")
-    parser.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
-    parser.add_argument('--extra-traits', nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
-    parser.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : xxx")
-    parser.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
+    parser.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json).")
+    parser.add_argument('--output-sequence', help="JSON file name that is passed on to auspice (e.g., zika_seq.json).")
+    parser.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json).")
+    if not v1_subcommand:
+        parser.add_argument('--new-schema', action="store_true", help="export JSONs using new v2 schema (in development)")
+        parser.add_argument('--output-main', help="Main JSON file name that is passed on to auspice (e.g., zika.json).")
+        parser.add_argument('--title', default="Analysis", help="Title to be displayed by auspice")
+        parser.add_argument('--maintainers', default=[""], nargs='+', help="Analysis maintained by")
+        parser.add_argument('--maintainer-urls', default=[""], nargs='+', help="URL of maintainers")
+        parser.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
+        parser.add_argument('--extra-traits', nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
+        parser.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : xxx")
+        parser.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
 
+
+def enforce_required_args(args):
+    """
+    With the move to allowing `augur export v1` we can't require arguments to be present on
+    `augur export`. We use this function to ensure they have been set.
+    """
+    reqs = ["tree", "metadata", "node_data"]
+    for r in reqs:
+        if not getattr(args, r):
+            print("The following option is required: \"--{}\"".format(r.replace("_","-")))
+            sys.exit(2)
+
+def register_arguments(parser):
+    # register arguments on the "main" `augur export` command
+    # note that arguments cannot be required here, as else the `v1` subparser cannot be used
+    _register_arguments(parser, v1_subcommand=False)
+    # create a subcommand, `augur export v1`, which behaves very similar to `augur export v1` as
+    # found in augur v6. Note that certain options present in `augur export` are _not_ present in
+    # `augur export v1`, such as the ability to export as the v2 schema!
+    subparsers = parser.add_subparsers(title='subparsers')
+    v1_parser = subparsers.add_parser('v1', help="Mimic augur v6's way of calling augur export. Contains a subset of the arguments available to `augur export`.")
+    _register_arguments(v1_parser, v1_subcommand=True)
 
 def run(args):
+    enforce_required_args(args)
     T = Phylo.read(args.tree, 'newick')
     node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
     nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules

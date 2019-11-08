@@ -189,7 +189,7 @@ rule export:
         auspice_seq = rules.all.input.auspice_seq
     shell:
         """
-        augur export \
+        augur export v1 \
             --tree {input.tree} \
             --metadata {input.metadata} \
             --node-data {input.branch_lengths} {input.traits} {input.nt_muts} {input.aa_muts} \
