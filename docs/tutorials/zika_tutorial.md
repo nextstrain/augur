@@ -334,17 +334,17 @@ rule export:
         aa_muts = rules.translate.output.node_data,
         auspice_config = "config/auspice_config.json"
     output:
-        auspice_tree = "auspice/zika_tree.json",
-        auspice_meta = "auspice/zika_meta.json"
+        auspice_json = "auspice/zika.json",
     shell:
         """
-        augur export \
+        augur export v2 \
             --tree {input.tree} \
             --metadata {input.metadata} \
             --node-data {input.branch_lengths} {input.traits} {input.nt_muts} {input.aa_muts} \
+            --colors {input.colors} \
+            --lat-longs {input.lat_longs} \
             --auspice-config {input.auspice_config} \
-            --output-tree {output.auspice_tree} \
-            --output-meta {output.auspice_meta}
+            --output {output.auspice_json}
         """
 ```
 
