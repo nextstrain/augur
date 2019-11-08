@@ -488,25 +488,23 @@ rule export:
         nt_muts = rules.ancestral.output.nt_data,
         aa_muts = rules.translate.output.aa_data,
         drms = rules.seqtraits.output.drm_data,
-        color_defs = colors_file,
-        config = config_file,
-        geo_info = geo_info_file,
+        color_defs = "config/colors.tsv",
+        config = "config/config.json",
+        geo_info = "config/lat_longs.tsv",
         clades = rules.clades.output.clade_data
     output:
-        tree = rules.all.input.auspice_tree,
-        meta = rules.all.input.auspice_meta
+        auspice_json = "auspice/tb.json",
     shell:
         """
-        augur export \
+        augur export v2 \
             --tree {input.tree} \
             --metadata {input.metadata} \
             --node-data {input.branch_lengths} {input.traits} {input.drms} {input.aa_muts} {input.nt_muts} {input.clades} \
             --auspice-config {input.config} \
             --colors {input.color_defs} \
             --lat-longs {input.geo_info} \
-            --output-tree {output.tree} \
-            --output-meta {output.meta}
-        """
+            --output {output.auspice_json} \
+            """
 ```
 
 
