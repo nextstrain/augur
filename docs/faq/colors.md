@@ -1,7 +1,5 @@
 # Adding Custom Trait Colors
 
-<span style="color:red">TODO: Update this to reflect changes in tab/space delimiting!</span>
-
 Auspice uses a number of default color schemes to color the tree using meta data or values that the augur pipeline computed. In some cases these defaults are not suitable for particular type of data, and you'd like to use your own color schemes.
 
 To specify a mapping between discrete trait values and colors, you can pass a tab-delimited file to `augur export`/`augur export v1`/`augur export v2` using `--colors`.
@@ -14,17 +12,25 @@ The file should contain 3 columns separated by tab characters. The first columns
 
 Example:
 ```
-country thailand    #511EA8
-country vietnam #4928B4
-country singapore   #4334BF
-country french_polynesia    #4041C7
-country american_samoa  #3F50CC
-country fiji    #3F5ED0
+country	thailand	#511EA8
+country	vietnam	#4928B4
+country	singapore	#4334BF
+country	french polynesia	#4041C7
+country	american samoa	#3F50CC
+country	fiji	#3F5ED0
 ```
 
-The hexadecimal notation starts with a #, followed by two letters coding for red, green, blue values. If you need advice or inspiration for colors, have a look at [colorbrewer](http://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3). 
+The hexadecimal notation starts with a #, followed by two letters coding for red, green, blue values. If you need advice or inspiration for colors, have a look at [colorbrewer](http://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3).
+Pay particular not to mix tabs and spaces for column separation.
+The line
+```
+country	american samoa	#3F50CC
+```
+for example has a tab between "country" and "american samoa" while "american" and "samoa" are separated by a space (because that happens to be the how this place is called).
+"samoa" and "#3F50CC" are again separted by a tab.
 
-Make sure your trait (e.g. 'country') and the values (e.g. 'thailand') exactly match what's in your metadata!
+Augur matches geographic location in lower case, so the casing doesn't matter.
+Beyond that, make sure your trait (e.g. 'country') and the values (e.g. 'thailand') exactly match what's in your metadata!
 
 ### Ordering
 
