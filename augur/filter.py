@@ -71,7 +71,7 @@ def register_arguments(parser):
     parser.add_argument('--priority', type=str, help="file with list priority scores for sequences (strain\tpriority)")
     parser.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     parser.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
-    parser.add_argument('--subsample-seed', help="seed to allow reproducible sub-sampling (with same input data). Can be number or string.")
+    parser.add_argument('--subsample-seed', help="random number generator seed to allow reproducible sub-sampling (with same input data). Can be number or string.")
     parser.add_argument('--exclude-where', nargs='+',
                                 help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
     parser.add_argument('--include-where', nargs='+',
@@ -218,12 +218,13 @@ def run(args):
     # specified in --group-by and then take at most --sequences-per-group
     # from each group. Within each group, sequences are optionally sorted
     # by a priority score specified in a file --priority
+    # Fix seed for the RNG if specified
+    if args.subsample_seed:
+        random.seed(args.subsample_seed)
     num_excluded_subsamp = 0
     if args.group_by and args.sequences_per_group:
         spg = args.sequences_per_group
         seq_names_by_group = defaultdict(list)
-        if args.subsample_seed:
-            random.seed(args.subsample_seed)
 
         for seq_name in seq_keep:
             group = []
