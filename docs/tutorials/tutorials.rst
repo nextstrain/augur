@@ -2,7 +2,7 @@
 Tutorials
 =========
 
-.. note:: We have just released version 6 of augur -- `check our upgrading guide <../upgrading/upgrading.html>`__
+.. note:: We have just released version 6 of augur -- `check our upgrading guide <../releases/migrating-v5-v6.html>`__
 
 .. toctree::
    :maxdepth: 1
@@ -10,6 +10,3 @@ Tutorials
 
    zika_tutorial
    tb_tutorial
-   community_hosting
-   clades
-   import-beast

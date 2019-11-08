@@ -1,5 +1,12 @@
 # Installation
 
+* [Using pip from PyPi](#using-pip-from-pypi)
+* [Using Conda](#using-conda)
+* [Install from source](#install-from-source)
+* [Testing if it worked](#testing-if-it-worked)
+
+---
+
 ## Using pip from PyPi
 
 Augur is written in Python 3 and requires at least Python 3.4.
@@ -9,11 +16,6 @@ It's published on [PyPi](https://pypi.org) as [nextstrain-augur](https://pypi.or
 pip install nextstrain-augur
 ```
 
-You can also install from a git clone or other copy of the source code by running:
-
-```bash
-pip install .
-```
 
 If your system has both Python 2 and Python 3 installed side-by-side, you may need to use `python3` instead of just `python` (which often defaults to Python 2 when both Python versions are installed).
 
@@ -44,9 +46,35 @@ Alternatively, augur itself and all of its dependencies can be installed into a 
 
     conda env create -f environment.yml
 
+> _By default this environment is named "augur" but you can change that by providing a name to the above command with `-n <your-env-name>`_
+
 When that finishes, the enviroment needs to be activated whenever you want to use augur:
 
     conda activate augur
+
+## Install from source
+
+```bash
+git clone https://github.com/nextstrain/augur.git
+pip install .
+```
+
+This install depends on a fairly minimal set of external Python libraries.
+There are some functions in augur that require a larger set of dependencies.
+These can be installed via:
+
+```bash
+pip install .[full]
+```
+
+If you wish to also install the development dependencies, and install augur in an "editable" mode whereby changes to the source code are reflected in your version of `augur` then run:
+
+```bash
+pip install -e .[dev]
+```
+
+[See above](#using-pip-from-pypi) for how to install the external bioinformatics programs which you'll need to have a fully functioning toolkit.
+
 
 ## Testing if it worked
 

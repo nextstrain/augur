@@ -2,7 +2,9 @@
 augur parse
 ===========
 
-.. contents::
+* `Example: how to parse metadata from fasta-headers <#example-how-to-parse-metadata-from-fasta-headers>`__
+
+----
 
 .. argparse::
     :module: augur

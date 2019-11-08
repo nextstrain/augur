@@ -2,10 +2,11 @@
 Annotate sequences based on amino-acid or nucleotide signatures.
 """
 
+import sys
 import numpy as np
 from treetime.vcf_utils import read_vcf
 from collections import defaultdict
-from .utils import write_json
+from .utils import write_json, get_json_name
 
 def read_in_translate_vcf(vcf_file, ref_file):
     """
@@ -294,11 +295,12 @@ def register_arguments(parser):
     parser.add_argument('--translations', type=str, help="AA alignment to search for sequence traits in (can include ancestral sequences)")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the nucleotide VCF was mapped to')
     parser.add_argument('--vcf-translate-reference', type=str, help='fasta file of the sequence the translated VCF was mapped to')
-    parser.add_argument('--features', type=str, 
+    parser.add_argument('--features', type=str,
         help='file that specifies sites defining the features in a tab-delimited format: "GENE SITE ALT DISPLAY_NAME FEATURE". For nucleotide sites, GENE can be "nuc" (or column excluded entirely for all-nuc sites). "DISPLAY_NAME" can be blank or excluded entirely.')
     parser.add_argument('--count', type=str, choices=['traits','mutations'], default='traits', help='Whether to count traits (ex: # drugs resistant to) or mutations')
     parser.add_argument('--label', type=str, default="# Traits", help='How to label the counts (ex: Drug_Resistance)')
-    parser.add_argument('--output', '-o', type=str, help='output json with sequence features')
+    parser.add_argument('--output-node-data', type=str, help='name of JSON file to save sequence features to')
+    parser.add_argument('--output', '-o', type=str, help='DEPRECATED. Same as --output-node-data')
 
 
 def run(args):
@@ -330,4 +332,6 @@ def run(args):
     seq_features = attach_features(annotations, args.label, args.count)
 
     #write out json
-    write_json({"nodes":seq_features}, args.output)
+    out_name = get_json_name(args)
+    write_json({"nodes":seq_features},out_name)
+    print("sequence traits written to", out_name, file=sys.stdout)

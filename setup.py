@@ -36,6 +36,7 @@ setup(
         "bcbio-gff >=0.6.0, ==0.6.*",
         "biopython >=1.67, ==1.*",
         "jsonschema >=3.0.0, ==3.*",
+        "packaging >=19.2",
         "pandas >=0.20.0, ==0.*",
         "phylo-treetime >=0.5.6, <0.7",
         "snakemake >=5.4.0, ==5.*"

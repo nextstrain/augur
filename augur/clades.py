@@ -6,7 +6,7 @@ import sys
 from Bio import Phylo
 import pandas as pd
 import numpy as np
-from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json
+from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json, get_json_name
 
 def read_in_clade_definitions(clade_file):
     '''
@@ -183,7 +183,8 @@ def register_arguments(parser):
     parser.add_argument('--mutations', nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
     parser.add_argument('--reference', nargs='+', help='fasta files containing reference and tip nucleotide and/or amino-acid sequences ')
     parser.add_argument('--clades', type=str, help='TSV file containing clade definitions by amino-acid')
-    parser.add_argument('--output', type=str, help="name of JSON files for clades")
+    parser.add_argument('--output-node-data', type=str, help='name of JSON file to save clade assignments to')
+    parser.add_argument('--output', '-o', type=str, help='DEPRECATED. Same as --output-node-data')
 
 
 def run(args):
@@ -209,5 +210,6 @@ def run(args):
 
     clade_membership = assign_clades(clade_designations, all_muts, tree, ref)
 
-    write_json({'nodes': clade_membership}, args.output)
-    print("clades written to", args.output, file=sys.stdout)
+    out_name = get_json_name(args)
+    write_json({'nodes': clade_membership}, out_name)
+    print("clades written to", out_name, file=sys.stdout)

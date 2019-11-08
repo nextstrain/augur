@@ -50,7 +50,7 @@ assert-clean-working-dir() {
 
 remove-changelog-header() {
     local version="$1"
-    perl -0pi -e "s/(?<=^# __NEXT__\n\n)\n# \Q$version\E .+\n\n//m" "$changes_file"
+    perl -0pi -e "s/(?<=^## __NEXT__\n\n)\n## \Q$version\E .+\n\n//m" "$changes_file"
 }
 
 main "$@"

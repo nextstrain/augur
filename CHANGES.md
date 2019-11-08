@@ -1,8 +1,10 @@
-# __NEXT__
+# CHANGELOG
 
-# 5.3.0 (9 September 2019)
+## __NEXT__
 
-## Features
+## 5.3.0 (9 September 2019)
+
+### Features
 
 * export: Improve printing of error messages with missing or conflicting author
   data. [See issue 274](https://github.com/nextstrain/augur/issues/274)
@@ -12,7 +14,7 @@
   polytomies when producing a time tree.
   [See PR 345](https://github.com/nextstrain/augur/pull/345)
 
-## Bug fixes
+### Bug fixes
 
 * Catch and throw error when there are duplicate strain names.
   [See PR 356](https://github.com/nextstrain/augur/pull/356)
@@ -22,20 +24,20 @@
 * Better handling of rerooting options for trees without temporal information.
   [See issue 348](https://github.com/nextstrain/augur/issues/348)
 
-## Data
+### Data
 
 * Small fixes in geographic coordinate file
 
-# 5.2.1 (4 August 2019)
+## 5.2.1 (4 August 2019)
 
-## Bug fixes
+### Bug fixes
 
 * Print more useful error message if Python recursion limit is reached.
   [See issue 328](https://github.com/nextstrain/augur/issues/328)
 * Print more useful error message if vcftools if missing.
   [See PR 312](https://github.com/nextstrain/augur/pull/321)
 
-## Development
+### Development
 
 * Significantly relax version requirements specified in setup.py for biopython,
   pandas, etc... Additionally, move lesser used packages (cvxopt, matplotlib,
@@ -43,13 +45,13 @@
   other pip installed packages.
   [See PR 323](https://github.com/nextstrain/augur/pull/323)
 
-## Data
+### Data
 
 * Include additional country lat/longs in base data
 
-# 5.2.0 (23 July 2019)
+## 5.2.0 (23 July 2019)
 
-## Features
+### Features
 
 * ancestral: Adds a new flag `--output-sequences` and logic to support saving
   ancestral sequences and leaves from the given tree to a FASTA file. Also adds a
@@ -66,7 +68,7 @@
   well when forecasting frequencies into the future.
   [See PR 271](https://github.com/nextstrain/augur/pull/271)
 
-## Bug fixes
+### Bug fixes
 
 * ancestral, traits, translate: Print warning if supplied tree is missing internal
   node names (normally provided by running `augur refine`).
@@ -75,11 +77,11 @@
 * Include pip in Conda enviroment file.
   [See PR 309](https://github.com/nextstrain/augur/pull/309)
 
-## Documentation
+### Documentation
 
 * Document environment variables respected by Augur
 
-## Development
+### Development
 
 * Remove matplotlib and seaborn from `setup.py` install. These are still called a
   few places in augur (like `titers.validate()`), but it was deemed rare enough
@@ -93,14 +95,14 @@
   [See PR 310](https://github.com/nextstrain/augur/pull/310)
 
 
-# 5.1.1 (1 July 2019)
+## 5.1.1 (1 July 2019)
 
-## Features
+### Features
 
 * tree: Add support for the GTR+R10 substitution model.
 * tree: Support parentheses in node names when using IQ-TREE.
 
-## Bug fixes
+### Bug fixes
 
 * Use the center of the UK for its coordinates instead of London.
 * filter: Mark `--output` required, which it always was but wasn't marked.
@@ -108,13 +110,13 @@
 * export: Fix for preliminary version 2 schema support.
 * refine: Correct error handling when the tree file is missing or empty.
 
-## Documentation
+### Documentation
 
 * Add examples of Augur usage in the wild.
 * Rename and reorganize CLI and Python API pages a little bit to make "where do
   I start learning to use Augur?" clearer to non-devs.
 
-## Development
+### Development
 
 * Relax version requirements of pandas and seaborn.  The hope is this will make
   installation smoother (particularly alongside other packages which require
@@ -122,9 +124,9 @@
   versions ourselves.
 
 
-# 5.1.0 (29 May 2019)
+## 5.1.0 (29 May 2019)
 
-## Documentation
+### Documentation
 
 * Documentation is now available online for the augur CLI and Python API via
   Read The Docs: <https://nextstrain-augur.readthedocs.io>.  The _latest_
@@ -133,9 +135,9 @@
   are in the README.
 
 
-# 5.0.0 (26 May 2019)
+## 5.0.0 (26 May 2019)
 
-## Features
+### Features
 
 * ancestral: New option to `--keep-ambiguous`, which will not infer nucleotides at
   ambiguous (N) sites on tip sequences and instead leave as 'N'
@@ -173,7 +175,7 @@
   explicit `--minify-json` argument available to `augur export`.
   [See PR 278.](https://github.com/nextstrain/augur/pull/278)
 
-## Bug fixes
+### Bug fixes
 
 * export: Cast numeric values to strings for export.
   [See issue 287.](https://github.com/nextstrain/augur/issues/287)
@@ -184,9 +186,9 @@
   was inferred. Re-rooting with an outgroup is sensible even without a timetree.
   [See PR 282.](https://github.com/nextstrain/augur/pull/282)
 
-# 4.0.0 (24 April 2019)
+## 4.0.0 (24 April 2019)
 
-## Features
+### Features
 
 * distance: New interface for specifying distances between sequences. This is
   a **backwards-incompatible** change. Refer to `augur distance --help` for
@@ -194,33 +196,33 @@
 
 * export: Add a `--minify-json` flag to omit indentation in Auspice JSONs.
 
-## Bug fixes
+### Bug fixes
 
 * frequencies: Emit one-based coordinates (instead of zero-based) for KDE-based
   mutation frequencies
 
-## Data
+### Data
 
 * Include additional country lat/longs in base data
 
 
-# 3.1.8 (13 February 2019)
+## 3.1.8 (13 February 2019)
 
-## Bug fixes
+### Bug fixes
 
 * titers: fix calculation of `mean_potentency` for model export
 
-# 3.1.7 (5 February 2019)
+## 3.1.7 (5 February 2019)
 
-## Bug fixes
+### Bug fixes
 
 * Update to TreeTime 0.5.3
 * tree: Fix bug in printing causing errors in Python versions <3.6
 * tree: Alter site masking to not be so memory intensive
 
-# 3.1.6 (29 January 2019)
+## 3.1.6 (29 January 2019)
 
-## Features
+### Features
 
 * filter: Allow negative matches to `--exclude-where`. For example,
  `--exclude-where country!=usa` would exclude all samples where metadata `country` does
@@ -228,70 +230,70 @@
 * tree: Allow `--exclude-sites` to work with FASTA input. Ensure that indexing of input
  sites is one-based.
 
-## Bug fixes
+### Bug fixes
 
 * fix loading of strains when loading titers from file, previously strains had not been
  filtered to match the tree appropriately
 
-# 3.1.5 (13 January 2019)
+## 3.1.5 (13 January 2019)
 
-## Features
+### Features
 
 * frequencies: Add `--ignore-char` and `--minimal-clade-size` as options.
 * frequencies: Include `--stiffness` and `--inertia` as options.
 * titers: Allow multiple titer date files in `--titers` import.
 
-## Bug fixes
+### Bug fixes
 
 * filter: Fix `--non-nucleotide` call to include `?` as allowed character.
 * tree: Fix `--method raxml` to properly delimit interim RAxML output so that
   simultaneous builds don't conflict.
 
-## Data
+### Data
 
 * Include additional country lat/longs in base data
 
-# 3.1.4 (1 January 2019)
+## 3.1.4 (1 January 2019)
 
-## Bug fixes
+### Bug fixes
 
 * frequencies: Include `counts` in `augur frequencies` output JSON to support
   downstream plotting.
 
-## Data
+### Data
 
 * Include additional country lat/longs in base data
 
-# 3.1.3 (29 December 2018)
+## 3.1.3 (29 December 2018)
 
-## Features
+### Features
 
 * filter: Add `--non-nucleotide` option to remove sequences with non-conforming
   nucleotide characters.
 
-## Bug fixes
+### Bug fixes
 
 * Revise treatment of `-`, ` ` in `augur parse` to leave `-` as is and remove white
   space. Also delimit `[` and `]` to `_`.
 * Fix bug in naming of temp IQTREE fixes to prevent conflicts from simultaneous builds.
 
-## Data
+### Data
 
 * Include additional country lat/longs in base data
 
-## Development
+### Development
 
 * Remove non-modular measles build in favor of [nextstrain/measles](https://github.com/nextstrain/measles) repo.
 
-# 3.1.2 (21 December 2018)
+## 3.1.2 (21 December 2018)
 
-## Bug fixes
+### Bug fixes
 
 * Update dependencies
 
-# 3.1.1 (21 December 2018)
+## 3.1.1 (21 December 2018)
 
-## Bug fixes
+### Bug fixes
 
 * filter: Fix `--include-where`. Adds an `all_seq` variable needed by the logic to
   include records by value. This was previously working for VCF but threw an exception
@@ -299,9 +301,9 @@
 * Update flu reference viruses and lat longs.
 * Update dependencies
 
-# 3.1.0 (18 December 2018)
+## 3.1.0 (18 December 2018)
 
-## Features
+### Features
 
 * reconstruct-sequences: Include `augur reconstruct-sequences` module that reconstructs
   alignments from mutations inferred on the tree
@@ -314,33 +316,33 @@
   clades but don't extrapolate as well as diffusion frequencies.
 * titers: Enable annotation of nodes in a tree from the substitution model
 
-# 3.0.5.dev1 (26 November 2018)
+## 3.0.5.dev1 (26 November 2018)
 
-## Bug fixes
+### Bug fixes
 
 * translate: Nucleotide ("nuc") annotation for non-bacterial builds starts at 0
   again, not 1, fixing a regression.
 
-## Documentation
+### Documentation
 
 * Schemas: Correct coordinate system description for genome start/end
   annotations.
 
 
-# 3.0.4.dev1 (26 November 2018)
+## 3.0.4.dev1 (26 November 2018)
 
-## Bug fixes
+### Bug fixes
 
 * validate: Fix regression for gene names containing an asterisk.
 
-## Development
+### Development
 
 * Fix Travis CI tests which were silently not running.
 
 
-# 3.0.3.dev1 (26 November 2018)
+## 3.0.3.dev1 (26 November 2018)
 
-## Features
+### Features
 
 * refine: Add a `--clock-std-dev` option
 
@@ -352,7 +354,7 @@
 * All JSON is now emitted with sorted keys, making it easier to diff and run
   other textual comparisons against output.
 
-## Bug fixes
+### Bug fixes
 
 * filter: Only consider A, T, C, and G when calculating sequence length for the
   `--min-length` option.
@@ -363,14 +365,14 @@
 
 * Normalize custom geographic names to lower case for consistent matching.
 
-## Data
+### Data
 
 * Fix typo in geographic entry for `netherlands`.
 
 * Schemas: Reconcile naming patterns used in gene definitions and tree
   annotations.
 
-## Development
+### Development
 
 * Upgrade TreeTime dependency to 0.5.x and at least 0.5.1.
 
@@ -379,23 +381,23 @@
 * Stop testing under Python 2.7 on Travis CI.
 
 
-# 3.0.2.dev1 (27 September 2018)
+## 3.0.2.dev1 (27 September 2018)
 
-## Bug fixes
+### Bug fixes
 
 * translate: Fix broken `--help` message
 
 
-# 3.0.1.dev1 (27 September 2018)
+## 3.0.1.dev1 (27 September 2018)
 
-## Features
+### Features
 
 * align and tree: The --nthreads option now accepts the special value "auto" to
   automatically set the number of threads to the number of CPU cores available.
 
 * Alias `augur --version` to `augur version`
 
-## Bug fixes
+### Bug fixes
 
 * tree: The --nthreads option is now respected.  Previously all tree builders
   were ignoring the value and using either 2 threads (RAxML, IQ-TREE) or as
@@ -418,7 +420,7 @@
 * Print the help message, instead of throwing an exception, when `augur` is run
   without arguments.
 
-## Documentation
+### Documentation
 
 * Briefly describe each command in its `--help` output and in the global `augur
   --help` output.
@@ -431,11 +433,11 @@
 
 * Include URLs for bug reports, the change log, and the source on PyPi.
 
-## Data
+### Data
 
 * Geographic coordinates added for the Netherlands and the Philippines.
 
-## Development
+### Development
 
 * Reset the `release` branch when rewinding a failed local release process.
 
@@ -443,24 +445,24 @@
   maintainability.
 
 
-# 3.0.0.dev3 (4 September 2018)
+## 3.0.0.dev3 (4 September 2018)
 
-## Development
+### Development
 
 * Use an allowed Topic classifier so we can upload to PyPi
 
 * Ignore distribution egg-info build files
 
 
-# 3.0.0.dev2 (4 September 2018)
+## 3.0.0.dev2 (4 September 2018)
 
-## Features
+### Features
 
 * Export: Add safety checks for optional annotations and geo data
 
 * Include more lat/longs in the default geo data
 
-## Development
+### Development
 
 * Add release tooling
 
@@ -473,9 +475,9 @@
   for example.
 
 
-# 3.0.0.dev1 (unreleased)
+## 3.0.0.dev1 (unreleased)
 
-## Development
+### Development
 
 * Start versioning augur beginning with 3.0.0.  A new `augur version` command
   reports the running version.
