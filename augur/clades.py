@@ -6,7 +6,7 @@ import sys
 from Bio import Phylo
 import pandas as pd
 import numpy as np
-from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json
+from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json, get_json_name
 
 def read_in_clade_definitions(clade_file):
     '''
@@ -210,5 +210,6 @@ def run(args):
 
     clade_membership = assign_clades(clade_designations, all_muts, tree, ref)
 
-    write_json({'nodes': clade_membership}, args.output)
-    print("clades written to", args.output, file=sys.stdout)
+    out_name = get_json_name(args)
+    write_json({'nodes': clade_membership}, out_name)
+    print("clades written to", out_name, file=sys.stdout)

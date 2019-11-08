@@ -23,6 +23,20 @@ def myopen(fname, mode):
     else:
         return open(fname, mode)
 
+def get_json_name(args, default=None):
+    if args.output:
+        print("WARNING: the --output flag will be deprecated in the next major augur release. Use --output-node-data instead.", file=sys.stderr)
+        return args.output
+    elif args.output_node_data:
+        return args.output_node_data
+    else:
+        if default:
+            print("WARNING: no name for the output file was specified. Writing results to %s."%default, file=sys.stderr)
+            return default
+        else:
+            raise ValueError("Please specify a name for the JSON file containing the results.")
+
+
 def ambiguous_date_to_date_range(mydate, fmt, min_max_year=None):
     from datetime import datetime
     sep = fmt.split('%')[1][-1]

@@ -6,7 +6,7 @@ import numpy as np
 from collections import defaultdict
 import os, sys
 import pandas as pd
-from .utils import read_metadata, write_json
+from .utils import read_metadata, write_json, get_json_name
 TINY = 1e-12
 
 def mugration_inference(tree=None, seq_meta=None, field='country', confidence=True,
@@ -179,6 +179,7 @@ def run(args):
 
     mugration_states = defaultdict(dict)
     models = defaultdict(dict)
+    out_prefix = '.'.join(args.tree.split('.')[:-1])
     for column in args.columns:
         T, gtr, alphabet = mugration_inference(tree=tree_fname, seq_meta=traits,
                                                field=column, confidence=args.confidence, sampling_bias_correction=args.sampling_bias_correction)
@@ -198,10 +199,8 @@ def run(args):
             models[column]['equilibrium_probabilities'] = list(gtr.Pi)
             models[column]['transition_matrix'] = [list(x) for x in gtr.W]
 
-        #if args.output is default (no dir), including '/' messes up writing
-        prefix = os.path.dirname(args.output)+'/' if len(os.path.dirname(args.output)) != 0 else ''
         if gtr:
-            with open(prefix+'%s.mugration_model.txt'%column, 'w') as ofile:
+            with open(out_prefix+'%s.mugration_model.txt'%column, 'w') as ofile:
                 ofile.write('Map from character to field name\n')
                 for k,v in alphabet.items():
                     ofile.write(k+':\t'+str(v)+'\n')
@@ -209,9 +208,11 @@ def run(args):
 
                 ofile.write(str(gtr))
 
-    write_json({"models":models, "nodes":mugration_states}, args.output)
+    out_name = get_json_name(args, out_prefix+'_traits.json')
+    write_json({"models":models, "nodes":mugration_states},out_name)
 
     print("\nInferred ancestral states of discrete character using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
           "\n\tVirus Evolution, vol 4, https://academic.oup.com/ve/article/4/1/vex042/4794731\n", file=sys.stdout)
-    print("results written to",args.output, file=sys.stdout)
+
+    print("results written to", out_name, file=sys.stdout)

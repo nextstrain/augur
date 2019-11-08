@@ -5,7 +5,7 @@ Translate gene regions from nucleotides to amino acids.
 import os, sys
 import numpy as np
 from Bio import SeqIO, SeqFeature, Seq, SeqRecord, Phylo
-from .utils import read_node_data, load_features, write_json, write_VCF_translation
+from .utils import read_node_data, load_features, write_json, write_VCF_translation, get_json_name
 from treetime.vcf_utils import read_vcf
 
 class MissingNodeError(Exception):
@@ -416,8 +416,10 @@ def run(args):
             output_data['reference'][fname] = translations[fname]['reference']
     else:
         output_data['reference'] = aa_muts[tree.root.name]['aa_sequences']
-    write_json(output_data, args.output)
-    print("amino acid mutations written to",args.output, file=sys.stdout)
+
+    out_name = get_json_name(args, '.'.join(args.tree.split('.')[:-1]) + '_aa-mutations.json')
+    write_json(output_data, out_name)
+    print("amino acid mutations written to", out_name, file=sys.stdout)
 
     ## write alignments to file is requested
     if args.alignment_output:

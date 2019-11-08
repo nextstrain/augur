@@ -6,7 +6,7 @@ import os, shutil, time, json, sys
 from Bio import Phylo, SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from .utils import read_tree, InvalidTreeError, write_json
+from .utils import read_tree, InvalidTreeError, write_json, get_json_name
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
 
@@ -161,16 +161,9 @@ def run(args):
     else:
         anc_seqs['reference'] = {"nuc":"".join(T.root.sequence) if hasattr(T.root, 'sequence') else ''}
 
-    if args.output:
-        anc_seqs_fname = args.output
-        print("WARNING: the --output flag will be deprecated in the next major augur release. Use --output-node-data instead.", file=sys.stderr)
-    elif args.output_node_data:
-        anc_seqs_fname = args.output_node_data
-    else:
-        anc_seqs_fname = '.'.join(args.alignment.split('.')[:-1]) + '.anc_seqs.json'
-
-    write_json(anc_seqs, anc_seqs_fname)
-    print("ancestral mutations and sequences JSON written to",anc_seqs_fname, file=sys.stdout)
+    out_name = get_json_name(args, '.'.join(args.alignment.split('.')[:-1]) + '_mutations.json')
+    write_json(anc_seqs, out_name)
+    print("ancestral mutations written to", out_name, file=sys.stdout)
 
     if args.output_sequences:
         if args.output_vcf:

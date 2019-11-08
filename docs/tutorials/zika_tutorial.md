@@ -188,7 +188,7 @@ rule traits:
         augur traits \
             --tree {input.tree} \
             --metadata {input.metadata} \
-            --output {output.node_data} \
+            --output-node-data {output.node_data} \
             --columns {params.columns} \
             --confidence
         """
@@ -212,7 +212,7 @@ rule ancestral:
         augur ancestral \
             --tree {input.tree} \
             --alignment {input.alignment} \
-            --output {output.node_data}
+            --output-node-data {output.node_data}
         """
 ```
 
@@ -292,7 +292,7 @@ rule translate:
             --tree {input.tree} \
             --ancestral-sequences {input.node_data} \
             --reference-sequence {input.reference} \
-            --output {output.node_data} \
+            --output-node-data {output.node_data} \
         """
 ```
 

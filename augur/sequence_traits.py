@@ -2,10 +2,11 @@
 Annotate sequences based on amino-acid or nucleotide signatures.
 """
 
+import sys
 import numpy as np
 from treetime.vcf_utils import read_vcf
 from collections import defaultdict
-from .utils import write_json
+from .utils import write_json, get_json_name
 
 def read_in_translate_vcf(vcf_file, ref_file):
     """
@@ -331,4 +332,6 @@ def run(args):
     seq_features = attach_features(annotations, args.label, args.count)
 
     #write out json
-    write_json({"nodes":seq_features}, args.output)
+    out_name = get_json_name(args)
+    write_json({"nodes":seq_features},out_name)
+    print("sequence traits written to", out_name, file=sys.stdout)
