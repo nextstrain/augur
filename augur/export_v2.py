@@ -375,18 +375,16 @@ def set_annotations(data_json, node_data):
 
 def set_filters(data_json, config):
     # NB set_colorings() must have been run as we access those results
-    potentials = {coloring["key"] for coloring in data_json['meta']["colorings"]
-                  if coloring["type"] != "continuous" and
-                     coloring["key"] != 'gt'}
-
     if config.get('filters') == []:
         # an empty config section indicates no filters are to be exported
         data_json['meta']['filters'] = []
     elif config.get('filters'):
         # set filters as long as they are not continuous
-        data_json['meta']['filters'] = [f for f in config['filters'] if f in potentials]
+        data_json['meta']['filters'] = config['filters']
     else:
         # if not specified in the config, include all boolean and categorical colorbys
+        potentials = {coloring["key"] for coloring in data_json['meta']["colorings"]
+                      if coloring["type"] != "continuous" and coloring["key"] != 'gt'}
         data_json['meta']['filters'] = list(potentials)
 
 def validate_data_json(filename):
