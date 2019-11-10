@@ -479,7 +479,7 @@ def create_author_data(node_attrs):
         author = node_author_info[node_name]["author"]
         if len(author_to_unique_tuples[author]) > 1:
             index = author_to_unique_tuples[author].index(author_tuple)
-            node_author_info[node_name]["value"] = author + " {}".format("ABCDEFGHIJKLMNOPQRSTUVWXYZ"[index])
+            node_author_info[node_name]["value"] = author + " {}".format("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"[index])
         else:
             node_author_info[node_name]["value"] = author
 
