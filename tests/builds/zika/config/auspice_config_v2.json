@@ -40,5 +40,11 @@
     "country",
     "region",
     "author"
+  ],
+  "panels": [
+    "tree",
+    "map",
+    "entropy",
+    "frequencies"
   ]
 }

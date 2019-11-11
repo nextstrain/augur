@@ -80,7 +80,7 @@
                 "type": "string"
             }
         },
-        "defaults": {
+        "display_defaults": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -101,6 +101,16 @@
                     "type": "string",
                     "enum": ["rect", "radial", "unrooted", "clock"]
                 }
+            }
+        },
+        "panels": {
+            "type": "array",
+            "description": "Which panels should auspice display",
+            "$comment": "optional",
+            "minItems": 1,
+            "items": {
+                "type": "string",
+                "enum": ["tree", "map", "frequencies", "entropy"]
             }
         }
     }
