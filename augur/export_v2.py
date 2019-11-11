@@ -652,23 +652,23 @@ def register_arguments_v2(subparsers):
     )
     required.add_argument('--tree','-t', metavar="newick", required=True, help="Phylogenetic tree, usually output from `augur refine`")
     required.add_argument('--node-data', metavar="JSON", required=True, nargs='+', help="JSON files containing metadata for nodes in the tree")
-    required.add_argument('--output', metavar="JSON", required=True, help="Ouput file for auspice")
+    required.add_argument('--output', metavar="JSON", required=True, help="Ouput file (typically for visualisation in auspice)")
 
     config = v2.add_argument_group(
-        title="CONFIG OPTIONS",
+        title="DISPLAY CONFIGURATION",
         description="These control the display settings for auspice. \
             You can supply a config JSON (which has all available options) or command line arguments (which are more limited but great to get started). \
-            Supplying both is fine too -- command line args will overrule what is set in the config file!"
+            Supplying both is fine too, command line args will overrule what is set in the config file!"
     )
     config.add_argument('--auspice-config', metavar="JSON", help="Auspice configuration file")
     config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
-    config.add_argument('--maintainers', metavar="name", action="append", nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>'")
-    config.add_argument('--geo-resolutions', metavar="trait", nargs='+', help="What location traits are used to plot on map")
+    config.add_argument('--maintainers', metavar="name", action="append", nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
+    config.add_argument('--geo-resolutions', metavar="trait", nargs='+', help="Geographic traits to be displayed on map")
     config.add_argument('--color-by-metadata', metavar="trait", nargs='+', help="Metadata columns to include as coloring options")
     config.add_argument('--panels', metavar="panels", nargs='+', choices=['tree', 'map', 'entropy', 'frequencies'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
 
     optional_inputs = v2.add_argument_group(
-        title="OPTIONAL INPUTS"
+        title="OPTIONAL INPUT FILES"
     )
     optional_inputs.add_argument('--metadata', metavar="TSV", help="Additional metadata for strains in the tree")
     optional_inputs.add_argument('--colors', metavar="TSV", help="Custom color definitions")
