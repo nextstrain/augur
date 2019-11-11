@@ -180,7 +180,6 @@ rule export:
             --lat-longs {input.geo_info} \
             --output-tree {output.tree} \
             --output-meta {output.meta}
-        augur validate export-v1 {output.meta} {output.tree}
         """
 
 

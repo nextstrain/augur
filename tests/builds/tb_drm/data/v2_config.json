@@ -27,7 +27,7 @@
   },
   "panels": ["tree", "map"],
   "maintainers": [
-    ["Emma Hodcroft", "https://neherlab.org/emma-hodcroft.html"]
+    {"name": "Emma Hodcroft", "url": "https://neherlab.org/emma-hodcroft.html"}
   ],
   "filters": [],
   "display_defaults": {
