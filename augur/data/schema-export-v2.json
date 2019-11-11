@@ -37,7 +37,8 @@
                         "properties": {
                             "name": {"type": "string"},
                             "url": {"type": "string"}
-                        }
+                        },
+                        "required": ["name"]
                     }
                 },
                 "genome_annotations": {

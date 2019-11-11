@@ -742,13 +742,13 @@ def set_maintainers(data_json, config, cmd_line_maintainers):
                     tmp_dict['url'] = url
                 maintainers.append(tmp_dict)
         data_json['meta']['maintainers'] = maintainers
-    elif config.get("maintainer"): #v1-type specification
+    elif config.get("maintainer"): # v1-type specification
         data_json['meta']["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
-    elif config.get("maintainers"): #v2-type specification (proposed by Emma)
-        data_json['meta']['maintainers'] = [{'name': n[0], 'url': n[1]} for n in config['maintainers']]
+    elif config.get("maintainers"): # see schema for details
+        data_json['meta']['maintainers'] = config['maintainers']
     else:
         warn("you didn't provide information on who is maintaining this analysis.")
-        data_json['meta']["maintainers"] = [{ "name": "unspecified", "url": "unspecified"}]
+        data_json['meta']["maintainers"] = [{ "name": "unspecified" }]
 
 
 def set_title(data_json, config, cmd_line_title):
