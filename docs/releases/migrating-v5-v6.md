@@ -262,16 +262,15 @@ E.g. `"title": "Phylodynamics of my Pathogen"`.
 #### maintainers
 
 You can now have more than one maintainer associated with your run!
-Specify maintainers and their websites using `"maintainers"` and listing the name and URL in pairs:
+Specify one or as many maintainers as you wish via the following structure (`url`s are optional):
 
 ```
 "maintainers": [
-  ["Jane Doe", "www.janedoe.com"],
-  ["Ravi Kupra","www.ravikupra.co.uk"]
+  {"name": "Jane Doe", "url": "www.janedoe.com"},
+  {"name": "Ravi Kupra", "url": "www.ravikupra.co.uk"}
 ]
 ```
 
-If you only have one maintainer, you still need to use the same format of two sets of square brackets: `"maintainers": [["Hanna Kukk", "www.hkukk.ee"]]`.
 Previously this was the "maintainer" field in your v1 config file and used a different structure.
 
 #### panels
@@ -343,8 +342,8 @@ Here is an example of how all of the above options would fit into a config file:
 {
   "title": "Phylodynamics of my Pathogen",
   "maintainers": [
-    ["Jane Doe", "www.janedoe.com"],
-    ["Ravi Kupra","www.ravikupra.co.uk"]
+    {"name": "Jane Doe", "url": "www.janedoe.com"},
+    {"name": "Ravi Kupra", "url": "www.ravikupra.co.uk"}
   ],
   "colorings": {
     "age": {
@@ -474,8 +473,8 @@ Export v2 config:
       "region"
     ],
   "maintainers": [
-    ["Hanna Kukk", "http://vamuzlab.org"],
-    ["Mohammad Fahir", "http://mfahir.co.uk"]
+    {"name": "Hanna Kukk", "url": "http://vamuzlab.org"},
+    {"name": "Mohammad Fahir", "url": "http://mfahir.co.uk"}
   ],
   "filters": [
     "country", "region"

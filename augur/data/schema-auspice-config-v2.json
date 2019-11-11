@@ -50,17 +50,18 @@
             }
         },
         "maintainers": {
+            "description": "Who maintains this dataset?",
+            "$comment": "order similar to a publication",
             "type": "array",
             "uniqueItems": true,
             "minItems": 1,
             "items": {
-                "type": "array",
-                "uniqueItems": true,
-                "minItems": 2,
-                "maxItems": 2,
-                "items": {
-                    "type": "string"
-                }
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "url": {"type": "string"}
+                },
+                "required": ["name"]
             }
         },
         "filters": {

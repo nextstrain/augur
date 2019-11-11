@@ -15,7 +15,7 @@
             "type": "object",
             "$comment": "Metadata associated with phylogeny",
             "additionalProperties": false,
-            "required": ["title", "updated", "maintainers", "panels"],
+            "required": ["title", "updated", "panels"],
             "properties" : {
                 "title" : {
                     "description": "Auspice displays this at the top of the page",
@@ -37,7 +37,8 @@
                         "properties": {
                             "name": {"type": "string"},
                             "url": {"type": "string"}
-                        }
+                        },
+                        "required": ["name"]
                     }
                 },
                 "genome_annotations": {
