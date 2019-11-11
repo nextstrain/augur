@@ -366,6 +366,8 @@ def read_config(fname):
         print("FATAL ERROR:")
         print("\tCouldn't parse the JSON file {}".format(fname))
         print("\tError message: '{}'".format(err.msg))
+        print("\tLine number: '{}'".format(err.lineno))
+        print("\tColumn number: '{}'".format(err.colno))
         print("\tYou must correct this file in order to proceed.")
         sys.exit(2)
 
