@@ -747,8 +747,7 @@ def set_maintainers(data_json, config, cmd_line_maintainers):
     elif config.get("maintainers"): # see schema for details
         data_json['meta']['maintainers'] = config['maintainers']
     else:
-        warn("you didn't provide information on who is maintaining this analysis.")
-        data_json['meta']["maintainers"] = [{ "name": "unspecified" }]
+        warn("You didn't provide information on who is maintaining this analysis.")
 
 
 def set_title(data_json, config, cmd_line_title):
