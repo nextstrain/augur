@@ -41,7 +41,7 @@ def prettify(x, trim=0, camelCase=False, etal=None, removeComma=False):
     if (trim > 0 and len(x) > trim):
         res = x[:trim] + "..."
 
-    if any(c in res for c in ["usvi", "usa", "uk"]):
+    if any(c == res for c in ["usvi", "usa", "uk"]):
         res = res.upper()
 
     words = res.split('_')
