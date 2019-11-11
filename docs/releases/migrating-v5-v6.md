@@ -81,8 +81,12 @@ Similarly, you can pass in files containing colors, latitute, and longitude data
 Instead of specifying two output files (`--output-tree` and `--output-meta`) you now only need to specify one with `--output`.
 For example, if your old files were `auspice/virus_AB_tree.json` and `auspice/virus_AB_meta.json`, you might want to call the single output `auspice/virus_AB.json` - or if you want to tell it apart from your v1 export, you might call it `auspice/virus_ABv2.json`.
 
-
 <span style="color:red">_TODO: the new option to export a reference sequence. Currently unused by Auspice_</span>
+
+### Other changed arguments
+
+The `--tree-name` argument has been removed, as auspice v2 no longer uses this.
+See [the auspice docs](https://nextstrain.github.io/auspice/advanced-functionality/second-trees) for more information about how second trees are specified and displayed.
 
 ### Command Line Options instead of (or in addition to) a config file
 

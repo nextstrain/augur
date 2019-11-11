@@ -677,7 +677,6 @@ def register_arguments_v2(subparsers):
     optional_settings = v2.add_argument_group(
         title="OPTIONAL SETTINGS"
     )
-    optional_settings.add_argument('--tree-name', metavar="name", default=False, help="Tree name (needed for tangle tree functionality)")
     optional_settings.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
 
 
