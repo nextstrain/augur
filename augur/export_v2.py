@@ -6,11 +6,10 @@ import sys
 import time
 from collections import defaultdict
 import warnings
+import re
 from Bio import Phylo
 from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
-from .validate import export_v2 as validate_v2
-from .validate import ValidateError
-import re
+from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
 
 # Set up warnings & exceptions
 warn = warnings.warn
@@ -794,6 +793,17 @@ def parse_node_data_and_metadata(T, node_data_files, metadata_file):
 
     return (node_data, node_attrs, node_data_names, metadata_names)
 
+def get_config(args):
+    if not args.auspice_config:
+        return {}
+    config = read_config(args.auspice_config)
+    try:
+        print("Validating config file {} against the JSON schema".format(args.auspice_config))
+        validate_auspice_config_v2(config_json=config)
+    except ValidateError:
+        print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
+        sys.exit(2)
+    return config
 
 def run_v2(args):
     configure_warnings()
@@ -802,7 +812,7 @@ def run_v2(args):
     # parse input files
     T = Phylo.read(args.tree, 'newick')
     node_data, node_attrs, node_data_names, metadata_names = parse_node_data_and_metadata(T, args.node_data, args.metadata)
-    config = read_config(args.auspice_config) if args.auspice_config else {}
+    config = get_config(args)
 
     # set metadata data structures
     set_title(data_json, config, args.title)

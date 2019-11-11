@@ -1,7 +1,9 @@
 {
     "type" : "object",
+    "version": "v2",
     "$schema": "http://json-schema.org/draft-06/schema#",
     "title": "Auspice config file to be supplied to `augur export v2`",
+    "$comment": "This schema includes deprecated-but-handled-by-augur-export-v1 properties, but their schema definitions are somewhat incomplete",
     "additionalProperties": false,
     "required": [],
     "properties" : {
@@ -36,27 +38,46 @@
                 }
             }
         },
+        "color_options": {
+            "description": "DEPRECATED v1 syntax for defining colorings",
+            "deprecated": true,
+            "type": "object"
+        },
         "geo_resolutions": {
             "description": "Traits to be interpreted as 'geo resolution' options -- i.e. associated with lat/longs & made points on the map",
+            "$comment": "Note that array entries can be different structures & you can mix & match",
             "type": "array",
             "uniqueItems": true,
             "minItems": 1,
             "items": {
-                "type": "object",
-                "description": "An indiviual geo resolution",
-                "additionalProperties": false,
-                "required": ["key"],
-                "properties": {
-                    "key": {
-                        "type": "string",
-                        "description": "Trait key - must be specified on nodes (e.g. 'country')"
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "description": "An indiviual geo resolution",
+                        "additionalProperties": false,
+                        "required": ["key"],
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "description": "Trait key - must be specified on nodes (e.g. 'country')"
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "The title to display in the geo resolution dropdown. Optional -- if not provided then `key` will be used."
+                            }
+                        }
                     },
-                    "title": {
-                      "type": "string",
-                      "description": "The title to display in the geo resolution dropdown. Optional -- if not provided then `key` will be used."
+                    {
+                        "type": "string",
+                        "description": "An indiviual geo resolution key"
                     }
-                }
+                ]
             }
+        },
+        "geo": {
+            "description": "DEPRECATED v1 syntax for defining geo_resolutions",
+            "deprecated": true,
+            "type": "array"
         },
         "maintainers": {
             "type": "array",
@@ -72,10 +93,15 @@
                 }
             }
         },
+        "maintainer": {
+            "description": "DEPRECATED v1 syntax for defining maintainers (but you could only define one!)",
+            "deprecated": true,
+            "type": "array"
+        },
         "filters": {
             "type": "array",
             "uniqueItems": true,
-            "minItems": 1,
+            "minItems": 0,
             "items": {
                 "type": "string"
             }
@@ -90,7 +116,7 @@
                 "geo_resolution": {
                     "type": "string"
                 },
-                "colorBy": {
+                "color_by": {
                     "type": "string"
                 },
                 "distance_measure": {
@@ -102,6 +128,17 @@
                     "enum": ["rect", "radial", "unrooted", "clock"]
                 }
             }
+        },
+        "defaults": {
+            "description": "DEPRECATED v1 syntax for defining auspice view defaults",
+            "deprecated": true,
+            "type": "object"
+        },
+        "updated": {
+            "description": "DEPRECATED v1 (or older) syntax for defining when the build was updated",
+            "$comment": "unused in augur v6",
+            "deprecated": true,
+            "type": "string"
         },
         "panels": {
             "type": "array",
