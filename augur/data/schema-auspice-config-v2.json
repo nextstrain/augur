@@ -11,16 +11,25 @@
         },
         "colorings": {
             "description": "Set traits to be available as color-dropdown options",
-            "type" : "object",
-            "additionalProperties": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
                 "type": "object",
+                "description": "An indiviual color-by for auspice",
                 "additionalProperties": false,
-                "required": [],
+                "required": ["key"],
                 "properties": {
+                    "key": {
+                        "description": "They key used to access the value of this coloring on each node",
+                        "type": "string"
+                    },
                     "title": {
+                        "description": "Text to be displayed in the \"color by\" dropdown and legends",
+                        "$comment": "string is parsed unchanged by Auspice",
                         "type": "string"
                     },
                     "type": {
+                        "description": "Defines how the color scale should be constructed",
                         "type": "string",
                         "enum": ["continuous", "ordinal", "categorical", "boolean"]
                     }

@@ -170,9 +170,6 @@
                             },
                             "scale": {
                                 "description": "Provided mapping between trait values & hex values",
-                                "$comment": "TODO: If type is continuous or ordinal, values between those provided here are interpolated",
-                                "$comment": "If type is categorical, values not present here are grey",
-                                "$comment": "TODO: If type is boolean, use \"1\" (true) and \"0\" (false) as properties",
                                 "type": "array",
                                 "items": {
                                     "type": "array",

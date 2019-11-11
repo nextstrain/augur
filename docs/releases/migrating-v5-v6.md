@@ -284,14 +284,15 @@ Options are "tree", "map", "entropy", and "frequencies" (e.g: `"panels": ["tree"
 
 #### colorings
 
-These are the traits which Auspice should display as options to color the tree & map.
-In previous versions of the config file this was "color_options" and the current structure is very similar - but easier to understand!
+These are a list of the traits which Auspice should display as options to color the tree & map.
+In previous versions of the config file this was "color_options" and the current structure is similar, but hopefully easier to understand!
 
 For each trait you include, you can define:
+* A required "key", which is used to lookup the values via node-data JSONs or other provided metadata.
 * An optional "title" which will shown by Auspice when referring to this trait -- for instance you may have a trait called "ab1" which you want to show as "Age bracket 1" in the drop-down menus, legend, and filter.
-* An optional, but recommended "type" which can be either 'ordinal', 'boolean', 'continuous', or 'categorical'. If you don't provide a type, augur will try to guess it (see how it guesses [here](#id1)).
+* An optional, but highly recommended "type" which can be either 'ordinal', 'boolean', 'continuous', or 'categorical'. If you don't provide a type, augur will try to guess it (see how it guesses [here](#id1)).
 
-Unless you want to change the name displayed, you _no longer_ need to include `gt`, `num_date`, `clade_membership`, or `Augur seqtraits` output (like clade or drug resistance information) in your config file - if that information is present, it will automatically be included. To exclude it, don't pass in the corresponding file to `--node-data`.
+Unless you want to change the name displayed, you _no longer_ need to include `gt`, `num_date`, `clade_membership`, or `augur seqtraits` output (like clade or drug resistance information) in your config file - if that information is present, it will automatically be included. To exclude it, don't pass in the corresponding file to `--node-data`.
 
 > _Remember that if you are using `--metadata-color-by` on the command-line, only the traits given there will be color-by options!_
 _To include everything in your config file, don't use `--metadata-color-by`, but include all traits you want as coloring options in "colorings" in the config file._
@@ -346,21 +347,25 @@ Here is an example of how all of the above options would fit into a config file:
     ["Jane Doe", "www.janedoe.com"],
     ["Ravi Kupra","www.ravikupra.co.uk"]
   ],
-  "colorings": {
-    "age": {
+  "colorings": [
+    {
+      "key": "age",
       "title": "Host age",
       "type": "continuous"
     },
-    "hospitalized": {
+    {
+      "key": "hospitalized",
       "type": "boolean"
     },
-    "country": {
+    {
+      "key": "country",
       "type": "categorical"
     },
-    "region": {
+    {
+      "key": "region",
       "type": "categorical"
     }
-  },
+  ],
   "geo_resolutions": [
     {"key":"country", "title": "Areas"},
     "region"
@@ -453,22 +458,26 @@ Export v2 config:
     <div class="highlight-default notranslate"><div class="highlight"><pre>
 {
   "title": "Phylodynamics of Virus A",
-  "colorings": {<br><br><br><br><br><br><br><br><br><br><br><br>
-    "age": {
+  "colorings": [<br><br><br><br><br><br><br><br><br><br><br><br>
+    {
+      "key": "age",<br>
       "title": "Host age",<br>
       "type": "continuous"<br>
     },
-    "host": {
+    {
+      "key": "host",<br>
       "title": "Animal",<br>
       "type": "categorical"<br>
     },
-    "country": {
+    {
+      "key": "country",<br>
       "type": "categorical"
     },
-    "region": {
+    {
+      "key": "region",<br>
       "type": "categorical"
     }<br><br><br><br><br><br>
-  },
+  ],
   "geo_resolutions": [
       "country",
       "region"
