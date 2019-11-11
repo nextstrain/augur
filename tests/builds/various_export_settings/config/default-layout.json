@@ -1,18 +1,21 @@
 {
   "title": "Default layout should be clock",
-  "colorings": {
-    "gt": {
+  "colorings": [
+    {
+      "key": "gt",
       "title": "Genotype",
       "type": "categorical"
     },
-    "num_date": {
+    {
+      "key": "num_date",
       "title": "Sampling date",
       "type": "continuous"
     },
-    "country": {
+    {
+      "key": "country",
       "type": "ordinal"
     }
-  },
+  ],
   "panels": [
     "tree"
   ],

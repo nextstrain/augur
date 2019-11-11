@@ -73,7 +73,7 @@ def validate(jsonToValidate, schema):
 
 def auspice_config_v2(config_json, **kwargs):
     schema = load_json_schema("schema-auspice-config-v2.json")
-    jsonToValidate = load_json(config_json)
+    jsonToValidate = load_json(config_json) if isinstance(config_json, str) else config_json
     validate(jsonToValidate, schema)
 
 def export_v2(json_v2, **kwargs):

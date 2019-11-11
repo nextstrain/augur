@@ -1,28 +1,33 @@
 {
   "title": "Real-time tracking of Zika virus evolution",
-  "colorings": {
-    "gt": {
+  "colorings": [
+    {
+      "key": "gt",
       "title": "Genotype",
       "type": "categorical"
     },
-    "num_date": {
+    {
+      "key": "num_date",
       "title": "Sampling date",
       "type": "continuous"
     },
-    "author": {
+    {
+      "key": "author",
       "title": "Authors",
       "type": "categorical"
     },
-    "country": {
+    {
+        "key": "country",
         "type": "ordinal"
     },
-    "region": {
+    {
+        "key": "region",
         "type": "ordinal"
     }
-  },
+  ],
   "geo_resolutions": [
     {"key": "country", "title": "Country Custom Title"},
-    {"key": "region"}
+    "region"
   ],
   "display_defaults": {
     "map_triplicate": true,
@@ -35,5 +40,11 @@
     "country",
     "region",
     "author"
+  ],
+  "panels": [
+    "tree",
+    "map",
+    "entropy",
+    "frequencies"
   ]
 }

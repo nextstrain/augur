@@ -6,11 +6,10 @@ import sys
 import time
 from collections import defaultdict
 import warnings
+import re
 from Bio import Phylo
 from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
-from .validate import export_v2 as validate_v2
-from .validate import ValidateError
-import re
+from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
 
 # Set up warnings & exceptions
 warn = warnings.warn
@@ -123,14 +122,35 @@ def is_valid(value):
     invalid = ["undefined", "unknown", "?", "nan", "na", "n/a", 'none', '', 'not known']
     return str(value).strip('\"').strip("'").strip().lower() not in invalid
 
-def get_config_defined_colorings(config):
+def get_config_colorings_as_dict(config):
     # extract the colorings information from the config JSON, if provided
+    # and return as a dict of `key` -> obj where `obj` is in v2-schema format
     config_colorings = {}
     if config.get("colorings"):
-        config_colorings = config["colorings"]
+        config_colorings = {v.get("key"):v for v in config["colorings"]}
     elif config.get("color_options"):
-        config_colorings = config["color_options"]
-        deprecated("[config file] 'color_options' has been replaced with 'colorings'")
+        deprecated("[config file] 'color_options' has been replaced with 'colorings' & the structure has changed.")
+        # parse v1-style colorings & convert to v2-style
+        for key, info in config.get("color_options").items():
+            # note: if both legentTitle & menuItem are present then we use the latter. See https://github.com/nextstrain/auspice/issues/730
+            if "menuItem" in info:
+                deprecated("[config file] coloring '{}': 'menuItem' has been replaced with 'title'. Using 'menuItem' as 'title'.".format(key))
+                info["title"] = info["menuItem"]
+                del info["menuItem"]
+            if "legendTitle" in info:
+                if info["title"]: # this can only have been set via menuItem ^^^
+                    deprecated("[config file] coloring '{}': 'legendTitle' has been replaced with 'title' & is unused since 'menuItem' is present.".format(key))
+                else:
+                    deprecated("[config file] coloring '{}': 'legendTitle' has been replaced with 'title'. Using 'legendTitle' as 'title'.".format(key))
+                    info["title"] = info["legendTitle"]
+                del info["legendTitle"]
+            if "key" in info:
+                del info["key"]
+            if info.get("type") == "discrete":
+                deprecated("[config file] coloring '{}': type 'discrete' is no longer valid. Please use either 'ordinal', 'categorical' or 'boolean'. "
+                    "This has been automatically changed to 'categorical'.".format(key))
+                info["type"] = "categorical"
+            config_colorings[key] = info
     return config_colorings
 
 
@@ -150,15 +170,11 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         if config.get(key, {}).get("type"):
             t = config.get(key).get("type")
             allowedTypes = ["continuous", "ordinal", "categorical", "boolean"]
-            if t == "discrete":
-                deprecated("[config file] Coloring type 'discrete' is no longer valid. Please use one of: '{}' instead. Trait {} has been automatically set as 'categorical'.".format(", ".join(allowedTypes), key))
-                return "categorical"
             if t not in allowedTypes:
                 warn("[config file] In trait {}, coloring type '{}' is not valid. Please choose from: '{}'. This trait has been excluded!".format(key, t, ", ".join(allowedTypes)))
                 raise InvalidOption()
             return t
         # no type supplied => try to guess
-        # import pdb; pdb.set_trace()
         if all([all([str(x).lower() in ["false", "true", "1.0", "0.0", "1", "0", "yes", "no"] for x in trait_values])]):
             t = "boolean"
         elif all([ isinstance(n, float) if isinstance(n, float) else isinstance(n, int) for n in trait_values ]):
@@ -168,26 +184,17 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         #Don't warn if command-line - no way to specify
         #treat country and region differently
         if config:
-            warn("[config file] Trait {} is missing type information. We've guessed '{}'.".format(key, t))
+            warn("[config file] Trait '{}' is missing type information. We've guessed '{}'.".format(key, t))
         elif key != "country" and key != "region":
-            print("Trait {} was guessed as being type '{}'. Use a 'config' file if you'd like to set this yourself.".format(key, t))
+            print("Trait '{}' was guessed as being type '{}'. Use a 'config' file if you'd like to set this yourself.".format(key, t))
         return t
 
     def _get_title(key):
-        # preferentially get the title from the config if set
-        if config.get(key):
-            info = config.get(key)
-            if "title" in info:
-                return info["title"]
-            oldFields = "' and '".join([a for a in info.keys() if a in ['menuItem', 'legendTitle']])
-            if "menuItem" in info:
-                deprecated("[config file] '{}' has been replaced with 'title'. "
-                           "Using 'menuItem' as 'title' for coloring '{}'.".format(oldFields, key))
-                return info["menuItem"]
-            if "legendTitle" in info:
-                deprecated("[config file] '{}' has been replaced with 'title'. "
-                           "Using 'legendTitle' as 'title' for coloring '{}'.".format(oldFields, key))
-                return info["legendTitle"]
+        # preferentially get the title from the config if set (walrus operator would help here)
+        config_title = config.get(key, {}).get("title")
+        if config_title:
+            return config_title
+
         # hardcoded fallbacks:
         if key == "clade_membership":
             return "Clade"
@@ -785,6 +792,17 @@ def parse_node_data_and_metadata(T, node_data_files, metadata_file):
 
     return (node_data, node_attrs, node_data_names, metadata_names)
 
+def get_config(args):
+    if not args.auspice_config:
+        return {}
+    config = read_config(args.auspice_config)
+    try:
+        print("Validating config file {} against the JSON schema".format(args.auspice_config))
+        validate_auspice_config_v2(config_json=config)
+    except ValidateError:
+        print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
+        sys.exit(2)
+    return config
 
 def run_v2(args):
     configure_warnings()
@@ -793,7 +811,7 @@ def run_v2(args):
     # parse input files
     T = Phylo.read(args.tree, 'newick')
     node_data, node_attrs, node_data_names, metadata_names = parse_node_data_and_metadata(T, args.node_data, args.metadata)
-    config = read_config(args.auspice_config) if args.auspice_config else {}
+    config = get_config(args)
 
     # set metadata data structures
     set_title(data_json, config, args.title)
@@ -803,7 +821,7 @@ def run_v2(args):
 
     set_colorings(
         data_json=data_json,
-        config=get_config_defined_colorings(config),
+        config=get_config_colorings_as_dict(config),
         command_line_colorings=args.color_by_metadata,
         metadata_names=metadata_names,
         node_data_colorings=node_data_names,
