@@ -99,9 +99,9 @@
             "deprecated": true,
             "type": "array"
         },
-        "repository": {
-          "description": "Repository URL used to build dataset",
-          "$comment": "optional, usually will be a GitHub URL",
+        "build_url": {
+          "description": "URL with instructions to reproduce build, usually expected to be a GitHub repo URL",
+          "$comment": "optional",
           "type": "string"
         },
         "filters": {

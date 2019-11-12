@@ -26,8 +26,8 @@
                     "type" : "string",
                     "pattern": "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$"
                 },
-                "repository" : {
-                    "description": "Auspice currently displays this for community pages in the sidebar",
+                "build_url" : {
+                    "description": "Auspice displays this at the top of the page as part of a byline",
                     "type" : "string"
                 },
                 "maintainers": {

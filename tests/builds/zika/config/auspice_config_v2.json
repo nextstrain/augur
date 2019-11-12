@@ -3,7 +3,7 @@
   "maintainers": [
     {"name": "Trevor Bedford", "url": "http://bedford.io/team/trevor-bedford/"}
   ],
-  "repository": "https://github.com/nextstrain/zika",    
+  "build_url": "https://github.com/nextstrain/zika",    
   "colorings": [
     {
       "key": "gt",
