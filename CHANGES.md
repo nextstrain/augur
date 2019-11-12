@@ -1,6 +1,13 @@
 # __NEXT__
 
 
+# 5.4.1 (12 November 2019)
+
+## Bug fixes
+
+* export v1: Include `--minify-json` option that was mistakenly not included in PR 398.
+  [See PR 409](https://github.com/nextstrain/augur/pull/409)
+
 # 5.4.0 (7 November 2019)
 
 ## Features
