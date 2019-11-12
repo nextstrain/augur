@@ -467,6 +467,7 @@ def _register_arguments(parser, v1_subcommand):
     parser.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json).")
     parser.add_argument('--output-sequence', help="JSON file name that is passed on to auspice (e.g., zika_seq.json).")
     parser.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json).")
+    parser.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
     if not v1_subcommand:
         parser.add_argument('--new-schema', action="store_true", help="export JSONs using new v2 schema (in development)")
         parser.add_argument('--output-main', help="Main JSON file name that is passed on to auspice (e.g., zika.json).")
@@ -476,7 +477,7 @@ def _register_arguments(parser, v1_subcommand):
         parser.add_argument('--geography-traits', nargs='+', help="What location traits are used to plot on map")
         parser.add_argument('--extra-traits', nargs='+', help="Metadata columns not run through 'traits' to be added to tree")
         parser.add_argument('--panels', default=['tree', 'map', 'entropy'], nargs='+', help="What panels to display in auspice. Options are : xxx")
-        parser.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
+
 
 
 def enforce_required_args(args):
