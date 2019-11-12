@@ -164,6 +164,10 @@ shell:
 ```
 You will need to use quotes in the same way even if you only have one maintainer!
 
+### Repository
+
+Set the repository URL displayed by Auspice via `--repository`.
+If running directly from the command line, input your repository URL directly (ex: `--repository https://github.com/nextstrain/zika`).
 
 ### Panels
 
@@ -273,6 +277,11 @@ Specify one or as many maintainers as you wish via the following structure (`url
 
 Previously this was the "maintainer" field in your v1 config file and used a different structure.
 
+#### repository
+
+The repository URL to be displayed by Auspice, a new functionality in `augur export v2`, e.g. `"repository": "https://github.com/nextstrain/zika"`.
+This is an optional field.
+
 #### panels
 
 Optional and unchanged from previous versions of the config file, this defines the panels that Auspice will display.
@@ -346,6 +355,7 @@ Here is an example of how all of the above options would fit into a config file:
     {"name": "Jane Doe", "url": "www.janedoe.com"},
     {"name": "Ravi Kupra", "url": "www.ravikupra.co.uk"}
   ],
+  "repository": "https://github.com/nextstrain/zika",
   "colorings": [
     {
       "key": "age",

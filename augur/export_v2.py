@@ -670,6 +670,7 @@ def register_arguments_v2(subparsers):
     config.add_argument('--auspice-config', metavar="JSON", help="Auspice configuration file")
     config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
     config.add_argument('--maintainers', metavar="name", action="append", nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
+    config.add_argument('--repository', type=str, metavar="repository", help="Build repository to be displayed by Auspice")
     config.add_argument('--geo-resolutions', metavar="trait", nargs='+', help="Geographic traits to be displayed on map")
     config.add_argument('--color-by-metadata', metavar="trait", nargs='+', help="Metadata columns to include as coloring options")
     config.add_argument('--panels', metavar="panels", nargs='+', choices=['tree', 'map', 'entropy', 'frequencies'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
@@ -764,6 +765,12 @@ def set_title(data_json, config, cmd_line_title):
     elif config.get("title"):
         data_json['meta']['title'] = config.get("title")
 
+def set_repository(data_json, config, cmd_line_repository):
+    # repository is not necessary. Cmd line args override any config settings
+    if cmd_line_repository:
+        data_json['meta']['repository'] = cmd_line_repository
+    elif config.get("repository"):
+        data_json['meta']['repository'] = config.get("repository")
 
 def parse_node_data_and_metadata(T, node_data_files, metadata_file):
     node_data = read_node_data(node_data_files) # node_data_files is an array of multiple files (or a single file)
@@ -817,6 +824,7 @@ def run_v2(args):
     set_title(data_json, config, args.title)
     set_display_defaults(data_json, config)
     set_maintainers(data_json, config, args.maintainers)
+    set_repository(data_json, config, args.repository)
     set_annotations(data_json, node_data)
 
     set_colorings(

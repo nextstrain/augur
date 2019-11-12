@@ -99,6 +99,11 @@
             "deprecated": true,
             "type": "array"
         },
+        "repository": {
+          "description": "Repository URL used to build dataset",
+          "$comment": "optional, usually will be a GitHub URL",
+          "type": "string"
+        },
         "filters": {
             "type": "array",
             "uniqueItems": true,

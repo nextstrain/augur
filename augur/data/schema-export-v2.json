@@ -26,6 +26,10 @@
                     "type" : "string",
                     "pattern": "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$"
                 },
+                "repository" : {
+                    "description": "Auspice currently displays this for community pages in the sidebar",
+                    "type" : "string"
+                },
                 "maintainers": {
                     "description": "Who maintains this dataset?",
                     "$comment": "order similar to a publication",
