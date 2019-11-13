@@ -263,7 +263,7 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         # it is here that we deal with the interplay between node-data "traits", command line colorings &
         # config provided options
         auto_colorings = [name for name in node_data_colorings
-                          if is_name_valid_for_export(name) and name not in metadata_names]
+                          if node_data_prop_is_normal_trait(name) and name not in metadata_names]
 
         colorings = []
         # If we have command line colorings, it seems we (a) ignore any provided in the config file
@@ -521,7 +521,8 @@ def set_node_attrs_on_tree(data_json, node_attrs):
                     node["branch_attrs"]["labels"] = { "aa": aa_lab }
 
     def _transfer_vaccine_info(node, raw_data):
-        pass
+        if raw_data.get("vaccine"):
+            node["node_attrs"]['vaccine'] = raw_data['vaccine']
 
     def _transfer_labels(node, raw_data):
         if "clade_annotation" in raw_data and is_valid(raw_data["clade_annotation"]):
@@ -589,7 +590,7 @@ def set_node_attrs_on_tree(data_json, node_attrs):
 
     _recursively_set_data(data_json["tree"])
 
-def is_name_valid_for_export(name):
+def node_data_prop_is_normal_trait(name):
     # those traits / keys / attrs which are not "special" and can be exported
     # as normal attributes on nodes 
     excluded = [
@@ -597,6 +598,7 @@ def is_name_valid_for_export(name):
         "clade_membership", # will be auto-detected if it is available
         "authors",          # authors are set as a node property, not a trait property
         "author",           # see above
+        "vaccine",          # vaccine info is stored as a "special" node prop
         'branch_length',
         'num_date',
         'raw_date',
