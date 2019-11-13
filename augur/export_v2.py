@@ -20,6 +20,9 @@ def deprecated(message):
     global deprecationWarningsEmitted
     deprecationWarningsEmitted=True
 
+def warning(message):
+    warn(message, UserWarning, stacklevel=2)
+
 def fatal(message):
     print("FATAL ERROR: {}".format(message))
     sys.exit(2)
@@ -588,7 +591,7 @@ def set_node_attrs_on_tree(data_json, node_attrs):
 
 def is_name_valid_for_export(name):
     # those traits / keys / attrs which are not "special" and can be exported
-    # as normal attributes on nodes
+    # as normal attributes on nodes 
     excluded = [
         "clade_annotation", # Clade annotation is label, not colorby!
         "clade_membership", # will be auto-detected if it is available
@@ -802,6 +805,11 @@ def get_config(args):
     except ValidateError:
         print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
         sys.exit(2)
+    # Print a warning about the inclusion of "vaccine_choices" which are _unused_ by `export v2`
+    # (They are in the schema as this allows v1-compat configs to be used)
+    if config.get("vaccine_choices"):
+        warning("The config JSON can no longer specify the `vaccine_choices`, they must be specified through a node-data JSON. This info will be unused.")
+        del config["vaccine_choices"]
     return config
 
 def run_v2(args):
