@@ -150,6 +150,11 @@
                 "type": "string",
                 "enum": ["tree", "map", "frequencies", "entropy"]
             }
+        },
+        "vaccine_choices": {
+            "type": "object",
+            "description": "UNUSED v1 syntax for defining vaccine choices",
+            "$comment": "This is unused in `augur export v2` which gets vaccine info vis a node-data JSON file. It remains in the schema so that v1 config files can be used by `augur export v2`"
         }
     }
 }

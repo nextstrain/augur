@@ -497,6 +497,10 @@ Export v2 config:
     </div>
 </div>
 
+### Vaccine choices
+In previous versions of augur, certain strains could be defined in the config file as `vaccine_choices` (auspice would display this as a cross over the tip in the tree).
+This functionality is now specified via a node-data JSON (see the v6 release notes).
+
 ## Prettifying metadata fields
 
 <span style="color:red">TODO: add more/edit</span>

@@ -20,6 +20,9 @@ def deprecated(message):
     global deprecationWarningsEmitted
     deprecationWarningsEmitted=True
 
+def warning(message):
+    warn(message, UserWarning, stacklevel=2)
+
 def fatal(message):
     print("FATAL ERROR: {}".format(message))
     sys.exit(2)
@@ -260,7 +263,7 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         # it is here that we deal with the interplay between node-data "traits", command line colorings &
         # config provided options
         auto_colorings = [name for name in node_data_colorings
-                          if is_name_valid_for_export(name) and name not in metadata_names]
+                          if node_data_prop_is_normal_trait(name) and name not in metadata_names]
 
         colorings = []
         # If we have command line colorings, it seems we (a) ignore any provided in the config file
@@ -518,7 +521,8 @@ def set_node_attrs_on_tree(data_json, node_attrs):
                     node["branch_attrs"]["labels"] = { "aa": aa_lab }
 
     def _transfer_vaccine_info(node, raw_data):
-        pass
+        if raw_data.get("vaccine"):
+            node["node_attrs"]['vaccine'] = raw_data['vaccine']
 
     def _transfer_labels(node, raw_data):
         if "clade_annotation" in raw_data and is_valid(raw_data["clade_annotation"]):
@@ -586,14 +590,15 @@ def set_node_attrs_on_tree(data_json, node_attrs):
 
     _recursively_set_data(data_json["tree"])
 
-def is_name_valid_for_export(name):
+def node_data_prop_is_normal_trait(name):
     # those traits / keys / attrs which are not "special" and can be exported
-    # as normal attributes on nodes
+    # as normal attributes on nodes 
     excluded = [
         "clade_annotation", # Clade annotation is label, not colorby!
         "clade_membership", # will be auto-detected if it is available
         "authors",          # authors are set as a node property, not a trait property
         "author",           # see above
+        "vaccine",          # vaccine info is stored as a "special" node prop
         'branch_length',
         'num_date',
         'raw_date',
@@ -802,6 +807,11 @@ def get_config(args):
     except ValidateError:
         print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
         sys.exit(2)
+    # Print a warning about the inclusion of "vaccine_choices" which are _unused_ by `export v2`
+    # (They are in the schema as this allows v1-compat configs to be used)
+    if config.get("vaccine_choices"):
+        warning("The config JSON can no longer specify the `vaccine_choices`, they must be specified through a node-data JSON. This info will be unused.")
+        del config["vaccine_choices"]
     return config
 
 def run_v2(args):
