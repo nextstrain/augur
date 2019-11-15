@@ -2,6 +2,33 @@
 
 ## __NEXT__
 
+## 5.4.1 (12 November 2019)
+
+### Bug fixes
+
+* export v1: Include `--minify-json` option that was mistakenly not included in PR 398.
+  [See PR 409](https://github.com/nextstrain/augur/pull/409)
+
+## 5.4.0 (7 November 2019)
+
+### Features
+
+* frequencies: Include `--minimal-clade-size-to-estimate` command line option.
+  [See PR 383](https://github.com/nextstrain/augur/pull/383)
+* lbi: Include `--no-normalization` command line option.
+  [See PR 380](https://github.com/nextstrain/augur/pull/380)
+
+### Compatibility fixes
+
+* export: Include `v1` subcommand to allow forwards compatibiliy with Augur v6 builds.
+  [See PR 398](https://github.com/nextstrain/augur/pull/398)
+
+### Bug fixes
+
+* export: Include warning if using a mismatched v6 translate file.
+  [See PR 392](https://github.com/nextstrain/augur/pull/392)
+* frequencies: Fix determination of interval for clipping of non-informative pivots
+
 ## 5.3.0 (9 September 2019)
 
 ### Features
