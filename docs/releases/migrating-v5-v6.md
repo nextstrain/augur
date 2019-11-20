@@ -21,7 +21,7 @@ Some important points:
 
 ---
 
-* [Compatibility between Augur & Auspice versions](#compatability-between-augur-auspice-versions)
+* [Compatibility between Augur & Auspice versions](#compatibility-between-augur-auspice-versions)
 * [Motivation behind changing JSON formats](#motivation-behind-changing-json-formats)
 * [I just need my old run to work _right now_!](#i-just-need-my-old-run-to-work-right-now)
 * [Terminology](#terminology)
@@ -38,7 +38,7 @@ The new Augur (v6) can still create "v1" JSONS, but can also create JSONs that w
 
 [This page](auspice-compatibility) has the most up-to-date compatibility information between different Augur and Auspice versions.
 
-> We understand how important backwards compatibility is - so for the time being "v1" JSONs will continue to work with Auspice v2.
+We understand how important backwards compatibility is - so for the time being "v1" JSONs will continue to work with Auspice v2.
 However, we recommend switching to v2 JSONs - they have more features, are easier to work with, and future versions of Auspice may not support v1 JSONs!
 
 
@@ -50,7 +50,7 @@ With the release of [Auspice v2](https://nextstrain.github.io/auspice/releases/v
 Why change formats? We were motivated by:
 
 * **Compactness**: Tree and Meta JSON files are now combined, so you only have to worry about one output file
-* **Flexibility**: The new v2 JSONs allow us flexiblity to include more features and data, and will let us move towards getting in line with existing conventions like GFF and BibTex
+* **Flexibility**: The new v2 JSONs allow us flexibility to include more features and data, and will let us move towards getting in line with existing conventions like GFF and BibTex
 * **Ease of use**: Users commonly got confused by the 'config' file. For basic runs you can now specify everything you need to see your data right in the command-line - no 'config' file needed! For more advanced exports, you can still specify a config file with more detail. (See "[Using a Config File](#using-a-config-file-to-customise-the-visualisation)")
 
 
@@ -74,7 +74,7 @@ _(Future you will thank past you!)_
 ### What's the same
 
 You still pass in your tree, metadata, and node-data files with `--tree`, `--metadata`, and `--node-data` - just like in `export v1`.
-Similarly, you can pass in files containing colors, latitute, and longitude data using `--colors` and `--lat-longs`, respectively.
+Similarly, you can pass in files containing colors, latitude, and longitude data using `--colors` and `--lat-longs`, respectively.
 
 ### Different outputs
 
@@ -109,7 +109,7 @@ We'll cover how coloring works on the [command line](#id1) and how it works in [
 
 #### Traits
 Traits is the general term for certain data associated with nodes in the tree, for example "country", "serotype", or "age".
-These may have been inferred for internal nodes by Augur functions like `augur traits` (confusingly named!) and `augur clades`, or they may only be availiable for tips and provided by the metadata TSV file.
+These may have been inferred for internal nodes by Augur functions like `augur traits` (confusingly named!) and `augur clades`, or they may only be available for tips and provided by the metadata TSV file.
 
 ### Geographic Traits
 Certain traits have a geographic interpretation, e.g. "country".
