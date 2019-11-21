@@ -2,9 +2,6 @@
 
 <span style="color:orange">
 
-TO DO:
-* Since this is now a "migrating" guide, we should expand on string prettying
-
 </span>
 
 
@@ -103,6 +100,10 @@ Previously, anything you wanted to color by had to be in the config file. You al
 We've made this smarter - `augur export v2` now automatically detects some traits and you can specify others on the command line. You can also control the color options in more detail using a config file.
 
 We'll cover how coloring works on the [command line](#id1) and how it works in [config files](#colorings) in more detail below.
+
+### Traits display exactly how you want
+
+Previously, auspice tried to make traits and locations look 'pretty' by auto-capitalizing them and removing underscores (which were required in multi-word traits). Auspice no longer does this for v2 JSONS, so you'll need to ensure your traits look exactly how you want them to display in auspice. You can read more about that [here](#prettifying-metadata-fields).
 
 ---
 ## Terminology
@@ -503,14 +504,12 @@ This functionality is now specified via a node-data JSON (see the v6 release not
 
 ## Prettifying metadata fields
 
-<span style="color:red">TODO: add more/edit</span>
-
 In Auspice v1, we automatically 'prettified' many metadata values. For example, a country value of 'new_zealand' would display as 'New Zealand', and a metadata column called 'age_range' would display as 'Age Range'.
 
 This worked well most of the time, but meant that users couldn't intentionally keep underscores or lower-case values. It also meant we had to detect exception cases like turning 'usa' into 'USA' rather than 'Usa'.
 
 In Auspice v2, all values are now displayed exactly as they arrive, allowing users to ensure every gene and abbreviation displays just as it should. However, this means that you should ensure your data looks exactly how you'd like it to display - change any 'new_zealand's in your metadata to 'New Zealand'!
 
-This also means we've become stricter about the format of the files that pass in color and lat-long information. Previously, it didn't matter if columns were separated by spaces or tabs - now, they must be separated by tabs.
+Don't forget to also change them in any custom lat-long and/or coloring files you are using. We've also become stricter about the format of the files that pass in color and lat-long information. Previously, it didn't matter if columns were separated by spaces or tabs - now, they must be separated by tabs.
 
 You can find out more about how to add [custom coloring](/faq/colors) and [lat-long](/faq/lat_longs) values.

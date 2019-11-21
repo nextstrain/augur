@@ -9,12 +9,12 @@ For augur to be able to parse this data, it needs to be formated consistently. Y
 An example meta data file is shown here:
 
 ```
-strain      accession   date        region
-1_0087_PF   KX447509    2013-12-XX  oceania
-1_0181_PF   KX447512    2013-12-XX  oceania
-1_0199_PF   KX447519    2013-11-XX  oceania
-BRA/2016    KY785433    2016-04-08  south_america
-BRA/2015    KY558989    2015-02-23  south_america
+strain      accession   date        region          host
+1_0087_PF   KX447509    2013-12-XX  Oceania         Human
+1_0181_PF   KX447512    2013-12-XX  Oceania         Bat
+1_0199_PF   KX447519    2013-11-XX  Oceania         Human
+BRA/2016    KY785433    2016-04-08  South America   Cow
+BRA/2015    KY558989    2015-02-23  South America   Bat
 ```
 
 ### A note on Excel
@@ -35,15 +35,17 @@ Dates should be formated according as `YYYY-MM-DD`. You can specify unknown date
 
 Geographic locations can be broken down, for example, into `region`, `country`, `division` or `city`. You can have as many levels of geographic information as you wish. For `region`, `country`, and some `division`s augur already knows many lat-long coordinates (see which ones it already knows by checking the list [here](https://github.com/nextstrain/augur/blob/master/augur/data/lat_longs.tsv)). 
 
-It is important that these are spelled consistently and we have adopted the convention that spaces are replaced by underscores (ex: New_Zealand).
+It is important that these are spelled consistently.
 
 If you want to include locations where augur doesn't know the lat-long values, you can include them - see how [here](lat_longs).
 
-<span style="color:orange">TODO: Update this to reflect changes in taking capitals and spacing!</span>
+### Consistancy and Style
 
-### Consistancy
+Check that your metadata is free from spelling mistakes and that values are consistant. Augur doesn't know that 'UK' and 'United Kingdom' or 'cat' and 'feline' are the same!
 
-Check that your metadata is free from spelling mistakes and that values are consistant. Augur doesn't know that 'UK' and 'united_kingdom' or 'cat' and 'feline' are the same!
+Previously, auspice 'prettified' traits by capitalizing them automatically, and removing the underscores that separated two-word locations ('new_zealand' became 'New Zealand'). 
+
+Auspice will still do this if you are exporting 'V1' type JSON files (from augur v5 or augur v6 using `export v1`), but will not do this if you are using `export v2` ([read more](../releases/migrating-v5-v6.html#prettifying-metadata-fields)). Instead, you should update your metadata files so that traits look the same as you'd like them to display in Auspice (change 'new_zealand' to 'New Zealand' in your metadata, and in any additional latitude-longitude or coloring files you use).
 
 ### Parsing from the header
 
@@ -54,6 +56,4 @@ Sometimes, metadata can be coded into the Fasta header, like so:
 ACTCGCTGCATCG...
 ```
 
-Augur can parse meta data from Fasta headers using the `parse` function (see [here]()), but you have to make sure that every sequence has the exact same meta data fields (even if empty), and that they are consistently delimited with `|`. Furthermore, none of the metadata fields can contain the character `|`.
-
-<span style="color:orange">TODO: Add link to parse!</span>
+Augur can parse meta data from Fasta headers using the `parse` function (see [here](parse.html)), but you have to make sure that every sequence has the exact same meta data fields (even if empty), and that they are consistently delimited with `|`. Furthermore, none of the metadata fields can contain the character `|`.

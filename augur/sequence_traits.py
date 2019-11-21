@@ -291,7 +291,7 @@ def attach_features(annotations, label, count):
 
 
 def register_arguments(parser):
-    parser.add_argument('--ancestral-sequences', type=str, help="nucleotide alignment to search for sequence traits in")
+    parser.add_argument('--ancestral-sequences', type=str, help="nucleotide alignment (VCF) to search for sequence traits in (can be generated from 'ancestral' using '--output-vcf')")
     parser.add_argument('--translations', type=str, help="AA alignment to search for sequence traits in (can include ancestral sequences)")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the nucleotide VCF was mapped to')
     parser.add_argument('--vcf-translate-reference', type=str, help='fasta file of the sequence the translated VCF was mapped to')
@@ -308,6 +308,7 @@ def run(args):
     This should be modified to work on Fasta-input files!!
     '''
     print("This method may change in future! Please use 'augur sequence-traits -h' to check the latest options.")
+    print("Unfortunately this method currently only works with VCF input.")
     ## check file format and read in sequences
     is_vcf = False
     if ( (args.ancestral_sequences and any([args.ancestral_sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])) or
@@ -324,7 +325,9 @@ def run(args):
             compress_seq["nuc"] = read_vcf(args.ancestral_sequences, args.vcf_reference)
     else:
         # TO-DO fill in fasta-format processing
-        aln = args.alignment
+        aln = args.ancestral_sequences
+        print("\nERROR: Unfortunately this feature currently only works with VCF input! It will be expanded to work with Fasta-input soon.")
+        return 1
 
     features = read_in_features(args.features)
     annotations = annotate_strains(features, compress_seq)
