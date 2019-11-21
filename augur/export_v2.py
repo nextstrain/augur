@@ -691,17 +691,6 @@ def register_arguments_v2(subparsers):
     )
     optional_settings.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
 
-
-    remove_pre_v6_release = v2.add_argument_group(
-        title="SOON TO BE REMOVED OPTIONS",
-        description="These options were available in augur v5 but are seemingly unused.\
-            Unless we discover otherwise, they will be removed before the v6 release. \
-            Note that they are still available via `augur export v1` to preserve the v5 behavior."
-    )
-    remove_pre_v6_release.add_argument('--output-sequence', metavar="JSON", help="(reconstructed) sequences for each node")
-    remove_pre_v6_release.add_argument('--reference', metavar="JSON", required=False, help="reference sequence for export to browser, only vcf")
-    remove_pre_v6_release.add_argument('--reference-translations', metavar="???", required=False, help="reference translations for export to browser, only vcf")
-
     return v2
 
 
