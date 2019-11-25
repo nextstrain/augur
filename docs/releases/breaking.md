@@ -35,4 +35,4 @@ Click on the `augur` function that used to work, and we'll try to get you up and
   > > augur export: error: the following arguments are required: Augur export now needs you to define the JSON version you want, e.g. `augur export v2`.
 
 * **Solution:**<br>
-  We've upgraded `augur export`. Find out how to adjust your `augur export` call to work with the latest version [using our handy guide](exportv.md).<br><br>
+  We've upgraded `augur export`. Find out how to adjust your `augur export` call to work with the latest version [using our handy guide](migrating-v5-v6.md).
