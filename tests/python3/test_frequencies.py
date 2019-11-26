@@ -13,7 +13,7 @@ import os
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from augur.frequency_estimators import get_pivots, TreeKdeFrequencies, AlignmentKdeFrequencies
-from base.io_util import json_to_tree
+from augur.utils import json_to_tree
 
 # Define regions to use for testing weighted frequencies.
 REGIONS = [
@@ -96,6 +96,9 @@ class TestTreeKdeFrequencies(object):
         assert hasattr(kde_frequencies, "frequencies")
         assert list(frequencies.values())[0].shape == kde_frequencies.pivots.shape
 
+        # Frequencies should sum to 1 at all pivots.
+        assert np.allclose(np.array(list(frequencies.values())).sum(axis=0), np.ones_like(kde_frequencies.pivots))
+
     def test_estimate_with_time_interval(self, tree):
         """Test frequency estimation with a given time interval.
         """
@@ -125,6 +128,9 @@ class TestTreeKdeFrequencies(object):
         assert hasattr(kde_frequencies, "frequencies")
         assert list(frequencies.values())[0].shape == kde_frequencies.pivots.shape
 
+        # Frequencies should sum to 1 at all pivots.
+        assert np.allclose(np.array(list(frequencies.values())).sum(axis=0), np.ones_like(kde_frequencies.pivots))
+
         # Estimate unweighted frequencies to compare with weighted frequencies.
         unweighted_kde_frequencies = TreeKdeFrequencies()
         unweighted_frequencies = unweighted_kde_frequencies.estimate(tree)
@@ -136,6 +142,36 @@ class TestTreeKdeFrequencies(object):
             frequencies[clade_to_test.name],
             unweighted_frequencies[clade_to_test.name]
         )
+
+    def test_weighted_estimate_with_unrepresented_weights(self, tree):
+        """Test frequency estimation with weighted tips when any of the weight
+        attributes is unrepresented.
+
+        In this case, normalization of frequencies to the proportions
+        represented by the weights should be followed by a second normalization
+        to sum to 1.
+        """
+        # Drop all tips sampled from Africa from the tree. Despite dropping a
+        # populous region, the estimated frequencies should still sum to 1
+        # below.
+        tips_from_africa = [
+            tip
+            for tip in tree.find_clades(terminal=True)
+            if tip.attr["region"] == "africa"
+        ]
+        for tip in tips_from_africa:
+            tree.prune(tip)
+
+        # Estimate weighted frequencies.
+        weights = {region[0]: region[1] for region in REGIONS}
+        kde_frequencies = TreeKdeFrequencies(
+            weights=weights,
+            weights_attribute="region"
+        )
+        frequencies = kde_frequencies.estimate(tree)
+
+        # Frequencies should sum to 1 at all pivots.
+        assert np.allclose(np.array(list(frequencies.values())).sum(axis=0), np.ones_like(kde_frequencies.pivots))
 
     def test_only_tip_estimates(self, tree):
         """Test frequency estimation for only tips in a given tree.
