@@ -1,5 +1,9 @@
 {
   "title": "Real-time tracking of Zika virus evolution",
+  "maintainers": [
+    {"name": "Trevor Bedford", "url": "http://bedford.io/team/trevor-bedford/"}
+  ],
+  "build_url": "https://github.com/nextstrain/zika",    
   "colorings": [
     {
       "key": "gt",
@@ -33,9 +37,6 @@
     "map_triplicate": true,
     "color_by": "author"
   },
-  "maintainers": [
-    {"name": "Trevor Bedford", "url": "http://bedford.io/team/trevor-bedford/"}
-  ],
   "filters": [
     "country",
     "region",

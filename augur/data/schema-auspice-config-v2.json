@@ -99,6 +99,11 @@
             "deprecated": true,
             "type": "array"
         },
+        "build_url": {
+          "description": "URL with instructions to reproduce build, usually expected to be a GitHub repo URL",
+          "$comment": "optional",
+          "type": "string"
+        },
         "filters": {
             "type": "array",
             "uniqueItems": true,

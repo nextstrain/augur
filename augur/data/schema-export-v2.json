@@ -26,6 +26,10 @@
                     "type" : "string",
                     "pattern": "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$"
                 },
+                "build_url" : {
+                    "description": "Auspice displays this at the top of the page as part of a byline",
+                    "type" : "string"
+                },
                 "maintainers": {
                     "description": "Who maintains this dataset?",
                     "$comment": "order similar to a publication",
