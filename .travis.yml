@@ -10,8 +10,9 @@ before_install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda info -a
-  - conda env create -f environment.yml
-  - source activate augur
+  - wget http://data.nextstrain.org/nextstrain.yml -O nextstrain.yml;
+  - conda env create -f nextstrain.yml
+  - source activate nextstrain
 install:
   - pip3 install -e .[dev]
 script:
