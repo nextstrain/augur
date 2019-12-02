@@ -78,7 +78,9 @@ Similarly, you can pass in files containing colors, latitude, and longitude data
 Instead of specifying two output files (`--output-tree` and `--output-meta`) you now only need to specify one with `--output`.
 For example, if your old files were `auspice/virus_AB_tree.json` and `auspice/virus_AB_meta.json`, you might want to call the single output `auspice/virus_AB.json` - or if you want to tell it apart from your v1 export, you might call it `auspice/virus_ABv2.json`.
 
-<span style="color:red">_TODO: the new option to export a reference sequence. Currently unused by Auspice_</span>
+To export the reference sequence relative to which mutations have been identified, specify the `--include-root-sequence` flag.
+This flag replaces the `--output-sequence` argument and writes a JSON whose name is relative to the stem of the main output JSON.
+For example, if the main output is called `auspice/virus_AB.json`, the root sequence will be saved to `auspice/virus_AB_root-sequence.json`.
 
 ### Other changed arguments
 

@@ -1,7 +1,7 @@
 """
 Export JSON files suitable for visualization with auspice.
 """
-
+from pathlib import Path
 import sys
 import time
 from collections import defaultdict
@@ -691,6 +691,7 @@ def register_arguments_v2(subparsers):
         title="OPTIONAL SETTINGS"
     )
     optional_settings.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
+    optional_settings.add_argument('--include-root-sequence', action="store_true", help="Export an additional JSON containing the root sequence used to identify mutations. The filename will follow the pattern of <OUTPUT>_root-sequence.json for a main auspice JSON of <OUTPUT>.json")
 
     return v2
 
@@ -846,8 +847,18 @@ def run_v2(args):
     # Write outputs - the (unified) dataset JSON intended for auspice & perhaps the ref root-sequence JSON
     indent = {"indent": None} if args.minify_json else {}
     write_json(data=data_json, file_name=args.output, include_version=False, **indent)
-    if 'reference' in node_data:
-        write_json(data=node_data['reference'], file_name=args.output[:-5]+'_root-sequence.json', include_version=False, **indent)
+
+    if args.include_root_sequence:
+        if 'reference' in node_data:
+            # Save the root sequence with the same stem from the main auspice
+            # output filename.  For example, if the main auspice output is
+            # "auspice/zika.json", the root sequence will be
+            # "auspice/zika_root-sequence.json".
+            output_path = Path(args.output)
+            root_sequence_path = output_path.parent / Path(output_path.stem + "_root-sequence" + output_path.suffix)
+            write_json(data=node_data['reference'], file_name=root_sequence_path, include_version=False, **indent)
+        else:
+            fatal("Root sequence output was requested, but the node data provided is missing a 'reference' key.")
 
     # validate outputs
     validate_data_json(args.output)
