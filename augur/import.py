@@ -4,8 +4,7 @@ Import analyses into augur pipeline from other systems
 from .import_beast import run_beast, register_arguments_beast
 
 def register_arguments(parser):
-    metavar_msg ="Import analyses into augur pipeline from other systems " + \
-                 "Currently allows `augur import beast`"
+    metavar_msg = "Import analyses into augur pipeline from other systems"
     subparsers = parser.add_subparsers(title="TYPE",
                                        metavar=metavar_msg)
     subparsers.required = True
