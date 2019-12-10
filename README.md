@@ -164,7 +164,7 @@ build to keep the Docker image up-to-date.
 
 [Documentation](https://nextstrain-augur.readthedocs.io) is built using [Sphinx](http://sphinx-doc.org/) and hosted on [Read The Docs](https://readthedocs.org/).
 Versions of the documentation for each augur release and git branch are available and preserved.
-
+Read The Docs is updated automatically from commits and releases on GitHub.
 
 Documentation is mostly written as [reStructuredText](http://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html) (.rst) files, but they can also be Markdown (.md) files.
 There are advantages to both formats:
@@ -173,7 +173,7 @@ There are advantages to both formats:
 * If you don't need autogeneration of help documentaiton, then you may want to stick with writing Markdown.
 
 
-Sphinx, coupled with reStructuredText, can be tricky to learn. 
+Sphinx, coupled with reStructuredText, can be tricky to learn.
 Here's a [subset of reStructuredText worth committing to memory](https://simonwillison.net/2018/Aug/25/restructuredtext/) to help you get started writing these files.
 
 
