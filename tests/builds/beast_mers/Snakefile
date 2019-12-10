@@ -17,7 +17,7 @@ rule import_beast:
         tree = "results/tree.new"
     shell:
         """
-        augur import-beast \
+        augur import beast \
             --mcc {input.mcc_tree} \
             --output-tree {output.tree} \
             --output-node-data {output.node_data}

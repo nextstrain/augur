@@ -2,30 +2,31 @@
 Parse a BEAST MCC tree for further analysis in augur or
 export for auspice v2+ (using `augur export v2` or greater).
 """
-
-from Bio import SeqIO, Phylo
-import re, sys, json
-import numpy as np
+import re
+import sys
+import json
 import datetime as dt
+from argparse import SUPPRESS
+import numpy as np
+from Bio import Phylo
 from treetime import TreeAnc
 from .utils import write_json
 
-
-def register_arguments(parser):
+def register_arguments_beast(subparsers):
     """
-    Arguments available to `augur import-beast` -- see `__init__.py`
+    Arguments available to `augur import beast`
     """
-    parser.add_argument('--mcc', required=True, help="BEAST MCC tree")
-    parser.add_argument('--most-recent-tip-date', default=0, type=float, help='Numeric date of most recent tip in tree (--tip-date-regex, --tip-date-format and --tip-date-delimeter are ignored if this is set)')
-    parser.add_argument('--tip-date-regex', default=r'[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$', type=str, help='regex to extract dates from tip names')
-    parser.add_argument('--tip-date-format', default="%Y-%m-%d", type=str, help='Format of date (if extracted by regex)')
-    parser.add_argument('--tip-date-delimeter', default="-", type=str, help='delimeter used in tip-date-format. Used to match partial dates.')
-    parser.add_argument('--verbose', action="store_true", help="Display verbose output. Only useful for debugging.")
-    parser.add_argument('--recursion-limit', default=False, type=int, help="Set a custom recursion limit (dangerous!)")
-    parser.add_argument('--output-tree', required=True, type=str, help='file name to write tree to')
-    parser.add_argument('--output-node-data', required=True, type=str, help='file name to write (temporal) branch lengths & BEAST traits as node data')
-
-
+    beast_parser = subparsers.add_parser('beast', help="Import beast analysis")
+    beast_parser.add_argument("--beast", help=SUPPRESS, default=True) # used to disambiguate subcommands
+    beast_parser.add_argument('--mcc', required=True, help="BEAST MCC tree")
+    beast_parser.add_argument('--most-recent-tip-date', default=0, type=float, help='Numeric date of most recent tip in tree (--tip-date-regex, --tip-date-format and --tip-date-delimeter are ignored if this is set)')
+    beast_parser.add_argument('--tip-date-regex', default=r'[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$', type=str, help='regex to extract dates from tip names')
+    beast_parser.add_argument('--tip-date-format', default="%Y-%m-%d", type=str, help='Format of date (if extracted by regex)')
+    beast_parser.add_argument('--tip-date-delimeter', default="-", type=str, help='delimeter used in tip-date-format. Used to match partial dates.')
+    beast_parser.add_argument('--verbose', action="store_true", help="Display verbose output. Only useful for debugging.")
+    beast_parser.add_argument('--recursion-limit', default=False, type=int, help="Set a custom recursion limit (dangerous!)")
+    beast_parser.add_argument('--output-tree', required=True, type=str, help='file name to write tree to')
+    beast_parser.add_argument('--output-node-data', required=True, type=str, help='file name to write (temporal) branch lengths & BEAST traits as node data')
 
 def parse_beast_tree(data, tipMap, verbose=False):
     """
@@ -570,7 +571,7 @@ def print_what_to_do_next(nodes, mcc_path, tree_path, node_data_path):
 
 
 
-def run(args):
+def run_beast(args):
     '''
     BEAST MCC tree to newick and node-data JSON for further augur processing / export
     '''
@@ -583,7 +584,7 @@ def run(args):
 
     # node data is the dict that will be exported as json
     node_data = {
-        'comment': "Imported from a BEAST MCC tree using `augur import-beast`",
+        'comment': "Imported from a BEAST MCC tree using `augur import beast`",
         'mcc_file': args.mcc
     }
 

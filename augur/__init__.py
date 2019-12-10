@@ -34,7 +34,7 @@ command_strings = [
     "export",
     "validate",
     "version",
-    "import_beast"
+    "import"
 ]
 
 COMMANDS = [importlib.import_module('augur.' + c) for c in command_strings]
