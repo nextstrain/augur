@@ -32,8 +32,6 @@ Augur will only translate genes which have 'CDS' as the feature name, and have a
 
 Compare the [original Zika reference on Genbank](https://www.ncbi.nlm.nih.gov/nuccore/KX369547) to the [one used on Nextstrain](https://github.com/nextstrain/zika/blob/master/config/zika_reference.gb). Notice that the genes are designated by `CDS` instead of `mat_peptide` and have an entry for `/gene=` as well as `/product=`.
 
-<span style="color:red">TODO: Update this to be more specific!</span>
-
 ### VCF
 
 You can also find an appropriate GFF annotation reference on GenBank. Be sure to pick one that is very close to the strain you are using - especially if there might be variability in the genes present! If the positions in the GFF file do not match the positions in your VCF file, it will not work.

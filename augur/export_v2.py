@@ -592,7 +592,7 @@ def set_node_attrs_on_tree(data_json, node_attrs):
 
 def node_data_prop_is_normal_trait(name):
     # those traits / keys / attrs which are not "special" and can be exported
-    # as normal attributes on nodes 
+    # as normal attributes on nodes
     excluded = [
         "clade_annotation", # Clade annotation is label, not colorby!
         "clade_membership", # will be auto-detected if it is available
@@ -691,7 +691,7 @@ def register_arguments_v2(subparsers):
         title="OPTIONAL SETTINGS"
     )
     optional_settings.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
-    optional_settings.add_argument('--include-root-sequence', action="store_true", help="Export an additional JSON containing the root sequence used to identify mutations. The filename will follow the pattern of <OUTPUT>_root-sequence.json for a main auspice JSON of <OUTPUT>.json")
+    optional_settings.add_argument('--include-root-sequence', action="store_true", help="Export an additional JSON containing the root sequence (reference sequence for vcf) used to identify mutations. The filename will follow the pattern of <OUTPUT>_root-sequence.json for a main auspice JSON of <OUTPUT>.json")
 
     return v2
 

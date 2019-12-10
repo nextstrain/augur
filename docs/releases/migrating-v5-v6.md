@@ -79,7 +79,8 @@ Instead of specifying two output files (`--output-tree` and `--output-meta`) you
 For example, if your old files were `auspice/virus_AB_tree.json` and `auspice/virus_AB_meta.json`, you might want to call the single output `auspice/virus_AB.json` - or if you want to tell it apart from your v1 export, you might call it `auspice/virus_ABv2.json`.
 
 To export the reference sequence relative to which mutations have been identified, specify the `--include-root-sequence` flag.
-This flag replaces the `--output-sequence` argument and writes a JSON whose name is relative to the stem of the main output JSON.
+This flag writes a JSON whose name is relative to the stem of the main output JSON.
+For VCF input, this file will contain the reference sequence to which the VCF is mapped.
 For example, if the main output is called `auspice/virus_AB.json`, the root sequence will be saved to `auspice/virus_AB_root-sequence.json`.
 
 ### Other changed arguments
@@ -525,3 +526,4 @@ In Auspice v2, all values are now displayed exactly as they arrive, allowing use
 Don't forget to also change them in any custom lat-long and/or coloring files you are using. We've also become stricter about the format of the files that pass in color and lat-long information. Previously, it didn't matter if columns were separated by spaces or tabs - now, they must be separated by tabs.
 
 You can find out more about how to add [custom coloring](/faq/colors) and [lat-long](/faq/lat_longs) values.
+If you use the command `parse` to generate a metadata table from fields in a fasta header, you can use the flag `--prettify-fields` to apply some prettifying operations to specific metadata entries, see the documentation [`parse`](/usage/cli/parse).
