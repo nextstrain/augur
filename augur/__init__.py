@@ -3,41 +3,41 @@ The top-level augur command which dispatches to subcommands.
 """
 
 import argparse
-import re, os, sys
+import re
+import os
+import sys
+import importlib
 from types import SimpleNamespace
-from . import parse, filter, align, tree, refine, ancestral
-from . import traits, translate, mask, titers, frequencies, export
-from . import validate, sequence_traits, clades, version
-from . import reconstruct_sequences, lbi, distance, import_beast
 from .utils import first_line
 
 recursion_limit = os.environ.get("AUGUR_RECURSION_LIMIT")
 if recursion_limit:
     sys.setrecursionlimit(int(recursion_limit))
 
-COMMANDS = [
-    parse,
-    filter,
-    mask,
-    align,
-    tree,
-    refine,
-    ancestral,
-    translate,
-    reconstruct_sequences,
-    clades,
-    traits,
-    sequence_traits,
-    lbi,
-    distance,
-    titers,
-    frequencies,
-    export,
-    validate,
-    version,
-    import_beast
+command_strings = [
+    "parse",
+    "filter",
+    "mask",
+    "align",
+    "tree",
+    "refine",
+    "ancestral",
+    "translate",
+    "reconstruct_sequences",
+    "clades",
+    "traits",
+    "sequence_traits",
+    "lbi",
+    "distance",
+    "titers",
+    "frequencies",
+    "export",
+    "validate",
+    "version",
+    "import_beast"
 ]
 
+COMMANDS = [importlib.import_module('augur.' + c) for c in command_strings]
 
 def make_parser():
     parser = argparse.ArgumentParser(
