@@ -28,4 +28,4 @@ We're in the process of adding examples and more extensive documentation for eac
 	export
 	validate
 	version
-	import-beast
+	import
