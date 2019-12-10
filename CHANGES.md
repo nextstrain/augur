@@ -2,14 +2,6 @@
 
 ## __NEXT__
 
-## 6.0.0 (10 December 2019)
-Version 6 is a major release of augur affecting many augur commands.
-The format of the exported JSON (v2) has changed and now merges the previously separate files containing tree and meta information.
-To maintain backward compatibility, the export command was split into `export v1` (old) and `export v2` (new).
-Detailed release notes are provided in the augur documentation [on read-the-docs](https://nextstrain-augur.readthedocs.io/en/stable/releases/v6.html).
-For a migration guide, consult [migrating-v5-v6](https://nextstrain-augur.readthedocs.io/en/stable/releases/migrating-v5-v6.html).
-
-
 ## 5.4.1 (12 November 2019)
 
 ### Bug fixes
