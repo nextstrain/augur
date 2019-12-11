@@ -33,8 +33,8 @@ def register_arguments(parser):
                                 help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--method', default='mafft', choices=["mafft"],
                                 help="alignment program to use")
-    parser.add_argument('--reference-name', type=str, help="strip insertions relative to reference sequence; use if the reference is already in the input sequences")
-    parser.add_argument('--reference-sequence', type=str, help="strip insertions relative to reference sequence; use if the reference is NOT already in the input sequences")
+    parser.add_argument('--reference-name', metavar="NAME", type=str, help="strip insertions relative to reference sequence; use if the reference is already in the input sequences")
+    parser.add_argument('--reference-sequence', metavar="PATH", type=str, help="Add this reference sequence to the dataset & strip insertions relative to this. Use if the reference is NOT already in the input sequences")
     parser.add_argument('--remove-reference', action="store_true", default=False, help="remove reference sequence from the alignment")
     parser.add_argument('--fill-gaps', action="store_true", default=False, help="if gaps represent missing data rather than true indels, replace by N after aligning")
 
@@ -70,26 +70,32 @@ def run(args):
         print(error)
         return 1
 
+    # Simple error checking related to a reference name/sequence
+    if ref_name and ref_fname:
+        print("ERROR: You cannot provide both --reference-name and --reference-sequence")
+        return 1
     if ref_name and (ref_name not in seqs):
-        print("Specified reference name %s is not in the sequence sample. Will not trim."%ref_name)
-        ref_name = None
+        print("ERROR: Specified reference name %s (via --reference-name) is not in the sequence sample."%ref_name)
+        return 1
 
     # potentially add the reference sequence to the sequences
-    if ref_fname and (not ref_name):
+    if ref_fname:
         if os.path.isfile(ref_fname):
             try:
                 ref_seq = SeqIO.read(ref_fname, 'genbank' if ref_fname.split('.')[-1] in ['gb', 'genbank'] else 'fasta')
             except:
-                print("WARNING: Cannot read reference sequence."
+                print("ERROR: Cannot read reference sequence."
                       "\n\tmake sure the file %s contains one sequence in genbank or fasta format"%ref_fname)
+                return 1
             else:
                 ref_name = ref_seq.id
                 seq_fname+='.ref.fasta'
                 temp_files_to_remove.append(seq_fname)
                 SeqIO.write(list(seqs.values())+[ref_seq], seq_fname, 'fasta')
         else:
-            print("WARNING: Cannot read reference sequence."
+            print("ERROR: Cannot read reference sequence."
                   "\n\tmake sure the file \"%s\" exists"%ref_fname)
+            return 1
 
     # before aligning, make a copy of the data that the aligner receives as input (very useful for debugging purposes)
     copyfile(seq_fname, output+".pre_aligner.fasta")
