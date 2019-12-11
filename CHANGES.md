@@ -2,6 +2,51 @@
 
 ## __NEXT__
 
+
+## 6.0.0 (10 December 2019)
+
+### Overview
+
+Version 6 is a major release of augur affecting many augur commands. The format
+of the exported JSON (v2) has changed and now merges the previously separate
+files containing tree and meta information. To maintain backward compatibility,
+the export command was split into `export v1` (old) and `export v2` (new).
+Detailed release notes are provided in the augur documentation [on
+read-the-docs](https://nextstrain-augur.readthedocs.io/en/stable/releases/v6.html).
+For a migration guide, consult
+[migrating-v5-v6](https://nextstrain-augur.readthedocs.io/en/stable/releases/migrating-v5-v6.html).
+
+### Major features / changes
+
+* export: Swap from a separate `_tree.json` and `_meta.json` to a single
+  "unified" `dataset.json` output file
+* export: Include additional command line options to alleviate need for Auspice
+  config
+* export: Include option for reference sequence output
+* export: Move to GFF-style annotations
+* export: Validate exported JSONs against schema
+* ancestral: Allow output of FASTA and JSON files
+* import: Include `import beast` command to import labeled BEAST MCC tree
+* parse: Include `--prettify-fields` option to cleanup metadata fields
+* Documentation improvements
+
+### Minor features / changes
+
+* colors.tsv: Allow whitespace, but insist on tab delimiting
+* lat_longs.tsv: Allow whitespace, but insist on tab delimiting
+* Remove code for old "non-modular" augur, old "non-modular" builds and Python
+  tests
+* Improve test builds
+* filter: More interpretable output of how many sequences have been filtered
+* filter: Additional flag `--subsample-seed` to seed the random number generator
+  and thereby make subsampling reproducible
+* sequence-traits: Numerical output as originally intended, but required an
+  Auspice bugfix
+* traits: Explanation of what is considered missing data & how it is interpreted
+* traits: GTR models are exported in the output JSON for better accountability &
+  reproducibility
+
+
 ## 5.4.1 (12 November 2019)
 
 ### Bug fixes
