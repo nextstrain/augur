@@ -1123,6 +1123,28 @@ class TreeKdeFrequencies(KdeFrequencies):
         # a given value sums to the proportion of tips that have that value.
         # If weights are not defined, estimate frequencies such that they sum to 1.
         if self.weights:
+            # Determine which weight attributes are represented in the
+            # tree. Drop any unrepresented attributes and renormalize the
+            # remaining proportions per attribute to sum to one before
+            # estimating frequencies.
+            weights_represented = set([
+                tip.attr[self.weights_attribute]
+                for tip in tree.find_clades(terminal=True)
+            ])
+
+            if len(self.weights) != len(weights_represented):
+                # Remove unrepresented weights.
+                weights_unrepresented = set(self.weights.keys()) - weights_represented
+                for weight in weights_unrepresented:
+                    del self.weights[weight]
+
+                # Renormalize the remaining weights.
+                weight_total = sum(self.weights.values())
+                for key, value in self.weights.items():
+                    self.weights[key] = value / weight_total
+
+            # Estimate frequencies for all tips within each weight attribute
+            # group.
             weight_keys, weight_values = zip(*sorted(self.weights.items()))
             proportions = np.array(weight_values) / np.array(weight_values).sum(axis=0)
             frequencies = {}
