@@ -54,6 +54,7 @@ def run(args):
     seq_fname = args.sequences
     ref_name = args.reference_name
     ref_fname = args.reference_sequence
+    temp_files_to_remove = []
     if args.output:
         output = args.output
     else:
@@ -73,7 +74,7 @@ def run(args):
         print("Specified reference name %s is not in the sequence sample. Will not trim."%ref_name)
         ref_name = None
 
-    # potentially add the reference seuqnce to the sequences
+    # potentially add the reference sequence to the sequences
     if ref_fname and (not ref_name):
         if os.path.isfile(ref_fname):
             try:
@@ -84,10 +85,11 @@ def run(args):
             else:
                 ref_name = ref_seq.id
                 seq_fname+='.ref.fasta'
+                temp_files_to_remove.append(seq_fname)
                 SeqIO.write(list(seqs.values())+[ref_seq], seq_fname, 'fasta')
         else:
             print("WARNING: Cannot read reference sequence."
-                  "\n\tmake sure the file %s does not exist"%ref_fname)
+                  "\n\tmake sure the file \"%s\" exists"%ref_fname)
 
     # before aligning, make a copy of the data that the aligner receives as input (very useful for debugging purposes)
     copyfile(seq_fname, output+".pre_aligner.fasta")
@@ -124,6 +126,11 @@ def run(args):
         if args.fill_gaps:
             make_gaps_ambiguous(seqs)
         SeqIO.write(seqs, output, 'fasta')
+
+    # remove any temporary files
+    if temp_files_to_remove:
+        for fname in temp_files_to_remove:
+            os.remove(fname)
 
 
 def strip_non_reference(alignment_fname, reference, keep_reference=False):
