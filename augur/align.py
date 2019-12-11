@@ -15,7 +15,7 @@ class AlignmentError(Exception):
     pass
 
 def register_arguments(parser):
-    parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
+    parser.add_argument('--sequences', '-s', required=True, metavar="FASTA", help="sequences to align")
     parser.add_argument('--output', '-o', default="alignment.fasta", help="output file (default: %(default)s)")
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                                 help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
