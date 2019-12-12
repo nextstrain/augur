@@ -5,7 +5,7 @@ rule all:
 rule files:
     params:
         aligned = "data/aligned.fasta",
-        new_seqs = "data/new.fasta",
+        new_seqs = ["data/new1.fasta", "data/new2.fasta"],
         reference = "data/reference.gb",
         metadata = "data/metadata.tsv"
 
@@ -23,7 +23,7 @@ rule align:
         """
         augur align \
             --existing-alignment {input.alignment} \
-            --sequences {input.sequences} \
+            --sequences {input.sequences:q} \
             --reference-sequence {input.reference} \
             --output {output.alignment} \
             --fill-gaps
@@ -157,7 +157,7 @@ rule check:
         from Bio import AlignIO, SeqIO, Seq
         existing_alignment = AlignIO.read("data/aligned.fasta", 'fasta')
         reference = SeqIO.read("data/reference.gb", 'genbank')
-        new_sequences = [*SeqIO.parse("data/new.fasta", "fasta")]
+        new_sequences = [*SeqIO.parse("data/new1.fasta", "fasta"), *SeqIO.parse("data/new2.fasta", "fasta")]
         new_alignment = AlignIO.read("results/aligned.fasta", "fasta")
         existing_alignment_len = existing_alignment.get_alignment_length()
         new_alignment_len = new_alignment.get_alignment_length()

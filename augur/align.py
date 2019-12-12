@@ -15,7 +15,7 @@ class AlignmentError(Exception):
     pass
 
 def register_arguments(parser):
-    parser.add_argument('--sequences', '-s', required=True, metavar="FASTA", help="sequences to align")
+    parser.add_argument('--sequences', '-s', required=True, nargs="+", metavar="FASTA", help="sequences to align")
     parser.add_argument('--output', '-o', default="alignment.fasta", help="output file (default: %(default)s)")
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                                 help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
@@ -42,7 +42,7 @@ def run(args):
 
     try:
         check_arguments(args)
-        seqs = read_sequences(args.sequences)
+        seqs = read_sequences(*args.sequences)
         existing_aln = read_alignment(args.existing_alignment) if args.existing_alignment else None
 
         # if we have been given a reference (strain) name, make sure it is present
@@ -50,31 +50,45 @@ def run(args):
         if args.reference_name:
             ensure_reference_strain_present(ref_name, existing_aln, seqs)
 
-        # potentially add the reference sequence to the sequences or existing alignment
-        if args.reference_sequence:
-            if existing_aln:
-                # make temp file & add into alignment
-                existing_aln_fname = args.existing_alignment + ".ref.fasta"
-                ref_name = add_reference_seq(ref_fname=args.reference_sequence, alignment=existing_aln, combined_fname=existing_aln_fname)
-                temp_files_to_remove.append(existing_aln_fname) # remove this new file upon success
-                seq_to_align_fname = args.sequences
-            else:
-                seq_to_align_fname = args.sequences+".ref.fasta"
-                ref_name = add_reference_seq(ref_fname=args.reference_sequence, seqs=seqs, combined_fname=seq_to_align_fname)
-                temp_files_to_remove.append(seq_to_align_fname) # remove this new file upon success
-                existing_aln_fname = False
+        # If given an existing alignment, then add the reference sequence to this if desired (and if it is the same length)
+        if existing_aln and args.reference_sequence:
+            existing_aln_fname = args.existing_alignment + ".ref.fasta"
+            ref_seq = read_reference(args.reference_sequence)
+            if len(ref_seq) != existing_aln.get_alignment_length():
+                raise AlignmentError("ERROR: Provided existing alignment ({}bp) is not the same length as the reference sequence ({}bp)".format(alignment.get_alignment_length(), len(ref_seq)))
+            existing_aln.append(ref_seq)
+            SeqIO.write(existing_aln, existing_aln_fname, 'fasta')
+            temp_files_to_remove.append(existing_aln_fname)
+            ref_name = ref_seq.id
         else:
-            # the sequences to align are the sequences supplied to `augur align`, without reference addition
-            seq_to_align_fname = args.sequences
             existing_aln_fname = args.existing_alignment # may be False
+
+        ## Given >=1 sequence files, create a single file for alignment. Add in the reference
+        ## sequence if desired
+        if args.reference_sequence and not existing_aln:
+            seqs_to_align_fname = args.output+".to_align.fasta"
+            temp_files_to_remove.append(seqs_to_align_fname)
+            ref_seq = read_reference(args.reference_sequence)
+            SeqIO.write(list(seqs.values())+[ref_seq], seqs_to_align_fname, 'fasta')
+            ref_name = ref_seq.id
+        elif len(args.sequences) > 1:
+            if existing_aln:
+                seqs_to_align_fname = args.output+".new_seqs_to_align.fasta"
+            else:
+                seqs_to_align_fname = args.output+".to_align.fasta"
+            SeqIO.write(list(seqs.values()), seqs_to_align_fname, 'fasta')
+            temp_files_to_remove.append(seqs_to_align_fname)
+        else:
+            seqs_to_align_fname = args.sequences[0]
 
         check_duplicates(existing_aln, ref_name, seqs)
 
         # before aligning, make a copy of the data that the aligner receives as input (very useful for debugging purposes)
-        copyfile(seq_to_align_fname, args.output+".pre_aligner.fasta")
+        if not existing_aln:
+            copyfile(seqs_to_align_fname, args.output+".pre_aligner.fasta")
 
         # generate alignment command & run
-        cmd = generate_alignment_cmd(args.method, args.nthreads, existing_aln_fname, seq_to_align_fname, args.output, args.output+".log")
+        cmd = generate_alignment_cmd(args.method, args.nthreads, existing_aln_fname, seqs_to_align_fname, args.output, args.output+".log")
         success = run_shell_command(cmd)
         if not success:
             raise AlignmentError("Error during alignment")
@@ -105,13 +119,19 @@ def run(args):
 
 #####################################################################################################
 
-def read_sequences(fname):
+def read_sequences(*fnames):
+    seqs = {}
     try:
-        return SeqIO.to_dict(SeqIO.parse(fname, 'fasta'))
+        for fname in fnames:
+            for record in SeqIO.parse(fname, 'fasta'):
+                if record.name in seqs:
+                    raise AlignmentError("Detected duplicate sequence input \"%s\""%record.name)
+                seqs[record.name] = record
     except FileNotFoundError:
         raise AlignmentError("\nCannot read sequences -- make sure the file %s exists and contains sequences in fasta format"%fname)
     except ValueError as error:
         raise AlignmentError("\nERROR: Problem reading in {}: {}".format(fname, str(error)))
+    return seqs
 
 def check_arguments(args):
     # Simple error checking related to a reference name/sequence
@@ -137,10 +157,7 @@ def ensure_reference_strain_present(ref_name, existing_alignment, seqs):
             raise AlignmentError("ERROR: Specified reference name %s (via --reference-name) is not in the sequence sample."%ref_name)
 
 
-def add_reference_seq(ref_fname, combined_fname, alignment=None, seqs=None):
-    # add the reference sequence found in ref_fname to the sequences in sequences
-    # and write out to the filename combined_fname
-    assert (seqs or alignment) and not (seqs and alignment)
+def read_reference(ref_fname):
     if not os.path.isfile(ref_fname):
         raise AlignmentError("ERROR: Cannot read reference sequence."
                              "\n\tmake sure the file \"%s\" exists"%ref_fname)
@@ -149,18 +166,7 @@ def add_reference_seq(ref_fname, combined_fname, alignment=None, seqs=None):
     except:
         raise AlignmentError("ERROR: Cannot read reference sequence."
                 "\n\tmake sure the file %s contains one sequence in genbank or fasta format"%ref_fname)
-
-    if seqs:
-        # write out the sequences+reference
-        SeqIO.write(list(seqs.values())+[ref_seq], combined_fname, 'fasta')
-    if alignment:
-        # if the same length, write out the alignment + reference
-        if len(ref_seq) != alignment.get_alignment_length():
-            raise AlignmentError("ERROR: Provided existing alignment ({}bp) is not the same length as the reference sequence ({}bp)".format(alignment.get_alignment_length(), len(ref_seq)))
-        alignment.append(ref_seq)
-        SeqIO.write(alignment, combined_fname, 'fasta')
-    return ref_seq.id
-
+    return ref_seq
 
 def generate_alignment_cmd(method, nthreads, existing_aln_fname, seqs_to_align_fname, aln_fname, log_fname):
     if method=='mafft':
