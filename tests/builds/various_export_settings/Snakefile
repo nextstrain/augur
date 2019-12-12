@@ -6,11 +6,13 @@ rule all:
         time_only = "auspice/v2_time-only-tree.json",
         div_only = "auspice/v2_div-only-tree.json",
         bool_metadata = "auspice/v2_boolean-metadata.json",
-        default_layout = "auspice/v2_default-layout.json"
+        default_layout = "auspice/v2_default-layout.json",
+        footer = "auspice/v2_custom-footer.json"
 rule files:
     params:
         hidden_nodes = "data/hidden_nodes.json",
-        boolean_metadata = "data/metadata_boolean.tsv"
+        boolean_metadata = "data/metadata_boolean.tsv",
+        footer_description = "config/footer-description.md"
 files = rules.files.params
 
 rule refine_with_temporal_information:
@@ -181,6 +183,26 @@ rule export_with_default_layout:
             --metadata {input.metadata} \
             --colors {input.colors} \
             --auspice-config {input.config} \
+            --output {output.auspice}
+        """
+
+rule export_with_custom_footer_description:
+    message: "Exporting (v2) with custom footer description"
+    input:
+        tree = {rules.refine_with_temporal_information.output.tree},
+        branch_lengths = {rules.refine_with_temporal_information.output.node_data},
+        metadata = {rules.parse.output.metadata},
+        footer = {files.footer_description}
+    output:
+        auspice = rules.all.input.footer,
+    shell:
+        """
+        augur export v2 \
+            --tree {input.tree} \
+            --node-data {input.branch_lengths} \
+            --metadata {input.metadata} \
+            --description {input.footer} \
+            --title "Custom footer" \
             --output {output.auspice}
         """
 
