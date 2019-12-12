@@ -777,7 +777,7 @@ def set_description(data_json, cmd_line_description_file):
         fatal("Provided description file needs to be a Markdown file.")
 
     if not os.path.isfile(cmd_line_description_file):
-        return warning("Provided description file {} does not exist".format(cmd_line_description_file))
+        fatal("Provided description file {} does not exist".format(cmd_line_description_file))
 
     with open(cmd_line_description_file) as description_file:
         markdown_text = ''.join(description_file.readlines())
