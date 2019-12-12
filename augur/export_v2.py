@@ -773,15 +773,12 @@ def set_description(data_json, cmd_line_description_file):
     Read Markdown file provided by *cmd_line_description_file* and set
     `meta.description` in *data_json* to the text provided.
     """
-    if not cmd_line_description_file.endswith('.md'):
-        fatal("Provided description file needs to be a Markdown file.")
-
-    if not os.path.isfile(cmd_line_description_file):
-        fatal("Provided description file {} does not exist".format(cmd_line_description_file))
-
-    with open(cmd_line_description_file) as description_file:
-        markdown_text = ''.join(description_file.readlines())
-        data_json['meta']['description'] = markdown_text
+    try:
+        with open(cmd_line_description_file) as description_file:
+            markdown_text = description_file.read()
+            data_json['meta']['description'] = markdown_text
+    except FileNotFoundError:
+        fatal("Provided desciption file {} does not exist".format(cmd_line_description_file))
 
 def parse_node_data_and_metadata(T, node_data_files, metadata_file):
     node_data = read_node_data(node_data_files) # node_data_files is an array of multiple files (or a single file)
