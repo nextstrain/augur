@@ -173,6 +173,10 @@ You will need to use quotes in the same way even if you only have one maintainer
 Set the build URL displayed by Auspice via `--build-url`.
 If running directly from the command line, input your build URL directly (ex: `--build-url https://github.com/nextstrain/zika`).
 
+### Description
+Set the description and/or acknowledgments in the footer of Auspice via `--description`.
+This option expects a Markdown file containing description to be displayed.
+
 ### Panels
 
 Auspice will, by default, try to show the tree, map, and entropy panels.

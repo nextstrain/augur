@@ -2,7 +2,7 @@
 Export JSON files suitable for visualization with auspice.
 """
 from pathlib import Path
-import sys
+import os, sys
 import time
 from collections import defaultdict
 import warnings
@@ -676,6 +676,7 @@ def register_arguments_v2(subparsers):
     config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
     config.add_argument('--maintainers', metavar="name", action="append", nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
     config.add_argument('--build-url', type=str, metavar="url", help="Build URL/repository to be displayed by Auspice")
+    config.add_argument('--description', metavar="description.md", help="Markdown file with description of build and/or acknowledgements to be displayed by Auspice")
     config.add_argument('--geo-resolutions', metavar="trait", nargs='+', help="Geographic traits to be displayed on map")
     config.add_argument('--color-by-metadata', metavar="trait", nargs='+', help="Metadata columns to include as coloring options")
     config.add_argument('--panels', metavar="panels", nargs='+', choices=['tree', 'map', 'entropy', 'frequencies'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
@@ -767,6 +768,18 @@ def set_build_url(data_json, config, cmd_line_build_url):
     elif config.get("build_url"):
         data_json['meta']['build_url'] = config.get("build_url")
 
+def set_description(data_json, cmd_line_description_file):
+    """
+    Read Markdown file provided by *cmd_line_description_file* and set
+    `meta.description` in *data_json* to the text provided.
+    """
+    try:
+        with open(cmd_line_description_file) as description_file:
+            markdown_text = description_file.read()
+            data_json['meta']['description'] = markdown_text
+    except FileNotFoundError:
+        fatal("Provided desciption file {} does not exist".format(cmd_line_description_file))
+
 def parse_node_data_and_metadata(T, node_data_files, metadata_file):
     node_data = read_node_data(node_data_files) # node_data_files is an array of multiple files (or a single file)
     metadata, _ = read_metadata(metadata_file) # metadata={} if file isn't read / doeesn't exist
@@ -826,6 +839,8 @@ def run_v2(args):
     set_maintainers(data_json, config, args.maintainers)
     set_build_url(data_json, config, args.build_url)
     set_annotations(data_json, node_data)
+    if args.description:
+        set_description(data_json, args.description)
 
     set_colorings(
         data_json=data_json,
