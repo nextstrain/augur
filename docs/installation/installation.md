@@ -44,13 +44,14 @@ Other Linux distributions will likely have the same packages available, although
 
 Alternatively, augur itself and all of its dependencies can be installed into a [Conda](https://conda.io/miniconda.html) environment:
 
-    conda env create -f environment.yml
+    curl http://data.nextstrain.org/nextstrain.yml --compressed -o nextstrain.yml
+    conda env create -f nextstrain.yml
 
-> _By default this environment is named "augur" but you can change that by providing a name to the above command with `-n <your-env-name>`_
+> _By default this environment is named "nextstrain" but you can change that by providing a name to the above command with `-n <your-env-name>`_
 
-When that finishes, the enviroment needs to be activated whenever you want to use augur:
+When that finishes, the environment needs to be activated whenever you want to use augur:
 
-    conda activate augur
+    conda activate nextstrain
 
 ## Install from source
 

@@ -50,11 +50,12 @@ Augur uses some common external bioinformatics programs which you'll need to ins
 
 Alternatively, all these dependencies (as well as augur itself) can be installed via Conda by running:
 
-    conda env create -f environment.yml
+    curl http://data.nextstrain.org/nextstrain.yml --compressed -o nextstrain.yml
+    conda env create -f nextstrain.yml
 
-Once installed, Conda the enviroment need to be activated whenever augur is to be used, by running:
+Once installed, the environment need to be activated whenever augur is to be used, by running:
 
-    conda activate augur
+    conda activate nextstrain
 
 ## Usage
 
