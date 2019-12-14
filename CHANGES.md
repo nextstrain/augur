@@ -3,6 +3,21 @@
 ## __NEXT__
 
 
+## 6.1.0 (13 December 2019)
+
+### Features
+
+* export: Include `--description` option to pass in a Markdown file with dataset
+  description. This is displays in Auspice in the footer. For rationale,
+  [see Auspice issue 707](https://github.com/nextstrain/auspice/issues/707) and
+  for Augur changes [see PR 423](https://github.com/nextstrain/augur/pull/423).
+
+### Bug fixes
+
+* frequencies: Fix weighted frequencies when weight keys are unrepresented.
+  [See PR 420](https://github.com/nextstrain/augur/pull/420).
+
+
 ## 6.0.0 (10 December 2019)
 
 ### Overview
