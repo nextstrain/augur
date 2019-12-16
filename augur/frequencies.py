@@ -8,7 +8,7 @@ from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
 
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
-from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies
+from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
 from .utils import read_metadata, read_node_data, write_json, get_numerical_dates
 
 
@@ -162,7 +162,12 @@ def run(args):
                 include_internal_nodes=args.include_internal_nodes,
                 censored=args.censored
             )
-            frequencies = kde_frequencies.estimate(tree)
+
+            try:
+                frequencies = kde_frequencies.estimate(tree)
+            except TreeKdeFrequenciesError as e:
+                print("ERROR: %s" % str(e), file=sys.stderr)
+                return 1
 
             # Export frequencies in auspice-format by strain name.
             frequency_dict = {"pivots": list(kde_frequencies.pivots)}

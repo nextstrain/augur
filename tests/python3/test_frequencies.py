@@ -12,7 +12,7 @@ import os
 # we assume (and assert) that this script is running from the tests/ directory
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from augur.frequency_estimators import get_pivots, TreeKdeFrequencies, AlignmentKdeFrequencies
+from augur.frequency_estimators import get_pivots, TreeKdeFrequencies, AlignmentKdeFrequencies, TreeKdeFrequenciesError
 from augur.utils import json_to_tree
 
 # Define regions to use for testing weighted frequencies.
@@ -172,6 +172,19 @@ class TestTreeKdeFrequencies(object):
 
         # Frequencies should sum to 1 at all pivots.
         assert np.allclose(np.array(list(frequencies.values())).sum(axis=0), np.ones_like(kde_frequencies.pivots))
+
+        # Estimate weighted frequencies such that all weighted attributes are
+        # missing. This should raise an exception because none of the tips will
+        # match any of the weights and the weighting of frequencies will be
+        # impossible.
+        weights = {"fake_region_1": 1.0, "fake_region_2": 2.0}
+        kde_frequencies = TreeKdeFrequencies(
+            weights=weights,
+            weights_attribute="region"
+        )
+
+        with pytest.raises(TreeKdeFrequenciesError):
+            frequencies = kde_frequencies.estimate(tree)
 
     def test_only_tip_estimates(self, tree):
         """Test frequency estimation for only tips in a given tree.

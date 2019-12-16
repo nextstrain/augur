@@ -12,6 +12,12 @@ debug = False
 log_thres = 10.0
 
 
+class TreeKdeFrequenciesError(Exception):
+    """Represents an error estimating KDE frequencies for a tree.
+    """
+    pass
+
+
 def get_pivots(observations, pivot_interval, start_date=None, end_date=None):
     """Calculate pivots for a given list of floating point observation dates and
     interval between pivots.
@@ -1142,6 +1148,13 @@ class TreeKdeFrequencies(KdeFrequencies):
                 weight_total = sum(self.weights.values())
                 for key, value in self.weights.items():
                     self.weights[key] = value / weight_total
+
+            # Confirm that one or more weights are represented by tips in the
+            # tree. If there are no more weights, raise an exception because
+            # this likely represents a data error (either in the tree
+            # annotations or the weight definitions).
+            if len(self.weights) == 0:
+                raise TreeKdeFrequenciesError("None of the provided weight attributes were represented by tips in the given tree. Doublecheck weight attribute definitions and their representations in the tree.")
 
             # Estimate frequencies for all tips within each weight attribute
             # group.
