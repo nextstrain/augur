@@ -1166,7 +1166,7 @@ class TreeKdeFrequencies(KdeFrequencies):
                 # Find tips with the current weight attribute.
                 tips = [(tip.name, tip.attr["num_date"])
                         for tip in tree.get_terminals()
-                        if tip.attr[self.weights_attribute].lower() == weight_key and self.tip_passes_filters(tip)]
+                        if tip.attr[self.weights_attribute] == weight_key and self.tip_passes_filters(tip)]
                 frequencies.update(self.estimate_tip_frequencies_to_proportion(tips, proportion))
         else:
             tips = [(tip.name, tip.attr["num_date"])
