@@ -3,6 +3,13 @@
 ## __NEXT__
 
 
+## 6.1.1 (17 December 2019)
+
+### Bug fixes
+
+* frequencies: Fix bug in string matching for weighted frequencies introduced in
+  v6.1.0. [See PR 426](https://github.com/nextstrain/augur/pull/426).
+
 ## 6.1.0 (13 December 2019)
 
 ### Features
