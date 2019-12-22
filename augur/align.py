@@ -55,7 +55,7 @@ def run(args):
             existing_aln_fname = args.existing_alignment + ".ref.fasta"
             ref_seq = read_reference(args.reference_sequence)
             if len(ref_seq) != existing_aln.get_alignment_length():
-                raise AlignmentError("ERROR: Provided existing alignment ({}bp) is not the same length as the reference sequence ({}bp)".format(alignment.get_alignment_length(), len(ref_seq)))
+                raise AlignmentError("ERROR: Provided existing alignment ({}bp) is not the same length as the reference sequence ({}bp)".format(existing_aln.get_alignment_length(), len(ref_seq)))
             existing_aln.append(ref_seq)
             SeqIO.write(existing_aln, existing_aln_fname, 'fasta')
             temp_files_to_remove.append(existing_aln_fname)
@@ -113,9 +113,8 @@ def run(args):
         return 1
 
     # finally, remove any temporary files
-    if temp_files_to_remove:
-        for fname in temp_files_to_remove:
-            os.remove(fname)
+    for fname in temp_files_to_remove:
+        os.remove(fname)
 
 #####################################################################################################
 
