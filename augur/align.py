@@ -58,7 +58,7 @@ def run(args):
             if len(ref_seq) != existing_aln.get_alignment_length():
                 raise AlignmentError("ERROR: Provided existing alignment ({}bp) is not the same length as the reference sequence ({}bp)".format(existing_aln.get_alignment_length(), len(ref_seq)))
             existing_aln.append(ref_seq)
-            SeqIO.write(existing_aln, existing_aln_fname, 'fasta')
+            write_seqs(existing_aln, existing_aln_fname)
             temp_files_to_remove.append(existing_aln_fname)
             ref_name = ref_seq.id
         else:
@@ -70,14 +70,14 @@ def run(args):
             seqs_to_align_fname = args.output+".to_align.fasta"
             temp_files_to_remove.append(seqs_to_align_fname)
             ref_seq = read_reference(args.reference_sequence)
-            SeqIO.write(list(seqs.values())+[ref_seq], seqs_to_align_fname, 'fasta')
+            write_seqs(list(seqs.values())+[ref_seq], seqs_to_align_fname)
             ref_name = ref_seq.id
         elif len(args.sequences) > 1:
             if existing_aln:
                 seqs_to_align_fname = args.output+".new_seqs_to_align.fasta"
             else:
                 seqs_to_align_fname = args.output+".to_align.fasta"
-            SeqIO.write(list(seqs.values()), seqs_to_align_fname, 'fasta')
+            write_seqs(list(seqs.values()), seqs_to_align_fname)
             temp_files_to_remove.append(seqs_to_align_fname)
         else:
             seqs_to_align_fname = args.sequences[0]
@@ -105,10 +105,10 @@ def run(args):
         # this will overwrite the alignment file
         if ref_name:
             seqs = strip_non_reference(args.output, ref_name, keep_reference=not args.remove_reference)
-            SeqIO.write(seqs, args.output, 'fasta')
+            write_seqs(seqs, args.output)
         if args.fill_gaps:
             make_gaps_ambiguous(seqs)
-            SeqIO.write(seqs, args.output, 'fasta')
+            write_seqs(seqs, args.output)
 
 
     except AlignmentError as e:
@@ -270,3 +270,10 @@ def check_duplicates(*values):
             add(sample)
         else:
             raise TypeError()
+
+def write_seqs(seqs, fname):
+    """A wrapper around SeqIO.write with error handling"""
+    try:
+        SeqIO.write(seqs, fname, 'fasta')
+    except FileNotFoundError:
+        raise AlignmentError('ERROR: Couldn\'t write "{}" -- perhaps the directory doesn\'t exist?'.format(fname))
