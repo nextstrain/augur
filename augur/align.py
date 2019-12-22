@@ -23,7 +23,7 @@ def register_arguments(parser):
     parser.add_argument('--reference-name', metavar="NAME", type=str, help="strip insertions relative to reference sequence; use if the reference is already in the input sequences")
     parser.add_argument('--reference-sequence', metavar="PATH", type=str, help="Add this reference sequence to the dataset & strip insertions relative to this. Use if the reference is NOT already in the input sequences")
     parser.add_argument('--remove-reference', action="store_true", default=False, help="remove reference sequence from the alignment")
-    parser.add_argument('--fill-gaps', action="store_true", default=False, help="if gaps represent missing data rather than true indels, replace by N after aligning. A reference must be specified.")
+    parser.add_argument('--fill-gaps', action="store_true", default=False, help="If gaps represent missing data rather than true indels, replace by N after aligning.")
     parser.add_argument('--existing-alignment', metavar="FASTA", default=False, help="An existing alignment to which the sequences will be added. The ouput alignment will be the same length as this existing alignment.")
 
 def run(args):
@@ -103,8 +103,9 @@ def run(args):
         # this will overwrite the alignment file
         if ref_name:
             seqs = strip_non_reference(args.output, ref_name, keep_reference=not args.remove_reference)
-            if args.fill_gaps:
-                make_gaps_ambiguous(seqs)
+            SeqIO.write(seqs, args.output, 'fasta')
+        if args.fill_gaps:
+            make_gaps_ambiguous(seqs)
             SeqIO.write(seqs, args.output, 'fasta')
 
 
@@ -138,8 +139,6 @@ def check_arguments(args):
         raise AlignmentError("ERROR: You cannot provide both --reference-name and --reference-sequence")
     if args.remove_reference and not (args.reference_name or args.reference_sequence):
         raise AlignmentError("ERROR: You've asked to remove the reference but haven't specified one!")
-    if args.fill_gaps and not (args.reference_name or args.reference_sequence):
-        raise AlignmentError("ERROR: In order to fill gaps (--fill-gaps) you must specify a reference")
 
 def read_alignment(fname):
     try:
