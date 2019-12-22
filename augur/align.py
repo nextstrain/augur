@@ -25,6 +25,7 @@ def register_arguments(parser):
     parser.add_argument('--remove-reference', action="store_true", default=False, help="remove reference sequence from the alignment")
     parser.add_argument('--fill-gaps', action="store_true", default=False, help="If gaps represent missing data rather than true indels, replace by N after aligning.")
     parser.add_argument('--existing-alignment', metavar="FASTA", default=False, help="An existing alignment to which the sequences will be added. The ouput alignment will be the same length as this existing alignment.")
+    parser.add_argument('--debug', action="store_true", default=False, help="Produce extra files (e.g. pre- and post-aligner files) which can help with debugging poor alignments.")
 
 def run(args):
     '''
@@ -84,7 +85,7 @@ def run(args):
         check_duplicates(existing_aln, ref_name, seqs)
 
         # before aligning, make a copy of the data that the aligner receives as input (very useful for debugging purposes)
-        if not existing_aln:
+        if args.debug and not existing_aln:
             copyfile(seqs_to_align_fname, args.output+".pre_aligner.fasta")
 
         # generate alignment command & run
@@ -94,7 +95,8 @@ def run(args):
             raise AlignmentError("Error during alignment")
 
         # after aligning, make a copy of the data that the aligner produced (useful for debugging)
-        copyfile(args.output, args.output+".post_aligner.fasta")
+        if args.debug:
+            copyfile(args.output, args.output+".post_aligner.fasta")
 
         # convert the aligner output to upper case (replacing the file in place)
         write_uppercase_alignment_in_place(args.output)
