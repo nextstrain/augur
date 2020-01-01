@@ -5,7 +5,7 @@ rule all:
 rule files:
     params:
         aligned = "data/aligned.fasta",
-        new_seqs = ["data/new1.fasta", "data/new2.fasta"],
+        new_seqs = ["data/new1.fasta", "data/new2.fasta", "data/new3_present_in_alignment.fasta", "data/new4_present_in_seqs.fasta"],
         reference = "data/reference.gb",
         metadata = "data/metadata.tsv"
 

@@ -64,23 +64,21 @@ def run(args):
         else:
             existing_aln_fname = args.existing_alignment # may be False
 
-        ## Given >=1 sequence files, create a single file for alignment. Add in the reference
-        ## sequence if desired
+        ## Create a single file of sequences for alignment (or to be added to the alignment).
+        ## Add in the reference file to the sequences _if_ we don't have an existing alignment
         if args.reference_sequence and not existing_aln:
             seqs_to_align_fname = args.output+".to_align.fasta"
-            temp_files_to_remove.append(seqs_to_align_fname)
             ref_seq = read_reference(args.reference_sequence)
             write_seqs(list(seqs.values())+[ref_seq], seqs_to_align_fname)
             ref_name = ref_seq.id
-        elif len(args.sequences) > 1:
-            if existing_aln:
-                seqs_to_align_fname = args.output+".new_seqs_to_align.fasta"
-            else:
-                seqs_to_align_fname = args.output+".to_align.fasta"
+        elif existing_aln:
+            seqs_to_align_fname = args.output+".new_seqs_to_align.fasta"
+            seqs = prune_seqs_matching_alignment(seqs, existing_aln)
             write_seqs(list(seqs.values()), seqs_to_align_fname)
-            temp_files_to_remove.append(seqs_to_align_fname)
         else:
-            seqs_to_align_fname = args.sequences[0]
+            seqs_to_align_fname = args.output+".to_align.fasta"
+            write_seqs(list(seqs.values()), seqs_to_align_fname)
+        temp_files_to_remove.append(seqs_to_align_fname)
 
         check_duplicates(existing_aln, ref_name, seqs)
 
@@ -127,7 +125,9 @@ def read_sequences(*fnames):
         for fname in fnames:
             for record in SeqIO.parse(fname, 'fasta'):
                 if record.name in seqs:
-                    raise AlignmentError("Detected duplicate sequence input \"%s\""%record.name)
+                    if str(record) != str(seqs[record.name]):
+                        raise AlignmentError("Detected duplicate input strains \"%s\" but the sequences are different."%record.name)
+                    # if the same sequence then we can proceed (and we only take one)
                 seqs[record.name] = record
     except FileNotFoundError:
         raise AlignmentError("\nCannot read sequences -- make sure the file %s exists and contains sequences in fasta format"%fname)
@@ -277,3 +277,18 @@ def write_seqs(seqs, fname):
         SeqIO.write(seqs, fname, 'fasta')
     except FileNotFoundError:
         raise AlignmentError('ERROR: Couldn\'t write "{}" -- perhaps the directory doesn\'t exist?'.format(fname))
+
+
+def prune_seqs_matching_alignment(seqs, aln):
+    """
+    Return a set of seqs excluding those set via `exclude` & print a warning
+    message for each sequence which is exluded.
+    """
+    ret = {}
+    exclude_names = {s.name for s in aln}
+    for name, seq in seqs.items():
+        if name in exclude_names:
+            print("Excluding {} as it is already present in the alignment".format(name))
+        else:
+            ret[name] = seq
+    return ret
