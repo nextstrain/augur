@@ -144,7 +144,7 @@ def check_arguments(args):
 
 def read_alignment(fname):
     try:
-        return AlignIO.read("data/aligned.fasta", 'fasta')
+        return AlignIO.read(fname, 'fasta')
     except Exception as error:
         raise AlignmentError("\nERROR: Problem reading in {}: {}".format(fname, str(error)))
 
