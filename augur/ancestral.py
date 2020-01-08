@@ -11,7 +11,7 @@ from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
 
 def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
-                                 marginal=False, fill_overhangs=True):
+                                 marginal=False, fill_overhangs=True, infer_tips=False):
     """infer ancestral sequences using TreeTime
 
     Parameters
@@ -29,6 +29,11 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
        filled with the gap character ('-'). If set to True, these end-gaps are
        converted to "ambiguous" characters ('N' for nucleotides, 'X' for
        aminoacids). Otherwise, the alignment is treated as-is
+    infer_tips : bool
+        Since v0.7, TreeTime does not reconstruct tip states by default.
+        This is only relevant when tip-state are not exactly specified, e.g. via
+        characters that signify ambiguous states. To replace those with the
+        most-likely state, set infer_tips=True
 
     Returns
     -------
@@ -44,7 +49,8 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
     bool_marginal = (marginal == "marginal")
 
     # only infer ancestral sequences, leave branch length untouched
-    tt.infer_ancestral_sequences(infer_gtr=infer_gtr, marginal=bool_marginal)
+    tt.infer_ancestral_sequences(infer_gtr=infer_gtr, marginal=bool_marginal,
+                                 reconstruct_tip_states=infer_tips)
 
     print("\nInferred ancestral sequence states using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
@@ -52,7 +58,7 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
 
     return tt
 
-def collect_sequences_and_mutations(T, is_vcf=False):
+def collect_sequences_and_mutations(tt, is_vcf=False, infer_tips=False):
     """iterates of the tree and produces dictionaries with
     mutations and sequences for each node.
 
@@ -70,18 +76,16 @@ def collect_sequences_and_mutations(T, is_vcf=False):
     """
     data = defaultdict(dict)
     inc = 1 # convert python numbering to start-at-1
-    for n in T.find_clades():
-        if hasattr(n, "mutations"):
-            mutations_attr = n.__getattribute__("mutations")
-            data[n.name]['muts'] = [str(a)+str(int(pos)+inc)+str(d)
-                                    for a,pos,d in mutations_attr]
+    for n in tt.tree.find_clades():
+        data[n.name]['muts'] = [str(a)+str(int(pos)+inc)+str(d)
+                                for a,pos,d in n.mutations]
+
     if not is_vcf:
-        for n in T.find_clades():
-            if hasattr(n, "sequence"):
-                sequence_attr = n.__getattribute__("sequence")
-                data[n.name]['sequence'] = ''.join(sequence_attr)
-            else:
-                data[n.name]['sequence'] = ''
+        for n in tt.tree.find_clades():
+            try:
+                data[n.name]['sequence'] = tt.sequence(n,reconstructed=infer_tips, as_string=True)
+            except:
+                print("No sequence available for node ",n.name)
 
     return data
 
@@ -96,8 +100,11 @@ def register_arguments(parser):
                                     help="calculate joint or marginal maximum likelihood ancestral sequence states")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
-    parser.add_argument('--keep-ambiguous', action="store_true", default=False,
-                                help='do not infer nucleotides at ambiguous (N) sites on tip sequences (leave as N). Always true for VCF input.')
+    ambiguous = parser.add_mutually_exclusive_group()
+    ambiguous.add_argument('--keep-ambiguous', action="store_false", dest='infer-ambiguous',
+                                help='do not infer nucleotides at ambiguous (N) sites on tip sequences (leave as N).')
+    ambiguous.add_argument('--infer-ambiguous', action="store_true", default=False,
+                                help='infer nucleotides at ambiguous (N,W,R,..) sites on tip sequences and replace with most likely state.')
     parser.add_argument('--keep-overhangs', action="store_true", default=False,
                                 help='do not infer nucleotides for gaps (-) on either side of the alignment')
 
@@ -135,25 +142,18 @@ def run(args):
     else:
         aln = args.alignment
 
-    # Only allow recovery of ambig sites for Fasta-input if TreeTime is version 0.5.6 or newer
-    # Otherwise it returns nonsense.
+    # Enfore treetime 0.7 or later
     from distutils.version import StrictVersion
     import treetime
-    if args.keep_ambiguous and not is_vcf and StrictVersion(treetime.version) < StrictVersion('0.5.6'):
-        print("ERROR: Keeping ambiguous sites for Fasta-input requires TreeTime version 0.5.6 or newer."+
-                "\nYour version is "+treetime.version+
-                "\nUpdate TreeTime or run without the --keep-ambiguous flag.")
+    if StrictVersion(treetime.version) < StrictVersion('0.7.0'):
+        print("ERROR: this version of augur requires TreeTime 0.7 or later.")
         return 1
 
     tt = ancestral_sequence_inference(tree=T, aln=aln, ref=ref, marginal=args.inference,
-                                      fill_overhangs = not(args.keep_overhangs))
+                                      fill_overhangs = not(args.keep_overhangs),
+                                      infer_tips = args.infer_ambiguous)
 
-    if is_vcf or args.keep_ambiguous:
-        # TreeTime overwrites ambig sites on tips during ancestral reconst.
-        # Put these back in tip sequences now, to avoid misleading
-        tt.recover_var_ambigs()
-
-    anc_seqs['nodes'] = collect_sequences_and_mutations(T, is_vcf)
+    anc_seqs['nodes'] = collect_sequences_and_mutations(tt, is_vcf, infer_tips=args.infer_ambiguous)
     # add reference sequence to json structure. This is the sequence with
     # respect to which mutations on the tree are defined.
     if is_vcf:
