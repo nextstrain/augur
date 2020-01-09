@@ -58,7 +58,7 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
 
     return tt
 
-def collect_sequences_and_mutations(tt, is_vcf=False, infer_tips=False):
+def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, character_map=None):
     """iterates of the tree and produces dictionaries with
     mutations and sequences for each node.
 
@@ -74,13 +74,18 @@ def collect_sequences_and_mutations(tt, is_vcf=False, infer_tips=False):
     dict
         dictionary of mutations and sequences
     """
+    if character_map is None:
+        cm = lambda x:x
+    else:
+        cm = lambda x: character_map.get(x, x)
+
     data = defaultdict(dict)
     inc = 1 # convert python numbering to start-at-1
     for n in tt.tree.find_clades():
-        data[n.name]['muts'] = [str(a)+str(int(pos)+inc)+str(d)
+        data[n.name]['muts'] = [a+str(int(pos)+inc)+cm(d)
                                 for a,pos,d in n.mutations]
 
-    if not is_vcf:
+    if full_sequences:
         for n in tt.tree.find_clades():
             try:
                 data[n.name]['sequence'] = tt.sequence(n,reconstructed=infer_tips, as_string=True)
@@ -153,7 +158,17 @@ def run(args):
                                       fill_overhangs = not(args.keep_overhangs),
                                       infer_tips = args.infer_ambiguous)
 
-    anc_seqs['nodes'] = collect_sequences_and_mutations(tt, is_vcf, infer_tips=args.infer_ambiguous)
+    character_map = {}
+    for x in tt.gtr.profile_map:
+        if tt.gtr.profile_map[x].sum()==tt.gtr.n_states:
+            # TreeTime treats all characters that are not valid IUPAC nucleotide chars as fully ambiguous
+            # To clean up auspice output, we map all those to 'N'
+            character_map[x] = 'N'
+        else:
+            character_map[x] = x
+
+    anc_seqs['nodes'] = collect_mutations_and_sequences(tt, full_sequences=not is_vcf,
+                            infer_tips=args.infer_ambiguous, character_map=character_map)
     # add reference sequence to json structure. This is the sequence with
     # respect to which mutations on the tree are defined.
     if is_vcf:
