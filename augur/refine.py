@@ -94,6 +94,7 @@ def register_arguments(parser):
     parser.add_argument('--output-tree', type=str, help='file name to write tree to')
     parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
     parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")
+    parser.add_argument('--force-timetree', action="store_true", help="export inferred timetree even when deemed unreliable.")
     parser.add_argument('--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
     parser.add_argument('--clock-rate', type=float, help="fixed clock rate")
     parser.add_argument('--clock-std-dev', type=float, help="standard deviation of the fixed clock_rate estimate")
@@ -197,12 +198,26 @@ def run(args):
                     clock_filter_iqd=args.clock_filter_iqd,
                     covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies))
 
-        node_data['clock'] = {'rate': tt.date2dist.clock_rate,
-                              'intercept': tt.date2dist.intercept,
-                              'rtt_Tmrca': -tt.date2dist.intercept/tt.date2dist.clock_rate}
-        attributes.extend(['numdate', 'clock_length', 'mutation_length', 'raw_date', 'date'])
-        if args.date_confidence:
-            attributes.append('num_date_confidence')
+        export_timetree = True
+        if tt.date2dist.r_val**2 < 0.2 and (args.root in ['best', 'least-squares'] or args.clock_rate is None):
+            # TreeTime performed rooting or estimated the rate
+            print("WARNING: The temporal signal in the data is weak. Rooting and rate estimation might be unreliable.")
+            if args.force_timetree:
+                print("You ran augur refine with the flag '--force-timetree'. Please inspect the result carefully.")
+            else:
+                export_timetree = False
+                print("Please specify an explicit root or a properly rooted tree and run with '--keep-root'."
+                      " Also, please specify the evolutionary rate via '--clock-rate'. "
+                      " This run won't export a timetree."
+                      " If you still want to infer a timetree, rerun with '--force-timetree'")
+
+        if export_timetree:
+            node_data['clock'] = {'rate': tt.date2dist.clock_rate,
+                                  'intercept': tt.date2dist.intercept,
+                                  'rtt_Tmrca': -tt.date2dist.intercept/tt.date2dist.clock_rate}
+            attributes.extend(['numdate', 'clock_length', 'mutation_length', 'raw_date', 'date'])
+            if args.date_confidence:
+                attributes.append('num_date_confidence')
     else:
         from treetime import TreeAnc
         # instantiate treetime for the sole reason to name internal nodes
