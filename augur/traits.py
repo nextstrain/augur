@@ -10,7 +10,7 @@ from .utils import read_metadata, write_json, get_json_name
 TINY = 1e-12
 
 def mugration_inference(tree=None, seq_meta=None, field='country', confidence=True,
-                        missing='?', sampling_bias_correction=None):
+                        missing='?', sampling_bias_correction=None, weights=None):
     """
     Infer likely ancestral states of a discrete character assuming a time reversible model.
 
@@ -26,6 +26,10 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
         calculate confidence values for inferences
     missing : str, optional
         character that is to be interpreted as missing data, default='?'
+    sampling_bias_correction : None, optional
+        factor by which the transition rate is scaled up to counter sampling bias
+    weights : None, optional
+        vector of equilibrium frequencies that one expects the far ancestor to be sampled from
 
     Returns
     -------
@@ -63,7 +67,7 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
     elif len(unique_states)<180:
         tt, letter_to_state, reverse_alphabet = \
             reconstruct_discrete_traits(T, traits, missing_data=missing,
-                 sampling_bias_correction=sampling_bias_correction)
+                 sampling_bias_correction=sampling_bias_correction, weights=weights)
     else:
         print("ERROR: 180 or more distinct discrete states found. TreeTime is currently not set up to handle that many states.")
         sys.exit(1)
@@ -102,6 +106,7 @@ def register_arguments(parser):
     """
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
     parser.add_argument('--metadata', required=True, help="tsv/csv table with meta data")
+    parser.add_argument('--weights', required=False, help="tsv/csv table with equilibrium probabilities of discrete states")
     parser.add_argument('--columns', required=True, nargs='+',
                         help='metadata fields to perform discrete reconstruction on')
     parser.add_argument('--confidence',action="store_true",
@@ -144,7 +149,8 @@ def run(args):
     for column in args.columns:
         T, gtr, alphabet = mugration_inference(tree=tree_fname, seq_meta=traits,
                                                field=column, confidence=args.confidence,
-                                               sampling_bias_correction=args.sampling_bias_correction)
+                                               sampling_bias_correction=args.sampling_bias_correction,
+                                               weights=args.weights)
         if T is None: # something went wrong
             continue
 
