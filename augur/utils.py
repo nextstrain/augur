@@ -681,6 +681,8 @@ def json_to_tree(json_dict, root=True):
 
     Assigns links back to parent nodes for the root of the tree.
 
+    Test opening a JSON from augur export v1.
+
     >>> import json
     >>> json_fh = open("tests/data/json_tree_to_nexus/flu_h3n2_ha_3y_tree.json", "r")
     >>> json_dict = json.load(json_fh)
@@ -697,9 +699,32 @@ def json_to_tree(json_dict, root=True):
     True
     >>> tree.clades[0].parent.name
     'NODE_0002020'
+    >>> tree.clades[0].branch_length > 0
+    True
+
+    Test opening a JSON from augur export v2.
+
+    >>> json_fh = open("tests/data/zika.json", "r")
+    >>> json_dict = json.load(json_fh)
+    >>> tree = json_to_tree(json_dict)
+    >>> hasattr(tree, "name")
+    True
+    >>> len(tree.clades) > 0
+    True
+    >>> tree.clades[0].branch_length > 0
+    True
     """
+    # Check for v2 JSON which has combined metadata and tree data.
+    if root and "meta" in json_dict and "tree" in json_dict:
+        json_dict = json_dict["tree"]
+
     node = Bio.Phylo.Newick.Clade()
-    node.name = json_dict["strain"]
+
+    # v1 and v2 JSONs use different keys for strain names.
+    if "name" in json_dict:
+        node.name = json_dict["name"]
+    else:
+        node.name = json_dict["strain"]
 
     if "children" in json_dict:
         # Recursively add children to the current node.
@@ -710,11 +735,15 @@ def json_to_tree(json_dict, root=True):
         if attr != "children":
             setattr(node, attr, value)
 
-    node.numdate = node.attr.get("num_date")
-    node.branch_length = node.attr.get("div")
+    # Only v1 JSONs support a single `attr` attribute.
+    if hasattr(node, "attr"):
+        node.numdate = node.attr.get("num_date")
+        node.branch_length = node.attr.get("div")
 
-    if "translations" in node.attr:
-        node.translations = node.attr["translations"]
+        if "translations" in node.attr:
+            node.translations = node.attr["translations"]
+    elif hasattr(node, "node_attrs"):
+        node.branch_length = node.node_attrs.get("div")
 
     if root:
         node = annotate_parents_for_tree(node)
