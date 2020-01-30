@@ -6,7 +6,7 @@ from Bio import SeqIO
 import pandas as pd
 import os
 import numpy as np
-from .utils import run_shell_command
+from .utils import run_shell_command, shquote
 
 def get_mask_sites(vcf_file, mask_file):
     '''
@@ -99,7 +99,7 @@ def run(args):
         in_file = args.sequences+"_temp"
         copyfile(args.sequences, in_file)
 
-    call = ["vcftools", "--exclude-positions", tempMaskFile, inCall, in_file, "--recode --stdout", outCall, ">", out_file]
+    call = ["vcftools", "--exclude-positions", shquote(tempMaskFile), inCall, shquote(in_file), "--recode --stdout", outCall, ">", shquote(out_file)]
     print("Removing masked sites from VCF file using vcftools... this may take some time. Call:")
     print(" ".join(call))
     run_shell_command(" ".join(call), raise_errors = True)
