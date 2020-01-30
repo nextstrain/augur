@@ -96,7 +96,7 @@ def run(args):
     if args.method=='mafft':
         shoutput = shquote(output)
         shname = shquote(seq_fname)
-        cmd = "mafft --reorder --anysymbol --thread %d -- %s 1> %s 2> %s.log"%(args.nthreads, shname, shoutput, shoutput)
+        cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2> %s.log"%(args.nthreads, shname, shoutput, shoutput)
         print("\nusing mafft to align via:\n\t" + cmd +
               " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"
               "\n\thttps://doi.org/10.1093%2Fnar%2Fgkf436\n")
