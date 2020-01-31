@@ -550,15 +550,15 @@ def run_shell_command(cmd, raise_errors = False, extra_env = None):
     if extra_env:
         env.update(extra_env)
 
+    shargs = ['-c', "set -euo pipefail; " + cmd]
+
+    if os.name == 'posix':
+        shellexec = ['/bin/bash']
+    else:
+        # We try best effort on other systems. For now that means nt/java.
+        shellexec = ['env', 'bash']
+
     try:
-        shargs = ['-c', "set -euo pipefail; " + cmd]
-
-        if os.name == 'posix':
-            shellexec = ['/bin/bash']
-        else:
-            # We try best effort on other systems. For now that means nt/java.
-            shellexec = ['env', 'bash']
-
         # Use check_call() instead of run() since the latter was added only in Python 3.5.
         subprocess.check_output(
             shellexec + shargs,
@@ -587,7 +587,7 @@ def run_shell_command(cmd, raise_errors = False, extra_env = None):
             Augur requires {shell} to be installed.  Please open an issue on GitHub
             <https://github.com/nextstrain/augur/issues/new> if you need assistance.
             """,
-            shell = error.filename
+            shell = ' and '.join(shellexec)
         )
         if raise_errors:
             raise
