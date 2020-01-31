@@ -546,7 +546,6 @@ def run_shell_command(cmd, raise_errors = False, extra_env = None):
     overlayed onto the default subprocess environment.
     """
     env = os.environ.copy()
-    out = ''
 
     if extra_env:
         env.update(extra_env)
@@ -561,15 +560,16 @@ def run_shell_command(cmd, raise_errors = False, extra_env = None):
             shellexec = ['env', 'bash']
 
         # Use check_call() instead of run() since the latter was added only in Python 3.5.
-        out = subprocess.check_output(
+        subprocess.check_output(
             shellexec + shargs,
             shell = False,
-            stderr=subprocess.STDOUT)
+            stderr = subprocess.STDOUT,
+            env = env)
 
     except subprocess.CalledProcessError as error:
         print_error(
             "{out}\nshell exited {rc} when running: {cmd}{extra}",
-            out = out,
+            out = error.output,
             rc  = error.returncode,
             cmd = cmd,
             extra = "\nAre you sure this program is installed?" if error.returncode==127 else "",
@@ -582,13 +582,11 @@ def run_shell_command(cmd, raise_errors = False, extra_env = None):
     except FileNotFoundError as error:
         print_error(
             """
-            {out}
             Unable to run shell commands using {shell}!
 
             Augur requires {shell} to be installed.  Please open an issue on GitHub
             <https://github.com/nextstrain/augur/issues/new> if you need assistance.
             """,
-            out   = out,
             shell = error.filename
         )
         if raise_errors:
