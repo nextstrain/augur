@@ -165,9 +165,9 @@ rule traits:
     output:
         node_data = "results/traits.json",
     params:
-        columns = "country",
+        columns = "country region",
         sampling_bias_correction = 3,
-        weights = "config/zika.country_weights.csv"
+        weights = "config/trait_weights.csv"
     shell:
         """
         augur traits \
