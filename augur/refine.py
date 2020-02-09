@@ -95,6 +95,7 @@ def register_arguments(parser):
     parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
     parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")
     parser.add_argument('--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
+    parser.add_argument('--gen-per-year', default=50, type=float, help="number of generations per year, relevant for skyline output('skyline')")
     parser.add_argument('--clock-rate', type=float, help="fixed clock rate")
     parser.add_argument('--clock-std-dev', type=float, help="standard deviation of the fixed clock_rate estimate")
     parser.add_argument('--root', nargs="+", default='best', help="rooting mechanism ('best', least-squares', 'min_dev', 'oldest') "
@@ -202,6 +203,10 @@ def run(args):
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
                               'rtt_Tmrca': -tt.date2dist.intercept/tt.date2dist.clock_rate}
+        if args.coalescent=='skyline':
+            skyline, conf = tt.merger_model.skyline_inferred(gen=args.gen_per_year, confidence=2)
+            node_data['skyline'] = [[float(x) for x in skyline.x], [float(y) for y in conf[0]],
+                                    [float(y) for y in skyline.y], [float(y) for y in conf[1]]]
         attributes.extend(['numdate', 'clock_length', 'mutation_length', 'raw_date', 'date'])
         if args.date_confidence:
             attributes.append('num_date_confidence')
