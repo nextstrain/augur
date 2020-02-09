@@ -143,6 +143,22 @@ def run(args):
         print("*** augur refine --tree %s --output-tree <filename>.nwk"%(tree_fname) )
         print("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'")
 
+    if args.weights:
+        weight_dict = {c:{} for c in args.columns}
+        sep = ',' if args.weights.endswith('csv') else '\t'
+        with open(args.weights, 'r') as fh:
+            for line in fh:
+                if line[0]=='#':
+                    continue
+                name, trait, value = line.strip().split(sep)
+                if trait in weight_dict:
+                    weight_dict[trait][name] = float(value)
+        for c in weight_dict:
+            if len(weight_dict[c])==0:
+                weight_dict[c]=None
+    else:
+        weight_dict = {c:None for c in args.columns}
+
     mugration_states = defaultdict(dict)
     models = defaultdict(dict)
     out_prefix = '.'.join(args.tree.split('.')[:-1])
@@ -150,7 +166,7 @@ def run(args):
         T, gtr, alphabet = mugration_inference(tree=tree_fname, seq_meta=traits,
                                                field=column, confidence=args.confidence,
                                                sampling_bias_correction=args.sampling_bias_correction,
-                                               weights=args.weights)
+                                               weights=weight_dict[column])
         if T is None: # something went wrong
             continue
 

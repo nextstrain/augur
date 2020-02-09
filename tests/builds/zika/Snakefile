@@ -135,6 +135,7 @@ rule ancestral:
         augur ancestral \
             --tree {input.tree} \
             --alignment {input.alignment} \
+            --infer-ambiguous \
             --output {output.node_data} \
             --inference {params.inference}
         """
@@ -164,12 +165,14 @@ rule traits:
     output:
         node_data = "results/traits.json",
     params:
-        columns = "region country",
-        sampling_bias_correction = 3
+        columns = "country",
+        sampling_bias_correction = 3,
+        weights = "config/zika.country_weights.csv"
     shell:
         """
         augur traits \
             --tree {input.tree} \
+            --weights {params.weights} \
             --metadata {input.metadata} \
             --output {output.node_data} \
             --columns {params.columns} \
