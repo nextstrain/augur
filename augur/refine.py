@@ -117,6 +117,8 @@ def register_arguments(parser):
                                 'interquartile ranges from the root-to-tip vs time regression')
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--year-bounds', type=int, nargs='+', help='specify min or max & min prediction bounds for samples with XX in year')
+    parser.add_argument('--divergence-units', type=str, choices=['mutations', 'mutations-per-site'],
+                        default='mutations-per-site', help='Units in which sequence divergences is exported.')
     parser.set_defaults(covariance=True)
 
 def run(args):
@@ -218,6 +220,16 @@ def run(args):
         tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=1)
 
     node_data['nodes'] = collect_node_data(T, attributes)
+    if args.divergence_units=='mutations-per-site': #default
+        pass
+    elif args.divergence_units=='mutations':
+        L = tt.seq_len
+        for node in node_data['nodes']:
+            node_data['nodes'][node]['mutation_length'] *= L
+            node_data['nodes'][node]['branch_length'] *= L
+    else:
+        print("ERROR: divergence unit",args.divergence_units,"not supported!")
+        return 1
 
     # Export refined tree and node data
     import json

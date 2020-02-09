@@ -3,6 +3,19 @@
 ## __NEXT__
 
 
+## 6.2.0 (25 January 2020)
+
+### Features
+
+* refine: Include `--divergence-units` option to distinguish between `mutations`
+  and `mutations-per-site`. Keep `mutations-per-site` as default behavior.
+  [See PR 435](https://github.com/nextstrain/augur/pull/435)
+
+### Bug fixes
+
+* utils: Support v2 auspice JSONs in json_to_tree utility function.
+  [See PR 432](https://github.com/nextstrain/augur/pull/432)  
+
 ## 6.1.1 (17 December 2019)
 
 ### Bug fixes

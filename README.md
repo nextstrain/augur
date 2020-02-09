@@ -36,6 +36,7 @@ This install depends on a fairly minimal set of external Python libraries. There
 functions in augur that require a larger set of dependencies. These can be installed via:
 
     pip install .[full]
+    pip install nextstrain-augur[full]
 
 Augur uses some common external bioinformatics programs which you'll need to install to have a fully functioning toolkit:
 
