@@ -814,7 +814,7 @@ def get_config(args):
     config = read_config(args.auspice_config)
     try:
         print("Validating config file {} against the JSON schema".format(args.auspice_config))
-        validate_auspice_config_v2(config_json=config)
+        validate_auspice_config_v2(args.auspice_config)
     except ValidateError:
         print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
         sys.exit(2)
