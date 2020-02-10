@@ -406,6 +406,7 @@ def validate_data_json(filename):
         print("\n------------------------")
         print("Validation of {} failed. Please check this in a local instance of `auspice`, as it is not expected to display correctly. ".format(filename))
         print("------------------------")
+        sys.exit(2)
 
 
 def set_panels(data_json, config, cmd_line_panels):
