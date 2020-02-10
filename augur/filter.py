@@ -8,7 +8,7 @@ from collections import defaultdict
 import random, os, re
 import numpy as np
 import sys
-from .utils import read_metadata, get_numerical_dates, run_shell_command
+from .utils import read_metadata, get_numerical_dates, run_shell_command, shquote
 
 comment_char = '#'
 
@@ -30,8 +30,8 @@ def write_vcf(compressed, input_file, output_file, dropped_samps):
     inCall = "--gzvcf" if compressed else "--vcf"
     outCall = "| gzip -c" if output_file.lower().endswith('.gz') else ""
 
-    toDrop = " ".join(["--remove-indv "+s for s in dropped_samps])
-    call = ["vcftools", toDrop, inCall, input_file, "--recode --stdout", outCall, ">", output_file]
+    toDrop = " ".join(["--remove-indv "+shquote(s) for s in dropped_samps])
+    call = ["vcftools", toDrop, inCall, shquote(input_file), "--recode --stdout", outCall, ">", shquote(output_file)]
 
     print("Filtering samples using VCFTools with the call:")
     print(" ".join(call))

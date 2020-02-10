@@ -6,7 +6,7 @@ import os,sys,argparse
 from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq
-from .utils import run_shell_command, nthreads_value
+from .utils import run_shell_command, nthreads_value, shquote
 
 def make_gaps_ambiguous(aln):
     '''
@@ -94,7 +94,9 @@ def run(args):
 
     # align
     if args.method=='mafft':
-        cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2> %s.log"%(args.nthreads, seq_fname, output, output)
+        shoutput = shquote(output)
+        shname = shquote(seq_fname)
+        cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2> %s.log"%(args.nthreads, shname, shoutput, shoutput)
         print("\nusing mafft to align via:\n\t" + cmd +
               " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"
               "\n\thttps://doi.org/10.1093%2Fnar%2Fgkf436\n")

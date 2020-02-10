@@ -4,6 +4,7 @@ import Bio.Phylo
 import os, json, sys
 import pandas as pd
 import subprocess
+import shlex
 from treetime.utils import numeric_date
 from collections import defaultdict
 from pkg_resources import resource_stream
@@ -531,6 +532,7 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
         call = ["gzip", vcf_file_name[:-3]]
         run_shell_command(" ".join(call), raise_errors = True)
 
+shquote = shlex.quote
 
 def run_shell_command(cmd, raise_errors = False, extra_env = None):
     """
@@ -548,17 +550,26 @@ def run_shell_command(cmd, raise_errors = False, extra_env = None):
     if extra_env:
         env.update(extra_env)
 
+    shargs = ['-c', "set -euo pipefail; " + cmd]
+
+    if os.name == 'posix':
+        shellexec = ['/bin/bash']
+    else:
+        # We try best effort on other systems. For now that means nt/java.
+        shellexec = ['env', 'bash']
+
     try:
         # Use check_call() instead of run() since the latter was added only in Python 3.5.
-        subprocess.check_call(
-            "set -euo pipefail; " + cmd,
-            shell = True,
-            executable = "/bin/bash",
+        subprocess.check_output(
+            shellexec + shargs,
+            shell = False,
+            stderr = subprocess.STDOUT,
             env = env)
 
     except subprocess.CalledProcessError as error:
         print_error(
-            "shell exited {rc} when running: {cmd}{extra}",
+            "{out}\nshell exited {rc} when running: {cmd}{extra}",
+            out = error.output,
             rc  = error.returncode,
             cmd = cmd,
             extra = "\nAre you sure this program is installed?" if error.returncode==127 else "",
@@ -576,7 +587,7 @@ def run_shell_command(cmd, raise_errors = False, extra_env = None):
             Augur requires {shell} to be installed.  Please open an issue on GitHub
             <https://github.com/nextstrain/augur/issues/new> if you need assistance.
             """,
-            shell = error.filename
+            shell = ' and '.join(shellexec)
         )
         if raise_errors:
             raise
