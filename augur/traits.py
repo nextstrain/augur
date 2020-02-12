@@ -151,8 +151,8 @@ def run(args):
                 if line[0]=='#':
                     continue
                 name, trait, value = line.strip().split(sep)
-                if trait in weight_dict:
-                    weight_dict[trait][name] = float(value)
+                if name in weight_dict:
+                    weight_dict[name][trait] = float(value)
         for c in weight_dict:
             if len(weight_dict[c])==0:
                 weight_dict[c]=None
