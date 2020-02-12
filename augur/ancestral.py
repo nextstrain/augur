@@ -106,9 +106,9 @@ def register_arguments(parser):
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
     ambiguous = parser.add_mutually_exclusive_group()
-    ambiguous.add_argument('--keep-ambiguous', action="store_false", dest='infer-ambiguous',
+    ambiguous.add_argument('--keep-ambiguous', action="store_false", dest='infer_ambiguous',
                                 help='do not infer nucleotides at ambiguous (N) sites on tip sequences (leave as N).')
-    ambiguous.add_argument('--infer-ambiguous', action="store_true", default=False,
+    ambiguous.add_argument('--infer-ambiguous', action="store_true",
                                 help='infer nucleotides at ambiguous (N,W,R,..) sites on tip sequences and replace with most likely state.')
     parser.add_argument('--keep-overhangs', action="store_true", default=False,
                                 help='do not infer nucleotides for gaps (-) on either side of the alignment')
