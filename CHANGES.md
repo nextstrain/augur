@@ -3,6 +3,36 @@
 ## __NEXT__
 
 
+## 6.3.0 (13 February 2020)
+
+### Features
+
+* Augur `refine`, `ancestral` and `traits` now use the
+  [upgraded TreeTime v0.7](https://github.com/neherlab/treetime/releases/tag/v0.7.0)
+  This should have a number of under-the-hood improvements.
+  [See PR 431](https://github.com/nextstrain/augur/pull/431) 
+* ancestral: New options to either `--keep-ambiguous` or `--infer-ambiguous`. If using
+  `--infer-ambiguous` the previous behavior will be maintained in which tips with `N` will have
+  their nucleotide state inferred. If using `--keep-ambiguous`, these tips will be left as `N`.
+  With this upgrade, we are still defaulting to `--infer-ambiguous`, however, we plan to swap
+  default to `--keep-ambiguous` in the future. If this distintion matters to you, we would suggest
+  that you explicitly record `--keep-ambiguous` / `--infer-ambiguous` in your build process.
+  [Also part of PR 431](https://github.com/nextstrain/augur/pull/431)  
+* traits: Allow input of `--weights` which references a `.tsv` file in the following format:
+  ```
+  division	Hubei	10.0
+  division	Jiangxi	1.0
+  division	Chongqing	1.0
+  ```
+  where these weights represent equilibrium frequencies in the CTMC transition model. We imagine the
+  primary use of user-specified weights to correct for strong sampling biases in available data.
+  [See PR 443](https://github.com/nextstrain/augur/pull/443)  
+
+### Bug fixes
+
+* Improvements to make shell scripts run more easily on Windows.
+  [See PR 437](https://github.com/nextstrain/augur/pull/437)  
+
 ## 6.2.0 (25 January 2020)
 
 ### Features
