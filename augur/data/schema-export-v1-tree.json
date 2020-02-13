@@ -134,7 +134,7 @@
             "type": "array",
             "items": {
               "oneOf": [
-                {"type": "string", "pattern": "^[ATCGN-][0-9]+[ATCGN-]$"},
+                {"type": "string", "pattern": "^[ATCGNYRWSKMDVHB-][0-9]+[ATCGNYRWSKMDVHB-]$"},
                 {"type": "string", "pattern": "^insertion [0-9]+-[0-9]+$", "$comment": "unused by auspice"},
                 {"type": "string", "pattern": "^deletion [0-9]+-[0-9]+$", "$comment": "unused by auspice"}
               ]
