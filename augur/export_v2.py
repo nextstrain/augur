@@ -555,11 +555,15 @@ def set_node_attrs_on_tree(data_json, node_attrs):
             if is_valid(raw_data.get(prop, None)):
                 node["node_attrs"][prop] = str(raw_data[prop])
 
-    def _transfer_colorings(node, raw_data):
-        # exclude special cases already taken care of
-        colorings = [c for c in data_json["meta"]["colorings"] if c["key"] not in ["gt", "num_date", "author"]]
-        for coloring in colorings:
-            key = coloring["key"]
+    def _transfer_colorings_filters(node, raw_data):
+        trait_keys = set() # order we add to the node_attrs is not important for auspice
+        if "colorings" in data_json["meta"]:
+            trait_keys = trait_keys.union([t["key"] for t in data_json["meta"]["colorings"]])
+        if "filters" in data_json["meta"]:
+            trait_keys = trait_keys.union(data_json["meta"]["filters"])
+        exclude_list = ["gt", "num_date", "author"] # exclude special cases already taken care of
+        trait_keys = trait_keys.difference(exclude_list)
+        for key in trait_keys:
             if is_valid(raw_data.get(key, None)):
                 node["node_attrs"][key] = {"value": raw_data[key]}
                 if is_valid(raw_data.get(key+"_confidence", None)):
@@ -582,8 +586,8 @@ def set_node_attrs_on_tree(data_json, node_attrs):
         _transfer_num_date(node, raw_data)
         _transfer_url_accession(node, raw_data)
         _transfer_author_data(node)
-        # transfer colorings, including entropy & confidence if available
-        _transfer_colorings(node, raw_data)
+        # transfer colorings & filters, including entropy & confidence if available
+        _transfer_colorings_filters(node, raw_data)
 
         for child in node.get("children", []):
             _recursively_set_data(child)

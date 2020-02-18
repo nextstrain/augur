@@ -7,7 +7,8 @@ rule all:
         div_only = "auspice/v2_div-only-tree.json",
         bool_metadata = "auspice/v2_boolean-metadata.json",
         default_layout = "auspice/v2_default-layout.json",
-        footer = "auspice/v2_custom-footer.json"
+        footer = "auspice/v2_custom-footer.json",
+        filter_not_color = "auspice/v2_filters-not-colors.json"
 rule files:
     params:
         hidden_nodes = "data/hidden_nodes.json",
@@ -203,6 +204,25 @@ rule export_with_custom_footer_description:
             --metadata {input.metadata} \
             --description {input.footer} \
             --title "Custom footer" \
+            --output {output.auspice}
+        """
+
+rule export_filter_which_isnt_a_coloring:
+    message: "Exporting (v2) with a filter which is not a coloring"
+    input:
+        tree = {rules.refine_with_temporal_information.output.tree},
+        branch_lengths = {rules.refine_with_temporal_information.output.node_data},
+        metadata = {rules.parse.output.metadata},
+        config = "config/filters.json"
+    output:
+        auspice = rules.all.input.filter_not_color,
+    shell:
+        """
+        augur export v2 \
+            --tree {input.tree} \
+            --node-data {input.branch_lengths} \
+            --metadata {input.metadata} \
+            --auspice-config {input.config} \
             --output {output.auspice}
         """
 
