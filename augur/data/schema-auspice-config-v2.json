@@ -132,6 +132,10 @@
                 "layout": {
                     "type": "string",
                     "enum": ["rect", "radial", "unrooted", "clock"]
+                },
+                "branch_label": {
+                    "type": "string",
+                    "enum": ["clade", "aa", "none"]
                 }
             }
         },
