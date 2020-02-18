@@ -57,6 +57,14 @@ def collectMutationGenes(root):
     genes -= {"nuc"}
     return genes
 
+def collectBranchLabels(root):
+    labels = set()
+    def recurse(node):
+        labels.update(node.get("branch_attrs", {}).get("labels", {}).keys())
+        if "children" in node:
+            [recurse(child) for child in node["children"]]
+    recurse(root)
+    return labels
 
 def verifyMainJSONIsInternallyConsistent(data, ValidateError):
     """
@@ -143,6 +151,12 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
             for gene in genes_with_mutations:
                 if gene not in data["meta"]["genome_annotations"]:
                     warn("The tree defined mutations on gene {} which doesn't appear in the metadata annotations object.".format(gene))
+
+    default_branch_label = data.get("meta").get("display_defaults", {}).get("branch_label")
+    if default_branch_label and default_branch_label.lower() != "none":
+        labels = collectBranchLabels(data['tree'])
+        if not default_branch_label in labels:
+            warn("Default label to display \"{}\" isn't found anywhere on the tree!".format(default_branch_label))
 
     if not warnings:
         print("Validation succeeded")
