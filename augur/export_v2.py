@@ -400,12 +400,13 @@ def set_filters(data_json, config):
 def validate_data_json(filename):
     print("Validating produced JSON")
     try:
-        validate_v2(json_v2=filename)
+        validate_v2(main_json=filename)
     except ValidateError as e:
         print(e)
         print("\n------------------------")
         print("Validation of {} failed. Please check this in a local instance of `auspice`, as it is not expected to display correctly. ".format(filename))
         print("------------------------")
+        sys.exit(2)
 
 
 def set_panels(data_json, config, cmd_line_panels):
@@ -817,7 +818,7 @@ def get_config(args):
     config = read_config(args.auspice_config)
     try:
         print("Validating config file {} against the JSON schema".format(args.auspice_config))
-        validate_auspice_config_v2(config_json=config)
+        validate_auspice_config_v2(args.auspice_config)
     except ValidateError:
         print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
         sys.exit(2)

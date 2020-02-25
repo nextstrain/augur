@@ -202,7 +202,7 @@ def read_node_data(fnames, tree=None):
                 tmp_data = json.load(jfile)
             if tmp_data.get("annotations"):
                 try:
-                    validate(tmp_data.get("annotations"), load_json_schema("schema-annotations.json"))
+                    validate(tmp_data.get("annotations"), load_json_schema("schema-annotations.json"), fname)
                 except ValidateError as err:
                     print("{} contains an `annotations` block of an invalid JSON format. "
                         "Was it produced by different version of augur the one you are currently using ({})? "
