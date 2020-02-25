@@ -197,7 +197,7 @@ def run(args):
                     Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
                     use_marginal = args.date_inference == 'marginal',
                     branch_length_inference = args.branch_length_inference or 'auto',
-                    precision = args.precision or 'auto',
+                    precision = 'auto' if args.precision is None else args.precision,
                     clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
                     clock_filter_iqd=args.clock_filter_iqd,
                     covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies))
