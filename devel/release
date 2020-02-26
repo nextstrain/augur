@@ -102,7 +102,13 @@ version-is-gt() {
 next-version() {
     local current_version="$(read-version)"
 
-    read -e -p "Current version is $current_version."$'\n'"New version? " -i "$current_version" new_version
+    # The ancient version of bash on macOS does not support the -i option, so
+    # test if it works before using it.
+    if read -i supported <<<"" 2>/dev/null >&2; then
+        read -e -p "Current version is $current_version."$'\n'"New version? " -i "$current_version" new_version
+    else
+        read -e -p "Current version is $current_version."$'\n'"New version? " new_version
+    fi
 
     echo "$new_version"
 }
