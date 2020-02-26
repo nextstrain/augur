@@ -719,7 +719,8 @@ def set_display_defaults(data_json, config):
         ["color_by", "colorBy"],
         ["distance_measure", "distanceMeasure"],
         ["map_triplicate", "mapTriplicate"],
-        ["layout", "layout"]
+        ["layout", "layout"],
+        ["branch_label", "branch_label"]
     ]
 
     display_defaults = {}
