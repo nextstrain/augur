@@ -3,3 +3,7 @@ rule all:
     """
     augur validate export-v2 auspice/v2_zika.json
     """
+
+rule clean:
+  run:
+    pass
