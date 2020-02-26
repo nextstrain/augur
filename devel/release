@@ -8,8 +8,8 @@
 #   B. Rewind the process if you're not (via devel/rewind-release or
 #      manually).
 #
-# You will need to have GPG and git's user.signingKey option configured in
-# order for this script to complete.
+# If you have GPG and git's user.signingKey option configured, a signed tag
+# will be created.  Otherwise, an unsigned annotated tag will be used.
 #
 # The script will prompt you for the new version if you do not provide it as
 # the sole argument.
@@ -141,7 +141,12 @@ commit-and-tag() {
     local version="$1"
 
     git commit -m "version $version" "$version_file" "$changes_file"
-    git tag -sm "version $version" "$version"
+
+    if [[ -n "$(git config user.signingKey)" ]]; then
+        git tag -sm "version $version" "$version"
+    else
+        git tag -am "version $version" "$version"
+    fi
 }
 
 merge-to-release-branch() {

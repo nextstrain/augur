@@ -136,7 +136,9 @@ As tests run on the development code in the augur repository, your environment s
 
 ### Releasing
 
-New releases are tagged in git using a [_signed_ tag][].  The `release` branch
+New releases are tagged in git using an "annotated" tag.  If the git option
+`user.signingKey` is set, the tag will also be [signed][].  Signed tags are
+preferred, but it can be hard to setup GPG correctly.  The `release` branch
 should always point to the latest release tag.  Source and wheel (binary)
 distributions are uploaded to [the nextstrain-augur project on
 PyPi](https://pypi.org/project/nextstrain-augur).
@@ -146,7 +148,7 @@ local repository.  It ends with instructions for you on how to push the release
 commit/tag/branch and how to upload the built distributions to PyPi.  You'll
 need [a PyPi account][] and [twine][] installed to do the latter.
 
-[_signed_ tag]: https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work
+[signed]: https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work
 [a PyPi account]: https://pypi.org/account/register/
 [twine]: https://pypi.org/project/twine
 
