@@ -3,6 +3,47 @@
 ## __NEXT__
 
 
+## 6.4.0 (26 February 2020)
+
+### Features
+
+* align: New sequences can now be added to an existing alignment.  [#422][]
+
+* align: Multiple sequence files can be provided as input. [#422][]
+
+* align: Extra debugging files such as `*.pre_aligner.fasta` and
+  `*.post_aligner.fasta` are no longer produced by default.  To request them,
+  pass the `--debug` flag. [#422][]
+
+* align: De-duplicate input sequences, with a warning. [#422][]
+
+* export v2: Add support for the `branch_label` property in `display_defaults`,
+  which was recently added to Auspice. [#445][]
+
+### Bug fixes
+
+* align: Exits with an error earlier if arguments are invalid instead of only
+  printing a warning. [#422][]
+
+* align: Performs more error checking and clarifies the help and error
+  messages. [#422][]
+
+* export v2: Traits which are filters but not colorings are now exported as
+  well, instead of being left out. [#442][]
+
+* export v2: Exits non-zero when validation fails, instead of masking errors.
+  [#441][]
+
+* validate: In order to improve clarity, messages now include the filenames
+  involved and distinguish between schema validation and internal consistency
+  checks. [#441][]
+
+[#422]: https://github.com/nextstrain/augur/pull/422
+[#441]: https://github.com/nextstrain/augur/pull/441
+[#442]: https://github.com/nextstrain/augur/pull/442
+[#445]: https://github.com/nextstrain/augur/pull/445
+
+
 ## 6.3.0 (13 February 2020)
 
 ### Features
