@@ -102,7 +102,9 @@ def run(args):
         # if we've specified a reference, strip out all the columns not present in the reference
         # this will overwrite the alignment file
         if ref_name:
-            seqs = strip_non_reference(args.output, ref_name, keep_reference=not args.remove_reference)
+            seqs = strip_non_reference(args.output, ref_name)
+            if args.remove_reference:
+                seqs = remove_reference_sequence(seqs, ref_name)
             write_seqs(seqs, args.output)
         if args.fill_gaps:
             make_gaps_ambiguous(seqs)
@@ -194,7 +196,10 @@ def write_uppercase_alignment_in_place(fname):
     AlignIO.write(aln, fname, 'fasta')
 
 
-def strip_non_reference(alignment_fname, reference, keep_reference=False):
+def remove_reference_sequence(seqs, reference_name):
+    return [seq for seq in seqs if seq.name!=reference_name]
+
+def strip_non_reference(alignment_fname, reference):
     '''
     return sequences that have all insertions relative to the reference
     removed. The alignment is read from file and returned as list of sequences.
@@ -205,9 +210,6 @@ def strip_non_reference(alignment_fname, reference, keep_reference=False):
         alignment file name, file needs to be fasta format
     reference : str
         name of reference sequence, assumed to be part of the alignment
-    keep_reference : bool, optional
-        by default, the reference sequence is removed after stripping
-        non-reference sequence. To keep the reference, use keep_reference=True
 
     Returns
     -------
@@ -229,8 +231,7 @@ def strip_non_reference(alignment_fname, reference, keep_reference=False):
     out_seqs = []
     for seq, seq_array in zip(aln, ref_aln_array):
         seq.seq = Seq.Seq(''.join(seq_array))
-        if keep_reference or seq.name!=reference:
-            out_seqs.append(seq)
+        out_seqs.append(seq)
 
     print("Trimmed gaps in", reference, "from the alignment")
     return out_seqs
