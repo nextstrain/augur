@@ -519,7 +519,10 @@ def set_node_attrs_on_tree(data_json, node_attrs):
                 #convert mutations into a label
                 if aa:
                     aa_lab = '; '.join("{!s}: {!s}".format(key,', '.join(val)) for (key,val) in aa.items())
-                    node["branch_attrs"]["labels"] = { "aa": aa_lab }
+                    if 'labels' in node["branch_attrs"]:
+                        node["branch_attrs"]["labels"]["aa"] = aa_lab
+                    else:
+                        node["branch_attrs"]["labels"] = { "aa": aa_lab }
 
     def _transfer_vaccine_info(node, raw_data):
         if raw_data.get("vaccine"):
@@ -527,7 +530,7 @@ def set_node_attrs_on_tree(data_json, node_attrs):
 
     def _transfer_labels(node, raw_data):
         if "clade_annotation" in raw_data and is_valid(raw_data["clade_annotation"]):
-            if 'labels' in node:
+            if 'labels' in node["branch_attrs"]:
                 node["branch_attrs"]["labels"]['clade'] = raw_data["clade_annotation"]
             else:
                 node["branch_attrs"]["labels"] = { "clade": raw_data["clade_annotation"] }
