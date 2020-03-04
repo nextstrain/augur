@@ -3,6 +3,20 @@
 ## __NEXT__
 
 
+## 6.4.1 (4 March 2020)
+
+### Bug Fixes
+
+* export: AA labels are now exported for branches where a clade is also labeled
+  [See PR 447](https://github.com/nextstrain/augur/pull/447)
+
+* export / validation: a dataset title is no longer required
+
+* release script now works on MacOS & code-signing is optional
+  [See PR 448](https://github.com/nextstrain/augur/pull/448)
+
+* traits: Missing data is correctly handled
+
 ## 6.4.0 (26 February 2020)
 
 ### Features
