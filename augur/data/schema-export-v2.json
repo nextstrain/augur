@@ -15,7 +15,7 @@
             "type": "object",
             "$comment": "Metadata associated with phylogeny",
             "additionalProperties": false,
-            "required": ["title", "updated", "panels"],
+            "required": ["updated", "panels"],
             "properties" : {
                 "title" : {
                     "description": "Auspice displays this at the top of the page",
