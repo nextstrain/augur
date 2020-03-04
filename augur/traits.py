@@ -78,7 +78,7 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
 
     # attach inferred states as e.g. node.region = 'africa'
     for node in tt.tree.find_clades():
-        node.__setattr__(field, letter_to_state[node.sequence[0]])
+        node.__setattr__(field, letter_to_state[node.cseq[0]])
 
     # if desired, attach entropy and confidence as e.g. node.region_entropy = 0.03
     if confidence:
