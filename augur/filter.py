@@ -294,7 +294,13 @@ def run(args):
     num_included_by_name = 0
     if args.include and os.path.isfile(args.include):
         with open(args.include, 'r') as ifile:
-            to_include = set([line.strip() for line in ifile if line[0]!=comment_char])
+            to_include = set(
+                [
+                    line.strip()
+                    for line in ifile
+                    if line[0]!=comment_char and len(line.strip()) > 0
+                ]
+            )
 
         for s in to_include:
             if s not in seq_keep:
