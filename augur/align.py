@@ -176,7 +176,7 @@ def read_reference(ref_fname):
 def generate_alignment_cmd(method, nthreads, existing_aln_fname, seqs_to_align_fname, aln_fname, log_fname):
     if method=='mafft':
         if existing_aln_fname:
-            cmd = "mafft --add %s --keeplength --reorder --anysymbol --thread %d %s 1> %s 2> %s"%(seqs_to_align_fname, nthreads, shquote(existing_aln_fname), shquote(aln_fname), shquote(log_fname))
+            cmd = "mafft --add %s --keeplength --reorder --anysymbol --thread %d %s 1> %s 2> %s"%(shquote(seqs_to_align_fname), nthreads, shquote(existing_aln_fname), shquote(aln_fname), shquote(log_fname))
         else:
             cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2> %s"%(nthreads, shquote(seqs_to_align_fname), shquote(aln_fname), shquote(log_fname))
         print("\nusing mafft to align via:\n\t" + cmd +
@@ -264,7 +264,7 @@ def check_duplicates(*values):
         if not sample:
             # allows false-like values (e.g. always provide existing_alignment, allowing
             # the default which is `False`)
-            continue 
+            continue
         elif type(sample) == dict:
             for s in sample:
                 add(s)
