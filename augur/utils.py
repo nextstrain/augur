@@ -71,7 +71,7 @@ def ambiguous_date_to_date_range(mydate, fmt, min_max_year=None):
     upper_bound = datetime(year=max_date['year'], month=max_date['month'], day=max_date['day']).date()
     return (lower_bound, upper_bound if upper_bound<today else today)
 
-def read_metadata(fname):
+def read_metadata(fname, query=None):
     if not fname:
         print("ERROR: read_metadata called without a filename")
         return {}, []
@@ -83,6 +83,15 @@ def read_metadata(fname):
             print("Error reading metadata file {}".format(fname))
             print(e)
             sys.exit(2)
+        if query:
+            try:
+                metadata.query(query, inplace=True)
+            except Exception as e:
+                # Would like to make this more specific, but Pandas throws multiple different
+                # errors from panda specific to python generic errors.
+                print("ERROR: Invalid query string: '{}'".format(query))
+                print(e)
+                sys.exit(2)
         meta_dict = {}
         for ii, val in metadata.iterrows():
             if hasattr(val, "strain"):
