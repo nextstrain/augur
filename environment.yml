@@ -9,7 +9,7 @@ dependencies:
 - fasttree
 - iqtree
 - vcftools
-- snakemake>=5.4.0,<5.11
+- snakemake
 - pip
 - pip:
   - .
