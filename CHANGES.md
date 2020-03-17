@@ -3,6 +3,36 @@
 ## __NEXT__
 
 
+## 6.4.2 (17 March 2020)
+
+### Bug Fixes
+
+* Require Snakemake less than 5.11 to avoid a breaking change.  The `--cores`
+  argument is now required by 5.11, which will affect many existing augur-based
+  workflows.  Reported upstream as
+  [snakemake/snakemake#283](https://github.com/snakemake/snakemake/issues/283).
+
+* align: Run mafft with the `--nomemsave` option.  This makes alignments of
+  sequences over 10k in length run much, much faster in the general case and
+  shouldn't cause issues for most modern hardware.  We may end up needing to
+  add an off-switch for this mode if it causes issues for other users of augur,
+  but the hope is that it will make things just magically run faster for most
+  folks!  There is likely more tuning that could be done with mafft, but this
+  is a huge improvement in our testing.
+  [#458][]
+
+* align: Ignore blank lines in `--include` files.  Thanks @CameronDevine!
+  [#451][]
+
+* align: Properly quote filenames when invoking mafft.  Thanks @CameronDevine!
+  [#452][]
+
+
+[#451]: https://github.com/nextstrain/augur/pull/451
+[#452]: https://github.com/nextstrain/augur/pull/452
+[#458]: https://github.com/nextstrain/augur/pull/458
+
+
 ## 6.4.1 (4 March 2020)
 
 ### Bug Fixes
