@@ -39,7 +39,7 @@ setup(
         "packaging >=19.2",
         "pandas >=0.20.0, ==0.*",
         "phylo-treetime >=0.7.2, ==0.7.*",
-        "snakemake >=5.4.0, ==5.*"
+        "snakemake >=5.4.0, <5.11"
     ],
     extras_require = {
         'full': [
