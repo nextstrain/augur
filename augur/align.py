@@ -220,7 +220,7 @@ def strip_non_reference(alignment_fname, reference, keep_reference=False):
         ref_array = np.array(seqs[reference])
         if "-" not in ref_array:
             print("No gaps in alignment to trim (with respect to the reference, %s)"%reference)
-            return [a for a in aln if (keep_reference or a.name != reference)]
+            return [seq for seq in aln if (keep_reference or seq.name != reference)]
         ungapped = ref_array!='-'
         ref_aln_array = np.array(aln)[:,ungapped]
     else:
