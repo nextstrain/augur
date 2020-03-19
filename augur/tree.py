@@ -9,6 +9,7 @@ import time
 import uuid
 import Bio
 from Bio import Phylo
+from Bio import Seq
 import numpy as np
 from treetime.vcf_utils import read_vcf
 from pathlib import Path
@@ -305,10 +306,10 @@ def write_out_informative_fasta(compress_seq, alignment):
 
     return fasta_file
 
-
-def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_file):
+def mask_and_cleanup_multiple_sequence_alignment(alignment_file, excluded_sites_file):
     """Creates a new multiple sequence alignment FASTA file from which the given
-    excluded sites have been removed and returns the filename of the new
+    excluded sites have been removed and any invalid characters have been masked
+    and returns the filename of the new
     alignment.
 
     Parameters
@@ -316,7 +317,7 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
     alignment_file : str
         path to the original multiple sequence alignment file
 
-    excluded_sites_file : str
+    excluded_sites_file : str or None
         path to a text file containing each nucleotide position to exclude with one position per line
 
     Returns
@@ -325,11 +326,10 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
         path to the new FASTA file from which sites have been excluded
     """
     # Load zero-based excluded sites.
-    excluded_sites = load_excluded_sites(excluded_sites_file).tolist()
-
-    # Return the original alignment file, if no excluded sites were found.
-    if len(excluded_sites) == 0:
-        return alignment_file
+    if excluded_sites_file is not None:
+        excluded_sites = load_excluded_sites(excluded_sites_file).tolist()
+    else:
+        excluded_sites = []
 
     # Load alignment as FASTA generator to prevent loading the whole alignment
     # into memory.
@@ -338,11 +338,16 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
     # Write the masked alignment to disk one record at a time.
     alignment_file_path = Path(alignment_file)
     masked_alignment_file = str(alignment_file_path.parent / ("masked_%s" % alignment_file_path.name))
+    # Valid sites from: http://reverse-complement.com/ambiguity.html
+    valid_sites = {"A", "G", "C", "T", "U", "R", "Y", "S", "W",
+                   "K", "M", "B", "V", "D", "H", "N", "-"}
     with open(masked_alignment_file, "w") as oh:
         for record in alignment:
-            # Convert to a mutable sequence to enable masking with Ns.
-            sequence = record.seq.tomutable()
-
+            # Replace invalid sites and convert to a mutable sequence
+            # to enable masking with Ns.
+            sequence = Bio.Seq.MutableSeq([
+                site if site in valid_sites else "N" for site in record.seq
+            ])
             # Replace all excluded sites with Ns.
             for site in excluded_sites:
                 sequence[site] = "N"
