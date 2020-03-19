@@ -372,26 +372,19 @@ def register_arguments(parser):
 
 
 def run(args):
-    # check alignment type, set flags, read in if VCF
-    is_vcf = False
-    ref = None
-    if any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
+    # check alignment type, convert to FASTA if it is a VCF
+    if any(args.alignment.lower().endswith(x) for x in ('.vcf', '.vcf.gz')):
         # Prepare a multiple sequence alignment from the given variants VCF and
         # reference FASTA.
         if not args.vcf_reference:
             print("ERROR: a reference Fasta is required with VCF-format alignments")
             return 1
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
-        sequences = compress_seq['sequences']
-        ref = compress_seq['reference']
-        is_vcf = True
-        aln = sequences
-    elif args.exclude_sites:
-        # Mask excluded sites from the given multiple sequence alignment.
-        aln = mask_sites_in_multiple_sequence_alignment(args.alignment, args.exclude_sites)
+        aln_file = write_out_informative_fasta(compress_seq, args.alignment)
     else:
-        # Use the multiple sequence alignment as is.
-        aln = args.alignment
+        aln_file = args.alignment
+
+    aln_file = mask_and_cleanup_multiple_sequence_alignment(aln_file, args.exclude_sites)
 
     start = time.time()
 
@@ -400,22 +393,15 @@ def run(args):
     else:
         tree_fname = '.'.join(args.alignment.split('.')[:-1]) + '.nwk'
 
-    # construct reduced alignment if needed
-    if is_vcf:
-        variable_fasta = write_out_informative_fasta(compress_seq, args.alignment, stripFile=args.exclude_sites)
-        fasta = variable_fasta
-    else:
-        fasta = aln
-
     if args.substitution_model and not args.method=='iqtree':
         print("Cannot specify model unless using IQTree. Model specification ignored.")
 
     if args.method=='raxml':
-        T = build_raxml(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
+        T = build_raxml(aln_file, tree_fname, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
     elif args.method=='iqtree':
-        T = build_iqtree(fasta, tree_fname, args.substitution_model, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
+        T = build_iqtree(aln_file, tree_fname, args.substitution_model, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
     elif args.method=='fasttree':
-        T = build_fasttree(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
+        T = build_fasttree(aln_file, tree_fname, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
     else:
         print("ERROR: unknown tree builder provided to --method: %s" % args.method, file = sys.stderr)
         return 1
