@@ -339,14 +339,19 @@ def mask_and_cleanup_multiple_sequence_alignment(alignment_file, excluded_sites_
     alignment_file_path = Path(alignment_file)
     masked_alignment_file = str(alignment_file_path.parent / ("masked_%s" % alignment_file_path.name))
     # Valid sites from: http://reverse-complement.com/ambiguity.html
+    # Including both upper & lower because set.includes is faster than str.upper
     valid_sites = {"A", "G", "C", "T", "U", "R", "Y", "S", "W",
-                   "K", "M", "B", "V", "D", "H", "N", "-"}
+                   "a", "g", "c", "t", "u", "r", "y", "s", "w",
+                   "K", "M", "B", "V", "D", "H", "N", "-",
+                   "k", "m", "b", "v", "d", "h", "n"}
     with open(masked_alignment_file, "w") as oh:
         for record in alignment:
             # Replace invalid sites and convert to a mutable sequence
             # to enable masking with Ns.
             sequence = Bio.Seq.MutableSeq([
-                site if site in valid_sites else "N" for site in record.seq
+                # For some reason, converting the Seq object to a string
+                # makes this ~5x faster.
+                site if site in valid_sites else "N" for site in str(record.seq)
             ])
             # Replace all excluded sites with Ns.
             for site in excluded_sites:
