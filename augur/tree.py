@@ -381,6 +381,12 @@ def register_arguments(parser):
 
 
 def run(args):
+    # Load zero-based excluded sites.
+    if args.exclude_file is not None:
+        exclude_sites = load_excluded_sites(args.exclude_file).tolist()
+    else:
+        exclude_sites = []
+
     # check alignment type, convert to FASTA if it is a VCF
     if any(args.alignment.lower().endswith(x) for x in ('.vcf', '.vcf.gz')):
         # Prepare a multiple sequence alignment from the given variants VCF and
@@ -389,11 +395,13 @@ def run(args):
             print("ERROR: a reference Fasta is required with VCF-format alignments")
             return 1
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
-        aln_file = write_out_informative_fasta(compress_seq, args.alignment)
+        # Because we only write the sequence vairants, we need to strip exclude sites now.
+        aln_file = write_out_informative_fasta(compress_seq, args.alignment, exclude_sites)
+        exclude_sites = []
     else:
         aln_file = args.alignment
 
-    aln_file = mask_and_cleanup_multiple_sequence_alignment(aln_file, args.exclude_sites)
+    aln_file = mask_and_cleanup_multiple_sequence_alignment(aln_file, exclude_sites)
 
     start = time.time()
 
