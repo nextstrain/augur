@@ -309,7 +309,7 @@ def write_out_informative_fasta(compress_seq, alignment, exclude_sites):
 
     return fasta_file
 
-def mask_and_cleanup_multiple_sequence_alignment(alignment_file, excluded_sites_file):
+def mask_and_cleanup_multiple_sequence_alignment(alignment_file, exclude_sites):
     """Creates a new multiple sequence alignment FASTA file from which the given
     excluded sites have been removed and any invalid characters have been masked
     and returns the filename of the new
@@ -328,12 +328,6 @@ def mask_and_cleanup_multiple_sequence_alignment(alignment_file, excluded_sites_
     str
         path to the new FASTA file from which sites have been excluded
     """
-    # Load zero-based excluded sites.
-    if excluded_sites_file is not None:
-        excluded_sites = load_excluded_sites(excluded_sites_file).tolist()
-    else:
-        excluded_sites = []
-
     # Load alignment as FASTA generator to prevent loading the whole alignment
     # into memory.
     alignment = Bio.SeqIO.parse(alignment_file, "fasta")
@@ -357,9 +351,8 @@ def mask_and_cleanup_multiple_sequence_alignment(alignment_file, excluded_sites_
                 site if site in valid_sites else "N" for site in str(record.seq)
             ])
             # Replace all excluded sites with Ns.
-            for site in excluded_sites:
+            for site in exclude_sites:
                 sequence[site] = "N"
-
             record.seq = sequence
             Bio.SeqIO.write(record, oh, "fasta")
 
