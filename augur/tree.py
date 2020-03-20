@@ -286,7 +286,6 @@ def write_out_informative_fasta(compress_seq, alignment, exclude_sites):
                 pattern = [value for value in origPattern if value != '-' and value != 'N']
             un = np.unique(pattern, return_counts=True)
             #If not all - or N, not all same base, and >1 differing base, append
-
             if len(un[0])!=0 and len(un[0])!=1 and not (len(un[0])==2 and min(un[1])==1):
                 sites.append(origPattern)
                 pos.append("\t".join([str(len(pos)+1),str(key)]))
@@ -312,16 +311,15 @@ def write_out_informative_fasta(compress_seq, alignment, exclude_sites):
 def mask_and_cleanup_multiple_sequence_alignment(alignment_file, exclude_sites):
     """Creates a new multiple sequence alignment FASTA file from which the given
     excluded sites have been removed and any invalid characters have been masked
-    and returns the filename of the new
-    alignment.
+    and returns the filename of the new alignment.
 
     Parameters
     ----------
     alignment_file : str
         path to the original multiple sequence alignment file
 
-    excluded_sites_file : str or None
-        path to a text file containing each nucleotide position to exclude with one position per line
+    exclude_sites : list
+        list of sites to exclude from the output
 
     Returns
     -------
@@ -336,23 +334,23 @@ def mask_and_cleanup_multiple_sequence_alignment(alignment_file, exclude_sites):
     alignment_file_path = Path(alignment_file)
     masked_alignment_file = str(alignment_file_path.parent / ("masked_%s" % alignment_file_path.name))
     # Valid sites from: http://reverse-complement.com/ambiguity.html
-    # Including both upper & lower because set.includes is faster than str.upper
+    # Including both upper & lower because 'x in set' is faster than str.upper
     valid_sites = {"A", "G", "C", "T", "U", "R", "Y", "S", "W",
                    "a", "g", "c", "t", "u", "r", "y", "s", "w",
                    "K", "M", "B", "V", "D", "H", "N", "-",
                    "k", "m", "b", "v", "d", "h", "n"}
     with open(masked_alignment_file, "w") as oh:
         for record in alignment:
-            # Replace invalid sites and convert to a mutable sequence
+            # Convert to a mutable sequence and remove invalid sites
             # to enable masking with Ns.
             sequence = Bio.Seq.MutableSeq([
-                # For some reason, converting the Seq object to a string
-                # makes this ~5x faster.
+                # Explicitly converting the seq to a string once makes this ~5x faster.
                 site if site in valid_sites else "N" for site in str(record.seq)
             ])
             # Replace all excluded sites with Ns.
             for site in exclude_sites:
                 sequence[site] = "N"
+
             record.seq = sequence
             Bio.SeqIO.write(record, oh, "fasta")
 
