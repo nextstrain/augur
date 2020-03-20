@@ -375,8 +375,8 @@ def register_arguments(parser):
 
 def run(args):
     # Load zero-based excluded sites.
-    if args.exclude_file is not None:
-        exclude_sites = load_excluded_sites(args.exclude_file).tolist()
+    if args.exclude_sites is not None:
+        exclude_sites = load_excluded_sites(args.exclude_sites).tolist()
     else:
         exclude_sites = []
 
