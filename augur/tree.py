@@ -253,7 +253,7 @@ def load_excluded_sites(excluded_sites_file):
     return strip_pos
 
 
-def write_out_informative_fasta(compress_seq, alignment):
+def write_out_informative_fasta(compress_seq, alignment, exclude_sites):
     from Bio import SeqIO
     from Bio.SeqRecord import SeqRecord
     from Bio.Seq import Seq
@@ -269,24 +269,27 @@ def write_out_informative_fasta(compress_seq, alignment):
     printPositionMap = False    #If true, prints file mapping Fasta position to real position
     sites = []
     pos = []
+    exclude_site_set = set(exclude_sites)
 
     for key in positions:
-        pattern = []
-        for k in sequences.keys():
-            #looping try/except is faster than list comprehension
-            try:
-                pattern.append(sequences[k][key])
-            except KeyError:
-                pattern.append(ref[key])
-        origPattern = list(pattern)
-        if '-' in pattern or 'N' in pattern:
-            #remove gaps/Ns to see if otherwise informative
-            pattern = [value for value in origPattern if value != '-' and value != 'N']
-        un = np.unique(pattern, return_counts=True)
-        #If not all - or N, not all same base, and >1 differing base, append
-        if len(un[0])!=0 and len(un[0])!=1 and not (len(un[0])==2 and min(un[1])==1):
-            sites.append(origPattern)
-            pos.append("\t".join([str(len(pos)+1),str(key)]))
+        if key not in exclude_site_set:
+            pattern = []
+            for k in sequences.keys():
+                #looping try/except is faster than list comprehension
+                try:
+                    pattern.append(sequences[k][key])
+                except KeyError:
+                    pattern.append(ref[key])
+            origPattern = list(pattern)
+            if '-' in pattern or 'N' in pattern:
+                #remove gaps/Ns to see if otherwise informative
+                pattern = [value for value in origPattern if value != '-' and value != 'N']
+            un = np.unique(pattern, return_counts=True)
+            #If not all - or N, not all same base, and >1 differing base, append
+
+            if len(un[0])!=0 and len(un[0])!=1 and not (len(un[0])==2 and min(un[1])==1):
+                sites.append(origPattern)
+                pos.append("\t".join([str(len(pos)+1),str(key)]))
 
     #Rotate and convert to SeqRecord
     sites = np.asarray(sites)
