@@ -319,12 +319,27 @@ def mask_and_cleanup_multiple_sequence_alignment(alignment_file, exclude_sites):
         path to the original multiple sequence alignment file
 
     exclude_sites : list
-        list of sites to exclude from the output
+        zero-indexed list of sites to exclude from the output
 
     Returns
     -------
     str
         path to the new FASTA file from which sites have been excluded
+
+    Tests
+    -----
+    >>> mask_and_cleanup_multiple_sequence_alignment("./tests/data/tree/mask_and_cleanup.fasta", [])
+    'tests/data/tree/masked_mask_and_cleanup.fasta'
+    >>> str(Bio.SeqIO.to_dict(Bio.SeqIO.parse("tests/data/tree/masked_mask_and_cleanup.fasta", "fasta"))["filter_chars"].seq)
+    'ABCDNNGHNNKNMNNNNRSTUVWNYNabcdNNghNNkNmnNNNrstuvwNyNNNN-NNN'
+    >>> mask_and_cleanup_multiple_sequence_alignment("./tests/data/tree/mask_and_cleanup.fasta", [4,9])
+    'tests/data/tree/masked_mask_and_cleanup.fasta'
+    >>> str(Bio.SeqIO.to_dict(Bio.SeqIO.parse("tests/data/tree/masked_mask_and_cleanup.fasta", "fasta"))["exclude_sites"].seq)
+    'atatNatatNatat'
+    >>> mask_and_cleanup_multiple_sequence_alignment("./tests/data/tree/mask_and_cleanup.fasta", [4,])
+    'tests/data/tree/masked_mask_and_cleanup.fasta'
+    >>> str(Bio.SeqIO.to_dict(Bio.SeqIO.parse("tests/data/tree/masked_mask_and_cleanup.fasta", "fasta"))["filter_and_exclude"].seq)
+    'NtatNatatGatat'
     """
     # Load alignment as FASTA generator to prevent loading the whole alignment
     # into memory.

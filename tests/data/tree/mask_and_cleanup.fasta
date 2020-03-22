@@ -1,0 +1,6 @@
+>filter_chars
+ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123-#$!
+>exclude_sites
+atatGatatGatat
+>filter_and_exclude
+EtatGatatGatat
