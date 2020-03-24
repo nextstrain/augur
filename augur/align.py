@@ -96,17 +96,22 @@ def run(args):
         if args.debug:
             copyfile(args.output, args.output+".post_aligner.fasta")
 
-        # convert the aligner output to upper case (replacing the file in place)
-        write_uppercase_alignment_in_place(args.output)
+        # reads the new alignment
+        seqs = read_alignment(args.output)
+
+        # convert the aligner output to upper case
+        for seq in seqs:
+            seq.seq = seq.seq.upper()
 
         # if we've specified a reference, strip out all the columns not present in the reference
         # this will overwrite the alignment file
         if ref_name:
-            seqs = strip_non_reference(args.output, ref_name, keep_reference=not args.remove_reference)
-            write_seqs(seqs, args.output)
+            seqs = strip_non_reference(seqs, ref_name, keep_reference=not args.remove_reference)
         if args.fill_gaps:
             make_gaps_ambiguous(seqs)
-            write_seqs(seqs, args.output)
+
+        # write the modified sequences back to the alignment file
+        write_seqs(seqs, args.output)
 
 
     except AlignmentError as e:
@@ -186,23 +191,15 @@ def generate_alignment_cmd(method, nthreads, existing_aln_fname, seqs_to_align_f
         raise AlignmentError('ERROR: alignment method %s not implemented'%method)
     return cmd
 
-
-def write_uppercase_alignment_in_place(fname):
-    aln = AlignIO.read(fname, 'fasta')
-    for seq in aln:
-        seq.seq = seq.seq.upper()
-    AlignIO.write(aln, fname, 'fasta')
-
-
-def strip_non_reference(alignment_fname, reference, keep_reference=False):
+def strip_non_reference(aln, reference, keep_reference=False):
     '''
     return sequences that have all insertions relative to the reference
     removed. The alignment is read from file and returned as list of sequences.
 
     Parameters
     ----------
-    alignment_fname : str
-        alignment file name, file needs to be fasta format
+    aln : MultipleSeqAlign
+        Biopython Alignment
     reference : str
         name of reference sequence, assumed to be part of the alignment
     keep_reference : bool, optional
@@ -216,24 +213,23 @@ def strip_non_reference(alignment_fname, reference, keep_reference=False):
 
     Tests
     -----
-    >>> [s.name for s in strip_non_reference("tests/data/align/test_aligned_sequences.fasta", "with_gaps", keep_reference=False)]
+    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps", keep_reference=False)]
     Trimmed gaps in with_gaps from the alignment
     ['no_gaps', 'some_other_seq']
-    >>> [s.name for s in strip_non_reference("tests/data/align/test_aligned_sequences.fasta", "with_gaps", keep_reference=True)]
+    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps", keep_reference=True)]
     Trimmed gaps in with_gaps from the alignment
     ['with_gaps', 'no_gaps', 'some_other_seq']
-    >>> [s.name for s in strip_non_reference("tests/data/align/test_aligned_sequences.fasta", "no_gaps", keep_reference=True)]
+    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "no_gaps", keep_reference=True)]
     No gaps in alignment to trim (with respect to the reference, no_gaps)
     ['with_gaps', 'no_gaps', 'some_other_seq']
-    >>> [s.name for s in strip_non_reference("tests/data/align/test_aligned_sequences.fasta", "no_gaps", keep_reference=False)]
+    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "no_gaps", keep_reference=False)]
     No gaps in alignment to trim (with respect to the reference, no_gaps)
     ['with_gaps', 'some_other_seq']
-    >>> [s.name for s in strip_non_reference("tests/data/align/test_aligned_sequences.fasta", "missing", keep_reference=False)]
+    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "missing", keep_reference=False)]
     Traceback (most recent call last):
       ...
     augur.align.AlignmentError: ERROR: reference missing not found in alignment
     '''
-    aln = AlignIO.read(alignment_fname, 'fasta')
     seqs = {s.name:s for s in aln}
     if reference in seqs:
         ref_array = np.array(seqs[reference])
