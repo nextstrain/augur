@@ -3,11 +3,11 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from shlex import quote
-import pathlib
 
 from augur import align
 
 import pytest
+import pathlib
 
 
 class TestAlign:
@@ -76,7 +76,7 @@ class TestAlign:
         )
         with pytest.raises(align.AlignmentError):
             assert align.check_duplicates(alignment, "seq3")
-            
+
     def test_prune_seqs_matching_alignment(self):
         sequence = {
             "seq1": SeqRecord(Seq("GTAC"), name="seq1"),
@@ -139,5 +139,8 @@ class TestAlign:
         data_file = pathlib.Path('tests/data/align/test_aligned_sequences.fasta')
         result = align.read_sequences(data_file)
         assert len(result.keys()) == 3
-        
-        
+
+    def test_read_seq_compare(self):
+        data_file = pathlib.Path("tests/data/align/aa-seq_h3n2_ha_2y_2HA1_dup.fasta")
+        with pytest.raises(align.AlignmentError):
+            assert align.read_sequences(data_file)

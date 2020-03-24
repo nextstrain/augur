@@ -129,13 +129,12 @@ def read_sequences(*fnames):
     try:
         for fname in fnames:
             for record in SeqIO.parse(fname, 'fasta'):
-                if record.name in seqs:
-                    if str(record) != str(seqs[record.name]):
-                        raise AlignmentError("Detected duplicate input strains \"%s\" but the sequences are different."%record.name)
+                if record.name in seqs and record.seq != seqs[record.name].seq:
+                    raise AlignmentError("Detected duplicate input strains \"%s\" but the sequences are different." % record.name)
                     # if the same sequence then we can proceed (and we only take one)
                 seqs[record.name] = record
     except FileNotFoundError:
-        raise AlignmentError("\nCannot read sequences -- make sure the file %s exists and contains sequences in fasta format"%fname)
+        raise AlignmentError("\nCannot read sequences -- make sure the file %s exists and contains sequences in fasta format" % fname)
     except ValueError as error:
         raise AlignmentError("\nERROR: Problem reading in {}: {}".format(fname, str(error)))
     return seqs
