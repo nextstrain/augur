@@ -213,6 +213,25 @@ def strip_non_reference(alignment_fname, reference, keep_reference=False):
     -------
     list
         list of trimmed sequences, effectively a multiple alignment
+
+    Tests
+    -----
+    >>> [s.name for s in strip_non_reference("tests/data/align/test_aligned_sequences.fasta", "with_gaps", keep_reference=False)]
+    Trimmed gaps in with_gaps from the alignment
+    ['no_gaps', 'some_other_seq']
+    >>> [s.name for s in strip_non_reference("tests/data/align/test_aligned_sequences.fasta", "with_gaps", keep_reference=True)]
+    Trimmed gaps in with_gaps from the alignment
+    ['with_gaps', 'no_gaps', 'some_other_seq']
+    >>> [s.name for s in strip_non_reference("tests/data/align/test_aligned_sequences.fasta", "no_gaps", keep_reference=True)]
+    No gaps in alignment to trim (with respect to the reference, no_gaps)
+    ['with_gaps', 'no_gaps', 'some_other_seq']
+    >>> [s.name for s in strip_non_reference("tests/data/align/test_aligned_sequences.fasta", "no_gaps", keep_reference=False)]
+    No gaps in alignment to trim (with respect to the reference, no_gaps)
+    ['with_gaps', 'some_other_seq']
+    >>> [s.name for s in strip_non_reference("tests/data/align/test_aligned_sequences.fasta", "missing", keep_reference=False)]
+    Traceback (most recent call last):
+      ...
+    augur.align.AlignmentError: ERROR: reference missing not found in alignment
     '''
     aln = AlignIO.read(alignment_fname, 'fasta')
     seqs = {s.name:s for s in aln}
@@ -220,7 +239,7 @@ def strip_non_reference(alignment_fname, reference, keep_reference=False):
         ref_array = np.array(seqs[reference])
         if "-" not in ref_array:
             print("No gaps in alignment to trim (with respect to the reference, %s)"%reference)
-            return aln
+            return [seq for seq in aln if (keep_reference or seq.name != reference)]
         ungapped = ref_array!='-'
         ref_aln_array = np.array(aln)[:,ungapped]
     else:
