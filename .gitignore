@@ -21,7 +21,9 @@ dist/
 *.pyc
 __pycache__/
 .cache/
+.coverage
 augur.egg-info/
+.mypy_cache/
 nextstrain_augur.egg-info/
 env/
 .pytest_cache

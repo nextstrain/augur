@@ -49,7 +49,8 @@ setup(
         ],
         'dev': [
             "pylint >=1.7.6, ==1.7.*",
-            "pytest >=3.2.1, ==3.*",
+            "pytest >=5.4.1, ==5.4.*",
+            "pytest-cov >=2.8.1, ==2.8.*",
             "recommonmark >=0.5.0, ==0.*",
             "Sphinx >=2.0.1, ==2.*",
             "sphinx-argparse >=0.2.5, ==0.*",
