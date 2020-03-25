@@ -3,6 +3,20 @@
 ## __NEXT__
 
 
+## 6.4.3 (25 March 2020)
+
+## 6.4.3 (25 March 2020)
+
+### Bug Fixes
+
+* align: Remove reference sequence from alignments even when no gaps exist in
+  input sequences relative to the reference. Thank you @danielsoneg! [#456][].
+
+### Documentation
+
+* Reorganize README, improve findability of documentation, and add separate dev
+  docs [#461][].
+
 ## 6.4.2 (17 March 2020)
 
 ### Bug Fixes
