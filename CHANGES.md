@@ -8,12 +8,17 @@
 ### Bug Fixes
 
 * align: Remove reference sequence from alignments even when no gaps exist in
-  input sequences relative to the reference. Thank you @danielsoneg! [#456][]
+  input sequences relative to the reference. Thank you @danielsoneg!
+  [#456][]
 
 ### Documentation
 
 * Reorganize README, improve findability of documentation, and add separate dev
-  docs. [#461][]
+  docs.
+  [#461][]
+
+[#456]: https://github.com/nextstrain/augur/pull/456
+[#461]: https://github.com/nextstrain/augur/pull/461
 
 ## 6.4.2 (17 March 2020)
 
