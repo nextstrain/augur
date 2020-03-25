@@ -53,6 +53,7 @@ Augur uses some common external bioinformatics programs which you'll need to ins
 
 On macOS, you can install these external programs using Homebrew with:
 ```bash
+brew tap brewsci/bio
 brew install mafft iqtree raxml fasttree vcftools
 ```
 
