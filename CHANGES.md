@@ -3,6 +3,18 @@
 ## __NEXT__
 
 
+## 6.4.3 (25 March 2020)
+
+### Bug Fixes
+
+* align: Remove reference sequence from alignments even when no gaps exist in
+  input sequences relative to the reference. Thank you @danielsoneg! [#456][].
+
+### Documentation
+
+* Reorganize README, improve findability of documentation, and add separate dev
+  docs [#461][].
+
 ## 6.4.2 (17 March 2020)
 
 ### Bug Fixes
@@ -95,14 +107,14 @@
 * Augur `refine`, `ancestral` and `traits` now use the
   [upgraded TreeTime v0.7](https://github.com/neherlab/treetime/releases/tag/v0.7.0)
   This should have a number of under-the-hood improvements.
-  [See PR 431](https://github.com/nextstrain/augur/pull/431) 
+  [See PR 431](https://github.com/nextstrain/augur/pull/431)
 * ancestral: New options to either `--keep-ambiguous` or `--infer-ambiguous`. If using
   `--infer-ambiguous` the previous behavior will be maintained in which tips with `N` will have
   their nucleotide state inferred. If using `--keep-ambiguous`, these tips will be left as `N`.
   With this upgrade, we are still defaulting to `--infer-ambiguous`, however, we plan to swap
   default to `--keep-ambiguous` in the future. If this distintion matters to you, we would suggest
   that you explicitly record `--keep-ambiguous` / `--infer-ambiguous` in your build process.
-  [Also part of PR 431](https://github.com/nextstrain/augur/pull/431)  
+  [Also part of PR 431](https://github.com/nextstrain/augur/pull/431)
 * traits: Allow input of `--weights` which references a `.tsv` file in the following format:
   ```
   division	Hubei	10.0
@@ -111,12 +123,12 @@
   ```
   where these weights represent equilibrium frequencies in the CTMC transition model. We imagine the
   primary use of user-specified weights to correct for strong sampling biases in available data.
-  [See PR 443](https://github.com/nextstrain/augur/pull/443)  
+  [See PR 443](https://github.com/nextstrain/augur/pull/443)
 
 ### Bug fixes
 
 * Improvements to make shell scripts run more easily on Windows.
-  [See PR 437](https://github.com/nextstrain/augur/pull/437)  
+  [See PR 437](https://github.com/nextstrain/augur/pull/437)
 
 ## 6.2.0 (25 January 2020)
 
@@ -129,7 +141,7 @@
 ### Bug fixes
 
 * utils: Support v2 auspice JSONs in json_to_tree utility function.
-  [See PR 432](https://github.com/nextstrain/augur/pull/432)  
+  [See PR 432](https://github.com/nextstrain/augur/pull/432)
 
 ## 6.1.1 (17 December 2019)
 
