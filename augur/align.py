@@ -267,10 +267,10 @@ def make_gaps_ambiguous(aln):
         Biopython Alignment
     '''
     for seq in aln:
-        seq_array = np.array(seq)
-        gaps = seq_array=='-'
-        seq_array[gaps]='N'
-        seq.seq = Seq.Seq("".join(seq_array))
+        _seq = str(seq.seq)
+        _seq = _seq.replace('-', 'N')
+        seq.seq = Seq.Seq(_seq, alphabet=seq.seq.alphabet)
+        
 
 def check_duplicates(*values):
     names = set()
