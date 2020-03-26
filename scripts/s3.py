@@ -291,7 +291,7 @@ if __name__ == "__main__":
             args.func(args.bucket, args.prefixes, args.local_dir, args.dryrun)
         elif args.command_name == "sync":
             args.func(args.source_bucket, args.destination_bucket, args.prefixes, args.dryrun)
-    except botocore.exceptions.NoCredentialsError, e:
+    except botocore.exceptions.NoCredentialsError as e:
         parser.error("Unable to locate AWS credentials. Set environment variables for AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID.")
-    except Exception, e:
+    except Exception as e:
         parser.error(e.message)
