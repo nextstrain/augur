@@ -1,5 +1,18 @@
 from pathlib    import Path
 from setuptools import setup
+import sys
+
+min_version = (3, 6)
+
+if sys.version_info < min_version:
+    error = """
+Beginning with augur 6.5.0, Python {0} or above is required.
+
+This may be due to an out of date pip.
+
+Make sure you have pip >= 9.0.1.
+""".format('.'.join(str(n) for n in min_version)),
+    sys.exit(error)
 
 base_dir = Path(__file__).parent.resolve()
 version_file = base_dir / "augur/__version__.py"
@@ -31,7 +44,7 @@ setup(
     packages = ['augur'],
     package_data = {'augur': ['data/*']},
     data_files = [("", ["LICENSE.txt"])],
-    python_requires = '>=3.4',
+    python_requires = '>={}'.format('.'.join(str(n) for n in min_version)),
     install_requires = [
         "bcbio-gff >=0.6.0, ==0.6.*",
         "biopython >=1.67, ==1.*",
@@ -67,9 +80,9 @@ setup(
 
         # Python 3 only; pathlib is >=3.4
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6"
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
     # Install an "augur" program which calls augur.__main__.main()
     #   https://setuptools.readthedocs.io/en/latest/setuptools.html#automatic-script-creation
