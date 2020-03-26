@@ -14,7 +14,7 @@ if args['jsons'] == None:
         jsons = glob('./*meta.json')
         assert len(jsons) > 0
     except:
-        raise IOError, 'ERROR: either provide path(s) to meta.json file(s) or run this script from directory with meta.json files.'
+        raise IOError('ERROR: either provide path(s) to meta.json file(s) or run this script from directory with meta.json files.')
 else:
     jsons = args['jsons']
 
