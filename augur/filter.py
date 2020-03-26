@@ -29,13 +29,20 @@ def read_vcf(filename):
     return sequences, sequences.copy()
 
 
-def write_vcf(compressed, input_file, output_file, dropped_samps):
-    #Read in/write out according to file ending
-    inCall = "--gzvcf" if compressed else "--vcf"
-    outCall = "| gzip -c" if output_file.lower().endswith('.gz') else ""
+def write_vcf(input_filename, output_filename, dropped_samps):
+    if _filename_gz(input_filename):
+        input_arg = "--gzvcf"
+    else:
+        input_arg = "--vcf"
 
-    toDrop = " ".join(["--remove-indv "+shquote(s) for s in dropped_samps])
-    call = ["vcftools", toDrop, inCall, shquote(input_file), "--recode --stdout", outCall, ">", shquote(output_file)]
+    if _filename_gz(output_filename):
+        output_pipe = "| gzip -c"
+    else:
+        output_pipe = ""
+
+    drop_args = ["--remove-indv " + shquote(s) for s in dropped_samps]
+
+    call = ["vcftools"] + drop_args + [input_arg, shquote(input_filename), "--recode --stdout", output_pipe, ">", shquote(output_filename)]
 
     print("Filtering samples using VCFTools with the call:")
     print(" ".join(call))
@@ -339,7 +346,7 @@ def run(args):
         if len(dropped_samps) == len(all_seq): #All samples have been dropped! Stop run, warn user.
             print("ERROR: All samples have been dropped! Check filter rules and metadata file format.")
             return 1
-        write_vcf(is_compressed, args.sequences, args.output, dropped_samps)
+        write_vcf(args.sequences, args.output, dropped_samps)
 
     else:
         seq_to_keep = [seq for id,seq in seqs.items() if id in seq_keep]
@@ -370,3 +377,7 @@ def run(args):
         print("\t%i sequences were added back because of '%s'" % (num_included_by_metadata, args.include_where))
 
     print("%i sequences have been written out to %s" % (len(seq_keep), args.output))
+
+
+def _filename_gz(filename):
+    return filename.lower().endswith(".gz")
