@@ -1,4 +1,5 @@
 import augur.filter
+
 import pytest
 
 
@@ -12,6 +13,11 @@ def mock_priorities_file_valid(mocker):
 @pytest.fixture
 def mock_priorities_file_malformed(mocker):
     mocker.patch("builtins.open", mocker.mock_open(read_data="strain1 X\n"))
+
+
+@pytest.fixture
+def mock_run_shell_command(mocker):
+    mocker.patch("augur.filter.run_shell_command")
 
 
 class TestFilter:
@@ -47,3 +53,56 @@ class TestFilter:
     def test_read_priority_scores_does_not_exist(self):
         with pytest.raises(FileNotFoundError):
             augur.filter.read_priority_scores("/does/not/exist.txt")
+
+    def test_write_vcf_compressed_input(self, mock_run_shell_command):
+        augur.filter.write_vcf(
+            True, "tests/builds/tb/data/lee_2015.vcf.gz", "output_file.vcf.gz", []
+        )
+
+        augur.filter.run_shell_command.assert_called_once_with(
+            "vcftools  --gzvcf tests/builds/tb/data/lee_2015.vcf.gz --recode --stdout | gzip -c > output_file.vcf.gz",
+            raise_errors=True,
+        )
+
+    def test_write_vcf_uncompressed_input(self, mock_run_shell_command):
+        augur.filter.write_vcf(
+            False, "tests/builds/tb/data/lee_2015.vcf", "output_file.vcf.gz", []
+        )
+
+        augur.filter.run_shell_command.assert_called_once_with(
+            "vcftools  --vcf tests/builds/tb/data/lee_2015.vcf --recode --stdout | gzip -c > output_file.vcf.gz",
+            raise_errors=True,
+        )
+
+    def test_write_vcf_compressed_output(self, mock_run_shell_command):
+        augur.filter.write_vcf(
+            False, "tests/builds/tb/data/lee_2015.vcf", "output_file.vcf.gz", []
+        )
+
+        augur.filter.run_shell_command.assert_called_once_with(
+            "vcftools  --vcf tests/builds/tb/data/lee_2015.vcf --recode --stdout | gzip -c > output_file.vcf.gz",
+            raise_errors=True,
+        )
+
+    def test_write_vcf_uncompressed_output(self, mock_run_shell_command):
+        augur.filter.write_vcf(
+            False, "tests/builds/tb/data/lee_2015.vcf", "output_file.vcf", []
+        )
+
+        augur.filter.run_shell_command.assert_called_once_with(
+            "vcftools  --vcf tests/builds/tb/data/lee_2015.vcf --recode --stdout  > output_file.vcf",
+            raise_errors=True,
+        )
+
+    def test_write_vcf_dropped_samples(self, mock_run_shell_command):
+        augur.filter.write_vcf(
+            False,
+            "tests/builds/tb/data/lee_2015.vcf",
+            "output_file.vcf",
+            ["x", "y", "z"],
+        )
+
+        augur.filter.run_shell_command.assert_called_once_with(
+            "vcftools --remove-indv x --remove-indv y --remove-indv z --vcf tests/builds/tb/data/lee_2015.vcf --recode --stdout  > output_file.vcf",
+            raise_errors=True,
+        )
