@@ -30,6 +30,7 @@ def read_bed_file(mask_file):
     for _, row in bed.iterrows():
         sitesToMask.extend(list(range(row[1], row[2]+1)))
     sitesToMask = np.unique(sitesToMask)
+    print("Found %d sites to mask" % len(sitesToMask))
     return sitesToMask
 
 def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
