@@ -2,10 +2,14 @@
 Mask specified sites from a VCF file.
 """
 
-from Bio import SeqIO
-import pandas as pd
+import gzip
 import os
+from shutil import copyfile
+
 import numpy as np
+import pandas as pd
+from Bio import SeqIO
+
 from .utils import run_shell_command, shquote
 
 def get_mask_sites(vcf_file, mask_file):
@@ -15,7 +19,6 @@ def get_mask_sites(vcf_file, mask_file):
     '''
 
     #Need CHROM name from VCF file:
-    import gzip
     chromName = None
     opn = gzip.open if vcf_file.lower().endswith('.gz') else open
     with opn(vcf_file, mode='rt') as f: #'rt' necessary for gzip
@@ -34,7 +37,7 @@ def get_mask_sites(vcf_file, mask_file):
     #I timed this against sets/update/sorted; this is faster
     sitesToMask = []
     bed = pd.read_csv(mask_file, sep='\t')
-    for index, row in bed.iterrows():
+    for _, row in bed.iterrows():
         sitesToMask.extend(list(range(row[1], row[2]+1)))
     sitesToMask = np.unique(sitesToMask)
 
@@ -60,7 +63,6 @@ def mask_vcf(mask_file, in_file, out_file):
     #vcftools doesn't like input/output being the same file.
     #If no output specified, they will be, so use copy of input we'll delete later
     if out_file is None:
-        from shutil import copyfile
         out_file = in_file
         in_file = in_file + "_temp"
         copyfile(out_file, in_file)
@@ -109,6 +111,6 @@ def run(args):
     if tempMaskFile is None:
         return 1
     if (args.sequences.lower().endswith(".vcf") or
-        args.sequences.lower().endswith(".vcf.gz")):
+            args.sequences.lower().endswith(".vcf.gz")):
         mask_vcf(tempMaskFile, args.sequences, args.output)
     os.remove(tempMaskFile) #remove masking file
