@@ -39,7 +39,7 @@ def register_arguments(parser):
     parser.add_argument('--mask', required=True, help="locations to be masked in BED file format")
     parser.add_argument('--output', '-o', help="output file")
 
-def mask_vcf(mask_file, in_file, out_file):
+def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
     cleanup_files = ['out.log']
 
     # Create the temporary masking file to be passed to VCFTools
@@ -70,11 +70,12 @@ def mask_vcf(mask_file, in_file, out_file):
     print(" ".join(call))
     run_shell_command(" ".join(call), raise_errors = True)
     # remove vcftools log file
-    for file in cleanup_files:
-        try:
-            os.remove(file)
-        except OSError:
-            pass
+    if cleanup:
+        for file in cleanup_files:
+            try:
+                os.remove(file)
+            except OSError:
+                pass
 
 
 def run(args):
