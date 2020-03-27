@@ -1,7 +1,6 @@
 """
 Assign clades to nodes in a tree based on amino-acid or nucleotide signatures.
 """
-
 import sys
 
 from Bio import Phylo
@@ -53,7 +52,7 @@ def read_in_clade_definitions(clade_file):
 
 
 def is_node_in_clade(clade_alleles, node, ref):
-    '''
+    """
     Determines whether a node matches the clade definition based on sequence
     For any condition, will first look in mutations stored in node.sequences,
     then check whether a reference sequence is available, and other reports 'non-match'
@@ -72,7 +71,7 @@ def is_node_in_clade(clade_alleles, node, ref):
     bool
         True if in clade
 
-    '''
+    """
     conditions = []
     for gene, pos, clade_state in clade_alleles:
         if gene in node.sequences and pos in node.sequences[gene]:
@@ -88,7 +87,7 @@ def is_node_in_clade(clade_alleles, node, ref):
 
 
 def assign_clades(clade_designations, all_muts, tree, ref=None):
-    '''
+    """
     Ensures all nodes have an entry (or auspice doesn't display nicely), tests each node
     to see if it's the first member of a clade (assigns 'clade_annotation'), and sets
     all nodes's clade_membership to the value of their parent. This will change if later found to be
@@ -109,9 +108,10 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
     -------
     dict
         mapping of node to clades
-    '''
+    """
 
     clade_membership = {}
+    # TODO `parents` does not seem to be used
     parents = get_parent_name_by_child_name_for_tree(tree)
 
     # first pass to set all nodes to unassigned as precaution to ensure attribute is set
@@ -206,6 +206,7 @@ def get_reference_sequence_from_root_node(all_muts, root_name):
 
 
 def register_arguments(parser):
+    """Add command option subparsers for `augur clades`"""
     parser.add_argument(
         '--tree', help="prebuilt Newick -- no tree will be built if provided"
     )
@@ -233,7 +234,8 @@ def register_arguments(parser):
 
 
 def run(args):
-    ## read tree and data, if reading data fails, return with error code
+    """Run the parser and execute the desired action"""
+    # read tree and data, if reading data fails, return with error code
     tree = Phylo.read(args.tree, 'newick')
     node_data = read_node_data(args.mutations, args.tree)
     if node_data is None:
