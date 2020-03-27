@@ -63,6 +63,24 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
             except OSError:
                 pass
 
+def mask_fasta(mask_sites, in_file, out_file):
+    # Load alignment as FASTA generator to prevent loading the whole alignment
+    # into memory.
+    alignment = SeqIO.parse(in_file, "fasta")
+
+    # Write the masked alignment to disk one record at a time.
+    print("Removing masked sites from FASTA file.")
+    with open_file(out_file, "w") as oh:
+        for record in alignment:
+            # Convert to a mutable sequence to enable masking with Ns.
+            sequence = record.seq.tomutable()
+            # Replace all excluded sites with Ns.
+            for site in mask_sites:
+                sequence[site] = "N"
+            record.seq = sequence
+            SeqIO.write(record, oh, "fasta")
+
+
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF format")
     parser.add_argument('--mask', required=True, help="locations to be masked in BED file format")
@@ -72,9 +90,12 @@ def register_arguments(parser):
 
 def run(args):
     '''
-    mask specified sites from the VCF.
-    this occurs by removing them entirely from the VCF, essentially making
-    them identical to the reference at the locations
+    Mask specified sites from the VCF or FASTA.
+
+    For VCF files, his occurs by removing them entirely from the VCF, essentially making
+    them identical to the reference at the locations.
+
+    For FASTA files, masked sites are replaced with "N".
 
     If users don't specify output, will overwrite the input file.
     '''
@@ -99,7 +120,9 @@ def run(args):
     out_file = args.output if args.output is not None else "masked_" + args.sequences
 
     if is_vcf(args.sequences):
-        mask_vcf(mask_sites, args.sequences, args.output, args.cleanup)
+        mask_vcf(mask_sites, args.sequences, out_file, args.cleanup)
+    else:
+        mask_fasta(mask_sites, args.sequences, out_file)
 
     if args.output is None:
         copyfile(out_file, args.sequences)
