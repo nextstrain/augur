@@ -6,7 +6,13 @@ import sys
 from Bio import Phylo
 import pandas as pd
 import numpy as np
-from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json, get_json_name
+from .utils import (
+    get_parent_name_by_child_name_for_tree,
+    read_node_data,
+    write_json,
+    get_json_name,
+)
+
 
 def read_in_clade_definitions(clade_file):
     '''
@@ -35,7 +41,7 @@ def read_in_clade_definitions(clade_file):
 
     df = pd.read_csv(clade_file, sep='\t' if clade_file.endswith('.tsv') else ',')
     for index, row in df.iterrows():
-        allele = (row.gene, row.site-1, row.alt)
+        allele = (row.gene, row.site - 1, row.alt)
         if row.clade in clades:
             clades[row.clade].append(allele)
         else:
@@ -74,7 +80,7 @@ def is_node_in_clade(clade_alleles, node, ref):
         else:
             state = ''
 
-        conditions.append(state==clade_state)
+        conditions.append(state == clade_state)
 
     return all(conditions)
 
@@ -107,56 +113,66 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
     parents = get_parent_name_by_child_name_for_tree(tree)
 
     # first pass to set all nodes to unassigned as precaution to ensure attribute is set
-    for node in tree.find_clades(order = 'preorder'):
+    for node in tree.find_clades(order='preorder'):
         clade_membership[node.name] = {'clade_membership': 'unassigned'}
 
     # count leaves
-    for node in tree.find_clades(order = 'postorder'):
-        node.leaf_count = 1 if node.is_terminal() else np.sum([c.leaf_count for c in node])
+    for node in tree.find_clades(order='postorder'):
+        node.leaf_count = (
+            1 if node.is_terminal() else np.sum([c.leaf_count for c in node])
+        )
 
     for node in tree.get_nonterminals():
         for c in node:
-            c.up=node
+            c.up = node
     tree.root.up = None
-    tree.root.sequences = {'nuc':{}}
-    tree.root.sequences.update({gene:{} for gene in all_muts[tree.root.name]['aa_muts']})
+    tree.root.sequences = {'nuc': {}}
+    tree.root.sequences.update(
+        {gene: {} for gene in all_muts[tree.root.name]['aa_muts']}
+    )
 
     # attach sequences to all nodes
     for node in tree.find_clades(order='preorder'):
         if node.up:
-            node.sequences = {gene:muts.copy() for gene, muts in node.up.sequences.items()}
+            node.sequences = {
+                gene: muts.copy() for gene, muts in node.up.sequences.items()
+            }
         for mut in all_muts[node.name]['muts']:
-            a, pos, d = mut[0], int(mut[1:-1])-1, mut[-1]
+            a, pos, d = mut[0], int(mut[1:-1]) - 1, mut[-1]
             node.sequences['nuc'][pos] = d
         if 'aa_muts' in all_muts[node.name]:
             for gene in all_muts[node.name]['aa_muts']:
                 for mut in all_muts[node.name]['aa_muts'][gene]:
-                    a, pos, d = mut[0], int(mut[1:-1])-1, mut[-1]
+                    a, pos, d = mut[0], int(mut[1:-1]) - 1, mut[-1]
 
                     if gene not in node.sequences:
-                        node.sequences[gene]={}
+                        node.sequences[gene] = {}
                     node.sequences[gene][pos] = d
-
 
     # second pass to assign 'clade_annotation' to basal nodes within each clade
     # if multiple nodes match, assign annotation to largest
     # otherwise occasional unwanted cousin nodes get assigned the annotation
     for clade_name, clade_alleles in clade_designations.items():
         node_counts = []
-        for node in tree.find_clades(order = 'preorder'):
+        for node in tree.find_clades(order='preorder'):
             if is_node_in_clade(clade_alleles, node, ref):
                 node_counts.append(node)
         sorted_nodes = sorted(node_counts, key=lambda x: x.leaf_count, reverse=True)
         if len(sorted_nodes) > 0:
             target_node = sorted_nodes[0]
-            clade_membership[target_node.name] = {'clade_annotation': clade_name, 'clade_membership': clade_name}
+            clade_membership[target_node.name] = {
+                'clade_annotation': clade_name,
+                'clade_membership': clade_name,
+            }
 
     # third pass to propagate 'clade_membership'
     # don't propagate if encountering 'clade_annotation'
-    for node in tree.find_clades(order = 'preorder'):
+    for node in tree.find_clades(order='preorder'):
         for child in node:
             if 'clade_annotation' not in clade_membership[child.name]:
-                clade_membership[child.name]['clade_membership'] = clade_membership[node.name]['clade_membership']
+                clade_membership[child.name]['clade_membership'] = clade_membership[
+                    node.name
+                ]['clade_membership']
 
     return clade_membership
 
@@ -167,24 +183,51 @@ def get_reference_sequence_from_root_node(all_muts, root_name):
     try:
         ref['nuc'] = list(all_muts[root_name]["sequence"])
     except:
-        print("WARNING in augur.clades: nucleotide mutation json does not contain full sequences for the root node.")
+        print(
+            "WARNING in augur.clades: nucleotide mutation json does not contain full sequences for the root node."
+        )
 
     if "aa_muts" in all_muts[root_name]:
         try:
-            ref.update({gene:list(seq) for gene, seq in all_muts[root_name]["aa_sequences"].items()})
+            ref.update(
+                {
+                    gene: list(seq)
+                    for gene, seq in all_muts[root_name]["aa_sequences"].items()
+                }
+            )
         except:
-            print("WARNING in augur.clades: amino acid mutation json does not contain full sequences for the root node.")
+            print(
+                "WARNING in augur.clades: amino acid mutation json does not contain full sequences for the root node."
+            )
 
     return ref
 
 
 def register_arguments(parser):
-    parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
-    parser.add_argument('--mutations', nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
-    parser.add_argument('--reference', nargs='+', help='fasta files containing reference and tip nucleotide and/or amino-acid sequences ')
-    parser.add_argument('--clades', type=str, help='TSV file containing clade definitions by amino-acid')
-    parser.add_argument('--output-node-data', type=str, help='name of JSON file to save clade assignments to')
-    parser.add_argument('--output', '-o', type=str, help='DEPRECATED. Same as --output-node-data')
+    parser.add_argument(
+        '--tree', help="prebuilt Newick -- no tree will be built if provided"
+    )
+    parser.add_argument(
+        '--mutations',
+        nargs='+',
+        help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ',
+    )
+    parser.add_argument(
+        '--reference',
+        nargs='+',
+        help='fasta files containing reference and tip nucleotide and/or amino-acid sequences ',
+    )
+    parser.add_argument(
+        '--clades', type=str, help='TSV file containing clade definitions by amino-acid'
+    )
+    parser.add_argument(
+        '--output-node-data',
+        type=str,
+        help='name of JSON file to save clade assignments to',
+    )
+    parser.add_argument(
+        '--output', '-o', type=str, help='DEPRECATED. Same as --output-node-data'
+    )
 
 
 def run(args):
