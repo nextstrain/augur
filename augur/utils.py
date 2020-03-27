@@ -32,6 +32,10 @@ def open_file(fname, mode):
         with open(fname, mode) as fh:
             yield fh
 
+def is_vcf(fname):
+    """Convenience method to check if a file is a vcf file."""
+    return fname.endswith(".vcf") or fname.endswith(".vcf.gz")
+
 def myopen(fname, mode):
     if fname.endswith('.gz'):
         import gzip
