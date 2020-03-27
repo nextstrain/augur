@@ -42,18 +42,10 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
     if chrom_name is None:
         return 1
     exclude = [chrom_name + "\t" + str(pos) for pos in mask_sites]
-    temp_mask_file = in_file +"_maskTemp"
+    temp_mask_file = in_file + "_maskTemp"
     with open_file(temp_mask_file, 'w') as fh:
         fh.write("\n".join(exclude))
     cleanup_files.append(temp_mask_file)
-
-    #vcftools doesn't like input/output being the same file.
-    #If no output specified, they will be, so use copy of input we'll delete later
-    if out_file is None:
-        out_file = in_file
-        in_file = in_file + "_temp"
-        copyfile(out_file, in_file)
-        cleanup_files.append(in_file)
 
     #Read in/write out according to file ending
     in_call = "--gzvcf" if in_file.lower().endswith(".gz") else "--vcf"
@@ -103,5 +95,13 @@ def run(args):
 
     mask_sites = read_bed_file(args.mask)
 
+    # For both FASTA and VCF parsing, we need a proper separate output file
+    out_file = args.output if args.output is not None else "masked_" + args.sequences
+
     if is_vcf(args.sequences):
         mask_vcf(mask_sites, args.sequences, args.output, args.cleanup)
+
+    if args.output is None:
+        copyfile(out_file, args.sequences)
+        if args.cleanup:
+           os.remove(out_file)
