@@ -25,7 +25,7 @@ def read_bed_file(mask_file):
     bed = pd.read_csv(mask_file, sep='\t')
     for _, row in bed.iterrows():
         sitesToMask.extend(list(range(row[1], row[2]+1)))
-    sitesToMask = np.unique(sitesToMask)
+    sitesToMask = np.unique(sitesToMask).tolist()
     print("Found %d sites to mask" % len(sitesToMask))
     return sitesToMask
 
