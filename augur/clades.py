@@ -3,9 +3,11 @@ Assign clades to nodes in a tree based on amino-acid or nucleotide signatures.
 """
 
 import sys
+
 from Bio import Phylo
-import pandas as pd
 import numpy as np
+import pandas as pd
+
 from .utils import (
     get_parent_name_by_child_name_for_tree,
     read_node_data,
@@ -15,8 +17,8 @@ from .utils import (
 
 
 def read_in_clade_definitions(clade_file):
-    '''
-    Reads in tab-seperated file that defines clades by amino acid or nucleotide mutations
+    """
+    Reads in tab-separated file that defines clades by amino acid or nucleotide mutations
 
     Format
     ------
@@ -35,7 +37,7 @@ def read_in_clade_definitions(clade_file):
     -------
     dict
         clade definitions as :code:`{clade_name:[(gene, site, allele),...]}`
-    '''
+    """
 
     clades = {}
 
