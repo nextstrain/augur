@@ -54,6 +54,33 @@ def register_arguments(parser):
     parser.add_argument('--mask', required=True, help="locations to be masked in BED file format")
     parser.add_argument('--output', '-o', help="output file")
 
+def mask_vcf(mask_file, in_file, out_file):
+    cleanup_files = ['out.log']
+
+    #vcftools doesn't like input/output being the same file.
+    #If no output specified, they will be, so use copy of input we'll delete later
+    if out_file is None:
+        from shutil import copyfile
+        out_file = in_file
+        in_file = in_file + "_temp"
+        copyfile(out_file, in_file)
+        cleanup_files.append(in_file)
+
+    #Read in/write out according to file ending
+    in_call = "--gzvcf" if in_file.lower().endswith(".gz") else "--vcf"
+    out_call = "| gzip -c" if out_file.lower().endswith(".gz") else ""
+
+    call = ["vcftools", "--exclude-positions", shquote(mask_file), in_call, shquote(in_file), "--recode --stdout", out_call, ">", shquote(out_file)]
+    print("Removing masked sites from VCF file using vcftools... this may take some time. Call:")
+    print(" ".join(call))
+    run_shell_command(" ".join(call), raise_errors = True)
+    # remove vcftools log file
+    for file in cleanup_files:
+        try:
+            os.remove(file)
+        except OSError:
+            pass
+
 
 def run(args):
     '''
@@ -81,35 +108,7 @@ def run(args):
     tempMaskFile = get_mask_sites(args.sequences, args.mask)
     if tempMaskFile is None:
         return 1
-
-    #Read in/write out according to file ending
-    inCall = "--gzvcf" if args.sequences.lower().endswith('.gz') else "--vcf"
-    if args.output:
-        outCall = "| gzip -c" if args.output.lower().endswith('.gz') else ""
-    else:
-        outCall = "| gzip -c" if args.sequences.lower().endswith('.gz') else ""
-
-    #vcftools doesn't like input/output being the same file.
-    #If no output specified, they will be, so use copy of input we'll delete later
-    in_file = args.sequences
-    out_file = args.output
-    if not(args.output):
-        from shutil import copyfile
-        out_file = in_file
-        in_file = args.sequences+"_temp"
-        copyfile(args.sequences, in_file)
-
-    call = ["vcftools", "--exclude-positions", shquote(tempMaskFile), inCall, shquote(in_file), "--recode --stdout", outCall, ">", shquote(out_file)]
-    print("Removing masked sites from VCF file using vcftools... this may take some time. Call:")
-    print(" ".join(call))
-    run_shell_command(" ".join(call), raise_errors = True)
+    if (args.sequences.lower().endswith(".vcf") or
+        args.sequences.lower().endswith(".vcf.gz")):
+        mask_vcf(tempMaskFile, args.sequences, args.output)
     os.remove(tempMaskFile) #remove masking file
-    # remove vcftools log file
-    try:
-        os.remove('out.log')
-    except OSError:
-        pass
-
-    #remove copy of input if there was no output specified
-    if not(args.output):
-        os.remove(in_file)
