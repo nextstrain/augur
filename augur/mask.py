@@ -1,8 +1,6 @@
 """
 Mask specified sites from a VCF file.
 """
-
-import gzip
 import os
 from shutil import copyfile
 
