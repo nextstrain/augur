@@ -10,38 +10,19 @@ import numpy as np
 import pandas as pd
 from Bio import SeqIO
 
-from .utils import run_shell_command, shquote, open_file
+from .utils import run_shell_command, shquote, open_file, is_vcf
 
-def get_mask_sites(vcf_file, mask_file):
-    '''
-    Creates a temporary file in correct format for vcftools to use
-    (two-column, tab-seperated: "chromName" "position")
-    '''
-
-    #Need CHROM name from VCF file:
-    chromName = None
+def get_chrom_name(vcf_file):
     with open_file(vcf_file, mode='r') as f:
         for line in f:
             if line[0] != "#":
-                header = line.strip().split('\t')
-                chromName = header[0]
-                break   # once chrom is found, no need to go through rest
+                header = line.strip().partition('\t')
+                return header[0]
 
-    if chromName is None or not chromName:
-        print("ERROR: Something went wrong reading your VCF file: a CHROM column could not be found. "
-              "Please check the file is valid VCF format.")
-        return None
+    print("ERROR: Something went wrong reading your VCF file: a CHROM column could not be found. "
+          "Please check the file is valid VCF format.")
+    return None
 
-    sitesToMask = read_bed_file(mask_file)
-    exclude = []
-    for pos in sitesToMask:
-        exclude.append(chromName+"\t"+str(pos))
-
-    tempMaskFile = mask_file+"_maskTemp"
-    with open(tempMaskFile, 'w') as the_file:
-        the_file.write("\n".join(exclude))
-
-    return tempMaskFile
 
 def read_bed_file(mask_file):
     #Read in BED file - 2nd column always chromStart, 3rd always chromEnd
@@ -61,6 +42,17 @@ def register_arguments(parser):
 def mask_vcf(mask_file, in_file, out_file):
     cleanup_files = ['out.log']
 
+    # Create the temporary masking file to be passed to VCFTools
+    # Need CHROM name from VCF file:
+    chrom_name = get_chrom_name(in_file)
+    if chrom_name is None:
+        return 1
+    exclude = [chrom_name + "\t" + str(pos) for pos in mask_sites]
+    temp_mask_file = in_file +"_maskTemp"
+    with open_file(temp_mask_file, 'w') as fh:
+        fh.write("\n".join(exclude))
+    cleanup_files.append(temp_mask_file)
+
     #vcftools doesn't like input/output being the same file.
     #If no output specified, they will be, so use copy of input we'll delete later
     if out_file is None:
@@ -73,7 +65,7 @@ def mask_vcf(mask_file, in_file, out_file):
     in_call = "--gzvcf" if in_file.lower().endswith(".gz") else "--vcf"
     out_call = "| gzip -c" if out_file.lower().endswith(".gz") else ""
 
-    call = ["vcftools", "--exclude-positions", shquote(mask_file), in_call, shquote(in_file), "--recode --stdout", out_call, ">", shquote(out_file)]
+    call = ["vcftools", "--exclude-positions", shquote(temp_mask_file), in_call, shquote(in_file), "--recode --stdout", out_call, ">", shquote(out_file)]
     print("Removing masked sites from VCF file using vcftools... this may take some time. Call:")
     print(" ".join(call))
     run_shell_command(" ".join(call), raise_errors = True)
@@ -108,10 +100,7 @@ def run(args):
         print("ERROR: {} is an empty file.".format(args.mask))
         return 1
 
-    tempMaskFile = get_mask_sites(args.sequences, args.mask)
-    if tempMaskFile is None:
-        return 1
-    if (args.sequences.lower().endswith(".vcf") or
-            args.sequences.lower().endswith(".vcf.gz")):
-        mask_vcf(tempMaskFile, args.sequences, args.output)
-    os.remove(tempMaskFile) #remove masking file
+    mask_sites = read_bed_file(args.mask)
+
+    if is_vcf(args.sequences):
+        mask_vcf(mask_sites, args.sequences, args.output)
