@@ -33,14 +33,7 @@ def get_mask_sites(vcf_file, mask_file):
               "Please check the file is valid VCF format.")
         return None
 
-    #Read in BED file - 2nd column always chromStart, 3rd always chromEnd
-    #I timed this against sets/update/sorted; this is faster
-    sitesToMask = []
-    bed = pd.read_csv(mask_file, sep='\t')
-    for _, row in bed.iterrows():
-        sitesToMask.extend(list(range(row[1], row[2]+1)))
-    sitesToMask = np.unique(sitesToMask)
-
+    sitesToMask = read_bed_file(mask_file)
     exclude = []
     for pos in sitesToMask:
         exclude.append(chromName+"\t"+str(pos))
@@ -51,6 +44,15 @@ def get_mask_sites(vcf_file, mask_file):
 
     return tempMaskFile
 
+def read_bed_file(mask_file):
+    #Read in BED file - 2nd column always chromStart, 3rd always chromEnd
+    #I timed this against sets/update/sorted; this is faster
+    sitesToMask = []
+    bed = pd.read_csv(mask_file, sep='\t')
+    for _, row in bed.iterrows():
+        sitesToMask.extend(list(range(row[1], row[2]+1)))
+    sitesToMask = np.unique(sitesToMask)
+    return sitesToMask
 
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF format")
