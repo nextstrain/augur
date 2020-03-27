@@ -2,6 +2,7 @@
 Mask specified sites from a VCF file.
 """
 import os
+import sys
 from shutil import copyfile
 
 import numpy as np
@@ -16,11 +17,6 @@ def get_chrom_name(vcf_file):
             if line[0] != "#":
                 header = line.strip().partition('\t')
                 return header[0]
-
-    print("ERROR: Something went wrong reading your VCF file: a CHROM column could not be found. "
-          "Please check the file is valid VCF format.")
-    return None
-
 
 def read_bed_file(mask_file):
     #Read in BED file - 2nd column always chromStart, 3rd always chromEnd
@@ -40,7 +36,10 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
     # Need CHROM name from VCF file:
     chrom_name = get_chrom_name(in_file)
     if chrom_name is None:
-        return 1
+        print("ERROR: Something went wrong reading your VCF file: a CHROM column could not be found. "
+              "Please check the file is valid VCF format.")
+        sys.exit(1)
+
     exclude = [chrom_name + "\t" + str(pos) for pos in mask_sites]
     temp_mask_file = in_file + "_maskTemp"
     with open_file(temp_mask_file, 'w') as fh:
