@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from Bio import SeqIO
 
-from .utils import run_shell_command, shquote
+from .utils import run_shell_command, shquote, open_file
 
 def get_mask_sites(vcf_file, mask_file):
     '''
@@ -20,8 +20,7 @@ def get_mask_sites(vcf_file, mask_file):
 
     #Need CHROM name from VCF file:
     chromName = None
-    opn = gzip.open if vcf_file.lower().endswith('.gz') else open
-    with opn(vcf_file, mode='rt') as f: #'rt' necessary for gzip
+    with open_file(vcf_file, mode='r') as f:
         for line in f:
             if line[0] != "#":
                 header = line.strip().split('\t')
