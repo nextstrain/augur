@@ -36,6 +36,8 @@ def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF format")
     parser.add_argument('--mask', required=True, help="locations to be masked in BED file format")
     parser.add_argument('--output', '-o', help="output file")
+    parser.add_argument('--no-cleanup', dest="cleanup", action="store_false",
+                        help="leave intermediate files around. May be useful for debugging")
 
 def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
     cleanup_files = ['out.log']
@@ -102,4 +104,4 @@ def run(args):
     mask_sites = read_bed_file(args.mask)
 
     if is_vcf(args.sequences):
-        mask_vcf(mask_sites, args.sequences, args.output)
+        mask_vcf(mask_sites, args.sequences, args.output, args.cleanup)
