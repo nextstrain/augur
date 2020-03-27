@@ -79,13 +79,12 @@ def mask_fasta(mask_sites, in_file, out_file):
             record.seq = sequence
             SeqIO.write(record, oh, "fasta")
 
-
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF format")
     parser.add_argument('--mask', required=True, help="locations to be masked in BED file format")
     parser.add_argument('--output', '-o', help="output file")
     parser.add_argument('--no-cleanup', dest="cleanup", action="store_false",
-                        help="leave intermediate files around. May be useful for debugging")
+                        help="Leave intermediate files around. May be useful for debugging")
 
 def run(args):
     '''
@@ -115,7 +114,7 @@ def run(args):
 
     mask_sites = read_bed_file(args.mask)
 
-    # For both FASTA and VCF parsing, we need a proper separate output file
+    # For both FASTA and VCF masking, we need a proper separate output file
     out_file = args.output if args.output is not None else "masked_" + args.sequences
 
     if is_vcf(args.sequences):
@@ -126,4 +125,4 @@ def run(args):
     if args.output is None:
         copyfile(out_file, args.sequences)
         if args.cleanup:
-           os.remove(out_file)
+            os.remove(out_file)
