@@ -32,13 +32,6 @@ def read_bed_file(mask_file):
     sitesToMask = np.unique(sitesToMask)
     return sitesToMask
 
-def register_arguments(parser):
-    parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF format")
-    parser.add_argument('--mask', required=True, help="locations to be masked in BED file format")
-    parser.add_argument('--output', '-o', help="output file")
-    parser.add_argument('--no-cleanup', dest="cleanup", action="store_false",
-                        help="leave intermediate files around. May be useful for debugging")
-
 def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
     cleanup_files = ['out.log']
 
@@ -77,6 +70,12 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
             except OSError:
                 pass
 
+def register_arguments(parser):
+    parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF format")
+    parser.add_argument('--mask', required=True, help="locations to be masked in BED file format")
+    parser.add_argument('--output', '-o', help="output file")
+    parser.add_argument('--no-cleanup', dest="cleanup", action="store_false",
+                        help="leave intermediate files around. May be useful for debugging")
 
 def run(args):
     '''
