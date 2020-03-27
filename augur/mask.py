@@ -21,13 +21,13 @@ def get_chrom_name(vcf_file):
 def read_bed_file(mask_file):
     #Read in BED file - 2nd column always chromStart, 3rd always chromEnd
     #I timed this against sets/update/sorted; this is faster
-    sitesToMask = []
+    sites_to_mask = []
     bed = pd.read_csv(mask_file, sep='\t')
     for _, row in bed.iterrows():
-        sitesToMask.extend(list(range(row[1], row[2]+1)))
-    sitesToMask = np.unique(sitesToMask).tolist()
-    print("Found %d sites to mask" % len(sitesToMask))
-    return sitesToMask
+        sites_to_mask.extend(list(range(row[1], row[2]+1)))
+    sites_to_mask = np.unique(sites_to_mask).tolist()
+    print("Found %d sites to mask" % len(sites_to_mask))
+    return sites_to_mask
 
 def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
     cleanup_files = ['out.log']
