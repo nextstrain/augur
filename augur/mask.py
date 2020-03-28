@@ -12,6 +12,11 @@ from Bio import SeqIO
 from .utils import run_shell_command, shquote, open_file, is_vcf
 
 def get_chrom_name(vcf_file):
+    """Read the CHROM field from the first non-header line of a vcf file.
+    
+    Returns:
+    str or None: Either the CHROM field or None if no non-comment line could be found. 
+    """
     with open_file(vcf_file, mode='r') as f:
         for line in f:
             if line[0] != "#":
@@ -19,8 +24,10 @@ def get_chrom_name(vcf_file):
                 return header[0]
 
 def read_bed_file(mask_file):
-    #Read in BED file - 2nd column always chromStart, 3rd always chromEnd
-    #I timed this against sets/update/sorted; this is faster
+    """Read the full list of excluded sites from the BED file.
+
+    Second column is chromStart, 3rd is chromEnd. Generate a range from these two columns.
+    """
     sites_to_mask = []
     bed = pd.read_csv(mask_file, sep='\t')
     for _, row in bed.iterrows():
@@ -30,6 +37,21 @@ def read_bed_file(mask_file):
     return sites_to_mask
 
 def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
+    """Mask the provided site list from a VCF file and write to a new file.
+
+    This function relies on 'vcftools --exclude-positions' to mask the requested sites.
+
+    Parameters:
+    -----------
+    mask_sites: list[int]
+        A list of site indexes to exclude from the vcf.
+    in_file: str
+        The path to the vcf file you wish to mask.
+    out_file: str
+        The path to write the resulting vcf to
+    cleanup: bool
+        Clean up the intermediate files, including the VCFTools log and mask sites file
+    """
     cleanup_files = ['out.log']
 
     # Create the temporary masking file to be passed to VCFTools
@@ -63,6 +85,19 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
                 pass
 
 def mask_fasta(mask_sites, in_file, out_file):
+    """Mask the provided site list from a FASTA file and write to a new file.
+
+    Masked sites are overwritten as "N"s.
+
+:
+    -----------
+    mask_sites: list[int]
+        A list of site indexes to exclude from the FASTA.
+    in_file: str
+        The path to the FASTA file you wish to mask.
+    out_file: str
+        The path to write the resulting FASTA to
+    """
     # Load alignment as FASTA generator to prevent loading the whole alignment
     # into memory.
     alignment = SeqIO.parse(in_file, "fasta")

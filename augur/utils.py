@@ -33,8 +33,16 @@ def open_file(fname, mode):
             yield fh
 
 def is_vcf(fname):
-    """Convenience method to check if a file is a vcf file."""
-    return fname.endswith(".vcf") or fname.endswith(".vcf.gz")
+    """Convenience method to check if a file is a vcf file.
+
+    >>> is_vcf("./foo")
+    False
+    >>> is_vcf("./foo.vcf")
+    True
+    >>> is_vcf("./foo.vcf.GZ")
+    True
+    """
+    return fname.lower().endswith(".vcf") or fname.lower().endswith(".vcf.gz")
 
 def myopen(fname, mode):
     if fname.endswith('.gz'):
