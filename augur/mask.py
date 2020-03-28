@@ -108,9 +108,11 @@ def mask_fasta(mask_sites, in_file, out_file):
         for record in alignment:
             # Convert to a mutable sequence to enable masking with Ns.
             sequence = record.seq.tomutable()
+            sequence_length = len(sequence)
             # Replace all excluded sites with Ns.
             for site in mask_sites:
-                sequence[site] = "N"
+                if site < sequence_length:
+                    sequence[site] = "N"
             record.seq = sequence
             SeqIO.write(record, oh, "fasta")
 
