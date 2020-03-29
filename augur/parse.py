@@ -5,17 +5,17 @@ Parse delimited fields from FASTA sequence names into a TSV and FASTA file.
 from Bio import SeqIO
 import pandas as pd
 
-forbidden_characters = [
-    (' ',''),
-    ('(','_'),
-    (')','_'),
-    ('[','_'),
-    (']','_'),
-    (':','_'),
-    (',','_'),
-    (';','_'),
-    ('\\','_')
-]
+forbidden_chactacters = str.maketrans(
+    {' ': None,
+     '(': '_',
+     ')': '_',
+     '[': '_',
+     ']': '_',
+     ':': '_',
+     ',': '_',
+     ';': '_',
+     '\\': '_'}
+)
 
 def fix_dates(d, dayfirst=True):
     '''
@@ -59,7 +59,7 @@ def prettify(x, trim=0, camelCase=False, etal=None, removeComma=False):
     elif etal=='strip':
         res = res.replace('et al.', '').replace('Et Al.', '').replace('et al', '').replace('Et Al', '');
 
-    return res;
+    return res
 
 
 def register_arguments(parser):
@@ -94,8 +94,7 @@ def run(args):
     for seq in seqs:
         fields = [x.strip() for x in seq.description.split(args.separator)]
         tmp_name = fields[strain_index]
-        for x, y in forbidden_characters:
-            tmp_name = tmp_name.replace(x, y)
+        tmp_name = tmp_name.translate(forbidden_chactacters)
 
         seq.name = seq.id = tmp_name
         seq.description = ''
