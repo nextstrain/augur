@@ -78,7 +78,7 @@ def run(args):
     parse a fasta file and turn information in the header into
     a tsv or csv file.
     '''
-    seqs = list(SeqIO.parse(args.sequences, 'fasta'))
+    seqs = SeqIO.parse(args.sequences, 'fasta')
 
     # if strain or name are found in specified fields, use this
     # field to index the dictionary and the data frame
