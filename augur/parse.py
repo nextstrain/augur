@@ -106,7 +106,8 @@ def run(args):
                     tmp_meta[field] = prettify(tmp_meta[field], camelCase=(not field.startswith('author')),
                                                   etal='lower' if field.startswith('author') else None)
 
-        del tmp_meta['strain']
+        if 'strain' in tmp_meta:
+            del tmp_meta['strain']
         meta_data[seq.id] = tmp_meta
 
         # parse dates and convert to a canonical format
