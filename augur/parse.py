@@ -38,26 +38,26 @@ def fix_dates(d, dayfirst=True):
 
 def prettify(x, trim=0, camelCase=False, etal=None, removeComma=False):
     res = x
-    if (trim > 0 and len(x) > trim):
+    if 0 < trim < len(x):
         res = x[:trim] + "..."
 
-    if any(c == res for c in ["usvi", "usa", "uk"]):
+    if res in {'usvi', 'usa', 'uk'}:
         res = res.upper()
 
     words = res.split('_')
 
-    if (camelCase):
-        words = [w[0].upper()+w[1:] for w in words if len(w)]
+    if camelCase:
+        words = map(str.capitalize, words)
 
     res = ' '.join(words)
 
     if removeComma:
         res.replace(',', '')
 
-    if etal=='lower':
-        res = res.replace('Et Al', 'et al')
-    elif etal=='strip':
-        res = res.replace('et al.', '').replace('Et Al.', '').replace('et al', '').replace('Et Al', '');
+    if etal == 'lower':
+        res = res.replace('Et Al', 'et al').replace('Et Al.', 'et al.')
+    elif etal == 'strip':
+        res = res.replace('et al.', '').replace('Et Al.', '').replace('et al', '').replace('Et Al', '')
 
     return res
 
