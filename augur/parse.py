@@ -83,22 +83,22 @@ def run(args):
     # if strain or name are found in specified fields, use this
     # field to index the dictionary and the data frame
     meta_data = {}
+
     if 'name' in args.fields:
-        strain_index = args.fields.index('name')
+        strain_key = 'name'
     elif 'strain' in args.fields:
-        strain_index = args.fields.index('strain')
+        strain_key = 'strain'
     else:
-        strain_index = 0
+        strain_key = args.fields[0]
 
     # loop over sequences, parse fasta header of each sequence
     for seq in seqs:
-        fields = [x.strip() for x in seq.description.split(args.separator)]
-        tmp_name = fields[strain_index]
-        tmp_name = tmp_name.translate(forbidden_chactacters)
+        fields = map(str.strip, seq.description.split(args.separator))
+        tmp_meta = dict(zip(args.fields, fields))
 
+        tmp_name = tmp_meta[strain_key].translate(forbidden_chactacters)
         seq.name = seq.id = tmp_name
         seq.description = ''
-        tmp_meta = {k:v for k,v in zip(args.fields, fields)}
 
         if args.prettify_fields:
             for field in args.prettify_fields:
