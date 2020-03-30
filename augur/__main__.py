@@ -1,6 +1,4 @@
 import argparse
-import importlib
-import os
 
 from .__version__ import __version__
 
@@ -42,7 +40,8 @@ def augur_cli():
     execute_run(args)
 
 def execute_run(args):
-    module = importlib.import_module(f'.{args.command}', package='augur')
+    from importlib import import_module
+    module = import_module(f'.{args.command}', package='augur')
     module.run(args)
 
 def lbi_options(parser):
@@ -482,6 +481,7 @@ def available_cpu_cores(fallback: int=1) -> int:
     **computer**, if determinable, otherwise the *fallback* number (which
     defaults to 1).
     """
+    import os
     try:
         # Note that this is the correct function to use, not os.cpu_count(), as
         # described in the latter's documentation.
