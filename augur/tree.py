@@ -13,7 +13,7 @@ import numpy as np
 from treetime.vcf_utils import read_vcf
 from pathlib import Path
 
-from .utils import run_shell_command, nthreads_value, shquote
+from .utils import run_shell_command, shquote
 
 def find_executable(names, default = None):
     """

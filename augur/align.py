@@ -6,7 +6,7 @@ import os
 from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
-from .utils import run_shell_command, nthreads_value, shquote
+from .utils import run_shell_command, shquote
 
 class AlignmentError(Exception):
     # TODO: this exception should potentially be renamed and made augur-wide
