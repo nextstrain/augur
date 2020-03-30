@@ -1,5 +1,8 @@
 import argparse
 import importlib
+import os
+
+from .__version__ import __version__
 
 command_strings = {
     "parse": "Parse delimited fields from FASTA sequence names into a TSV and FASTA file.",
@@ -25,13 +28,15 @@ command_strings = {
 }
 
 def augur_cli():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog='augur',
+                                     description="Augur: A bioinformatics toolkit for phylogenetic analysis.")
+    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
     _globals = globals()
 
     subparsers = parser.add_subparsers(dest='command')
-    for command, help in command_strings.items():
-        p = subparsers.add_parser(command, help=help, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-        _globals[f'{command}_options'](p)
+    for command, help_str in command_strings.items():
+        p = subparsers.add_parser(command, help=help_str, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        _globals[f'{command.replace("-", "_")}_options'](p)
 
     args = parser.parse_args()
     execute_run(args)
@@ -110,7 +115,80 @@ def frequencies_options(parser):
 
 
 def export_options(parser):
-    pass
+    metavar_msg ="Augur export now needs you to define the JSON version " + \
+                 "you want, e.g. `augur export v2`."
+    subparsers = parser.add_subparsers(title="JSON SCHEMA",
+                                       metavar=metavar_msg)
+    subparsers.required = True
+
+    v1 = subparsers.add_parser('v1', help="Export version 1 JSON schema (separate meta and tree JSONs)")
+    core = v1.add_argument_group("REQUIRED")
+    core.add_argument('--tree','-t', required=True, help="tree to perform trait reconstruction on")
+    core.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
+    core.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
+    core.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json).")
+    core.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json).")
+    core.add_argument('--auspice-config', help="file with auspice configuration")
+
+    options = v1.add_argument_group("OPTIONS")
+    options.add_argument('--colors', help="file with color definitions")
+    options.add_argument('--lat-longs', help="file latitudes and longitudes, overrides built in mappings")
+    options.add_argument('--tree-name', default=False, help="Tree name (needed for tangle tree functionality)")
+    options.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
+    options.add_argument('--output-sequence', help="JSON file name that is passed on to auspice (e.g., zika_seq.json).")
+    options.add_argument('--reference', required=False, help="reference sequence for export to browser, only vcf")
+    options.add_argument('--reference-translations', required=False, help="reference translations for export to browser, only vcf")
+
+    v1.add_argument("--v1", help=argparse.SUPPRESS, default=True)
+
+    v2 = subparsers.add_parser("v2", help="Export version 2 JSON schema")
+
+    required = v2.add_argument_group(
+        title="REQUIRED"
+    )
+    required.add_argument('--tree', '-t', metavar="newick", required=True,
+                          help="Phylogenetic tree, usually output from `augur refine`")
+    required.add_argument('--node-data', metavar="JSON", required=True, nargs='+',
+                          help="JSON files containing metadata for nodes in the tree")
+    required.add_argument('--output', metavar="JSON", required=True,
+                          help="Ouput file (typically for visualisation in auspice)")
+
+    config = v2.add_argument_group(
+        title="DISPLAY CONFIGURATION",
+        description="These control the display settings for auspice. \
+                You can supply a config JSON (which has all available options) or command line arguments (which are more limited but great to get started). \
+                Supplying both is fine too, command line args will overrule what is set in the config file!"
+    )
+    config.add_argument('--auspice-config', metavar="JSON", help="Auspice configuration file")
+    config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
+    config.add_argument('--maintainers', metavar="name", action="append", nargs='+',
+                        help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
+    config.add_argument('--build-url', type=str, metavar="url", help="Build URL/repository to be displayed by Auspice")
+    config.add_argument('--description', metavar="description.md",
+                        help="Markdown file with description of build and/or acknowledgements to be displayed by Auspice")
+    config.add_argument('--geo-resolutions', metavar="trait", nargs='+',
+                        help="Geographic traits to be displayed on map")
+    config.add_argument('--color-by-metadata', metavar="trait", nargs='+',
+                        help="Metadata columns to include as coloring options")
+    config.add_argument('--panels', metavar="panels", nargs='+', choices=['tree', 'map', 'entropy', 'frequencies'],
+                        help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
+
+    optional_inputs = v2.add_argument_group(
+        title="OPTIONAL INPUT FILES"
+    )
+    optional_inputs.add_argument('--metadata', metavar="TSV", help="Additional metadata for strains in the tree")
+    optional_inputs.add_argument('--colors', metavar="TSV", help="Custom color definitions")
+    optional_inputs.add_argument('--lat-longs', metavar="TSV",
+                                 help="Latitudes and longitudes for geography traits (overrides built in mappings)")
+
+    optional_settings = v2.add_argument_group(
+        title="OPTIONAL SETTINGS"
+    )
+    optional_settings.add_argument('--minify-json', action="store_true",
+                                   help="export JSONs without indentation or line returns")
+    optional_settings.add_argument('--include-root-sequence', action="store_true",
+                                   help="Export an additional JSON containing the root sequence (reference sequence for vcf) used to identify mutations. The filename will follow the pattern of <OUTPUT>_root-sequence.json for a main auspice JSON of <OUTPUT>.json")
+
 
 def validate_options(parser):
     subparsers = parser.add_subparsers(dest="subcommand", help="Which file(s) do you want to validate?")
@@ -129,7 +207,22 @@ def version_options(parser):
     pass
 
 def import_options(parser):
-    pass
+    metavar_msg = "Import analyses into augur pipeline from other systems"
+    subparsers = parser.add_subparsers(title="TYPE",
+                                       metavar=metavar_msg)
+    subparsers.required = True
+
+    beast_parser = subparsers.add_parser('beast', help="Import beast analysis")
+    beast_parser.add_argument("--beast", help=argparse.SUPPRESS, default=True) # used to disambiguate subcommands
+    beast_parser.add_argument('--mcc', required=True, help="BEAST MCC tree")
+    beast_parser.add_argument('--most-recent-tip-date', default=0, type=float, help='Numeric date of most recent tip in tree (--tip-date-regex, --tip-date-format and --tip-date-delimeter are ignored if this is set)')
+    beast_parser.add_argument('--tip-date-regex', default=r'[0-9]{4}(\-[0-9]{2})*(\-[0-9]{2})*$', type=str, help='regex to extract dates from tip names')
+    beast_parser.add_argument('--tip-date-format', default="%Y-%m-%d", type=str, help='Format of date (if extracted by regex)')
+    beast_parser.add_argument('--tip-date-delimeter', default="-", type=str, help='delimeter used in tip-date-format. Used to match partial dates.')
+    beast_parser.add_argument('--verbose', action="store_true", help="Display verbose output. Only useful for debugging.")
+    beast_parser.add_argument('--recursion-limit', default=False, type=int, help="Set a custom recursion limit (dangerous!)")
+    beast_parser.add_argument('--output-tree', required=True, type=str, help='file name to write tree to')
+    beast_parser.add_argument('--output-node-data', required=True, type=str, help='file name to write (temporal) branch lengths & BEAST traits as node data')
 
 def distance_options(parser):
     parser.add_argument("--tree", help="Newick tree", required=True)
@@ -382,7 +475,7 @@ def align_options(parser):
     parser.add_argument('--debug', action="store_true", default=False,
                         help="Produce extra files (e.g. pre- and post-aligner files) which can help with debugging poor alignments.")
 
-def available_cpu_cores(fallback: int = 1) -> int:
+def available_cpu_cores(fallback: int=1) -> int:
     """
     Returns the number (an int) of CPU cores available to this **process**, if
     determinable, otherwise the number of CPU cores available to the
