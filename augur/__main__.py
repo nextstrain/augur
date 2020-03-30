@@ -11,10 +11,10 @@ command_strings = {
     "refine": "Refine an initial tree using sequence metadata.",
     "ancestral": "Infer ancestral sequences based on a tree.",
     "translate": "Translate gene regions from nucleotides to amino acids.",
-    "reconstruct_sequences": "Reconstruct alignments from mutations inferred on the tree",
+    "reconstruct-sequences": "Reconstruct alignments from mutations inferred on the tree",
     "clades": "Assign clades to nodes in a tree based on amino-acid or nucleotide signatures.",
     "traits": "Infer ancestral traits based on a tree.",
-    "sequence_traits": "Annotate sequences based on amino-acid or nucleotide signatures.",
+    "sequence-traits": "Annotate sequences based on amino-acid or nucleotide signatures.",
     "lbi": "Calculate LBI for a given tree and one or more sets of parameters.",
     "distance": 'Calculate the distance between sequences across entire genes or at a predefined subset of sites.',
     "titers": "Annotate a tree with actual and inferred titer measurements.",
@@ -41,7 +41,7 @@ def augur_cli():
 
 def execute_run(args):
     from importlib import import_module
-    module = import_module(f'.{args.command}', package='augur')
+    module = import_module(f'.{args.command.replace("-", "_")}', package='augur')
     module.run(args)
 
 def lbi_options(parser):
