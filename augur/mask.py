@@ -152,7 +152,11 @@ def run(args):
     mask_sites = read_bed_file(args.mask)
 
     # For both FASTA and VCF masking, we need a proper separate output file
-    out_file = args.output if args.output is not None else "masked_" + args.sequences
+    if args.output is not None:
+        out_file = args.output
+    else:
+        out_file = os.path.join(os.path.dirname(args.sequences),
+                                "masked_" + os.path.basename(args.sequences))
 
     if is_vcf(args.sequences):
         mask_vcf(mask_sites, args.sequences, out_file, args.cleanup)
