@@ -1,3 +1,9 @@
+"""Tests for augur mask
+
+NOTE: Several functions are monkeypatched in these tests. If you change the arguments
+for any function in mask.py, check that it is correctly updated in this file.
+"""
+import argparse
 import os
 import pytest
 
@@ -39,6 +45,8 @@ def vcf_file(tmpdir):
         fh.write(TEST_VCF)
     return vcf_file
 
+TEST_BED_SEQUENCE = [1,2,4,6,7,8,9,10]
+# IF YOU UPDATE ONE OF THESE, UPDATE THE OTHER.
 TEST_BED="""\
 Chrom	ChromStart	ChromEnd	locus tag	Comment	
 SEQ1	1	2	IG18_Rv0018c-Rv0019c	
@@ -60,6 +68,16 @@ def mp_context(monkeypatch):
     with monkeypatch.context() as mp:
         yield mp
 
+
+@pytest.fixture
+def argparser():
+    """Provide an easy way to test command line arguments"""
+    parser = argparse.ArgumentParser()
+    mask.register_arguments(parser)
+    def parse(args):
+        return parser.parse_args(args.split(" "))
+    return parse
+
 class TestMask:
     def test_get_chrom_name_valid(self, vcf_file):
         """get_chrom_name should return the first CHROM field in a vcf file"""
@@ -77,9 +95,9 @@ class TestMask:
         """read_bed_file should read and deduplicate the list of sites in a bed file"""
         # Not a whole lot of testing to do with bed files. We're basically testing if pandas
         # can read a CSV and numpy can dedupe it.
-        assert mask.read_bed_file(bed_file) == [1,2,4,6,7,8,9,10]
+        assert mask.read_bed_file(bed_file) == TEST_BED_SEQUENCE
 
-    def test_mask_vcf_bails_on_no_chrom(self, tmpdir, mp_context):
+    def test_mask_vcf_bails_on_no_chrom(self, tmpdir):
         """mask_vcf should pull a sys.exit() if get_chrom_name returns None"""
         bad_vcf = str(tmpdir / "bad.vcf")
         with open(bad_vcf, "w") as fh:
@@ -158,3 +176,58 @@ class TestMask:
             for idx, site in enumerate(seq):
                 if idx != 5:
                     assert site == original[idx], "Incorrect sites modified!"
+    
+    def test_run_recognize_vcf(self, bed_file, vcf_file, argparser, mp_context):
+        """Ensure we're handling vcf files correctly"""
+        args = argparser("--mask=%s -s %s --no-cleanup" % (bed_file, vcf_file))
+        def fail(*args, **kwargs):
+            assert False, "Called mask_fasta incorrectly"
+        mp_context.setattr(mask, "mask_vcf", lambda *a, **k: None)
+        mp_context.setattr(mask, "mask_fasta", fail)
+        mp_context.setattr(mask, "copyfile", lambda *args: None)
+        mask.run(args)
+
+    def test_run_recognize_fasta(self, bed_file, fasta_file, argparser, mp_context):
+        """Ensure we're handling fasta files correctly"""
+        args = argparser("--mask=%s -s %s --no-cleanup" % (bed_file, fasta_file))
+        def fail(*args, **kwargs):
+            assert False, "Called mask_fasta incorrectly"
+        mp_context.setattr(mask, "mask_fasta", lambda *a, **k: None)
+        mp_context.setattr(mask, "mask_vcf", fail)
+        mp_context.setattr(mask, "copyfile", lambda *args: None)
+        mask.run(args)
+
+    def test_run_handle_missing_outfile(self, bed_file, fasta_file, argparser, mp_context):
+        args = argparser("--mask=%s -s %s" % (bed_file, fasta_file))
+        expected_outfile = os.path.join(os.path.dirname(fasta_file), "masked_" + os.path.basename(fasta_file))
+        def check_outfile(mask_sites, in_file, out_file):
+            assert out_file == expected_outfile
+            with open(out_file, "w") as fh:
+                fh.write("test_string")
+        mp_context.setattr(mask, "mask_fasta", check_outfile)
+        mask.run(args)
+        with open(fasta_file) as fh:
+            assert fh.read() == "test_string"
+    
+    def test_run_respect_no_cleanup(self, bed_file, tmpdir, vcf_file, argparser, mp_context):
+        out_file = os.path.join(os.path.dirname(vcf_file), "masked_" + os.path.basename(vcf_file))
+        def make_outfile(mask_sites, in_file, out_file, cleanup=True):
+            assert cleanup == False
+            open(out_file, "w").close() # need out_file to exist
+        mp_context.setattr(mask, "mask_vcf", make_outfile)
+        args = argparser("--mask=%s -s %s -o %s --no-cleanup" % (bed_file, vcf_file, out_file))
+        mask.run(args)
+        assert os.path.exists(out_file), "Output file incorrectly deleted"
+
+    def test_run_normal_case(self, bed_file, vcf_file, tmpdir, argparser, mp_context):
+        test_outfile = str(tmpdir / "out")
+        def check_args(mask_sites, in_file, out_file, cleanup):
+            assert mask_sites == TEST_BED_SEQUENCE, "Wrong mask sites provided"
+            assert in_file == vcf_file, "Incorrect input file provided"
+            assert out_file == test_outfile, "Incorrect output file provided"
+            assert cleanup is True, "Cleanup erroneously passed in as False"
+            open(out_file, "w").close() # want to test we don't delete output.
+        mp_context.setattr(mask, "mask_vcf", check_args)
+        args = argparser("--mask=%s --sequences=%s --output=%s" %(bed_file, vcf_file, test_outfile))
+        mask.run(args)
+        assert os.path.exists(test_outfile), "Output file incorrectly deleted"
