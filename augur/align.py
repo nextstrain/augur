@@ -14,18 +14,6 @@ class AlignmentError(Exception):
     # exit with code 1
     pass
 
-def register_arguments(parser):
-    parser.add_argument('--sequences', '-s', required=True, nargs="+", metavar="FASTA", help="sequences to align")
-    parser.add_argument('--output', '-o', default="alignment.fasta", help="output file (default: %(default)s)")
-    parser.add_argument('--nthreads', type=nthreads_value, default=1,
-                                help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
-    parser.add_argument('--method', default='mafft', choices=["mafft"], help="alignment program to use")
-    parser.add_argument('--reference-name', metavar="NAME", type=str, help="strip insertions relative to reference sequence; use if the reference is already in the input sequences")
-    parser.add_argument('--reference-sequence', metavar="PATH", type=str, help="Add this reference sequence to the dataset & strip insertions relative to this. Use if the reference is NOT already in the input sequences")
-    parser.add_argument('--remove-reference', action="store_true", default=False, help="remove reference sequence from the alignment")
-    parser.add_argument('--fill-gaps', action="store_true", default=False, help="If gaps represent missing data rather than true indels, replace by N after aligning.")
-    parser.add_argument('--existing-alignment', metavar="FASTA", default=False, help="An existing alignment to which the sequences will be added. The ouput alignment will be the same length as this existing alignment.")
-    parser.add_argument('--debug', action="store_true", default=False, help="Produce extra files (e.g. pre- and post-aligner files) which can help with debugging poor alignments.")
 
 def run(args):
     '''

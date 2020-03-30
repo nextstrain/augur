@@ -95,24 +95,6 @@ def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, 
     return data
 
 
-def register_arguments(parser):
-    parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
-    parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
-    parser.add_argument('--output-node-data', type=str, help='name of JSON file to save mutations and ancestral sequences to')
-    parser.add_argument('--output', '-o', type=str, help='DEPRECATED. Same as --output-node-data')
-    parser.add_argument('--output-sequences', type=str, help='name of FASTA file to save ancestral sequences to (FASTA alignments only)')
-    parser.add_argument('--inference', default='joint', choices=["joint", "marginal"],
-                                    help="calculate joint or marginal maximum likelihood ancestral sequence states")
-    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    parser.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
-    ambiguous = parser.add_mutually_exclusive_group()
-    ambiguous.add_argument('--keep-ambiguous', action="store_false", dest='infer_ambiguous',
-                                help='do not infer nucleotides at ambiguous (N) sites on tip sequences (leave as N).')
-    ambiguous.add_argument('--infer-ambiguous', action="store_true",
-                                help='infer nucleotides at ambiguous (N,W,R,..) sites on tip sequences and replace with most likely state.')
-    parser.add_argument('--keep-overhangs', action="store_true", default=False,
-                                help='do not infer nucleotides for gaps (-) on either side of the alignment')
-
 def run(args):
     # check alignment type, set flags, read in if VCF
     is_vcf = False

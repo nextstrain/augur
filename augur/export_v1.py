@@ -8,7 +8,6 @@ import re
 import time
 import numpy as np
 from Bio import Phylo
-from argparse import SUPPRESS
 from collections import defaultdict
 from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
 
@@ -305,37 +304,6 @@ def get_root_sequence(root_node, ref=None, translations=None):
         root_sequence.update(root_node["aa_sequences"])
 
     return root_sequence
-
-
-def add_core_args(parser):
-    core = parser.add_argument_group("REQUIRED")
-    core.add_argument('--tree','-t', required=True, help="tree to perform trait reconstruction on")
-    core.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
-    core.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
-    core.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json).")
-    core.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json).")
-    core.add_argument('--auspice-config', help="file with auspice configuration")
-    return core
-
-
-def add_option_args(parser):
-    options = parser.add_argument_group("OPTIONS")
-    options.add_argument('--colors', help="file with color definitions")
-    options.add_argument('--lat-longs', help="file latitudes and longitudes, overrides built in mappings")
-    options.add_argument('--tree-name', default=False, help="Tree name (needed for tangle tree functionality)")
-    options.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
-    options.add_argument('--output-sequence', help="JSON file name that is passed on to auspice (e.g., zika_seq.json).")
-    options.add_argument('--reference', required=False, help="reference sequence for export to browser, only vcf")
-    options.add_argument('--reference-translations', required=False, help="reference translations for export to browser, only vcf")
-    return options
-
-
-def register_arguments_v1(subparsers):
-    # V1 sub-command
-    v1 = subparsers.add_parser('v1', help="Export version 1 JSON schema (separate meta and tree JSONs)")
-    v1_core = add_core_args(v1)
-    v1_options = add_option_args(v1)
-    v1.add_argument("--v1", help=SUPPRESS, default=True)
 
 
 def run_v1(args):

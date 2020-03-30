@@ -87,41 +87,6 @@ def collect_node_data(T, attributes):
     return data
 
 
-def register_arguments(parser):
-    parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
-    parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
-    parser.add_argument('--metadata', type=str, help="tsv/csv table with meta data for sequences")
-    parser.add_argument('--output-tree', type=str, help='file name to write tree to')
-    parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
-    parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")
-    parser.add_argument('--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
-    parser.add_argument('--gen-per-year', default=50, type=float, help="number of generations per year, relevant for skyline output('skyline')")
-    parser.add_argument('--clock-rate', type=float, help="fixed clock rate")
-    parser.add_argument('--clock-std-dev', type=float, help="standard deviation of the fixed clock_rate estimate")
-    parser.add_argument('--root', nargs="+", default='best', help="rooting mechanism ('best', least-squares', 'min_dev', 'oldest') "
-                                "OR node to root by OR two nodes indicating a monophyletic group to root by. "
-                                "Run treetime -h for definitions of rooting methods.")
-    parser.add_argument('--keep-root', action="store_true", help="do not reroot the tree; use it as-is. "
-                                "Overrides anything specified by --root.")
-    parser.add_argument('--covariance', dest='covariance', action='store_true', help="Account for covariation when estimating "
-                                "rates and/or rerooting. "
-                                "Use --no-covariance to turn off.")
-    parser.add_argument('--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!
-    parser.add_argument('--keep-polytomies', action='store_true', help='Do not attempt to resolve polytomies')
-    parser.add_argument('--date-format', default="%Y-%m-%d", help="date format")
-    parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
-    parser.add_argument('--date-inference', default='joint', choices=["joint", "marginal"],
-                                help="assign internal nodes to their marginally most likely dates, not jointly most likely")
-    parser.add_argument('--branch-length-inference', default='auto', choices = ['auto', 'joint', 'marginal', 'input'],
-                                help='branch length mode of treetime to use')
-    parser.add_argument('--clock-filter-iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
-                                'interquartile ranges from the root-to-tip vs time regression')
-    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    parser.add_argument('--year-bounds', type=int, nargs='+', help='specify min or max & min prediction bounds for samples with XX in year')
-    parser.add_argument('--divergence-units', type=str, choices=['mutations', 'mutations-per-site'],
-                        default='mutations-per-site', help='Units in which sequence divergences is exported.')
-    parser.set_defaults(covariance=True)
-
 def run(args):
     # check alignment type, set flags, read in if VCF
     is_vcf = False

@@ -79,16 +79,6 @@ def calculate_LBI(tree, attr="lbi", tau=0.4, transform=lambda x:x, normalize=Tru
         setattr(node, attr, node.attr[attr])
 
 
-def register_arguments(parser):
-    parser.add_argument("--tree", help="Newick tree", required=True)
-    parser.add_argument("--branch-lengths", help="JSON with branch lengths and internal node dates estimated by TreeTime", required=True)
-    parser.add_argument("--output", help="JSON file with calculated distances stored by node name and attribute name", required=True)
-    parser.add_argument("--attribute-names", nargs="+", help="names to store distances associated with the corresponding masks", required=True)
-    parser.add_argument("--tau", nargs="+", type=float, help="tau value(s) defining the neighborhood of each clade", required=True)
-    parser.add_argument("--window", nargs="+", type=float, help="time window(s) to calculate LBI across", required=True)
-    parser.add_argument("--no-normalization", action="store_true", help="disable normalization of LBI by the maximum value")
-
-
 def run(args):
     # Load tree.
     tree = Bio.Phylo.read(args.tree, "newick")

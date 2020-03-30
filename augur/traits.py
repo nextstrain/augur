@@ -96,31 +96,6 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
     return tt.tree, tt.gtr, letter_to_state
 
 
-def register_arguments(parser):
-    """Add subcommand specific arguments
-
-    Parameters
-    ----------
-    parser : argparse
-        subcommand argument parser
-    """
-    parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
-    parser.add_argument('--metadata', required=True, help="tsv/csv table with meta data")
-    parser.add_argument('--weights', required=False, help="tsv/csv table with equilibrium probabilities of discrete states")
-    parser.add_argument('--columns', required=True, nargs='+',
-                        help='metadata fields to perform discrete reconstruction on')
-    parser.add_argument('--confidence',action="store_true",
-                        help='record the distribution of subleading mugration states')
-    parser.add_argument('--sampling-bias-correction', type=float,
-                        help='a rough estimate of how many more events would have been observed'
-                             ' if sequences represented an even sample. This should be'
-                             ' roughly the (1-sum_i p_i^2)/(1-sum_i t_i^2), where p_i'
-                             ' are the equilibrium frequencies and t_i are apparent ones.'
-                             '(or rather the time spent in a particular state on the tree)')
-    parser.add_argument('--output-node-data', type=str, help='name of JSON file to save trait inferences to')
-    parser.add_argument('--output', '-o', type=str, help='DEPRECATED. Same as --output-node-data')
-    parser.epilog = "Note that missing data must be represented by a `?` character. Missing data will currently be inferred."
-
 def run(args):
     """run mugration inference
 

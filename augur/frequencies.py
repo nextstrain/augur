@@ -12,62 +12,6 @@ from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, T
 from .utils import read_metadata, read_node_data, write_json, get_numerical_dates
 
 
-def register_arguments(parser):
-    # Shared arguments
-    parser.add_argument('--method', choices=["diffusion", "kde"], required=True,
-                        help="method by which frequencies should be estimated")
-    parser.add_argument('--metadata', type=str, required=True,
-                        help="tab-delimited metadata including dates for given samples")
-    parser.add_argument('--regions', type=str, nargs='+', default=['global'],
-                        help="region to subsample to")
-    parser.add_argument("--pivot-interval", type=int, default=3,
-                        help="number of months between pivots")
-    parser.add_argument('--min-date', type=float,
-                        help="minimal pivot value")
-    parser.add_argument('--max-date', type=float,
-                        help="maximal pivot value")
-
-    # Tree-specific arguments
-    parser.add_argument('--tree', '-t', type=str,
-                        help="tree to estimate clade frequencies for")
-    parser.add_argument("--include-internal-nodes", action="store_true",
-                        help="calculate frequencies for internal nodes as well as tips")
-
-    # Alignment-specific arguments
-    parser.add_argument('--alignments', type=str, nargs='+',
-                        help="alignments to estimate mutations frequencies for")
-    parser.add_argument('--gene-names', nargs='+', type=str,
-                        help="names of the sequences in the alignment, same order assumed")
-    parser.add_argument('--ignore-char', type=str, default='',
-                        help="character to be ignored in frequency calculations")
-    parser.add_argument('--minimal-frequency', type=float, default=0.05,
-                        help="minimal all-time frequencies for a trajectory to be estimates")
-
-    # KDE-specific arguments
-    parser.add_argument("--narrow-bandwidth", type=float, default=1 / 12.0, help="the bandwidth for the narrow KDE")
-    parser.add_argument("--wide-bandwidth", type=float, default=3 / 12.0, help="the bandwidth for the wide KDE")
-    parser.add_argument("--proportion-wide", type=float, default=0.2, help="the proportion of the wide bandwidth to use in the KDE mixture model")
-    parser.add_argument("--weights", help="a dictionary of key/value mappings in JSON format used to weight KDE tip frequencies")
-    parser.add_argument("--weights-attribute", help="name of the attribute on each tip whose values map to the given weights dictionary")
-    parser.add_argument("--censored", action="store_true", help="calculate censored frequencies at each pivot")
-
-    # Diffusion frequency specific arguments
-    parser.add_argument('--minimal-clade-size', type=int, default=0,
-                        help="minimal number of tips a clade must have for its diffusion frequencies to be reported")
-    parser.add_argument('--minimal-clade-size-to-estimate', type=int, default=10,
-                        help="""minimal number of tips a clade must have for its diffusion frequencies to be estimated
-                                by the diffusion likelihood; all smaller clades will inherit frequencies from their
-                                parents""")
-    parser.add_argument("--stiffness", type=float, default=10.0, help="parameter penalizing curvature of the frequency trajectory")
-    parser.add_argument("--inertia", type=float, default=0.0, help="determines how frequencies continue "
-                        "in absense of data (inertia=0 -> go flat, inertia=1.0 -> continue current trend)")
-
-    # Output arguments
-    parser.add_argument('--output-format', default='auspice', choices=['auspice', 'nextflu'],
-                        help="format to export frequencies JSON depending on the viewing interface")
-    parser.add_argument('--output', '-o', type=str,
-                        help='JSON file to save estimated frequencies to')
-
 
 def format_frequencies(freq):
     return [round(x,6) for x in freq]

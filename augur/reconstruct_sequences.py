@@ -10,17 +10,6 @@ from .utils import read_node_data, write_json
 from treetime.vcf_utils import read_vcf
 
 
-
-def register_arguments(parser):
-    parser.add_argument('--tree', required=True, help="tree as Newick file")
-    parser.add_argument('--gene', type=str, help="gene to translate (list or file containing list)")
-    parser.add_argument('--mutations', required=True, type=str, help="json file containing mutations "
-                            "mapped to each branch and the sequence of the root.")
-    parser.add_argument('--vcf-aa-reference', type=str, help='fasta file of the reference gene translations for VCF format')
-    parser.add_argument('--internal-nodes', action='store_true', help="include sequences of internal nodes in output")
-    parser.add_argument('--output', type=str)
-
-
 def get_sequence(pseq, muts):
     """reconstruct a child sequence from that of its parent and the mutations
 

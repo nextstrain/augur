@@ -358,19 +358,6 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
     return masked_alignment_file
 
 
-def register_arguments(parser):
-    parser.add_argument('--alignment', '-a', required=True, help="alignment in fasta or VCF format")
-    parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
-    parser.add_argument('--output', '-o', type=str, help='file name to write tree to')
-    parser.add_argument('--substitution-model', default="GTR", choices=["HKY", "GTR", "HKY+G", "GTR+G", "GTR+R10"],
-                                help='substitution model to use. Specify \'none\' to run ModelTest. Currently, only available for IQTREE.')
-    parser.add_argument('--nthreads', type=nthreads_value, default=1,
-                                help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
-    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    parser.add_argument('--exclude-sites', type=str, help='file name of one-based sites to exclude for raw tree building (BED format in .bed files, DRM format in tab-delimited files, or one position per line)')
-    parser.add_argument('--tree-builder-args', type=str, default='', help='extra arguments to be passed directly to the executable of the requested tree method (e.g., --tree-builder-args="-czb")')
-
-
 def run(args):
     # check alignment type, set flags, read in if VCF
     is_vcf = False

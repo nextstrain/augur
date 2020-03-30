@@ -301,21 +301,6 @@ def get_genes_from_file(fname):
     return unique_genes
 
 
-def register_arguments(parser):
-    parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
-    parser.add_argument('--ancestral-sequences', type=str, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
-    parser.add_argument('--reference-sequence', required=True,
-                        help='GenBank or GFF file containing the annotation')
-    parser.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
-    parser.add_argument('--output-node-data', type=str, help='name of JSON file to save aa-mutations to')
-    parser.add_argument('--output', '-o', type=str, help='DEPRECATED. Same as --output-node-data')
-    parser.add_argument('--alignment-output', type=str, help="write out translated gene alignments. "
-                                   "If a VCF-input, a .vcf or .vcf.gz will be output here (depending on file ending). If fasta-input, specify the file name "
-                                   "like so: 'my_alignment_%%GENE.fasta', where '%%GENE' will be replaced by the name of the gene")
-    parser.add_argument('--vcf-reference-output', type=str, help="fasta file where reference sequence translations for VCF input will be written")
-    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-
-
 def run(args):
     ## read tree and data, if reading data fails, return with error code
     tree = Phylo.read(args.tree, 'newick')

@@ -63,26 +63,6 @@ def read_priority_scores(fname):
     return priorities
 
 
-def register_arguments(parser):
-    parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
-    parser.add_argument('--metadata', required=True, help="metadata associated with sequences")
-    parser.add_argument('--min-date', type=float, help="minimal cutoff for numerical date")
-    parser.add_argument('--max-date', type=float, help="maximal cutoff for numerical date")
-    parser.add_argument('--min-length', type=int, help="minimal length of the sequences")
-    parser.add_argument('--non-nucleotide', action='store_true', help="exclude sequences that contain illegal characters")
-    parser.add_argument('--exclude', type=str, help="file with list of strains that are to be excluded")
-    parser.add_argument('--include', type=str, help="file with list of strains that are to be included regardless of priorities or subsampling")
-    parser.add_argument('--priority', type=str, help="file with list priority scores for sequences (strain\tpriority)")
-    parser.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
-    parser.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
-    parser.add_argument('--subsample-seed', help="random number generator seed to allow reproducible sub-sampling (with same input data). Can be number or string.")
-    parser.add_argument('--exclude-where', nargs='+',
-                                help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
-    parser.add_argument('--include-where', nargs='+',
-                                help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND. This rule is applied last and ensures any sequences matching these rules will be included.")
-    parser.add_argument('--output', '-o', help="output file", required=True)
-
-
 def run(args):
     '''
     filter and subsample a set of sequences into an analysis set

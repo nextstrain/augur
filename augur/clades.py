@@ -178,15 +178,6 @@ def get_reference_sequence_from_root_node(all_muts, root_name):
     return ref
 
 
-def register_arguments(parser):
-    parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
-    parser.add_argument('--mutations', nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
-    parser.add_argument('--reference', nargs='+', help='fasta files containing reference and tip nucleotide and/or amino-acid sequences ')
-    parser.add_argument('--clades', type=str, help='TSV file containing clade definitions by amino-acid')
-    parser.add_argument('--output-node-data', type=str, help='name of JSON file to save clade assignments to')
-    parser.add_argument('--output', '-o', type=str, help='DEPRECATED. Same as --output-node-data')
-
-
 def run(args):
     ## read tree and data, if reading data fails, return with error code
     tree = Phylo.read(args.tree, 'newick')
