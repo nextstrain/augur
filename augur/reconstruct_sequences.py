@@ -41,7 +41,17 @@ def get_sequence(pseq, muts):
     for mut in muts:
         new_state = mut[-1]
         pos = int(mut[1:-1])-1
-        assert pseq_list[pos]==mut[0]
+        try:
+            assert pseq_list[pos]==mut[0]
+        except AssertionError:
+            msg = (
+                "Parental state {pseq} of sequence does not match "
+                "mutation parental state {mut}.".format(
+                    pseq=pseq_list[pos],
+                    mut=mut[0]
+                )
+            )
+            raise AssertionError(msg)
         pseq_list[pos]=new_state
 
     return "".join(pseq_list)
