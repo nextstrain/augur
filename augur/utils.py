@@ -397,7 +397,7 @@ def read_lat_longs(overrides=None, use_defaults=True):
                     add_line_to_coordinates(line)
     if overrides:
         if os.path.isfile(overrides):
-            with open(overrides) as ifile:
+            with open(overrides, encoding='utf-8') as ifile:
                 for line in ifile:
                     add_line_to_coordinates(line)
         else:
