@@ -456,7 +456,7 @@ def parse_options(parser):
                         help="attempt to parse non-standard dates and output them in standard YYYY-MM-DD format")
 
 def align_options(parser):
-    parser.add_argument('sequences', nargs="+", metavar="FASTA", help="sequences to align")
+    parser.add_argument('--sequences', nargs="+", metavar="FASTA", help="sequences to align")
     parser.add_argument('--output', '-o', default="alignment.fasta", help="output file (default: %(default)s)")
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                         help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
