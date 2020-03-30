@@ -50,7 +50,11 @@ def load_json_schema(path):
     return jsonschema.Draft6Validator(schema)
 
 def load_json(path):
-    with open(path) as fh:
+    # From Python 3.6, json can load various UTF formats from a file opened in
+    # binary mode. See note at bottom of
+    # https://docs.python.org/3/library/json.html#json.load
+    mode = 'r' if sys.version_info < (3, 6) else 'rb'
+    with open(path, mode) as fh:
         try:
             jsonToValidate = json.load(fh)
         except json.JSONDecodeError:

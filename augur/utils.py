@@ -360,8 +360,12 @@ def read_config(fname):
         print("ERROR: config file %s not found."%fname)
         return defaultdict(dict)
 
+    # From Python 3.6, json can load various UTF formats from a file opened in
+    # binary mode. See note at bottom of
+    # https://docs.python.org/3/library/json.html#json.load
+    mode = 'r' if sys.version_info < (3, 6) else 'rb'
     try:
-        with open(fname) as ifile:
+        with open(fname, mode) as ifile:
             config = json.load(ifile)
     except json.decoder.JSONDecodeError as err:
         print("FATAL ERROR:")
