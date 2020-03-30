@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* Drop support for Python 3.4 and 3.5
 
 ## 6.4.3 (25 March 2020)
 

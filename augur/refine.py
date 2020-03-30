@@ -9,7 +9,7 @@ from treetime.vcf_utils import read_vcf, write_vcf
 
 
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
-             confidence=False, resolve_polytomies=True, max_iter=2,
+             confidence=False, resolve_polytomies=True, max_iter=2, precision='auto',
              infer_gtr=True, Tc=0.01, reroot=None, use_marginal=False, fixed_pi=None,
              clock_rate=None, clock_std=None, clock_filter_iqd=None, verbosity=1, covariance=True, **kwarks):
     from treetime import TreeTime
@@ -34,7 +34,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
 
     #send ref, if is None, does no harm
     tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates,
-                  verbose=verbosity, gtr='JC69')
+                  verbose=verbosity, gtr='JC69', precision=precision)
 
     # conditionally run clock-filter and remove bad tips
     if clock_filter_iqd:
@@ -108,6 +108,7 @@ def register_arguments(parser):
                                 "Use --no-covariance to turn off.")
     parser.add_argument('--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!
     parser.add_argument('--keep-polytomies', action='store_true', help='Do not attempt to resolve polytomies')
+    parser.add_argument('--precision', type=int, choices=[0,1,2,3], help="precision used by TreeTime to determine the number of grid points that are used for the evaluation of the branch length interpolation objects. Values range from 0 (rough) to 3 (ultra fine) and default to 'auto'.")
     parser.add_argument('--date-format', default="%Y-%m-%d", help="date format")
     parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
     parser.add_argument('--date-inference', default='joint', choices=["joint", "marginal"],
@@ -196,6 +197,7 @@ def run(args):
                     Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
                     use_marginal = args.date_inference == 'marginal',
                     branch_length_inference = args.branch_length_inference or 'auto',
+                    precision = 'auto' if args.precision is None else args.precision,
                     clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
                     clock_filter_iqd=args.clock_filter_iqd,
                     covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies))

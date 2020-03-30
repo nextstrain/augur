@@ -12,17 +12,21 @@ from .utils import read_metadata, get_numerical_dates, run_shell_command, shquot
 
 comment_char = '#'
 
-def read_vcf(compressed, input_file):
-    import gzip
-    opn = gzip.open if compressed else open
 
-    with opn(input_file, mode='rt') as f: #'rt' necessary for gzip
-        for line in f:
-            if line[0:2] == "#C":
-                header = line.strip().split('\t')
-                seq_keep = header[header.index("FORMAT")+1:]
-                all_seq = seq_keep.copy() #because we need 'seqs to remove' for VCF
-                return seq_keep, all_seq
+def read_vcf(filename):
+    if filename.lower().endswith(".gz"):
+        import gzip
+        file = gzip.open(filename, mode="rt")
+    else:
+        file = open(filename)
+
+    chrom_line = next(line for line in file if line.startswith("#C"))
+    file.close()
+    headers = chrom_line.strip().split("\t")
+    sequences = headers[headers.index("FORMAT") + 1:]
+
+    # because we need 'seqs to remove' for VCF
+    return sequences, sequences.copy()
 
 
 def write_vcf(compressed, input_file, output_file, dropped_samps):
@@ -99,7 +103,7 @@ def run(args):
 
     #If VCF, open and get sequence names
     if is_vcf:
-        seq_keep, all_seq = read_vcf(is_compressed, args.sequences)
+        seq_keep, all_seq = read_vcf(args.sequences)
 
     #if Fasta, read in file to get sequence names and sequences
     else:

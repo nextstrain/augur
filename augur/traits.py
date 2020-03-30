@@ -64,12 +64,12 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
         for node in T.find_clades():
             node.__setattr__(field, unique_states[0])
         return T, None, {}
-    elif len(unique_states)<180:
+    elif len(unique_states)<300:
         tt, letter_to_state, reverse_alphabet = \
             reconstruct_discrete_traits(T, traits, missing_data=missing,
                  sampling_bias_correction=sampling_bias_correction, weights=weights)
     else:
-        print("ERROR: 180 or more distinct discrete states found. TreeTime is currently not set up to handle that many states.")
+        print("ERROR: 300 or more distinct discrete states found. TreeTime is currently not set up to handle that many states.")
         sys.exit(1)
 
     if tt is None:
