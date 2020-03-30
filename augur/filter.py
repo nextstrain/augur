@@ -47,20 +47,15 @@ def write_vcf(compressed, input_file, output_file, dropped_samps):
         pass
 
 def read_priority_scores(fname):
-    priorities = defaultdict(float)
-    if not os.path.isfile(fname):
-        print("ERROR: priority file %s doesn't exist"%fname)
-        return priorities
-
-    with open(fname) as pfile:
-        for l in pfile:
-            f = l.strip().split()
-            try:
-                priorities[f[0]] = float(f[1])
-            except:
-                print("ERROR: malformatted priority:",l)
-
-    return priorities
+    try:
+        with open(fname) as pfile:
+            return {
+                elems[0]: float(elems[1])
+                for elems in (line.strip().split() for line in pfile.readlines())
+            }
+    except Exception as e:
+        print(f"ERROR: missing or malformed priority scores file {fname}", file=sys.stderr)
+        raise e
 
 
 def register_arguments(parser):
@@ -72,7 +67,7 @@ def register_arguments(parser):
     parser.add_argument('--non-nucleotide', action='store_true', help="exclude sequences that contain illegal characters")
     parser.add_argument('--exclude', type=str, help="file with list of strains that are to be excluded")
     parser.add_argument('--include', type=str, help="file with list of strains that are to be included regardless of priorities or subsampling")
-    parser.add_argument('--priority', type=str, help="file with list priority scores for sequences (strain\tpriority)")
+    parser.add_argument('--priority', type=str, help="file with list of priority scores for sequences (strain\tpriority)")
     parser.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     parser.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
     parser.add_argument('--subsample-seed', help="random number generator seed to allow reproducible sub-sampling (with same input data). Can be number or string.")
