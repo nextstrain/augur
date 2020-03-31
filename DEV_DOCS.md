@@ -65,6 +65,7 @@ This section will describe briefly:
 - Writing tests
   - Unit tests
   - Doctests
+  - End-to-end tests
 - Running tests
   - Locally
   - Continuous Integration
@@ -84,24 +85,30 @@ A pull request **should always contain unit tests**. Optionally, a pull request 
 doctests if the contributor believes a doctest would improve the documentation and execution
 of a real world example.
 
+End-to-end tests confirm that augur behaves as expected in real-world pipelines.
+These domain-specific tests are implemented as Snakemake pipelines in `tests/builds`.
+
 #### Running Tests
 
-You've written tests and now you want to run them to see if they are passing. To run
-augur's tests (unit tests and doctests) with pytest and Python3, use the following command
-from the root, top-level of the augur repository:
+You've written tests and now you want to run them to see if they are passing.
+First, install augur with the development dependencies as described above.
+Next, run augur's tests (unit tests and doctests) with the following command from the root, top-level of the augur repository:
 
 ```bash
-pytest -c pytest.python3.ini
+./run_tests.sh
 ```
 
-If you are running legacy augur code using Python 2, execute `pytest -c pytest.python2.ini`.
+Troubleshooting tip: As tests run on the development code in the augur repository, your environment should not have an existing augur installation that could cause a conflict in pytest.
 
-Troubleshooting tip: As tests run on the development code in the augur repository,
-your environment should not have an existing augur installation that could cause a
-conflict in pytest.
+To run end-to-end tests, use the following command from the root, top-level directory.
+You will need to [install the complete Nextstrain environment](https://nextstrain.org/docs/getting-started/local-installation) to run these tests.
 
-We also use Continuous integration with Travis CI to run tests on every pull request
-submitted to the project.
+```bash
+bash tests/builds/runner.sh
+```
+
+We use continuous integration with Travis CI to run tests on every pull request submitted to the project.
+We use [codecov](https://codecov.io/) to automatically produce test coverage for new contributions and the project as a whole.
 
 ### Releasing
 
