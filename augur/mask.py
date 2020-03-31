@@ -29,7 +29,7 @@ def read_bed_file(mask_file):
     Second column is chromStart, 3rd is chromEnd. Generate a range from these two columns.
     """
     sites_to_mask = []
-    bed = pd.read_csv(mask_file, sep='\t')
+    bed = pd.read_csv(mask_file, sep='\t', header=None)
     for _, row in bed.iterrows():
         sites_to_mask.extend(list(range(row[1], row[2]+1)))
     sites_to_mask = np.unique(sites_to_mask).tolist()

@@ -48,7 +48,6 @@ def vcf_file(tmpdir):
 TEST_BED_SEQUENCE = [1,2,4,6,7,8,9,10]
 # IF YOU UPDATE ONE OF THESE, UPDATE THE OTHER.
 TEST_BED="""\
-Chrom	ChromStart	ChromEnd	locus tag	Comment	
 SEQ1	1	2	IG18_Rv0018c-Rv0019c	
 SEQ1	4	4	IG18_Rv0018c-Rv0019c	
 SEQ1	6	8	IG18_Rv0018c-Rv0019c	
