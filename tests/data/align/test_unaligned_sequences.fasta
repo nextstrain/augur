@@ -1,0 +1,8 @@
+>with_gaps
+ATATA
+>no_gaps
+GGGATATAGGG
+>some_other_seq
+GATCTAGGG
+>crick_strand some description
+CCTATATCC

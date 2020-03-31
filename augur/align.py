@@ -69,7 +69,8 @@ def run(args):
         if args.reference_sequence and not existing_aln:
             seqs_to_align_fname = args.output+".to_align.fasta"
             ref_seq = read_reference(args.reference_sequence)
-            write_seqs(list(seqs.values())+[ref_seq], seqs_to_align_fname)
+            # reference sequence needs to be the first one for auto direction adjustment (auto reverse-complement)
+            write_seqs([ref_seq] + list(seqs.values()), seqs_to_align_fname)
             ref_name = ref_seq.id
         elif existing_aln:
             seqs_to_align_fname = args.output+".new_seqs_to_align.fasta"
@@ -99,9 +100,8 @@ def run(args):
         # reads the new alignment
         seqs = read_alignment(args.output)
 
-        # convert the aligner output to upper case
-        for seq in seqs:
-            seq.seq = seq.seq.upper()
+        # convert the aligner output to upper case and remove auto reverse-complement prefix
+        prettify_alignment(seqs)
 
         # if we've specified a reference, strip out all the columns not present in the reference
         # this will overwrite the alignment file
@@ -180,9 +180,9 @@ def read_reference(ref_fname):
 def generate_alignment_cmd(method, nthreads, existing_aln_fname, seqs_to_align_fname, aln_fname, log_fname):
     if method=='mafft':
         if existing_aln_fname:
-            cmd = "mafft --add %s --keeplength --reorder --anysymbol --nomemsave --thread %d %s 1> %s 2> %s"%(shquote(seqs_to_align_fname), nthreads, shquote(existing_aln_fname), shquote(aln_fname), shquote(log_fname))
+            cmd = "mafft --add %s --keeplength --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s"%(shquote(seqs_to_align_fname), nthreads, shquote(existing_aln_fname), shquote(aln_fname), shquote(log_fname))
         else:
-            cmd = "mafft --reorder --anysymbol --nomemsave --thread %d %s 1> %s 2> %s"%(nthreads, shquote(seqs_to_align_fname), shquote(aln_fname), shquote(log_fname))
+            cmd = "mafft --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s"%(nthreads, shquote(seqs_to_align_fname), shquote(aln_fname), shquote(log_fname))
         print("\nusing mafft to align via:\n\t" + cmd +
               " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"
               "\n\thttps://doi.org/10.1093%2Fnar%2Fgkf436\n")
@@ -214,16 +214,16 @@ def strip_non_reference(aln, reference, keep_reference=False):
     -----
     >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps", keep_reference=False)]
     Trimmed gaps in with_gaps from the alignment
-    ['no_gaps', 'some_other_seq']
+    ['no_gaps', 'some_other_seq', '_R_crick_strand']
     >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps", keep_reference=True)]
     Trimmed gaps in with_gaps from the alignment
-    ['with_gaps', 'no_gaps', 'some_other_seq']
+    ['with_gaps', 'no_gaps', 'some_other_seq', '_R_crick_strand']
     >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "no_gaps", keep_reference=True)]
     No gaps in alignment to trim (with respect to the reference, no_gaps)
-    ['with_gaps', 'no_gaps', 'some_other_seq']
+    ['with_gaps', 'no_gaps', 'some_other_seq', '_R_crick_strand']
     >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "no_gaps", keep_reference=False)]
     No gaps in alignment to trim (with respect to the reference, no_gaps)
-    ['with_gaps', 'some_other_seq']
+    ['with_gaps', 'some_other_seq', '_R_crick_strand']
     >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "missing", keep_reference=False)]
     Traceback (most recent call last):
       ...
@@ -249,6 +249,26 @@ def strip_non_reference(aln, reference, keep_reference=False):
     print("Trimmed gaps in", reference, "from the alignment")
     return out_seqs
 
+def prettify_alignment(aln):
+    '''
+    Converts all bases to uppercase and removes auto reverse-complement prefix (_R_).
+    This modifies the alignment in place.
+
+    Parameters
+    ----------
+    aln : MultipleSeqAlign
+        Biopython Alignment
+    '''
+    for seq in aln:
+        seq.seq = seq.seq.upper()
+        # AlignIO.read repeats the ID in the name and description field
+        if seq.id.startswith("_R_"):
+            seq.id = seq.id[3:]
+            print("Sequence \"{}\" was reverse-complemented by the alignment program.".format(seq.id))
+        if seq.name.startswith("_R_"):
+            seq.name = seq.name[3:]
+        if seq.description.startswith("_R_"):
+            seq.description = seq.description[3:]
 
 def make_gaps_ambiguous(aln):
     '''
