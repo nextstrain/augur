@@ -14,7 +14,7 @@ dev_path = Path(__file__).parent.parent
 if (dev_path/"augur"/"__init__.py").exists():
     path.insert(0, str(dev_path))
 
-    from augur.__main__ import augur_cli
-    exit(augur_cli())
+    from augur.__main__ import main
+    exit(main())
 else:
     raise RuntimeError("Unable to add dev path for augur. You may be using a system-wide installation")

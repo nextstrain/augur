@@ -25,7 +25,7 @@ command_strings = {
     "import": "Import analyses into augur pipeline from other systems"
 }
 
-def augur_cli():
+def main():
     parser = argparse.ArgumentParser(prog='augur',
                                      description="Augur: A bioinformatics toolkit for phylogenetic analysis.")
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
@@ -514,4 +514,4 @@ def nthreads_value(value):
         raise argparse.ArgumentTypeError("'%s' is not an integer or the word 'auto'" % value) from None
 
 if __name__ == "__main__":
-    augur_cli()
+    main()
