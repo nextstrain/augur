@@ -78,10 +78,10 @@ def load_alignments(sequence_files, gene_names):
     return alignments
 
 
-def encode_root_sequence_from_vcf(
+def get_reference_sequences_from_vcf(
+        vcf_aa_reference,
         node_data,
         root_node,
-        vcf_aa_reference,
         gene
     ):
     """
@@ -91,26 +91,34 @@ def encode_root_sequence_from_vcf(
         for record in SeqIO.parse(handle, "fasta"):
             if record.id==gene:
                 #'root' may not be same as 'reference', so apply any mutations at root here!
-                node_data["nodes"][root_node]['aa_sequences'][record.id] = get_sequence(str(record.seq), node_data["nodes"][root_node]["aa_muts"][record.id])
+                node_data["nodes"][root_node]['aa_sequences'][record.id] = get_sequence(
+                    str(record.seq),
+                    node_data["nodes"][root_node]["aa_muts"][record.id]
+                )
     return node_data
 
 
-def read_and_reconstruct_sequences_in_tree(
+def reconstruct_sequences_from_tree_of_mutations(
+        tree,
         node_data,
+        root_node,
         gene,
     ):
-    print(node_data)
     # gather all reconstructed sequences
     sequences = dict()
     is_terminal = {}
 
-    sequences[root_node] = node_data["nodes"][root_node]['aa_sequences'][args.gene]
+    sequences[root_node] = node_data["nodes"][root_node]['aa_sequences'][gene]
     is_terminal[root_node] = False
     for node in tree.get_nonterminals(order='preorder'):
         parent_sequence = sequences[node.name]
         for child in node:
-            sequences[child.name] = get_sequence(parent_sequence, node_data["nodes"][child.name]["aa_muts"][args.gene])
+            sequences[child.name] = get_sequence(
+                parent_sequence,
+                node_data["nodes"][child.name]["aa_muts"][gene]
+            )
             is_terminal[child.name] = child.is_terminal()
+    return sequences, is_terminal
 
 
 def run(args):
@@ -124,6 +132,7 @@ def run(args):
 
     ## check file format and read in sequences
     node_data = read_node_data(args.mutations, args.tree)
+
     if node_data is None:
         print("ERROR: could not read mutation data "+ ("(incl sequences)" if not is_vcf else ""))
         return 1
@@ -132,29 +141,34 @@ def run(args):
 
     #if VCF, read in the reference seq for each gene, put on root
     if(is_vcf):
-        encode_root_sequence_from_vcf(
-            node_data,
-            root_data,
+        get_reference_sequences_from_vcf(
             args.vcf_aa_reference,
-            args.gene
+            node_data,
+            root_node,
+            args.gene,
         )
 
     # check that root node has sequences for each requested gene
     if "aa_sequences" not in node_data["nodes"][root_node]:
         print("ERROR: ancestral sequences are not provided")
         return 1
+
     if not args.gene in node_data["nodes"][root_node]['aa_sequences']:
         print("ERROR: ancestral sequences missing for gene",args.gene)
         return 1
 
-
-    read_and_reconstruct_sequences_in_tree(...)
+    sequences, is_terminal = reconstruct_sequences_from_tree_of_mutations(
+        tree,
+        node_data,
+        root_node,
+        args.gene
+    )
 
     # write alignments to file
-    seq = []
+    seqs = []
     for strain in sequences:
-        if is_terminal[strain]
-            seq.append(
+        if is_terminal[strain]:
+            seqs.append(
                 SeqRecord.SeqRecord(
                     seq=Seq.Seq(sequences[strain]),
                     id=strain,

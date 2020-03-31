@@ -1,8 +1,12 @@
 import pytest
+from Bio import  Phylo
 from Bio.Align import MultipleSeqAlignment
+from augur.utils import read_node_data
 from augur.reconstruct_sequences import (
     get_sequence,
-    load_alignments
+    load_alignments,
+    reconstruct_sequences_from_tree_of_mutations,
+    run
 )
 
 
@@ -81,3 +85,73 @@ def test_load_alignments(tmp_path, alignment_data):
     assert 'geneA' in alignments
     assert 'geneB' in alignments
     assert isinstance(alignments['geneA'], MultipleSeqAlignment)
+
+
+@pytest.fixture
+def zika_tree_file():
+    return 'tests/data/zika_example/results/tree.nwk'
+
+
+@pytest.fixture
+def zika_tree(zika_tree_file):
+    return Phylo.read(
+        zika_tree_file,
+        'newick'
+    )
+
+
+@pytest.fixture
+def zika_mutations():
+    return 'tests/data/zika_example/results/aa_muts.json'
+
+
+@pytest.fixture
+def zika_node_data(zika_tree_file, zika_mutations):
+    return read_node_data(zika_mutations, zika_tree_file)
+
+
+@pytest.fixture
+def zika_root_node(zika_tree):
+    return zika_tree.root.name
+
+
+@pytest.fixture
+def zika_gene():
+    return "ENV"
+
+
+@pytest.fixture
+def args(tmp_path):
+    class Args(): pass
+    args = Args()
+    args.tree = 'tests/data/zika_example/results/tree.nwk'
+    args.gene = 'ENV'
+    args.mutations = 'tests/data/zika_example/results/aa_muts.json'
+    args.vcf_aa_reference = None
+    args.internal_nodes = False
+    args.output = str(tmp_path.joinpath('reconstructed_sequences.fasta'))
+    return args
+
+
+def test_reconstruct_sequences_from_tree_of_mutations(
+        zika_tree,
+        zika_node_data,
+        zika_root_node,
+        zika_gene
+    ):
+    sequences, is_terminal = reconstruct_sequences_from_tree_of_mutations(
+        zika_tree,
+        zika_node_data,
+        zika_root_node,
+        zika_gene
+    )
+    assert isinstance(sequences, dict)
+    assert isinstance(is_terminal, dict)
+
+
+def test_run(tmp_path, args):
+    run(args)
+    output = tmp_path.joinpath('reconstructed_sequences.fasta')
+    assert output.exists()
+    results = output.read_text()
+    assert len(results) > 0
