@@ -1,5 +1,5 @@
 """
-Mask specified sites from a VCF file.
+Mask specified sites from a VCF or FASTA file.
 """
 import os
 import sys
@@ -117,7 +117,7 @@ def mask_fasta(mask_sites, in_file, out_file):
             SeqIO.write(record, oh, "fasta")
 
 def register_arguments(parser):
-    parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF format")
+    parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF or FASTA format")
     parser.add_argument('--mask', required=True, help="locations to be masked in BED file format")
     parser.add_argument('--output', '-o', help="output file")
     parser.add_argument('--no-cleanup', dest="cleanup", action="store_false",
