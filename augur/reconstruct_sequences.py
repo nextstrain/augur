@@ -10,7 +10,6 @@ from .utils import read_node_data, write_json
 from treetime.vcf_utils import read_vcf
 
 
-
 def register_arguments(parser):
     parser.add_argument('--tree', required=True, help="tree as Newick file")
     parser.add_argument('--gene', type=str, help="gene to translate (list or file containing list)")
@@ -56,26 +55,67 @@ def get_sequence(pseq, muts):
     return "".join(pseq_list)
 
 
-
-
-
-
-
-
 def load_alignments(sequence_files, gene_names):
+    """Load a list of sequence files and map them to
+    the gene names.
+
+    Parameters
+    ----------
+    sequence_files: list of strings
+        A list of filenames for alignments in FASTA format.
+
+    gene_names: list of strings
+        A list of gene names to map to the given sequence files.
+
+    Returns
+    -------
+    alignments : dict of Bio.Align.MultipleSeqAlignment objects
+        A dictionary mapping gene names to alignment objects.
+    """
     alignments = {}
     for fname, gene in zip(sequence_files, gene_names):
         alignments[gene] = AlignIO.read(fname, 'fasta')
     return alignments
 
 
+def encode_root_sequence_from_vcf(
+        node_data,
+        root_node,
+        vcf_aa_reference,
+        gene
+    ):
+    """
+    """
+    node_data["nodes"][root_node]['aa_sequences'] = {}
+    with open(vcf_aa_reference) as handle:
+        for record in SeqIO.parse(handle, "fasta"):
+            if record.id==gene:
+                #'root' may not be same as 'reference', so apply any mutations at root here!
+                node_data["nodes"][root_node]['aa_sequences'][record.id] = get_sequence(str(record.seq), node_data["nodes"][root_node]["aa_muts"][record.id])
+    return node_data
 
 
+def read_and_reconstruct_sequences_in_tree(
+        node_data,
+        gene,
+    ):
+    print(node_data)
+    # gather all reconstructed sequences
+    sequences = dict()
+    is_terminal = {}
 
-
+    sequences[root_node] = node_data["nodes"][root_node]['aa_sequences'][args.gene]
+    is_terminal[root_node] = False
+    for node in tree.get_nonterminals(order='preorder'):
+        parent_sequence = sequences[node.name]
+        for child in node:
+            sequences[child.name] = get_sequence(parent_sequence, node_data["nodes"][child.name]["aa_muts"][args.gene])
+            is_terminal[child.name] = child.is_terminal()
 
 
 def run(args):
+    """Write a fasta file with all reconstructed sequences from a given tree.
+    """
     ## read tree and data, if reading data fails, return with error code
     tree = Phylo.read(args.tree, 'newick')
 
@@ -92,12 +132,12 @@ def run(args):
 
     #if VCF, read in the reference seq for each gene, put on root
     if(is_vcf):
-        node_data["nodes"][root_node]['aa_sequences'] = {}
-        with open(args.vcf_aa_reference) as handle:
-            for record in SeqIO.parse(handle, "fasta"):
-                if record.id==args.gene:
-                    #'root' may not be same as 'reference', so apply any mutations at root here!
-                    node_data["nodes"][root_node]['aa_sequences'][record.id] = get_sequence(str(record.seq), node_data["nodes"][root_node]["aa_muts"][record.id])
+        encode_root_sequence_from_vcf(
+            node_data,
+            root_data,
+            args.vcf_aa_reference,
+            args.gene
+        )
 
     # check that root node has sequences for each requested gene
     if "aa_sequences" not in node_data["nodes"][root_node]:
@@ -107,19 +147,20 @@ def run(args):
         print("ERROR: ancestral sequences missing for gene",args.gene)
         return 1
 
-    # gather all reconstructed sequences
-    sequences = dict()
-    is_terminal = {}
 
-    sequences[root_node] = node_data["nodes"][root_node]['aa_sequences'][args.gene]
-    is_terminal[root_node] = False
-    for node in tree.get_nonterminals(order='preorder'):
-        parent_sequence = sequences[node.name]
-        for child in node:
-            sequences[child.name] = get_sequence(parent_sequence, node_data["nodes"][child.name]["aa_muts"][args.gene])
-            is_terminal[child.name] = child.is_terminal()
+    read_and_reconstruct_sequences_in_tree(...)
 
     # write alignments to file
-    seqs = [SeqRecord.SeqRecord(seq=Seq.Seq(sequences[strain]), id=strain, name=strain, description='')
-            for strain in sequences if is_terminal[strain] or args.internal_nodes]
+    seq = []
+    for strain in sequences:
+        if is_terminal[strain]
+            seq.append(
+                SeqRecord.SeqRecord(
+                    seq=Seq.Seq(sequences[strain]),
+                    id=strain,
+                    name=strain,
+                    description=''
+                )
+            )
+
     SeqIO.write(seqs, args.output, 'fasta')
