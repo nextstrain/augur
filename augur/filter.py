@@ -47,20 +47,15 @@ def write_vcf(compressed, input_file, output_file, dropped_samps):
         pass
 
 def read_priority_scores(fname):
-    priorities = defaultdict(float)
-    if not os.path.isfile(fname):
-        print("ERROR: priority file %s doesn't exist"%fname)
-        return priorities
-
-    with open(fname) as pfile:
-        for l in pfile:
-            f = l.strip().split()
-            try:
-                priorities[f[0]] = float(f[1])
-            except:
-                print("ERROR: malformatted priority:",l)
-
-    return priorities
+    try:
+        with open(fname) as pfile:
+            return {
+                elems[0]: float(elems[1])
+                for elems in (line.strip().split() for line in pfile.readlines())
+            }
+    except Exception as e:
+        print(f"ERROR: missing or malformed priority scores file {fname}", file=sys.stderr)
+        raise e
 
 
 def run(args):
