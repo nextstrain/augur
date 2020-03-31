@@ -55,6 +55,7 @@ Thumbs.db
 # IDE #
 #######
 *sublime*
+/.vscode/
 
 # slurm logs
 builds/flu/slurm_log/*

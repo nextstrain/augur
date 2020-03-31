@@ -10,7 +10,10 @@ import pytest
 class TestAlign:
     def test_make_gaps_ambiguous(self):
         alignment = MultipleSeqAlignment(
-            [SeqRecord(Seq("G-AC")), SeqRecord(Seq("----")), SeqRecord(Seq("TAGC"))]
+            [
+                SeqRecord(Seq("G-AC")), SeqRecord(Seq("----")),
+                SeqRecord(Seq("TAGC"))
+            ]
         )
 
         align.make_gaps_ambiguous(alignment)

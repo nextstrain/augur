@@ -1,4 +1,4 @@
-from pathlib    import Path
+from pathlib import Path
 from setuptools import setup
 import sys
 
