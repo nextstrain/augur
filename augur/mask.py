@@ -29,9 +29,13 @@ def read_bed_file(mask_file):
     Second column is chromStart, 3rd is chromEnd. Generate a range from these two columns.
     """
     sites_to_mask = []
-    bed = pd.read_csv(mask_file, sep='\t', header=None)
-    for _, row in bed.iterrows():
-        sites_to_mask.extend(list(range(row[1], row[2]+1)))
+    bed = pd.read_csv(mask_file, sep='\t', header=None, usecols=[1,2])
+    for idx, row in bed.iterrows():
+        try:
+            sites_to_mask.extend(list(range(int(row[1]), int(row[2])+1)))
+        except ValueError as err:
+            # Skip unparseable lines, including header lines.
+            print("Could not read line %d of BED file %s: %s. Continuing." % (idx, mask_file, err))
     sites_to_mask = np.unique(sites_to_mask).tolist()
     print("Found %d sites to mask" % len(sites_to_mask))
     return sites_to_mask

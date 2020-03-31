@@ -90,6 +90,13 @@ class TestMask:
             fh.write("#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO\n")
         assert mask.get_chrom_name(vcf_file) is None
     
+    def test_read_bed_file_with_header(self, bed_file):
+        """read_bed_file should ignore header rows if they exist"""
+        with open(bed_file, "w") as fh:
+            fh.write("CHROM\tSTART\tEND\n")
+            fh.write("SEQ\t5\t6")
+        assert mask.read_bed_file(bed_file) == [5,6]
+
     def test_read_bed_file(self, bed_file):
         """read_bed_file should read and deduplicate the list of sites in a bed file"""
         # Not a whole lot of testing to do with bed files. We're basically testing if pandas
