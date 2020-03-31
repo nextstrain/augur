@@ -94,6 +94,16 @@ class TestAlign:
         assert list(result.keys()) == ["seq2"]
         assert result["seq2"].seq == sequence["seq2"].seq
 
+    def test_prettify_alignment(self):
+        data_file = pathlib.Path('tests/data/align/test_aligned_sequences.fasta')
+        alignment = align.read_alignment(str(data_file.resolve()))
+        seqs = {s.id:s for s in alignment}
+        assert "_R_crick_strand" in seqs
+
+        align.prettify_alignment(alignment)
+        seqs = {s.id:s for s in alignment}
+        assert "crick_strand" in seqs
+
     def test_generate_alignment_cmd_non_mafft(self):
         with pytest.raises(align.AlignmentError):
             assert align.generate_alignment_cmd('no-mafft', 1, None, None, None, None)
@@ -110,7 +120,7 @@ class TestAlign:
                                               aln_fname,
                                               log_fname)
         
-        expected = "mafft --add %s --keeplength --reorder --anysymbol --nomemsave --thread %d %s 1> %s 2> %s" % (quote(seqs_to_align_fname), 1, quote(existing_aln_fname), quote(aln_fname), quote(log_fname))
+        expected = "mafft --add %s --keeplength --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s" % (quote(seqs_to_align_fname), 1, quote(existing_aln_fname), quote(aln_fname), quote(log_fname))
         
         assert result == expected
                                     
@@ -125,7 +135,7 @@ class TestAlign:
                                               aln_fname,
                                               log_fname)
         
-        expected = "mafft --reorder --anysymbol --nomemsave --thread %d %s 1> %s 2> %s" % (1, quote(seqs_to_align_fname), quote(aln_fname), quote(log_fname))
+        expected = "mafft --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s" % (1, quote(seqs_to_align_fname), quote(aln_fname), quote(log_fname))
         
         assert result == expected
         
@@ -133,12 +143,12 @@ class TestAlign:
         data_file = pathlib.Path('tests/data/align/test_aligned_sequences.fasta')
         result = align.read_alignment(str(data_file.resolve()))
         
-        assert len(result) == 3
+        assert len(result) == 4
         
     def test_read_sequences(self):
         data_file = pathlib.Path('tests/data/align/test_aligned_sequences.fasta')
         result = align.read_sequences(data_file)
-        assert len(result.keys()) == 3
+        assert len(result.keys()) == 4
 
     def test_read_seq_compare(self):
         data_file = pathlib.Path("tests/data/align/aa-seq_h3n2_ha_2y_2HA1_dup.fasta")
