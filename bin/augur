@@ -10,15 +10,11 @@ from pathlib import Path
 # Try to add our containing package source directory to the Python module
 # search path so that we load augur from there instead of any installed
 # system-wide.
-try:
-    dev_path = Path(__file__).parent.parent
-
-    # Raises an exception if the path doesn't exist.
-    (dev_path / "augur/__init__.py").resolve()
-except:
-    pass
-else:
+dev_path = Path(__file__).parent.parent
+if (dev_path/"augur"/"__init__.py").exists():
     path.insert(0, str(dev_path))
 
-from augur.__main__ import main
-exit( main() )
+    from augur.__main__ import augur_cli
+    exit(augur_cli())
+else:
+    raise RuntimeError("Unable to add dev path for augur. You may be using a system-wide installation")
