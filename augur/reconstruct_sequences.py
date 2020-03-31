@@ -5,7 +5,7 @@ Reconstruct alignments from mutations inferred on the tree
 import os, sys
 import numpy as np
 from collections import defaultdict
-from Bio import SeqIO, Seq, SeqRecord, Phylo
+from Bio import SeqIO, Seq, SeqRecord, Phylo, AlignIO
 from .utils import read_node_data, write_json
 from treetime.vcf_utils import read_vcf
 
@@ -37,32 +37,42 @@ def get_sequence(pseq, muts):
     str
         reconstructed sequence
     """
-    pseq_list = list(pseq)
-    for mut in muts:
-        new_state = mut[-1]
-        pos = int(mut[1:-1])-1
-        try:
+    try:
+        pseq_list = list(pseq)
+        for mut in muts:
+            new_state = mut[-1]
+            pos = int(mut[1:-1])-1
             assert pseq_list[pos]==mut[0]
-        except AssertionError:
-            msg = (
-                "Parental state {pseq} of sequence does not match "
-                "mutation parental state {mut}.".format(
-                    pseq=pseq_list[pos],
-                    mut=mut[0]
-                )
+            pseq_list[pos]=new_state
+    except AssertionError:
+        msg = (
+            "Parental state {pseq} of sequence does not match "
+            "mutation parental state {mut}.".format(
+                pseq=pseq_list[pos],
+                mut=mut[0]
             )
-            raise AssertionError(msg)
-        pseq_list[pos]=new_state
-
+        )
+        raise AssertionError(msg)
     return "".join(pseq_list)
 
 
+
+
+
+
+
+
 def load_alignments(sequence_files, gene_names):
-    from Bio import AlignIO
     alignments = {}
     for fname, gene in zip(sequence_files, gene_names):
         alignments[gene] = AlignIO.read(fname, 'fasta')
     return alignments
+
+
+
+
+
+
 
 
 def run(args):
