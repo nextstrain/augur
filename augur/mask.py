@@ -8,6 +8,7 @@ from shutil import copyfile
 import numpy as np
 import pandas as pd
 from Bio import SeqIO
+from Bio.Seq import MutableSeq
 
 from .utils import run_shell_command, shquote, open_file, is_vcf
 
@@ -88,7 +89,7 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
             except OSError:
                 pass
 
-def mask_fasta(mask_sites, in_file, out_file):
+def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_end=0):
     """Mask the provided site list from a FASTA file and write to a new file.
 
     Masked sites are overwritten as "N"s.
@@ -101,6 +102,10 @@ def mask_fasta(mask_sites, in_file, out_file):
         The path to the FASTA file you wish to mask.
     out_file: str
         The path to write the resulting FASTA to
+    mask_from_beginning: int
+       Number of sites to mask from the beginning of each sequence (default 0)
+    mask_from_end: int
+       Number of sites to mask from the end of each sequence (default 0)
     """
     # Load alignment as FASTA generator to prevent loading the whole alignment
     # into memory.
@@ -111,7 +116,11 @@ def mask_fasta(mask_sites, in_file, out_file):
     with open_file(out_file, "w") as oh:
         for record in alignment:
             # Convert to a mutable sequence to enable masking with Ns.
-            sequence = record.seq.tomutable()
+            sequence = MutableSeq(
+                "N" * mask_from_beginning + 
+                str(record.seq)[mask_from_beginning:-mask_from_end or None] + 
+                "N" * mask_from_end
+            )
             sequence_length = len(sequence)
             # Replace all excluded sites with Ns.
             for site in mask_sites:
