@@ -116,12 +116,15 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
     with open_file(out_file, "w") as oh:
         for record in alignment:
             # Convert to a mutable sequence to enable masking with Ns.
+            sequence_length = len(record.seq)
+            beginning, end = mask_from_beginning, mask_from_end
+            if beginning + end > sequence_length:
+                beginning, end = sequence_length, 0
             sequence = MutableSeq(
-                "N" * mask_from_beginning + 
-                str(record.seq)[mask_from_beginning:-mask_from_end or None] + 
-                "N" * mask_from_end
+                "N" * beginning +
+                str(record.seq)[beginning:-end or None] +
+                "N" * end
             )
-            sequence_length = len(sequence)
             # Replace all excluded sites with Ns.
             for site in mask_sites:
                 if site < sequence_length:

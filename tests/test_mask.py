@@ -211,6 +211,13 @@ class TestMask:
             assert seq.seq[-3:] == "NNN"
             assert seq.seq[2:-3] == original.seq[2:-3]
 
+    @pytest.mark.parametrize("beginning,end", ((1000,0), (0,1000),(1000,1000)))
+    def test_mask_fasta_from_beginning_and_end_too_long(self, fasta_file, out_file, beginning, end):
+        mask.mask_fasta([], fasta_file, out_file, mask_from_beginning=beginning, mask_from_end=end)
+        output = SeqIO.parse(out_file, "fasta")
+        for record in output:
+            assert record.seq == "N" * len(record.seq)
+
     def test_run_recognize_vcf(self, bed_file, vcf_file, argparser, mp_context):
         """Ensure we're handling vcf files correctly"""
         args = argparser("--mask=%s -s %s --no-cleanup" % (bed_file, vcf_file))
