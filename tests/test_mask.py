@@ -218,6 +218,30 @@ class TestMask:
         for record in output:
             assert record.seq == "N" * len(record.seq)
 
+    def test_run_handle_missing_sequence_file(self, vcf_file, argparser):
+        os.remove(vcf_file)
+        args = argparser("-s %s" % vcf_file)
+        with pytest.raises(SystemExit):
+            mask.run(args)
+
+    def test_run_handle_empty_sequence_file(self, vcf_file, argparser):
+        open(vcf_file,"w").close()
+        args = argparser("-s %s --mask-sites 1" % vcf_file)
+        with pytest.raises(SystemExit):
+            mask.run(args)
+
+    def test_run_handle_missing_mask_file(self, vcf_file, bed_file, argparser):
+        os.remove(bed_file)
+        args = argparser("-s %s --mask %s" % (vcf_file, bed_file))
+        with pytest.raises(SystemExit):
+            mask.run(args)
+
+    def test_run_handle_empty_mask_file(self, vcf_file, bed_file, argparser):
+        open(bed_file, "w").close()
+        args = argparser("-s %s --mask %s" % (vcf_file, bed_file))
+        with pytest.raises(SystemExit):
+            mask.run(args)
+
     def test_run_recognize_vcf(self, bed_file, vcf_file, argparser, mp_context):
         """Ensure we're handling vcf files correctly"""
         args = argparser("--mask=%s -s %s --no-cleanup" % (bed_file, vcf_file))

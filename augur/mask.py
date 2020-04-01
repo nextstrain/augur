@@ -156,18 +156,18 @@ def run(args):
     # Check files exist and are not empty
     if not os.path.isfile(args.sequences):
         print("ERROR: File {} does not exist!".format(args.sequences))
-        return 1
+        sys.exit(1)
     if os.path.getsize(args.sequences) == 0:
         print("ERROR: {} is empty. Please check how this file was produced. "
               "Did an error occur in an earlier step?".format(args.sequences))
-        return 1
+        sys.exit(1)
     if args.mask_file:
         if not os.path.isfile(args.mask_file):
             print("ERROR: File {} does not exist!".format(args.mask_file))
-            return 1
+            sys.exit(1)
         if os.path.getsize(args.mask_file) == 0:
             print("ERROR: {} is an empty file.".format(args.mask_file))
-            return 1
+            sys.exit(1)
     if not any((args.mask_file, args.mask_from_beginning, args.mask_from_end, args.mask_sites)):
         print("No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, or --mask-sites")
         sys.exit(1)
