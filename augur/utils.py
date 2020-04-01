@@ -1,10 +1,12 @@
 import argparse
 import Bio
 import Bio.Phylo
+import gzip
 import os, json, sys
 import pandas as pd
 import subprocess
 import shlex
+from contextlib import contextmanager
 from treetime.utils import numeric_date
 from collections import defaultdict
 from pkg_resources import resource_stream
@@ -16,6 +18,31 @@ from .validate import validate, ValidateError, load_json_schema
 
 class AugurException(Exception):
     pass
+
+@contextmanager
+def open_file(fname, mode):
+    """Open a file using either gzip.open() or open() depending on file name. Semantics identical to open()"""
+    if fname.endswith('.gz'):
+        if "t" not in mode:
+            # For interoperability, gzip needs to open files in "text" mode
+            mode = mode + "t"
+        with gzip.open(fname, mode) as fh:
+            yield fh
+    else:
+        with open(fname, mode) as fh:
+            yield fh
+
+def is_vcf(fname):
+    """Convenience method to check if a file is a vcf file.
+
+    >>> is_vcf("./foo")
+    False
+    >>> is_vcf("./foo.vcf")
+    True
+    >>> is_vcf("./foo.vcf.GZ")
+    True
+    """
+    return fname.lower().endswith(".vcf") or fname.lower().endswith(".vcf.gz")
 
 def myopen(fname, mode):
     if fname.endswith('.gz'):
