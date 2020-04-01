@@ -277,3 +277,22 @@ class TestMask:
             assert mask_sites == sorted(set(TEST_BED_SEQUENCE + [20,21]))
         mp_context.setattr(mask, "mask_vcf", check_mask_sites)
         mask.run(args)
+
+    def test_run_requires_some_masking(self, vcf_file, argparser):
+        args = argparser("-s %s" % vcf_file)
+        with pytest.raises(SystemExit) as err:
+            mask.run(args)
+
+    @pytest.mark.parametrize("op", ("beginning", "end"))
+    def test_run_vcf_cannot_mask_beginning_or_end(self, vcf_file, argparser, op):
+        args = argparser("-s %s --mask-from-%s 2" % (vcf_file, op))
+        with pytest.raises(SystemExit) as err:
+            mask.run(args)
+
+    def test_run_fasta_mask_from_beginning_or_end(self, fasta_file, out_file, argparser, mp_context):
+        args = argparser("-s %s -o %s --mask-from-beginning 2 --mask-from-end 3" % (fasta_file, out_file))
+        def check_mask_from(*args, mask_from_beginning=0, mask_from_end=0):
+            assert mask_from_beginning == 2
+            assert mask_from_end == 3
+        mp_context.setattr(mask, "mask_fasta", check_mask_from)
+        mask.run(args)

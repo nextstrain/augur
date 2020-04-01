@@ -132,6 +132,8 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF or FASTA format")
     parser.add_argument('--mask', dest="mask_file", required=False, help="locations to be masked in BED file format")
+    parser.add_argument('--mask-from-beginning', type=int, help="FASTA Only: Number of sites to mask from beginning")
+    parser.add_argument('--mask-from-end', type=int, help="FASTA Only: Number of sites to mask from end")
     parser.add_argument("--mask-sites", nargs='+', type = int,  help="list of sites to mask")
     parser.add_argument('--output', '-o', help="output file")
     parser.add_argument('--no-cleanup', dest="cleanup", action="store_false",
@@ -163,6 +165,9 @@ def run(args):
         if os.path.getsize(args.mask_file) == 0:
             print("ERROR: {} is an empty file.".format(args.mask_file))
             return 1
+    if not any((args.mask_file, args.mask_from_beginning, args.mask_from_end, args.mask_sites)):
+        print("No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, or --mask-sites")
+        sys.exit(1)
 
     mask_sites = set()
     if args.mask_sites:
@@ -179,9 +184,14 @@ def run(args):
                                 "masked_" + os.path.basename(args.sequences))
 
     if is_vcf(args.sequences):
+        if args.mask_from_beginning or args.mask_from_end:
+            print("Cannot use --mask-from-beginning or --mask-from-end with VCF files!")
+            sys.exit(1)
         mask_vcf(mask_sites, args.sequences, out_file, args.cleanup)
     else:
-        mask_fasta(mask_sites, args.sequences, out_file)
+        mask_fasta(mask_sites, args.sequences, out_file, 
+                   mask_from_beginning=args.mask_from_beginning,
+                   mask_from_end=args.mask_from_end)
 
     if args.output is None:
         copyfile(out_file, args.sequences)
