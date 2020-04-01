@@ -164,11 +164,12 @@ def run(args):
             print("ERROR: {} is an empty file.".format(args.mask_file))
             return 1
 
-    mask_sites = []
+    mask_sites = set()
     if args.mask_sites:
-        mask_sites.extend(args.mask_sites)
+        mask_sites.update(args.mask_sites)
     if args.mask_file:
-        mask_sites.extend(read_bed_file(args.mask_file))
+        mask_sites.update(read_bed_file(args.mask_file))
+    mask_sites = sorted(mask_sites)
 
     # For both FASTA and VCF masking, we need a proper separate output file
     if args.output is not None:
