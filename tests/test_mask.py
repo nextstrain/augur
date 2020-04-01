@@ -183,6 +183,34 @@ class TestMask:
                 if idx != 5:
                     assert site == original[idx], "Incorrect sites modified!"
     
+    def test_mask_fasta_from_beginning(self, tmpdir, fasta_file, sequences):
+        out_file = str(tmpdir / "output.fasta")
+        mask.mask_fasta([], fasta_file, out_file, mask_from_beginning=3)
+        output = SeqIO.parse(out_file, "fasta")
+        for seq in output:
+            original = sequences[seq.id]
+            assert seq.seq[:3] == "NNN"
+            assert seq.seq[3:] == original.seq[3:]
+
+    def test_mask_fasta_from_end(self, tmpdir, fasta_file, sequences):
+        out_file = str(tmpdir / "output.fasta")
+        mask.mask_fasta([], fasta_file, out_file, mask_from_end=3)
+        output = SeqIO.parse(out_file, "fasta")
+        for seq in output:
+            original = sequences[seq.id]
+            assert seq.seq[-3:] == "NNN"
+            assert seq.seq[:-3] == original.seq[:-3]
+
+    def test_mask_fasta_from_beginning_and_end(self, tmpdir, fasta_file, sequences):
+        out_file = str(tmpdir / "output.fasta")
+        mask.mask_fasta([], fasta_file, out_file, mask_from_beginning=2, mask_from_end=3)
+        output = SeqIO.parse(out_file, "fasta")
+        for seq in output:
+            original = sequences[seq.id]
+            assert seq.seq[:2] == "NN"
+            assert seq.seq[-3:] == "NNN"
+            assert seq.seq[2:-3] == original.seq[2:-3]
+
     def test_run_recognize_vcf(self, bed_file, vcf_file, argparser, mp_context):
         """Ensure we're handling vcf files correctly"""
         args = argparser("--mask=%s -s %s --no-cleanup" % (bed_file, vcf_file))
@@ -206,7 +234,7 @@ class TestMask:
     def test_run_handle_missing_outfile(self, bed_file, fasta_file, argparser, mp_context):
         args = argparser("--mask=%s -s %s" % (bed_file, fasta_file))
         expected_outfile = os.path.join(os.path.dirname(fasta_file), "masked_" + os.path.basename(fasta_file))
-        def check_outfile(mask_sites, in_file, out_file):
+        def check_outfile(mask_sites, in_file, out_file, **kwargs):
             assert out_file == expected_outfile
             with open(out_file, "w") as fh:
                 fh.write("test_string")
