@@ -131,7 +131,7 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
 
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF or FASTA format")
-    parser.add_argument('--mask', required=True, help="locations to be masked in BED file format")
+    parser.add_argument('--mask', dest="mask_file", required=False, help="locations to be masked in BED file format")
     parser.add_argument('--output', '-o', help="output file")
     parser.add_argument('--no-cleanup', dest="cleanup", action="store_false",
                         help="Leave intermediate files around. May be useful for debugging")
@@ -151,18 +151,21 @@ def run(args):
     if not os.path.isfile(args.sequences):
         print("ERROR: File {} does not exist!".format(args.sequences))
         return 1
-    if not os.path.isfile(args.mask):
-        print("ERROR: File {} does not exist!".format(args.mask))
-        return 1
     if os.path.getsize(args.sequences) == 0:
         print("ERROR: {} is empty. Please check how this file was produced. "
               "Did an error occur in an earlier step?".format(args.sequences))
         return 1
-    if os.path.getsize(args.mask) == 0:
-        print("ERROR: {} is an empty file.".format(args.mask))
+    if args.mask_file:
+        if not os.path.isfile(args.mask_file):
+            print("ERROR: File {} does not exist!".format(args.mask_file))
         return 1
+        if os.path.getsize(args.mask_file) == 0:
+            print("ERROR: {} is an empty file.".format(args.mask_file))
+            return 1
 
-    mask_sites = read_bed_file(args.mask)
+    mask_sites = []
+    if args.mask_file:
+        mask_sites.extend(read_bed_file(args.mask_file))
 
     # For both FASTA and VCF masking, we need a proper separate output file
     if args.output is not None:
