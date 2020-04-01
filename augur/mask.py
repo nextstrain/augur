@@ -159,7 +159,7 @@ def run(args):
     if args.mask_file:
         if not os.path.isfile(args.mask_file):
             print("ERROR: File {} does not exist!".format(args.mask_file))
-        return 1
+            return 1
         if os.path.getsize(args.mask_file) == 0:
             print("ERROR: {} is an empty file.".format(args.mask_file))
             return 1
