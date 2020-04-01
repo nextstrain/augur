@@ -4,7 +4,54 @@
 
 ### Major Changes
 
-* Drop support for Python 3.4 and 3.5
+* Drop support for Python 3.4 and 3.5 [#482][]
+
+### Features
+
+* improve testing by
+	* adding a simple shell script to run tests and improving pytest configuration and output [#463][]
+	* adding code coverage reports ([#486][], [#491][]) and integration with codecov.io [#508][]
+	* adding unit tests for align ([#477][]), filter ([#478][], [#479][], [#487][]), utils ([#501][])
+* align: reverse complement sequences when necessary using mafft’s autodirection flag [#467][]
+* align: speed up replacement of gaps with “ambiguous” bases [#474][]
+* mask: add support for FASTA input files [#493][]
+* traits: bump TreeTime version to 0.7.4 and increase maximum number of unique traits allowed from 180 to 300 [#495][]
+
+### Bug Fixes
+
+* align: enable filling gaps in input sequences even if no reference is provided instead of throwing an exception [#466][]
+* align: detect duplicate sequences by comparing sequence objects instead of (often truncated) string representations of those objects [#468][]
+* import_beast: use raw strings for regular expressions to avoid syntax errors in future versions of Python [#469][]
+* scripts: update exception syntax to new style [#484][]
+* filter: fail loudly when a given priority file is invalid and exit instead of just printing an error [#487][]
+
+### Documentation
+
+* README: document need for brew tap prior to brew install [#471][]
+* DEV_DOCS: add a proper section on how to write and run tests [#481][]
+* README: improve discoverability of core documentation with RTD badge [#490][]
+
+[#463]: https://github.com/nextstrain/augur/pull/463/
+[#466]: https://github.com/nextstrain/augur/pull/466
+[#467]: https://github.com/nextstrain/augur/pull/467
+[#468]: https://github.com/nextstrain/augur/pull/468
+[#469]: https://github.com/nextstrain/augur/pull/469
+[#471]: https://github.com/nextstrain/augur/pull/471
+[#474]: https://github.com/nextstrain/augur/pull/474
+[#477]: https://github.com/nextstrain/augur/pull/477
+[#478]: https://github.com/nextstrain/augur/pull/478
+[#479]: https://github.com/nextstrain/augur/pull/479
+[#481]: https://github.com/nextstrain/augur/pull/481
+[#482]: https://github.com/nextstrain/augur/pull/482
+[#484]: https://github.com/nextstrain/augur/pull/484
+[#486]: https://github.com/nextstrain/augur/pull/486
+[#487]: https://github.com/nextstrain/augur/pull/487
+[#490]: https://github.com/nextstrain/augur/pull/490
+[#491]: https://github.com/nextstrain/augur/pull/491
+[#493]: https://github.com/nextstrain/augur/pull/493
+[#495]: https://github.com/nextstrain/augur/pull/495
+[#501]: https://github.com/nextstrain/augur/pull/501
+[#508]: https://github.com/nextstrain/augur/pull/508
 
 ## 6.4.3 (25 March 2020)
 
