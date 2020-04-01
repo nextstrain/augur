@@ -263,4 +263,17 @@ class TestMask:
         args = argparser("--mask=%s --sequences=%s --output=%s" %(bed_file, vcf_file, out_file))
         mask.run(args)
         assert os.path.exists(out_file), "Output file incorrectly deleted"
+    
+    def test_run_with_mask_sites(self, vcf_file, out_file, argparser, mp_context):
+        args = argparser("--mask-sites 2 8 -s %s -o %s" % (vcf_file, out_file))
+        def check_mask_sites(mask_sites, *args, **kwargs):
+            assert mask_sites == [2,8]
+        mp_context.setattr(mask, "mask_vcf", check_mask_sites)
+        mask.run(args)
+
+    def test_run_with_mask_sites_and_mask_file(self, vcf_file, out_file, bed_file, argparser, mp_context):
+        args = argparser("--mask-sites 20 21 --mask %s -s %s -o %s" % (bed_file, vcf_file, out_file))
+        def check_mask_sites(mask_sites, *args, **kwargs):
+            assert mask_sites == sorted(set(TEST_BED_SEQUENCE + [20,21]))
+        mp_context.setattr(mask, "mask_vcf", check_mask_sites)
         mask.run(args)
