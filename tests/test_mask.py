@@ -62,6 +62,12 @@ def bed_file(tmpdir):
     return bed_file
 
 @pytest.fixture
+def out_file(tmpdir):
+    out_file = str(tmpdir / "out")
+    open(out_file, "w").close()
+    return out_file
+
+@pytest.fixture
 def mp_context(monkeypatch):
     #Have found explicit monkeypatch context-ing prevents stupid bugs
     with monkeypatch.context() as mp:
@@ -136,9 +142,8 @@ class TestMask:
         in_file = vcf_file + ".gz"
         mask.mask_vcf([1,5], in_file, in_file)
 
-    def test_mask_vcf_removes_matching_sites(self, tmpdir, vcf_file):
+    def test_mask_vcf_removes_matching_sites(self, vcf_file, out_file):
         """mask_vcf should remove the given sites from the VCF file"""
-        out_file = str(tmpdir / "output.vcf")
         mask.mask_vcf([5,6], vcf_file, out_file)
         with open(out_file) as after, open(vcf_file) as before:
             assert len(after.readlines()) == len(before.readlines()) - 1, "Too many lines removed!"
@@ -156,9 +161,8 @@ class TestMask:
         mask.mask_vcf([], vcf_file, "", cleanup=False)
         assert os.path.isfile(tmp_mask_file), "Temporary mask cleaned up as expected"
     
-    def test_mask_fasta_normal_case(self, tmpdir, fasta_file, sequences):
+    def test_mask_fasta_normal_case(self, fasta_file, out_file, sequences):
         """mask_fasta normal case - all sites in sequences"""
-        out_file = str(tmpdir / "output.fasta")
         mask_sites = [5,10]
         mask.mask_fasta([5,10], fasta_file, out_file)
         output = SeqIO.parse(out_file, "fasta")
@@ -170,9 +174,8 @@ class TestMask:
                 else:
                     assert site == "N", "Not all sites modified correctly!"
     
-    def test_mask_fasta_out_of_index(self, tmpdir, fasta_file, sequences):
+    def test_mask_fasta_out_of_index(self, out_file, fasta_file, sequences):
         """mask_fasta provided a list of indexes past the length of the sequences"""
-        out_file = str(tmpdir / "output.fasta")
         max_length = max(len(record.seq) for record in sequences.values())
         mask.mask_fasta([5, max_length, max_length+5], fasta_file, out_file)
         output = SeqIO.parse(out_file, "fasta")
@@ -183,8 +186,7 @@ class TestMask:
                 if idx != 5:
                     assert site == original[idx], "Incorrect sites modified!"
     
-    def test_mask_fasta_from_beginning(self, tmpdir, fasta_file, sequences):
-        out_file = str(tmpdir / "output.fasta")
+    def test_mask_fasta_from_beginning(self, out_file, fasta_file, sequences):
         mask.mask_fasta([], fasta_file, out_file, mask_from_beginning=3)
         output = SeqIO.parse(out_file, "fasta")
         for seq in output:
@@ -192,8 +194,7 @@ class TestMask:
             assert seq.seq[:3] == "NNN"
             assert seq.seq[3:] == original.seq[3:]
 
-    def test_mask_fasta_from_end(self, tmpdir, fasta_file, sequences):
-        out_file = str(tmpdir / "output.fasta")
+    def test_mask_fasta_from_end(self, out_file, fasta_file, sequences):
         mask.mask_fasta([], fasta_file, out_file, mask_from_end=3)
         output = SeqIO.parse(out_file, "fasta")
         for seq in output:
@@ -201,8 +202,7 @@ class TestMask:
             assert seq.seq[-3:] == "NNN"
             assert seq.seq[:-3] == original.seq[:-3]
 
-    def test_mask_fasta_from_beginning_and_end(self, tmpdir, fasta_file, sequences):
-        out_file = str(tmpdir / "output.fasta")
+    def test_mask_fasta_from_beginning_and_end(self, out_file, fasta_file, sequences):
         mask.mask_fasta([], fasta_file, out_file, mask_from_beginning=2, mask_from_end=3)
         output = SeqIO.parse(out_file, "fasta")
         for seq in output:
@@ -243,7 +243,7 @@ class TestMask:
         with open(fasta_file) as fh:
             assert fh.read() == "test_string"
     
-    def test_run_respect_no_cleanup(self, bed_file, tmpdir, vcf_file, argparser, mp_context):
+    def test_run_respect_no_cleanup(self, bed_file, vcf_file, argparser, mp_context):
         out_file = os.path.join(os.path.dirname(vcf_file), "masked_" + os.path.basename(vcf_file))
         def make_outfile(mask_sites, in_file, out_file, cleanup=True):
             assert cleanup == False
@@ -253,15 +253,14 @@ class TestMask:
         mask.run(args)
         assert os.path.exists(out_file), "Output file incorrectly deleted"
 
-    def test_run_normal_case(self, bed_file, vcf_file, tmpdir, argparser, mp_context):
-        test_outfile = str(tmpdir / "out")
-        def check_args(mask_sites, in_file, out_file, cleanup):
+    def test_run_normal_case(self, bed_file, vcf_file, out_file, argparser, mp_context):
+        def check_args(mask_sites, in_file, _out_file, cleanup):
             assert mask_sites == TEST_BED_SEQUENCE, "Wrong mask sites provided"
             assert in_file == vcf_file, "Incorrect input file provided"
-            assert out_file == test_outfile, "Incorrect output file provided"
+            assert _out_file == out_file, "Incorrect output file provided"
             assert cleanup is True, "Cleanup erroneously passed in as False"
-            open(out_file, "w").close() # want to test we don't delete output.
         mp_context.setattr(mask, "mask_vcf", check_args)
-        args = argparser("--mask=%s --sequences=%s --output=%s" %(bed_file, vcf_file, test_outfile))
+        args = argparser("--mask=%s --sequences=%s --output=%s" %(bed_file, vcf_file, out_file))
         mask.run(args)
-        assert os.path.exists(test_outfile), "Output file incorrectly deleted"
+        assert os.path.exists(out_file), "Output file incorrectly deleted"
+        mask.run(args)
