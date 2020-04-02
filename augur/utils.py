@@ -822,7 +822,7 @@ def read_bed_file(bed_file):
     ----------
     bed_file : str
         Path to the BED file
-    
+
     Returns:
     --------
     list[int]:
@@ -832,7 +832,7 @@ def read_bed_file(bed_file):
     try:
         bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1,2],
                           dtype={1:int,2:int})
-    except ValueError as err:
+    except ValueError:
         # Check if we have a header row. Otherwise, just fail.
         bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1,2],
                           dtype={1:int,2:int}, skiprows=1)
@@ -844,7 +844,7 @@ def read_bed_file(bed_file):
 def read_mask_file(mask_file):
     """Read a masking file and return a list of excluded sites.
 
-    Masking files have a single masking site per line. These sites 
+    Masking files have a single masking site per line. These sites
     are assumed to be one-indexed, NOT zero-indexed. Incorrectly
     formatted lines will be skipped.
 
@@ -875,7 +875,7 @@ def load_mask_sites(mask_file):
     ----------
     mask_file: str
         Path to the BED or masking file
-    
+
     Returns
     -------
     list[int]
