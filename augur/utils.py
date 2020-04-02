@@ -594,12 +594,11 @@ def run_shell_command(cmd, raise_errors = False, extra_env = None):
             env = env)
 
     except subprocess.CalledProcessError as error:
+        extra = "\nAre you sure this program is installed?" if error.returncode == 127 else ""
         print_error(
-            "{out}\nshell exited {rc} when running: {cmd}{extra}",
-            out = error.output,
-            rc  = error.returncode,
-            cmd = cmd,
-            extra = "\nAre you sure this program is installed?" if error.returncode==127 else "",
+            f"{error.output}\n"
+            f"shell exited {error.returncode} when running: "
+            f"{cmd}{extra}"
         )
         if raise_errors:
             raise
@@ -607,8 +606,9 @@ def run_shell_command(cmd, raise_errors = False, extra_env = None):
             return False
 
     except FileNotFoundError as error:
+        shell = " and ".join(shellexec)
         print_error(
-            """
+            f"""
             Unable to run shell commands using {shell}!
 
             Augur requires {shell} to be installed.  Please open an issue on GitHub
