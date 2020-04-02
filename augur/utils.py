@@ -809,3 +809,81 @@ def is_augur_version_compatable(version):
     current_version = packaging_version.parse(get_augur_version())
     this_version = packaging_version.parse(version)
     return this_version.release[0] == current_version.release[0]
+
+def read_bed_file(bed_file):
+    """Read a BED file and return a list of excluded sites.
+
+    Note: This function assumes the given file is a BED file. On parsing
+    failures, it will attempt to skip the first line and retry, but no
+    other error checking is attempted. Incorrectly formatted files will
+    raise errors.
+
+    Parameters
+    ----------
+    bed_file : str
+        Path to the BED file
+    
+    Returns:
+    --------
+    list[int]:
+        Sorted list of unique zero-indexed sites
+    """
+    mask_sites = []
+    try:
+        bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1,2],
+                          dtype={1:int,2:int})
+    except ValueError as err:
+        # Check if we have a header row. Otherwise, just fail.
+        bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1,2],
+                          dtype={1:int,2:int}, skiprows=1)
+        print("Skipped row 1 of %s, assuming it is a header." % bed_file)
+    for _, row in bed.iterrows():
+        mask_sites.extend(range(row[1], row[2]+1))
+    return sorted(set(mask_sites))
+
+def read_mask_file(mask_file):
+    """Read a masking file and return a list of excluded sites.
+
+    Masking files have a single masking site per line. These sites 
+    are assumed to be one-indexed, NOT zero-indexed. Incorrectly
+    formatted lines will be skipped.
+
+    Parameters
+    ----------
+    mask_file : str
+        Path to the masking file
+
+    Returns:
+    --------
+    list[int]:
+        Sorted list of unique zero-indexed sites
+    """
+    mask_sites = []
+    with open(mask_file) as mf:
+        for idx, line in enumerate(l.strip() for l in mf.readlines()):
+            try:
+                mask_sites.append(int(line) - 1)
+            except ValueError as err:
+                print("Could not read line %s of %s: '%s' - %s" %
+                      (idx, mask_file, line, err))
+    return sorted(set(mask_sites))
+
+def load_mask_sites(mask_file):
+    """Load masking sites from either a BED file or a masking file.
+
+    Parameters
+    ----------
+    mask_file: str
+        Path to the BED or masking file
+    
+    Returns
+    -------
+    list[int]
+        Sorted list of unique zero-indexed sites
+    """
+    if mask_file.lower().endswith(".bed"):
+        mask_sites = read_bed_file(mask_file)
+    else:
+        mask_sites = read_mask_file(mask_file)
+    print("%d masking sites read from %s" % (len(mask_sites), mask_file))
+    return mask_sites
