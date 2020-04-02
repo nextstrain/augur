@@ -1,11 +1,10 @@
 import datetime
-import pytest
-
-from augur import utils
-
-from freezegun import freeze_time
 from unittest.mock import patch
 
+import pytest
+from freezegun import freeze_time
+
+from augur import utils
 
 class TestUtils:
     def test_ambiguous_date_to_date_range_not_ambiguous(self):

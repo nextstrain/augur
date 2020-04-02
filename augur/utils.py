@@ -832,7 +832,7 @@ def read_bed_file(bed_file):
     try:
         bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1,2],
                           dtype={1:int,2:int})
-    except ValueError as err:
+    except ValueError:
         # Check if we have a header row. Otherwise, just fail.
         bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1,2],
                           dtype={1:int,2:int}, skiprows=1)
