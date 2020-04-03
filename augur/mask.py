@@ -137,7 +137,7 @@ def register_arguments(parser):
     parser.add_argument('--mask', dest="mask_file", required=False, help="locations to be masked in BED file format")
     parser.add_argument('--mask-from-beginning', type=int, help="FASTA Only: Number of sites to mask from beginning")
     parser.add_argument('--mask-from-end', type=int, help="FASTA Only: Number of sites to mask from end")
-    parser.add_argument("--mask-sites", nargs='+', type = int,  help="list of sites to mask")
+    parser.add_argument("--mask-sites", nargs='+', type = int,  help="1-indexed list of sites to mask")
     parser.add_argument('--output', '-o', help="output file")
     parser.add_argument('--no-cleanup', dest="cleanup", action="store_false",
                         help="Leave intermediate files around. May be useful for debugging")
@@ -174,7 +174,8 @@ def run(args):
 
     mask_sites = set()
     if args.mask_sites:
-        mask_sites.update(args.mask_sites)
+        # Mask sites passed in as 1-indexed
+        mask_sites.update(site - 1 for site in args.mask_sites)
     if args.mask_file:
         mask_sites.update(read_bed_file(args.mask_file))
     mask_sites = sorted(mask_sites)
