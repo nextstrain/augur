@@ -36,6 +36,7 @@ SEQ	2	.	G	A	.		.
 SEQ	3	.	C	T	.		.
 SEQ	5	.	C	T	.		.
 SEQ	8	.	A	C	.		.
+SEQ	13	.	A	C	.		.
 """
 
 @pytest.fixture
@@ -329,3 +330,59 @@ class TestMask:
             assert mask_from_end == 3
         mp_context.setattr(mask, "mask_fasta", check_mask_from)
         mask.run(args)
+
+    def test_e2e_fasta_minimal(self, fasta_file, bed_file, sequences, argparser):
+        args = argparser("-s %s --mask %s" % (fasta_file, bed_file))
+        mask.run(args)
+        output = SeqIO.parse(fasta_file,"fasta")
+        for record in output:
+            reference = sequences[record.id].seq
+            for idx, site in enumerate(record.seq):
+                if idx in TEST_BED_SEQUENCE:
+                    assert site == "N"
+                else:
+                    assert site == reference[idx]
+
+    def test_e2e_fasta_beginning_end_sites(self, fasta_file, bed_file, out_file, sequences, argparser):
+        from_beginning = 3
+        from_end = 1
+        arg_sites = [5, 12]
+        expected_removals = sorted(set(TEST_BED_SEQUENCE + [s - 1 for s in arg_sites]))
+        print(expected_removals)
+        args = argparser("-s %s -o %s --mask %s --mask-from-beginning %s --mask-from-end %s --mask-sites %s" % (
+                         fasta_file, out_file, bed_file, from_beginning, from_end, " ".join(str(s) for s in arg_sites)))
+        mask.run(args)
+        output = SeqIO.parse(out_file, "fasta")
+        for record in output:
+            reference = str(sequences[record.id].seq)
+            masked_seq = str(record.seq)
+            assert masked_seq[:from_beginning] == "N" * from_beginning
+            assert masked_seq[-from_end:] == "N" * from_end
+            for idx, site in enumerate(masked_seq[from_beginning:-from_end], from_beginning):
+                if idx in expected_removals:
+                    assert site == "N"
+                else:
+                    assert site == reference[idx]
+
+    def test_e2e_vcf_minimal(self, vcf_file, bed_file, argparser):
+        args = argparser("-s %s --mask %s" % (vcf_file, bed_file))
+        mask.run(args)
+        with open(vcf_file) as output:
+            assert output.readline().startswith("##fileformat") # is a VCF
+            assert output.readline().startswith("#CHROM\tPOS\t") # have a header
+            for line in output.readlines():
+                site = int(line.split("\t")[1]) # POS column
+                assert site not in TEST_BED_SEQUENCE
+
+    def test_e2e_vcf_with_options(self, vcf_file, bed_file, out_file, argparser):
+        arg_sites = [5, 12, 14]
+        expected_removals = sorted(set(TEST_BED_SEQUENCE + [s - 1 for s in arg_sites]))
+        args = argparser("-s %s -o %s --mask %s --mask-sites %s" % (
+                         vcf_file, out_file, bed_file, " ".join(str(s) for s in arg_sites)))
+        mask.run(args)
+        with open(out_file) as output:
+            assert output.readline().startswith("##fileformat") # is a VCF
+            assert output.readline().startswith("#CHROM\tPOS\t") # have a header
+            for line in output.readlines():
+                site = int(line.split("\t")[1]) # POS column
+                assert site not in expected_removals
