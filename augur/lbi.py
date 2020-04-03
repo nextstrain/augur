@@ -13,6 +13,18 @@ def select_nodes_in_season(tree, timepoint, time_window=0.6):
     timepoint or prior to the timepoint by the given time window preceding.
 
     This annotation is used by the LBI and epitope cross-immunity predictors.
+
+    Parameters
+
+    ----------
+
+    tree: Bio.Phylo tree object
+        A tree object to be annotated 
+    timepoint: float
+        Cutoff timepoint in num_date format to decide if alive
+    time_window: float
+        Time window to precede timepoint cutoff
+    
     """
     for node in tree.find_clades(order="postorder"):
         if node.is_terminal():
