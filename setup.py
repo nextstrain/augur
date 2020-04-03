@@ -80,7 +80,7 @@ setup(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "License :: OSI Approved :: GNU Affero General Public License v3",
 
-        # Python 3 only; pathlib is >=3.4
+        # Python 3 only
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6"
         "Programming Language :: Python :: 3.7",

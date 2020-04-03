@@ -26,7 +26,7 @@ Please see the [project board](https://github.com/orgs/nextstrain/projects/6) fo
 
 ## Contributing code
 
-We currently target compatibility with Python 3.4 and higher. As Python releases new versions,
+We currently target compatibility with Python 3.6 and higher. As Python releases new versions,
 the minimum target compatibility may be increased in the future.
 
 Versions for this project, Augur, from 3.0.0 onwards aim to follow the
