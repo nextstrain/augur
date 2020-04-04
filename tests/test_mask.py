@@ -119,7 +119,7 @@ class TestMask:
             mask.mask_vcf([], bad_vcf, "")
     
     def test_mask_vcf_creates_maskfile(self, vcf_file, mp_context):
-        """mask_vcf should create and use a mask file from the given list of sites"""
+        """mask_vcf should create a 1-indexed mask file from the 0-indexed list of sites"""
         mask_file = vcf_file + "_maskTemp"
         def shell_has_maskfile(call, **kwargs):
             assert mask_file in call
@@ -128,7 +128,7 @@ class TestMask:
         mask.mask_vcf([1,5], vcf_file, vcf_file, cleanup=False)
         assert os.path.isfile(mask_file), "Mask file was not written!"
         with open(mask_file) as fh:
-            assert fh.read() == "SEQ	1\nSEQ	5", "Incorrect mask file written!"
+            assert fh.read() == "SEQ	2\nSEQ	6", "Incorrect mask file written!"
     
     def test_mask_vcf_handles_gz(self, vcf_file, mp_context):
         """mask_vcf should recognize when the in or out files are .gz and call out accordingly"""
@@ -145,7 +145,7 @@ class TestMask:
 
     def test_mask_vcf_removes_matching_sites(self, vcf_file, out_file):
         """mask_vcf should remove the given sites from the VCF file"""
-        mask.mask_vcf([5,6], vcf_file, out_file)
+        mask.mask_vcf([4,5], vcf_file, out_file)
         with open(out_file) as after, open(vcf_file) as before:
             assert len(after.readlines()) == len(before.readlines()) - 1, "Too many lines removed!"
             assert "SEQ\t5" not in after.read(), "Correct sites not removed!"
@@ -372,6 +372,7 @@ class TestMask:
             assert output.readline().startswith("#CHROM\tPOS\t") # have a header
             for line in output.readlines():
                 site = int(line.split("\t")[1]) # POS column
+                site = site - 1 # shift to zero-indexed site
                 assert site not in TEST_BED_SEQUENCE
 
     def test_e2e_vcf_with_options(self, vcf_file, bed_file, out_file, argparser):
@@ -385,4 +386,5 @@ class TestMask:
             assert output.readline().startswith("#CHROM\tPOS\t") # have a header
             for line in output.readlines():
                 site = int(line.split("\t")[1]) # POS column
+                site = site - 1 #re-zero-index the VCF sites
                 assert site not in expected_removals

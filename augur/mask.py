@@ -67,7 +67,8 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
               "Please check the file is valid VCF format.")
         sys.exit(1)
 
-    exclude = [chrom_name + "\t" + str(pos) for pos in mask_sites]
+    # mask_sites is zero-indexed, VCFTools expects 1-indexed.
+    exclude = [chrom_name + "\t" + str(pos + 1) for pos in mask_sites]
     temp_mask_file = in_file + "_maskTemp"
     with open_file(temp_mask_file, 'w') as fh:
         fh.write("\n".join(exclude))
