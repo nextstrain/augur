@@ -46,11 +46,11 @@ def vcf_file(tmpdir):
         fh.write(TEST_VCF)
     return vcf_file
 
-TEST_BED_SEQUENCE = [1,2,4,6,7,8,9,10]
+TEST_BED_SEQUENCE = [1,4,6,7,8,9]
 # IF YOU UPDATE ONE OF THESE, UPDATE THE OTHER.
 TEST_BED="""\
 SEQ1	1	2	IG18_Rv0018c-Rv0019c	
-SEQ1	4	4	IG18_Rv0018c-Rv0019c	
+SEQ1	4	5	IG18_Rv0018c-Rv0019c	
 SEQ1	6	8	IG18_Rv0018c-Rv0019c	
 SEQ1	7	10	IG18_Rv0018c-Rv0019c	
 """
@@ -101,7 +101,7 @@ class TestMask:
         """read_bed_file should ignore header rows if they exist"""
         with open(bed_file, "w") as fh:
             fh.write("CHROM\tSTART\tEND\n")
-            fh.write("SEQ\t5\t6")
+            fh.write("SEQ\t5\t7")
         assert mask.read_bed_file(bed_file) == [5,6]
 
     def test_read_bed_file(self, bed_file):

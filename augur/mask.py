@@ -33,7 +33,7 @@ def read_bed_file(mask_file):
     bed = pd.read_csv(mask_file, sep='\t', header=None, usecols=[1,2])
     for idx, row in bed.iterrows():
         try:
-            sites_to_mask.extend(list(range(int(row[1]), int(row[2])+1)))
+            sites_to_mask.extend(range(int(row[1]), int(row[2])))
         except ValueError as err:
             # Skip unparseable lines, including header lines.
             print("Could not read line %d of BED file %s: %s. Continuing." % (idx, mask_file, err))
