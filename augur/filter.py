@@ -1,383 +1,261 @@
 """
 Filter and subsample a sequence set.
 """
-
 from Bio import SeqIO
-import pandas as pd
-from collections import defaultdict
-import random, os, re
-import numpy as np
-import sys
-from .utils import read_metadata, get_numerical_dates, run_shell_command, shquote
+import functools
 
-comment_char = '#'
-
-
-def read_vcf(filename):
-    if filename.lower().endswith(".gz"):
-        import gzip
-        file = gzip.open(filename, mode="rt")
-    else:
-        file = open(filename)
-
-    chrom_line = next(line for line in file if line.startswith("#C"))
-    file.close()
-    headers = chrom_line.strip().split("\t")
-    sequences = headers[headers.index("FORMAT") + 1:]
-
-    # because we need 'seqs to remove' for VCF
-    return sequences, sequences.copy()
-
-
-def write_vcf(input_filename, output_filename, dropped_samps):
-    if _filename_gz(input_filename):
-        input_arg = "--gzvcf"
-    else:
-        input_arg = "--vcf"
-
-    if _filename_gz(output_filename):
-        output_pipe = "| gzip -c"
-    else:
-        output_pipe = ""
-
-    drop_args = ["--remove-indv " + shquote(s) for s in dropped_samps]
-
-    call = ["vcftools"] + drop_args + [input_arg, shquote(input_filename), "--recode --stdout", output_pipe, ">", shquote(output_filename)]
-
-    print("Filtering samples using VCFTools with the call:")
-    print(" ".join(call))
-    run_shell_command(" ".join(call), raise_errors = True)
-    # remove vcftools log file
-    try:
-        os.remove('out.log')
-    except OSError:
-        pass
-
-def read_priority_scores(fname):
-    try:
-        with open(fname) as pfile:
-            return {
-                elems[0]: float(elems[1])
-                for elems in (line.strip().split() for line in pfile.readlines())
-            }
-    except Exception as e:
-        print(f"ERROR: missing or malformed priority scores file {fname}", file=sys.stderr)
-        raise e
+from augur.exceptions import MissingDependencyException
+from augur.filtering.matchers import MATCHER_CLASSES
+from augur.filtering.vcf_selector import VCFSelector
+from augur.sequence_file import SequenceFile
 
 
 def register_arguments(parser):
-    parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
-    parser.add_argument('--metadata', required=True, help="metadata associated with sequences")
-    parser.add_argument('--min-date', type=float, help="minimal cutoff for numerical date")
-    parser.add_argument('--max-date', type=float, help="maximal cutoff for numerical date")
-    parser.add_argument('--min-length', type=int, help="minimal length of the sequences")
-    parser.add_argument('--non-nucleotide', action='store_true', help="exclude sequences that contain illegal characters")
-    parser.add_argument('--exclude', type=str, help="file with list of strains that are to be excluded")
-    parser.add_argument('--include', type=str, help="file with list of strains that are to be included regardless of priorities or subsampling")
-    parser.add_argument('--priority', type=str, help="file with list of priority scores for sequences (strain\tpriority)")
-    parser.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
-    parser.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
-    parser.add_argument('--subsample-seed', help="random number generator seed to allow reproducible sub-sampling (with same input data). Can be number or string.")
-    parser.add_argument('--exclude-where', nargs='+',
-                                help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
-    parser.add_argument('--include-where', nargs='+',
-                                help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND. This rule is applied last and ensures any sequences matching these rules will be included.")
-    parser.add_argument('--output', '-o', help="output file", required=True)
+    parser.add_argument(
+        "--sequences",
+        "-s",
+        required=True,
+        help="sequences in FASTA, VCF, or gzipped VCF format (detected by file extension)",
+    )
+    parser.add_argument(
+        "--metadata", required=True, help="metadata associated with sequences"
+    )
+    parser.add_argument("--output", "-o", required=True, help="output file")
+
+    parser.add_argument(
+        "--sequences-per-group",
+        type=int,
+        help="subsample to no more than this number of sequences per category",
+    )
+    parser.add_argument(
+        "--group-by",
+        nargs="+",
+        help="categories with respect to subsample; two virtual fields, `month` and `year`, are supported if they don't already exist as real fields but a `date` field does exist",
+    )
+    parser.add_argument(
+        "--priority",
+        type=str,
+        help="file with list priority scores for sequences (strain\tpriority)",
+    )
+    parser.add_argument(
+        "--subsample-seed",
+        help="random number generator seed to allow reproducible sub-sampling (with same input data). Can be number or string.",
+    )
+
+    for cls in MATCHER_CLASSES.values():
+        cls.add_arguments(parser)
 
 
 def run(args):
-    '''
-    filter and subsample a set of sequences into an analysis set
-    '''
-    #Set flags if VCF
-    is_vcf = False
-    is_compressed = False
-    if any([args.sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
-        is_vcf = True
-        if args.sequences.lower().endswith('.gz'):
-            is_compressed = True
+    """
+    Apply exclusion, inclusion, and subsampling rules to produce a subset of input data.
 
-    ### Check users has vcftools. If they don't, a one-blank-line file is created which
-    #   allows next step to run but error very badly.
-    if is_vcf:
-        from shutil import which
-        if which("vcftools") is None:
-            print("ERROR: 'vcftools' is not installed! This is required for VCF data. "
-                  "Please see the augur install instructions to install it.")
-            return 1
+    This command supports exclusion or inclusion rules TODO TODO TODO
 
-    ####Read in files
-
-    #If VCF, open and get sequence names
-    if is_vcf:
-        seq_keep, all_seq = read_vcf(args.sequences)
-
-    #if Fasta, read in file to get sequence names and sequences
-    else:
-        try:
-            seqs = SeqIO.to_dict(SeqIO.parse(args.sequences, 'fasta'))
-        except ValueError as error:
-            print("ERROR: Problem reading in {}:".format(args.sequences))
-            print(error)
-            return 1
-        seq_keep = list(seqs.keys())
-        all_seq = seq_keep.copy()
-
-    try:
-        meta_dict, meta_columns = read_metadata(args.metadata)
-    except ValueError as error:
-        print("ERROR: Problem reading in {}:".format(args.metadata))
-        print(error)
-        return 1
+    Also subsampling TODO
+    """
+    Filterer(args).run()
 
 
-    #####################################
-    #Filtering steps
-    #####################################
+class Filterer:
+    def __init__(self, args):
+        self.args = args
+        self.sequence_file = SequenceFile(args.sequences, args.metadata)
 
-    # remove sequences without meta data
-    tmp = [ ]
-    for seq_name in seq_keep:
-        if seq_name in meta_dict:
-            tmp.append(seq_name)
-        else:
-            print("No meta data for %s, excluding from all further analysis."%seq_name)
-    seq_keep = tmp
+        self.check_vcftools()
 
-    # remove strains explicitly excluded by name
-    # read list of strains to exclude from file and prune seq_keep
-    num_excluded_by_name = 0
-    if args.exclude:
-        try:
-            with open(args.exclude, 'r') as ifile:
-                to_exclude = set()
-                for line in ifile:
-                    if line[0] != comment_char:
-                        # strip whitespace and remove all text following comment character
-                        exclude_name = line.split(comment_char)[0].strip()
-                        to_exclude.add(exclude_name)
-            tmp = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
-            num_excluded_by_name = len(seq_keep) - len(tmp)
-            seq_keep = tmp
-        except FileNotFoundError as e:
-            print("ERROR: Could not open file of excluded strains '%s'" % args.exclude, file=sys.stderr)
-            sys.exit(1)
+        self.sequences = self.sequence_file.sequences
 
-    # exclude strain my metadata field like 'host=camel'
-    # match using lowercase
-    num_excluded_by_metadata = {}
-    if args.exclude_where:
-        for ex in args.exclude_where:
-            try:
-                col, val = re.split(r'!?=', ex)
-            except (ValueError,TypeError):
-                print("invalid --exclude-where clause \"%s\", should be of from property=value or property!=value"%ex)
-            else:
-                to_exclude = set()
-                for seq_name in seq_keep:
-                    if "!=" in ex: # i.e. property!=value requested
-                        if meta_dict[seq_name].get(col,'unknown').lower() != val.lower():
-                            to_exclude.add(seq_name)
-                    else: # i.e. property=value requested
-                        if meta_dict[seq_name].get(col,'unknown').lower() == val.lower():
-                            to_exclude.add(seq_name)
-                tmp = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
-                num_excluded_by_metadata[ex] = len(seq_keep) - len(tmp)
-                seq_keep = tmp
+    def run(self):
+        self.filter_sequences()
+        self.print_summary()
+        self.write_output_file()
 
-    # filter by sequence length
-    num_excluded_by_length = 0
-    if args.min_length:
-        if is_vcf: #doesn't make sense for VCF, ignore.
-            print("WARNING: Cannot use min_length for VCF files. Ignoring...")
-        else:
-            seq_keep_by_length = []
-            for seq_name in seq_keep:
-                sequence = seqs[seq_name].seq
-                length = sum(map(lambda x: sequence.count(x), ["a", "t", "g", "c", "A", "T", "G", "C"]))
-                if length >= args.min_length:
-                    seq_keep_by_length.append(seq_name)
-            num_excluded_by_length = len(seq_keep) - len(seq_keep_by_length)
-            seq_keep = seq_keep_by_length
+    def translate_args(self):
+        """
+        Translate legacy CLI arguments to the generic scheme.
 
-    # filter by date
-    num_excluded_by_date = 0
-    if (args.min_date or args.max_date) and 'date' in meta_columns:
-        dates = get_numerical_dates(meta_dict, fmt="%Y-%m-%d")
-        tmp = [s for s in seq_keep if dates[s] is not None]
-        if args.min_date:
-            tmp = [s for s in tmp if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s])>args.min_date]
-        if args.max_date:
-            tmp = [s for s in tmp if (np.isscalar(dates[s]) or all(dates[s])) and np.min(dates[s])<args.max_date]
-        num_excluded_by_date = len(seq_keep) - len(tmp)
-        seq_keep = tmp
+        This is transitional code while the legacy scheme is still supported.
+        """
+        translated_args = {"exclude": [], "include": []}
 
-    # exclude sequences with non-nucleotide characters
-    num_excluded_by_nuc = 0
-    if args.non_nucleotide:
-        good_chars = {'A', 'C', 'G', 'T', '-', 'N', 'R', 'Y', 'S', 'W', 'K', 'M', 'D', 'H', 'B', 'V', '?'}
-        tmp = [s for s in seq_keep if len(set(str(seqs[s].seq).upper()).difference(good_chars))==0]
-        num_excluded_by_nuc = len(seq_keep) - len(tmp)
-        seq_keep = tmp
+        if self.args.min_date or self.args.max_date:
 
-    # subsampling. This will sort sequences into groups by meta data fields
-    # specified in --group-by and then take at most --sequences-per-group
-    # from each group. Within each group, sequences are optionally sorted
-    # by a priority score specified in a file --priority
-    # Fix seed for the RNG if specified
-    if args.subsample_seed:
-        random.seed(args.subsample_seed)
-    num_excluded_subsamp = 0
-    if args.group_by and args.sequences_per_group:
-        spg = args.sequences_per_group
-        seq_names_by_group = defaultdict(list)
+            translated_args["exclude"].append(
+                f"date:"
+                + f"min={self.args.min_date}" if self.args.min_date else ""
+                + f"max={self.args.max_date}" if self.args.max_date else ""
+            )
+        if self.args.min_length:
+            translated_args["exclude"].append(f"length:min={self.args.min_length}")
+        if self.args.non_nucleotide:
+            translated_args["exclude"].append("non-nucleotide")
+        if self.args.exclude:
+            translated_args["exclude"].append(f"name:file={self.args.exclude}")
+        if self.args.exclude_where:
+            conditions = (
+                [self.args.exclude_where]
+                if not isinstance(self.args.exclude_where, list)
+                else self.args.exclude_where
+            )
+            for condition in conditions:
+                translated_args["exclude"].append(f"metadata:{condition}")
+        if self.args.include:
+            translated_args["include"].append(f"name:file={self.args.include}")
+        if self.args.include_where:
+            conditions = (
+                [self.args.include_where]
+                if not isinstance(self.args.include_where, list)
+                else self.args.include_where
+            )
+            conditions_str = ",".join(conditions)
+            translated_args["include"].append(f"metadata:{conditions_str}")
 
-        for seq_name in seq_keep:
-            group = []
-            m = meta_dict[seq_name]
-            # collect group specifiers
-            for c in args.group_by:
-                if c in m:
-                    group.append(m[c])
-                elif c in ['month', 'year'] and 'date' in m:
-                    try:
-                        year = int(m["date"].split('-')[0])
-                    except:
-                        print("WARNING: no valid year, skipping",seq_name, m["date"])
-                        continue
-                    if c=='month':
-                        try:
-                            month = int(m["date"].split('-')[1])
-                        except:
-                            month = random.randint(1,12)
-                        group.append((year, month))
-                    else:
-                        group.append(year)
-                else:
-                    group.append('unknown')
-            seq_names_by_group[tuple(group)].append(seq_name)
+        return translated_args
 
-        #If didnt find any categories specified, all seqs will be in 'unknown' - but don't sample this!
-        if len(seq_names_by_group)==1 and ('unknown' in seq_names_by_group or ('unknown',) in seq_names_by_group):
-            print("WARNING: The specified group-by categories (%s) were not found."%args.group_by,
-                  "No sequences-per-group sampling will be done.")
-            if any([x in args.group_by for x in ['year','month']]):
-                print("Note that using 'year' or 'year month' requires a column called 'date'.")
-            print("\n")
-        else:
-            # Check to see if some categories are missing to warn the user
-            group_by = set(['date' if cat in ['year','month'] else cat
-                            for cat in args.group_by])
-            missing_cats = [cat for cat in group_by if cat not in meta_columns]
-            if missing_cats:
-                print("WARNING:")
-                if any([cat != 'date' for cat in missing_cats]):
-                    print("\tSome of the specified group-by categories couldn't be found: ",
-                          ", ".join([str(cat) for cat in missing_cats if cat != 'date']))
-                if any([cat == 'date' for cat in missing_cats]):
-                    print("\tA 'date' column could not be found to group-by year or month.")
-                print("\tFiltering by group may behave differently than expected!\n")
+    @functools.lru_cache()
+    def enabled_matchers(self, operation):
+        """
+        Determine which matchers have been enabled for the given operation.
 
-            if args.priority: # read priorities
-                priorities = read_priority_scores(args.priority)
+        Parameters
+        ---------
+        operation : string
+            `"include"` or `"exclude"`
 
-            # subsample each groups, either by taking the spg highest priority strains or
-            # sampling at random from the sequences in the group
-            seq_subsample = []
-            for group, sequences_in_group in seq_names_by_group.items():
-                if args.priority: #sort descending by priority
-                    seq_subsample.extend(sorted(sequences_in_group, key=lambda x:priorities[x], reverse=True)[:spg])
-                else:
-                    seq_subsample.extend(sequences_in_group if len(sequences_in_group)<=spg
-                                         else random.sample(sequences_in_group, spg))
+        Returns
+        -------
+        list
+            list of matcher objects that are enabled for the specified operation
+        """
+        return [
+            MATCHER_CLASSES[matcher_type].build(matcher_args)
+            for matcher_type, _, matcher_args in (
+                filter_directive.partition(":")
+                for filter_directive in self.translate_args()[operation]
+            )
+        ]
 
-            num_excluded_subsamp = len(seq_keep) - len(seq_subsample)
-            seq_keep = seq_subsample
+    def filter_sequences(self):
+        """
+        Apply the enabled filters (if any) and apply subsampling (if specified).
 
-    # force include sequences specified in file.
-    # Note that this might re-add previously excluded sequences
-    # Note that we are also not checking for existing meta data here
-    num_included_by_name = 0
-    if args.include and os.path.isfile(args.include):
-        with open(args.include, 'r') as ifile:
-            to_include = set(
-                [
-                    line.strip()
-                    for line in ifile
-                    if line[0]!=comment_char and len(line.strip()) > 0
-                ]
+        The order of operations is always as follows:
+            1. Remove any samples matched by the exclusion filters
+            2. Perform subsampling
+            3. Add any samples matched by the inclusion filters
+
+        Note that any sample matched by an inclusion rule will _always_ be present in the output.
+
+        Side Effects
+        ------------
+        self.resulting_sequences : list
+            Populated with the result of the specified filtering operation(s)
+        """
+        self.resulting_sequences = [
+            sample for sample in self.sequences if self.no_exclusion_matches(sample)
+        ]
+
+        self.resulting_sequences = self.subsample()
+
+        self.resulting_sequences += [
+            sample for sample in self.sequences if self.any_inclusion_matches(sample)
+        ]
+
+    def no_exclusion_matches(self, sample):
+        """
+        Determine whether _none_ of the enabled exclusion rules match the given sample.
+
+        Parameters
+        ----------
+        sample : Sequencse (TODO)
+            sample to be evaluated
+
+        Returns
+        -------
+        bool
+            True if none of the enabled exclusion rules match the sample
+        """
+        return not all(
+            [
+                filter_obj.is_affected(sample)
+                for filter_obj in self.enabled_matchers("exclude")
+            ]
+        )
+
+    def any_inclusion_matches(self, sample):
+        """
+        Determine whether _any_ of the specified inclusion rules match the given sample.
+
+        Parameters
+        ----------
+        sample : Sequencse (TODO)
+            sample to be evaluated
+
+        Returns
+        -------
+        bool
+            True if any of the enabled inclusion rules match the sample
+        """
+        return any(
+            [
+                filter_obj.is_affected(sample)
+                for filter_obj in self.enabled_matchers("include")
+            ]
+        )
+
+    def subsample(self):
+        # TODO
+        # Subsampler(self.resulting_sequences, ...).subsample()
+        return self.resulting_sequences
+
+    def write_output_file(self):
+        num_sequences = len(self.resulting_sequences)
+        if num_sequences == 0:
+            raise Exception(
+                "ERROR: All samples have been dropped! Check filter rules and metadata file format."
             )
 
-        for s in to_include:
-            if s not in seq_keep:
-                seq_keep.append(s)
-                num_included_by_name += 1
+        if self.sequence_file.is_vcf:
+            VCFSelector(
+                selected_samples=self.resulting_sequences,
+                samplefile=self.sequence_file,
+                output_fname=self.args.output,
+            ).write_output_vcf()
+        elif self.sequence_file.is_fasta:
+            SeqIO.write(
+                [sequence.bio_seq for sequence in self.resulting_sequences],
+                self.args.output,
+                "fasta",
+            )
+        else:
+            raise
+        print(f"{num_sequences} sequences written to {self.args.output}")
 
-    # add sequences with particular meta data attributes
-    num_included_by_metadata = 0
-    if args.include_where:
-        to_include = []
-        for ex in args.include_where:
-            try:
-                col, val = ex.split("=")
-            except (ValueError,TypeError):
-                print("invalid include clause %s, should be of from property=value"%ex)
-                continue
+    def print_summary(self):
+        """
+        # TODO each filter_obj keeps a count of records affected. or even the actual records, when debug flag.
+        total_affected = {"include": 0, "exclude": 0}
+        for filter_obj in self.filter_chain:
+            op_sign = {"include": "+", "exclude": "-"}[filter_obj.filter_operation()]
+            num_affected = len(filter_obj.affected_sequences_set)
+            total_affected[filter_obj.filter_operation()] += num_affected
+            print(f"{op_sign}{num_affected} samples by {filter_obj.__class__}")
 
-            # loop over all sequences and re-add sequences
-            for seq_name in all_seq:
-                if seq_name in meta_dict:
-                    if meta_dict[seq_name].get(col)==val:
-                        to_include.append(seq_name)
-                else:
-                    print("WARNING: no metadata for %s, skipping"%seq_name)
-                    continue
+        print(
+            "\n"
+            f"{total_affected['exclude']} records filtered out."
+            f"{total_affected['include']} records re-added."
+            f"{total_affected['include'] - total_affected['exclude']} net change."
+        )
+        """
 
-        for s in to_include:
-            if s not in seq_keep:
-                seq_keep.append(s)
-                num_included_by_metadata += 1
+    def check_vcftools(self):
+        if not self.sequence_file.is_vcf:
+            # vcftools is irrelevant if the sequences file is not in VCF format
+            return
 
-    ####Write out files
+        from shutil import which
 
-    if is_vcf:
-        #get the samples to be deleted, not to keep, for VCF
-        dropped_samps = list(set(all_seq) - set(seq_keep))
-        if len(dropped_samps) == len(all_seq): #All samples have been dropped! Stop run, warn user.
-            print("ERROR: All samples have been dropped! Check filter rules and metadata file format.")
-            return 1
-        write_vcf(args.sequences, args.output, dropped_samps)
-
-    else:
-        seq_to_keep = [seq for id,seq in seqs.items() if id in seq_keep]
-        if len(seq_to_keep) == 0:
-            print("ERROR: All samples have been dropped! Check filter rules and metadata file format.")
-            return 1
-        SeqIO.write(seq_to_keep, args.output, 'fasta')
-
-    print("\n%i sequences were dropped during filtering" % (len(all_seq) - len(seq_keep),))
-    if args.exclude:
-        print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
-    if args.exclude_where:
-        for key,val in num_excluded_by_metadata.items():
-            print("\t%i of these were dropped because of '%s'" % (val, key))
-    if args.min_length:
-        print("\t%i of these were dropped because they were shorter than minimum length of %sbp" % (num_excluded_by_length, args.min_length))
-    if (args.min_date or args.max_date) and 'date' in meta_columns:
-        print("\t%i of these were dropped because of their date (or lack of date)" % (num_excluded_by_date))
-    if args.non_nucleotide:
-        print("\t%i of these were dropped because they had non-nucleotide characters" % (num_excluded_by_nuc))
-    if args.group_by and args.sequences_per_group:
-        seed_txt = ", using seed {}".format(args.subsample_seed) if args.subsample_seed else ""
-        print("\t%i of these were dropped because of subsampling criteria%s" % (num_excluded_subsamp, seed_txt))
-
-    if args.include and os.path.isfile(args.include):
-        print("\n\t%i sequences were added back because they were in %s" % (num_included_by_name, args.include))
-    if args.include_where:
-        print("\t%i sequences were added back because of '%s'" % (num_included_by_metadata, args.include_where))
-
-    print("%i sequences have been written out to %s" % (len(seq_keep), args.output))
-
-
-def _filename_gz(filename):
-    return filename.lower().endswith(".gz")
+        if which("vcftools") is None:
+            raise MissingDependencyException("vcftools")
