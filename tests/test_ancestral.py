@@ -46,8 +46,10 @@ class TestAncestral:
         )
         result = ancestral.run(args)
         assert result == 0
-        nt_muts_expected = json.load(open(TEST_DATA_DIR + "expected/nt_muts.json", "r"))
-        nt_muts_actual = json.load(open(TMP_DIR + "out/nt_muts.json", "r"))
+        with open(TEST_DATA_DIR + "expected/nt_muts.json", "r") as fh:
+            nt_muts_expected = json.load(fh)
+        with open(TMP_DIR + "out/nt_muts.json", "r") as fh:
+            nt_muts_actual = json.load(fh)
         assert nt_muts_actual == nt_muts_expected
 
     def test_tb_run(self, tmpdir):
@@ -73,10 +75,10 @@ class TestAncestral:
         )
         result = ancestral.run(args)
         assert result == 0
-        nt_muts_json_expected = json.load(
-            open(TEST_DATA_DIR + "expected/nt_muts.json", "r")
-        )
-        nt_muts_json_actual = json.load(open(TMP_DIR + "out/nt_muts.json", "r"))
+        with open(TEST_DATA_DIR + "expected/nt_muts.json", "r") as fh:
+            nt_muts_json_expected = json.load(fh)
+        with open(TMP_DIR + "out/nt_muts.json", "r") as fh:
+            nt_muts_json_actual = json.load(fh)
         assert nt_muts_json_actual == nt_muts_json_expected
         # Check the VCF output as well
         assert filecmp.cmp(
@@ -108,10 +110,10 @@ class TestAncestral:
         )
         result = ancestral.run(args)
         assert result == 0
-        nt_muts_json_expected = json.load(
-            open(TEST_DATA_DIR + "expected/nt_muts.json", "r")
-        )
-        nt_muts_json_actual = json.load(open(TMP_DIR + "out/nt_muts.json", "r"))
+        with open(TEST_DATA_DIR + "expected/nt_muts.json", "r") as fh:
+            nt_muts_json_expected = json.load(fh)
+        with open(TMP_DIR + "out/nt_muts.json", "r") as fh:
+            nt_muts_json_actual = json.load(fh)
         assert nt_muts_json_actual == nt_muts_json_expected
         # Check the VCF output as well
         assert filecmp.cmp(
@@ -143,6 +145,8 @@ class TestAncestral:
         )
         result = ancestral.run(args)
         assert result == 0
-        nt_muts_expected = json.load(open(TEST_DATA_DIR + "expected/nt_muts.json", "r"))
-        nt_muts_actual = json.load(open(TMP_DIR + "out/nt_muts.json", "r"))
+        with open(TEST_DATA_DIR + "expected/nt_muts.json", "r") as fh:
+            nt_muts_expected = json.load(fh)
+        with open(TMP_DIR + "out/nt_muts.json", "r") as fh:
+            nt_muts_actual = json.load(fh)
         assert nt_muts_actual == nt_muts_expected
