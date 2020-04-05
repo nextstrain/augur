@@ -7,7 +7,28 @@ from unittest import mock
 
 
 class TestAncestral:
+    """
+    Augur's end-to-end tests execute Snakemake pipelines that call a series of augur CLI commands.
+
+    Some of those pipelines call 'augur ancestral', including:
+        - add_to_alignment
+        - tb
+        - tb_drm
+        - zika
+
+    This test class reproduces each of those pipelines' calls to 'augur ancestral', using the data that each pipeline passes in.  
+    For each build, the input files are stored in tests/data/ancestral/<build name>/in/.
+
+    Each test then compares the file output of that call to a control file that the pipeline has actually generated.  
+    For each build, the expected control files are stored in tests/data/ancestral/<build name>/expected/.
+    """
+
     def test_add_to_alignment_run(self):
+        """
+        Reproduce the behavior of the 'augur ancestral' CLI command, as implemented in the 'add_to_alignment' test build:
+
+        augur ancestral --tree results/tree.nwk --alignment results/aligned.fasta --output results/nt_muts.json --inference joint
+        """
         TEST_DATA_DIR = "./tests/data/ancestral/add_to_alignment/"
         args = argparse.Namespace(
             tree=TEST_DATA_DIR + "in/tree.nwk",
@@ -29,6 +50,11 @@ class TestAncestral:
         assert nt_muts_actual == nt_muts_expected
 
     def test_tb_run(self):
+        """
+        Reproduce the behavior of the 'augur ancestral' CLI command, as implemented in the 'tb' test build:
+
+        augur ancestral --tree results/tree.nwk --alignment results/masked.vcf.gz --output results/nt_muts.json --inference joint --output-vcf results/nt_muts.vcf --vcf-reference data/ref.fasta
+        """
         TEST_DATA_DIR = "./tests/data/ancestral/tb/"
         args = argparse.Namespace(
             tree=TEST_DATA_DIR + "in/tree.nwk",
@@ -58,6 +84,11 @@ class TestAncestral:
         )
 
     def test_tb_drm_run(self):
+        """
+        Reproduce the behavior of the 'augur ancestral' CLI command, as implemented in the 'tb_drm' test build:
+
+        augur ancestral --tree results/tree.nwk --alignment results/masked.vcf.gz --output results/nt_muts.json --inference joint --output-vcf results/nt_muts.vcf --vcf-reference data/ref.fasta
+        """
         TEST_DATA_DIR = "./tests/data/ancestral/tb_drm/"
         args = argparse.Namespace(
             tree=TEST_DATA_DIR + "in/tree.nwk",
@@ -87,6 +118,11 @@ class TestAncestral:
         )
 
     def test_zika_run(self):
+        """
+        Reproduce the behavior of the 'augur ancestral' CLI command, as implemented in the 'zika' test build:
+
+        augur ancestral --tree results/tree.nwk --alignment results/aligned.fasta --infer-ambiguous --output results/nt_muts.json --inference joint
+        """
         TEST_DATA_DIR = "./tests/data/ancestral/zika/"
         args = argparse.Namespace(
             tree=TEST_DATA_DIR + "in/tree.nwk",
