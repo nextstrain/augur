@@ -227,7 +227,7 @@ def load_excluded_sites(excluded_sites_file):
             is_bed_format = True
             bed = pd.read_csv(excluded_sites_file, sep='\t')
             for index, row in bed.iterrows():
-                strip_pos.extend(list(range(row[1], row[2]+1)))
+                strip_pos.extend(list(range(row[1], row[2])))
         else:
             # Next, check for DRM-file format or site-per-line format.
             with open(excluded_sites_file, 'r') as ifile:
@@ -246,6 +246,7 @@ def load_excluded_sites(excluded_sites_file):
 
     # If the given sites are not in BED format, they are one-based positions and
     # need to be internally adjusted to zero-based positions.
+    # http://genome.ucsc.edu/blog/the-ucsc-genome-browser-coordinate-counting-systems/
     if not is_bed_format:
         strip_pos = strip_pos - 1
 
