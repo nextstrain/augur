@@ -1,0 +1,10 @@
+# For running tests
+pytest
+pytest-mock
+freezegun
+# For building documentations
+sphinx-rtd-theme
+sphinx-markdown-tables
+sphinx-argparse
+recommonmark
+

@@ -10,6 +10,8 @@ dependencies:
 - iqtree
 - vcftools
 - snakemake
+- biopython
+- yaml
 - pip
 - pip:
   - .
