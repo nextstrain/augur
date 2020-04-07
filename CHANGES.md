@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* Fix typo with Python classifiers in setup.py
 
 ## 7.0.0 (7 April 2020)
 
