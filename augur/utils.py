@@ -11,15 +11,17 @@ from treetime.utils import numeric_date
 from collections import defaultdict
 from pkg_resources import resource_stream
 from io import TextIOWrapper
-from textwrap import dedent
 from .__version__ import __version__
 import packaging.version as packaging_version
 from .validate import validate, ValidateError, load_json_schema
 
 from augur.util_support.date_disambiguator import DateDisambiguator
+from augur.util_support.shell_command_runner import ShellCommandRunner
+
 
 class AugurException(Exception):
     pass
+
 
 @contextmanager
 def open_file(fname, mode):
@@ -540,7 +542,7 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
 
 shquote = shlex.quote
 
-def run_shell_command(cmd, raise_errors = False, extra_env = None):
+def run_shell_command(cmd, raise_errors=False, extra_env=None):
     """
     Run the given command string via Bash with error checking.
 
@@ -551,66 +553,7 @@ def run_shell_command(cmd, raise_errors = False, extra_env = None):
     If an *extra_env* mapping is passed, the provided keys and values are
     overlayed onto the default subprocess environment.
     """
-    env = os.environ.copy()
-
-    if extra_env:
-        env.update(extra_env)
-
-    shargs = ['-c', "set -euo pipefail; " + cmd]
-
-    if os.name == 'posix':
-        shellexec = ['/bin/bash']
-    else:
-        # We try best effort on other systems. For now that means nt/java.
-        shellexec = ['env', 'bash']
-
-    try:
-        # Use check_call() instead of run() since the latter was added only in Python 3.5.
-        subprocess.check_output(
-            shellexec + shargs,
-            shell = False,
-            stderr = subprocess.STDOUT,
-            env = env)
-
-    except subprocess.CalledProcessError as error:
-        print_error(
-            "{out}\nshell exited {rc} when running: {cmd}{extra}",
-            out = error.output,
-            rc  = error.returncode,
-            cmd = cmd,
-            extra = "\nAre you sure this program is installed?" if error.returncode==127 else "",
-        )
-        if raise_errors:
-            raise
-        else:
-            return False
-
-    except FileNotFoundError as error:
-        print_error(
-            """
-            Unable to run shell commands using {shell}!
-
-            Augur requires {shell} to be installed.  Please open an issue on GitHub
-            <https://github.com/nextstrain/augur/issues/new> if you need assistance.
-            """,
-            shell = ' and '.join(shellexec)
-        )
-        if raise_errors:
-            raise
-        else:
-            return False
-
-    else:
-        return True
-
-
-def print_error(message, **kwargs):
-    """
-    Formats *message* with *kwargs* using :meth:`str.format` and
-    :func:`textwrap.dedent` and uses it to print an error message to
-    ``sys.stderr``.
-    """
-    print("\nERROR: " + dedent(message.format(**kwargs)).lstrip("\n")+"\n", file = sys.stderr)
+    return ShellCommandRunner(cmd, raise_errors=raise_errors, extra_env=extra_env).run()
 
 
 def first_line(text):
