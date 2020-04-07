@@ -44,44 +44,47 @@ def run(args):
     try:
         check_arguments(args)
         seqs = read_sequences(*args.sequences)
-        existing_aln = read_alignment(args.existing_alignment) if args.existing_alignment else None
+        seqs_to_align_fname = args.output + "to_align.fasta"
 
-        # if we have been given a reference (strain) name, make sure it is present
-        ref_name = args.reference_name
+        # Load existing alignment
+        existing_aln = None
+        existing_aln_fname = None
+        if args.existing_alignment:
+            existing_aln_fname = args.existing_alignment
+            existing_aln = read_alignment(args.existing_alignment)
+
+        # Load reference alignment
+        ref_name = None
+        ref_seq = None
         if args.reference_name:
+            ref_name = args.reference_name
             ensure_reference_strain_present(ref_name, existing_aln, seqs)
-
-        # If given an existing alignment, then add the reference sequence to this if desired (and if it is the same length)
-        if existing_aln and args.reference_sequence:
-            existing_aln_fname = args.existing_alignment + ".ref.fasta"
+        elif args.reference_sequence:
             ref_seq = read_reference(args.reference_sequence)
-            if len(ref_seq) != existing_aln.get_alignment_length():
-                raise AlignmentError("ERROR: Provided existing alignment ({}bp) is not the same length as the reference sequence ({}bp)".format(existing_aln.get_alignment_length(), len(ref_seq)))
-            existing_aln.append(ref_seq)
-            write_seqs(existing_aln, existing_aln_fname)
-            temp_files_to_remove.append(existing_aln_fname)
             ref_name = ref_seq.id
-        else:
-            existing_aln_fname = args.existing_alignment # may be False
 
-        ## Create a single file of sequences for alignment (or to be added to the alignment).
-        ## Add in the reference file to the sequences _if_ we don't have an existing alignment
-        if args.reference_sequence and not existing_aln:
-            seqs_to_align_fname = args.output+".to_align.fasta"
-            ref_seq = read_reference(args.reference_sequence)
-            # reference sequence needs to be the first one for auto direction adjustment (auto reverse-complement)
-            write_seqs([ref_seq] + list(seqs.values()), seqs_to_align_fname)
-            ref_name = ref_seq.id
-        elif existing_aln:
-            seqs_to_align_fname = args.output+".new_seqs_to_align.fasta"
+        if existing_aln:
+            # Strip the existing sequences from the new sequences, add the reference to the alignment
+            seqs_to_align_fname = args.output + "new_seqs_to_align.fasta"
             seqs = prune_seqs_matching_alignment(seqs, existing_aln)
             write_seqs(list(seqs.values()), seqs_to_align_fname)
+            if ref_seq:
+                if len(ref_seq) != existing_aln.get_alignment_length():
+                    raise AlignmentError("ERROR: Provided existing alignment ({}bp) is not the same length as the reference sequence ({}bp)".format(existing_aln.get_alignment_length(), len(ref_seq)))
+                existing_aln_fname = existing_aln_fname + ".ref.fasta"
+                existing_aln.append(ref_seq)
+                write_seqs(existing_aln, existing_aln_fname)
+                temp_files_to_remove.append(existing_aln_fname)
+        elif ref_seq: # Got a reference sequence but no existing alignment
+            # reference sequence needs to be the first one for auto direction
+            # adjustment (auto reverse-complement)
+            write_seqs([ref_seq] + list(seqs.values()), seqs_to_align_fname)
+            seqs[ref_name] = ref_seq
         else:
-            seqs_to_align_fname = args.output+".to_align.fasta"
             write_seqs(list(seqs.values()), seqs_to_align_fname)
         temp_files_to_remove.append(seqs_to_align_fname)
 
-        check_duplicates(existing_aln, ref_name, seqs)
+        check_duplicates(existing_aln, seqs)
 
         # before aligning, make a copy of the data that the aligner receives as input (very useful for debugging purposes)
         if args.debug and not existing_aln:
