@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 7.0.0 (7 April 2020)
+
 ### Major Changes
 
 * Drop support for Python 3.4 and 3.5 [#482][]
