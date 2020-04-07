@@ -136,7 +136,7 @@ rule ancestral:
             --tree {input.tree} \
             --alignment {input.alignment} \
             --infer-ambiguous \
-            --output {output.node_data} \
+            --output-node-data {output.node_data} \
             --inference {params.inference}
         """
 
@@ -154,7 +154,7 @@ rule translate:
             --tree {input.tree} \
             --ancestral-sequences {input.node_data} \
             --reference-sequence {input.reference} \
-            --output {output.node_data} \
+            --output-node-data {output.node_data} \
         """
 
 rule traits:
@@ -174,7 +174,7 @@ rule traits:
             --tree {input.tree} \
             --weights {params.weights} \
             --metadata {input.metadata} \
-            --output {output.node_data} \
+            --output-node-data {output.node_data} \
             --columns {params.columns} \
             --sampling-bias-correction {params.sampling_bias_correction} \
             --confidence

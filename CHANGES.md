@@ -5,6 +5,7 @@
 ### Major Changes
 
 * Drop support for Python 3.4 and 3.5 [#482][]
+* Drop support for `--output` flag in augur ancestral, clades, sequence-traits, traits, and translate in favor of `--output-node-data` flag [#529][]
 
 ### Features
 
@@ -52,6 +53,7 @@
 [#495]: https://github.com/nextstrain/augur/pull/495
 [#501]: https://github.com/nextstrain/augur/pull/501
 [#508]: https://github.com/nextstrain/augur/pull/508
+[#529]: https://github.com/nextstrain/augur/pull/529
 
 ## 6.4.3 (25 March 2020)
 
