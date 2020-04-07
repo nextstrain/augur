@@ -44,6 +44,8 @@ class TestFilter:
         )
 
         assert priorities == {"strain1": 5, "strain2": 6, "strain3": 8}
+        assert priorities["strain1"] == 5
+        assert priorities["strain42"] == 0, "Default priority is 0 for unlisted sequences"
 
     def test_read_priority_scores_malformed(self, mock_priorities_file_malformed):
         with pytest.raises(ValueError):
