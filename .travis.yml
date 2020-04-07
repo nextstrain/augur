@@ -20,7 +20,7 @@ script:
   - (pytest -c pytest.python3.ini  --cov-report= --cov=augur)
   - (bash tests/builds/runner.sh)
 after_success:
-  - if [[ "$TRAVIS_PULL_REQUEST" == "false" && $TRAVIS_BRANCH = "release" ]]; then
+  - if [[ "$TRAVIS_PULL_REQUEST" == "false" && $TRAVIS_BRANCH == "release" ]]; then
       ./devel/travis-rebuild-docker-image;
     fi
   # upload to codecov
