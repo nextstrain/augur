@@ -12,12 +12,12 @@ from collections import defaultdict
 from pkg_resources import resource_stream
 from io import TextIOWrapper
 from textwrap import dedent
-from .__version__ import __version__
 import packaging.version as packaging_version
-from .validate import validate, ValidateError, load_json_schema
 
-class AugurException(Exception):
-    pass
+from augur.exceptions import AugurException
+from .validate import validate, ValidateError, load_json_schema
+from .__version__ import __version__
+
 
 @contextmanager
 def open_file(fname, mode):
