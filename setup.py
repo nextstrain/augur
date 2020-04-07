@@ -6,7 +6,7 @@ min_version = (3, 6)
 
 if sys.version_info < min_version:
     error = """
-Beginning with augur 6.5.0, Python {0} or above is required.
+Beginning with augur 7.0.0, Python {0} or above is required.
 
 This may be due to an out of date pip.
 
