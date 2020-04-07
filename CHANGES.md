@@ -3,6 +3,17 @@
 ## __NEXT__
 
 
+## 7.0.2 (7 April 2020)
+
+### Bug Fixes
+
+* filter: Fix regression introduced in 7.0.0 which caused an error to be raised
+  if a priorities file didn't include every sequence.  Sequences which are not
+  explicitly listed will once again default to a priority of 0. [#530][]
+
+[#530]: https://github.com/nextstrain/augur/pull/530
+
+
 ## 7.0.1 (7 April 2020)
 
 ### Bug Fixes
