@@ -56,10 +56,10 @@ def write_vcf(input_filename, output_filename, dropped_samps):
 def read_priority_scores(fname):
     try:
         with open(fname) as pfile:
-            return {
+            return defaultdict(float, {
                 elems[0]: float(elems[1])
                 for elems in (line.strip().split() for line in pfile.readlines())
-            }
+            })
     except Exception as e:
         print(f"ERROR: missing or malformed priority scores file {fname}", file=sys.stderr)
         raise e
