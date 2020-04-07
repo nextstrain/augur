@@ -96,7 +96,7 @@ rule ancestral:
     shell:
         """
         augur ancestral --tree {input.tree} --alignment {input.alignment} \
-            --output {output.nt_data} --inference {params.inference} \
+            --output-node-data {output.nt_data} --inference {params.inference} \
             --output-vcf {output.vcf_out} --vcf-reference {input.ref}
         """
 
@@ -114,7 +114,7 @@ rule translate:
     shell:
         """
         augur translate --tree {input.tree} --genes {input.genes} --vcf-reference {input.ref} \
-            --ancestral-sequences {input.vcf} --output {output.aa_data} --reference-sequence {input.gene_ref} \
+            --ancestral-sequences {input.vcf} --output-node-data {output.aa_data} --reference-sequence {input.gene_ref} \
             --alignment-output {output.vcf_out} --vcf-reference-output {output.vcf_ref}
         """
 
@@ -128,7 +128,7 @@ rule traits:
         traits = 'country region'
     shell:
         'augur traits --tree {input.tree} --metadata {input.meta}'
-        ' --columns {params.traits} --output {output}'
+        ' --columns {params.traits} --output-node-data {output}'
 
 rule seqtraits:
     input:
@@ -149,7 +149,7 @@ rule seqtraits:
             --vcf-reference {input.ref} \
             --translations {input.trans_align} \
             --vcf-translate-reference {input.trans_ref} \
-            --features {input.drms} --output {output.drm_data} \
+            --features {input.drms} --output-node-data {output.drm_data} \
             --count {params.count} --label {params.label}
         """
 
