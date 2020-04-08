@@ -1,3 +1,4 @@
+version: ~> 1.0
 language: generic
 
 # See <https://docs.travis-ci.com/user/build-stages/> for more information on
