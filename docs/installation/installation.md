@@ -64,13 +64,13 @@ There are some functions in augur that require a larger set of dependencies.
 These can be installed via:
 
 ```bash
-pip install .[full]
+pip install '.[full]'
 ```
 
 If you wish to also install the development dependencies, and install augur in an "editable" mode whereby changes to the source code are reflected in your version of `augur` then run:
 
 ```bash
-pip install -e .[dev]
+pip install -e '.[dev]'
 ```
 
 [See above](#using-pip-from-pypi) for how to install the external bioinformatics programs which you'll need to have a fully functioning toolkit.

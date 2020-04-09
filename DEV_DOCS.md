@@ -49,7 +49,7 @@ as an **editable package** so that your global `augur` command always uses your
 local source code copy:
 
 ```bash
-pip install -e .[dev]
+pip install -e '.[dev]'
 ```
 
 Using an "editable package" is not recommended if you want to be able to compare output
@@ -172,7 +172,7 @@ Building the documentation locally is useful to test changes.
 First, make sure you have the development dependencies of augur installed:
 
 ```bash
-pip install -e .[dev]
+pip install -e '.[dev]'
 ```
 
 This installs packages listed in the `dev` section of `extras_require` in _setup.py_,
