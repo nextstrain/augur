@@ -1,5 +1,5 @@
 from pathlib    import Path
-from setuptools import setup
+import setuptools
 import sys
 
 min_version = (3, 6)
@@ -26,7 +26,8 @@ with version_file.open() as f:
 with readme_file.open(encoding = "utf-8") as f:
     long_description = f.read()
 
-setup(
+
+setuptools.setup(
     name = "nextstrain-augur",
     version = __version__,
     author = "Nextstrain developers",
@@ -41,7 +42,7 @@ setup(
         "Change Log": "https://github.com/nextstrain/augur/blob/master/CHANGES.md#next",
         "Source": "https://github.com/nextstrain/augur",
     },
-    packages = ['augur'],
+    packages = setuptools.find_packages(),
     package_data = {'augur': ['data/*']},
     data_files = [("", ["LICENSE.txt"])],
     python_requires = '>={}'.format('.'.join(str(n) for n in min_version)),
