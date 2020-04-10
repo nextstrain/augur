@@ -27,30 +27,30 @@ def register_arguments(parser):
     parser.add_argument('--existing-alignment', metavar="FASTA", default=False, help="An existing alignment to which the sequences will be added. The ouput alignment will be the same length as this existing alignment.")
     parser.add_argument('--debug', action="store_true", default=False, help="Produce extra files (e.g. pre- and post-aligner files) which can help with debugging poor alignments.")
 
-def prepare(args):
-    seqs = read_sequences(*args.sequences)
-    seqs_to_align_fname = args.output + "to_align.fasta"
+def prepare(sequences, existing_alignment, output, reference_name, reference_sequence):
+    seqs = read_sequences(*sequences)
+    seqs_to_align_fname = output + "to_align.fasta"
 
     # Load existing alignment
     existing_aln = None
     existing_aln_fname = None
-    if args.existing_alignment:
-        existing_aln_fname = args.existing_alignment
-        existing_aln = read_alignment(args.existing_alignment)
+    if existing_alignment:
+        existing_aln_fname = existing_alignment
+        existing_aln = read_alignment(existing_alignment)
 
     # Load reference alignment
     ref_name = None
     ref_seq = None
-    if args.reference_name:
-        ref_name = args.reference_name
+    if reference_name:
+        ref_name = reference_name
         ensure_reference_strain_present(ref_name, existing_aln, seqs)
-    elif args.reference_sequence:
-        ref_seq = read_reference(args.reference_sequence)
+    elif reference_sequence:
+        ref_seq = read_reference(reference_sequence)
         ref_name = ref_seq.id
 
     if existing_aln:
         # Strip the existing sequences from the new sequences, add the reference to the alignment
-        seqs_to_align_fname = args.output + "new_seqs_to_align.fasta"
+        seqs_to_align_fname = output + "new_seqs_to_align.fasta"
         seqs = prune_seqs_matching_alignment(seqs, existing_aln)
         write_seqs(list(seqs.values()), seqs_to_align_fname)
         if ref_seq:
@@ -88,11 +88,11 @@ def run(args):
 
     try:
         check_arguments(args)
-        existing_aln_fname, seqs_to_align_fname, ref_name = prepare(args)
+        existing_aln_fname, seqs_to_align_fname, ref_name = prepare(args.sequences, args.existing_alignment, args.output, args.reference_name, args.reference_sequence)
         # -- existing_aln_fname, seqs_to_align_fname, ref_name --
 
         # before aligning, make a copy of the data that the aligner receives as input (very useful for debugging purposes)
-        if args.debug and not existing_aln:
+        if args.debug and not existing_aln_fname:
             copyfile(seqs_to_align_fname, args.output+".pre_aligner.fasta")
 
         # generate alignment command & run
