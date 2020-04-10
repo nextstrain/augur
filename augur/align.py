@@ -320,13 +320,13 @@ def write_seqs(seqs, fname):
 
 def prune_seqs_matching_alignment(seqs, aln):
     """
-    Return a set of seqs excluding those set via `exclude` & print a warning
+    Return a set of seqs excluding those already in the alignment & print a warning
     message for each sequence which is exluded.
     """
     ret = []
-    exclude_names = {s.name for s in aln}
+    aln_names = {s.name for s in aln}
     for seq in seqs:
-        if seq.name in exclude_names:
+        if seq.name in aln_names:
             print("Excluding {} as it is already present in the alignment".format(name))
         else:
             ret.append(seq)
