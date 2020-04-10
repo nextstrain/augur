@@ -31,35 +31,31 @@ def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
     seqs = read_sequences(*sequences)
     seqs_to_align_fname = output + ".to_align.fasta"
 
-    # Load existing alignment
-    existing_aln = None
     if existing_aln_fname:
         existing_aln = read_alignment(existing_aln_fname)
-
-    # Load reference alignment
-    ref_seq = None
-    if ref_name:
-        ensure_reference_strain_present(ref_name, existing_aln, seqs)
-    elif ref_seq_fname:
+        seqs = prune_seqs_matching_alignment(seqs, existing_aln)
+    else:
+        existing_aln = None
+        
+    if ref_seq_fname:
         ref_seq = read_reference(ref_seq_fname)
         ref_name = ref_seq.id
-
-    if existing_aln:
-        # Strip the existing sequences from the new sequences, add the reference to the alignment
-        seqs_to_align_fname = output + ".new_seqs_to_align.fasta"
-        seqs = prune_seqs_matching_alignment(seqs, existing_aln)
-        if ref_seq:
+        if existing_aln:
             if len(ref_seq) != existing_aln.get_alignment_length():
                 raise AlignmentError("ERROR: Provided existing alignment ({}bp) is not the same length as the reference sequence ({}bp)".format(existing_aln.get_alignment_length(), len(ref_seq)))
             existing_aln_fname = existing_aln_fname + ".ref.fasta"
             existing_aln.append(ref_seq)
             write_seqs(existing_aln, existing_aln_fname)
-    elif ref_seq: # Got a reference sequence but no existing alignment
-        # reference sequence needs to be the first one for auto direction
-        # adjustment (auto reverse-complement)
-        seqs.insert(0, ref_seq)
+        else:
+            # reference sequence needs to be the first one for auto direction
+            # adjustment (auto reverse-complement)
+            seqs.insert(0, ref_seq)
+    elif ref_name:
+        ensure_reference_strain_present(ref_name, existing_aln, seqs)
+
     write_seqs(seqs, seqs_to_align_fname)
 
+    # 90% sure this is only ever going to catch ref_seq was a dupe
     check_duplicates(existing_aln, seqs)
     return existing_aln_fname, seqs_to_align_fname, ref_name
 
