@@ -4,8 +4,16 @@ from augur.filtering.matchers.base_matcher import BaseMatcher
 
 
 class Metadata(BaseMatcher):
-    def __init__(self, *, conditions):
-        self.conditions = conditions
+    def __init__(self, *, clause):
+        self.conditions = []
+        for condition in clause.split(","):
+            matches = re.search(r"(\w+)(=|!=)(\w+)", condition)
+            if matches is None:
+                raise AttributeError(
+                    f"Malformed condition`{condition}`. "
+                    "Must be of form `property=value` or `property!=value`"
+                )
+            self.conditions.append(matches.groups())
 
     def is_affected(self, sequence):
         return any(
@@ -31,20 +39,6 @@ class Metadata(BaseMatcher):
 
         # Should be impossible
         raise
-
-    @classmethod
-    def build(cls, matcher_args):
-        conditions = []  # TODO list of namedtuples maybe. or just a new class.
-        for condition in matcher_args.split(","):
-            matches = re.search(r"(\w+)(=|!=)(\w+)", condition)
-            if matches is None:
-                raise AttributeError(
-                    f"Malformed condition`{condition}`. "
-                    "Must be of form `property=value` or `property!=value`"
-                )
-            conditions.append(matches.groups())
-
-        return cls(conditions=conditions)
 
     @staticmethod
     def add_arguments(parser):

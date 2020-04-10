@@ -5,10 +5,6 @@ class Nonnucleotide(BaseMatcher):
     def is_affected(self, sequence):
         return not sequence.has_only_nucleotide_symbols
 
-    @classmethod
-    def build(cls, _matcher_args):
-        return cls()
-
     @staticmethod
     def add_arguments(parser):
         parser.add_argument(

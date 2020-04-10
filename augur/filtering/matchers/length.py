@@ -10,13 +10,6 @@ class Length(BaseMatcher):
     def is_affected(self, sequence):
         return sequence.length < self.min_length
 
-    @classmethod
-    def build(cls, matcher_args):
-        arg_matches = re.search(r"min=([^,]*)", matcher_args)
-        min_length = arg_matches.groups()[0] if arg_matches else None
-
-        return cls(min_length=min_length)
-
     @staticmethod
     def add_arguments(parser):
         parser.add_argument(

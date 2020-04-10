@@ -15,20 +15,11 @@ def strip_comment(line):
 
 
 class Name(BaseMatcher):
-    def __init__(self, *, names):
-        self.names = set(names)
+    def __init__(self, *, filename):
+        self.names = set(read_names(filename))
 
     def is_affected(self, sequence):
         return sequence.name in self.names
-
-    @classmethod
-    def build(cls, matcher_args):
-        scheme, _, location = matcher_args.partition("=")
-
-        if scheme == "file":
-            return cls(names=read_names(location))
-        else:
-            raise
 
     @staticmethod
     def add_arguments(parser):

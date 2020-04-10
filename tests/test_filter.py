@@ -1,3 +1,5 @@
+import datetime
+
 from augur.filter import Filterer
 from augur.filtering.matchers import MATCHER_CLASSES
 from augur.sequence import Sequence
@@ -20,25 +22,17 @@ def build_args(**args):
         **{
             "sequences": "tests/builds/tb/data/lee_2015.vcf",
             "metadata": "tests/builds/tb/data/meta.tsv",
-            "min_date": None,
-            "max_date": None,
-            "min_length": None,
-            "non_nucleotide": None,
-            "exclude": None,
-            "exclude_where": None,
-            "include": None,
-            "include_where": None,
-            **args
+            "min_date": "2000-05-05",
+            "max_date": "2000-06-06",
+            "min_length": "5",
+            "non_nucleotide": True,
+            "exclude": "tests/builds/tb/data/dropped_strains.txt",
+            "exclude_where": "key!=val",
+            "include": "tests/builds/tb/data/dropped_strains.txt",
+            "include_where": "key=val",
+            **args,
         }
     )
-
-
-@pytest.fixture
-def mock_translate_args(mocker):
-    mocker.patch("augur.filter.Filterer.translate_args", lambda _: {
-        "exclude": ["metadata:key!=val", "name:file=tests/builds/tb/data/dropped_strains.txt"],
-        "include": ["length:min=5"],
-    })
 
 
 class TestFilterer:
@@ -46,52 +40,29 @@ class TestFilterer:
         # TODO end-to-end
         pass
 
-    @pytest.mark.parametrize(
-        "args, expected_exclude, expected_include",
-        [
-            (
-                build_args(min_length=5, min_date=2000),
-                ["date:min=2000", "length:min=5"],
-                [],
-            ),
-            (
-                build_args(non_nucleotide=True, include="include_file.txt"),
-                ["non-nucleotide"],
-                ["name:file=include_file.txt"],
-            ),
-            (
-                build_args(exclude="exclude_file.txt", include_where="key=val"),
-                ["name:file=exclude_file.txt"],
-                ["metadata:key=val"],
-            ),
-            (
-                build_args(exclude_where="key!=val"),
-                ["metadata:key!=val"],
-                [],
-            ),
-        ]
-    )
-    def test_translate_args(self, args, expected_exclude, expected_include):
-        assert Filterer(args).translate_args() == {
-            "exclude": expected_exclude,
-            "include": expected_include,
-        }
+    def test_enabled_matchers_exclude(self):
+        exclude_matchers = Filterer(build_args()).enabled_matchers()["exclude"]
 
-    def test_enabled_matchers_exclude(self, mock_translate_args):
-        enabled_matchers = Filterer(build_args()).enabled_matchers("exclude")
+        assert len(exclude_matchers) == 5
+        assert exclude_matchers[0].__class__ == MATCHER_CLASSES["date"]
+        assert exclude_matchers[0].min_date == datetime.date(2000, 5, 5)
+        assert exclude_matchers[0].max_date == datetime.date(2000, 6, 6)
+        assert exclude_matchers[1].__class__ == MATCHER_CLASSES["length"]
+        assert exclude_matchers[1].min_length == 5
+        assert exclude_matchers[2].__class__ == MATCHER_CLASSES["non-nucleotide"]
+        assert exclude_matchers[3].__class__ == MATCHER_CLASSES["name"]
+        assert exclude_matchers[3].names == {"G22696"}
+        assert exclude_matchers[4].__class__ == MATCHER_CLASSES["metadata"]
+        assert exclude_matchers[4].conditions == [("key", "!=", "val")]
 
-        assert len(enabled_matchers) == 2
-        assert enabled_matchers[0].__class__ == MATCHER_CLASSES["metadata"]
-        assert enabled_matchers[0].conditions == [("key", "!=", "val")]
-        assert enabled_matchers[1].__class__ == MATCHER_CLASSES["name"]
-        assert enabled_matchers[1].names == {"G22696"}
+    def test_enabled_matchers_include(self):
+        include_matchers = Filterer(build_args()).enabled_matchers()["include"]
 
-    def test_enabled_matchers_include(self, mock_translate_args):
-        enabled_matchers = Filterer(build_args()).enabled_matchers("include")
-
-        assert len(enabled_matchers) == 1
-        assert enabled_matchers[0].__class__ == MATCHER_CLASSES["length"]
-        assert enabled_matchers[0].min_length == 5
+        assert len(include_matchers) == 2
+        assert include_matchers[0].__class__ == MATCHER_CLASSES["name"]
+        assert include_matchers[0].names == {"G22696"}
+        assert include_matchers[1].__class__ == MATCHER_CLASSES["metadata"]
+        assert include_matchers[1].conditions == [("key", "=", "val")]
 
     def test_filter_sequences(self):
         pass

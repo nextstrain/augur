@@ -71,70 +71,55 @@ class Filterer:
         self.print_summary()
         self.write_output_file()
 
-    def translate_args(self):
-        """
-        Translate legacy CLI arguments to the generic scheme.
-
-        This is transitional code while the legacy scheme is still supported.
-        """
-        translated_args = {"exclude": [], "include": []}
+    @functools.lru_cache()
+    def enabled_matchers(self):
+        enabled_matchers = {"exclude": [], "include": []}
 
         if self.args.min_date or self.args.max_date:
-
-            translated_args["exclude"].append(
-                f"date:"
-                + f"min={self.args.min_date}" if self.args.min_date else ""
-                + f"max={self.args.max_date}" if self.args.max_date else ""
+            enabled_matchers["exclude"].append(
+                MATCHER_CLASSES["date"](
+                    min_date=self.args.min_date, max_date=self.args.max_date
+                )
             )
         if self.args.min_length:
-            translated_args["exclude"].append(f"length:min={self.args.min_length}")
+            enabled_matchers["exclude"].append(
+                MATCHER_CLASSES["length"](min_length=self.args.min_length)
+            )
         if self.args.non_nucleotide:
-            translated_args["exclude"].append("non-nucleotide")
+            enabled_matchers["exclude"].append(MATCHER_CLASSES["non-nucleotide"]())
         if self.args.exclude:
-            translated_args["exclude"].append(f"name:file={self.args.exclude}")
+            enabled_matchers["exclude"].append(
+                MATCHER_CLASSES["name"](filename=self.args.exclude)
+            )
         if self.args.exclude_where:
-            conditions = (
+            # The argument can be specified multiple times, each time with a
+            # comma-separated list of conditions. Each occurrence of the arg
+            # (called a clause) is a new instance of the matcher.
+            clauses = (
                 [self.args.exclude_where]
                 if not isinstance(self.args.exclude_where, list)
                 else self.args.exclude_where
             )
-            for condition in conditions:
-                translated_args["exclude"].append(f"metadata:{condition}")
+            for clause in clauses:
+                enabled_matchers["exclude"].append(
+                    MATCHER_CLASSES["metadata"](clause=clause)
+                )
         if self.args.include:
-            translated_args["include"].append(f"name:file={self.args.include}")
+            enabled_matchers["include"].append(
+                MATCHER_CLASSES["name"](filename=self.args.include)
+            )
         if self.args.include_where:
-            conditions = (
+            clauses = (
                 [self.args.include_where]
                 if not isinstance(self.args.include_where, list)
                 else self.args.include_where
             )
-            conditions_str = ",".join(conditions)
-            translated_args["include"].append(f"metadata:{conditions_str}")
+            for clause in clauses:
+                enabled_matchers["include"].append(
+                    MATCHER_CLASSES["metadata"](clause=clause)
+                )
 
-        return translated_args
-
-    @functools.lru_cache()
-    def enabled_matchers(self, operation):
-        """
-        Determine which matchers have been enabled for the given operation.
-
-        Parameters
-        ---------
-        operation : string
-            `"include"` or `"exclude"`
-
-        Returns
-        -------
-        list
-            list of matcher objects that are enabled for the specified operation
-        """
-        return [
-            MATCHER_CLASSES[matcher_type].build(matcher_args)
-            for matcher_type, _, matcher_args in (
-                filter_directive.partition(":")
-                for filter_directive in self.translate_args()[operation]
-            )
-        ]
+        return enabled_matchers
 
     def filter_sequences(self):
         """
@@ -179,7 +164,7 @@ class Filterer:
         return not all(
             [
                 filter_obj.is_affected(sample)
-                for filter_obj in self.enabled_matchers("exclude")
+                for filter_obj in self.enabled_matchers["exclude"]
             ]
         )
 
@@ -200,7 +185,7 @@ class Filterer:
         return any(
             [
                 filter_obj.is_affected(sample)
-                for filter_obj in self.enabled_matchers("include")
+                for filter_obj in self.enabled_matchers["include"]
             ]
         )
 

@@ -16,33 +16,33 @@ def all_sequences(sequence_factory):
 
 class TestMetadataMatcher:
     @pytest.mark.parametrize(
-        "matcher_args, expected_conditions",
+        "clause, expected_conditions",
         [
             ("color=red", [("color", "=", "red")]),
             ("color!=red", [("color", "!=", "red")]),
             ("color=red,size=med", [("color", "=", "red"), ("size", "=", "med")]),
         ],
     )
-    def test_build(self, matcher_args, expected_conditions):
-        matcher = Metadata.build(matcher_args)
+    def test_init(self, clause, expected_conditions):
+        matcher = Metadata(clause=clause)
 
         assert isinstance(matcher, Metadata)
         assert matcher.conditions == expected_conditions
 
     @pytest.mark.parametrize(
-        "matcher_args, expected_exception",
+        "clause, expected_exception",
         [
             ("color=", AttributeError),
             ("color==red", AttributeError),
             ("color", AttributeError),
         ],
     )
-    def test_build_bad_arg_string(self, mocker, matcher_args, expected_exception):
+    def test_init_malformed_clause(self, mocker, clause, expected_exception):
         with pytest.raises(expected_exception):
-            Metadata.build(matcher_args)
+            Metadata(clause=clause)
 
     @pytest.mark.parametrize(
-        "matcher_args, expected_matches",
+        "clause, expected_matches",
         [
             ("color=red", {"red"}),
             ("color!=red", {"blue", "green"}),
@@ -51,8 +51,8 @@ class TestMetadataMatcher:
             ("power=high", {"red", "blue", "green"}),
         ],
     )
-    def test_is_affected(self, all_sequences, matcher_args, expected_matches):
-        matcher = Metadata.build(matcher_args)
+    def test_is_affected(self, all_sequences, clause, expected_matches):
+        matcher = Metadata(clause=clause)
         assert (
             set(
                 [

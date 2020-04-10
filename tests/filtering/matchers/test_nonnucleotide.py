@@ -15,9 +15,6 @@ def all_sequences(sequence_factory):
 
 
 class TestNonnucleotideMatcher:
-    def test_build(self):
-        assert isinstance(Nonnucleotide.build(None), Nonnucleotide)
-
     def test_affected_sequences(self, all_sequences):
         matcher = Nonnucleotide()
         assert {seq.name: matcher.is_affected(seq) for seq in all_sequences} == {
