@@ -27,16 +27,14 @@ def register_arguments(parser):
     parser.add_argument('--existing-alignment', metavar="FASTA", default=False, help="An existing alignment to which the sequences will be added. The ouput alignment will be the same length as this existing alignment.")
     parser.add_argument('--debug', action="store_true", default=False, help="Produce extra files (e.g. pre- and post-aligner files) which can help with debugging poor alignments.")
 
-def prepare(sequences, existing_alignment, output, ref_name, ref_seq_fname):
+def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
     seqs = read_sequences(*sequences)
     seqs_to_align_fname = output + "to_align.fasta"
 
     # Load existing alignment
     existing_aln = None
-    existing_aln_fname = None
-    if existing_alignment:
-        existing_aln_fname = existing_alignment
-        existing_aln = read_alignment(existing_alignment)
+    if existing_aln_fname:
+        existing_aln = read_alignment(existing_aln_fname)
 
     # Load reference alignment
     if ref_name:
@@ -66,8 +64,6 @@ def prepare(sequences, existing_alignment, output, ref_name, ref_seq_fname):
 
     check_duplicates(existing_aln, seqs)
     return existing_aln_fname, seqs_to_align_fname, ref_name
-
-
 
 def run(args):
     '''
