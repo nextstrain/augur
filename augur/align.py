@@ -95,23 +95,7 @@ def run(args):
         if args.debug:
             copyfile(args.output, args.output+".post_aligner.fasta")
 
-        # -- ref_name --
-        # reads the new alignment
-        seqs = read_alignment(args.output)
-
-        # convert the aligner output to upper case and remove auto reverse-complement prefix
-        prettify_alignment(seqs)
-
-        # if we've specified a reference, strip out all the columns not present in the reference
-        # this will overwrite the alignment file
-        if ref_name:
-            seqs = strip_non_reference(seqs, ref_name, keep_reference=not args.remove_reference)
-        if args.fill_gaps:
-            make_gaps_ambiguous(seqs)
-
-        # write the modified sequences back to the alignment file
-        write_seqs(seqs, args.output)
-
+        postprocess(args.output, ref_name, not args.remove_reference, args.fill_gaps)
 
     except AlignmentError as e:
         print(str(e))
@@ -120,6 +104,23 @@ def run(args):
     # finally, remove any temporary files
     for fname in temp_files_to_remove:
         os.remove(fname)
+
+def postprocess(output_file, ref_name, keep_reference, fill_gaps):
+    # -- ref_name --
+    # reads the new alignment
+    seqs = read_alignment(output_file)
+    # convert the aligner output to upper case and remove auto reverse-complement prefix
+    prettify_alignment(seqs)
+
+    # if we've specified a reference, strip out all the columns not present in the reference
+    # this will overwrite the alignment file
+    if ref_name:
+        seqs = strip_non_reference(seqs, ref_name, keep_reference=keep_reference)
+    if fill_gaps:
+        make_gaps_ambiguous(seqs)
+
+    # write the modified sequences back to the alignment file
+    write_seqs(seqs, output_file)
 
 #####################################################################################################
 
