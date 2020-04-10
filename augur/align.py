@@ -29,7 +29,7 @@ def register_arguments(parser):
 
 def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
     seqs = read_sequences(*sequences)
-    seqs_to_align_fname = output + "to_align.fasta"
+    seqs_to_align_fname = output + ".to_align.fasta"
 
     # Load existing alignment
     existing_aln = None
@@ -46,7 +46,7 @@ def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
 
     if existing_aln:
         # Strip the existing sequences from the new sequences, add the reference to the alignment
-        seqs_to_align_fname = output + "new_seqs_to_align.fasta"
+        seqs_to_align_fname = output + ".new_seqs_to_align.fasta"
         seqs = prune_seqs_matching_alignment(seqs, existing_aln)
         if ref_seq:
             if len(ref_seq) != existing_aln.get_alignment_length():
@@ -80,6 +80,9 @@ def run(args):
     try:
         check_arguments(args)
         existing_aln_fname, seqs_to_align_fname, ref_name = prepare(args.sequences, args.existing_alignment, args.output, args.reference_name, args.reference_sequence)
+        temp_files_to_remove.append(seqs_to_align_fname)
+        if existing_aln_fname != args.existing_alignment:
+            temp_files_to_remove.append(existing_aln_fname)
         # -- existing_aln_fname, seqs_to_align_fname, ref_name --
 
         # before aligning, make a copy of the data that the aligner receives as input (very useful for debugging purposes)
