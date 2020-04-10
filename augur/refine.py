@@ -1,7 +1,7 @@
 """
 Refine an initial tree using sequence metadata.
 """
-
+import numpy as np
 import os, shutil, time, sys
 from Bio import Phylo
 from .utils import read_metadata, read_tree, get_numerical_dates, write_json, InvalidTreeError
@@ -121,9 +121,13 @@ def register_arguments(parser):
     parser.add_argument('--year-bounds', type=int, nargs='+', help='specify min or max & min prediction bounds for samples with XX in year')
     parser.add_argument('--divergence-units', type=str, choices=['mutations', 'mutations-per-site'],
                         default='mutations-per-site', help='Units in which sequence divergences is exported.')
+    parser.add_argument('--seed', type=int, help='seed for random number generation')
     parser.set_defaults(covariance=True)
 
 def run(args):
+    if args.seed is not None:
+        np.random.seed(args.seed)
+
     # check alignment type, set flags, read in if VCF
     is_vcf = False
     ref = None

@@ -1,0 +1,273 @@
+{
+  "annotations": {
+    "2K": {
+      "end": 6897,
+      "start": 6828,
+      "strand": 1
+    },
+    "CA": {
+      "end": 456,
+      "start": 90,
+      "strand": 1
+    },
+    "ENV": {
+      "end": 2472,
+      "start": 960,
+      "strand": 1
+    },
+    "MP": {
+      "end": 960,
+      "start": 735,
+      "strand": 1
+    },
+    "NS1": {
+      "end": 3528,
+      "start": 2472,
+      "strand": 1
+    },
+    "NS2A": {
+      "end": 4206,
+      "start": 3528,
+      "strand": 1
+    },
+    "NS2B": {
+      "end": 4596,
+      "start": 4206,
+      "strand": 1
+    },
+    "NS3": {
+      "end": 6447,
+      "start": 4596,
+      "strand": 1
+    },
+    "NS4A": {
+      "end": 6828,
+      "start": 6447,
+      "strand": 1
+    },
+    "NS4B": {
+      "end": 7650,
+      "start": 6897,
+      "strand": 1
+    },
+    "NS5": {
+      "end": 10359,
+      "start": 7650,
+      "strand": 1
+    },
+    "PRO": {
+      "end": 735,
+      "start": 456,
+      "strand": 1
+    },
+    "nuc": {
+      "end": 10769,
+      "start": 0,
+      "strand": 1
+    }
+  },
+  "author_info": {
+    "Blohm et al": {
+      "journal": "Genome Announc 5 (17), e00231-17 (2017)",
+      "n": 1,
+      "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/28450510",
+      "title": "Complete Genome Sequences of Identical Zika virus Isolates in a Nursing Mother and Her Infant"
+    },
+    "Lanciotti et al": {
+      "journal": "Emerging Infect. Dis. 22 (5), 933-935 (2016)",
+      "n": 1,
+      "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/27088323",
+      "title": "Phylogeny of Zika Virus in Western Hemisphere, 2015"
+    },
+    "Marquez et al": {
+      "journal": "Genome Announc 5 (8), e01673-16 (2017)",
+      "n": 1,
+      "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/28232448",
+      "title": "First Complete Genome Sequences of Zika Virus Isolated from Febrile Patient Sera in Ecuador"
+    },
+    "Metsky et al": {
+      "journal": "Nature 546 (7658), 411-415 (2017)",
+      "n": 4,
+      "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/28538734",
+      "title": "Zika virus evolution and spread in the Americas"
+    },
+    "Pickett et al": {
+      "journal": "Submitted (28-JUL-2017) J. Craig Venter Institute, 9704 Medical Center Drive, Rockville, MD 20850, USA",
+      "n": 2,
+      "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/",
+      "title": "Direct Submission"
+    },
+    "Quick et al": {
+      "journal": "Nat Protoc 12 (6), 1261-1276 (2017)",
+      "n": 1,
+      "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/28538739",
+      "title": "Multiplex PCR method for MinION and Illumina sequencing of Zika and other virus genomes directly from clinical samples"
+    },
+    "Shabman et al": {
+      "journal": "Submitted (29-APR-2016) J. Craig Venter Institute, 9704 Medical Center Drive, Rockville, MD 20850, USA",
+      "n": 1,
+      "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/",
+      "title": "Direct Submission"
+    },
+    "Wu et al": {
+      "journal": "Submitted (18-MAY-2016) Center for Diseases Control and Prevention of Guangdong Province; National Institute of Viral Disease Control and Prevention, China",
+      "n": 1,
+      "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/",
+      "title": "Direct Submission"
+    }
+  },
+  "color_options": {
+    "authors": {
+      "key": "authors",
+      "legendTitle": "Authors",
+      "menuItem": "authors",
+      "type": "discrete"
+    },
+    "country": {
+      "color_map": [
+        [
+          "American Samoa",
+          "#3F50CC"
+        ],
+        [
+          "Brazil",
+          "#56A0AF"
+        ],
+        [
+          "Ecuador",
+          "#63AC99"
+        ],
+        [
+          "Colombia",
+          "#6BB18E"
+        ],
+        [
+          "Venezuela",
+          "#86BB6E"
+        ],
+        [
+          "Panama",
+          "#A4BE56"
+        ],
+        [
+          "Honduras",
+          "#B9BC4A"
+        ],
+        [
+          "Puerto Rico",
+          "#E68234"
+        ],
+        [
+          "Dominican Republic",
+          "#E4632E"
+        ]
+      ],
+      "key": "country",
+      "legendTitle": "country",
+      "menuItem": "country"
+    },
+    "gt": {
+      "key": "genotype",
+      "legendTitle": "Genotype",
+      "menuItem": "genotype",
+      "type": "discrete"
+    },
+    "num_date": {
+      "key": "num_date",
+      "legendTitle": "Sampling date",
+      "menuItem": "date",
+      "type": "continuous"
+    },
+    "region": {
+      "color_map": [
+        [
+          "Oceania",
+          "#88BB6C"
+        ],
+        [
+          "South America",
+          "#E56C2F"
+        ],
+        [
+          "North America",
+          "#DC2F24"
+        ]
+      ],
+      "key": "region",
+      "legendTitle": "region",
+      "menuItem": "region"
+    }
+  },
+  "filters": [
+    "country",
+    "region",
+    "authors"
+  ],
+  "geo": {
+    "country": {
+      "American Samoa": {
+        "latitude": -14.27806,
+        "longitude": -170.7025
+      },
+      "Brazil": {
+        "latitude": -10.3333332,
+        "longitude": -53.1999999
+      },
+      "Colombia": {
+        "latitude": 2.893108,
+        "longitude": -73.7845142
+      },
+      "Dominican Republic": {
+        "latitude": 18.50012,
+        "longitude": -69.98857
+      },
+      "Ecuador": {
+        "latitude": -1.3397667,
+        "longitude": -79.3666964
+      },
+      "Honduras": {
+        "latitude": 15.0610686,
+        "longitude": -84.5978533
+      },
+      "Panama": {
+        "latitude": 8.3096067,
+        "longitude": -81.3066245
+      },
+      "Puerto Rico": {
+        "latitude": 18.2459121,
+        "longitude": -66.4164147
+      },
+      "Venezuela": {
+        "latitude": 8.0,
+        "longitude": -66.0
+      }
+    },
+    "region": {
+      "North America": {
+        "latitude": 28.2367447,
+        "longitude": -97.738017
+      },
+      "Oceania": {
+        "latitude": -25.0562891,
+        "longitude": 152.008576
+      },
+      "South America": {
+        "latitude": -13.083583,
+        "longitude": -58.470721
+      }
+    }
+  },
+  "maintainer": [
+    "Trevor Bedford",
+    "http://bedford.io/team/trevor-bedford/"
+  ],
+  "panels": [
+    "tree",
+    "map",
+    "entropy",
+    "frequencies"
+  ],
+  "title": "Real-time tracking of Zika virus evolution",
+  "updated": "18 Apr 2020",
+  "virus_count": 10
+}
