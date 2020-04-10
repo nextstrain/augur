@@ -27,7 +27,7 @@ def register_arguments(parser):
     parser.add_argument('--existing-alignment', metavar="FASTA", default=False, help="An existing alignment to which the sequences will be added. The ouput alignment will be the same length as this existing alignment.")
     parser.add_argument('--debug', action="store_true", default=False, help="Produce extra files (e.g. pre- and post-aligner files) which can help with debugging poor alignments.")
 
-def prepare(sequences, existing_alignment, output, reference_name, reference_sequence):
+def prepare(sequences, existing_alignment, output, ref_name, ref_seq_fname):
     seqs = read_sequences(*sequences)
     seqs_to_align_fname = output + "to_align.fasta"
 
@@ -39,13 +39,10 @@ def prepare(sequences, existing_alignment, output, reference_name, reference_seq
         existing_aln = read_alignment(existing_alignment)
 
     # Load reference alignment
-    ref_name = None
-    ref_seq = None
-    if reference_name:
-        ref_name = reference_name
+    if ref_name:
         ensure_reference_strain_present(ref_name, existing_aln, seqs)
-    elif reference_sequence:
-        ref_seq = read_reference(reference_sequence)
+    elif ref_seq_fname:
+        ref_seq = read_reference(ref_seq_fname)
         ref_name = ref_seq.id
 
     if existing_aln:
