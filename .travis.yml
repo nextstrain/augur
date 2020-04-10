@@ -1,27 +1,44 @@
-language: python
-sudo: required
-python:
-  - "3.6"
-  - "3.7"
-  - "3.8"
-before_install:
-  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  - conda info -a
-  - conda env create -f environment.yml
-  - source activate augur
-install:
-  - pip3 install -e .[dev]
-script:
-  - (pytest -c pytest.python3.ini  --cov-report= --cov=augur)
-  - (bash tests/builds/runner.sh)
-after_success:
-  - if [[ "$TRAVIS_PULL_REQUEST" == "false" && $TRAVIS_BRANCH = "release" ]]; then
-      ./devel/travis-rebuild-docker-image;
-    fi
-  # upload to codecov
-  - bash <(curl -s https://codecov.io/bash) -f "!*.gcov" -X gcov -e TRAVIS_PYTHON_VERSION -y ci/codecov.yml|| echo "Codecov did not collect coverage reports"
+version: ~> 1.0
+language: generic
+
+# See <https://docs.travis-ci.com/user/build-stages/> for more information on
+# how build stages work.
+stages:
+  - test
+
+  # See <https://docs.travis-ci.com/user/conditions-v1> for more on the "if" syntax.
+  - name: deploy
+    if: branch = release and type != pull_request
+
+jobs:
+  include:
+    - &test
+      stage: test
+      language: python
+      python: 3.6
+      before_install:
+        - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+        - bash miniconda.sh -b -p $HOME/miniconda
+        - export PATH="$HOME/miniconda/bin:$PATH"
+        - hash -r
+        - conda config --set always_yes yes --set changeps1 no
+        - conda update -q conda
+        - conda info -a
+        - conda env create -f environment.yml
+        - source activate augur
+      install:
+        - pip3 install -e .[dev]
+      script:
+        - (pytest -c pytest.python3.ini  --cov-report= --cov=augur)
+        - (bash tests/builds/runner.sh)
+      after_success:
+        # upload to codecov
+        - bash <(curl -s https://codecov.io/bash) -f "!*.gcov" -X gcov -e TRAVIS_PYTHON_VERSION -y ci/codecov.yml|| echo "Codecov did not collect coverage reports"
+
+    - <<: *test
+      python: 3.7
+    - <<: *test
+      python: 3.8
+
+    - stage: deploy
+      script: ./devel/travis-rebuild-docker-image
