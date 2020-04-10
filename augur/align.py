@@ -37,6 +37,7 @@ def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
         existing_aln = read_alignment(existing_aln_fname)
 
     # Load reference alignment
+    ref_seq = None
     if ref_name:
         ensure_reference_strain_present(ref_name, existing_aln, seqs)
     elif ref_seq_fname:
@@ -47,7 +48,6 @@ def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
         # Strip the existing sequences from the new sequences, add the reference to the alignment
         seqs_to_align_fname = output + "new_seqs_to_align.fasta"
         seqs = prune_seqs_matching_alignment(seqs, existing_aln)
-        write_seqs(list(seqs.values()), seqs_to_align_fname)
         if ref_seq:
             if len(ref_seq) != existing_aln.get_alignment_length():
                 raise AlignmentError("ERROR: Provided existing alignment ({}bp) is not the same length as the reference sequence ({}bp)".format(existing_aln.get_alignment_length(), len(ref_seq)))
@@ -57,10 +57,8 @@ def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
     elif ref_seq: # Got a reference sequence but no existing alignment
         # reference sequence needs to be the first one for auto direction
         # adjustment (auto reverse-complement)
-        write_seqs([ref_seq] + list(seqs.values()), seqs_to_align_fname)
-        seqs[ref_name] = ref_seq
-    else:
-        write_seqs(list(seqs.values()), seqs_to_align_fname)
+        seqs.insert(0, ref_seq)
+    write_seqs(seqs, seqs_to_align_fname)
 
     check_duplicates(existing_aln, seqs)
     return existing_aln_fname, seqs_to_align_fname, ref_name
@@ -127,6 +125,7 @@ def run(args):
 #####################################################################################################
 
 def read_sequences(*fnames):
+    """return list of sequences from all fnames"""
     seqs = {}
     try:
         for fname in fnames:
@@ -139,7 +138,7 @@ def read_sequences(*fnames):
         raise AlignmentError("\nCannot read sequences -- make sure the file %s exists and contains sequences in fasta format" % fname)
     except ValueError as error:
         raise AlignmentError("\nERROR: Problem reading in {}: {}".format(fname, str(error)))
-    return seqs
+    return list(seqs.values())
 
 def check_arguments(args):
     # Simple error checking related to a reference name/sequence
@@ -159,7 +158,7 @@ def ensure_reference_strain_present(ref_name, existing_alignment, seqs):
         if ref_name not in {x.name for x in existing_alignment}:
             raise AlignmentError("ERROR: Specified reference name %s (via --reference-name) is not in the supplied alignment."%ref_name)
     else:
-        if ref_name not in seqs:
+        if ref_name not in {x.name for x in seqs}:
             raise AlignmentError("ERROR: Specified reference name %s (via --reference-name) is not in the sequence sample."%ref_name)
 
 
@@ -295,19 +294,15 @@ def check_duplicates(*values):
         if name in names:
             raise AlignmentError("Duplicate strains of \"{}\" detected".format(name))
         names.add(name)
-
     for sample in values:
         if not sample:
             # allows false-like values (e.g. always provide existing_alignment, allowing
             # the default which is `False`)
             continue
-        elif type(sample) == dict:
-            for s in sample:
-                add(s)
-        elif type(sample) == Align.MultipleSeqAlignment:
+        elif isinstance(sample, (list, Align.MultipleSeqAlignment)):
             for s in sample:
                 add(s.name)
-        elif type(sample) == str:
+        elif isinstance(sample, str):
             add(sample)
         else:
             raise TypeError()
@@ -325,11 +320,11 @@ def prune_seqs_matching_alignment(seqs, aln):
     Return a set of seqs excluding those set via `exclude` & print a warning
     message for each sequence which is exluded.
     """
-    ret = {}
+    ret = []
     exclude_names = {s.name for s in aln}
-    for name, seq in seqs.items():
-        if name in exclude_names:
+    for seq in seqs:
+        if seq.name in exclude_names:
             print("Excluding {} as it is already present in the alignment".format(name))
         else:
-            ret[name] = seq
+            ret.append(seq)
     return ret
