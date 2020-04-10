@@ -132,20 +132,24 @@ need [a PyPi account][] and [twine][] installed to do the latter.
 
 Branches and PRs are tested by Travis CI jobs configured in `.travis.yml`.
 
-The set of "test" stage jobs are explicitly defined instead of auto-expanded
-from the implicit job property matrix. Since top-level properties are inherited
-by all jobs regardless of build stage, making the matrix explicit is less
-confusing and easier to reason about. YAML's anchor (&foo) and alias merge key
-(<<: *foo) syntax let us do this without repeating ourselves unnecessarily. The
-config is valid YAML and jobs end up as expected when pasted into
-https://config.travis-ci.com/explore.
+Our Travis config uses two build stages: _test_ and _deploy_.  Jobs in the
+_test_ stage always run, but _deploy_ jobs only run sometimes (see below).
+
+The set of _test_ jobs are explicitly defined instead of auto-expanded from the
+implicit job property matrix. Since top-level properties are inherited by all
+jobs regardless of build stage, making the matrix explicit is less confusing
+and easier to reason about. YAML's anchor (`&foo`) and alias merge key (`<<:
+*foo`) syntax let us do this without repeating ourselves unnecessarily.
 
 New releases, via pushes to the `release` branch, trigger a new [docker-base][]
-build to keep the Docker image up-to-date. This trigger is implemented with a
-second build stage, "deploy", which is implicitly conditioned on the previous
-"test" stage's successful completion and explicitly conditioned on a non-PR
-trigger on the "release" branch. Note that currently we cannot test this
-"deploy" stage without making a release.
+build to keep the Docker image up-to-date. This trigger is implemented in the
+_deploy_ stage, which is implicitly conditioned on the previous _test_ stage's
+successful completion and explicitly conditioned on a non-PR trigger on the
+`release` branch. Note that currently we cannot test this _deploy_ stage
+without making a release.
+
+It can sometimes be useful to verify the config is parsed as you expect using
+<https://config.travis-ci.com/explore>.
 
 [docker-base]: https://github.com/nextstrain/docker-base
 
