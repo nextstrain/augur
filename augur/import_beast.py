@@ -7,6 +7,7 @@ import sys
 import json
 import datetime as dt
 from argparse import SUPPRESS
+from collections import defaultdict
 import numpy as np
 from Bio import Phylo
 from treetime import TreeAnc
@@ -506,16 +507,11 @@ def compute_entropies_for_discrete_traits(tree):
 
     Author: James Hadfield
     """
-    alphabets={} ## store alphabets
+    alphabets = defaultdict(list) ## store alphabets
     for clade in tree.find_clades(): ## iterate over branches
         for attr in [key for key in clade.attrs if isinstance(clade.attrs[key], dict)]: ## iterate over branch attributes
-            if attr in alphabets: ## if attr seen before
-                for val in clade.attrs[attr]: ## iterate over attribute values of the node
-                    if val not in alphabets[attr]: ## not seen this attribute value before
-                        alphabets[attr].append(val)
-            else:
-                alphabets[attr]=[] ## not seen trait before - start a list of its values
-                for val in clade.attrs[attr]: ## iterate over trait values for this branch
+            for val in clade.attrs[attr]: ## iterate over attribute values of the node
+                if val not in alphabets[attr]: ## not seen this attribute value before
                     alphabets[attr].append(val)
 
     for clade in tree.find_clades(): ## iterate over branches

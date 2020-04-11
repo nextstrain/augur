@@ -6,6 +6,7 @@ import sys
 from Bio import Phylo
 import pandas as pd
 import numpy as np
+from collections import defaultdict
 from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json, get_json_name
 
 def read_in_clade_definitions(clade_file):
@@ -31,15 +32,12 @@ def read_in_clade_definitions(clade_file):
         clade definitions as :code:`{clade_name:[(gene, site, allele),...]}`
     '''
 
-    clades = {}
+    clades = defaultdict(list)
 
     df = pd.read_csv(clade_file, sep='\t' if clade_file.endswith('.tsv') else ',')
     for index, row in df.iterrows():
         allele = (row.gene, row.site-1, row.alt)
-        if row.clade in clades:
-            clades[row.clade].append(allele)
-        else:
-            clades[row.clade] = [allele]
+        clades[row.clade].append(allele)
 
     return clades
 
