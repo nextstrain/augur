@@ -41,30 +41,7 @@ To install, run:
     pip install nextstrain-augur[full]
 ```
 
-Augur uses some common external bioinformatics programs which you'll need to install to have a fully functioning toolkit:
-
-* `augur align` requires [mafft](https://mafft.cbrc.jp/alignment/software/)
-
-* `augur tree` requires at least one of:
-   - [IQ-TREE](http://www.iqtree.org/) (used by default)
-   - [RAxML](https://sco.h-its.org/exelixis/web/software/raxml/) (optional alternative)
-   - [FastTree](http://www.microbesonline.org/fasttree/) (optional alternative)
-
-* Bacterial data (or any VCF usage) requires [vcftools](https://vcftools.github.io/)
-
-On macOS, you can install these external programs using Homebrew with:
-```bash
-brew tap brewsci/bio
-brew install mafft iqtree raxml fasttree vcftools
-```
-
-On Debian/Ubuntu, you can install them via:
-
-```bash
-sudo apt install mafft iqtree raxml fasttree vcftools
-```
-
-[For more extensive installation instructions, please see the technical docs](https://nextstrain-augur.readthedocs.io/en/stable/installation/installation.html)
+To have a fully functioning toolkit you'll need to install some external bioinformatics programs, details of which can be found in the [Installation docs](https://nextstrain-augur.readthedocs.io/en/stable/installation/installation.html).
 
 ## Basic Usage
 
