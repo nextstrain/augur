@@ -5,10 +5,9 @@ Reconstruct alignments from mutations inferred on the tree
 import os, sys
 import numpy as np
 from collections import defaultdict
-from Bio import SeqIO, Seq, SeqRecord, Phylo
+from Bio import SeqIO, Seq, SeqRecord, Phylo, AlignIO
 from .utils import read_node_data, write_json
 from treetime.vcf_utils import read_vcf
-
 
 
 def register_arguments(parser):
@@ -37,25 +36,94 @@ def get_sequence(pseq, muts):
     str
         reconstructed sequence
     """
-    pseq_list = list(pseq)
-    for mut in muts:
-        new_state = mut[-1]
-        pos = int(mut[1:-1])-1
-        assert pseq_list[pos]==mut[0]
-        pseq_list[pos]=new_state
-
+    try:
+        pseq_list = list(pseq)
+        for mut in muts:
+            new_state = mut[-1]
+            pos = int(mut[1:-1])-1
+            assert pseq_list[pos]==mut[0]
+            pseq_list[pos]=new_state
+    except AssertionError:
+        msg = (
+            "Parental state {pseq} of sequence does not match "
+            "mutation parental state {mut}.".format(
+                pseq=pseq_list[pos],
+                mut=mut[0]
+            )
+        )
+        raise AssertionError(msg)
     return "".join(pseq_list)
 
 
 def load_alignments(sequence_files, gene_names):
-    from Bio import AlignIO
+    """Load a list of sequence files and map them to
+    the gene names.
+
+    Parameters
+    ----------
+    sequence_files: list of strings
+        A list of filenames for alignments in FASTA format.
+
+    gene_names: list of strings
+        A list of gene names to map to the given sequence files.
+
+    Returns
+    -------
+    alignments : dict of Bio.Align.MultipleSeqAlignment objects
+        A dictionary mapping gene names to alignment objects.
+    """
     alignments = {}
     for fname, gene in zip(sequence_files, gene_names):
         alignments[gene] = AlignIO.read(fname, 'fasta')
     return alignments
 
 
+def get_reference_sequences_from_vcf(
+        vcf_aa_reference,
+        node_data,
+        root_node,
+        gene
+    ):
+    """
+    """
+    node_data["nodes"][root_node]['aa_sequences'] = {}
+    with open(vcf_aa_reference) as handle:
+        for record in SeqIO.parse(handle, "fasta"):
+            if record.id==gene:
+                #'root' may not be same as 'reference', so apply any mutations at root here!
+                node_data["nodes"][root_node]['aa_sequences'][record.id] = get_sequence(
+                    str(record.seq),
+                    node_data["nodes"][root_node]["aa_muts"][record.id]
+                )
+    return node_data
+
+
+def reconstruct_sequences_from_tree_of_mutations(
+        tree,
+        node_data,
+        root_node,
+        gene,
+    ):
+    # gather all reconstructed sequences
+    sequences = dict()
+    is_terminal = {}
+
+    sequences[root_node] = node_data["nodes"][root_node]['aa_sequences'][gene]
+    is_terminal[root_node] = False
+    for node in tree.get_nonterminals(order='preorder'):
+        parent_sequence = sequences[node.name]
+        for child in node:
+            sequences[child.name] = get_sequence(
+                parent_sequence,
+                node_data["nodes"][child.name]["aa_muts"][gene]
+            )
+            is_terminal[child.name] = child.is_terminal()
+    return sequences, is_terminal
+
+
 def run(args):
+    """Write a fasta file with all reconstructed sequences from a given tree.
+    """
     ## read tree and data, if reading data fails, return with error code
     tree = Phylo.read(args.tree, 'newick')
 
@@ -64,6 +132,7 @@ def run(args):
 
     ## check file format and read in sequences
     node_data = read_node_data(args.mutations, args.tree)
+
     if node_data is None:
         print("ERROR: could not read mutation data "+ ("(incl sequences)" if not is_vcf else ""))
         return 1
@@ -72,34 +141,40 @@ def run(args):
 
     #if VCF, read in the reference seq for each gene, put on root
     if(is_vcf):
-        node_data["nodes"][root_node]['aa_sequences'] = {}
-        with open(args.vcf_aa_reference) as handle:
-            for record in SeqIO.parse(handle, "fasta"):
-                if record.id==args.gene:
-                    #'root' may not be same as 'reference', so apply any mutations at root here!
-                    node_data["nodes"][root_node]['aa_sequences'][record.id] = get_sequence(str(record.seq), node_data["nodes"][root_node]["aa_muts"][record.id])
+        get_reference_sequences_from_vcf(
+            args.vcf_aa_reference,
+            node_data,
+            root_node,
+            args.gene,
+        )
 
     # check that root node has sequences for each requested gene
     if "aa_sequences" not in node_data["nodes"][root_node]:
         print("ERROR: ancestral sequences are not provided")
         return 1
+
     if not args.gene in node_data["nodes"][root_node]['aa_sequences']:
         print("ERROR: ancestral sequences missing for gene",args.gene)
         return 1
 
-    # gather all reconstructed sequences
-    sequences = dict()
-    is_terminal = {}
-
-    sequences[root_node] = node_data["nodes"][root_node]['aa_sequences'][args.gene]
-    is_terminal[root_node] = False
-    for node in tree.get_nonterminals(order='preorder'):
-        parent_sequence = sequences[node.name]
-        for child in node:
-            sequences[child.name] = get_sequence(parent_sequence, node_data["nodes"][child.name]["aa_muts"][args.gene])
-            is_terminal[child.name] = child.is_terminal()
+    sequences, is_terminal = reconstruct_sequences_from_tree_of_mutations(
+        tree,
+        node_data,
+        root_node,
+        args.gene
+    )
 
     # write alignments to file
-    seqs = [SeqRecord.SeqRecord(seq=Seq.Seq(sequences[strain]), id=strain, name=strain, description='')
-            for strain in sequences if is_terminal[strain] or args.internal_nodes]
+    seqs = []
+    for strain in sequences:
+        if is_terminal[strain]:
+            seqs.append(
+                SeqRecord.SeqRecord(
+                    seq=Seq.Seq(sequences[strain]),
+                    id=strain,
+                    name=strain,
+                    description=''
+                )
+            )
+
     SeqIO.write(seqs, args.output, 'fasta')
