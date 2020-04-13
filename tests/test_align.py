@@ -1,16 +1,19 @@
+import argparse
+import functools
 import os
+
+import pytest
+import pathlib
+
+from shlex import quote
 
 from Bio import SeqIO
 from Bio.Align import MultipleSeqAlignment
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
-from shlex import quote
-
 from augur import align
 
-import pytest
-import pathlib
 
 def write_strains(tmpdir, name, strains):
     path = str(tmpdir / name + ".fasta")
