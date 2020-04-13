@@ -66,6 +66,29 @@ def out_file(tmpdir):
     open(out_file, "w").close()
     return out_file
 
+@pytest.fixture
+def argparser():
+    """Provide an easy way to test command line arguments"""
+    parser = argparse.ArgumentParser()
+    align.register_arguments(parser)
+    def parse(args):
+        return parser.parse_args(args.split(" "))
+    return parse
+
+@pytest.fixture
+def run(argparser, out_file):
+    def run(args):
+        args = argparser(args + " -o %s" % out_file)
+        align.run(args)
+        return SeqIO.to_dict(SeqIO.parse(out_file, "fasta"))
+    return run
+
+@pytest.fixture
+def mp_context(monkeypatch):
+    #This should be moved to conftest once #512 is merged
+    with monkeypatch.context() as mp:
+        yield mp
+
 class TestAlign:
     def test_make_gaps_ambiguous(self):
         alignment = MultipleSeqAlignment(
