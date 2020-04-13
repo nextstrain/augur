@@ -36,7 +36,7 @@ def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
         seqs = prune_seqs_matching_alignment(seqs, existing_aln)
     else:
         existing_aln = None
-        
+
     if ref_seq_fname:
         ref_seq = read_reference(ref_seq_fname)
         ref_name = ref_seq.id
@@ -286,7 +286,6 @@ def make_gaps_ambiguous(aln):
         _seq = str(seq.seq)
         _seq = _seq.replace('-', 'N')
         seq.seq = Seq.Seq(_seq, alphabet=seq.seq.alphabet)
-        
 
 def check_duplicates(*values):
     names = set()
