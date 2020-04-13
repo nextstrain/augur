@@ -372,8 +372,130 @@ class TestAlign:
         gap_file = write_strains(tmpdir, "gaps", [ref_seq, gapped])
         align.postprocess(gap_file, ref_seq.id, True, False)
         output = SeqIO.to_dict(SeqIO.parse(gap_file, "fasta"))
-        print(output)
         assert "-" not in output[ref_seq.id].seq
         assert output["GAP"].seq.count("-") == 1
         for record in output.values():
             assert len(record.seq) == expected_length
+
+    def test_run_no_ref_or_alignment(self, test_file, test_seqs, ref_seq, out_file, argparser, run):
+        """No reference sequence or existing alignment. In this case, all sequences should be the length of the max sequence minus gaps"""
+        gaps = ref_seq.seq.count("-")
+        expected_length = max(len(seq.seq) for seq in test_seqs.values()) - gaps
+        output = run("-s %s" % (test_file))
+        assert output.keys() == test_seqs.keys()
+        assert all(len(r.seq) == expected_length for r in output.values())
+    
+    def test_run_fill_gaps(self, test_file, run):
+        """All gaps should be filled when --fill-gaps is passed"""
+        output = run("-s %s --fill-gaps" % test_file)
+        assert all("-" not in r.seq for r in output.values())
+    
+    def test_run_with_ref_name_no_alignment(self, test_with_ref, test_seqs, ref_seq, run):
+        expected_length = len(ref_seq.seq) - ref_seq.seq.count("-")
+        output = run("-s %s --reference-name %s" % (test_with_ref, ref_seq.id))
+        assert list(output.keys()) == [ref_seq.id,] + list(test_seqs.keys()) 
+        assert all(len(r.seq) == expected_length for r in output.values())
+        assert output["PREFIX"].seq.startswith("---")
+        assert output["SUFFIX"].seq.endswith("---")
+
+    def test_run_with_ref_seq_no_alignment(self, test_file, test_seqs, ref_file, ref_seq, run):
+        expected_length = len(ref_seq.seq) - ref_seq.seq.count("-")
+        output = run("-s %s --reference-sequence %s" % (test_file, ref_file))
+        assert list(output.keys()) == [ref_seq.id,] + list(test_seqs.keys()) 
+        assert all(len(r.seq) == expected_length for r in output.values())
+        assert output["PREFIX"].seq.startswith("---")
+        assert output["SUFFIX"].seq.endswith("---")
+    
+    def test_run_with_ref_seq_remove_reference(self, test_with_ref, ref_seq, run):
+        expected_length = len(ref_seq.seq) - ref_seq.seq.count("-")
+        output = run("-s %s --reference-name %s --remove-reference" % (test_file, ref_seq.id))
+        assert ref_seq.id not in output
+
+    def test_run_with_ref_seq_remove_reference(self, test_file, ref_file, ref_seq, run):
+        expected_length = len(ref_seq.seq) - ref_seq.seq.count("-")
+        output = run("-s %s --reference-sequence %s --remove-reference" % (test_file, ref_file))
+        assert ref_seq.id not in output
+    
+    def test_run_no_ref_with_alignment(self, test_seqs, test_file, existing_aln, existing_file, run):
+        output = run("-s %s --existing-alignment %s" % (test_file, existing_file))
+        assert sorted(output.keys()) == sorted(list(test_seqs.keys()) + list(existing_aln.keys())), "Missing some sequences from input or alignment"
+        assert len({len(r.seq) for r in output.values()}) == 1, "Not all sequences are the same length"
+    
+    def test_run_multiple_sequences_concatenated(self, test_file, test_seqs, ref_file, ref_seq, run):
+        output = run("-s %s %s" % (test_file, ref_file))
+        assert ref_seq.id in output
+        assert all(r in output for r in test_seqs)
+    
+    def test_run_with_ref_file_with_alignment_file(self, test_file, test_seqs, ref_file, ref_seq, existing_aln, existing_file, run):
+        expected_len = len(ref_seq.seq) - ref_seq.seq.count("-")
+        output = run("-s %s --existing-alignment %s --reference-sequence %s" % (test_file, existing_file, ref_file))
+        assert all(seq in output for seq in test_seqs)
+        assert all(seq in output for seq in existing_aln)
+        assert ref_seq.id in output
+        assert all(len(record.seq) == expected_len for record in output.values())
+    
+    @pytest.mark.parametrize("remove_ref", [True, False])
+    def test_run_remove_reference(self, test_file, existing_file, ref_file, ref_seq, run, remove_ref):
+        output = run("-s %s --existing-alignment %s --reference-sequence %s%s" % (
+                     test_file, existing_file, ref_file, " --remove-reference" if remove_ref else ""))
+        assert (ref_seq.id not in output) == remove_ref 
+    
+    @pytest.mark.parametrize("fill_gaps" , [True, False])
+    def test_run_fill_gaps(self, test_file, ref_file, run, fill_gaps):
+        output = run("-s %s --reference-sequence %s%s" % (test_file, ref_file, " --fill-gaps" if fill_gaps else ""))
+        expected_char = "N" if fill_gaps else "-"
+        assert output["PREFIX"].seq.startswith(expected_char*3)
+        assert output["SUFFIX"].seq.endswith(expected_char*3)
+        if fill_gaps:
+            assert all("-" not in record.seq for record in output.values())
+    
+    def test_run_error_during_alignment(self, test_file, argparser, mp_context):
+        """Not a great test - we can't be sure we're not failing some other check somewhere along the way, but it's all we can do"""
+        mp_context.setattr(align, "run_shell_command", lambda i: False)
+        args = argparser("-s %s" % test_file)
+        assert align.run(args) == 1
+    
+    def test_run_debug_files(self, test_file, out_file, run):
+        run("-s %s --debug" % test_file)
+        assert os.path.isfile(out_file + ".pre_aligner.fasta")
+        assert os.path.isfile(out_file + ".post_aligner.fasta")
+
+    def test_run_check_files_are_cleaned_up_including_alignment(self, test_file, existing_file, ref_file, run, mp_context):
+        """Check we clean up the correct files after run is done.
+
+        Note: This test is complicated because we need to test that everything is actually deleted correctly, so we need
+        to go through the entire run cycle. This means the files all have to be prepared exactly as though they were real.
+        So, below, we're monkeypatching "align.prepare" to catch the generated file names. We're using three tricks here: 
+        first, we're passing a dictionary to the function. Dictionaries are passed by reference (not copy), which means
+        modifications made to the dictionary inside the function are reflected outside, with no need for return. Second, we're
+        importing "align.prepare" again under a second name to avoid the recursion depth exceeded error. Finally, we're using a
+        functools.partial statement to pass our dictionary to our mocked function before align.run() gets to it. 
+        
+        All of this is not Good, but it does Work.
+        """
+        out_files = {}
+        from augur.align import prepare as prpr # Prevent recursion depth exceeded. Yes, this is terrible.
+        def catch_filenames(out_files, *args, **kwargs):
+            existing_aln_fname, seqs_to_align_fname, ref_name = prpr(*args, **kwargs)
+            out_files["aln"] = existing_aln_fname
+            out_files["seq"] = seqs_to_align_fname
+            return existing_aln_fname, seqs_to_align_fname, ref_name
+        mp_context.setattr(align, "prepare", functools.partial(catch_filenames, out_files))
+        run("-s %s --existing-alignment %s --reference-sequence %s" % (test_file, existing_file, ref_file))
+        assert not os.path.exists(out_files["seq"])
+        assert not os.path.exists(out_files["aln"])
+
+    def test_run_check_alignment_not_deleted_if_unchanged(self, test_file, existing_with_ref, ref_seq, run, mp_context):
+        """Check we Don't clean up our original alignment by accident. See note above for this test."""
+        out_files = {}
+        from augur.align import prepare as prpr # Prevent recursion depth exceeded. Yes, this is terrible.
+        def catch_filenames(out_files, *args, **kwargs):
+            existing_aln_fname, seqs_to_align_fname, ref_name = prpr(*args, **kwargs)
+            out_files["aln"] = existing_aln_fname
+            out_files["seq"] = seqs_to_align_fname
+            return existing_aln_fname, seqs_to_align_fname, ref_name
+        mp_context.setattr(align, "prepare", functools.partial(catch_filenames, out_files))
+        run("-s %s --existing-alignment %s --reference-name %s" % (test_file, existing_with_ref, ref_seq.id))
+        assert out_files["aln"] == existing_with_ref
+        assert os.path.exists(out_files["aln"]), "Deleted our existing alignment file by accident"
+        assert not os.path.exists(out_files["seq"])
