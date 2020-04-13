@@ -1,3 +1,6 @@
+import os
+
+from Bio import SeqIO
 from Bio.Align import MultipleSeqAlignment
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -9,6 +12,56 @@ from augur import align
 import pytest
 import pathlib
 
+def write_strains(tmpdir, name, strains):
+    path = str(tmpdir / name + ".fasta")
+    with open(path, "w") as fh:
+        SeqIO.write(strains, fh, "fasta")
+    return path
+
+@pytest.fixture
+def ref_seq():
+    return SeqRecord(Seq("AAAATTTTGGGGCCCC"), "REF")
+
+@pytest.fixture
+def test_seqs(ref_seq):
+    return {
+        "PREFIX": SeqRecord(ref_seq.seq[3:], "PREFIX"),
+        "SUFFIX": SeqRecord(ref_seq.seq[:-3], "SUFFIX"),
+        "LONGER": SeqRecord("CCC" + ref_seq.seq + "AAA", "LONGER")
+    }
+
+@pytest.fixture
+def existing_aln(ref_seq):
+    return {
+        "EXISTING1": SeqRecord("NN" + ref_seq.seq[2:-3] + "NNN", "EXISTING1"),
+        "EXISTING2": SeqRecord("NNN" + ref_seq.seq[3:-1] + "N", "EXISTING2")
+    }
+
+@pytest.fixture
+def ref_file(tmpdir, ref_seq):
+    return write_strains(tmpdir, "ref", ref_seq)
+
+@pytest.fixture
+def test_file(tmpdir, test_seqs):
+    return write_strains(tmpdir, "test", test_seqs.values())
+
+@pytest.fixture
+def test_with_ref(tmpdir, test_seqs, ref_seq):
+    return write_strains(tmpdir, "test_w_ref", [ref_seq,] + list(existing_aln.values()))
+
+@pytest.fixture
+def existing_file(tmpdir, existing_aln):
+    return write_strains(tmpdir, "existing", existing_aln.values())
+
+@pytest.fixture
+def existing_with_ref(tmpdir, existing_aln, ref_seq):
+    return write_strains(tmpdir, "existing_w_ref", [ref_seq,] + list(existing_aln.values()))
+
+@pytest.fixture
+def out_file(tmpdir):
+    out_file = str(tmpdir / "out")
+    open(out_file, "w").close()
+    return out_file
 
 class TestAlign:
     def test_make_gaps_ambiguous(self):
@@ -155,3 +208,14 @@ class TestAlign:
         data_file = pathlib.Path("tests/data/align/aa-seq_h3n2_ha_2y_2HA1_dup.fasta")
         with pytest.raises(align.AlignmentError):
             assert align.read_sequences(data_file)
+
+    def test_prepare_no_alignment_or_ref(self, test_file, test_seqs, tmpdir, out_file):
+        """
+        Strictly we shouldn't see this case, since we should always have a
+        ref_name or ref_seq, but it's still good to check the behavior.
+        """
+        expected_output = out_file + ".to_align.fasta"
+        align.prepare([test_file,], None, out_file, None, None)
+        assert os.path.isfile(expected_output), "Didn't write sequences where we expected"
+        for name, seq in SeqIO.to_dict(SeqIO.parse(expected_output, "fasta")).items():
+            assert seq.seq == test_seqs[name].seq
