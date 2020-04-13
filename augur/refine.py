@@ -11,7 +11,8 @@ from treetime.vcf_utils import read_vcf, write_vcf
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
              confidence=False, resolve_polytomies=True, max_iter=2, precision='auto',
              infer_gtr=True, Tc=0.01, reroot=None, use_marginal=False, fixed_pi=None,
-             clock_rate=None, clock_std=None, clock_filter_iqd=None, verbosity=1, covariance=True, **kwarks):
+             clock_rate=None, clock_std=None, clock_filter_iqd=None, verbosity=3, 
+             covariance=True, n_point_skyline=10, **kwarks):
     from treetime import TreeTime
 
     try: #Tc could be a number or  'opt' or 'skyline'. TreeTime expects a float or int if a number.
@@ -67,7 +68,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
     tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
            branch_length_mode=branch_length_inference, resolve_polytomies=resolve_polytomies,
            max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
-           vary_rate=vary_rate, use_covariation=covariance, **kwarks)
+           vary_rate=vary_rate, use_covariation=covariance, n_points=n_point_skyline, **kwarks)
 
     if confidence:
         for n in tt.tree.find_clades():
