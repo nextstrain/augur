@@ -90,9 +90,10 @@ class TestAlign:
             ]
         )
         
-        result = align.prune_seqs_matching_alignment(sequence, alignment)
-        assert list(result.keys()) == ["seq2"]
-        assert result["seq2"].seq == sequence["seq2"].seq
+        result = align.prune_seqs_matching_alignment(sequence.values(), alignment)
+        assert [r.name for r in result] == ["seq2"]
+        for r in result:
+            assert r.seq == sequence[r.name].seq
 
     def test_prettify_alignment(self):
         data_file = pathlib.Path('tests/data/align/test_aligned_sequences.fasta')
@@ -148,7 +149,7 @@ class TestAlign:
     def test_read_sequences(self):
         data_file = pathlib.Path('tests/data/align/test_aligned_sequences.fasta')
         result = align.read_sequences(data_file)
-        assert len(result.keys()) == 4
+        assert len(result) == 4
 
     def test_read_seq_compare(self):
         data_file = pathlib.Path("tests/data/align/aa-seq_h3n2_ha_2y_2HA1_dup.fasta")

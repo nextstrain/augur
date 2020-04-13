@@ -324,7 +324,7 @@ def prune_seqs_matching_alignment(seqs, aln):
     aln_names = {s.name for s in aln}
     for seq in seqs:
         if seq.name in aln_names:
-            print("Excluding {} as it is already present in the alignment".format(name))
+            print("Excluding {} as it is already present in the alignment".format(seq.name))
         else:
             ret.append(seq)
     return ret
