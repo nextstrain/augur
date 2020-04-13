@@ -20,7 +20,7 @@ def write_strains(tmpdir, name, strains):
 
 @pytest.fixture
 def ref_seq():
-    return SeqRecord(Seq("AAAATTTTGGGGCCCC"), "REF")
+    return SeqRecord(Seq("aaaaTT-Tg-ggCCCC"), "REF")
 
 @pytest.fixture
 def test_seqs(ref_seq):
@@ -210,10 +210,6 @@ class TestAlign:
             assert align.read_sequences(data_file)
 
     def test_prepare_no_alignment_or_ref(self, test_file, test_seqs, out_file):
-        """
-        Strictly we shouldn't see this case, since we should always have a
-        ref_name or ref_seq, but it's still good to check the behavior.
-        """
         _, output, _ = align.prepare([test_file,], None, out_file, None, None)
         assert os.path.isfile(output), "Didn't write sequences where it said"
         for name, seq in SeqIO.to_dict(SeqIO.parse(output, "fasta")).items():
@@ -302,15 +298,56 @@ class TestAlign:
     
     def test_prepare_with_alignment_with_duplicate_sequences(self, test_file, test_seqs, existing_file, existing_aln, out_file):
         """Test that sequences matching the alignment are removed from the input sequences"""
-        # Again, we're skipping the ref here. It shouldn't affect the outcome.
         _, seq_outfile, _ = align.prepare([existing_file, test_file], existing_file, out_file, None, None)
         seq_output = SeqIO.to_dict(SeqIO.parse(seq_outfile, "fasta"))
         assert seq_output.keys() == test_seqs.keys(), "Did not strip duplicate sequences from test input!"
     
     def test_prepare_with_alignment_ref_sequence_wrong_length(self, test_file, existing_file, ref_seq, ref_file):
+        """Test that including a reference sequence with a length different than the existing alignment fails."""
         ref_seq.seq = ref_seq.seq[:-3]
         with open(ref_file, "w") as fh:
             SeqIO.write(ref_seq, fh, "fasta")
         with pytest.raises(align.AlignmentError):
             align.prepare([test_file,], existing_file, "out", None, ref_file)
+    
+    def test_postprocess_prettify_alignment(self, tmpdir, existing_aln, ref_seq):
+        """Postprocess should strip _R_ from reverse-complemented strains and convert all sites to uppercase"""
+        ref_seq.name = "_R_" + ref_seq.name
+        post_align = write_strains(tmpdir, "post_align", [ref_seq] + list(existing_aln.values()))
+        align.postprocess(post_align, None, True, False)
+        output = SeqIO.to_dict(SeqIO.parse(post_align, "fasta"))
+        for name, record in output.items():
+            assert record.seq == record.seq.upper(), "Sequence was not made uppercase"
+            assert "_R_" not in name, "Reverse-complement prefix not removed"
 
+    @pytest.mark.parametrize("keep_ref", [True, False])
+    def test_postprocess_remove_reference(self, existing_with_ref, ref_seq, keep_ref):
+        """Postprocess should remove the reference strain only if requested"""
+        align.postprocess(existing_with_ref, ref_seq.id, keep_ref, False)
+        output = SeqIO.to_dict(SeqIO.parse(existing_with_ref, "fasta"))
+        assert (ref_seq.id in output) == keep_ref
+    
+    @pytest.mark.parametrize("fill_gaps", [True, False])
+    def test_postprocess_fill_gaps(self, existing_file, existing_aln, ref_seq, fill_gaps):
+        """Postprocess should make the gaps ambiguous only if requested"""
+        align.postprocess(existing_file, None, True, fill_gaps)
+        output = SeqIO.to_dict(SeqIO.parse(existing_file, "fasta"))
+        for name, record in output.items():
+            for idx, site in enumerate(existing_aln[name].seq):
+                if site == "-":
+                    assert (record.seq[idx] == "N") == fill_gaps
+
+    def test_postprocess_strip_non_reference(self, tmpdir, ref_seq, ref_file):
+        """Postprocess should strip gaps in the reference sequence from other sequences, but not gaps in those sequences"""
+        expected_length = len(ref_seq.seq) - ref_seq.seq.count("-")
+        gapped_seq = ref_seq.seq.tomutable()
+        gapped_seq[1] = "-"
+        gapped = SeqRecord(gapped_seq, "GAP")
+        gap_file = write_strains(tmpdir, "gaps", [ref_seq, gapped])
+        align.postprocess(gap_file, ref_seq.id, True, False)
+        output = SeqIO.to_dict(SeqIO.parse(gap_file, "fasta"))
+        print(output)
+        assert "-" not in output[ref_seq.id].seq
+        assert output["GAP"].seq.count("-") == 1
+        for record in output.values():
+            assert len(record.seq) == expected_length
