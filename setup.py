@@ -61,6 +61,7 @@ setup(
             "seaborn >=0.9.0, ==0.9.*"
         ],
         'dev': [
+            "more-itertools ==8.2.*",
             "freezegun >=0.3.15, ==0.3.*",
             "pylint >=1.7.6, ==1.7.*",
             "pytest >=5.4.1, ==5.4.*",
