@@ -10,7 +10,7 @@ import pandas as pd
 from Bio import SeqIO
 from Bio.Seq import MutableSeq
 
-from .utils import run_shell_command, shquote, open_file, is_vcf
+from .utils import run_shell_command, shquote, open_file, is_vcf, load_mask_sites
 
 def get_chrom_name(vcf_file):
     """Read the CHROM field from the first non-header line of a vcf file.
@@ -23,23 +23,6 @@ def get_chrom_name(vcf_file):
             if line[0] != "#":
                 header = line.strip().partition('\t')
                 return header[0]
-
-def read_bed_file(mask_file):
-    """Read the full list of excluded sites from the BED file.
-
-    Second column is chromStart, 3rd is chromEnd. Generate a range from these two columns.
-    """
-    sites_to_mask = []
-    bed = pd.read_csv(mask_file, sep='\t', header=None, usecols=[1,2])
-    for idx, row in bed.iterrows():
-        try:
-            sites_to_mask.extend(range(int(row[1]), int(row[2])))
-        except ValueError as err:
-            # Skip unparseable lines, including header lines.
-            print("Could not read line %d of BED file %s: %s. Continuing." % (idx, mask_file, err))
-    sites_to_mask = np.unique(sites_to_mask).tolist()
-    print("Found %d sites to mask" % len(sites_to_mask))
-    return sites_to_mask
 
 def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
     """Mask the provided site list from a VCF file and write to a new file.
@@ -135,7 +118,7 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
 
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF or FASTA format")
-    parser.add_argument('--mask', dest="mask_file", required=False, help="locations to be masked in BED file format")
+    parser.add_argument('--mask', dest="mask_file", required=False, help="locations to be masked in either BED file format or one 1-indexed site per line.")
     parser.add_argument('--mask-from-beginning', type=int, default=0, help="FASTA Only: Number of sites to mask from beginning")
     parser.add_argument('--mask-from-end', type=int, default=0, help="FASTA Only: Number of sites to mask from end")
     parser.add_argument("--mask-sites", nargs='+', type = int,  help="1-indexed list of sites to mask")
@@ -178,7 +161,7 @@ def run(args):
         # Mask sites passed in as 1-indexed
         mask_sites.update(site - 1 for site in args.mask_sites)
     if args.mask_file:
-        mask_sites.update(read_bed_file(args.mask_file))
+        mask_sites.update(load_mask_sites(args.mask_file))
     mask_sites = sorted(mask_sites)
 
     # For both FASTA and VCF masking, we need a proper separate output file
