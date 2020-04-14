@@ -74,8 +74,8 @@ class TestUtils:
     def test_read_bed_file_good_input(self, tmpdir):
         """read_bed_file should read site ranges from properly formatted bed files"""
         bed_file = str(tmpdir / "temp.bed")
-        bed_lines = ["SEQ\t7\t8", "SEQ\t2\t5", "SEQ\t3\t4"]
-        expected_sites = [2,3,4,5,7,8]
+        bed_lines = ["SEQ\t7\t8", "SEQ\t2\t6", "SEQ\t3\t4"]
+        expected_sites = [2,3,4,5,7]
         with open(bed_file, "w") as fh:
             fh.write("\n".join(bed_lines))
         assert utils.read_bed_file(bed_file) == expected_sites
@@ -84,7 +84,7 @@ class TestUtils:
         """read_bed_file should skip header lines if they exist in bed files"""
         bed_file = str(tmpdir / "temp.bed")
         bed_lines = ["CHROM\tSTART\tEND","SEQ\t7\t8", "SEQ\t2\t5"]
-        expected_sites = [2,3,4,5,7,8]
+        expected_sites = [2,3,4,7]
         with open(bed_file, "w") as fh:
             fh.write("\n".join(bed_lines))
         assert utils.read_bed_file(bed_file) == expected_sites
