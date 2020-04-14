@@ -118,7 +118,7 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
 
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF or FASTA format")
-    parser.add_argument('--mask', dest="mask_file", required=False, help="locations to be masked in either BED file format or one 1-indexed site per line.")
+    parser.add_argument('--mask', dest="mask_file", required=False, help="locations to be masked in either BED file format, DRM format, or one 1-indexed site per line.")
     parser.add_argument('--mask-from-beginning', type=int, default=0, help="FASTA Only: Number of sites to mask from beginning")
     parser.add_argument('--mask-from-end', type=int, default=0, help="FASTA Only: Number of sites to mask from end")
     parser.add_argument("--mask-sites", nargs='+', type = int,  help="1-indexed list of sites to mask")
