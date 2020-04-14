@@ -838,7 +838,7 @@ def read_bed_file(bed_file):
                           dtype={1:int,2:int}, skiprows=1)
         print("Skipped row 1 of %s, assuming it is a header." % bed_file)
     for _, row in bed.iterrows():
-        mask_sites.extend(range(row[1], row[2]+1))
+        mask_sites.extend(range(row[1], row[2]))
     return sorted(set(mask_sites))
 
 def read_mask_file(mask_file):
