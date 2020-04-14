@@ -2,9 +2,39 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* mask: Fix parsing of BED files as zero-indexed, half-open intervals [#512][]
+
+### Features
+
+* mask: Allow masking of specific sites passed by the user with `--mask-sites` and masking of a fixed number of sites from the beginning or end of each sequence with `--mask-from-beginning` and `--mask-from-end` [#512][]
+
+[#512]: https://github.com/nextstrain/augur/pull/512
+
+## 7.0.2 (7 April 2020)
+
+### Bug Fixes
+
+* filter: Fix regression introduced in 7.0.0 which caused an error to be raised
+  if a priorities file didn't include every sequence.  Sequences which are not
+  explicitly listed will once again default to a priority of 0. [#530][]
+
+[#530]: https://github.com/nextstrain/augur/pull/530
+
+
+## 7.0.1 (7 April 2020)
+
+### Bug Fixes
+
+* Fix typo with Python classifiers in setup.py
+
+## 7.0.0 (7 April 2020)
+
 ### Major Changes
 
 * Drop support for Python 3.4 and 3.5 [#482][]
+* Drop support for `--output` flag in augur ancestral, clades, sequence-traits, traits, and translate in favor of `--output-node-data` flag [#529][]
 
 ### Features
 
@@ -52,6 +82,7 @@
 [#495]: https://github.com/nextstrain/augur/pull/495
 [#501]: https://github.com/nextstrain/augur/pull/501
 [#508]: https://github.com/nextstrain/augur/pull/508
+[#529]: https://github.com/nextstrain/augur/pull/529
 
 ## 6.4.3 (25 March 2020)
 

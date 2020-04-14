@@ -118,7 +118,6 @@ def register_arguments(parser):
                              ' are the equilibrium frequencies and t_i are apparent ones.'
                              '(or rather the time spent in a particular state on the tree)')
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save trait inferences to')
-    parser.add_argument('--output', '-o', type=str, help='DEPRECATED. Same as --output-node-data')
     parser.epilog = "Note that missing data must be represented by a `?` character. Missing data will currently be inferred."
 
 def run(args):

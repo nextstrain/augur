@@ -9,7 +9,7 @@
 
 ## Using pip from PyPi
 
-Augur is written in Python 3 and requires at least Python 3.4.
+Augur is written in Python 3 and requires at least Python 3.6.
 It's published on [PyPi](https://pypi.org) as [nextstrain-augur](https://pypi.org/project/nextstrain-augur), so you can install it with `pip` like so:
 
 ```bash
@@ -64,13 +64,13 @@ There are some functions in augur that require a larger set of dependencies.
 These can be installed via:
 
 ```bash
-pip install .[full]
+pip install '.[full]'
 ```
 
 If you wish to also install the development dependencies, and install augur in an "editable" mode whereby changes to the source code are reflected in your version of `augur` then run:
 
 ```bash
-pip install -e .[dev]
+pip install -e '.[dev]'
 ```
 
 [See above](#using-pip-from-pypi) for how to install the external bioinformatics programs which you'll need to have a fully functioning toolkit.

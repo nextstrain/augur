@@ -257,7 +257,7 @@ rule ancestral:
             --alignment {input.alignment} \
             --vcf-reference {input.ref} \
             --inference {params.inference} \
-            --output {output.nt_data} \
+            --output-node-data {output.nt_data} \
             --output-vcf {output.vcf_out}
         """
 ```
@@ -297,7 +297,7 @@ rule translate:
             --ancestral-sequences {input.vcf} \
             --genes {input.genes} \
             --reference-sequence {input.gene_ref} \
-            --output {output.aa_data} \
+            --output-node-data {output.aa_data} \
             --alignment-output {output.vcf_out} \
             --vcf-reference-output {output.vcf_ref}
         """
@@ -325,7 +325,7 @@ rule traits:
         augur traits --tree {input.tree} \
             --metadata {input.meta} \
             --columns {params.traits} \
-            --output {output}
+            --output-node-data {output}
         """
 ```
 
@@ -362,7 +362,7 @@ rule clades:
         augur clades --tree {input.tree} \
             --mutations {input.nuc_muts} {input.aa_muts} \
             --clades {input.clades} \
-            --output {output.clade_data}
+            --output-node-data {output.clade_data}
         """
 ```
 
@@ -430,7 +430,7 @@ rule seqtraits:
             --features {input.drms} \
             --count {params.count} \
             --label {params.label} \
-            --output {output.drm_data}
+            --output-node-data {output.drm_data}
         """
 ```
 

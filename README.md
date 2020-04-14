@@ -34,7 +34,7 @@ The output of augur is a series of JSONs that can be used to visualize your resu
 
 ## Installation
 
-Augur is written in Python 3 and requires at least Python 3.4.
+Augur is written in Python 3 and requires at least Python 3.6.
 
 To install, run:
 ```bash

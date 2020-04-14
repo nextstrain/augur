@@ -300,7 +300,6 @@ def register_arguments(parser):
     parser.add_argument('--count', type=str, choices=['traits','mutations'], default='traits', help='Whether to count traits (ex: # drugs resistant to) or mutations')
     parser.add_argument('--label', type=str, default="# Traits", help='How to label the counts (ex: Drug_Resistance)')
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save sequence features to')
-    parser.add_argument('--output', '-o', type=str, help='DEPRECATED. Same as --output-node-data')
 
 
 def run(args):

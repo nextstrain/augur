@@ -26,7 +26,7 @@ Please see the [project board](https://github.com/orgs/nextstrain/projects/6) fo
 
 ## Contributing code
 
-We currently target compatibility with Python 3.4 and higher. As Python releases new versions,
+We currently target compatibility with Python 3.6 and higher. As Python releases new versions,
 the minimum target compatibility may be increased in the future.
 
 Versions for this project, Augur, from 3.0.0 onwards aim to follow the
@@ -49,7 +49,7 @@ as an **editable package** so that your global `augur` command always uses your
 local source code copy:
 
 ```bash
-pip install -e .[dev]
+pip install -e '.[dev]'
 ```
 
 Using an "editable package" is not recommended if you want to be able to compare output
@@ -132,8 +132,24 @@ need [a PyPi account][] and [twine][] installed to do the latter.
 
 Branches and PRs are tested by Travis CI jobs configured in `.travis.yml`.
 
+Our Travis config uses two build stages: _test_ and _deploy_.  Jobs in the
+_test_ stage always run, but _deploy_ jobs only run sometimes (see below).
+
+The set of _test_ jobs are explicitly defined instead of auto-expanded from the
+implicit job property matrix. Since top-level properties are inherited by all
+jobs regardless of build stage, making the matrix explicit is less confusing
+and easier to reason about. YAML's anchor (`&foo`) and alias merge key (`<<:
+*foo`) syntax let us do this without repeating ourselves unnecessarily.
+
 New releases, via pushes to the `release` branch, trigger a new [docker-base][]
-build to keep the Docker image up-to-date.
+build to keep the Docker image up-to-date. This trigger is implemented in the
+_deploy_ stage, which is implicitly conditioned on the previous _test_ stage's
+successful completion and explicitly conditioned on a non-PR trigger on the
+`release` branch. Note that currently we cannot test this _deploy_ stage
+without making a release.
+
+It can sometimes be useful to verify the config is parsed as you expect using
+<https://config.travis-ci.com/explore>.
 
 [docker-base]: https://github.com/nextstrain/docker-base
 
@@ -172,7 +188,7 @@ Building the documentation locally is useful to test changes.
 First, make sure you have the development dependencies of augur installed:
 
 ```bash
-pip install -e .[dev]
+pip install -e '.[dev]'
 ```
 
 This installs packages listed in the `dev` section of `extras_require` in _setup.py_,

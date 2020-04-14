@@ -52,10 +52,7 @@ def myopen(fname, mode):
         return open(fname, mode)
 
 def get_json_name(args, default=None):
-    if args.output:
-        print("WARNING: the --output flag will be deprecated in the next major augur release. Use --output-node-data instead.", file=sys.stderr)
-        return args.output
-    elif args.output_node_data:
+    if args.output_node_data:
         return args.output_node_data
     else:
         if default:
