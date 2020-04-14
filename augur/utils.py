@@ -844,7 +844,8 @@ def read_bed_file(bed_file):
 def read_mask_file(mask_file):
     """Read a masking file and return a list of excluded sites.
 
-    Masking files have a single masking site per line. These sites
+    Masking files have a single masking site per line, either alone
+    or as the second column of a tab-separated file. These sites
     are assumed to be one-indexed, NOT zero-indexed. Incorrectly
     formatted lines will be skipped.
 
@@ -861,6 +862,8 @@ def read_mask_file(mask_file):
     mask_sites = []
     with open(mask_file) as mf:
         for idx, line in enumerate(l.strip() for l in mf.readlines()):
+            if "\t" in line:
+                line = line.split("\t")[1]
             try:
                 mask_sites.append(int(line) - 1)
             except ValueError as err:

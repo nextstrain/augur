@@ -97,3 +97,12 @@ class TestUtils:
             fh.write("\n".join(bed_lines))
         with pytest.raises(Exception):
             utils.read_bed_file(bed_file)
+    
+    def test_read_mask_file_drm_file(self, tmpdir):
+        """read_mask_file should handle drm files as well"""
+        drm_file = str(tmpdir / "temp.drm")
+        drm_lines = ["SEQ\t5", "SEQ\t7"]
+        expected_sites = [4,6]
+        with open(drm_file, "w") as fh:
+            fh.write("\n".join(drm_lines))
+        assert utils.read_mask_file(drm_file) == expected_sites
