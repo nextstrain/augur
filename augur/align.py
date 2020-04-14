@@ -28,6 +28,32 @@ def register_arguments(parser):
     parser.add_argument('--debug', action="store_true", default=False, help="Produce extra files (e.g. pre- and post-aligner files) which can help with debugging poor alignments.")
 
 def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
+    """Prepare the sequences, existing alignment, and reference sequence for alignment.
+
+    This function:
+        1. Combines all given input sequences into a single file
+        2. Checks to make sure the input sequences don't overlap with the existing alignment, if one exists.
+        3. If given a reference name, check that sequence exists in either the existing alignment, if given, or the input sequences.
+        4. If given a reference sequence, either add it to the existing alignment or prepend it to the input seqeunces.
+        5. Write the input sequences to a single file, and write the alignment back out if we added the reference sequence to it.
+    
+    Parameters
+    ----------
+    sequences : list[str]
+        List of paths to FASTA-formatted sequences to align.
+    existing_aln_fname : str
+        Path of an existing alignment to use, or None
+    output: str
+        Path the aligned sequences will be written out to.
+    ref_name: str
+        The name of the reference sequence, if provided
+    ref_seq_fname: str
+        The path to the reference sequence file. If this is provided, it overrides ref_name.
+    
+    Returns
+    -------
+        tuple: The existing alignment filename, the new sequences filename, and the name of the reference sequence.
+    """
     seqs = read_sequences(*sequences)
     seqs_to_align_fname = output + ".to_align.fasta"
 
@@ -106,6 +132,23 @@ def run(args):
         os.remove(fname)
 
 def postprocess(output_file, ref_name, keep_reference, fill_gaps):
+    """Postprocessing of the combined alignment file.
+
+    Parameters
+    ----------
+    output_file: str
+        The file the new alignment was written to
+    ref_name: str
+        If provided, the name of the reference strain used in the alignment
+    keep_reference: bool
+        If the reference was provided, whether it should be kept in the alignment
+    fill_gaps: bool
+        Replace all gaps in the alignment with "N" to indicate ambiguous sites.
+    
+    Returns
+    -------
+        None - the modified alignment is written directly to output_file
+    """
     # -- ref_name --
     # reads the new alignment
     seqs = read_alignment(output_file)
