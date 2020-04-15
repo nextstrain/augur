@@ -140,6 +140,7 @@ rule export:
             --metadata {input.metadata} \
             --node-data {input.branch_lengths} {input.nt_muts} {input.aa_muts} \
             --auspice-config {input.auspice_config} \
+            --maintainers "James Hadfield" \
             --output {output.auspice}
         """
 
