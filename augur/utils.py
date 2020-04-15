@@ -96,34 +96,32 @@ def ambiguous_date_to_date_range(mydate, fmt, min_max_year=None):
     return (lower_bound, upper_bound if upper_bound<today else today)
 
 def read_metadata(fname):
-    if not fname:
-        print("ERROR: read_metadata called without a filename")
-        return {}, []
-    if os.path.isfile(fname):
-        try:
-            metadata = pd.read_csv(fname, sep='\t' if fname[-3:]=='tsv' else ',',
-                                    skipinitialspace=True).fillna('')
-        except pd.errors.ParserError as e:
-            print("Error reading metadata file {}".format(fname))
-            print(e)
-            sys.exit(2)
-        meta_dict = {}
-        for ii, val in metadata.iterrows():
-            if hasattr(val, "strain"):
-                if val.strain in meta_dict:
-                    raise ValueError("Duplicate strain '{}'".format(val.strain))
-                meta_dict[val.strain] = val.to_dict()
-            elif hasattr(val, "name"):
-                if val.name in meta_dict:
-                    raise ValueError("Duplicate name '{}'".format(val.name))
-                meta_dict[val.name] = val.to_dict()
-            else:
-                print("ERROR: meta data file needs 'name' or 'strain' column")
+    # Accept either tab-delimited TSV files or CSV files.
+    metadata = pd.read_csv(
+        fname,
+        sep='\t' if fname[-3:]=='tsv' else ',',
+        skipinitialspace=True
+    ).fillna('')
+    metadata_columns = list(metadata.columns)
 
-        return meta_dict, list(metadata.columns)
-    else:
-        print("ERROR: meta data file ({}) does not exist".format(fname))
-        return {}, []
+    # Look for a valid strain key to index records by.
+    valid_strain_keys = ("strain", "name")
+    strain_key = None
+    for key in valid_strain_keys:
+        if key in metadata_columns:
+            strain_key = key
+            break
+
+    if strain_key is None:
+        raise KeyError("metadata file needs 'name' or 'strain' column")
+
+    # Index data frame by the strain key.
+    metadata["_index"] = metadata[strain_key]
+
+    # Convert the data frame to a dictionary of dictionaries indexed by strain key.
+    meta_dict = metadata.set_index("_index").to_dict("index")
+
+    return meta_dict, metadata_columns
 
 
 def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, min_max_year=None):

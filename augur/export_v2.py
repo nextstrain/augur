@@ -791,7 +791,14 @@ def set_description(data_json, cmd_line_description_file):
 
 def parse_node_data_and_metadata(T, node_data_files, metadata_file):
     node_data = read_node_data(node_data_files) # node_data_files is an array of multiple files (or a single file)
-    metadata, _ = read_metadata(metadata_file) # metadata={} if file isn't read / doeesn't exist
+
+    # Since metadata are optional, check whether metadata file has been defined
+    # or not. If it is not defined, default to an empty dictionary.
+    if metadata_file is None:
+        metadata = {}
+    else:
+        metadata, _ = read_metadata(metadata_file)
+
     node_data_names = set()
     metadata_names = set()
 
