@@ -1,0 +1,25 @@
+Map from character to field name
+A:	village_b
+B:	village_e
+C:	village_k
+D:	?
+
+
+Substitution rate (mu): 220.638021
+
+Equilibrium frequencies (pi_i):
+  A: 0.2725
+  B: 0.3747
+  C: 0.3527
+
+Symmetrized rates from j->i (W_ij):
+	A	B	C
+  A	0	1.6117	1.1295
+  B	1.6117	0	1.716
+  C	1.1295	1.716	0
+
+Actual rates from j->i (Q_ij):
+	A	B	C
+  A	0	0.4392	0.3078
+  B	0.604	0	0.6431
+  C	0.3984	0.6053	0
