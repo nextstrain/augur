@@ -10,13 +10,13 @@ echo -e "\nRunning all tests\n-----------------\n\n"
 
 cd $(dirname "$BASH_SOURCE")
 
-# exclude_test_dirs=(export filter import mask refine traits translate tree validate various_export_settings zika runner.sh)
-exclude_test_dirs=(traits runner.sh)
+exclude_test_dirs=(export filter refine traits tree various_export_settings zika runner.sh)
+# exclude_test_dirs=(traits runner.sh)
 
 for test_dir in *; do
     if [[ ! " ${exclude_test_dirs[@]} " =~ " ${test_dir} " ]]; then
       echo -e "\nRunning tests in ${test_dir}...\n"
-      cram -v $test_dir
+      cram $test_dir --verbose --shell=/bin/bash
     else
       echo -e "\nSkipping all tests in ${test_dir}.\n"
     fi
