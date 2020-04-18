@@ -1,0 +1,527 @@
+{
+  "aa_muts": {
+    "Rv0026": [
+      "P408S"
+    ],
+    "Rv0039c": [
+      "F24C"
+    ],
+    "Rv0565c": [
+      "S68P"
+    ],
+    "Rv0909": [
+      "Q45H"
+    ],
+    "Rv1129c": [
+      "S480P"
+    ],
+    "Rv3087": [
+      "V447L"
+    ],
+    "cobS": [
+      "S155L"
+    ],
+    "cycA": [
+      "R477G"
+    ],
+    "dnaQ": [
+      "D76G",
+      "A164V"
+    ],
+    "eccC2": [
+      "S443*"
+    ],
+    "embB": [
+      "A378E"
+    ],
+    "embC": [
+      "I270T",
+      "V981L"
+    ],
+    "esxD": [
+      "A49T"
+    ],
+    "esxM": [
+      "K59*"
+    ],
+    "fadE5": [
+      "V522F"
+    ],
+    "hsdS": [
+      "G25V"
+    ],
+    "katG": [
+      "L463R"
+    ],
+    "lldD2": [
+      "A59G",
+      "A176V"
+    ],
+    "murD": [
+      "T80I"
+    ],
+    "narX": [
+      "G77D"
+    ],
+    "pks15": [
+      "R374G"
+    ],
+    "rpoC": [
+      "G594E"
+    ],
+    "ubiA": [
+      "D149E"
+    ]
+  },
+  "attr": {
+    "clade_membership": "unassigned",
+    "clock_length": 0.001,
+    "cluster": "Mj-IV.c",
+    "date": "1949-04-14",
+    "div": 0,
+    "location": "village_e",
+    "num_date": 1949.2833747864772
+  },
+  "branch_length": 0.001,
+  "children": [
+    {
+      "aa_muts": {
+        "Rv2752c": [
+          "V533M"
+        ],
+        "esxU": [
+          "W62S"
+        ]
+      },
+      "attr": {
+        "clade_annotation": "Mj-IV.b",
+        "clade_membership": "Mj-IV.b",
+        "clock_length": 4.565554775119592e-06,
+        "cluster": "Mj-IV.c",
+        "date": "1994-12-09",
+        "div": 5.419610651303024e-06,
+        "location": "village_e",
+        "num_date": 1994.938922537673
+      },
+      "branch_length": 4.57e-06,
+      "children": [
+        {
+          "aa_muts": {},
+          "attr": {
+            "accession": "16490",
+            "authors": "Lee et al",
+            "clade_membership": "Mj-IV.b",
+            "clock_length": 6.2457325340533426e-09,
+            "cluster": "Mj-IV.b",
+            "date": "1995-01-01",
+            "div": 5.419610651304235e-06,
+            "location": "village_e",
+            "num_date": 1995.0013798630137,
+            "raw_date": "1995-XX-XX"
+          },
+          "branch_length": 1e-08,
+          "clade": 0,
+          "muts": [
+            "G2282624-"
+          ],
+          "strain": "G22677",
+          "yvalue": 9
+        },
+        {
+          "aa_muts": {},
+          "attr": {
+            "accession": "MT-2224",
+            "authors": "Lee et al",
+            "clade_annotation": "Mj-IV.c",
+            "clade_membership": "Mj-IV.c",
+            "clock_length": 1.3062453582545415e-06,
+            "cluster": "Mj-IV.c",
+            "date": "2008-01-01",
+            "div": 6.5486875113398345e-06,
+            "location": "village_e",
+            "num_date": 2008.0013761202185,
+            "raw_date": "2008-XX-XX"
+          },
+          "branch_length": 1.31e-06,
+          "clade": 1,
+          "muts": [
+            "G208073T",
+            "A686658C",
+            "G2408010T",
+            "C3215368T",
+            "C3698588T"
+          ],
+          "strain": "G22614",
+          "yvalue": 8
+        }
+      ],
+      "clade": 2,
+      "muts": [
+        "C76835T",
+        "G78926-",
+        "C125357G",
+        "G489205A",
+        "T592453G",
+        "G593036A",
+        "C681601A",
+        "C841448A",
+        "G841473A",
+        "A841475G",
+        "T841482C",
+        "C841494G",
+        "A841495G",
+        "C916341T",
+        "A1331500G",
+        "C1358348A",
+        "A1577404G",
+        "C1797378A",
+        "C2123181A",
+        "G2471620A",
+        "C3053481A",
+        "C3064595T",
+        "C3416043T",
+        "C3614894T",
+        "C3863080G"
+      ],
+      "strain": "NODE_0000004",
+      "yvalue": 8.5
+    },
+    {
+      "aa_muts": {},
+      "attr": {
+        "clade_membership": "unassigned",
+        "clock_length": 1.773203927104384e-07,
+        "cluster": "Mj-III.b",
+        "date": "1951-01-21",
+        "div": 2.258146387049768e-07,
+        "location": "village_e",
+        "num_date": 1951.0565787135815
+      },
+      "branch_length": 1.8e-07,
+      "children": [
+        {
+          "aa_muts": {},
+          "attr": {
+            "clade_membership": "unassigned",
+            "clock_length": 1.4632618598518372e-06,
+            "cluster": "Mj-V.a",
+            "date": "1965-09-09",
+            "div": 1.8065304768256632e-06,
+            "location": "village_e",
+            "num_date": 1965.6891973121
+          },
+          "branch_length": 1.46e-06,
+          "children": [
+            {
+              "aa_muts": {
+                "Rv3087": [
+                  "S227A"
+                ]
+              },
+              "attr": {
+                "accession": "MT-1167",
+                "authors": "Lee et al",
+                "clade_annotation": "Mj-V.a",
+                "clade_membership": "Mj-V.a",
+                "clock_length": 4.330944656768146e-06,
+                "cluster": "Mj-V.a",
+                "date": "2008-12-31",
+                "div": 6.548691100623334e-06,
+                "location": "village_b",
+                "num_date": 2008.9986438797814,
+                "raw_date": "2008-XX-XX"
+              },
+              "branch_length": 4.33e-06,
+              "clade": 3,
+              "muts": [
+                "C140456A",
+                "G166518A",
+                "C271291G",
+                "C279342T",
+                "T547914C",
+                "G627968A",
+                "C735680T",
+                "G778981C",
+                "A780761C",
+                "C822018A",
+                "A907514G",
+                "C1182755T",
+                "C1726220T",
+                "A1966558G",
+                "A2270264C",
+                "A2439204G",
+                "T2570032C",
+                "C2870142A",
+                "T3453603G",
+                "-3874723T",
+                "C4101177-",
+                "G4101178-",
+                "G4101179-",
+                "G4284962C",
+                "G4334284T"
+              ],
+              "strain": "G22592",
+              "yvalue": 7
+            },
+            {
+              "aa_muts": {},
+              "attr": {
+                "accession": "15613",
+                "authors": "Lee et al",
+                "clade_annotation": "Mj-V.c",
+                "clade_membership": "Mj-V.c",
+                "clock_length": 2.9309442824886343e-06,
+                "cluster": "Mj-V.d",
+                "date": "1994-12-31",
+                "div": 5.193771268644695e-06,
+                "location": "village_e",
+                "num_date": 1994.9986401369863,
+                "raw_date": "1994-XX-XX"
+              },
+              "branch_length": 2.93e-06,
+              "clade": 4,
+              "muts": [
+                "G20375A",
+                "G687906A",
+                "C1050085T",
+                "C1266777T",
+                "A1426482G",
+                "C1483215T",
+                "C1503915T",
+                "G2648402A",
+                "G2880738T",
+                "G3242169A",
+                "C3428716T",
+                "T3626718C",
+                "C3938279T",
+                "A4110575G",
+                "G4166890A"
+              ],
+              "strain": "G22676",
+              "yvalue": 6
+            }
+          ],
+          "clade": 5,
+          "muts": [
+            "A600688C",
+            "C1016956T",
+            "C2117071A",
+            "C2123146T",
+            "T2431533C",
+            "T3083532A",
+            "G3154627A",
+            "G3546617A"
+          ],
+          "strain": "NODE_0000005",
+          "yvalue": 6.5
+        },
+        {
+          "aa_muts": {},
+          "attr": {
+            "clade_annotation": "Mj-III.a",
+            "clade_membership": "Mj-III.a",
+            "clock_length": 5.534392092059198e-06,
+            "cluster": "Mj-III.b",
+            "date": "2006-05-27",
+            "div": 6.097047814442071e-06,
+            "location": "village_k",
+            "num_date": 2006.4004996341737
+          },
+          "branch_length": 5.53e-06,
+          "children": [
+            {
+              "aa_muts": {},
+              "attr": {
+                "clade_membership": "Mj-III.a",
+                "clock_length": 2.909109844332035e-10,
+                "cluster": "Mj-III.a",
+                "date": "2006-05-28",
+                "div": 6.097047814443283e-06,
+                "location": "village_k",
+                "num_date": 2006.403408744018
+              },
+              "branch_length": 0.0,
+              "children": [
+                {
+                  "aa_muts": {},
+                  "attr": {
+                    "accession": "MT-5983",
+                    "authors": "Lee et al",
+                    "clade_membership": "Mj-III.a",
+                    "clock_length": 4.5979711189957586e-07,
+                    "cluster": "Mj-III.a",
+                    "date": "2011-01-01",
+                    "div": 6.548684271206493e-06,
+                    "location": "village_k",
+                    "num_date": 2011.0013798630137,
+                    "raw_date": "2011-XX-XX"
+                  },
+                  "branch_length": 4.6e-07,
+                  "clade": 6,
+                  "muts": [
+                    "C200530T",
+                    "A396246C"
+                  ],
+                  "strain": "G22574",
+                  "yvalue": 5
+                },
+                {
+                  "aa_muts": {},
+                  "attr": {
+                    "accession": "MT-2175",
+                    "authors": "Lee et al",
+                    "clade_membership": "Mj-III.a",
+                    "clock_length": 5.597967376200643e-07,
+                    "cluster": "Mj-III.a",
+                    "date": "2012-01-01",
+                    "div": 6.5486767701674236e-06,
+                    "location": "village_k",
+                    "num_date": 2012.0013761202185,
+                    "raw_date": "2012-XX-XX"
+                  },
+                  "branch_length": 5.6e-07,
+                  "clade": 7,
+                  "muts": [
+                    "G1226103A",
+                    "G2322383A"
+                  ],
+                  "strain": "G22611",
+                  "yvalue": 4
+                }
+              ],
+              "clade": 8,
+              "muts": [],
+              "strain": "NODE_0000007",
+              "yvalue": 4.5
+            },
+            {
+              "aa_muts": {},
+              "attr": {
+                "clade_annotation": "Mj-III.b",
+                "clade_membership": "Mj-III.b",
+                "clock_length": 4.604593982380118e-07,
+                "cluster": "Mj-III.b",
+                "date": "2011-01-02",
+                "div": 6.774490864890199e-06,
+                "location": "village_k",
+                "num_date": 2011.0050936165537
+              },
+              "branch_length": 4.6e-07,
+              "children": [
+                {
+                  "aa_muts": {},
+                  "attr": {
+                    "accession": "MT-504",
+                    "authors": "Lee et al",
+                    "clade_membership": "Mj-III.b",
+                    "clock_length": 2.3330345807297406e-10,
+                    "cluster": "Mj-III.b",
+                    "date": "2011-01-03",
+                    "div": 6.77449086489141e-06,
+                    "location": "village_k",
+                    "num_date": 2011.0074266511344,
+                    "raw_date": "2011-XX-XX"
+                  },
+                  "branch_length": 0.0,
+                  "clade": 9,
+                  "muts": [],
+                  "strain": "G22665",
+                  "yvalue": 3
+                },
+                {
+                  "aa_muts": {},
+                  "attr": {
+                    "accession": "MT-2356",
+                    "authors": "Lee et al",
+                    "clade_membership": "Mj-III.b",
+                    "clock_length": 9.96282503664857e-08,
+                    "cluster": "Mj-III.b",
+                    "date": "2012-01-01",
+                    "div": 6.77449086489141e-06,
+                    "location": "village_k",
+                    "num_date": 2012.0013761202185,
+                    "raw_date": "2012-XX-XX"
+                  },
+                  "branch_length": 1e-07,
+                  "clade": 10,
+                  "muts": [],
+                  "strain": "G22615",
+                  "yvalue": 2
+                },
+                {
+                  "aa_muts": {},
+                  "attr": {
+                    "accession": "MT-1466",
+                    "authors": "Lee et al",
+                    "clade_membership": "Mj-III.b",
+                    "clock_length": 1.993550263227731e-07,
+                    "cluster": "Mj-III.b",
+                    "date": "2012-12-31",
+                    "div": 7.226126512902456e-06,
+                    "location": "village_k",
+                    "num_date": 2012.9986438797814,
+                    "raw_date": "2012-XX-XX"
+                  },
+                  "branch_length": 2e-07,
+                  "clade": 11,
+                  "muts": [
+                    "G1728059A",
+                    "G3241798C"
+                  ],
+                  "strain": "G22601",
+                  "yvalue": 1
+                }
+              ],
+              "clade": 12,
+              "muts": [
+                "A276685C",
+                "C1558108T",
+                "G3644579A"
+              ],
+              "strain": "NODE_0000002",
+              "yvalue": 2.0
+            }
+          ],
+          "clade": 13,
+          "muts": [
+            "C444296A",
+            "C456877T",
+            "T567913C",
+            "G600950A",
+            "T756178G",
+            "A809416G",
+            "C1360496A",
+            "G1626539A",
+            "G1837767A",
+            "G1917190A",
+            "C1973649T",
+            "T2228900G",
+            "G2501354A",
+            "G2623818A",
+            "A2760387C",
+            "G2783792T",
+            "G2903926A",
+            "T3108453C",
+            "A3374067C",
+            "G3430937A",
+            "G3599965A",
+            "C3772940T",
+            "C4232293G",
+            "G4287890A",
+            "G4409769C"
+          ],
+          "strain": "NODE_0000000",
+          "yvalue": 3.25
+        }
+      ],
+      "clade": 14,
+      "muts": [],
+      "strain": "NODE_0000003",
+      "yvalue": 4.875
+    }
+  ],
+  "clade": 15,
+  "muts": [],
+  "strain": "NODE_0000001",
+  "yvalue": 6.6875
+}
