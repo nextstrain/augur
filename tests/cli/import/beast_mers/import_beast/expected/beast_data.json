@@ -4,7 +4,7 @@
     "program": "augur",
     "version": "7.0.2"
   },
-  "mcc_file": "data/MERS_CoV_274_mcc.tree",
+  "mcc_file": "in/MERS_CoV_274_mcc.tree",
   "nodes": {
     "AbuDhabi/Gayathi_UAE_2_2014|KP209310|human|2014-03-07": {
       "clock_length": 0.10633457352043063,
