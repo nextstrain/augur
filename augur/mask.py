@@ -38,7 +38,7 @@ def read_bed_file(mask_file):
             # Skip unparseable lines, including header lines.
             print("Could not read line %d of BED file %s: %s. Continuing." % (idx, mask_file, err))
     sites_to_mask = np.unique(sites_to_mask).tolist()
-    print("Found %d sites to mask" % len(sites_to_mask))
+    print("Found %d sites to mask in '%s'" % (len(sites_to_mask), mask_file))
     return sites_to_mask
 
 def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
