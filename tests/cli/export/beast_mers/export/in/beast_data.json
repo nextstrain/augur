@@ -1,0 +1,6760 @@
+{
+  "comment": "Imported from a BEAST MCC tree using `augur import beast`",
+  "generated_by": {
+    "program": "augur",
+    "version": "7.0.2"
+  },
+  "mcc_file": "data/MERS_CoV_274_mcc.tree",
+  "nodes": {
+    "AbuDhabi/Gayathi_UAE_2_2014|KP209310|human|2014-03-07": {
+      "clock_length": 0.10633457352043063,
+      "num_date": 2014.1780821910966,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "AbuDhabi_UAE_16_2014|KP209308|human|2014-04-10": {
+      "clock_length": 0.06769135444639574,
+      "num_date": 2014.2712328810965,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "AbuDhabi_UAE_18_2014|KP209307|human|2014-04-10": {
+      "clock_length": 0.03633660957318585,
+      "num_date": 2014.2712328810965,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "AbuDhabi_UAE_26_2014|KP209313|human|2014-04-13": {
+      "clock_length": 0.026457813898878024,
+      "num_date": 2014.2794520510965,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "AbuDhabi_UAE_30_2014|KP209309|human|2014-04-19": {
+      "clock_length": 0.02346546849059794,
+      "num_date": 2014.2958904110958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "AbuDhabi_UAE_33_2014|KP209311|human|2014-04-17": {
+      "clock_length": 0.017986018489814404,
+      "num_date": 2014.290410961095,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "AbuDhabi_UAE_8_2014|KP209306|human|2014-04-07": {
+      "clock_length": 0.024364818183496784,
+      "num_date": 2014.2630137010958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "AbuDhabi_UAE_9_2013|KP209312|human|2013-11-15": {
+      "clock_length": 0.146349610175323,
+      "num_date": 2013.8712328810968,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_11_2013|KF600629|human|2013-05-03": {
+      "clock_length": 0.06446582115636934,
+      "num_date": 2013.3342465810958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_12_2013|KF600627|human|2013-05-07": {
+      "clock_length": 0.09327759638996502,
+      "num_date": 2013.3452054810962,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_14_2013|KF600615|human|2013-05-08": {
+      "clock_length": 0.09935635205659876,
+      "num_date": 2013.3479452110962,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_15_2013|KF600645|human|2013-05-11": {
+      "clock_length": 0.0727802734426577,
+      "num_date": 2013.3561643810942,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_16_2013|KF600644|human|2013-05-12": {
+      "clock_length": 0.07552000344260268,
+      "num_date": 2013.358904111094,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_17_2013|KF600647|human|2013-05-15": {
+      "clock_length": 0.03335445593155617,
+      "num_date": 2013.3671232910958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_18_2013|KF600651|human|2013-05-23": {
+      "clock_length": 0.06819191275550018,
+      "num_date": 2013.3890411010955,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_19_2013|KF600632|human|2013-05-23": {
+      "clock_length": 0.011974723084299477,
+      "num_date": 2013.3890411010955,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_1_2013|KF186567|human|2013-05-09": {
+      "clock_length": 0.07235441055541214,
+      "num_date": 2013.3506849310954,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_21_2013|KF600634|human|2013-05-30": {
+      "clock_length": 0.08736999275730284,
+      "num_date": 2013.4082191810974,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_23_2013|KJ156860|human|2013-05-13": {
+      "clock_length": 0.2772895920631475,
+      "num_date": 2013.361643841094,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_25_2013|KJ156866|human|2013-05-02": {
+      "clock_length": 0.07078976741749843,
+      "num_date": 2013.3315068510958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_26_2013|KJ156882|human|2013-06-18": {
+      "clock_length": 0.02354094756531122,
+      "num_date": 2013.4602739710942,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_27_2013|KJ156943|human|2013-06-19": {
+      "clock_length": 0.026280677565343247,
+      "num_date": 2013.4630137010943,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_28_2013|KJ156887|human|2013-06-22": {
+      "clock_length": 0.0958758005446172,
+      "num_date": 2013.4712328810958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_2_2013|KF186566|human|2013-04-21": {
+      "clock_length": 0.061386308396234046,
+      "num_date": 2013.3013698610973,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_3_2013|KF186565|human|2013-04-22": {
+      "clock_length": 0.05428803073764188,
+      "num_date": 2013.3041095910974,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_4_2013|KF186564|human|2013-05-01": {
+      "clock_length": 0.058986361156319056,
+      "num_date": 2013.3287671210958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_7_2013|KF600623|human|2013-05-01": {
+      "clock_length": 0.07420146509404635,
+      "num_date": 2013.3287671210958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Al-Hasa_8_2013|KF600618|human|2013-05-01": {
+      "clock_length": 0.09836822322708727,
+      "num_date": 2013.3287671210958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Asir_2_2013|KJ156863|human|2013-08-05": {
+      "clock_length": 0.5206592161142889,
+      "num_date": 2013.5917808210959,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Buraidah_1_2013|KF600630|human|2013-05-13": {
+      "clock_length": 0.5011320281969711,
+      "num_date": 2013.361643841094,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Camel_Egypt_NRCE-HKU270||camel|2013-12-30": {
+      "clock_length": 0.0398202417549165,
+      "num_date": 2013.9945205510967,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Camel_Egypt_NRCE-HKU271||camel|2013-12-30": {
+      "clock_length": 0.0398202417549165,
+      "num_date": 2013.9945205510967,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "ChinaGD01|KT036372|human|2015-05-28": {
+      "clock_length": 0.07975968999904037,
+      "num_date": 2015.4027397310956,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "D1157/15|KX108944|camel|2015-05-12": {
+      "clock_length": 0.6304895900642833,
+      "num_date": 2015.3589041110956,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "D1164.1/14|KX108937|camel|2014-06-02": {
+      "clock_length": 0.043438511550191405,
+      "num_date": 2014.4164383610948,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "D1189.1/15|KX108946|camel|2015-05-18": {
+      "clock_length": 0.2890375284944049,
+      "num_date": 2015.3753424710956,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "D1271/15|KX108945|camel|2015-05-29": {
+      "clock_length": 0.335526801270184,
+      "num_date": 2015.4054794510955,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "D252/15|KX108939|camel|2015-01-30": {
+      "clock_length": 0.08807196839348574,
+      "num_date": 2015.079452051096,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "D2597.2/14|KX108938|camel|2014-12-13": {
+      "clock_length": 0.04541710259418652,
+      "num_date": 2014.9479452110959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "D374/15|KX108940|camel|2015-02-12": {
+      "clock_length": 0.17109992031233234,
+      "num_date": 2015.115068491096,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "D383/15|KX108941|camel|2015-02-14": {
+      "clock_length": 0.1291678683931735,
+      "num_date": 2015.120547951096,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "D389/15|KX108942|camel|2015-02-15": {
+      "clock_length": 0.17931910031193576,
+      "num_date": 2015.1232876710958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "D998/15|KX108943|camel|2015-04-23": {
+      "clock_length": 3.525783511362679,
+      "num_date": 2015.3068493210956,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "EMC/2012|JX869059|human|2012-06-13": {
+      "clock_length": 1.4638496871394562,
+      "num_date": 2012.4480874310939,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Egypt_NRCE-NC163/2014|KU740200|camel|2014-12-17": {
+      "clock_length": 1.8186626412693692,
+      "num_date": 2014.9589041110953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "England/1/2012|KC164505|human|2012-09-11": {
+      "clock_length": 0.4905436825675942,
+      "num_date": 2012.6939890710953,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "England/2/2013|KM015348|human|2013-02-10": {
+      "clock_length": 0.020370914148831076,
+      "num_date": 2013.1095890410948,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "England/3/2013|KM210278|human|2013-02-10": {
+      "clock_length": 0.02037091414883152,
+      "num_date": 2013.1095890410948,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "England/4/2013|KM210277|human|2013-02-13": {
+      "clock_length": 0.03849826865562367,
+      "num_date": 2013.117808221094,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Florida/USA-2_SaudiArabia_2014|KJ829365|human|2014-05-10": {
+      "clock_length": 0.11256580397048066,
+      "num_date": 2014.3534246610966,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Germany3/UAE-Dubai/Abu-Dhabi||human|2015-03-11": {
+      "clock_length": 1.5335467594878955,
+      "num_date": 2015.1890411010957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Hafr-Al-Batin_1_2013|KF600628|human|2013-06-04": {
+      "clock_length": 0.09380837521162055,
+      "num_date": 2013.4219178110955,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Hafr-Al-Batin_2_2013|KJ156910|human|2013-08-05": {
+      "clock_length": 0.020405873721576206,
+      "num_date": 2013.5917808210959,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Hafr-Al-Batin_4_2013|KJ156931|human|2013-08-25": {
+      "clock_length": 0.17354157624721855,
+      "num_date": 2013.646575341097,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Hafr-Al-Batin_5_2013|KJ156951|human|2013-08-25": {
+      "clock_length": 0.07098819080705443,
+      "num_date": 2013.646575341097,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Hafr-Al-Batin_6_2013|KJ156874|human|2013-08-28": {
+      "clock_length": 0.07238385176070405,
+      "num_date": 2013.6547945210953,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Hufuf-KSA-11002/2015|KT806046|human|2015-05-10": {
+      "clock_length": 0.054974155683569836,
+      "num_date": 2015.3534246610955,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Hufuf-KSA-9158/2015|KT806047|human|2015-03-27": {
+      "clock_length": 0.1985334347166831,
+      "num_date": 2015.2328767110953,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Indiana/USA-1_SaudiArabia_2014|KJ813439|human|2014-04-30": {
+      "clock_length": 0.05683262642648579,
+      "num_date": 2014.326027401095,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah-1|KF917527|camel|2013-11-08": {
+      "clock_length": 0.06057100359337442,
+      "num_date": 2013.8520547910969,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah-1|KF958702|human|2013-11-05": {
+      "clock_length": 0.052351833590960295,
+      "num_date": 2013.8438356210945,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah-KFH-285TA||human|2014-06-03": {
+      "clock_length": 0.04651557540952411,
+      "num_date": 2014.4191780810966,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah-KFH-605TD||human|2014-06-09": {
+      "clock_length": 0.06295393540873828,
+      "num_date": 2014.4356164410958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah-KFH-668TD||human|2014-06-09": {
+      "clock_length": 0.008112904671007781,
+      "num_date": 2014.4356164410958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah-KFH-899NF||human|2014-06-16": {
+      "clock_length": 0.02729098467178792,
+      "num_date": 2014.4547945210966,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah-KFH-949NSG1||human|2014-06-18": {
+      "clock_length": 0.05339958117674004,
+      "num_date": 2014.4602739710951,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah-KSA-3RS2702/2015|KU851859|human|2015-07-12": {
+      "clock_length": 0.37865901772311455,
+      "num_date": 2015.5260274010955,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah-KSA-C20843/2015|KT806044|human|2015-02-09": {
+      "clock_length": 0.015099566928137631,
+      "num_date": 2015.1068493210955,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah-KSA-C20860/2015|KT806055|human|2015-02-10": {
+      "clock_length": 0.146485629775289,
+      "num_date": 2015.109589041096,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah-KSA-C21271/2015|KT806045|human|2015-02-22": {
+      "clock_length": 0.050715996928279994,
+      "num_date": 2015.1424657510956,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/401/2014|KT368827|camel|2014-09": {
+      "clock_length": 0.012716283418548358,
+      "num_date": 2014.7041095910959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D100/2014|KT368828|camel|2014-12": {
+      "clock_length": 0.02422654614388453,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D33b/2014|KT368829|camel|2014-12": {
+      "clock_length": 0.025689338083002222,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D34/2014|KT368830|camel|2014-12": {
+      "clock_length": 0.025689338083002222,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D35/2014|KT368831|camel|2014-12": {
+      "clock_length": 0.1272807885713776,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D36/2014|KT368832|camel|2014-12": {
+      "clock_length": 0.03265351090628965,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D38b/2014|KT368833|camel|2014-12": {
+      "clock_length": 0.0427912716803035,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D40/2014|KT368834|camel|2014-12": {
+      "clock_length": 0.06919792637133682,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D42/2014|KT368835|camel|2014-12": {
+      "clock_length": 0.08246759798279235,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D43b/2014|KT368836|camel|2014-12": {
+      "clock_length": 0.01460794694382428,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D45/2014|KT368837|camel|2014-12": {
+      "clock_length": 0.10399076042893052,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D46b/2014|KT368838|camel|2014-12": {
+      "clock_length": 0.01460794694382428,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D47/2014|KT368839|camel|2014-12": {
+      "clock_length": 0.12411437369794154,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D48/2014|KT368840|camel|2014-12": {
+      "clock_length": 0.08184322410243772,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D49/2014|KT368841|camel|2014-12": {
+      "clock_length": 0.08246759798279235,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D50b/2014|KT368842|camel|2014-12": {
+      "clock_length": 0.08184322410243772,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D88/2014|KT368843|camel|2014-12": {
+      "clock_length": 0.02422654614388453,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D90/2014|KT368844|camel|2014-12": {
+      "clock_length": 0.03645392640175704,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/D92/2014|KT368845|camel|2014-12": {
+      "clock_length": 0.09058769324530802,
+      "num_date": 2014.9534246610958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/F13A/2014|KT368824|camel|2014-05": {
+      "clock_length": 1.3584415847603113,
+      "num_date": 2014.3671232910958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/Jd175/2015|KT368866|camel|2015-02": {
+      "clock_length": 0.017426923370173375,
+      "num_date": 2015.1232876710958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/Jd199/2015|KT368867|camel|2015-02": {
+      "clock_length": 0.017426923370173375,
+      "num_date": 2015.1232876710958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/Jd1b/2015|KT368858|camel|2015-01": {
+      "clock_length": 0.033446687585548585,
+      "num_date": 2015.0383561610959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/Jd4/2015|KT368859|camel|2015-01": {
+      "clock_length": 0.026795567666702436,
+      "num_date": 2015.0383561610959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/Jd6b/2015|KT368860|camel|2015-01": {
+      "clock_length": 0.026795567666702325,
+      "num_date": 2015.0383561610959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/Jd7/2015|KT368861|camel|2015-01": {
+      "clock_length": 0.03960720853419586,
+      "num_date": 2015.0383561610959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/Jd85/2015|KT368862|camel|2015-01": {
+      "clock_length": 0.02521715198401464,
+      "num_date": 2015.0383561610959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/Jd86/2015|KT368863|camel|2015-01": {
+      "clock_length": 0.02521715198401442,
+      "num_date": 2015.0383561610959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/Jd87/2015|KT368864|camel|2015-01": {
+      "clock_length": 0.025422990409902257,
+      "num_date": 2015.0383561610959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/Jd90/2015|KT368865|camel|2015-01": {
+      "clock_length": 0.025422990409901924,
+      "num_date": 2015.0383561610959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/N51/2014|KT368846|camel|2014-11": {
+      "clock_length": 0.04890725833507603,
+      "num_date": 2014.8712328810961,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/N62b/2014|KT368847|camel|2014-11": {
+      "clock_length": 0.06604711887932757,
+      "num_date": 2014.8712328810961,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/N68b/2014|KT368848|camel|2014-11": {
+      "clock_length": 0.04890725833507592,
+      "num_date": 2014.8712328810961,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/O23b/2014|KT368849|camel|2014-10": {
+      "clock_length": 0.04905296734068343,
+      "num_date": 2014.7863013710953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/O24/2014|KT368850|camel|2014-10": {
+      "clock_length": 0.04905296734068365,
+      "num_date": 2014.7863013710953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/O30/2014|KT368851|camel|2014-10": {
+      "clock_length": 0.0832031123103446,
+      "num_date": 2014.7863013710953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/O47b/2014|KT368852|camel|2014-10": {
+      "clock_length": 0.28130837465541925,
+      "num_date": 2014.7863013710953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/S100/2014|KT368853|camel|2014-09": {
+      "clock_length": 0.06437117227578981,
+      "num_date": 2014.7041095910959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/S73/2014|KT368854|camel|2014-09": {
+      "clock_length": 0.06437117227578981,
+      "num_date": 2014.7041095910959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/S93/2014|KT368855|camel|2014-09": {
+      "clock_length": 0.21074001994747715,
+      "num_date": 2014.7041095910959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/S94/2014|KT368856|camel|2014-09": {
+      "clock_length": 0.012716283418548358,
+      "num_date": 2014.7041095910959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah/S99/2014|KT368857|camel|2014-09": {
+      "clock_length": 0.04960800215752137,
+      "num_date": 2014.7041095910959,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah_C10306/KSA|KM027260|human|2014-04-21": {
+      "clock_length": 0.06051100397021836,
+      "num_date": 2014.3013698610964,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah_C7149/KSA|KM027255|human|2014-04-05": {
+      "clock_length": 0.007339729312977994,
+      "num_date": 2014.257534251095,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah_C7569/KSA|KM027256|human|2014-04-03": {
+      "clock_length": 0.0458136109073255,
+      "num_date": 2014.252054791095,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah_C7770/KSA|KM027257|human|2014-04-07": {
+      "clock_length": 0.023355261193216847,
+      "num_date": 2014.2630137010958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah_C8826/KSA|KM027258|human|2014-04-12": {
+      "clock_length": 0.06490379884138453,
+      "num_date": 2014.2767123310948,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jeddah_C9055/KSA|KM027259|human|2014-04-14": {
+      "clock_length": 0.0575407930028089,
+      "num_date": 2014.2821917810966,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jordan-N3/2012|KC776174|human|2012-04-15": {
+      "clock_length": 1.3026475071425607,
+      "num_date": 2012.2868852510971,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jordan_10_2015|KU233362|human|2015-09-17": {
+      "clock_length": 0.08286713239262163,
+      "num_date": 2015.7095890410958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Jordan_1_2015|KU233363|human|2015-09-17": {
+      "clock_length": 0.08286713239262163,
+      "num_date": 2015.7095890410958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KFMC-10|KT121578|human|2014-05-01": {
+      "clock_length": 0.04039220080571693,
+      "num_date": 2014.3287671210958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KFMC-1|KT121580|human|2014-04-28": {
+      "clock_length": 0.03290400444627606,
+      "num_date": 2014.3205479510966,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KFMC-2|KT121577|human|2014-05-11": {
+      "clock_length": 0.03594446037743948,
+      "num_date": 2014.3561643810951,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KFMC-3|KT121573|human|2014-05-09": {
+      "clock_length": 0.034494173523883065,
+      "num_date": 2014.3506849310966,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KFMC-4|KT121575|human|2014-05-12": {
+      "clock_length": 0.038684190377308525,
+      "num_date": 2014.358904111095,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KFMC-5|KT121572|human|2014-05-12": {
+      "clock_length": 0.033042681442847055,
+      "num_date": 2014.358904111095,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KFMC-6|KT121576|human|2014-05-18": {
+      "clock_length": 0.049481041444067175,
+      "num_date": 2014.3753424710962,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KFMC-7|KT121581|human|2014-05-03": {
+      "clock_length": 0.04974224686061035,
+      "num_date": 2014.3342465810958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KFMC-8|KT121579|human|2014-04-30": {
+      "clock_length": 0.04070161833527575,
+      "num_date": 2014.326027401095,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KFMC-9|KT121574|human|2014-05-07": {
+      "clock_length": 0.07563756373609776,
+      "num_date": 2014.3452054810948,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KFU-HKU13|KJ650295|camel|2013-12-30": {
+      "clock_length": 0.04246622709494274,
+      "num_date": 2013.9945205510967,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KFU-HKU19Dam|KJ650296|camel|2013-12-30": {
+      "clock_length": 0.04246622709494274,
+      "num_date": 2013.9945205510967,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KFU-HKU1|KJ650297|camel|2013-11-30": {
+      "clock_length": 0.026489321156318635,
+      "num_date": 2013.9123287710945,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/CNUH_SNU/016_06_2015|KT868865|human|2015-06-11": {
+      "clock_length": 0.05473275150693474,
+      "num_date": 2015.4410958910958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/CNUH_SNU/023_06_2015|KT868866|human|2015-06-11": {
+      "clock_length": 0.04381214671103084,
+      "num_date": 2015.4410958910958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/CNUH_SNU/024_06_2015|KT868867|human|2015-06-08": {
+      "clock_length": 0.045406741294067965,
+      "num_date": 2015.4328767110958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/CNUH_SNU/030_06_2015|KT868868|human|2015-06-08": {
+      "clock_length": 0.042177659611229545,
+      "num_date": 2015.4328767110958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/CNUH_SNU/031_06_2015|KT868869|human|2015-06-11": {
+      "clock_length": 0.03464057960068595,
+      "num_date": 2015.4410958910958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/CNUH_SNU/038_06_2015|KT868870|human|2015-06-10": {
+      "clock_length": 0.11940299968458207,
+      "num_date": 2015.4383561610957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/CNUH_SNU/054_06_2015|KT868871|human|2015-06-09": {
+      "clock_length": 0.058970758008557556,
+      "num_date": 2015.4356164410958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/CNUH_SNU/082_06_2015|KT868872|human|2015-06-10": {
+      "clock_length": 0.005492752595670836,
+      "num_date": 2015.4383561610957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/CNUH_SNU/085_06_2015|KT868873|human|2015-06-10": {
+      "clock_length": 0.05291989179433165,
+      "num_date": 2015.4383561610957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/CNUH_SNU/110_06_2015|KT868874|human|2015-06-11": {
+      "clock_length": 0.022721641972248185,
+      "num_date": 2015.4410958910958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/CNUH_SNU/122_06_2015|KT868875|human|2015-06-10": {
+      "clock_length": 0.01678030364972416,
+      "num_date": 2015.4383561610957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/CNUH_SNU/148_06_2015|KT868876|human|2015-06-10": {
+      "clock_length": 0.005492752595670836,
+      "num_date": 2015.4383561610957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/CNUH_SNU/172_06_2015|KT868877|human|2015-06-22": {
+      "clock_length": 0.06477756960063788,
+      "num_date": 2015.4712328810956,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/KNIH/002_05_2015|KT029139|human|2015-05-20": {
+      "clock_length": 0.08616870357025985,
+      "num_date": 2015.3808219210957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/Seoul/014-2015|KX034093|human|2015-05-30": {
+      "clock_length": 0.031573498008455325,
+      "num_date": 2015.4082191810955,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/Seoul/050-1-2015|KX034094|human|2015-06-11": {
+      "clock_length": 0.01952003364976118,
+      "num_date": 2015.4410958910958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/Seoul/066-2015|KX034095|human|2015-06-04": {
+      "clock_length": 0.01600242888416964,
+      "num_date": 2015.4219178110955,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/Seoul/077-2-2015|KX034096|human|2015-06-17": {
+      "clock_length": 0.030943097376779027,
+      "num_date": 2015.4575342510955,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/Seoul/080-3-2015|KX034097|human|2015-06-17": {
+      "clock_length": 0.037763376074936406,
+      "num_date": 2015.4575342510955,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/Seoul/162-1-2015|KX034098|human|2015-06-22": {
+      "clock_length": 0.03917113090076477,
+      "num_date": 2015.4712328810956,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/Seoul/169-2015|KX034099|human|2015-06-26": {
+      "clock_length": 0.04481886317471956,
+      "num_date": 2015.4821917810957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOR/Seoul/177-3-2015|KX034100|human|2015-07-03": {
+      "clock_length": 0.06399694317477345,
+      "num_date": 2015.5013698610958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOREA/Seoul/014-1-2015|KT374052|human|2015-05-31": {
+      "clock_length": 0.01814235911494433,
+      "num_date": 2015.4109589010957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOREA/Seoul/035-1-2015|KT374054|human|2015-06-03": {
+      "clock_length": 0.0046442653143589085,
+      "num_date": 2015.4191780810954,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOREA/Seoul/163-1-2015|KT374051|human|2015-06-19": {
+      "clock_length": 0.12396364467909476,
+      "num_date": 2015.4630137010956,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KOREA/Seoul/168-1-2015|KT374056|human|2015-06-21": {
+      "clock_length": 0.04872227607516921,
+      "num_date": 2015.4684931510958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KSA-363|KJ713298|camel|2013-11": {
+      "clock_length": 0.7661526158037077,
+      "num_date": 2013.8712328810968,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KSA-376|KJ713299|camel|2013-11": {
+      "clock_length": 0.8001112761151137,
+      "num_date": 2013.8712328810968,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KSA-378|KJ713296|camel|2013-11": {
+      "clock_length": 0.13969267687839215,
+      "num_date": 2013.8712328810968,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KSA-503|KJ713297|camel|2013-11": {
+      "clock_length": 0.5008919591463195,
+      "num_date": 2013.8712328810968,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "KSA-505|KJ713295|camel|2013-11": {
+      "clock_length": 0.06930898983686884,
+      "num_date": 2013.8712328810968,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Kharj-KSA-2598/2015|KT806053|human|2015-02-02": {
+      "clock_length": 0.28159970431539394,
+      "num_date": 2015.0876712310958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Kharj-KSA-2599/2015|KT806052|human|2015-02-02": {
+      "clock_length": 0.2901012098333119,
+      "num_date": 2015.0876712310958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Khobar-KSA-6736/2015|KT806048|human|2015-02-07": {
+      "clock_length": 0.7744086758589912,
+      "num_date": 2015.1013698610955,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Korea/Seoul/SNU1-035/2015|KU308549|human|2015-06-08": {
+      "clock_length": 0.018342895314634067,
+      "num_date": 2015.4328767110958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Madinah_3b_2013|KJ156916|human|2013-09-11": {
+      "clock_length": 0.08364669031899119,
+      "num_date": 2013.6931506810963,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Makkah_C9355/KSA/Makkah|KM027261|human|2014-04-15": {
+      "clock_length": 0.03473698931469915,
+      "num_date": 2014.2849315110966,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Munich/AbuDhabi/2013|KF192507|human|2013-03-22": {
+      "clock_length": 1.2072906451469327,
+      "num_date": 2013.219178081094,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000000": {
+      "clock_length": 0.001,
+      "num_date": 2010.0582971299452,
+      "num_date_confidence": [
+        2011.4273525750482,
+        2008.2768834319415
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9936298454594795,
+        "h": 0.006370154540520467
+      },
+      "type_entropy": 0.03855816103048164
+    },
+    "NODE_0000001": {
+      "clock_length": 1.7120660480289822,
+      "num_date": 2011.770363177974,
+      "num_date_confidence": [
+        2012.2626057275866,
+        2011.178418607308
+      ],
+      "posterior": 0.9978004399120176,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9953335241912397,
+        "h": 0.004666475808760378
+      },
+      "type_entropy": 0.02970218487260839
+    },
+    "NODE_0000002": {
+      "clock_length": 0.4099029008025892,
+      "num_date": 2012.1802660787769,
+      "num_date_confidence": [
+        2012.536371671876,
+        2011.7673795624676
+      ],
+      "posterior": 0.8835947096295027,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9902689771110824,
+        "h": 0.009731022888917626
+      },
+      "type_entropy": 0.05476186524480435
+    },
+    "NODE_0000003": {
+      "clock_length": 0.30021255452424844,
+      "num_date": 2012.4804786333011,
+      "num_date_confidence": [
+        2012.7131008499505,
+        2012.2232132462746
+      ],
+      "posterior": 0.8835947096295027,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9905922669080564,
+        "h": 0.009407733091943619
+      },
+      "type_entropy": 0.05326192370583528
+    },
+    "NODE_0000004": {
+      "clock_length": 0.1308476120688833,
+      "num_date": 2012.61132624537,
+      "num_date_confidence": [
+        2012.7753140176676,
+        2012.4237870969455
+      ],
+      "posterior": 0.9988002399520096,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9664521664521665,
+        "h": 0.03354783354783355
+      },
+      "type_entropy": 0.14686631900667743
+    },
+    "NODE_0000005": {
+      "clock_length": 0.2491855675272272,
+      "num_date": 2012.8605118128971,
+      "num_date_confidence": [
+        2013.1091588857844,
+        2012.6210084915995
+      ],
+      "posterior": 0.9999428685691433,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9961719754320811,
+        "h": 0.003828024567918869
+      },
+      "type_entropy": 0.0251252004964213
+    },
+    "NODE_0000006": {
+      "clock_length": 0.1609332569084203,
+      "num_date": 2013.0214450698056,
+      "num_date_confidence": [
+        2013.2028831593348,
+        2012.814897967706
+      ],
+      "posterior": 0.9867169423258205,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9991025418331306,
+        "h": 0.0008974581668693186
+      },
+      "type_entropy": 0.007193571416210202
+    },
+    "NODE_0000007": {
+      "clock_length": 0.1240491800476069,
+      "num_date": 2013.1454942498533,
+      "num_date_confidence": [
+        2013.266083031634,
+        2013.0088936139211
+      ],
+      "posterior": 0.9399263004541949,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9931011427182106,
+        "h": 0.006898857281789448
+      },
+      "type_entropy": 0.04120647492747363
+    },
+    "NODE_0000008": {
+      "clock_length": 0.048077869082203684,
+      "num_date": 2013.1935721189354,
+      "num_date_confidence": [
+        2013.3801322711051,
+        2013.0928259042405
+      ],
+      "posterior": 0.5724283714685634,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9976046708917611,
+        "h": 0.002395329108238934
+      },
+      "type_entropy": 0.01684643570010264
+    },
+    "NODE_0000009": {
+      "clock_length": 0.20738996803901877,
+      "num_date": 2013.4009620869745,
+      "num_date_confidence": [
+        2013.6009151196815,
+        2013.200886115453
+      ],
+      "posterior": 0.9971434284571657,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9993984014667545,
+        "h": 0.0006015985332454808
+      },
+      "type_entropy": 0.005062824065623978
+    },
+    "NODE_0000010": {
+      "clock_length": 0.3698740161096865,
+      "num_date": 2013.770836103084,
+      "num_date_confidence": [
+        2013.9816632040097,
+        2013.5374836354813
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9920301653954924,
+        "h": 0.00796983460450767
+      },
+      "type_entropy": 0.04644896092009382
+    },
+    "NODE_0000011": {
+      "clock_length": 0.11473125935117356,
+      "num_date": 2013.8855673624353,
+      "num_date_confidence": [
+        2014.0549205762084,
+        2013.704896575062
+      ],
+      "posterior": 0.9550089982003599,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.948971045704714,
+        "h": 0.05102895429528596
+      },
+      "type_entropy": 0.20153386326337153
+    },
+    "NODE_0000012": {
+      "clock_length": 0.18618025514092618,
+      "num_date": 2014.0717476175762,
+      "num_date_confidence": [
+        2014.1565304246242,
+        2013.968973336161
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.10495043848373183,
+        "h": 0.8950495615162681
+      },
+      "type_entropy": 0.3358259975309718
+    },
+    "NODE_0000013": {
+      "clock_length": 0.1317939090738307,
+      "num_date": 2014.20354152665,
+      "num_date_confidence": [
+        2014.2545475601241,
+        2014.1404542876937
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.00728425743422744,
+        "h": 0.9927157425657726
+      },
+      "type_entropy": 0.04311106720269303
+    },
+    "NODE_0000014": {
+      "clock_length": 0.03135474487320988,
+      "num_date": 2014.2348962715232,
+      "num_date_confidence": [
+        2014.2629747700078,
+        2014.206964250508
+      ],
+      "posterior": 0.8299197303396464,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.00020651912022854783,
+        "h": 0.9997934808797715
+      },
+      "type_entropy": 0.0019588366067892003
+    },
+    "NODE_0000015": {
+      "clock_length": 0.0037526113890014035,
+      "num_date": 2014.2386488829122,
+      "num_date_confidence": [
+        2014.2630121106235,
+        2014.2325173185652
+      ],
+      "posterior": 0.24512240409061045,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000016": {
+      "clock_length": 0.014345354285449474,
+      "num_date": 2014.2529942371978,
+      "num_date_confidence": [
+        2014.2783937303893,
+        2014.248243966793
+      ],
+      "posterior": 0.44122604050618447,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000017": {
+      "clock_length": 0.019430705407431637,
+      "num_date": 2014.272424942605,
+      "num_date_confidence": [
+        2014.290410625471,
+        2014.2648912810098
+      ],
+      "posterior": 0.7153997771874196,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000018": {
+      "clock_length": 0.41359718853327454,
+      "num_date": 2014.2991645509685,
+      "num_date_confidence": [
+        2014.4424156657685,
+        2014.1083198034205
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998000399920016,
+        "h": 0.0001999600079984003
+      },
+      "type_entropy": 0.0019030778213457733
+    },
+    "NODE_0000019": {
+      "clock_length": 0.5236418155379273,
+      "num_date": 2014.8228063665065,
+      "num_date_confidence": [
+        2014.9243179491361,
+        2014.6901099365652
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9993715542605764,
+        "h": 0.0006284457394235438
+      },
+      "type_entropy": 0.005261313957877943
+    },
+    "NODE_0000020": {
+      "clock_length": 0.0797217419952988,
+      "num_date": 2014.9025281085019,
+      "num_date_confidence": [
+        2014.945769753277,
+        2014.841407402073
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.999914302853715,
+        "h": 8.56971462850287e-05
+      },
+      "type_entropy": 0.0008882205714465313
+    },
+    "NODE_0000021": {
+      "clock_length": 0.0888519742008611,
+      "num_date": 2014.9913800827026,
+      "num_date_confidence": [
+        2015.0794510888766,
+        2014.9189811003178
+      ],
+      "posterior": 0.8617990687576771,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9999005601776658,
+        "h": 9.94398223341841e-05
+      },
+      "type_entropy": 0.00101586789399065
+    },
+    "NODE_0000022": {
+      "clock_length": 0.1211622042773075,
+      "num_date": 2014.9439685707837,
+      "num_date_confidence": [
+        2015.0970043479629,
+        2014.8310242017135
+      ],
+      "posterior": 0.8040391921615677,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9997868334103102,
+        "h": 0.00021316658968984262
+      },
+      "type_entropy": 0.002015133916429233
+    },
+    "NODE_0000023": {
+      "clock_length": 0.3215727636820498,
+      "num_date": 2014.0924088667662,
+      "num_date_confidence": [
+        2014.1698593157275,
+        2013.9551446840585
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9996572114148599,
+        "h": 0.0003427885851401148
+      },
+      "type_entropy": 0.003077632932849904
+    },
+    "NODE_0000024": {
+      "clock_length": 0.04202967640506272,
+      "num_date": 2014.1344385431712,
+      "num_date_confidence": [
+        2014.1917801009752,
+        2014.099177243371
+      ],
+      "posterior": 0.7883851801068358,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998913004094351,
+        "h": 0.00010869959056487554
+      },
+      "type_entropy": 0.0011007862247327206
+    },
+    "NODE_0000025": {
+      "clock_length": 0.25389904957720977,
+      "num_date": 2014.3883375927485,
+      "num_date_confidence": [
+        2014.44664270024,
+        2014.3089488694504
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.999914302853715,
+        "h": 8.56971462850287e-05
+      },
+      "type_entropy": 0.0008882205714465313
+    },
+    "NODE_0000026": {
+      "clock_length": 0.19475569983000485,
+      "num_date": 2013.5957177868045,
+      "num_date_confidence": [
+        2013.7377010066343,
+        2013.442200641423
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9676636101351158,
+        "h": 0.032336389864884164
+      },
+      "type_entropy": 0.14277216898061346
+    },
+    "NODE_0000027": {
+      "clock_length": 0.10383719048155937,
+      "num_date": 2013.699554977286,
+      "num_date_confidence": [
+        2013.802432043381,
+        2013.5855299555535
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.7080298226069072,
+        "h": 0.29197017739309283
+      },
+      "type_entropy": 0.6039063344401763
+    },
+    "NODE_0000028": {
+      "clock_length": 0.025328293635458188,
+      "num_date": 2013.7248832709215,
+      "num_date_confidence": [
+        2013.8115653976724,
+        2013.658341310919
+      ],
+      "posterior": 0.5100122832576341,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.19950711325193235,
+        "h": 0.8004928867480676
+      },
+      "type_entropy": 0.4997183775711014
+    },
+    "NODE_0000029": {
+      "clock_length": 0.5800968883908071,
+      "num_date": 2014.2796518656767,
+      "num_date_confidence": [
+        2014.3830485322312,
+        2014.144334624785
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9997143428457166,
+        "h": 0.000285657154283429
+      },
+      "type_entropy": 0.0026167836961639287
+    },
+    "NODE_0000030": {
+      "clock_length": 0.09334798386790588,
+      "num_date": 2014.3729998495446,
+      "num_date_confidence": [
+        2014.4140542262073,
+        2014.312570249446
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9999428685691433,
+        "h": 5.7131430856685804e-05
+      },
+      "type_entropy": 0.0006153125987920666
+    },
+    "NODE_0000031": {
+      "clock_length": 0.03697291548179216,
+      "num_date": 2014.3166247811587,
+      "num_date_confidence": [
+        2014.4302760284481,
+        2014.2536549654994
+      ],
+      "posterior": 0.5152112434655925,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000032": {
+      "clock_length": 0.014047381328390562,
+      "num_date": 2014.330672162487,
+      "num_date_confidence": [
+        2014.4466227721912,
+        2014.3044637129522
+      ],
+      "posterior": 0.22712600337075442,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000033": {
+      "clock_length": 0.13862770262601298,
+      "num_date": 2013.7343454894303,
+      "num_date_confidence": [
+        2013.8631871343855,
+        2013.5986206074092
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9659211014939869,
+        "h": 0.03407889850601308
+      },
+      "type_entropy": 0.1486467201818073
+    },
+    "NODE_0000034": {
+      "clock_length": 0.15149396050776232,
+      "num_date": 2013.8858394499382,
+      "num_date_confidence": [
+        2013.9123277992783,
+        2013.8329215178103
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9994572514068615,
+        "h": 0.0005427485931385152
+      },
+      "type_entropy": 0.004623454121710968
+    },
+    "NODE_0000035": {
+      "clock_length": 0.0662148740636419,
+      "num_date": 2013.952054324002,
+      "num_date_confidence": [
+        2013.994519591072,
+        2013.9083874608996
+      ],
+      "posterior": 0.8696546405004714,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000036": {
+      "clock_length": 0.049676535176061076,
+      "num_date": 2013.0711216049817,
+      "num_date_confidence": [
+        2013.4394946823452,
+        2012.9237008451748
+      ],
+      "posterior": 0.4066329591224612,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9995785036880928,
+        "h": 0.00042149631190727084
+      },
+      "type_entropy": 0.003697149959204204
+    },
+    "NODE_0000037": {
+      "clock_length": 0.10600413469953063,
+      "num_date": 2012.7173303800694,
+      "num_date_confidence": [
+        2012.821491346033,
+        2012.5715783271576
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.6864627074585083,
+        "h": 0.3135372925414917
+      },
+      "type_entropy": 0.6219017327130667
+    },
+    "NODE_0000038": {
+      "clock_length": 0.08073967028714923,
+      "num_date": 2012.7980700503567,
+      "num_date_confidence": [
+        2012.9658843178624,
+        2012.6345244347367
+      ],
+      "posterior": 0.9772045590881824,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.6851413370750388,
+        "h": 0.3148586629249613
+      },
+      "type_entropy": 0.6229331498797648
+    },
+    "NODE_0000039": {
+      "clock_length": 0.12312904281904968,
+      "num_date": 2012.9211990931756,
+      "num_date_confidence": [
+        2013.101327301587,
+        2012.738159977893
+      ],
+      "posterior": 0.9981146627817293,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.7848659168312297,
+        "h": 0.21513408316877022
+      },
+      "type_entropy": 0.5206799748521718
+    },
+    "NODE_0000040": {
+      "clock_length": 0.16315515585532125,
+      "num_date": 2013.084354249031,
+      "num_date_confidence": [
+        2013.2268609227071,
+        2012.9292217940965
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.5753420744422544,
+        "h": 0.4246579255577456
+      },
+      "type_entropy": 0.6817509665366314
+    },
+    "NODE_0000041": {
+      "clock_length": 0.14604464883762835,
+      "num_date": 2013.2303988978686,
+      "num_date_confidence": [
+        2013.2846130319515,
+        2013.1688011861597
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.018539149312994545,
+        "h": 0.9814608506870055
+      },
+      "type_entropy": 0.09229795570910222
+    },
+    "NODE_0000042": {
+      "clock_length": 0.009584654832429873,
+      "num_date": 2013.239983552701,
+      "num_date_confidence": [
+        2013.2907368373603,
+        2013.2056356535986
+      ],
+      "posterior": 0.29428400034278857,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.00145602795573675,
+        "h": 0.9985439720442633
+      },
+      "type_entropy": 0.010965804636126598
+    },
+    "NODE_0000043": {
+      "clock_length": 0.002667631075771837,
+      "num_date": 2013.2426511837768,
+      "num_date_confidence": [
+        2013.2999415927216,
+        2013.2333900581236
+      ],
+      "posterior": 0.075642014454252,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.00037764350453172205,
+        "h": 0.9996223564954683
+      },
+      "type_entropy": 0.0033539918964996538
+    },
+    "NODE_0000044": {
+      "clock_length": 0.005937675262718045,
+      "num_date": 2013.2485888590395,
+      "num_date_confidence": [
+        2013.3234615293961,
+        2013.2736102768897
+      ],
+      "posterior": 0.0007712743165652583,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000045": {
+      "clock_length": 0.0033390256666097073,
+      "num_date": 2013.2519278847062,
+      "num_date_confidence": [
+        2013.3232964181063,
+        2013.2917624279648
+      ],
+      "posterior": 0.0012568914788470876,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000046": {
+      "clock_length": 0.0007623359712880529,
+      "num_date": 2013.2526902206773,
+      "num_date_confidence": [
+        2013.3254819683873,
+        2013.2868354652694
+      ],
+      "posterior": 0.0009141028937069729,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000047": {
+      "clock_length": 0.0170905392619507,
+      "num_date": 2013.2697807599393,
+      "num_date_confidence": [
+        2013.328763873112,
+        2013.2905951016412
+      ],
+      "posterior": 0.050332790584740196,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000048": {
+      "clock_length": 0.01358735495548613,
+      "num_date": 2013.266277575633,
+      "num_date_confidence": [
+        2013.3481956002217,
+        2013.298638175596
+      ],
+      "posterior": 0.013654411974747907,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000049": {
+      "clock_length": 0.012052944906988383,
+      "num_date": 2013.2783305205398,
+      "num_date_confidence": [
+        2013.3504012082883,
+        2013.3036222564224
+      ],
+      "posterior": 0.04610506470134545,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000050": {
+      "clock_length": 0.05543831462428184,
+      "num_date": 2013.3337688351642,
+      "num_date_confidence": [
+        2013.361859986908,
+        2013.3030667918829
+      ],
+      "posterior": 0.9804610506470135,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.0003204848061066923,
+        "h": 0.9996795151938933
+      },
+      "type_entropy": 0.002898950058733542
+    },
+    "NODE_0000051": {
+      "clock_length": 0.041588245386935174,
+      "num_date": 2013.375357080551,
+      "num_date_confidence": [
+        2013.3890410462711,
+        2013.3540934220155
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 5.7131430856685804e-05,
+        "h": 0.9999428685691433
+      },
+      "type_entropy": 0.0006153125987920666
+    },
+    "NODE_0000052": {
+      "clock_length": 0.0017092974600281252,
+      "num_date": 2013.3770663780112,
+      "num_date_confidence": [
+        2013.3890365411064,
+        2013.366331618183
+      ],
+      "posterior": 0.13985774273716686,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000053": {
+      "clock_length": 0.05966664551767353,
+      "num_date": 2013.4367330235289,
+      "num_date_confidence": [
+        2013.4602737797534,
+        2013.4136038154058
+      ],
+      "posterior": 0.7755591738795098,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000054": {
+      "clock_length": 0.05457161270703281,
+      "num_date": 2013.32084918834,
+      "num_date_confidence": [
+        2013.3890385451234,
+        2013.3371071549782
+      ],
+      "posterior": 0.43259919444682493,
+      "type": "h",
+      "type_confidence": {
+        "c": 6.603275224511358e-05,
+        "h": 0.9999339672477549
+      },
+      "type_entropy": 0.000701619363905695
+    },
+    "NODE_0000055": {
+      "clock_length": 0.007170376582849247,
+      "num_date": 2013.2498215603596,
+      "num_date_confidence": [
+        2013.3038060751421,
+        2013.2291666769293
+      ],
+      "posterior": 0.00022852572342674322,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000056": {
+      "clock_length": 0.004744095641989965,
+      "num_date": 2013.2545656560017,
+      "num_date_confidence": [
+        2013.3206750766592,
+        2013.27936557223
+      ],
+      "posterior": 0.0009426686091353158,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000057": {
+      "clock_length": 0.0061514276765781695,
+      "num_date": 2013.2607170836782,
+      "num_date_confidence": [
+        2013.3274244431514,
+        2013.2751159415789
+      ],
+      "posterior": 0.004313423029679778,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000058": {
+      "clock_length": 0.022667023973265366,
+      "num_date": 2013.2833841076515,
+      "num_date_confidence": [
+        2013.3539828677315,
+        2013.306163518344
+      ],
+      "posterior": 0.06872911132059302,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000059": {
+      "clock_length": 0.2812399020817473,
+      "num_date": 2013.0793099524383,
+      "num_date_confidence": [
+        2013.109293462679,
+        2013.0332064396694
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.0035707144285428627,
+        "h": 0.9964292855714572
+      },
+      "type_entropy": 0.023685270235753383
+    },
+    "NODE_0000060": {
+      "clock_length": 0.009908174507625045,
+      "num_date": 2013.089218126946,
+      "num_date_confidence": [
+        2013.1095887063302,
+        2013.0770529744573
+      ],
+      "posterior": 0.4497100579884023,
+      "type": "h",
+      "type_confidence": {
+        "c": 6.352029473416756e-05,
+        "h": 0.9999364797052658
+      },
+      "type_entropy": 0.0006773878035696318
+    },
+    "NODE_0000061": {
+      "clock_length": 0.34490222541259463,
+      "num_date": 2012.8253808587137,
+      "num_date_confidence": [
+        2013.1084214020882,
+        2012.5387004532006
+      ],
+      "posterior": 0.9929157025737709,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.998273828361,
+        "h": 0.0017261716389999713
+      },
+      "type_entropy": 0.01270632449032559
+    },
+    "NODE_0000062": {
+      "clock_length": 0.18330084762178656,
+      "num_date": 2013.0086817063354,
+      "num_date_confidence": [
+        2013.2351988926016,
+        2012.765309583946
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9996000799840032,
+        "h": 0.0003999200159968006
+      },
+      "type_entropy": 0.0035289124191519804
+    },
+    "NODE_0000063": {
+      "clock_length": 0.134156883003409,
+      "num_date": 2013.142838589339,
+      "num_date_confidence": [
+        2013.323313728497,
+        2012.953515292003
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9967435084411689,
+        "h": 0.003256491558831091
+      },
+      "type_entropy": 0.021901451897566482
+    },
+    "NODE_0000064": {
+      "clock_length": 0.11128585241227196,
+      "num_date": 2013.2541244417512,
+      "num_date_confidence": [
+        2013.3949058997268,
+        2013.109564162806
+      ],
+      "posterior": 0.999000199960008,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9198787601509779,
+        "h": 0.08012123984902207
+      },
+      "type_entropy": 0.2790653815424152
+    },
+    "NODE_0000065": {
+      "clock_length": 0.0739849941327777,
+      "num_date": 2013.3281094358838,
+      "num_date_confidence": [
+        2013.4169832877992,
+        2013.229207047564
+      ],
+      "posterior": 0.9960293655554603,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.811546403579213,
+        "h": 0.18845359642078696
+      },
+      "type_entropy": 0.4839728781182905
+    },
+    "NODE_0000066": {
+      "clock_length": 0.037055202081268224,
+      "num_date": 2013.365164637965,
+      "num_date_confidence": [
+        2013.457249689293,
+        2013.2749468345473
+      ],
+      "posterior": 0.9207301396863484,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.7935591958302308,
+        "h": 0.20644080416976918
+      },
+      "type_entropy": 0.5092026623125161
+    },
+    "NODE_0000067": {
+      "clock_length": 0.0367920431446187,
+      "num_date": 2013.4019566811098,
+      "num_date_confidence": [
+        2013.485804283525,
+        2013.3237126814704
+      ],
+      "posterior": 0.9233296197903277,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.7024719240169539,
+        "h": 0.29752807598304615
+      },
+      "type_entropy": 0.6087552743744682
+    },
+    "NODE_0000068": {
+      "clock_length": 0.03454316158074722,
+      "num_date": 2013.4364998426906,
+      "num_date_confidence": [
+        2013.5065881749451,
+        2013.3589628420852
+      ],
+      "posterior": 0.9005913103093667,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.6896311098423573,
+        "h": 0.31036889015764263
+      },
+      "type_entropy": 0.6193955023373225
+    },
+    "NODE_0000069": {
+      "clock_length": 0.20591279485337433,
+      "num_date": 2013.6424126375439,
+      "num_date_confidence": [
+        2013.9028321871108,
+        2013.4189606891512
+      ],
+      "posterior": 0.9833176221898478,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9960491531824652,
+        "h": 0.003950846817534788
+      },
+      "type_entropy": 0.02580632795247006
+    },
+    "NODE_0000070": {
+      "clock_length": 0.14558132975548888,
+      "num_date": 2013.7879939672994,
+      "num_date_confidence": [
+        2014.0208410188661,
+        2013.5500816262954
+      ],
+      "posterior": 0.9941440283371897,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9992529164990518,
+        "h": 0.0007470835009482213
+      },
+      "type_entropy": 0.006125307512953532
+    },
+    "NODE_0000071": {
+      "clock_length": 0.1689825477530662,
+      "num_date": 2013.9569765150525,
+      "num_date_confidence": [
+        2014.1882913424943,
+        2013.7245268160402
+      ],
+      "posterior": 0.9766618104950439,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9992102954080141,
+        "h": 0.0007897045919859608
+      },
+      "type_entropy": 0.006430924919319424
+    },
+    "NODE_0000072": {
+      "clock_length": 0.22001188165765306,
+      "num_date": 2014.1769883967102,
+      "num_date_confidence": [
+        2014.3527275297038,
+        2013.9901487833226
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998857371382867,
+        "h": 0.00011426286171337161
+      },
+      "type_entropy": 0.0011514211529576838
+    },
+    "NODE_0000073": {
+      "clock_length": 0.1367858607772432,
+      "num_date": 2014.3137742574872,
+      "num_date_confidence": [
+        2014.4424391712766,
+        2014.175917866535
+      ],
+      "posterior": 0.9824892164424258,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998255509681921,
+        "h": 0.00017444903180787347
+      },
+      "type_entropy": 0.0016840942427622859
+    },
+    "NODE_0000074": {
+      "clock_length": 0.01318692774914676,
+      "num_date": 2014.3269611852365,
+      "num_date_confidence": [
+        2014.4444870214531,
+        2014.2094437875596
+      ],
+      "posterior": 0.2843716970891536,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9997990959316926,
+        "h": 0.00020090406830738323
+      },
+      "type_entropy": 0.001911116339864731
+    },
+    "NODE_0000075": {
+      "clock_length": 0.08717403704710058,
+      "num_date": 2014.4141352222837,
+      "num_date_confidence": [
+        2014.4926728970524,
+        2014.322788497947
+      ],
+      "posterior": 0.9943725540606164,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9997989083596668,
+        "h": 0.00020109164033323758
+      },
+      "type_entropy": 0.0019127129558267073
+    },
+    "NODE_0000076": {
+      "clock_length": 0.026876523277958864,
+      "num_date": 2014.4410117455616,
+      "num_date_confidence": [
+        2014.504528950967,
+        2014.3705677339972
+      ],
+      "posterior": 0.7988402319536093,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998212050777758,
+        "h": 0.00017879492222420883
+      },
+      "type_entropy": 0.0017216485917096271
+    },
+    "NODE_0000077": {
+      "clock_length": 0.12126116305224288,
+      "num_date": 2014.5622729086137,
+      "num_date_confidence": [
+        2014.7352510047003,
+        2014.4306625525476
+      ],
+      "posterior": 0.7390521895620876,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9989950525664811,
+        "h": 0.001004947433518862
+      },
+      "type_entropy": 0.007941413391663857
+    },
+    "NODE_0000078": {
+      "clock_length": 0.04559453907825506,
+      "num_date": 2014.6078674476921,
+      "num_date_confidence": [
+        2014.8084063355846,
+        2014.4906309140488
+      ],
+      "posterior": 0.41551689662067587,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9980063247628214,
+        "h": 0.0019936752371786056
+      },
+      "type_entropy": 0.014387911370861562
+    },
+    "NODE_0000079": {
+      "clock_length": 0.17739303993849742,
+      "num_date": 2014.7852604876305,
+      "num_date_confidence": [
+        2014.9335554547274,
+        2014.6397584026593
+      ],
+      "posterior": 0.989002199560088,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9887354861070995,
+        "h": 0.011264513892900467
+      },
+      "type_entropy": 0.061734541127569154
+    },
+    "NODE_0000080": {
+      "clock_length": 0.03666505071707882,
+      "num_date": 2014.8219255383476,
+      "num_date_confidence": [
+        2015.015275832137,
+        2014.7589002955356
+      ],
+      "posterior": 0.04944725340646156,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9953783939919122,
+        "h": 0.00462160600808781
+      },
+      "type_entropy": 0.029461345345324536
+    },
+    "NODE_0000081": {
+      "clock_length": 0.32835257963162123,
+      "num_date": 2015.1502781179793,
+      "num_date_confidence": [
+        2015.1999999888374,
+        2015.0615626388917
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.996086496986317,
+        "h": 0.003913503013682978
+      },
+      "type_entropy": 0.025599643948888296
+    },
+    "NODE_0000082": {
+      "clock_length": 0.13443706037719666,
+      "num_date": 2015.2847151783565,
+      "num_date_confidence": [
+        2015.3368926616517,
+        2015.225538430427
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.030251092638615133,
+        "h": 0.9697489073613849
+      },
+      "type_entropy": 0.1356139103978915
+    },
+    "NODE_0000083": {
+      "clock_length": 0.013735327055431457,
+      "num_date": 2015.298450505412,
+      "num_date_confidence": [
+        2015.3513701541815,
+        2015.2856402434254
+      ],
+      "posterior": 0.12854571942754306,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.00022222222222222223,
+        "h": 0.9997777777777778
+      },
+      "type_entropy": 0.0020914934792035677
+    },
+    "NODE_0000084": {
+      "clock_length": 0.02050265599919565,
+      "num_date": 2015.3189531614112,
+      "num_date_confidence": [
+        2015.3967063759346,
+        2015.317208768883
+      ],
+      "posterior": 0.30045419487531067,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.0002852253280091272,
+        "h": 0.9997147746719909
+      },
+      "type_entropy": 0.00261325948033552
+    },
+    "NODE_0000085": {
+      "clock_length": 0.004026879685558926,
+      "num_date": 2015.3229800410966,
+      "num_date_confidence": [
+        2015.3993276315323,
+        2015.3241574823617
+      ],
+      "posterior": 0.07321392864284286,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000086": {
+      "clock_length": 0.016070015319829933,
+      "num_date": 2015.3390500564165,
+      "num_date_confidence": [
+        2015.4185781657452,
+        2015.337022726732
+      ],
+      "posterior": 0.13697260547890422,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.0016684045881126173,
+        "h": 0.9983315954118874
+      },
+      "type_entropy": 0.012337939785864005
+    },
+    "NODE_0000087": {
+      "clock_length": 0.06686532579482829,
+      "num_date": 2015.4059153822113,
+      "num_date_confidence": [
+        2015.4219170542847,
+        2015.3784822606892
+      ],
+      "posterior": 0.9994286856914332,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.00020007431331637464,
+        "h": 0.9997999256866836
+      },
+      "type_entropy": 0.0019040513491506738
+    },
+    "NODE_0000088": {
+      "clock_length": 0.0061595446911281715,
+      "num_date": 2015.4120749269025,
+      "num_date_confidence": [
+        2015.4382879169298,
+        2015.4074424858375
+      ],
+      "posterior": 0.46279315565458334,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000089": {
+      "clock_length": 0.009500930543511477,
+      "num_date": 2015.421575857446,
+      "num_date_confidence": [
+        2015.43835447459,
+        2015.4204826218104
+      ],
+      "posterior": 0.2474933584711629,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000090": {
+      "clock_length": 0.007695948118129958,
+      "num_date": 2015.4197708750205,
+      "num_date_confidence": [
+        2015.4556232997095,
+        2015.418140475288
+      ],
+      "posterior": 0.25403490730425343,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000091": {
+      "clock_length": 0.009938039169096247,
+      "num_date": 2015.2946532175256,
+      "num_date_confidence": [
+        2015.3598892682758,
+        2015.2693703585571
+      ],
+      "posterior": 0.0828977061730511,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.00034458993797381116,
+        "h": 0.9996554100620262
+      },
+      "type_entropy": 0.003091999496306477
+    },
+    "NODE_0000092": {
+      "clock_length": 0.06838905794407896,
+      "num_date": 2015.3630422754695,
+      "num_date_confidence": [
+        2015.3949285139945,
+        2015.324873978999
+      ],
+      "posterior": 0.9978861370583026,
+      "type": "h",
+      "type_confidence": {
+        "c": 5.725245469899522e-05,
+        "h": 0.999942747545301
+      },
+      "type_entropy": 0.0006164948856118113
+    },
+    "NODE_0000093": {
+      "clock_length": 0.007307483681638749,
+      "num_date": 2015.3703497591512,
+      "num_date_confidence": [
+        2015.40428925898,
+        2015.3522817806484
+      ],
+      "posterior": 0.37658182649184446,
+      "type": "h",
+      "type_confidence": {
+        "c": 7.58552681483729e-05,
+        "h": 0.9999241447318516
+      },
+      "type_entropy": 0.0007954671041921656
+    },
+    "NODE_0000094": {
+      "clock_length": 0.011352176670087477,
+      "num_date": 2015.3817019358214,
+      "num_date_confidence": [
+        2015.4248126615391,
+        2015.378543202434
+      ],
+      "posterior": 0.118376324735053,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000095": {
+      "clock_length": 0.003734333479974483,
+      "num_date": 2015.3854362693014,
+      "num_date_confidence": [
+        2015.430952639838,
+        2015.3904183707343
+      ],
+      "posterior": 0.06810066558116948,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000096": {
+      "clock_length": 0.0009268702874345447,
+      "num_date": 2015.3863631395889,
+      "num_date_confidence": [
+        2015.4305220788704,
+        2015.3961623140108
+      ],
+      "posterior": 0.013711543405604593,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000097": {
+      "clock_length": 0.0011068302128806606,
+      "num_date": 2015.3874699698017,
+      "num_date_confidence": [
+        2015.4318182243776,
+        2015.402521267879
+      ],
+      "posterior": 0.007941268889079327,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000098": {
+      "clock_length": 0.0032290816828384195,
+      "num_date": 2015.3906990514845,
+      "num_date_confidence": [
+        2015.4328400233055,
+        2015.407572644873
+      ],
+      "posterior": 0.011483417602193846,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000099": {
+      "clock_length": 0.006584692900184097,
+      "num_date": 2015.3972837443846,
+      "num_date_confidence": [
+        2015.440851633752,
+        2015.416424579469
+      ],
+      "posterior": 0.049161596252178134,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000100": {
+      "clock_length": 0.009171567110345225,
+      "num_date": 2015.406455311495,
+      "num_date_confidence": [
+        2015.4410958361948,
+        2015.4226100061735
+      ],
+      "posterior": 0.1366298168937641,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000101": {
+      "clock_length": 0.051161472678635356,
+      "num_date": 2015.4328634085,
+      "num_date_confidence": [
+        2015.4383559477656,
+        2015.4208353137687
+      ],
+      "posterior": 0.9999714342845717,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000102": {
+      "clock_length": 0.006295923935917824,
+      "num_date": 2015.3766456830872,
+      "num_date_confidence": [
+        2015.4073430421104,
+        2015.3673816193302
+      ],
+      "posterior": 0.05387493929785472,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000103": {
+      "clock_length": 0.02977426651115278,
+      "num_date": 2015.3928165419807,
+      "num_date_confidence": [
+        2015.4109401228322,
+        2015.3706310607404
+      ],
+      "posterior": 0.9968292055874539,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000104": {
+      "clock_length": 0.0013762389830662691,
+      "num_date": 2015.3941927809637,
+      "num_date_confidence": [
+        2015.4160400064297,
+        2015.3855364264095
+      ],
+      "posterior": 0.20975804839032194,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000105": {
+      "clock_length": 0.02418146815960215,
+      "num_date": 2015.4183742491234,
+      "num_date_confidence": [
+        2015.4410953856316,
+        2015.4069371912858
+      ],
+      "posterior": 0.7593624132316393,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000106": {
+      "clock_length": 0.00821690459526453,
+      "num_date": 2015.4265911537186,
+      "num_date_confidence": [
+        2015.4575281906746,
+        2015.424412285395
+      ],
+      "posterior": 0.4371125774845031,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000107": {
+      "clock_length": 0.0054705964761699866,
+      "num_date": 2015.4320617501949,
+      "num_date_confidence": [
+        2015.4709394200045,
+        2015.4348633677148
+      ],
+      "posterior": 0.26771788499442967,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000108": {
+      "clock_length": 0.005311167726049504,
+      "num_date": 2015.437372917921,
+      "num_date_confidence": [
+        2015.479001203993,
+        2015.4392826130986
+      ],
+      "posterior": 0.2113291627388808,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000109": {
+      "clock_length": 0.020341034817230763,
+      "num_date": 2015.4145338157812,
+      "num_date_confidence": [
+        2015.4191779832831,
+        2015.405324735064
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000110": {
+      "clock_length": 0.1702301722461098,
+      "num_date": 2014.9921557105938,
+      "num_date_confidence": [
+        2015.0843913204988,
+        2014.8890830405792
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9995143828377182,
+        "h": 0.00048561716228182934
+      },
+      "type_entropy": 0.0041908016734794485
+    },
+    "NODE_0000111": {
+      "clock_length": 0.059207366500884206,
+      "num_date": 2015.0513630770947,
+      "num_date_confidence": [
+        2015.15524160812,
+        2014.9700119115903
+      ],
+      "posterior": 0.7742737166852344,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9999262128758531,
+        "h": 7.378712414683638e-05
+      },
+      "type_entropy": 0.0007758189785032999
+    },
+    "NODE_0000112": {
+      "clock_length": 0.0773123564440985,
+      "num_date": 2015.0694680670379,
+      "num_date_confidence": [
+        2015.137790969031,
+        2014.9885533754043
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9974576513268775,
+        "h": 0.0025423486731225185
+      },
+      "type_entropy": 0.01772880055705529
+    },
+    "NODE_0000113": {
+      "clock_length": 0.0904603148737968,
+      "num_date": 2015.1599283819116,
+      "num_date_confidence": [
+        2015.1965074730813,
+        2015.112987703282
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000114": {
+      "clock_length": 0.02923437832869602,
+      "num_date": 2015.1891627602404,
+      "num_date_confidence": [
+        2015.199999678744,
+        2015.1662849600868
+      ],
+      "posterior": 0.9994572514068615,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000115": {
+      "clock_length": 0.01230953363183973,
+      "num_date": 2014.7975700212623,
+      "num_date_confidence": [
+        2014.9918091922407,
+        2014.7477910507378
+      ],
+      "posterior": 0.031936469848887365,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.8765652951699463,
+        "h": 0.12343470483005367
+      },
+      "type_entropy": 0.3737129962851523
+    },
+    "NODE_0000116": {
+      "clock_length": 0.008501505517917951,
+      "num_date": 2014.8060715267802,
+      "num_date_confidence": [
+        2015.0120278831482,
+        2014.7764621978965
+      ],
+      "posterior": 0.018367755020424488,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9284603421461898,
+        "h": 0.07153965785381027
+      },
+      "type_entropy": 0.2576034784172744
+    },
+    "NODE_0000117": {
+      "clock_length": 0.019197168114395646,
+      "num_date": 2014.8252686948947,
+      "num_date_confidence": [
+        2015.0160888313849,
+        2014.7838331572725
+      ],
+      "posterior": 0.04256291598823093,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9711409395973154,
+        "h": 0.028859060402684565
+      },
+      "type_entropy": 0.13075350249079323
+    },
+    "NODE_0000118": {
+      "clock_length": 0.09689879674681134,
+      "num_date": 2014.9221674916414,
+      "num_date_confidence": [
+        2015.0417322540566,
+        2014.8453750698873
+      ],
+      "posterior": 0.5838260919244722,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9841961052940601,
+        "h": 0.015803894705939917
+      },
+      "type_entropy": 0.08122498526000849
+    },
+    "NODE_0000119": {
+      "clock_length": 0.11217578473717615,
+      "num_date": 2015.0343432763786,
+      "num_date_confidence": [
+        2015.1553144578095,
+        2014.9251631827885
+      ],
+      "posterior": 0.9694918159225298,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9985267686142786,
+        "h": 0.0014732313857214413
+      },
+      "type_entropy": 0.011078051733574554
+    },
+    "NODE_0000120": {
+      "clock_length": 0.03560937344672488,
+      "num_date": 2015.0699526498254,
+      "num_date_confidence": [
+        2015.2351857823242,
+        2014.9779809030676
+      ],
+      "posterior": 0.4417116576684663,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.999417965465951,
+        "h": 0.0005820345340490202
+      },
+      "type_entropy": 0.004917428973676239
+    },
+    "NODE_0000121": {
+      "clock_length": 0.01635229277577066,
+      "num_date": 2015.0863049426011,
+      "num_date_confidence": [
+        2015.2669171801326,
+        2015.0026464451812
+      ],
+      "posterior": 0.2480932384951581,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9995394358088658,
+        "h": 0.00046056419113413934
+      },
+      "type_entropy": 0.003998999454622189
+    },
+    "NODE_0000122": {
+      "clock_length": 0.09273692954254054,
+      "num_date": 2015.0149044211842,
+      "num_date_confidence": [
+        2015.082907848165,
+        2014.9367697840237
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9121889907732739,
+        "h": 0.08781100922672608
+      },
+      "type_entropy": 0.29744382776849565
+    },
+    "NODE_0000123": {
+      "clock_length": 0.028863208391048945,
+      "num_date": 2015.043767629575,
+      "num_date_confidence": [
+        2015.0995612259683,
+        2015.002657681415
+      ],
+      "posterior": 0.6662667466506699,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.1933201852169439,
+        "h": 0.8066798147830561
+      },
+      "type_entropy": 0.4910016107484696
+    },
+    "NODE_0000124": {
+      "clock_length": 0.04798212459231188,
+      "num_date": 2015.0917497541675,
+      "num_date_confidence": [
+        2015.1067577405768,
+        2015.0681259126325
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.031079498386037078,
+        "h": 0.9689205016139629
+      },
+      "type_entropy": 0.13847481690959385
+    },
+    "NODE_0000125": {
+      "clock_length": 0.1536209857778904,
+      "num_date": 2014.76148843347,
+      "num_date_confidence": [
+        2014.8848544139148,
+        2014.62444232493
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9957722741166053,
+        "h": 0.00422772588339475
+      },
+      "type_entropy": 0.027327910828640518
+    },
+    "NODE_0000126": {
+      "clock_length": 0.1227383012544625,
+      "num_date": 2014.8842267347245,
+      "num_date_confidence": [
+        2014.9417022863367,
+        2014.8112467808996
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9997143428457166,
+        "h": 0.000285657154283429
+      },
+      "type_entropy": 0.0026167836961639287
+    },
+    "NODE_0000127": {
+      "clock_length": 0.026406654691033316,
+      "num_date": 2014.9106333894154,
+      "num_date_confidence": [
+        2014.9534229521753,
+        2014.875386601997
+      ],
+      "posterior": 0.6430713857228554,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9999111584932481,
+        "h": 8.884150675195451e-05
+      },
+      "type_entropy": 0.0009176092684368801
+    },
+    "NODE_0000128": {
+      "clock_length": 0.04208341192433174,
+      "num_date": 2014.8035718453943,
+      "num_date_confidence": [
+        2014.989763696386,
+        2014.697545640182
+      ],
+      "posterior": 0.5420344502528066,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9731225296442688,
+        "h": 0.026877470355731226
+      },
+      "type_entropy": 0.12371447197346898
+    },
+    "NODE_0000129": {
+      "clock_length": 0.672049732326402,
+      "num_date": 2015.4756215777206,
+      "num_date_confidence": [
+        2015.5890410552413,
+        2015.278503978505
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.32113577284543093,
+        "h": 0.6788642271545691
+      },
+      "type_entropy": 0.6277226086607521
+    },
+    "NODE_0000130": {
+      "clock_length": 0.024660615037278205,
+      "num_date": 2015.500282192758,
+      "num_date_confidence": [
+        2015.6307938814625,
+        2015.3874529226364
+      ],
+      "posterior": 0.4769903162224698,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.16636722960833633,
+        "h": 0.8336327703916637
+      },
+      "type_entropy": 0.450078960372261
+    },
+    "NODE_0000131": {
+      "clock_length": 0.1264397159451387,
+      "num_date": 2015.626721908703,
+      "num_date_confidence": [
+        2015.6938188344388,
+        2015.5382820655318
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.07107149998571714,
+        "h": 0.9289285000142828
+      },
+      "type_entropy": 0.25640180753982034
+    },
+    "NODE_0000132": {
+      "clock_length": 0.10606432474789029,
+      "num_date": 2015.5816859024685,
+      "num_date_confidence": [
+        2015.6289506694516,
+        2015.5236281402683
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.03262204701916759,
+        "h": 0.9673779529808324
+      },
+      "type_entropy": 0.14374172926041567
+    },
+    "NODE_0000133": {
+      "clock_length": 0.04432582454929816,
+      "num_date": 2015.6260117270178,
+      "num_date_confidence": [
+        2015.643588546147,
+        2015.5998102482904
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.00048561716228182934,
+        "h": 0.9995143828377182
+      },
+      "type_entropy": 0.0041908016734794485
+    },
+    "NODE_0000134": {
+      "clock_length": 0.14811650020414768,
+      "num_date": 2014.9516883455983,
+      "num_date_confidence": [
+        2015.0655779441634,
+        2014.8251947931797
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.4670208815379781,
+        "h": 0.5329791184620218
+      },
+      "type_entropy": 0.6909703558702209
+    },
+    "NODE_0000135": {
+      "clock_length": 0.07306052032568033,
+      "num_date": 2015.024748865924,
+      "num_date_confidence": [
+        2015.0930392724608,
+        2014.9416348126317
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.27303110806410147,
+        "h": 0.7269688919358985
+      },
+      "type_entropy": 0.5862503960309582
+    },
+    "NODE_0000136": {
+      "clock_length": 0.05095667321006914,
+      "num_date": 2015.075705539134,
+      "num_date_confidence": [
+        2015.1070750784236,
+        2015.0389288109186
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.008598280343931213,
+        "h": 0.9914017196560688
+      },
+      "type_entropy": 0.04945628979088794
+    },
+    "NODE_0000137": {
+      "clock_length": 0.020739399304210315,
+      "num_date": 2015.0964449384385,
+      "num_date_confidence": [
+        2015.1212388891186,
+        2015.0683399819566
+      ],
+      "posterior": 0.9918587711029223,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.00011520073728471862,
+        "h": 0.9998847992627152
+      },
+      "type_entropy": 0.0011599303117334396
+    },
+    "NODE_0000138": {
+      "clock_length": 0.011187960179678602,
+      "num_date": 2015.107632898618,
+      "num_date_confidence": [
+        2015.128751353669,
+        2015.0840903201083
+      ],
+      "posterior": 0.998914502813723,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000139": {
+      "clock_length": 0.023452474205003626,
+      "num_date": 2015.131085372823,
+      "num_date_confidence": [
+        2015.1463437395669,
+        2015.1135213945602
+      ],
+      "posterior": 0.9998000399920016,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000140": {
+      "clock_length": 0.0006448434087740207,
+      "num_date": 2015.1317302162317,
+      "num_date_confidence": [
+        2015.1489829715254,
+        2015.1211287014235
+      ],
+      "posterior": 0.08475447767589339,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000141": {
+      "clock_length": 0.0014051681135152094,
+      "num_date": 2015.1331353843455,
+      "num_date_confidence": [
+        2015.1506241878783,
+        2015.1279905888746
+      ],
+      "posterior": 0.07338532293541292,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000142": {
+      "clock_length": 0.011738427563065645,
+      "num_date": 2015.1448738119084,
+      "num_date_confidence": [
+        2015.1561626718744,
+        2015.1332768899226
+      ],
+      "posterior": 0.6671522838289485,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000143": {
+      "clock_length": 0.0012110261807589673,
+      "num_date": 2015.146084838089,
+      "num_date_confidence": [
+        2015.1561625776917,
+        2015.1396115321406
+      ],
+      "posterior": 0.16191047504784759,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000144": {
+      "clock_length": 0.003962309279960552,
+      "num_date": 2015.1500471473692,
+      "num_date_confidence": [
+        2015.1643822258989,
+        2015.147080292463
+      ],
+      "posterior": 0.29625503470734427,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000145": {
+      "clock_length": 0.013844477026285662,
+      "num_date": 2015.1455746932581,
+      "num_date_confidence": [
+        2015.167113917754,
+        2015.1408860051013
+      ],
+      "posterior": 0.4645642300111406,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000146": {
+      "clock_length": 0.00313656606542434,
+      "num_date": 2015.1107694646835,
+      "num_date_confidence": [
+        2015.1360454636374,
+        2015.093444457517
+      ],
+      "posterior": 0.3837803867797869,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000147": {
+      "clock_length": 0.02574428253780381,
+      "num_date": 2015.1365137472212,
+      "num_date_confidence": [
+        2015.1552100479207,
+        2015.1162121029304
+      ],
+      "posterior": 0.9998000399920016,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000148": {
+      "clock_length": 0.004282144474345717,
+      "num_date": 2015.1407958916957,
+      "num_date_confidence": [
+        2015.1584578897744,
+        2015.1311074792618
+      ],
+      "posterior": 0.3932356385865684,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000149": {
+      "clock_length": 0.009071730671077138,
+      "num_date": 2015.0847772698053,
+      "num_date_confidence": [
+        2015.1095884899835,
+        2015.066552291687
+      ],
+      "posterior": 0.49207301396863484,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.0002322071287588529,
+        "h": 0.9997677928712412
+      },
+      "type_entropy": 0.0021752615382275705
+    },
+    "NODE_0000150": {
+      "clock_length": 0.002779506893844652,
+      "num_date": 2015.087556776699,
+      "num_date_confidence": [
+        2015.1095864033819,
+        2015.0784719046096
+      ],
+      "posterior": 0.17336532693461307,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.00016477179106936892,
+        "h": 0.9998352282089307
+      },
+      "type_entropy": 0.0016000767048302657
+    },
+    "NODE_0000151": {
+      "clock_length": 0.2301300805773655,
+      "num_date": 2014.7924029891913,
+      "num_date_confidence": [
+        2014.85675168211,
+        2014.711735454224
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9996000799840032,
+        "h": 0.0003999200159968006
+      },
+      "type_entropy": 0.0035289124191519804
+    },
+    "NODE_0000152": {
+      "clock_length": 0.0034179247638893573,
+      "num_date": 2014.7958209139551,
+      "num_date_confidence": [
+        2014.8590366019869,
+        2014.7487197114565
+      ],
+      "posterior": 0.09452395235238667,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9996977938954367,
+        "h": 0.0003022061045633122
+      },
+      "type_entropy": 0.002751359784782621
+    },
+    "NODE_0000153": {
+      "clock_length": 0.018435170630430653,
+      "num_date": 2014.8142560845854,
+      "num_date_confidence": [
+        2014.9304478499312,
+        2014.8262541828838
+      ],
+      "posterior": 0.09749478675693432,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000154": {
+      "clock_length": 0.01505420281231773,
+      "num_date": 2014.829310287398,
+      "num_date_confidence": [
+        2014.9420851796865,
+        2014.8469259305186
+      ],
+      "posterior": 0.13460165109835176,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000155": {
+      "clock_length": 0.004122398142518691,
+      "num_date": 2014.8334326855404,
+      "num_date_confidence": [
+        2014.9461772670672,
+        2014.8554802173603
+      ],
+      "posterior": 0.036078498585997085,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000156": {
+      "clock_length": 0.01600121512649233,
+      "num_date": 2014.8494339006668,
+      "num_date_confidence": [
+        2014.9533569831412,
+        2014.8803993918434
+      ],
+      "posterior": 0.040563315908246925,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000157": {
+      "clock_length": 0.021523162446138167,
+      "num_date": 2014.8709570631129,
+      "num_date_confidence": [
+        2014.9534215144845,
+        2014.9033059097512
+      ],
+      "posterior": 0.11894763904361985,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000158": {
+      "clock_length": 0.03814875145298513,
+      "num_date": 2014.8715814369932,
+      "num_date_confidence": [
+        2014.9534213655293,
+        2014.9028027067131
+      ],
+      "posterior": 0.11897620475904819,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000159": {
+      "clock_length": 0.12456062956643499,
+      "num_date": 2014.938816714152,
+      "num_date_confidence": [
+        2014.9534242332186,
+        2014.9070731040097
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000160": {
+      "clock_length": 0.009364848261837588,
+      "num_date": 2014.805185762217,
+      "num_date_confidence": [
+        2014.8686325025203,
+        2014.803599729761
+      ],
+      "posterior": 0.046790641871625675,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000161": {
+      "clock_length": 0.01713986054425154,
+      "num_date": 2014.8223256227611,
+      "num_date_confidence": [
+        2014.8712278125813,
+        2014.8281925044498
+      ],
+      "posterior": 0.16085354357699888,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000162": {
+      "clock_length": 0.16402881872278774,
+      "num_date": 2014.956431807914,
+      "num_date_confidence": [
+        2015.0082662323339,
+        2014.893496764205
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9999714342845717,
+        "h": 2.8565715428342902e-05
+      },
+      "type_entropy": 0.00032745685251764275
+    },
+    "NODE_0000163": {
+      "clock_length": 0.04231714464776748,
+      "num_date": 2014.9987489525618,
+      "num_date_confidence": [
+        2015.0315290657368,
+        2014.9582154775683
+      ],
+      "posterior": 0.9988573713828662,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000164": {
+      "clock_length": 0.0061605209486472745,
+      "num_date": 2015.0049094735105,
+      "num_date_confidence": [
+        2015.0378681903449,
+        2014.988607656988
+      ],
+      "posterior": 0.31750792698603136,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000165": {
+      "clock_length": 0.006651119918846038,
+      "num_date": 2015.0115605934293,
+      "num_date_confidence": [
+        2015.0383542972065,
+        2015.0052039424806
+      ],
+      "posterior": 0.2679464107178564,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000166": {
+      "clock_length": 0.0478914318750977,
+      "num_date": 2015.004323239789,
+      "num_date_confidence": [
+        2015.035056738318,
+        2014.965080494678
+      ],
+      "posterior": 0.9999428685691433,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9999428653049565,
+        "h": 5.71346950435652e-05
+      },
+      "type_entropy": 0.000615344490127733
+    },
+    "NODE_0000167": {
+      "clock_length": 0.008815769322851441,
+      "num_date": 2015.013139009112,
+      "num_date_confidence": [
+        2015.0383558779442,
+        2015.0069065309915
+      ],
+      "posterior": 0.22146999171594253,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000168": {
+      "clock_length": 0.008609930896963713,
+      "num_date": 2015.012933170686,
+      "num_date_confidence": [
+        2015.0383560854882,
+        2015.006006159484
+      ],
+      "posterior": 0.2161853343616991,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000169": {
+      "clock_length": 0.3234889154068358,
+      "num_date": 2014.7376241376905,
+      "num_date_confidence": [
+        2014.9645720606495,
+        2014.493758923152
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9979432684891593,
+        "h": 0.002056731510840689
+      },
+      "type_entropy": 0.014778866465426876
+    },
+    "NODE_0000170": {
+      "clock_length": 0.23011829114133875,
+      "num_date": 2014.9677424288318,
+      "num_date_confidence": [
+        2015.1107103802915,
+        2014.801862045139
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9996572114148599,
+        "h": 0.0003427885851401148
+      },
+      "type_entropy": 0.003077632932849904
+    },
+    "NODE_0000171": {
+      "clock_length": 0.17962595454062769,
+      "num_date": 2015.1473683833724,
+      "num_date_confidence": [
+        2015.236102223764,
+        2015.0492564238225
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.999914302853715,
+        "h": 8.56971462850287e-05
+      },
+      "type_entropy": 0.0008882205714465313
+    },
+    "NODE_0000172": {
+      "clock_length": 0.047514259933463254,
+      "num_date": 2015.1948826433058,
+      "num_date_confidence": [
+        2015.2551821909212,
+        2015.1282315708825
+      ],
+      "posterior": 0.8989059330990945,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9999364433710436,
+        "h": 6.355662895640016e-05
+      },
+      "type_entropy": 0.0006777389302849031
+    },
+    "NODE_0000173": {
+      "clock_length": 0.051551608629467616,
+      "num_date": 2015.2464342519354,
+      "num_date_confidence": [
+        2015.2797832505935,
+        2015.2040262246794
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000174": {
+      "clock_length": 0.014560265994684296,
+      "num_date": 2015.26099451793,
+      "num_date_confidence": [
+        2015.284931468741,
+        2015.2415115671843
+      ],
+      "posterior": 0.6139343559859457,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000175": {
+      "clock_length": 0.028897971730187266,
+      "num_date": 2015.2753322236656,
+      "num_date_confidence": [
+        2015.284931459456,
+        2015.2552634293672
+      ],
+      "posterior": 0.999914302853715,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9999428636727231,
+        "h": 5.713632727688264e-05
+      },
+      "type_entropy": 0.0006153604370923017
+    },
+    "NODE_0000176": {
+      "clock_length": 0.03376883763762567,
+      "num_date": 2015.2286514809434,
+      "num_date_confidence": [
+        2015.2842877082433,
+        2015.1935629774175
+      ],
+      "posterior": 0.634615933956066,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000177": {
+      "clock_length": 0.01221815962035916,
+      "num_date": 2015.240869640564,
+      "num_date_confidence": [
+        2015.2849303421394,
+        2015.2293918342268
+      ],
+      "posterior": 0.31756505841688804,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000178": {
+      "clock_length": 0.14530064935120923,
+      "num_date": 2015.113043078183,
+      "num_date_confidence": [
+        2015.1808993111042,
+        2015.0294676358576
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000179": {
+      "clock_length": 0.016339539019206484,
+      "num_date": 2015.1293826172023,
+      "num_date_confidence": [
+        2015.1952965812116,
+        2015.09075006557
+      ],
+      "posterior": 0.43088525152112434,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000180": {
+      "clock_length": 0.39884502072027705,
+      "num_date": 2015.1364691584108,
+      "num_date_confidence": [
+        2015.1952050395282,
+        2015.0540228331351
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9999428685691433,
+        "h": 5.7131430856685804e-05
+      },
+      "type_entropy": 0.0006153125987920666
+    },
+    "NODE_0000181": {
+      "clock_length": 0.2530586138933848,
+      "num_date": 2014.0410525811928,
+      "num_date_confidence": [
+        2014.2328362709086,
+        2013.843551527549
+      ],
+      "posterior": 0.9766618104950439,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9975138929511553,
+        "h": 0.0024861070488446913
+      },
+      "type_entropy": 0.017392290440633482
+    },
+    "NODE_0000182": {
+      "clock_length": 0.1352939194009828,
+      "num_date": 2014.1763465005938,
+      "num_date_confidence": [
+        2014.3597501667145,
+        2013.9887311561422
+      ],
+      "posterior": 0.9766618104950439,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998245100906697,
+        "h": 0.0001754899093302135
+      },
+      "type_entropy": 0.0016930985885319192
+    },
+    "NODE_0000183": {
+      "clock_length": 0.20360453319150063,
+      "num_date": 2014.3799510337853,
+      "num_date_confidence": [
+        2014.512406644579,
+        2014.231812893708
+      ],
+      "posterior": 0.9766618104950439,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9996197718631179,
+        "h": 0.00038022813688212925
+      },
+      "type_entropy": 0.003374353026997395
+    },
+    "NODE_0000184": {
+      "clock_length": 0.12504196265452672,
+      "num_date": 2014.5049929964398,
+      "num_date_confidence": [
+        2014.6151959946897,
+        2014.3878740521689
+      ],
+      "posterior": 0.9776616105350359,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9978962746530314,
+        "h": 0.00210372534696859
+      },
+      "type_entropy": 0.015068969587166515
+    },
+    "NODE_0000185": {
+      "clock_length": 0.0024360389244768577,
+      "num_date": 2014.5074290353643,
+      "num_date_confidence": [
+        2014.6373105070904,
+        2014.4389242148268
+      ],
+      "posterior": 0.07187134001771074,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9972178060413355,
+        "h": 0.0027821939586645467
+      },
+      "type_entropy": 0.01915018324960746
+    },
+    "NODE_0000186": {
+      "clock_length": 0.032395021689654246,
+      "num_date": 2014.539824057054,
+      "num_date_confidence": [
+        2014.7419911683812,
+        2014.4853615508512
+      ],
+      "posterior": 0.1344302568057817,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9904377390565235,
+        "h": 0.009562260943476413
+      },
+      "type_entropy": 0.05398025025326406
+    },
+    "NODE_0000187": {
+      "clock_length": 0.01760042493481273,
+      "num_date": 2014.5574244819886,
+      "num_date_confidence": [
+        2014.7732926460071,
+        2014.5091465691398
+      ],
+      "posterior": 0.11800497043448453,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9740982812878237,
+        "h": 0.02590171871217623
+      },
+      "type_entropy": 0.12019386405746796
+    },
+    "NODE_0000188": {
+      "clock_length": 0.015742646376882607,
+      "num_date": 2014.5731671283656,
+      "num_date_confidence": [
+        2014.7752995836465,
+        2014.5086632622674
+      ],
+      "posterior": 0.11803353614991287,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9482090997095838,
+        "h": 0.05179090029041626
+      },
+      "type_entropy": 0.20375505362247862
+    },
+    "NODE_0000189": {
+      "clock_length": 0.389936282954897,
+      "num_date": 2014.9631034113206,
+      "num_date_confidence": [
+        2015.081536949596,
+        2014.8039084497516
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9843459879452681,
+        "h": 0.015654012054731912
+      },
+      "type_entropy": 0.08060501037419326
+    },
+    "NODE_0000190": {
+      "clock_length": 0.1427573364050364,
+      "num_date": 2015.1058607477255,
+      "num_date_confidence": [
+        2015.123287660135,
+        2015.0687102191034
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000191": {
+      "clock_length": 0.3230129107965223,
+      "num_date": 2014.8628369678504,
+      "num_date_confidence": [
+        2014.9331843683997,
+        2014.7717405921333
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998286057074299,
+        "h": 0.0001713942925700574
+      },
+      "type_entropy": 0.0016576325276036774
+    },
+    "NODE_0000192": {
+      "clock_length": 0.05413376684355098,
+      "num_date": 2014.916970734694,
+      "num_date_confidence": [
+        2014.9509466297975,
+        2014.8698978963278
+      ],
+      "posterior": 0.9908304053475019,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000193": {
+      "clock_length": 0.012227380257872511,
+      "num_date": 2014.9291981149518,
+      "num_date_confidence": [
+        2014.9534239585946,
+        2014.9133035474117
+      ],
+      "posterior": 0.5142114434256005,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000194": {
+      "clock_length": 0.14707255357402604,
+      "num_date": 2014.6545015889383,
+      "num_date_confidence": [
+        2014.6983287381368,
+        2014.5977240423406
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998857371382867,
+        "h": 0.00011426286171337161
+      },
+      "type_entropy": 0.0011514211529576838
+    },
+    "NODE_0000195": {
+      "clock_length": 0.036891718738972124,
+      "num_date": 2014.6913933076773,
+      "num_date_confidence": [
+        2014.704108933419,
+        2014.665124550634
+      ],
+      "posterior": 0.9992001599680064,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9999714114182795,
+        "h": 2.858858172046085e-05
+      },
+      "type_entropy": 0.0003276960996649326
+    },
+    "NODE_0000196": {
+      "clock_length": 0.11341853736307583,
+      "num_date": 2014.4933695711484,
+      "num_date_confidence": [
+        2014.6034229886072,
+        2014.3669892631904
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9991144628217213,
+        "h": 0.00088553717827863
+      },
+      "type_entropy": 0.0071098655330256106
+    },
+    "NODE_0000197": {
+      "clock_length": 0.10799798728496257,
+      "num_date": 2014.6013675584334,
+      "num_date_confidence": [
+        2014.6718301553071,
+        2014.5178765417397
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9996572114148599,
+        "h": 0.0003427885851401148
+      },
+      "type_entropy": 0.003077632932849904
+    },
+    "NODE_0000198": {
+      "clock_length": 0.10173070035156306,
+      "num_date": 2014.7030982587848,
+      "num_date_confidence": [
+        2014.7816182960046,
+        2014.6253399469933
+      ],
+      "posterior": 0.8899362984545948,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998395069653977,
+        "h": 0.00016049303460229826
+      },
+      "type_entropy": 0.0015627493287349917
+    },
+    "NODE_0000199": {
+      "clock_length": 0.034150144969660956,
+      "num_date": 2014.7372484037546,
+      "num_date_confidence": [
+        2014.7863008054119,
+        2014.7138305033295
+      ],
+      "posterior": 0.5376067643614134,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000200": {
+      "clock_length": 0.03837086038672166,
+      "num_date": 2014.6397384188201,
+      "num_date_confidence": [
+        2014.690922905137,
+        2014.5772582893333
+      ],
+      "posterior": 0.9977718741965893,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998282229665894,
+        "h": 0.000171777033410633
+      },
+      "type_entropy": 0.0016609509888761067
+    },
+    "NODE_0000201": {
+      "clock_length": 0.2639388878828466,
+      "num_date": 2014.3049914690757,
+      "num_date_confidence": [
+        2014.3123281798205,
+        2014.2899838169385
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.005427485931385151,
+        "h": 0.9945725140686148
+      },
+      "type_entropy": 0.03372401244467959
+    },
+    "NODE_0000202": {
+      "clock_length": 1.1690650814311478,
+      "num_date": 2014.811477718975,
+      "num_date_confidence": [
+        2014.8356163711487,
+        2014.7581930786555
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.003999200159968006,
+        "h": 0.996000799840032
+      },
+      "type_entropy": 0.026073419623401928
+    },
+    "NODE_0000203": {
+      "clock_length": 0.03030774635108946,
+      "num_date": 2013.4668075890415,
+      "num_date_confidence": [
+        2013.5217815688277,
+        2013.40351162673
+      ],
+      "posterior": 0.7742165852543776,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.30339814780651586,
+        "h": 0.6966018521934841
+      },
+      "type_entropy": 0.6137161102689972
+    },
+    "NODE_0000204": {
+      "clock_length": 0.11366113855524729,
+      "num_date": 2013.5804687275968,
+      "num_date_confidence": [
+        2013.6083542428103,
+        2013.545246437338
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.015282657754163454,
+        "h": 0.9847173422458365
+      },
+      "type_entropy": 0.07906262926185278
+    },
+    "NODE_0000205": {
+      "clock_length": 0.10564473843187727,
+      "num_date": 2013.5076014195417,
+      "num_date_confidence": [
+        2013.5397226373952,
+        2013.4627770511427
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.06924329419830319,
+        "h": 0.9307567058016968
+      },
+      "type_entropy": 0.25167717127561484
+    },
+    "NODE_0000206": {
+      "clock_length": 0.10190257123556679,
+      "num_date": 2013.6095039907773,
+      "num_date_confidence": [
+        2013.6478339422206,
+        2013.5645235963786
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.0057988402319536095,
+        "h": 0.9942011597680463
+      },
+      "type_entropy": 0.03564658582619036
+    },
+    "NODE_0000207": {
+      "clock_length": 0.020708696085241396,
+      "num_date": 2013.6302126868625,
+      "num_date_confidence": [
+        2013.6493150333056,
+        2013.613659610903
+      ],
+      "posterior": 0.6199045905104693,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.0001843233030735911,
+        "h": 0.9998156766969264
+      },
+      "type_entropy": 0.0017692688830803752
+    },
+    "NODE_0000208": {
+      "clock_length": 0.019932799678014312,
+      "num_date": 2013.5275342192197,
+      "num_date_confidence": [
+        2013.539725621541,
+        2013.5081419991714
+      ],
+      "posterior": 0.7253120804410547,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.0030719546295931628,
+        "h": 0.9969280453704068
+      },
+      "type_entropy": 0.020839844117306664
+    },
+    "NODE_0000209": {
+      "clock_length": 0.38538856066457794,
+      "num_date": 2013.7505531986296,
+      "num_date_confidence": [
+        2013.7803401622493,
+        2013.701536686738
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.010569314708486875,
+        "h": 0.9894306852915131
+      },
+      "type_entropy": 0.05860153285972818
+    },
+    "NODE_0000210": {
+      "clock_length": 0.3301951755109984,
+      "num_date": 2013.4730337648498,
+      "num_date_confidence": [
+        2013.5807024823698,
+        2013.3226253169646
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.5544605364641357,
+        "h": 0.44553946353586427
+      },
+      "type_entropy": 0.68720349513261
+    },
+    "NODE_0000211": {
+      "clock_length": 0.09834118252451596,
+      "num_date": 2013.5713749473744,
+      "num_date_confidence": [
+        2013.5917798524079,
+        2013.5393507675822
+      ],
+      "posterior": 0.9992001599680064,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.016095371508619456,
+        "h": 0.9839046284913805
+      },
+      "type_entropy": 0.08242652701603242
+    },
+    "NODE_0000212": {
+      "clock_length": 0.004212202915648167,
+      "num_date": 2013.57558715029,
+      "num_date_confidence": [
+        2013.5999986043469,
+        2013.570322973984
+      ],
+      "posterior": 0.3580141114634216,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.0003191574243995851,
+        "h": 0.9996808425756004
+      },
+      "type_entropy": 0.0028882680479214353
+    },
+    "NODE_0000213": {
+      "clock_length": 0.006823519044572457,
+      "num_date": 2013.5824106693346,
+      "num_date_confidence": [
+        2013.5999998025004,
+        2013.5771333609136
+      ],
+      "posterior": 0.26394721055788845,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000214": {
+      "clock_length": 0.830113482894197,
+      "num_date": 2013.655494341608,
+      "num_date_confidence": [
+        2014.09299419581,
+        2013.0899016425776
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9927728739966293,
+        "h": 0.007227126003370755
+      },
+      "type_entropy": 0.04283005543393841
+    },
+    "NODE_0000215": {
+      "clock_length": 0.5485859378662583,
+      "num_date": 2014.204080279474,
+      "num_date_confidence": [
+        2014.2779816051022,
+        2014.0900046908905
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.17453652126717514,
+        "h": 0.8254634787328249
+      },
+      "type_entropy": 0.46300702623789214
+    },
+    "NODE_0000216": {
+      "clock_length": 0.0651144951944218,
+      "num_date": 2014.2691947746684,
+      "num_date_confidence": [
+        2014.2993834010845,
+        2014.222987465815
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.07632759162453223,
+        "h": 0.9236724083754677
+      },
+      "type_entropy": 0.2697071445398074
+    },
+    "NODE_0000217": {
+      "clock_length": 0.05567645290077894,
+      "num_date": 2014.2597567323749,
+      "num_date_confidence": [
+        2014.2938559916995,
+        2014.2144184649646
+      ],
+      "posterior": 0.9935441483131945,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.026681234007072827,
+        "h": 0.9733187659929272
+      },
+      "type_entropy": 0.12300939832201599
+    },
+    "NODE_0000218": {
+      "clock_length": 0.02474760186025282,
+      "num_date": 2014.2845043342352,
+      "num_date_confidence": [
+        2014.3069217599084,
+        2014.2589839709435
+      ],
+      "posterior": 0.9912017596480703,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.0015562408138563072,
+        "h": 0.9984437591861437
+      },
+      "type_entropy": 0.011616876168532433
+    },
+    "NODE_0000219": {
+      "clock_length": 0.0008214485245956471,
+      "num_date": 2014.2853257827596,
+      "num_date_confidence": [
+        2014.310297487739,
+        2014.27044664905
+      ],
+      "posterior": 0.10489330705287514,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000220": {
+      "clock_length": 0.002318163890618674,
+      "num_date": 2014.2876439466504,
+      "num_date_confidence": [
+        2014.3152521039428,
+        2014.2776860132967
+      ],
+      "posterior": 0.08903933499014482,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.0006416426050689766,
+        "h": 0.9993583573949311
+      },
+      "type_entropy": 0.005358458708736114
+    },
+    "NODE_0000221": {
+      "clock_length": 0.0007309736396368116,
+      "num_date": 2014.28837492029,
+      "num_date_confidence": [
+        2014.3183790624141,
+        2014.2814643563809
+      ],
+      "posterior": 0.040449053046533553,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000222": {
+      "clock_length": 0.020375247511188244,
+      "num_date": 2014.3087501678012,
+      "num_date_confidence": [
+        2014.3458398921139,
+        2014.3052624842344
+      ],
+      "posterior": 0.4190019139029337,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000223": {
+      "clock_length": 0.011469752916554388,
+      "num_date": 2014.3202199207178,
+      "num_date_confidence": [
+        2014.3557916132575,
+        2014.3235628507775
+      ],
+      "posterior": 0.1119204730482475,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000224": {
+      "clock_length": 0.007440589771506856,
+      "num_date": 2014.3161907575727,
+      "num_date_confidence": [
+        2014.3506400185388,
+        2014.3197536935968
+      ],
+      "posterior": 0.07609906590110549,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000225": {
+      "clock_length": 0.009670672079510556,
+      "num_date": 2014.3258614296522,
+      "num_date_confidence": [
+        2014.3589016403512,
+        2014.331262829766
+      ],
+      "posterior": 0.1982746307881281,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000226": {
+      "clock_length": 0.009811184983846921,
+      "num_date": 2014.2695679173587,
+      "num_date_confidence": [
+        2014.3040327418298,
+        2014.2516802572868
+      ],
+      "posterior": 0.5027280258234067,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.007954997443036536,
+        "h": 0.9920450025569635
+      },
+      "type_entropy": 0.04637737119070427
+    },
+    "NODE_0000227": {
+      "clock_length": 0.032155751272690436,
+      "num_date": 2014.3017236686314,
+      "num_date_confidence": [
+        2014.3095890166962,
+        2014.2868832981894
+      ],
+      "posterior": 0.999914302853715,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.00048565878185350244,
+        "h": 0.9995143412181465
+      },
+      "type_entropy": 0.004191119212555703
+    },
+    "NODE_0000228": {
+      "clock_length": 0.01957602967277894,
+      "num_date": 2014.3212996983043,
+      "num_date_confidence": [
+        2014.3424645385035,
+        2014.3073177570793
+      ],
+      "posterior": 0.8267489359271003,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000229": {
+      "clock_length": 0.2415242579728636,
+      "num_date": 2012.011887435947,
+      "num_date_confidence": [
+        2012.4562109974001,
+        2011.6297331774883
+      ],
+      "posterior": 0.7810152255263233,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9962693390878168,
+        "h": 0.003730660912183168
+      },
+      "type_entropy": 0.024582452024516838
+    },
+    "NODE_0000230": {
+      "clock_length": 0.1915579525805331,
+      "num_date": 2012.2034453885276,
+      "num_date_confidence": [
+        2012.5825088021081,
+        2012.002997102346
+      ],
+      "posterior": 0.7811580541034651,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9871644847509691,
+        "h": 0.012835515249030937
+      },
+      "type_entropy": 0.06865837647851589
+    },
+    "NODE_0000231": {
+      "clock_length": 0.03735190627774232,
+      "num_date": 2012.2407972948054,
+      "num_date_confidence": [
+        2012.7540021988002,
+        2012.18525248735
+      ],
+      "posterior": 0.2527780158254063,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9932195728330885,
+        "h": 0.006780427166911515
+      },
+      "type_entropy": 0.04061690977635765
+    },
+    "NODE_0000232": {
+      "clock_length": 0.8642829704876962,
+      "num_date": 2013.105080265293,
+      "num_date_confidence": [
+        2013.4910977490895,
+        2012.6463542748006
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9994001199760048,
+        "h": 0.0005998800239952009
+      },
+      "type_entropy": 0.005050078313944134
+    },
+    "NODE_0000233": {
+      "clock_length": 0.2652606566573885,
+      "num_date": 2013.3703409219504,
+      "num_date_confidence": [
+        2013.6560075218258,
+        2013.1576477737024
+      ],
+      "posterior": 0.8080955237523924,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9999293011417866,
+        "h": 7.069885821343985e-05
+      },
+      "type_entropy": 0.0007463708830831643
+    },
+    "NODE_0000234": {
+      "clock_length": 0.029636684735858676,
+      "num_date": 2013.3999776066862,
+      "num_date_confidence": [
+        2013.7073279716283,
+        2013.331148766956
+      ],
+      "posterior": 0.3024537949552947,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9997166603702304,
+        "h": 0.00028333962976955044
+      },
+      "type_entropy": 0.0025978622645302105
+    },
+    "NODE_0000235": {
+      "clock_length": 0.2643606499489022,
+      "num_date": 2013.6643382566351,
+      "num_date_confidence": [
+        2013.798552852003,
+        2013.5199597620901
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998000399920016,
+        "h": 0.0001999600079984003
+      },
+      "type_entropy": 0.0019030778213457733
+    },
+    "NODE_0000236": {
+      "clock_length": 0.06720194758316622,
+      "num_date": 2013.7315402042184,
+      "num_date_confidence": [
+        2013.8318806592888,
+        2013.64035518344
+      ],
+      "posterior": 0.8889364984146028,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998071917478069,
+        "h": 0.00019280825219319386
+      },
+      "type_entropy": 0.001842035462691446
+    },
+    "NODE_0000237": {
+      "clock_length": 0.07038368704152376,
+      "num_date": 2013.8019238912598,
+      "num_date_confidence": [
+        2013.8675288573763,
+        2013.750607833527
+      ],
+      "posterior": 0.9273288199502957,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998151741983181,
+        "h": 0.0001848258016819148
+      },
+      "type_entropy": 0.0017735890007054538
+    },
+    "NODE_0000238": {
+      "clock_length": 0.22595482911952303,
+      "num_date": 2014.0278787203795,
+      "num_date_confidence": [
+        2014.5059956639718,
+        2013.7897342554043
+      ],
+      "posterior": 0.7835861399148741,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9991615325726368,
+        "h": 0.0008384674273632022
+      },
+      "type_entropy": 0.006777764222561436
+    },
+    "NODE_0000239": {
+      "clock_length": 0.7005358006518968,
+      "num_date": 2014.7284145210313,
+      "num_date_confidence": [
+        2014.9546192099372,
+        2014.4355555994316
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9298140371925615,
+        "h": 0.07018596280743851
+      },
+      "type_entropy": 0.25411970934327116
+    },
+    "NODE_0000240": {
+      "clock_length": 0.26713120958374226,
+      "num_date": 2014.995545730615,
+      "num_date_confidence": [
+        2015.0136982174258,
+        2014.9586841640926
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.003827805867397949,
+        "h": 0.996172194132602
+      },
+      "type_entropy": 0.025123984171671235
+    },
+    "NODE_0000241": {
+      "clock_length": 0.026396793363640647,
+      "num_date": 2015.0219425239786,
+      "num_date_confidence": [
+        2015.0540626973223,
+        2015.0048322717444
+      ],
+      "posterior": 0.7791298883080526,
+      "type": "h",
+      "type_confidence": {
+        "c": 7.332722273143904e-05,
+        "h": 0.9999266727772685
+      },
+      "type_entropy": 0.000771441923969557
+    },
+    "NODE_0000242": {
+      "clock_length": 0.008026885227107261,
+      "num_date": 2015.0299694092057,
+      "num_date_confidence": [
+        2015.0547944955524,
+        2015.0239574573604
+      ],
+      "posterior": 0.34758762533207643,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000243": {
+      "clock_length": 0.42186878769329783,
+      "num_date": 2014.4497475080727,
+      "num_date_confidence": [
+        2014.786352382311,
+        2014.0832632063791
+      ],
+      "posterior": 0.9927157425657726,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9982159300184162,
+        "h": 0.0017840699815837937
+      },
+      "type_entropy": 0.013073602989531002
+    },
+    "NODE_0000244": {
+      "clock_length": 0.37639636445165814,
+      "num_date": 2014.8261438725244,
+      "num_date_confidence": [
+        2014.9267688950633,
+        2014.6982515402235
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9994286856914332,
+        "h": 0.000571314308566858
+      },
+      "type_entropy": 0.004837481066803976
+    },
+    "NODE_0000245": {
+      "clock_length": 0.09462727766508794,
+      "num_date": 2014.9207711501895,
+      "num_date_confidence": [
+        2014.9529351802757,
+        2014.8696457923154
+      ],
+      "posterior": 0.9959436684091753,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9999713179406281,
+        "h": 2.86820593718629e-05
+      },
+      "type_entropy": 0.00032867395455314326
+    },
+    "NODE_0000246": {
+      "clock_length": 0.006964172823287429,
+      "num_date": 2014.9277353230127,
+      "num_date_confidence": [
+        2014.9534232882943,
+        2014.9160204929499
+      ],
+      "posterior": 0.33401891050361354,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "NODE_0000247": {
+      "clock_length": 0.32624978383157366,
+      "num_date": 2013.9905880404667,
+      "num_date_confidence": [
+        2014.1172059518096,
+        2013.8372934575066
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9680635301511127,
+        "h": 0.031936469848887365
+      },
+      "type_entropy": 0.14141039841076802
+    },
+    "NODE_0000248": {
+      "clock_length": 0.19118440026940298,
+      "num_date": 2014.1817724407363,
+      "num_date_confidence": [
+        2014.2383211486456,
+        2014.1092884930124
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.09492387236838347,
+        "h": 0.9050761276316165
+      },
+      "type_entropy": 0.3137842202184805
+    },
+    "NODE_0000249": {
+      "clock_length": 0.01768280845631698,
+      "num_date": 2014.1994552491924,
+      "num_date_confidence": [
+        2014.2472813436486,
+        2014.1715720488833
+      ],
+      "posterior": 0.4451966749507241,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.014051973051010587,
+        "h": 0.9859480269489894
+      },
+      "type_entropy": 0.07388433729947967
+    },
+    "NODE_0000250": {
+      "clock_length": 0.006785930995171441,
+      "num_date": 2014.2062411801876,
+      "num_date_confidence": [
+        2014.2520527573722,
+        2014.201069428813
+      ],
+      "posterior": 0.21561402005313224,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.000794912559618442,
+        "h": 0.9992050874403816
+      },
+      "type_entropy": 0.006468108604152861
+    },
+    "NODE_0000251": {
+      "clock_length": 0.0055673520657555375,
+      "num_date": 2014.2118085322534,
+      "num_date_confidence": [
+        2014.2710865388287,
+        2014.2191735527197
+      ],
+      "posterior": 0.17753592138715113,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.0004827031375703942,
+        "h": 0.9995172968624296
+      },
+      "type_entropy": 0.004168560053353877
+    },
+    "NODE_0000252": {
+      "clock_length": 0.012842455840368583,
+      "num_date": 2014.2246509880938,
+      "num_date_confidence": [
+        2014.2809780476134,
+        2014.2344497095874
+      ],
+      "posterior": 0.26394721055788845,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.00010822510822510823,
+        "h": 0.9998917748917749
+      },
+      "type_entropy": 0.0010964546755551168
+    },
+    "NODE_0000253": {
+      "clock_length": 0.01620786903232241,
+      "num_date": 2014.240858857126,
+      "num_date_confidence": [
+        2014.298182048391,
+        2014.2459866692916
+      ],
+      "posterior": 0.3669266146770646,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.001946282600233554,
+        "h": 0.9980537173997664
+      },
+      "type_entropy": 0.014092760234847354
+    },
+    "NODE_0000254": {
+      "clock_length": 0.05073927258943445,
+      "num_date": 2014.2501945217819,
+      "num_date_confidence": [
+        2014.2575342023622,
+        2014.2343922373175
+      ],
+      "posterior": 0.9977433084811609,
+      "type": "h",
+      "type_confidence": {
+        "c": 5.7260650480989464e-05,
+        "h": 0.999942739349519
+      },
+      "type_entropy": 0.0006165749412825673
+    },
+    "NODE_0000255": {
+      "clock_length": 0.05788599916634474,
+      "num_date": 2014.2396584399025,
+      "num_date_confidence": [
+        2014.2621173625953,
+        2014.2036835997462
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.05824549375839118,
+        "h": 0.9417545062416088
+      },
+      "type_entropy": 0.22211239385149364
+    },
+    "NODE_0000256": {
+      "clock_length": 0.11705621692597079,
+      "num_date": 2014.3567146568284,
+      "num_date_confidence": [
+        2014.4056922548154,
+        2014.3056069746317
+      ],
+      "posterior": 0.9967149427257406,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.006419809698498223,
+        "h": 0.9935801903015018
+      },
+      "type_entropy": 0.03880871244844997
+    },
+    "NODE_0000257": {
+      "clock_length": 0.01594784885850986,
+      "num_date": 2014.372662505687,
+      "num_date_confidence": [
+        2014.417845812879,
+        2014.353971129412
+      ],
+      "posterior": 0.4752192418659125,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.00042077422457321474,
+        "h": 0.9995792257754268
+      },
+      "type_entropy": 0.0036915377986934013
+    },
+    "NODE_0000258": {
+      "clock_length": 0.050159733089965464,
+      "num_date": 2014.4068743899184,
+      "num_date_confidence": [
+        2014.4328404393195,
+        2014.3749257742084
+      ],
+      "posterior": 0.9994858171222898,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.00022864328789047987,
+        "h": 0.9997713567121095
+      },
+      "type_entropy": 0.002145413074645551
+    },
+    "NODE_0000259": {
+      "clock_length": 0.020629146506274898,
+      "num_date": 2014.4275035364246,
+      "num_date_confidence": [
+        2014.4356164352669,
+        2014.4114112982136
+      ],
+      "posterior": 0.9987716742365813,
+      "type": "h",
+      "type_confidence": {
+        "c": 2.860084658505892e-05,
+        "h": 0.9999713991534149
+      },
+      "type_entropy": 0.0003278244178682915
+    },
+    "NODE_0000260": {
+      "clock_length": 0.38217859474660276,
+      "num_date": 2012.622975889552,
+      "num_date_confidence": [
+        2012.8710262658365,
+        2012.3450009290418
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9791470277373097,
+        "h": 0.02085297226269032
+      },
+      "type_entropy": 0.10134042069301383
+    },
+    "NODE_0000261": {
+      "clock_length": 0.1868954733967887,
+      "num_date": 2012.8098713629488,
+      "num_date_confidence": [
+        2013.0077391734617,
+        2012.5927023757038
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.972005598880224,
+        "h": 0.027994401119776045
+      },
+      "type_entropy": 0.127699849910513
+    },
+    "NODE_0000262": {
+      "clock_length": 0.19522336633337112,
+      "num_date": 2013.005094729282,
+      "num_date_confidence": [
+        2013.2167423895621,
+        2012.7761767632317
+      ],
+      "posterior": 0.9997143428457166,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9981141240677772,
+        "h": 0.001885875932222762
+      },
+      "type_entropy": 0.01371488041969757
+    },
+    "NODE_0000263": {
+      "clock_length": 0.04236329169575148,
+      "num_date": 2013.047458020978,
+      "num_date_confidence": [
+        2013.2983701406195,
+        2012.9048606349272
+      ],
+      "posterior": 0.4160025137829577,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9994506626381927,
+        "h": 0.0005493373618073199
+      },
+      "type_entropy": 0.004672950749014742
+    },
+    "NODE_0000264": {
+      "clock_length": 0.22004119545918854,
+      "num_date": 2013.267499216437,
+      "num_date_confidence": [
+        2013.3919345417487,
+        2013.1206743191033
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9953723541006084,
+        "h": 0.0046276458993915505
+      },
+      "type_entropy": 0.029493789977446012
+    },
+    "NODE_0000265": {
+      "clock_length": 0.5239845710664408,
+      "num_date": 2013.7914837875035,
+      "num_date_confidence": [
+        2013.8437980942895,
+        2013.7017579161495
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9121889907732739,
+        "h": 0.08781100922672608
+      },
+      "type_entropy": 0.29744382776849565
+    },
+    "NODE_0000266": {
+      "clock_length": 0.13651377656833885,
+      "num_date": 2013.4040129930054,
+      "num_date_confidence": [
+        2013.4414231096416,
+        2013.354318227866
+      ],
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "c": 0.08646842060159397,
+        "h": 0.913531579398406
+      },
+      "type_entropy": 0.29428997982530025
+    },
+    "NODE_0000267": {
+      "clock_length": 0.39463512787447375,
+      "num_date": 2010.4529322578196,
+      "num_date_confidence": [
+        2011.8149356037577,
+        2009.9135801341506
+      ],
+      "posterior": 0.4787042591481704,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9910490511994271,
+        "h": 0.00895094880057286
+      },
+      "type_entropy": 0.051123405218405714
+    },
+    "NODE_0000268": {
+      "clock_length": 1.3281335519131199,
+      "num_date": 2011.7810658097328,
+      "num_date_confidence": [
+        2013.2645781735052,
+        2010.7922416295125
+      ],
+      "posterior": 0.9237866712371812,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9957945514703609,
+        "h": 0.004205448529639135
+      },
+      "type_entropy": 0.027206176120821858
+    },
+    "NODE_0000269": {
+      "clock_length": 1.3088871452573443,
+      "num_date": 2013.0899529549902,
+      "num_date_confidence": [
+        2013.649158560338,
+        2012.3293005872415
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9995143828377182,
+        "h": 0.00048561716228182934
+      },
+      "type_entropy": 0.0041908016734794485
+    },
+    "NODE_0000270": {
+      "clock_length": 0.05028851483571417,
+      "num_date": 2013.140241469826,
+      "num_date_confidence": [
+        2013.8092805270592,
+        2012.8057334268558
+      ],
+      "posterior": 0.24495100979804038,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998833819241982,
+        "h": 0.00011661807580174928
+      },
+      "type_entropy": 0.0011727750723883295
+    },
+    "NODE_0000271": {
+      "clock_length": 0.8144588395159764,
+      "num_date": 2013.954700309342,
+      "num_date_confidence": [
+        2013.9939705339896,
+        2013.8865163859818
+      ],
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9998857371382867,
+        "h": 0.00011426286171337161
+      },
+      "type_entropy": 0.0011514211529576838
+    },
+    "NODE_0000272": {
+      "clock_length": 0.5313054861348006,
+      "num_date": 2010.9842377439545,
+      "num_date_confidence": [
+        2012.1036191932967,
+        2010.3910122350496
+      ],
+      "posterior": 0.7580483903219356,
+      "type": "c",
+      "type_confidence": {
+        "c": 0.9557975656630365,
+        "h": 0.044202434336963484
+      },
+      "type_entropy": 0.181077091541146
+    },
+    "NRCE-HKU205|KJ477102|camel|2013-11-15": {
+      "clock_length": 0.7812799261065873,
+      "num_date": 2013.8712328810968,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Najran-KSA-C20915/2015|KT806054|human|2015-02-13": {
+      "clock_length": 0.07404059152068954,
+      "num_date": 2015.1178082210959,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Oman_2285_2013|KT156560|human|2013-10-28": {
+      "clock_length": 0.09703454017551216,
+      "num_date": 2013.821917811097,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Oman_2874_2013|KT156561|human|2013-12-28": {
+      "clock_length": 0.25469561166531385,
+      "num_date": 2013.9890411010958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Qatar3|KF961221|human|2013-10-13": {
+      "clock_length": 0.030268722466005427,
+      "num_date": 2013.7808219210958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Qatar4|KF961222|human|2013-10-17": {
+      "clock_length": 0.04122762246508649,
+      "num_date": 2013.7917808210948,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Qatar_2_2014|KJ650098|camel|2014-02-16": {
+      "clock_length": 0.135439360628975,
+      "num_date": 2014.1260274010958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KKUH-104||human|2014-04-25": {
+      "clock_length": 0.007337302019211567,
+      "num_date": 2014.3123287710948,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KKUH-105||human|2014-04-25": {
+      "clock_length": 0.007337302019211567,
+      "num_date": 2014.3123287710948,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KKUH-291||human|2014-05-06": {
+      "clock_length": 0.021166052790597467,
+      "num_date": 2014.3424657510948,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KKUH-368||human|2014-05-13": {
+      "clock_length": 0.04034414279088194,
+      "num_date": 2014.361643841095,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KKUH-643||human|2014-11-02": {
+      "clock_length": 0.024138722121200384,
+      "num_date": 2014.8356164410961,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KKUH-665||human|2014-11-19": {
+      "clock_length": 0.07071406212067244,
+      "num_date": 2014.8821917810958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KKUH-90b||human|2014-04-24": {
+      "clock_length": 0.007865372463380815,
+      "num_date": 2014.3095890410948,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KSA-16077/2015|KU851863|human|2015-08-27": {
+      "clock_length": 0.6006917140009753,
+      "num_date": 2015.6520547910957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KSA-16098/2015|KU851864|human|2015-08-24": {
+      "clock_length": 0.06214971862696621,
+      "num_date": 2015.6438356210956,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KSA-16117/2015|KU851862|human|2015-08-24": {
+      "clock_length": 0.01782389407766599,
+      "num_date": 2015.6438356210956,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KSA-16120/2015|KU851861|human|2015-08-24": {
+      "clock_length": 0.01782389407766599,
+      "num_date": 2015.6438356210956,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KSA-16121/2015|KU851860|human|2015-08-24": {
+      "clock_length": 0.14355342833758114,
+      "num_date": 2015.6438356210956,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KSA-2049/2015|KR011266|human|2015-01-06": {
+      "clock_length": 0.018152900480822187,
+      "num_date": 2015.0136986310958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KSA-2343/2015|KR011264|human|2015-01-21": {
+      "clock_length": 0.024825111889923646,
+      "num_date": 2015.0547945210958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KSA-2345/2015|KR011263|human|2015-01-21": {
+      "clock_length": 0.024825111889923646,
+      "num_date": 2015.0547945210958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KSA-2466/2015|KR011265|human|2015-01-26": {
+      "clock_length": 0.046550627116744736,
+      "num_date": 2015.0684931510955,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KSA-2716/2015|KT806051|human|2015-02-05": {
+      "clock_length": 0.782116153607947,
+      "num_date": 2015.0958904110953,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KSA-3065/2015|KT806050|human|2015-02-12": {
+      "clock_length": 0.28979979620140617,
+      "num_date": 2015.115068491096,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh-KSA-3181/2015|KT806049|human|2015-02-15": {
+      "clock_length": 0.17159932549729173,
+      "num_date": 2015.1232876710958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh/Ry136/2015|KT368868|camel|2015-03": {
+      "clock_length": 0.04007161918373092,
+      "num_date": 2015.2000000010953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh/Ry137/2015|KT368869|camel|2015-03": {
+      "clock_length": 0.06353084268465736,
+      "num_date": 2015.2000000010953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh/Ry159b/2015|KT368870|camel|2015-03": {
+      "clock_length": 0.04972188311611536,
+      "num_date": 2015.2000000010953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh/Ry162/2015|KT368871|camel|2015-03": {
+      "clock_length": 0.14863692400074258,
+      "num_date": 2015.2000000010953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh/Ry173/2015|KT368872|camel|2015-03": {
+      "clock_length": 0.0869569229123861,
+      "num_date": 2015.2000000010953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh/Ry177/2015|KT368873|camel|2015-03": {
+      "clock_length": 0.07061738389317951,
+      "num_date": 2015.2000000010953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh/Ry178/2015|KT368874|camel|2015-03": {
+      "clock_length": 0.07061738389317962,
+      "num_date": 2015.2000000010953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh/Ry179/2015|KT368875|camel|2015-03": {
+      "clock_length": 0.7502524930226585,
+      "num_date": 2015.2000000010953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh/Ry23N/2014|KT368825|camel|2014-07": {
+      "clock_length": 0.357900080501655,
+      "num_date": 2014.5342465810954,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh/Ry63/2015|KT368876|camel|2015-03": {
+      "clock_length": 0.010837240855034458,
+      "num_date": 2015.2000000010953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh/Ry64/2015|KT368877|camel|2015-03": {
+      "clock_length": 0.010837240855034458,
+      "num_date": 2015.2000000010953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh/Ry79/2015|KT368878|camel|2015-03": {
+      "clock_length": 0.18509557991131076,
+      "num_date": 2015.2000000010953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh/Ry84N/2014|KT368826|camel|2014-07": {
+      "clock_length": 0.09323483553386391,
+      "num_date": 2014.5342465810954,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh/Ry86/2015|KT368879|camel|2015-03": {
+      "clock_length": 0.06353084268465736,
+      "num_date": 2015.2000000010953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_10_2013|KJ156891|human|2013-09-05": {
+      "clock_length": 0.04649964423327191,
+      "num_date": 2013.6767123310958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_11_2013|KJ156946|human|2013-08-06": {
+      "clock_length": 0.06698633187630065,
+      "num_date": 2013.594520551096,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_12_2013|KJ156926|human|2013-08-08": {
+      "clock_length": 0.01758933175966737,
+      "num_date": 2013.6000000010943,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_13_2013|KJ156888|human|2013-08-13": {
+      "clock_length": 0.03322990350023858,
+      "num_date": 2013.6136986310971,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_14_2013|KJ156934|human|2013-08-15": {
+      "clock_length": 0.0387093534985139,
+      "num_date": 2013.6191780810955,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_17_2013|KJ156918|human|2013-08-26": {
+      "clock_length": 0.01910238423462296,
+      "num_date": 2013.6493150710971,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_1_2012|KF600612|human|2012-10-23": {
+      "clock_length": 0.6284770923205918,
+      "num_date": 2012.8087431710974,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_2014KSA_158/KSA/2014|KM027281|human|2014-05-20": {
+      "clock_length": 0.9808443144085588,
+      "num_date": 2014.3808219210948,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_2014KSA_683/KSA/2014|KM027262|human|2014-04-22": {
+      "clock_length": 0.03491481642783145,
+      "num_date": 2014.3041095910964,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_2_2012|KF600652|human|2012-10-30": {
+      "clock_length": 0.11053847102739711,
+      "num_date": 2012.8278688510968,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_3_2013|KF600613|human|2013-02-05": {
+      "clock_length": 0.286019048148654,
+      "num_date": 2013.0958904110973,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_4_2013|KJ156952|human|2013-03-01": {
+      "clock_length": 0.5386679515437942,
+      "num_date": 2013.1616438410958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_5_2013|KJ156944|human|2013-07-02": {
+      "clock_length": 0.45117212011633434,
+      "num_date": 2013.4986301410943,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_6_2013|KJ156879|human|2013-07-02": {
+      "clock_length": 0.24450569934308852,
+      "num_date": 2013.4986301410943,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_7_2013|KJ156937|human|2013-07-15": {
+      "clock_length": 0.06743899205262238,
+      "num_date": 2013.5342465810943,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_8_2013|KJ156880|human|2013-07-17": {
+      "clock_length": 0.012191811876076208,
+      "num_date": 2013.5397260310958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_9_2013|KJ156869|human|2013-07-17": {
+      "clock_length": 0.6185269379200817,
+      "num_date": 2013.5397260310958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_0734||human|2015-02-18": {
+      "clock_length": 0.035061912656945915,
+      "num_date": 2015.1315068510953,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_0755||human|2015-02-23": {
+      "clock_length": 0.05764870439662295,
+      "num_date": 2015.1452054810957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_0756||human|2015-02-23": {
+      "clock_length": 0.06042821129046816,
+      "num_date": 2015.1452054810957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_0780||human|2015-02-25": {
+      "clock_length": 0.017549546750372347,
+      "num_date": 2015.1506849310958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_0801||human|2015-02-27": {
+      "clock_length": 0.010079543006518143,
+      "num_date": 2015.1561643810958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_0818||human|2015-02-28": {
+      "clock_length": 0.04813464641224152,
+      "num_date": 2015.1589041110958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_0826||human|2015-02-28": {
+      "clock_length": 0.018108219400091996,
+      "num_date": 2015.1589041110958,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_0939||human|2015-03-02": {
+      "clock_length": 0.014336413726189434,
+      "num_date": 2015.1643835610953,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_0944||human|2015-03-02": {
+      "clock_length": 0.027869813874039306,
+      "num_date": 2015.1643835610953,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_1066||human|2015-03-03": {
+      "clock_length": 0.021548597837236172,
+      "num_date": 2015.1671232910953,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_1080||human|2015-03-03": {
+      "clock_length": 0.14237442517125998,
+      "num_date": 2015.1671232910953,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_1145||human|2015-03-04": {
+      "clock_length": 0.02428831783751073,
+      "num_date": 2015.1698630110957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_1217||human|2015-03-04": {
+      "clock_length": 0.024989199187212763,
+      "num_date": 2015.1698630110957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_1461||human|2015-03-08": {
+      "clock_length": 0.049736548272567904,
+      "num_date": 2015.1808219210957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_1470||human|2015-03-08": {
+      "clock_length": 0.040026029399997665,
+      "num_date": 2015.1808219210957,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KKUH_1522||human|2015-03-09": {
+      "clock_length": 0.03351449372692605,
+      "num_date": 2015.183561641096,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KSA_2959_2015|KT026453|human|2015-02-10": {
+      "clock_length": 0.02203226439669792,
+      "num_date": 2015.109589041096,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Riyadh_KSA_4050_2015|KT026454|human|2015-03-01": {
+      "clock_length": 0.09217577405787492,
+      "num_date": 2015.1616438410956,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "THA/CU/17_06_2015|KT225476|human|2015-06-17": {
+      "clock_length": 0.37122930849429736,
+      "num_date": 2015.4575342510955,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif/KSA-7032/2014|KU710264|human|2014-11-04": {
+      "clock_length": 0.26792876273037713,
+      "num_date": 2014.841095891096,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif/T150/2015|KT368889|camel|2015-03": {
+      "clock_length": 0.28936661167992894,
+      "num_date": 2015.2000000010953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif/T157b/2015|KT368890|camel|2015-03": {
+      "clock_length": 0.6425755191066392,
+      "num_date": 2015.2000000010953,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif/T16/2015|KT368882|camel|2015-04": {
+      "clock_length": 0.0239369931654293,
+      "num_date": 2015.2849315110955,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif/T22/2015|KT368883|camel|2015-04": {
+      "clock_length": 0.023936993165429243,
+      "num_date": 2015.2849315110955,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif/T3/2015|KT368880|camel|2015-04": {
+      "clock_length": 0.009599287429926384,
+      "num_date": 2015.2849315110955,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif/T68/2015|KT368884|camel|2015-04": {
+      "clock_length": 0.05628003015195504,
+      "num_date": 2015.2849315110955,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif/T7/2015|KT368881|camel|2015-04": {
+      "clock_length": 0.009599287429926384,
+      "num_date": 2015.2849315110955,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif/T89/2015|KT368885|camel|2015-04": {
+      "clock_length": 0.04406187053159649,
+      "num_date": 2015.2849315110955,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif/T91b/2015|KT368886|camel|2015-04": {
+      "clock_length": 0.04406187053159605,
+      "num_date": 2015.2849315110955,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif/T92/2015|KT368887|camel|2015-04": {
+      "clock_length": 1.3279549960429882,
+      "num_date": 2015.2849315110955,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif/T98/2015|KT368888|camel|2015-04": {
+      "clock_length": 1.1079431143853347,
+      "num_date": 2015.2849315110955,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif_1_2013|KJ156949|human|2013-06-12": {
+      "clock_length": 0.03982262809184922,
+      "num_date": 2013.4438356210972,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif_2_2013|KJ156896|human|2013-06-12": {
+      "clock_length": 0.25026350216185067,
+      "num_date": 2013.4438356210972,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Taif_3_2013|KJ156938|human|2013-06-13": {
+      "clock_length": 0.042562348090448676,
+      "num_date": 2013.446575341096,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "UAE-FRA1_1627-2013_BAL|KJ361500|human|2013-04-26": {
+      "clock_length": 0.16957424124203602,
+      "num_date": 2013.3150684910952,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "UAE/D1164.10/2014|KP719928|camel|2014-06": {
+      "clock_length": 0.13543000993791487,
+      "num_date": 2014.4520547910965,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "UAE/D1164.11/2014|KP719929|camel|2014-06": {
+      "clock_length": 0.07905494155180093,
+      "num_date": 2014.4520547910965,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "UAE/D1164.14/2014|KP719930|camel|2014-06": {
+      "clock_length": 0.12138262860952431,
+      "num_date": 2014.4520547910965,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "UAE/D1164.9/2014|KP719927|camel|2014-06": {
+      "clock_length": 0.12138262860952409,
+      "num_date": 2014.4520547910965,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "UAE/D1209/2014|KP719933|camel|2014-06": {
+      "clock_length": 0.15289024012794372,
+      "num_date": 2014.4520547910965,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "UAE/D1243.12/2014|KP719932|camel|2014-06": {
+      "clock_length": 0.06371719834806955,
+      "num_date": 2014.4520547910965,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "UAE/D1339.2/2014|KP719931|camel|2014-06": {
+      "clock_length": 0.06371719834806955,
+      "num_date": 2014.4520547910965,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "UAE/D469-14|KU242424|camel|2014-03-04": {
+      "clock_length": 0.07745414432858366,
+      "num_date": 2014.1698630110948,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "UAE/D511-14|KU242423|camel|2014-03-12": {
+      "clock_length": 0.05734227792450097,
+      "num_date": 2014.1917808210958,
+      "posterior": 1.0,
+      "type": "c",
+      "type_confidence": {
+        "c": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    },
+    "Wadi-Ad-Dawasir_1_2013|KJ156881|human|2013-06-12": {
+      "clock_length": 0.4387408918151281,
+      "num_date": 2013.4438356210972,
+      "posterior": 1.0,
+      "type": "h",
+      "type_confidence": {
+        "h": 1.0
+      },
+      "type_entropy": -1.000000082690371e-10
+    }
+  }
+}

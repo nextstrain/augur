@@ -1,0 +1,143 @@
+{
+  "alignment": "results/masked.vcf.gz",
+  "clock": {
+    "intercept": -0.00019223701774527378,
+    "rate": 1e-07,
+    "rtt_Tmrca": 1922.3701774527378
+  },
+  "generated_by": {
+    "program": "augur",
+    "version": "7.0.2"
+  },
+  "input_tree": "results/tree_raw.nwk",
+  "nodes": {
+    "G20188": {
+      "branch_length": 3.268983297591514e-06,
+      "clock_length": 3.268983297591514e-06,
+      "date": "2003-12-31",
+      "mutation_length": 3.840940980067266e-06,
+      "numdate": 2003.9986401369863,
+      "raw_date": "2003-XX-XX"
+    },
+    "G20290": {
+      "branch_length": 1.0411997876907599e-06,
+      "clock_length": 1.0411997876907599e-06,
+      "date": "2004-12-31",
+      "mutation_length": 1.3556203282539638e-06,
+      "numdate": 2004.9986438797814,
+      "raw_date": "2004-XX-XX"
+    },
+    "G20293": {
+      "branch_length": 1.2865804798517055e-06,
+      "clock_length": 1.2865804798517055e-06,
+      "date": "2004-12-31",
+      "mutation_length": 1.5815516253701957e-06,
+      "numdate": 2004.9986438797814,
+      "raw_date": "2004-XX-XX"
+    },
+    "G20401": {
+      "branch_length": 3.707731698393904e-06,
+      "clock_length": 3.707731698393904e-06,
+      "date": "2001-12-31",
+      "mutation_length": 6.5522020682290445e-06,
+      "numdate": 2001.9986401369863,
+      "raw_date": "2001-XX-XX"
+    },
+    "G20407": {
+      "branch_length": 4.060506911600154e-06,
+      "clock_length": 4.060506911600154e-06,
+      "date": "2000-12-31",
+      "mutation_length": 4.292801421947184e-06,
+      "numdate": 2000.9986438797814,
+      "raw_date": "2000-XX-XX"
+    },
+    "G20524": {
+      "branch_length": 4.411994134112484e-07,
+      "clock_length": 4.411994134112484e-07,
+      "date": "1998-12-31",
+      "mutation_length": 4.518737595560887e-07,
+      "numdate": 1998.9986401369863,
+      "raw_date": "1998-XX-XX"
+    },
+    "G20795": {
+      "branch_length": 2.9424895879168494e-06,
+      "clock_length": 2.9424895879168494e-06,
+      "date": "2006-01-01",
+      "mutation_length": 2.711242850688057e-06,
+      "numdate": 2006.0013798630137,
+      "raw_date": "2006-XX-XX"
+    },
+    "G20855": {
+      "branch_length": 2.211402444721577e-06,
+      "clock_length": 2.211402444721577e-06,
+      "date": "1995-01-01",
+      "mutation_length": 9.037487777225681e-07,
+      "numdate": 1995.0013798630137,
+      "raw_date": "1995-XX-XX"
+    },
+    "G21051": {
+      "branch_length": 8.865804798517057e-07,
+      "clock_length": 8.865804798517057e-07,
+      "date": "2000-12-31",
+      "mutation_length": 1.3556190610113676e-06,
+      "numdate": 2000.9986438797814,
+      "raw_date": "2000-XX-XX"
+    },
+    "NODE_0000000": {
+      "branch_length": 6.387484008023898e-07,
+      "clock_length": 6.387484008023898e-07,
+      "date": "1971-04-23",
+      "mutation_length": 6.778102932288752e-07,
+      "numdate": 1971.3088071610712
+    },
+    "NODE_0000001": {
+      "branch_length": 5.267676822774e-07,
+      "clock_length": 5.267676822774e-07,
+      "date": "1976-07-29",
+      "mutation_length": 6.77811783769214e-07,
+      "numdate": 1976.5764839838453
+    },
+    "NODE_0000002": {
+      "branch_length": 1.8010162019028653e-06,
+      "clock_length": 1.8010162019028653e-06,
+      "date": "1994-08-03",
+      "mutation_length": 2.9371896535519924e-06,
+      "numdate": 1994.5866460028737
+    },
+    "NODE_0000003": {
+      "branch_length": 4.5277483892673845e-07,
+      "clock_length": 4.5277483892673845e-07,
+      "date": "1964-12-03",
+      "mutation_length": 4.5187269839477413e-07,
+      "numdate": 1964.9213231530473
+    },
+    "NODE_0000004": {
+      "branch_length": 3.053546280641923e-06,
+      "clock_length": 3.053546280641923e-06,
+      "date": "1960-05-24",
+      "mutation_length": 2.7544228369863856e-06,
+      "numdate": 1960.39357476378
+    },
+    "NODE_0000005": {
+      "branch_length": 4.302924345843724e-06,
+      "clock_length": 4.302924345843724e-06,
+      "date": "1972-11-20",
+      "mutation_length": 4.47556091714234e-06,
+      "numdate": 1972.8873554157979
+    },
+    "NODE_0000006": {
+      "branch_length": 1.9245483665466465e-06,
+      "clock_length": 1.9245483665466465e-06,
+      "date": "1992-02-18",
+      "mutation_length": 2.9371785947237906e-06,
+      "numdate": 1992.1328390812644
+    },
+    "NODE_0000007": {
+      "branch_length": 0.001,
+      "clock_length": 0.001,
+      "date": "1929-11-10",
+      "mutation_length": 0.001,
+      "numdate": 1929.8581119573607
+    }
+  }
+}

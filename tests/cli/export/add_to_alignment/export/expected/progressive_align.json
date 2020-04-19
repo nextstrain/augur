@@ -1,0 +1,655 @@
+{
+  "meta": {
+    "colorings": [
+      {
+        "key": "gt",
+        "title": "Genotype",
+        "type": "categorical"
+      },
+      {
+        "key": "country",
+        "title": "country",
+        "type": "ordinal"
+      }
+    ],
+    "filters": [],
+    "genome_annotations": {
+      "2K": {
+        "end": 6897,
+        "seqid": "data/reference.gb",
+        "start": 6829,
+        "strand": "+",
+        "type": "CDS"
+      },
+      "CA": {
+        "end": 456,
+        "seqid": "data/reference.gb",
+        "start": 91,
+        "strand": "+",
+        "type": "CDS"
+      },
+      "ENV": {
+        "end": 2472,
+        "seqid": "data/reference.gb",
+        "start": 961,
+        "strand": "+",
+        "type": "CDS"
+      },
+      "MP": {
+        "end": 960,
+        "seqid": "data/reference.gb",
+        "start": 736,
+        "strand": "+",
+        "type": "CDS"
+      },
+      "NS1": {
+        "end": 3528,
+        "seqid": "data/reference.gb",
+        "start": 2473,
+        "strand": "+",
+        "type": "CDS"
+      },
+      "NS2A": {
+        "end": 4206,
+        "seqid": "data/reference.gb",
+        "start": 3529,
+        "strand": "+",
+        "type": "CDS"
+      },
+      "NS2B": {
+        "end": 4596,
+        "seqid": "data/reference.gb",
+        "start": 4207,
+        "strand": "+",
+        "type": "CDS"
+      },
+      "NS3": {
+        "end": 6447,
+        "seqid": "data/reference.gb",
+        "start": 4597,
+        "strand": "+",
+        "type": "CDS"
+      },
+      "NS4A": {
+        "end": 6828,
+        "seqid": "data/reference.gb",
+        "start": 6448,
+        "strand": "+",
+        "type": "CDS"
+      },
+      "NS4B": {
+        "end": 7650,
+        "seqid": "data/reference.gb",
+        "start": 6898,
+        "strand": "+",
+        "type": "CDS"
+      },
+      "NS5": {
+        "end": 10359,
+        "seqid": "data/reference.gb",
+        "start": 7651,
+        "strand": "+",
+        "type": "CDS"
+      },
+      "PRO": {
+        "end": 735,
+        "seqid": "data/reference.gb",
+        "start": 457,
+        "strand": "+",
+        "type": "CDS"
+      },
+      "nuc": {
+        "end": 10769,
+        "seqid": "data/reference.gb",
+        "start": 1,
+        "strand": "+",
+        "type": "source"
+      }
+    },
+    "panels": [
+      "tree",
+      "entropy"
+    ],
+    "title": "Add sequences to existing alignment test build",
+    "updated": "2020-04-15"
+  },
+  "tree": {
+    "branch_attrs": {
+      "mutations": {}
+    },
+    "children": [
+      {
+        "branch_attrs": {
+          "mutations": {}
+        },
+        "name": "KX369547.1",
+        "node_attrs": {
+          "div": 0.0
+        }
+      },
+      {
+        "branch_attrs": {
+          "labels": {
+            "aa": "MP: L42F; NS1: E146K"
+          },
+          "mutations": {
+            "MP": [
+              "L42F"
+            ],
+            "NS1": [
+              "E146K"
+            ],
+            "nuc": [
+              "A765G",
+              "C859T",
+              "G2908A"
+            ]
+          }
+        },
+        "children": [
+          {
+            "branch_attrs": {
+              "labels": {
+                "aa": "CA: S109N; ENV: K419R; NS1: R324Q; NS5: N624S, K670R"
+              },
+              "mutations": {
+                "CA": [
+                  "S109N"
+                ],
+                "ENV": [
+                  "K419R"
+                ],
+                "NS1": [
+                  "R324Q"
+                ],
+                "NS5": [
+                  "N624S",
+                  "K670R"
+                ],
+                "nuc": [
+                  "T249C",
+                  "G416A",
+                  "C789T",
+                  "A1158G",
+                  "T2032C",
+                  "T2076C",
+                  "A2216G",
+                  "T3321C",
+                  "G3443A",
+                  "C4428T",
+                  "T4602A",
+                  "A4671G",
+                  "T4740C",
+                  "T5286C",
+                  "T5676C",
+                  "T6405C",
+                  "C6475T",
+                  "T7026C",
+                  "G7230A",
+                  "C8145T",
+                  "T8652C",
+                  "C8748T",
+                  "A9521G",
+                  "T9595C",
+                  "A9659G",
+                  "A9711G",
+                  "A9768G",
+                  "C10596T"
+                ]
+              }
+            },
+            "name": "ZKC2/2016",
+            "node_attrs": {
+              "accession": "KX253996",
+              "author": {
+                "author": "Wu et al",
+                "journal": "Submitted (18-MAY-2016) Center for Diseases Control and Prevention of Guangdong Province; National Institute of Viral Disease Control and Prevention, China",
+                "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/",
+                "title": "Direct Submission",
+                "value": "Wu et al"
+              },
+              "country": {
+                "value": "American Samoa"
+              },
+              "div": 0.0028874900000000004,
+              "url": "https://www.ncbi.nlm.nih.gov/nuccore/KX253996"
+            }
+          },
+          {
+            "branch_attrs": {
+              "labels": {
+                "aa": "NS5: M114V"
+              },
+              "mutations": {
+                "NS5": [
+                  "M114V"
+                ],
+                "nuc": [
+                  "T2637C",
+                  "T3501C",
+                  "T7500C",
+                  "A7990G",
+                  "C8391T",
+                  "G9417A",
+                  "G10375A"
+                ]
+              }
+            },
+            "children": [
+              {
+                "branch_attrs": {
+                  "labels": {
+                    "aa": "NS1: M349V"
+                  },
+                  "mutations": {
+                    "NS1": [
+                      "M349V"
+                    ],
+                    "nuc": [
+                      "T1275C",
+                      "T1858C",
+                      "T2409C",
+                      "A2754G",
+                      "A3517G",
+                      "A3780G",
+                      "G4971T",
+                      "C5532T",
+                      "G5751A",
+                      "G6453C",
+                      "A6873G",
+                      "G6966A",
+                      "C8232A",
+                      "T8553C",
+                      "C8850T",
+                      "A9420G",
+                      "G9933T",
+                      "C10098T",
+                      "A10347G",
+                      "T10372C"
+                    ]
+                  }
+                },
+                "name": "EcEs062_16",
+                "node_attrs": {
+                  "accession": "KX879603",
+                  "author": {
+                    "author": "Marquez et al",
+                    "journal": "Genome Announc 5 (8), e01673-16 (2017)",
+                    "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/28232448",
+                    "title": "First Complete Genome Sequences of Zika Virus Isolated from Febrile Patient Sera in Ecuador",
+                    "value": "Marquez et al"
+                  },
+                  "country": {
+                    "value": "Ecuador"
+                  },
+                  "div": 0.00279569,
+                  "url": "https://www.ncbi.nlm.nih.gov/nuccore/KX879603"
+                }
+              },
+              {
+                "branch_attrs": {
+                  "mutations": {
+                    "nuc": [
+                      "C9279T"
+                    ]
+                  }
+                },
+                "children": [
+                  {
+                    "branch_attrs": {
+                      "labels": {
+                        "aa": "CA: I80T; NS5: A91V"
+                      },
+                      "mutations": {
+                        "CA": [
+                          "I80T"
+                        ],
+                        "NS5": [
+                          "A91V"
+                        ],
+                        "nuc": [
+                          "T329C",
+                          "T762C",
+                          "G1170T",
+                          "G1458A",
+                          "A1482G",
+                          "C1887T",
+                          "C2838T",
+                          "T3549C",
+                          "T3576C",
+                          "C4866T",
+                          "T5070C",
+                          "T5139C",
+                          "A5298G",
+                          "T6612A",
+                          "T6654C",
+                          "T7077C",
+                          "T7134C",
+                          "C7488T",
+                          "C7922T",
+                          "T8835C",
+                          "T9000C",
+                          "C9225T"
+                        ]
+                      }
+                    },
+                    "name": "early_insertion",
+                    "node_attrs": {
+                      "accession": "KU501215",
+                      "author": {
+                        "author": "Lanciotti et al",
+                        "journal": "Emerging Infect. Dis. 22 (5), 933-935 (2016)",
+                        "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/27088323",
+                        "title": "Phylogeny of Zika Virus in Western Hemisphere, 2015",
+                        "value": "Lanciotti et al"
+                      },
+                      "country": {
+                        "value": "Puerto Rico"
+                      },
+                      "div": 0.00309129,
+                      "url": "https://www.ncbi.nlm.nih.gov/nuccore/KU501215"
+                    }
+                  },
+                  {
+                    "branch_attrs": {
+                      "mutations": {
+                        "nuc": [
+                          "C2517T",
+                          "T3972C"
+                        ]
+                      }
+                    },
+                    "children": [
+                      {
+                        "branch_attrs": {
+                          "mutations": {
+                            "nuc": [
+                              "T876C",
+                              "C2646T",
+                              "A4341G",
+                              "C5988T",
+                              "T6618C",
+                              "A7116G",
+                              "C7488T",
+                              "T7506C",
+                              "G8040A",
+                              "A8820G",
+                              "C9066T",
+                              "T9717C"
+                            ]
+                          }
+                        },
+                        "name": "start_missing",
+                        "node_attrs": {
+                          "accession": "KY785433",
+                          "author": {
+                            "author": "Metsky et al",
+                            "journal": "Nature 546 (7658), 411-415 (2017)",
+                            "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/28538734",
+                            "title": "Zika virus evolution and spread in the Americas",
+                            "value": "Metsky et al"
+                          },
+                          "country": {
+                            "value": "Brazil"
+                          },
+                          "div": 0.00240945,
+                          "url": "https://www.ncbi.nlm.nih.gov/nuccore/KY785433"
+                        }
+                      },
+                      {
+                        "branch_attrs": {
+                          "labels": {
+                            "aa": "CA: D107E; NS1: R324W; NS5: T833A"
+                          },
+                          "mutations": {
+                            "CA": [
+                              "D107E"
+                            ],
+                            "NS1": [
+                              "R324W"
+                            ],
+                            "NS5": [
+                              "T833A"
+                            ],
+                            "nuc": [
+                              "A3C",
+                              "T411A",
+                              "T738C",
+                              "C858T",
+                              "G864T",
+                              "C1381T",
+                              "C3442T",
+                              "A3894G",
+                              "C5991T",
+                              "A10147G"
+                            ]
+                          }
+                        },
+                        "children": [
+                          {
+                            "branch_attrs": {
+                              "labels": {
+                                "aa": "PRO: N17K"
+                              },
+                              "mutations": {
+                                "PRO": [
+                                  "N17K"
+                                ],
+                                "nuc": [
+                                  "C507A",
+                                  "C1233T",
+                                  "C2163T",
+                                  "T7843C",
+                                  "T10332C"
+                                ]
+                              }
+                            },
+                            "name": "Colombia/2016/ZC204Se",
+                            "node_attrs": {
+                              "accession": "KY317939",
+                              "author": {
+                                "author": "Quick et al",
+                                "journal": "Nat Protoc 12 (6), 1261-1276 (2017)",
+                                "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/28538739",
+                                "title": "Multiplex PCR method for MinION and Illumina sequencing of Zika and other virus genomes directly from clinical samples",
+                                "value": "Quick et al"
+                              },
+                              "country": {
+                                "value": "Colombia"
+                              },
+                              "div": 0.00256394,
+                              "url": "https://www.ncbi.nlm.nih.gov/nuccore/KY317939"
+                            }
+                          },
+                          {
+                            "branch_attrs": {
+                              "mutations": {
+                                "nuc": [
+                                  "T1029C",
+                                  "T3705C"
+                                ]
+                              }
+                            },
+                            "children": [
+                              {
+                                "branch_attrs": {
+                                  "labels": {
+                                    "aa": "NS2B: M32I"
+                                  },
+                                  "mutations": {
+                                    "NS2B": [
+                                      "M32I"
+                                    ],
+                                    "nuc": [
+                                      "G23A",
+                                      "A35T",
+                                      "G40A",
+                                      "T2538C",
+                                      "A3750G",
+                                      "G3771A",
+                                      "G4302A",
+                                      "C7056T",
+                                      "T10344C"
+                                    ]
+                                  }
+                                },
+                                "name": "PAN/CDC_259359_V1_V3/2015",
+                                "node_attrs": {
+                                  "accession": "KX156774",
+                                  "author": {
+                                    "author": "Shabman et al",
+                                    "journal": "Submitted (29-APR-2016) J. Craig Venter Institute, 9704 Medical Center Drive, Rockville, MD 20850, USA",
+                                    "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/",
+                                    "title": "Direct Submission",
+                                    "value": "Shabman et al"
+                                  },
+                                  "country": {
+                                    "value": "Panama"
+                                  },
+                                  "div": 0.00312356,
+                                  "url": "https://www.ncbi.nlm.nih.gov/nuccore/KX156774"
+                                }
+                              },
+                              {
+                                "branch_attrs": {
+                                  "mutations": {
+                                    "nuc": [
+                                      "G2895A",
+                                      "T3804C",
+                                      "C4311T",
+                                      "T4605G",
+                                      "C6643T",
+                                      "T8862G"
+                                    ]
+                                  }
+                                },
+                                "children": [
+                                  {
+                                    "branch_attrs": {
+                                      "labels": {
+                                        "aa": "NS1: L169I, G292E"
+                                      },
+                                      "mutations": {
+                                        "NS1": [
+                                          "L169I",
+                                          "G292E"
+                                        ],
+                                        "nuc": [
+                                          "T1506C",
+                                          "C2977A",
+                                          "G3347A",
+                                          "G5655A",
+                                          "T8445C"
+                                        ]
+                                      }
+                                    },
+                                    "name": "COL/FLR_00008/2015",
+                                    "node_attrs": {
+                                      "accession": "MF574562",
+                                      "author": {
+                                        "author": "Pickett et al",
+                                        "journal": "Submitted (28-JUL-2017) J. Craig Venter Institute, 9704 Medical Center Drive, Rockville, MD 20850, USA",
+                                        "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/",
+                                        "title": "Direct Submission",
+                                        "value": "Pickett et al"
+                                      },
+                                      "country": {
+                                        "value": "Colombia"
+                                      },
+                                      "div": 0.00333367,
+                                      "url": "https://www.ncbi.nlm.nih.gov/nuccore/MF574562"
+                                    }
+                                  },
+                                  {
+                                    "branch_attrs": {
+                                      "labels": {
+                                        "aa": "CA: E76D; NS1: T301P; NS5: A833T"
+                                      },
+                                      "mutations": {
+                                        "CA": [
+                                          "E76D"
+                                        ],
+                                        "NS1": [
+                                          "T301P"
+                                        ],
+                                        "NS5": [
+                                          "A833T"
+                                        ],
+                                        "nuc": [
+                                          "G318T",
+                                          "G438T",
+                                          "C1233T",
+                                          "C1416T",
+                                          "A3373C",
+                                          "C8016T",
+                                          "G10147A"
+                                        ]
+                                      }
+                                    },
+                                    "name": "early_deletion",
+                                    "node_attrs": {
+                                      "accession": "KX702400",
+                                      "author": {
+                                        "author": "Blohm et al",
+                                        "journal": "Genome Announc 5 (17), e00231-17 (2017)",
+                                        "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/28450510",
+                                        "title": "Complete Genome Sequences of Identical Zika virus Isolates in a Nursing Mother and Her Infant",
+                                        "value": "Blohm et al"
+                                      },
+                                      "country": {
+                                        "value": "Venezuela"
+                                      },
+                                      "div": 0.00354662,
+                                      "url": "https://www.ncbi.nlm.nih.gov/nuccore/KX702400"
+                                    }
+                                  }
+                                ],
+                                "name": "NODE_0000007",
+                                "node_attrs": {
+                                  "div": 0.00286433
+                                }
+                              }
+                            ],
+                            "name": "NODE_0000006",
+                            "node_attrs": {
+                              "div": 0.00228456
+                            }
+                          }
+                        ],
+                        "name": "NODE_0000005",
+                        "node_attrs": {
+                          "div": 0.00209246
+                        }
+                      }
+                    ],
+                    "name": "NODE_0000004",
+                    "node_attrs": {
+                      "div": 0.00121627
+                    }
+                  }
+                ],
+                "name": "NODE_0000003",
+                "node_attrs": {
+                  "div": 0.00102351
+                }
+              }
+            ],
+            "name": "NODE_0000002",
+            "node_attrs": {
+              "div": 0.0009313
+            }
+          }
+        ],
+        "name": "NODE_0000001",
+        "node_attrs": {
+          "div": 0.00027863
+        }
+      }
+    ],
+    "name": "NODE_0000000",
+    "node_attrs": {
+      "div": 0
+    }
+  },
+  "version": "v2"
+}

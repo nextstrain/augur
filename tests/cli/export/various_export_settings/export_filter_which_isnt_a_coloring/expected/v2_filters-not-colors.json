@@ -1,0 +1,408 @@
+{
+  "meta": {
+    "colorings": [
+      {
+        "key": "num_date",
+        "title": "Sampling date",
+        "type": "continuous"
+      }
+    ],
+    "filters": [
+      "country"
+    ],
+    "panels": [
+      "tree"
+    ],
+    "title": "Country is a filter but not a coloring",
+    "updated": "2020-04-15"
+  },
+  "tree": {
+    "branch_attrs": {},
+    "children": [
+      {
+        "branch_attrs": {},
+        "children": [
+          {
+            "branch_attrs": {},
+            "name": "Colombia/2016/ZC204Se",
+            "node_attrs": {
+              "accession": "KY317939",
+              "author": {
+                "author": "Quick et al",
+                "journal": "Nat Protoc 12 (6), 1261-1276 (2017)",
+                "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/28538739",
+                "title": "Multiplex PCR method for MinION and Illumina sequencing of Zika and other virus genomes directly from clinical samples",
+                "value": "Quick et al"
+              },
+              "country": {
+                "value": "colombia"
+              },
+              "div": 0.0008364480765899717,
+              "num_date": {
+                "confidence": [
+                  2016.0150273224044,
+                  2016.0150273224044
+                ],
+                "value": 2016.0150273224044
+              },
+              "url": "https://www.ncbi.nlm.nih.gov/nuccore/KY317939"
+            }
+          },
+          {
+            "branch_attrs": {},
+            "children": [
+              {
+                "branch_attrs": {},
+                "name": "PAN/CDC_259359_V1_V3/2015",
+                "node_attrs": {
+                  "accession": "KX156774",
+                  "author": {
+                    "author": "Shabman et al",
+                    "journal": "Submitted (29-APR-2016) J. Craig Venter Institute, 9704 Medical Center Drive, Rockville, MD 20850, USA",
+                    "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/",
+                    "title": "Direct Submission",
+                    "value": "Shabman et al"
+                  },
+                  "country": {
+                    "value": "panama"
+                  },
+                  "div": 0.0013942244165601222,
+                  "num_date": {
+                    "confidence": [
+                      2015.9630136986302,
+                      2015.9630136986302
+                    ],
+                    "value": 2015.9630136986302
+                  },
+                  "url": "https://www.ncbi.nlm.nih.gov/nuccore/KX156774"
+                }
+              },
+              {
+                "branch_attrs": {},
+                "children": [
+                  {
+                    "branch_attrs": {},
+                    "name": "COL/FLR_00008/2015",
+                    "node_attrs": {
+                      "accession": "MF574562",
+                      "author": {
+                        "author": "Pickett et al",
+                        "journal": "Submitted (28-JUL-2017) J. Craig Venter Institute, 9704 Medical Center Drive, Rockville, MD 20850, USA",
+                        "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/",
+                        "title": "Direct Submission",
+                        "value": "Pickett et al"
+                      },
+                      "country": {
+                        "value": "colombia"
+                      },
+                      "div": 0.0015799206667146462,
+                      "num_date": {
+                        "confidence": [
+                          2015.9249777829466,
+                          2015.9986301369863
+                        ],
+                        "value": 2015.9986301369863
+                      },
+                      "url": "https://www.ncbi.nlm.nih.gov/nuccore/MF574562"
+                    }
+                  },
+                  {
+                    "branch_attrs": {},
+                    "name": "VEN/UF_1/2016",
+                    "node_attrs": {
+                      "accession": "KX702400",
+                      "author": {
+                        "author": "Blohm et al",
+                        "journal": "Genome Announc 5 (17), e00231-17 (2017)",
+                        "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/28450510",
+                        "title": "Complete Genome Sequences of Identical Zika virus Isolates in a Nursing Mother and Her Infant",
+                        "value": "Blohm et al"
+                      },
+                      "country": {
+                        "value": "venezuela"
+                      },
+                      "div": 0.001765774219570341,
+                      "num_date": {
+                        "confidence": [
+                          2016.23087431694,
+                          2016.23087431694
+                        ],
+                        "value": 2016.23087431694
+                      },
+                      "url": "https://www.ncbi.nlm.nih.gov/nuccore/KX702400"
+                    }
+                  }
+                ],
+                "name": "NODE_0000008",
+                "node_attrs": {
+                  "div": 0.001115130275116599,
+                  "num_date": {
+                    "confidence": [
+                      2011.2350062695452,
+                      2015.990919379263
+                    ],
+                    "value": 2015.470569151975
+                  }
+                }
+              }
+            ],
+            "name": "NODE_0000007",
+            "node_attrs": {
+              "div": 0.0005574773854711197,
+              "num_date": {
+                "confidence": [
+                  2006.3690718905357,
+                  2015.9562609776717
+                ],
+                "value": 2014.9825626521974
+              }
+            }
+          }
+        ],
+        "name": "NODE_0000001",
+        "node_attrs": {
+          "div": 0.000371681521094316,
+          "num_date": {
+            "confidence": [
+              2004.506428212432,
+              2015.921010846426
+            ],
+            "value": 2014.7256549113245
+          }
+        }
+      },
+      {
+        "branch_attrs": {},
+        "children": [
+          {
+            "branch_attrs": {},
+            "name": "BRA/2016/FC_6706",
+            "node_attrs": {
+              "accession": "KY785433",
+              "author": {
+                "author": "Metsky et al",
+                "journal": "Nature 546 (7658), 411-415 (2017)",
+                "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/28538734",
+                "title": "Zika virus evolution and spread in the Americas",
+                "value": "Metsky et al"
+              },
+              "country": {
+                "value": "brazil"
+              },
+              "div": 0.0017679422199014657,
+              "num_date": {
+                "confidence": [
+                  2016.26912568306,
+                  2016.26912568306
+                ],
+                "value": 2016.26912568306
+              },
+              "url": "https://www.ncbi.nlm.nih.gov/nuccore/KY785433"
+            }
+          },
+          {
+            "branch_attrs": {},
+            "children": [
+              {
+                "branch_attrs": {},
+                "name": "ZKC2/2016",
+                "node_attrs": {
+                  "accession": "KX253996",
+                  "author": {
+                    "author": "Wu et al",
+                    "journal": "Submitted (18-MAY-2016) Center for Diseases Control and Prevention of Guangdong Province; National Institute of Viral Disease Control and Prevention, China",
+                    "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/",
+                    "title": "Direct Submission",
+                    "value": "Wu et al"
+                  },
+                  "country": {
+                    "value": "american_samoa"
+                  },
+                  "div": 0.0040975120056054365,
+                  "num_date": {
+                    "confidence": [
+                      2016.127049180328,
+                      2016.127049180328
+                    ],
+                    "value": 2016.127049180328
+                  },
+                  "url": "https://www.ncbi.nlm.nih.gov/nuccore/KX253996"
+                }
+              },
+              {
+                "branch_attrs": {},
+                "children": [
+                  {
+                    "branch_attrs": {},
+                    "name": "HND/2016/HU_ME59",
+                    "node_attrs": {
+                      "accession": "KY785418",
+                      "author": {
+                        "author": "Metsky et al",
+                        "journal": "Nature 546 (7658), 411-415 (2017)",
+                        "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/28538734",
+                        "title": "Zika virus evolution and spread in the Americas",
+                        "value": "Metsky et al"
+                      },
+                      "country": {
+                        "value": "honduras"
+                      },
+                      "div": 0.00213903225360425,
+                      "num_date": {
+                        "confidence": [
+                          2016.3647540983607,
+                          2016.3647540983607
+                        ],
+                        "value": 2016.3647540983607
+                      },
+                      "url": "https://www.ncbi.nlm.nih.gov/nuccore/KY785418"
+                    }
+                  },
+                  {
+                    "branch_attrs": {},
+                    "name": "PRVABC59",
+                    "node_attrs": {
+                      "accession": "KU501215",
+                      "author": {
+                        "author": "Lanciotti et al",
+                        "journal": "Emerging Infect. Dis. 22 (5), 933-935 (2016)",
+                        "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/27088323",
+                        "title": "Phylogeny of Zika Virus in Western Hemisphere, 2015",
+                        "value": "Lanciotti et al"
+                      },
+                      "country": {
+                        "value": "puerto_rico"
+                      },
+                      "div": 0.0029769674473140947,
+                      "num_date": {
+                        "confidence": [
+                          2015.9264539275973,
+                          2015.9986301369863
+                        ],
+                        "value": 2015.9986301369863
+                      },
+                      "url": "https://www.ncbi.nlm.nih.gov/nuccore/KU501215"
+                    }
+                  }
+                ],
+                "name": "NODE_0000004",
+                "node_attrs": {
+                  "div": 0.0009293322992608603,
+                  "num_date": {
+                    "confidence": [
+                      1998.8126445712037,
+                      2015.9809776643965
+                    ],
+                    "value": 2014.495239578568
+                  }
+                }
+              },
+              {
+                "branch_attrs": {},
+                "children": [
+                  {
+                    "branch_attrs": {},
+                    "name": "EcEs062_16",
+                    "node_attrs": {
+                      "accession": "KX879603",
+                      "author": {
+                        "author": "Marquez et al",
+                        "journal": "Genome Announc 5 (8), e01673-16 (2017)",
+                        "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/28232448",
+                        "title": "First Complete Genome Sequences of Zika Virus Isolated from Febrile Patient Sera in Ecuador",
+                        "value": "Marquez et al"
+                      },
+                      "country": {
+                        "value": "ecuador"
+                      },
+                      "div": 0.002697220035239538,
+                      "num_date": {
+                        "confidence": [
+                          2016.25,
+                          2016.3292349726776
+                        ],
+                        "value": 2016.3292349726776
+                      },
+                      "url": "https://www.ncbi.nlm.nih.gov/nuccore/KX879603"
+                    }
+                  },
+                  {
+                    "branch_attrs": {},
+                    "name": "DOM/2016/BB_0059",
+                    "node_attrs": {
+                      "accession": "KY785425",
+                      "author": {
+                        "author": "Metsky et al",
+                        "journal": "Nature 546 (7658), 411-415 (2017)",
+                        "paper_url": "https://www.ncbi.nlm.nih.gov/pubmed/28538734",
+                        "title": "Zika virus evolution and spread in the Americas",
+                        "value": "Metsky et al"
+                      },
+                      "country": {
+                        "value": "dominican_republic"
+                      },
+                      "div": 0.0030744395454095283,
+                      "num_date": {
+                        "confidence": [
+                          2016.2581967213114,
+                          2016.2581967213114
+                        ],
+                        "value": 2016.2581967213114
+                      },
+                      "url": "https://www.ncbi.nlm.nih.gov/nuccore/KY785425"
+                    }
+                  }
+                ],
+                "name": "NODE_0000002",
+                "node_attrs": {
+                  "div": 0.00102224784204102,
+                  "num_date": {
+                    "confidence": [
+                      1999.2976711445265,
+                      2016.2581967213114
+                    ],
+                    "value": 2014.5488327860057
+                  }
+                }
+              }
+            ],
+            "name": "NODE_0000003",
+            "node_attrs": {
+              "div": 0.0008364317281573706,
+              "num_date": {
+                "confidence": [
+                  1997.8741041922892,
+                  2015.9463000649714
+                ],
+                "value": 2014.4050967533083
+              }
+            }
+          }
+        ],
+        "name": "NODE_0000005",
+        "node_attrs": {
+          "div": 0.0006506159926373225,
+          "num_date": {
+            "confidence": [
+              1997.0610141251839,
+              2015.911007922131
+            ],
+            "value": 2014.2369481137898
+          }
+        }
+      }
+    ],
+    "name": "NODE_0000006",
+    "node_attrs": {
+      "div": 0,
+      "num_date": {
+        "confidence": [
+          1993.47447313344,
+          2015.875746065337
+        ],
+        "value": 2013.831597152626
+      }
+    }
+  },
+  "version": "v2"
+}
