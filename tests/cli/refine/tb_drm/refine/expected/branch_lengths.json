@@ -1,5 +1,5 @@
 {
-  "alignment": "results/masked.vcf.gz",
+  "alignment": "in/masked.vcf.gz",
   "clock": {
     "intercept": -0.00019223701774527378,
     "rate": 1e-07,
@@ -9,7 +9,7 @@
     "program": "augur",
     "version": "7.0.2"
   },
-  "input_tree": "results/tree_raw.nwk",
+  "input_tree": "in/tree_raw.nwk",
   "nodes": {
     "G20188": {
       "branch_length": 3.268983297591514e-06,

@@ -1,10 +1,10 @@
 {
-  "alignment": "results/aligned.fasta",
+  "alignment": "in/aligned.fasta",
   "generated_by": {
     "program": "augur",
     "version": "7.0.2"
   },
-  "input_tree": "results/tree_raw.nwk",
+  "input_tree": "in/tree_raw.nwk",
   "nodes": {
     "BRA/2016/FC_6706": {
       "branch_length": 0.00119695
