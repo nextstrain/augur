@@ -2,6 +2,11 @@
   $ TEST_DATA_DIR="$TESTDIR"
   $ mkdir -p "$TMP/out"
 
+Explicitly cd into TEST_DATA_DIR, so we can pass a relative path to --tree AND --alignment.  
+The value for this param gets written into the output file.  So if we just passed the full path, e.g. $TEST_DATA_DIR/in/tree_raw.nwk,
+this test would fail on other machines/environments.
+
+  $ cd $TEST_DATA_DIR
   $ augur refine --tree $TEST_DATA_DIR/in/tree_raw.nwk --alignment $TEST_DATA_DIR/in/aligned.fasta --metadata $TEST_DATA_DIR/in/metadata.tsv --output-tree $TMP/out/tree.nwk --output-node-data $TMP/out/branch_lengths.json --timetree --coalescent opt --date-confidence --date-inference marginal --clock-filter-iqd 4 >/dev/null
   $ echo $?
   0

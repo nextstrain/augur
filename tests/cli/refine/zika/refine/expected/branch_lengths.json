@@ -1,5 +1,5 @@
 {
-  "alignment": "results/aligned.fasta",
+  "alignment": "in/aligned.fasta",
   "clock": {
     "intercept": -2.6608110502656173,
     "rate": 0.0013208776076038859,
@@ -9,7 +9,7 @@
     "program": "augur",
     "version": "7.0.2"
   },
-  "input_tree": "results/tree_raw.nwk",
+  "input_tree": "in/tree_raw.nwk",
   "nodes": {
     "BRA/2016/FC_6706": {
       "branch_length": 0.0021308771870438576,
