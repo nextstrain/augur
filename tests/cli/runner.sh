@@ -10,8 +10,8 @@ echo -e "\nRunning all tests\n-----------------\n\n"
 
 cd $(dirname "$BASH_SOURCE")
 
-# exclude_test_dirs=(refine tree)
-exclude_test_dirs=(export filter traits runner.sh)
+# exclude_test_dirs=(tree)
+exclude_test_dirs=(export filter traits refine runner.sh)
 
 for test_dir in *; do
     if [[ ! " ${exclude_test_dirs[@]} " =~ " ${test_dir} " ]]; then
