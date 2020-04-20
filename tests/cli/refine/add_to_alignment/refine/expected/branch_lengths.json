@@ -1,0 +1,61 @@
+{
+  "alignment": "results/aligned.fasta",
+  "generated_by": {
+    "program": "augur",
+    "version": "7.0.2"
+  },
+  "input_tree": "results/tree_raw.nwk",
+  "nodes": {
+    "COL/FLR_00008/2015": {
+      "branch_length": 0.00046934
+    },
+    "Colombia/2016/ZC204Se": {
+      "branch_length": 0.00047148
+    },
+    "EcEs062_16": {
+      "branch_length": 0.00186439
+    },
+    "KX369547.1": {
+      "branch_length": 0.0
+    },
+    "NODE_0000000": {
+      "branch_length": 0.001
+    },
+    "NODE_0000001": {
+      "branch_length": 0.00027863
+    },
+    "NODE_0000002": {
+      "branch_length": 0.00065267
+    },
+    "NODE_0000003": {
+      "branch_length": 9.221e-05
+    },
+    "NODE_0000004": {
+      "branch_length": 0.00019276
+    },
+    "NODE_0000005": {
+      "branch_length": 0.00087619
+    },
+    "NODE_0000006": {
+      "branch_length": 0.0001921
+    },
+    "NODE_0000007": {
+      "branch_length": 0.00057977
+    },
+    "PAN/CDC_259359_V1_V3/2015": {
+      "branch_length": 0.000839
+    },
+    "ZKC2/2016": {
+      "branch_length": 0.00260886
+    },
+    "early_deletion": {
+      "branch_length": 0.00068229
+    },
+    "early_insertion": {
+      "branch_length": 0.00206778
+    },
+    "start_missing": {
+      "branch_length": 0.00119318
+    }
+  }
+}
