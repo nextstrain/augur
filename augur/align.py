@@ -25,6 +25,7 @@ def register_arguments(parser):
     parser.add_argument('--remove-reference', action="store_true", default=False, help="remove reference sequence from the alignment")
     parser.add_argument('--fill-gaps', action="store_true", default=False, help="If gaps represent missing data rather than true indels, replace by N after aligning.")
     parser.add_argument('--existing-alignment', metavar="FASTA", default=False, help="An existing alignment to which the sequences will be added. The ouput alignment will be the same length as this existing alignment.")
+    parser.add_argument('--add-fragments', action="store_true", help="Use mafft's --add-fragments option to align similar sequences to a reference")
     parser.add_argument('--debug', action="store_true", default=False, help="Produce extra files (e.g. pre- and post-aligner files) which can help with debugging poor alignments.")
 
 def run(args):
@@ -87,8 +88,14 @@ def run(args):
         if args.debug and not existing_aln:
             copyfile(seqs_to_align_fname, args.output+".pre_aligner.fasta")
 
+        # Determine whether to pass the reference filename to the aligner.
+        if args.add_fragments:
+            ref_fname = args.reference_sequence
+        else:
+            ref_fname = None
+
         # generate alignment command & run
-        cmd = generate_alignment_cmd(args.method, args.nthreads, existing_aln_fname, seqs_to_align_fname, args.output, args.output+".log")
+        cmd = generate_alignment_cmd(args.method, args.nthreads, existing_aln_fname, seqs_to_align_fname, args.output, args.output+".log", ref_fname)
         success = run_shell_command(cmd)
         if not success:
             raise AlignmentError("Error during alignment")
@@ -143,8 +150,16 @@ def check_arguments(args):
     # Simple error checking related to a reference name/sequence
     if args.reference_name and args.reference_sequence:
         raise AlignmentError("ERROR: You cannot provide both --reference-name and --reference-sequence")
+
     if args.remove_reference and not (args.reference_name or args.reference_sequence):
         raise AlignmentError("ERROR: You've asked to remove the reference but haven't specified one!")
+
+    if args.add_fragments:
+        if args.reference_sequence is None:
+            raise AlignmentError("ERROR: The --add-fragments option requires a --reference-sequence.")
+
+        if args.existing_alignment:
+            raise AlignmentError("ERROR: The --add-fragments option cannot be used with the --existing-alignment option.")
 
 def read_alignment(fname):
     try:
@@ -177,12 +192,15 @@ def read_reference(ref_fname):
                 "\n\tmake sure the file %s contains one sequence in genbank or fasta format"%ref_fname)
     return ref_seq
 
-def generate_alignment_cmd(method, nthreads, existing_aln_fname, seqs_to_align_fname, aln_fname, log_fname):
+def generate_alignment_cmd(method, nthreads, existing_aln_fname, seqs_to_align_fname, aln_fname, log_fname, ref_fname=None):
     if method=='mafft':
         if existing_aln_fname:
             cmd = "mafft --add %s --keeplength --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s"%(shquote(seqs_to_align_fname), nthreads, shquote(existing_aln_fname), shquote(aln_fname), shquote(log_fname))
+        elif ref_fname is not None:
+            cmd = "mafft --auto --keeplength --anysymbol --adjustdirection --thread %d --addfragments %s %s 1> %s 2> %s"%(nthreads, shquote(seqs_to_align_fname), shquote(ref_fname), shquote(aln_fname), shquote(log_fname))
         else:
             cmd = "mafft --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s"%(nthreads, shquote(seqs_to_align_fname), shquote(aln_fname), shquote(log_fname))
+
         print("\nusing mafft to align via:\n\t" + cmd +
               " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"
               "\n\thttps://doi.org/10.1093%2Fnar%2Fgkf436\n")
