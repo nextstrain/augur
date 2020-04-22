@@ -160,7 +160,7 @@ def run(args):
 
     mugration_states = defaultdict(dict)
     models = defaultdict(dict)
-    out_prefix = '.'.join(args.tree.split('.')[:-1])
+    out_prefix = '.'.join(args.output_node_data.split('.')[:-1])
     for column in args.columns:
         T, gtr, alphabet = mugration_inference(tree=tree_fname, seq_meta=traits,
                                                field=column, confidence=args.confidence,
