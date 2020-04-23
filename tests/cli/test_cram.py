@@ -2,9 +2,13 @@ import pytest
 import pathlib
 import cram
 import os
+# Coverage.py warning: No data was collected. (no-data-collected)
+import augur
+
 
 # Locate all Cram tests to be executed.
 test_dir = "./tests/cli"
+#test_dir = "./tests/cli/ancestral"
 cram_tests = list(pathlib.Path(test_dir).glob("**/*.t"))
 
 
