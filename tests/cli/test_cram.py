@@ -25,9 +25,9 @@ class TestCram:
         pytest -vv -s tests/cli/test_cram.py --cov augur --cov-report term
     """
 
-    @pytest.mark.xfail(
-        reason="Cram tests currently fail for export, filter, mask, refine, and tree."
-    )
+    #@pytest.mark.xfail(
+    #    reason="Cram tests currently fail for export, filter, mask, refine, and tree."
+    #)
     @pytest.mark.parametrize("cram_test_file", cram_tests, ids=get_ids)
     def test_all(self, cram_test_file):
         # cram expects a bytes literal here, e.g. b"tests/cli/ancestral/add_to_alignment/ancestral/ancestral.t"
