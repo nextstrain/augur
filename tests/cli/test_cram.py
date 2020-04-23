@@ -31,6 +31,6 @@ class TestCram:
     @pytest.mark.parametrize("cram_test_file", cram_tests, ids=get_ids)
     def test_all(self, cram_test_file):
         # cram expects a bytes literal here, e.g. b"tests/cli/ancestral/add_to_alignment/ancestral/ancestral.t"
-        ins, outs, diffs = cram.testfile(path=bytes(cram_test_file))
+        ins, outs, diffs = cram.testfile(path=bytes(cram_test_file), shell="/bin/bash")
         diff_list = list(diffs)
         assert len(diff_list) == 0, f"Cram diffs: {diff_list}"
