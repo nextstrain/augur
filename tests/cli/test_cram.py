@@ -1,7 +1,7 @@
 import pytest
 import pathlib
 import cram
-
+import os
 
 # Locate all Cram tests to be executed.
 test_dir = "./tests/cli"
@@ -29,7 +29,11 @@ class TestCram:
     #    reason="Cram tests currently fail for export, filter, mask, refine, and tree."
     #)
     @pytest.mark.parametrize("cram_test_file", cram_tests, ids=get_ids)
-    def test_all(self, cram_test_file):
+    def test_all(self, tmpdir, cram_test_file):
+        # cram.main() sets these environment variables, but cram.testfile() does not.
+        # If they're unset, cram tests can't (e.g.) write to $TMP/out from here.
+        for s in ('TMPDIR', 'TEMP', 'TMP'):
+            os.environ[s] = str(tmpdir)
         # cram expects a bytes literal here, e.g. b"tests/cli/ancestral/add_to_alignment/ancestral/ancestral.t"
         ins, outs, diffs = cram.testfile(path=bytes(cram_test_file), shell="/bin/bash")
         diff_list = list(diffs)
