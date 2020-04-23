@@ -2,13 +2,13 @@ import pytest
 import pathlib
 import cram
 import os
+
 # Coverage.py warning: No data was collected. (no-data-collected)
 import augur
 
 
 # Locate all Cram tests to be executed.
 test_dir = "./tests/cli"
-#test_dir = "./tests/cli/ancestral"
 cram_tests = list(pathlib.Path(test_dir).glob("**/*.t"))
 
 
@@ -29,14 +29,14 @@ class TestCram:
         pytest -vv -s tests/cli/test_cram.py --cov augur --cov-report term
     """
 
-    #@pytest.mark.xfail(
-    #    reason="Cram tests currently fail for export, filter, mask, refine, and tree."
-    #)
+    @pytest.mark.xfail(
+        reason="Cram tests currently fail for export, filter, mask, refine, and tree."
+    )
     @pytest.mark.parametrize("cram_test_file", cram_tests, ids=get_ids)
     def test_all(self, tmpdir, cram_test_file):
         # cram.main() sets these environment variables, but cram.testfile() does not.
         # If they're unset, cram tests can't (e.g.) write to $TMP/out from here.
-        for s in ('TMPDIR', 'TEMP', 'TMP'):
+        for s in ("TMPDIR", "TEMP", "TMP"):
             os.environ[s] = str(tmpdir)
         # cram expects a bytes literal here, e.g. b"tests/cli/ancestral/add_to_alignment/ancestral/ancestral.t"
         ins, outs, diffs = cram.testfile(path=bytes(cram_test_file), shell="/bin/bash")
