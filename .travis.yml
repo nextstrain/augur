@@ -30,7 +30,8 @@ jobs:
         - pip3 install -e .[dev]
       script:
         - (pytest -c pytest.python3.ini  --cov-report= --cov=augur)
-        - (pytest -p pytest_cov -vv -s --cov augur --cov-report term tests/cli/test_cram.py)
+        - (pytest -c pytest.python3.cli.ini)
+        # - (pytest -p pytest_cov -vv -s --cov augur --cov-report term tests/cli/test_cram.py)
         # - (bash tests/cli/runner.sh)
         - (bash tests/builds/runner.sh)
       after_success:
