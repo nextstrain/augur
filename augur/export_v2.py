@@ -811,6 +811,8 @@ def parse_node_data_and_metadata(T, node_data_files, metadata_file):
         if name in node_attrs: # i.e. this node name is in the tree
             for key, value in info.items():
                 corrected_key = update_deprecated_names(key)
+                if corrected_key in node_attrs[name]:
+                    raise KeyError("Node data is overwriting metadata for strain {}".format(name))
                 node_attrs[name][corrected_key] = value
                 node_data_names.add(corrected_key)
 
@@ -839,7 +841,11 @@ def run_v2(args):
 
     # parse input files
     T = Phylo.read(args.tree, 'newick')
-    node_data, node_attrs, node_data_names, metadata_names = parse_node_data_and_metadata(T, args.node_data, args.metadata)
+    try:
+        node_data, node_attrs, node_data_names, metadata_names = parse_node_data_and_metadata(T, args.node_data, args.metadata)
+    except KeyError as e:
+        warn(e)
+
     config = get_config(args)
 
     # set metadata data structures
