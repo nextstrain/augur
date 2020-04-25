@@ -1,0 +1,679 @@
+{
+  "aa_muts": {
+    "Rv0039c": [
+      "F24C"
+    ],
+    "Rv0466": [
+      "V226I"
+    ],
+    "Rv0909": [
+      "Q45H"
+    ],
+    "Rv1081c": [
+      "P7S"
+    ],
+    "Rv1112": [
+      "T275N"
+    ],
+    "Rv1218c": [
+      "R243Q"
+    ],
+    "Rv3087": [
+      "V447L"
+    ],
+    "Rv3463": [
+      "G94D"
+    ],
+    "cobS": [
+      "S155L"
+    ],
+    "dnaQ": [
+      "D76G",
+      "A164V"
+    ],
+    "eccC2": [
+      "M73L"
+    ],
+    "embB": [
+      "A378E"
+    ],
+    "embC": [
+      "I270T"
+    ],
+    "esxD": [
+      "A49T"
+    ],
+    "esxM": [
+      "K59*"
+    ],
+    "gid": [
+      "L16R"
+    ],
+    "gyrB": [
+      "V301L"
+    ],
+    "katG": [
+      "L463R"
+    ],
+    "lldD2": [
+      "A59G",
+      "A176V"
+    ],
+    "mbtK": [
+      "D192A"
+    ],
+    "narX": [
+      "G77D"
+    ],
+    "pks15": [
+      "R374G"
+    ],
+    "thyA": [
+      "T202A"
+    ],
+    "ubiA": [
+      "D149E"
+    ]
+  },
+  "attr": {
+    "Drug_Resistance": 0,
+    "clock_length": 0.001,
+    "country": "malawi",
+    "date": "1929-11-10",
+    "div": 0,
+    "num_date": 1929.8581119573607,
+    "region": "africa"
+  },
+  "branch_length": 0.001,
+  "children": [
+    {
+      "aa_muts": {
+        "ethA": [
+          "L82P"
+        ],
+        "katG": [
+          "S315T"
+        ]
+      },
+      "attr": {
+        "Drug_Resistance": 2,
+        "Isoniazid": "katG: S315T",
+        "Streptomycin": "rrs: C513T",
+        "clock_length": 4.302924345843724e-06,
+        "country": "malawi",
+        "date": "1972-11-20",
+        "div": 4.47556091714234e-06,
+        "num_date": 1972.8873554157979,
+        "region": "africa"
+      },
+      "branch_length": 4.3e-06,
+      "children": [
+        {
+          "aa_muts": {},
+          "attr": {
+            "Drug_Resistance": 2,
+            "Isoniazid": "katG: S315T",
+            "Streptomycin": "rrs: C513T",
+            "accession": "ERR212008",
+            "authors": "Guerra-Assuncao et al 2015",
+            "clock_length": 2.211402444721577e-06,
+            "country": "malawi",
+            "date": "1995-01-01",
+            "div": 5.379309694864908e-06,
+            "num_date": 1995.0013798630137,
+            "raw_date": "1995-XX-XX",
+            "region": "africa"
+          },
+          "branch_length": 2.21e-06,
+          "clade": 0,
+          "muts": [
+            "T1094415C",
+            "C1096508G",
+            "T1096510C",
+            "G4318425C"
+          ],
+          "strain": "G20855",
+          "yvalue": 9
+        },
+        {
+          "aa_muts": {
+            "Rv1129c": [
+              "V116F"
+            ],
+            "pncA": [
+              "Q141P"
+            ],
+            "rpoB": [
+              "S450L",
+              "V970M"
+            ]
+          },
+          "attr": {
+            "Drug_Resistance": 3,
+            "Isoniazid": "katG: S315T",
+            "Rifampicin": "rpoB: S450L",
+            "Streptomycin": "rrs: C513T",
+            "clock_length": 1.9245483665466465e-06,
+            "country": "malawi",
+            "date": "1992-02-18",
+            "div": 7.412739511866131e-06,
+            "num_date": 1992.1328390812644,
+            "region": "africa"
+          },
+          "branch_length": 1.92e-06,
+          "children": [
+            {
+              "aa_muts": {
+                "embB": [
+                  "D1024N"
+                ]
+              },
+              "attr": {
+                "Drug_Resistance": 4,
+                "Ethambutol": "embB: D1024N",
+                "Isoniazid": "katG: S315T",
+                "Rifampicin": "rpoB: S450L",
+                "Streptomycin": "rrs: C513T",
+                "accession": "ERR221618",
+                "authors": "Guerra-Assuncao et al 2015",
+                "clock_length": 8.865804798517057e-07,
+                "country": "malawi",
+                "date": "2000-12-31",
+                "div": 8.768358572877499e-06,
+                "num_date": 2000.9986438797814,
+                "raw_date": "2000-XX-XX",
+                "region": "africa"
+              },
+              "branch_length": 8.9e-07,
+              "clade": 1,
+              "muts": [
+                "G1484512C",
+                "T1574082G",
+                "T1803384C",
+                "C2074509G",
+                "G4249583A",
+                "C4316228T"
+              ],
+              "strain": "G21051",
+              "yvalue": 8
+            },
+            {
+              "aa_muts": {},
+              "attr": {
+                "Drug_Resistance": 3,
+                "Isoniazid": "katG: S315T",
+                "Rifampicin": "rpoB: S450L",
+                "Streptomycin": "rrs: C513T",
+                "accession": "ERR163958",
+                "authors": "Guerra-Assuncao et al 2015",
+                "clock_length": 1.2865804798517055e-06,
+                "country": "zimbabwe",
+                "date": "2004-12-31",
+                "div": 8.994291137236327e-06,
+                "num_date": 2004.9986438797814,
+                "raw_date": "2004-XX-XX",
+                "region": "africa"
+              },
+              "branch_length": 1.29e-06,
+              "clade": 2,
+              "muts": [
+                "G1076920C",
+                "C1094413G",
+                "T1494014C",
+                "T2401883C",
+                "A2784613G",
+                "G3892129A",
+                "G4318703A"
+              ],
+              "strain": "G20293",
+              "yvalue": 7
+            }
+          ],
+          "clade": 3,
+          "muts": [
+            "C1215G",
+            "G227910A",
+            "C322516T",
+            "T580772A",
+            "C761155T",
+            "G762714A",
+            "C1254189A",
+            "C1493991T",
+            "C1850061G",
+            "T2288820G",
+            "G2782347C",
+            "T2931669C",
+            "C4243217T"
+          ],
+          "strain": "NODE_0000006",
+          "yvalue": 7.5
+        }
+      ],
+      "clade": 4,
+      "muts": [
+        "G29262A",
+        "G360651C",
+        "G413123A",
+        "G578020A",
+        "G784272A",
+        "G865194T",
+        "C907388T",
+        "A1147076C",
+        "G1198122A",
+        "C1472358T",
+        "G1868538A",
+        "A2023384C",
+        "C2117445T",
+        "G2130529A",
+        "C2155168G",
+        "C2677333A",
+        "T2884548G",
+        "G2964034A",
+        "G3046934A",
+        "T3116349C",
+        "T3432544C",
+        "G3545149A",
+        "T3675823C",
+        "G3862150T",
+        "G3896806A",
+        "G3898137C",
+        "C4248730T",
+        "A4327229G",
+        "C4329146T",
+        "G4363555A",
+        "T4394261C",
+        "T4402426C"
+      ],
+      "strain": "NODE_0000005",
+      "yvalue": 8.25
+    },
+    {
+      "aa_muts": {},
+      "attr": {
+        "Drug_Resistance": 0,
+        "clock_length": 3.053546280641923e-06,
+        "country": "malawi",
+        "date": "1960-05-24",
+        "div": 2.7544228369863856e-06,
+        "num_date": 1960.39357476378,
+        "region": "africa"
+      },
+      "branch_length": 3.05e-06,
+      "children": [
+        {
+          "aa_muts": {
+            "katG": [
+              "W412*"
+            ]
+          },
+          "attr": {
+            "Drug_Resistance": 0,
+            "accession": "ERR176554",
+            "authors": "Guerra-Assuncao et al 2015",
+            "clock_length": 4.060506911600154e-06,
+            "country": "malawi",
+            "date": "2000-12-31",
+            "div": 7.04722425893357e-06,
+            "num_date": 2000.9986438797814,
+            "raw_date": "2000-XX-XX",
+            "region": "africa"
+          },
+          "branch_length": 4.06e-06,
+          "clade": 5,
+          "muts": [
+            "A65396G",
+            "C118811G",
+            "G228297A",
+            "G245396A",
+            "C446688G",
+            "C866930T",
+            "G984579A",
+            "C1096508G",
+            "G2074565C",
+            "C2154877T",
+            "G2176156A",
+            "A2267372G",
+            "C2726112T",
+            "G3232815A",
+            "C3263660T",
+            "G3264435A",
+            "A3295084T",
+            "G3922380A",
+            "T4173563C"
+          ],
+          "strain": "G20407",
+          "yvalue": 6
+        },
+        {
+          "aa_muts": {},
+          "attr": {
+            "Drug_Resistance": 0,
+            "clock_length": 4.5277483892673845e-07,
+            "country": "malawi",
+            "date": "1964-12-03",
+            "div": 3.20629553538116e-06,
+            "num_date": 1964.9213231530473,
+            "region": "africa"
+          },
+          "branch_length": 4.5e-07,
+          "children": [
+            {
+              "aa_muts": {},
+              "attr": {
+                "Drug_Resistance": 0,
+                "accession": "ERR176546",
+                "authors": "Guerra-Assuncao et al 2015",
+                "clock_length": 3.707731698393904e-06,
+                "country": "malawi",
+                "date": "2001-12-31",
+                "div": 9.758497603610205e-06,
+                "num_date": 2001.9986401369863,
+                "raw_date": "2001-XX-XX",
+                "region": "africa"
+              },
+              "branch_length": 3.71e-06,
+              "clade": 6,
+              "muts": [
+                "C46729T",
+                "A229986C",
+                "A393617G",
+                "G625959A",
+                "C667237T",
+                "T747341G",
+                "C824744T",
+                "T907901G",
+                "G918999A",
+                "C972962G",
+                "T1096510C",
+                "C1199023T",
+                "C1405067T",
+                "C1500944T",
+                "A2007817C",
+                "A2012859C",
+                "G2014902A",
+                "T2401883C",
+                "A2592392G",
+                "A2784613G",
+                "T2884548G",
+                "C2906813T",
+                "G3093846T",
+                "A3160875G",
+                "T3336587A",
+                "G3404254A",
+                "G3571764A",
+                "G4177544A",
+                "T4402426C"
+              ],
+              "strain": "G20401",
+              "yvalue": 5
+            },
+            {
+              "aa_muts": {},
+              "attr": {
+                "Drug_Resistance": 0,
+                "clock_length": 6.387484008023898e-07,
+                "country": "malawi",
+                "date": "1971-04-23",
+                "div": 3.884105828610035e-06,
+                "num_date": 1971.3088071610712,
+                "region": "africa"
+              },
+              "branch_length": 6.4e-07,
+              "children": [
+                {
+                  "aa_muts": {
+                    "fadE5": [
+                      "Q321H"
+                    ],
+                    "gyrA": [
+                      "D67G"
+                    ],
+                    "infA": [
+                      "A21V"
+                    ]
+                  },
+                  "attr": {
+                    "Drug_Resistance": 0,
+                    "accession": "ERR161073",
+                    "authors": "Guerra-Assuncao et al 2015",
+                    "clock_length": 3.268983297591514e-06,
+                    "country": "uganda",
+                    "date": "2003-12-31",
+                    "div": 7.7250468086773e-06,
+                    "num_date": 2003.9986401369863,
+                    "raw_date": "2003-XX-XX",
+                    "region": "africa"
+                  },
+                  "branch_length": 3.27e-06,
+                  "clade": 7,
+                  "muts": [
+                    "G1463C",
+                    "A7501G",
+                    "C242282T",
+                    "C294671A",
+                    "C774023A",
+                    "A774781C",
+                    "G1575624A",
+                    "C2033576T",
+                    "C2182238A",
+                    "C2283675A",
+                    "C2330182T",
+                    "G2489112A",
+                    "G3000976A",
+                    "T3189580C",
+                    "G3208696A",
+                    "G3659944C",
+                    "G3880592A"
+                  ],
+                  "strain": "G20188",
+                  "yvalue": 4
+                },
+                {
+                  "aa_muts": {
+                    "katG": [
+                      "S315T"
+                    ]
+                  },
+                  "attr": {
+                    "Drug_Resistance": 1,
+                    "Isoniazid": "katG: S315T",
+                    "clock_length": 5.267676822774e-07,
+                    "country": "malawi",
+                    "date": "1976-07-29",
+                    "div": 4.561917612379249e-06,
+                    "num_date": 1976.5764839838453,
+                    "region": "africa"
+                  },
+                  "branch_length": 5.3e-07,
+                  "children": [
+                    {
+                      "aa_muts": {
+                        "pknF": [
+                          "P298H"
+                        ],
+                        "rpsL": [
+                          "K88R"
+                        ]
+                      },
+                      "attr": {
+                        "Drug_Resistance": 2,
+                        "Isoniazid": "katG: S315T",
+                        "Streptomycin": "rpsL: K88R",
+                        "accession": "ERR182037",
+                        "authors": "Guerra-Assuncao et al 2015",
+                        "clock_length": 2.9424895879168494e-06,
+                        "country": "zimbabwe",
+                        "date": "2006-01-01",
+                        "div": 7.273160463067306e-06,
+                        "num_date": 2006.0013798630137,
+                        "raw_date": "2006-XX-XX",
+                        "region": "africa"
+                      },
+                      "branch_length": 2.94e-06,
+                      "clade": 8,
+                      "muts": [
+                        "C110663T",
+                        "G620212T",
+                        "A781822G",
+                        "C1973030A",
+                        "C2123146T",
+                        "G2459018A",
+                        "C2576585T",
+                        "C2730341T",
+                        "A3265381G",
+                        "C3602926T",
+                        "T3640379C",
+                        "G3854117A"
+                      ],
+                      "strain": "G20795",
+                      "yvalue": 3
+                    },
+                    {
+                      "aa_muts": {
+                        "Rv1816": [
+                          "R112C"
+                        ],
+                        "ethA": [
+                          "P454L"
+                        ],
+                        "fadA2": [
+                          "K378*"
+                        ],
+                        "gid": [
+                          "L18H"
+                        ]
+                      },
+                      "attr": {
+                        "Drug_Resistance": 1,
+                        "Isoniazid": "katG: S315T",
+                        "clock_length": 1.8010162019028653e-06,
+                        "country": "malawi",
+                        "date": "1994-08-03",
+                        "div": 7.499107265931242e-06,
+                        "num_date": 1994.5866460028737,
+                        "region": "africa"
+                      },
+                      "branch_length": 1.8e-06,
+                      "children": [
+                        {
+                          "aa_muts": {},
+                          "attr": {
+                            "Drug_Resistance": 1,
+                            "Isoniazid": "katG: S315T",
+                            "accession": "ERR176736",
+                            "authors": "Guerra-Assuncao et al 2015",
+                            "clock_length": 4.411994134112484e-07,
+                            "country": "malawi",
+                            "date": "1998-12-31",
+                            "div": 7.95098102548733e-06,
+                            "num_date": 1998.9986401369863,
+                            "raw_date": "1998-XX-XX",
+                            "region": "africa"
+                          },
+                          "branch_length": 4.4e-07,
+                          "clade": 9,
+                          "muts": [
+                            "G670545A",
+                            "G4318425C"
+                          ],
+                          "strain": "G20524",
+                          "yvalue": 2
+                        },
+                        {
+                          "aa_muts": {
+                            "embB": [
+                              "G406S"
+                            ],
+                            "rpoB": [
+                              "D435V"
+                            ]
+                          },
+                          "attr": {
+                            "Drug_Resistance": 3,
+                            "Ethambutol": "embB: G406S",
+                            "Isoniazid": "katG: S315T",
+                            "Rifampicin": "rpoB: D435V",
+                            "accession": "ERR163953",
+                            "authors": "Guerra-Assuncao et al 2015",
+                            "clock_length": 1.0411997876907599e-06,
+                            "country": "malawi",
+                            "date": "2004-12-31",
+                            "div": 8.854727594185205e-06,
+                            "num_date": 2004.9986438797814,
+                            "raw_date": "2004-XX-XX",
+                            "region": "africa"
+                          },
+                          "branch_length": 1.04e-06,
+                          "clade": 10,
+                          "muts": [
+                            "A761110T",
+                            "G1912013A",
+                            "G3232815A",
+                            "T3336587A",
+                            "A4203166G",
+                            "G4247729A"
+                          ],
+                          "strain": "G20290",
+                          "yvalue": 1
+                        }
+                      ],
+                      "clade": 11,
+                      "muts": [
+                        "G16599A",
+                        "A293302T",
+                        "T580772A",
+                        "C1901519T",
+                        "C2058589T",
+                        "G2074565C",
+                        "C2757107G",
+                        "C2931998T",
+                        "G3445651A",
+                        "G3542339T",
+                        "G3993208T",
+                        "G4326113A",
+                        "A4408150T"
+                      ],
+                      "strain": "NODE_0000002",
+                      "yvalue": 1.5
+                    }
+                  ],
+                  "clade": 12,
+                  "muts": [
+                    "G1934661C",
+                    "C2155168G",
+                    "A2926938C"
+                  ],
+                  "strain": "NODE_0000001",
+                  "yvalue": 2.25
+                }
+              ],
+              "clade": 13,
+              "muts": [
+                "C1411971T",
+                "G1964945C",
+                "G2092759T"
+              ],
+              "strain": "NODE_0000000",
+              "yvalue": 3.125
+            }
+          ],
+          "clade": 14,
+          "muts": [
+            "C2074509G",
+            "C2129281A"
+          ],
+          "strain": "NODE_0000003",
+          "yvalue": 4.0625
+        }
+      ],
+      "clade": 15,
+      "muts": [],
+      "strain": "NODE_0000004",
+      "yvalue": 5.03125
+    }
+  ],
+  "clade": 16,
+  "muts": [],
+  "strain": "NODE_0000007",
+  "yvalue": 6.640625
+}

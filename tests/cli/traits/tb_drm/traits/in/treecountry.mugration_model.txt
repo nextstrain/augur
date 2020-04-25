@@ -1,0 +1,25 @@
+Map from character to field name
+A:	malawi
+B:	uganda
+C:	zimbabwe
+D:	?
+
+
+Substitution rate (mu): 312.425505
+
+Equilibrium frequencies (pi_i):
+  A: 0.4904
+  B: 0.248
+  C: 0.2616
+
+Symmetrized rates from j->i (W_ij):
+	A	B	C
+  A	0	1.4107	2.0723
+  B	1.4107	0	0.9645
+  C	2.0723	0.9645	0
+
+Actual rates from j->i (Q_ij):
+	A	B	C
+  A	0	0.6917	1.0162
+  B	0.3499	0	0.2392
+  C	0.5421	0.2523	0

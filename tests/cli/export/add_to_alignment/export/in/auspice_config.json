@@ -1,0 +1,19 @@
+{
+  "title": "Add sequences to existing alignment test build",
+  "colorings": [
+    {
+      "key": "gt",
+      "title": "Genotype",
+      "type": "categorical"
+    },
+    {
+      "key": "country",
+      "type": "ordinal"
+    }
+  ],
+  "panels": [
+    "tree",
+    "entropy"
+  ],
+  "filters": []
+}

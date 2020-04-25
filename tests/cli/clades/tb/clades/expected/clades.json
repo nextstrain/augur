@@ -1,0 +1,62 @@
+{
+  "generated_by": {
+    "program": "augur",
+    "version": "7.0.2"
+  },
+  "nodes": {
+    "G22574": {
+      "clade_membership": "Mj-III.a"
+    },
+    "G22592": {
+      "clade_annotation": "Mj-V.a",
+      "clade_membership": "Mj-V.a"
+    },
+    "G22601": {
+      "clade_membership": "Mj-III.b"
+    },
+    "G22611": {
+      "clade_membership": "Mj-III.a"
+    },
+    "G22614": {
+      "clade_annotation": "Mj-IV.c",
+      "clade_membership": "Mj-IV.c"
+    },
+    "G22615": {
+      "clade_membership": "Mj-III.b"
+    },
+    "G22665": {
+      "clade_membership": "Mj-III.b"
+    },
+    "G22676": {
+      "clade_annotation": "Mj-V.c",
+      "clade_membership": "Mj-V.c"
+    },
+    "G22677": {
+      "clade_membership": "Mj-IV.b"
+    },
+    "NODE_0000000": {
+      "clade_annotation": "Mj-III.a",
+      "clade_membership": "Mj-III.a"
+    },
+    "NODE_0000001": {
+      "clade_membership": "unassigned"
+    },
+    "NODE_0000002": {
+      "clade_annotation": "Mj-III.b",
+      "clade_membership": "Mj-III.b"
+    },
+    "NODE_0000003": {
+      "clade_membership": "unassigned"
+    },
+    "NODE_0000004": {
+      "clade_annotation": "Mj-IV.b",
+      "clade_membership": "Mj-IV.b"
+    },
+    "NODE_0000005": {
+      "clade_membership": "unassigned"
+    },
+    "NODE_0000007": {
+      "clade_membership": "Mj-III.a"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Country is a filter but not a coloring",
+  "colorings": [
+    {
+      "key": "num_date",
+      "title": "Sampling date",
+      "type": "continuous"
+    }
+  ],
+  "panels": [
+    "tree"
+  ],
+  "filters": [
+    "country"
+  ]
+}

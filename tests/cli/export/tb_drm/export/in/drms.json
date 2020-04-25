@@ -1,0 +1,81 @@
+{
+  "generated_by": {
+    "program": "augur",
+    "version": "7.0.2"
+  },
+  "nodes": {
+    "G20188": {
+      "Drug_Resistance": 0
+    },
+    "G20290": {
+      "Drug_Resistance": 3,
+      "Ethambutol": "embB: G406S",
+      "Isoniazid": "katG: S315T",
+      "Rifampicin": "rpoB: D435V"
+    },
+    "G20293": {
+      "Drug_Resistance": 3,
+      "Isoniazid": "katG: S315T",
+      "Rifampicin": "rpoB: S450L",
+      "Streptomycin": "rrs: C513T"
+    },
+    "G20401": {
+      "Drug_Resistance": 0
+    },
+    "G20407": {
+      "Drug_Resistance": 0
+    },
+    "G20524": {
+      "Drug_Resistance": 1,
+      "Isoniazid": "katG: S315T"
+    },
+    "G20795": {
+      "Drug_Resistance": 2,
+      "Isoniazid": "katG: S315T",
+      "Streptomycin": "rpsL: K88R"
+    },
+    "G20855": {
+      "Drug_Resistance": 2,
+      "Isoniazid": "katG: S315T",
+      "Streptomycin": "rrs: C513T"
+    },
+    "G21051": {
+      "Drug_Resistance": 4,
+      "Ethambutol": "embB: D1024N",
+      "Isoniazid": "katG: S315T",
+      "Rifampicin": "rpoB: S450L",
+      "Streptomycin": "rrs: C513T"
+    },
+    "NODE_0000000": {
+      "Drug_Resistance": 0
+    },
+    "NODE_0000001": {
+      "Drug_Resistance": 1,
+      "Isoniazid": "katG: S315T"
+    },
+    "NODE_0000002": {
+      "Drug_Resistance": 1,
+      "Isoniazid": "katG: S315T"
+    },
+    "NODE_0000003": {
+      "Drug_Resistance": 0
+    },
+    "NODE_0000004": {
+      "Drug_Resistance": 0
+    },
+    "NODE_0000005": {
+      "Drug_Resistance": 2,
+      "Isoniazid": "katG: S315T",
+      "Streptomycin": "rrs: C513T"
+    },
+    "NODE_0000006": {
+      "Drug_Resistance": 3,
+      "Isoniazid": "katG: S315T",
+      "Rifampicin": "rpoB: S450L",
+      "Streptomycin": "rrs: C513T"
+    },
+    "NODE_0000007": {
+      "Drug_Resistance": 0
+    }
+  }
+}

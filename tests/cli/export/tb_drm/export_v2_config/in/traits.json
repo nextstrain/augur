@@ -1,0 +1,109 @@
+{
+  "generated_by": {
+    "program": "augur",
+    "version": "7.0.2"
+  },
+  "models": {
+    "country": {
+      "alphabet": [
+        "malawi",
+        "uganda",
+        "zimbabwe",
+        "?"
+      ],
+      "equilibrium_probabilities": [
+        0.4903512328836352,
+        0.24803699735975931,
+        0.26161176975660544
+      ],
+      "rate": 312.4255048031472,
+      "transition_matrix": [
+        [
+          0.0,
+          1.4106615696823193,
+          2.072338685098534
+        ],
+        [
+          1.4106615696823193,
+          0.0,
+          0.9644858136263535
+        ],
+        [
+          2.072338685098534,
+          0.9644858136263535,
+          0.0
+        ]
+      ]
+    }
+  },
+  "nodes": {
+    "G20188": {
+      "country": "uganda",
+      "region": "africa"
+    },
+    "G20290": {
+      "country": "malawi",
+      "region": "africa"
+    },
+    "G20293": {
+      "country": "zimbabwe",
+      "region": "africa"
+    },
+    "G20401": {
+      "country": "malawi",
+      "region": "africa"
+    },
+    "G20407": {
+      "country": "malawi",
+      "region": "africa"
+    },
+    "G20524": {
+      "country": "malawi",
+      "region": "africa"
+    },
+    "G20795": {
+      "country": "zimbabwe",
+      "region": "africa"
+    },
+    "G20855": {
+      "country": "malawi",
+      "region": "africa"
+    },
+    "G21051": {
+      "country": "malawi",
+      "region": "africa"
+    },
+    "NODE_0000000": {
+      "country": "malawi",
+      "region": "africa"
+    },
+    "NODE_0000001": {
+      "country": "malawi",
+      "region": "africa"
+    },
+    "NODE_0000002": {
+      "country": "malawi",
+      "region": "africa"
+    },
+    "NODE_0000003": {
+      "country": "malawi",
+      "region": "africa"
+    },
+    "NODE_0000004": {
+      "country": "malawi",
+      "region": "africa"
+    },
+    "NODE_0000005": {
+      "country": "malawi",
+      "region": "africa"
+    },
+    "NODE_0000006": {
+      "country": "malawi",
+      "region": "africa"
+    },
+    "NODE_0000007": {
+      "country": "malawi",
+      "region": "africa"
+    }
+  }
+}

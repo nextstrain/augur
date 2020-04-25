@@ -60,3 +60,6 @@ Thumbs.db
 
 # slurm logs
 builds/flu/slurm_log/*
+
+# Output from cram test failures
+*.t.err

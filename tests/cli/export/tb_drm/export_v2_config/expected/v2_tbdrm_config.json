@@ -1,0 +1,2236 @@
+{
+  "meta": {
+    "colorings": [
+      {
+        "key": "gt",
+        "title": "Genotype",
+        "type": "categorical"
+      },
+      {
+        "key": "num_date",
+        "title": "Sampling date",
+        "type": "continuous"
+      },
+      {
+        "key": "Drug_Resistance",
+        "title": "Drug Resistance (ordinal)",
+        "type": "ordinal"
+      },
+      {
+        "key": "Ethambutol",
+        "title": "Ethambutol Resistance (categorical)",
+        "type": "categorical"
+      },
+      {
+        "key": "Rifampicin",
+        "title": "Rifampicin Resistance (ordinal)",
+        "type": "ordinal"
+      },
+      {
+        "key": "country",
+        "scale": [
+          [
+            "malawi",
+            "#bcbddc"
+          ],
+          [
+            "uganda",
+            "#e6194b"
+          ],
+          [
+            "zimbabwe",
+            "#46f0f0"
+          ]
+        ],
+        "title": "country",
+        "type": "categorical"
+      },
+      {
+        "key": "Isoniazid",
+        "title": "Isoniazid",
+        "type": "categorical"
+      },
+      {
+        "key": "Streptomycin",
+        "title": "Streptomycin",
+        "type": "categorical"
+      },
+      {
+        "key": "Drug_Resistance",
+        "title": "Drug Resistance (ordinal)",
+        "type": "ordinal"
+      },
+      {
+        "key": "Ethambutol",
+        "title": "Ethambutol Resistance (categorical)",
+        "type": "categorical"
+      },
+      {
+        "key": "Rifampicin",
+        "title": "Rifampicin Resistance (ordinal)",
+        "type": "ordinal"
+      }
+    ],
+    "display_defaults": {
+      "color_by": "Drug_Resistance"
+    },
+    "filters": [],
+    "genome_annotations": {
+      "*MtCM": {
+        "end": 2134872,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2134273,
+        "strand": "+",
+        "type": "gene"
+      },
+      "PE13": {
+        "end": 1339302,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1339003,
+        "strand": "+",
+        "type": "gene"
+      },
+      "PE_PGRS39": {
+        "end": 2618908,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2617667,
+        "strand": "+",
+        "type": "gene"
+      },
+      "PE_PGRS60": {
+        "end": 4093946,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4093632,
+        "strand": "+",
+        "type": "gene"
+      },
+      "PPE13": {
+        "end": 978203,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 976872,
+        "strand": "+",
+        "type": "gene"
+      },
+      "PPE20": {
+        "end": 1563388,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1561769,
+        "strand": "+",
+        "type": "gene"
+      },
+      "PPE50": {
+        "end": 3501732,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3501334,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0010c": {
+        "end": 13558,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 13133,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0011c": {
+        "end": 13995,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 13714,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0026": {
+        "end": 31068,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 29722,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0039c": {
+        "end": 42351,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 42004,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0147": {
+        "end": 174758,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 173238,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0323c": {
+        "end": 391251,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 390580,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0401": {
+        "end": 480160,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 479789,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0466": {
+        "end": 557252,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 556458,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0565c": {
+        "end": 657470,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 656010,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0600c": {
+        "end": 698410,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 697904,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0605": {
+        "end": 702014,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 701406,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0744c": {
+        "end": 834946,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 834440,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0745": {
+        "end": 835681,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 835154,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0841": {
+        "end": 937835,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 937593,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0879c": {
+        "end": 978756,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 978481,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0893c": {
+        "end": 996295,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 995318,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0909": {
+        "end": 1014860,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1014681,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0920c": {
+        "end": 1026816,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1025497,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv0921": {
+        "end": 1027685,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1027104,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1042c": {
+        "end": 1165499,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1165092,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1043c": {
+        "end": 1166806,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1165781,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1081c": {
+        "end": 1206418,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1205984,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1096": {
+        "end": 1225260,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1224385,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1112": {
+        "end": 1239328,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1238255,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1129c": {
+        "end": 1254534,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1253074,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1144": {
+        "end": 1271908,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1271156,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1192": {
+        "end": 1335754,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1334927,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1194c": {
+        "end": 1338513,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1337248,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1218c": {
+        "end": 1362733,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1361798,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1303": {
+        "end": 1460251,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1459766,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1393c": {
+        "end": 1569587,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1568109,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1465": {
+        "end": 1653256,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1652768,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1482c": {
+        "end": 1673299,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1672457,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1520": {
+        "end": 1712068,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1711028,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1816": {
+        "end": 2058960,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2058256,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1817": {
+        "end": 2061058,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2059595,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv1939": {
+        "end": 2192609,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2192094,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv2077c": {
+        "end": 2334294,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2333323,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv2209": {
+        "end": 2474938,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2473400,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv2314c": {
+        "end": 2587290,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2585917,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv2417c": {
+        "end": 2716314,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2715472,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv2729c": {
+        "end": 3042475,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3041570,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv2733c": {
+        "end": 3046524,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3044986,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv2734": {
+        "end": 3047675,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3046821,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv2752c": {
+        "end": 3066191,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3064515,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv2765": {
+        "end": 3075373,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3074636,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv2771c": {
+        "end": 3081033,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3080581,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv2807": {
+        "end": 3114812,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3113658,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv2885c": {
+        "end": 3195548,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3194166,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv3067": {
+        "end": 3431838,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3431428,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv3071": {
+        "end": 3435573,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3434464,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv3087": {
+        "end": 3454343,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3452925,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv3090": {
+        "end": 3459098,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3458211,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv3210c": {
+        "end": 3587539,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3586844,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv3463": {
+        "end": 3881764,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3880907,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv3651": {
+        "end": 4092878,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4091841,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv3766": {
+        "end": 4212982,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4212293,
+        "strand": "+",
+        "type": "gene"
+      },
+      "Rv3863": {
+        "end": 4340027,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4338849,
+        "strand": "+",
+        "type": "gene"
+      },
+      "ahpC": {
+        "end": 2726780,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2726193,
+        "strand": "+",
+        "type": "gene"
+      },
+      "atsH": {
+        "end": 4251005,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4249878,
+        "strand": "+",
+        "type": "gene"
+      },
+      "blaC": {
+        "end": 2326809,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2325886,
+        "strand": "+",
+        "type": "gene"
+      },
+      "cinA": {
+        "end": 2148954,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2147662,
+        "strand": "+",
+        "type": "gene"
+      },
+      "cobS": {
+        "end": 2473242,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2472493,
+        "strand": "+",
+        "type": "gene"
+      },
+      "ctpE": {
+        "end": 1014124,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1011731,
+        "strand": "+",
+        "type": "gene"
+      },
+      "cycA": {
+        "end": 1931456,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1929786,
+        "strand": "+",
+        "type": "gene"
+      },
+      "cyp141": {
+        "end": 3487711,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3486509,
+        "strand": "+",
+        "type": "gene"
+      },
+      "cysE": {
+        "end": 2610421,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2609732,
+        "strand": "+",
+        "type": "gene"
+      },
+      "dlaT": {
+        "end": 2483626,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2481965,
+        "strand": "+",
+        "type": "gene"
+      },
+      "dnaQ": {
+        "end": 4156729,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4155740,
+        "strand": "+",
+        "type": "gene"
+      },
+      "eccC2": {
+        "end": 4380452,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4376262,
+        "strand": "+",
+        "type": "gene"
+      },
+      "eccD1": {
+        "end": 4356542,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4355007,
+        "strand": "+",
+        "type": "gene"
+      },
+      "echA8": {
+        "end": 1195043,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1194270,
+        "strand": "+",
+        "type": "gene"
+      },
+      "eis": {
+        "end": 2715332,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2714124,
+        "strand": "+",
+        "type": "gene"
+      },
+      "embA": {
+        "end": 4246517,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4243233,
+        "strand": "+",
+        "type": "gene"
+      },
+      "embB": {
+        "end": 4249810,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4246514,
+        "strand": "+",
+        "type": "gene"
+      },
+      "embC": {
+        "end": 4243147,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4239863,
+        "strand": "+",
+        "type": "gene"
+      },
+      "espB": {
+        "end": 4361925,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4360543,
+        "strand": "+",
+        "type": "gene"
+      },
+      "espG2": {
+        "end": 4373630,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4372800,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxA": {
+        "end": 4352896,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4352609,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxB": {
+        "end": 4352576,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4352274,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxC": {
+        "end": 4374013,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4373726,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxD": {
+        "end": 4374372,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4374049,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxE": {
+        "end": 4390709,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4390437,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxF": {
+        "end": 4391031,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4390720,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxG": {
+        "end": 351818,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 351525,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxH": {
+        "end": 352138,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 351848,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxI": {
+        "end": 1160828,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1160544,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxJ": {
+        "end": 1161151,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1160855,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxK": {
+        "end": 1340955,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1340659,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxL": {
+        "end": 1341290,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1341006,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxM": {
+        "end": 2030643,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2030347,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxN": {
+        "end": 2030978,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2030694,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxO": {
+        "end": 2626172,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2625888,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxP": {
+        "end": 2626519,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2626223,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxQ": {
+        "end": 3376852,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3376490,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxR": {
+        "end": 3379001,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3378711,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxS": {
+        "end": 3379329,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3379036,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxT": {
+        "end": 3862926,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3862624,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxU": {
+        "end": 3863264,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3862947,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxV": {
+        "end": 4060268,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4059984,
+        "strand": "+",
+        "type": "gene"
+      },
+      "esxW": {
+        "end": 4060591,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4060295,
+        "strand": "+",
+        "type": "gene"
+      },
+      "ethA": {
+        "end": 4327473,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4326004,
+        "strand": "+",
+        "type": "gene"
+      },
+      "fabG1": {
+        "end": 1674183,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1673440,
+        "strand": "+",
+        "type": "gene"
+      },
+      "fadA2": {
+        "end": 293493,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 292171,
+        "strand": "+",
+        "type": "gene"
+      },
+      "fadA3": {
+        "end": 1199373,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1198156,
+        "strand": "+",
+        "type": "gene"
+      },
+      "fadA4": {
+        "end": 1487031,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1485862,
+        "strand": "+",
+        "type": "gene"
+      },
+      "fadA5": {
+        "end": 3986732,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3985557,
+        "strand": "+",
+        "type": "gene"
+      },
+      "fadA6": {
+        "end": 3996964,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3995804,
+        "strand": "+",
+        "type": "gene"
+      },
+      "fadD14": {
+        "end": 1182315,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1180684,
+        "strand": "+",
+        "type": "gene"
+      },
+      "fadD30": {
+        "end": 485734,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 483977,
+        "strand": "+",
+        "type": "gene"
+      },
+      "fadE33": {
+        "end": 4006203,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4005247,
+        "strand": "+",
+        "type": "gene"
+      },
+      "fadE35": {
+        "end": 4252866,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4251085,
+        "strand": "+",
+        "type": "gene"
+      },
+      "fadE5": {
+        "end": 295633,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 293798,
+        "strand": "+",
+        "type": "gene"
+      },
+      "fbiA": {
+        "end": 3641538,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3640543,
+        "strand": "+",
+        "type": "gene"
+      },
+      "fecB2": {
+        "end": 317503,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 316511,
+        "strand": "+",
+        "type": "gene"
+      },
+      "folC": {
+        "end": 2747598,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2746135,
+        "strand": "+",
+        "type": "gene"
+      },
+      "furA": {
+        "end": 2156592,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2156149,
+        "strand": "+",
+        "type": "gene"
+      },
+      "gid": {
+        "end": 4408202,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4407528,
+        "strand": "+",
+        "type": "gene"
+      },
+      "greA": {
+        "end": 1205798,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1205304,
+        "strand": "+",
+        "type": "gene"
+      },
+      "gyrA": {
+        "end": 9818,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 7302,
+        "strand": "+",
+        "type": "gene"
+      },
+      "gyrB": {
+        "end": 7267,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 5240,
+        "strand": "+",
+        "type": "gene"
+      },
+      "hsdS": {
+        "end": 3072640,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3071546,
+        "strand": "+",
+        "type": "gene"
+      },
+      "icl1": {
+        "end": 558813,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 557527,
+        "strand": "+",
+        "type": "gene"
+      },
+      "infA": {
+        "end": 3880653,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3880432,
+        "strand": "+",
+        "type": "gene"
+      },
+      "inhA": {
+        "end": 1675011,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1674202,
+        "strand": "+",
+        "type": "gene"
+      },
+      "irtA": {
+        "end": 1515626,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1513047,
+        "strand": "+",
+        "type": "gene"
+      },
+      "kasA": {
+        "end": 2519365,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2518115,
+        "strand": "+",
+        "type": "gene"
+      },
+      "katG": {
+        "end": 2156111,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2153889,
+        "strand": "+",
+        "type": "gene"
+      },
+      "lipG": {
+        "end": 741139,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 740234,
+        "strand": "+",
+        "type": "gene"
+      },
+      "lipJ": {
+        "end": 2147633,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2146245,
+        "strand": "+",
+        "type": "gene"
+      },
+      "lldD2": {
+        "end": 2123151,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2121907,
+        "strand": "+",
+        "type": "gene"
+      },
+      "lppJ": {
+        "end": 2337869,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2337306,
+        "strand": "+",
+        "type": "gene"
+      },
+      "lppQ": {
+        "end": 2620016,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2619597,
+        "strand": "+",
+        "type": "gene"
+      },
+      "lprO": {
+        "end": 210812,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 209703,
+        "strand": "+",
+        "type": "gene"
+      },
+      "mazF8": {
+        "end": 2546805,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2546488,
+        "strand": "+",
+        "type": "gene"
+      },
+      "mbtK": {
+        "end": 1512605,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1511973,
+        "strand": "+",
+        "type": "gene"
+      },
+      "mce1R": {
+        "end": 194815,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 194144,
+        "strand": "+",
+        "type": "gene"
+      },
+      "mce3D": {
+        "end": 2214126,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2212855,
+        "strand": "+",
+        "type": "gene"
+      },
+      "mmpL1": {
+        "end": 483231,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 480355,
+        "strand": "+",
+        "type": "gene"
+      },
+      "mtrB": {
+        "end": 3626613,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3624910,
+        "strand": "+",
+        "type": "gene"
+      },
+      "murD": {
+        "end": 2416394,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2414934,
+        "strand": "+",
+        "type": "gene"
+      },
+      "narX": {
+        "end": 1964186,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1962228,
+        "strand": "+",
+        "type": "gene"
+      },
+      "ndh": {
+        "end": 2103042,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2101651,
+        "strand": "+",
+        "type": "gene"
+      },
+      "nuc": {
+        "end": 4411532,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1,
+        "strand": "+",
+        "type": "gene"
+      },
+      "opcA": {
+        "end": 1625365,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1624454,
+        "strand": "+",
+        "type": "gene"
+      },
+      "pabC": {
+        "end": 907292,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 906423,
+        "strand": "+",
+        "type": "gene"
+      },
+      "pip": {
+        "end": 937317,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 936457,
+        "strand": "+",
+        "type": "gene"
+      },
+      "pknF": {
+        "end": 1973568,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1972138,
+        "strand": "+",
+        "type": "gene"
+      },
+      "pks12": {
+        "end": 2306986,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2294531,
+        "strand": "+",
+        "type": "gene"
+      },
+      "pks15": {
+        "end": 3297840,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3296350,
+        "strand": "+",
+        "type": "gene"
+      },
+      "pks17": {
+        "end": 1888020,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1886512,
+        "strand": "+",
+        "type": "gene"
+      },
+      "pks2": {
+        "end": 4299605,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4293225,
+        "strand": "+",
+        "type": "gene"
+      },
+      "pks3": {
+        "end": 1315191,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1313725,
+        "strand": "+",
+        "type": "gene"
+      },
+      "pks8": {
+        "end": 1886512,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1881704,
+        "strand": "+",
+        "type": "gene"
+      },
+      "pncA": {
+        "end": 2289241,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2288681,
+        "strand": "+",
+        "type": "gene"
+      },
+      "ponA1": {
+        "end": 55699,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 53663,
+        "strand": "+",
+        "type": "gene"
+      },
+      "ppsA": {
+        "end": 3251075,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3245445,
+        "strand": "+",
+        "type": "gene"
+      },
+      "proA": {
+        "end": 2725477,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2724230,
+        "strand": "+",
+        "type": "gene"
+      },
+      "proZ": {
+        "end": 4202613,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4201894,
+        "strand": "+",
+        "type": "gene"
+      },
+      "pyrB": {
+        "end": 1554191,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1553232,
+        "strand": "+",
+        "type": "gene"
+      },
+      "pyrG": {
+        "end": 1925589,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1923829,
+        "strand": "+",
+        "type": "gene"
+      },
+      "rbsK": {
+        "end": 2734144,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2733230,
+        "strand": "+",
+        "type": "gene"
+      },
+      "rfe": {
+        "end": 1459509,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1458295,
+        "strand": "+",
+        "type": "gene"
+      },
+      "rhlE": {
+        "end": 3589381,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3587798,
+        "strand": "+",
+        "type": "gene"
+      },
+      "rpoB": {
+        "end": 763325,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 759807,
+        "strand": "+",
+        "type": "gene"
+      },
+      "rpoC": {
+        "end": 767320,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 763370,
+        "strand": "+",
+        "type": "gene"
+      },
+      "rpsA": {
+        "end": 1834987,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1833542,
+        "strand": "+",
+        "type": "gene"
+      },
+      "rpsL": {
+        "end": 781934,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 781560,
+        "strand": "+",
+        "type": "gene"
+      },
+      "rrs": {
+        "end": 1473382,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1471846,
+        "strand": "+",
+        "type": "gene"
+      },
+      "sigC": {
+        "end": 2327501,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2326944,
+        "strand": "+",
+        "type": "gene"
+      },
+      "tcrX": {
+        "end": 4211784,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4211080,
+        "strand": "+",
+        "type": "gene"
+      },
+      "thyA": {
+        "end": 3074471,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3073680,
+        "strand": "+",
+        "type": "gene"
+      },
+      "thyX": {
+        "end": 3067945,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3067193,
+        "strand": "+",
+        "type": "gene"
+      },
+      "tlyA": {
+        "end": 1918746,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1917940,
+        "strand": "+",
+        "type": "gene"
+      },
+      "ubiA": {
+        "end": 4269833,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4268925,
+        "strand": "+",
+        "type": "gene"
+      },
+      "vapB28": {
+        "end": 703489,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 703244,
+        "strand": "+",
+        "type": "gene"
+      },
+      "vapC34": {
+        "end": 1968165,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 1967917,
+        "strand": "+",
+        "type": "gene"
+      },
+      "vapC39": {
+        "end": 2854686,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2854267,
+        "strand": "+",
+        "type": "gene"
+      },
+      "whiB2": {
+        "end": 3640141,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 3639872,
+        "strand": "+",
+        "type": "gene"
+      },
+      "whiB6": {
+        "end": 4338521,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 4338171,
+        "strand": "+",
+        "type": "gene"
+      },
+      "yjcE": {
+        "end": 2561331,
+        "seqid": "data/Mtb_H37Rv_NCBI_Annot.gff",
+        "start": 2559703,
+        "strand": "+",
+        "type": "gene"
+      }
+    },
+    "maintainers": [
+      {
+        "name": "Emma Hodcroft",
+        "url": "https://neherlab.org/emma-hodcroft.html"
+      }
+    ],
+    "panels": [
+      "tree"
+    ],
+    "title": "TB with DRMs",
+    "updated": "2020-04-15"
+  },
+  "tree": {
+    "branch_attrs": {
+      "labels": {
+        "aa": "Rv0039c: F24C; Rv0466: V226I; Rv0909: Q45H; Rv1081c: P7S; Rv1112: T275N; Rv1218c: R243Q; Rv3087: V447L; Rv3463: G94D; cobS: S155L; dnaQ: D76G, A164V; eccC2: M73L; embB: A378E; embC: I270T; esxD: A49T; esxM: K59*; gid: L16R; gyrB: V301L; katG: L463R; lldD2: A59G, A176V; mbtK: D192A; narX: G77D; pks15: R374G; thyA: T202A; ubiA: D149E"
+      },
+      "mutations": {
+        "Rv0039c": [
+          "F24C"
+        ],
+        "Rv0466": [
+          "V226I"
+        ],
+        "Rv0909": [
+          "Q45H"
+        ],
+        "Rv1081c": [
+          "P7S"
+        ],
+        "Rv1112": [
+          "T275N"
+        ],
+        "Rv1218c": [
+          "R243Q"
+        ],
+        "Rv3087": [
+          "V447L"
+        ],
+        "Rv3463": [
+          "G94D"
+        ],
+        "cobS": [
+          "S155L"
+        ],
+        "dnaQ": [
+          "D76G",
+          "A164V"
+        ],
+        "eccC2": [
+          "M73L"
+        ],
+        "embB": [
+          "A378E"
+        ],
+        "embC": [
+          "I270T"
+        ],
+        "esxD": [
+          "A49T"
+        ],
+        "esxM": [
+          "K59*"
+        ],
+        "gid": [
+          "L16R"
+        ],
+        "gyrB": [
+          "V301L"
+        ],
+        "katG": [
+          "L463R"
+        ],
+        "lldD2": [
+          "A59G",
+          "A176V"
+        ],
+        "mbtK": [
+          "D192A"
+        ],
+        "narX": [
+          "G77D"
+        ],
+        "pks15": [
+          "R374G"
+        ],
+        "thyA": [
+          "T202A"
+        ],
+        "ubiA": [
+          "D149E"
+        ]
+      }
+    },
+    "children": [
+      {
+        "branch_attrs": {
+          "labels": {
+            "aa": "ethA: L82P; katG: S315T"
+          },
+          "mutations": {
+            "ethA": [
+              "L82P"
+            ],
+            "katG": [
+              "S315T"
+            ],
+            "nuc": [
+              "G29262A",
+              "G360651C",
+              "G413123A",
+              "G578020A",
+              "G784272A",
+              "G865194T",
+              "C907388T",
+              "A1147076C",
+              "G1198122A",
+              "C1472358T",
+              "G1868538A",
+              "A2023384C",
+              "C2117445T",
+              "G2130529A",
+              "C2155168G",
+              "C2677333A",
+              "T2884548G",
+              "G2964034A",
+              "G3046934A",
+              "T3116349C",
+              "T3432544C",
+              "G3545149A",
+              "T3675823C",
+              "G3862150T",
+              "G3896806A",
+              "G3898137C",
+              "C4248730T",
+              "A4327229G",
+              "C4329146T",
+              "G4363555A",
+              "T4394261C",
+              "T4402426C"
+            ]
+          }
+        },
+        "children": [
+          {
+            "branch_attrs": {
+              "mutations": {
+                "nuc": [
+                  "T1094415C",
+                  "C1096508G",
+                  "T1096510C",
+                  "G4318425C"
+                ]
+              }
+            },
+            "name": "G20855",
+            "node_attrs": {
+              "Drug_Resistance": {
+                "value": 2
+              },
+              "Isoniazid": {
+                "value": "katG: S315T"
+              },
+              "Streptomycin": {
+                "value": "rrs: C513T"
+              },
+              "accession": "ERR212008",
+              "author": {
+                "author": "Guerra-Assuncao et al 2015",
+                "paper_url": "https://cdn.elifesciences.org/articles/05166/elife-05166-v1.pdf",
+                "title": "Large-scale whole genome sequencing of M. tuberculosis provides insights into transmission in a high prevalence area",
+                "value": "Guerra-Assuncao et al 2015"
+              },
+              "country": {
+                "value": "malawi"
+              },
+              "div": 5.379309694864908e-06,
+              "num_date": {
+                "value": 1995.0013798630137
+              }
+            }
+          },
+          {
+            "branch_attrs": {
+              "labels": {
+                "aa": "Rv1129c: V116F; pncA: Q141P; rpoB: S450L, V970M"
+              },
+              "mutations": {
+                "Rv1129c": [
+                  "V116F"
+                ],
+                "nuc": [
+                  "C1215G",
+                  "G227910A",
+                  "C322516T",
+                  "T580772A",
+                  "C761155T",
+                  "G762714A",
+                  "C1254189A",
+                  "C1493991T",
+                  "C1850061G",
+                  "T2288820G",
+                  "G2782347C",
+                  "T2931669C",
+                  "C4243217T"
+                ],
+                "pncA": [
+                  "Q141P"
+                ],
+                "rpoB": [
+                  "S450L",
+                  "V970M"
+                ]
+              }
+            },
+            "children": [
+              {
+                "branch_attrs": {
+                  "labels": {
+                    "aa": "embB: D1024N"
+                  },
+                  "mutations": {
+                    "embB": [
+                      "D1024N"
+                    ],
+                    "nuc": [
+                      "G1484512C",
+                      "T1574082G",
+                      "T1803384C",
+                      "C2074509G",
+                      "G4249583A",
+                      "C4316228T"
+                    ]
+                  }
+                },
+                "name": "G21051",
+                "node_attrs": {
+                  "Drug_Resistance": {
+                    "value": 4
+                  },
+                  "Ethambutol": {
+                    "value": "embB: D1024N"
+                  },
+                  "Isoniazid": {
+                    "value": "katG: S315T"
+                  },
+                  "Rifampicin": {
+                    "value": "rpoB: S450L"
+                  },
+                  "Streptomycin": {
+                    "value": "rrs: C513T"
+                  },
+                  "accession": "ERR221618",
+                  "author": {
+                    "author": "Guerra-Assuncao et al 2015",
+                    "paper_url": "https://cdn.elifesciences.org/articles/05166/elife-05166-v1.pdf",
+                    "title": "Large-scale whole genome sequencing of M. tuberculosis provides insights into transmission in a high prevalence area",
+                    "value": "Guerra-Assuncao et al 2015"
+                  },
+                  "country": {
+                    "value": "malawi"
+                  },
+                  "div": 8.768358572877499e-06,
+                  "num_date": {
+                    "value": 2000.9986438797814
+                  }
+                }
+              },
+              {
+                "branch_attrs": {
+                  "mutations": {
+                    "nuc": [
+                      "G1076920C",
+                      "C1094413G",
+                      "T1494014C",
+                      "T2401883C",
+                      "A2784613G",
+                      "G3892129A",
+                      "G4318703A"
+                    ]
+                  }
+                },
+                "name": "G20293",
+                "node_attrs": {
+                  "Drug_Resistance": {
+                    "value": 3
+                  },
+                  "Isoniazid": {
+                    "value": "katG: S315T"
+                  },
+                  "Rifampicin": {
+                    "value": "rpoB: S450L"
+                  },
+                  "Streptomycin": {
+                    "value": "rrs: C513T"
+                  },
+                  "accession": "ERR163958",
+                  "author": {
+                    "author": "Guerra-Assuncao et al 2015",
+                    "paper_url": "https://cdn.elifesciences.org/articles/05166/elife-05166-v1.pdf",
+                    "title": "Large-scale whole genome sequencing of M. tuberculosis provides insights into transmission in a high prevalence area",
+                    "value": "Guerra-Assuncao et al 2015"
+                  },
+                  "country": {
+                    "value": "zimbabwe"
+                  },
+                  "div": 8.994291137236327e-06,
+                  "num_date": {
+                    "value": 2004.9986438797814
+                  }
+                }
+              }
+            ],
+            "name": "NODE_0000006",
+            "node_attrs": {
+              "Drug_Resistance": {
+                "value": 3
+              },
+              "Isoniazid": {
+                "value": "katG: S315T"
+              },
+              "Rifampicin": {
+                "value": "rpoB: S450L"
+              },
+              "Streptomycin": {
+                "value": "rrs: C513T"
+              },
+              "country": {
+                "value": "malawi"
+              },
+              "div": 7.412739511866131e-06,
+              "num_date": {
+                "value": 1992.1328390812644
+              }
+            }
+          }
+        ],
+        "name": "NODE_0000005",
+        "node_attrs": {
+          "Drug_Resistance": {
+            "value": 2
+          },
+          "Isoniazid": {
+            "value": "katG: S315T"
+          },
+          "Streptomycin": {
+            "value": "rrs: C513T"
+          },
+          "country": {
+            "value": "malawi"
+          },
+          "div": 4.47556091714234e-06,
+          "num_date": {
+            "value": 1972.8873554157979
+          }
+        }
+      },
+      {
+        "branch_attrs": {
+          "mutations": {}
+        },
+        "children": [
+          {
+            "branch_attrs": {
+              "labels": {
+                "aa": "katG: W412*"
+              },
+              "mutations": {
+                "katG": [
+                  "W412*"
+                ],
+                "nuc": [
+                  "A65396G",
+                  "C118811G",
+                  "G228297A",
+                  "G245396A",
+                  "C446688G",
+                  "C866930T",
+                  "G984579A",
+                  "C1096508G",
+                  "G2074565C",
+                  "C2154877T",
+                  "G2176156A",
+                  "A2267372G",
+                  "C2726112T",
+                  "G3232815A",
+                  "C3263660T",
+                  "G3264435A",
+                  "A3295084T",
+                  "G3922380A",
+                  "T4173563C"
+                ]
+              }
+            },
+            "name": "G20407",
+            "node_attrs": {
+              "Drug_Resistance": {
+                "value": 0
+              },
+              "accession": "ERR176554",
+              "author": {
+                "author": "Guerra-Assuncao et al 2015",
+                "paper_url": "https://cdn.elifesciences.org/articles/05166/elife-05166-v1.pdf",
+                "title": "Large-scale whole genome sequencing of M. tuberculosis provides insights into transmission in a high prevalence area",
+                "value": "Guerra-Assuncao et al 2015"
+              },
+              "country": {
+                "value": "malawi"
+              },
+              "div": 7.04722425893357e-06,
+              "num_date": {
+                "value": 2000.9986438797814
+              }
+            }
+          },
+          {
+            "branch_attrs": {
+              "mutations": {
+                "nuc": [
+                  "C2074509G",
+                  "C2129281A"
+                ]
+              }
+            },
+            "children": [
+              {
+                "branch_attrs": {
+                  "mutations": {
+                    "nuc": [
+                      "C46729T",
+                      "A229986C",
+                      "A393617G",
+                      "G625959A",
+                      "C667237T",
+                      "T747341G",
+                      "C824744T",
+                      "T907901G",
+                      "G918999A",
+                      "C972962G",
+                      "T1096510C",
+                      "C1199023T",
+                      "C1405067T",
+                      "C1500944T",
+                      "A2007817C",
+                      "A2012859C",
+                      "G2014902A",
+                      "T2401883C",
+                      "A2592392G",
+                      "A2784613G",
+                      "T2884548G",
+                      "C2906813T",
+                      "G3093846T",
+                      "A3160875G",
+                      "T3336587A",
+                      "G3404254A",
+                      "G3571764A",
+                      "G4177544A",
+                      "T4402426C"
+                    ]
+                  }
+                },
+                "name": "G20401",
+                "node_attrs": {
+                  "Drug_Resistance": {
+                    "value": 0
+                  },
+                  "accession": "ERR176546",
+                  "author": {
+                    "author": "Guerra-Assuncao et al 2015",
+                    "paper_url": "https://cdn.elifesciences.org/articles/05166/elife-05166-v1.pdf",
+                    "title": "Large-scale whole genome sequencing of M. tuberculosis provides insights into transmission in a high prevalence area",
+                    "value": "Guerra-Assuncao et al 2015"
+                  },
+                  "country": {
+                    "value": "malawi"
+                  },
+                  "div": 9.758497603610205e-06,
+                  "num_date": {
+                    "value": 2001.9986401369863
+                  }
+                }
+              },
+              {
+                "branch_attrs": {
+                  "mutations": {
+                    "nuc": [
+                      "C1411971T",
+                      "G1964945C",
+                      "G2092759T"
+                    ]
+                  }
+                },
+                "children": [
+                  {
+                    "branch_attrs": {
+                      "labels": {
+                        "aa": "fadE5: Q321H; gyrA: D67G; infA: A21V"
+                      },
+                      "mutations": {
+                        "fadE5": [
+                          "Q321H"
+                        ],
+                        "gyrA": [
+                          "D67G"
+                        ],
+                        "infA": [
+                          "A21V"
+                        ],
+                        "nuc": [
+                          "G1463C",
+                          "A7501G",
+                          "C242282T",
+                          "C294671A",
+                          "C774023A",
+                          "A774781C",
+                          "G1575624A",
+                          "C2033576T",
+                          "C2182238A",
+                          "C2283675A",
+                          "C2330182T",
+                          "G2489112A",
+                          "G3000976A",
+                          "T3189580C",
+                          "G3208696A",
+                          "G3659944C",
+                          "G3880592A"
+                        ]
+                      }
+                    },
+                    "name": "G20188",
+                    "node_attrs": {
+                      "Drug_Resistance": {
+                        "value": 0
+                      },
+                      "accession": "ERR161073",
+                      "author": {
+                        "author": "Guerra-Assuncao et al 2015",
+                        "paper_url": "https://cdn.elifesciences.org/articles/05166/elife-05166-v1.pdf",
+                        "title": "Large-scale whole genome sequencing of M. tuberculosis provides insights into transmission in a high prevalence area",
+                        "value": "Guerra-Assuncao et al 2015"
+                      },
+                      "country": {
+                        "value": "uganda"
+                      },
+                      "div": 7.7250468086773e-06,
+                      "num_date": {
+                        "value": 2003.9986401369863
+                      }
+                    }
+                  },
+                  {
+                    "branch_attrs": {
+                      "labels": {
+                        "aa": "katG: S315T"
+                      },
+                      "mutations": {
+                        "katG": [
+                          "S315T"
+                        ],
+                        "nuc": [
+                          "G1934661C",
+                          "C2155168G",
+                          "A2926938C"
+                        ]
+                      }
+                    },
+                    "children": [
+                      {
+                        "branch_attrs": {
+                          "labels": {
+                            "aa": "pknF: P298H; rpsL: K88R"
+                          },
+                          "mutations": {
+                            "nuc": [
+                              "C110663T",
+                              "G620212T",
+                              "A781822G",
+                              "C1973030A",
+                              "C2123146T",
+                              "G2459018A",
+                              "C2576585T",
+                              "C2730341T",
+                              "A3265381G",
+                              "C3602926T",
+                              "T3640379C",
+                              "G3854117A"
+                            ],
+                            "pknF": [
+                              "P298H"
+                            ],
+                            "rpsL": [
+                              "K88R"
+                            ]
+                          }
+                        },
+                        "name": "G20795",
+                        "node_attrs": {
+                          "Drug_Resistance": {
+                            "value": 2
+                          },
+                          "Isoniazid": {
+                            "value": "katG: S315T"
+                          },
+                          "Streptomycin": {
+                            "value": "rpsL: K88R"
+                          },
+                          "accession": "ERR182037",
+                          "author": {
+                            "author": "Guerra-Assuncao et al 2015",
+                            "paper_url": "https://cdn.elifesciences.org/articles/05166/elife-05166-v1.pdf",
+                            "title": "Large-scale whole genome sequencing of M. tuberculosis provides insights into transmission in a high prevalence area",
+                            "value": "Guerra-Assuncao et al 2015"
+                          },
+                          "country": {
+                            "value": "zimbabwe"
+                          },
+                          "div": 7.273160463067306e-06,
+                          "num_date": {
+                            "value": 2006.0013798630137
+                          }
+                        }
+                      },
+                      {
+                        "branch_attrs": {
+                          "labels": {
+                            "aa": "Rv1816: R112C; ethA: P454L; fadA2: K378*; gid: L18H"
+                          },
+                          "mutations": {
+                            "Rv1816": [
+                              "R112C"
+                            ],
+                            "ethA": [
+                              "P454L"
+                            ],
+                            "fadA2": [
+                              "K378*"
+                            ],
+                            "gid": [
+                              "L18H"
+                            ],
+                            "nuc": [
+                              "G16599A",
+                              "A293302T",
+                              "T580772A",
+                              "C1901519T",
+                              "C2058589T",
+                              "G2074565C",
+                              "C2757107G",
+                              "C2931998T",
+                              "G3445651A",
+                              "G3542339T",
+                              "G3993208T",
+                              "G4326113A",
+                              "A4408150T"
+                            ]
+                          }
+                        },
+                        "children": [
+                          {
+                            "branch_attrs": {
+                              "mutations": {
+                                "nuc": [
+                                  "G670545A",
+                                  "G4318425C"
+                                ]
+                              }
+                            },
+                            "name": "G20524",
+                            "node_attrs": {
+                              "Drug_Resistance": {
+                                "value": 1
+                              },
+                              "Isoniazid": {
+                                "value": "katG: S315T"
+                              },
+                              "accession": "ERR176736",
+                              "author": {
+                                "author": "Guerra-Assuncao et al 2015",
+                                "paper_url": "https://cdn.elifesciences.org/articles/05166/elife-05166-v1.pdf",
+                                "title": "Large-scale whole genome sequencing of M. tuberculosis provides insights into transmission in a high prevalence area",
+                                "value": "Guerra-Assuncao et al 2015"
+                              },
+                              "country": {
+                                "value": "malawi"
+                              },
+                              "div": 7.95098102548733e-06,
+                              "num_date": {
+                                "value": 1998.9986401369863
+                              }
+                            }
+                          },
+                          {
+                            "branch_attrs": {
+                              "labels": {
+                                "aa": "embB: G406S; rpoB: D435V"
+                              },
+                              "mutations": {
+                                "embB": [
+                                  "G406S"
+                                ],
+                                "nuc": [
+                                  "A761110T",
+                                  "G1912013A",
+                                  "G3232815A",
+                                  "T3336587A",
+                                  "A4203166G",
+                                  "G4247729A"
+                                ],
+                                "rpoB": [
+                                  "D435V"
+                                ]
+                              }
+                            },
+                            "name": "G20290",
+                            "node_attrs": {
+                              "Drug_Resistance": {
+                                "value": 3
+                              },
+                              "Ethambutol": {
+                                "value": "embB: G406S"
+                              },
+                              "Isoniazid": {
+                                "value": "katG: S315T"
+                              },
+                              "Rifampicin": {
+                                "value": "rpoB: D435V"
+                              },
+                              "accession": "ERR163953",
+                              "author": {
+                                "author": "Guerra-Assuncao et al 2015",
+                                "paper_url": "https://cdn.elifesciences.org/articles/05166/elife-05166-v1.pdf",
+                                "title": "Large-scale whole genome sequencing of M. tuberculosis provides insights into transmission in a high prevalence area",
+                                "value": "Guerra-Assuncao et al 2015"
+                              },
+                              "country": {
+                                "value": "malawi"
+                              },
+                              "div": 8.854727594185205e-06,
+                              "num_date": {
+                                "value": 2004.9986438797814
+                              }
+                            }
+                          }
+                        ],
+                        "name": "NODE_0000002",
+                        "node_attrs": {
+                          "Drug_Resistance": {
+                            "value": 1
+                          },
+                          "Isoniazid": {
+                            "value": "katG: S315T"
+                          },
+                          "country": {
+                            "value": "malawi"
+                          },
+                          "div": 7.499107265931242e-06,
+                          "num_date": {
+                            "value": 1994.5866460028737
+                          }
+                        }
+                      }
+                    ],
+                    "name": "NODE_0000001",
+                    "node_attrs": {
+                      "Drug_Resistance": {
+                        "value": 1
+                      },
+                      "Isoniazid": {
+                        "value": "katG: S315T"
+                      },
+                      "country": {
+                        "value": "malawi"
+                      },
+                      "div": 4.561917612379249e-06,
+                      "num_date": {
+                        "value": 1976.5764839838453
+                      }
+                    }
+                  }
+                ],
+                "name": "NODE_0000000",
+                "node_attrs": {
+                  "Drug_Resistance": {
+                    "value": 0
+                  },
+                  "country": {
+                    "value": "malawi"
+                  },
+                  "div": 3.884105828610035e-06,
+                  "num_date": {
+                    "value": 1971.3088071610712
+                  }
+                }
+              }
+            ],
+            "name": "NODE_0000003",
+            "node_attrs": {
+              "Drug_Resistance": {
+                "value": 0
+              },
+              "country": {
+                "value": "malawi"
+              },
+              "div": 3.20629553538116e-06,
+              "num_date": {
+                "value": 1964.9213231530473
+              }
+            }
+          }
+        ],
+        "name": "NODE_0000004",
+        "node_attrs": {
+          "Drug_Resistance": {
+            "value": 0
+          },
+          "country": {
+            "value": "malawi"
+          },
+          "div": 2.7544228369863856e-06,
+          "num_date": {
+            "value": 1960.39357476378
+          }
+        }
+      }
+    ],
+    "name": "NODE_0000007",
+    "node_attrs": {
+      "Drug_Resistance": {
+        "value": 0
+      },
+      "country": {
+        "value": "malawi"
+      },
+      "div": 0,
+      "num_date": {
+        "value": 1929.8581119573607
+      }
+    }
+  },
+  "version": "v2"
+}

@@ -1,0 +1,178 @@
+GENE	SITE	ALT	DISPLAY_NAME	FEATURE
+gyrB	461	N		Fluoroquinolones
+gyrB	499	D		Fluoroquinolones
+gyrA	88	C		Fluoroquinolones
+gyrA	88	A		Fluoroquinolones
+gyrA	90	V		Fluoroquinolones
+gyrA	91	P		Fluoroquinolones
+gyrA	94	N		Fluoroquinolones
+gyrA	94	H		Fluoroquinolones
+gyrA	94	Y		Fluoroquinolones
+gyrA	94	G		Fluoroquinolones
+gyrA	94	A		Fluoroquinolones
+rpoB	170	F		Rifampicin
+rpoB	359	A		Rifampicin
+rpoB	432	E		Rifampicin
+rpoB	432	K		Rifampicin
+rpoB	432	P		Rifampicin
+rpoB	432	L		Rifampicin
+rpoB	435	Y		Rifampicin
+rpoB	435	G		Rifampicin
+rpoB	435	V		Rifampicin
+rpoB	441	L		Rifampicin
+rpoB	445	D		Rifampicin
+rpoB	445	Y		Rifampicin
+rpoB	445	N		Rifampicin
+rpoB	445	L		Rifampicin
+rpoB	445	P		Rifampicin
+rpoB	445	R		Rifampicin
+rpoB	448	Q		Rifampicin
+rpoB	450	L		Rifampicin
+rpoB	450	W		Rifampicin
+rpoB	452	P		Rifampicin
+rpoB	491	F		Rifampicin
+rpsL	43	R		Streptomycin
+rpsL	88	R		Streptomycin
+nuc	1472358	T	rrs: C513T	Streptomycin
+nuc	1472359	C	rrs: A514C	Streptomycin
+nuc	1472361	T	rrs: C516T	Streptomycin
+nuc	1472362	T	rrs: C517T	Streptomycin
+nuc	1472749	G	rrs: C904G	Streptomycin
+nuc	1472749	A	rrs: C904A	Streptomycin
+nuc	1472751	G	rrs: A906G	Streptomycin
+nuc	1472752	T	rrs: A907T	Streptomycin
+nuc	1473246	G	rrs: A1401G	Amikacin Capreomycin Kanamycin
+nuc	1473247	T	rrs: C1402T	Capreomycin
+nuc	1473329	T	rrs: G1484T	Amikacin Capreomycin
+nuc	1673423	T	fabG1: G-17T	Isoniazid Ethionamide
+nuc	1673425	T	fabG1: C-15T	Isoniazid Ethionamide
+nuc	1673432	C	fabG1: T-8C	Isoniazid Ethionamide
+IsoniazidA	21	T		Isoniazid Ethionamide
+IsoniazidA	94	A		Isoniazid Ethionamide
+IsoniazidA	194	T		Isoniazid
+nuc	1917857	T	tylA: C-83T	Capreomycin
+tlyA	232	D		Capreomycin
+tlyA	236	K		Capreomycin
+tlyA	236	K		Capreomycin
+katG	633	A		Isoniazid
+katG	632	C		Isoniazid
+katG	542	H		Isoniazid
+katG	420	T		Isoniazid
+katG	419	H		Isoniazid
+katG	351	*		Isoniazid
+katG	329	A		Isoniazid
+katG	328	L		Isoniazid
+katG	315	R		Isoniazid
+katG	315	I		Isoniazid
+katG	315	T		Isoniazid
+katG	315	N		Isoniazid
+katG	300	C		Isoniazid
+katG	275	P		Isoniazid
+katG	232	R		Isoniazid
+katG	191	R		Isoniazid
+katG	180	K		Isoniazid
+katG	159	P		Isoniazid
+katG	155	S		Isoniazid
+katG	100	T		Isoniazid
+katG	90	R		Isoniazid
+pncA	180	F		Pyrazinamide
+pncA	172	P		Pyrazinamide
+pncA	162	D		Pyrazinamide
+pncA	141	*		Pyrazinamide
+pncA	139	L		Pyrazinamide
+pncA	138	R		Pyrazinamide
+pncA	136	N		Pyrazinamide
+pncA	132	D		Pyrazinamide
+pncA	125	G		Pyrazinamide
+pncA	104	R		Pyrazinamide
+pncA	97	D		Pyrazinamide
+pncA	96	T		Pyrazinamide
+pncA	78	C		Pyrazinamide
+pncA	68	C		Pyrazinamide
+pncA	57	R		Pyrazinamide
+pncA	57	D		Pyrazinamide
+pncA	49	N		Pyrazinamide
+pncA	27	P		Pyrazinamide
+pncA	14	R		Pyrazinamide
+pncA	12	A		Pyrazinamide
+pncA	10	*		Pyrazinamide
+pncA	8	G		Pyrazinamide
+pncA	8	N		Pyrazinamide
+pncA	7	L		Pyrazinamide
+pncA	4	S		Pyrazinamide
+nuc	2289252	G	pncA: A-11G	Pyrazinamide
+nuc	2289253	C	pncA: T-12C	Pyrazinamide
+eis	342	L		Capreomycin
+nuc	2715338	T	eis: G-6T	Kanamycin
+nuc	2715342	A	eis: G-10A	Kanamycin
+nuc	2715342	C	eis: G-10C	Kanamycin
+nuc	2715344	T	eis: C-12T	Kanamycin
+nuc	2715345	G	eis: A-13G	Kanamycin
+nuc	2715346	T	eis: C-14T	Kanamycin Capreomycin
+nuc	2715347	T	eis: C-15T	Kanamycin
+nuc	2715369	T	eis: G-37T	Kanamycin
+nuc	2726136	T	ahpC: C-57T	Isoniazid
+nuc	4243217	G	embA: C-16G	Ethambutol
+nuc	-4243221	T	embA: C-12T	Ethambutol
+embB	306	L		Ethambutol
+embB	306	V		Ethambutol
+embB	306	I		Ethambutol
+embB	319	S		Ethambutol
+embB	328	Y		Ethambutol
+embB	328	G		Ethambutol
+embB	354	A		Ethambutol
+embB	405	D		Ethambutol
+embB	406	C		Ethambutol
+embB	406	S		Ethambutol
+embB	406	D		Ethambutol
+embB	406	A		Ethambutol
+embB	497	K		Ethambutol
+embB	497	L		Ethambutol
+embB	497	R		Ethambutol
+embB	505	V		Ethambutol
+embB	1000	R		Ethambutol
+embB	1024	N		Ethambutol
+embB	1082	A		Ethambutol
+ethA	345	K		Ethionamide
+ethA	337	V		Ethionamide
+ethA	334	A		Ethionamide
+ethA	281	P		Ethionamide
+ethA	266	R		Ethionamide
+ethA	256	*		Ethionamide
+ethA	246	R		Ethionamide
+ethA	230	L		Ethionamide
+ethA	192	S		Ethionamide
+ethA	175	T		Ethionamide
+ethA	167	*		Ethionamide
+ethA	167	S		Ethionamide
+ethA	165	P		Ethionamide
+ethA	137	R		Ethionamide
+ethA	136	R		Ethionamide
+ethA	32	D		Ethionamide
+gid	217	G		Streptomycin
+gid	202	E		Streptomycin
+gid	200	E		Streptomycin
+gid	158	L		Streptomycin
+gid	149	R		Streptomycin
+gid	138	V		Streptomycin
+gid	138	T		Streptomycin
+gid	137	W		Streptomycin
+gid	134	E		Streptomycin
+gid	108	R		Streptomycin
+gid	94	P		Streptomycin
+gid	91	P		Streptomycin
+gid	88	A		Streptomycin
+gid	84	L		Streptomycin
+gid	80	P		Streptomycin
+gid	79	S		Streptomycin
+gid	77	G		Streptomycin
+gid	75	L		Streptomycin
+gid	73	E		Streptomycin
+gid	73	A		Streptomycin
+gid	70	N		Streptomycin
+gid	69	D		Streptomycin
+gid	67	G		Streptomycin
+gid	66	L		Streptomycin
+gid	65	G		Streptomycin
+gid	50	R		Streptomycin
+gid	48	N		Streptomycin
