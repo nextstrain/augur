@@ -1,14 +1,16 @@
 """
 Unit tests for nucleotide to acid translation
 """
-from Bio.Seq import Seq
-from Bio.SeqFeature import SeqFeature, FeatureLocation
 import json
 import numpy as np
 from pathlib import Path
 import pytest
 import sys
 import os
+
+from Bio.Seq import Seq
+from Bio.SeqFeature import SeqFeature, FeatureLocation
+import treetime
 
 # we assume (and assert) that this script is running from the tests/ directory
 sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -55,4 +57,6 @@ class TestTranslate:
 
         assert translate.translate_feature(aln, feature) == expected_translations
 
+    # TODO: test_vcf_feature, assign_aa_vcf, assign_aa_fasta
+    # Unclear how to emulate inputs (TreeTime dict, tree)
 
