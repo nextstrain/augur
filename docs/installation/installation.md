@@ -13,11 +13,8 @@ Augur is written in Python 3 and requires at least Python 3.6.
 It's published on [PyPi](https://pypi.org) as [nextstrain-augur](https://pypi.org/project/nextstrain-augur), so you can install it with `pip` like so:
 
 ```bash
-pip install nextstrain-augur
+python3 -m pip install nextstrain-augur
 ```
-
-
-If your system has both Python 2 and Python 3 installed side-by-side, you may need to use `python3` instead of just `python` (which often defaults to Python 2 when both Python versions are installed).
 
 Augur uses some common external bioinformatics programs which you'll need to install to have a fully functioning toolkit:
 
@@ -56,7 +53,7 @@ When that finishes, the enviroment needs to be activated whenever you want to us
 
 ```bash
 git clone https://github.com/nextstrain/augur.git
-pip install .
+python3 -m pip install .
 ```
 
 This install depends on a fairly minimal set of external Python libraries.
@@ -64,13 +61,13 @@ There are some functions in augur that require a larger set of dependencies.
 These can be installed via:
 
 ```bash
-pip install '.[full]'
+python3 -m pip install '.[full]'
 ```
 
 If you wish to also install the development dependencies, and install augur in an "editable" mode whereby changes to the source code are reflected in your version of `augur` then run:
 
 ```bash
-pip install -e '.[dev]'
+python3 -m pip install -e '.[dev]'
 ```
 
 [See above](#using-pip-from-pypi) for how to install the external bioinformatics programs which you'll need to have a fully functioning toolkit.

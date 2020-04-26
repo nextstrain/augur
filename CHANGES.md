@@ -2,6 +2,15 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* mask: Fix parsing of BED files as zero-indexed, half-open intervals [#512][]
+
+### Features
+
+* mask: Allow masking of specific sites passed by the user with `--mask-sites` and masking of a fixed number of sites from the beginning or end of each sequence with `--mask-from-beginning` and `--mask-from-end` [#512][]
+
+[#512]: https://github.com/nextstrain/augur/pull/512
 
 ## 7.0.2 (7 April 2020)
 
