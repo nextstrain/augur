@@ -12,7 +12,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
              confidence=False, resolve_polytomies=True, max_iter=2, precision='auto',
              infer_gtr=True, Tc=0.01, reroot=None, use_marginal=False, fixed_pi=None,
              clock_rate=None, clock_std=None, clock_filter_iqd=None, verbosity=3, 
-             covariance=True, n_point_skyline=10, **kwarks):
+             covariance=True, n_point_skyline=10, use_fft=False, **kwarks):
     from treetime import TreeTime
 
     try: #Tc could be a number or  'opt' or 'skyline'. TreeTime expects a float or int if a number.
@@ -35,7 +35,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
 
     #send ref, if is None, does no harm
     tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates,
-                  verbose=verbosity, gtr='JC69', precision=precision)
+                  verbose=verbosity, gtr='JC69', precision=precision, use_fft=False)
 
     # conditionally run clock-filter and remove bad tips
     if clock_filter_iqd:
@@ -108,6 +108,7 @@ def register_arguments(parser):
                                 "rates and/or rerooting. "
                                 "Use --no-covariance to turn off.")
     parser.add_argument('--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!
+    parser.add_argument('--use-fft', action='store_true', help='use FastFourierTransform for convolutions in TreeTime -- experimental')
     parser.add_argument('--keep-polytomies', action='store_true', help='Do not attempt to resolve polytomies')
     parser.add_argument('--precision', type=int, choices=[0,1,2,3], help="precision used by TreeTime to determine the number of grid points that are used for the evaluation of the branch length interpolation objects. Values range from 0 (rough) to 3 (ultra fine) and default to 'auto'.")
     parser.add_argument('--date-format', default="%Y-%m-%d", help="date format")
@@ -201,7 +202,8 @@ def run(args):
                     precision = 'auto' if args.precision is None else args.precision,
                     clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
                     clock_filter_iqd=args.clock_filter_iqd,
-                    covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies))
+                    covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies),
+                    use_fft=args.use_fft)
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
