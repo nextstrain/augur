@@ -35,7 +35,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
 
     #send ref, if is None, does no harm
     tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates,
-                  verbose=verbosity, gtr='JC69', precision=precision, use_fft=False)
+                  verbose=verbosity, gtr='JC69', precision=precision, use_fft=use_fft)
 
     # conditionally run clock-filter and remove bad tips
     if clock_filter_iqd:
