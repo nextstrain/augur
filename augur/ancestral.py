@@ -149,7 +149,7 @@ def run(args):
     # Enfore treetime 0.7 or later
     from distutils.version import StrictVersion
     import treetime
-    if StrictVersion(treetime.version) < StrictVersion('0.7.0'):
+    if StrictVersion(treetime.version[:5]) < StrictVersion('0.7.0'):
         print("ERROR: this version of augur requires TreeTime 0.7 or later.")
         return 1
 
