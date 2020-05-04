@@ -11,9 +11,11 @@
 * tests: Add initial functional tests of the augur command line interface using Cram [#542][]
 * mask: Allow masking of specific sites passed by the user with `--mask-sites` and masking of a fixed number of sites from the beginning or end of each sequence with `--mask-from-beginning` and `--mask-from-end` [#512][]
 * refine: Add a `--seed` argument to set the random seed for more reproducible outputs across runs [#542][]
+* utils: Add a consolidated generic `load_mask_sites` function and specific `read_mask_file` and `read_bed_file` functions for reading masking sites from files. [#514]
 
 [#512]: https://github.com/nextstrain/augur/pull/512
 [#542]: https://github.com/nextstrain/augur/pull/542
+[#514]: https://github.com/nextstrain/augur/pull/514
 
 ## 7.0.2 (7 April 2020)
 
