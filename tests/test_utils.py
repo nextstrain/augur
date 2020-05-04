@@ -63,13 +63,13 @@ class TestUtils:
         assert utils.read_mask_file(mask_file) == expected_sites
 
     def test_read_mask_file_bad_lines(self, tmpdir):
-        """read_mask_file should ignore bad lines in mask files"""
+        """read_mask_file should fail on bad lines in mask files"""
         mask_file = str(tmpdir / "temp.mask")
         bad_mask_sites = ["1", "#comment", "2"]
-        expected_sites = [0,1]
         with open(mask_file, "w") as fh:
             fh.write("\n".join(bad_mask_sites))
-        assert utils.read_mask_file(mask_file) == expected_sites
+        with pytest.raises(ValueError):
+            utils.read_mask_file(mask_file)
 
     def test_read_bed_file_good_input(self, tmpdir):
         """read_bed_file should read site ranges from properly formatted bed files"""
