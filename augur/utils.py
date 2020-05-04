@@ -868,12 +868,8 @@ def read_mask_file(mask_file):
                 mask_sites.append(int(line) - 1)
             except ValueError as err:
                 print("Could not read line %s of %s: '%s' - %s" %
-<<<<<<< HEAD
                       (idx, mask_file, line, err), file=sys.stderr)
                 raise
-=======
-                      (idx, mask_file, line, err))
->>>>>>> 0ab96383af3def4fd4663820c7198466781227e1
     return sorted(set(mask_sites))
 
 def load_mask_sites(mask_file):
