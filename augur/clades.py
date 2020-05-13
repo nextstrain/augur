@@ -33,11 +33,11 @@ def read_in_clade_definitions(clade_file):
     '''
 
     clades = defaultdict(list)
-
     df = pd.read_csv(clade_file, sep='\t' if clade_file.endswith('.tsv') else ',')
     for index, row in df.iterrows():
         allele = (row.gene, row.site-1, row.alt)
         clades[row.clade].append(allele)
+    clades.default_factory = None
 
     return clades
 

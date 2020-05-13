@@ -513,6 +513,7 @@ def compute_entropies_for_discrete_traits(tree):
             for val in clade.attrs[attr]: ## iterate over attribute values of the node
                 if val not in alphabets[attr]: ## not seen this attribute value before
                     alphabets[attr].append(val)
+    alphabets.default_factory = None
 
     for clade in tree.find_clades(): ## iterate over branches
         for trait in alphabets: ## iterate over traits
