@@ -78,7 +78,7 @@ def parse_beast_tree(data, tipMap, verbose=False):
             node_count += 1 ## increment node counter
             i+=1 ## advance in tree string by one character
 
-        numericalTip=re.match('(\(|,)([0-9]+)(\[|\:)',data[i-1:i+100]) ## look for tips in BEAST format (integers).
+        numericalTip=re.match(r'(\(|,)([0-9]+)(\[|\:)',data[i-1:i+100]) ## look for tips in BEAST format (integers).
         if numericalTip is not None:
             node = Phylo.Newick.Clade() ## new object
             if tipMap:
@@ -94,7 +94,7 @@ def parse_beast_tree(data, tipMap, verbose=False):
 
             i+=len(numericalTip.group(2)) ## advance in tree string by however many characters the tip is encoded
 
-        alphaTip=re.match('(\(|,)(\'|\")*([A-Za-z\_\-\|\.0-9\?\/]+)(\'|\"|)(\[)*',data[i-1:i+200])  ## look for tips with unencoded names - if the tips have some unusual format you'll have to modify this
+        alphaTip=re.match(r'(\(|,)(\'|\")*([A-Za-z\_\-\|\.0-9\?\/]+)(\'|\"|)(\[)*',data[i-1:i+200])  ## look for tips with unencoded names - if the tips have some unusual format you'll have to modify this
         if alphaTip is not None:
             if verbose==True:
                 print('%d adding leaf (non-BEAST) %s'%(i,alphaTip.group(3)))
@@ -107,27 +107,27 @@ def parse_beast_tree(data, tipMap, verbose=False):
 
             i+=len(alphaTip.group(3))+alphaTip.group().count("'")+alphaTip.group().count('"') ## advance in tree string by however many characters the tip is encoded
 
-        multitypeNode=re.match('\)([0-9]+)\[',data[i-1:i+100]) ## look for multitype tree singletons.
+        multitypeNode=re.match(r'\)([0-9]+)\[',data[i-1:i+100]) ## look for multitype tree singletons.
         if multitypeNode is not None:
             if verbose==True:
                 print('%d adding multitype node %s'%(i,multitypeNode.group(1)))
             i+=len(multitypeNode.group(1))
 
-        commentBlock=re.match('(\:)*\[(&[A-Za-z\_\-{}\,0-9\.\%=\"\'\+!#]+)\]',data[i:])## look for MCC comments
+        commentBlock=re.match(r'(\:)*\[(&[A-Za-z\_\-{}\,0-9\.\%=\"\'\+!#]+)\]',data[i:])## look for MCC comments
         if commentBlock is not None:
             if verbose==True:
                 print('%d comment: %s'%(i,commentBlock.group(2)))
             comment=commentBlock.group(2)
-            numerics=re.findall('[,&][A-Za-z\_\.0-9]+=[0-9\-Ee\.]+',comment) ## find all entries that have values as floats
-            strings=re.findall('[,&][A-Za-z\_\.0-9]+=["|\']*[A-Za-z\_0-9\.\+]+["|\']*',comment) ## strings
-            treelist=re.findall('[,&][A-Za-z\_\.0-9]+={[A-Za-z\_,{}0-9\.]+}',comment) ## complete history logged robust counting (MCMC trees)
-            sets=re.findall('[,&][A-Za-z\_\.0-9\%]+={[A-Za-z\.\-0-9eE,\"\_]+}',comment) ## sets and ranges
-            figtree=re.findall('\![A-Za-z]+=[A-Za-z0-9#]+',comment) ## figtree comments, in case MCC was manipulated in FigTree
+            numerics=re.findall(r'[,&][A-Za-z\_\.0-9]+=[0-9\-Ee\.]+',comment) ## find all entries that have values as floats
+            strings=re.findall(r'[,&][A-Za-z\_\.0-9]+=["|\']*[A-Za-z\_0-9\.\+]+["|\']*',comment) ## strings
+            treelist=re.findall(r'[,&][A-Za-z\_\.0-9]+={[A-Za-z\_,{}0-9\.]+}',comment) ## complete history logged robust counting (MCMC trees)
+            sets=re.findall(r'[,&][A-Za-z\_\.0-9\%]+={[A-Za-z\.\-0-9eE,\"\_]+}',comment) ## sets and ranges
+            figtree=re.findall(r'\![A-Za-z]+=[A-Za-z0-9#]+',comment) ## figtree comments, in case MCC was manipulated in FigTree
 
             for vals in strings: ## string states go here
                 tr,val=vals.split('=') ## split into key and value
                 tr=tr[1:] ## key has preceding & or ,
-                if re.search('.*[^0-9\.eE].*',val) is not None: ## string regex can sometimes match floats (thanks to beast2), only allow values with at least one non-numeric character
+                if re.search(r'.*[^0-9\.eE].*',val) is not None: ## string regex can sometimes match floats (thanks to beast2), only allow values with at least one non-numeric character
                     if '+' in val: ## state was equiprobable with something else
                         equiprobable=val.split('+') ## get set of equiprobable states
                         val=equiprobable[np.random.randint(len(equiprobable))] ## DO NOT ALLOW EQUIPROBABLE DOUBLE ANNOTATIONS (which are in format "A+B")
@@ -142,7 +142,7 @@ def parse_beast_tree(data, tipMap, verbose=False):
             # for val in treelist:  ### enables parsing of complete history logger output from posterior trees
             #     tr,val=val.split('=')
             #     tr=tr[1:]
-            #     completeHistoryLogger=re.findall('{([0-9]+,[0-9\.\-e]+,[A-Z]+,[A-Z]+)}',val)
+            #     completeHistoryLogger=re.findall(r'{([0-9]+,[0-9\.\-e]+,[A-Z]+,[A-Z]+)}',val)
             #     setattr(cur_node,'muts',[])
             #     for val in completeHistoryLogger:
             #         codon,timing,start,end=val.split(',')
@@ -173,14 +173,14 @@ def parse_beast_tree(data, tipMap, verbose=False):
 
             i+=len(commentBlock.group()) ## advance in tree string by however many characters it took to encode comments
 
-        nodeLabel=re.match('([A-Za-z\_\-0-9\.]+)(\:|\;)',data[i:])## look for old school node labels
+        nodeLabel=re.match(r'([A-Za-z\_\-0-9\.]+)(\:|\;)',data[i:])## look for old school node labels
         if nodeLabel is not None:
             if verbose==True:
                 print('old school comment found: %s'%(nodeLabel.group(1)))
             cur_node.name=nodeLabel.group(1)
             i+=len(nodeLabel.group(1))
 
-        branchLength=re.match('(\:)*([0-9\.\-Ee]+)',data[i:i+100]) ## look for branch lengths without comments
+        branchLength=re.match(r'(\:)*([0-9\.\-Ee]+)',data[i:i+100]) ## look for branch lengths without comments
         if branchLength is not None:
             if verbose==True:
                 print('adding branch length (%d) %.6f'%(i,float(branchLength.group(2))))
@@ -197,7 +197,7 @@ def parse_beast_tree(data, tipMap, verbose=False):
 
 
 
-def parse_nexus(tree_path, treestring_regex='tree [A-Za-z\_]+([0-9]+)', verbose=False):
+def parse_nexus(tree_path, treestring_regex=r'tree [A-Za-z\_]+([0-9]+)', verbose=False):
     """
     Parses the BEAST MCC tree (NEXUS format)
 
@@ -241,7 +241,7 @@ def parse_nexus(tree_path, treestring_regex='tree [A-Za-z\_]+([0-9]+)', verbose=
     for line in handle: ## iterate over lines
         l=line.strip('\n')
 
-        nTaxa=re.search('dimensions ntax=([0-9]+);',l.lower()) ## get number of tips that should be in tree
+        nTaxa=re.search(r'dimensions ntax=([0-9]+);',l.lower()) ## get number of tips that should be in tree
         if nTaxa is not None:
             tipNum=int(nTaxa.group(1))
             if verbose:
@@ -256,7 +256,7 @@ def parse_nexus(tree_path, treestring_regex='tree [A-Za-z\_]+([0-9]+)', verbose=
                 print('Identified tree string')
 
         if tipFlag==True: ## going through tip encoding block
-            tipEncoding=re.search('([0-9]+) ([A-Za-z\-\_\/\.\'0-9 \|?]+)',l) ## search for key:value pairs
+            tipEncoding=re.search(r'([0-9]+) ([A-Za-z\-\_\/\.\'0-9 \|?]+)',l) ## search for key:value pairs
             if tipEncoding is not None:
                 tips[tipEncoding.group(1)]=tipEncoding.group(2).strip('"').strip("'") ## add to tips dict
                 if verbose==True:

@@ -2,6 +2,151 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* mask: Fix parsing of BED files as zero-indexed, half-open intervals [#512][]
+
+### Features
+
+* tests: Add initial functional tests of the augur command line interface using Cram [#542][]
+* mask: Allow masking of specific sites passed by the user with `--mask-sites` and masking of a fixed number of sites from the beginning or end of each sequence with `--mask-from-beginning` and `--mask-from-end` [#512][]
+* refine: Add a `--seed` argument to set the random seed for more reproducible outputs across runs [#542][]
+
+[#512]: https://github.com/nextstrain/augur/pull/512
+[#542]: https://github.com/nextstrain/augur/pull/542
+
+## 7.0.2 (7 April 2020)
+
+### Bug Fixes
+
+* filter: Fix regression introduced in 7.0.0 which caused an error to be raised
+  if a priorities file didn't include every sequence.  Sequences which are not
+  explicitly listed will once again default to a priority of 0. [#530][]
+
+[#530]: https://github.com/nextstrain/augur/pull/530
+
+
+## 7.0.1 (7 April 2020)
+
+### Bug Fixes
+
+* Fix typo with Python classifiers in setup.py
+
+## 7.0.0 (7 April 2020)
+
+### Major Changes
+
+* Drop support for Python 3.4 and 3.5 [#482][]
+* Drop support for `--output` flag in augur ancestral, clades, sequence-traits, traits, and translate in favor of `--output-node-data` flag [#529][]
+
+### Features
+
+* improve testing by
+	* adding a simple shell script to run tests and improving pytest configuration and output [#463][]
+	* adding code coverage reports ([#486][], [#491][]) and integration with codecov.io [#508][]
+	* adding unit tests for align ([#477][]), filter ([#478][], [#479][], [#487][]), utils ([#501][])
+* align: reverse complement sequences when necessary using mafft’s autodirection flag [#467][]
+* align: speed up replacement of gaps with “ambiguous” bases [#474][]
+* mask: add support for FASTA input files [#493][]
+* traits: bump TreeTime version to 0.7.4 and increase maximum number of unique traits allowed from 180 to 300 [#495][]
+
+### Bug Fixes
+
+* align: enable filling gaps in input sequences even if no reference is provided instead of throwing an exception [#466][]
+* align: detect duplicate sequences by comparing sequence objects instead of (often truncated) string representations of those objects [#468][]
+* import_beast: use raw strings for regular expressions to avoid syntax errors in future versions of Python [#469][]
+* scripts: update exception syntax to new style [#484][]
+* filter: fail loudly when a given priority file is invalid and exit instead of just printing an error [#487][]
+
+### Documentation
+
+* README: document need for brew tap prior to brew install [#471][]
+* DEV_DOCS: add a proper section on how to write and run tests [#481][]
+* README: improve discoverability of core documentation with RTD badge [#490][]
+
+[#463]: https://github.com/nextstrain/augur/pull/463/
+[#466]: https://github.com/nextstrain/augur/pull/466
+[#467]: https://github.com/nextstrain/augur/pull/467
+[#468]: https://github.com/nextstrain/augur/pull/468
+[#469]: https://github.com/nextstrain/augur/pull/469
+[#471]: https://github.com/nextstrain/augur/pull/471
+[#474]: https://github.com/nextstrain/augur/pull/474
+[#477]: https://github.com/nextstrain/augur/pull/477
+[#478]: https://github.com/nextstrain/augur/pull/478
+[#479]: https://github.com/nextstrain/augur/pull/479
+[#481]: https://github.com/nextstrain/augur/pull/481
+[#482]: https://github.com/nextstrain/augur/pull/482
+[#484]: https://github.com/nextstrain/augur/pull/484
+[#486]: https://github.com/nextstrain/augur/pull/486
+[#487]: https://github.com/nextstrain/augur/pull/487
+[#490]: https://github.com/nextstrain/augur/pull/490
+[#491]: https://github.com/nextstrain/augur/pull/491
+[#493]: https://github.com/nextstrain/augur/pull/493
+[#495]: https://github.com/nextstrain/augur/pull/495
+[#501]: https://github.com/nextstrain/augur/pull/501
+[#508]: https://github.com/nextstrain/augur/pull/508
+[#529]: https://github.com/nextstrain/augur/pull/529
+
+## 6.4.3 (25 March 2020)
+
+### Bug Fixes
+
+* align: Remove reference sequence from alignments even when no gaps exist in
+  input sequences relative to the reference. Thank you @danielsoneg!
+  [#456][]
+
+### Documentation
+
+* Reorganize README, improve findability of documentation, and add separate dev
+  docs.
+  [#461][]
+
+[#456]: https://github.com/nextstrain/augur/pull/456
+[#461]: https://github.com/nextstrain/augur/pull/461
+
+## 6.4.2 (17 March 2020)
+
+### Bug Fixes
+
+* Require Snakemake less than 5.11 to avoid a breaking change.  The `--cores`
+  argument is now required by 5.11, which will affect many existing augur-based
+  workflows.  Reported upstream as
+  [snakemake/snakemake#283](https://github.com/snakemake/snakemake/issues/283).
+
+* align: Run mafft with the `--nomemsave` option.  This makes alignments of
+  sequences over 10k in length run much, much faster in the general case and
+  shouldn't cause issues for most modern hardware.  We may end up needing to
+  add an off-switch for this mode if it causes issues for other users of augur,
+  but the hope is that it will make things just magically run faster for most
+  folks!  There is likely more tuning that could be done with mafft, but this
+  is a huge improvement in our testing.
+  [#458][]
+
+* align: Ignore blank lines in `--include` files.  Thanks @CameronDevine!
+  [#451][]
+
+* align: Properly quote filenames when invoking mafft.  Thanks @CameronDevine!
+  [#452][]
+
+
+[#451]: https://github.com/nextstrain/augur/pull/451
+[#452]: https://github.com/nextstrain/augur/pull/452
+[#458]: https://github.com/nextstrain/augur/pull/458
+
+
+## 6.4.1 (4 March 2020)
+
+### Bug Fixes
+
+* export: AA labels are now exported for branches where a clade is also labeled
+  [See PR 447](https://github.com/nextstrain/augur/pull/447)
+
+* export / validation: a dataset title is no longer required
+
+* release script now works on MacOS & code-signing is optional
+  [See PR 448](https://github.com/nextstrain/augur/pull/448)
+
+* traits: Missing data is correctly handled
 
 ## 6.4.0 (26 February 2020)
 
@@ -51,14 +196,14 @@
 * Augur `refine`, `ancestral` and `traits` now use the
   [upgraded TreeTime v0.7](https://github.com/neherlab/treetime/releases/tag/v0.7.0)
   This should have a number of under-the-hood improvements.
-  [See PR 431](https://github.com/nextstrain/augur/pull/431) 
+  [See PR 431](https://github.com/nextstrain/augur/pull/431)
 * ancestral: New options to either `--keep-ambiguous` or `--infer-ambiguous`. If using
   `--infer-ambiguous` the previous behavior will be maintained in which tips with `N` will have
   their nucleotide state inferred. If using `--keep-ambiguous`, these tips will be left as `N`.
   With this upgrade, we are still defaulting to `--infer-ambiguous`, however, we plan to swap
   default to `--keep-ambiguous` in the future. If this distintion matters to you, we would suggest
   that you explicitly record `--keep-ambiguous` / `--infer-ambiguous` in your build process.
-  [Also part of PR 431](https://github.com/nextstrain/augur/pull/431)  
+  [Also part of PR 431](https://github.com/nextstrain/augur/pull/431)
 * traits: Allow input of `--weights` which references a `.tsv` file in the following format:
   ```
   division	Hubei	10.0
@@ -67,12 +212,12 @@
   ```
   where these weights represent equilibrium frequencies in the CTMC transition model. We imagine the
   primary use of user-specified weights to correct for strong sampling biases in available data.
-  [See PR 443](https://github.com/nextstrain/augur/pull/443)  
+  [See PR 443](https://github.com/nextstrain/augur/pull/443)
 
 ### Bug fixes
 
 * Improvements to make shell scripts run more easily on Windows.
-  [See PR 437](https://github.com/nextstrain/augur/pull/437)  
+  [See PR 437](https://github.com/nextstrain/augur/pull/437)
 
 ## 6.2.0 (25 January 2020)
 
@@ -85,7 +230,7 @@
 ### Bug fixes
 
 * utils: Support v2 auspice JSONs in json_to_tree utility function.
-  [See PR 432](https://github.com/nextstrain/augur/pull/432)  
+  [See PR 432](https://github.com/nextstrain/augur/pull/432)
 
 ## 6.1.1 (17 December 2019)
 

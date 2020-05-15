@@ -12,26 +12,37 @@ from .utils import read_metadata, get_numerical_dates, run_shell_command, shquot
 
 comment_char = '#'
 
-def read_vcf(compressed, input_file):
-    import gzip
-    opn = gzip.open if compressed else open
 
-    with opn(input_file, mode='rt') as f: #'rt' necessary for gzip
-        for line in f:
-            if line[0:2] == "#C":
-                header = line.strip().split('\t')
-                seq_keep = header[header.index("FORMAT")+1:]
-                all_seq = seq_keep.copy() #because we need 'seqs to remove' for VCF
-                return seq_keep, all_seq
+def read_vcf(filename):
+    if filename.lower().endswith(".gz"):
+        import gzip
+        file = gzip.open(filename, mode="rt")
+    else:
+        file = open(filename)
+
+    chrom_line = next(line for line in file if line.startswith("#C"))
+    file.close()
+    headers = chrom_line.strip().split("\t")
+    sequences = headers[headers.index("FORMAT") + 1:]
+
+    # because we need 'seqs to remove' for VCF
+    return sequences, sequences.copy()
 
 
-def write_vcf(compressed, input_file, output_file, dropped_samps):
-    #Read in/write out according to file ending
-    inCall = "--gzvcf" if compressed else "--vcf"
-    outCall = "| gzip -c" if output_file.lower().endswith('.gz') else ""
+def write_vcf(input_filename, output_filename, dropped_samps):
+    if _filename_gz(input_filename):
+        input_arg = "--gzvcf"
+    else:
+        input_arg = "--vcf"
 
-    toDrop = " ".join(["--remove-indv "+shquote(s) for s in dropped_samps])
-    call = ["vcftools", toDrop, inCall, shquote(input_file), "--recode --stdout", outCall, ">", shquote(output_file)]
+    if _filename_gz(output_filename):
+        output_pipe = "| gzip -c"
+    else:
+        output_pipe = ""
+
+    drop_args = ["--remove-indv " + shquote(s) for s in dropped_samps]
+
+    call = ["vcftools"] + drop_args + [input_arg, shquote(input_filename), "--recode --stdout", output_pipe, ">", shquote(output_filename)]
 
     print("Filtering samples using VCFTools with the call:")
     print(" ".join(call))
@@ -43,20 +54,15 @@ def write_vcf(compressed, input_file, output_file, dropped_samps):
         pass
 
 def read_priority_scores(fname):
-    priorities = defaultdict(float)
-    if not os.path.isfile(fname):
-        print("ERROR: priority file %s doesn't exist"%fname)
-        return priorities
-
-    with open(fname) as pfile:
-        for l in pfile:
-            f = l.strip().split()
-            try:
-                priorities[f[0]] = float(f[1])
-            except:
-                print("ERROR: malformatted priority:",l)
-
-    return priorities
+    try:
+        with open(fname) as pfile:
+            return defaultdict(float, {
+                elems[0]: float(elems[1])
+                for elems in (line.strip().split() for line in pfile.readlines())
+            })
+    except Exception as e:
+        print(f"ERROR: missing or malformed priority scores file {fname}", file=sys.stderr)
+        raise e
 
 
 def register_arguments(parser):
@@ -68,7 +74,7 @@ def register_arguments(parser):
     parser.add_argument('--non-nucleotide', action='store_true', help="exclude sequences that contain illegal characters")
     parser.add_argument('--exclude', type=str, help="file with list of strains that are to be excluded")
     parser.add_argument('--include', type=str, help="file with list of strains that are to be included regardless of priorities or subsampling")
-    parser.add_argument('--priority', type=str, help="file with list priority scores for sequences (strain\tpriority)")
+    parser.add_argument('--priority', type=str, help="file with list of priority scores for sequences (strain\tpriority)")
     parser.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     parser.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
     parser.add_argument('--subsample-seed', help="random number generator seed to allow reproducible sub-sampling (with same input data). Can be number or string.")
@@ -104,7 +110,7 @@ def run(args):
 
     #If VCF, open and get sequence names
     if is_vcf:
-        seq_keep, all_seq = read_vcf(is_compressed, args.sequences)
+        seq_keep, all_seq = read_vcf(args.sequences)
 
     #if Fasta, read in file to get sequence names and sequences
     else:
@@ -294,7 +300,13 @@ def run(args):
     num_included_by_name = 0
     if args.include and os.path.isfile(args.include):
         with open(args.include, 'r') as ifile:
-            to_include = set([line.strip() for line in ifile if line[0]!=comment_char])
+            to_include = set(
+                [
+                    line.strip()
+                    for line in ifile
+                    if line[0]!=comment_char and len(line.strip()) > 0
+                ]
+            )
 
         for s in to_include:
             if s not in seq_keep:
@@ -334,7 +346,7 @@ def run(args):
         if len(dropped_samps) == len(all_seq): #All samples have been dropped! Stop run, warn user.
             print("ERROR: All samples have been dropped! Check filter rules and metadata file format.")
             return 1
-        write_vcf(is_compressed, args.sequences, args.output, dropped_samps)
+        write_vcf(args.sequences, args.output, dropped_samps)
 
     else:
         seq_to_keep = [seq for id,seq in seqs.items() if id in seq_keep]
@@ -365,3 +377,7 @@ def run(args):
         print("\t%i sequences were added back because of '%s'" % (num_included_by_metadata, args.include_where))
 
     print("%i sequences have been written out to %s" % (len(seq_keep), args.output))
+
+
+def _filename_gz(filename):
+    return filename.lower().endswith(".gz")
