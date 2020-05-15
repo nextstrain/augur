@@ -358,7 +358,7 @@ def run(args):
 
     print("\n%i sequences were dropped during filtering" % (len(all_seq) - len(seq_keep),))
     if num_excluded_lacking_metadata:
-        print("\t%i of these were dropped because they did not have metadata")
+        print("\t%i of these were dropped because they did not have metadata" % num_excluded_lacking_metadata)
     if args.exclude:
         print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
     if args.exclude_where:
