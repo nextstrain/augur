@@ -76,7 +76,7 @@ def register_arguments(parser):
                                 help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
     parser.add_argument('--include-where', nargs='+',
                                 help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND. This rule is applied last and ensures any sequences matching these rules will be included.")
-    parser.add_argument('--where', type=str, metavar="QUERY",
+    parser.add_argument('--prefilter-metadata', type=str, metavar="QUERY",
                                 help="Filter samples by attribute. Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax. Note this behavior overrides '--include' and '--include-where'.")
     parser.add_argument('--output', '-o', help="output file", required=True)
 
@@ -120,7 +120,7 @@ def run(args):
         all_seq = seq_keep.copy()
 
     try:
-        meta_dict, meta_columns, meta_filtered = read_metadata_with_query(args.metadata, query=args.where)
+        meta_dict, meta_columns, meta_filtered = read_metadata_with_query(args.metadata, query=args.prefilter_metadata)
     except ValueError as error:
         print("ERROR: Problem reading in {}:".format(args.metadata))
         print(error)
@@ -379,8 +379,8 @@ def run(args):
     if args.include_where:
         print("\t%i sequences were added back because of '%s'" % (num_included_by_metadata, args.include_where))
 
-    if args.where:
+    if args.prefilter_metadata:
         print("\n\t%i were dropped due to the metadata query:\n\t\t%s"
-              % (num_excluded_filtered_metadata, args.where))
+              % (num_excluded_filtered_metadata, args.prefilter_metadata))
 
     print("%i sequences have been written out to %s" % (len(seq_keep), args.output))
