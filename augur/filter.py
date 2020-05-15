@@ -8,7 +8,7 @@ from collections import defaultdict
 import random, os, re
 import numpy as np
 import sys
-from .utils import read_metadata, get_numerical_dates, run_shell_command, shquote
+from .utils import read_metadata_with_query, get_numerical_dates, run_shell_command, shquote
 
 comment_char = '#'
 
@@ -120,7 +120,7 @@ def run(args):
         all_seq = seq_keep.copy()
 
     try:
-        meta_dict, meta_columns = read_metadata(args.metadata, query=args.where)
+        meta_dict, meta_columns, meta_filtered = read_metadata_with_query(args.metadata, query=args.where)
     except ValueError as error:
         print("ERROR: Problem reading in {}:".format(args.metadata))
         print(error)
@@ -134,9 +134,12 @@ def run(args):
     # remove sequences without meta data
     tmp = [ ]
     num_excluded_lacking_metadata = 0
+    num_excluded_filtered_metadata = 0
     for seq_name in seq_keep:
         if seq_name in meta_dict:
             tmp.append(seq_name)
+        elif seq_name in meta_filtered:
+            num_excluded_filtered_metadata += 1
         else:
             print("No meta data for %s, excluding from all further analysis."%seq_name)
             num_excluded_lacking_metadata +=1
@@ -354,6 +357,8 @@ def run(args):
         SeqIO.write(seq_to_keep, args.output, 'fasta')
 
     print("\n%i sequences were dropped during filtering" % (len(all_seq) - len(seq_keep),))
+    if num_excluded_lacking_metadata:
+        print("\t%i of these were dropped because they did not have metadata")
     if args.exclude:
         print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
     if args.exclude_where:
@@ -375,7 +380,7 @@ def run(args):
         print("\t%i sequences were added back because of '%s'" % (num_included_by_metadata, args.include_where))
 
     if args.where:
-        print("\n\t%i sequences were dropped because they did not have metadata. This may be due to the metadata query:\n\t\t%s"
-              % (num_excluded_lacking_metadata, args.where))
+        print("\n\t%i were dropped due to the metadata query:\n\t\t%s"
+              % (num_excluded_filtered_metadata, args.where))
 
     print("%i sequences have been written out to %s" % (len(seq_keep), args.output))
