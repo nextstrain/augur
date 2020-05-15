@@ -107,7 +107,7 @@ def run(args):
         # if we've specified a reference, strip out all the columns not present in the reference
         # this will overwrite the alignment file
         if ref_name:
-            seqs = strip_non_reference(args.output, ref_name, insertion_csv=args.output+".insertions.csv")
+            seqs = strip_non_reference(seqs, ref_name, insertion_csv=args.output+".insertions.csv")
             if args.remove_reference:
                 seqs = remove_reference_sequence(seqs, ref_name)
             write_seqs(seqs, args.output)
@@ -200,7 +200,7 @@ def remove_reference_sequence(seqs, reference_name):
     return [seq for seq in seqs if seq.name!=reference_name]
 
 
-def strip_non_reference(alignment_fname, reference, insertion_csv):
+def strip_non_reference(aln, reference, insertion_csv):
     '''
     return sequences that have all insertions relative to the reference
     removed. The alignment is read from file and returned as list of sequences.
