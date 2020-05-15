@@ -203,7 +203,7 @@ def remove_reference_sequence(seqs, reference_name):
 def strip_non_reference(aln, reference, insertion_csv):
     '''
     return sequences that have all insertions relative to the reference
-    removed. The alignment is read from file and returned as list of sequences.
+    removed. The aligment is returned as list of sequences.
 
     Parameters
     ----------
@@ -221,16 +221,10 @@ def strip_non_reference(aln, reference, insertion_csv):
     -----
     >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps")]
     Trimmed gaps in with_gaps from the alignment
-    ['no_gaps', 'some_other_seq', '_R_crick_strand']
-    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps")]
-    Trimmed gaps in with_gaps from the alignment
     ['with_gaps', 'no_gaps', 'some_other_seq', '_R_crick_strand']
     >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "no_gaps")]
     No gaps in alignment to trim (with respect to the reference, no_gaps)
     ['with_gaps', 'no_gaps', 'some_other_seq', '_R_crick_strand']
-    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "no_gaps")]
-    No gaps in alignment to trim (with respect to the reference, no_gaps)
-    ['with_gaps', 'some_other_seq', '_R_crick_strand']
     >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "missing")]
     Traceback (most recent call last):
       ...
