@@ -102,8 +102,8 @@ def run(args):
             seq.description = ''
 
             if args.prettify_fields:
-                for field in args.prettify_fields:
-                    if field in tmp_meta and isinstance(tmp_meta[field], str):
+                for field in tmp_meta.keys() & args.prettify_fields:
+                    if isinstance(tmp_meta[field], str):
                         tmp_meta[field] = prettify(tmp_meta[field], camelCase=(not field.startswith('author')),
                                                     etal='lower' if field.startswith('author') else None)
 
