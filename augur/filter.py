@@ -76,7 +76,7 @@ def register_arguments(parser):
                                 help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
     parser.add_argument('--include-where', nargs='+',
                                 help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND. This rule is applied last and ensures any sequences matching these rules will be included.")
-    parser.add_argument('--where', type=str, metavar="QUERY",
+    parser.add_argument('--prefilter-metadata', type=str, metavar="QUERY",
                                 help="Filter samples by attribute. Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax. Note this behavior overrides '--include' and '--include-where'.")
     parser.add_argument('--output', '-o', help="output file", required=True)
 
@@ -120,7 +120,8 @@ def run(args):
         all_seq = seq_keep.copy()
 
     try:
-        meta_dict, meta_columns = read_metadata(args.metadata, query=args.where)
+        meta_dict, meta_columns = read_metadata(args.metadata, query=args.prefilter_metadata)
+        unfiltered_meta_dict, _ = read_metadata(args.metadata)
     except ValueError as error:
         print("ERROR: Problem reading in {}:".format(args.metadata))
         print(error)
@@ -134,9 +135,13 @@ def run(args):
     # remove sequences without meta data
     tmp = [ ]
     num_excluded_lacking_metadata = 0
+    num_excluded_metadata_filter = 0
     for seq_name in seq_keep:
-        if seq_name in meta_dict:
-            tmp.append(seq_name)
+        if seq_name in unfiltered_meta_dict:
+            if seq_name in meta_dict:
+                tmp.append(seq_name)
+            else:
+                num_excluded_metadata_filter += 1
         else:
             print("No meta data for %s, excluding from all further analysis."%seq_name)
             num_excluded_lacking_metadata +=1
@@ -356,6 +361,8 @@ def run(args):
     print("\n%i sequences were dropped during filtering" % (len(all_seq) - len(seq_keep),))
     if args.exclude:
         print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
+    if args.prefilter_metadata:
+        print("\t%i of these were dropped because of the metadata prefilter:\n\t\t%s" % (num_excluded_metadata_filter, args.prefilter_metadata))
     if args.exclude_where:
         for key,val in num_excluded_by_metadata.items():
             print("\t%i of these were dropped because of '%s'" % (val, key))
@@ -373,9 +380,5 @@ def run(args):
         print("\n\t%i sequences were added back because they were in %s" % (num_included_by_name, args.include))
     if args.include_where:
         print("\t%i sequences were added back because of '%s'" % (num_included_by_metadata, args.include_where))
-
-    if args.where:
-        print("\n\t%i sequences were dropped because they did not have metadata. This may be due to the metadata query:\n\t\t%s"
-              % (num_excluded_lacking_metadata, args.where))
 
     print("%i sequences have been written out to %s" % (len(seq_keep), args.output))
