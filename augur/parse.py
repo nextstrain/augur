@@ -107,14 +107,14 @@ def run(args):
                         tmp_meta[field] = prettify(tmp_meta[field], camelCase=(not field.startswith('author')),
                                                     etal='lower' if field.startswith('author') else None)
 
+            # parse dates and convert to a canonical format
+            if args.fix_dates and 'date' in tmp_meta:
+                tmp_meta['date'] = fix_dates(tmp_meta['date'],
+                                            dayfirst=args.fix_dates=='dayfirst')
+
             if 'strain' in tmp_meta:
                 del tmp_meta['strain']
             meta_data[seq.id] = tmp_meta
-
-            # parse dates and convert to a canonical format
-            if args.fix_dates and 'date' in args.fields:
-                meta_data[seq.id]['date'] = fix_dates(meta_data[seq.id]['date'],
-                                            dayfirst=args.fix_dates=='dayfirst')
 
             SeqIO.write(seq, output, 'fasta')
 
