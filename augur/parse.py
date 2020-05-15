@@ -92,31 +92,32 @@ def run(args):
         strain_key = args.fields[0]
 
     # loop over sequences, parse fasta header of each sequence
-    for seq in seqs:
-        fields = map(str.strip, seq.description.split(args.separator))
-        tmp_meta = dict(zip(args.fields, fields))
+    with open(args.output_sequences, 'w') as output:
+        for seq in seqs:
+            fields = map(str.strip, seq.description.split(args.separator))
+            tmp_meta = dict(zip(args.fields, fields))
 
-        tmp_name = tmp_meta[strain_key].translate(forbidden_chactacters)
-        seq.name = seq.id = tmp_name
-        seq.description = ''
+            tmp_name = tmp_meta[strain_key].translate(forbidden_chactacters)
+            seq.name = seq.id = tmp_name
+            seq.description = ''
 
-        if args.prettify_fields:
-            for field in args.prettify_fields:
-                if field in tmp_meta and type(tmp_meta[field])==str:
-                    tmp_meta[field] = prettify(tmp_meta[field], camelCase=(not field.startswith('author')),
-                                                  etal='lower' if field.startswith('author') else None)
+            if args.prettify_fields:
+                for field in args.prettify_fields:
+                    if field in tmp_meta and type(tmp_meta[field])==str:
+                        tmp_meta[field] = prettify(tmp_meta[field], camelCase=(not field.startswith('author')),
+                                                    etal='lower' if field.startswith('author') else None)
 
-        if 'strain' in tmp_meta:
-            del tmp_meta['strain']
-        meta_data[seq.id] = tmp_meta
+            if 'strain' in tmp_meta:
+                del tmp_meta['strain']
+            meta_data[seq.id] = tmp_meta
 
-        # parse dates and convert to a canonical format
-        if args.fix_dates and 'date' in args.fields:
-            meta_data[seq.id]['date'] = fix_dates(meta_data[seq.id]['date'],
-                                        dayfirst=args.fix_dates=='dayfirst')
+            # parse dates and convert to a canonical format
+            if args.fix_dates and 'date' in args.fields:
+                meta_data[seq.id]['date'] = fix_dates(meta_data[seq.id]['date'],
+                                            dayfirst=args.fix_dates=='dayfirst')
 
-    # output results to a new fasta alignment and tsv/csv via pandas
-    SeqIO.write(seqs, args.output_sequences, 'fasta')
+            SeqIO.write(seq, output, 'fasta')
+
     df = pd.DataFrame.from_dict(meta_data, orient='index')
     df.to_csv(args.output_metadata, index_label='strain',
               sep='\t' if args.output_metadata[-3:]=='tsv' else ',')
