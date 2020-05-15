@@ -359,10 +359,12 @@ def run(args):
         SeqIO.write(seq_to_keep, args.output, 'fasta')
 
     print("\n%i sequences were dropped during filtering" % (len(all_seq) - len(seq_keep),))
-    if args.exclude:
-        print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
+    if num_excluded_lacking_metadata:
+        print("\n\t%i sequences were dropped because they did not have metadata.")
     if args.prefilter_metadata:
-        print("\t%i of these were dropped because of the metadata prefilter:\n\t\t%s" % (num_excluded_metadata_filter, args.prefilter_metadata))
+        print("\n\t%i of these were dropped because of the metadata prefilter:\n\t\t%s" % (num_excluded_metadata_filter, args.prefilter_metadata))
+    if args.exclude:
+        print("\n\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
     if args.exclude_where:
         for key,val in num_excluded_by_metadata.items():
             print("\t%i of these were dropped because of '%s'" % (val, key))
@@ -381,4 +383,4 @@ def run(args):
     if args.include_where:
         print("\t%i sequences were added back because of '%s'" % (num_included_by_metadata, args.include_where))
 
-    print("%i sequences have been written out to %s" % (len(seq_keep), args.output))
+    print("\n%i sequences have been written out to %s" % (len(seq_keep), args.output))
