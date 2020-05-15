@@ -71,45 +71,157 @@ def ambiguous_date_to_date_range(mydate, fmt, min_max_year=None):
     upper_bound = datetime(year=max_date['year'], month=max_date['month'], day=max_date['day']).date()
     return (lower_bound, upper_bound if upper_bound<today else today)
 
-def read_metadata(fname, query=None):
-    if not fname:
-        print("ERROR: read_metadata called without a filename")
-        return {}, []
-    if os.path.isfile(fname):
-        try:
-            metadata = pd.read_csv(fname, sep='\t' if fname[-3:]=='tsv' else ',',
-                                    skipinitialspace=True).fillna('')
-        except pd.errors.ParserError as e:
-            print("Error reading metadata file {}".format(fname))
-            print(e)
-            sys.exit(2)
-        if query:
-            try:
-                metadata.query(query, inplace=True)
-            except Exception as e:
-                # Would like to make this more specific, but Pandas throws multiple different
-                # errors from panda specific to python generic errors.
-                print("ERROR: Invalid query string: '{}'".format(query))
-                print(e)
-                sys.exit(2)
-        meta_dict = {}
-        for ii, val in metadata.iterrows():
-            if hasattr(val, "strain"):
-                if val.strain in meta_dict:
-                    raise ValueError("Duplicate strain '{}'".format(val.strain))
-                meta_dict[val.strain] = val.to_dict()
-            elif hasattr(val, "name"):
-                if val.name in meta_dict:
-                    raise ValueError("Duplicate name '{}'".format(val.name))
-                meta_dict[val.name] = val.to_dict()
-            else:
-                print("ERROR: meta data file needs 'name' or 'strain' column")
+class MetadataException(AugurException):
+    """Exception class for errors reading metadata files"""
 
-        return meta_dict, list(metadata.columns)
+class MetadataFileException(MetadataException):
+    """Errors caused by missing or empty file names"""
+
+class MetadataPandasException(MetadataException):
+    """Errors thrown by Pandas while reading the metadata file"""
+    def __init__(self, message, pandas_error):
+        self.message = message
+        self.pandas_error = pandas_error
+
+def read_metadata(fname):
+    """Read metadata from a .TSV or .CSV file.
+
+    Note: If given either no filename or the path to a missing file, this
+    function will return empty results. If given an improperly formatted CSV or TSV,
+    it will call sys.exit().
+
+    Parameters
+    ----------
+    fname : str
+        Path to the metadata file to read.
+    query : str
+        Pandas Dataframe query string. For syntax, see:
+        https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.query.html
+    
+    Returns
+    -------
+    Tuple of dictionary mapping strain name to its metadata and 
+    the list of metadata columns
+    """
+    try:
+        metadata = load_metadata_file(fname)
+    except MetadataFileException as e:
+        print(e)
+        return {}, []
+    except MetadataPandasException as e:
+        print(e.message)
+        print(e.pandas_error)
+        sys.exit(2)
     else:
-        print("ERROR: meta data file ({}) does not exist".format(fname))
-        return {}, []
+        meta_dict = format_metadata(metadata)
+        return meta_dict, list(metadata.columns)
 
+def read_metadata_with_query(fname, query=None):
+    """Read metadata from a .TSV or .CSV file, optionally filtering by a query string.
+    
+    This function is extremely similar to read_metadata. It was separated to preserve existing
+    uses of read_metadata while providing the option to filter metadata and see the filtered strains.
+
+    Note: Following the convention in read_metadata, if given either no filename or
+    a nonexistent filename, this function will return empty values. If given either an
+    invalid metadata file or a bad query, this function will call sys.exit.
+
+    Parameters
+    ----------
+    fname : str
+        Path to the metadata file to read.
+    query : str
+        Pandas Dataframe query string. For syntax, see:
+        https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.query.html
+    
+    Returns
+    -------
+    Tuple of metadata dictionary, list of columns in metadata,
+    and set of names of strains filtered by query.
+
+    """
+    try:
+        all_metadata = load_metadata_file(fname)
+    except MetadataFileException as e:
+        print(e)
+        return {}, [], set()
+    except MetadataPandasException as e:
+        print(e.message)
+        print(e.pandas_error)
+        sys.exit(2)
+    try:
+        if query:
+            metadata = all_metadata.query(query)
+        else:
+            metadata = all_metadata
+    except Exception as e:
+        # Would like to make this more specific, but Pandas throws multiple different
+        # errors from panda specific to python generic errors.
+        print("ERROR: Invalid query string: '{}'".format(query))
+        print(e)
+        sys.exit(2)
+    all_meta_dict = format_metadata(all_metadata)
+    meta_dict = format_metadata(metadata)
+    filtered_strains = {strain for strain in all_meta_dict if strain not in meta_dict}
+    return meta_dict, list(metadata.columns), filtered_strains
+
+def load_metadata_file(fname):
+    """Read a TSV or CSV containing strain metadata
+
+    Parameters
+    ----------
+    fname : str
+        Path to the TSV or CSV file to read
+    
+    Returns
+    -------
+    Pandas.DataFrame read from the file
+
+    Raises
+    ------
+    MetadataFileException for missing or empty filenames
+    MetadataPandasException for errors reading the metadata file.
+    """
+    if not fname:
+        raise MetadataFileException("load_metadata_file called without a filename")
+    elif not os.path.isfile(fname):
+        raise MetadataFileException("metadata file ({}) does not exist".format(fname))
+    try:
+        return pd.read_csv(fname, sep='\t' if fname[-3:]=='tsv' else ',',
+                            skipinitialspace=True).fillna('')
+    except pd.errors.ParserError as pandas_error:
+        raise MetadataPandasException("Error reading metadata file {}".format(fname), pandas_error)
+
+def format_metadata(metadata):
+    """Format a Pandas Dataframe containing strain metadata into a dictionary mapping strain name to metadata
+
+    Parameters
+    ----------
+    metadata : Pandas.DataFrame
+        Pandas DataFrame containing strain metadata. Must have at least
+        a 'name' or 'strain' column, cannot have duplicates.
+    
+    Returns
+    -------
+    Dictionary mapping strain name to its metadata as a dictionary.
+
+    Raises
+    ------
+    ValueError if duplicate strains are found.
+    """
+    meta_dict = {}
+    for _, val in metadata.iterrows():
+        if hasattr(val, "strain"):
+            if val.strain in meta_dict:
+                raise ValueError("Duplicate strain '{}'".format(val.strain))
+            meta_dict[val.strain] = val.to_dict()
+        elif hasattr(val, "name"):
+            if val.name in meta_dict:
+                raise ValueError("Duplicate name '{}'".format(val.name))
+            meta_dict[val.name] = val.to_dict()
+        else:
+            print("ERROR: meta data file needs 'name' or 'strain' column")
+    return meta_dict
 
 def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, min_max_year=None):
     if fmt:
