@@ -184,7 +184,6 @@ def register_arguments(parser):
     parser.add_argument('--reference', nargs='+', help='fasta files containing reference and tip nucleotide and/or amino-acid sequences ')
     parser.add_argument('--clades', type=str, help='TSV file containing clade definitions by amino-acid')
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save clade assignments to')
-    parser.add_argument('--output', '-o', type=str, help='DEPRECATED. Same as --output-node-data')
 
 
 def run(args):

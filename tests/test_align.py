@@ -2,9 +2,12 @@ from Bio.Align import MultipleSeqAlignment
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
+from shlex import quote
+
 from augur import align
 
 import pytest
+import pathlib
 
 
 class TestAlign:
@@ -73,3 +76,81 @@ class TestAlign:
         )
         with pytest.raises(align.AlignmentError):
             assert align.check_duplicates(alignment, "seq3")
+
+    def test_prune_seqs_matching_alignment(self):
+        sequence = {
+            "seq1": SeqRecord(Seq("GTAC"), name="seq1"),
+            "seq2": SeqRecord(Seq("CGTT"), name="seq2"),
+            "seq3": SeqRecord(Seq("TAGC"), name="seq3"),
+        }
+        alignment = MultipleSeqAlignment(
+            [
+                SeqRecord(Seq("GTAC"), name="seq1"),
+                SeqRecord(Seq("TAGC"), name="seq3"),
+            ]
+        )
+        
+        result = align.prune_seqs_matching_alignment(sequence, alignment)
+        assert list(result.keys()) == ["seq2"]
+        assert result["seq2"].seq == sequence["seq2"].seq
+
+    def test_prettify_alignment(self):
+        data_file = pathlib.Path('tests/data/align/test_aligned_sequences.fasta')
+        alignment = align.read_alignment(str(data_file.resolve()))
+        seqs = {s.id:s for s in alignment}
+        assert "_R_crick_strand" in seqs
+
+        align.prettify_alignment(alignment)
+        seqs = {s.id:s for s in alignment}
+        assert "crick_strand" in seqs
+
+    def test_generate_alignment_cmd_non_mafft(self):
+        with pytest.raises(align.AlignmentError):
+            assert align.generate_alignment_cmd('no-mafft', 1, None, None, None, None)
+            
+    def test_generate_alignment_cmd_mafft_existing_aln_fname(self):
+        existing_aln_fname = "existing_aln"
+        seqs_to_align_fname = "seqs_to_align"
+        aln_fname = "aln_fname"
+        log_fname = "log_fname"
+        
+        result = align.generate_alignment_cmd("mafft", 1,
+                                              existing_aln_fname,
+                                              seqs_to_align_fname,
+                                              aln_fname,
+                                              log_fname)
+        
+        expected = "mafft --add %s --keeplength --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s" % (quote(seqs_to_align_fname), 1, quote(existing_aln_fname), quote(aln_fname), quote(log_fname))
+        
+        assert result == expected
+                                    
+    def test_generate_alignment_cmd_mafft_no_existing_aln_fname(self):
+        seqs_to_align_fname = "seqs_to_align"
+        aln_fname = "aln_fname"
+        log_fname = "log_fname"
+        
+        result = align.generate_alignment_cmd("mafft", 1,
+                                              None,
+                                              seqs_to_align_fname,
+                                              aln_fname,
+                                              log_fname)
+        
+        expected = "mafft --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s" % (1, quote(seqs_to_align_fname), quote(aln_fname), quote(log_fname))
+        
+        assert result == expected
+        
+    def test_read_alignment(self):
+        data_file = pathlib.Path('tests/data/align/test_aligned_sequences.fasta')
+        result = align.read_alignment(str(data_file.resolve()))
+        
+        assert len(result) == 4
+        
+    def test_read_sequences(self):
+        data_file = pathlib.Path('tests/data/align/test_aligned_sequences.fasta')
+        result = align.read_sequences(data_file)
+        assert len(result.keys()) == 4
+
+    def test_read_seq_compare(self):
+        data_file = pathlib.Path("tests/data/align/aa-seq_h3n2_ha_2y_2HA1_dup.fasta")
+        with pytest.raises(align.AlignmentError):
+            assert align.read_sequences(data_file)

@@ -22,6 +22,7 @@ dist/
 __pycache__/
 .cache/
 .coverage
+htmlcov/
 augur.egg-info/
 .mypy_cache/
 nextstrain_augur.egg-info/
@@ -55,6 +56,7 @@ Thumbs.db
 # IDE #
 #######
 *sublime*
+.vscode
 
 # slurm logs
 builds/flu/slurm_log/*

@@ -33,7 +33,7 @@ rule clades:
         augur clades --tree {input.tree} \
             --mutations {input.nuc_muts} {input.aa_muts} \
             --clades {input.clades} \
-            --output {output.clade_data}
+            --output-node-data {output.clade_data}
         """
 ```
 As input, this command requires the tree, the output of the ancestral reconstruction steps and the translation step (assuming your clades are defined using translations), as well as the file with clade definitions.

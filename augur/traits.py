@@ -64,12 +64,12 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
         for node in T.find_clades():
             node.__setattr__(field, unique_states[0])
         return T, None, {}
-    elif len(unique_states)<180:
+    elif len(unique_states)<300:
         tt, letter_to_state, reverse_alphabet = \
             reconstruct_discrete_traits(T, traits, missing_data=missing,
                  sampling_bias_correction=sampling_bias_correction, weights=weights)
     else:
-        print("ERROR: 180 or more distinct discrete states found. TreeTime is currently not set up to handle that many states.")
+        print("ERROR: 300 or more distinct discrete states found. TreeTime is currently not set up to handle that many states.")
         sys.exit(1)
 
     if tt is None:
@@ -118,7 +118,6 @@ def register_arguments(parser):
                              ' are the equilibrium frequencies and t_i are apparent ones.'
                              '(or rather the time spent in a particular state on the tree)')
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save trait inferences to')
-    parser.add_argument('--output', '-o', type=str, help='DEPRECATED. Same as --output-node-data')
     parser.epilog = "Note that missing data must be represented by a `?` character. Missing data will currently be inferred."
 
 def run(args):

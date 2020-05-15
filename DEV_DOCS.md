@@ -26,7 +26,7 @@ Please see the [project board](https://github.com/orgs/nextstrain/projects/6) fo
 
 ## Contributing code
 
-We currently target compatibility with Python 3.4 and higher. As Python releases new versions,
+We currently target compatibility with Python 3.6 and higher. As Python releases new versions,
 the minimum target compatibility may be increased in the future.
 
 Versions for this project, Augur, from 3.0.0 onwards aim to follow the
@@ -49,7 +49,7 @@ as an **editable package** so that your global `augur` command always uses your
 local source code copy:
 
 ```bash
-pip install -e .[dev]
+pip install -e '.[dev]'
 ```
 
 Using an "editable package" is not recommended if you want to be able to compare output
@@ -59,49 +59,95 @@ output of `augur` installed with pip and `./bin/augur` from your local source co
 ### Testing
 
 Writing good tests and running tests helps maintain code quality and eases future refactoring.
-We use the [pytest](https://docs.pytest.org) package for running our tests.
+We use [pytest](https://docs.pytest.org) and [Cram](https://bitheap.org/cram/) to test augur.
 This section will describe briefly:
 
 - Writing tests
   - Unit tests
   - Doctests
+  - Functional tests
 - Running tests
   - Locally
   - Continuous Integration
 
 #### Writing Tests
 
-It's good practice to write **unit tests** for any code contribution. The
-[pytest documentation](https://docs.pytest.org) and [Python documentation](https://docs.python.org)
-are good references for unit tests. Augur's unit tests are located in the `tests` directory and
-there is generally one test file for each code file.
+It's good practice to write **unit tests** for any code contribution.
+The [pytest documentation](https://docs.pytest.org) and [Python documentation](https://docs.python.org) are good references for unit tests.
+Augur's unit tests are located in the `tests` directory and there is generally one test file for each code file.
 
-On the other hand, [**doctests**](https://docs.python.org/3/library/doctest.html) are a type of
-tests that are written within a module's docstrings. They can be helpful for testing a real-world
-example and determining if a regression is introduced in a particular module.
+On the other hand, [**doctests**](https://docs.python.org/3/library/doctest.html) are a type of tests that are written within a module's docstrings.
+They can be helpful for testing a real-world example and determining if a regression is introduced in a particular module.
 
-A pull request **should always contain unit tests**. Optionally, a pull request may also contain
-doctests if the contributor believes a doctest would improve the documentation and execution
-of a real world example.
+A pull request that contributes new code **should always contain unit tests**.
+Optionally, a pull request may also contain doctests if the contributor believes a doctest would improve the documentation and execution of a real world example.
+
+We test augur's command line interface with functional tests implemented with the [Cram framework](https://bitheap.org/cram/).
+These tests complement existing unit tests of individual augur Python functions by running augur commands on the shell and confirming that these commands:
+
+1. execute without any errors
+2. produce exactly the expected outputs for the given inputs
+
+These tests can reveal bugs resulting from untested internal functions or untested combinations fo internal functions.
+
+Functional tests should either:
+
+* suitably test a single augur command with an eponymously named Cram file in `tests/functional/` (e.g., `mask.t` for augur mask)
+
+OR
+
+* test a complete build with augur commands with an appropriately named Cram file in `tests/builds/` (e.g., `zika.t` for the example Zika build)
+
+##### Functional tests of specific commands
+
+Functional tests of specific commands consist of a single Cram file per test and a corresponding directory of expected inputs and outputs to use for comparison of test results.
+
+The Cram file should test most reasonable combinations of command arguments and flags.
+
+##### Functional tests of example builds
+
+Functional tests of example builds use output from a real Snakemake workflow as expected inputs and outputs.
+These tests should confirm that all steps of a workflow can execute and produce the expected output.
+These tests reflect actual augur usage in workflows and are not intended to comprehensively test interfaces for specific augur commands.
+
+The Cram file should replicate the example workflow from start to end.
+These tests should use the output of the Snakemake workflow (e.g., files in `zika/results/` for the Zika build test) as the expected inputs and outputs.
+
+##### Comparing outputs of augur commands
+
+Compare deterministic outputs of augur commands with a `diff` between the expected and observed output files.
+For extremely simple deterministic outputs, use the expected text written to standard output instead of creating a separate expected output file.
+
+To compare trees with stochastic branch lengths:
+
+1. provide a fixed random seed to the tree builder executable (e.g., `--tree-builder-args "-seed 314159"` for the “iqtree” method of augur tree)
+2. use `scripts/diff_trees.py` instead of `diff` and optionally provide a specific number to  `--significant-digits` to limit the precision that should be considered in the diff
+
+To compare JSON outputs with stochastic numerical values, use `scripts/diff_jsons.py` with the appropriate `--significant-digits` argument.
+
+Both tree and JSON comparison scripts rely on [deepdiff](https://deepdiff.readthedocs.io/en/latest/) for underlying comparisons.
 
 #### Running Tests
 
-You've written tests and now you want to run them to see if they are passing. To run
-augur's tests (unit tests and doctests) with pytest and Python3, use the following command
-from the root, top-level of the augur repository:
+You've written tests and now you want to run them to see if they are passing.
+First, you will need to [install the complete Nextstrain environment](https://nextstrain.org/docs/getting-started/local-installation) and augur dev dependencies as described above.
+Next, run all augur tests with the following command from the root, top-level of the augur repository:
 
 ```bash
-pytest -c pytest.python3.ini
+./run_tests.sh
 ```
 
-If you are running legacy augur code using Python 2, execute `pytest -c pytest.python2.ini`.
+For rapid execution of a subset of unit tests (as during test-driven development), the `-k` argument will disable code coverage and functional tests and pass directly to pytest to limit the tests that are run.
+For example, the following command only runs unit tests related to augur mask.
 
-Troubleshooting tip: As tests run on the development code in the augur repository,
-your environment should not have an existing augur installation that could cause a
-conflict in pytest.
+```bash
+./run_tests.sh -k test_mask
+```
 
-We also use Continuous integration with Travis CI to run tests on every pull request
-submitted to the project.
+Troubleshooting tip: As tests run on the development code in the augur repository, your environment should not have an existing augur installation that could cause a conflict in pytest.
+
+We use continuous integration with Travis CI to run tests on every pull request submitted to the project.
+We use [codecov](https://codecov.io/) to automatically produce test coverage for new contributions and the project as a whole.
 
 ### Releasing
 
@@ -125,8 +171,24 @@ need [a PyPi account][] and [twine][] installed to do the latter.
 
 Branches and PRs are tested by Travis CI jobs configured in `.travis.yml`.
 
+Our Travis config uses two build stages: _test_ and _deploy_.  Jobs in the
+_test_ stage always run, but _deploy_ jobs only run sometimes (see below).
+
+The set of _test_ jobs are explicitly defined instead of auto-expanded from the
+implicit job property matrix. Since top-level properties are inherited by all
+jobs regardless of build stage, making the matrix explicit is less confusing
+and easier to reason about. YAML's anchor (`&foo`) and alias merge key (`<<:
+*foo`) syntax let us do this without repeating ourselves unnecessarily.
+
 New releases, via pushes to the `release` branch, trigger a new [docker-base][]
-build to keep the Docker image up-to-date.
+build to keep the Docker image up-to-date. This trigger is implemented in the
+_deploy_ stage, which is implicitly conditioned on the previous _test_ stage's
+successful completion and explicitly conditioned on a non-PR trigger on the
+`release` branch. Note that currently we cannot test this _deploy_ stage
+without making a release.
+
+It can sometimes be useful to verify the config is parsed as you expect using
+<https://config.travis-ci.com/explore>.
 
 [docker-base]: https://github.com/nextstrain/docker-base
 
@@ -165,7 +227,7 @@ Building the documentation locally is useful to test changes.
 First, make sure you have the development dependencies of augur installed:
 
 ```bash
-pip install -e .[dev]
+pip install -e '.[dev]'
 ```
 
 This installs packages listed in the `dev` section of `extras_require` in _setup.py_,
