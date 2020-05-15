@@ -219,19 +219,19 @@ def strip_non_reference(aln, reference, insertion_csv):
 
     Tests
     -----
-    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps", keep_reference=False)]
+    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps")]
     Trimmed gaps in with_gaps from the alignment
     ['no_gaps', 'some_other_seq', '_R_crick_strand']
-    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps", keep_reference=True)]
+    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps")]
     Trimmed gaps in with_gaps from the alignment
     ['with_gaps', 'no_gaps', 'some_other_seq', '_R_crick_strand']
-    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "no_gaps", keep_reference=True)]
+    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "no_gaps")]
     No gaps in alignment to trim (with respect to the reference, no_gaps)
     ['with_gaps', 'no_gaps', 'some_other_seq', '_R_crick_strand']
-    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "no_gaps", keep_reference=False)]
+    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "no_gaps")]
     No gaps in alignment to trim (with respect to the reference, no_gaps)
     ['with_gaps', 'some_other_seq', '_R_crick_strand']
-    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "missing", keep_reference=False)]
+    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "missing")]
     Traceback (most recent call last):
       ...
     augur.align.AlignmentError: ERROR: reference missing not found in alignment
@@ -241,7 +241,6 @@ def strip_non_reference(aln, reference, insertion_csv):
         ref_array = np.array(seqs[reference])
         if "-" not in ref_array:
             print("No gaps in alignment to trim (with respect to the reference, %s)"%reference)
-            return [seq for seq in aln if (keep_reference or seq.name != reference)]
         ungapped = ref_array!='-'
         ref_aln_array = np.array(aln)[:,ungapped]
     else:
