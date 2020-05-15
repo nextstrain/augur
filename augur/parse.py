@@ -103,7 +103,7 @@ def run(args):
 
             if args.prettify_fields:
                 for field in args.prettify_fields:
-                    if field in tmp_meta and type(tmp_meta[field])==str:
+                    if field in tmp_meta and isinstance(tmp_meta[field], str):
                         tmp_meta[field] = prettify(tmp_meta[field], camelCase=(not field.startswith('author')),
                                                     etal='lower' if field.startswith('author') else None)
 
@@ -120,4 +120,4 @@ def run(args):
 
     df = pd.DataFrame.from_dict(meta_data, orient='index')
     df.to_csv(args.output_metadata, index_label='strain',
-              sep='\t' if args.output_metadata[-3:]=='tsv' else ',')
+              sep='\t' if args.output_metadata.endswith('tsv') else ',')
