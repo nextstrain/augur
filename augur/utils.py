@@ -97,7 +97,7 @@ def read_metadata(fname):
     query : str
         Pandas Dataframe query string. For syntax, see:
         https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.query.html
-    
+
     Returns
     -------
     Tuple of dictionary mapping strain name to its metadata and 
@@ -118,7 +118,7 @@ def read_metadata(fname):
 
 def read_metadata_with_query(fname, query=None):
     """Read metadata from a .TSV or .CSV file, optionally filtering by a query string.
-    
+
     This function is extremely similar to read_metadata. It was separated to preserve existing
     uses of read_metadata while providing the option to filter metadata and see the filtered strains.
 
@@ -133,7 +133,7 @@ def read_metadata_with_query(fname, query=None):
     query : str
         Pandas Dataframe query string. For syntax, see:
         https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.query.html
-    
+
     Returns
     -------
     Tuple of metadata dictionary, list of columns in metadata,
@@ -172,7 +172,7 @@ def load_metadata_file(fname):
     ----------
     fname : str
         Path to the TSV or CSV file to read
-    
+
     Returns
     -------
     Pandas.DataFrame read from the file
@@ -200,7 +200,7 @@ def format_metadata(metadata):
     metadata : Pandas.DataFrame
         Pandas DataFrame containing strain metadata. Must have at least
         a 'name' or 'strain' column, cannot have duplicates.
-    
+
     Returns
     -------
     Dictionary mapping strain name to its metadata as a dictionary.
