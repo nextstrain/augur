@@ -39,7 +39,7 @@ Since no output is provided, the input file is overridden with the masked sequen
 
   $ cp mask/sequences.fasta "$TMP/"
   $ augur mask --sequences "$TMP/sequences.fasta" --mask mask/mask.bed
-  Found 3 sites to mask in 'mask/mask.bed'
+  3 masking sites read from mask/mask.bed
   Removing masked sites from FASTA file.
 
   $ cat "$TMP/sequences.fasta"
@@ -53,7 +53,7 @@ Mask sequences with a BED file and a specified output file.
   >  --sequences mask/sequences.fasta \
   >  --mask mask/mask.bed \
   >  --output "$TMP/masked.fasta"
-  Found 3 sites to mask in 'mask/mask.bed'
+  3 masking sites read from mask/mask.bed
   Removing masked sites from FASTA file.
 
   $ cat "$TMP/masked.fasta"
