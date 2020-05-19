@@ -2,6 +2,10 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* utils: Add a consolidated generic `load_mask_sites` function and specific `read_mask_file` and `read_bed_file` functions for reading masking sites from files. Changes the Python API by moving mask-loading functionality out of augur mask and tree into utils [#514 and #550]
+
 ### Bug Fixes
 
 * mask: Fix parsing of BED files as zero-indexed, half-open intervals [#512][]
@@ -14,6 +18,8 @@
 
 [#512]: https://github.com/nextstrain/augur/pull/512
 [#542]: https://github.com/nextstrain/augur/pull/542
+[#514]: https://github.com/nextstrain/augur/pull/514
+[#550]: https://github.com/nextstrain/augur/pull/550
 
 ## 7.0.2 (7 April 2020)
 
