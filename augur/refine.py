@@ -166,6 +166,8 @@ def run(args):
     else:
         aln = args.alignment
 
+    from treetime import version as treetime_version
+    print(f"augur refine is using TreeTime version {treetime_version}")
 
     # if not specified, construct default output file name with suffix _tt.nwk
     if args.output_tree:

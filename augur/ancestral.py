@@ -41,7 +41,9 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
         treetime.TreeAnc instance
     """
 
-    from treetime import TreeAnc
+    from treetime import TreeAnc, version as treetime_version
+    print(f"augur ancestral is using TreeTime version {treetime_version}")
+
     tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69',
                  fill_overhangs=fill_overhangs, verbose=1)
 
