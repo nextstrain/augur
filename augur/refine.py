@@ -1,7 +1,7 @@
 """
 Refine an initial tree using sequence metadata.
 """
-
+import numpy as np
 import os, shutil, time, sys
 from Bio import Phylo
 from .utils import read_metadata, read_tree, get_numerical_dates, write_json, InvalidTreeError
@@ -60,7 +60,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
     # uncertainty of the the clock rate is relevant if confidence intervals are estimated
     if confidence and clock_std:
         vary_rate = clock_std # if standard devivation of clock is specified, use that
-    elif confidence and covariance:
+    elif (clock_rate is None) and confidence and covariance:
         vary_rate = True      # if run in covariance mode, standard deviation can be estimated
     else:
         vary_rate = False     # otherwise, rate uncertainty will be ignored
@@ -123,9 +123,13 @@ def register_arguments(parser):
     parser.add_argument('--year-bounds', type=int, nargs='+', help='specify min or max & min prediction bounds for samples with XX in year')
     parser.add_argument('--divergence-units', type=str, choices=['mutations', 'mutations-per-site'],
                         default='mutations-per-site', help='Units in which sequence divergences is exported.')
+    parser.add_argument('--seed', type=int, help='seed for random number generation')
     parser.set_defaults(covariance=True)
 
 def run(args):
+    if args.seed is not None:
+        np.random.seed(args.seed)
+
     # check alignment type, set flags, read in if VCF
     is_vcf = False
     ref = None
@@ -164,6 +168,8 @@ def run(args):
     else:
         aln = args.alignment
 
+    from treetime import version as treetime_version
+    print(f"augur refine is using TreeTime version {treetime_version}")
 
     # if not specified, construct default output file name with suffix _tt.nwk
     if args.output_tree:

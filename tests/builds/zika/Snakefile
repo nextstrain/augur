@@ -58,6 +58,7 @@ rule filter:
             --output {output.sequences} \
             --group-by {params.group_by} \
             --sequences-per-group {params.sequences_per_group} \
+            --subsample-seed 314159 \
             --min-date {params.min_date}
         """
 
@@ -90,7 +91,8 @@ rule tree:
         augur tree \
             --alignment {input.alignment} \
             --output {output.tree} \
-            --method {params.method}
+            --method {params.method} \
+            --tree-builder-args "-seed 314159"
         """
 
 rule refine:
@@ -118,7 +120,8 @@ rule refine:
             --coalescent {params.coalescent} \
             --date-confidence \
             --date-inference {params.date_inference} \
-            --clock-filter-iqd {params.clock_filter_iqd}
+            --clock-filter-iqd {params.clock_filter_iqd} \
+            --seed 314159
         """
 
 rule ancestral:

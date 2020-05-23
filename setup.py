@@ -50,7 +50,7 @@ setup(
         "biopython >=1.67, ==1.*",
         "jsonschema >=3.0.0, ==3.*",
         "packaging >=19.2",
-        "pandas >=0.20.0, ==0.*",
+        "pandas >=1.0.0, ==1.*",
         "phylo-treetime >=0.7.4",
         "snakemake >=5.4.0, <5.11"
     ],
@@ -61,6 +61,8 @@ setup(
             "seaborn >=0.9.0, ==0.9.*"
         ],
         'dev': [
+            "cram >=0.7, ==0.*",
+            "deepdiff >=4.3.2, ==4.3.*",
             "freezegun >=0.3.15, ==0.3.*",
             "pylint >=1.7.6, ==1.7.*",
             "pytest >=5.4.1, ==5.4.*",
