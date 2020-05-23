@@ -385,7 +385,7 @@ def read_config(fname):
         return defaultdict(dict)
 
     try:
-        with open(fname) as ifile:
+        with open(fname, 'rb') as ifile:
             config = json.load(ifile)
     except json.decoder.JSONDecodeError as err:
         print("FATAL ERROR:")
