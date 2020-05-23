@@ -50,7 +50,7 @@ def load_json_schema(path):
     return jsonschema.Draft6Validator(schema)
 
 def load_json(path):
-    with open(path) as fh:
+    with open(path, 'rb') as fh:
         try:
             jsonToValidate = json.load(fh)
         except json.JSONDecodeError:

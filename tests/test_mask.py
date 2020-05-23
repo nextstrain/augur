@@ -62,6 +62,20 @@ def bed_file(tmpdir):
         fh.write(TEST_BED)
     return bed_file
 
+TEST_MASK_SEQUENCE = [3,5,7]
+TEST_MASK="""\
+4
+6
+8
+"""
+
+@pytest.fixture
+def mask_file(tmpdir):
+    mask_file = str(tmpdir / "exclude.mask")
+    with open(mask_file, "w") as fh:
+        fh.write(TEST_MASK)
+    return mask_file
+
 @pytest.fixture
 def out_file(tmpdir):
     out_file = str(tmpdir / "out")
@@ -97,19 +111,6 @@ class TestMask:
             fh.write("#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO\n")
         assert mask.get_chrom_name(vcf_file) is None
     
-    def test_read_bed_file_with_header(self, bed_file):
-        """read_bed_file should ignore header rows if they exist"""
-        with open(bed_file, "w") as fh:
-            fh.write("CHROM\tSTART\tEND\n")
-            fh.write("SEQ\t5\t7")
-        assert mask.read_bed_file(bed_file) == [5,6]
-
-    def test_read_bed_file(self, bed_file):
-        """read_bed_file should read and deduplicate the list of sites in a bed file"""
-        # Not a whole lot of testing to do with bed files. We're basically testing if pandas
-        # can read a CSV and numpy can dedupe it.
-        assert mask.read_bed_file(bed_file) == TEST_BED_SEQUENCE
-
     def test_mask_vcf_bails_on_no_chrom(self, tmpdir):
         """mask_vcf should pull a sys.exit() if get_chrom_name returns None"""
         bad_vcf = str(tmpdir / "bad.vcf")
@@ -343,6 +344,18 @@ class TestMask:
                 else:
                     assert site == reference[idx]
 
+    def test_e2e_fasta_mask_file(self, fasta_file, mask_file, sequences, argparser):
+        args = argparser("-s %s --mask %s" % (fasta_file, mask_file))
+        mask.run(args)
+        output = SeqIO.parse(fasta_file,"fasta")
+        for record in output:
+            reference = sequences[record.id].seq
+            for idx, site in enumerate(record.seq):
+                if idx in TEST_MASK_SEQUENCE:
+                    assert site == "N"
+                else:
+                    assert site == reference[idx]
+
     def test_e2e_fasta_beginning_end_sites(self, fasta_file, bed_file, out_file, sequences, argparser):
         from_beginning = 3
         from_end = 1
@@ -374,6 +387,17 @@ class TestMask:
                 site = int(line.split("\t")[1]) # POS column
                 site = site - 1 # shift to zero-indexed site
                 assert site not in TEST_BED_SEQUENCE
+
+    def test_e2e_vcf_mask_file(self, vcf_file, mask_file, argparser):
+        args = argparser("-s %s --mask %s" % (vcf_file, mask_file))
+        mask.run(args)
+        with open(vcf_file) as output:
+            assert output.readline().startswith("##fileformat") # is a VCF
+            assert output.readline().startswith("#CHROM\tPOS\t") # have a header
+            for line in output.readlines():
+                site = int(line.split("\t")[1]) # POS column
+                site = site - 1 # shift to zero-indexed site
+                assert site not in TEST_MASK_SEQUENCE
 
     def test_e2e_vcf_with_options(self, vcf_file, bed_file, out_file, argparser):
         arg_sites = [5, 12, 14]
