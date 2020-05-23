@@ -59,7 +59,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
     # uncertainty of the the clock rate is relevant if confidence intervals are estimated
     if confidence and clock_std:
         vary_rate = clock_std # if standard devivation of clock is specified, use that
-    elif confidence and covariance:
+    elif (clock_rate is None) and confidence and covariance:
         vary_rate = True      # if run in covariance mode, standard deviation can be estimated
     else:
         vary_rate = False     # otherwise, rate uncertainty will be ignored
