@@ -64,6 +64,25 @@ def read_priority_scores(fname):
         print(f"ERROR: missing or malformed priority scores file {fname}", file=sys.stderr)
         raise e
 
+def filter_by_query(sequences, metadata_file, query):
+    """Filter a set of sequences using Pandas DataFrame querying against the metadata file.
+
+    Parameters
+    ----------
+    sequences : list[str]
+        List of sequence names to filter
+    metadata_file : str
+        Path to the metadata associated wtih the sequences
+    query : str
+        Query string for the dataframe.
+
+    Returns
+    -------
+    list[str]:
+        List of sequence names that match the given query
+    """
+    filtered_meta_dict, _ = read_metadata(metadata_file, query)
+    return [seq for seq in sequences if seq in filtered_meta_dict]
 
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
