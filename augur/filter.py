@@ -101,6 +101,7 @@ def register_arguments(parser):
                                 help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
     parser.add_argument('--include-where', nargs='+',
                                 help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND. This rule is applied last and ensures any sequences matching these rules will be included.")
+    parser.add_argument('--query', help="Filter samples by attribute. Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.")
     parser.add_argument('--output', '-o', help="output file", required=True)
 
 
@@ -181,6 +182,13 @@ def run(args):
         except FileNotFoundError as e:
             print("ERROR: Could not open file of excluded strains '%s'" % args.exclude, file=sys.stderr)
             sys.exit(1)
+
+    # exclude strains by metadata, using Pandas querying
+    num_excluded_by_query = 0
+    if args.query:
+        filtered = filter_by_query(seq_keep, args.metadata, args.query)
+        num_excluded_by_query = len(seq_keep) - len(filtered)
+        seq_keep = filtered
 
     # exclude strain my metadata field like 'host=camel'
     # match using lowercase
@@ -377,6 +385,8 @@ def run(args):
     print("\n%i sequences were dropped during filtering" % (len(all_seq) - len(seq_keep),))
     if args.exclude:
         print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
+    if args.query:
+        print("\t%i of these were filtered out by the query:\n\t\t\"%s\"" % (num_excluded_by_query, args.query))
     if args.exclude_where:
         for key,val in num_excluded_by_metadata.items():
             print("\t%i of these were dropped because of '%s'" % (val, key))
