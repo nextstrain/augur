@@ -183,13 +183,6 @@ def run(args):
             print("ERROR: Could not open file of excluded strains '%s'" % args.exclude, file=sys.stderr)
             sys.exit(1)
 
-    # exclude strains by metadata, using Pandas querying
-    num_excluded_by_query = 0
-    if args.query:
-        filtered = filter_by_query(seq_keep, args.metadata, args.query)
-        num_excluded_by_query = len(seq_keep) - len(filtered)
-        seq_keep = filtered
-
     # exclude strain my metadata field like 'host=camel'
     # match using lowercase
     num_excluded_by_metadata = {}
@@ -211,6 +204,13 @@ def run(args):
                 tmp = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
                 num_excluded_by_metadata[ex] = len(seq_keep) - len(tmp)
                 seq_keep = tmp
+
+    # exclude strains by metadata, using Pandas querying
+    num_excluded_by_query = 0
+    if args.query:
+        filtered = filter_by_query(seq_keep, args.metadata, args.query)
+        num_excluded_by_query = len(seq_keep) - len(filtered)
+        seq_keep = filtered
 
     # filter by sequence length
     num_excluded_by_length = 0
@@ -385,11 +385,11 @@ def run(args):
     print("\n%i sequences were dropped during filtering" % (len(all_seq) - len(seq_keep),))
     if args.exclude:
         print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
-    if args.query:
-        print("\t%i of these were filtered out by the query:\n\t\t\"%s\"" % (num_excluded_by_query, args.query))
     if args.exclude_where:
         for key,val in num_excluded_by_metadata.items():
             print("\t%i of these were dropped because of '%s'" % (val, key))
+    if args.query:
+        print("\t%i of these were filtered out by the query:\n\t\t\"%s\"" % (num_excluded_by_query, args.query))
     if args.min_length:
         print("\t%i of these were dropped because they were shorter than minimum length of %sbp" % (num_excluded_by_length, args.min_length))
     if (args.min_date or args.max_date) and 'date' in meta_columns:
