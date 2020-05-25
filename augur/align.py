@@ -248,7 +248,9 @@ def strip_non_reference(aln, reference, insertion_csv=None):
         seq.seq = Seq.Seq(''.join(seq_array))
         out_seqs.append(seq)
 
-    print("Trimmed gaps in", reference, "from the alignment")
+    if "-" in ref_array:
+        print("Trimmed gaps in", reference, "from the alignment")
+
     return out_seqs
 
 def analyse_insertions(aln, ungapped, insertion_csv):
