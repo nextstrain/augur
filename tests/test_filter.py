@@ -1,7 +1,44 @@
-import augur.filter
+import argparse
+import random
+import shlex
 
 import pytest
 
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+
+import augur.filter
+
+@pytest.fixture
+def argparser():
+    parser = argparse.ArgumentParser()
+    augur.filter.register_arguments(parser)
+    def parse(args):
+        return parser.parse_args(shlex.split(args))
+    return parse
+
+@pytest.fixture
+def sequences():
+    def random_seq(k):
+        return "".join(random.choices(("A","T","G","C"), k=k))
+    return {
+        "SEQ_1": SeqRecord(Seq(random_seq(10)), id="SEQ_1"),
+        "SEQ_2": SeqRecord(Seq(random_seq(10)), id="SEQ_2"),
+        "SEQ_3": SeqRecord(Seq(random_seq(10)), id="SEQ_3"),
+    }
+
+@pytest.fixture
+def fasta_fn(tmpdir, sequences):
+    fn = str(tmpdir / "sequences.fasta")
+    SeqIO.write(sequences.values(), fn, "fasta")
+    return fn
+
+def write_metadata(tmpdir, metadata):
+    fn = str(tmpdir / "metadata.tsv")
+    with open(fn, "w") as fh:
+        fh.write("\n".join(("\t".join(md) for md in metadata)))
+    return fn
 
 @pytest.fixture
 def mock_priorities_file_valid(mocker):
@@ -105,3 +142,62 @@ class TestFilter:
             "vcftools --remove-indv x --remove-indv y --remove-indv z --vcf tests/builds/tb/data/lee_2015.vcf --recode --stdout  > output_file.vcf",
             raise_errors=True,
         )
+
+    def test_filter_on_query_good(self, tmpdir, sequences):
+        """Basic filter_on_query test"""
+        meta_fn = write_metadata(tmpdir, (("strain","location","quality"),
+                                          ("SEQ_1","colorado","good"),
+                                          ("SEQ_2","colorado","bad"),
+                                          ("SEQ_3","nevada","good")))
+        filtered = augur.filter.filter_by_query(sequences.keys(), meta_fn, 'quality=="good"')
+        assert filtered == ["SEQ_1", "SEQ_3"]
+
+    def test_filter_on_query_subset(self, tmpdir):
+        """Test filtering on query works when given fewer strains than metadata"""
+        meta_fn = write_metadata(tmpdir, (("strain","location","quality"),
+                                          ("SEQ_1","colorado","good"),
+                                          ("SEQ_2","colorado","bad"),
+                                          ("SEQ_3","nevada","good")))
+        filtered = augur.filter.filter_by_query(["SEQ_2"], meta_fn, 'quality=="bad" & location=="colorado"')
+        assert filtered == ["SEQ_2"]
+
+    def test_filter_run_with_query(self, tmpdir, fasta_fn, argparser):
+        """Test that filter --query works as expected"""
+        out_fn = str(tmpdir / "out.fasta")
+        meta_fn = write_metadata(tmpdir, (("strain","location","quality"),
+                                          ("SEQ_1","colorado","good"),
+                                          ("SEQ_2","colorado","bad"),
+                                          ("SEQ_3","nevada","good")))
+        args = argparser('-s %s --metadata %s -o %s --query "location==\'colorado\'"'
+                         % (fasta_fn, meta_fn, out_fn))
+        augur.filter.run(args)
+        output = SeqIO.to_dict(SeqIO.parse(out_fn, "fasta"))
+        assert list(output.keys()) == ["SEQ_1", "SEQ_2"]
+
+    def test_filter_run_with_query_and_include(self, tmpdir, fasta_fn, argparser):
+        """Test that --include still works with filtering on query"""
+        out_fn = str(tmpdir / "out.fasta")
+        meta_fn = write_metadata(tmpdir, (("strain","location","quality"),
+                                          ("SEQ_1","colorado","good"),
+                                          ("SEQ_2","colorado","bad"),
+                                          ("SEQ_3","nevada","good")))
+        include_fn = str(tmpdir / "include")
+        open(include_fn, "w").write("SEQ_3")
+        args = argparser('-s %s --metadata %s -o %s --query "quality==\'good\' & location==\'colorado\'" --include %s'
+                         % (fasta_fn, meta_fn, out_fn, include_fn))
+        augur.filter.run(args)
+        output = SeqIO.to_dict(SeqIO.parse(out_fn, "fasta"))
+        assert list(output.keys()) == ["SEQ_1", "SEQ_3"]
+
+    def test_filter_run_with_query_and_include_where(self, tmpdir, fasta_fn, argparser):
+        """Test that --include_where still works with filtering on query"""
+        out_fn = str(tmpdir / "out.fasta")
+        meta_fn = write_metadata(tmpdir, (("strain","location","quality"),
+                                          ("SEQ_1","colorado","good"),
+                                          ("SEQ_2","colorado","bad"),
+                                          ("SEQ_3","nevada","good")))
+        args = argparser('-s %s --metadata %s -o %s --query "quality==\'good\' & location==\'colorado\'" --include-where "location=nevada"'
+                         % (fasta_fn, meta_fn, out_fn))
+        augur.filter.run(args)
+        output = SeqIO.to_dict(SeqIO.parse(out_fn, "fasta"))
+        assert list(output.keys()) == ["SEQ_1", "SEQ_3"]
