@@ -217,10 +217,8 @@ def run(args):
                 node_data['skyline'] = [[float(x) for x in skyline.x], [float(y) for y in conf[0]],
                                         [float(y) for y in skyline.y], [float(y) for y in conf[1]]]
             except:
-                print("Warning: optimization of coalescent skyline seems to have failed.")
-                # TODO: handle properly. this isn't actually used anywhere at the moment and
-                # this should be handled by TreeTime.
-                node_data['skyline'] = [[],[],[],[]]
+                print("ERROR: skyline optimization by TreeTime has failed.")
+                return 1
 
         attributes.extend(['numdate', 'clock_length', 'mutation_length', 'raw_date', 'date'])
         if args.date_confidence:
