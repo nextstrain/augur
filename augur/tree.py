@@ -136,13 +136,13 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         aln_file    file name of input aligment
         out_file    file name to write tree to
     '''
-    with open(aln_file) as ifile:
+    with open(aln_file, encoding='utf-8') as ifile:
         tmp_seqs = ifile.readlines()
 
     # IQ-tree messes with taxon names. Hence remove offending characters, reinstaniate later
     tmp_aln_file = aln_file.replace(".fasta", "-delim.fasta")
     log_file = tmp_aln_file.replace(".fasta", ".iqtree.log")
-    with open(tmp_aln_file, 'w') as ofile:
+    with open(tmp_aln_file, 'w', encoding='utf-8') as ofile:
         for line in tmp_seqs:
             ofile.write(line.replace('/', '_X_X_').replace('|','_Y_Y_').replace("(","_X_Y_").replace(")","_Y_X_"))
 
@@ -256,7 +256,7 @@ def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
 
     #If want a position map, print:
     if printPositionMap:
-        with open(fasta_file+".positions.txt", 'w') as the_file:
+        with open(fasta_file+".positions.txt", 'w', encoding='utf-8') as the_file:
             the_file.write("\n".join(pos))
 
     return fasta_file
@@ -294,7 +294,7 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
     # Write the masked alignment to disk one record at a time.
     alignment_file_path = Path(alignment_file)
     masked_alignment_file = str(alignment_file_path.parent / ("masked_%s" % alignment_file_path.name))
-    with open(masked_alignment_file, "w") as oh:
+    with open(masked_alignment_file, "w", encoding='utf-8') as oh:
         for record in alignment:
             # Convert to a mutable sequence to enable masking with Ns.
             sequence = record.seq.tomutable()

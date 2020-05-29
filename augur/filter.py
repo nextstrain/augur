@@ -16,9 +16,9 @@ comment_char = '#'
 def read_vcf(filename):
     if filename.lower().endswith(".gz"):
         import gzip
-        file = gzip.open(filename, mode="rt")
+        file = gzip.open(filename, mode="rt", encoding='utf-8')
     else:
-        file = open(filename)
+        file = open(filename, encoding='utf-8')
 
     chrom_line = next(line for line in file if line.startswith("#C"))
     file.close()
@@ -55,7 +55,7 @@ def write_vcf(input_filename, output_filename, dropped_samps):
 
 def read_priority_scores(fname):
     try:
-        with open(fname) as pfile:
+        with open(fname, encoding='utf-8') as pfile:
             return defaultdict(float, {
                 elems[0]: float(elems[1])
                 for elems in (line.strip().split() for line in pfile.readlines())
@@ -169,7 +169,7 @@ def run(args):
     num_excluded_by_name = 0
     if args.exclude:
         try:
-            with open(args.exclude, 'r') as ifile:
+            with open(args.exclude, 'r', encoding='utf-8') as ifile:
                 to_exclude = set()
                 for line in ifile:
                     if line[0] != comment_char:
@@ -326,7 +326,7 @@ def run(args):
     # Note that we are also not checking for existing meta data here
     num_included_by_name = 0
     if args.include and os.path.isfile(args.include):
-        with open(args.include, 'r') as ifile:
+        with open(args.include, 'r', encoding='utf-8') as ifile:
             to_include = set(
                 [
                     line.strip()
