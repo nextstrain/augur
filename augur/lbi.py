@@ -94,7 +94,7 @@ def run(args):
     tree = Bio.Phylo.read(args.tree, "newick")
 
     # Load branch lengths.
-    with open(args.branch_lengths, "r") as json_fh:
+    with open(args.branch_lengths, "r", encoding='utf-8') as json_fh:
         branch_lengths = json.load(json_fh)
 
     # Annotate branch lengths and dates onto tree nodes.

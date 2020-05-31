@@ -26,10 +26,10 @@ def open_file(fname, mode):
         if "t" not in mode:
             # For interoperability, gzip needs to open files in "text" mode
             mode = mode + "t"
-        with gzip.open(fname, mode) as fh:
+        with gzip.open(fname, mode, encoding='utf-8') as fh:
             yield fh
     else:
-        with open(fname, mode) as fh:
+        with open(fname, mode, encoding='utf-8') as fh:
             yield fh
 
 def is_vcf(fname):
@@ -47,9 +47,9 @@ def is_vcf(fname):
 def myopen(fname, mode):
     if fname.endswith('.gz'):
         import gzip
-        return gzip.open(fname, mode)
+        return gzip.open(fname, mode, encoding='utf-8')
     else:
-        return open(fname, mode)
+        return open(fname, mode, encoding='utf-8')
 
 def get_json_name(args, default=None):
     if args.output_node_data:
@@ -231,7 +231,7 @@ def read_node_data(fnames, tree=None):
     node_data = {"nodes": {}}
     for fname in fnames:
         if os.path.isfile(fname):
-            with open(fname) as jfile:
+            with open(fname, encoding='utf-8') as jfile:
                 tmp_data = json.load(jfile)
             if tmp_data.get("annotations"):
                 try:
@@ -327,7 +327,7 @@ def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSO
     if include_version:
         data["generated_by"] = {"program": "augur", "version": get_augur_version()}
 
-    with open(file_name, 'w') as handle:
+    with open(file_name, 'w', encoding='utf-8') as handle:
         json.dump(data, handle, indent=indent, sort_keys=True)
 
 
@@ -348,7 +348,7 @@ def load_features(reference, feature_names=None):
             return None
         limit_info = dict( gff_type = ['gene'] )
 
-        with open(reference) as in_handle:
+        with open(reference, encoding='utf-8') as in_handle:
             for rec in GFF.parse(in_handle, limit_info=limit_info):
                 for feat in rec.features:
                     if feature_names is not None: #check both tags; user may have used either
@@ -468,7 +468,7 @@ def read_colors(overrides=None, use_defaults=True):
 
     if overrides:
         if os.path.isfile(overrides):
-            with open(overrides) as fh:
+            with open(overrides, encoding='utf-8') as fh:
                 for line in fh:
                     add_line(line)
         else:
@@ -497,7 +497,7 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
 
     #prepare the header of the VCF & write out
     header=["#CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT"]+seqNames
-    with open(vcf_file_name, 'w') as the_file:
+    with open(vcf_file_name, 'w', encoding='utf-8') as the_file:
         the_file.write( "##fileformat=VCFv4.2\n"+
                         "##source=NextStrain_Protein_Translation\n"+
                         "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n")
@@ -552,10 +552,10 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
             vcfWrite.append("\t".join(output))
 
     #write it all out
-    with open(ref_file_name, 'w') as the_file:
+    with open(ref_file_name, 'w', encoding='utf-8') as the_file:
         the_file.write("\n".join(refWrite))
 
-    with open(vcf_file_name, 'a') as the_file:
+    with open(vcf_file_name, 'a', encoding='utf-8') as the_file:
         the_file.write("\n".join(vcfWrite))
 
     if vcf_file_name.lower().endswith('.gz'):
@@ -869,7 +869,7 @@ def read_mask_file(mask_file):
         Sorted list of unique zero-indexed sites
     """
     mask_sites = []
-    with open(mask_file) as mf:
+    with open(mask_file, encoding='utf-8') as mf:
         for idx, line in enumerate(l.strip() for l in mf.readlines()):
             if "\t" in line:
                 line = line.split("\t")[1]

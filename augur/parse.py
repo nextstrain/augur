@@ -92,7 +92,7 @@ def run(args):
         strain_key = args.fields[0]
 
     # loop over sequences, parse fasta header of each sequence
-    with open(args.output_sequences, 'w') as output:
+    with open(args.output_sequences, 'w', encoding='utf-8') as output:
         for seq in seqs:
             fields = map(str.strip, seq.description.split(args.separator))
             tmp_meta = dict(zip(args.fields, fields))

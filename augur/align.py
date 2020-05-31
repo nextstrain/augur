@@ -294,7 +294,7 @@ def analyse_insertions(aln, ungapped, insertion_csv):
         for insertion_seq, strains in i_data.items():
             for strain in strains:
                 strain_data[strain][idx] = insertion_seq
-    with open(insertion_csv, 'w') as fh:
+    with open(insertion_csv, 'w', encoding='utf-8') as fh:
         print(",".join(header), file=fh)
         for strain in strain_data:
             print("{},{}".format(strain, ",".join(strain_data[strain])), file=fh)

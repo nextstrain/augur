@@ -783,7 +783,7 @@ def set_description(data_json, cmd_line_description_file):
     `meta.description` in *data_json* to the text provided.
     """
     try:
-        with open(cmd_line_description_file) as description_file:
+        with open(cmd_line_description_file, encoding='utf-8') as description_file:
             markdown_text = description_file.read()
             data_json['meta']['description'] = markdown_text
     except FileNotFoundError:

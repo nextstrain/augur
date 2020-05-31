@@ -231,7 +231,7 @@ def parse_nexus(tree_path, treestring_regex=r'tree [A-Za-z\_]+([0-9]+)', verbose
 
     if isinstance(tree_path,str): ## determine if path or handle was provided to function
         try:
-            handle=open(tree_path,'r')
+            handle=open(tree_path,'r', encoding='utf-8')
         except FileNotFoundError:
             print("FATAL: No such file {}".format(tree_path))
             sys.exit(2)
