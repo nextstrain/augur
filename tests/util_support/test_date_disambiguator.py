@@ -14,8 +14,7 @@ class TestDateDisambiguator:
         [
             ("2000-01-01", (datetime.date(2000, 1, 1), datetime.date(2000, 1, 1))),
             ("2000-02-XX", (datetime.date(2000, 2, 1), datetime.date(2000, 2, 29))),
-            ("2000-XX-05", (datetime.date(2000, 1, 5), datetime.date(2000, 12, 5))),
-            ("2X00-5-5", (datetime.date(2000, 5, 5), datetime.date(2111, 5, 5))),
+            ("2000-XX-XX", (datetime.date(2000, 1, 1), datetime.date(2000, 12, 31))),
         ],
     )
     def test_range(self, date_str, expected_range):
@@ -40,9 +39,8 @@ class TestDateDisambiguator:
         "date_str, expected_components",
         [
             ("2000-01-01", {"Y": "2000", "m": "01", "d": "01"}),
-            ("2000-XX-01", {"Y": "2000", "m": "XX", "d": "01"}),
+            ("2000-01-XX", {"Y": "2000", "m": "01", "d": "XX"}),
             ("2000-XX-XX", {"Y": "2000", "m": "XX", "d": "XX"}),
-            ("200X-XX-2X", {"Y": "200X", "m": "XX", "d": "2X"}),
         ],
     )
     def test_uncertain_date_components(self, date_str, expected_components):
@@ -71,3 +69,14 @@ class TestDateDisambiguator:
         assert (
             date_disambiguator.resolve_uncertain_int(date_str, min_or_max) == expected
         )
+
+    @pytest.mark.parametrize(
+        "date_str, expected_error",
+        [
+            ("200X-01-01", "so month and day must also be uncertain"),
+            ("2000-XX-01", "so day must also be uncertain"),
+        ],
+    )
+    def test_assert_only_less_significant_uncertainty(self, date_str, expected_error):
+        with pytest.raises(ValueError, match=expected_error):
+            DateDisambiguator(date_str)

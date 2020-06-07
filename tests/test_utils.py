@@ -19,12 +19,6 @@ class TestUtils:
             datetime.date(year=2000, month=1, day=31),
         )
 
-    def test_ambiguous_date_to_date_range_ambiguous_month(self):
-        assert utils.ambiguous_date_to_date_range("2000-XX-5", "%Y-%m-%d") == (
-            datetime.date(year=2000, month=1, day=5),
-            datetime.date(year=2000, month=12, day=5),
-        )
-
     def test_ambiguous_date_to_date_range_ambiguous_month_and_day(self):
         assert utils.ambiguous_date_to_date_range("2000-XX-XX", "%Y-%m-%d") == (
             datetime.date(year=2000, month=1, day=1),

@@ -43,6 +43,8 @@ class DateDisambiguator:
         self.fmt = fmt
         self.min_max_year = min_max_year
 
+        self.assert_only_less_significant_uncertainty()
+
     def range(self):
         min_date = tuple_to_date(
             resolve_uncertain_int(self.uncertain_date_components["Y"], "min"),
@@ -90,3 +92,32 @@ class DateDisambiguator:
             .replace("%d", "(..?)")
             + "$"
         )
+
+    def assert_only_less_significant_uncertainty(self):
+        """
+        Raise an exception if a constrained digit appears in a less-significant place
+        than an uncertain digit.
+
+        Assuming %Y-%m-%d, these patterns are valid:
+            2000-01-01
+            2000-01-XX
+            2000-XX-XX
+
+        but this is invalid, because month is uncertain but day is constrained:
+            2000-XX-01
+
+        These invalid cases are assumed to be unintended use of the tool.
+        """
+        if "X" in self.uncertain_date_components["Y"]:
+            if (
+                self.uncertain_date_components["m"] != "XX"
+                or self.uncertain_date_components["d"] != "XX"
+            ):
+                raise ValueError(
+                    "Invalid date: Year contains uncertainty, so month and day must also be uncertain."
+                )
+        elif "X" in self.uncertain_date_components["m"]:
+            if self.uncertain_date_components["d"] != "XX":
+                raise ValueError(
+                    "Invalid date: Month contains uncertainty, so day must also be uncertain."
+                )
