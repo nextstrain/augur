@@ -721,22 +721,16 @@ def set_display_defaults(data_json, config):
         ["geo_resolution", "geoResolution"],
         ["color_by", "colorBy"],
         ["distance_measure", "distanceMeasure"],
-        ["map_triplicate", "mapTriplicate"],
-        ["layout", "layout"],
-        ["branch_label", "branch_label"]
+        ["map_triplicate", "mapTriplicate"]
     ]
 
-    display_defaults = {}
+    for [v2_key, v1_key] in [x for x in v1_v2_keys if x[1] in defaults]:
+        deprecated("[config file] '{}' has been replaced with '{}'".format(v1_key, v2_key))
+        defaults[v2_key] = defaults[v1_key]
+        del defaults[v1_key]
 
-    for [v2_key, v1_key] in v1_v2_keys:
-        if v2_key in defaults:
-            display_defaults[v2_key] = defaults[v2_key]
-        elif v1_key in defaults:
-            deprecated("[config file] '{}' has been replaced with '{}'".format(v1_key, v2_key))
-            display_defaults[v2_key] = defaults[v1_key]
-
-    if display_defaults:
-        data_json['meta']["display_defaults"] = display_defaults
+    if defaults:
+        data_json['meta']["display_defaults"] = defaults
 
 def set_maintainers(data_json, config, cmd_line_maintainers):
     # Command-line args overwrite the config file
