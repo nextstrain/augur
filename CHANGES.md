@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 8.0.0 (8 June 2020)
+
 ### Major Changes
 
 * utils: Add a consolidated generic `load_mask_sites` function and specific `read_mask_file` and `read_bed_file` functions for reading masking sites from files. Changes the Python API by moving mask-loading functionality out of augur mask and tree into utils [#514][] and [#550][]
