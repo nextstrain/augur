@@ -4,22 +4,46 @@
 
 ### Major Changes
 
-* utils: Add a consolidated generic `load_mask_sites` function and specific `read_mask_file` and `read_bed_file` functions for reading masking sites from files. Changes the Python API by moving mask-loading functionality out of augur mask and tree into utils [#514 and #550]
+* utils: Add a consolidated generic `load_mask_sites` function and specific `read_mask_file` and `read_bed_file` functions for reading masking sites from files. Changes the Python API by moving mask-loading functionality out of augur mask and tree into utils [#514][] and [#550][]
+* mask: Parse BED files as zero-indexed, half-open intervals [#512][]
 
 ### Bug Fixes
 
-* mask: Fix parsing of BED files as zero-indexed, half-open intervals [#512][]
+* traits: Export mugration models to the same output directory as traits JSON [#544][]
+* Explicitly open files with UTF-8 file encoding [#499][], [#503][], and [#560][]
+* refine: Only request confidence intervals from TreeTime when no clock rate is provided [#548][]
+* refine: Catch failed skyline optimization [#556][]
 
 ### Features
 
-* tests: Add initial functional tests of the augur command line interface using Cram [#542][]
+* align: Report insertions stripped during alignment [#449][]
+* Require minimum pandas version of 1.0.0 [#488][]
+* parse: Reduce memory use and clarify code with standard Python idioms [#496][]
 * mask: Allow masking of specific sites passed by the user with `--mask-sites` and masking of a fixed number of sites from the beginning or end of each sequence with `--mask-from-beginning` and `--mask-from-end` [#512][]
+* clades, import: Use `defaultdict` to simplify code [#533][]
+* tests: Add initial functional tests of the augur command line interface using Cram [#542][]
 * refine: Add a `--seed` argument to set the random seed for more reproducible outputs across runs [#542][]
+* ancestral, refine, and traits: Print the version of TreeTime being used for these commands [#552][]
+* filter: Add support for flexible pandas-style queries with new `--query` argument [#555][]
+* export: Allow display defaults for transmission lines [#561][]
 
+[#449]: https://github.com/nextstrain/augur/pull/449
+[#488]: https://github.com/nextstrain/augur/pull/488
+[#496]: https://github.com/nextstrain/augur/pull/496
+[#499]: https://github.com/nextstrain/augur/pull/499
+[#503]: https://github.com/nextstrain/augur/pull/503
 [#512]: https://github.com/nextstrain/augur/pull/512
-[#542]: https://github.com/nextstrain/augur/pull/542
 [#514]: https://github.com/nextstrain/augur/pull/514
+[#533]: https://github.com/nextstrain/augur/pull/533
+[#542]: https://github.com/nextstrain/augur/pull/542
+[#544]: https://github.com/nextstrain/augur/pull/544
+[#548]: https://github.com/nextstrain/augur/pull/548
 [#550]: https://github.com/nextstrain/augur/pull/550
+[#552]: https://github.com/nextstrain/augur/pull/552
+[#555]: https://github.com/nextstrain/augur/pull/555
+[#556]: https://github.com/nextstrain/augur/pull/556
+[#560]: https://github.com/nextstrain/augur/pull/560
+[#561]: https://github.com/nextstrain/augur/pull/561
 
 ## 7.0.2 (7 April 2020)
 
