@@ -163,6 +163,9 @@ local repository.  It ends with instructions for you on how to push the release
 commit/tag/branch and how to upload the built distributions to PyPi.  You'll
 need [a PyPi account][] and [twine][] installed to do the latter.
 
+After you create a new release and before you push it to GitHub, run all tests with `./run_tests.sh` to confirm that nothing broke with the new release.
+If any tests fail, run the `./devel/rewind-release` script to undo the release, then fix the tests before trying again.
+
 [signed]: https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work
 [a PyPi account]: https://pypi.org/account/register/
 [twine]: https://pypi.org/project/twine

@@ -88,7 +88,7 @@ Calculate tip frequencies from the tree.
   >  --pivot-interval 3 \
   >  --output "$TMP/out/zika_tip-frequencies.json" > /dev/null
 
-  $ diff -u "auspice/zika_tip-frequencies.json" "$TMP/out/zika_tip-frequencies.json"
+  $ diff -u --ignore-matching-lines version "auspice/zika_tip-frequencies.json" "$TMP/out/zika_tip-frequencies.json"
 
 Infer ancestral sequences from the tree.
 
@@ -99,7 +99,7 @@ Infer ancestral sequences from the tree.
   >  --output-node-data "$TMP/out/nt_muts.json" \
   >  --inference joint > /dev/null
 
-  $ diff -u "results/nt_muts.json" "$TMP/out/nt_muts.json"
+  $ diff -u --ignore-matching-lines version "results/nt_muts.json" "$TMP/out/nt_muts.json"
 
 Infer ancestral traits from the tree.
 
@@ -125,21 +125,21 @@ Translate inferred ancestral and observed nucleotide sequences to amino acid mut
 
   $ augur translate \
   >  --tree "results/tree.nwk" \
-  >  --ancestral-sequences "results/nt_muts.json" \
+  >  --ancestral-sequences "$TMP/out/nt_muts.json" \
   >  --reference-sequence "config/zika_outgroup.gb" \
   >  --output-node-data "$TMP/out/aa_muts.json" > /dev/null
 
-  $ diff -u "results/aa_muts.json" "$TMP/out/aa_muts.json"
+  $ diff -u --ignore-matching-lines version "results/aa_muts.json" "$TMP/out/aa_muts.json"
 
 Export JSON files as v1 auspice outputs.
 
   $ augur export v1 \
   >  --tree "results/tree.nwk" \
   >  --metadata "results/metadata.tsv" \
-  >  --node-data "results/branch_lengths.json" \
-  >              "results/traits.json" \
-  >              "results/nt_muts.json" \
-  >              "results/aa_muts.json" \
+  >  --node-data "$TMP/out/branch_lengths.json" \
+  >              "$TMP/out/traits.json" \
+  >              "$TMP/out/nt_muts.json" \
+  >              "$TMP/out/aa_muts.json" \
   >  --colors "config/colors.tsv" \
   >  --auspice-config "config/auspice_config_v1.json" \
   >  --output-tree "$TMP/out/v1_zika_tree.json" \
@@ -147,7 +147,6 @@ Export JSON files as v1 auspice outputs.
   >  --output-sequence "$TMP/out/v1_zika_seq.json" > /dev/null
 
   $ augur validate export-v1 "$TMP/out/v1_zika_meta.json" "$TMP/out/v1_zika_tree.json" > /dev/null
-  $ diff -u "auspice/v1_zika_tree.json" "$TMP/out/v1_zika_tree.json"
 
 Compare auspice metadata files, but ignore the "updated" field since this changes with the date the export command is run.
 
@@ -158,10 +157,10 @@ Export JSON files as v2 auspice outputs.
   $ augur export v2 \
   >  --tree "results/tree.nwk" \
   >  --metadata "results/metadata.tsv" \
-  >  --node-data "results/branch_lengths.json" \
-  >              "results/traits.json" \
-  >              "results/nt_muts.json" \
-  >              "results/aa_muts.json" \
+  >  --node-data "$TMP/out/branch_lengths.json" \
+  >              "$TMP/out/traits.json" \
+  >              "$TMP/out/nt_muts.json" \
+  >              "$TMP/out/aa_muts.json" \
   >  --colors "config/colors.tsv" \
   >  --auspice-config "config/auspice_config_v2.json" \
   >  --output "$TMP/out/v2_zika.json" \
@@ -169,10 +168,6 @@ Export JSON files as v2 auspice outputs.
   >  --panels tree map entropy frequencies > /dev/null
 
   $ augur validate export-v2 "$TMP/out/v2_zika.json" > /dev/null
-
-Ignore the date the auspice output was "updated", but consider all other differences.
-
-  $ diff -u --ignore-matching-lines updated "auspice/v2_zika.json" "$TMP/out/v2_zika.json"
 
 Switch back to the original directory where testing started.
 
