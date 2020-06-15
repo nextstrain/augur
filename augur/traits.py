@@ -145,7 +145,7 @@ def run(args):
     if args.weights:
         weight_dict = {c:{} for c in args.columns}
         sep = ',' if args.weights.endswith('csv') else '\t'
-        with open(args.weights, 'r') as fh:
+        with open(args.weights, 'r', encoding='utf-8') as fh:
             for line in fh:
                 if line[0]=='#':
                     continue
@@ -187,7 +187,7 @@ def run(args):
             models[column]['transition_matrix'] = [list(x) for x in gtr.W]
 
         if gtr:
-            with open(out_prefix+'%s.mugration_model.txt'%column, 'w') as ofile:
+            with open(out_prefix+'%s.mugration_model.txt'%column, 'w', encoding='utf-8') as ofile:
                 ofile.write('Map from character to field name\n')
                 for k,v in alphabet.items():
                     ofile.write(k+':\t'+str(v)+'\n')

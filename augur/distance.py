@@ -166,7 +166,7 @@ def read_distance_map(map_file):
     [('default', 0.0), ('map', {'SigPep': {0: {('W', 'P'): -8.3}}})]
     """
     # Load the JSON.
-    with open(map_file, "r") as fh:
+    with open(map_file, "r", encoding='utf-8') as fh:
         json_distance_map = json.load(fh)
 
     # Confirm that all required fields are present.

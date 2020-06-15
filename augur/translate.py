@@ -285,7 +285,7 @@ def assign_aa_fasta(tree, translations):
 def get_genes_from_file(fname):
     genes = []
     if os.path.isfile(fname):
-        with open(fname) as ifile:
+        with open(fname, encoding='utf-8') as ifile:
             for line in ifile:
                 fields = line.strip().split('#')
                 if fields[0].strip():

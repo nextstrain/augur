@@ -200,7 +200,7 @@ def remove_reference_sequence(seqs, reference_name):
     return [seq for seq in seqs if seq.name!=reference_name]
 
 
-def strip_non_reference(aln, reference, insertion_csv):
+def strip_non_reference(aln, reference, insertion_csv=None):
     '''
     return sequences that have all insertions relative to the reference
     removed. The aligment is returned as list of sequences.
@@ -248,7 +248,9 @@ def strip_non_reference(aln, reference, insertion_csv):
         seq.seq = Seq.Seq(''.join(seq_array))
         out_seqs.append(seq)
 
-    print("Trimmed gaps in", reference, "from the alignment")
+    if "-" in ref_array:
+        print("Trimmed gaps in", reference, "from the alignment")
+
     return out_seqs
 
 def analyse_insertions(aln, ungapped, insertion_csv):
@@ -277,7 +279,7 @@ def analyse_insertions(aln, ungapped, insertion_csv):
 
     for insertion_coord, data in zip(insertion_coords, insertions):
         # GFF is 1-based & insertions are to the right of the base.
-        print("{}bp insertion at ref position {}".format(insertion_coord[1]-insertion_coord[0], insertion_coord[2]+1)) 
+        print("{}bp insertion at ref position {}".format(insertion_coord[1]-insertion_coord[0], insertion_coord[2]+1))
         for k, v in data.items():
             print("\t{}: {}".format(k, ", ".join(v)))
         if not len(data.keys()):
@@ -286,13 +288,13 @@ def analyse_insertions(aln, ungapped, insertion_csv):
             print("\tWARNING: this insertion was caused due to 'N's or '?'s in provided sequences")
 
     # output for auspice drag&drop -- GFF is 1-based & insertions are to the right of the base.
-    header = ["strain"]+["insertion: {}bp @ ref pos {}".format(ic[1]-ic[0], ic[2]+1) for ic in insertion_coords] 
+    header = ["strain"]+["insertion: {}bp @ ref pos {}".format(ic[1]-ic[0], ic[2]+1) for ic in insertion_coords]
     strain_data = defaultdict(lambda: ["" for _ in range(0, len(insertion_coords))])
     for idx, i_data in enumerate(insertions):
         for insertion_seq, strains in i_data.items():
             for strain in strains:
                 strain_data[strain][idx] = insertion_seq
-    with open(insertion_csv, 'w') as fh:
+    with open(insertion_csv, 'w', encoding='utf-8') as fh:
         print(",".join(header), file=fh)
         for strain in strain_data:
             print("{},{}".format(strain, ",".join(strain_data[strain])), file=fh)
@@ -335,7 +337,7 @@ def make_gaps_ambiguous(aln):
         _seq = str(seq.seq)
         _seq = _seq.replace('-', 'N')
         seq.seq = Seq.Seq(_seq, alphabet=seq.seq.alphabet)
-        
+
 
 def check_duplicates(*values):
     names = set()

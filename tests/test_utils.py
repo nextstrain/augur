@@ -106,3 +106,25 @@ class TestUtils:
         with open(drm_file, "w") as fh:
             fh.write("\n".join(drm_lines))
         assert utils.read_mask_file(drm_file) == expected_sites
+
+    def test_read_metadata_with_good_query(self, tmpdir):
+        meta_fn = str(tmpdir / "metadata.tsv")
+        meta_lines = ["strain\tlocation\tquality",
+                      "c_good\tcolorado\tgood",
+                      "c_bad\tcolorado\tbad",
+                      "n_good\tnevada\tgood"]
+        with open(meta_fn, "w") as fh:
+            fh.write("\n".join(meta_lines))
+        meta_dict, _ = utils.read_metadata(meta_fn, query='quality=="good" & location=="colorado"')
+        assert len(meta_dict) == 1
+        assert "c_good" in meta_dict
+
+    def test_read_metadata_bad_query(self, tmpdir):
+        meta_fn = str(tmpdir / "metadata.tsv")
+        meta_lines = ["strain\tlocation\tquality",
+                      "c_good\tcolorado\tgood",
+                      "n_bad\tnevada\tbad",]
+        with open(meta_fn, "w") as fh:
+            fh.write("\n".join(meta_lines))
+        with pytest.raises(SystemExit):
+            utils.read_metadata(meta_fn, query='badcol=="goodval"')
