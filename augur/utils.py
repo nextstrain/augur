@@ -123,6 +123,7 @@ def read_metadata(fname, query=None):
                     raise ValueError("Duplicate strain '{}'".format(val.strain))
                 meta_dict[val.strain] = val.to_dict()
             elif hasattr(val, "name"):
+                val = val.rename(val["name"])
                 if val.name in meta_dict:
                     raise ValueError("Duplicate name '{}'".format(val.name))
                 meta_dict[val.name] = val.to_dict()
