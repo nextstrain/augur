@@ -162,9 +162,9 @@ def postprocess(output_file, ref_name, keep_reference, fill_gaps):
     # this will overwrite the alignment file
     if ref_name:
         seqs = strip_non_reference(seqs, ref_name, insertion_csv=output_file+".insertions.csv")
-        if args.remove_reference:
+        if not keep_reference:
             seqs = remove_reference_sequence(seqs, ref_name)
-        write_seqs(seqs, args.output)
+
     if fill_gaps:
         make_gaps_ambiguous(seqs)
 
@@ -385,10 +385,7 @@ def make_gaps_ambiguous(aln):
         _seq = str(seq.seq)
         _seq = _seq.replace('-', 'N')
         seq.seq = Seq.Seq(_seq, alphabet=seq.seq.alphabet)
-<<<<<<< HEAD
-=======
 
->>>>>>> master
 
 def check_duplicates(*values):
     names = set()
