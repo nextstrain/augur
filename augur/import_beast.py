@@ -7,6 +7,7 @@ import sys
 import json
 import datetime as dt
 from argparse import SUPPRESS
+from collections import defaultdict
 import numpy as np
 from Bio import Phylo
 from treetime import TreeAnc
@@ -231,7 +232,7 @@ def parse_nexus(tree_path, treestring_regex=r'tree [A-Za-z\_]+([0-9]+)', verbose
 
     if isinstance(tree_path,str): ## determine if path or handle was provided to function
         try:
-            handle=open(tree_path,'r')
+            handle=open(tree_path,'r', encoding='utf-8')
         except FileNotFoundError:
             print("FATAL: No such file {}".format(tree_path))
             sys.exit(2)
@@ -506,17 +507,13 @@ def compute_entropies_for_discrete_traits(tree):
 
     Author: James Hadfield
     """
-    alphabets={} ## store alphabets
+    alphabets = defaultdict(list) ## store alphabets
     for clade in tree.find_clades(): ## iterate over branches
         for attr in [key for key in clade.attrs if isinstance(clade.attrs[key], dict)]: ## iterate over branch attributes
-            if attr in alphabets: ## if attr seen before
-                for val in clade.attrs[attr]: ## iterate over attribute values of the node
-                    if val not in alphabets[attr]: ## not seen this attribute value before
-                        alphabets[attr].append(val)
-            else:
-                alphabets[attr]=[] ## not seen trait before - start a list of its values
-                for val in clade.attrs[attr]: ## iterate over trait values for this branch
+            for val in clade.attrs[attr]: ## iterate over attribute values of the node
+                if val not in alphabets[attr]: ## not seen this attribute value before
                     alphabets[attr].append(val)
+    alphabets.default_factory = None
 
     for clade in tree.find_clades(): ## iterate over branches
         for trait in alphabets: ## iterate over traits

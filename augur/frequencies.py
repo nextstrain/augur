@@ -82,7 +82,7 @@ def run(args):
     if args.method == "kde":
         # Load weights if they have been provided.
         if args.weights:
-            with open(args.weights, "r") as fh:
+            with open(args.weights, "r", encoding='utf-8') as fh:
                 weights = json.load(fh)
 
             weights_attribute = args.weights_attribute

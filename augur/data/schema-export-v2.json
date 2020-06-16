@@ -225,6 +225,10 @@
                         "branch_label": {
                             "description": "What branch label should be displayed by default.",
                             "type": "string"
+                        },
+                        "transmission_lines": {
+                            "description": "Should transmission lines (if available) be displaye by default",
+                            "type": "boolean"
                         }
                     }
                 },

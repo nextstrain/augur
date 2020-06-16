@@ -13,7 +13,7 @@ import numpy as np
 from treetime.vcf_utils import read_vcf
 from pathlib import Path
 
-from .utils import run_shell_command, nthreads_value, shquote
+from .utils import run_shell_command, nthreads_value, shquote, load_mask_sites
 
 def find_executable(names, default = None):
     """
@@ -136,13 +136,13 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         aln_file    file name of input aligment
         out_file    file name to write tree to
     '''
-    with open(aln_file) as ifile:
+    with open(aln_file, encoding='utf-8') as ifile:
         tmp_seqs = ifile.readlines()
 
     # IQ-tree messes with taxon names. Hence remove offending characters, reinstaniate later
     tmp_aln_file = aln_file.replace(".fasta", "-delim.fasta")
     log_file = tmp_aln_file.replace(".fasta", ".iqtree.log")
-    with open(tmp_aln_file, 'w') as ofile:
+    with open(tmp_aln_file, 'w', encoding='utf-8') as ofile:
         for line in tmp_seqs:
             ofile.write(line.replace('/', '_X_X_').replace('|','_Y_Y_').replace("(","_X_Y_").replace(")","_Y_X_"))
 
@@ -204,54 +204,6 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     return T
 
 
-def load_excluded_sites(excluded_sites_file):
-    """Returns an array of zero-based sites to exclude from a FASTA prior to tree building.
-
-    Parameters
-    ----------
-    excluded_sites_file : str
-        a path to a BED file (with a .bed extension), a tab-delimited DRM file, or a plain text file with one position per line
-
-    Returns
-    -------
-    ndarray :
-        a unique array of positions loaded from the given file
-    """
-    strip_pos = []
-    is_bed_format = False
-
-    if excluded_sites_file is not None:
-        # Check for BED file extension.
-        if excluded_sites_file.lower().endswith('.bed'):
-            import pandas as pd
-            is_bed_format = True
-            bed = pd.read_csv(excluded_sites_file, sep='\t')
-            for index, row in bed.iterrows():
-                strip_pos.extend(list(range(row[1], row[2]+1)))
-        else:
-            # Next, check for DRM-file format or site-per-line format.
-            with open(excluded_sites_file, 'r') as ifile:
-                line1 = ifile.readline()
-                # If the file is tab-delimited, assume it is in DRM-file format.
-                if '\t' in line1:
-                    strip_pos = [int(line.strip().split('\t')[1]) for line in ifile]
-                else:
-                    # Finally, fall back to site-per-line format.
-                    strip_pos = [int(line.strip()) for line in ifile]
-                    if line1.strip():
-                        # Add the first line back to the list
-                        strip_pos.append(int(line1.strip()))
-
-    strip_pos = np.unique(strip_pos)
-
-    # If the given sites are not in BED format, they are one-based positions and
-    # need to be internally adjusted to zero-based positions.
-    if not is_bed_format:
-        strip_pos = strip_pos - 1
-
-    return strip_pos
-
-
 def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
     from Bio import SeqIO
     from Bio.SeqRecord import SeqRecord
@@ -262,7 +214,7 @@ def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
     positions = compress_seq['positions']
 
     #If want to exclude sites from initial treebuild, read in here
-    strip_pos = load_excluded_sites(stripFile)
+    strip_pos = load_mask_sites(stripFile)
 
     #Get sequence names
     seqNames = list(sequences.keys())
@@ -304,7 +256,7 @@ def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
 
     #If want a position map, print:
     if printPositionMap:
-        with open(fasta_file+".positions.txt", 'w') as the_file:
+        with open(fasta_file+".positions.txt", 'w', encoding='utf-8') as the_file:
             the_file.write("\n".join(pos))
 
     return fasta_file
@@ -329,7 +281,7 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
         path to the new FASTA file from which sites have been excluded
     """
     # Load zero-based excluded sites.
-    excluded_sites = load_excluded_sites(excluded_sites_file).tolist()
+    excluded_sites = load_mask_sites(excluded_sites_file)
 
     # Return the original alignment file, if no excluded sites were found.
     if len(excluded_sites) == 0:
@@ -342,7 +294,7 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
     # Write the masked alignment to disk one record at a time.
     alignment_file_path = Path(alignment_file)
     masked_alignment_file = str(alignment_file_path.parent / ("masked_%s" % alignment_file_path.name))
-    with open(masked_alignment_file, "w") as oh:
+    with open(masked_alignment_file, "w", encoding='utf-8') as oh:
         for record in alignment:
             # Convert to a mutable sequence to enable masking with Ns.
             sequence = record.seq.tomutable()

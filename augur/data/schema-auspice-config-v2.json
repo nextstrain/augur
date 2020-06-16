@@ -136,6 +136,9 @@
                 "branch_label": {
                     "type": "string",
                     "enum": ["clade", "aa", "none"]
+                },
+                "transmission_lines": {
+                    "type": "boolean"
                 }
             }
         },
