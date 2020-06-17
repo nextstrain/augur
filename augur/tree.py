@@ -214,7 +214,7 @@ def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
     positions = compress_seq['positions']
 
     #If want to exclude sites from initial treebuild, read in here
-    strip_pos = load_mask_sites(stripFile)
+    strip_pos = load_mask_sites(stripFile) if stripFile else []
 
     #Get sequence names
     seqNames = list(sequences.keys())
