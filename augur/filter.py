@@ -8,6 +8,8 @@ from collections import defaultdict
 import random, os, re
 import numpy as np
 import sys
+import datetime
+import treetime.utils
 from .utils import read_metadata, get_numerical_dates, run_shell_command, shquote
 
 comment_char = '#'
@@ -87,8 +89,8 @@ def filter_by_query(sequences, metadata_file, query):
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
     parser.add_argument('--metadata', required=True, help="metadata associated with sequences")
-    parser.add_argument('--min-date', type=float, help="minimal cutoff for numerical date")
-    parser.add_argument('--max-date', type=float, help="maximal cutoff for numerical date")
+    parser.add_argument('--min-date', type=numeric_date, help="minimal cutoff for date; may be specified as an Augur-style numeric date (with the year as the integer part) or YYYY-MM-DD")
+    parser.add_argument('--max-date', type=numeric_date, help="maximal cutoff for date; may be specified as an Augur-style numeric date (with the year as the integer part) or YYYY-MM-DD")
     parser.add_argument('--min-length', type=int, help="minimal length of the sequences")
     parser.add_argument('--non-nucleotide', action='store_true', help="exclude sequences that contain illegal characters")
     parser.add_argument('--exclude', type=str, help="file with list of strains that are to be excluded")
@@ -410,3 +412,21 @@ def run(args):
 
 def _filename_gz(filename):
     return filename.lower().endswith(".gz")
+
+
+def numeric_date(date):
+    """
+    Converts the given *date* string to a :py:class:`float`.
+
+    *date* may be given as a number (a float) with year as the integer part, or
+    in the YYYY-MM-DD (ISO 8601) syntax.
+
+    >>> numeric_date("2020.42")
+    2020.42
+    >>> numeric_date("2020-06-04")
+    2020.42486...
+    """
+    try:
+        return float(date)
+    except ValueError:
+        return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))
