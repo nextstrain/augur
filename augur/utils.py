@@ -16,6 +16,8 @@ from .__version__ import __version__
 import packaging.version as packaging_version
 from .validate import validate, ValidateError, load_json_schema
 
+from augur.util_support.date_disambiguator import DateDisambiguator
+
 class AugurException(Exception):
     pass
 
@@ -62,38 +64,8 @@ def get_json_name(args, default=None):
             raise ValueError("Please specify a name for the JSON file containing the results.")
 
 
-def ambiguous_date_to_date_range(mydate, fmt, min_max_year=None):
-    from datetime import datetime
-    sep = fmt.split('%')[1][-1]
-    min_date, max_date = {}, {}
-    today = datetime.today().date()
-
-    for val, field  in zip(mydate.split(sep), fmt.split(sep+'%')):
-        f = 'year' if 'y' in field.lower() else ('day' if 'd' in field.lower() else 'month')
-        if 'XX' in val:
-            if f=='year':
-                if min_max_year:
-                    min_date[f]=min_max_year[0]
-                    if len(min_max_year)>1:
-                        max_date[f]=min_max_year[1]
-                    elif len(min_max_year)==1:
-                        max_date[f]=4000 #will be replaced by 'today' below.
-                else:
-                    return None, None
-            elif f=='month':
-                min_date[f]=1
-                max_date[f]=12
-            elif f=='day':
-                min_date[f]=1
-                max_date[f]=31
-        else:
-            min_date[f]=int(val)
-            max_date[f]=int(val)
-    max_date['day'] = min(max_date['day'], 31 if max_date['month'] in [1,3,5,7,8,10,12]
-                                           else 28 if max_date['month']==2 else 30)
-    lower_bound = datetime(year=min_date['year'], month=min_date['month'], day=min_date['day']).date()
-    upper_bound = datetime(year=max_date['year'], month=max_date['month'], day=max_date['day']).date()
-    return (lower_bound, upper_bound if upper_bound<today else today)
+def ambiguous_date_to_date_range(uncertain_date, fmt, min_max_year=None):
+    return DateDisambiguator(uncertain_date, fmt=fmt, min_max_year=min_max_year).range()
 
 def read_metadata(fname, query=None):
     if not fname:

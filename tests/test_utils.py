@@ -19,12 +19,6 @@ class TestUtils:
             datetime.date(year=2000, month=1, day=31),
         )
 
-    def test_ambiguous_date_to_date_range_ambiguous_month(self):
-        assert utils.ambiguous_date_to_date_range("2000-XX-5", "%Y-%m-%d") == (
-            datetime.date(year=2000, month=1, day=5),
-            datetime.date(year=2000, month=12, day=5),
-        )
-
     def test_ambiguous_date_to_date_range_ambiguous_month_and_day(self):
         assert utils.ambiguous_date_to_date_range("2000-XX-XX", "%Y-%m-%d") == (
             datetime.date(year=2000, month=1, day=1),
@@ -145,8 +139,7 @@ class TestUtils:
         with open(meta_fn, "w") as fh:
             fh.write("\n".join(meta_lines))
         with pytest.raises(SystemExit):
-            utils.read_metadata(meta_fn, query='badcol=="goodval"')
-    
+            utils.read_metadata(meta_fn, query='badcol=="goodval"')    
     def test_read_metadata_duplicate_strain(self, tmpdir):
         meta_fn = str(tmpdir / "metadata.tsv")
         meta_lines = ["strain\tlocation\tquality",
@@ -185,4 +178,3 @@ class TestUtils:
             fh.write("\n".join(meta_lines))
         
         assert utils.read_metadata('') == expected_result
-
