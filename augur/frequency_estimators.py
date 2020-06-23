@@ -214,7 +214,7 @@ class frequency_estimator(object):
 
         self.pivots = make_pivots(pivots, self.tps)
 
-        good_tps = (self.tps>self.pivots[0])&(self.tps<self.pivots[-1])
+        good_tps = (self.tps>=self.pivots[0])&(self.tps<self.pivots[-1])
         self.tps = self.tps[good_tps]
         self.obs = self.obs[good_tps]
 
