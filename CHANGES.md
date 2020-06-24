@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* frequencies: Avoid interpolation of a single data point during frequency estimation with sparse data [#569][]
+
+[#569]: https://github.com/nextstrain/augur/pull/569
 
 ## 8.0.0 (8 June 2020)
 
