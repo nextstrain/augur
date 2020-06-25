@@ -3,9 +3,9 @@ infer frequencies of mutations or clades
 """
 import json, os, sys
 import numpy as np
-from collections import defaultdict
 from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
+import pandas as pd
 
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
@@ -63,6 +63,7 @@ def register_arguments(parser):
                         "in absense of data (inertia=0 -> go flat, inertia=1.0 -> continue current trend)")
 
     # Output arguments
+    parser.add_argument("--group-by", help="calculate frequencies by group based on values of the given column from the metadata")
     parser.add_argument('--output-format', default='auspice', choices=['auspice', 'nextflu'],
                         help="format to export frequencies JSON depending on the viewing interface")
     parser.add_argument('--output', '-o', type=str,
@@ -180,6 +181,7 @@ def run(args):
         print("tree frequencies written to", args.output, file=sys.stdout)
     elif args.alignments:
         frequencies = None
+
         for gene, fname in zip(args.gene_names, args.alignments):
             if not os.path.isfile(fname):
                 print("ERROR: alignment file not found", file=sys.stderr)
@@ -191,36 +193,79 @@ def run(args):
 
             if frequencies is None:
                 pivots = get_pivots(tps, args.pivot_interval, args.min_date, args.max_date)
-                frequencies = {"pivots":format_frequencies(pivots)}
+                frequencies = {"pivots": format_frequencies(pivots)}
 
-            if args.method == "kde":
-                kde_frequencies = AlignmentKdeFrequencies(
-                    sigma_narrow=args.narrow_bandwidth,
-                    sigma_wide=args.wide_bandwidth,
-                    proportion_wide=args.proportion_wide,
-                    pivot_frequency=args.pivot_interval,
-                    start_date=args.min_date,
-                    end_date=args.max_date,
-                    weights=weights,
-                    weights_attribute=weights_attribute,
-                    include_internal_nodes=args.include_internal_nodes,
-                    censored=args.censored
-                )
-                kde_frequencies.estimate(
-                    aln,
-                    tps
-                )
+                # Get distinct strains
+                distinct_strains = set([seq.name for seq in aln])
 
-                for mutation, mutation_frequencies in kde_frequencies.frequencies.items():
-                    position, state = mutation.split(":")
-                    frequencies["%s:%s%s" % (gene, position, state)] = format_frequencies(mutation_frequencies)
-            else:
-                freqs = alignment_frequencies(aln, tps, pivots, stiffness=stiffness, inertia=inertia, method='SLSQP', dtps=2.0)
-                freqs.mutation_frequencies(min_freq = args.minimal_frequency, ignore_char=args.ignore_char)
-                frequencies.update({"%s:%d%s" % (gene, pos+1, state): format_frequencies(mutation_frequencies)
-                                    for (pos, state), mutation_frequencies in freqs.frequencies.items()})
-                frequencies["%s:counts" % gene] = [int(observations_per_pivot)
-                                                   for observations_per_pivot in freqs.counts]
+                if args.group_by:
+                    # Load metadata to identify groups of strains.
+                    metadata_df = pd.read_csv(args.metadata, sep="\t")
+
+                    if args.group_by not in metadata_df.columns:
+                        print(f"ERROR: requested group by column '{args.group_by}' does not exist in the metadata file '{args.metadata}'", file=sys.stderr)
+                        return 1
+
+                    # Filter to metadata for strains in the given alignment(s).
+                    # TODO: use "strain" or "name"?
+                    metadata_df = metadata_df[metadata_df["strain"].isin(distinct_strains)].copy()
+
+                    # Group strains by the given field.
+                    strains_by_group = {
+                        group: grouped_df["strain"].values
+                        for group, grouped_df in metadata_df.groupby(args.group_by)
+                    }
+                else:
+                    strains_by_group = {
+                        "global": np.array(distinct_strains)
+                    }
+
+            for group, group_strains in strains_by_group.items():
+                print(f"\nCalculate mutations for {group}\n")
+                # TODO: this news to be an alignment object to work with the KDE method
+                group_aln = [seq for seq in aln if seq.name in group_strains]
+                group_tps = np.array([np.mean(dates[seq.name]) for seq in group_aln])
+
+                if args.method == "kde":
+                    kde_frequencies = AlignmentKdeFrequencies(
+                        sigma_narrow=args.narrow_bandwidth,
+                        sigma_wide=args.wide_bandwidth,
+                        proportion_wide=args.proportion_wide,
+                        pivot_frequency=args.pivot_interval,
+                        start_date=args.min_date,
+                        end_date=args.max_date,
+                        weights=weights,
+                        weights_attribute=weights_attribute,
+                        include_internal_nodes=args.include_internal_nodes,
+                        censored=args.censored
+                    )
+                    kde_frequencies.estimate(
+                        group_aln,
+                        group_tps
+                    )
+
+                    for mutation, mutation_frequencies in kde_frequencies.frequencies.items():
+                        position, state = mutation.split(":")
+                        frequency_key = "%s:%s%s" % (gene, position, state)
+                        if frequency_key not in frequencies:
+                            frequencies[frequency_key] = {}
+
+                        frequencies[frequency_key][group] = format_frequencies(mutation_frequencies)
+                else:
+                    freqs = alignment_frequencies(group_aln, group_tps, pivots, stiffness=stiffness, inertia=inertia, method='SLSQP', dtps=2.0)
+                    freqs.mutation_frequencies(min_freq = args.minimal_frequency, ignore_char=args.ignore_char)
+
+                    for (pos, state), mutation_frequencies in freqs.frequencies.items():
+                        frequency_key = "%s:%d%s" % (gene, pos+1, state)
+                        if frequency_key not in frequencies:
+                            frequencies[frequency_key] = {}
+
+                        frequencies[frequency_key][group] = format_frequencies(mutation_frequencies)
+
+                    frequencies[f"{group}_{gene}:counts"] = [
+                        int(observations_per_pivot)
+                        for observations_per_pivot in freqs.counts
+                    ]
 
         write_json(frequencies, args.output)
         print("mutation frequencies written to", args.output, file=sys.stdout)
