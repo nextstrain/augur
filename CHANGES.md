@@ -2,10 +2,29 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* align: The API to the `read_sequences` function now returns a list of sequences instead of a dictionary [#536][]
+
 ### Bug Fixes
 
+* align: Prevent duplicate strains warning when using `--reference-name` [#536][]
 * frequencies: Avoid interpolation of a single data point during frequency estimation with sparse data [#569][]
+* tests: Always use the local helper script (`bin/augur`) to run tests instead of any globally installed augur executables [#527][]
+* utils: Do not attempt to parse dates with only ambiguous months (e.g., 2020-XX-01) [#532][]
 
+### Features
+
+* docs: Updates description of how missing data are handled by `augur traits`
+* filter: Add support for ISO 8601 dates (YYYY-MM-DD) for `--min-date` and `--max-date` [#568][]
+* tests: Refactor and add tests for ambiguous date parsing [#532][]
+* tree: Allow VCF input without an `--exclude-sites` argument [#565][]
+
+[#527]: https://github.com/nextstrain/augur/pull/527
+[#532]: https://github.com/nextstrain/augur/pull/532
+[#536]: https://github.com/nextstrain/augur/pull/536
+[#565]: https://github.com/nextstrain/augur/pull/565
+[#568]: https://github.com/nextstrain/augur/pull/568
 [#569]: https://github.com/nextstrain/augur/pull/569
 
 ## 8.0.0 (8 June 2020)
