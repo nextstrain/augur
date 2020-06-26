@@ -66,6 +66,7 @@ setuptools.setup(
             "cram >=0.7, ==0.*",
             "deepdiff >=4.3.2, ==4.3.*",
             "freezegun >=0.3.15, ==0.3.*",
+            "nextstrain-sphinx-theme >=2020.3",
             "pylint >=1.7.6, ==1.7.*",
             "pytest >=5.4.1, ==5.4.*",
             "pytest-cov >=2.8.1, ==2.8.*",
