@@ -1,0 +1,8 @@
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+MTB_anc	1463	.	G	C	.	PASS	.
+MTB_anc	2018	.	C	T	.	PASS	.
+MTB_anc	2532	.	C	T	.	PASS	.
+MTB_anc	3132	.	A	C	.	PASS	.
+MTB_anc	4663	.	G	C	.	PASS	.
+MTB_anc	5887	.	C	T	.	PASS	.
+MTB_anc	7581	.	G	T	.	PASS	.

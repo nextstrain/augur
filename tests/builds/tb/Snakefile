@@ -106,7 +106,7 @@ rule ancestral:
     shell:
         """
         augur ancestral --tree {input.tree} --alignment {input.alignment} \
-            --output {output.nt_data} --inference {params.inference} \
+            --output-node-data {output.nt_data} --inference {params.inference} \
             --output-vcf {output.vcf_out} --vcf-reference {input.ref}
         """
 
@@ -124,7 +124,7 @@ rule translate:
     shell:
         """
         augur translate --tree {input.tree} --genes {input.genes} --vcf-reference {input.ref} \
-            --ancestral-sequences {input.vcf} --output {output.aa_data} --reference-sequence {input.gene_ref} \
+            --ancestral-sequences {input.vcf} --output-node-data {output.aa_data} --reference-sequence {input.gene_ref} \
             --alignment-output {output.vcf_out} --vcf-reference-output {output.fasta_out}
         """
 
@@ -162,7 +162,7 @@ rule clades:
         """
         augur clades --tree {input.tree} \
             --mutations {input.nuc_muts} {input.aa_muts} \
-            --output {output.clade_data} --clades {input.clades}
+            --output-node-data {output.clade_data} --clades {input.clades}
         """
 
 rule traits:
@@ -175,7 +175,7 @@ rule traits:
         traits = 'location cluster'
     shell:
         'augur traits --tree {input.tree} --metadata {input.meta}'
-        ' --columns {params.traits} --output {output}'
+        ' --columns {params.traits} --output-node-data {output}'
 
 rule export_v1:
     message: "Exporting data files for for auspice using nextflu compatible schema"

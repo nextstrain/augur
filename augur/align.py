@@ -7,6 +7,7 @@ from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
 from .utils import run_shell_command, nthreads_value, shquote
+from collections import defaultdict
 
 class AlignmentError(Exception):
     # TODO: this exception should potentially be renamed and made augur-wide
@@ -27,6 +28,64 @@ def register_arguments(parser):
     parser.add_argument('--existing-alignment', metavar="FASTA", default=False, help="An existing alignment to which the sequences will be added. The ouput alignment will be the same length as this existing alignment.")
     parser.add_argument('--debug', action="store_true", default=False, help="Produce extra files (e.g. pre- and post-aligner files) which can help with debugging poor alignments.")
 
+def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
+    """Prepare the sequences, existing alignment, and reference sequence for alignment.
+
+    This function:
+        1. Combines all given input sequences into a single file
+        2. Checks to make sure the input sequences don't overlap with the existing alignment, if one exists.
+        3. If given a reference name, check that sequence exists in either the existing alignment, if given, or the input sequences.
+        4. If given a reference sequence, either add it to the existing alignment or prepend it to the input seqeunces.
+        5. Write the input sequences to a single file, and write the alignment back out if we added the reference sequence to it.
+
+    Parameters
+    ----------
+    sequences : list[str]
+        List of paths to FASTA-formatted sequences to align.
+    existing_aln_fname : str
+        Path of an existing alignment to use, or None
+    output: str
+        Path the aligned sequences will be written out to.
+    ref_name: str
+        The name of the reference sequence, if provided
+    ref_seq_fname: str
+        The path to the reference sequence file. If this is provided, it overrides ref_name.
+
+    Returns
+    -------
+        tuple: The existing alignment filename, the new sequences filename, and the name of the reference sequence.
+    """
+    seqs = read_sequences(*sequences)
+    seqs_to_align_fname = output + ".to_align.fasta"
+
+    if existing_aln_fname:
+        existing_aln = read_alignment(existing_aln_fname)
+        seqs = prune_seqs_matching_alignment(seqs, existing_aln)
+    else:
+        existing_aln = None
+
+    if ref_seq_fname:
+        ref_seq = read_reference(ref_seq_fname)
+        ref_name = ref_seq.id
+        if existing_aln:
+            if len(ref_seq) != existing_aln.get_alignment_length():
+                raise AlignmentError("ERROR: Provided existing alignment ({}bp) is not the same length as the reference sequence ({}bp)".format(existing_aln.get_alignment_length(), len(ref_seq)))
+            existing_aln_fname = existing_aln_fname + ".ref.fasta"
+            existing_aln.append(ref_seq)
+            write_seqs(existing_aln, existing_aln_fname)
+        else:
+            # reference sequence needs to be the first one for auto direction
+            # adjustment (auto reverse-complement)
+            seqs.insert(0, ref_seq)
+    elif ref_name:
+        ensure_reference_strain_present(ref_name, existing_aln, seqs)
+
+    write_seqs(seqs, seqs_to_align_fname)
+
+    # 90% sure this is only ever going to catch ref_seq was a dupe
+    check_duplicates(existing_aln, seqs)
+    return existing_aln_fname, seqs_to_align_fname, ref_name
+
 def run(args):
     '''
     Parameters
@@ -43,48 +102,14 @@ def run(args):
 
     try:
         check_arguments(args)
-        seqs = read_sequences(*args.sequences)
-        existing_aln = read_alignment(args.existing_alignment) if args.existing_alignment else None
-
-        # if we have been given a reference (strain) name, make sure it is present
-        ref_name = args.reference_name
-        if args.reference_name:
-            ensure_reference_strain_present(ref_name, existing_aln, seqs)
-
-        # If given an existing alignment, then add the reference sequence to this if desired (and if it is the same length)
-        if existing_aln and args.reference_sequence:
-            existing_aln_fname = args.existing_alignment + ".ref.fasta"
-            ref_seq = read_reference(args.reference_sequence)
-            if len(ref_seq) != existing_aln.get_alignment_length():
-                raise AlignmentError("ERROR: Provided existing alignment ({}bp) is not the same length as the reference sequence ({}bp)".format(existing_aln.get_alignment_length(), len(ref_seq)))
-            existing_aln.append(ref_seq)
-            write_seqs(existing_aln, existing_aln_fname)
-            temp_files_to_remove.append(existing_aln_fname)
-            ref_name = ref_seq.id
-        else:
-            existing_aln_fname = args.existing_alignment # may be False
-
-        ## Create a single file of sequences for alignment (or to be added to the alignment).
-        ## Add in the reference file to the sequences _if_ we don't have an existing alignment
-        if args.reference_sequence and not existing_aln:
-            seqs_to_align_fname = args.output+".to_align.fasta"
-            ref_seq = read_reference(args.reference_sequence)
-            # reference sequence needs to be the first one for auto direction adjustment (auto reverse-complement)
-            write_seqs([ref_seq] + list(seqs.values()), seqs_to_align_fname)
-            ref_name = ref_seq.id
-        elif existing_aln:
-            seqs_to_align_fname = args.output+".new_seqs_to_align.fasta"
-            seqs = prune_seqs_matching_alignment(seqs, existing_aln)
-            write_seqs(list(seqs.values()), seqs_to_align_fname)
-        else:
-            seqs_to_align_fname = args.output+".to_align.fasta"
-            write_seqs(list(seqs.values()), seqs_to_align_fname)
+        existing_aln_fname, seqs_to_align_fname, ref_name = prepare(args.sequences, args.existing_alignment, args.output, args.reference_name, args.reference_sequence)
         temp_files_to_remove.append(seqs_to_align_fname)
-
-        check_duplicates(existing_aln, ref_name, seqs)
+        if existing_aln_fname != args.existing_alignment:
+            temp_files_to_remove.append(existing_aln_fname)
+        # -- existing_aln_fname, seqs_to_align_fname, ref_name --
 
         # before aligning, make a copy of the data that the aligner receives as input (very useful for debugging purposes)
-        if args.debug and not existing_aln:
+        if args.debug and not existing_aln_fname:
             copyfile(seqs_to_align_fname, args.output+".pre_aligner.fasta")
 
         # generate alignment command & run
@@ -97,21 +122,7 @@ def run(args):
         if args.debug:
             copyfile(args.output, args.output+".post_aligner.fasta")
 
-        # reads the new alignment
-        seqs = read_alignment(args.output)
-
-        # convert the aligner output to upper case and remove auto reverse-complement prefix
-        prettify_alignment(seqs)
-
-        # if we've specified a reference, strip out all the columns not present in the reference
-        # this will overwrite the alignment file
-        if ref_name:
-            seqs = strip_non_reference(seqs, ref_name, keep_reference=not args.remove_reference)
-        if args.fill_gaps:
-            make_gaps_ambiguous(seqs)
-
-        # write the modified sequences back to the alignment file
-        write_seqs(seqs, args.output)
+        postprocess(args.output, ref_name, not args.remove_reference, args.fill_gaps)
 
 
     except AlignmentError as e:
@@ -122,9 +133,50 @@ def run(args):
     for fname in temp_files_to_remove:
         os.remove(fname)
 
+
+def postprocess(output_file, ref_name, keep_reference, fill_gaps):
+    """Postprocessing of the combined alignment file.
+
+    Parameters
+    ----------
+    output_file: str
+        The file the new alignment was written to
+    ref_name: str
+        If provided, the name of the reference strain used in the alignment
+    keep_reference: bool
+        If the reference was provided, whether it should be kept in the alignment
+    fill_gaps: bool
+        Replace all gaps in the alignment with "N" to indicate ambiguous sites.
+
+    Returns
+    -------
+        None - the modified alignment is written directly to output_file
+    """
+    # -- ref_name --
+    # reads the new alignment
+    seqs = read_alignment(output_file)
+    # convert the aligner output to upper case and remove auto reverse-complement prefix
+    prettify_alignment(seqs)
+
+    # if we've specified a reference, strip out all the columns not present in the reference
+    # this will overwrite the alignment file
+    if ref_name:
+        seqs = strip_non_reference(seqs, ref_name, insertion_csv=output_file+".insertions.csv")
+        if not keep_reference:
+            seqs = remove_reference_sequence(seqs, ref_name)
+
+    if fill_gaps:
+        make_gaps_ambiguous(seqs)
+
+    # write the modified sequences back to the alignment file
+    write_seqs(seqs, output_file)
+
+
+
 #####################################################################################################
 
 def read_sequences(*fnames):
+    """return list of sequences from all fnames"""
     seqs = {}
     try:
         for fname in fnames:
@@ -137,7 +189,7 @@ def read_sequences(*fnames):
         raise AlignmentError("\nCannot read sequences -- make sure the file %s exists and contains sequences in fasta format" % fname)
     except ValueError as error:
         raise AlignmentError("\nERROR: Problem reading in {}: {}".format(fname, str(error)))
-    return seqs
+    return list(seqs.values())
 
 def check_arguments(args):
     # Simple error checking related to a reference name/sequence
@@ -157,7 +209,7 @@ def ensure_reference_strain_present(ref_name, existing_alignment, seqs):
         if ref_name not in {x.name for x in existing_alignment}:
             raise AlignmentError("ERROR: Specified reference name %s (via --reference-name) is not in the supplied alignment."%ref_name)
     else:
-        if ref_name not in seqs:
+        if ref_name not in {x.name for x in seqs}:
             raise AlignmentError("ERROR: Specified reference name %s (via --reference-name) is not in the sequence sample."%ref_name)
 
 
@@ -166,6 +218,7 @@ def ensure_reference_strain_present(ref_name, existing_alignment, seqs):
     #     shoutput = shquote(output)
     #     shname = shquote(seq_fname)
     #     cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2> %s.log"%(args.nthreads, shname, shoutput, shoutput)
+
 def read_reference(ref_fname):
     if not os.path.isfile(ref_fname):
         raise AlignmentError("ERROR: Cannot read reference sequence."
@@ -190,10 +243,15 @@ def generate_alignment_cmd(method, nthreads, existing_aln_fname, seqs_to_align_f
         raise AlignmentError('ERROR: alignment method %s not implemented'%method)
     return cmd
 
-def strip_non_reference(aln, reference, keep_reference=False):
+
+def remove_reference_sequence(seqs, reference_name):
+    return [seq for seq in seqs if seq.name!=reference_name]
+
+
+def strip_non_reference(aln, reference, insertion_csv=None):
     '''
     return sequences that have all insertions relative to the reference
-    removed. The alignment is read from file and returned as list of sequences.
+    removed. The aligment is returned as list of sequences.
 
     Parameters
     ----------
@@ -201,9 +259,6 @@ def strip_non_reference(aln, reference, keep_reference=False):
         Biopython Alignment
     reference : str
         name of reference sequence, assumed to be part of the alignment
-    keep_reference : bool, optional
-        by default, the reference sequence is removed after stripping
-        non-reference sequence. To keep the reference, use keep_reference=True
 
     Returns
     -------
@@ -212,19 +267,13 @@ def strip_non_reference(aln, reference, keep_reference=False):
 
     Tests
     -----
-    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps", keep_reference=False)]
-    Trimmed gaps in with_gaps from the alignment
-    ['no_gaps', 'some_other_seq', '_R_crick_strand']
-    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps", keep_reference=True)]
+    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps")]
     Trimmed gaps in with_gaps from the alignment
     ['with_gaps', 'no_gaps', 'some_other_seq', '_R_crick_strand']
-    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "no_gaps", keep_reference=True)]
+    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "no_gaps")]
     No gaps in alignment to trim (with respect to the reference, no_gaps)
     ['with_gaps', 'no_gaps', 'some_other_seq', '_R_crick_strand']
-    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "no_gaps", keep_reference=False)]
-    No gaps in alignment to trim (with respect to the reference, no_gaps)
-    ['with_gaps', 'some_other_seq', '_R_crick_strand']
-    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "missing", keep_reference=False)]
+    >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "missing")]
     Traceback (most recent call last):
       ...
     augur.align.AlignmentError: ERROR: reference missing not found in alignment
@@ -234,20 +283,70 @@ def strip_non_reference(aln, reference, keep_reference=False):
         ref_array = np.array(seqs[reference])
         if "-" not in ref_array:
             print("No gaps in alignment to trim (with respect to the reference, %s)"%reference)
-            return [seq for seq in aln if (keep_reference or seq.name != reference)]
         ungapped = ref_array!='-'
         ref_aln_array = np.array(aln)[:,ungapped]
     else:
         raise AlignmentError("ERROR: reference %s not found in alignment"%reference)
 
+    if False in ungapped and insertion_csv:
+        analyse_insertions(aln, ungapped, insertion_csv)
+
     out_seqs = []
     for seq, seq_array in zip(aln, ref_aln_array):
         seq.seq = Seq.Seq(''.join(seq_array))
-        if keep_reference or seq.name!=reference:
-            out_seqs.append(seq)
+        out_seqs.append(seq)
 
-    print("Trimmed gaps in", reference, "from the alignment")
+    if "-" in ref_array:
+        print("Trimmed gaps in", reference, "from the alignment")
+
     return out_seqs
+
+def analyse_insertions(aln, ungapped, insertion_csv):
+    ## Gather groups (runs) of insertions:
+    insertion_coords = [] # python syntax - e.g. [0, 3, 5] means indexes 0,1 & 2 are insertions (w.r.t. ref), to the right of 0-based ref pos 5
+    _open_idx = False
+    _ref_idx = -1
+    for i, in_ref in enumerate(ungapped):
+        if not in_ref and _open_idx is False:
+            _open_idx = i # insertion run start
+        elif in_ref and _open_idx is not False:
+            insertion_coords.append([_open_idx, i, _ref_idx])# insertion run has finished
+            _open_idx = False
+        if in_ref:
+            _ref_idx += 1
+    if _open_idx is not False:
+        insertion_coords.append([_open_idx, len(ungapped), _ref_idx])
+
+    # For each run of insertions (w.r.t. reference) collect the insertions we have
+    insertions = [defaultdict(list) for ins in insertion_coords]
+    for idx, insertion_coord in enumerate(insertion_coords):
+        for seq in aln:
+            s = seq[insertion_coord[0]:insertion_coord[1]].seq.ungap("-").ungap("N").ungap("?")
+            if len(s):
+                insertions[idx][str(s)].append(seq.name)
+
+    for insertion_coord, data in zip(insertion_coords, insertions):
+        # GFF is 1-based & insertions are to the right of the base.
+        print("{}bp insertion at ref position {}".format(insertion_coord[1]-insertion_coord[0], insertion_coord[2]+1))
+        for k, v in data.items():
+            print("\t{}: {}".format(k, ", ".join(v)))
+        if not len(data.keys()):
+            # This happens when there _is_ an insertion, but it's an insertion of gaps
+            # We know that these are associated with poor alignments...
+            print("\tWARNING: this insertion was caused due to 'N's or '?'s in provided sequences")
+
+    # output for auspice drag&drop -- GFF is 1-based & insertions are to the right of the base.
+    header = ["strain"]+["insertion: {}bp @ ref pos {}".format(ic[1]-ic[0], ic[2]+1) for ic in insertion_coords]
+    strain_data = defaultdict(lambda: ["" for _ in range(0, len(insertion_coords))])
+    for idx, i_data in enumerate(insertions):
+        for insertion_seq, strains in i_data.items():
+            for strain in strains:
+                strain_data[strain][idx] = insertion_seq
+    with open(insertion_csv, 'w', encoding='utf-8') as fh:
+        print(",".join(header), file=fh)
+        for strain in strain_data:
+            print("{},{}".format(strain, ",".join(strain_data[strain])), file=fh)
+
 
 def prettify_alignment(aln):
     '''
@@ -270,6 +369,7 @@ def prettify_alignment(aln):
         if seq.description.startswith("_R_"):
             seq.description = seq.description[3:]
 
+
 def make_gaps_ambiguous(aln):
     '''
     replace all gaps by 'N' in all sequences in the alignment. TreeTime will treat them
@@ -285,7 +385,7 @@ def make_gaps_ambiguous(aln):
         _seq = str(seq.seq)
         _seq = _seq.replace('-', 'N')
         seq.seq = Seq.Seq(_seq, alphabet=seq.seq.alphabet)
-        
+
 
 def check_duplicates(*values):
     names = set()
@@ -293,19 +393,15 @@ def check_duplicates(*values):
         if name in names:
             raise AlignmentError("Duplicate strains of \"{}\" detected".format(name))
         names.add(name)
-
     for sample in values:
         if not sample:
             # allows false-like values (e.g. always provide existing_alignment, allowing
             # the default which is `False`)
             continue
-        elif type(sample) == dict:
-            for s in sample:
-                add(s)
-        elif type(sample) == Align.MultipleSeqAlignment:
+        elif isinstance(sample, (list, Align.MultipleSeqAlignment)):
             for s in sample:
                 add(s.name)
-        elif type(sample) == str:
+        elif isinstance(sample, str):
             add(sample)
         else:
             raise TypeError()
@@ -320,14 +416,14 @@ def write_seqs(seqs, fname):
 
 def prune_seqs_matching_alignment(seqs, aln):
     """
-    Return a set of seqs excluding those set via `exclude` & print a warning
+    Return a set of seqs excluding those already in the alignment & print a warning
     message for each sequence which is exluded.
     """
-    ret = {}
-    exclude_names = {s.name for s in aln}
-    for name, seq in seqs.items():
-        if name in exclude_names:
-            print("Excluding {} as it is already present in the alignment".format(name))
+    ret = []
+    aln_names = {s.name for s in aln}
+    for seq in seqs:
+        if seq.name in aln_names:
+            print("Excluding {} as it is already present in the alignment".format(seq.name))
         else:
-            ret[name] = seq
+            ret.append(seq)
     return ret

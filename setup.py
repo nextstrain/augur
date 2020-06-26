@@ -1,12 +1,12 @@
 from pathlib    import Path
-from setuptools import setup
+import setuptools
 import sys
 
 min_version = (3, 6)
 
 if sys.version_info < min_version:
     error = """
-Beginning with augur 6.5.0, Python {0} or above is required.
+Beginning with augur 7.0.0, Python {0} or above is required.
 
 This may be due to an out of date pip.
 
@@ -26,7 +26,9 @@ with version_file.open() as f:
 with readme_file.open(encoding = "utf-8") as f:
     long_description = f.read()
 
-setup(
+
+
+setuptools.setup(
     name = "nextstrain-augur",
     version = __version__,
     author = "Nextstrain developers",
@@ -41,7 +43,7 @@ setup(
         "Change Log": "https://github.com/nextstrain/augur/blob/master/CHANGES.md#next",
         "Source": "https://github.com/nextstrain/augur",
     },
-    packages = ['augur'],
+    packages = setuptools.find_packages(),
     package_data = {'augur': ['data/*']},
     data_files = [("", ["LICENSE.txt"])],
     python_requires = '>={}'.format('.'.join(str(n) for n in min_version)),
@@ -50,7 +52,7 @@ setup(
         "biopython >=1.67, ==1.*",
         "jsonschema >=3.0.0, ==3.*",
         "packaging >=19.2",
-        "pandas >=0.20.0, ==0.*",
+        "pandas >=1.0.0, ==1.*",
         "phylo-treetime >=0.7.4, ==0.7.*",
         "snakemake >=5.4.0, <5.11"
     ],
@@ -61,6 +63,8 @@ setup(
             "seaborn >=0.9.0, ==0.9.*"
         ],
         'dev': [
+            "cram >=0.7, ==0.*",
+            "deepdiff >=4.3.2, ==4.3.*",
             "freezegun >=0.3.15, ==0.3.*",
             "pylint >=1.7.6, ==1.7.*",
             "pytest >=5.4.1, ==5.4.*",
@@ -82,7 +86,7 @@ setup(
 
         # Python 3 only
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6"
+        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
     ],

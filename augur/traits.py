@@ -118,7 +118,6 @@ def register_arguments(parser):
                              ' are the equilibrium frequencies and t_i are apparent ones.'
                              '(or rather the time spent in a particular state on the tree)')
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save trait inferences to')
-    parser.add_argument('--output', '-o', type=str, help='DEPRECATED. Same as --output-node-data')
     parser.epilog = "Note that missing data must be represented by a `?` character. Missing data will currently be inferred."
 
 def run(args):
@@ -146,7 +145,7 @@ def run(args):
     if args.weights:
         weight_dict = {c:{} for c in args.columns}
         sep = ',' if args.weights.endswith('csv') else '\t'
-        with open(args.weights, 'r') as fh:
+        with open(args.weights, 'r', encoding='utf-8') as fh:
             for line in fh:
                 if line[0]=='#':
                     continue
@@ -161,7 +160,11 @@ def run(args):
 
     mugration_states = defaultdict(dict)
     models = defaultdict(dict)
-    out_prefix = '.'.join(args.tree.split('.')[:-1])
+    out_prefix = '.'.join(args.output_node_data.split('.')[:-1])
+
+    from treetime import version as treetime_version
+    print(f"augur traits is using TreeTime version {treetime_version}")
+
     for column in args.columns:
         T, gtr, alphabet = mugration_inference(tree=tree_fname, seq_meta=traits,
                                                field=column, confidence=args.confidence,
@@ -184,7 +187,7 @@ def run(args):
             models[column]['transition_matrix'] = [list(x) for x in gtr.W]
 
         if gtr:
-            with open(out_prefix+'%s.mugration_model.txt'%column, 'w') as ofile:
+            with open(out_prefix+'%s.mugration_model.txt'%column, 'w', encoding='utf-8') as ofile:
                 ofile.write('Map from character to field name\n')
                 for k,v in alphabet.items():
                     ofile.write(k+':\t'+str(v)+'\n')

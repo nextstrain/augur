@@ -41,7 +41,9 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
         treetime.TreeAnc instance
     """
 
-    from treetime import TreeAnc
+    from treetime import TreeAnc, version as treetime_version
+    print(f"augur ancestral is using TreeTime version {treetime_version}")
+
     tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69',
                  fill_overhangs=fill_overhangs, verbose=1)
 
@@ -99,7 +101,6 @@ def register_arguments(parser):
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save mutations and ancestral sequences to')
-    parser.add_argument('--output', '-o', type=str, help='DEPRECATED. Same as --output-node-data')
     parser.add_argument('--output-sequences', type=str, help='name of FASTA file to save ancestral sequences to (FASTA alignments only)')
     parser.add_argument('--inference', default='joint', choices=["joint", "marginal"],
                                     help="calculate joint or marginal maximum likelihood ancestral sequence states")

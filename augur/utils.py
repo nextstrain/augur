@@ -16,6 +16,8 @@ from .__version__ import __version__
 import packaging.version as packaging_version
 from .validate import validate, ValidateError, load_json_schema
 
+from augur.util_support.date_disambiguator import DateDisambiguator
+
 class AugurException(Exception):
     pass
 
@@ -26,10 +28,10 @@ def open_file(fname, mode):
         if "t" not in mode:
             # For interoperability, gzip needs to open files in "text" mode
             mode = mode + "t"
-        with gzip.open(fname, mode) as fh:
+        with gzip.open(fname, mode, encoding='utf-8') as fh:
             yield fh
     else:
-        with open(fname, mode) as fh:
+        with open(fname, mode, encoding='utf-8') as fh:
             yield fh
 
 def is_vcf(fname):
@@ -47,15 +49,12 @@ def is_vcf(fname):
 def myopen(fname, mode):
     if fname.endswith('.gz'):
         import gzip
-        return gzip.open(fname, mode)
+        return gzip.open(fname, mode, encoding='utf-8')
     else:
-        return open(fname, mode)
+        return open(fname, mode, encoding='utf-8')
 
 def get_json_name(args, default=None):
-    if args.output:
-        print("WARNING: the --output flag will be deprecated in the next major augur release. Use --output-node-data instead.", file=sys.stderr)
-        return args.output
-    elif args.output_node_data:
+    if args.output_node_data:
         return args.output_node_data
     else:
         if default:
@@ -65,40 +64,10 @@ def get_json_name(args, default=None):
             raise ValueError("Please specify a name for the JSON file containing the results.")
 
 
-def ambiguous_date_to_date_range(mydate, fmt, min_max_year=None):
-    from datetime import datetime
-    sep = fmt.split('%')[1][-1]
-    min_date, max_date = {}, {}
-    today = datetime.today().date()
+def ambiguous_date_to_date_range(uncertain_date, fmt, min_max_year=None):
+    return DateDisambiguator(uncertain_date, fmt=fmt, min_max_year=min_max_year).range()
 
-    for val, field  in zip(mydate.split(sep), fmt.split(sep+'%')):
-        f = 'year' if 'y' in field.lower() else ('day' if 'd' in field.lower() else 'month')
-        if 'XX' in val:
-            if f=='year':
-                if min_max_year:
-                    min_date[f]=min_max_year[0]
-                    if len(min_max_year)>1:
-                        max_date[f]=min_max_year[1]
-                    elif len(min_max_year)==1:
-                        max_date[f]=4000 #will be replaced by 'today' below.
-                else:
-                    return None, None
-            elif f=='month':
-                min_date[f]=1
-                max_date[f]=12
-            elif f=='day':
-                min_date[f]=1
-                max_date[f]=31
-        else:
-            min_date[f]=int(val)
-            max_date[f]=int(val)
-    max_date['day'] = min(max_date['day'], 31 if max_date['month'] in [1,3,5,7,8,10,12]
-                                           else 28 if max_date['month']==2 else 30)
-    lower_bound = datetime(year=min_date['year'], month=min_date['month'], day=min_date['day']).date()
-    upper_bound = datetime(year=max_date['year'], month=max_date['month'], day=max_date['day']).date()
-    return (lower_bound, upper_bound if upper_bound<today else today)
-
-def read_metadata(fname):
+def read_metadata(fname, query=None):
     if not fname:
         print("ERROR: read_metadata called without a filename")
         return {}, []
@@ -110,6 +79,15 @@ def read_metadata(fname):
             print("Error reading metadata file {}".format(fname))
             print(e)
             sys.exit(2)
+        if query:
+            try:
+                metadata.query(query, inplace=True)
+            except Exception as e:
+                # Would like to make this more specific, but Pandas throws multiple different
+                # errors from panda specific to python generic errors.
+                print("ERROR: Invalid query string: '{}'".format(query))
+                print(e)
+                sys.exit(2)
         meta_dict = {}
         for ii, val in metadata.iterrows():
             if hasattr(val, "strain"):
@@ -117,6 +95,7 @@ def read_metadata(fname):
                     raise ValueError("Duplicate strain '{}'".format(val.strain))
                 meta_dict[val.strain] = val.to_dict()
             elif hasattr(val, "name"):
+                val = val.rename(val["name"])
                 if val.name in meta_dict:
                     raise ValueError("Duplicate name '{}'".format(val.name))
                 meta_dict[val.name] = val.to_dict()
@@ -225,7 +204,7 @@ def read_node_data(fnames, tree=None):
     node_data = {"nodes": {}}
     for fname in fnames:
         if os.path.isfile(fname):
-            with open(fname) as jfile:
+            with open(fname, encoding='utf-8') as jfile:
                 tmp_data = json.load(jfile)
             if tmp_data.get("annotations"):
                 try:
@@ -321,7 +300,7 @@ def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSO
     if include_version:
         data["generated_by"] = {"program": "augur", "version": get_augur_version()}
 
-    with open(file_name, 'w') as handle:
+    with open(file_name, 'w', encoding='utf-8') as handle:
         json.dump(data, handle, indent=indent, sort_keys=True)
 
 
@@ -342,7 +321,7 @@ def load_features(reference, feature_names=None):
             return None
         limit_info = dict( gff_type = ['gene'] )
 
-        with open(reference) as in_handle:
+        with open(reference, encoding='utf-8') as in_handle:
             for rec in GFF.parse(in_handle, limit_info=limit_info):
                 for feat in rec.features:
                     if feature_names is not None: #check both tags; user may have used either
@@ -388,7 +367,7 @@ def read_config(fname):
         return defaultdict(dict)
 
     try:
-        with open(fname) as ifile:
+        with open(fname, 'rb') as ifile:
             config = json.load(ifile)
     except json.decoder.JSONDecodeError as err:
         print("FATAL ERROR:")
@@ -424,7 +403,7 @@ def read_lat_longs(overrides=None, use_defaults=True):
                     add_line_to_coordinates(line)
     if overrides:
         if os.path.isfile(overrides):
-            with open(overrides) as ifile:
+            with open(overrides, encoding='utf-8') as ifile:
                 for line in ifile:
                     add_line_to_coordinates(line)
         else:
@@ -462,7 +441,7 @@ def read_colors(overrides=None, use_defaults=True):
 
     if overrides:
         if os.path.isfile(overrides):
-            with open(overrides) as fh:
+            with open(overrides, encoding='utf-8') as fh:
                 for line in fh:
                     add_line(line)
         else:
@@ -491,7 +470,7 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
 
     #prepare the header of the VCF & write out
     header=["#CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT"]+seqNames
-    with open(vcf_file_name, 'w') as the_file:
+    with open(vcf_file_name, 'w', encoding='utf-8') as the_file:
         the_file.write( "##fileformat=VCFv4.2\n"+
                         "##source=NextStrain_Protein_Translation\n"+
                         "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n")
@@ -546,10 +525,10 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
             vcfWrite.append("\t".join(output))
 
     #write it all out
-    with open(ref_file_name, 'w') as the_file:
+    with open(ref_file_name, 'w', encoding='utf-8') as the_file:
         the_file.write("\n".join(refWrite))
 
-    with open(vcf_file_name, 'a') as the_file:
+    with open(vcf_file_name, 'a', encoding='utf-8') as the_file:
         the_file.write("\n".join(vcfWrite))
 
     if vcf_file_name.lower().endswith('.gz'):
@@ -812,3 +791,85 @@ def is_augur_version_compatable(version):
     current_version = packaging_version.parse(get_augur_version())
     this_version = packaging_version.parse(version)
     return this_version.release[0] == current_version.release[0]
+
+def read_bed_file(bed_file):
+    """Read a BED file and return a list of excluded sites.
+
+    Note: This function assumes the given file is a BED file. On parsing
+    failures, it will attempt to skip the first line and retry, but no
+    other error checking is attempted. Incorrectly formatted files will
+    raise errors.
+
+    Parameters
+    ----------
+    bed_file : str
+        Path to the BED file
+
+    Returns:
+    --------
+    list[int]:
+        Sorted list of unique zero-indexed sites
+    """
+    mask_sites = []
+    try:
+        bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1,2],
+                          dtype={1:int,2:int})
+    except ValueError:
+        # Check if we have a header row. Otherwise, just fail.
+        bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1,2],
+                          dtype={1:int,2:int}, skiprows=1)
+        print("Skipped row 1 of %s, assuming it is a header." % bed_file)
+    for _, row in bed.iterrows():
+        mask_sites.extend(range(row[1], row[2]))
+    return sorted(set(mask_sites))
+
+def read_mask_file(mask_file):
+    """Read a masking file and return a list of excluded sites.
+
+    Masking files have a single masking site per line, either alone
+    or as the second column of a tab-separated file. These sites
+    are assumed to be one-indexed, NOT zero-indexed. Incorrectly
+    formatted lines will be skipped.
+
+    Parameters
+    ----------
+    mask_file : str
+        Path to the masking file
+
+    Returns:
+    --------
+    list[int]:
+        Sorted list of unique zero-indexed sites
+    """
+    mask_sites = []
+    with open(mask_file, encoding='utf-8') as mf:
+        for idx, line in enumerate(l.strip() for l in mf.readlines()):
+            if "\t" in line:
+                line = line.split("\t")[1]
+            try:
+                mask_sites.append(int(line) - 1)
+            except ValueError as err:
+                print("Could not read line %s of %s: '%s' - %s" %
+                      (idx, mask_file, line, err), file=sys.stderr)
+                raise
+    return sorted(set(mask_sites))
+
+def load_mask_sites(mask_file):
+    """Load masking sites from either a BED file or a masking file.
+
+    Parameters
+    ----------
+    mask_file: str
+        Path to the BED or masking file
+
+    Returns
+    -------
+    list[int]
+        Sorted list of unique zero-indexed sites
+    """
+    if mask_file.lower().endswith(".bed"):
+        mask_sites = read_bed_file(mask_file)
+    else:
+        mask_sites = read_mask_file(mask_file)
+    print("%d masking sites read from %s" % (len(mask_sites), mask_file))
+    return mask_sites
