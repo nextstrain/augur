@@ -43,7 +43,7 @@ def prose_list(items):
     else:
         return ", ".join([*items[0:-1], "and " + items[-1]])
 
-project = 'augur'
+project = 'Augur'
 copyright = '2014–%d Trevor Bedford and Richard Neher' % (date.today().year)
 author = prose_list(git_authors())
 
