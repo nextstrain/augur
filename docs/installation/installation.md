@@ -29,6 +29,7 @@ Augur uses some common external bioinformatics programs which you'll need to ins
 
 On macOS, you can install these external programs using [Homebrew](https://brew.sh/) with:
 
+    brew tap brewsci/bio
     brew install mafft iqtree raxml fasttree vcftools
 
 On Debian/Ubuntu, you can install them via:
