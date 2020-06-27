@@ -4,7 +4,7 @@ Export JSON files suitable for visualization with auspice.
 from pathlib import Path
 import os, sys
 import time
-from collections import defaultdict
+from collections import defaultdict, deque
 import warnings
 import re
 from Bio import Phylo
@@ -433,6 +433,47 @@ def set_panels(data_json, config, cmd_line_panels):
     data_json['meta']["panels"] = panels
 
 
+def counter_to_disambiguation_suffix(count):
+    """Given a numeric count of author papers, return a distinct alphabetical
+    disambiguation suffix.
+
+    >>> counter_to_disambiguation_suffix(0)
+    'A'
+    >>> counter_to_disambiguation_suffix(25)
+    'Z'
+    >>> counter_to_disambiguation_suffix(26)
+    'AA'
+    >>> counter_to_disambiguation_suffix(51)
+    'AZ'
+    >>> counter_to_disambiguation_suffix(52)
+    'BA'
+    """
+    letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    base = len(letters)
+    suffix = deque()
+
+    # Find the appropriate combination of letters for the given count. This
+    # closely resembles the steps required to calculate the base 26 value of the
+    # given base 10 number.
+    while True:
+        quotient = count // base
+        remainder = count % base
+
+        # Collect remainders from right to left. Letters are zero-indexed such
+        # that a count of 0 returns an "A".
+        suffix.appendleft(letters[remainder])
+
+        # Stop when we've accounted for all possible quotient and remainder
+        # values.
+        if quotient == 0:
+            break
+
+        # Convert counts to zero-indexed values such that the next place value
+        # starts with the letter "A" instead of the letter "B".
+        count = quotient - 1
+
+    return "".join(suffix)
+
 def create_author_data(node_attrs):
     """Gather the authors which appear in the metadata and create the author
     info structure with unique keys
@@ -488,7 +529,8 @@ def create_author_data(node_attrs):
         author = node_author_info[node_name]["author"]
         if len(author_to_unique_tuples[author]) > 1:
             index = author_to_unique_tuples[author].index(author_tuple)
-            node_author_info[node_name]["value"] = author + " {}".format("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"[index])
+            disambiguation_suffix = counter_to_disambiguation_suffix(index)
+            node_author_info[node_name]["value"] = f"{author} {disambiguation_suffix}"
         else:
             node_author_info[node_name]["value"] = author
 
