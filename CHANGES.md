@@ -9,23 +9,35 @@
 ### Bug Fixes
 
 * align: Prevent duplicate strains warning when using `--reference-name` [#536][]
+* docs: Sync and deduplicate installation documentation from README to main docs [#578][]
+* export: Flexibly disambiguate multiple publications by the same author [#581][]
 * frequencies: Avoid interpolation of a single data point during frequency estimation with sparse data [#569][]
+* parse: Actually remove commas during prettify when this behavior is requested [#573][]
 * tests: Always use the local helper script (`bin/augur`) to run tests instead of any globally installed augur executables [#527][]
+* tree: Keep log files after trees are built [#572][]
 * utils: Do not attempt to parse dates with only ambiguous months (e.g., 2020-XX-01) [#532][]
+* utils: Parse `name` column of metadata as a data field instead of a pandas DataFrame attribute [#564][]
 
 ### Features
 
 * docs: Updates description of how missing data are handled by `augur traits`
 * filter: Add support for ISO 8601 dates (YYYY-MM-DD) for `--min-date` and `--max-date` [#568][]
-* tests: Refactor and add tests for ambiguous date parsing [#532][]
+* tests: Add tests for utilities (ambiguous date parsing [#532][] and `run_shell_command` [#577][]), parse [#573][], and translate [#546][]
 * tree: Allow VCF input without an `--exclude-sites` argument [#565][]
 
 [#527]: https://github.com/nextstrain/augur/pull/527
 [#532]: https://github.com/nextstrain/augur/pull/532
 [#536]: https://github.com/nextstrain/augur/pull/536
+[#546]: https://github.com/nextstrain/augur/pull/546
+[#564]: https://github.com/nextstrain/augur/pull/564
 [#565]: https://github.com/nextstrain/augur/pull/565
 [#568]: https://github.com/nextstrain/augur/pull/568
 [#569]: https://github.com/nextstrain/augur/pull/569
+[#572]: https://github.com/nextstrain/augur/pull/572
+[#573]: https://github.com/nextstrain/augur/pull/573
+[#577]: https://github.com/nextstrain/augur/pull/577
+[#578]: https://github.com/nextstrain/augur/pull/578
+[#581]: https://github.com/nextstrain/augur/pull/581
 
 ## 8.0.0 (8 June 2020)
 
