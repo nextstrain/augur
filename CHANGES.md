@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 9.0.0 (29 June 2020)
+
 ### Major Changes
 
 * align: The API to the `read_sequences` function now returns a list of sequences instead of a dictionary [#536][]
