@@ -7,10 +7,11 @@ Running from the test data directory allows us to use relative paths that won't 
   $ TEST_DATA_DIR="$TESTDIR/zika"
   $ mkdir -p "$TMP/out"
   $ pushd "$TEST_DATA_DIR" > /dev/null
+  $ export AUGUR="../../../bin/augur"
 
 Parse a FASTA whose defline contains metadata into separate sequence and metadata files.
 
-  $ ../../../bin/augur parse \
+  $ ${AUGUR} parse \
   >   --sequences "data/zika.fasta" \
   >   --output-sequences "$TMP/out/sequences.fasta" \
   >   --output-metadata "$TMP/out/metadata.tsv" \
@@ -21,7 +22,7 @@ Parse a FASTA whose defline contains metadata into separate sequence and metadat
 
 Filter sequences by a minimum date and an exclusion list and only keep one sequence per country, year, and month.
 
-  $ ../../../bin/augur filter \
+  $ ${AUGUR} filter \
   >   --sequences "results/sequences.fasta" \
   >   --metadata "results/metadata.tsv" \
   >   --exclude "config/dropped_strains.txt" \
@@ -35,7 +36,7 @@ Filter sequences by a minimum date and an exclusion list and only keep one seque
 
 Align filtered sequences to a specific reference sequence and fill any gaps.
 
-  $ ../../../bin/augur align \
+  $ ${AUGUR} align \
   >  --sequences "results/filtered.fasta" \
   >  --reference-sequence "config/zika_outgroup.gb" \
   >  --output "$TMP/out/aligned.fasta" \
@@ -45,7 +46,7 @@ Align filtered sequences to a specific reference sequence and fill any gaps.
 
 Build a tree from the multiple sequence alignment.
 
-  $ ../../../bin/augur tree \
+  $ ${AUGUR} tree \
   >  --alignment "results/aligned.fasta" \
   >  --output "$TMP/out/tree_raw.nwk" \
   >  --method iqtree \
@@ -62,7 +63,7 @@ Confirm that tree log file exists.
 
 Build a time tree from the existing tree topology, the multiple sequence alignment, and the strain metadata.
 
-  $ ../../../bin/augur refine \
+  $ ${AUGUR} refine \
   >  --tree "results/tree_raw.nwk" \
   >  --alignment "results/aligned.fasta" \
   >  --metadata "results/metadata.tsv" \
@@ -87,7 +88,7 @@ Branch lengths and other annotations like dates are too stochastic across runs t
 
 Calculate tip frequencies from the tree.
 
-  $ ../../../bin/augur frequencies \
+  $ ${AUGUR} frequencies \
   >  --method kde \
   >  --tree "results/tree.nwk" \
   >  --metadata "results/metadata.tsv" \
@@ -98,7 +99,7 @@ Calculate tip frequencies from the tree.
 
 Infer ancestral sequences from the tree.
 
-  $ ../../../bin/augur ancestral \
+  $ ${AUGUR} ancestral \
   >  --tree "results/tree.nwk" \
   >  --alignment "results/aligned.fasta" \
   >  --infer-ambiguous \
@@ -109,7 +110,7 @@ Infer ancestral sequences from the tree.
 
 Infer ancestral traits from the tree.
 
-  $ ../../../bin/augur traits \
+  $ ${AUGUR} traits \
   >  --tree "results/tree.nwk" \
   >  --weights "config/trait_weights.csv" \
   >  --metadata "results/metadata.tsv" \
@@ -129,7 +130,7 @@ See augur issue 541 (https://github.com/nextstrain/augur/issues/541) for more de
 
 Translate inferred ancestral and observed nucleotide sequences to amino acid mutations.
 
-  $ ../../../bin/augur translate \
+  $ ${AUGUR} translate \
   >  --tree "results/tree.nwk" \
   >  --ancestral-sequences "$TMP/out/nt_muts.json" \
   >  --reference-sequence "config/zika_outgroup.gb" \
@@ -139,7 +140,7 @@ Translate inferred ancestral and observed nucleotide sequences to amino acid mut
 
 Export JSON files as v1 auspice outputs.
 
-  $ ../../../bin/augur export v1 \
+  $ ${AUGUR} export v1 \
   >  --tree "results/tree.nwk" \
   >  --metadata "results/metadata.tsv" \
   >  --node-data "$TMP/out/branch_lengths.json" \
@@ -152,7 +153,7 @@ Export JSON files as v1 auspice outputs.
   >  --output-meta "$TMP/out/v1_zika_meta.json" \
   >  --output-sequence "$TMP/out/v1_zika_seq.json" > /dev/null
 
-  $ ../../../bin/augur validate export-v1 "$TMP/out/v1_zika_meta.json" "$TMP/out/v1_zika_tree.json" > /dev/null
+  $ ${AUGUR} validate export-v1 "$TMP/out/v1_zika_meta.json" "$TMP/out/v1_zika_tree.json" > /dev/null
 
 Compare auspice metadata files, but ignore the "updated" field since this changes with the date the export command is run.
 
@@ -160,7 +161,7 @@ Compare auspice metadata files, but ignore the "updated" field since this change
 
 Export JSON files as v2 auspice outputs.
 
-  $ ../../../bin/augur export v2 \
+  $ ${AUGUR} export v2 \
   >  --tree "results/tree.nwk" \
   >  --metadata "results/metadata.tsv" \
   >  --node-data "$TMP/out/branch_lengths.json" \
@@ -173,7 +174,7 @@ Export JSON files as v2 auspice outputs.
   >  --title 'Real-time tracking of Zika virus evolution -- v2 JSON' \
   >  --panels tree map entropy frequencies > /dev/null
 
-  $ ../../../bin/augur validate export-v2 "$TMP/out/v2_zika.json" > /dev/null
+  $ ${AUGUR} validate export-v2 "$TMP/out/v2_zika.json" > /dev/null
 
 Switch back to the original directory where testing started.
 
