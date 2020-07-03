@@ -827,7 +827,10 @@ def set_description(data_json, cmd_line_description_file):
 
 def parse_node_data_and_metadata(T, node_data_files, metadata_file):
     node_data = read_node_data(node_data_files) # node_data_files is an array of multiple files (or a single file)
-    metadata, _ = read_metadata(metadata_file) # metadata={} if file isn't read / doeesn't exist
+    if metadata_file is not None:
+        metadata, _ = read_metadata(metadata_file)
+    else:
+        metadata = {}
     node_data_names = set()
     metadata_names = set()
 
@@ -875,7 +878,11 @@ def run_v2(args):
 
     # parse input files
     T = Phylo.read(args.tree, 'newick')
-    node_data, node_attrs, node_data_names, metadata_names = parse_node_data_and_metadata(T, args.node_data, args.metadata)
+    try:
+        node_data, node_attrs, node_data_names, metadata_names = parse_node_data_and_metadata(T, args.node_data, args.metadata)
+    except FileNotFoundError:
+        print(f"ERROR: meta data file ({args.metadata}) does not exist")
+        sys.exit(2)
     config = get_config(args)
 
     # set metadata data structures

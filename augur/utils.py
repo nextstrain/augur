@@ -16,6 +16,7 @@ import packaging.version as packaging_version
 from .validate import validate, ValidateError, load_json_schema
 
 from augur.util_support.date_disambiguator import DateDisambiguator
+from augur.util_support.metadata_file import MetadataFile
 from augur.util_support.shell_command_runner import ShellCommandRunner
 
 
@@ -70,45 +71,7 @@ def ambiguous_date_to_date_range(uncertain_date, fmt, min_max_year=None):
     return DateDisambiguator(uncertain_date, fmt=fmt, min_max_year=min_max_year).range()
 
 def read_metadata(fname, query=None):
-    if not fname:
-        print("ERROR: read_metadata called without a filename")
-        return {}, []
-    if os.path.isfile(fname):
-        try:
-            metadata = pd.read_csv(fname, sep='\t' if fname[-3:]=='tsv' else ',',
-                                    skipinitialspace=True).fillna('')
-        except pd.errors.ParserError as e:
-            print("Error reading metadata file {}".format(fname))
-            print(e)
-            sys.exit(2)
-        if query:
-            try:
-                metadata.query(query, inplace=True)
-            except Exception as e:
-                # Would like to make this more specific, but Pandas throws multiple different
-                # errors from panda specific to python generic errors.
-                print("ERROR: Invalid query string: '{}'".format(query))
-                print(e)
-                sys.exit(2)
-        meta_dict = {}
-        for ii, val in metadata.iterrows():
-            if hasattr(val, "strain"):
-                if val.strain in meta_dict:
-                    raise ValueError("Duplicate strain '{}'".format(val.strain))
-                meta_dict[val.strain] = val.to_dict()
-            elif hasattr(val, "name"):
-                val = val.rename(val["name"])
-                if val.name in meta_dict:
-                    raise ValueError("Duplicate name '{}'".format(val.name))
-                meta_dict[val.name] = val.to_dict()
-            else:
-                print("ERROR: meta data file needs 'name' or 'strain' column")
-
-        return meta_dict, list(metadata.columns)
-    else:
-        print("ERROR: meta data file ({}) does not exist".format(fname))
-        return {}, []
-
+    return MetadataFile(fname, query).read()
 
 def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, min_max_year=None):
     if fmt:
