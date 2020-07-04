@@ -90,7 +90,7 @@ def collect_node_data(T, attributes):
 def register_arguments(parser):
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
-    parser.add_argument('--metadata', type=str, help="tsv/csv table with meta data for sequences")
+    parser.add_argument('--metadata', type=str, metavar="FILE", help="sequence metadata, as CSV or TSV")
     parser.add_argument('--output-tree', type=str, help='file name to write tree to')
     parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
     parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")

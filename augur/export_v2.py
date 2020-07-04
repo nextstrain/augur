@@ -734,7 +734,7 @@ def register_arguments_v2(subparsers):
     optional_inputs = v2.add_argument_group(
         title="OPTIONAL INPUT FILES"
     )
-    optional_inputs.add_argument('--metadata', metavar="TSV", help="Additional metadata for strains in the tree")
+    optional_inputs.add_argument('--metadata', metavar="FILE", help="Additional metadata for strains in the tree, as CSV or TSV")
     optional_inputs.add_argument('--colors', metavar="TSV", help="Custom color definitions")
     optional_inputs.add_argument('--lat-longs', metavar="TSV", help="Latitudes and longitudes for geography traits (overrides built in mappings)")
 

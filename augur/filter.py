@@ -88,7 +88,7 @@ def filter_by_query(sequences, metadata_file, query):
 
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
-    parser.add_argument('--metadata', required=True, help="metadata associated with sequences")
+    parser.add_argument('--metadata', required=True, metavar="FILE", help="sequence metadata, as CSV or TSV")
     parser.add_argument('--min-date', type=numeric_date, help="minimal cutoff for date; may be specified as an Augur-style numeric date (with the year as the integer part) or YYYY-MM-DD")
     parser.add_argument('--max-date', type=numeric_date, help="maximal cutoff for date; may be specified as an Augur-style numeric date (with the year as the integer part) or YYYY-MM-DD")
     parser.add_argument('--min-length', type=int, help="minimal length of the sequences")

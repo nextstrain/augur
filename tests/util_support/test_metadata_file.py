@@ -9,7 +9,7 @@ import pytest
 def prepare_file(tmpdir):
     def _prepare_file(contents):
         with open(f"{tmpdir}/metadata.txt", "w") as file:
-            file.write(re.sub("^\s*", "", contents))
+            file.write(re.sub(r"^\s*", "", contents))
 
     return _prepare_file
 
@@ -113,15 +113,7 @@ class TestMetadataFile:
 
         records, columns = MetadataFile(f"{tmpdir}/metadata.txt").read()
         assert records == {
-            "strainA": {
-                "strain": "strainA",
-                "location": "colorado",
-                "quality": "good",
-            },
-            "strainB": {
-                "strain": "strainB",
-                "location": "nevada",
-                "quality": "good",
-            },
+            "strainA": {"strain": "strainA", "location": "colorado", "quality": "good"},
+            "strainB": {"strain": "strainB", "location": "nevada", "quality": "good"},
         }
         assert list(columns) == ["strain", "location", "quality"]
