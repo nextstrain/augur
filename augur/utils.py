@@ -15,6 +15,7 @@ from .__version__ import __version__
 import packaging.version as packaging_version
 from .validate import validate, ValidateError, load_json_schema
 
+from augur.util_support.color_parser import ColorParser
 from augur.util_support.date_disambiguator import DateDisambiguator
 from augur.util_support.metadata_file import MetadataFile
 from augur.util_support.shell_command_runner import ShellCommandRunner
@@ -376,46 +377,7 @@ def read_lat_longs(overrides=None, use_defaults=True):
     return coordinates
 
 def read_colors(overrides=None, use_defaults=True):
-    colors = {}
-    # TODO: make parsing of tsv files more robust while allow for whitespace delimiting for backwards compatibility
-    def add_line(line):
-        if line.startswith('#'):
-            return
-        fields = line.strip().split() if not '\t' in line else line.strip().split('\t')
-        if not fields:
-            return # blank lines
-        if len(fields) != 3:
-            print("WARNING: Color map file contains invalid line. Please make sure not to mix tabs and spaces as delimiters (use only tabs):",line)
-            return
-        trait, trait_value, hex_code = fields[0].lower(), fields[1].lower(), fields[2]
-        if not hex_code.startswith("#") or len(hex_code) != 7:
-            print("WARNING: Color map file contained this invalid hex code: ", hex_code)
-            return
-        # If was already added, delete entirely so order can change to order in user-specified file
-        # (even though dicts shouldn't be relied on to have order)
-        if (trait, trait_value) in colors:
-            del colors[(trait, trait_value)]
-        colors[(trait, trait_value)] = hex_code
-
-
-    if use_defaults:
-        with resource_stream(__package__, "data/colors.tsv") as stream:
-            with TextIOWrapper(stream, "utf-8") as defaults:
-                for line in defaults:
-                    add_line(line)
-
-    if overrides:
-        if os.path.isfile(overrides):
-            with open(overrides, encoding='utf-8') as fh:
-                for line in fh:
-                    add_line(line)
-        else:
-            print("WARNING: Couldn't open color definitions file {}.".format(overrides))
-    color_map = defaultdict(list)
-    for (trait, trait_value), hex_code in colors.items():
-        color_map[trait].append((trait_value, hex_code))
-
-    return color_map
+    return ColorParser(mapping_filename=overrides, use_defaults=use_defaults).mapping
 
 def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
     """
