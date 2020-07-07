@@ -1,3 +1,5 @@
+import re
+
 from augur.util_support.metadata_file import MetadataFile
 
 import pytest
@@ -7,7 +9,7 @@ import pytest
 def prepare_file(tmpdir):
     def _prepare_file(contents):
         with open(f"{tmpdir}/metadata.txt", "w") as file:
-            file.write(contents)
+            file.write(re.sub(r"^\s*", "", contents))
 
     return _prepare_file
 
@@ -99,3 +101,19 @@ class TestMetadataFile:
 
         with pytest.raises(ValueError, match="does not contain"):
             MetadataFile(f"{tmpdir}/metadata.txt", None).read()
+
+    def test_metadata_delimiter_autodetect(self, tmpdir, prepare_file):
+        prepare_file(
+            """
+            strain\tlocation\tquality
+            strainA\tcolorado\tgood
+            strainB\tnevada\tgood
+            """
+        )
+
+        records, columns = MetadataFile(f"{tmpdir}/metadata.txt").read()
+        assert records == {
+            "strainA": {"strain": "strainA", "location": "colorado", "quality": "good"},
+            "strainB": {"strain": "strainB", "location": "nevada", "quality": "good"},
+        }
+        assert list(columns) == ["strain", "location", "quality"]

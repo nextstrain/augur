@@ -310,7 +310,7 @@ def get_root_sequence(root_node, ref=None, translations=None):
 def add_core_args(parser):
     core = parser.add_argument_group("REQUIRED")
     core.add_argument('--tree','-t', required=True, help="tree to perform trait reconstruction on")
-    core.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
+    core.add_argument('--metadata', required=True, metavar="FILE", help="sequence metadata, as CSV or TSV")
     core.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
     core.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json).")
     core.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json).")

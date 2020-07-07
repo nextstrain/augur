@@ -90,6 +90,7 @@ class MetadataFile:
     def parse_file(self):
         return pandas.read_csv(
             self.fname,
-            sep="\t" if self.fname.endswith("tsv") else ",",
+            sep=None,  # csv.Sniffer will automatically detect sep
+            engine="python",
             skipinitialspace=True,
         ).fillna("")
