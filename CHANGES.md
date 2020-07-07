@@ -2,6 +2,14 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* utils: `read_metadata` interface improvements
+  * raises exceptions when 1) input file is missing or unreadable or 2) required columns (`strain` or `name`) are missing instead of failing silently [#584][]
+  * automatically detects delimiter in metadata file instead of assuming delimiter based on filename extension [#587][]
+
+[#584]: https://github.com/nextstrain/augur/pull/584
+[#587]: https://github.com/nextstrain/augur/pull/587
 
 ## 9.0.0 (29 June 2020)
 
