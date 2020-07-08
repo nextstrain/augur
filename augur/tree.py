@@ -139,8 +139,11 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     # IQ-tree messes with taxon names. Hence remove offending characters, reinstaniate later
     tmp_aln_file = aln_file.replace(".fasta", "-delim.fasta")
     log_file = tmp_aln_file.replace(".fasta", ".iqtree.log")
+    num_seqs = 0
     with open(tmp_aln_file, 'w', encoding='utf-8') as ofile:
         for line in tmp_seqs:
+            if line.startswith(">"):
+                num_seqs+=1
             ofile.write(line.replace('/', '_X_X_').replace('|','_Y_Y_').replace("(","_X_Y_").replace(")","_Y_X_"))
 
     # For compat with older versions of iqtree, we avoid the newish -fast
@@ -159,6 +162,11 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         "-n",     "2",
         "-me",    "0.05"
     ]
+
+    # bound number of threads to either the number of threads requested, 
+    # or the number of sequences, whichever is lower. Set lower bound to 1.
+    # This avoids an error from IQ-TREE when num_seq < nthreads.
+    nthreads = max(min(num_seqs,nthreads),1)
 
     if substitution_model.lower() != "none":
         call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", shquote(tmp_aln_file),
