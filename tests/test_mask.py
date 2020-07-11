@@ -6,19 +6,23 @@ for any function in mask.py, check that it is correctly updated in this file.
 import argparse
 import os
 import pytest
+import random
+import string
 
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from augur import mask
+from augur.utils import VALID_NUCLEOTIDES
 
 # Test inputs for the commands. Writing these here so tests are self-contained.
 @pytest.fixture
 def sequences():
     return {
         "SEQ1": SeqRecord(Seq("ATGC-ATGC-ATGC"), id="SEQ1"),
-        "SEQ2": SeqRecord(Seq("ATATATATATATATAT"), id="SEQ2")
+        "SEQ2": SeqRecord(Seq("ATATATATATATATAT"), id="SEQ2"),
+        "SEQ_ALLCHARS": SeqRecord(Seq(string.ascii_letters + string.digits + "-"), id="SEQ_ALLCHARS")
     }
 
 @pytest.fixture
@@ -219,6 +223,18 @@ class TestMask:
         output = SeqIO.parse(out_file, "fasta")
         for record in output:
             assert record.seq == "N" * len(record.seq)
+
+    @pytest.mark.parametrize("mask_invalid", (True, False))
+    def test_mask_fasta_invalid_sites(self, fasta_file, out_file, sequences, mask_invalid):
+        """Verify that mask_fasta masks invalid nucleotides when and only when mask_invalid is passed as True"""
+        mask.mask_fasta([], fasta_file, out_file, mask_invalid=mask_invalid)
+        output = SeqIO.to_dict(SeqIO.parse(out_file, "fasta"))
+        for name, record in sequences.items():
+            for site, nucleotide in enumerate(record.seq):
+                if nucleotide not in VALID_NUCLEOTIDES and mask_invalid is True:
+                    assert output[name][site] == "N"
+                else:
+                    assert output[name][site] == nucleotide
 
     def test_run_handle_missing_sequence_file(self, vcf_file, argparser):
         os.remove(vcf_file)
