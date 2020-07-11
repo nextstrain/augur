@@ -108,7 +108,7 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
                 beginning, end = sequence_length, 0
             seq = str(record.seq)[beginning:-end or None]
             if mask_invalid:
-                seq = str(nuc if nuc in VALID_NUCLEOTIDES else "N" for nuc in seq)
+                seq = "".join(nuc if nuc in VALID_NUCLEOTIDES else "N" for nuc in seq)
             sequence = MutableSeq("N" * beginning + seq + "N" * end)
             # Replace all excluded sites with Ns.
             for site in mask_sites:
