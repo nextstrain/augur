@@ -342,7 +342,7 @@ class TestMask:
 
     def test_run_fasta_mask_from_beginning_or_end(self, fasta_file, out_file, argparser, mp_context):
         args = argparser("-s %s -o %s --mask-from-beginning 2 --mask-from-end 3" % (fasta_file, out_file))
-        def check_mask_from(*args, mask_from_beginning=0, mask_from_end=0):
+        def check_mask_from(*args, mask_from_beginning=0, mask_from_end=0, **kwargs):
             assert mask_from_beginning == 2
             assert mask_from_end == 3
         mp_context.setattr(mask, "mask_fasta", check_mask_from)
@@ -392,6 +392,15 @@ class TestMask:
                     assert site == "N"
                 else:
                     assert site == reference[idx]
+
+    def test_e2e_fasta_mask_invalid(self, fasta_file, out_file, sequences, argparser):
+        args = argparser("-s %s -o %s --mask-invalid" % (fasta_file, out_file))
+        mask.run(args)
+        output = SeqIO.parse(out_file, "fasta")
+        for record in output:
+            reference = str(sequences[record.id].seq)
+            for idx, site in enumerate(reference):
+                assert record.seq[idx] == site if site in VALID_NUCLEOTIDES else "N"
 
     def test_e2e_vcf_minimal(self, vcf_file, bed_file, argparser):
         args = argparser("-s %s --mask %s" % (vcf_file, bed_file))
