@@ -10,7 +10,7 @@ import pandas as pd
 from Bio import SeqIO
 from Bio.Seq import MutableSeq
 
-from .utils import run_shell_command, shquote, open_file, is_vcf, load_mask_sites
+from .utils import run_shell_command, shquote, open_file, is_vcf, load_mask_sites, VALID_NUCLEOTIDES
 
 def get_chrom_name(vcf_file):
     """Read the CHROM field from the first non-header line of a vcf file.
@@ -73,12 +73,12 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
             except OSError:
                 pass
 
-def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_end=0):
+def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_end=0, mask_invalid=False):
     """Mask the provided site list from a FASTA file and write to a new file.
 
     Masked sites are overwritten as "N"s.
 
-:
+    Parameters:
     -----------
     mask_sites: list[int]
         A list of site indexes to exclude from the FASTA.
@@ -90,6 +90,8 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
        Number of sites to mask from the beginning of each sequence (default 0)
     mask_from_end: int
        Number of sites to mask from the end of each sequence (default 0)
+    mask_invalid: bool
+        Mask invalid nucleotides (default False)
     """
     # Load alignment as FASTA generator to prevent loading the whole alignment
     # into memory.
@@ -104,11 +106,10 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
             beginning, end = mask_from_beginning, mask_from_end
             if beginning + end > sequence_length:
                 beginning, end = sequence_length, 0
-            sequence = MutableSeq(
-                "N" * beginning +
-                str(record.seq)[beginning:-end or None] +
-                "N" * end
-            )
+            seq = str(record.seq)[beginning:-end or None]
+            if mask_invalid:
+                seq = str(nuc if nuc in VALID_NUCLEOTIDES else "N" for nuc in seq)
+            sequence = MutableSeq("N" * beginning + seq + "N" * end)
             # Replace all excluded sites with Ns.
             for site in mask_sites:
                 if site < sequence_length:
