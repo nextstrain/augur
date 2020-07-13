@@ -200,14 +200,13 @@ def run(args):
 
                 if args.group_by:
                     # Load metadata to identify groups of strains.
-                    metadata_df = pd.read_csv(args.metadata, sep="\t")
+                    metadata_df = pd.DataFrame(metadata.values())
 
                     if args.group_by not in metadata_df.columns:
                         print(f"ERROR: requested group by column '{args.group_by}' does not exist in the metadata file '{args.metadata}'", file=sys.stderr)
                         return 1
 
                     # Filter to metadata for strains in the given alignment(s).
-                    # TODO: use "strain" or "name"?
                     metadata_df = metadata_df[metadata_df["strain"].isin(distinct_strains)].copy()
 
                     # Group strains by the given field.
