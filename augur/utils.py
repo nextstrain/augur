@@ -741,3 +741,8 @@ def load_mask_sites(mask_file):
         mask_sites = read_mask_file(mask_file)
     print("%d masking sites read from %s" % (len(mask_sites), mask_file))
     return mask_sites
+
+VALID_NUCLEOTIDES = { # http://reverse-complement.com/ambiguity.html
+    "A", "G", "C", "T", "U", "N", "R", "Y", "S", "W", "K", "M", "B", "V", "D", "H", "-",
+    "a", "g", "c", "t", "u", "n", "r", "y", "s", "w", "k", "m", "b", "v", "d", "h", "-"
+}

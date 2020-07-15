@@ -6,7 +6,7 @@ Integration tests for augur mask.
 Try masking a VCF without any specified mask.
 
   $ ${AUGUR} mask --sequences mask/variants.vcf
-  No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, or --mask-sites
+  No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites
   [1]
 
 Mask a VCF with a BED file and no specified output file.
@@ -32,7 +32,7 @@ Mask a VCF with a BED file and a specified output file.
 Try masking sequences without any specified mask.
 
   $ ${AUGUR} mask --sequences mask/sequences.fasta
-  No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, or --mask-sites
+  No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites
   [1]
 
 Mask sequences with a BED file and no specified output file.
@@ -89,6 +89,19 @@ Mask a specific list of sites and also mask one base from the beginning and the 
   $ cat "$TMP/masked.fasta"
   >sequence_1
   NTNNTN
+  $ rm -f "$TMP/masked.fasta"
+
+Mask invalid nucleotides
+
+  $ ${AUGUR} mask \
+  >  --sequences mask/invalidnucleotide.fasta \
+  >  --mask-invalid \
+  >  --output "$TMP/masked.fasta"
+  Removing masked sites from FASTA file.
+
+  $ cat "$TMP/masked.fasta"
+  >sequence_1
+  ATCGNNNN
   $ rm -f "$TMP/masked.fasta"
 
   $ popd > /dev/null
