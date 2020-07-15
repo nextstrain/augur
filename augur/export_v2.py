@@ -735,7 +735,7 @@ def register_arguments_v2(subparsers):
         title="OPTIONAL INPUT FILES"
     )
     optional_inputs.add_argument('--metadata', metavar="FILE", help="Additional metadata for strains in the tree, as CSV or TSV")
-    optional_inputs.add_argument('--colors', metavar="TSV", help="Custom color definitions")
+    optional_inputs.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
     optional_inputs.add_argument('--lat-longs', metavar="TSV", help="Latitudes and longitudes for geography traits (overrides built in mappings)")
 
     optional_settings = v2.add_argument_group(
@@ -894,15 +894,19 @@ def run_v2(args):
     if args.description:
         set_description(data_json, args.description)
 
-    set_colorings(
-        data_json=data_json,
-        config=get_config_colorings_as_dict(config),
-        command_line_colorings=args.color_by_metadata,
-        metadata_names=metadata_names,
-        node_data_colorings=node_data_names,
-        provided_colors=read_colors(args.colors),
-        node_attrs=node_attrs
-    )
+    try:
+        set_colorings(
+            data_json=data_json,
+            config=get_config_colorings_as_dict(config),
+            command_line_colorings=args.color_by_metadata,
+            metadata_names=metadata_names,
+            node_data_colorings=node_data_names,
+            provided_colors=read_colors(args.colors),
+            node_attrs=node_attrs
+        )
+    except FileNotFoundError as e:
+        print(f"ERROR: required file could not be read: {e}")
+        sys.exit(2)
     set_filters(data_json, config)
 
     # set tree structure
