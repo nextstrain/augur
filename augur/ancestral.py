@@ -66,10 +66,14 @@ def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, 
 
     Parameters
     ----------
-    T : Bio.Phylo.Tree
-        Phylogenetic tree decorated with sequences and mutations as output by treetime.
-    is_vcf : bool, optional
-        specifies whether input alignment was vcf type (implying long genomes)
+    tt : treetime
+        instance of treetime with valid ancestral reconstruction
+    infer_tips : bool, optional
+        if true, request the reconstructed tip sequences from treetime, otherwise retain input ambiguities
+    full_sequences : bool, optional
+        if true, add the full sequences
+    character_map : None, optional
+        optional dictionary to map characters to a custom set.
 
     Returns
     -------
