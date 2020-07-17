@@ -12,11 +12,11 @@ from collections import defaultdict
 from pkg_resources import resource_stream
 from io import TextIOWrapper
 from .__version__ import __version__
-import packaging.version as packaging_version
 
 from augur.util_support.color_parser import ColorParser
 from augur.util_support.date_disambiguator import DateDisambiguator
 from augur.util_support.metadata_file import MetadataFile
+from augur.util_support.node_data_reader import NodeDataReader
 from augur.util_support.shell_command_runner import ShellCommandRunner
 
 
@@ -156,11 +156,8 @@ def read_tree(fname, min_terminals=3):
     return T
 
 
-
 def read_node_data(fnames, tree=None):
-    import augur
-    return augur.util_support.node_data_reader.NodeDataReader(fnames, tree).read()
-    #return NodeDataReader(fnames, tree).read()
+    return NodeDataReader(fnames, tree).read()
 
 
 def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 2), include_version=True):
@@ -571,25 +568,6 @@ def get_augur_version():
     """
     return __version__
 
-
-def is_augur_version_compatible(version):
-    """
-    Checks if the provided **version** is the same major version
-    as the currently running version of augur.
-
-    Parameters
-    ----------
-    version : str
-        version to check against the current version
-
-    Returns
-    -------
-    Bool
-
-    """
-    current_version = packaging_version.parse(get_augur_version())
-    this_version = packaging_version.parse(version)
-    return this_version.release[0] == current_version.release[0]
 
 def read_bed_file(bed_file):
     """Read a BED file and return a list of excluded sites.
