@@ -641,7 +641,8 @@ def get_augur_version():
     """
     return __version__
 
-def is_augur_version_compatable(version):
+
+def is_augur_version_compatible(version):
     """
     Checks if the provided **version** is the same major version
     as the currently running version of augur.
