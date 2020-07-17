@@ -57,7 +57,7 @@ def load_json(path):
             raise ValidateError("Supplied JSON to validate ({}) is not a valid JSON".format(path))
     return jsonToValidate
 
-def validate(jsonToValidate, schema, filename):
+def validate_json(jsonToValidate, schema, filename):
     print("Validating schema of {!r}...".format(filename))
     try:
         schema.validate(jsonToValidate) # https://python-jsonschema.readthedocs.io/en/latest/validate/
@@ -69,6 +69,10 @@ def validate(jsonToValidate, schema, filename):
             trace = [str(x) for x in trace]
             print("\tERROR: {}. Trace: {}".format(error.message, " - ".join(trace)), file=sys.stderr)
         raise ValidateError("Validation of {!r} failed.".format(filename))
+
+
+validate = validate_json  # TODO update uses and drop this alias
+
 
 def auspice_config_v2(config_json, **kwargs):
     schema = load_json_schema("schema-auspice-config-v2.json")
