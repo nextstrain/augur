@@ -243,7 +243,8 @@ def run(args):
     elif args.divergence_units=='mutations':
         L = tt.seq_len
         for node in node_data['nodes']:
-            node_data['nodes'][node]['mutation_length'] *= L
+            if args.timetree:
+                node_data['nodes'][node]['mutation_length'] *= L
             node_data['nodes'][node]['branch_length'] *= L
     else:
         print("ERROR: divergence unit",args.divergence_units,"not supported!")
