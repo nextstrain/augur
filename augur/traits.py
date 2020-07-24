@@ -105,7 +105,7 @@ def register_arguments(parser):
         subcommand argument parser
     """
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
-    parser.add_argument('--metadata', required=True, help="tsv/csv table with meta data")
+    parser.add_argument('--metadata', required=True, metavar="FILE", help="table with metadata, as CSV or TSV")
     parser.add_argument('--weights', required=False, help="tsv/csv table with equilibrium probabilities of discrete states")
     parser.add_argument('--columns', required=True, nargs='+',
                         help='metadata fields to perform discrete reconstruction on')
@@ -145,7 +145,7 @@ def run(args):
     if args.weights:
         weight_dict = {c:{} for c in args.columns}
         sep = ',' if args.weights.endswith('csv') else '\t'
-        with open(args.weights, 'r') as fh:
+        with open(args.weights, 'r', encoding='utf-8') as fh:
             for line in fh:
                 if line[0]=='#':
                     continue
@@ -160,7 +160,11 @@ def run(args):
 
     mugration_states = defaultdict(dict)
     models = defaultdict(dict)
-    out_prefix = '.'.join(args.tree.split('.')[:-1])
+    out_prefix = '.'.join(args.output_node_data.split('.')[:-1])
+
+    from treetime import version as treetime_version
+    print(f"augur traits is using TreeTime version {treetime_version}")
+
     for column in args.columns:
         T, gtr, alphabet = mugration_inference(tree=tree_fname, seq_meta=traits,
                                                field=column, confidence=args.confidence,
@@ -183,7 +187,7 @@ def run(args):
             models[column]['transition_matrix'] = [list(x) for x in gtr.W]
 
         if gtr:
-            with open(out_prefix+'%s.mugration_model.txt'%column, 'w') as ofile:
+            with open(out_prefix+'%s.mugration_model.txt'%column, 'w', encoding='utf-8') as ofile:
                 ofile.write('Map from character to field name\n')
                 for k,v in alphabet.items():
                     ofile.write(k+':\t'+str(v)+'\n')

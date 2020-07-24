@@ -8,6 +8,8 @@ from collections import defaultdict
 import random, os, re
 import numpy as np
 import sys
+import datetime
+import treetime.utils
 from .utils import read_metadata, get_numerical_dates, run_shell_command, shquote
 
 comment_char = '#'
@@ -16,9 +18,9 @@ comment_char = '#'
 def read_vcf(filename):
     if filename.lower().endswith(".gz"):
         import gzip
-        file = gzip.open(filename, mode="rt")
+        file = gzip.open(filename, mode="rt", encoding='utf-8')
     else:
-        file = open(filename)
+        file = open(filename, encoding='utf-8')
 
     chrom_line = next(line for line in file if line.startswith("#C"))
     file.close()
@@ -55,7 +57,7 @@ def write_vcf(input_filename, output_filename, dropped_samps):
 
 def read_priority_scores(fname):
     try:
-        with open(fname) as pfile:
+        with open(fname, encoding='utf-8') as pfile:
             return defaultdict(float, {
                 elems[0]: float(elems[1])
                 for elems in (line.strip().split() for line in pfile.readlines())
@@ -64,12 +66,31 @@ def read_priority_scores(fname):
         print(f"ERROR: missing or malformed priority scores file {fname}", file=sys.stderr)
         raise e
 
+def filter_by_query(sequences, metadata_file, query):
+    """Filter a set of sequences using Pandas DataFrame querying against the metadata file.
+
+    Parameters
+    ----------
+    sequences : list[str]
+        List of sequence names to filter
+    metadata_file : str
+        Path to the metadata associated wtih the sequences
+    query : str
+        Query string for the dataframe.
+
+    Returns
+    -------
+    list[str]:
+        List of sequence names that match the given query
+    """
+    filtered_meta_dict, _ = read_metadata(metadata_file, query)
+    return [seq for seq in sequences if seq in filtered_meta_dict]
 
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
-    parser.add_argument('--metadata', required=True, help="metadata associated with sequences")
-    parser.add_argument('--min-date', type=float, help="minimal cutoff for numerical date")
-    parser.add_argument('--max-date', type=float, help="maximal cutoff for numerical date")
+    parser.add_argument('--metadata', required=True, metavar="FILE", help="sequence metadata, as CSV or TSV")
+    parser.add_argument('--min-date', type=numeric_date, help="minimal cutoff for date; may be specified as an Augur-style numeric date (with the year as the integer part) or YYYY-MM-DD")
+    parser.add_argument('--max-date', type=numeric_date, help="maximal cutoff for date; may be specified as an Augur-style numeric date (with the year as the integer part) or YYYY-MM-DD")
     parser.add_argument('--min-length', type=int, help="minimal length of the sequences")
     parser.add_argument('--non-nucleotide', action='store_true', help="exclude sequences that contain illegal characters")
     parser.add_argument('--exclude', type=str, help="file with list of strains that are to be excluded")
@@ -82,6 +103,7 @@ def register_arguments(parser):
                                 help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
     parser.add_argument('--include-where', nargs='+',
                                 help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND. This rule is applied last and ensures any sequences matching these rules will be included.")
+    parser.add_argument('--query', help="Filter samples by attribute. Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.")
     parser.add_argument('--output', '-o', help="output file", required=True)
 
 
@@ -149,7 +171,7 @@ def run(args):
     num_excluded_by_name = 0
     if args.exclude:
         try:
-            with open(args.exclude, 'r') as ifile:
+            with open(args.exclude, 'r', encoding='utf-8') as ifile:
                 to_exclude = set()
                 for line in ifile:
                     if line[0] != comment_char:
@@ -184,6 +206,13 @@ def run(args):
                 tmp = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
                 num_excluded_by_metadata[ex] = len(seq_keep) - len(tmp)
                 seq_keep = tmp
+
+    # exclude strains by metadata, using Pandas querying
+    num_excluded_by_query = 0
+    if args.query:
+        filtered = filter_by_query(seq_keep, args.metadata, args.query)
+        num_excluded_by_query = len(seq_keep) - len(filtered)
+        seq_keep = filtered
 
     # filter by sequence length
     num_excluded_by_length = 0
@@ -299,7 +328,7 @@ def run(args):
     # Note that we are also not checking for existing meta data here
     num_included_by_name = 0
     if args.include and os.path.isfile(args.include):
-        with open(args.include, 'r') as ifile:
+        with open(args.include, 'r', encoding='utf-8') as ifile:
             to_include = set(
                 [
                     line.strip()
@@ -361,6 +390,8 @@ def run(args):
     if args.exclude_where:
         for key,val in num_excluded_by_metadata.items():
             print("\t%i of these were dropped because of '%s'" % (val, key))
+    if args.query:
+        print("\t%i of these were filtered out by the query:\n\t\t\"%s\"" % (num_excluded_by_query, args.query))
     if args.min_length:
         print("\t%i of these were dropped because they were shorter than minimum length of %sbp" % (num_excluded_by_length, args.min_length))
     if (args.min_date or args.max_date) and 'date' in meta_columns:
@@ -381,3 +412,21 @@ def run(args):
 
 def _filename_gz(filename):
     return filename.lower().endswith(".gz")
+
+
+def numeric_date(date):
+    """
+    Converts the given *date* string to a :py:class:`float`.
+
+    *date* may be given as a number (a float) with year as the integer part, or
+    in the YYYY-MM-DD (ISO 8601) syntax.
+
+    >>> numeric_date("2020.42")
+    2020.42
+    >>> numeric_date("2020-06-04")
+    2020.42486...
+    """
+    try:
+        return float(date)
+    except ValueError:
+        return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))

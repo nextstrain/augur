@@ -16,8 +16,8 @@ def register_arguments(parser):
     # Shared arguments
     parser.add_argument('--method', choices=["diffusion", "kde"], required=True,
                         help="method by which frequencies should be estimated")
-    parser.add_argument('--metadata', type=str, required=True,
-                        help="tab-delimited metadata including dates for given samples")
+    parser.add_argument('--metadata', type=str, required=True, metavar="FILE",
+                        help="metadata including dates for given samples, as CSV or TSV")
     parser.add_argument('--regions', type=str, nargs='+', default=['global'],
                         help="region to subsample to")
     parser.add_argument("--pivot-interval", type=int, default=3,
@@ -82,7 +82,7 @@ def run(args):
     if args.method == "kde":
         # Load weights if they have been provided.
         if args.weights:
-            with open(args.weights, "r") as fh:
+            with open(args.weights, "r", encoding='utf-8') as fh:
                 weights = json.load(fh)
 
             weights_attribute = args.weights_attribute

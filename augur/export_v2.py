@@ -4,7 +4,7 @@ Export JSON files suitable for visualization with auspice.
 from pathlib import Path
 import os, sys
 import time
-from collections import defaultdict
+from collections import defaultdict, deque
 import warnings
 import re
 from Bio import Phylo
@@ -433,6 +433,47 @@ def set_panels(data_json, config, cmd_line_panels):
     data_json['meta']["panels"] = panels
 
 
+def counter_to_disambiguation_suffix(count):
+    """Given a numeric count of author papers, return a distinct alphabetical
+    disambiguation suffix.
+
+    >>> counter_to_disambiguation_suffix(0)
+    'A'
+    >>> counter_to_disambiguation_suffix(25)
+    'Z'
+    >>> counter_to_disambiguation_suffix(26)
+    'AA'
+    >>> counter_to_disambiguation_suffix(51)
+    'AZ'
+    >>> counter_to_disambiguation_suffix(52)
+    'BA'
+    """
+    letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    base = len(letters)
+    suffix = deque()
+
+    # Find the appropriate combination of letters for the given count. This
+    # closely resembles the steps required to calculate the base 26 value of the
+    # given base 10 number.
+    while True:
+        quotient = count // base
+        remainder = count % base
+
+        # Collect remainders from right to left. Letters are zero-indexed such
+        # that a count of 0 returns an "A".
+        suffix.appendleft(letters[remainder])
+
+        # Stop when we've accounted for all possible quotient and remainder
+        # values.
+        if quotient == 0:
+            break
+
+        # Convert counts to zero-indexed values such that the next place value
+        # starts with the letter "A" instead of the letter "B".
+        count = quotient - 1
+
+    return "".join(suffix)
+
 def create_author_data(node_attrs):
     """Gather the authors which appear in the metadata and create the author
     info structure with unique keys
@@ -488,7 +529,8 @@ def create_author_data(node_attrs):
         author = node_author_info[node_name]["author"]
         if len(author_to_unique_tuples[author]) > 1:
             index = author_to_unique_tuples[author].index(author_tuple)
-            node_author_info[node_name]["value"] = author + " {}".format("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"[index])
+            disambiguation_suffix = counter_to_disambiguation_suffix(index)
+            node_author_info[node_name]["value"] = f"{author} {disambiguation_suffix}"
         else:
             node_author_info[node_name]["value"] = author
 
@@ -692,8 +734,8 @@ def register_arguments_v2(subparsers):
     optional_inputs = v2.add_argument_group(
         title="OPTIONAL INPUT FILES"
     )
-    optional_inputs.add_argument('--metadata', metavar="TSV", help="Additional metadata for strains in the tree")
-    optional_inputs.add_argument('--colors', metavar="TSV", help="Custom color definitions")
+    optional_inputs.add_argument('--metadata', metavar="FILE", help="Additional metadata for strains in the tree, as CSV or TSV")
+    optional_inputs.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
     optional_inputs.add_argument('--lat-longs', metavar="TSV", help="Latitudes and longitudes for geography traits (overrides built in mappings)")
 
     optional_settings = v2.add_argument_group(
@@ -721,22 +763,16 @@ def set_display_defaults(data_json, config):
         ["geo_resolution", "geoResolution"],
         ["color_by", "colorBy"],
         ["distance_measure", "distanceMeasure"],
-        ["map_triplicate", "mapTriplicate"],
-        ["layout", "layout"],
-        ["branch_label", "branch_label"]
+        ["map_triplicate", "mapTriplicate"]
     ]
 
-    display_defaults = {}
+    for [v2_key, v1_key] in [x for x in v1_v2_keys if x[1] in defaults]:
+        deprecated("[config file] '{}' has been replaced with '{}'".format(v1_key, v2_key))
+        defaults[v2_key] = defaults[v1_key]
+        del defaults[v1_key]
 
-    for [v2_key, v1_key] in v1_v2_keys:
-        if v2_key in defaults:
-            display_defaults[v2_key] = defaults[v2_key]
-        elif v1_key in defaults:
-            deprecated("[config file] '{}' has been replaced with '{}'".format(v1_key, v2_key))
-            display_defaults[v2_key] = defaults[v1_key]
-
-    if display_defaults:
-        data_json['meta']["display_defaults"] = display_defaults
+    if defaults:
+        data_json['meta']["display_defaults"] = defaults
 
 def set_maintainers(data_json, config, cmd_line_maintainers):
     # Command-line args overwrite the config file
@@ -783,7 +819,7 @@ def set_description(data_json, cmd_line_description_file):
     `meta.description` in *data_json* to the text provided.
     """
     try:
-        with open(cmd_line_description_file) as description_file:
+        with open(cmd_line_description_file, encoding='utf-8') as description_file:
             markdown_text = description_file.read()
             data_json['meta']['description'] = markdown_text
     except FileNotFoundError:
@@ -791,7 +827,10 @@ def set_description(data_json, cmd_line_description_file):
 
 def parse_node_data_and_metadata(T, node_data_files, metadata_file):
     node_data = read_node_data(node_data_files) # node_data_files is an array of multiple files (or a single file)
-    metadata, _ = read_metadata(metadata_file) # metadata={} if file isn't read / doeesn't exist
+    if metadata_file is not None:
+        metadata, _ = read_metadata(metadata_file)
+    else:
+        metadata = {}
     node_data_names = set()
     metadata_names = set()
 
@@ -839,7 +878,11 @@ def run_v2(args):
 
     # parse input files
     T = Phylo.read(args.tree, 'newick')
-    node_data, node_attrs, node_data_names, metadata_names = parse_node_data_and_metadata(T, args.node_data, args.metadata)
+    try:
+        node_data, node_attrs, node_data_names, metadata_names = parse_node_data_and_metadata(T, args.node_data, args.metadata)
+    except FileNotFoundError:
+        print(f"ERROR: meta data file ({args.metadata}) does not exist")
+        sys.exit(2)
     config = get_config(args)
 
     # set metadata data structures
@@ -851,15 +894,19 @@ def run_v2(args):
     if args.description:
         set_description(data_json, args.description)
 
-    set_colorings(
-        data_json=data_json,
-        config=get_config_colorings_as_dict(config),
-        command_line_colorings=args.color_by_metadata,
-        metadata_names=metadata_names,
-        node_data_colorings=node_data_names,
-        provided_colors=read_colors(args.colors),
-        node_attrs=node_attrs
-    )
+    try:
+        set_colorings(
+            data_json=data_json,
+            config=get_config_colorings_as_dict(config),
+            command_line_colorings=args.color_by_metadata,
+            metadata_names=metadata_names,
+            node_data_colorings=node_data_names,
+            provided_colors=read_colors(args.colors),
+            node_attrs=node_attrs
+        )
+    except FileNotFoundError as e:
+        print(f"ERROR: required file could not be read: {e}")
+        sys.exit(2)
     set_filters(data_json, config)
 
     # set tree structure

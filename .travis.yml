@@ -27,9 +27,10 @@ jobs:
         - conda env create -f environment.yml
         - source activate augur
       install:
-        - pip3 install -e .[dev]
+        - pip install -e .[dev]
       script:
         - (pytest -c pytest.python3.ini  --cov-report= --cov=augur)
+        - (cram --shell=/bin/bash tests/functional/*.t tests/builds/*.t)
         - (bash tests/builds/runner.sh)
       after_success:
         # upload to codecov

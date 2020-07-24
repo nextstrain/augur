@@ -10,7 +10,7 @@ import pandas as pd
 from Bio import SeqIO
 from Bio.Seq import MutableSeq
 
-from .utils import run_shell_command, shquote, open_file, is_vcf
+from .utils import run_shell_command, shquote, open_file, is_vcf, load_mask_sites, VALID_NUCLEOTIDES
 
 def get_chrom_name(vcf_file):
     """Read the CHROM field from the first non-header line of a vcf file.
@@ -23,23 +23,6 @@ def get_chrom_name(vcf_file):
             if line[0] != "#":
                 header = line.strip().partition('\t')
                 return header[0]
-
-def read_bed_file(mask_file):
-    """Read the full list of excluded sites from the BED file.
-
-    Second column is chromStart, 3rd is chromEnd. Generate a range from these two columns.
-    """
-    sites_to_mask = []
-    bed = pd.read_csv(mask_file, sep='\t', header=None, usecols=[1,2])
-    for idx, row in bed.iterrows():
-        try:
-            sites_to_mask.extend(range(int(row[1]), int(row[2])))
-        except ValueError as err:
-            # Skip unparseable lines, including header lines.
-            print("Could not read line %d of BED file %s: %s. Continuing." % (idx, mask_file, err))
-    sites_to_mask = np.unique(sites_to_mask).tolist()
-    print("Found %d sites to mask" % len(sites_to_mask))
-    return sites_to_mask
 
 def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
     """Mask the provided site list from a VCF file and write to a new file.
@@ -90,12 +73,12 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
             except OSError:
                 pass
 
-def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_end=0):
+def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_end=0, mask_invalid=False):
     """Mask the provided site list from a FASTA file and write to a new file.
 
     Masked sites are overwritten as "N"s.
 
-:
+    Parameters:
     -----------
     mask_sites: list[int]
         A list of site indexes to exclude from the FASTA.
@@ -107,6 +90,8 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
        Number of sites to mask from the beginning of each sequence (default 0)
     mask_from_end: int
        Number of sites to mask from the end of each sequence (default 0)
+    mask_invalid: bool
+        Mask invalid nucleotides (default False)
     """
     # Load alignment as FASTA generator to prevent loading the whole alignment
     # into memory.
@@ -121,11 +106,10 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
             beginning, end = mask_from_beginning, mask_from_end
             if beginning + end > sequence_length:
                 beginning, end = sequence_length, 0
-            sequence = MutableSeq(
-                "N" * beginning +
-                str(record.seq)[beginning:-end or None] +
-                "N" * end
-            )
+            seq = str(record.seq)[beginning:-end or None]
+            if mask_invalid:
+                seq = "".join(nuc if nuc in VALID_NUCLEOTIDES else "N" for nuc in seq)
+            sequence = MutableSeq("N" * beginning + seq + "N" * end)
             # Replace all excluded sites with Ns.
             for site in mask_sites:
                 if site < sequence_length:
@@ -135,9 +119,10 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
 
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF or FASTA format")
-    parser.add_argument('--mask', dest="mask_file", required=False, help="locations to be masked in BED file format")
+    parser.add_argument('--mask', dest="mask_file", required=False, help="locations to be masked in either BED file format, DRM format, or one 1-indexed site per line.")
     parser.add_argument('--mask-from-beginning', type=int, default=0, help="FASTA Only: Number of sites to mask from beginning")
     parser.add_argument('--mask-from-end', type=int, default=0, help="FASTA Only: Number of sites to mask from end")
+    parser.add_argument('--mask-invalid', action='store_true', help="FASTA Only: Mask invalid nucleotides")
     parser.add_argument("--mask-sites", nargs='+', type = int,  help="1-indexed list of sites to mask")
     parser.add_argument('--output', '-o', help="output file")
     parser.add_argument('--no-cleanup', dest="cleanup", action="store_false",
@@ -169,8 +154,8 @@ def run(args):
         if os.path.getsize(args.mask_file) == 0:
             print("ERROR: {} is an empty file.".format(args.mask_file))
             sys.exit(1)
-    if not any((args.mask_file, args.mask_from_beginning, args.mask_from_end, args.mask_sites)):
-        print("No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, or --mask-sites")
+    if not any((args.mask_file, args.mask_from_beginning, args.mask_from_end, args.mask_sites, args.mask_invalid)):
+        print("No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites")
         sys.exit(1)
 
     mask_sites = set()
@@ -178,7 +163,7 @@ def run(args):
         # Mask sites passed in as 1-indexed
         mask_sites.update(site - 1 for site in args.mask_sites)
     if args.mask_file:
-        mask_sites.update(read_bed_file(args.mask_file))
+        mask_sites.update(load_mask_sites(args.mask_file))
     mask_sites = sorted(mask_sites)
 
     # For both FASTA and VCF masking, we need a proper separate output file
@@ -189,14 +174,15 @@ def run(args):
                                 "masked_" + os.path.basename(args.sequences))
 
     if is_vcf(args.sequences):
-        if args.mask_from_beginning or args.mask_from_end:
-            print("Cannot use --mask-from-beginning or --mask-from-end with VCF files!")
+        if args.mask_from_beginning or args.mask_from_end or args.mask_invalid:
+            print("Cannot use --mask-from-beginning, --mask-from-end, or --mask-invalid with VCF files!")
             sys.exit(1)
         mask_vcf(mask_sites, args.sequences, out_file, args.cleanup)
     else:
         mask_fasta(mask_sites, args.sequences, out_file, 
                    mask_from_beginning=args.mask_from_beginning,
-                   mask_from_end=args.mask_from_end)
+                   mask_from_end=args.mask_from_end,
+                   mask_invalid=args.mask_invalid)
 
     if args.output is None:
         copyfile(out_file, args.sequences)

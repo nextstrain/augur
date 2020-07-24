@@ -2,15 +2,98 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* utils: `read_metadata` interface improvements
+  * raises exceptions when 1) input file is missing or unreadable or 2) required columns (`strain` or `name`) are missing instead of failing silently [#584][]
+  * automatically detects delimiter in metadata file instead of assuming delimiter based on filename extension [#587][]
+
+[#584]: https://github.com/nextstrain/augur/pull/584
+[#587]: https://github.com/nextstrain/augur/pull/587
+
+## 9.0.0 (29 June 2020)
+
+### Major Changes
+
+* align: The API to the `read_sequences` function now returns a list of sequences instead of a dictionary [#536][]
+
 ### Bug Fixes
 
-* mask: Fix parsing of BED files as zero-indexed, half-open intervals [#512][]
+* align: Prevent duplicate strains warning when using `--reference-name` [#536][]
+* docs: Sync and deduplicate installation documentation from README to main docs [#578][]
+* export: Flexibly disambiguate multiple publications by the same author [#581][]
+* frequencies: Avoid interpolation of a single data point during frequency estimation with sparse data [#569][]
+* parse: Actually remove commas during prettify when this behavior is requested [#573][]
+* tests: Always use the local helper script (`bin/augur`) to run tests instead of any globally installed augur executables [#527][]
+* tree: Keep log files after trees are built [#572][]
+* utils: Do not attempt to parse dates with only ambiguous months (e.g., 2020-XX-01) [#532][]
+* utils: Parse `name` column of metadata as a data field instead of a pandas DataFrame attribute [#564][]
 
 ### Features
 
-* mask: Allow masking of specific sites passed by the user with `--mask-sites` and masking of a fixed number of sites from the beginning or end of each sequence with `--mask-from-beginning` and `--mask-from-end` [#512][]
+* docs: Updates description of how missing data are handled by `augur traits`
+* filter: Add support for ISO 8601 dates (YYYY-MM-DD) for `--min-date` and `--max-date` [#568][]
+* tests: Add tests for utilities (ambiguous date parsing [#532][] and `run_shell_command` [#577][]), parse [#573][], and translate [#546][]
+* tree: Allow VCF input without an `--exclude-sites` argument [#565][]
 
+[#527]: https://github.com/nextstrain/augur/pull/527
+[#532]: https://github.com/nextstrain/augur/pull/532
+[#536]: https://github.com/nextstrain/augur/pull/536
+[#546]: https://github.com/nextstrain/augur/pull/546
+[#564]: https://github.com/nextstrain/augur/pull/564
+[#565]: https://github.com/nextstrain/augur/pull/565
+[#568]: https://github.com/nextstrain/augur/pull/568
+[#569]: https://github.com/nextstrain/augur/pull/569
+[#572]: https://github.com/nextstrain/augur/pull/572
+[#573]: https://github.com/nextstrain/augur/pull/573
+[#577]: https://github.com/nextstrain/augur/pull/577
+[#578]: https://github.com/nextstrain/augur/pull/578
+[#581]: https://github.com/nextstrain/augur/pull/581
+
+## 8.0.0 (8 June 2020)
+
+### Major Changes
+
+* utils: Add a consolidated generic `load_mask_sites` function and specific `read_mask_file` and `read_bed_file` functions for reading masking sites from files. Changes the Python API by moving mask-loading functionality out of augur mask and tree into utils [#514][] and [#550][]
+* mask: Parse BED files as zero-indexed, half-open intervals [#512][]
+
+### Bug Fixes
+
+* traits: Export mugration models to the same output directory as traits JSON [#544][]
+* Explicitly open files with UTF-8 file encoding [#499][], [#503][], and [#560][]
+* refine: Only request confidence intervals from TreeTime when no clock rate is provided [#548][]
+* refine: Catch failed skyline optimization [#556][]
+
+### Features
+
+* align: Report insertions stripped during alignment [#449][]
+* Require minimum pandas version of 1.0.0 [#488][]
+* parse: Reduce memory use and clarify code with standard Python idioms [#496][]
+* mask: Allow masking of specific sites passed by the user with `--mask-sites` and masking of a fixed number of sites from the beginning or end of each sequence with `--mask-from-beginning` and `--mask-from-end` [#512][]
+* clades, import: Use `defaultdict` to simplify code [#533][]
+* tests: Add initial functional tests of the augur command line interface using Cram [#542][]
+* refine: Add a `--seed` argument to set the random seed for more reproducible outputs across runs [#542][]
+* ancestral, refine, and traits: Print the version of TreeTime being used for these commands [#552][]
+* filter: Add support for flexible pandas-style queries with new `--query` argument [#555][]
+* export: Allow display defaults for transmission lines [#561][]
+
+[#449]: https://github.com/nextstrain/augur/pull/449
+[#488]: https://github.com/nextstrain/augur/pull/488
+[#496]: https://github.com/nextstrain/augur/pull/496
+[#499]: https://github.com/nextstrain/augur/pull/499
+[#503]: https://github.com/nextstrain/augur/pull/503
 [#512]: https://github.com/nextstrain/augur/pull/512
+[#514]: https://github.com/nextstrain/augur/pull/514
+[#533]: https://github.com/nextstrain/augur/pull/533
+[#542]: https://github.com/nextstrain/augur/pull/542
+[#544]: https://github.com/nextstrain/augur/pull/544
+[#548]: https://github.com/nextstrain/augur/pull/548
+[#550]: https://github.com/nextstrain/augur/pull/550
+[#552]: https://github.com/nextstrain/augur/pull/552
+[#555]: https://github.com/nextstrain/augur/pull/555
+[#556]: https://github.com/nextstrain/augur/pull/556
+[#560]: https://github.com/nextstrain/augur/pull/560
+[#561]: https://github.com/nextstrain/augur/pull/561
 
 ## 7.0.2 (7 April 2020)
 

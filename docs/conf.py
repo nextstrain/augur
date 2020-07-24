@@ -43,7 +43,7 @@ def prose_list(items):
     else:
         return ", ".join([*items[0:-1], "and " + items[-1]])
 
-project = 'augur'
+project = 'Augur'
 copyright = '2014–%d Trevor Bedford and Richard Neher' % (date.today().year)
 author = prose_list(git_authors())
 
@@ -76,7 +76,7 @@ rst_epilog = f"""
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'nextstrain-sphinx-theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

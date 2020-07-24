@@ -41,7 +41,9 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
         treetime.TreeAnc instance
     """
 
-    from treetime import TreeAnc
+    from treetime import TreeAnc, version as treetime_version
+    print(f"augur ancestral is using TreeTime version {treetime_version}")
+
     tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69',
                  fill_overhangs=fill_overhangs, verbose=1)
 
@@ -64,10 +66,14 @@ def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, 
 
     Parameters
     ----------
-    T : Bio.Phylo.Tree
-        Phylogenetic tree decorated with sequences and mutations as output by treetime.
-    is_vcf : bool, optional
-        specifies whether input alignment was vcf type (implying long genomes)
+    tt : treetime
+        instance of treetime with valid ancestral reconstruction
+    infer_tips : bool, optional
+        if true, request the reconstructed tip sequences from treetime, otherwise retain input ambiguities
+    full_sequences : bool, optional
+        if true, add the full sequences
+    character_map : None, optional
+        optional dictionary to map characters to a custom set.
 
     Returns
     -------

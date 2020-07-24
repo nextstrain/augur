@@ -5,17 +5,17 @@ Parse delimited fields from FASTA sequence names into a TSV and FASTA file.
 from Bio import SeqIO
 import pandas as pd
 
-forbidden_characters = [
-    (' ',''),
-    ('(','_'),
-    (')','_'),
-    ('[','_'),
-    (']','_'),
-    (':','_'),
-    (',','_'),
-    (';','_'),
-    ('\\','_')
-]
+forbidden_chactacters = str.maketrans(
+    {' ': None,
+     '(': '_',
+     ')': '_',
+     '[': '_',
+     ']': '_',
+     ':': '_',
+     ',': '_',
+     ';': '_',
+     '\\': '_'}
+)
 
 def fix_dates(d, dayfirst=True):
     '''
@@ -38,28 +38,28 @@ def fix_dates(d, dayfirst=True):
 
 def prettify(x, trim=0, camelCase=False, etal=None, removeComma=False):
     res = x
-    if (trim > 0 and len(x) > trim):
+    if 0 < trim < len(x):
         res = x[:trim] + "..."
 
-    if any(c == res for c in ["usvi", "usa", "uk"]):
+    if res in {'usvi', 'usa', 'uk'}:
         res = res.upper()
 
     words = res.split('_')
 
-    if (camelCase):
-        words = [w[0].upper()+w[1:] for w in words if len(w)]
+    if camelCase:
+        words = map(str.capitalize, words)
 
     res = ' '.join(words)
 
     if removeComma:
-        res.replace(',', '')
+        res = res.replace(',', '')
 
-    if etal=='lower':
-        res = res.replace('Et Al', 'et al')
-    elif etal=='strip':
-        res = res.replace('et al.', '').replace('Et Al.', '').replace('et al', '').replace('Et Al', '');
+    if etal == 'lower':
+        res = res.replace('Et Al', 'et al').replace('Et Al.', 'et al.').replace('Et al', 'et al')
+    elif etal == 'strip':
+        res = res.replace('et al.', '').replace('Et Al.', '').replace('et al', '').replace('Et Al', '')
 
-    return res;
+    return res
 
 
 def register_arguments(parser):
@@ -78,44 +78,46 @@ def run(args):
     parse a fasta file and turn information in the header into
     a tsv or csv file.
     '''
-    seqs = list(SeqIO.parse(args.sequences, 'fasta'))
+    seqs = SeqIO.parse(args.sequences, 'fasta')
 
     # if strain or name are found in specified fields, use this
     # field to index the dictionary and the data frame
     meta_data = {}
+
     if 'name' in args.fields:
-        strain_index = args.fields.index('name')
+        strain_key = 'name'
     elif 'strain' in args.fields:
-        strain_index = args.fields.index('strain')
+        strain_key = 'strain'
     else:
-        strain_index = 0
+        strain_key = args.fields[0]
 
     # loop over sequences, parse fasta header of each sequence
-    for seq in seqs:
-        fields = [x.strip() for x in seq.description.split(args.separator)]
-        tmp_name = fields[strain_index]
-        for x, y in forbidden_characters:
-            tmp_name = tmp_name.replace(x, y)
+    with open(args.output_sequences, 'w', encoding='utf-8') as output:
+        for seq in seqs:
+            fields = map(str.strip, seq.description.split(args.separator))
+            tmp_meta = dict(zip(args.fields, fields))
 
-        seq.name = seq.id = tmp_name
-        seq.description = ''
-        tmp_meta = {k:v for k,v in zip(args.fields, fields)}
+            tmp_name = tmp_meta[strain_key].translate(forbidden_chactacters)
+            seq.name = seq.id = tmp_name
+            seq.description = ''
 
-        if args.prettify_fields:
-            for field in args.prettify_fields:
-                if field in tmp_meta and type(tmp_meta[field])==str:
-                    tmp_meta[field] = prettify(tmp_meta[field], camelCase=(not field.startswith('author')),
-                                                  etal='lower' if field.startswith('author') else None)
+            if args.prettify_fields:
+                for field in tmp_meta.keys() & args.prettify_fields:
+                    if isinstance(tmp_meta[field], str):
+                        tmp_meta[field] = prettify(tmp_meta[field], camelCase=(not field.startswith('author')),
+                                                    etal='lower' if field.startswith('author') else None)
 
-        meta_data[seq.id] = tmp_meta
-        meta_data[seq.id].pop('strain')
-        # parse dates and convert to a canonical format
-        if args.fix_dates and 'date' in args.fields:
-            meta_data[seq.id]['date'] = fix_dates(meta_data[seq.id]['date'],
-                                        dayfirst=args.fix_dates=='dayfirst')
+            # parse dates and convert to a canonical format
+            if args.fix_dates and 'date' in tmp_meta:
+                tmp_meta['date'] = fix_dates(tmp_meta['date'],
+                                            dayfirst=args.fix_dates=='dayfirst')
 
-    # output results to a new fasta alignment and tsv/csv via pandas
-    SeqIO.write(seqs, args.output_sequences, 'fasta')
+            if 'strain' in tmp_meta:
+                del tmp_meta['strain']
+            meta_data[seq.id] = tmp_meta
+
+            SeqIO.write(seq, output, 'fasta')
+
     df = pd.DataFrame.from_dict(meta_data, orient='index')
     df.to_csv(args.output_metadata, index_label='strain',
-              sep='\t' if args.output_metadata[-3:]=='tsv' else ',')
+              sep='\t' if args.output_metadata.endswith('tsv') else ',')

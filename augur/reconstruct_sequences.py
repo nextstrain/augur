@@ -73,7 +73,7 @@ def run(args):
     #if VCF, read in the reference seq for each gene, put on root
     if(is_vcf):
         node_data["nodes"][root_node]['aa_sequences'] = {}
-        with open(args.vcf_aa_reference) as handle:
+        with open(args.vcf_aa_reference, encoding='utf-8') as handle:
             for record in SeqIO.parse(handle, "fasta"):
                 if record.id==args.gene:
                     #'root' may not be same as 'reference', so apply any mutations at root here!
