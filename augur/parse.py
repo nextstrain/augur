@@ -52,10 +52,10 @@ def prettify(x, trim=0, camelCase=False, etal=None, removeComma=False):
     res = ' '.join(words)
 
     if removeComma:
-        res.replace(',', '')
+        res = res.replace(',', '')
 
     if etal == 'lower':
-        res = res.replace('Et Al', 'et al').replace('Et Al.', 'et al.')
+        res = res.replace('Et Al', 'et al').replace('Et Al.', 'et al.').replace('Et al', 'et al')
     elif etal == 'strip':
         res = res.replace('et al.', '').replace('Et Al.', '').replace('et al', '').replace('Et Al', '')
 

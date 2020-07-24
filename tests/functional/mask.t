@@ -1,17 +1,18 @@
 Integration tests for augur mask.
 
   $ pushd "$TESTDIR" > /dev/null
+  $ export AUGUR="../../bin/augur"
 
 Try masking a VCF without any specified mask.
 
-  $ augur mask --sequences mask/variants.vcf
-  No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, or --mask-sites
+  $ ${AUGUR} mask --sequences mask/variants.vcf
+  No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites
   [1]
 
 Mask a VCF with a BED file and no specified output file.
 
   $ cp "mask/variants.vcf" "$TMP/"
-  $ augur mask \
+  $ ${AUGUR} mask \
   >  --sequences "$TMP/variants.vcf" \
   >  --mask "mask/mask_variants.bed" > /dev/null
 
@@ -20,7 +21,7 @@ Mask a VCF with a BED file and no specified output file.
 
 Mask a VCF with a BED file and a specified output file.
 
-  $ augur mask \
+  $ ${AUGUR} mask \
   >  --sequences "mask/variants.vcf" \
   >  --mask "mask/mask_variants.bed" \
   >  --output "$TMP/masked_variants.vcf" > /dev/null
@@ -30,15 +31,15 @@ Mask a VCF with a BED file and a specified output file.
 
 Try masking sequences without any specified mask.
 
-  $ augur mask --sequences mask/sequences.fasta
-  No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, or --mask-sites
+  $ ${AUGUR} mask --sequences mask/sequences.fasta
+  No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites
   [1]
 
 Mask sequences with a BED file and no specified output file.
 Since no output is provided, the input file is overridden with the masked sequences.
 
   $ cp mask/sequences.fasta "$TMP/"
-  $ augur mask --sequences "$TMP/sequences.fasta" --mask mask/mask.bed
+  $ ${AUGUR} mask --sequences "$TMP/sequences.fasta" --mask mask/mask.bed
   3 masking sites read from mask/mask.bed
   Removing masked sites from FASTA file.
 
@@ -49,7 +50,7 @@ Since no output is provided, the input file is overridden with the masked sequen
 
 Mask sequences with a BED file and a specified output file.
 
-  $ augur mask \
+  $ ${AUGUR} mask \
   >  --sequences mask/sequences.fasta \
   >  --mask mask/mask.bed \
   >  --output "$TMP/masked.fasta"
@@ -63,7 +64,7 @@ Mask sequences with a BED file and a specified output file.
 
 Mask one base from the beginning and the end.
 
-  $ augur mask \
+  $ ${AUGUR} mask \
   >  --sequences mask/sequences.fasta \
   >  --mask-from-beginning 1 \
   >  --mask-from-end 1 \
@@ -77,7 +78,7 @@ Mask one base from the beginning and the end.
 
 Mask a specific list of sites and also mask one base from the beginning and the end.
 
-  $ augur mask \
+  $ ${AUGUR} mask \
   >  --sequences mask/sequences.fasta \
   >  --mask-sites 3 4 \
   >  --mask-from-beginning 1 \
@@ -88,6 +89,19 @@ Mask a specific list of sites and also mask one base from the beginning and the 
   $ cat "$TMP/masked.fasta"
   >sequence_1
   NTNNTN
+  $ rm -f "$TMP/masked.fasta"
+
+Mask invalid nucleotides
+
+  $ ${AUGUR} mask \
+  >  --sequences mask/invalidnucleotide.fasta \
+  >  --mask-invalid \
+  >  --output "$TMP/masked.fasta"
+  Removing masked sites from FASTA file.
+
+  $ cat "$TMP/masked.fasta"
+  >sequence_1
+  ATCGNNNN
   $ rm -f "$TMP/masked.fasta"
 
   $ popd > /dev/null

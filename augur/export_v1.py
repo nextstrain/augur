@@ -310,7 +310,7 @@ def get_root_sequence(root_node, ref=None, translations=None):
 def add_core_args(parser):
     core = parser.add_argument_group("REQUIRED")
     core.add_argument('--tree','-t', required=True, help="tree to perform trait reconstruction on")
-    core.add_argument('--metadata', required=True, help="tsv file with sequence meta data")
+    core.add_argument('--metadata', required=True, metavar="FILE", help="sequence metadata, as CSV or TSV")
     core.add_argument('--node-data', required=True, nargs='+', help="JSON files with meta data for each node")
     core.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json).")
     core.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json).")
@@ -320,7 +320,7 @@ def add_core_args(parser):
 
 def add_option_args(parser):
     options = parser.add_argument_group("OPTIONS")
-    options.add_argument('--colors', help="file with color definitions")
+    options.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
     options.add_argument('--lat-longs', help="file latitudes and longitudes, overrides built in mappings")
     options.add_argument('--tree-name', default=False, help="Tree name (needed for tangle tree functionality)")
     options.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
@@ -387,7 +387,11 @@ def run_v1(args):
 
     # Export the metadata JSON
     lat_long_mapping = read_lat_longs(args.lat_longs)
-    color_mapping = read_colors(args.colors)
+    try:
+        color_mapping = read_colors(args.colors)
+    except FileNotFoundError as e:
+        print(f"ERROR: required file could not be read: {e}")
+        sys.exit(2)
     meta_json["updated"] = time.strftime("%d %b %Y")
     meta_json["virus_count"] = len(list(T.get_terminals()))
     meta_json["author_info"] = construct_author_info_v1(meta_tsv, T, nodes)

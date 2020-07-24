@@ -105,7 +105,7 @@ def register_arguments(parser):
         subcommand argument parser
     """
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
-    parser.add_argument('--metadata', required=True, help="tsv/csv table with meta data")
+    parser.add_argument('--metadata', required=True, metavar="FILE", help="table with metadata, as CSV or TSV")
     parser.add_argument('--weights', required=False, help="tsv/csv table with equilibrium probabilities of discrete states")
     parser.add_argument('--columns', required=True, nargs='+',
                         help='metadata fields to perform discrete reconstruction on')

@@ -70,7 +70,6 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args
         if clean_up:
             os.remove("RAxML_bestTree.%s"%(random_string))
             os.remove("RAxML_info.%s"%(random_string))
-            os.remove("RAxML_log.%s"%(random_string))
             os.remove("RAxML_parsimonyTree.%s"%(random_string))
             os.remove("RAxML_result.%s"%(random_string))
 
@@ -118,8 +117,6 @@ def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_a
     try:
         run_shell_command(cmd, raise_errors = True, extra_env = extra_env)
         T = Phylo.read(out_file, 'newick')
-        if clean_up:
-            os.remove(log_file)
     except:
         print("ERROR: TREE BUILDING FAILED")
         if os.path.isfile(log_file):
@@ -189,11 +186,10 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
             if substitution_model.lower() == 'none':
                 shutil.copyfile(log_file, out_file.replace(out_file.split('/')[-1],"iqtree.log"))
 
-            for f in [log_file, tmp_aln_file]:
-                if os.path.isfile(f):
-                    os.remove(f)
+            if os.path.isfile(tmp_aln_file):
+                os.remove(tmp_aln_file)
 
-            for ext in [".bionj",".ckp.gz",".iqtree",".log",".mldist",".model.gz",".treefile",".uniqueseq.phy",".model"]:
+            for ext in [".bionj",".ckp.gz",".iqtree",".mldist",".model.gz",".treefile",".uniqueseq.phy",".model"]:
                 if os.path.isfile(tmp_aln_file + ext):
                     os.remove(tmp_aln_file + ext)
     except:
@@ -214,7 +210,7 @@ def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
     positions = compress_seq['positions']
 
     #If want to exclude sites from initial treebuild, read in here
-    strip_pos = load_mask_sites(stripFile)
+    strip_pos = load_mask_sites(stripFile) if stripFile else []
 
     #Get sequence names
     seqNames = list(sequences.keys())

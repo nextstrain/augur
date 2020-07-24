@@ -6,19 +6,23 @@ for any function in mask.py, check that it is correctly updated in this file.
 import argparse
 import os
 import pytest
+import random
+import string
 
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from augur import mask
+from augur.utils import VALID_NUCLEOTIDES
 
 # Test inputs for the commands. Writing these here so tests are self-contained.
 @pytest.fixture
 def sequences():
     return {
         "SEQ1": SeqRecord(Seq("ATGC-ATGC-ATGC"), id="SEQ1"),
-        "SEQ2": SeqRecord(Seq("ATATATATATATATAT"), id="SEQ2")
+        "SEQ2": SeqRecord(Seq("ATATATATATATATAT"), id="SEQ2"),
+        "SEQ_ALLCHARS": SeqRecord(Seq(string.ascii_letters + string.digits + "-"), id="SEQ_ALLCHARS")
     }
 
 @pytest.fixture
@@ -220,6 +224,18 @@ class TestMask:
         for record in output:
             assert record.seq == "N" * len(record.seq)
 
+    @pytest.mark.parametrize("mask_invalid", (True, False))
+    def test_mask_fasta_invalid_sites(self, fasta_file, out_file, sequences, mask_invalid):
+        """Verify that mask_fasta masks invalid nucleotides when and only when mask_invalid is passed as True"""
+        mask.mask_fasta([], fasta_file, out_file, mask_invalid=mask_invalid)
+        output = SeqIO.to_dict(SeqIO.parse(out_file, "fasta"))
+        for name, record in sequences.items():
+            for site, nucleotide in enumerate(record.seq):
+                if nucleotide not in VALID_NUCLEOTIDES and mask_invalid is True:
+                    assert output[name][site] == "N"
+                else:
+                    assert output[name][site] == nucleotide
+
     def test_run_handle_missing_sequence_file(self, vcf_file, argparser):
         os.remove(vcf_file)
         args = argparser("-s %s" % vcf_file)
@@ -326,7 +342,7 @@ class TestMask:
 
     def test_run_fasta_mask_from_beginning_or_end(self, fasta_file, out_file, argparser, mp_context):
         args = argparser("-s %s -o %s --mask-from-beginning 2 --mask-from-end 3" % (fasta_file, out_file))
-        def check_mask_from(*args, mask_from_beginning=0, mask_from_end=0):
+        def check_mask_from(*args, mask_from_beginning=0, mask_from_end=0, **kwargs):
             assert mask_from_beginning == 2
             assert mask_from_end == 3
         mp_context.setattr(mask, "mask_fasta", check_mask_from)
@@ -376,6 +392,15 @@ class TestMask:
                     assert site == "N"
                 else:
                     assert site == reference[idx]
+
+    def test_e2e_fasta_mask_invalid(self, fasta_file, out_file, sequences, argparser):
+        args = argparser("-s %s -o %s --mask-invalid" % (fasta_file, out_file))
+        mask.run(args)
+        output = SeqIO.parse(out_file, "fasta")
+        for record in output:
+            reference = str(sequences[record.id].seq)
+            for idx, site in enumerate(reference):
+                assert record.seq[idx] == site if site in VALID_NUCLEOTIDES else "N"
 
     def test_e2e_vcf_minimal(self, vcf_file, bed_file, argparser):
         args = argparser("-s %s --mask %s" % (vcf_file, bed_file))
