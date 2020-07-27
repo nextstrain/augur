@@ -160,11 +160,19 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         "-me",    "0.05"
     ]
 
+    # specify "-nt AUTO" to tell IQ-TREE to automatically determine the 
+    # best number of cores given the current data,
+    # with an upper bound of "-ntmax nthreads", the number of cores specified by the user.
+    # This puts the onus on IQ-TREE to determine the number of threads to use
+    # within the limit specified by the user. The actual number of threads used
+    # by IQ-TREE may be lower than the value of nthreads, depending on the data. 
+    # This avoid a scenario where IQ-TREE crashes because the user has specified 
+    # more cores than IQ-TREE can use for a given dataset.
+    #   See: https://github.com/nextstrain/augur/issues/589
+    call = ["iqtree", *fast_opts, "-nt", "AUTO", "-ntmax", str(nthreads), "-s", shquote(tmp_aln_file)]
     if substitution_model.lower() != "none":
-        call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", shquote(tmp_aln_file),
-                "-m", substitution_model, tree_builder_args, ">", log_file]
-    else:
-        call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", shquote(tmp_aln_file), tree_builder_args, ">", shquote(log_file)]
+        call += ["-m", substitution_model]
+    call += [tree_builder_args, ">", shquote(log_file)]
 
     cmd = " ".join(call)
 
