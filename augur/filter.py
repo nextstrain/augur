@@ -3,8 +3,8 @@ Filter and subsample a sequence set.
 """
 
 from Bio import SeqIO
-import pandas as pd
 from collections import defaultdict
+from typing import Collection
 import random, os, re
 import numpy as np
 import sys
@@ -96,7 +96,9 @@ def register_arguments(parser):
     parser.add_argument('--exclude', type=str, help="file with list of strains that are to be excluded")
     parser.add_argument('--include', type=str, help="file with list of strains that are to be included regardless of priorities or subsampling")
     parser.add_argument('--priority', type=str, help="file with list of priority scores for sequences (strain\tpriority)")
-    parser.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
+    subsample_group = parser.add_mutually_exclusive_group()
+    subsample_group.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
+    subsample_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences")
     parser.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
     parser.add_argument('--subsample-seed', help="random number generator seed to allow reproducible sub-sampling (with same input data). Can be number or string.")
     parser.add_argument('--exclude-where', nargs='+',
@@ -257,7 +259,7 @@ def run(args):
     if args.subsample_seed:
         random.seed(args.subsample_seed)
     num_excluded_subsamp = 0
-    if args.group_by and args.sequences_per_group:
+    if args.group_by and (args.sequences_per_group or args.subsample_max_sequences):
         spg = args.sequences_per_group
         seq_names_by_group = defaultdict(list)
 
@@ -309,6 +311,20 @@ def run(args):
 
             if args.priority: # read priorities
                 priorities = read_priority_scores(args.priority)
+
+            if spg is None:
+                # this is only possible if we have imposed a maximum number of samples
+                # to produce.  we need binary search until we have the correct spg.
+                try:
+                    spg = _calculate_sequences_per_group(
+                        args.subsample_max_sequences,
+                        [len(sequences_in_group)
+                         for sequences_in_group in seq_names_by_group.values()],
+                    )
+                except TooManyGroupsError as ex:
+                    print(f"ERROR: {ex}", file=sys.stderr)
+                    sys.exit(1)
+                print("sampling at {} per group.".format(spg))
 
             # subsample each groups, either by taking the spg highest priority strains or
             # sampling at random from the sequences in the group
@@ -430,3 +446,76 @@ def numeric_date(date):
         return float(date)
     except ValueError:
         return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))
+
+
+class TooManyGroupsError(ValueError):
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __str__(self):
+        return str(self.msg)
+
+
+def _calculate_total_sequences(
+        hypothetical_spg: int, sequence_lengths: Collection[int],
+) -> int:
+    # calculate how many sequences we'd keep given a hypothetical spg.
+    return sum(
+        min(hypothetical_spg, sequence_length)
+        for sequence_length in sequence_lengths
+    )
+
+
+def _calculate_sequences_per_group(
+        target_max_value: int,
+        sequence_lengths: Collection[int],
+) -> int:
+    """This is partially inspired by
+    https://github.com/python/cpython/blob/3.8/Lib/bisect.py
+
+    This should return the spg such that we don't exceed the requested
+    number of samples.
+
+    Parameters
+    ----------
+    target_max_value : int
+        the total number of sequences allowed across all groups
+    sequence_lengths : Collection[int]
+        the number of sequences in each group
+
+    Returns
+    -------
+    int
+        maximum number of sequences allowed per group to meet the required maximum total
+        sequences allowed
+
+    >>> _calculate_sequences_per_group(4, [4, 2])
+    2
+    >>> _calculate_sequences_per_group(2, [4, 2])
+    1
+    >>> _calculate_sequences_per_group(1, [4, 2])
+    Traceback (most recent call last):
+        ...
+    augur.filter.TooManyGroupsError: Asked to provide at most 1 sequences, but there are 2 groups.
+    """
+
+    if len(sequence_lengths) > target_max_value:
+        # we have more groups than sequences we are allowed, which is an
+        # error.
+
+        raise TooManyGroupsError(
+            "Asked to provide at most {} sequences, but there are {} "
+            "groups.".format(target_max_value, len(sequence_lengths)))
+
+    lo = 1
+    hi = target_max_value
+    while hi - lo > 2:
+        mid = (lo + hi) // 2
+        if _calculate_total_sequences(mid, sequence_lengths) <= target_max_value:
+            lo = mid
+        else:
+            hi = mid
+    if _calculate_total_sequences(hi, sequence_lengths) <= target_max_value:
+        return hi
+    else:
+        return lo
