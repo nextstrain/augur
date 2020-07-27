@@ -8,8 +8,27 @@
   * raises exceptions when 1) input file is missing or unreadable or 2) required columns (`strain` or `name`) are missing instead of failing silently [#584][]
   * automatically detects delimiter in metadata file instead of assuming delimiter based on filename extension [#587][]
 
+* utils: `read_colors` refactor [#588][]
+  * raises an exception when the requested color file is missing instead of printing a warning to stdout
+  * splits out logic to parse colors file into separate classes (`util_support/color_parser.py` and `util_support/color_parser_line.py`) with unit tests
+
+### Bug Fixes
+
+* ancestral: Fix docstring for `collect_mutations_and_sequences` [4c474a9][]
+* refine: Enable divergence unit scaling without timetree [e9b3eec][]
+
+### Features
+
+* mask: Add `--mask-invalid` flag to mask invalid nucleotides from FASTA files [#592][]
+* filter: Add `--subsample-max-sequences` argument to limit the maximum number of sequences to be included in subsampled output [#593][]
+
 [#584]: https://github.com/nextstrain/augur/pull/584
 [#587]: https://github.com/nextstrain/augur/pull/587
+[#588]: https://github.com/nextstrain/augur/pull/588
+[#592]: https://github.com/nextstrain/augur/pull/592
+[#593]: https://github.com/nextstrain/augur/pull/593
+[e9b3eec]: https://github.com/nextstrain/augur/commit/e9b3eec670b9603874e195cc1ccd4f3c1aeef5dd
+[4c474a9]: https://github.com/nextstrain/augur/commit/4c474a96232e9cc333e3fc4c0971336a090b703c
 
 ## 9.0.0 (29 June 2020)
 
