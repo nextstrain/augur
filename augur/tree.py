@@ -143,7 +143,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     with open(tmp_aln_file, 'w', encoding='utf-8') as ofile:
         for line in tmp_seqs:
             if line.startswith(">"):
-                num_seqs+=1
+                num_seqs += 1
             ofile.write(line.replace('/', '_X_X_').replace('|','_Y_Y_').replace("(","_X_Y_").replace(")","_Y_X_"))
 
     # For compat with older versions of iqtree, we avoid the newish -fast
@@ -163,10 +163,15 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         "-me",    "0.05"
     ]
 
-    # bound number of threads to either the number of threads requested, 
+    # bound number of threads to either the number of threads requested,
     # or the number of sequences, whichever is lower. Set lower bound to 1.
     # This avoids an error from IQ-TREE when num_seq < nthreads.
-    nthreads = max(min(num_seqs,nthreads),1)
+    if num_seqs < nthreads:
+        nthreads = max(num_seqs, 1)
+        print(
+            f"WARNING: more threads requested than there are sequences; scaling down to {nthreads} threads.",
+            file=sys.stderr
+        )
 
     if substitution_model.lower() != "none":
         call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", shquote(tmp_aln_file),
