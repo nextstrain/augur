@@ -163,13 +163,16 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         "-me",    "0.05"
     ]
 
-    # bound number of threads to either the number of threads requested,
-    # or the number of sequences, whichever is lower. Set lower bound to 1.
-    # This avoids an error from IQ-TREE when num_seq < nthreads.
+    # Use IQ-TREE's auto-scaling of threads when the user has requested more
+    # threads than there are sequences. This approach avoids an error from
+    # IQ-TREE when num_seq < nthreads (as when users request `-nthreads auto` on
+    # a machine with many cores and fewer input sequences) and also avoids
+    # requesting as many threads as there are sequences when there may be fewer
+    # available threads on the current machine.
     if num_seqs < nthreads:
-        nthreads = max(num_seqs, 1)
+        nthreads = "AUTO"
         print(
-            f"WARNING: more threads requested than there are sequences; scaling down to {nthreads} threads.",
+            "WARNING: more threads requested than there are sequences; falling back to IQ-TREE's `-nt AUTO` mode.",
             file=sys.stderr
         )
 
