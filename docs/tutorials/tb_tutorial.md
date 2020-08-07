@@ -100,12 +100,12 @@ rule filter:
 
 Now run filter. If you are using the Snakefile included with the TB tutorial, you can run:
 ```bash
-snakemake filter
+snakemake --cores 1 filter
 ```
 
 If you have created your own Snakefile, you'll need to specify its name. For example, if it is called `TB_snakefile`, you would run:
 ```bash
-snakemake -s TB_snakefile filter
+snakemake --cores 1 -s TB_snakefile filter
 ```
 
 ### Mask the Sequences
@@ -450,7 +450,7 @@ rule all:
 
 This rule tells Snakemake what the final output of our entire run should look like.
 It will run all rules necessary to produce these files, so they should be the names of your final step.
-If you have an "all" rule, you can run your entire analysis just by running `snakemake` or `snakemake --snakefile Snakefile2` (if the name of your Snakefile is not 'Snakefile').
+If you have an "all" rule, you can run your entire analysis just by running `snakemake --cores 1` or `snakemake --cores 1 --snakefile Snakefile2` (if the name of your Snakefile is not 'Snakefile').
 
 We'll need to add a few remaining files to our list of files at the start of our Snakefile:
 ```bash
