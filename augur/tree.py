@@ -139,8 +139,11 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     # IQ-tree messes with taxon names. Hence remove offending characters, reinstaniate later
     tmp_aln_file = aln_file.replace(".fasta", "-delim.fasta")
     log_file = tmp_aln_file.replace(".fasta", ".iqtree.log")
+    num_seqs = 0
     with open(tmp_aln_file, 'w', encoding='utf-8') as ofile:
         for line in tmp_seqs:
+            if line.startswith(">"):
+                num_seqs += 1
             ofile.write(line.replace('/', '_X_X_').replace('|','_Y_Y_').replace("(","_X_Y_").replace(")","_Y_X_"))
 
     # For compat with older versions of iqtree, we avoid the newish -fast
@@ -159,6 +162,19 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         "-n",     "2",
         "-me",    "0.05"
     ]
+
+    # Use IQ-TREE's auto-scaling of threads when the user has requested more
+    # threads than there are sequences. This approach avoids an error from
+    # IQ-TREE when num_seq < nthreads (as when users request `-nthreads auto` on
+    # a machine with many cores and fewer input sequences) and also avoids
+    # requesting as many threads as there are sequences when there may be fewer
+    # available threads on the current machine.
+    if num_seqs < nthreads:
+        nthreads = "AUTO"
+        print(
+            "WARNING: more threads requested than there are sequences; falling back to IQ-TREE's `-nt AUTO` mode.",
+            file=sys.stderr
+        )
 
     if substitution_model.lower() != "none":
         call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", shquote(tmp_aln_file),
