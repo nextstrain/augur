@@ -25,7 +25,13 @@ def fix_dates(d, dayfirst=True):
     On failure to parse the date, the function will return the input.
     '''
     try:
-        dto, _, res = pd.core.tools.datetimes.parse_time_string(d, dayfirst=dayfirst)
+        from pandas.core.tools.datetimes import parsing
+        results = parsing.parse_time_string(d, dayfirst=dayfirst)
+        if len(results) == 2:
+            dto, res = results
+        else:
+            dto, _, res = results
+
         if res == 'year':
             return "%d-XX-XX"%dto.year
         elif res == 'month':
