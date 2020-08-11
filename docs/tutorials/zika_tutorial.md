@@ -5,6 +5,9 @@ Augur consists of a number of tools that allow the user to filter and align sequ
 The different tools are meant to be composable and the output of one tool will serve as the input of other tools.
 We will work off the tutorial for Zika virus on the [nextstrain web site](https://nextstrain.org/docs/getting-started/zika-tutorial) and the github repository [nextstrain/zika-tutorial](https://github.com/nextstrain/zika-tutorial).
 
+## Setup
+
+To run this tutorial you'll need to [install augur](../installation/installation) and [install Snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html).
 
 ## Augur commands
 

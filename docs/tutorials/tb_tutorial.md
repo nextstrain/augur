@@ -5,6 +5,10 @@ However, much of it will be applicable to any run where you are starting with [V
 
 As in the Zika fasta-input [tutorial](zika_tutorial), we'll build up a Snakefile step-by-step for each step of the analysis.
 
+## Setup
+
+To run this tutorial you'll need to [install augur](../installation/installation) and [install Snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html).
+
 ## Build steps
 Nextstrain builds typically require the following steps:
 

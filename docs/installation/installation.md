@@ -18,6 +18,8 @@ python3 -m pip install nextstrain-augur
 
 Augur uses some common external bioinformatics programs which you'll need to install to have a fully functioning toolkit:
 
+* Nextstrain workflows and some tutorials require [Snakemake](https://snakemake.readthedocs.io)
+
 * `augur align` requires [mafft](https://mafft.cbrc.jp/alignment/software/)
 
 * `augur tree` requires at least one of:
@@ -27,7 +29,7 @@ Augur uses some common external bioinformatics programs which you'll need to ins
 
 * Bacterial data (or any VCF usage) requires [vcftools](https://vcftools.github.io/)
 
-On macOS, you can install these external programs using [Homebrew](https://brew.sh/) with:
+On macOS, you can install most of these external programs using [Homebrew](https://brew.sh/) with:
 
     brew tap brewsci/bio
     brew install mafft iqtree raxml fasttree vcftools
@@ -37,6 +39,7 @@ On Debian/Ubuntu, you can install them via:
     sudo apt install mafft iqtree raxml fasttree vcftools
 
 Other Linux distributions will likely have the same packages available, although the names may differ slightly.
+Follow [Snakemake's installation instructions](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) for your operating system.
 
 ## Using Conda
 
