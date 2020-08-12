@@ -612,32 +612,6 @@ class alignment_frequencies(object):
         self.counts = count_observations(self.pivots, self.tps)
 
 
-    def estimate_genotype_frequency(self, gt):
-        '''
-        slice an alignment at possibly multiple positions and calculate the
-        frequency trajectory of this multi-locus genotype
-
-        Parameters
-        ----------
-        gt : list
-            a list of (position, state) tuples specifying the genotype
-            whose frequency is to be estimated
-
-        Returns
-        -------
-        np.array
-            frequency trajectory
-        '''
-        match = []
-        for pos, state in gt:
-            match.append(aln[:,pos]==state)
-        obs = np.array(match).all(axis=0)
-
-        fe = frequency_estimator(zip(self.tps, obs),self.pivots, **kwargs)
-        fe.learn()
-        return fe.frequency_estimate
-
-
     def mutation_frequencies(self, min_freq=0.01, include_set=None, ignore_char=''):
         '''
         estimate frequencies of single site mutations for each alignment column.
