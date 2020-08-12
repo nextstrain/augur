@@ -4,29 +4,41 @@
 
 ### Major Changes
 
-* utils: `read_metadata` interface improvements
-  * raises exceptions when 1) input file is missing or unreadable or 2) required columns (`strain` or `name`) are missing instead of failing silently [#584][]
-  * automatically detects delimiter in metadata file instead of assuming delimiter based on filename extension [#587][]
-
+* Remove Snakemake as a dependency of the augur Python package [#557][]
+  * Updated documentation to reflect external Snakemake dependency [#600][] and Snakemake's required `--cores` argument [#599][]
 * utils: `read_colors` refactor [#588][]
   * raises an exception when the requested color file is missing instead of printing a warning to stdout
   * splits out logic to parse colors file into separate classes (`util_support/color_parser.py` and `util_support/color_parser_line.py`) with unit tests
+* utils: `read_metadata` interface improvements
+  * raises exceptions when 1) input file is missing or unreadable or 2) required columns (`strain` or `name`) are missing instead of failing silently [#584][]
+  * automatically detects delimiter in metadata file instead of assuming delimiter based on filename extension [#587][]
+* utils: `read_node_data` interface improvements [#595][]
+  * exits with a nonzero code when node data node names don't match tree nodes and when the input tree cannot be loaded
+  * refactors logic to read node data into separate classes with unit tests
 
 ### Bug Fixes
 
 * ancestral: Fix docstring for `collect_mutations_and_sequences` [4c474a9][]
+* parse: Fix date parsing bug caused by a change in the API for `parse_time_string` in pandas 1.1.0 [#601][]
 * refine: Enable divergence unit scaling without timetree [e9b3eec][]
+* tree: Use IQ-TREE's `-nt AUTO` mode when users request more threads than there are input sequences, avoiding an IQ-TREE error [#598][]
 
 ### Features
 
-* mask: Add `--mask-invalid` flag to mask invalid nucleotides from FASTA files [#592][]
 * filter: Add `--subsample-max-sequences` argument to limit the maximum number of sequences to be included in subsampled output [#593][]
+* mask: Add `--mask-invalid` flag to mask invalid nucleotides from FASTA files [#592][]
 
+[#557]: https://github.com/nextstrain/augur/pull/557
 [#584]: https://github.com/nextstrain/augur/pull/584
 [#587]: https://github.com/nextstrain/augur/pull/587
 [#588]: https://github.com/nextstrain/augur/pull/588
 [#592]: https://github.com/nextstrain/augur/pull/592
 [#593]: https://github.com/nextstrain/augur/pull/593
+[#595]: https://github.com/nextstrain/augur/pull/595
+[#598]: https://github.com/nextstrain/augur/pull/598
+[#599]: https://github.com/nextstrain/augur/pull/599
+[#600]: https://github.com/nextstrain/augur/pull/600
+[#601]: https://github.com/nextstrain/augur/pull/601
 [e9b3eec]: https://github.com/nextstrain/augur/commit/e9b3eec670b9603874e195cc1ccd4f3c1aeef5dd
 [4c474a9]: https://github.com/nextstrain/augur/commit/4c474a96232e9cc333e3fc4c0971336a090b703c
 
