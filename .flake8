@@ -1,0 +1,15 @@
+# Right now we use Flake8 only for a few static checks focusing on runtime
+# safety and correctness.  We don't use it for style checks.
+
+[flake8]
+select =
+    E9,     # syntax errors
+    F63,    # syntax warnings (e.g., "==" versus "is")
+    F7,     # type hint logic/syntax errors
+    F82,    # undefined names
+
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
