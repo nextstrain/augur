@@ -39,16 +39,16 @@ class TiterCollection(object):
         >>> type(measurements)
         <class 'dict'>
         >>> len(measurements)
-        11
-        >>> measurements[("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10"))]
-        [80.0]
+        198
+        >>> measurements[("A/Singapore/36/2004", ("A/Hiroshima/39/2004", "HIROSHIMA/39/2004-NIID"))]
+        [160.0]
         >>> len(strains)
-        13
+        104
         >>> len(sources)
-        5
-        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv", excluded_sources=["NIMR_Sep2013_7-11.csv"])
+        198
+        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv", excluded_sources=["Russell2008_3224", "Russell2008_941"])
         >>> len(measurements)
-        5
+        196
         >>> measurements.get(("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10")))
         >>>
         >>> output = TiterCollection.load_from_file("tests/data/titer_model/missing.tsv")
@@ -109,12 +109,10 @@ class TiterCollection(object):
 
         >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv")
         >>> titer_counts = TiterCollection.count_strains(measurements)
-        >>> titer_counts["A/Acores/11/2013"]
-        6
-        >>> titer_counts["A/Acores/SU43/2012"]
-        3
-        >>> titer_counts["A/Cairo/63/2012"]
+        >>> titer_counts["A/Wisconsin/19/2004"]
         2
+        >>> titer_counts["A/Singapore/36/2004"]
+        4
         """
         counts = defaultdict(int)
         for key in titers.keys():
@@ -144,7 +142,7 @@ class TiterCollection(object):
 
         >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv")
         >>> len(measurements)
-        11
+        198
 
         Test the case when a test strain exists in the subset but the none of
         its corresponding reference strains do.
@@ -154,10 +152,8 @@ class TiterCollection(object):
 
         Test when both the test and reference strains exist in the subset.
 
-        >>> len(TiterCollection.filter_strains(measurements, ["A/Acores/11/2013", "A/Alabama/5/2010", "A/Athens/112/2012"]))
+        >>> len(TiterCollection.filter_strains(measurements, ["A/Fujian/411/2002", "A/Tennessee/6/2004", "A/Singapore/36/2004"]))
         2
-        >>> len(TiterCollection.filter_strains(measurements, ["A/Acores/11/2013", "A/Acores/SU43/2012", "A/Alabama/5/2010", "A/Athens/112/2012"]))
-        3
         >>> len(TiterCollection.filter_strains(measurements, []))
         0
         """
@@ -280,11 +276,11 @@ class TiterCollection(object):
         >>> titers = TiterCollection(measurements)
         >>> sera, ref_strains, test_strains = titers.strain_census(measurements)
         >>> len(sera)
-        9
+        126
         >>> len(ref_strains)
-        9
+        67
         >>> len(test_strains)
-        13
+        104
 
         Parameters
         ----------
@@ -486,7 +482,7 @@ class TiterModel(object):
             pred_titer = self.predict_titer(key[0], key[1], cutoff=cutoff)
             validation[key] = (val, pred_titer)
 
-        validation_array = np.array(validation.values())
+        validation_array = np.array(list(validation.values()))
         actual = validation_array[:,0]
         predicted = validation_array[:,1]
 
@@ -499,7 +495,7 @@ class TiterModel(object):
                         'rms_error': np.sqrt(np.mean((actual-predicted)**2)),
         }
         pprint(model_performance)
-        model_performance['values'] = validation.values()
+        model_performance['values'] = list(validation.values())
 
         self.validation = model_performance
 
@@ -1191,16 +1187,3 @@ class SubstitutionModel(TiterModel):
                 child.cTiterSub = node.cTiterSub + child.dTiterSub
 
         return tree
-
-
-if __name__=="__main__":
-    # test tree model (assumes there is a tree called flu in memory...)
-    ttm = TreeModel(flu.tree.tree, flu.titers)
-    ttm.prepare(training_fraction=0.8)
-    ttm.train(method='nnl1reg')
-    ttm.validate(plot=True)
-
-    tsm = SubstitutionModel(flu.tree.tree, flu.titers)
-    tsm.prepare(training_fraction=0.8)
-    tsm.train(method='nnl1reg')
-    tsm.validate(plot=True)
