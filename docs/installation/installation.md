@@ -1,11 +1,34 @@
 # Installation
 
+* [Using conda](#using-conda)
 * [Using pip from PyPi](#using-pip-from-pypi)
-* [Using Conda](#using-conda)
 * [Install from source](#install-from-source)
 * [Testing if it worked](#testing-if-it-worked)
 
 ---
+
+## Using conda
+
+Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
+Create a conda environment to install augur into and activate that environment.
+
+```bash
+conda create -n nextstrain
+conda activate nextstrain
+```
+
+Install augur and its dependencies into your environment.
+
+```bash
+conda install -c conda-forge -c bioconda augur
+```
+
+For a much faster installation process, use [mamba](https://github.com/TheSnakePit/mamba) as a drop-in replacement for conda.
+
+```bash
+conda install -c conda-forge mamba
+mamba install -c conda-forge -c bioconda augur
+```
 
 ## Using pip from PyPi
 
@@ -40,18 +63,6 @@ On Debian/Ubuntu, you can install them via:
 
 Other Linux distributions will likely have the same packages available, although the names may differ slightly.
 Follow [Snakemake's installation instructions](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) for your operating system.
-
-## Using Conda
-
-Alternatively, augur itself and all of its dependencies can be installed into a [Conda](https://conda.io/miniconda.html) environment:
-
-    conda env create -f environment.yml
-
-> _By default this environment is named "augur" but you can change that by providing a name to the above command with `-n <your-env-name>`_
-
-When that finishes, the enviroment needs to be activated whenever you want to use augur:
-
-    conda activate augur
 
 ## Install from source
 
