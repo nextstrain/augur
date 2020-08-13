@@ -6,7 +6,8 @@ Thank you for helping us to improve Nextstrain! This document describes:
 - Contributing code
   - Running local code changes
   - Testing
-  - Creating a release
+  - Releasing
+  - Maintaining Bioconda package
   - Continuous integration
 - Contributing documentation
   - Formats (Markdown and reStructuredText)
@@ -169,6 +170,16 @@ If any tests fail, run the `./devel/rewind-release` script to undo the release, 
 [signed]: https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work
 [a PyPi account]: https://pypi.org/account/register/
 [twine]: https://pypi.org/project/twine
+
+### Maintaining Bioconda package
+
+Bioconda hosts [augur’s conda package](http://bioconda.github.io/recipes/augur/README.html) and defines augur’s dependencies in [a conda recipe YAML file](https://github.com/bioconda/bioconda-recipes/blob/master/recipes/augur/meta.yaml).
+New releases on GitHub automatically trigger a new Bioconda release.
+
+To modify augur’s dependencies or other aspects of its conda environment, [follow Bioconda’s contributing guide](https://bioconda.github.io/contributor/index.html).
+You will need to update the existing recipe YAML locally and create a pull request on GitHub for testing and review.
+Add your GitHub username to the `recipe_maintainers` list, if this is your first time modifying the augur recipe.
+After a successful pull request review, Bioconda will automatically update the augur package that users download.
 
 ### Travis CI
 
