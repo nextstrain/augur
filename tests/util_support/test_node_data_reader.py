@@ -113,3 +113,10 @@ class TestNodeDataFile:
 
         with pytest.raises(SystemExit):
             NodeDataReader([f"{tmpdir}/file1.json"], f"{tmpdir}/tree.newick").read()
+
+    def test_read_check_against_missing_tree(self, tmpdir):
+        with pytest.raises(SystemExit):
+            node_names_from_tree = NodeDataReader(
+                [f"{tmpdir}/file1.json"],
+                f"{tmpdir}/missing_file.txt"
+            ).node_names_from_tree_file
