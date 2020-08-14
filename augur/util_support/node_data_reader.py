@@ -70,7 +70,6 @@ class NodeDataReader:
             print(
                 f"Failed to read tree from file {self.tree_file}: {e}", file=sys.stderr
             )
-            return
             sys.exit(2)
 
         return set([clade.name for clade in tree.find_clades()])
