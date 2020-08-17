@@ -25,6 +25,7 @@
 
 ### Features
 
+* docs: Document support for installation from Bioconda [#604][]
 * filter: Add `--subsample-max-sequences` argument to limit the maximum number of sequences to be included in subsampled output [#593][]
 * mask: Add `--mask-invalid` flag to mask invalid nucleotides from FASTA files [#592][]
 
@@ -39,6 +40,7 @@
 [#599]: https://github.com/nextstrain/augur/pull/599
 [#600]: https://github.com/nextstrain/augur/pull/600
 [#601]: https://github.com/nextstrain/augur/pull/601
+[#604]: https://github.com/nextstrain/augur/pull/604
 [#605]: https://github.com/nextstrain/augur/pull/605
 [e9b3eec]: https://github.com/nextstrain/augur/commit/e9b3eec670b9603874e195cc1ccd4f3c1aeef5dd
 [4c474a9]: https://github.com/nextstrain/augur/commit/4c474a96232e9cc333e3fc4c0971336a090b703c
