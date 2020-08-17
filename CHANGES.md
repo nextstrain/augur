@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 10.0.0 (17 August 2020)
+
 ### Major Changes
 
 * Remove Snakemake as a dependency of the augur Python package [#557][]
