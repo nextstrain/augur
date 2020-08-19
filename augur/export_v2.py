@@ -9,7 +9,7 @@ import warnings
 import re
 from Bio import Phylo
 from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
-from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
+from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, JsonValidationError
 
 # Set up warnings & exceptions
 warn = warnings.warn
@@ -401,7 +401,7 @@ def validate_data_json(filename):
     print("Validating produced JSON")
     try:
         validate_v2(main_json=filename)
-    except ValidateError as e:
+    except JsonValidationError as e:
         print(e)
         print("\n------------------------")
         print("Validation of {} failed. Please check this in a local instance of `auspice`, as it is not expected to display correctly. ".format(filename))
@@ -862,7 +862,7 @@ def get_config(args):
     try:
         print("Validating config file {} against the JSON schema".format(args.auspice_config))
         validate_auspice_config_v2(args.auspice_config)
-    except ValidateError:
+    except JsonValidationError:
         print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
         sys.exit(2)
     # Print a warning about the inclusion of "vaccine_choices" which are _unused_ by `export v2`
