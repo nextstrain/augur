@@ -2,7 +2,7 @@ import json
 
 from augur.__version__ import __version__
 from augur.__version__ import is_augur_version_compatible
-from augur.validate import validate_json, ValidateError, load_json_schema
+from augur.validation.json_validator import JsonValidator
 
 
 FILTERED_ATTRS = ["generated_by"]
@@ -51,18 +51,14 @@ class NodeDataFile:
 
     def validate(self):
         if self.annotations:
-            try:
-                validate_json(
-                    self.annotations,
-                    load_json_schema("schema-annotations.json"),
-                    self.fname,
-                )
-            except ValidateError as err:
+            json_validator = JsonValidator(self.attrs, "schema-annotations.json")
+
+            if not json_validator.is_valid:
                 raise RuntimeError(
                     f"{self.fname} contains an `annotations` attribute of an invalid JSON format. Was it "
                     "produced by different version of augur the one you are currently using "
                     f" ({__version__})? Please check the program that produced that JSON file."
-                ) from err
+                )
 
         if not isinstance(self.nodes, dict):
             raise RuntimeError(
