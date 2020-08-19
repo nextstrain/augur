@@ -1,0 +1,13 @@
+{
+  "colorings": [
+    {
+      "title": "Genotype",
+      "type": "categorical"
+    },
+    {
+      "key": "num_date",
+      "title": "Sampling date",
+      "type": "continuous"
+    }
+  ]
+}
