@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* ancestral: Clarify default values for inference of ambiguous bases [#613][]
+
+[#613]: https://github.com/nextstrain/augur/pull/613
 
 ## 10.0.0 (17 August 2020)
 
