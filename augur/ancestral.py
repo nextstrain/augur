@@ -111,9 +111,9 @@ def register_arguments(parser):
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
     ambiguous = parser.add_mutually_exclusive_group()
-    ambiguous.add_argument('--keep-ambiguous', action="store_false", dest='infer_ambiguous',
+    ambiguous.add_argument('--keep-ambiguous', action="store_true",
                                 help='do not infer nucleotides at ambiguous (N) sites on tip sequences (leave as N).')
-    ambiguous.add_argument('--infer-ambiguous', action="store_true",
+    ambiguous.add_argument('--infer-ambiguous', action="store_true", default=True,
                                 help='infer nucleotides at ambiguous (N,W,R,..) sites on tip sequences and replace with most likely state.')
     parser.add_argument('--keep-overhangs', action="store_true", default=False,
                                 help='do not infer nucleotides for gaps (-) on either side of the alignment')
@@ -159,9 +159,14 @@ def run(args):
         print("ERROR: this version of augur requires TreeTime 0.7 or later.")
         return 1
 
+    # Infer ambiguous bases if the user has requested that we infer them (either
+    # explicitly or by default) and the user has not explicitly requested that
+    # we keep them.
+    infer_ambiguous = args.infer_ambiguous and not args.keep_ambiguous
+
     tt = ancestral_sequence_inference(tree=T, aln=aln, ref=ref, marginal=args.inference,
                                       fill_overhangs = not(args.keep_overhangs),
-                                      infer_tips = args.infer_ambiguous)
+                                      infer_tips = infer_ambiguous)
 
     character_map = {}
     for x in tt.gtr.profile_map:
@@ -173,7 +178,7 @@ def run(args):
             character_map[x] = x
 
     anc_seqs['nodes'] = collect_mutations_and_sequences(tt, full_sequences=not is_vcf,
-                            infer_tips=args.infer_ambiguous, character_map=character_map)
+                            infer_tips=infer_ambiguous, character_map=character_map)
     # add reference sequence to json structure. This is the sequence with
     # respect to which mutations on the tree are defined.
     if is_vcf:
