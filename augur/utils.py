@@ -408,14 +408,6 @@ def run_shell_command(cmd, raise_errors=False, extra_env=None):
     return ShellCommandRunner(cmd, raise_errors=raise_errors, extra_env=extra_env).run()
 
 
-def first_line(text):
-    """
-    Returns the first line of the given text, ignoring leading and trailing
-    whitespace.
-    """
-    return text.strip().splitlines()[0]
-
-
 def available_cpu_cores(fallback: int = 1) -> int:
     """
     Returns the number (an int) of CPU cores available to this **process**, if

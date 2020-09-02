@@ -20,5 +20,5 @@ except:
 else:
     path.insert(0, str(dev_path))
 
-from augur.__main__ import main
-exit( main() )
+from augur_cli.__main__ import main
+exit(main())

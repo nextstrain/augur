@@ -95,7 +95,7 @@ setuptools.setup(
     #   https://setuptools.readthedocs.io/en/latest/setuptools.html#automatic-script-creation
     entry_points = {
         "console_scripts": [
-            "augur = augur.__main__:main",
+            "augur = augur_cli.__main__:main",
         ]
     }
 )
