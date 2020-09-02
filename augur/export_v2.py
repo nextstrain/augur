@@ -400,7 +400,7 @@ def set_filters(data_json, config):
 def validate_data_json(filename):
     print("Validating produced JSON")
     try:
-        validate_v2(main_json=filename)
+        validate_v2(filename)
     except JsonValidationError as e:
         print(e)
         print("\n------------------------")
