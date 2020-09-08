@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 10.0.1 (8 September 2020)
+
 ### Bug Fixes
 
 * ancestral: Clarify default values for inference of ambiguous bases [#613][]
