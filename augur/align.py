@@ -384,7 +384,7 @@ def make_gaps_ambiguous(aln):
     for seq in aln:
         _seq = str(seq.seq)
         _seq = _seq.replace('-', 'N')
-        seq.seq = Seq.Seq(_seq, alphabet=seq.seq.alphabet)
+        seq.seq = Seq.Seq(_seq)
 
 
 def check_duplicates(*values):

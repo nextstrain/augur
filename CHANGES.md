@@ -2,6 +2,12 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* align: Remove references to BioPython's deprecated `Alphabet` attributes [#615][]
+* Pin BioPython dependency to a max supported version to prevent breaking changes to augur in the future [#615][]
+
+[#615]: https://github.com/nextstrain/augur/pull/615
 
 ## 10.0.1 (8 September 2020)
 
