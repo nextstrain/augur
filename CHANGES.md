@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 10.0.2 (8 September 2020)
+
 ### Bug Fixes
 
 * align: Remove references to BioPython's deprecated `Alphabet` attributes [#615][]
