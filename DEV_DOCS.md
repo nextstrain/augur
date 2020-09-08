@@ -152,6 +152,21 @@ We use [codecov](https://codecov.io/) to automatically produce test coverage for
 
 ### Releasing
 
+Before you create a new release, run all tests from a fresh conda environment to verify that nothing has broken since the last CI build on GitHub.
+The following commands will setup the equivalent conda environment to the Travis CI environment, run unit and integration tests, and deactivate the environment.
+
+```bash
+conda env create -f environment.yml
+conda activate augur
+python3 -m pip install -e .[dev]
+
+./run_tests.sh
+bash tests/builds/runner.sh
+
+conda deactivate
+conda env remove -n augur
+```
+
 New releases are tagged in git using an "annotated" tag.  If the git option
 `user.signingKey` is set, the tag will also be [signed][].  Signed tags are
 preferred, but it can be hard to setup GPG correctly.  The `release` branch
@@ -164,7 +179,7 @@ local repository.  It ends with instructions for you on how to push the release
 commit/tag/branch and how to upload the built distributions to PyPi.  You'll
 need [a PyPi account][] and [twine][] installed to do the latter.
 
-After you create a new release and before you push it to GitHub, run all tests with `./run_tests.sh` to confirm that nothing broke with the new release.
+After you create a new release and before you push it to GitHub, run all tests again as described above to confirm that nothing broke with the new release.
 If any tests fail, run the `./devel/rewind-release` script to undo the release, then fix the tests before trying again.
 
 [signed]: https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work
