@@ -26,6 +26,5 @@ For instance, the documentation for `augur filter <./cli/filter.html>`__ shows h
    :maxdepth: 2
 
    cli/cli
-   augur_snakemake
    json_format
    envvars
