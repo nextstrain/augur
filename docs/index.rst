@@ -2,6 +2,9 @@
 Augur: A bioinformatics toolkit for phylogenetic analysis
 =========================================================
 
+.. warning::
+   This is the augur project's reference documentation. For the general Nextstrain docs, go here: :doc:`docs.nextstrain.org:index`
+
     *One held to foretell events by omens.*
     (`Merriam-Webster <https://www.merriam-webster.com/dictionary/augur>`__)
 
