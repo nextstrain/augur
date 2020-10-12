@@ -241,11 +241,11 @@ def run(args):
     if args.divergence_units=='mutations-per-site': #default
         pass
     elif args.divergence_units=='mutations':
-        L = tt.seq_len
-        for node in node_data['nodes']:
+        for node in T.find_clades:
+            n_muts = len([p for a,p,d in node.mutations if a not in ['N', '-'] and d not in ['N', '-']])
             if args.timetree:
-                node_data['nodes'][node]['mutation_length'] *= L
-            node_data['nodes'][node]['branch_length'] *= L
+                node_data['nodes'][node.name]['mutation_length'] = n_muts
+            node_data['nodes'][node]['branch_length'] = n_muts
     else:
         print("ERROR: divergence unit",args.divergence_units,"not supported!")
         return 1
