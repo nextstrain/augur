@@ -136,7 +136,7 @@ def run(args):
     node_data = {'alignment': args.alignment}
     # list of node attributes that are to be exported, will grow
     attributes = ['branch_length']
-
+    print("new2")
     try:
         T = read_tree(args.tree)
         node_data['input_tree'] = args.tree
@@ -241,11 +241,12 @@ def run(args):
     if args.divergence_units=='mutations-per-site': #default
         pass
     elif args.divergence_units=='mutations':
-        for node in T.find_clades:
+        for node in T.find_clades():
             n_muts = len([p for a,p,d in node.mutations if a not in ['N', '-'] and d not in ['N', '-']])
+            print(node.name, n_muts)
             if args.timetree:
                 node_data['nodes'][node.name]['mutation_length'] = n_muts
-            node_data['nodes'][node]['branch_length'] = n_muts
+            node_data['nodes'][node.name]['branch_length'] = n_muts
     else:
         print("ERROR: divergence unit",args.divergence_units,"not supported!")
         return 1
