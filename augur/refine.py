@@ -136,7 +136,7 @@ def run(args):
     node_data = {'alignment': args.alignment}
     # list of node attributes that are to be exported, will grow
     attributes = ['branch_length']
-    print("new2")
+
     try:
         T = read_tree(args.tree)
         node_data['input_tree'] = args.tree
