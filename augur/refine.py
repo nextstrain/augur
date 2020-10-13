@@ -246,7 +246,7 @@ def run(args):
             if a in ['-', 'N'] or d in ['-', 'N']:
                 return False
             elif a in nuc_map and d in nuc_map:
-                return np.sum(nuc_map[a]*nuc_map[d])>0
+                return np.sum(nuc_map[a]*nuc_map[d])==0
             else:
                 return False
 
