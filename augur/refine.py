@@ -6,7 +6,7 @@ import os, shutil, time, sys
 from Bio import Phylo
 from .utils import read_metadata, read_tree, get_numerical_dates, write_json, InvalidTreeError
 from treetime.vcf_utils import read_vcf, write_vcf
-
+from treetime.seq_utils import profile_maps
 
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
              confidence=False, resolve_polytomies=True, max_iter=2, precision='auto',
@@ -241,9 +241,17 @@ def run(args):
     if args.divergence_units=='mutations-per-site': #default
         pass
     elif args.divergence_units=='mutations':
+        nuc_map = profile_maps['nuc']
+        def different(a,d):
+            if a in ['-', 'N'] or d in ['-', 'N']:
+                return False
+            elif a in nuc_map and d in nuc_map:
+                return np.sum(nuc_map[a]*nuc_map[d])>0
+            else:
+                return False
+
         for node in T.find_clades():
-            n_muts = len([p for a,p,d in node.mutations if a not in ['N', '-'] and d not in ['N', '-']])
-            print(node.name, n_muts)
+            n_muts = len([p for a,p,d in node.mutations if different(a,d)])
             if args.timetree:
                 node_data['nodes'][node.name]['mutation_length'] = n_muts
             node_data['nodes'][node.name]['branch_length'] = n_muts
