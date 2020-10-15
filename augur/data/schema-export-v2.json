@@ -445,9 +445,9 @@
                 },
                 "children": {
                     "description": "Child nodes. Recursive structure. Terminal nodes do not have this property.",
-                    "$comment": "Polytomies (more than 2 items) allowed.",
+                    "$comment": "Polytomies (more than 2 items) allowed, as are nodes with a single child.",
                     "type": "array",
-                    "minItems": 2,
+                    "minItems": 1,
                     "items": {"$ref": "#/properties/tree"}
                 }
             }
