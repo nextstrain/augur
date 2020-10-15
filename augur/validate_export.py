@@ -7,6 +7,20 @@ and refactored over time.
 import sys
 from collections import defaultdict
 
+def ensure_no_duplicate_names(root, ValidateError):
+    """
+    Check that all node names are identical, which is required for auspice (v2) JSONs.
+    """
+    names = set()
+    def recurse(node):
+        if node["name"] in names:
+            raise ValidateError(f"Node {node['name']} appears multiple times in the tree.")
+        names.add(node["name"])
+        if "children" in node:
+            [recurse(child) for child in node["children"]]
+    recurse(root)
+
+
 def collectTreeAttrsV2(root, warn):
     """
     Collect all keys specified on `node["node_attrs"]` throughout the tree
@@ -81,6 +95,8 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
         print("\tWARNING: ", msg, file=sys.stderr)
 
     print("Validating that the JSON is internally consistent...")
+
+    ensure_no_duplicate_names(data["tree"], ValidateError)
 
     if "entropy" in data["meta"]["panels"] and "genome_annotations" not in data["meta"]:
         warn("The entropy panel has been specified but annotations don't exist.")
