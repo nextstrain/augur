@@ -241,8 +241,15 @@ def run(args):
     if args.divergence_units=='mutations-per-site': #default
         pass
     elif args.divergence_units=='mutations':
+        if not args.timetree:
+            tt.infer_ancestral_sequences()
         nuc_map = profile_maps['nuc']
+
         def different(a,d):
+            '''
+            determine whether two ancestral states should count as mutation for divergence estimates
+            while correctly accounting for ambiguous nucleotides
+            '''
             if a in ['-', 'N'] or d in ['-', 'N']:
                 return False
             elif a in nuc_map and d in nuc_map:
