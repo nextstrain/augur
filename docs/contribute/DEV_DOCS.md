@@ -1,6 +1,6 @@
-# Development Docs for Contributors
+# Augur Development Docs for Contributors
 
-Thank you for helping us to improve Nextstrain! This document describes:
+Thank you for helping us to improve Augur! This document describes:
 
 - Getting Started
 - Contributing code
