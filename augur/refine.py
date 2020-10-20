@@ -258,9 +258,15 @@ def run(args):
                 return False
 
         for node in T.find_clades():
-            n_muts = len([p for a,p,d in node.mutations if different(a,d)])
+            n_muts = len([
+                position
+                for ancestral, position, derived in node.mutations
+                if different(ancestral, derived)
+            ])
+
             if args.timetree:
                 node_data['nodes'][node.name]['mutation_length'] = n_muts
+
             node_data['nodes'][node.name]['branch_length'] = n_muts
     else:
         print("ERROR: divergence unit",args.divergence_units,"not supported!")
