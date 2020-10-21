@@ -145,14 +145,15 @@ def run(args):
         return 1
 
     if not args.alignment:
-        # fake alignment to appease treetime when only using it for naming nodes...
         if args.timetree:
-            print("ERROR: alignment is required for ancestral reconstruction or timetree inference")
-            return 1
-        if args.divergence_units=='mutations':
-            print("ERROR: alignment is required for divergence in units of mutations")
+            print("ERROR: alignment is required for ancestral reconstruction or timetree inference", file=sys.stderr)
             return 1
 
+        if args.divergence_units=='mutations':
+            print("ERROR: alignment is required for divergence in units of mutations", file=sys.stderr)
+            return 1
+
+        # fake alignment to appease treetime when only using it for naming nodes...
         from Bio import SeqRecord, Seq, Align
         seqs = []
         for n in T.get_terminals():
@@ -160,7 +161,7 @@ def run(args):
         aln = Align.MultipleSeqAlignment(seqs)
     elif any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
         if not args.vcf_reference:
-            print("ERROR: a reference Fasta is required with VCF-format alignments")
+            print("ERROR: a reference Fasta is required with VCF-format alignments", file=sys.stderr)
             return 1
 
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
@@ -189,7 +190,7 @@ def run(args):
     if args.timetree:
         # load meta data and covert dates to numeric
         if args.metadata is None:
-            print("ERROR: meta data with dates is required for time tree reconstruction")
+            print("ERROR: meta data with dates is required for time tree reconstruction", file=sys.stderr)
             return 1
         metadata, columns = read_metadata(args.metadata)
         if args.year_bounds:
@@ -221,7 +222,7 @@ def run(args):
                 node_data['skyline'] = [[float(x) for x in skyline.x], [float(y) for y in conf[0]],
                                         [float(y) for y in skyline.y], [float(y) for y in conf[1]]]
             except:
-                print("ERROR: skyline optimization by TreeTime has failed.")
+                print("ERROR: skyline optimization by TreeTime has failed.", file=sys.stderr)
                 return 1
 
         attributes.extend(['numdate', 'clock_length', 'mutation_length', 'raw_date', 'date'])
@@ -273,7 +274,7 @@ def run(args):
 
             node_data['nodes'][node.name]['branch_length'] = n_muts
     else:
-        print("ERROR: divergence unit",args.divergence_units,"not supported!")
+        print("ERROR: divergence unit",args.divergence_units,"not supported!", file=sys.stderr)
         return 1
 
     # Export refined tree and node data
