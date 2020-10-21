@@ -6,7 +6,7 @@ import os, shutil, time, sys
 from Bio import Phylo
 from .utils import read_metadata, read_tree, get_numerical_dates, write_json, InvalidTreeError
 from treetime.vcf_utils import read_vcf, write_vcf
-
+from treetime.seq_utils import profile_maps
 
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
              confidence=False, resolve_polytomies=True, max_iter=2, precision='auto',
@@ -145,10 +145,15 @@ def run(args):
         return 1
 
     if not args.alignment:
-        # fake alignment to appease treetime when only using it for naming nodes...
         if args.timetree:
-            print("ERROR: alignment is required for ancestral reconstruction or timetree inference")
+            print("ERROR: alignment is required for ancestral reconstruction or timetree inference", file=sys.stderr)
             return 1
+
+        if args.divergence_units=='mutations':
+            print("ERROR: alignment is required for divergence in units of mutations", file=sys.stderr)
+            return 1
+
+        # fake alignment to appease treetime when only using it for naming nodes...
         from Bio import SeqRecord, Seq, Align
         seqs = []
         for n in T.get_terminals():
@@ -156,7 +161,7 @@ def run(args):
         aln = Align.MultipleSeqAlignment(seqs)
     elif any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
         if not args.vcf_reference:
-            print("ERROR: a reference Fasta is required with VCF-format alignments")
+            print("ERROR: a reference Fasta is required with VCF-format alignments", file=sys.stderr)
             return 1
 
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
@@ -185,7 +190,7 @@ def run(args):
     if args.timetree:
         # load meta data and covert dates to numeric
         if args.metadata is None:
-            print("ERROR: meta data with dates is required for time tree reconstruction")
+            print("ERROR: meta data with dates is required for time tree reconstruction", file=sys.stderr)
             return 1
         metadata, columns = read_metadata(args.metadata)
         if args.year_bounds:
@@ -217,7 +222,7 @@ def run(args):
                 node_data['skyline'] = [[float(x) for x in skyline.x], [float(y) for y in conf[0]],
                                         [float(y) for y in skyline.y], [float(y) for y in conf[1]]]
             except:
-                print("ERROR: skyline optimization by TreeTime has failed.")
+                print("ERROR: skyline optimization by TreeTime has failed.", file=sys.stderr)
                 return 1
 
         attributes.extend(['numdate', 'clock_length', 'mutation_length', 'raw_date', 'date'])
@@ -241,13 +246,35 @@ def run(args):
     if args.divergence_units=='mutations-per-site': #default
         pass
     elif args.divergence_units=='mutations':
-        L = tt.seq_len
-        for node in node_data['nodes']:
+        if not args.timetree:
+            tt.infer_ancestral_sequences()
+        nuc_map = profile_maps['nuc']
+
+        def are_sequence_states_different(nuc1, nuc2):
+            '''
+            determine whether two ancestral states should count as mutation for divergence estimates
+            while correctly accounting for ambiguous nucleotides
+            '''
+            if nuc1 in ['-', 'N'] or nuc2 in ['-', 'N']:
+                return False
+            elif nuc1 in nuc_map and nuc2 in nuc_map:
+                return np.sum(nuc_map[nuc1]*nuc_map[nuc2])==0
+            else:
+                return False
+
+        for node in T.find_clades():
+            n_muts = len([
+                position
+                for ancestral, position, derived in node.mutations
+                if are_sequence_states_different(ancestral, derived)
+            ])
+
             if args.timetree:
-                node_data['nodes'][node]['mutation_length'] *= L
-            node_data['nodes'][node]['branch_length'] *= L
+                node_data['nodes'][node.name]['mutation_length'] = n_muts
+
+            node_data['nodes'][node.name]['branch_length'] = n_muts
     else:
-        print("ERROR: divergence unit",args.divergence_units,"not supported!")
+        print("ERROR: divergence unit",args.divergence_units,"not supported!", file=sys.stderr)
         return 1
 
     # Export refined tree and node data
