@@ -149,6 +149,10 @@ def run(args):
         if args.timetree:
             print("ERROR: alignment is required for ancestral reconstruction or timetree inference")
             return 1
+        if args.divergence_units=='mutations':
+            print("ERROR: alignment is required for divergence in units of mutations")
+            return 1
+
         from Bio import SeqRecord, Seq, Align
         seqs = []
         for n in T.get_terminals():
@@ -245,15 +249,15 @@ def run(args):
             tt.infer_ancestral_sequences()
         nuc_map = profile_maps['nuc']
 
-        def different(a,d):
+        def are_sequence_states_different(nuc1, nuc2):
             '''
             determine whether two ancestral states should count as mutation for divergence estimates
             while correctly accounting for ambiguous nucleotides
             '''
-            if a in ['-', 'N'] or d in ['-', 'N']:
+            if nuc1 in ['-', 'N'] or nuc2 in ['-', 'N']:
                 return False
-            elif a in nuc_map and d in nuc_map:
-                return np.sum(nuc_map[a]*nuc_map[d])==0
+            elif nuc1 in nuc_map and nuc2 in nuc_map:
+                return np.sum(nuc_map[nuc1]*nuc_map[nuc2])==0
             else:
                 return False
 
@@ -261,7 +265,7 @@ def run(args):
             n_muts = len([
                 position
                 for ancestral, position, derived in node.mutations
-                if different(ancestral, derived)
+                if are_sequence_states_different(ancestral, derived)
             ])
 
             if args.timetree:
