@@ -92,5 +92,5 @@ html_css_files = [
 # -- Cross-project references ------------------------------------------------
 
 intersphinx_mapping = {
-    'docs.nextstrain.org': ('https://docs.nextstrain.org/en/migrate/', None),
+    'docs.nextstrain.org': ('https://docs.nextstrain.org/en/latest/', None),
 }
