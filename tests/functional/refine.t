@@ -69,7 +69,8 @@ Confirm that trees match expected topology and branch lengths, given that the ou
 
   $ python3 "$TESTDIR/../../scripts/diff_trees.py" "refine/not_time_tree.nwk" "$TMP/tree.nwk" --significant-digits 2
   {}
-  $ diff -u "refine/mutations_per_site_branch_lengths.json" "$TMP/branch_lengths.json"
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" "refine/mutations_per_site_branch_lengths.json" "$TMP/branch_lengths.json" --significant-digits 0
+  {}
 
 Run refine again without a time tree, but request number of mutations per branch as the divergence unit.
 This approach only works when we provide an alignment FASTA.
@@ -93,7 +94,8 @@ Confirm that trees match expected topology and branch lengths, given that the ou
 
   $ python3 "$TESTDIR/../../scripts/diff_trees.py" "refine/not_time_tree.nwk" "$TMP/tree.nwk" --significant-digits 2
   {}
-  $ diff -u "refine/integer_branch_lengths.json" "$TMP/branch_lengths.json"
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" "refine/integer_branch_lengths.json" "$TMP/branch_lengths.json" --significant-digits 0
+  {}
 
 Run refine again without a time tree, but try to request number of mutations per branch as the divergence unit.
 This approach does not make sense and should not work without an alignment FASTA.
