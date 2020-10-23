@@ -2,6 +2,13 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* refine: Report divergence by number of mutations as an integer instead of a floating point value [#618][]
+* validate: Allow internal nodes with a single child and do not allow duplicate node names [#621][]
+
+[#618]: https://github.com/nextstrain/augur/pull/618
+[#621]: https://github.com/nextstrain/augur/pull/621
 
 ## 10.0.2 (8 September 2020)
 
