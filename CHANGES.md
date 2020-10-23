@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 10.0.3 (23 October 2020)
+
 ### Bug Fixes
 
 * refine: Report divergence by number of mutations as an integer instead of a floating point value [#618][]
