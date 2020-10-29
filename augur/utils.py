@@ -102,7 +102,7 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, m
                     numerical_dates[k] = None
     else:
         numerical_dates = {k:float(v) for k,v in meta_dict.items()}
-    if num_excluede_recs:
+    if num_excluded_recs:
         print("%s records were excluded due to ambiguous date"%num_excluded_recs)
     return numerical_dates
 
