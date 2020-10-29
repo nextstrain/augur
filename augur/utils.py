@@ -37,7 +37,6 @@ def open_file(fname, mode):
         with open(fname, mode, encoding='utf-8') as fh:
             yield fh
 
-
 def is_vcf(fname):
     """Convenience method to check if a file is a vcf file.
 
@@ -50,7 +49,6 @@ def is_vcf(fname):
     """
     return fname.lower().endswith(".vcf") or fname.lower().endswith(".vcf.gz")
 
-
 def myopen(fname, mode):
     if fname.endswith('.gz'):
         import gzip
@@ -58,14 +56,12 @@ def myopen(fname, mode):
     else:
         return open(fname, mode, encoding='utf-8')
 
-
 def get_json_name(args, default=None):
     if args.output_node_data:
         return args.output_node_data
     else:
         if default:
-            print("WARNING: no name for the output file was specified. Writing results to %s." % default,
-                  file=sys.stderr)
+            print("WARNING: no name for the output file was specified. Writing results to %s."%default, file=sys.stderr)
             return default
         else:
             raise ValueError("Please specify a name for the JSON file containing the results.")
@@ -74,32 +70,29 @@ def get_json_name(args, default=None):
 def ambiguous_date_to_date_range(uncertain_date, fmt, min_max_year=None):
     return DateDisambiguator(uncertain_date, fmt=fmt, min_max_year=min_max_year).range()
 
-
 def read_metadata(fname, query=None):
     return MetadataFile(fname, query).read()
 
-
-def get_numerical_dates(meta_dict, name_col=None, date_col='date', fmt=None, min_max_year=None,
-                        exclude_ambiguous_dates=None):
-    num_excluede_recs = 0
+def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, min_max_year=None, exclude_ambiguous_dates=None):
+    num_excluded_recs = 0
     if fmt:
         from datetime import datetime
         numerical_dates = {}
-        for k, m in meta_dict.items():
+        for k,m in meta_dict.items():
             v = m[date_col]
-            if type(v) != str:
-                print("WARNING: %s has an invalid data string:" % k, v)
+            if type(v)!=str:
+                print("WARNING: %s has an invalid data string:"%k,v)
                 continue
             elif 'XX' in v:
                 if (exclude_ambiguous_dates == 'all') or \
                         (exclude_ambiguous_dates == 'days' and 'XX' in v.split('-')[2]) or \
                         (exclude_ambiguous_dates == 'months' and 'XX' in v.split('-')[1]):
                     numerical_dates[k] = None
-                    num_excluede_recs += 1
+                    num_excluded_recs += 1
                     continue
                 ambig_date = ambiguous_date_to_date_range(v, fmt, min_max_year)
                 if ambig_date is None or None in ambig_date:
-                    numerical_dates[k] = [None, None]  # don't send to numeric_date or will be set to today
+                    numerical_dates[k] = [None, None] #don't send to numeric_date or will be set to today
                 else:
                     numerical_dates[k] = [numeric_date(d) for d in ambig_date]
             else:
@@ -108,9 +101,9 @@ def get_numerical_dates(meta_dict, name_col=None, date_col='date', fmt=None, min
                 except:
                     numerical_dates[k] = None
     else:
-        numerical_dates = {k: float(v) for k, v in meta_dict.items()}
+        numerical_dates = {k:float(v) for k,v in meta_dict.items()}
     if num_excluede_recs:
-        print("%s records were excluded due to ambiguous data" % num_excluede_recs)
+        print("%s records were excluded due to ambiguous date"%num_excluded_recs)
     return numerical_dates
 
 
@@ -165,8 +158,7 @@ def read_tree(fname, min_terminals=3):
     # If the tree cannot be loaded, raise an error to that effect.
     if T is None:
         raise InvalidTreeError(
-            "Could not read the given tree %s using the following supported formats: %s" % (
-            fname, ", ".join(supported_tree_formats))
+            "Could not read the given tree %s using the following supported formats: %s" % (fname, ", ".join(supported_tree_formats))
         )
 
     return T
@@ -197,12 +189,12 @@ def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSO
     ------
     OSError
     """
-    # in case parent folder does not exist yet
+    #in case parent folder does not exist yet
     parent_directory = os.path.dirname(file_name)
     if parent_directory and not os.path.exists(parent_directory):
         try:
             os.makedirs(parent_directory)
-        except OSError:  # Guard against race condition
+        except OSError: #Guard against race condition
             if not os.path.isdir(parent_directory):
                 raise
 
@@ -214,27 +206,26 @@ def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSO
 
 
 def load_features(reference, feature_names=None):
-    # read in appropriately whether GFF or Genbank
-    # checks explicitly for GFF otherwise assumes Genbank
+    #read in appropriately whether GFF or Genbank
+    #checks explicitly for GFF otherwise assumes Genbank
     if not os.path.isfile(reference):
         print("ERROR: reference sequence not found. looking for", reference)
         return None
 
     features = {}
     if '.gff' in reference.lower():
-        # looks for 'gene' and 'gene' as best for TB
+        #looks for 'gene' and 'gene' as best for TB
         try:
-            from BCBio import GFF  # Package name is confusing - tell user exactly what they need!
+            from BCBio import GFF #Package name is confusing - tell user exactly what they need!
         except ImportError:
-            print(
-                "ERROR: Package BCBio.GFF not found! Please install using \'pip install bcbio-gff\' before re-running.")
+            print("ERROR: Package BCBio.GFF not found! Please install using \'pip install bcbio-gff\' before re-running.")
             return None
-        limit_info = dict(gff_type=['gene'])
+        limit_info = dict( gff_type = ['gene'] )
 
         with open(reference, encoding='utf-8') as in_handle:
             for rec in GFF.parse(in_handle, limit_info=limit_info):
                 for feat in rec.features:
-                    if feature_names is not None:  # check both tags; user may have used either
+                    if feature_names is not None: #check both tags; user may have used either
                         if "gene" in feat.qualifiers and feat.qualifiers["gene"][0] in feature_names:
                             fname = feat.qualifiers["gene"][0]
                         elif "locus_tag" in feat.qualifiers and feat.qualifiers["locus_tag"][0] in feature_names:
@@ -257,7 +248,7 @@ def load_features(reference, feature_names=None):
     else:
         from Bio import SeqIO
         for feat in SeqIO.read(reference, 'genbank').features:
-            if feat.type == 'CDS':
+            if feat.type=='CDS':
                 if "locus_tag" in feat.qualifiers:
                     fname = feat.qualifiers["locus_tag"][0]
                     if feature_names is None or fname in feature_names:
@@ -266,15 +257,14 @@ def load_features(reference, feature_names=None):
                     fname = feat.qualifiers["gene"][0]
                     if feature_names is None or fname in feature_names:
                         features[fname] = feat
-            elif feat.type == 'source':  # read 'nuc' as well for annotations - need start/end of whole!
+            elif feat.type=='source': #read 'nuc' as well for annotations - need start/end of whole!
                 features['nuc'] = feat
 
     return features
 
-
 def read_config(fname):
     if not (fname and os.path.isfile(fname)):
-        print("ERROR: config file %s not found." % fname)
+        print("ERROR: config file %s not found."%fname)
         return defaultdict(dict)
 
     try:
@@ -291,10 +281,8 @@ def read_config(fname):
 
     return config
 
-
 def read_lat_longs(overrides=None, use_defaults=True):
     coordinates = {}
-
     # TODO: make parsing of tsv files more robust while allow for whitespace delimiting for backwards compatibility
     def add_line_to_coordinates(line):
         if line.startswith('#') or line.strip() == "":
@@ -308,10 +296,7 @@ def read_lat_longs(overrides=None, use_defaults=True):
                 "longitude": long
             }
         else:
-            print(
-                "WARNING: geo-coordinate file contains invalid line. Please make sure not to mix tabs and spaces as delimiters (use only tabs):",
-                line)
-
+            print("WARNING: geo-coordinate file contains invalid line. Please make sure not to mix tabs and spaces as delimiters (use only tabs):",line)
     if use_defaults:
         with resource_stream(__package__, "data/lat_longs.tsv") as stream:
             with TextIOWrapper(stream, "utf-8") as defaults:
@@ -326,10 +311,8 @@ def read_lat_longs(overrides=None, use_defaults=True):
             print("WARNING: input lat/long file %s not found." % overrides)
     return coordinates
 
-
 def read_colors(overrides=None, use_defaults=True):
     return ColorParser(mapping_filename=overrides, use_defaults=use_defaults).mapping
-
 
 def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
     """
@@ -344,66 +327,66 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
     """
     import numpy as np
 
-    # for the header
+    #for the header
     seqNames = list(prot_dict[list(prot_dict.keys())[0]]['sequences'].keys())
 
-    # prepare the header of the VCF & write out
-    header = ["#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"] + seqNames
+    #prepare the header of the VCF & write out
+    header=["#CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT"]+seqNames
     with open(vcf_file_name, 'w', encoding='utf-8') as the_file:
-        the_file.write("##fileformat=VCFv4.2\n" +
-                       "##source=NextStrain_Protein_Translation\n" +
-                       "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n")
-        the_file.write("\t".join(header) + "\n")
+        the_file.write( "##fileformat=VCFv4.2\n"+
+                        "##source=NextStrain_Protein_Translation\n"+
+                        "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n")
+        the_file.write("\t".join(header)+"\n")
 
     refWrite = []
     vcfWrite = []
 
-    # go through for every gene/protein
+    #go through for every gene/protein
     for fname, prot in prot_dict.items():
         sequences = prot['sequences']
         ref = prot['reference']
         positions = prot['positions']
 
-        # write out the reference fasta
-        refWrite.append(">" + fname)
+        #write out the reference fasta
+        refWrite.append(">"+fname)
         refWrite.append(ref)
 
-        # go through every variable position
-        # There are no deletions here, so it's simpler than for VCF nuc sequenes!
+        #go through every variable position
+        #There are no deletions here, so it's simpler than for VCF nuc sequenes!
         for pi in positions:
-            pos = pi + 1  # change numbering to match VCF not python
-            refb = ref[pi]  # reference base at this position
+            pos = pi+1 #change numbering to match VCF not python
+            refb = ref[pi] #reference base at this position
 
-            # try/except is (much) faster than list comprehension!
+            #try/except is (much) faster than list comprehension!
             pattern = []
-            for k, v in sequences.items():
+            for k,v in sequences.items():
                 try:
                     pattern.append(sequences[k][pi])
                 except KeyError:
                     pattern.append('.')
             pattern = np.array(pattern)
 
-            # get the list of ALTs - minus any '.'!
+            #get the list of ALTs - minus any '.'!
             uniques = np.unique(pattern)
-            uniques = uniques[np.where(uniques != '.')]
+            uniques = uniques[np.where(uniques!='.')]
 
-            # Convert bases to the number that matches the ALT
-            j = 1
+            #Convert bases to the number that matches the ALT
+            j=1
             for u in uniques:
-                pattern[np.where(pattern == u)[0]] = str(j)
-                j += 1
-            # Now convert these calls to #/# (VCF format)
-            calls = [j + "/" + j if j != '.' else '.' for j in pattern]
-            if len(uniques) == 0:
+                pattern[np.where(pattern==u)[0]] = str(j)
+                j+=1
+            #Now convert these calls to #/# (VCF format)
+            calls = [ j+"/"+j if j!='.' else '.' for j in pattern ]
+            if len(uniques)==0:
                 print("UNEXPECTED ERROR WHILE CONVERTING TO VCF AT POSITION {}".format(str(pi)))
                 break
 
-            # put it all together and write it out
+            #put it all together and write it out
             output = [fname, str(pos), ".", refb, ",".join(uniques), ".", "PASS", ".", "GT"] + calls
 
             vcfWrite.append("\t".join(output))
 
-    # write it all out
+    #write it all out
     with open(ref_file_name, 'w', encoding='utf-8') as the_file:
         the_file.write("\n".join(refWrite))
 
@@ -412,14 +395,12 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
 
     if vcf_file_name.lower().endswith('.gz'):
         import os
-        # must temporarily remove .gz ending, or gzip won't zip it!
+        #must temporarily remove .gz ending, or gzip won't zip it!
         os.rename(vcf_file_name, vcf_file_name[:-3])
         call = ["gzip", vcf_file_name[:-3]]
-        run_shell_command(" ".join(call), raise_errors=True)
-
+        run_shell_command(" ".join(call), raise_errors = True)
 
 shquote = shlex.quote
-
 
 def run_shell_command(cmd, raise_errors=False, extra_env=None):
     """
@@ -589,7 +570,6 @@ def json_to_tree(json_dict, root=True):
 
     return node
 
-
 def get_augur_version():
     """
     Returns a string of the current augur version.
@@ -617,17 +597,16 @@ def read_bed_file(bed_file):
     """
     mask_sites = []
     try:
-        bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1, 2],
-                          dtype={1: int, 2: int})
+        bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1,2],
+                          dtype={1:int,2:int})
     except ValueError:
         # Check if we have a header row. Otherwise, just fail.
-        bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1, 2],
-                          dtype={1: int, 2: int}, skiprows=1)
+        bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1,2],
+                          dtype={1:int,2:int}, skiprows=1)
         print("Skipped row 1 of %s, assuming it is a header." % bed_file)
     for _, row in bed.iterrows():
         mask_sites.extend(range(row[1], row[2]))
     return sorted(set(mask_sites))
-
 
 def read_mask_file(mask_file):
     """Read a masking file and return a list of excluded sites.
@@ -660,7 +639,6 @@ def read_mask_file(mask_file):
                 raise
     return sorted(set(mask_sites))
 
-
 def load_mask_sites(mask_file):
     """Load masking sites from either a BED file or a masking file.
 
@@ -681,8 +659,7 @@ def load_mask_sites(mask_file):
     print("%d masking sites read from %s" % (len(mask_sites), mask_file))
     return mask_sites
 
-
-VALID_NUCLEOTIDES = {  # http://reverse-complement.com/ambiguity.html
+VALID_NUCLEOTIDES = { # http://reverse-complement.com/ambiguity.html
     "A", "G", "C", "T", "U", "N", "R", "Y", "S", "W", "K", "M", "B", "V", "D", "H", "-",
     "a", "g", "c", "t", "u", "n", "r", "y", "s", "w", "k", "m", "b", "v", "d", "h", "-"
 }
