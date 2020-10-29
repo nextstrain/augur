@@ -105,6 +105,8 @@ def register_arguments(parser):
                                 help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
     parser.add_argument('--include-where', nargs='+',
                                 help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND. This rule is applied last and ensures any sequences matching these rules will be included.")
+    parser.add_argument('--exclude-ambiguous-dates', choices=['all', 'days', 'months'],
+                                help='Exclude ambiguous dates Ex: days - excludes 2020-09-XX, months - exclueds 2020-xx-19, all - excludes any ambiguous dates')
     parser.add_argument('--query', help="Filter samples by attribute. Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.")
     parser.add_argument('--output', '-o', help="output file", required=True)
 
@@ -234,7 +236,7 @@ def run(args):
     # filter by date
     num_excluded_by_date = 0
     if (args.min_date or args.max_date) and 'date' in meta_columns:
-        dates = get_numerical_dates(meta_dict, fmt="%Y-%m-%d")
+        dates = get_numerical_dates(meta_dict, fmt="%Y-%m-%d", exclude_ambiguous_dates=args.exclude_ambiguous_dates)
         tmp = [s for s in seq_keep if dates[s] is not None]
         if args.min_date:
             tmp = [s for s in tmp if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s])>args.min_date]
