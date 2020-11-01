@@ -6,6 +6,7 @@ from freezegun import freeze_time
 
 from augur import utils
 
+
 class TestUtils:
     def test_ambiguous_date_to_date_range_not_ambiguous(self):
         assert utils.ambiguous_date_to_date_range("2000-03-29", "%Y-%m-%d") == (
@@ -100,3 +101,13 @@ class TestUtils:
         with open(drm_file, "w") as fh:
             fh.write("\n".join(drm_lines))
         assert utils.read_mask_file(drm_file) == expected_sites
+
+    def test_numeric_dates_exclude_months(self):
+        meta_dict = {'SEQ1': {"date": "2015-XX-18"}, "SEQ2": {"date": "2019-10-XX"}}
+        result_dict = utils.get_numerical_dates(meta_dict, fmt='%Y-%m-%d', exclude_ambiguous_dates='months')
+        assert result_dict == {'SEQ1': None, 'SEQ2': [2019.7493150684932, 2019.831506849315]}
+
+    def test_numeric_dates_exclude_all(self):
+        meta_dict = {'SEQ1': {"date": "2015-XX-18"}, "SEQ2": {"date": "2019-09-XX"}}
+        result_dict = utils.get_numerical_dates(meta_dict, fmt='%Y-%m-%d', exclude_ambiguous_dates='all')
+        assert result_dict == {'SEQ1': None, 'SEQ2': None}
