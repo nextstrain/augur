@@ -6,7 +6,6 @@ from freezegun import freeze_time
 
 from augur import utils
 
-
 class TestUtils:
     def test_ambiguous_date_to_date_range_not_ambiguous(self):
         assert utils.ambiguous_date_to_date_range("2000-03-29", "%Y-%m-%d") == (
