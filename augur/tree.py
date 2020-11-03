@@ -139,7 +139,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         from string import ascii_uppercase as letters
         return "".join([letters[i] for i in np.random.randint(len(letters), size=n)])
     prefix = random_string(20)
-    escape_dict = {c:f'_{prefix}-{random_string(20)}_' for x in '/|()*'}
+    escape_dict = {c:f'_{prefix}-{random_string(20)}_' for c in '/|()*'}
     reverse_escape_dict = {v:k for k,v in escape_dict.items()}
 
 
