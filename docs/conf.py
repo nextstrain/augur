@@ -78,6 +78,12 @@ rst_epilog = f"""
 #
 html_theme = 'nextstrain-sphinx-theme'
 
+html_theme_options = {
+    'logo_only': False, # if True, don't display project name at top of the sidebar
+    'collapse_navigation': False, # if True, no [+] icons in sidebar
+    'titles_only': True, # if True, page subheadings not included in nav
+}
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
