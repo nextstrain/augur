@@ -10,7 +10,6 @@ common questions and problems users run into.
    :maxdepth: 1
    :glob:
 
-   introduction-to-augur
    what-is-a-build
    metadata
    clades
