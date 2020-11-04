@@ -71,7 +71,7 @@ setuptools.setup(
             "pytest-cov >=2.8.1, ==2.8.*",
             "pytest-mock >= 2.0.0, ==2.0.*",
             "recommonmark >=0.5.0, ==0.*",
-            "snakemake >=5.4.0, ==5.*",
+            "snakemake >=5.4.0, <5.27",
             "Sphinx >=2.0.1, ==2.*",
             "sphinx-argparse >=0.2.5, ==0.*",
             "sphinx-markdown-tables >= 0.0.9",
