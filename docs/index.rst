@@ -5,13 +5,19 @@ Augur: A bioinformatics toolkit for phylogenetic analysis
     *One held to foretell events by omens.*
     (`Merriam-Webster <https://www.merriam-webster.com/dictionary/augur>`__)
 
-.. warning::
-   This is the augur project's reference documentation. For the general Nextstrain docs, go here: :doc:`docs.nextstrain.org:index`
+.. note::
+   The documentation you are viewing is Augur's reference guide, which means it is information-oriented and targeted at users who just need info about how Augur works. 
+    
+   * If you have a question about how to achieve a specific goal with Augur, check out our :doc:`Augur-focused How-to Guides section <docs.nextstrain.org:guides/bioinformatics/index>` in the main Nextstrain documentation.
+   * If you want to learn the basics of how to use Augur from scratch, check out our :doc:`Zika tutorial <docs.nextstrain.org:augur/docs/tutorials/zika_tutorial>` in the main Nextstrain documentation.
+   * If you want to understand how Augur fits together with Auspice to visualize results, check out our :doc:`Data Formats section <docs.nextstrain.org:reference/formats/data-formats>` in the main Nextstrain documentation.
+
 
 
 Augur is a bioinformatics toolkit to track evolution from sequence and serological data.
 It provides a collection of commands which are designed to be composable into larger processing pipelines.
 Augur originated as part of `Nextstrain <https://nextstrain.org>`__, an open-source project to harness the scientific and public health potential of pathogen genome data.
+All source code is available on [GitHub](https://github.com/nextstrain/augur).
 
 .. note:: We have just released version 6 of augur -- `check our upgrading guide <releases/migrating-v5-v6.html>`__
 
@@ -29,7 +35,6 @@ The ``refine`` step is necessary to ensure that cross-referencing between tree n
 
 The different augur modules can be strung together by workflow managers like snakemake and nextflow.
 The nextstrain team uses `snakemake <https://snakemake.readthedocs.io/en/stable/>`__ to run and manage the different analysis that you see on `nextstrain.org <https://nextstrain.org>`__.
-
 
 .. toctree::
    :maxdepth: 2
