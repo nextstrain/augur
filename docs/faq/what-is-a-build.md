@@ -11,7 +11,7 @@ These steps, taken together, are what we refer to as a "build".
 
 ### Example build
 
-The [Zika virus tutorial](/docs/tutorials/zika#build-steps) describes a build which contains the following steps:
+The [Zika virus tutorial](https://docs.nextstrain.org/en/latest/tutorials/zika.html#build-steps) describes a build which contains the following steps:
 
 1. Prepare pathogen sequences and metadata
 2. Align sequences
@@ -21,21 +21,12 @@ The [Zika virus tutorial](/docs/tutorials/zika#build-steps) describes a build wh
 
 and each of these can be run via a separate `augur` command.
 
-
-
+If you look at the [other tutorials](https://docs.nextstrain.org/en/latest/tutorials/index.html), each one uses a slightly different combination of `augur` commands depending on the pathogen.
 
 ### Snakemake
 
 While it is possible to run a build by running each of the individual steps, we typically group these together into a make-type file.
 [Snakemake](https://snakemake.readthedocs.io/en/stable/index.html) is "a tool to create reproducible and scalable data analyses... via a human-readable, Python-based language."
 
-> Snakemake is installed as part of the [conda environment](/docs/getting-started/local-installation#install-augur--auspice-with-conda-recommended) or the [docker container](/docs/getting-started/container-installation#install-docker).
+> Snakemake is installed as part of the [conda environment](https://docs.nextstrain.org/en/latest/guides/install/local-installation.html#install-augur-auspice-with-conda) or the [docker container](https://docs.nextstrain.org/en/latest/cli/doc/installation.html).
 If you ever see a build which has a "Snakefile" then you can run this by typing `snakemake --cores 1` or `nextstrain build --cpus 1 .`, respectively.
-
-
-### Next steps
-
-* Have a look at some of the tutorials (listed in the sidebar).
-Each one will use a slightly different combination of `augur` commands depending on the pathogen.
-
-* Visit the [augur docs](https://nextstrain-augur.readthedocs.io/en/stable) for more information on the bioinformatics toolkit.
