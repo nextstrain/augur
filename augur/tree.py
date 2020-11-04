@@ -133,18 +133,29 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         aln_file    file name of input aligment
         out_file    file name to write tree to
     '''
-    with open(aln_file, encoding='utf-8') as ifile:
-        tmp_seqs = ifile.readlines()
+    # create a dictionary for characters that IQ-tree changes.
+    # we remove those prior to tree-building and reinstantiate later
+    def random_string(n):
+        from string import ascii_uppercase as letters
+        return "".join([letters[i] for i in np.random.randint(len(letters), size=n)])
+    prefix = "DELIM"
+    escape_dict = {c:f'_{prefix}-{random_string(20)}_' for c in '/|()*'}
+    reverse_escape_dict = {v:k for k,v in escape_dict.items()}
+
 
     # IQ-tree messes with taxon names. Hence remove offending characters, reinstaniate later
     tmp_aln_file = aln_file.replace(".fasta", "-delim.fasta")
     log_file = tmp_aln_file.replace(".fasta", ".iqtree.log")
     num_seqs = 0
-    with open(tmp_aln_file, 'w', encoding='utf-8') as ofile:
-        for line in tmp_seqs:
+    with open(tmp_aln_file, 'w', encoding='utf-8') as ofile, open(aln_file, encoding='utf-8') as ifile:
+        for line in ifile:
+            tmp_line = line
             if line.startswith(">"):
                 num_seqs += 1
-            ofile.write(line.replace('/', '_X_X_').replace('|','_Y_Y_').replace("(","_X_Y_").replace(")","_Y_X_"))
+                for c,v in escape_dict.items():
+                    tmp_line = tmp_line.replace(c,v)
+
+            ofile.write(tmp_line)
 
     # For compat with older versions of iqtree, we avoid the newish -fast
     # option alias and instead spell out its component parts:
@@ -195,7 +206,10 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         T = Phylo.read(tmp_aln_file+".treefile", 'newick')
         shutil.copyfile(tmp_aln_file+".treefile", out_file)
         for n in T.find_clades(terminal=True):
-            n.name = n.name.replace('_X_X_','/').replace('_Y_Y_','|').replace("_X_Y_","(").replace("_Y_X_",")")
+            tmp_name = n.name
+            for v,c in reverse_escape_dict.items():
+                tmp_name = tmp_name.replace(v,c)
+            n.name = tmp_name
         #this allows the user to check intermediate output, as tree.nwk will be
         if clean_up:
             #allow user to see chosen model if modeltest was run
