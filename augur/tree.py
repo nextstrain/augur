@@ -138,7 +138,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     def random_string(n):
         from string import ascii_uppercase as letters
         return "".join([letters[i] for i in np.random.randint(len(letters), size=n)])
-    prefix = random_string(20)
+    prefix = "DELIM"
     escape_dict = {c:f'_{prefix}-{random_string(20)}_' for c in '/|()*'}
     reverse_escape_dict = {v:k for k,v in escape_dict.items()}
 
@@ -149,11 +149,11 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     num_seqs = 0
     with open(tmp_aln_file, 'w', encoding='utf-8') as ofile, open(aln_file, encoding='utf-8') as ifile:
         for line in ifile:
+            tmp_line = line
             if line.startswith(">"):
                 num_seqs += 1
-            tmp_line = line
-            for c,v in escape_dict.items():
-                tmp_line = tmp_line.replace(c,v)
+                for c,v in escape_dict.items():
+                    tmp_line = tmp_line.replace(c,v)
 
             ofile.write(tmp_line)
 
