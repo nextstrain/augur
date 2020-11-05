@@ -61,7 +61,19 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store',
+    'contribute/DEV_DOCS.md',
+    'faq/colors.md',
+    'faq/fasta_input.md',
+    'faq/import-beast.md',
+    'faq/lat_longs.md',
+    'faq/seq_traits.md',
+    'faq/translate_ref.md',
+    'faq/vcf_input.md',
+    'tutorials/tb_tutorial.md',
+    'tutorials/zika_tutorial.md',
+    'usage/augur_snakemake.md',
+]
 
 # A string of reStructuredText that will be included at the end of every source
 # file that is read. This is a possible place to add substitutions that should
