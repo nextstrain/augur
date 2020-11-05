@@ -139,7 +139,7 @@ def run(args):
     #if Fasta, read in file to get sequence names and sequences
     else:
         try:
-            seqs = SeqIO.to_dict(SeqIO.parse(args.sequences, 'fasta'))
+            seqs = SeqIO.index(args.sequences, 'fasta')
         except ValueError as error:
             print("ERROR: Problem reading in {}:".format(args.sequences))
             print(error)
@@ -394,11 +394,24 @@ def run(args):
         write_vcf(args.sequences, args.output, dropped_samps)
 
     else:
-        seq_to_keep = [seq for id,seq in seqs.items() if id in seq_keep]
-        if len(seq_to_keep) == 0:
+        # It is possible to have ids in the list of sequences to keep that do
+        # not exist in the original input sequences. Find the intersection of
+        # these two lists of ids to determine if all samples were dropped or
+        # not. This final list of ids is in the same order as the input
+        # sequences such that output sequences are always in the same order for
+        # a given set of filters.
+        seq_to_write = [seq_id for seq_id in seqs if seq_id in seq_keep]
+
+        if len(seq_to_write) == 0:
             print("ERROR: All samples have been dropped! Check filter rules and metadata file format.")
             return 1
-        SeqIO.write(seq_to_keep, args.output, 'fasta')
+
+        # Write out sequences that passed all filters using an iterator to
+        # ensure that sequences are streamed to disk without being read into
+        # memory first.
+        seq_to_keep = (seqs[seq_id] for seq_id in seq_to_write)
+        sequences_written = SeqIO.write(seq_to_keep, args.output, 'fasta')
+        seqs.close()
 
     print("\n%i sequences were dropped during filtering" % (len(all_seq) - len(seq_keep),))
     if args.exclude:
