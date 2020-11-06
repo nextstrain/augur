@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+# Runs tests in a sandboxed environment that loosely replicates the Travis CI
+# environment.
+set -euo pipefail
+
+# Conda functions are not exported into a new bash environment by default, so we
+# need to source the conda profile script from the current conda installation.
+# This script expects PS1 to be defined, so we set it to an empty value.
+export PS1=
+conda_dir=$(conda info --base)
+source "${conda_dir}/etc/profile.d/conda.sh"
+
+# Install Augur from the current directory into a new conda environment.
+conda env create -f environment.yml
+conda activate augur
+python3 -m pip install -e .[dev]
+
+# Run unit and functional tests.
+./run_tests.sh
+bash tests/builds/runner.sh
+
+# Clean up the temporary environment.
+conda deactivate
+conda env remove -n augur
