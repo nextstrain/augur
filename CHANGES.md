@@ -2,6 +2,13 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* tree: Use a more generic approach to escape special characters from alignment sequence names prior to running IQ-TREE [#625][]
+* filter: Reduce memory usage by not reading sequences into memory [#627][]
+
+[#625]: https://github.com/nextstrain/augur/pull/625
+[#627]: https://github.com/nextstrain/augur/pull/627
 
 ## 10.0.3 (23 October 2020)
 
