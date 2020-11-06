@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 10.0.4 (6 November 2020)
+
 ### Bug Fixes
 
 * tree: Use a more generic approach to escape special characters from alignment sequence names prior to running IQ-TREE [#625][]
