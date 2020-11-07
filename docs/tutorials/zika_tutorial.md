@@ -7,7 +7,7 @@ We will work off the tutorial for Zika virus on the [nextstrain web site](https:
 
 ## Setup
 
-To run this tutorial you'll need to [install augur](../installation/installation) and [install Snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html).
+To run this tutorial you'll need to [install augur](../guides/install/augur_install.md) and [install Snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html).
 
 ## Augur commands
 
