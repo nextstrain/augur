@@ -73,7 +73,26 @@ def ambiguous_date_to_date_range(uncertain_date, fmt, min_max_year=None):
 def read_metadata(fname, query=None):
     return MetadataFile(fname, query).read()
 
-def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, min_max_year=None, exclude_ambiguous_dates=None):
+def is_date_ambiguous(date, ambiguous_by="all"):
+    """
+    Returns whether a given date string in the format of YYYY-MM-DD is ambiguous by a given part of the date (e.g., day, month, year, or all parts).
+
+    Parameters
+    ----------
+    date : str
+        Date string in the format of YYYY-MM-DD
+    ambiguous_by : str
+        Field of the date string to test for ambiguity ("day", "month", "year", "all")
+    """
+    year, month, day = date.split('-')
+    return (
+            (ambiguous_by == 'all' and 'X' in date) or
+            (ambiguous_by == 'day' and 'X' in day) or
+            (ambiguous_by == 'month' and 'X' in month) or
+            (ambiguous_by == 'year' and 'X' in year)
+    )
+
+def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, min_max_year=None):
     num_excluded_recs = 0
     if fmt:
         from datetime import datetime
@@ -84,12 +103,6 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, m
                 print("WARNING: %s has an invalid data string:"%k,v)
                 continue
             elif 'XX' in v:
-                if (exclude_ambiguous_dates == 'all') or \
-                        (exclude_ambiguous_dates == 'days' and 'XX' in v.split('-')[2]) or \
-                        (exclude_ambiguous_dates == 'months' and 'XX' in v.split('-')[1]):
-                    numerical_dates[k] = None
-                    num_excluded_recs += 1
-                    continue
                 ambig_date = ambiguous_date_to_date_range(v, fmt, min_max_year)
                 if ambig_date is None or None in ambig_date:
                     numerical_dates[k] = [None, None] #don't send to numeric_date or will be set to today

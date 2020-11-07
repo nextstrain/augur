@@ -101,12 +101,16 @@ class TestUtils:
             fh.write("\n".join(drm_lines))
         assert utils.read_mask_file(drm_file) == expected_sites
 
-    def test_numeric_dates_exclude_months(self):
-        meta_dict = {'SEQ1': {"date": "2015-XX-18"}, "SEQ2": {"date": "2019-10-XX"}}
-        result_dict = utils.get_numerical_dates(meta_dict, fmt='%Y-%m-%d', exclude_ambiguous_dates='months')
-        assert result_dict == {'SEQ1': None, 'SEQ2': [2019.7493150684932, 2019.831506849315]}
+    def test_is_date_ambiguous(self):
+        """ is_date_ambiguous should return true for ambiguous dates"""
+        assert utils.is_date_ambiguous("2019-0X-0X", "all")
+        assert utils.is_date_ambiguous("2019-XX-09", "month")
+        assert utils.is_date_ambiguous("2019-03-XX", "day")
+        assert utils.is_date_ambiguous("201X-03-09", "year")
 
-    def test_numeric_dates_exclude_all(self):
-        meta_dict = {'SEQ1': {"date": "2015-XX-18"}, "SEQ2": {"date": "2019-09-XX"}}
-        result_dict = utils.get_numerical_dates(meta_dict, fmt='%Y-%m-%d', exclude_ambiguous_dates='all')
-        assert result_dict == {'SEQ1': None, 'SEQ2': None}
+    def test_not_is_date_ambiguous(self):
+        """ is_date_ambiguous should return false for valid dates"""
+        assert utils.is_date_ambiguous("2019-09-03", "all") is False
+        assert utils.is_date_ambiguous("2019-03-XX", "month") is False
+        assert utils.is_date_ambiguous("2019-XX-01", "day") is False
+        assert utils.is_date_ambiguous("2019-XX-XX", "year") is False
