@@ -15,16 +15,16 @@ bibliography: paper.bib
 
 The analysis of human pathogens requires a diverse collection of bioinformatics tools.
 These tools include standard genomic and phylogenetic software and custom software developed to handle the relatively numerous and short genomes of viruses and bacteria.
-Researchers increasingly depend on the outputs of these tools to infer transmission dynamics of human diseases and make actionable recommendations to public health officials [@Black2020; @Bedford2020].
+Researchers increasingly depend on the outputs of these tools to infer transmission dynamics of human diseases and make actionable recommendations to public health officials [@Black2020; @Gardy2015].
 Under these circumstances, bioinformatics tools must scale rapidly with the number of disease samples to enable real-time analyses of pathogen evolution.
 To meet these needs, we developed Augur, a bioinformatics toolkit designed for phylogenetic analyses of human pathogens.
 
 Augur originally existed as an internal component of the nextflu [@Neher:2015jr] and Nextstrain [@Hadfield2018] applications.
-In its original form, Augur consisted of two monolithic Python scripts, "prepare" and "process", that performed most operations in memory.
-These scripts prepared a subset of pathogen sequences and metadata and then processed those data to produce an annotated phylogeny that could be viewed at [Nextstrain](https://nextstrain.org).
 The original nextflu scripts only supported seasonal influenza viruses.
 When nextflu was replaced with Nextstrain and expanded to support multiple viral and bacterial pathogens, each pathogen received its own copy of the original scripts.
 The resulting redundancy of these large scripts complicated efforts to debug analyses, add new features for all pathogens, and add support for new pathogens.
+In its original form, Augur consisted of two monolithic Python scripts, "prepare" and "process", that performed most operations in memory.
+These scripts prepared a subset of pathogen sequences and metadata and then processed those data to produce an annotated phylogeny that could be viewed at [Nextstrain](https://nextstrain.org).
 Critically, this software architecture led to long-lived, divergent branches of untested code in version control that Nextstrain team members could not confidently merge without potentially breaking existing analyses.
 
 # Implementation
@@ -36,15 +36,16 @@ To enable interoperability with existing bioinformatics tools, we designed subco
 For example, we represented all raw sequence data in FASTA format, alignments in either FASTA or VCF format, and phylogenies in Newick format.
 To handle the common case where a standard file format could not represent some or all of the outputs produced by an Augur command, we implemented a lightweight JSON schema to store the remaining data.
 The "node data" JSON format represents one such Augur-specific file format that supports arbitrary annotations of phylogenies indexed by the name assigned to internal nodes or tips.
-To provide a standard interface for our own analyses, we also designed several Augur subcommands to wrap existing bioinformatics tools including `augur align` (mafft [@Katoh2002]), `augur tree` (FastTree [@Price2010], RAxML [@Stamatakis2014], and IQ-TREE [@Nguyen2014]), and `augur refine` (TreeTime [@Sagulenko2018]).
+To provide a standard interface for our own analyses, we also designed several Augur subcommands to wrap existing bioinformatics tools including `augur align` (mafft [@Katoh2002]) and `augur tree` (FastTree [@Price2010], RAxML [@Stamatakis2014], and IQ-TREE [@Nguyen2014]).
+Many commands including `augur refine`, `traits` and `ancestral` make extensive use of TreeTime [@Sagulenko2018] to provide time-scaled phylogenetic trees or further annotate the phylogeny.
 
 By implementing the core components of Augur as a command line tool, we were able to rewrite our existing pathogen analyses as straightforward bioinformatics workflows using existing workflow management software like Snakemake [@Snakemake].
 Most pathogen workflows begin with user-curated sequences in a FASTA file (e.g., `sequences.fasta`) and metadata describing each sequence in a tab-delimited text file (e.g., `metadata.tsv`).
 Users can apply a series of Augur commands and other standard bioinformatics tools to these files to create annotated phylogenies that can be viewed in Auspice, the web application that serves [Nextstrain](https://nextstrain.org) (\autoref{fig:example-workflows}).
 This approach allows users to leverage the distributed computing abilities of workflow managers to run multiple steps of the workflow in parallel and also run individual commands that support multiprocessing in parallel.
 
-The modular Augur interface has enabled a proliferation of phylogenetic and genomic epidemiological analyses by academic researchers, public health laboratories, and private companies.
-Most recently, these tools have supported the real-time tracking of SARS-CoV-2 evolution at global and local scales.
+The modular Augur interface has enabled phylogenetic and genomic epidemiological analyses by academic researchers, public health laboratories, and private companies.
+Most recently, these tools have supported the real-time tracking of SARS-CoV-2 evolution at global and local scales [@NextstrainNcov2020, @Bedford2020, @Alm2020].
 This success has attracted contributions from the open source community that have allowed us to improve Augur's functionality, documentation, and test coverage.
 Augur can be installed from PyPI ([nextstrain-augur](https://pypi.org/project/nextstrain-augur/)) and Bioconda ([augur](https://bioconda.github.io/recipes/augur/README.html)).
 [See the full documentation](http://docs.nextstrain.org/) for more details about how to use or contribute to development of Augur.
