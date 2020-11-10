@@ -100,6 +100,7 @@ def register_arguments(parser):
     subsample_group.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     subsample_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences")
     parser.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
+    parser.add_argument('--probabilistic-sampling', action='store_true', help="Sample probabilitically from groups -- useful when there are more groups than requested sequences")
     parser.add_argument('--subsample-seed', help="random number generator seed to allow reproducible sub-sampling (with same input data). Can be number or string.")
     parser.add_argument('--exclude-where', nargs='+',
                                 help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
@@ -320,6 +321,7 @@ def run(args):
                         args.subsample_max_sequences,
                         [len(sequences_in_group)
                          for sequences_in_group in seq_names_by_group.values()],
+                        args.probabilistic_sampling
                     )
                 except TooManyGroupsError as ex:
                     print(f"ERROR: {ex}", file=sys.stderr)
@@ -330,11 +332,15 @@ def run(args):
             # sampling at random from the sequences in the group
             seq_subsample = []
             for group, sequences_in_group in seq_names_by_group.items():
+                tmp_spg = np.random.poisson(spg) if args.probabilistic_sampling else spg
+                if tmp_spg==0:
+                    continue
+
                 if args.priority: #sort descending by priority
-                    seq_subsample.extend(sorted(sequences_in_group, key=lambda x:priorities[x], reverse=True)[:spg])
+                    seq_subsample.extend(sorted(sequences_in_group, key=lambda x:priorities[x], reverse=True)[:tmp_spg])
                 else:
-                    seq_subsample.extend(sequences_in_group if len(sequences_in_group)<=spg
-                                         else random.sample(sequences_in_group, spg))
+                    seq_subsample.extend(sequences_in_group if len(sequences_in_group)<=tmp_spg
+                                         else random.sample(sequences_in_group, tmp_spg))
 
             num_excluded_subsamp = len(seq_keep) - len(seq_subsample)
             seq_keep = seq_subsample
@@ -470,8 +476,8 @@ class TooManyGroupsError(ValueError):
 
 
 def _calculate_total_sequences(
-        hypothetical_spg: int, sequence_lengths: Collection[int],
-) -> int:
+        hypothetical_spg: float, sequence_lengths: Collection[int],
+) -> float:
     # calculate how many sequences we'd keep given a hypothetical spg.
     return sum(
         min(hypothetical_spg, sequence_length)
@@ -482,7 +488,8 @@ def _calculate_total_sequences(
 def _calculate_sequences_per_group(
         target_max_value: int,
         sequence_lengths: Collection[int],
-) -> int:
+        allow_fractional: bool
+) -> float:
     """This is partially inspired by
     https://github.com/python/cpython/blob/3.8/Lib/bisect.py
 
@@ -512,7 +519,7 @@ def _calculate_sequences_per_group(
     augur.filter.TooManyGroupsError: Asked to provide at most 1 sequences, but there are 2 groups.
     """
 
-    if len(sequence_lengths) > target_max_value:
+    if len(sequence_lengths) > target_max_value and (not allow_fractional):
         # we have more groups than sequences we are allowed, which is an
         # error.
 
@@ -520,15 +527,20 @@ def _calculate_sequences_per_group(
             "Asked to provide at most {} sequences, but there are {} "
             "groups.".format(target_max_value, len(sequence_lengths)))
 
-    lo = 1
+    lo = 1e-5 if allow_fractional else 1
     hi = target_max_value
-    while hi - lo > 2:
-        mid = (lo + hi) // 2
+    continue_condition = lambda lo, hi: hi/lo > 1.1 if allow_fractional else hi-lo > 2
+    while continue_condition(hi, lo):
+        mid = (lo + hi) / 2 if allow_fractional else (hi + lo) // 2
         if _calculate_total_sequences(mid, sequence_lengths) <= target_max_value:
             lo = mid
         else:
             hi = mid
+
+    if allow_fractional:
+        return (lo + hi) / 2
+
     if _calculate_total_sequences(hi, sequence_lengths) <= target_max_value:
-        return hi
+        return int(hi)
     else:
-        return lo
+        return int(lo)
