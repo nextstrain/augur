@@ -246,13 +246,7 @@ def run(args):
     # filter by date
     num_excluded_by_date = 0
     if (args.min_date or args.max_date) and 'date' in meta_columns:
-        if num_excluded_by_ambiguous_date:
-            date_meta_dict = {}
-            for seq_name in seq_keep:
-                date_meta_dict[seq_name]=meta_dict[seq_name]
-            dates = get_numerical_dates(date_meta_dict, fmt="%Y-%m-%d")
-        else:
-            dates = get_numerical_dates(meta_dict, fmt="%Y-%m-%d")
+        dates = get_numerical_dates(meta_dict, fmt="%Y-%m-%d")
         tmp = [s for s in seq_keep if dates[s] is not None]
         if args.min_date:
             tmp = [s for s in tmp if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s])>args.min_date]
