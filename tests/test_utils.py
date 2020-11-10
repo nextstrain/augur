@@ -107,6 +107,8 @@ class TestUtils:
         assert utils.is_date_ambiguous("2019-XX-09", "month")
         assert utils.is_date_ambiguous("2019-03-XX", "day")
         assert utils.is_date_ambiguous("201X-03-09", "year")
+        assert utils.is_date_ambiguous("2019", "all")
+        assert utils.is_date_ambiguous("2019-10", "day")
 
     def test_not_is_date_ambiguous(self):
         """ is_date_ambiguous should return false for valid dates"""
@@ -114,3 +116,4 @@ class TestUtils:
         assert not utils.is_date_ambiguous("2019-03-XX", "month")
         assert not utils.is_date_ambiguous("2019-XX-01", "day")
         assert not utils.is_date_ambiguous("2019-XX-XX", "year")
+        assert not utils.is_date_ambiguous("2019", "year")

@@ -84,9 +84,20 @@ def is_date_ambiguous(date, ambiguous_by="all"):
     ambiguous_by : str
         Field of the date string to test for ambiguity ("day", "month", "year", "all")
     """
-    year, month, day = date.split('-')
+    date_components = date.split('-', 2)
+
+    if len(date_components) == 3:
+        year, month, day = date_components
+    elif len(date_components) == 2:
+        year, month = date_components
+        day = "XX"
+    else:
+        year = date_components
+        month = "XX"
+        day = "XX"
+
     return (
-            (ambiguous_by == 'all' and 'X' in date) or
+            (ambiguous_by == 'all' and ('X' in year or 'X' in month or 'X' in day)) or
             (ambiguous_by == 'day' and 'X' in day) or
             (ambiguous_by == 'month' and 'X' in month) or
             (ambiguous_by == 'year' and 'X' in year)
