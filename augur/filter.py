@@ -106,7 +106,7 @@ def register_arguments(parser):
     parser.add_argument('--include-where', nargs='+',
                                 help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND. This rule is applied last and ensures any sequences matching these rules will be included.")
     parser.add_argument('--exclude-ambiguous-dates-by', choices=['all', 'day', 'month', 'year'],
-                                help='Exclude ambiguous dates Ex: days - excludes 2020-09-XX, months - excludes 2020-xx-19, all - excludes any ambiguous dates')
+                                help='Exclude ambiguous dates by day (e.g., 2020-09-XX), month (e.g., 2020-XX-XX), year (e.g., 200X-10-01), or all date fields')
     parser.add_argument('--query', help="Filter samples by attribute. Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.")
     parser.add_argument('--output', '-o', help="output file", required=True)
 
@@ -238,8 +238,9 @@ def run(args):
     if args.exclude_ambiguous_dates_by and 'date' in meta_columns:
         seq_keep_by_date = []
         for seq_name in seq_keep:
-            if is_date_ambiguous(meta_dict[seq_name]['date'],args.exclude_ambiguous_dates_by) is False:
+            if not is_date_ambiguous(meta_dict[seq_name]['date'], args.exclude_ambiguous_dates_by):
                 seq_keep_by_date.append(seq_name)
+
         num_excluded_by_ambiguous_date = len(seq_keep) - len(seq_keep_by_date)
         seq_keep = seq_keep_by_date
 

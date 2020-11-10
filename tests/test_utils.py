@@ -91,7 +91,7 @@ class TestUtils:
             fh.write("\n".join(bed_lines))
         with pytest.raises(Exception):
             utils.read_bed_file(bed_file)
-    
+
     def test_read_mask_file_drm_file(self, tmpdir):
         """read_mask_file should handle drm files as well"""
         drm_file = str(tmpdir / "temp.drm")
@@ -110,7 +110,7 @@ class TestUtils:
 
     def test_not_is_date_ambiguous(self):
         """ is_date_ambiguous should return false for valid dates"""
-        assert utils.is_date_ambiguous("2019-09-03", "all") is False
-        assert utils.is_date_ambiguous("2019-03-XX", "month") is False
-        assert utils.is_date_ambiguous("2019-XX-01", "day") is False
-        assert utils.is_date_ambiguous("2019-XX-XX", "year") is False
+        assert not utils.is_date_ambiguous("2019-09-03", "all")
+        assert not utils.is_date_ambiguous("2019-03-XX", "month")
+        assert not utils.is_date_ambiguous("2019-XX-01", "day")
+        assert not utils.is_date_ambiguous("2019-XX-XX", "year")
