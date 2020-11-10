@@ -530,7 +530,7 @@ def _calculate_sequences_per_group(
     lo = 1e-5 if allow_fractional else 1
     hi = target_max_value
     continue_condition = lambda lo, hi: hi/lo > 1.1 if allow_fractional else hi-lo > 2
-    while continue_condition(hi, lo):
+    while continue_condition(lo,hi):
         mid = (lo + hi) / 2 if allow_fractional else (hi + lo) // 2
         if _calculate_total_sequences(mid, sequence_lengths) <= target_max_value:
             lo = mid
