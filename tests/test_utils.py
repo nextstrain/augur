@@ -104,19 +104,24 @@ class TestUtils:
     def test_is_date_ambiguous(self):
         """is_date_ambiguous should return true for ambiguous dates and false for valid dates."""
         # Test complete date strings with ambiguous values.
-        assert utils.is_date_ambiguous("2019-0X-0X", "all")
+        assert utils.is_date_ambiguous("2019-0X-0X", "any")
         assert utils.is_date_ambiguous("2019-XX-09", "month")
         assert utils.is_date_ambiguous("2019-03-XX", "day")
         assert utils.is_date_ambiguous("201X-03-09", "year")
+        assert utils.is_date_ambiguous("20XX-01-09", "month")
+        assert utils.is_date_ambiguous("2019-XX-03", "day")
+        assert utils.is_date_ambiguous("20XX-01-03", "day")
 
         # Test incomplete date strings with ambiguous values.
-        assert utils.is_date_ambiguous("2019", "all")
+        assert utils.is_date_ambiguous("2019", "any")
         assert utils.is_date_ambiguous("201X", "year")
         assert utils.is_date_ambiguous("2019-XX", "month")
         assert utils.is_date_ambiguous("2019-10", "day")
+        assert utils.is_date_ambiguous("2019-XX", "any")
+        assert utils.is_date_ambiguous("2019-XX", "day")
 
         # Test complete date strings without ambiguous dates for the requested field.
-        assert not utils.is_date_ambiguous("2019-09-03", "all")
+        assert not utils.is_date_ambiguous("2019-09-03", "any")
         assert not utils.is_date_ambiguous("2019-03-XX", "month")
         assert not utils.is_date_ambiguous("2019-09-03", "day")
         assert not utils.is_date_ambiguous("2019-XX-XX", "year")

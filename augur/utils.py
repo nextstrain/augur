@@ -73,16 +73,16 @@ def ambiguous_date_to_date_range(uncertain_date, fmt, min_max_year=None):
 def read_metadata(fname, query=None):
     return MetadataFile(fname, query).read()
 
-def is_date_ambiguous(date, ambiguous_by="all"):
+def is_date_ambiguous(date, ambiguous_by="any"):
     """
-    Returns whether a given date string in the format of YYYY-MM-DD is ambiguous by a given part of the date (e.g., day, month, year, or all parts).
+    Returns whether a given date string in the format of YYYY-MM-DD is ambiguous by a given part of the date (e.g., day, month, year, or any parts).
 
     Parameters
     ----------
     date : str
         Date string in the format of YYYY-MM-DD
     ambiguous_by : str
-        Field of the date string to test for ambiguity ("day", "month", "year", "all")
+        Field of the date string to test for ambiguity ("day", "month", "year", "any")
     """
     date_components = date.split('-', 2)
 
@@ -96,12 +96,13 @@ def is_date_ambiguous(date, ambiguous_by="all"):
         month = "XX"
         day = "XX"
 
-    return (
-            (ambiguous_by == 'all' and ('X' in year or 'X' in month or 'X' in day)) or
-            (ambiguous_by == 'day' and 'X' in day) or
-            (ambiguous_by == 'month' and 'X' in month) or
-            (ambiguous_by == 'year' and 'X' in year)
-    )
+    # Determine ambiguity hierarchically such that, for example, an ambiguous
+    # month implicates an ambiguous day even when day information is available.
+    return any((
+        "X" in year,
+        "X" in month and ambiguous_by in ("any", "month", "day"),
+        "X" in day and ambiguous_by in ("any", "day")
+    ))
 
 def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, min_max_year=None):
     if fmt:
