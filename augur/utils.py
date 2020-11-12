@@ -92,7 +92,7 @@ def is_date_ambiguous(date, ambiguous_by="all"):
         year, month = date_components
         day = "XX"
     else:
-        year = date_components
+        year = date_components[0]
         month = "XX"
         day = "XX"
 

@@ -102,18 +102,25 @@ class TestUtils:
         assert utils.read_mask_file(drm_file) == expected_sites
 
     def test_is_date_ambiguous(self):
-        """ is_date_ambiguous should return true for ambiguous dates"""
+        """is_date_ambiguous should return true for ambiguous dates and false for valid dates."""
+        # Test complete date strings with ambiguous values.
         assert utils.is_date_ambiguous("2019-0X-0X", "all")
         assert utils.is_date_ambiguous("2019-XX-09", "month")
         assert utils.is_date_ambiguous("2019-03-XX", "day")
         assert utils.is_date_ambiguous("201X-03-09", "year")
+
+        # Test incomplete date strings with ambiguous values.
         assert utils.is_date_ambiguous("2019", "all")
+        assert utils.is_date_ambiguous("201X", "year")
+        assert utils.is_date_ambiguous("2019-XX", "month")
         assert utils.is_date_ambiguous("2019-10", "day")
 
-    def test_not_is_date_ambiguous(self):
-        """ is_date_ambiguous should return false for valid dates"""
+        # Test complete date strings without ambiguous dates for the requested field.
         assert not utils.is_date_ambiguous("2019-09-03", "all")
         assert not utils.is_date_ambiguous("2019-03-XX", "month")
-        assert not utils.is_date_ambiguous("2019-XX-01", "day")
+        assert not utils.is_date_ambiguous("2019-09-03", "day")
         assert not utils.is_date_ambiguous("2019-XX-XX", "year")
+
+        # Test incomplete date strings without ambiguous dates for the requested fields.
         assert not utils.is_date_ambiguous("2019", "year")
+        assert not utils.is_date_ambiguous("2019-10", "month")
