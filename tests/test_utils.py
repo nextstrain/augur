@@ -100,3 +100,17 @@ class TestUtils:
         with open(drm_file, "w") as fh:
             fh.write("\n".join(drm_lines))
         assert utils.read_mask_file(drm_file) == expected_sites
+
+    def test_is_date_ambiguous(self):
+        """ is_date_ambiguous should return true for ambiguous dates"""
+        assert utils.is_date_ambiguous("2019-0X-0X", "all")
+        assert utils.is_date_ambiguous("2019-XX-09", "month")
+        assert utils.is_date_ambiguous("2019-03-XX", "day")
+        assert utils.is_date_ambiguous("201X-03-09", "year")
+
+    def test_not_is_date_ambiguous(self):
+        """ is_date_ambiguous should return false for valid dates"""
+        assert utils.is_date_ambiguous("2019-09-03", "all") is False
+        assert utils.is_date_ambiguous("2019-03-XX", "month") is False
+        assert utils.is_date_ambiguous("2019-XX-01", "day") is False
+        assert utils.is_date_ambiguous("2019-XX-XX", "year") is False
