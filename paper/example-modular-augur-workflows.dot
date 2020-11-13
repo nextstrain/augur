@@ -2,17 +2,17 @@ digraph G {
     graph[margin=0];
 
     subgraph cluster_zika_snakemake_dag {
-        graph[bgcolor=white, color=white, margin=0, center=true, label="A                          ", labeljus=left, labelloc=top, fontsize=20, size=4.25];
+        graph[bgcolor=white, color=white, margin=0, center=true, label="A                          ", labeljus=left, labelloc=top, fontsize=20, size=2.25];
         node[shape=box, style=rounded, fontname=sans, fontsize=12, penwidth=2];
         edge[penwidth=2, color=grey];
-        z1[label = "export", color = "0.27 0.6 0.85", style="rounded"];
-        z2[label = "refine", color = "0.60 0.6 0.85", style="rounded"];
-        z3[label = "traits", color = "0.07 0.6 0.85", style="rounded"];
-        z4[label = "ancestral", color = "0.40 0.6 0.85", style="rounded"];
-        z5[label = "translate", color = "0.33 0.6 0.85", style="rounded"];
-        z6[label = "tree", color = "0.13 0.6 0.85", style="rounded"];
-        z7[label = "align", color = "0.00 0.6 0.85", style="rounded"];
-        z8[label = "filter", color = "0.53 0.6 0.85", style="rounded"];
+        z1[label = "export", color = "0.0 0.0 0.0", style="rounded"];
+        z2[label = "refine", color = "0.0 0.0 0.0", style="rounded"];
+        z3[label = "traits", color = "0.0 0.0 0.0", style="rounded"];
+        z4[label = "ancestral", color = "0.0 0.0 0.0", style="rounded"];
+        z5[label = "translate", color = "0.0 0.0 0.0", style="rounded"];
+        z6[label = "tree", color = "0.0 0.0 0.0", style="rounded"];
+        z7[label = "align", color = "0.0 0.0 0.0", style="rounded"];
+        z8[label = "filter", color = "0.0 0.0 0.0", style="rounded"];
         z2 -> z1
         z3 -> z1
         z4 -> z1
@@ -29,19 +29,19 @@ digraph G {
     }
 
     subgraph cluster_tb_snakemake_dag {
-        graph[bgcolor=white, color=white, margin=0, center=true, label="B                          ", labeljus=left, labelloc=top, fontsize=20, size=4.25];
+        graph[bgcolor=white, color=white, margin=0, center=true, label="B                              ", labeljus=left, labelloc=top, fontsize=20, size=2.25];
         node[shape=box, style=rounded, fontname=sans, fontsize=12, penwidth=2];
         edge[penwidth=2, color=grey];
-        t1[label = "export", color = "0.22 0.6 0.85", style="rounded"];
-        t2[label = "refine", color = "0.28 0.6 0.85", style="rounded"];
-        t3[label = "traits", color = "0.00 0.6 0.85", style="rounded"];
-        t4[label = "ancestral", color = "0.33 0.6 0.85", style="rounded"];
-        t5[label = "translate", color = "0.44 0.6 0.85", style="rounded"];
-        t6[label = "seqtraits", color = "0.56 0.6 0.85", style="rounded"];
-        t7[label = "clades", color = "0.06 0.6 0.85", style="rounded"];
-        t8[label = "tree", color = "0.17 0.6 0.85", style="rounded"];
-        t9[label = "mask", color = "0.39 0.6 0.85", style="rounded"];
-        t10[label = "filter", color = "0.50 0.6 0.85", style="rounded"];
+        t1[label = "export", color = "0.0 0.0 0.0", style="rounded"];
+        t2[label = "refine", color = "0.0 0.0 0.0", style="rounded"];
+        t3[label = "traits", color = "0.0 0.0 0.0", style="rounded"];
+        t4[label = "ancestral", color = "0.0 0.0 0.0", style="rounded"];
+        t5[label = "translate", color = "0.0 0.0 0.0", style="rounded"];
+        t6[label = "seqtraits", color = "0.0 0.0 0.0", style="rounded"];
+        t7[label = "clades", color = "0.0 0.0 0.0", style="rounded"];
+        t8[label = "tree", color = "0.0 0.0 0.0", style="rounded"];
+        t9[label = "mask", color = "0.0 0.0 0.0", style="rounded"];
+        t10[label = "filter", color = "0.0 0.0 0.0", style="rounded"];
         t2 -> t1
         t3 -> t1
         t4 -> t1
@@ -62,5 +62,20 @@ digraph G {
         t4 -> t7
         t9 -> t8
         t10 -> t9
+    }
+
+    subgraph cluster_beast{
+        graph[bgcolor=white, color=white, margin=0, center=true, label="C                          ", labeljus=left, labelloc=top, fontsize=20, size=2.25];
+        node[shape=box, style=rounded, fontname=sans, fontsize=12, penwidth=2];
+        edge[penwidth=2, color=grey];
+        b1[label = "BEAST", color = "red", style="rounded"];
+        b2[label = "import beast", color = "0.0 0.0 0.0", style="rounded"];
+        b3[label = "traits", color = "0.0 0.0 0.0", style="rounded"];
+        b5[label = "export", color = "0.0 0.0 0.0", style="rounded"];
+        b1 -> b2
+        b1 -> b5
+        b2 -> b5
+        b2 -> b3
+        b3 -> b5
     }
 }

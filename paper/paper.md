@@ -82,12 +82,13 @@ Augur can be installed from PyPI ([nextstrain-augur](https://pypi.org/project/ne
 
 # Figures
 
-![Example workflows composed with Snakemake from Augur commands for A) Zika virus and B) tuberculosis.
-  Each node in the workflow graph represents an Augur command than performs a specific part of the analysis (e.g., aligning sequences, building a tree, etc.).
+![Example workflows composed with Snakemake from Augur commands for A) Zika virus, B) tuberculosis, and C) a BEAST analysis.
+  Each node in the workflow graph represents a command than performs a specific part of the analysis (e.g., aligning sequences, building a tree, etc.) with Augur commands in black and non-Augur commands in red.
   A typical workflow starts by filtering sequences and metadata to a desired subset for analysis followed by inference of a phylogeny, annotation of that phylogeny, and export of the annotated phylogeny to a JSON that can be viewed on Nextstrain.
   Workflows for viral (A) and bacterial (B) pathogens follow a similar structure but also support custom pathogen-specific steps.
+  Augur's modularity enables workflows that build on outputs from other tools in the field like BEAST (C).
   Multiple outgoing edges from a single node represent opportunities to run the workflow in parallel.
-  See the full workflows at [https://github.com/nextstrain/zika-tutorial](https://github.com/nextstrain/zika-tutorial) and [https://github.com/nextstrain/tb](https://github.com/nextstrain/tb).\label{fig:example-workflows}](example-modular-augur-workflows.pdf)
+  See the full viral and bacterial workflows at [https://github.com/nextstrain/zika-tutorial](https://github.com/nextstrain/zika-tutorial) and [https://github.com/nextstrain/tb](https://github.com/nextstrain/tb).\label{fig:example-workflows}](example-modular-augur-workflows.pdf)
 
 # Acknowledgments
 
