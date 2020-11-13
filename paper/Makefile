@@ -1,7 +1,7 @@
 all : paper.pdf
 
 paper.pdf : paper.md paper.bib example-modular-augur-workflows.pdf
-	pandoc --citeproc --bibliography=paper.bib -s $< -o $@
+	pandoc --citeproc --bibliography=paper.bib --template template.tex -s $< -o $@
 
 example-modular-augur-workflows.pdf : example-modular-augur-workflows.dot
 	dot -Tpdf $< > $@
