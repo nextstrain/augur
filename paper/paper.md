@@ -20,11 +20,10 @@ Under these circumstances, bioinformatics tools must scale rapidly with the numb
 To meet these needs, we developed Augur, a bioinformatics toolkit designed for phylogenetic analyses of human pathogens.
 
 Augur originally existed as an internal component of the nextflu [@Neher:2015jr] and Nextstrain [@Hadfield2018] applications.
-The original nextflu scripts only supported seasonal influenza viruses.
-When nextflu was replaced with Nextstrain and expanded to support multiple viral and bacterial pathogens, each pathogen received its own copy of the original scripts.
+As a component of nextflu, Augur consisted of a single monolithic Python script that performed most operations in memory.
+This script prepared a subset of seasonal influenza sequences and metadata and then processed those data to produce an annotated phylogeny for visualization in the nextflu web application.
+When Nextstrain replaced nextflu and expanded to support multiple viral and bacterial pathogens, each pathogen received its own copy of the original script.
 The resulting redundancy of these large scripts complicated efforts to debug analyses, add new features for all pathogens, and add support for new pathogens.
-In its original form, Augur consisted of two monolithic Python scripts, "prepare" and "process", that performed most operations in memory.
-These scripts prepared a subset of pathogen sequences and metadata and then processed those data to produce an annotated phylogeny that could be viewed at [Nextstrain](https://nextstrain.org).
 Critically, this software architecture led to long-lived, divergent branches of untested code in version control that Nextstrain team members could not confidently merge without potentially breaking existing analyses.
 
 # Implementation
