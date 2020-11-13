@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 10.1.0 (13 November 2020)
+
 ### Features
 
 * docs: Migrate non-reference documentation to docs.nextstrain.org [#620][]
