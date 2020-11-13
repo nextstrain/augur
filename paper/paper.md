@@ -20,24 +20,27 @@ authors:
   - name: Eli Harkins
     affiliation: 2
   - name: Augur Contributors
+    affiliation: 3
   - name: Trevor Bedford
     affiliation: 2
     orcid: 0000-0002-4039-5794
   - name: Richard A. Neher
-    affiliation: "3, 4"
+    affiliation: "4, 5"
     orcid: 0000-0003-2525-1407
   - name: Emma B. Hodcroft
-    affiliation: "3, 4"
+    affiliation: "4, 5"
     orcid: 0000-0002-0078-2212
 affiliations:
   - name: Molecular and Cell Biology Program, University of Washington, Seattle, WA, USA
     index: 1
   - name: Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Research Center, Seattle, WA, USA
     index: 2
-  - name: Biozentrum, University of Basel, Basel, Switzerland
+  - name: Open Source Software community
     index: 3
-  - name: Swiss Institute of Bioinformatics, Basel, Switzerland
+  - name: Biozentrum, University of Basel, Basel, Switzerland
     index: 4
+  - name: Swiss Institute of Bioinformatics, Basel, Switzerland
+    index: 5
 date: 5 November 2020
 bibliography: paper.bib
 ---
