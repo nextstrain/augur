@@ -2,6 +2,14 @@
 
 ## __NEXT__
 
+### Features
+
+* docs: Migrate non-reference documentation to docs.nextstrain.org [#620][]
+* filter: Add `--exclude-ambiguous-dates-by` flag to enable exclusion of samples with ambiguous dates [#623][] and [#631][]
+
+[#620]: https://github.com/nextstrain/augur/pull/620
+[#623]: https://github.com/nextstrain/augur/pull/623
+[#631]: https://github.com/nextstrain/augur/pull/631
 
 ## 10.0.4 (6 November 2020)
 
