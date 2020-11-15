@@ -53,7 +53,7 @@ setuptools.setup(
         "jsonschema >=3.0.0, ==3.*",
         "packaging >=19.2",
         "pandas >=1.0.0, ==1.*",
-        "phylo-treetime >=0.7.4, ==0.7.*"
+        "phylo-treetime ==0.8.*"
     ],
     extras_require = {
         'full': [
