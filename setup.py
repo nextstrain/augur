@@ -49,7 +49,7 @@ setuptools.setup(
     python_requires = '>={}'.format('.'.join(str(n) for n in min_version)),
     install_requires = [
         "bcbio-gff >=0.6.0, ==0.6.*",
-        "biopython >=1.67, <=1.78",
+        "biopython >=1.67, <=1.76",
         "jsonschema >=3.0.0, ==3.*",
         "packaging >=19.2",
         "pandas >=1.0.0, ==1.*",
