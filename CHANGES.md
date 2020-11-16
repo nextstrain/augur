@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 10.1.1 (16 November 2020)
+
 ### Bug Fixes
 
 * dependencies: Require the most recent minor versions of TreeTime (0.8.X) to fix numpy matrix errors [#633][]
