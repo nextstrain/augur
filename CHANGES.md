@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* dependencies: Require the most recent minor versions of TreeTime (0.8.X) to fix numpy matrix errors [#633][]
+
+[#633]: https://github.com/nextstrain/augur/pull/633
 
 ## 10.1.0 (13 November 2020)
 
