@@ -97,5 +97,12 @@ Augur can be installed from PyPI ([nextstrain-augur](https://pypi.org/project/ne
 
 Thank you to all of [the open source community members who have contributed to Augur](https://github.com/nextstrain/augur/graphs/contributors).
 Thank you to Dan Fornika from BCCDC Public Health Laboratory for creating the first conda recipe for Augur in Bioconda.
+JH is a Graduate Research Fellow and is supported by the NIH grant NIAID F31AI140714.
+JH is supported by.
+TRS is supported by.
+EH is supported by.
+TB is a Pew Biomedical Scholar and is supported by NIH grants NIGMS R35 GM119774-01, NIAID U19 AI117891-01 and NIAID R01 AI127893-01.
+RAN is supported by NIAID R01 AI127893-01 and institutional core funding.
+EBH is supported by.
 
 # References
