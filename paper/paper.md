@@ -22,7 +22,7 @@ authors:
   - name: Augur Contributors
     affiliation: 3
   - name: Trevor Bedford
-    affiliation: 2
+    affiliation: "1, 2"
     orcid: 0000-0002-4039-5794
   - name: Richard A. Neher
     affiliation: "4, 5"
@@ -50,7 +50,7 @@ bibliography: paper.bib
 The analysis of human pathogens requires a diverse collection of bioinformatics tools.
 These tools include standard genomic and phylogenetic software and custom software developed to handle the relatively numerous and short genomes of viruses and bacteria.
 Researchers increasingly depend on the outputs of these tools to infer transmission dynamics of human diseases and make actionable recommendations to public health officials [@Black2020; @Gardy2015].
-Under these circumstances, bioinformatics tools must scale rapidly with the number of disease samples to enable real-time analyses of pathogen evolution.
+Under these circumstances, bioinformatics tools must scale rapidly with the number of samples to enable real-time analyses of pathogen evolution.
 To meet these needs, we developed Augur, a bioinformatics toolkit designed for phylogenetic analyses of human pathogens.
 
 Augur originally existed as an internal component of the nextflu [@Neher:2015jr] and Nextstrain [@Hadfield2018] applications.
@@ -97,12 +97,10 @@ Augur can be installed from PyPI ([nextstrain-augur](https://pypi.org/project/ne
 
 Thank you to all of [the open source community members who have contributed to Augur](https://github.com/nextstrain/augur/graphs/contributors).
 Thank you to Dan Fornika from BCCDC Public Health Laboratory for creating the first conda recipe for Augur in Bioconda.
-JH is a Graduate Research Fellow and is supported by the NIH grant NIAID F31AI140714.
-JH is supported by.
-TRS is supported by.
-EH is supported by.
-TB is a Pew Biomedical Scholar and is supported by NIH grants NIGMS R35 GM119774-01, NIAID U19 AI117891-01 and NIAID R01 AI127893-01.
-RAN is supported by NIAID R01 AI127893-01 and institutional core funding.
-EBH is supported by.
+JHu is a Graduate Research Fellow and is supported by the NIH grant NIAID F31AI140714.
+TB is a Pew Biomedical Scholar.
+RAN is supported by...
+EBH is supported by...
+This work is supported by NIH awards NIGMS R35 GM119774-01, NIAID U19 AI117891-01 and NIAID R01 AI127893-01.
 
 # References
