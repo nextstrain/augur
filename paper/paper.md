@@ -50,7 +50,7 @@ bibliography: paper.bib
 The analysis of human pathogens requires a diverse collection of bioinformatics tools.
 These tools include standard genomic and phylogenetic software and custom software developed to handle the relatively numerous and short genomes of viruses and bacteria.
 Researchers increasingly depend on the outputs of these tools to infer transmission dynamics of human diseases and make actionable recommendations to public health officials [@Black2020; @Gardy2015].
-Under these circumstances, bioinformatics tools must scale rapidly with the number of samples to enable real-time analyses of pathogen evolution.
+In order to enable real-time analyses of pathogen evolution, bioinformatics tools must scale rapidly with the number of samples and be flexible enough to adapt to a variety of questions and organisms.
 To meet these needs, we developed Augur, a bioinformatics toolkit designed for phylogenetic analyses of human pathogens.
 
 Augur originally existed as an internal component of the nextflu [@Neher:2015jr] and Nextstrain [@Hadfield2018] applications.
@@ -76,6 +76,7 @@ By implementing the core components of Augur as a command line tool, we were abl
 Most pathogen workflows begin with user-curated sequences in a FASTA file (e.g., `sequences.fasta`) and metadata describing each sequence in a tab-delimited text file (e.g., `metadata.tsv`).
 Users can apply a series of Augur commands and other standard bioinformatics tools to these files to create annotated phylogenies that can be viewed in Auspice, the web application that serves [Nextstrain](https://nextstrain.org) (\autoref{fig:example-workflows}).
 This approach allows users to leverage the distributed computing abilities of workflow managers to run multiple steps of the workflow in parallel and also run individual commands that support multiprocessing in parallel.
+Further, the Augur modules can be easily recombined both with each other and with user-generated scripts to flexibly address the differing questions and restrictions posed by a variety of human pathogens.
 
 The modular Augur interface has enabled phylogenetic and genomic epidemiological analyses by academic researchers, public health laboratories, and private companies.
 Most recently, these tools have supported the real-time tracking of SARS-CoV-2 evolution at global and local scales [@NextstrainNcov2020, @Bedford2020, @Alm2020].
