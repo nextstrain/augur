@@ -81,6 +81,7 @@ Further, the Augur modules can be easily recombined both with each other and wit
 The modular Augur interface has enabled phylogenetic and genomic epidemiological analyses by academic researchers, public health laboratories, and private companies.
 Most recently, these tools have supported the real-time tracking of SARS-CoV-2 evolution at global and local scales [@NextstrainNcov2020, @Bedford2020, @Alm2020].
 This success has attracted contributions from the open source community that have allowed us to improve Augur's functionality, documentation, and test coverage.
+In order to continue facilitating Augur modules' use as part of wider bioinformatics pipelines in public health, we are committed to working with and contributing to open-source data standards such as PHA4GE [@griffiths_pha4ge_2020], and to following recommendations to enable better pathogen genome analyses [@black_ten_2020].
 Augur can be installed from PyPI ([nextstrain-augur](https://pypi.org/project/nextstrain-augur/)) and Bioconda ([augur](https://bioconda.github.io/recipes/augur/README.html)).
 [See the full documentation](http://docs.nextstrain.org/) for more details about how to use or contribute to development of Augur.
 
