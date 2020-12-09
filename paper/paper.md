@@ -91,7 +91,7 @@ Augur can be installed from PyPI ([nextstrain-augur](https://pypi.org/project/ne
 # Figures
 
 ![Example workflows composed with Snakemake from Augur commands for A) Zika virus, B) tuberculosis, C) a BEAST analysis, and D) the Nextstrain SARS-CoV-2 pipeline as of 2020-11-27.
-  Each node in the workflow graph represents a command than performs a specific part of the analysis (e.g., aligning sequences, building a tree, etc.) with Augur commands in black, external software in red, and custom scripts in blue.
+  Each node in the workflow graph represents a command that performs a specific part of the analysis (e.g., aligning sequences, building a tree, etc.) with Augur commands in black, external software in red, and custom scripts in blue.
   A typical workflow starts by filtering sequences and metadata to a desired subset for analysis followed by inference of a phylogeny, annotation of that phylogeny, and export of the annotated phylogeny to a JSON that can be viewed on Nextstrain.
   Workflows for viral (A) and bacterial (B) pathogens follow a similar structure but also support custom pathogen-specific steps.
   Augur's modularity enables workflows that build on outputs from other tools in the field like BEAST (C) as well as more complicated analyses such as that behind Nextstrain's daily SARS-CoV-2 builds (D) which often require custom scripts to perform analysis-specific steps.
