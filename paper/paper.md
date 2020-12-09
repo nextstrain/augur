@@ -95,7 +95,7 @@ Augur can be installed from PyPI ([nextstrain-augur](https://pypi.org/project/ne
   Workflows for viral (A) and bacterial (B) pathogens follow a similar structure but also support custom pathogen-specific steps.
   Augur's modularity enables workflows that build on outputs from other tools in the field like BEAST (C) as well as more complicated analyses such as that behind Nextstrain's daily SARS-CoV-2 builds (D) which often require custom scripts to perform analysis-specific steps.
   Multiple outgoing edges from a single node represent opportunities to run the workflow in parallel.
-  See the full workflows behind A, B, and D at [github.com/nextstrain/zika-tutorial](https://github.com/nextstrain/zika-tutorial), [github.com/nextstrain/tb](https://github.com/nextstrain/tb) and [github.com/nextstrain/ncov](https://github.com/nextstrain/ncov).\label{fig:example-workflows}](example-modular-augur-workflows.pdf)
+  See the full workflows behind A, B, and D at https://github.com/nextstrain/zika-tutorial, https://github.com/nextstrain/tb, and https://github.com/nextstrain/ncov.\label{fig:example-workflows}](example-modular-augur-workflows.pdf)
 
 # Acknowledgments
 
