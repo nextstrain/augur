@@ -28,7 +28,7 @@ authors:
     affiliation: "4, 5"
     orcid: 0000-0003-2525-1407
   - name: Emma B. Hodcroft
-    affiliation: "4, 5"
+    affiliation: "4, 5, 6"
     orcid: 0000-0002-0078-2212
 affiliations:
   - name: Molecular and Cell Biology Program, University of Washington, Seattle, WA, USA
@@ -41,6 +41,8 @@ affiliations:
     index: 4
   - name: Swiss Institute of Bioinformatics, Basel, Switzerland
     index: 5
+  - name: Institute of Social and Preventive Medicine, University of Bern, Bern, Switzerland
+    index: 6
 date: 5 November 2020
 bibliography: paper.bib
 ---
@@ -101,8 +103,7 @@ Thank you to all of [the open source community members who have contributed to A
 Thank you to Dan Fornika from BCCDC Public Health Laboratory for creating the first conda recipe for Augur in Bioconda.
 JHu is a Graduate Research Fellow and is supported by the NIH grant NIAID F31AI140714.
 TB is a Pew Biomedical Scholar.
-RAN is supported by...
-EBH is supported by...
+RAN and EBH are supported by University of Basel core funding.
 This work is supported by NIH awards NIGMS R35 GM119774-01, NIAID U19 AI117891-01 and NIAID R01 AI127893-01.
 
 # References
