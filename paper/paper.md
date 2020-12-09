@@ -17,8 +17,9 @@ authors:
   - name: Thomas R. Sibley
     affiliation: 2
     orcid: 0000-0001-5269-2297
-  - name: Eli Harkins
+  - name: Elias Harkins
     affiliation: 2
+    orcid: 0000-0001-6525-9134
   - name: Augur Contributors
     affiliation: 3
   - name: Trevor Bedford
