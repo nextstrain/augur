@@ -1,0 +1,167 @@
+digraph G {
+    graph[margin=1];
+
+    subgraph cluster_zika_snakemake_dag {
+        graph[bgcolor=white, color=white, margin=0, center=true, label="A                          ", labeljus=left, labelloc=top, fontsize=20, size=2.25];
+        node[shape=box, style=rounded, fontname=sans, fontsize=12, penwidth=2];
+        edge[penwidth=2, color=grey];
+        z1[label = "export", color = "0.0 0.0 0.0", style="rounded"];
+        z2[label = "refine", color = "0.0 0.0 0.0", style="rounded"];
+        z3[label = "traits", color = "0.0 0.0 0.0", style="rounded"];
+        z4[label = "ancestral", color = "0.0 0.0 0.0", style="rounded"];
+        z5[label = "translate", color = "0.0 0.0 0.0", style="rounded"];
+        z6[label = "tree", color = "0.0 0.0 0.0", style="rounded"];
+        z7[label = "align", color = "0.0 0.0 0.0", style="rounded"];
+        z8[label = "filter", color = "0.0 0.0 0.0", style="rounded"];
+        z2 -> z1
+        z3 -> z1
+        z4 -> z1
+        z5 -> z1
+        z6 -> z2
+        z7 -> z2
+        z2 -> z3
+        z2 -> z4
+        z7 -> z4
+        z2 -> z5
+        z4 -> z5
+        z7 -> z6
+        z8 -> z7
+    }
+
+    subgraph cluster_tb_snakemake_dag {
+        graph[bgcolor=white, color=white, margin=0, center=true, label="B                              ", labeljus=left, labelloc=top, fontsize=20, size=2.25];
+        node[shape=box, style=rounded, fontname=sans, fontsize=12, penwidth=2];
+        edge[penwidth=2, color=grey];
+        t1[label = "export", color = "0.0 0.0 0.0", style="rounded"];
+        t2[label = "refine", color = "0.0 0.0 0.0", style="rounded"];
+        t3[label = "traits", color = "0.0 0.0 0.0", style="rounded"];
+        t4[label = "ancestral", color = "0.0 0.0 0.0", style="rounded"];
+        t5[label = "translate", color = "0.0 0.0 0.0", style="rounded"];
+        t6[label = "seqtraits", color = "0.0 0.0 0.0", style="rounded"];
+        t7[label = "clades", color = "0.0 0.0 0.0", style="rounded"];
+        t8[label = "tree", color = "0.0 0.0 0.0", style="rounded"];
+        t9[label = "mask", color = "0.0 0.0 0.0", style="rounded"];
+        t10[label = "filter", color = "0.0 0.0 0.0", style="rounded"];
+        t2 -> t1
+        t3 -> t1
+        t4 -> t1
+        t5 -> t1
+        t6 -> t1
+        t7 -> t1
+        t8 -> t2
+        t9 -> t2
+        t2 -> t3
+        t2 -> t4
+        t9 -> t4
+        t2 -> t5
+        t4 -> t5
+        t4 -> t6
+        t5 -> t6
+        t2 -> t7
+        t5 -> t7
+        t4 -> t7
+        t9 -> t8
+        t10 -> t9
+    }
+
+    subgraph cluster_beast{
+        graph[bgcolor=white, color=white, margin=0, center=true, label="C                          ", labeljus=left, labelloc=top, fontsize=20, size=2.25];
+        node[shape=box, style=rounded, fontname=sans, fontsize=12, penwidth=2];
+        edge[penwidth=2, color=grey];
+        b1[label = "BEAST", color = "red", style="rounded"];
+        b2[label = "import beast", color = "0.0 0.0 0.0", style="rounded"];
+        b3[label = "traits", color = "0.0 0.0 0.0", style="rounded"];
+        b5[label = "export", color = "0.0 0.0 0.0", style="rounded"];
+        b1 -> b2
+        b1 -> b5
+        b2 -> b5
+        b2 -> b3
+        b3 -> b5
+    }
+
+    subgraph ncov_pipeline {
+        graph[bgcolor=white, ranksep=0.1, color=white, margin=0, center=true, label="D                                                                         ", labeljus=left, labelloc=top, fontsize=20, size=2.25];
+        node[shape=box, style=rounded, fontname=sans, fontsize=10, penwidth=1, height=0.25];
+        edge[penwidth=1, color=grey];
+        0[label = "finalize", color = "royalblue", style="rounded"];
+        1[label = "incorporate_travel_history", color = "royalblue", style="rounded"];
+        2[label = "tip_frequencies", color = "0.0 0.0 0.0", style="rounded"];
+        3[label = "export", color = "0.0 0.0 0.0", style="rounded"];
+        4[label = "colors", color = "royalblue", style="rounded"];
+        5[label = "refine", color = "0.0 0.0 0.0", style="rounded"];
+        6[label = "download", color = "royalblue", style="rounded"];
+        7[label = "ancestral", color = "0.0 0.0 0.0", style="rounded"];
+        8[label = "translate", color = "0.0 0.0 0.0", style="rounded"];
+        9[label = "rename_legacy_clades", color = "royalblue", style="rounded"];
+        10[label = "rename_subclades", color = "royalblue", style="rounded"];
+        11[label = "clades", color = "0.0 0.0 0.0", style="rounded"];
+        12[label = "recency: global", color = "royalblue", style="rounded"];
+        13[label = "traits", color = "0.0 0.0 0.0", style="rounded"];
+        14[label = "tree", color = "0.0 0.0 0.0", style="rounded"];
+        15[label = "combine_samples", color = "royalblue", style="rounded"];
+        16[label = "legacy_clades", color = "0.0 0.0 0.0", style="rounded"];
+        17[label = "subclades", color = "0.0 0.0 0.0", style="rounded"];
+        18[label = "clade_files: global", color = "royalblue", style="rounded"];
+        19[label = "subsample", color = "0.0 0.0 0.0", style="rounded"];
+        20[label = "mask", color = "0.0 0.0 0.0", style="rounded"];
+        21[label = "refilter", color = "0.0 0.0 0.0", style="rounded"];
+        22[label = "aggregate_alignments", color = "royalblue", style="rounded"];
+        23[label = "diagnostic", color = "royalblue", style="rounded"];
+        24[label = "partition_sequences", color = "royalblue", style="rounded"];
+        25[label = "filter", color = "0.0 0.0 0.0", style="rounded"];
+        1 -> 0
+        2 -> 0
+        3 -> 0
+        3 -> 1
+        4 -> 1
+        5 -> 2
+        6 -> 2
+        5 -> 3
+        6 -> 3
+        7 -> 3
+        8 -> 3
+        9 -> 3
+        10 -> 3
+        11 -> 3
+        12 -> 3
+        13 -> 3
+        4 -> 3
+        6 -> 4
+        14 -> 5
+        15 -> 5
+        6 -> 5
+        5 -> 7
+        15 -> 7
+        5 -> 8
+        7 -> 8
+        16 -> 9
+        17 -> 10
+        5 -> 11
+        8 -> 11
+        7 -> 11
+        18 -> 11
+        6 -> 12
+        5 -> 13
+        6 -> 13
+        15 -> 14
+        19 -> 15
+        5 -> 16
+        8 -> 16
+        7 -> 16
+        5 -> 17
+        8 -> 17
+        7 -> 17
+        20 -> 19
+        6 -> 19
+        21 -> 20
+        22 -> 21
+        6 -> 21
+        23 -> 21
+        24 -> 22
+        22 -> 23
+        6 -> 23
+        25 -> 24
+        6 -> 25
+    }            
+
+}
