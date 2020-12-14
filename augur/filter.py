@@ -317,23 +317,39 @@ def run(args):
                 # this is only possible if we have imposed a maximum number of samples
                 # to produce.  we need binary search until we have the correct spg.
                 try:
-                    spg = _calculate_sequences_per_group(
-                        args.subsample_max_sequences,
-                        [len(sequences_in_group)
-                         for sequences_in_group in seq_names_by_group.values()],
-                        args.probabilistic_sampling
-                    )
+                    length_of_sequences_per_group = [
+                        len(sequences_in_group)
+                        for sequences_in_group in seq_names_by_group.values()
+                    ]
+
+                    if args.probabilistic_sampling:
+                        spg = _calculate_fractional_sequences_per_group(
+                            args.subsample_max_sequences,
+                            length_of_sequences_per_group
+                        )
+                    else:
+                        spg = _calculate_sequences_per_group(
+                            args.subsample_max_sequences,
+                            length_of_sequences_per_group
+                        )
                 except TooManyGroupsError as ex:
                     print(f"ERROR: {ex}", file=sys.stderr)
                     sys.exit(1)
                 print("sampling at {} per group.".format(spg))
 
+            if args.probabilistic_sampling:
+                random_generator = np.random.default_rng()
+
             # subsample each groups, either by taking the spg highest priority strains or
             # sampling at random from the sequences in the group
             seq_subsample = []
             for group, sequences_in_group in seq_names_by_group.items():
-                tmp_spg = np.random.poisson(spg) if args.probabilistic_sampling else spg
-                if tmp_spg==0:
+                if args.probabilistic_sampling:
+                    tmp_spg = random_generator.poisson(spg)
+                else:
+                    tmp_spg = spg
+
+                if tmp_spg == 0:
                     continue
 
                 if args.priority: #sort descending by priority
@@ -487,9 +503,8 @@ def _calculate_total_sequences(
 
 def _calculate_sequences_per_group(
         target_max_value: int,
-        sequence_lengths: Collection[int],
-        allow_fractional: bool
-) -> float:
+        sequence_lengths: Collection[int]
+) -> int:
     """This is partially inspired by
     https://github.com/python/cpython/blob/3.8/Lib/bisect.py
 
@@ -519,7 +534,7 @@ def _calculate_sequences_per_group(
     augur.filter.TooManyGroupsError: Asked to provide at most 1 sequences, but there are 2 groups.
     """
 
-    if len(sequence_lengths) > target_max_value and (not allow_fractional):
+    if len(sequence_lengths) > target_max_value:
         # we have more groups than sequences we are allowed, which is an
         # error.
 
@@ -527,20 +542,64 @@ def _calculate_sequences_per_group(
             "Asked to provide at most {} sequences, but there are {} "
             "groups.".format(target_max_value, len(sequence_lengths)))
 
-    lo = 1e-5 if allow_fractional else 1
+    lo = 1
     hi = target_max_value
-    continue_condition = lambda lo, hi: hi/lo > 1.1 if allow_fractional else hi-lo > 2
-    while continue_condition(lo,hi):
-        mid = (lo + hi) / 2 if allow_fractional else (hi + lo) // 2
+
+    while hi - lo > 2:
+        mid = (hi + lo) // 2
         if _calculate_total_sequences(mid, sequence_lengths) <= target_max_value:
             lo = mid
         else:
             hi = mid
 
-    if allow_fractional:
-        return (lo + hi) / 2
-
     if _calculate_total_sequences(hi, sequence_lengths) <= target_max_value:
         return int(hi)
     else:
         return int(lo)
+
+
+def _calculate_fractional_sequences_per_group(
+        target_max_value: int,
+        sequence_lengths: Collection[int]
+) -> float:
+    """Returns the fractional sequences per group for the given list of group
+    sequences such that the total doesn't exceed the requested number of
+    samples.
+
+    Parameters
+    ----------
+    target_max_value : int
+        the total number of sequences allowed across all groups
+    sequence_lengths : Collection[int]
+        the number of sequences in each group
+
+    Returns
+    -------
+    float
+        fractional maximum number of sequences allowed per group to meet the
+        required maximum total sequences allowed
+
+    >>> np.around(_calculate_fractional_sequences_per_group(4, [4, 2]), 4)
+    1.9375
+    >>> np.around(_calculate_fractional_sequences_per_group(2, [4, 2]), 4)
+    0.9688
+
+    Unlike the integer-based version of this function, the fractional version
+    can accept a maximum number of sequences that exceeds the number of groups.
+    In this case, the function returns a fraction that can be used downstream,
+    for example with Poisson sampling.
+
+    >>> np.around(_calculate_fractional_sequences_per_group(1, [4, 2]), 4)
+    0.4844
+    """
+    lo = 1e-5
+    hi = target_max_value
+
+    while (hi / lo) > 1.1:
+        mid = (lo + hi) / 2
+        if _calculate_total_sequences(mid, sequence_lengths) <= target_max_value:
+            lo = mid
+        else:
+            hi = mid
+
+    return (lo + hi) / 2

@@ -62,32 +62,6 @@ rule filter:
             --min-date {params.min_date}
         """
 
-rule filter_max:
-    message: "Filtering sequences"
-    input:
-        sequences = rules.parse.output.sequences,
-        metadata = rules.parse.output.metadata,
-        exclude = files.dropped_strains
-    output:
-        sequences = "results/filtered_probabilistic.fasta"
-    params:
-        group_by = "country year month",
-        max_sequences = 5,
-        min_date = 2012
-    shell:
-        """
-        augur filter \
-            --sequences {input.sequences} \
-            --metadata {input.metadata} \
-            --exclude {input.exclude} \
-            --output {output.sequences} \
-            --group-by {params.group_by} \
-            --subsample-max-sequences {params.max_sequences} \
-            --probabilistic-sampling \
-            --subsample-seed 314159 \
-            --min-date {params.min_date}
-        """
-
 rule align:
     message: "Aligning sequences"
     input:
