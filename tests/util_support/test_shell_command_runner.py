@@ -37,8 +37,8 @@ class TestShellCommandRunner:
         "exception, expected_message",
         [
             (
-                subprocess.CalledProcessError(5, "actual-cmd", output="some error"),
-                "some error.*shell exited 5 when running: cmd",
+                subprocess.CalledProcessError(5, "actual-cmd", output=b"some error"),
+                "Shell exited 5 when running: cmd.*?some error",
             ),
             (
                 FileNotFoundError(),

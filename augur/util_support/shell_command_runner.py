@@ -1,7 +1,7 @@
 import os
 import sys
 import subprocess
-from textwrap import dedent
+from textwrap import dedent, indent
 
 
 class ShellCommandRunner:
@@ -66,7 +66,11 @@ class ShellCommandRunner:
 
     def print_error_message(self, error):
         if isinstance(error, subprocess.CalledProcessError):
-            message = f"{error.output}\nshell exited {error.returncode} when running: {self.cmd}"
+            message = f"Shell exited {error.returncode} when running: {self.cmd}"
+            output = (error.output or b'').decode().strip("\n")
+
+            if output:
+                message += f"\nCommand output was:\n{indent(output, '  ')}"
 
             if error.returncode == 127:
                 message += "\nAre you sure this program is installed?"
