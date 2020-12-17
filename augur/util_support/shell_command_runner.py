@@ -1,8 +1,14 @@
 import os
 import sys
 import subprocess
+from signal import Signals
 from textwrap import dedent, indent
 
+try:
+    from signal import SIGKILL
+except ImportError:
+    # A non-POSIX platform
+    SIGKILL = None
 
 class ShellCommandRunner:
     """
@@ -66,14 +72,25 @@ class ShellCommandRunner:
 
     def print_error_message(self, error):
         if isinstance(error, subprocess.CalledProcessError):
-            message = f"Shell exited {error.returncode} when running: {self.cmd}"
+            signal = self.signal_from_error(error)
+
+            if signal:
+                message = f"Shell exited from fatal signal {signal.name} when running: {self.cmd}"
+            else:
+                message = f"Shell exited {error.returncode} when running: {self.cmd}"
+
             output = (error.output or b'').decode().strip("\n")
 
             if output:
                 message += f"\nCommand output was:\n{indent(output, '  ')}"
 
+            # Bash exits 127 when it cannot find a given command.
             if error.returncode == 127:
                 message += "\nAre you sure this program is installed?"
+
+            # Linux's oom-killer issues SIGKILLs to alleviate memory pressure
+            elif signal is SIGKILL:
+                message += f"\nThe OS may have terminated the command due to an out-of-memory condition."
         elif isinstance(error, FileNotFoundError):
             shell = " and ".join(self.shell_executable)
 
@@ -92,3 +109,28 @@ class ShellCommandRunner:
     def print_error(message):
         """Prints message to STDERR formatted with textwrap.dedent"""
         print("\nERROR: " + dedent(message).lstrip("\n") + "\n", file=sys.stderr)
+
+    @staticmethod
+    def signal_from_error(error):
+        """
+        Return the :py:class:`signal.Signals` member for the
+        :py:attr:`subprocess.CalledProcessError.returncode` of *error*, if any.
+        """
+        def signal(num):
+            try:
+                return Signals(num)
+            except ValueError:
+                return None
+
+        # A grandchild process exited from a signal, which bubbled back up
+        # through Bash as 128 + signal number.
+        if error.returncode > 128:
+            return signal(error.returncode - 128)
+
+        # CalledProcessError documents that fatal signals for the direct child
+        # process (bash in our case) are reported as negative exit codes.
+        elif error.returncode < 0:
+            return signal(abs(error.returncode))
+
+        else:
+            return None
