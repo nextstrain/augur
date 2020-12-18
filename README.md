@@ -28,7 +28,7 @@ The output of augur is a series of JSONs that can be used to visualize your resu
 * [Technical documentation for Augur](https://nextstrain-augur.readthedocs.io/en/stable/installation/installation.html)
 * [Contributor guide](https://github.com/nextstrain/.github/blob/master/CONTRIBUTING.md)
 * [Project board with available issues](https://github.com/orgs/nextstrain/projects/6)
-* [Developer docs for Augur](./DEV_DOCS.md)
+* [Developer docs for Augur](./docs/contribute/DEV_DOCS.md)
 
 ## Quickstart
 

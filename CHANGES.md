@@ -3,6 +3,25 @@
 ## __NEXT__
 
 
+## 10.1.1 (16 November 2020)
+
+### Bug Fixes
+
+* dependencies: Require the most recent minor versions of TreeTime (0.8.X) to fix numpy matrix errors [#633][]
+
+[#633]: https://github.com/nextstrain/augur/pull/633
+
+## 10.1.0 (13 November 2020)
+
+### Features
+
+* docs: Migrate non-reference documentation to docs.nextstrain.org [#620][]
+* filter: Add `--exclude-ambiguous-dates-by` flag to enable exclusion of samples with ambiguous dates [#623][] and [#631][]
+
+[#620]: https://github.com/nextstrain/augur/pull/620
+[#623]: https://github.com/nextstrain/augur/pull/623
+[#631]: https://github.com/nextstrain/augur/pull/631
+
 ## 10.0.4 (6 November 2020)
 
 ### Bug Fixes

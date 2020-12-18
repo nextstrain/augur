@@ -10,7 +10,7 @@ import numpy as np
 import sys
 import datetime
 import treetime.utils
-from .utils import read_metadata, get_numerical_dates, run_shell_command, shquote
+from .utils import read_metadata, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
 
 comment_char = '#'
 
@@ -106,6 +106,8 @@ def register_arguments(parser):
                                 help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
     parser.add_argument('--include-where', nargs='+',
                                 help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND. This rule is applied last and ensures any sequences matching these rules will be included.")
+    parser.add_argument('--exclude-ambiguous-dates-by', choices=['any', 'day', 'month', 'year'],
+                                help='Exclude ambiguous dates by day (e.g., 2020-09-XX), month (e.g., 2020-XX-XX), year (e.g., 200X-10-01), or any date fields. An ambiguous year makes the corresponding month and day ambiguous, too, even if those fields have unambiguous values (e.g., "201X-10-01"). Similarly, an ambiguous month makes the corresponding day ambiguous (e.g., "2010-XX-01").')
     parser.add_argument('--query', help="Filter samples by attribute. Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.")
     parser.add_argument('--output', '-o', help="output file", required=True)
 
@@ -231,6 +233,17 @@ def run(args):
                     seq_keep_by_length.append(seq_name)
             num_excluded_by_length = len(seq_keep) - len(seq_keep_by_length)
             seq_keep = seq_keep_by_length
+
+    # filter by ambiguous dates
+    num_excluded_by_ambiguous_date = 0
+    if args.exclude_ambiguous_dates_by and 'date' in meta_columns:
+        seq_keep_by_date = []
+        for seq_name in seq_keep:
+            if not is_date_ambiguous(meta_dict[seq_name]['date'], args.exclude_ambiguous_dates_by):
+                seq_keep_by_date.append(seq_name)
+
+        num_excluded_by_ambiguous_date = len(seq_keep) - len(seq_keep_by_date)
+        seq_keep = seq_keep_by_date
 
     # filter by date
     num_excluded_by_date = 0
@@ -445,6 +458,8 @@ def run(args):
         print("\t%i of these were filtered out by the query:\n\t\t\"%s\"" % (num_excluded_by_query, args.query))
     if args.min_length:
         print("\t%i of these were dropped because they were shorter than minimum length of %sbp" % (num_excluded_by_length, args.min_length))
+    if args.exclude_ambiguous_dates_by and num_excluded_by_ambiguous_date:
+        print("\t%i of these were dropped because of their ambiguous date in %s" % (num_excluded_by_ambiguous_date, args.exclude_ambiguous_dates_by))
     if (args.min_date or args.max_date) and 'date' in meta_columns:
         print("\t%i of these were dropped because of their date (or lack of date)" % (num_excluded_by_date))
     if args.non_nucleotide:

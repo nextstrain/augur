@@ -119,7 +119,8 @@ These may have been inferred for internal nodes by Augur functions like `augur t
 Certain traits have a geographic interpretation, e.g. "country".
 Auspice will attempt to display these traits on a map (and provide a drop-down to switch between them if there are more than one).
 
-> _Make sure that these have corresponding entry in the lat-longs TSV file supplied to `export`. See how to do this [here](/faq/lat_longs)._
+> _Make sure that these have corresponding entry in the lat-longs TSV file supplied to `export`. See how to do this [here](https://docs.nextstrain.org/en/latest/guides/bioinformatics/lat_longs.html)._
+
 
 
 ---
@@ -528,5 +529,6 @@ In Auspice v2, all values are now displayed exactly as they arrive, allowing use
 
 Don't forget to also change them in any custom lat-long and/or coloring files you are using. We've also become stricter about the format of the files that pass in color and lat-long information. Previously, it didn't matter if columns were separated by spaces or tabs - now, they must be separated by tabs.
 
-You can find out more about how to add [custom coloring](/faq/colors) and [lat-long](/faq/lat_longs) values.
+You can find out more about how to add [custom coloring](https://docs.nextstrain.org/en/latest/guides/bioinformatics/colors.html) and [lat-long](https://docs.nextstrain.org/en/latest/guides/bioinformatics/lat_longs.html) values.
+
 If you use the command `parse` to generate a metadata table from fields in a fasta header, you can use the flag `--prettify-fields` to apply some prettifying operations to specific metadata entries, see the documentation [`parse`](/usage/cli/parse).

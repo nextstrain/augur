@@ -53,7 +53,7 @@ author = prose_list(git_authors())
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['recommonmark', 'sphinx.ext.autodoc', 'sphinxarg.ext', 'sphinx.ext.napoleon', 'sphinx_markdown_tables']
+extensions = ['recommonmark', 'sphinx.ext.autodoc', 'sphinxarg.ext', 'sphinx.ext.napoleon', 'sphinx_markdown_tables', 'sphinx.ext.intersphinx']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -61,7 +61,19 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store',
+    'contribute/DEV_DOCS.md',
+    'faq/colors.md',
+    'faq/fasta_input.md',
+    'faq/import-beast.md',
+    'faq/lat_longs.md',
+    'faq/seq_traits.md',
+    'faq/translate_ref.md',
+    'faq/vcf_input.md',
+    'tutorials/tb_tutorial.md',
+    'tutorials/zika_tutorial.md',
+    'usage/augur_snakemake.md',
+]
 
 # A string of reStructuredText that will be included at the end of every source
 # file that is read. This is a possible place to add substitutions that should
@@ -78,6 +90,12 @@ rst_epilog = f"""
 #
 html_theme = 'nextstrain-sphinx-theme'
 
+html_theme_options = {
+    'logo_only': False, # if True, don't display project name at top of the sidebar
+    'collapse_navigation': False, # if True, no [+] icons in sidebar
+    'titles_only': True, # if True, page subheadings not included in nav
+}
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -88,3 +106,9 @@ html_static_path = ['_static']
 html_css_files = [
     'css/custom.css',
 ]
+
+# -- Cross-project references ------------------------------------------------
+
+intersphinx_mapping = {
+    'docs.nextstrain.org': ('https://docs.nextstrain.org/en/latest/', None),
+}
