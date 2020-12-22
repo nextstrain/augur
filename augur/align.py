@@ -113,10 +113,11 @@ def run(args):
             copyfile(seqs_to_align_fname, args.output+".pre_aligner.fasta")
 
         # generate alignment command & run
-        cmd = generate_alignment_cmd(args.method, args.nthreads, existing_aln_fname, seqs_to_align_fname, args.output, args.output+".log")
+        log = args.output + ".log"
+        cmd = generate_alignment_cmd(args.method, args.nthreads, existing_aln_fname, seqs_to_align_fname, args.output, log)
         success = run_shell_command(cmd)
         if not success:
-            raise AlignmentError("Error during alignment")
+            raise AlignmentError(f"Error during alignment: please see the log file {log!r} for more details")
 
         # after aligning, make a copy of the data that the aligner produced (useful for debugging)
         if args.debug:
