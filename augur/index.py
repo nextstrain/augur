@@ -1,5 +1,5 @@
 """
-Count occurences of bases in a set of sequences
+Count occurrence of bases in a set of sequences
 """
 
 from Bio import SeqIO
@@ -12,7 +12,7 @@ def register_arguments(parser):
 
 def run(args):
     '''
-    counts the number of a,c,t,g,n and non_actgn bases in a set of sequences
+    counts the number of a,c,t,g,n and other IUPAC nucleotides in a set of sequences
     '''
     #read in files
     try:
@@ -22,25 +22,58 @@ def run(args):
         print(error)
         return 1
 
+    good_chars = {'a', 'c', 'g', 't', 'n', '-', 'r', 'y', 's', 'w', 'k', 'm', 'd', 'h', 'b', 'v','?'}
+    tot_length = 0
+    num_of_seqs = 0
+    #characters to count either as a list or a single character
+    other_IUPAC = ['r', 'y', 's', 'w', 'k', 'm', 'd', 'h', 'b', 'v']
+    values = ['a','c','g','t','n',other_IUPAC]
+    #set the labels for header in tsv output file
+    labels = ['A','C','G','T','N','other_IUPAC']
+
+    #print a warning if labels do not match characters to count 
+    if len(labels)-len(values)!=0:
+        print('Warning: labels do not  match length of values to count')
+
     #count occurences and write to output file
     with open(args.output, 'wt') as out_file:
         tsv_writer = csv.writer(out_file, delimiter = '\t')
-        tsv_writer.writerow(['sequence_name', 'length', '#A','#C', '#G', '#T' ,'#N', '#non-ACTGN'])
+
+        #write header
+        header = ['sequence_name', 'length']+labels
+        tsv_writer.writerow(header)
 
         for record in seqs:
-            #change sequences to lower case and remove gaps
-            seq = record.seq.ungap(gap='-').lower()
-            l = len(seq)
+            #check if sequence contains non nucleotide characters
+            if len(set(str(record.seq)).difference(good_chars))==0:
 
-            #count bases
-            a = seq.count('a')
-            c = seq.count('c')
-            g = seq.count('g')
-            t = seq.count('t')
-            n = seq.count('n')
-            non_acgtn = l-sum([a,c,g,t,n])
+                #change sequences to lower case and remove gaps
+                seq = record.seq.ungap(gap='-').ungap(gap='?').lower()
+                l = len(seq)
+                tot_length += l 
+                num_of_seqs += 1    
 
-            #write row for each sequence
-            tsv_writer.writerow([record.id,l,a,c,g,t,n,non_acgtn])
+                #count occurrence for each value
+                counts = []
+                for v in values:
+                    #if value is a list sum up the occurrences of each member in list
+                    if isinstance(v,list):
+                       counts.append(sum(map(lambda x: seq.count(x), v)))
+                    else:
+                    #if value is not a list it is expected to be a single character
+                        try:
+                            counts.append(seq.count(v))
+                        except ValueError as error:
+                            print("ERROR: %s is not a valid search pattern"%(v))
+                            print(error)
+                            return 1
+                #write row for each sequence
+                row = [record.id, l]+counts
+                tsv_writer.writerow(row)
 
+            else:
+                #skip sequences with non nucleotide characters
+                print("sequence contains non nucleotide characters, skipping...")
+
+    print("Analysed %i sequences with an average length of %i nucleotides."%(num_of_seqs,int(tot_length/num_of_seqs)))
     seqs.close()
