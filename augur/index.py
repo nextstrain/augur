@@ -25,10 +25,10 @@ def run(args):
     good_chars = {'a', 'c', 'g', 't', 'n', '-', 'r', 'y', 's', 'w', 'k', 'm', 'd', 'h', 'b', 'v','?'}
     tot_length = 0
     num_of_seqs = 0
-    #characters to count either as a list or a single character
+    #characters to count as list of strings
     other_IUPAC = ['r', 'y', 's', 'w', 'k', 'm', 'd', 'h', 'b', 'v']
-    values = ['a','c','g','t','n',other_IUPAC]
-    #set the labels for header in tsv output file
+    values = [['a'],['c'],['g'],['t'],['n'],other_IUPAC]
+    #labels for header in tsv output file
     labels = ['A','C','G','T','N','other_IUPAC']
 
     #print a warning if labels do not match characters to count 
@@ -56,17 +56,7 @@ def run(args):
                 #count occurrence for each value
                 counts = []
                 for v in values:
-                    #if value is a list sum up the occurrences of each member in list
-                    if isinstance(v,list):
-                       counts.append(sum(map(lambda x: seq.count(x), v)))
-                    else:
-                    #if value is not a list it is expected to be a single character
-                        try:
-                            counts.append(seq.count(v))
-                        except ValueError as error:
-                            print("ERROR: %s is not a valid search pattern"%(v))
-                            print(error)
-                            return 1
+                    counts.append(sum(map(lambda x: seq.count(x), v)))
                 #write row for each sequence
                 row = [record.id, l]+counts
                 tsv_writer.writerow(row)
