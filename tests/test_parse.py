@@ -1,3 +1,5 @@
+import Bio.SeqIO
+import Bio.Seq
 import pytest
 from pathlib import Path
 import unittest
@@ -8,7 +10,7 @@ sys.path.insert(0, (str(Path(__file__).parent.parent.parent)))
 from augur import parse
 
 
-class TestParse: 
+class TestParse:
     def test_fix_dates(self):
         full_date = "4-5-2020"
         assert parse.fix_dates(full_date) == "2020-05-04"
@@ -49,5 +51,24 @@ class TestParse:
         # test etal
         etal_lower_string = "testing string Et Al Et al"
         etal_strip_string = "nextstrain et al. et al Et Al."
-        assert parse.prettify(etal_lower_string, etal='lower') == etal_lower_string.lower() 
+        assert parse.prettify(etal_lower_string, etal='lower') == etal_lower_string.lower()
         assert parse.prettify(etal_strip_string, etal='strip') == "nextstrain   "
+
+    def test_parse_sequence(self):
+        sequence_record = Bio.SeqRecord.SeqRecord(
+            seq=Bio.Seq.Seq("ATCG"),
+            id="sequence_A",
+            description="sequence_A|USA|2020-10-03|north_america"
+        )
+        fields = ["strain", "country", "date", "region"]
+        sequence, metadata = parse.parse_sequence(
+            sequence_record,
+            fields=fields,
+            strain_key="strain",
+            prettify_fields=["region"]
+        )
+
+        assert sequence.id == metadata["strain"]
+        assert sequence.id == "sequence_A"
+        assert set(fields) == set(metadata.keys())
+        assert metadata["region"] == "North America"
