@@ -45,7 +45,7 @@ def run(args):
 
         for record in seqs:
             #check if sequence contains non nucleotide characters
-            if len(set(str(record.seq)).difference(good_chars))==0:
+            if len(set(str(record.seq.lower())).difference(good_chars))==0:
 
                 #change sequences to lower case and remove gaps
                 seq = record.seq.ungap(gap='-').ungap(gap='?').lower()
@@ -65,5 +65,9 @@ def run(args):
                 #skip sequences with non nucleotide characters
                 print("sequence contains non nucleotide characters, skipping...")
 
-    print("Analysed %i sequences with an average length of %i nucleotides."%(num_of_seqs,int(tot_length/num_of_seqs)))
+    if num_of_seqs==0:
+        print("No valid sequences found.")
+    else:
+        print("Analysed %i sequences with an average length of %i nucleotides."%(num_of_seqs,int(tot_length/num_of_seqs)))
+        
     seqs.close()
