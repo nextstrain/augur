@@ -2,6 +2,34 @@
 # coding: utf-8
 """Identify emerging clades from previously defined clades based on a minimum
 number of new mutations that have reached a minimum frequency in a given region.
+
+Example use cases:
+# Find subclades based on nucleotide mutations with defaults.
+python3 scripts/identify_emerging_clades.py \
+  --tree-url http://data.nextstrain.org/ncov_global.json \
+  --frequencies-url http://data.nextstrain.org/ncov_global_tip-frequencies.json \
+  --nextstrain-url https://nextstrain.org/ncov/global \
+  --output-table nuc_subclades.tsv \
+  --output-html nuc_subclades.html
+# Find region-specific subclades with nucleotide mutations.
+python3 scripts/identify_emerging_clades.py \
+  --tree-url http://data.nextstrain.org/ncov_europe.json \
+  --frequencies-url http://data.nextstrain.org/ncov_europe_tip-frequencies.json \
+  --nextstrain-url https://nextstrain.org/ncov/europe \
+  --filter-attribute region \
+  --filter-value Europe \
+  --output-table europe_nuc_subclades.tsv \
+  --output-html europe_nuc_subclades.html
+# Find subclades based on spike amino acid mutations.
+python3 scripts/identify_emerging_clades.py \
+  --tree-url http://data.nextstrain.org/ncov_global.json \
+  --frequencies-url http://data.nextstrain.org/ncov_global_tip-frequencies.json \
+  --nextstrain-url https://nextstrain.org/ncov/global \
+  --mutation-region S \
+  --minimum-mutations 1 \
+  --minimum-frequency 0.1 \
+  --output-table spike_subclades.tsv \
+  --output-html spike_subclades.html
 """
 import argparse
 from augur.utils import json_to_tree
