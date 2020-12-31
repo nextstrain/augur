@@ -9,7 +9,15 @@
 
 ## Using conda
 
-Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
+[Install Miniconda with Python 3](https://docs.conda.io/en/latest/miniconda.html).
+If you already have Miniconda installed with Python 2, download the latest Python 3 version and [follow conda's installation instructions](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
+If you already have an older Miniconda version installed with Python 3, you may need to update your installation prior to installing Nextstrain's tools with:
+
+```sh
+conda activate base
+conda update conda
+```
+
 Create a conda environment to install augur into and activate that environment.
 
 ```bash
