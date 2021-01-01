@@ -2,6 +2,15 @@
 
 ## __NEXT__
 
+### Features
+
+* filter: Add `--probablistic-sampling` flag to allow subsampling with `--subsample-max-sequences` when the number of groups exceeds the requested number of samples [#629][]
+* scripts: Add script to identify emerging clades from existing Nextstrain build JSONs [#653][]
+* docs: Add instructions to update conda installations prior to installing Augur [#655][]
+
+[#629]: https://github.com/nextstrain/augur/pull/629
+[#653]: https://github.com/nextstrain/augur/pull/653
+[#655]: https://github.com/nextstrain/augur/pull/655
 
 ## 10.1.1 (16 November 2020)
 
