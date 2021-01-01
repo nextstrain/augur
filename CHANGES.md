@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 10.2.0 (1 January 2021)
+
 ### Features
 
 * filter: Add `--probablistic-sampling` flag to allow subsampling with `--subsample-max-sequences` when the number of groups exceeds the requested number of samples [#629][]
