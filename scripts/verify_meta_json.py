@@ -39,7 +39,7 @@ if __name__=="__main__":
     if "author_info" in data:
         verify_author_info(data["author_info"])
     else:
-        print("ERROR: author_info does not exist. This build needs to be updated and will soon be incompatable with auspice.")
+        print("ERROR: author_info does not exist. This build needs to be updated and will soon be incompatible with auspice.")
 
 
     # set_trace()
