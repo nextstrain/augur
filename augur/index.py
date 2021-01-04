@@ -50,9 +50,16 @@ def index_sequence(sequence, values):
 
     """
     counts = []
+    seq = sequence.seq.lower()
+    l = len(seq)   
+    
     for v in values:
-        counts.append(sum(map(lambda x: sequence.count(x), v)))
-    return counts
+        counts.append(sum(map(lambda x: seq.count(x), v)))
+                
+    invalid_nucleotides = l-sum(counts)
+    row = [sequence.id, l]+counts+[invalid_nucleotides]    
+    
+    return row
 
 
 def index_sequences(sequences_path, sequence_index_path):
@@ -88,23 +95,16 @@ def index_sequences(sequences_path, sequence_index_path):
     with open(sequence_index_path, 'wt') as out_file:
         tsv_writer = csv.writer(out_file, delimiter = '\t')
         
-        #write header
+        #write header i output file
         header = ['strain', 'length']+labels+['invalid_nucleotides']
         tsv_writer.writerow(header)
         
         for record in seqs:
-
-            #change sequences to lower case
-            sequence = record.seq.lower()
-            l = len(sequence)   
-            
-            #index the sequence and write row
-            counts = index_sequence(sequence, values)
-            invalid_nucleotides = l-sum(counts)
-            row = [record.id, l]+counts+[invalid_nucleotides]
+            #index the sequence and write row in output file
+            row = index_sequence(record, values)
             tsv_writer.writerow(row)
             
-            tot_length += l 
+            tot_length += row[1]
             num_of_seqs += 1 
     
     seqs.close()    

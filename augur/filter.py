@@ -165,8 +165,7 @@ def run(args):
         # Calculate summary statistics needed for filtering.
         sequence_index["ACGT"] = sequence_index.loc[:, ["A", "C", "G", "T"]].sum(axis=1)
         sequence_index["valid_nucleotides"] = sequence_index.loc[:, ["ACGT", "N", "other_IUPAC"]].sum(axis=1)
-        sequence_index["invalid_nucleotides"] = sequence_index["length"] - sequence_index["valid_nucleotides"]
-        seq_keep = sequence_index["sequence_name"].values
+        seq_keep = sequence_index["strain"].values
         all_seq = seq_keep.copy()
 
     try:
@@ -244,12 +243,12 @@ def run(args):
         if is_vcf: #doesn't make sense for VCF, ignore.
             print("WARNING: Cannot use min_length for VCF files. Ignoring...")
         else:
-            is_in_seq_keep = sequence_index["sequence_name"].isin(seq_keep)
+            is_in_seq_keep = sequence_index["strain"].isin(seq_keep)
             is_gte_min_length = sequence_index["ACGT"] >= args.min_length
 
             seq_keep_by_length = sequence_index[
                 (is_in_seq_keep) & (is_gte_min_length)
-            ]["sequence_name"].tolist()
+            ]["strain"].tolist()
 
             num_excluded_by_length = len(seq_keep) - len(seq_keep_by_length)
             seq_keep = seq_keep_by_length
@@ -282,11 +281,11 @@ def run(args):
     if args.non_nucleotide:
         #good_chars = {'A', 'C', 'G', 'T', '-', 'N', 'R', 'Y', 'S', 'W', 'K', 'M', 'D', 'H', 'B', 'V', '?'}
         #tmp = [s for s in seq_keep if len(set(str(seqs[s].seq).upper()).difference(good_chars))==0]
-        is_in_seq_keep = sequence_index["sequence_name"].isin(seq_keep)
+        is_in_seq_keep = sequence_index["strain"].isin(seq_keep)
         no_invalid_nucleotides = sequence_index["invalid_nucleotides"] == 0
         seq_keep_by_valid_nucleotides = sequence_index[
             (is_in_seq_keep) & (no_invalid_nucleotides)
-        ]["sequence_name"].tolist()
+        ]["strain"].tolist()
 
         num_excluded_by_nuc = len(seq_keep) - len(seq_keep_by_valid_nucleotides)
         seq_keep = seq_keep_by_valid_nucleotides
