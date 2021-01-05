@@ -3,6 +3,7 @@ Count occurrence of bases in a set of sequences
 """
 
 from Bio import SeqIO
+from itertools import combinations
 import Bio.Seq
 import Bio.SeqRecord
 import sys
@@ -21,8 +22,9 @@ def index_sequence(sequence, values):
     sequence : Bio.SeqRecord.SeqRecord
         sequence record to index.
 
-    values : list of lists of str
-        values to count
+    values : list of sets of str
+        values to count; sets must be non-overlapping and contain only
+        single-character, lowercase strings
 
     Returns
     -------
@@ -31,8 +33,8 @@ def index_sequence(sequence, values):
         for the given values, and a final column with the number of characters
         that didn't match any of those in the given values.
 
-    >>> other_IUPAC = ['r', 'y', 's', 'w', 'k', 'm', 'd', 'h', 'b', 'v']
-    >>> values = [['a'],['c'],['g'],['t'],['n'], other_IUPAC, ['-'], ['?']]
+    >>> other_IUPAC = {'r', 'y', 's', 'w', 'k', 'm', 'd', 'h', 'b', 'v'}
+    >>> values = [{'a'},{'c'},{'g'},{'t'},{'n'}, other_IUPAC, {'-'}, {'?'}]
     >>> sequence_a = Bio.SeqRecord.SeqRecord(seq=Bio.Seq.Seq("ACTGN-?XWN"), id="seq_A")
     >>> index_sequence(sequence_a, values)
     ['seq_A', 10, 1, 1, 1, 1, 2, 1, 1, 1, 1]
@@ -48,7 +50,47 @@ def index_sequence(sequence, values):
     >>> index_sequence(sequence_c, values)
     ['seq_C', 11, 1, 1, 1, 1, 2, 0, 0, 0, 5]
 
+    The list of value sets must not overlap.
+
+    >>> sequence_d = Bio.SeqRecord.SeqRecord(seq=Bio.Seq.Seq("A!C!TGXN"), id="seq_D")
+    >>> index_sequence(sequence_d, [set('actg'), set('xn'), set('n')])
+    Traceback (most recent call last):
+      ...
+    ValueError: character sets {'x', 'n'} and {'n'} overlap: {'n'}
+
+    Value sets must contain only single-character, lowercase strings.
+
+    >>> index_sequence(sequence_d, [{'a'}, {'c'}, {'T'}, {'g'}])
+    Traceback (most recent call last):
+      ...
+    ValueError: character set {'T'} contains a non-lowercase character: 'T'
+
+    >>> index_sequence(sequence_d, [{'actg'}])
+    Traceback (most recent call last):
+      ...
+    ValueError: character set {'actg'} contains a multi-character (or maybe zero-length) string: 'actg'
+
+    >>> index_sequence(sequence_d, [{'a', 'c'}, {0, 1}])
+    Traceback (most recent call last):
+      ...
+    ValueError: character set {0, 1} contains a non-string element: 0
     """
+    # Sets must be non-overlapping and contain only single-character, lowercase
+    # strings, otherwise our assumptions are broken.  This is not much hardship
+    # on the caller.
+    for v in values:
+        for c in v:
+            if not isinstance(c, str):
+                raise ValueError(f"character set {v!r} contains a non-string element: {c!r}")
+            if len(c) != 1:
+                raise ValueError(f"character set {v!r} contains a multi-character (or maybe zero-length) string: {c!r}")
+            if c != c.lower():
+                raise ValueError(f"character set {v!r} contains a non-lowercase character: {c!r}")
+
+    for a, b in combinations(values, 2):
+        if not a.isdisjoint(b):
+            raise ValueError(f"character sets {a!r} and {b!r} overlap: {a & b!r}")
+
     counts = []
     seq = sequence.seq.lower()
     l = len(seq)   
@@ -85,8 +127,8 @@ def index_sequences(sequences_path, sequence_index_path):
         print(error, file=sys.stderr)
         return 1
     
-    other_IUPAC = ['r', 'y', 's', 'w', 'k', 'm', 'd', 'h', 'b', 'v']
-    values = [['a'],['c'],['g'],['t'],['n'],other_IUPAC,['-'],['?']] 
+    other_IUPAC = {'r', 'y', 's', 'w', 'k', 'm', 'd', 'h', 'b', 'v'}
+    values = [{'a'},{'c'},{'g'},{'t'},{'n'},other_IUPAC,{'-'},{'?'}]
     labels = ['A','C','G','T','N','other_IUPAC','-','?']
     
     tot_length = 0
