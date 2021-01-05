@@ -50,6 +50,7 @@ rule filter:
             --output {output.sequences} \
             --group-by {params.group_by} \
             --sequences-per-group {params.sequences_per_group} \
+            --no-probabilistic-sampling \
             --min-date {params.min_date}
         """
 
@@ -112,4 +113,3 @@ rule refine:
             --date-inference {params.date_inference} \
             --clock-filter-iqd {params.clock_filter_iqd}
         """
-

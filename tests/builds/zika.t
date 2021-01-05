@@ -30,6 +30,7 @@ Filter sequences by a minimum date and an exclusion list and only keep one seque
   >   --group-by country year month \
   >   --sequences-per-group 1 \
   >   --subsample-seed 314159 \
+  >   --no-probabilistic-sampling \
   >   --min-date 2012 > /dev/null
 
   $ diff -u "results/filtered.fasta" "$TMP/out/filtered.fasta"

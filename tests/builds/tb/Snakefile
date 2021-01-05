@@ -49,6 +49,7 @@ rule filter:
             --exclude {input.exclude} \
             --group-by {params.group_by} \
             --sequences-per-group {params.sequences_per_group} \
+            --no-probabilistic-sampling
         """
 
 rule mask:
