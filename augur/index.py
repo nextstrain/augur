@@ -35,7 +35,7 @@ def index_sequence(sequence, values):
     >>> values = [['a'],['c'],['g'],['t'],['n'], other_IUPAC, ['-'], ['?']]
     >>> sequence_a = Bio.SeqRecord.SeqRecord(seq=Bio.Seq.Seq("ACTGN-?XWN"), id="seq_A")
     >>> index_sequence(sequence_a, values)
-    ['seq_A', 10, 1, 1, 1, 1, 2, 2, 1, 1, 0]
+    ['seq_A', 10, 1, 1, 1, 1, 2, 1, 1, 1, 1]
 
     >>> sequence_b = Bio.SeqRecord.SeqRecord(seq=Bio.Seq.Seq("ACTGACTG"), id="seq_B")
     >>> index_sequence(sequence_b, values)
@@ -46,7 +46,7 @@ def index_sequence(sequence, values):
 
     >>> sequence_c = Bio.SeqRecord.SeqRecord(seq=Bio.Seq.Seq("ACTG%@!!!NN"), id="seq_C")
     >>> index_sequence(sequence_c, values)
-    ['seq_C', 11, 1, 1, 1, 1, 1, 0, 0, 0, 5]
+    ['seq_C', 11, 1, 1, 1, 1, 2, 0, 0, 0, 5]
 
     """
     counts = []
