@@ -17,34 +17,39 @@ authors:
   - name: Thomas R. Sibley
     affiliation: 2
     orcid: 0000-0001-5269-2297
+  - name: Jover Lee
+    affiliation: 2
+    orcid: 0000-0002-2391-0512
+  - name: Kairsten Fay
+    affiliation: 2
+    orcid: 0000-0002-6529-9205
+  - name: Misja Ilcisin
+    affiliation: 2
+    orcid: 0000-0002-1468-7697
   - name: Elias Harkins
     affiliation: 2
     orcid: 0000-0001-6525-9134
-  - name: Augur Contributors
-    affiliation: 3
   - name: Trevor Bedford
     affiliation: "1, 2"
     orcid: 0000-0002-4039-5794
   - name: Richard A. Neher
-    affiliation: "4, 5"
+    affiliation: "3, 4"
     orcid: 0000-0003-2525-1407
   - name: Emma B. Hodcroft
-    affiliation: "4, 5, 6"
+    affiliation: "3, 4, 5"
     orcid: 0000-0002-0078-2212
 affiliations:
-  - name: Molecular and Cell Biology Program, University of Washington, Seattle, WA, USA
+  - name: Molecular and Cellular Biology Program, University of Washington, Seattle, WA, USA
     index: 1
   - name: Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Research Center, Seattle, WA, USA
     index: 2
-  - name: Open Source Software community
-    index: 3
   - name: Biozentrum, University of Basel, Basel, Switzerland
-    index: 4
+    index: 3
   - name: Swiss Institute of Bioinformatics, Basel, Switzerland
-    index: 5
+    index: 4
   - name: Institute of Social and Preventive Medicine, University of Bern, Bern, Switzerland
-    index: 6
-date: 5 November 2020
+    index: 5
+date: 5 January 2021
 bibliography: paper.bib
 ---
 
@@ -102,6 +107,7 @@ Augur can be installed from PyPI ([nextstrain-augur](https://pypi.org/project/ne
 # Acknowledgments
 
 Thank you to all of [the open source community members who have contributed to Augur](https://github.com/nextstrain/augur/graphs/contributors).
+Specifically, we thank Eric Danielson, Eddie Lebow, Barney Potter, Ryan Grout, Sai Kiran Kollapudi, Mingye Wang, Carol Willing, Louise Moncla, Thomas Caswell, Sidney Bell, Terry Jones, Christian Clauss, Julien Bordellier, Gytis Dudas, Cameron Devine, Samuel Zhang, Akshay Subramanian, Christopher Tomkins-Tinch, Danielle Kain, Pierre Barrat-Charlaix, Rhys Kidd, Chris Woszczak, Tony Tung, Mathias Walter, and Zachary Sailer.
 Thank you to Dan Fornika from BCCDC Public Health Laboratory for creating the first conda recipe for Augur in Bioconda.
 JHu is a Graduate Research Fellow and is supported by the NIH grant NIAID F31AI140714.
 TB is a Pew Biomedical Scholar.
