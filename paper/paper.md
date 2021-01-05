@@ -17,6 +17,15 @@ authors:
   - name: Thomas R. Sibley
     affiliation: 2
     orcid: 0000-0001-5269-2297
+  - name: Jover Lee
+    affiliation: 2
+    orcid: 0000-0002-2391-0512
+  - name: Kairsten Fay
+    affiliation: 2
+    orcid: 0000-0002-6529-9205
+  - name: Misja Ilcisin
+    affiliation: 2
+    orcid: 0000-0002-1468-7697
   - name: Elias Harkins
     affiliation: 2
     orcid: 0000-0001-6525-9134
