@@ -14,7 +14,6 @@ from .utils import read_metadata, get_numerical_dates, run_shell_command, shquot
 
 comment_char = '#'
 
-
 def read_vcf(filename):
     if filename.lower().endswith(".gz"):
         import gzip
@@ -101,7 +100,7 @@ def register_arguments(parser):
     subsample_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences")
     parser.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
     probabilistic_sampling_group = parser.add_mutually_exclusive_group()
-    probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true', default=True, help="Enable probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.")
+    probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true', help="(deprecated) Enable probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.")
     probabilistic_sampling_group.add_argument('--no-probabilistic-sampling', action='store_true', help="Disable probabilistic sampling during subsampling, requiring that there must be no more subsampling groups than the requested maximum number of sequences. This option only applies when `--subsample-max-sequences` is provided.")
     parser.add_argument('--subsample-seed', help="random number generator seed to allow reproducible sub-sampling (with same input data). Can be number or string.")
     parser.add_argument('--exclude-where', nargs='+',
@@ -138,6 +137,15 @@ def run(args):
     # Probabilistic sampling is enabled by default, but we disable it when the
     # user has explicitly requested so.
     use_probabilistic_sampling = not args.no_probabilistic_sampling
+
+    # If the user requested probabilistic sampling, let them know the flag is
+    # deprecated.
+    if args.probabilistic_sampling:
+        print(
+            "WARNING: Probabilistic sampling is now the default behavior.",
+            "The `--probabilistic_sampling` is deprecated and will be removed in Augur version 12.",
+            file=sys.stderr
+        )
 
     ####Read in files
 

@@ -46,6 +46,7 @@ Explicitly use probabilistic subsampling to handle the case when there are more 
   >  --subsample-seed 314159 \
   >  --probabilistic-sampling \
   >  --output "$TMP/filtered.fasta" > /dev/null
+  WARNING: Probabilistic sampling is now the default behavior. The `--probabilistic_sampling` is deprecated and will be removed in Augur version 12.
   $ rm -f "$TMP/filtered.fasta"
 
 Using the default probabilistic subsampling, should work the same as the previous case.
