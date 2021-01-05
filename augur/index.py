@@ -53,10 +53,10 @@ def index_sequence(sequence, values):
     The list of value sets must not overlap.
 
     >>> sequence_d = Bio.SeqRecord.SeqRecord(seq=Bio.Seq.Seq("A!C!TGXN"), id="seq_D")
-    >>> index_sequence(sequence_d, [set('actg'), set('xn'), set('n')])
+    >>> index_sequence(sequence_d, [set('actg'), set('xn'), set('n')]) # doctest: +ELLIPSIS
     Traceback (most recent call last):
       ...
-    ValueError: character sets {'x', 'n'} and {'n'} overlap: {'n'}
+    ValueError: character sets ... and {'n'} overlap: {'n'}
 
     Value sets must contain only single-character, lowercase strings.
 
