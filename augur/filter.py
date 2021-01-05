@@ -100,7 +100,9 @@ def register_arguments(parser):
     subsample_group.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     subsample_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences")
     parser.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
-    parser.add_argument('--probabilistic-sampling', action='store_true', help="Sample probabilitically from groups -- useful when there are more groups than requested sequences")
+    probabilistic_sampling_group = parser.add_mutually_exclusive_group()
+    probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true', default=True, help="Enable probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.")
+    probabilistic_sampling_group.add_argument('--no-probabilistic-sampling', action='store_true', help="Disable probabilistic sampling during subsampling, requiring that there must be no more subsampling groups than the requested maximum number of sequences. This option only applies when `--subsample-max-sequences` is provided.")
     parser.add_argument('--subsample-seed', help="random number generator seed to allow reproducible sub-sampling (with same input data). Can be number or string.")
     parser.add_argument('--exclude-where', nargs='+',
                                 help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
@@ -132,6 +134,10 @@ def run(args):
             print("ERROR: 'vcftools' is not installed! This is required for VCF data. "
                   "Please see the augur install instructions to install it.")
             return 1
+
+    # Probabilistic sampling is enabled by default, but we disable it when the
+    # user has explicitly requested so.
+    use_probabilistic_sampling = not args.no_probabilistic_sampling
 
     ####Read in files
 
@@ -335,7 +341,7 @@ def run(args):
                         for sequences_in_group in seq_names_by_group.values()
                     ]
 
-                    if args.probabilistic_sampling:
+                    if use_probabilistic_sampling:
                         spg = _calculate_fractional_sequences_per_group(
                             args.subsample_max_sequences,
                             length_of_sequences_per_group
@@ -350,14 +356,14 @@ def run(args):
                     sys.exit(1)
                 print("sampling at {} per group.".format(spg))
 
-            if args.probabilistic_sampling:
+            if use_probabilistic_sampling:
                 random_generator = np.random.default_rng()
 
             # subsample each groups, either by taking the spg highest priority strains or
             # sampling at random from the sequences in the group
             seq_subsample = []
             for group, sequences_in_group in seq_names_by_group.items():
-                if args.probabilistic_sampling:
+                if use_probabilistic_sampling:
                     tmp_spg = random_generator.poisson(spg)
                 else:
                     tmp_spg = spg
