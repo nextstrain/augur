@@ -230,9 +230,15 @@ if __name__ == '__main__':
             for index, row_df in distinct_subclades.iterrows():
                 parent_clade = row_df["parent_clade"]
                 mutations = row_df["mutations"]
-                print(
-                    f"<li><a target='_new' href='{nextstrain_url}?c=gt-{mutation_region}_{mutations}&p=grid'>{parent_clade}: {mutations}</a></li>",
-                    file=oh
-                )
+                if filter_attribute:
+                    print(
+                        f"<li><a target='_new' href='{nextstrain_url}?c=gt-{mutation_region}_{mutations}&f_{filter_attribute}={filter_value}&transmissions=hide&p=grid'>{parent_clade}: {mutations}</a></li>",
+                        file=oh
+                    )
+                else:
+                    print(
+                        f"<li><a target='_new' href='{nextstrain_url}?c=gt-{mutation_region}_{mutations}&transmissions=hide&p=grid'>{parent_clade}: {mutations}</a></li>",
+                        file=oh
+                    )
 
             print("</ul>", file=oh)
