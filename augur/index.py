@@ -1,5 +1,4 @@
-"""
-Count occurrence of bases in a set of sequences
+"""Count occurrence of bases in a set of sequences.
 """
 
 from Bio import SeqIO
@@ -11,7 +10,7 @@ import csv
 
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
-    parser.add_argument('--output', '-o', help="output file", required=True)
+    parser.add_argument('--output', '-o', help="tab-delimited file containing the number of bases per sequence in the given file. Output columns include strain, length, and counts for A, C, G, T, N, other valid IUPAC characters, ambiguous characters ('?' and '-'), and other invalid characters.", required=True)
 
 
 def index_sequence(sequence, values):
