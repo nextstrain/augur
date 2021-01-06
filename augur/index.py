@@ -118,6 +118,14 @@ def index_sequences(sequences_path, sequence_index_path):
         path to a tab-delimited file containing the composition details for each
         sequence in the given input file.
 
+    Returns
+    -------
+    int :
+        number of sequences indexed
+
+    int :
+        total length of sequences indexed
+
     """
     #read in files
     try:
@@ -147,10 +155,11 @@ def index_sequences(sequences_path, sequence_index_path):
             tsv_writer.writerow(row)
             
             tot_length += row[1]
-            num_of_seqs += 1 
-    
-    seqs.close()    
-    print("Analysed %i sequences with an average length of %i nucleotides."%(num_of_seqs,int(tot_length/num_of_seqs)))
+            num_of_seqs += 1
+
+    seqs.close()
+
+    return num_of_seqs, tot_length
 
 
 def run(args):
@@ -159,5 +168,5 @@ def run(args):
     ("?" and "-"), and other invalid characters in a set of sequences and write
     the composition as a data frame to the given sequence index path.
     '''
-    print('Running index_sequences:')
-    index_sequences(args.sequences, args.output)
+    num_of_seqs, tot_length = index_sequences(args.sequences, args.output)
+    print("Analysed %i sequences with an average length of %i nucleotides." % (num_of_seqs, int(tot_length / num_of_seqs)))
