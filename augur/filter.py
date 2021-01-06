@@ -153,6 +153,11 @@ def run(args):
         if args.sequence_index is None:
             # Create a new index based on the given sequence's path.
             sequence_index_path = args.sequences + ".idx"
+            print(
+                f"WARNING: A sequence index was not provided, so we are generating one at '{sequence_index_path}'.",
+                "Generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.",
+                file=sys.stderr
+            )
             index_sequences(args.sequences, sequence_index_path)
         else:
             sequence_index_path = args.sequence_index
