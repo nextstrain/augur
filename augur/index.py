@@ -92,14 +92,14 @@ def index_sequence(sequence, values):
 
     counts = []
     seq = sequence.seq.lower()
-    l = len(seq)   
-    
+    l = len(seq)
+
     for v in values:
         counts.append(sum(map(lambda x: seq.count(x), v)))
-                
+
     invalid_nucleotides = l-sum(counts)
-    row = [sequence.id, l]+counts+[invalid_nucleotides]    
-    
+    row = [sequence.id, l]+counts+[invalid_nucleotides]
+
     return row
 
 
@@ -133,26 +133,26 @@ def index_sequences(sequences_path, sequence_index_path):
         print("ERROR: Problem reading in {}:".format(sequences_path), file=sys.stderr)
         print(error, file=sys.stderr)
         return 1
-    
+
     other_IUPAC = {'r', 'y', 's', 'w', 'k', 'm', 'd', 'h', 'b', 'v'}
     values = [{'a'},{'c'},{'g'},{'t'},{'n'},other_IUPAC,{'-'},{'?'}]
     labels = ['A','C','G','T','N','other_IUPAC','-','?']
-    
+
     tot_length = 0
     num_of_seqs = 0
-    
+
     with open(sequence_index_path, 'wt') as out_file:
         tsv_writer = csv.writer(out_file, delimiter = '\t')
-        
+
         #write header i output file
         header = ['strain', 'length']+labels+['invalid_nucleotides']
         tsv_writer.writerow(header)
-        
+
         for record in seqs:
             #index the sequence and write row in output file
             row = index_sequence(record, values)
             tsv_writer.writerow(row)
-            
+
             tot_length += row[1]
             num_of_seqs += 1
 
