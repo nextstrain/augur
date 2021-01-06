@@ -2,6 +2,13 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* scripts: Fix typo in `verify_meta_json.py` [#656][]
+* CI: Use the expected Python version in conda environments [#658][]
+
+[#656]: https://github.com/nextstrain/augur/pull/656
+[#658]: https://github.com/nextstrain/augur/pull/658
 
 ## 10.2.0 (1 January 2021)
 
