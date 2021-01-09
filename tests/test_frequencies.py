@@ -66,17 +66,20 @@ def test_get_pivots_from_tree_only(tree):
 
 def test_get_pivots_from_start_and_end_date():
     """
-    Test pivot calculation from a given start and end date instead of a given tree.
+    Test pivot calculation from a given start and end date instead of a given tree
+    First pivot is the first day of the month immediately following start_date
+    Last pivot is the first day of the month immediately preceding end_date
+    Current logic converts numeric date 2015.5 to 2015-07-02, hence using 2015.49
     """
-    pivot_frequency = 3
-    start_date = 2015.5
+    pivot_frequency = 1
+    start_date = 2015.49
     end_date = 2018.5
     observations = []
     pivots = get_pivots(observations, pivot_frequency, start_date=start_date, end_date=end_date)
     assert isinstance(pivots, np.ndarray)
-    assert pivots[1] - pivots[0] == pivot_frequency / 12.0
-    assert pivots[0] == start_date
-    assert pivots[-1] == end_date
+    assert np.round( 12 * (pivots[1] - pivots[0]) ) == pivot_frequency
+    assert pivots[0] == 2015.5
+    assert pivots[-1] == 2018.5
     assert pivots[-1] >= end_date - pivot_frequency
 
 #
@@ -110,7 +113,7 @@ class TestTreeKdeFrequencies(object):
         )
         frequencies = kde_frequencies.estimate(tree)
         assert hasattr(kde_frequencies, "pivots")
-        assert kde_frequencies.pivots[0] == start_date
+        assert kde_frequencies.pivots[0] == 2015.5833
         assert hasattr(kde_frequencies, "frequencies")
         assert list(frequencies.values())[0].shape == kde_frequencies.pivots.shape
 
