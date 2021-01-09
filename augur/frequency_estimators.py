@@ -1,6 +1,7 @@
 # estimates clade frequencies
 from __future__ import division, print_function
 from collections import defaultdict
+import datetime
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
@@ -804,42 +805,28 @@ def test_nested_estimator():
 
     return nested_freq
 
-
-def float_to_datestring(time):
-    """Convert a floating point date to a date string
-
-    >>> float_to_datestring(2010.75)
-    '2010-10-01'
-    >>> float_to_datestring(2011.25)
-    '2011-04-01'
-    >>> float_to_datestring(2011.0)
-    '2011-01-01'
-    >>> float_to_datestring(2011.0 + 11.0 / 12)
-    '2011-12-01'
-
-    In some cases, the given float value can be truncated leading to unexpected
-    conversion between floating point and integer values. This function should
-    account for these errors by rounding months to the nearest integer.
-
-    >>> float_to_datestring(2011.9166666666665)
-    '2011-12-01'
-    >>> float_to_datestring(2016.9609856262834)
-    '2016-12-01'
+def float_to_datestring(numdate):
+    """convert a numeric decimal date to a python datetime object
+    Note that this only works for AD dates since the range of datetime objects
+    is restricted to year>1.
+    Copied from treetime.utils
+    Parameters
+    ----------
+    numdate : float
+        numeric date as in 2018.23
+    Returns
+    -------
+    datetime.datetime
+        datetime object
     """
-    year = int(time)
+    from calendar import isleap
+    days_in_year = 366 if isleap(int(numdate)) else 365
+    # add a small number of the time elapsed in a year to avoid
+    # unexpected behavior for values 1/365, 2/365, etc
+    days_elapsed = int(((numdate%1)+1e-10)*days_in_year)
+    date = datetime.datetime(int(numdate),1,1) + datetime.timedelta(days=days_elapsed)
 
-    # After accounting for the current year, extract the remainder and convert
-    # it to a month using the inverse of the logic used to create the floating
-    # point date. If the float date is sufficiently close to the end of the
-    # year, rounding can produce a 13th month.
-    month = min(int(np.rint(((time - year) * 12) + 1)), 12)
-
-    # Floating point dates do not encode day information, so we always assume
-    # they refer to the start of a given month.
-    day = 1
-
-    return "%s-%02d-%02d" % (year, month, day)
-
+    return "%s-%02d-%02d" % (date.year, date.month, date.day)
 
 def timestamp_to_float(time):
     """Convert a pandas timestamp to a floating point date.
