@@ -22,6 +22,8 @@ def register_arguments(parser):
                         help="region to subsample to")
     parser.add_argument("--pivot-interval", type=int, default=3,
                         help="number of months between pivots")
+    parser.add_argument("--pivot-interval-units", type=str, default="months", choices=['months', 'weeks'],
+                        help="space pivots by months (default) or by weeks")
     parser.add_argument('--min-date', type=float,
                         help="minimal pivot value")
     parser.add_argument('--max-date', type=float,
@@ -104,7 +106,7 @@ def run(args):
 
         if args.method == "diffusion":
             # estimate tree frequencies
-            pivots = get_pivots(tps, args.pivot_interval, args.min_date, args.max_date)
+            pivots = get_pivots(tps, args.pivot_interval, args.min_date, args.max_date, args.pivot_interval_units)
             frequency_dict = {"pivots":format_frequencies(pivots)}
             frequency_dict["counts"] = {}
 
@@ -157,6 +159,7 @@ def run(args):
                 pivot_frequency=args.pivot_interval,
                 start_date=args.min_date,
                 end_date=args.max_date,
+                pivot_interval_units=args.pivot_interval_units,
                 weights=weights,
                 weights_attribute=weights_attribute,
                 include_internal_nodes=args.include_internal_nodes,
@@ -190,7 +193,7 @@ def run(args):
             tps = np.array([np.mean(dates[seq.name]) for seq in aln])
 
             if frequencies is None:
-                pivots = get_pivots(tps, args.pivot_interval, args.min_date, args.max_date)
+                pivots = get_pivots(tps, args.pivot_interval, args.min_date, args.max_date, args.pivot_interval_units)
                 frequencies = {"pivots":format_frequencies(pivots)}
 
             if args.method == "kde":
@@ -201,6 +204,7 @@ def run(args):
                     pivot_frequency=args.pivot_interval,
                     start_date=args.min_date,
                     end_date=args.max_date,
+                    pivot_interval_units=args.pivot_interval_units,
                     weights=weights,
                     weights_attribute=weights_attribute,
                     include_internal_nodes=args.include_internal_nodes,
