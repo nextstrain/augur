@@ -4,11 +4,19 @@
 
 ### Bug Fixes
 
-* scripts: Fix typo in `verify_meta_json.py` [#656][]
+* scripts: Fix typo in `verify_meta_json.py` [#656][] (@felixonmars)
 * CI: Use the expected Python version in conda environments [#658][]
+* CI: Minimize codecov feedback [#661][]
+
+### Features
+
+* frequencies: Add `--pivot-interval-units` argument with support for weekly pivots [#660][]
+* frequencies: Add support for ISO dates for `--min-date` and `--max-date` arguments [#660][]
 
 [#656]: https://github.com/nextstrain/augur/pull/656
 [#658]: https://github.com/nextstrain/augur/pull/658
+[#660]: https://github.com/nextstrain/augur/pull/660
+[#661]: https://github.com/nextstrain/augur/pull/661
 
 ## 10.2.0 (1 January 2021)
 
