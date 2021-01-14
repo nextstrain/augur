@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 10.3.0 (14 January 2021)
+
 ### Bug Fixes
 
 * scripts: Fix typo in `verify_meta_json.py` [#656][] (@felixonmars)
