@@ -53,9 +53,12 @@ def get_pivots(observations, pivot_interval, start_date=None, end_date=None, piv
     pivot_start = start_date if start_date else np.floor(np.min(observations) / pivot_frequency) * pivot_frequency
     pivot_end = end_date if end_date else np.ceil(np.max(observations) / pivot_frequency) * pivot_frequency
 
-    offset = "%sMS" % pivot_interval
-    if pivot_interval_units == "weeks":
+    if pivot_interval_units == "months":
+        offset = "%sMS" % pivot_interval
+    elif pivot_interval_units == "weeks":
         offset = "%sW" % pivot_interval
+    else:
+        raise ValueError(f"The given interval unit '{pivot_interval_units}' is not supported.")
 
     datetime_pivots = pd.date_range(
         float_to_datestring(pivot_start),

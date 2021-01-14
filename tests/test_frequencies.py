@@ -82,6 +82,26 @@ def test_get_pivots_from_start_and_end_date():
     assert pivots[-1] == 2018.5
     assert pivots[-1] >= end_date - pivot_frequency
 
+def test_get_pivots_by_months():
+    """Get pivots where intervals are defined by months.
+    """
+    pivots = get_pivots(observations=[], pivot_interval=1, start_date=2015.0, end_date=2016.0, pivot_interval_units="months")
+    # Pivots should include all 12 months of the year plus the month represented
+    # by the end date, since the pandas month interval uses "month starts". See
+    # pandas date offsets documentation for more details:
+    # https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
+    assert len(pivots) == 13
+
+def test_get_pivots_by_weeks():
+    """Get pivots where intervals are defined as weeks instead of months.
+    """
+    pivots = get_pivots(observations=[], pivot_interval=1, start_date=2015.0, end_date=2016.0, pivot_interval_units="weeks")
+    assert len(pivots) == 52
+
+def test_get_pivots_by_invalid_unit():
+    with pytest.raises(ValueError, match=r".*invalid_unit.*is not supported.*"):
+        pivots = get_pivots(observations=[], pivot_interval=1, start_date=2015.0, end_date=2016.0, pivot_interval_units="invalid_unit")
+
 #
 # Test KDE frequency estimation for trees
 #

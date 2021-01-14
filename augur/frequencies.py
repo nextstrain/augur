@@ -23,7 +23,7 @@ def register_arguments(parser):
     parser.add_argument('--regions', type=str, nargs='+', default=['global'],
                         help="region to subsample to")
     parser.add_argument("--pivot-interval", type=int, default=3,
-                        help="number of months between pivots")
+                        help="number of units between pivots")
     parser.add_argument("--pivot-interval-units", type=str, default="months", choices=['months', 'weeks'],
                         help="space pivots by months (default) or by weeks")
     parser.add_argument('--min-date', type=numeric_date,
