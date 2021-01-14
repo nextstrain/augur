@@ -1,0 +1,13 @@
+comment:
+  # Only post a codecov comment if coverage changes.
+  require_changes: true
+
+coverage:
+  status:
+    # Disable GitHub checks for code coverage that make otherwise valid builds fail.
+    project: off
+    patch: off
+
+github_checks:
+  # Disable inline annotations of code coverage in pull requests.
+  annotations: false
