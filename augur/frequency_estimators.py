@@ -1,6 +1,7 @@
 # estimates clade frequencies
 from __future__ import division, print_function
 from collections import defaultdict
+import datetime
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
@@ -18,7 +19,7 @@ class TreeKdeFrequenciesError(Exception):
     pass
 
 
-def get_pivots(observations, pivot_interval, start_date=None, end_date=None):
+def get_pivots(observations, pivot_interval, start_date=None, end_date=None, pivot_interval_units="months"):
     """Calculate pivots for a given list of floating point observation dates and
     interval between pivots.
 
@@ -30,11 +31,13 @@ def get_pivots(observations, pivot_interval, start_date=None, end_date=None):
     observations : list
         a list of observed floating point dates per sample
     pivot_interval : int
-        number of months between pivots
+        number of months (or weeks) between pivots
     start_date : float
         optional start of the pivots interval
     end_date : float
         optional end of the pivots interval
+    pivot_interval : str
+        whether pivots are measured in "months" or in "weeks"
 
     Returns
     -------
@@ -44,18 +47,27 @@ def get_pivots(observations, pivot_interval, start_date=None, end_date=None):
     """
     # Convert months between pivots to pivot frequency.
     pivot_frequency = pivot_interval / 12.0
+    if pivot_interval_units == "weeks":
+        pivot_frequency = pivot_interval / 52.1429
 
     pivot_start = start_date if start_date else np.floor(np.min(observations) / pivot_frequency) * pivot_frequency
     pivot_end = end_date if end_date else np.ceil(np.max(observations) / pivot_frequency) * pivot_frequency
 
+    if pivot_interval_units == "months":
+        offset = "%sMS" % pivot_interval
+    elif pivot_interval_units == "weeks":
+        offset = "%sW" % pivot_interval
+    else:
+        raise ValueError(f"The given interval unit '{pivot_interval_units}' is not supported.")
+
     datetime_pivots = pd.date_range(
         float_to_datestring(pivot_start),
         float_to_datestring(pivot_end),
-        freq="%sMS" % pivot_interval
+        freq = offset
     )
     pivots = np.array([timestamp_to_float(pivot) for pivot in datetime_pivots])
 
-    return np.around(pivots, 2)
+    return np.around(pivots, 4)
 
 
 def make_pivots(pivots, tps):
@@ -796,45 +808,33 @@ def test_nested_estimator():
 
     return nested_freq
 
-
-def float_to_datestring(time):
-    """Convert a floating point date to a date string
-
-    >>> float_to_datestring(2010.75)
-    '2010-10-01'
-    >>> float_to_datestring(2011.25)
-    '2011-04-01'
-    >>> float_to_datestring(2011.0)
-    '2011-01-01'
-    >>> float_to_datestring(2011.0 + 11.0 / 12)
-    '2011-12-01'
-
-    In some cases, the given float value can be truncated leading to unexpected
-    conversion between floating point and integer values. This function should
-    account for these errors by rounding months to the nearest integer.
-
-    >>> float_to_datestring(2011.9166666666665)
-    '2011-12-01'
-    >>> float_to_datestring(2016.9609856262834)
-    '2016-12-01'
+def float_to_datestring(numdate):
+    """convert a numeric decimal date to a python datetime object
+    Note that this only works for AD dates since the range of datetime objects
+    is restricted to year>1.
+    Copied from treetime.utils
+    Parameters
+    ----------
+    numdate : float
+        numeric date as in 2018.23
+    Returns
+    -------
+    datetime.datetime
+        datetime object
     """
-    year = int(time)
+    from calendar import isleap
+    days_in_year = 366 if isleap(int(numdate)) else 365
+    # add a small number of the time elapsed in a year to avoid
+    # unexpected behavior for values 1/365, 2/365, etc
+    days_elapsed = int(((numdate%1)+1e-10)*days_in_year)
+    date = datetime.datetime(int(numdate),1,1) + datetime.timedelta(days=days_elapsed)
 
-    # After accounting for the current year, extract the remainder and convert
-    # it to a month using the inverse of the logic used to create the floating
-    # point date. If the float date is sufficiently close to the end of the
-    # year, rounding can produce a 13th month.
-    month = min(int(np.rint(((time - year) * 12) + 1)), 12)
-
-    # Floating point dates do not encode day information, so we always assume
-    # they refer to the start of a given month.
-    day = 1
-
-    return "%s-%02d-%02d" % (year, month, day)
-
+    return "%s-%02d-%02d" % (date.year, date.month, date.day)
 
 def timestamp_to_float(time):
     """Convert a pandas timestamp to a floating point date.
+    This is not entirely accurate as it doesn't account for months with different
+    numbers of days, but should be close enough to be accurate for weekly pivots.
 
     >>> import datetime
     >>> time = datetime.date(2010, 10, 1)
@@ -848,7 +848,7 @@ def timestamp_to_float(time):
     >>> timestamp_to_float(datetime.date(2011, 12, 1)) == (2011.0 + 11.0 / 12)
     True
     """
-    return time.year + ((time.month - 1) / 12.0)
+    return time.year + ((time.month - 1) / 12.0) + ((time.day - 1) / 365.25)
 
 
 class KdeFrequencies(object):
@@ -858,8 +858,10 @@ class KdeFrequencies(object):
     each clade in the tree.
     """
     def __init__(self, sigma_narrow=1 / 12.0, sigma_wide=3 / 12.0, proportion_wide=0.2,
-                 pivot_frequency=1, start_date=None, end_date=None, weights=None, weights_attribute=None,
-                 node_filters=None, max_date=None, include_internal_nodes=False, censored=False):
+                 pivot_frequency=1, start_date=None, end_date=None,
+                 pivot_interval_units="months", weights=None, weights_attribute=None,
+                 node_filters=None, max_date=None, include_internal_nodes=False,
+                 censored=False):
         """Define parameters for KDE-based frequency estimation.
 
         Args:
@@ -869,6 +871,7 @@ class KdeFrequencies(object):
             pivot_frequency (int): Number of months between pivots
             start_date (float): start of the pivots interval
             end_date (float): end of the pivots interval
+            pivot_interval_units (str): Whether pivot intervals are measured in "months" or "weeks"
             weights (dict): Numerical weights indexed by attribute values and applied to individual tips
             weights_attribute (str): Attribute annotated on tips of a tree to use for weighting
             node_filters (dict): Mapping of node attribute names (keys) to a list of valid values to keep
@@ -886,6 +889,7 @@ class KdeFrequencies(object):
         self.pivot_frequency = pivot_frequency
         self.start_date = start_date
         self.end_date = end_date
+        self.pivot_interval_units = pivot_interval_units
         self.weights = weights
         self.weights_attribute = weights_attribute
         self.node_filters = node_filters
@@ -907,6 +911,7 @@ class KdeFrequencies(object):
             "pivot_frequency": self.pivot_frequency,
             "start_date": self.start_date,
             "end_date": self.end_date,
+            "pivot_interval_units": self.pivot_interval_units,
             "weights": self.weights,
             "weights_attribute": self.weights_attribute,
             "max_date": self.max_date,
@@ -1121,7 +1126,8 @@ class TreeKdeFrequencies(KdeFrequencies):
             observations,
             self.pivot_frequency,
             start_date=self.start_date,
-            end_date=self.end_date
+            end_date=self.end_date,
+            pivot_interval_units=self.pivot_interval_units
         )
 
         # If weights are defined, calculate frequencies for all tips by their
@@ -1208,7 +1214,8 @@ class AlignmentKdeFrequencies(KdeFrequencies):
             observations,
             self.pivot_frequency,
             start_date=self.start_date,
-            end_date=self.end_date
+            end_date=self.end_date,
+            pivot_interval_units=self.pivot_interval_units
         )
 
         # Pair alignment sequence indices with observation dates.
