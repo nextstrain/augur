@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 11.0.0 (22 January 2021)
+
 ### Major Changes
 
 * filter: Use probabilistic sampling by default when requesting a maximum number of sequences to subsample with `--subsample-max-sequences`. Adds `--no-probabilistic-sampling` flag to disable this default behavior and prevent users from requesting fewer maximum sequences than there are subsampling groups. [#659][]
