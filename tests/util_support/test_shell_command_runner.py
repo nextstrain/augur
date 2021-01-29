@@ -37,8 +37,25 @@ class TestShellCommandRunner:
         "exception, expected_message",
         [
             (
-                subprocess.CalledProcessError(5, "actual-cmd", output="some error"),
-                "some error.*shell exited 5 when running: cmd",
+                subprocess.CalledProcessError(5, "actual-cmd", output=b"some error"),
+                "Shell exited 5 when running: cmd.*?some error",
+            ),
+            (
+                subprocess.CalledProcessError(-15, "actual-cmd"),
+                "Shell exited from fatal signal SIGTERM when running: cmd",
+            ),
+            (
+                subprocess.CalledProcessError(128 + 15, "actual-cmd"),
+                "Shell exited from fatal signal SIGTERM when running: cmd",
+            ),
+            (
+                subprocess.CalledProcessError(128 + 9, "actual-cmd"),
+                "Shell exited from fatal signal SIGKILL when running: cmd.*out-of-memory",
+            ),
+            (
+                # Unknown signal doesn't cause exception
+                subprocess.CalledProcessError(-120, "actual-cmd"),
+                "Shell exited -120 when running: cmd",
             ),
             (
                 FileNotFoundError(),
