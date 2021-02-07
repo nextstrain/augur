@@ -93,4 +93,5 @@ class MetadataFile:
             sep=None,  # csv.Sniffer will automatically detect sep
             engine="python",
             skipinitialspace=True,
+            dtype={"strain":"string", "name":"string"}
         ).fillna("")
