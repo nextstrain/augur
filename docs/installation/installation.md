@@ -1,9 +1,10 @@
 # Installation
 
-* [Using conda](#using-conda)
-* [Using pip from PyPi](#using-pip-from-pypi)
-* [Install from source](#install-from-source)
-* [Testing if it worked](#testing-if-it-worked)
+- [Installation](#installation)
+  - [Using conda](#using-conda)
+  - [Using pip from PyPi](#using-pip-from-pypi)
+  - [Install from source](#install-from-source)
+  - [Testing if it worked](#testing-if-it-worked)
 
 ---
 
@@ -94,6 +95,8 @@ python3 -m pip install -e '.[dev]'
 ```
 
 [See above](#using-pip-from-pypi) for how to install the external bioinformatics programs which you'll need to have a fully functioning toolkit.
+
+[Here](.docs/../../contribute/DEV_DOCS.md) is how to install a developer version of Augur.
 
 
 ## Testing if it worked
