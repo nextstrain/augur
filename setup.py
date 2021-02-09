@@ -57,7 +57,7 @@ setuptools.setup(
     ],
     extras_require = {
         'full': [
-            "cvxopt >=1.1.9, ==1.1.*",
+            "cvxopt >=1.1.9, ==1.*",
             "matplotlib >=2.0, ==2.*",
             "seaborn >=0.9.0, ==0.9.*"
         ],
