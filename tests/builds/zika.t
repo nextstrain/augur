@@ -20,10 +20,20 @@ Parse a FASTA whose defline contains metadata into separate sequence and metadat
 
   $ diff -u "results/sequences.fasta" "$TMP/out/sequences.fasta"
 
+Index sequence composition to speed up filters.
+
+  $ ${AUGUR} index \
+  >   --sequences "results/sequences.fasta" \
+  >   --output "$TMP/out/sequence_index.tsv"
+  Analysed 12 sequences with an average length of 10598 nucleotides.
+
+  $ diff -u "results/sequence_index.tsv" "$TMP/out/sequence_index.tsv"
+
 Filter sequences by a minimum date and an exclusion list and only keep one sequence per country, year, and month.
 
   $ ${AUGUR} filter \
   >   --sequences "results/sequences.fasta" \
+  >   --sequence-index "results/sequence_index.tsv" \
   >   --metadata "results/metadata.tsv" \
   >   --exclude "config/dropped_strains.txt" \
   >   --output "$TMP/out/filtered.fasta" \
