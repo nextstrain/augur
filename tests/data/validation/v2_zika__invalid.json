@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "build_url": "https://github.com/nextstrain/zika",
+    "colorings": [
+      {
+        "key": "gt",
+        "title": "Genotype",
+        "type": "categorical"
+      }
+    ],
+    "display_defaults": {
+      "color_by": "author",
+      "map_triplicate": true
+    },
+    "filters": [
+      "country",
+      "region",
+      "author"
+    ],
+    "genome_annotations": {
+      "2K": {
+        "end": 6897,
+        "seqid": "config/zika_outgroup.gb",
+        "start": 6829,
+        "strand": "+",
+        "type": "CDS"
+      }
+    }
+  },
+  "tree": {
+    "branch_attrs": {
+      "mutations": {}
+    },
+    "name": "NODE_0000006"
+	}
+}
