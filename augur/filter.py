@@ -179,7 +179,6 @@ def run(args):
 
         # Calculate summary statistics needed for filtering.
         sequence_index["ACGT"] = sequence_index.loc[:, ["A", "C", "G", "T"]].sum(axis=1)
-        sequence_index["valid_nucleotides"] = sequence_index.loc[:, ["ACGT", "N", "other_IUPAC"]].sum(axis=1)
         seq_keep = sequence_index["strain"].values
         all_seq = seq_keep.copy()
 
@@ -294,8 +293,6 @@ def run(args):
     # exclude sequences with non-nucleotide characters
     num_excluded_by_nuc = 0
     if args.non_nucleotide:
-        #good_chars = {'A', 'C', 'G', 'T', '-', 'N', 'R', 'Y', 'S', 'W', 'K', 'M', 'D', 'H', 'B', 'V', '?'}
-        #tmp = [s for s in seq_keep if len(set(str(seqs[s].seq).upper()).difference(good_chars))==0]
         is_in_seq_keep = sequence_index["strain"].isin(seq_keep)
         no_invalid_nucleotides = sequence_index["invalid_nucleotides"] == 0
         seq_keep_by_valid_nucleotides = sequence_index[
