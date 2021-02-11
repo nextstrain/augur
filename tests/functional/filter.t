@@ -8,7 +8,7 @@ With 10 groups to subsample from, this should produce one sequence per group.
 
   $ ${AUGUR} filter \
   >  --sequences filter/sequences.fasta \
-  >  --sequence-index filter/sequences.fasta.idx \
+  >  --sequence-index filter/sequence_index.tsv \
   >  --metadata filter/metadata.tsv \
   >  --min-date 2012 \
   >  --group-by country year month \
@@ -25,7 +25,7 @@ This should fail, as probabilistic sampling is explicitly disabled.
 
   $ ${AUGUR} filter \
   >  --sequences filter/sequences.fasta \
-  >  --sequence-index filter/sequences.fasta.idx \
+  >  --sequence-index filter/sequence_index.tsv \
   >  --metadata filter/metadata.tsv \
   >  --min-date 2012 \
   >  --group-by country year month \
@@ -41,7 +41,7 @@ Explicitly use probabilistic subsampling to handle the case when there are more 
 
   $ ${AUGUR} filter \
   >  --sequences filter/sequences.fasta \
-  >  --sequence-index filter/sequences.fasta.idx \
+  >  --sequence-index filter/sequence_index.tsv \
   >  --metadata filter/metadata.tsv \
   >  --min-date 2012 \
   >  --group-by country year month \
@@ -55,7 +55,7 @@ Using the default probabilistic subsampling, should work the same as the previou
 
   $ ${AUGUR} filter \
   >  --sequences filter/sequences.fasta \
-  >  --sequence-index filter/sequences.fasta.idx \
+  >  --sequence-index filter/sequence_index.tsv \
   >  --metadata filter/metadata.tsv \
   >  --min-date 2012 \
   >  --group-by country year month \
