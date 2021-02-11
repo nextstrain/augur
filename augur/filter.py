@@ -60,7 +60,7 @@ def read_priority_scores(fname):
         with open(fname, encoding='utf-8') as pfile:
             return defaultdict(float, {
                 elems[0]: float(elems[1])
-                for elems in (line.strip().split('\t') for line in pfile.readlines())
+                for elems in (line.strip().split() if '\t' not in line else line.strip().split('\t') for line in pfile.readlines())
             })
     except Exception as e:
         print(f"ERROR: missing or malformed priority scores file {fname}", file=sys.stderr)
