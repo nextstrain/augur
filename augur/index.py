@@ -11,7 +11,7 @@ import csv
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
     parser.add_argument('--output', '-o', help="tab-delimited file containing the number of bases per sequence in the given file. Output columns include strain, length, and counts for A, C, G, T, N, other valid IUPAC characters, ambiguous characters ('?' and '-'), and other invalid characters.", required=True)
-
+    parser.add_argument('--verbose', '-v', action="store_true", help="print index statistics to stdout")
 
 def index_sequence(sequence, values):
     """Count the number of nucleotides for a given sequence record.
@@ -168,4 +168,6 @@ def run(args):
     the composition as a data frame to the given sequence index path.
     '''
     num_of_seqs, tot_length = index_sequences(args.sequences, args.output)
-    print("Analysed %i sequences with an average length of %i nucleotides." % (num_of_seqs, int(tot_length / num_of_seqs)))
+
+    if args.verbose:
+        print("Analysed %i sequences with an average length of %i nucleotides." % (num_of_seqs, int(tot_length / num_of_seqs)))

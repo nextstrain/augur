@@ -24,7 +24,8 @@ Index sequence composition to speed up filters.
 
   $ ${AUGUR} index \
   >   --sequences "results/sequences.fasta" \
-  >   --output "$TMP/out/sequence_index.tsv"
+  >   --output "$TMP/out/sequence_index.tsv" \
+  >   --verbose
   Analysed 12 sequences with an average length of 10598 nucleotides.
 
   $ diff -u "results/sequence_index.tsv" "$TMP/out/sequence_index.tsv"
