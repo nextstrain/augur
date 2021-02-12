@@ -117,3 +117,15 @@ class TestMetadataFile:
             "strainB": {"strain": "strainB", "location": "nevada", "quality": "good"},
         }
         assert list(columns) == ["strain", "location", "quality"]
+
+    def test_metadata_strain_type(self, tmpdir, prepare_file):
+        prepare_file(
+            """
+            strain\tlocation
+            1\tWashington
+            2\tOregon
+            """
+        )
+
+        records, columns = MetadataFile(f"{tmpdir}/metadata.txt").read()
+        assert "1" in records
