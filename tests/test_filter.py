@@ -57,6 +57,12 @@ def mock_run_shell_command(mocker):
     mocker.patch("augur.filter.run_shell_command")
 
 
+@pytest.fixture
+def mock_priorities_file_valid_with_spaces_and_tabs(mocker):
+    mocker.patch(
+        "builtins.open", mocker.mock_open(read_data="strain 1\t5\nstrain 2\t6\nstrain 3\t8\n")
+    )
+
 class TestFilter:
     def test_read_vcf_compressed(self):
         seq_keep, all_seq = augur.filter.read_vcf(
@@ -88,6 +94,14 @@ class TestFilter:
         with pytest.raises(ValueError):
             # builtins.open is stubbed, but we need a valid file to satisfy the existence check
             augur.filter.read_priority_scores("tests/builds/tb/data/lee_2015.vcf")
+
+    def test_read_priority_scores_valid_with_spaces_and_tabs(self, mock_priorities_file_valid_with_spaces_and_tabs):
+        # builtins.open is stubbed, but we need a valid file to satisfy the existence check
+        priorities = augur.filter.read_priority_scores(
+            "tests/builds/tb/data/lee_2015.vcf"
+        )
+
+        assert priorities == {"strain 1": 5, "strain 2": 6, "strain 3": 8}
 
     def test_read_priority_scores_does_not_exist(self):
         with pytest.raises(FileNotFoundError):
