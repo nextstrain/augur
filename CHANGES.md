@@ -2,6 +2,22 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* align/utils: Improve external command errors [#638][]
+* filter: Fix parsing of priorities files to allow spaces in sequence IDs [#668][]
+* utils: Ensure columns `strain` and `name` in metadata get parsed as strings [#669][]
+
+### Features
+
+* index/filter: Add new `index` subcommand and optional `--sequence-index` argument for `filter` command to enable filtering without inspecting sequences [#651][]
+* titers: Bump supported cvxopt version to latest 1.* release [#671][]
+
+[#638]: https://github.com/nextstrain/augur/pull/638
+[#651]: https://github.com/nextstrain/augur/pull/651
+[#668]: https://github.com/nextstrain/augur/pull/668
+[#669]: https://github.com/nextstrain/augur/pull/669
+[#671]: https://github.com/nextstrain/augur/pull/671
 
 ## 11.0.0 (22 January 2021)
 
