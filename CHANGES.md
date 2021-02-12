@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 11.1.0 (12 February 2021)
+
 ### Bug Fixes
 
 * align/utils: Improve external command errors [#638][]
