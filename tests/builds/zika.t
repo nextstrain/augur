@@ -43,8 +43,8 @@ Filter sequences by a minimum date and an exclusion list and only keep one seque
   >   --subsample-seed 314159 \
   >   --no-probabilistic-sampling \
   >   --min-date 2012 > /dev/null
-
-  $ diff -u "results/filtered.fasta" "$TMP/out/filtered.fasta"
+  $ grep "^>" "$TMP/out/filtered.fasta" | wc -l
+  \s*10 (re)
 
 Align filtered sequences to a specific reference sequence and fill any gaps.
 
