@@ -45,7 +45,6 @@ setuptools.setup(
     },
     packages = setuptools.find_packages(),
     package_data = {'augur': ['data/*']},
-    data_files = [("", ["LICENSE.txt"])],
     python_requires = '>={}'.format('.'.join(str(n) for n in min_version)),
     install_requires = [
         "bcbio-gff >=0.6.0, ==0.6.*",
