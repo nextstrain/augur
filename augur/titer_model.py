@@ -888,7 +888,7 @@ class TreeModel(TiterModel):
         # mark HI splits have to have been run before, assigning self.titer_split_count
         n_params = self.titer_split_count + len(self.sera) + len(self.test_strains)
         for (test, ref), val in self.train_titers.items():
-            if not np.isnan(val):
+            if not np.isnan(val) and not np.isinf(val):
                 try:
                     if ref[0] in self.strain_lookup and test in self.strain_lookup:
                         path = self.get_path_no_terminals(test, ref[0])
@@ -1049,7 +1049,7 @@ class SubstitutionModel(TiterModel):
         # loop over all measurements and encode the HI model as [0,1,0,1,0,0..] vector:
         # 1-> mutation present, 0 not present, same for serum and virus effects
         for (test, ref), val in self.train_titers.items():
-            if not np.isnan(val):
+            if not np.isnan(val) and not np.isinf(val):
                 try:
                     muts = self.get_mutations(ref[0], test)
                     if muts is None:
