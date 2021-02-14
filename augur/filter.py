@@ -17,6 +17,7 @@ from .index import index_sequences
 from .utils import read_metadata, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
 
 comment_char = '#'
+MAX_NUMBER_OF_PROBABILISTIC_SAMPLING_ATTEMPTS = 10
 
 
 def read_vcf(filename):
@@ -393,20 +394,30 @@ def run(args):
             # subsample each groups, either by taking the spg highest priority strains or
             # sampling at random from the sequences in the group
             seq_subsample = []
-            for group, sequences_in_group in seq_names_by_group.items():
-                if args.probabilistic_sampling:
-                    tmp_spg = random_generator.poisson(spg)
-                else:
-                    tmp_spg = spg
+            subsampling_attempts = 0
 
-                if tmp_spg == 0:
-                    continue
+            # Attempt to subsample with the given constraints for a fixed number
+            # of times. For small values of maximum sequences, subsampling can
+            # randomly select zero sequences to keep. When this happens, we can
+            # usually find a non-zero number of samples by repeating the
+            # process.
+            while len(seq_subsample) == 0 and subsampling_attempts < MAX_NUMBER_OF_PROBABILISTIC_SAMPLING_ATTEMPTS:
+                subsampling_attempts += 1
 
-                if args.priority: #sort descending by priority
-                    seq_subsample.extend(sorted(sequences_in_group, key=lambda x:priorities[x], reverse=True)[:tmp_spg])
-                else:
-                    seq_subsample.extend(sequences_in_group if len(sequences_in_group)<=tmp_spg
-                                         else random.sample(sequences_in_group, tmp_spg))
+                for group, sequences_in_group in seq_names_by_group.items():
+                    if args.probabilistic_sampling:
+                        tmp_spg = random_generator.poisson(spg)
+                    else:
+                        tmp_spg = spg
+
+                    if tmp_spg == 0:
+                        continue
+
+                    if args.priority: #sort descending by priority
+                        seq_subsample.extend(sorted(sequences_in_group, key=lambda x:priorities[x], reverse=True)[:tmp_spg])
+                    else:
+                        seq_subsample.extend(sequences_in_group if len(sequences_in_group)<=tmp_spg
+                                            else random.sample(sequences_in_group, tmp_spg))
 
             num_excluded_subsamp = len(seq_keep) - len(seq_subsample)
             seq_keep = seq_subsample
