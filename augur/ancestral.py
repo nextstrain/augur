@@ -92,7 +92,7 @@ def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, 
         data[n.name]['muts'] = [a+str(int(pos)+inc)+cm(d)
                                 for a,pos,d in n.mutations]
 
-
+    mask=None
     if full_sequences:
         if mask_ambiguous:
             ambiguous_count = np.zeros(tt.sequence_length, dtype=int)
@@ -110,7 +110,7 @@ def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, 
             except:
                 print("No sequence available for node ",n.name)
 
-    return data
+    return {"nodes": data, "mask": mask}
 
 
 def register_arguments(parser):
@@ -189,14 +189,17 @@ def run(args):
         else:
             character_map[x] = x
 
-    anc_seqs['nodes'] = collect_mutations_and_sequences(tt, full_sequences=not is_vcf,
-                            infer_tips=infer_ambiguous, character_map=character_map)
+    anc_seqs.update(collect_mutations_and_sequences(tt, full_sequences=not is_vcf,
+                          infer_tips=infer_ambiguous, character_map=character_map))
     # add reference sequence to json structure. This is the sequence with
     # respect to which mutations on the tree are defined.
     if is_vcf:
         anc_seqs['reference'] = {"nuc":compress_seq['reference']}
     else:
-        anc_seqs['reference'] = {"nuc":"".join(T.root.sequence) if hasattr(T.root, 'sequence') else ''}
+        root_seq = tt.sequence(T.root)
+        if anc_seqs['mask']:
+            root_seq[anc_seqs['mask']] = tt.gtr.ambiguous
+        anc_seqs['reference'] = {"nuc": ''.join(root_seq)}
 
     out_name = get_json_name(args, '.'.join(args.alignment.split('.')[:-1]) + '_mutations.json')
     write_json(anc_seqs, out_name)
