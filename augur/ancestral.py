@@ -196,10 +196,14 @@ def run(args):
     if is_vcf:
         anc_seqs['reference'] = {"nuc":compress_seq['reference']}
     else:
-        root_seq = tt.sequence(T.root)
+        root_seq = tt.sequence(T.root, as_string=False)
         if ('mask' in anc_seqs) and (anc_seqs['mask'] is not None):
+            print("HERE", root_seq, anc_seqs['mask'])
             root_seq[anc_seqs['mask']] = tt.gtr.ambiguous
         anc_seqs['reference'] = {"nuc": ''.join(root_seq)}
+
+    if ('mask' in anc_seqs) and (anc_seqs['mask'] is not None):
+        anc_seqs["mask"] = "".join(['1' if x else '0' for x in anc_seqs["mask"]])
 
     out_name = get_json_name(args, '.'.join(args.alignment.split('.')[:-1]) + '_mutations.json')
     write_json(anc_seqs, out_name)
