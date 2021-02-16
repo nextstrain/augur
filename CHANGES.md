@@ -2,6 +2,15 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* filter: Retry probabilistic subsampling when it doesn't select any samples [#676][]
+* titers: Skip infinite log titer values caused by zero-valued raw titers [#677][]
+* setup: Include license file with distribution artifacts instead of Python installation root [#678][]
+
+[#676]: https://github.com/nextstrain/augur/pull/676
+[#677]: https://github.com/nextstrain/augur/pull/677
+[#678]: https://github.com/nextstrain/augur/pull/678
 
 ## 11.1.0 (12 February 2021)
 
