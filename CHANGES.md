@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 11.1.1 (16 February 2021)
+
 ### Bug Fixes
 
 * filter: Retry probabilistic subsampling when it doesn't select any samples [#676][]
