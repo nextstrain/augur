@@ -198,7 +198,6 @@ def run(args):
     else:
         root_seq = tt.sequence(T.root, as_string=False)
         if ('mask' in anc_seqs) and (anc_seqs['mask'] is not None):
-            print("HERE", root_seq, anc_seqs['mask'])
             root_seq[anc_seqs['mask']] = tt.gtr.ambiguous
         anc_seqs['reference'] = {"nuc": ''.join(root_seq)}
 
