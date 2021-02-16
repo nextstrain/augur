@@ -95,12 +95,12 @@ def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, 
 
     if full_sequences:
         if mask_ambiguous:
-            ambiguous_count = np.zeros(tt.sequence_length(), dtype=int)
+            ambiguous_count = np.zeros(tt.sequence_length, dtype=int)
             for n in tt.tree.get_terminals():
                 ambiguous_count += np.array(tt.sequence(n,reconstructed=False, as_string=False)==tt.gtr.ambiguous, dtype=int)
             mask = ambiguous_count==len(tt.tree.get_terminals())
         else:
-            mask = np.zeros(tt.sequence_length(), dtype=bool)
+            mask = np.zeros(tt.sequence_length, dtype=bool)
 
         for n in tt.tree.find_clades():
             try:
