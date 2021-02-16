@@ -60,7 +60,7 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
 
     return tt
 
-def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, character_map=None):
+def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, character_map=None, mask_ambiguous=True):
     """iterates of the tree and produces dictionaries with
     mutations and sequences for each node.
 
@@ -91,10 +91,21 @@ def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, 
         data[n.name]['muts'] = [a+str(int(pos)+inc)+cm(d)
                                 for a,pos,d in n.mutations]
 
+
     if full_sequences:
+        if mask_ambiguous:
+            ambiguous_count = np.zeros(tt.sequence_length(), dtype=int)
+            for n in tt.tree.get_terminals():
+                ambiguous_count += np.array(tt.sequence(n,reconstructed=False, as_string=False)==tt.gtr.ambiguous, dtype=int)
+            mask = ambiguous_count==len(tt.tree.get_terminals())
+        else:
+            mask = np.zeros(tt.sequence_length(), dtype=bool)
+
         for n in tt.tree.find_clades():
             try:
-                data[n.name]['sequence'] = tt.sequence(n,reconstructed=infer_tips, as_string=True)
+                tmp = tt.sequence(n,reconstructed=infer_tips, as_string=False)
+                tmp[mask] = tt.gtr.ambiguous
+                data[n.name]['sequence'] = "".join(tmp)
             except:
                 print("No sequence available for node ",n.name)
 
