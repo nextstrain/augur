@@ -197,7 +197,7 @@ def run(args):
         anc_seqs['reference'] = {"nuc":compress_seq['reference']}
     else:
         root_seq = tt.sequence(T.root)
-        if anc_seqs['mask']:
+        if ('mask' in anc_seqs) and (anc_seqs['mask'] is not None):
             root_seq[anc_seqs['mask']] = tt.gtr.ambiguous
         anc_seqs['reference'] = {"nuc": ''.join(root_seq)}
 
