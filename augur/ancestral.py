@@ -3,6 +3,7 @@ Infer ancestral sequences based on a tree.
 """
 
 import os, shutil, time, json, sys
+import numpy as np
 from Bio import Phylo, SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
