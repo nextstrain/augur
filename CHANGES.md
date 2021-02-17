@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 11.1.2 (16 February 2021)
+
 ### Bug Fixes
 
 * index: Remove call to deprecated BioPython SeqIO.close method [#684][]
