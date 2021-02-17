@@ -156,8 +156,6 @@ def index_sequences(sequences_path, sequence_index_path):
             tot_length += row[1]
             num_of_seqs += 1
 
-    seqs.close()
-
     return num_of_seqs, tot_length
 
 
