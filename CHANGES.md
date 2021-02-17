@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* index: Remove call to deprecated BioPython SeqIO.close method [#684][]
+
+[#684]: https://github.com/nextstrain/augur/pull/684
 
 ## 11.1.1 (16 February 2021)
 
