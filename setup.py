@@ -47,12 +47,19 @@ setuptools.setup(
     package_data = {'augur': ['data/*']},
     python_requires = '>={}'.format('.'.join(str(n) for n in min_version)),
     install_requires = [
-        "bcbio-gff >=0.6.0, ==0.6.*",
-        "biopython >=1.67, <=1.76",
-        "jsonschema >=3.0.0, ==3.*",
+        # Important!  These must be both valid Python¹ _and_ Conda² requirement
+        # specs, as they're used not only for the Python distribution but also
+        # the Bioconda recipe.³
+        #
+        # ¹ <https://www.python.org/dev/peps/pep-0440/#version-matching>
+        # ² <https://conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications>
+        # ³ <https://github.com/bioconda/bioconda-recipes/blob/master/recipes/augur/meta.yaml>
+        "bcbio-gff >=0.6.0,<0.7",
+        "biopython >=1.67,<=1.76",
+        "jsonschema >=3.0.0,<4",
         "packaging >=19.2",
-        "pandas >=1.0.0, ==1.*",
-        "phylo-treetime ==0.8.*"
+        "pandas >=1.0.0,<2",
+        "phylo-treetime >=0.8,<0.9",
     ],
     extras_require = {
         'full': [
