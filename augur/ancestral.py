@@ -95,6 +95,10 @@ def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, 
     mask=None
     if full_sequences:
         if mask_ambiguous:
+            # Identify sites for which every terminal sequence is ambiguous.
+            # These sites will be masked to prevent rounding errors in the
+            # maximum likelihood inference from assigning an arbitrary
+            # nucleotide to sites at internal nodes.
             ambiguous_count = np.zeros(tt.sequence_length, dtype=int)
             for n in tt.tree.get_terminals():
                 ambiguous_count += np.array(tt.sequence(n,reconstructed=False, as_string=False)==tt.gtr.ambiguous, dtype=int)
@@ -197,11 +201,11 @@ def run(args):
         anc_seqs['reference'] = {"nuc":compress_seq['reference']}
     else:
         root_seq = tt.sequence(T.root, as_string=False)
-        if ('mask' in anc_seqs) and (anc_seqs['mask'] is not None):
+        if anc_seqs.get("mask") is not None:
             root_seq[anc_seqs['mask']] = tt.gtr.ambiguous
         anc_seqs['reference'] = {"nuc": ''.join(root_seq)}
 
-    if ('mask' in anc_seqs) and (anc_seqs['mask'] is not None):
+    if anc_seqs.get("mask") is not None:
         anc_seqs["mask"] = "".join(['1' if x else '0' for x in anc_seqs["mask"]])
 
     out_name = get_json_name(args, '.'.join(args.alignment.split('.')[:-1]) + '_mutations.json')
