@@ -188,8 +188,12 @@ def run(args):
 
     #If VCF, open and get sequence names
     if is_vcf:
-        seq_keep, all_seq = read_vcf(args.sequences)
-        # TODO: How to best handle "source of truth" for VCF files vs. metadata?
+        vcf_sequences, _ = read_vcf(args.sequences)
+
+        # Intersect sequence strain names with metadata strains.
+        strains_with_sequences = [seq for seq in seq_keep if seq in vcf_sequences]
+        num_excluded_by_lack_of_sequences = len(seq_keep) - len(strains_with_sequences)
+        seq_keep = strains_with_sequences
     elif args.sequences or args.sequence_index:
         # If FASTA, try to load the sequence composition details and strain
         # names to be filtered.
@@ -223,6 +227,13 @@ def run(args):
 
         # Calculate summary statistics needed for filtering.
         sequence_index["ACGT"] = sequence_index.loc[:, ["A", "C", "G", "T"]].sum(axis=1)
+
+        # Intersect sequence strain names with metadata strains.
+        strains_with_sequences = [seq for seq in seq_keep if seq in sequence_index["strain"].values]
+        num_excluded_by_lack_of_sequences = len(seq_keep) - len(strains_with_sequences)
+        seq_keep = strains_with_sequences
+    else:
+        num_excluded_by_lack_of_sequences = 0
 
     #####################################
     #Filtering steps
@@ -492,15 +503,23 @@ def run(args):
                 num_included_by_metadata += 1
 
     ####Write out files
+    if args.output_metadata:
+        metadata_df = pd.DataFrame([meta_dict[strain] for strain in seq_keep])
+        metadata_df.to_csv(
+            args.output_metadata,
+            sep="\t",
+            index=False
+        )
 
-    if is_vcf:
-        #get the samples to be deleted, not to keep, for VCF
+    if args.output_strains:
+        with open(args.output_strains, "w") as oh:
+            for strain in sorted(seq_keep):
+                oh.write(f"{strain}\n")
+
+    if is_vcf and args.output:
+        # Get the samples to be deleted, not to keep, for VCF
         dropped_samps = list(set(all_seq) - set(seq_keep))
-        if len(dropped_samps) == len(all_seq): #All samples have been dropped! Stop run, warn user.
-            print("ERROR: All samples have been dropped! Check filter rules and metadata file format.")
-            return 1
         write_vcf(args.sequences, args.output, dropped_samps)
-
     elif args.sequences and args.output:
         # It should not be possible to have ids in the list of sequences to keep
         # that do not exist in the original input sequences, since we built this
@@ -517,24 +536,9 @@ def run(args):
         # memory first.
         sequences_written = SeqIO.write(sequences_to_write, args.output, 'fasta')
 
-        if sequences_written == 0:
-            print("ERROR: All samples have been dropped! Check filter rules and metadata file format.", file=sys.stderr)
-            return 1
-
-    if args.output_metadata:
-        metadata_df = pd.DataFrame([meta_dict[strain] for strain in seq_keep])
-        metadata_df.to_csv(
-            args.output_metadata,
-            sep="\t",
-            index=False
-        )
-
-    if args.output_strains:
-        with open(args.output_strains, "w") as oh:
-            for strain in sorted(seq_keep):
-                oh.write(f"{strain}\n")
-
     print("\n%i sequences were dropped during filtering" % (len(all_seq) - len(seq_keep),))
+    print("\t%i were excluded because they had no sequence data" % (num_excluded_by_lack_of_sequences,))
+
     if args.exclude:
         print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
     if args.exclude_where:
@@ -560,6 +564,10 @@ def run(args):
         print("\t%i sequences were added back because of '%s'" % (num_included_by_metadata, args.include_where))
 
     print("%i strains have been passed all filters" % (len(seq_keep),))
+
+    if len(seq_keep) == 0:
+        print("ERROR: All samples have been dropped! Check filter rules and metadata file format.", file=sys.stderr)
+        return 1
 
 
 def _filename_gz(filename):

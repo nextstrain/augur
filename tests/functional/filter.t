@@ -176,3 +176,49 @@ Alternately, exclude only the sequences from Brazil and Colombia (12 - 4 strains
   $ grep "^>" "$TMP/filtered.fasta" | wc -l
   \s*8 (re)
   $ rm -f "$TMP/filtered.fasta"
+
+Try to filter with sequences that don't match any of the metadata.
+This should produce no results because the intersection of metadata and sequences is empty.
+
+  $ echo -e ">something\nATCG" > "$TMP/dummy.fasta"
+  $ ${AUGUR} filter \
+  >  --sequences "$TMP/dummy.fasta" \
+  >  --metadata filter/metadata.tsv \
+  >  --max-date 2020-01-30 \
+  >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
+  WARNING: A sequence index was not provided, so we are generating one. Generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
+  ERROR: All samples have been dropped! Check filter rules and metadata file format.
+  [1]
+  $ wc -l "$TMP/filtered_strains.txt"
+  \s*0 .* (re)
+  $ rm -f "$TMP/filtered_strains.txt"
+
+Repeat with sequence and strain outputs. We should get the same results.
+
+  $ ${AUGUR} filter \
+  >  --sequences "$TMP/dummy.fasta" \
+  >  --metadata filter/metadata.tsv \
+  >  --max-date 2020-01-30 \
+  >  --output-strains "$TMP/filtered_strains.txt" \
+  >  --output-sequences "$TMP/filtered.fasta" > /dev/null
+  WARNING: A sequence index was not provided, so we are generating one. Generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
+  ERROR: All samples have been dropped! Check filter rules and metadata file format.
+  [1]
+  $ wc -l "$TMP/filtered_strains.txt"
+  \s*0 .* (re)
+  $ grep "^>" "$TMP/filtered.fasta" | wc -l
+  \s*0 (re)
+  $ rm -f "$TMP/filtered_strains.txt"
+  $ rm -f "$TMP/filtered.fasta"
+
+Filter TB strains from VCF and save as a list of filtered strains.
+
+  $ ${AUGUR} filter \
+  >  --sequences filter/tb.vcf.gz \
+  >  --metadata filter/tb_metadata.tsv \
+  >  --min-date 2012 \
+  >  --min-length 10500 \
+  >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
+  $ wc -l "$TMP/filtered_strains.txt"
+  \s*3 .* (re)
+  $ rm -f "$TMP/filtered_strains.txt"
