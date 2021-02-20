@@ -99,9 +99,9 @@ def register_arguments(parser):
     parser.add_argument('--max-date', type=numeric_date, help="maximal cutoff for date; may be specified as an Augur-style numeric date (with the year as the integer part) or YYYY-MM-DD")
     parser.add_argument('--min-length', type=int, help="minimal length of the sequences")
     parser.add_argument('--non-nucleotide', action='store_true', help="exclude sequences that contain illegal characters")
-    parser.add_argument('--exclude', type=str, help="file with list of strains that are to be excluded")
+    parser.add_argument('--exclude', type=str, nargs="+", help="file(s) with list of strains to exclude")
     parser.add_argument('--exclude-all', action="store_true", help="exclude all strains by default. Use this with the include arguments to select a specific subset of strains.")
-    parser.add_argument('--include', type=str, nargs="+", help="file(s) with list of strains that are to be included regardless of priorities or subsampling")
+    parser.add_argument('--include', type=str, nargs="+", help="file(s) with list of strains to include regardless of priorities or subsampling")
     parser.add_argument('--priority', type=str, help="file with list of priority scores for sequences (strain\tpriority)")
     subsample_group = parser.add_mutually_exclusive_group()
     subsample_group.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
@@ -246,13 +246,7 @@ def run(args):
     num_excluded_by_name = 0
     if args.exclude:
         try:
-            with open(args.exclude, 'r', encoding='utf-8') as ifile:
-                to_exclude = set()
-                for line in ifile:
-                    if line[0] != comment_char:
-                        # strip whitespace and remove all text following comment character
-                        exclude_name = line.split(comment_char)[0].strip()
-                        to_exclude.add(exclude_name)
+            to_exclude = read_strains(*args.exclude)
             tmp = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
             num_excluded_by_name = len(seq_keep) - len(tmp)
             seq_keep = tmp

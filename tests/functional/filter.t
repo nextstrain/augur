@@ -164,3 +164,15 @@ Finally, exclude all sequences except those from the two sets of strains (there 
   $ grep "^>" "$TMP/filtered.fasta" | wc -l
   \s*4 (re)
   $ rm -f "$TMP/filtered.fasta"
+
+Alternately, exclude only the sequences from Brazil and Colombia (12 - 4 strains).
+
+  $ ${AUGUR} filter \
+  >  --sequences filter/sequences.fasta \
+  >  --sequence-index filter/sequence_index.tsv \
+  >  --metadata filter/metadata.tsv \
+  >  --exclude "$TMP/filtered_strains.brazil.txt" "$TMP/filtered_strains.colombia.txt" \
+  >  --output "$TMP/filtered.fasta" > /dev/null
+  $ grep "^>" "$TMP/filtered.fasta" | wc -l
+  \s*8 (re)
+  $ rm -f "$TMP/filtered.fasta"
