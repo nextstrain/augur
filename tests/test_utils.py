@@ -1,4 +1,5 @@
 import datetime
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -129,3 +130,18 @@ class TestUtils:
         # Test incomplete date strings without ambiguous dates for the requested fields.
         assert not utils.is_date_ambiguous("2019", "year")
         assert not utils.is_date_ambiguous("2019-10", "month")
+
+    def test_read_strains(self, tmpdir):
+        # Write one list of filenames with some unnecessary whitespace.
+        strains1 = Path(tmpdir) / Path("strains1.txt")
+        with open(strains1, "w") as oh:
+            oh.write("strain1\nstrain2\n   \n")
+
+        # Write another list of filenames with a comment.
+        strains2 = Path(tmpdir) / Path("strains2.txt")
+        with open(strains2, "w") as oh:
+            oh.write("# this is a comment. ignore this.\nstrain2\nstrain3\n")
+
+        strains = utils.read_strains(strains1, strains2)
+        assert len(strains) == 3
+        assert "strain1" in strains

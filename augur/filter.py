@@ -14,7 +14,7 @@ from tempfile import NamedTemporaryFile
 import treetime.utils
 
 from .index import index_sequences
-from .utils import read_metadata, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
+from .utils import read_metadata, read_strains, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
 
 comment_char = '#'
 MAX_NUMBER_OF_PROBABILISTIC_SAMPLING_ATTEMPTS = 10
@@ -465,18 +465,7 @@ def run(args):
     num_included_by_name = 0
     if args.include:
         # Collect the union of all given strains to include.
-        to_include = set()
-        for include_file in args.include:
-            with open(include_file, 'r', encoding='utf-8') as ifile:
-                to_include.update(
-                    set(
-                        [
-                            line.strip()
-                            for line in ifile
-                            if line[0]!=comment_char and len(line.strip()) > 0
-                        ]
-                    )
-                )
+        to_include = read_strains(*args.include)
 
         for s in to_include:
             if s not in seq_keep:
