@@ -194,6 +194,9 @@ def run(args):
         strains_with_sequences = [seq for seq in seq_keep if seq in vcf_sequences]
         num_excluded_by_lack_of_sequences = len(seq_keep) - len(strains_with_sequences)
         seq_keep = strains_with_sequences
+
+        # Also track the number of sequences without metadata.
+        num_sequences_without_metadata = len([seq for seq in vcf_sequences if seq not in all_seq])
     elif args.sequences or args.sequence_index:
         # If FASTA, try to load the sequence composition details and strain
         # names to be filtered.
@@ -232,8 +235,12 @@ def run(args):
         strains_with_sequences = [seq for seq in seq_keep if seq in sequence_index["strain"].values]
         num_excluded_by_lack_of_sequences = len(seq_keep) - len(strains_with_sequences)
         seq_keep = strains_with_sequences
+
+        # Also track the number of sequences without metadata.
+        num_sequences_without_metadata = len([seq for seq in sequence_index["strain"].values if seq not in all_seq])
     else:
-        num_excluded_by_lack_of_sequences = 0
+        num_excluded_by_lack_of_sequences = None
+        num_sequences_without_metadata = None
 
     #####################################
     #Filtering steps
@@ -537,7 +544,12 @@ def run(args):
         sequences_written = SeqIO.write(sequences_to_write, args.output, 'fasta')
 
     print("\n%i sequences were dropped during filtering" % (len(all_seq) - len(seq_keep),))
-    print("\t%i were excluded because they had no sequence data" % (num_excluded_by_lack_of_sequences,))
+
+    if num_excluded_by_lack_of_sequences:
+        print("\t%i were excluded because they had no sequence data" % (num_excluded_by_lack_of_sequences,))
+
+    if num_sequences_without_metadata:
+        print("\t%i sequences were excluded because they did not have metadata" % (num_sequences_without_metadata,))
 
     if args.exclude:
         print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
