@@ -135,7 +135,7 @@ class TestUtils:
         # Write one list of filenames with some unnecessary whitespace.
         strains1 = Path(tmpdir) / Path("strains1.txt")
         with open(strains1, "w") as oh:
-            oh.write("strain1\nstrain2\n   \n")
+            oh.write("strain1 # this is an inline comment about strain 1\nstrain2\n   # this is a comment preceded by whitespace.\n")
 
         # Write another list of filenames with a comment.
         strains2 = Path(tmpdir) / Path("strains2.txt")
