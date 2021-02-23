@@ -1,19 +1,19 @@
 # Installation
 
-...there are quite a few ways to contract `augur`:
+...there are a few ways to contract `augur`:
 
 * [Using conda](#using-conda)
 * [Using pip from PyPi](#using-pip-from-pypi)
 * [Install from Debian repositories](#install-from-debian-repositories)
 * [Install from source](#install-from-source)
 
-Lastly... [testing if it worked](#testing-if-it-worked)
+Lastly... [testing if it worked](#testing-if-it-worked)!
 
 ---
 
 ## Using conda
 
-We recommend using `conda` because Python's `pip` does not protect dependencies between specific versions of Python packages.
+We recommend using `conda` because Python's `pip` does not protect dependencies between specific versions of Python packages. Also, installation via `pip` may not include all the necessary tools for all the work flows. 
 
 [Install Miniconda with Python 3](https://docs.conda.io/en/latest/miniconda.html).
 If you already have Miniconda installed with Python 2, download the latest Python 3 version and [follow conda's installation instructions](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
@@ -56,9 +56,26 @@ python3 -m pip install nextstrain-augur
 
 Augur uses some common external bioinformatics programs which you'll need to install to have a fully functioning toolkit:
 
-* Nextstrain workflows and some tutorials require [Snakemake](https://snakemake.readthedocs.io)
+* Nextstrain workflows and some tutorials require [Snakemake](https://snakemake.readthedocs.io). Either install Snakemake via pip:
 
-* `augur align` requires [mafft](https://mafft.cbrc.jp/alignment/software/)
+```bash
+pip3 install snakemake
+```
+
+or
+
+use `conda`:
+
+```bash
+conda install -c conda-forge mamba
+mamba create -c conda-forge -c bioconda -n snakemake snakemake
+conda activate snakemake
+
+# testing the installation:
+snakemake --help
+```
+
+* `augur align` requires [mafft](https://mafft.cbrc.jp/alignment/software/):
 
 * `augur tree` requires at least one of:
    - [IQ-TREE](http://www.iqtree.org/) (used by default)
@@ -69,12 +86,16 @@ Augur uses some common external bioinformatics programs which you'll need to ins
 
 On __macOS__, you can install most of these external programs using [Homebrew](https://brew.sh/) with:
 
-    brew tap brewsci/bio
-    brew install mafft iqtree raxml fasttree vcftools
+```bash
+brew tap brewsci/bio
+brew install mafft iqtree raxml fasttree vcftools
+```
 
 On __Debian/Ubuntu__, you can install them via:
 
-    sudo apt install mafft iqtree raxml fasttree vcftools
+```bash
+sudo apt install mafft iqtree raxml fasttree vcftools
+```
 
 Other Linux distributions will likely have the same packages available, although the names may differ slightly.
 Follow [Snakemake's installation instructions](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) for your operating system.
