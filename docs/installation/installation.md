@@ -13,7 +13,7 @@ Lastly... [testing if it worked](#testing-if-it-worked)!
 
 ## Using conda
 
-We recommend using `conda` because Python's `pip` does not protect dependencies between specific versions of Python packages. Also, installation via `pip` may not include all the necessary tools for all the work flows. 
+We recommend using `conda` because Python's `pip` does not protect dependencies between specific versions of Python packages. Also, installation via `pip` may not include all the necessary tools for all the workflows. 
 
 [Install Miniconda with Python 3](https://docs.conda.io/en/latest/miniconda.html).
 If you already have Miniconda installed with Python 2, download the latest Python 3 version and [follow conda's installation instructions](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
@@ -103,7 +103,7 @@ Follow [Snakemake's installation instructions](https://snakemake.readthedocs.io/
 
 ## Install from Debian repositories
 
-If you're running a Debian-derived Linux, installing the `augur` package from the Ubuntu repositories would be the easiest way. It is provided in Ubuntu 20.10 and 21.04.
+If you're using a Debian-derived Linux, installing the `augur` package from the Ubuntu repositories would be the easiest way. It is provided in Ubuntu 20.10 and 21.04. We do not favor this solution because `pip`, `conda` and especially `git` will provide you with the newest versions of `augur`.   
 
 ```bash
 sudo apt install augur mafft
