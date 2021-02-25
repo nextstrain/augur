@@ -253,6 +253,7 @@ def run(args):
 
     # Exclude all strains by default.
     if args.exclude_all:
+        num_excluded_by_all = len(available_strains)
         seq_keep = set()
 
     # remove strains explicitly excluded by name
@@ -561,6 +562,8 @@ def run(args):
     if num_excluded_by_lack_of_metadata:
         print(f"\t{num_excluded_by_lack_of_metadata} had no metadata")
 
+    if args.exclude_all:
+        print(f"\t{num_excluded_by_all} of these were dropped by `--exclude-all`")
     if args.exclude:
         print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
     if args.exclude_where:
