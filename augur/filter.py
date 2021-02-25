@@ -160,8 +160,7 @@ def run(args):
         # Metadata are the source of truth for which sequences we want to keep
         # in filtered output.
         meta_dict, meta_columns = read_metadata(args.metadata)
-        seq_keep = sorted(meta_dict.keys())
-        all_seq = seq_keep.copy()
+        metadata_strains = set(meta_dict.keys())
     except ValueError as error:
         print("ERROR: Problem reading in {}:".format(args.metadata))
         print(error)
@@ -184,19 +183,12 @@ def run(args):
                   "Please see the augur install instructions to install it.")
             return 1
 
-    ####Read in files
+    # Read in files
 
-    #If VCF, open and get sequence names
+    # If VCF, open and get sequence names
     if is_vcf:
         vcf_sequences, _ = read_vcf(args.sequences)
-
-        # Intersect sequence strain names with metadata strains.
-        strains_with_sequences = [seq for seq in seq_keep if seq in vcf_sequences]
-        num_excluded_by_lack_of_sequences = len(seq_keep) - len(strains_with_sequences)
-        seq_keep = strains_with_sequences
-
-        # Also track the number of sequences without metadata.
-        num_sequences_without_metadata = len([seq for seq in vcf_sequences if seq not in all_seq])
+        sequence_strains = set(vcf_sequences)
     elif args.sequences or args.sequence_index:
         # If FASTA, try to load the sequence composition details and strain
         # names to be filtered.
@@ -230,17 +222,30 @@ def run(args):
 
         # Calculate summary statistics needed for filtering.
         sequence_index["ACGT"] = sequence_index.loc[:, ["A", "C", "G", "T"]].sum(axis=1)
+        sequence_strains = set(sequence_index["strain"].values)
+    else:
+        sequence_strains = None
+
+    if sequence_strains is not None:
+        # Calculate the number of strains that don't exist in either metadata or sequences.
+        num_excluded_by_lack_of_metadata = len(sequence_strains - metadata_strains)
+        num_excluded_by_lack_of_sequences = len(metadata_strains - sequence_strains)
 
         # Intersect sequence strain names with metadata strains.
-        strains_with_sequences = [seq for seq in seq_keep if seq in sequence_index["strain"].values]
-        num_excluded_by_lack_of_sequences = len(seq_keep) - len(strains_with_sequences)
-        seq_keep = strains_with_sequences
-
-        # Also track the number of sequences without metadata.
-        num_sequences_without_metadata = len([seq for seq in sequence_index["strain"].values if seq not in all_seq])
+        all_strains = metadata_strains | sequence_strains
+        available_strains = metadata_strains & sequence_strains
     else:
+        num_excluded_by_lack_of_metadata = None
         num_excluded_by_lack_of_sequences = None
-        num_sequences_without_metadata = None
+
+        # When no sequence data are available, we treat the metadata as the
+        # source of truth.
+        all_strains = metadata_strains
+        available_strains = metadata_strains
+
+    # Track the strains that are available to select by the filters below, after
+    # accounting for availability of metadata and sequences.
+    seq_keep = available_strains.copy()
 
     #####################################
     #Filtering steps
@@ -248,16 +253,7 @@ def run(args):
 
     # Exclude all strains by default.
     if args.exclude_all:
-        seq_keep = []
-
-    # remove sequences without meta data
-    tmp = [ ]
-    for seq_name in seq_keep:
-        if seq_name in meta_dict:
-            tmp.append(seq_name)
-        else:
-            print("No meta data for %s, excluding from all further analysis."%seq_name)
-    seq_keep = tmp
+        seq_keep = set()
 
     # remove strains explicitly excluded by name
     # read list of strains to exclude from file and prune seq_keep
@@ -265,9 +261,8 @@ def run(args):
     if args.exclude:
         try:
             to_exclude = read_strains(*args.exclude)
-            tmp = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
-            num_excluded_by_name = len(seq_keep) - len(tmp)
-            seq_keep = tmp
+            num_excluded_by_name = len(seq_keep & to_exclude)
+            seq_keep = seq_keep - to_exclude
         except FileNotFoundError as e:
             print("ERROR: Could not open file of excluded strains '%s'" % args.exclude, file=sys.stderr)
             sys.exit(1)
@@ -290,15 +285,15 @@ def run(args):
                     else: # i.e. property=value requested
                         if meta_dict[seq_name].get(col,'unknown').lower() == val.lower():
                             to_exclude.add(seq_name)
-                tmp = [seq_name for seq_name in seq_keep if seq_name not in to_exclude]
-                num_excluded_by_metadata[ex] = len(seq_keep) - len(tmp)
-                seq_keep = tmp
+
+                num_excluded_by_metadata[ex] = len(seq_keep & to_exclude)
+                seq_keep = seq_keep - to_exclude
 
     # exclude strains by metadata, using Pandas querying
     num_excluded_by_query = 0
     if args.query:
-        filtered = filter_by_query(seq_keep, args.metadata, args.query)
-        num_excluded_by_query = len(seq_keep) - len(filtered)
+        filtered = set(filter_by_query(list(seq_keep), args.metadata, args.query))
+        num_excluded_by_query = len(seq_keep - filtered)
         seq_keep = filtered
 
     # filter by sequence length
@@ -310,9 +305,11 @@ def run(args):
             is_in_seq_keep = sequence_index["strain"].isin(seq_keep)
             is_gte_min_length = sequence_index["ACGT"] >= args.min_length
 
-            seq_keep_by_length = sequence_index[
-                (is_in_seq_keep) & (is_gte_min_length)
-            ]["strain"].tolist()
+            seq_keep_by_length = set(
+                sequence_index[
+                    (is_in_seq_keep) & (is_gte_min_length)
+                ]["strain"].tolist()
+            )
 
             num_excluded_by_length = len(seq_keep) - len(seq_keep_by_length)
             seq_keep = seq_keep_by_length
@@ -320,10 +317,10 @@ def run(args):
     # filter by ambiguous dates
     num_excluded_by_ambiguous_date = 0
     if args.exclude_ambiguous_dates_by and 'date' in meta_columns:
-        seq_keep_by_date = []
+        seq_keep_by_date = set()
         for seq_name in seq_keep:
             if not is_date_ambiguous(meta_dict[seq_name]['date'], args.exclude_ambiguous_dates_by):
-                seq_keep_by_date.append(seq_name)
+                seq_keep_by_date.add(seq_name)
 
         num_excluded_by_ambiguous_date = len(seq_keep) - len(seq_keep_by_date)
         seq_keep = seq_keep_by_date
@@ -332,11 +329,11 @@ def run(args):
     num_excluded_by_date = 0
     if (args.min_date or args.max_date) and 'date' in meta_columns:
         dates = get_numerical_dates(meta_dict, fmt="%Y-%m-%d")
-        tmp = [s for s in seq_keep if dates[s] is not None]
+        tmp = {s for s in seq_keep if dates[s] is not None}
         if args.min_date:
-            tmp = [s for s in tmp if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s])>args.min_date]
+            tmp = {s for s in tmp if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s])>args.min_date}
         if args.max_date:
-            tmp = [s for s in tmp if (np.isscalar(dates[s]) or all(dates[s])) and np.min(dates[s])<args.max_date]
+            tmp = {s for s in tmp if (np.isscalar(dates[s]) or all(dates[s])) and np.min(dates[s])<args.max_date}
         num_excluded_by_date = len(seq_keep) - len(tmp)
         seq_keep = tmp
 
@@ -345,9 +342,11 @@ def run(args):
     if args.non_nucleotide:
         is_in_seq_keep = sequence_index["strain"].isin(seq_keep)
         no_invalid_nucleotides = sequence_index["invalid_nucleotides"] == 0
-        seq_keep_by_valid_nucleotides = sequence_index[
-            (is_in_seq_keep) & (no_invalid_nucleotides)
-        ]["strain"].tolist()
+        seq_keep_by_valid_nucleotides = set(
+            sequence_index[
+                (is_in_seq_keep) & (no_invalid_nucleotides)
+            ]["strain"].tolist()
+        )
 
         num_excluded_by_nuc = len(seq_keep) - len(seq_keep_by_valid_nucleotides)
         seq_keep = seq_keep_by_valid_nucleotides
@@ -442,7 +441,7 @@ def run(args):
 
             # subsample each groups, either by taking the spg highest priority strains or
             # sampling at random from the sequences in the group
-            seq_subsample = []
+            seq_subsample = set()
             subsampling_attempts = 0
 
             # Attempt to subsample with the given constraints for a fixed number
@@ -463,10 +462,23 @@ def run(args):
                         continue
 
                     if args.priority: #sort descending by priority
-                        seq_subsample.extend(sorted(sequences_in_group, key=lambda x:priorities[x], reverse=True)[:tmp_spg])
+                        seq_subsample.update(
+                            set(
+                                sorted(
+                                    sequences_in_group,
+                                    key=lambda x: priorities[x],
+                                    reverse=True
+                                )[:tmp_spg]
+                            )
+                        )
                     else:
-                        seq_subsample.extend(sequences_in_group if len(sequences_in_group)<=tmp_spg
-                                            else random.sample(sequences_in_group, tmp_spg))
+                        seq_subsample.update(
+                            set(
+                                sequences_in_group
+                                if len(sequences_in_group)<=tmp_spg
+                                else random.sample(sequences_in_group, tmp_spg)
+                            )
+                        )
 
             num_excluded_subsamp = len(seq_keep) - len(seq_subsample)
             seq_keep = seq_subsample
@@ -479,15 +491,22 @@ def run(args):
         # Collect the union of all given strains to include.
         to_include = read_strains(*args.include)
 
-        for s in to_include:
-            if s not in seq_keep:
-                seq_keep.append(s)
-                num_included_by_name += 1
+        # Find requested strains that can be included because they have metadata
+        # and sequences.
+        available_to_include = available_strains & to_include
+
+        # Track the number of strains that could and could not be included.
+        num_included_by_name = len(available_to_include)
+        num_not_included_by_name = len(to_include - available_to_include)
+
+        # Union the strains that can be included with the sequences to keep.
+        seq_keep = seq_keep | available_to_include
 
     # add sequences with particular meta data attributes
     num_included_by_metadata = 0
     if args.include_where:
-        to_include = []
+        to_include = set()
+
         for ex in args.include_where:
             try:
                 col, val = ex.split("=")
@@ -496,18 +515,12 @@ def run(args):
                 continue
 
             # loop over all sequences and re-add sequences
-            for seq_name in all_seq:
-                if seq_name in meta_dict:
-                    if meta_dict[seq_name].get(col)==val:
-                        to_include.append(seq_name)
-                else:
-                    print("WARNING: no metadata for %s, skipping"%seq_name)
-                    continue
+            for seq_name in available_strains:
+                if meta_dict[seq_name].get(col)==val:
+                    to_include.add(seq_name)
 
-        for s in to_include:
-            if s not in seq_keep:
-                seq_keep.append(s)
-                num_included_by_metadata += 1
+        num_included_by_metadata = len(to_include)
+        seq_keep = seq_keep | to_include
 
     ####Write out files
     if args.output_metadata:
@@ -525,16 +538,9 @@ def run(args):
 
     if is_vcf and args.output:
         # Get the samples to be deleted, not to keep, for VCF
-        dropped_samps = list(set(all_seq) - set(seq_keep))
+        dropped_samps = list(available_strains - seq_keep)
         write_vcf(args.sequences, args.output, dropped_samps)
     elif args.sequences and args.output:
-        # It should not be possible to have ids in the list of sequences to keep
-        # that do not exist in the original input sequences, since we built this
-        # list of ids from the sequence index. Just to be safe though, we find
-        # the intersection of these two lists of ids to determine if all samples
-        # were dropped or not. This final list of ids is in the same order as
-        # the input sequences such that output sequences are always in the same
-        # order for a given set of filters.
         sequences = SeqIO.parse(args.sequences, "fasta")
         sequences_to_write = (sequence for sequence in sequences if sequence.id in seq_keep)
 
@@ -543,13 +549,17 @@ def run(args):
         # memory first.
         sequences_written = SeqIO.write(sequences_to_write, args.output, 'fasta')
 
-    print("\n%i sequences were dropped during filtering" % (len(all_seq) - len(seq_keep),))
+    # Calculate the number of strains passed and filtered.
+    total_strains_passed = len(seq_keep)
+    total_strains_filtered = len(all_strains) - total_strains_passed
+
+    print(f"{total_strains_filtered} strains were dropped during filtering")
 
     if num_excluded_by_lack_of_sequences:
-        print("\t%i were excluded because they had no sequence data" % (num_excluded_by_lack_of_sequences,))
+        print(f"\t{num_excluded_by_lack_of_sequences} had no sequence data")
 
-    if num_sequences_without_metadata:
-        print("\t%i sequences were excluded because they did not have metadata" % (num_sequences_without_metadata,))
+    if num_excluded_by_lack_of_metadata:
+        print(f"\t{num_excluded_by_lack_of_metadata} had no metadata")
 
     if args.exclude:
         print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
@@ -571,15 +581,18 @@ def run(args):
         print("\t%i of these were dropped because of subsampling criteria%s" % (num_excluded_subsamp, seed_txt))
 
     if args.include:
-        print("\n\t%i sequences were added back because they were in %s" % (num_included_by_name, " and ".join(args.include)))
+        print(f"\n\t{num_included_by_name} strains were added back because they were requested by include files")
+
+        if num_not_included_by_name:
+            print(f"\t{num_not_included_by_name} strains from include files were not added because they lacked sequence or metadata")
     if args.include_where:
         print("\t%i sequences were added back because of '%s'" % (num_included_by_metadata, args.include_where))
 
-    print("%i strains have been passed all filters" % (len(seq_keep),))
-
-    if len(seq_keep) == 0:
+    if total_strains_passed == 0:
         print("ERROR: All samples have been dropped! Check filter rules and metadata file format.", file=sys.stderr)
         return 1
+
+    print(f"{total_strains_passed} strains passed all filters")
 
 
 def _filename_gz(filename):

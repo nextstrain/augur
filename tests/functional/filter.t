@@ -33,7 +33,7 @@ This should fail, as probabilistic sampling is explicitly disabled.
   >  --subsample-seed 314159 \
   >  --no-probabilistic-sampling \
   >  --output "$TMP/filtered.fasta"
-  ERROR: Asked to provide at most 5 sequences, but there are 10 groups.
+  ERROR: Asked to provide at most 5 sequences, but there are 8 groups.
   [1]
   $ rm -f "$TMP/filtered.fasta"
 
@@ -73,10 +73,10 @@ Filter using only metadata without sequence input or output and save results as 
   >  --min-length 10500 \
   >  --output-metadata "$TMP/filtered_metadata.tsv" > /dev/null
 
-Output should include the 9 sequences matching the filters and a header line.
+Output should include the 8 sequences matching the filters and a header line.
 
   $ wc -l "$TMP/filtered_metadata.tsv"
-  \s*10 .* (re)
+  \s*9 .* (re)
   $ rm -f "$TMP/filtered_metadata.tsv"
 
 Filter using only metadata and save results as a list of filtered strains.
@@ -88,10 +88,10 @@ Filter using only metadata and save results as a list of filtered strains.
   >  --min-length 10500 \
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
 
-Output should include only the 9 sequences matching the filters (without a header line).
+Output should include only the 8 sequences matching the filters (without a header line).
 
   $ wc -l "$TMP/filtered_strains.txt"
-  \s*9 .* (re)
+  \s*8 .* (re)
   $ rm -f "$TMP/filtered_strains.txt"
 
 Filter using only metadata without a sequence index.
@@ -174,7 +174,7 @@ Alternately, exclude only the sequences from Brazil and Colombia (12 - 4 strains
   >  --exclude "$TMP/filtered_strains.brazil.txt" "$TMP/filtered_strains.colombia.txt" \
   >  --output "$TMP/filtered.fasta" > /dev/null
   $ grep "^>" "$TMP/filtered.fasta" | wc -l
-  \s*8 (re)
+  \s*6 (re)
   $ rm -f "$TMP/filtered.fasta"
 
 Try to filter with sequences that don't match any of the metadata.
@@ -221,4 +221,30 @@ Filter TB strains from VCF and save as a list of filtered strains.
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
   $ wc -l "$TMP/filtered_strains.txt"
   \s*3 .* (re)
+  $ rm -f "$TMP/filtered_strains.txt"
+
+Confirm that filtering omits strains without metadata or sequences.
+The input sequences are missing one strain that is in the metadata.
+The metadata are missing one strain that has a sequence.
+The list of strains to include has one strain with no metadata/sequence and one strain with information that would have been filtered by country.
+The query initially filters 3 strains from Colombia, one of which is added back by the include.
+
+  $ echo "NotReal" > "$TMP/include.txt"
+  $ echo "COL/FLR_00008/2015" >> "$TMP/include.txt"
+  $ ${AUGUR} filter \
+  >  --sequence-index filter/sequence_index.tsv \
+  >  --metadata filter/metadata.tsv \
+  >  --query "country != 'Colombia'" \
+  >  --include "$TMP/include.txt" \
+  >  --output-strains "$TMP/filtered_strains.txt"
+  4 strains were dropped during filtering
+  \t1 had no sequence data (esc)
+  \t1 had no metadata (esc)
+  \t3 of these were filtered out by the query: (esc)
+  \t\t"country != 'Colombia'" (esc)
+   (esc)
+  \t1 strains were added back because they were requested by include files (esc)
+  \t1 strains from include files were not added because they lacked sequence or metadata (esc)
+  8 strains passed all filters
+
   $ rm -f "$TMP/filtered_strains.txt"
