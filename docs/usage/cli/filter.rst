@@ -15,7 +15,7 @@ augur filter
 How we subsample sequences in the zika-tutoral
 ==============================================
 
-As an example, we'll look that the ``filter`` command in greater detail using material form the :doc:`Zika tutorial <docs.nextstrain.org:tutorials/zika>`.
+As an example, we'll look that the ``filter`` command in greater detail using material from the :doc:`Zika tutorial <docs.nextstrain.org:tutorials/zika>`.
 The filter command allows you to selected various subsets of your input data for different types of analysis.
 A simple example use of this command would be
 
