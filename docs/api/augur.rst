@@ -6,6 +6,13 @@ augur package
    :undoc-members:
    :show-inheritance:
 
+Subpackages
+-----------
+
+.. toctree::
+
+   augur.util_support
+
 Submodules
 ----------
 
@@ -22,7 +29,9 @@ Submodules
    augur.filter
    augur.frequencies
    augur.frequency_estimators
+   augur.import
    augur.import_beast
+   augur.index
    augur.lbi
    augur.mask
    augur.parse

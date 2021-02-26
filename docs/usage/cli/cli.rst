@@ -10,6 +10,7 @@ We're in the process of adding examples and more extensive documentation for eac
 	:maxdepth: 1
 
 	parse
+	index
 	filter
 	mask
 	align
