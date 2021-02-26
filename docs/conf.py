@@ -70,8 +70,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store',
     'faq/seq_traits.md',
     'faq/translate_ref.md',
     'faq/vcf_input.md',
-    'tutorials/tb_tutorial.md',
-    'tutorials/zika_tutorial.md',
     'usage/augur_snakemake.md',
 ]
 
