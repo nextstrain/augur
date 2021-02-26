@@ -176,6 +176,8 @@ class TiterCollection(object):
         **kwargs
             Description
         """
+        self.kwargs = kwargs
+
         # Assign titers and prepare list of strains.
         if (isinstance(titers, str) and os.path.isfile(titers))\
             or isinstance(titers, list):
