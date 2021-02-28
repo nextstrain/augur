@@ -8,18 +8,64 @@ Example use cases:
 python3 scripts/identify_emerging_clades.py \
   --tree-url http://data.nextstrain.org/ncov_global.json \
   --frequencies-url http://data.nextstrain.org/ncov_global_tip-frequencies.json \
-  --nextstrain-url https://nextstrain.org/ncov/global \
-  --output-table nuc_subclades.tsv \
-  --output-html nuc_subclades.html
+  --minimum-frequency 0.2 \
+  --minimum-mutations 3 \
+  --output-table nuc_subclades_global.tsv
 # Find region-specific subclades with nucleotide mutations.
+## Africa
+python3 scripts/identify_emerging_clades.py \
+  --tree-url http://data.nextstrain.org/ncov_africa.json \
+  --frequencies-url http://data.nextstrain.org/ncov_africa_tip-frequencies.json \
+  --filter-attribute region \
+  --filter-value Africa \
+  --minimum-frequency 0.3 \
+  --minimum-mutations 3 \
+  --output-table nuc_subclades_africa.tsv
+## Asia
+python3 scripts/identify_emerging_clades.py \
+  --tree-url http://data.nextstrain.org/ncov_asia.json \
+  --frequencies-url http://data.nextstrain.org/ncov_asia_tip-frequencies.json \
+  --filter-attribute region \
+  --filter-value Asia \
+  --minimum-frequency 0.3 \
+  --minimum-mutations 3 \
+  --output-table nuc_subclades_asia.tsv
+## Europe
 python3 scripts/identify_emerging_clades.py \
   --tree-url http://data.nextstrain.org/ncov_europe.json \
   --frequencies-url http://data.nextstrain.org/ncov_europe_tip-frequencies.json \
-  --nextstrain-url https://nextstrain.org/ncov/europe \
   --filter-attribute region \
   --filter-value Europe \
-  --output-table europe_nuc_subclades.tsv \
-  --output-html europe_nuc_subclades.html
+  --minimum-frequency 0.3 \
+  --minimum-mutations 3 \
+  --output-table nuc_subclades_europe.tsv
+## North America
+python3 scripts/identify_emerging_clades.py \
+  --tree-url http://data.nextstrain.org/ncov_north-america.json \
+  --frequencies-url http://data.nextstrain.org/ncov_north-america_tip-frequencies.json \
+  --filter-attribute region \
+  --filter-value "North America" \
+  --minimum-frequency 0.3 \
+  --minimum-mutations 3 \
+  --output-table nuc_subclades_north-america.tsv
+## Oceania
+python3 scripts/identify_emerging_clades.py \
+  --tree-url http://data.nextstrain.org/ncov_oceania.json \
+  --frequencies-url http://data.nextstrain.org/ncov_oceania_tip-frequencies.json \
+  --filter-attribute region \
+  --filter-value Oceania \
+  --minimum-frequency 0.3 \
+  --minimum-mutations 3 \
+  --output-table nuc_subclades_oceania.tsv
+## South America
+python3 scripts/identify_emerging_clades.py \
+  --tree-url http://data.nextstrain.org/ncov_south-america.json \
+  --frequencies-url http://data.nextstrain.org/ncov_south-america_tip-frequencies.json \
+  --filter-attribute region \
+  --filter-value "South America" \
+  --minimum-frequency 0.3 \
+  --minimum-mutations 3 \
+  --output-table nuc_subclades_south-america.tsv
 # Find subclades based on spike amino acid mutations.
 python3 scripts/identify_emerging_clades.py \
   --tree-url http://data.nextstrain.org/ncov_global.json \
@@ -53,7 +99,7 @@ if __name__ == '__main__':
     parser.add_argument("--mutation-region", default="nuc", help="region of the genome to inspect for mutations")
     parser.add_argument("--minimum-mutations", default=2, type=int, help="minimum number of mutations to require for subclade since its annotated parent clade")
     parser.add_argument("--minimum-frequency", default=0.2, type=float, help="minimum frequency that a subclade must have been observed at")
-    parser.add_argument("--minimum-timepoints-at-frequency", default=2, type=int, help="minimum number of timepoints a given subclade must have met the frequency threshold")
+    parser.add_argument("--minimum-timepoints-at-frequency", default=5, type=int, help="minimum number of timepoints a given subclade must have met the frequency threshold")
     parser.add_argument("--filter-attribute", help="name of a node attribute in the tree JSON to filter tips by and correspondingly renormalize frequencies to only those tips")
     parser.add_argument("--filter-value", help="value of the associated node attribute in the tree JSON to filter tips by")
 
