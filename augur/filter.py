@@ -546,11 +546,14 @@ def run(args):
                     SeqIO.write(sequence, output_handle, 'fasta')
 
         if sequence_strains != observed_sequence_strains:
-            print(
-                "WARNING: The sequence index is out of sync with the provided sequences.",
-                "Augur will only output strains with available sequences.",
-                file=sys.stderr
-            )
+            # Warn the user if the expected strains from the sequence index are
+            # not a superset of the observed strains.
+            if not observed_sequence_strains <= sequence_strains:
+                print(
+                    "WARNING: The sequence index is out of sync with the provided sequences.",
+                    "Augur will only output strains with available sequences.",
+                    file=sys.stderr
+                )
 
             # Update the set of available sequence strains and which of these
             # strains passed filters. This prevents writing out strain lists or
