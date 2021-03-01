@@ -232,7 +232,6 @@ def run(args):
         num_excluded_by_lack_of_sequences = len(metadata_strains - sequence_strains)
 
         # Intersect sequence strain names with metadata strains.
-        all_strains = metadata_strains | sequence_strains
         available_strains = metadata_strains & sequence_strains
     else:
         num_excluded_by_lack_of_metadata = None
@@ -240,7 +239,6 @@ def run(args):
 
         # When no sequence data are available, we treat the metadata as the
         # source of truth.
-        all_strains = metadata_strains
         available_strains = metadata_strains
 
     # Track the strains that are available to select by the filters below, after
@@ -523,7 +521,48 @@ def run(args):
         num_included_by_metadata = len(to_include)
         seq_keep = seq_keep | to_include
 
-    ####Write out files
+    # Write output starting with sequences, if they've been requested. It is
+    # possible for the input sequences and sequence index to be out of sync
+    # (e.g., the index is a superset of the given sequences input), so we need
+    # to update the set of strains to keep based on which strains are actually
+    # available.
+    if is_vcf and args.output:
+        # Get the samples to be deleted, not to keep, for VCF
+        dropped_samps = list(available_strains - seq_keep)
+        write_vcf(args.sequences, args.output, dropped_samps)
+    elif args.sequences and args.output:
+        sequences = SeqIO.parse(args.sequences, "fasta")
+
+        # Stream to disk all sequences that passed all filters to avoid reading
+        # sequences into memory first. Track the observed strain names in the
+        # sequence file as part of the single pass to allow comparison with the
+        # provided sequence index.
+        observed_sequence_strains = set()
+        with open(args.output, "w") as output_handle:
+            for sequence in sequences:
+                observed_sequence_strains.add(sequence.id)
+
+                if sequence.id in seq_keep:
+                    SeqIO.write(sequence, output_handle, 'fasta')
+
+        if sequence_strains != observed_sequence_strains:
+            print(
+                "WARNING: The sequence index is out of sync with the provided sequences.",
+                "Augur will only output strains with available sequences.",
+                file=sys.stderr
+            )
+
+            # Update the set of available sequence strains and which of these
+            # strains passed filters. This prevents writing out strain lists or
+            # metadata for strains that have no sequences.
+            sequence_strains = observed_sequence_strains
+            seq_keep = seq_keep & sequence_strains
+
+            # Calculate the number of strains that don't exist in either
+            # metadata or sequences.
+            num_excluded_by_lack_of_metadata = len(sequence_strains - metadata_strains)
+            num_excluded_by_lack_of_sequences = len(metadata_strains - sequence_strains)
+
     if args.output_metadata:
         metadata_df = pd.DataFrame([meta_dict[strain] for strain in seq_keep])
         metadata_df.to_csv(
@@ -537,20 +576,12 @@ def run(args):
             for strain in sorted(seq_keep):
                 oh.write(f"{strain}\n")
 
-    if is_vcf and args.output:
-        # Get the samples to be deleted, not to keep, for VCF
-        dropped_samps = list(available_strains - seq_keep)
-        write_vcf(args.sequences, args.output, dropped_samps)
-    elif args.sequences and args.output:
-        sequences = SeqIO.parse(args.sequences, "fasta")
-        sequences_to_write = (sequence for sequence in sequences if sequence.id in seq_keep)
-
-        # Write out sequences that passed all filters using an iterator to
-        # ensure that sequences are streamed to disk without being read into
-        # memory first.
-        sequences_written = SeqIO.write(sequences_to_write, args.output, 'fasta')
-
     # Calculate the number of strains passed and filtered.
+    if sequence_strains is not None:
+        all_strains = metadata_strains | sequence_strains
+    else:
+        all_strains = metadata_strains
+
     total_strains_passed = len(seq_keep)
     total_strains_filtered = len(all_strains) - total_strains_passed
 
