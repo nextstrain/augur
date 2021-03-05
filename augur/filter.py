@@ -8,6 +8,7 @@ from typing import Collection
 import random, os, re
 import pandas as pd
 import numpy as np
+import pysam
 import sys
 import datetime
 from tempfile import NamedTemporaryFile
@@ -545,39 +546,30 @@ def run(args):
         dropped_samps = list(available_strains - seq_keep)
         write_vcf(args.sequences, args.output, dropped_samps)
     elif args.sequences and args.output:
-        sequences = SeqIO.parse(args.sequences, "fasta")
+        sequences = pysam.FastaFile(args.sequences)
 
         # Stream to disk all sequences that passed all filters to avoid reading
         # sequences into memory first. Track the observed strain names in the
         # sequence file as part of the single pass to allow comparison with the
         # provided sequence index.
-        observed_sequence_strains = set()
+        missing_sequence_strains = set()
         with open(args.output, "w") as output_handle:
-            for sequence in sequences:
-                observed_sequence_strains.add(sequence.id)
+            for strain in seq_keep:
+                try:
+                    sequence = sequences.fetch(strain)
+                    output_handle.write(f">{strain}\n")
+                    output_handle.write(f"{sequence}\n")
+                except KeyError:
+                    missing_sequence_strains.add(strain)
 
-                if sequence.id in seq_keep:
-                    SeqIO.write(sequence, output_handle, 'fasta')
-
-        if sequence_strains != observed_sequence_strains:
-            # Warn the user if the expected strains from the sequence index are
-            # not a superset of the observed strains.
-            if not observed_sequence_strains <= sequence_strains:
-                print(
-                    "WARNING: The sequence index is out of sync with the provided sequences.",
-                    "Augur will only output strains with available sequences.",
-                    file=sys.stderr
-                )
-
+        if len(missing_sequence_strains) > 0:
             # Update the set of available sequence strains and which of these
             # strains passed filters. This prevents writing out strain lists or
             # metadata for strains that have no sequences.
-            sequence_strains = observed_sequence_strains
+            sequence_strains = sequence_strains - missing_sequence_strains
             seq_keep = seq_keep & sequence_strains
 
-            # Calculate the number of strains that don't exist in either
-            # metadata or sequences.
-            num_excluded_by_lack_of_metadata = len(sequence_strains - metadata_strains)
+            # Recalculate the number of strains that don't exist in sequences.
             num_excluded_by_lack_of_sequences = len(metadata_strains - sequence_strains)
 
     if args.output_metadata:
