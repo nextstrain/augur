@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 11.2.0 (8 March 2021)
+
 ### Bug Fixes
 
 * ancestral: Mask positions that are ambiguous in all tip sequences before inferring ancestral sequence states, to avoid assigning arbitrary ancestral values based on rounding errors [#682][]
