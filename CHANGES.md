@@ -2,6 +2,26 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* ancestral: Mask positions that are ambiguous in all tip sequences before inferring ancestral sequence states, to avoid assigning arbitrary ancestral values based on rounding errors [#682][]
+* titers: Add missing `kwargs` attribute to `TiterCollection` class [#690][]
+
+### Documentation
+
+* Update API documentation to include newer Python modules and the `index` subcommand [#687][]
+* Remove Zika and TB tutorials in favor of copies in docs.nextstrain.org [#689][]
+
+### Features
+
+* filter: Enable filtering by metadata only such that sequence inputs/outputs are optional and metadata/strain list outputs are now possible [#679][]
+* filter: Enable extraction of sequences from multiple lists of strains with a new `--exclude-all` flag and support for multiple inputs to the `--include` argument [#679][]
+
+[#679]: https://github.com/nextstrain/augur/pull/679
+[#682]: https://github.com/nextstrain/augur/pull/682
+[#687]: https://github.com/nextstrain/augur/pull/687
+[#689]: https://github.com/nextstrain/augur/pull/689
+[#690]: https://github.com/nextstrain/augur/pull/690
 
 ## 11.1.2 (16 February 2021)
 
