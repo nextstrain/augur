@@ -686,3 +686,38 @@ VALID_NUCLEOTIDES = { # http://reverse-complement.com/ambiguity.html
     "A", "G", "C", "T", "U", "N", "R", "Y", "S", "W", "K", "M", "B", "V", "D", "H", "-",
     "a", "g", "c", "t", "u", "n", "r", "y", "s", "w", "k", "m", "b", "v", "d", "h", "-"
 }
+
+
+def read_strains(*files, comment_char="#"):
+    """Reads strain names from one or more plain text files and returns the
+    set of distinct strains.
+
+    Strain names can be commented with full-line or inline comments. For
+    example, the following is a valid strain names file:
+
+        # this is a comment at the top of the file
+        strain1  # exclude strain1 because it isn't sequenced properly
+        strain2
+          # this is an empty line that will be ignored.
+
+    Parameters
+    ----------
+    files : one or more str
+        one or more names of text files with one strain name per line
+
+    Returns
+    -------
+    set :
+        strain names from the given input files
+
+    """
+    strains = set()
+    for input_file in files:
+        with open(input_file, 'r', encoding='utf-8') as ifile:
+            for line in ifile:
+                # Allow comments anywhere in a given line.
+                strain_name = line.split(comment_char)[0].strip()
+                if len(strain_name) > 0:
+                    strains.add(strain_name)
+
+    return strains
