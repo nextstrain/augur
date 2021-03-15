@@ -30,8 +30,8 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
 
     This function relies on 'vcftools --exclude-positions' to mask the requested sites.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     mask_sites: list[int]
         A list of site indexes to exclude from the vcf.
     in_file: str
@@ -76,6 +76,28 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
 
 
 def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask_invalid):
+    """Mask characters at the given sites in a single sequence record, modifying the
+    record in place.
+
+    Parameters
+    ----------
+    sequence : Bio.SeqIO.SeqRecord
+        A sequence to be masked
+    mask_sites: list[int]
+        A list of site indexes to exclude from the FASTA.
+    mask_from_beginning: int
+        Number of sites to mask from the beginning of each sequence (default 0)
+    mask_from_end: int
+        Number of sites to mask from the end of each sequence (default 0)
+    mask_invalid: bool
+        Mask invalid nucleotides (default False)
+
+    Returns
+    -------
+    Bio.SeqIO.SeqRecord
+        Masked sequence in its original record object
+
+    """
     # Convert to a mutable sequence to enable masking with Ns.
     sequence_length = len(sequence.seq)
     beginning, end = mask_from_beginning, mask_from_end
@@ -105,8 +127,8 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
 
     Masked sites are overwritten as "N"s.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     mask_sites: list[int]
         A list of site indexes to exclude from the FASTA.
     in_file: str
