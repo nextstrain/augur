@@ -115,7 +115,6 @@ def register_arguments(parser):
     metadata_filter_group.add_argument('--include', type=str, nargs="+", help="file(s) with list of strains to include regardless of priorities or subsampling")
     metadata_filter_group.add_argument('--include-where', nargs='+',
                                 help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND. This rule is applied last and ensures any sequences matching these rules will be included.")
-    metadata_filter_group.add_argument('--priority', type=str, help="file with list of priority scores for strains (strain\tpriority)")
 
     sequence_filter_group = parser.add_argument_group("sequence filters", "filters to apply to sequence data")
     sequence_filter_group.add_argument('--min-length', type=int, help="minimal length of the sequences")
@@ -129,6 +128,10 @@ def register_arguments(parser):
     probabilistic_sampling_group = subsample_group.add_mutually_exclusive_group()
     probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true', help="Enable probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.")
     probabilistic_sampling_group.add_argument('--no-probabilistic-sampling', action='store_false', dest='probabilistic_sampling')
+    subsample_group.add_argument('--priority', type=str, help="""tab-delimited file with list of priority scores for strains (e.g., "<strain>\\t<priority>") and no header.
+    When scores are provided, Augur converts scores to floating point values, sorts strains within each subsampling group from highest to lowest priority, and selects the top N strains per group where N is the calculated or requested number of strains per group.
+    Higher numbers indicate higher priority.
+    Since priorities represent relative values between strains, these values can be arbitrary.""")
     subsample_group.add_argument('--subsample-seed', help="random number generator seed to allow reproducible sub-sampling (with same input data). Can be number or string.")
 
     output_group = parser.add_argument_group("outputs", "possible representations of filtered data (at least one required)")
