@@ -22,6 +22,11 @@ It provides a collection of commands which are designed to be composable into la
 
 The output of augur is a series of JSONs that can be used to visualize your results using [Auspice](https://github.com/nextstrain/auspice).
 
+## Quickstart
+
+[Follow instructions to install Augur](https://nextstrain-augur.readthedocs.io/en/stable/installation/installation.html).
+Try out an analysis of real virus data by [completing the Zika tutorial](https://nextstrain.org/docs/tutorials/zika).
+
 ## Documentation
 
 * [Overview of how Augur fits together with other Nextstrain tools](https://nextstrain.org/docs/getting-started/introduction#open-source-tools-for-the-community)
@@ -31,54 +36,9 @@ The output of augur is a series of JSONs that can be used to visualize your resu
 * [Project board with available issues](https://github.com/orgs/nextstrain/projects/6)
 * [Developer docs for Augur](./docs/contribute/DEV_DOCS.md)
 
-## Quickstart
+## Citation
 
-[Follow instructions to install augur](https://nextstrain-augur.readthedocs.io/en/stable/installation/installation.html).
-Try out an analysis of real virus data by [completing the Zika tutorial](https://nextstrain.org/docs/tutorials/zika).
-
-## Basic Usage
-
-All of Augur's commands are accessed through the `augur` program.
-For example, to infer ancestral sequences from a tree, you'd run `augur ancestral`.
-If you've installed the `nextstrain-augur` package, you can just run `augur`.
-Otherwise, you can run `./bin/augur` from a copy of the source code.
-
-```
-usage: augur [-h] {parse,filter,mask,align,tree,refine,ancestral,translate,clades,traits,sequence-traits,titers,export,validate,version} ...
-
-Augur: A bioinformatics toolkit for phylogenetic analysis.
-
-positional arguments:
-  {parse,filter,mask,align,tree,refine,ancestral,translate,clades,traits,sequence-traits,titers,export,validate,version}
-    parse               Parse delimited fields from FASTA sequence names into
-                        a TSV and FASTA file.
-    filter              Filter and subsample a sequence set.
-    mask                Mask specified sites from a VCF file.
-    align               Align multiple sequences from FASTA or VCF.
-    tree                Build a tree using a variety of methods.
-    refine              Refine an initial tree using sequence metadata.
-    ancestral           Infer ancestral sequences based on a tree.
-    translate           Translate gene regions from nucleotides to amino
-                        acids.
-    clades              Assign clades to nodes in a tree based on amino-acid
-                        or nucleotide signatures.
-    traits              Infer ancestral traits based on a tree.
-    sequence-traits     Annotate sequences based on amino-acid or nucleotide
-                        signatures.
-    titers              Annotate a tree with actual and inferred titer
-                        measurements.
-    export              Export JSON files suitable for visualization with
-                        auspice.
-    validate            Validate a set of JSON files intended for
-                        visualization in auspice.
-    version             Print the version of augur.
-
-optional arguments:
-  -h, --help            show this help message and exit
-```
-
-For more information on a specific command, you can run it with the `--help` option, for example, `augur tree --help`.
-
+Huddleston J, Hadfield J, Sibley TR, Lee J, Fay K, Ilcisin M, Harkins E, Bedford T, Neher RA, Hodcroft EB, (2021). Augur: a bioinformatics toolkit for phylogenetic analyses of human pathogens. Journal of Open Source Software, 6(57), 2906, https://doi.org/10.21105/joss.02906
 
 ## License and copyright
 
