@@ -49,8 +49,8 @@ Filter sequences by a minimum date and an exclusion list and only keep one seque
 Align filtered sequences to a specific reference sequence and fill any gaps.
 
   $ ${AUGUR} align \
-  >  --sequences "results/filtered.fasta" \
-  >  --reference-sequence "config/zika_outgroup.gb" \
+  >  --sequences "results/filtered.fasta.gz" \
+  >  --reference-sequence "config/zika_outgroup.gb.gz" \
   >  --output "$TMP/out/aligned.fasta" \
   >  --fill-gaps > /dev/null
 
