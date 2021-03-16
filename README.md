@@ -36,6 +36,10 @@ The output of augur is a series of JSONs that can be used to visualize your resu
 [Follow instructions to install augur](https://nextstrain-augur.readthedocs.io/en/stable/installation/installation.html).
 Try out an analysis of real virus data by [completing the Zika tutorial](https://nextstrain.org/docs/tutorials/zika).
 
+## Contributing to Augur
+
+Please follow the [Contributor Guide](https://github.com/nextstrain/.github/blob/master/CONTRIBUTING.md) to get started contributing to Augur. Here's also the [Developer documentation](./docs/contribute/DEV_DOCS.md) for developers contributing code.
+
 ## Basic Usage
 
 All of Augur's commands are accessed through the `augur` program.
@@ -78,7 +82,6 @@ optional arguments:
 ```
 
 For more information on a specific command, you can run it with the `--help` option, for example, `augur tree --help`.
-
 
 ## License and copyright
 

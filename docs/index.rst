@@ -47,5 +47,6 @@ The nextstrain team uses `snakemake <https://snakemake.readthedocs.io/en/stable/
    releases/releases
    faq/faq
    examples/examples
+   contribute/DEV_DOCS
    api/api
    authors/authors
