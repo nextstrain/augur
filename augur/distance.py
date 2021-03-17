@@ -135,6 +135,7 @@ import Bio
 import Bio.Phylo
 from collections import defaultdict
 import copy
+from itertools import chain
 import json
 import numpy as np
 import pandas as pd
@@ -300,6 +301,28 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map,
     >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
     2
 
+    If the default value is greater than any of the site-specific mismatches and
+    the specific mismatch does not have a weighted defined, use the default
+    weight.
+
+    >>> distance_map = {
+    ...     "default": 4,
+    ...     "map": {
+    ...         "gene": {
+    ...             1: {
+    ...                 ('C', 'G'): 1,
+    ...                 ('C', 'A'): 2
+    ...             },
+    ...             2: {
+    ...                 ('T', 'G'): 3,
+    ...                 ('T', 'A'): 2
+    ...             }
+    ...         }
+    ...     }
+    ... }
+    >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
+    4
+
     Count mismatches adjacent to indel events.
 
     >>> node_a_sequences = {"gene": "ACTGTA"}
@@ -375,7 +398,10 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map,
                         elif seq_ancestral == "-" or seq_derived == "-":
                             mismatch_distances.append(
                                 aggregate_function(
-                                    distance_map["map"][gene][site].values()
+                                    chain(
+                                        (distance_map["default"],),
+                                        distance_map["map"][gene][site].values()
+                                    )
                                 )
                             )
                         # Finally, use the default weight, if no
