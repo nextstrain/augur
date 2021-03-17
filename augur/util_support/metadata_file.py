@@ -1,5 +1,5 @@
 import functools
-import pandas
+import pandas as pd
 import sys
 
 
@@ -11,14 +11,18 @@ class MetadataFile:
     which is used to match metadata with samples.
     """
 
-    def __init__(self, fname, query=None):
-        self.fname = fname
+    def __init__(self, *fnames, query=None, as_data_frame=False):
+        self.fname = fnames
         self.query = query
+        self.as_data_frame = as_data_frame
 
         self.key_type = self.find_key_type()
 
     def read(self):
         self.check_metadata_duplicates()
+
+        if self.as_data_frame:
+            return self.metadata
 
         # augur assumes the metadata dict will contain either "strain" or "name" (the
         # indexed column), but DataFrame.to_dict("index") does not place the indexed
@@ -88,10 +92,19 @@ class MetadataFile:
 
     @functools.lru_cache()
     def parse_file(self):
-        return pandas.read_csv(
-            self.fname,
-            sep=None,  # csv.Sniffer will automatically detect sep
-            engine="python",
-            skipinitialspace=True,
-            dtype={"strain":"string", "name":"string"}
-        ).fillna("")
+        return pd.concat(
+            [
+                pd.read_csv(
+                    fname,
+                    sep=None,  # csv.Sniffer will automatically detect sep
+                    engine="python",
+                    skipinitialspace=True,
+                    dtype={"strain":"string", "name":"string"}
+                ).fillna("")
+                for fname in self.fname
+            ],
+            ignore_index=True
+        ).drop_duplicates(
+            subset=("strain",),
+            ignore_index=True
+        )
