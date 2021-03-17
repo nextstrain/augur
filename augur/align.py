@@ -1,13 +1,18 @@
 """
 Align multiple sequences from FASTA.
 """
-
+import hashlib
+from itertools import chain
 import os
+from pathlib import Path
 from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
 from .utils import run_shell_command, nthreads_value, shquote
 from collections import defaultdict
+
+from .io import open_file, read_sequences as io_read_sequences, write_sequences
+
 
 class AlignmentError(Exception):
     # TODO: this exception should potentially be renamed and made augur-wide
@@ -58,11 +63,12 @@ def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
     seqs = read_sequences(*sequences)
     seqs_to_align_fname = output + ".to_align.fasta"
 
+    existing_aln = None
+    existing_aln_sequence_names = set()
+
     if existing_aln_fname:
         existing_aln = read_alignment(existing_aln_fname)
         seqs = prune_seqs_matching_alignment(seqs, existing_aln)
-    else:
-        existing_aln = None
 
     if ref_seq_fname:
         ref_seq = read_reference(ref_seq_fname)
@@ -72,18 +78,22 @@ def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
                 raise AlignmentError("ERROR: Provided existing alignment ({}bp) is not the same length as the reference sequence ({}bp)".format(existing_aln.get_alignment_length(), len(ref_seq)))
             existing_aln_fname = existing_aln_fname + ".ref.fasta"
             existing_aln.append(ref_seq)
-            write_seqs(existing_aln, existing_aln_fname)
+            existing_aln_sequence_names = write_seqs(existing_aln, existing_aln_fname)
         else:
             # reference sequence needs to be the first one for auto direction
             # adjustment (auto reverse-complement)
-            seqs.insert(0, ref_seq)
-    elif ref_name:
-        ensure_reference_strain_present(ref_name, existing_aln, seqs)
+            seqs = chain((ref_seq,), seqs)
 
-    write_seqs(seqs, seqs_to_align_fname)
+    alignment_sequence_names = write_seqs(seqs, seqs_to_align_fname, ref_name)
 
-    # 90% sure this is only ever going to catch ref_seq was a dupe
-    check_duplicates(existing_aln, seqs)
+    # Check for duplicates in the intersection of existing and new alignment
+    # sequences.
+    duplicate_sequence_names = existing_aln_sequence_names & alignment_sequence_names
+    if len(duplicate_sequence_names) > 0:
+        raise AlignmentError(
+            f"Duplicate strains detected: {', '.join(duplicate_sequence_names)}"
+        )
+
     return existing_aln_fname, seqs_to_align_fname, ref_name
 
 def run(args):
@@ -178,19 +188,34 @@ def postprocess(output_file, ref_name, keep_reference, fill_gaps):
 
 def read_sequences(*fnames):
     """return list of sequences from all fnames"""
-    seqs = {}
+    sequence_hash_by_name = {}
+
     try:
-        for fname in fnames:
-            for record in SeqIO.parse(fname, 'fasta'):
-                if record.name in seqs and record.seq != seqs[record.name].seq:
+        # Stream sequences from all input files into a single output file,
+        # skipping duplicate records (same strain and sequence) and noting
+        # mismatched sequences for the same strain name.
+        for record in io_read_sequences(*fnames):
+            # Hash each sequence and check whether another sequence with the
+            # same name already exists and if the hash is different.
+            sequence_hash = hashlib.sha256(str(record.seq).encode("utf-8")).hexdigest()
+            if record.name in sequence_hash_by_name:
+                # If the hashes differ (multiple entries with the same strain
+                # name but different sequences), we keep the first sequence and
+                # add the strain to a list of duplicates to report at the end.
+                if sequence_hash_by_name.get(record.name) != sequence_hash:
                     raise AlignmentError("Detected duplicate input strains \"%s\" but the sequences are different." % record.name)
-                    # if the same sequence then we can proceed (and we only take one)
-                seqs[record.name] = record
+
+                # If the current strain has been seen before, don't use its
+                # sequence again.
+                continue
+
+            sequence_hash_by_name[record.name] = sequence_hash
+            yield record
+
     except FileNotFoundError:
         raise AlignmentError("\nCannot read sequences -- make sure the file %s exists and contains sequences in fasta format" % fname)
     except ValueError as error:
         raise AlignmentError("\nERROR: Problem reading in {}: {}".format(fname, str(error)))
-    return list(seqs.values())
 
 def check_arguments(args):
     # Simple error checking related to a reference name/sequence
@@ -201,31 +226,29 @@ def check_arguments(args):
 
 def read_alignment(fname):
     try:
-        return AlignIO.read(fname, 'fasta')
+        with open_file(fname) as handle:
+            alignment = AlignIO.read(handle, "fasta")
+
+        return alignment
     except Exception as error:
         raise AlignmentError("\nERROR: Problem reading in {}: {}".format(fname, str(error)))
-
-def ensure_reference_strain_present(ref_name, existing_alignment, seqs):
-    if existing_alignment:
-        if ref_name not in {x.name for x in existing_alignment}:
-            raise AlignmentError("ERROR: Specified reference name %s (via --reference-name) is not in the supplied alignment."%ref_name)
-    else:
-        if ref_name not in {x.name for x in seqs}:
-            raise AlignmentError("ERROR: Specified reference name %s (via --reference-name) is not in the sequence sample."%ref_name)
-
-
-    # align
-    # if args.method=='mafft':
-    #     shoutput = shquote(output)
-    #     shname = shquote(seq_fname)
-    #     cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2> %s.log"%(args.nthreads, shname, shoutput, shoutput)
 
 def read_reference(ref_fname):
     if not os.path.isfile(ref_fname):
         raise AlignmentError("ERROR: Cannot read reference sequence."
                              "\n\tmake sure the file \"%s\" exists"%ref_fname)
+
+    genbank_suffixes = {".gb", ".genbank"}
+    ref_fname_path = Path(ref_fname)
+
+    # Check for GenBank suffixes, while allowing for compression suffixes.
+    if len(set(ref_fname_path.suffixes) & genbank_suffixes) > 0:
+        format = "genbank"
+    else:
+        format = "fasta"
+
     try:
-        ref_seq = SeqIO.read(ref_fname, 'genbank' if ref_fname.split('.')[-1] in ['gb', 'genbank'] else 'fasta')
+        ref_seq = next(io_read_sequences(ref_fname, format=format))
     except:
         raise AlignmentError("ERROR: Cannot read reference sequence."
                 "\n\tmake sure the file %s contains one sequence in genbank or fasta format"%ref_fname)
@@ -388,31 +411,23 @@ def make_gaps_ambiguous(aln):
         seq.seq = Seq.Seq(_seq)
 
 
-def check_duplicates(*values):
-    names = set()
-    def add(name):
-        if name in names:
-            raise AlignmentError("Duplicate strains of \"{}\" detected".format(name))
-        names.add(name)
-    for sample in values:
-        if not sample:
-            # allows false-like values (e.g. always provide existing_alignment, allowing
-            # the default which is `False`)
-            continue
-        elif isinstance(sample, (list, Align.MultipleSeqAlignment)):
-            for s in sample:
-                add(s.name)
-        elif isinstance(sample, str):
-            add(sample)
-        else:
-            raise TypeError()
-
-def write_seqs(seqs, fname):
+def write_seqs(seqs, fname, ref_name=None):
     """A wrapper around SeqIO.write with error handling"""
+    sequences_written = set()
+
     try:
-        SeqIO.write(seqs, fname, 'fasta')
+        with open_file(fname, "wt") as handle:
+            for sequence in seqs:
+                sequences_written.add(sequence.id)
+                write_sequences(sequence, handle)
+
     except FileNotFoundError:
         raise AlignmentError('ERROR: Couldn\'t write "{}" -- perhaps the directory doesn\'t exist?'.format(fname))
+
+    if ref_name is not None and ref_name not in sequences_written:
+        raise AlignmentError(f"ERROR: Specified reference name {ref_name} (via --reference-name) is not in the sequence sample.")
+
+    return sequences_written
 
 
 def prune_seqs_matching_alignment(seqs, aln):
@@ -420,11 +435,9 @@ def prune_seqs_matching_alignment(seqs, aln):
     Return a set of seqs excluding those already in the alignment & print a warning
     message for each sequence which is exluded.
     """
-    ret = []
     aln_names = {s.name for s in aln}
     for seq in seqs:
         if seq.name in aln_names:
             print("Excluding {} as it is already present in the alignment".format(seq.name))
         else:
-            ret.append(seq)
-    return ret
+            yield seq

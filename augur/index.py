@@ -8,10 +8,14 @@ import Bio.SeqRecord
 import sys
 import csv
 
+from .io import open_file, read_sequences
+
+
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
     parser.add_argument('--output', '-o', help="tab-delimited file containing the number of bases per sequence in the given file. Output columns include strain, length, and counts for A, C, G, T, N, other valid IUPAC characters, ambiguous characters ('?' and '-'), and other invalid characters.", required=True)
     parser.add_argument('--verbose', '-v', action="store_true", help="print index statistics to stdout")
+
 
 def index_sequence(sequence, values):
     """Count the number of nucleotides for a given sequence record.
@@ -127,13 +131,7 @@ def index_sequences(sequences_path, sequence_index_path):
         total length of sequences indexed
 
     """
-    #read in files
-    try:
-        seqs = SeqIO.parse(sequences_path, 'fasta')
-    except ValueError as error:
-        print("ERROR: Problem reading in {}:".format(sequences_path), file=sys.stderr)
-        print(error, file=sys.stderr)
-        return 1
+    seqs = read_sequences(sequences_path)
 
     other_IUPAC = {'r', 'y', 's', 'w', 'k', 'm', 'd', 'h', 'b', 'v'}
     values = [{'a'},{'c'},{'g'},{'t'},{'n'},other_IUPAC,{'-'},{'?'}]
@@ -142,7 +140,7 @@ def index_sequences(sequences_path, sequence_index_path):
     tot_length = 0
     num_of_seqs = 0
 
-    with open(sequence_index_path, 'wt') as out_file:
+    with open_file(sequence_index_path, 'wt') as out_file:
         tsv_writer = csv.writer(out_file, delimiter = '\t')
 
         #write header i output file
@@ -166,7 +164,12 @@ def run(args):
     ("?" and "-"), and other invalid characters in a set of sequences and write
     the composition as a data frame to the given sequence index path.
     '''
-    num_of_seqs, tot_length = index_sequences(args.sequences, args.output)
+    try:
+        num_of_seqs, tot_length = index_sequences(args.sequences, args.output)
+    except ValueError as error:
+        print("ERROR: Problem reading in {}:".format(sequences_path), file=sys.stderr)
+        print(error, file=sys.stderr)
+        return 1
 
     if args.verbose:
         print("Analysed %i sequences with an average length of %i nucleotides." % (num_of_seqs, int(tot_length / num_of_seqs)))

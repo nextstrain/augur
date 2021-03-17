@@ -70,8 +70,23 @@ def get_json_name(args, default=None):
 def ambiguous_date_to_date_range(uncertain_date, fmt, min_max_year=None):
     return DateDisambiguator(uncertain_date, fmt=fmt, min_max_year=min_max_year).range()
 
-def read_metadata(fname, query=None):
-    return MetadataFile(fname, query).read()
+def read_metadata(*fnames, query=None, as_data_frame=False):
+    return MetadataFile(*fnames, query=query, as_data_frame=as_data_frame).read()
+
+def read_sequence_index(*sequence_index_paths):
+    return pd.concat(
+            [
+                pd.read_csv(
+                    sequence_index_path,
+                    sep="\t"
+                )
+                for sequence_index_path in sequence_index_paths
+            ],
+            ignore_index=True
+        ).drop_duplicates(
+            subset=("strain",),
+            ignore_index=True
+        )
 
 def is_date_ambiguous(date, ambiguous_by="any"):
     """
