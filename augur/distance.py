@@ -198,7 +198,7 @@ def read_distance_map(map_file):
     return distance_map
 
 
-def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map):
+def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map, aggregate_function=max):
     """Calculate distance between the two given nodes using the given distance map.
 
     In cases where the distance map between sequences is asymmetric, the first
@@ -327,10 +327,33 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
     for gene in node_a_sequences:
         gene_length = len(node_a_sequences[gene])
 
+        # In a first pass, find all mismatches between the given sequences. Use
+        # this pass to identify all sites in insertion/deletion (indel) events,
+        # so we can calculate an aggregate weight per event. Track each event by
+        # its start site.
+        mismatches_by_site = defaultdict(set)
+        in_gap = False
         for site in range(gene_length):
             if (node_a_sequences[gene][site] != node_b_sequences[gene][site]
                 and node_a_sequences[gene][site] not in ignored_characters
                 and node_b_sequences[gene][site] not in ignored_characters):
+                if node_a_sequences[gene][site] == "-" or node_b_sequences[gene][site] == "-":
+                    if not in_gap:
+                        gap_start = site
+                        in_gap = True
+
+                    mismatches_by_site[gap_start].add(site)
+                else:
+                    in_gap = False
+                    mismatches_by_site[site].add(site)
+            else:
+                in_gap = False
+
+        # Sum distances across mismatched sites, aggregating indel events by a
+        # summary function (e.g., max, mean, etc.).
+        for sites in mismatches_by_site.values():
+            mismatch_distances = []
+            for site in sites:
                 if gene in distance_map["map"] and site in distance_map["map"][gene]:
                     # Distances can be provided as either site- and
                     # sequence-specific dictionaries of sequence pairs to
@@ -339,14 +362,33 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
                     if isinstance(distance_map["map"][gene][site], dict):
                         seq_ancestral = node_a_sequences[gene][site]
                         seq_derived = node_b_sequences[gene][site]
-                        distance += distance_map["map"][gene][site].get(
-                            (seq_ancestral, seq_derived),
-                            distance_map["default"]
-                        )
+
+                        # Check first for a user-defined weight for the
+                        # mismatched bases. This supports mismatch weights
+                        # between specific characters including gaps.
+                        if (seq_ancestral, seq_derived) in distance_map["map"][gene][site]:
+                            mismatch_distances.append(
+                                distance_map["map"][gene][site][(seq_ancestral, seq_derived)]
+                            )
+                        # Next, check whether the mismatch is a gap. We want to
+                        # take the aggregate of all weights at this site.
+                        elif seq_ancestral == "-" or seq_derived == "-":
+                            mismatch_distances.append(
+                                aggregate_function(
+                                    distance_map["map"][gene][site].values()
+                                )
+                            )
+                        # Finally, use the default weight, if no
+                        # sequence-specific weights are defined.
+                        else:
+                            mismatch_distances.append(distance_map["default"])
                     else:
-                        distance += distance_map["map"][gene][site]
+                        mismatch_distances.append(distance_map["map"][gene][site])
                 else:
-                    distance += distance_map["default"]
+                    mismatch_distances.append(distance_map["default"])
+
+            # Aggregate the distances for all sites in the current mismatch.
+            distance += aggregate_function(mismatch_distances)
 
     return distance_type(np.round(distance, 2))
 
