@@ -60,3 +60,6 @@ Thumbs.db
 
 # slurm logs
 builds/flu/slurm_log/*
+
+# run_tests logs
+tests/functional/tree/*.log
