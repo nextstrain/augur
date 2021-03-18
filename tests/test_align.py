@@ -448,13 +448,7 @@ class TestAlign:
         assert output["SUFFIX"].seq.endswith(expected_char*3)
         if fill_gaps:
             assert all("-" not in record.seq for record in output.values())
-    
-    def test_run_error_during_alignment(self, test_file, argparser, mp_context):
-        """Not a great test - we can't be sure we're not failing some other check somewhere along the way, but it's all we can do"""
-        mp_context.setattr(align, "run_shell_command", lambda i: False)
-        args = argparser("-s %s" % test_file)
-        assert align.run(args) == 1
-    
+
     def test_run_debug_files(self, test_file, out_file, run):
         run("-s %s --debug" % test_file)
         assert os.path.isfile(out_file + ".pre_aligner.fasta")
