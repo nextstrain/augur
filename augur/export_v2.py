@@ -433,6 +433,27 @@ def set_panels(data_json, config, cmd_line_panels):
     data_json['meta']["panels"] = panels
 
 
+def set_data_provenance(data_json, config):
+    """Set the data provenance from the given config file to the given data JSON.
+
+    Parameters
+    ----------
+    data_json : dict
+        auspice JSON to be updated
+    config : dict
+        config JSON with an expected ``data_provenance`` key
+
+    >>> config = {"data_provenance": [{"name": "GISAID"}, {"name": "INSDC"}]}
+    >>> data_json = {"meta": {}}
+    >>> set_data_provenance(data_json, config)
+    >>> data_json["meta"]["data_provenance"][0]["name"]
+    'GISAID'
+
+    """
+    if "data_provenance" in config:
+        data_json["meta"]["data_provenance"] = config["data_provenance"]
+
+
 def counter_to_disambiguation_suffix(count):
     """Given a numeric count of author papers, return a distinct alphabetical
     disambiguation suffix.
@@ -914,6 +935,7 @@ def run_v2(args):
     set_node_attrs_on_tree(data_json, node_attrs)
     set_geo_resolutions(data_json, config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_attrs)
     set_panels(data_json, config, args.panels)
+    set_data_provenance(data_json, config)
 
     # Write outputs - the (unified) dataset JSON intended for auspice & perhaps the ref root-sequence JSON
     indent = {"indent": None} if args.minify_json else {}
