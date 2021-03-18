@@ -5,24 +5,24 @@ Integration tests for augur mask.
 
 Try masking a VCF without any specified mask.
 
-  $ ${AUGUR} mask --sequences mask/variants.vcf
+  $ ${AUGUR} mask --sequences mask/variants.vcf.gz
   No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites
   [1]
 
 Mask a VCF with a BED file and no specified output file.
 
-  $ cp "mask/variants.vcf" "$TMP/"
+  $ cp "mask/variants.vcf.gz" "$TMP/"
   $ ${AUGUR} mask \
-  >  --sequences "$TMP/variants.vcf" \
+  >  --sequences "$TMP/variants.vcf.gz" \
   >  --mask "mask/mask_variants.bed" > /dev/null
 
-  $ diff -u "mask/masked_variants.vcf" "$TMP/variants.vcf"
-  $ rm -f "$TMP/variants.vcf"
+  $ diff -u "mask/masked_variants.vcf" <(gzip -c -d "$TMP/variants.vcf.gz")
+  $ rm -f "$TMP/variants.vcf.gz"
 
 Mask a VCF with a BED file and a specified output file.
 
   $ ${AUGUR} mask \
-  >  --sequences "mask/variants.vcf" \
+  >  --sequences "mask/variants.vcf.gz" \
   >  --mask "mask/mask_variants.bed" \
   >  --output "$TMP/masked_variants.vcf" > /dev/null
 
