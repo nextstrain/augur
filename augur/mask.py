@@ -10,13 +10,14 @@ import pandas as pd
 from Bio import SeqIO
 from Bio.Seq import MutableSeq
 
-from .utils import run_shell_command, shquote, open_file, is_vcf, load_mask_sites, VALID_NUCLEOTIDES
+from .io import open_file, read_sequences, write_sequences
+from .utils import run_shell_command, shquote, is_vcf, load_mask_sites, VALID_NUCLEOTIDES
 
 def get_chrom_name(vcf_file):
     """Read the CHROM field from the first non-header line of a vcf file.
-    
+
     Returns:
-    str or None: Either the CHROM field or None if no non-comment line could be found. 
+    str or None: Either the CHROM field or None if no non-comment line could be found.
     """
     with open_file(vcf_file, mode='r') as f:
         for line in f:
@@ -29,8 +30,8 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
 
     This function relies on 'vcftools --exclude-positions' to mask the requested sites.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     mask_sites: list[int]
         A list of site indexes to exclude from the vcf.
     in_file: str
@@ -73,13 +74,61 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
             except OSError:
                 pass
 
+
+def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask_invalid):
+    """Mask characters at the given sites in a single sequence record, modifying the
+    record in place.
+
+    Parameters
+    ----------
+    sequence : Bio.SeqIO.SeqRecord
+        A sequence to be masked
+    mask_sites: list[int]
+        A list of site indexes to exclude from the FASTA.
+    mask_from_beginning: int
+        Number of sites to mask from the beginning of each sequence (default 0)
+    mask_from_end: int
+        Number of sites to mask from the end of each sequence (default 0)
+    mask_invalid: bool
+        Mask invalid nucleotides (default False)
+
+    Returns
+    -------
+    Bio.SeqIO.SeqRecord
+        Masked sequence in its original record object
+
+    """
+    # Convert to a mutable sequence to enable masking with Ns.
+    sequence_length = len(sequence.seq)
+    beginning, end = mask_from_beginning, mask_from_end
+
+    if beginning + end > sequence_length:
+        beginning, end = sequence_length, 0
+
+    seq = str(sequence.seq)[beginning:-end or None]
+
+    if mask_invalid:
+        seq = "".join(nuc if nuc in VALID_NUCLEOTIDES else "N" for nuc in seq)
+
+    masked_sequence = MutableSeq("N" * beginning + seq + "N" * end)
+
+    # Replace all excluded sites with Ns.
+    for site in mask_sites:
+        if site < sequence_length:
+            masked_sequence[site] = "N"
+
+    sequence.seq = masked_sequence
+
+    return sequence
+
+
 def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_end=0, mask_invalid=False):
     """Mask the provided site list from a FASTA file and write to a new file.
 
     Masked sites are overwritten as "N"s.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     mask_sites: list[int]
         A list of site indexes to exclude from the FASTA.
     in_file: str
@@ -95,27 +144,27 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
     """
     # Load alignment as FASTA generator to prevent loading the whole alignment
     # into memory.
-    alignment = SeqIO.parse(in_file, "fasta")
+    alignment = read_sequences(in_file)
 
     # Write the masked alignment to disk one record at a time.
     print("Removing masked sites from FASTA file.")
-    with open_file(out_file, "w") as oh:
-        for record in alignment:
-            # Convert to a mutable sequence to enable masking with Ns.
-            sequence_length = len(record.seq)
-            beginning, end = mask_from_beginning, mask_from_end
-            if beginning + end > sequence_length:
-                beginning, end = sequence_length, 0
-            seq = str(record.seq)[beginning:-end or None]
-            if mask_invalid:
-                seq = "".join(nuc if nuc in VALID_NUCLEOTIDES else "N" for nuc in seq)
-            sequence = MutableSeq("N" * beginning + seq + "N" * end)
-            # Replace all excluded sites with Ns.
-            for site in mask_sites:
-                if site < sequence_length:
-                    sequence[site] = "N"
-            record.seq = sequence
-            SeqIO.write(record, oh, "fasta")
+
+    masked_sequences = (
+        mask_sequence(
+            sequence,
+            mask_sites,
+            mask_from_beginning,
+            mask_from_end,
+            mask_invalid,
+        )
+        for sequence in alignment
+    )
+    sequences_written = write_sequences(
+        masked_sequences,
+        out_file,
+        "fasta"
+    )
+
 
 def register_arguments(parser):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF or FASTA format")
@@ -179,7 +228,7 @@ def run(args):
             sys.exit(1)
         mask_vcf(mask_sites, args.sequences, out_file, args.cleanup)
     else:
-        mask_fasta(mask_sites, args.sequences, out_file, 
+        mask_fasta(mask_sites, args.sequences, out_file,
                    mask_from_beginning=args.mask_from_beginning,
                    mask_from_end=args.mask_from_end,
                    mask_invalid=args.mask_invalid)
