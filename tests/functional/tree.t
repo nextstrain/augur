@@ -20,4 +20,7 @@ Try building a tree with IQ-TREE with more threads (4) than there are input sequ
   >  --nthreads 4 > /dev/null
   WARNING: more threads requested than there are sequences; falling back to IQ-TREE's `-nt AUTO` mode.
 
+Clean up tree log files.
+
+  $ rm -f tree/*.log
   $ popd > /dev/null
