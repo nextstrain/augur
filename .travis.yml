@@ -29,7 +29,7 @@ jobs:
       install:
         - pip install -e .[dev]
       script:
-        - (coverage run `which cram` --shell=/bin/bash tests/functional/*.t tests/builds/*.t)
+        - (coverage run -m cram --shell=/bin/bash tests/functional/*.t tests/builds/*.t)
         - (pytest -c pytest.python3.ini  --cov-report= --cov=augur --cov-append)
         - (bash tests/builds/runner.sh)
       after_success:
