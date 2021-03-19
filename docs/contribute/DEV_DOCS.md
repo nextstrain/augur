@@ -156,13 +156,20 @@ Before you create a new release, run all tests from a fresh conda environment to
 The following commands will setup the equivalent conda environment to the Travis CI environment, run unit and integration tests, and deactivate the environment.
 
 ```bash
-conda env create -f environment.yml
+# Update Conda.
+conda activate base
+conda update conda
+
+# Create an Augur environment.
+conda create -n augur -c conda-forge -c bioconda augur
 conda activate augur
 python3 -m pip install -e .[dev]
 
+# Run tests.
 ./run_tests.sh
 bash tests/builds/runner.sh
 
+# Clean up.
 conda deactivate
 conda env remove -n augur
 ```

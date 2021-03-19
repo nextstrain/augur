@@ -11,15 +11,29 @@ export PS1=
 conda_dir=$(conda info --base)
 source "${conda_dir}/etc/profile.d/conda.sh"
 
+ENV_NAME="test-augur"
+
+if [[ -e "`which mamba`" ]]
+then
+    CONDA="mamba"
+else
+    CONDA="conda"
+
+    echo Install Mamba with `conda install -n base -c conda-forge mamba` for a faster test experience.
+fi
+
 # Install Augur from the current directory into a new conda environment.
-conda env create -f environment.yml
-conda activate augur
+echo Setting up Conda test environment with ${CONDA}
+${CONDA} create --yes --quiet -n ${ENV_NAME} -c conda-forge -c bioconda augur
+conda activate ${ENV_NAME}
 python3 -m pip install -e .[dev]
 
 # Run unit and functional tests.
-./run_tests.sh
-bash tests/builds/runner.sh
+echo Running tests
+./run_tests.sh || true
+bash tests/builds/runner.sh || true
 
 # Clean up the temporary environment.
+echo Cleaning up
 conda deactivate
-conda env remove -n augur
+conda env remove -n ${ENV_NAME}
