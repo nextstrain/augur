@@ -243,6 +243,27 @@
                     "$comment": "Frequencies could be specified here if desired",
                     "$comment": "If not specified, and frequencies are asked for in #/panels, then Auspice will attempt to fetch a seperate JSON",
                     "$comment": "cc John / Trevor"
+                },
+                "data_provenance": {
+                    "description": "Specify provenance of data included in this analysis",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "description": "An individual data source",
+                        "additionalProperties": false,
+                        "required": ["name"],
+                        "properties": {
+                            "name": {
+                                "description": "Name of the data source",
+                                "type": "string"
+                            },
+                            "url": {
+                                "description": "URL to use in link to data source",
+                                "type": "string"
+                            }
+                        }
+                    }
                 }
             }
         },

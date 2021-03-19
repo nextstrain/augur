@@ -47,5 +47,14 @@
     "map",
     "entropy",
     "frequencies"
+  ],
+  "data_provenance": [
+    {
+      "name": "GISAID"
+    },
+    {
+      "name": "COG UK",
+      "url": "https://www.cogconsortium.uk"
+    }
   ]
 }
