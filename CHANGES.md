@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 11.3.0 (19 March 2021)
+
 ### Bug Fixes
 
 * filter: Clarify how the `--priority` input affects subsampling in the command line help documentation [#695][]
