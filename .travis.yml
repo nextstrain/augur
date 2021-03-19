@@ -30,7 +30,7 @@ jobs:
         - pip install -e .[dev]
       script:
         - (`which coverage` run `which cram` --shell=/bin/bash tests/functional/*.t tests/builds/*.t)
-        - (pytest -c pytest.python3.ini  --cov-report= --cov=augur)
+        - (pytest -c pytest.python3.ini  --cov-report= --cov=augur --cov-append)
         - (bash tests/builds/runner.sh)
       after_success:
         # upload to codecov
