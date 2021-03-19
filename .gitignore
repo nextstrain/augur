@@ -58,8 +58,5 @@ Thumbs.db
 *sublime*
 .vscode
 
-# slurm logs
-builds/flu/slurm_log/*
-
-# run_tests logs
-tests/functional/tree/*.log
+# Recursively ignore log files
+**/*.log
