@@ -2,6 +2,21 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* filter: Clarify how the `--priority` input affects subsampling in the command line help documentation [#695][]
+* tests: Clean up outputs created by tests [#703][], ignore log files [#701][], and remove unnecessary Conda environment file [#702][]
+
+### Features
+
+* io: Add new `io` module with `open_file`, `read_sequences`, and `write_sequences` functions that support compressed inputs and outputs [#652][]
+* parse, index, filter, mask: Add support for compressed inputs/outputs [#652][]
+
+[#652]: https://github.com/nextstrain/augur/pull/652
+[#695]: https://github.com/nextstrain/augur/pull/695
+[#701]: https://github.com/nextstrain/augur/pull/701
+[#702]: https://github.com/nextstrain/augur/pull/702
+[#703]: https://github.com/nextstrain/augur/pull/703
 
 ## 11.2.0 (8 March 2021)
 
