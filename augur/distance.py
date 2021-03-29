@@ -245,31 +245,47 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
     >>> distance_map = {"default": 0.0, "map": {"gene": {2: {('T', 'G'): 0.5}}}}
     >>> get_distance_between_nodes(node_b_sequences, node_a_sequences, distance_map)
     0.0
+
+    Ignore specific characters defined in the distance map.
+
+    >>> node_a_sequences = {"gene": "ACTGG"}
+    >>> node_b_sequences = {"gene": "A--GN"}
+    >>> distance_map = {"default": 1, "ignored_characters":["-"], "map": {}}
+    >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
+    1
+    >>> distance_map = {"default": 1, "ignored_characters":["-", "N"], "map": {}}
+    >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
+    0
     """
     distance_type = type(distance_map["default"])
     distance = distance_type(0)
+    if "ignored_characters" in distance_map:
+        ignored_characters = distance_map["ignored_characters"]
+    else:
+        ignored_characters = []
 
     for gene in node_a_sequences:
         gene_length = len(node_a_sequences[gene])
 
         for site in range(gene_length):
-            if node_a_sequences[gene][site] != node_b_sequences[gene][site]:
-                if gene in distance_map["map"] and site in distance_map["map"][gene]:
-                    # Distances can be provided as either site- and
-                    # sequence-specific dictionaries of sequence pairs to
-                    # weights or as site-specific weights. Check for
-                    # dictionaries first.
-                    if isinstance(distance_map["map"][gene][site], dict):
-                        seq_ancestral = node_a_sequences[gene][site]
-                        seq_derived = node_b_sequences[gene][site]
-                        distance += distance_map["map"][gene][site].get(
-                            (seq_ancestral, seq_derived),
-                            distance_map["default"]
-                        )
+            if node_a_sequences[gene][site] not in ignored_characters and node_b_sequences[gene][site] not in ignored_characters:
+                if node_a_sequences[gene][site] != node_b_sequences[gene][site]:
+                    if gene in distance_map["map"] and site in distance_map["map"][gene]:
+                        # Distances can be provided as either site- and
+                        # sequence-specific dictionaries of sequence pairs to
+                        # weights or as site-specific weights. Check for
+                        # dictionaries first.
+                        if isinstance(distance_map["map"][gene][site], dict):
+                            seq_ancestral = node_a_sequences[gene][site]
+                            seq_derived = node_b_sequences[gene][site]
+                            distance += distance_map["map"][gene][site].get(
+                                (seq_ancestral, seq_derived),
+                                distance_map["default"]
+                            )
+                        else:
+                            distance += distance_map["map"][gene][site]
                     else:
-                        distance += distance_map["map"][gene][site]
-                else:
-                    distance += distance_map["default"]
+                        distance += distance_map["default"]
 
     return distance_type(np.round(distance, 2))
 
