@@ -215,3 +215,31 @@ class TestFilter:
         augur.filter.run(args)
         output = SeqIO.to_dict(SeqIO.parse(out_fn, "fasta"))
         assert list(output.keys()) == ["SEQ_1", "SEQ_3"]
+
+    def test_filter_run_min_date(self, tmpdir, fasta_fn, argparser):
+        """Test that filter --min-date is inclusive"""
+        out_fn = str(tmpdir / "out.fasta")
+        min_date = "2020-02-26"
+        meta_fn = write_metadata(tmpdir, (("strain","date"),
+                                          ("SEQ_1","2020-02-XX"),
+                                          ("SEQ_2","2020-02-26"),
+                                          ("SEQ_3","2020-02-25")))
+        args = argparser('-s %s --metadata %s -o %s --min-date %s'
+                         % (fasta_fn, meta_fn, out_fn, min_date))
+        augur.filter.run(args)
+        output = SeqIO.to_dict(SeqIO.parse(out_fn, "fasta"))
+        assert list(output.keys()) == ["SEQ_1", "SEQ_2"]
+
+    def test_filter_run_max_date(self, tmpdir, fasta_fn, argparser):
+        """Test that filter --max-date is inclusive"""
+        out_fn = str(tmpdir / "out.fasta")
+        max_date = "2020-03-01"
+        meta_fn = write_metadata(tmpdir, (("strain","date"),
+                                          ("SEQ_1","2020-03-XX"),
+                                          ("SEQ_2","2020-03-01"),
+                                          ("SEQ_3","2020-03-02")))
+        args = argparser('-s %s --metadata %s -o %s --max-date %s'
+                         % (fasta_fn, meta_fn, out_fn, max_date))
+        augur.filter.run(args)
+        output = SeqIO.to_dict(SeqIO.parse(out_fn, "fasta"))
+        assert list(output.keys()) == ["SEQ_1", "SEQ_2"]
