@@ -133,6 +133,10 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         aln_file    file name of input aligment
         out_file    file name to write tree to
     '''
+    iqtree = find_executable([
+        "iqtree2",
+        "iqtree"
+    ])
     # create a dictionary for characters that IQ-tree changes.
     # we remove those prior to tree-building and reinstantiate later
     def random_string(n):
@@ -188,10 +192,10 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         )
 
     if substitution_model.lower() != "none":
-        call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", shquote(tmp_aln_file),
+        call = [iqtree, *fast_opts, "-nt", str(nthreads), "-s", shquote(tmp_aln_file),
                 "-m", substitution_model, tree_builder_args, ">", log_file]
     else:
-        call = ["iqtree", *fast_opts, "-nt", str(nthreads), "-s", shquote(tmp_aln_file), tree_builder_args, ">", shquote(log_file)]
+        call = [iqtree *fast_opts, "-nt", str(nthreads), "-s", shquote(tmp_aln_file), tree_builder_args, ">", shquote(log_file)]
 
     cmd = " ".join(call)
 
