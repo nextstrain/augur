@@ -426,8 +426,8 @@ def run(args):
             # Check to see if some categories are missing to warn the user
             group_by = set(['date' if cat in ['year','month'] else cat
                             for cat in groups])
-            missing_cats = [cat for cat in group_by if cat not in meta_columns]
-            if missing_cats and ("_dummy" not in missing_cats):
+            missing_cats = [cat for cat in group_by if cat not in meta_columns and cat != "_dummy"]
+            if missing_cats:
                 print("WARNING:")
                 if any([cat != 'date' for cat in missing_cats]):
                     print("\tSome of the specified group-by categories couldn't be found: ",
@@ -435,9 +435,6 @@ def run(args):
                 if any([cat == 'date' for cat in missing_cats]):
                     print("\tA 'date' column could not be found to group-by year or month.")
                 print("\tFiltering by group may behave differently than expected!\n")
-            elif "_dummy" in missing_cats:
-                print("WARNING:\n\tNo group-by categories were specified.", 
-                      "\n\tSequences-per-group sampling will be done using a dummy category.")
 
             if args.priority: # read priorities
                 priorities = read_priority_scores(args.priority)
