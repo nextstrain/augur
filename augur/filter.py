@@ -376,15 +376,14 @@ def run(args):
     if args.subsample_seed:
         random.seed(args.subsample_seed)
     num_excluded_subsamp = 0
-    #if args.group_by and (args.sequences_per_group or args.subsample_max_sequences):
     if args.subsample_max_sequences or (args.group_by and args.sequences_per_group):
         
         #set groups to group_by values
         if args.group_by:
             groups = args.group_by
-        #if not specified use dummy category
+        #if group_by not specified use dummy category
         else:
-            groups = ["dummy"]
+            groups = ["_dummy"]
 
         spg = args.sequences_per_group
         seq_names_by_group = defaultdict(list)
@@ -394,7 +393,7 @@ def run(args):
             m = meta_dict[seq_name]
             # collect group specifiers
             for c in groups:
-                if c == "dummy":
+                if c == "_dummy":
                     group.append(c)
                 elif c in m:
                     group.append(m[c])
@@ -428,7 +427,7 @@ def run(args):
             group_by = set(['date' if cat in ['year','month'] else cat
                             for cat in groups])
             missing_cats = [cat for cat in group_by if cat not in meta_columns]
-            if missing_cats and ("dummy" not in missing_cats):
+            if missing_cats and ("_dummy" not in missing_cats):
                 print("WARNING:")
                 if any([cat != 'date' for cat in missing_cats]):
                     print("\tSome of the specified group-by categories couldn't be found: ",
@@ -436,7 +435,7 @@ def run(args):
                 if any([cat == 'date' for cat in missing_cats]):
                     print("\tA 'date' column could not be found to group-by year or month.")
                 print("\tFiltering by group may behave differently than expected!\n")
-            elif "dummy" in missing_cats:
+            elif "_dummy" in missing_cats:
                 print("WARNING:\n\tNo group-by categories were specified.", 
                       "\n\tSequences-per-group sampling will be done using a dummy category.")
 
