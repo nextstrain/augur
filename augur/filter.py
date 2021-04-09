@@ -125,7 +125,7 @@ def register_arguments(parser):
     subsample_group.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
     subsample_limits_group = subsample_group.add_mutually_exclusive_group()
     subsample_limits_group.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
-    subsample_limits_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences")
+    subsample_limits_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences; can be used without the group_by argument")
     probabilistic_sampling_group = subsample_group.add_mutually_exclusive_group()
     probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true', help="Enable probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.")
     probabilistic_sampling_group.add_argument('--no-probabilistic-sampling', action='store_false', dest='probabilistic_sampling')
@@ -376,7 +376,15 @@ def run(args):
     if args.subsample_seed:
         random.seed(args.subsample_seed)
     num_excluded_subsamp = 0
-    if args.group_by and (args.sequences_per_group or args.subsample_max_sequences):
+    if args.subsample_max_sequences or (args.group_by and args.sequences_per_group):
+        
+        #set groups to group_by values
+        if args.group_by:
+            groups = args.group_by
+        #if group_by not specified use dummy category
+        else:
+            groups = ["_dummy"]
+
         spg = args.sequences_per_group
         seq_names_by_group = defaultdict(list)
 
@@ -384,8 +392,10 @@ def run(args):
             group = []
             m = meta_dict[seq_name]
             # collect group specifiers
-            for c in args.group_by:
-                if c in m:
+            for c in groups:
+                if c == "_dummy":
+                    group.append(c)
+                elif c in m:
                     group.append(m[c])
                 elif c in ['month', 'year'] and 'date' in m:
                     try:
@@ -407,16 +417,16 @@ def run(args):
 
         #If didnt find any categories specified, all seqs will be in 'unknown' - but don't sample this!
         if len(seq_names_by_group)==1 and ('unknown' in seq_names_by_group or ('unknown',) in seq_names_by_group):
-            print("WARNING: The specified group-by categories (%s) were not found."%args.group_by,
+            print("WARNING: The specified group-by categories (%s) were not found."%groups,
                   "No sequences-per-group sampling will be done.")
-            if any([x in args.group_by for x in ['year','month']]):
+            if any([x in groups for x in ['year','month']]):
                 print("Note that using 'year' or 'year month' requires a column called 'date'.")
             print("\n")
         else:
             # Check to see if some categories are missing to warn the user
             group_by = set(['date' if cat in ['year','month'] else cat
-                            for cat in args.group_by])
-            missing_cats = [cat for cat in group_by if cat not in meta_columns]
+                            for cat in groups])
+            missing_cats = [cat for cat in group_by if cat not in meta_columns and cat != "_dummy"]
             if missing_cats:
                 print("WARNING:")
                 if any([cat != 'date' for cat in missing_cats]):
