@@ -222,7 +222,11 @@ def run(args):
                 node_data['skyline'] = [[float(x) for x in skyline.x], [float(y) for y in conf[0]],
                                         [float(y) for y in skyline.y], [float(y) for y in conf[1]]]
             except:
-                print("ERROR: skyline optimization by TreeTime has failed.", file=sys.stderr)
+                print(
+                    "ERROR: skyline optimization by TreeTime has failed.",
+                    "To avoid this error, try running without coalescent optimization or with `--coalescent opt` instead of `--coalescent skyline`.",
+                    file=sys.stderr
+                )
                 return 1
 
         attributes.extend(['numdate', 'clock_length', 'mutation_length', 'raw_date', 'date'])
