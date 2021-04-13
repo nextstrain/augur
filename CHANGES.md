@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 12.0.0 (13 April 2021)
+
 ### Major Changes
 
 * filter: Date bounds (`--min-date` and `--max-date`) are now inclusive instead of exclusive such that records matching the given dates will pass date filters [#708][] (@benjaminotter)
