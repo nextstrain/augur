@@ -2,6 +2,27 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* filter: Date bounds (`--min-date` and `--max-date`) are now inclusive instead of exclusive such that records matching the given dates will pass date filters [#708][] (@benjaminotter)
+
+### Bug Fixes
+
+* refine: Recommend an alternate action when skyline optimization fails [#712][] (@huddlej)
+
+### Features
+
+* distance: Count insertion/deletion events once in pairwise distances [#698][] (@huddlej, @benjaminotter)
+* distance: Optionally ignore specific list of characters defined in a distance map's top-level `ignored_characters` list [#707][] (@benjaminotter)
+* filter: Allow `--subsample-max-sequences` without `--group-by` [#710][] (@benjaminotter)
+* tree: Prefer `iqtree2` binary over `iqtree` when possible [#711][] (@benjaminotter)
+
+[#698]: https://github.com/nextstrain/augur/pull/698
+[#707]: https://github.com/nextstrain/augur/pull/707
+[#708]: https://github.com/nextstrain/augur/pull/708
+[#710]: https://github.com/nextstrain/augur/pull/710
+[#711]: https://github.com/nextstrain/augur/pull/711
+[#712]: https://github.com/nextstrain/augur/pull/712
 
 ## 11.3.0 (19 March 2021)
 
