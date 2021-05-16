@@ -91,7 +91,7 @@ def write_sequences(sequences, path_or_buffer, format="fasta"):
         Number of sequences written out to the given path.
 
     """
-    with open_file(path_or_buffer, "wt") as handle:
+    with open_file(path_or_buffer, "wt", compresslevel=2) as handle:
         # Bio.SeqIO supports writing to the same handle multiple times for specific
         # file formats. For the formats we use, this function call should work for
         # both a newly opened file handle or one that is provided by the caller.
