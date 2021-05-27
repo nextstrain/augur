@@ -180,11 +180,15 @@
                             },
                             "scale": {
                                 "description": "Provided mapping between trait values & hex values",
+                                "$comment": "For continuous scales at least 2 items must be specified",
                                 "type": "array",
                                 "items": {
                                     "type": "array",
                                     "items": [
-                                        {"type": "string", "description": "value of trait (should exist on >= 1 nodes)"},
+                                        {
+                                            "type": ["string", "number"],
+                                            "description": "For categorical/ordinal scales, this is the (string) value of the trait to associate with the colour. For continuous scales this is the (numeric) value to associate to with the colour, and interpolation will be used to span the domain"
+                                        },
                                         {"type": "string", "description": "color hex value", "pattern": "^#[0-9A-Fa-f]{6}$"}
                                     ]
                                 }

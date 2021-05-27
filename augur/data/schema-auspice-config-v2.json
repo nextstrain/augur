@@ -35,6 +35,21 @@
                         "type": "string",
                         "enum": ["continuous", "ordinal", "categorical", "boolean"]
                     },
+                    "scale": {
+                        "description": "Provided mapping between trait values & hex values",
+                        "$comment": "NOTE: if supplied here, we will not use information supplied to `augur export` via `--colors` for this coloring.",
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": [
+                                {
+                                    "type": ["string", "number"],
+                                    "description": "For categorical/ordinal scales, this is the (string) value of the trait to associate with the colour. For continuous scales this is the (numeric) value to associate to with the colour, and interpolation will be used to span the domain"
+                                },
+                                {"type": "string", "description": "color hex value", "pattern": "^#[0-9A-Fa-f]{6}$"}
+                            ]
+                        }
+                    },
                     "legend": {
                         "description": "Specify the entries displayed in the legend. This can be used to restrict the entries in the legend for display without otherwise affecting the data viz",
                         "type": "array",

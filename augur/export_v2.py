@@ -6,6 +6,7 @@ import os, sys
 import time
 from collections import defaultdict, deque
 import warnings
+import numbers
 import re
 from Bio import Phylo
 from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
@@ -211,8 +212,38 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         return key
 
     def _add_color_scale(coloring):
+        ## consider various sources to find any user-provided scale information
         key = coloring["key"]
-        if key.lower() in provided_colors:
+        scale_type = coloring["type"]
+        if scale_type is "continuous":
+            ## continuous scale information can only come from an auspice config JSON
+            if config.get(key, {}).get("scale"):
+                # enforce numeric values (we can't use the schema for this)
+                provided_scale = [s for s in config[key]['scale'] if isinstance(s[0], numbers.Number)]
+                if len(provided_scale)<2:
+                    warn(f"The scale provided for {key} had fewer than 2 (valid numeric) entries. Skipping.")
+                    return coloring
+                coloring["scale"] = provided_scale
+                return coloring
+        elif config.get(key, {}).get("scale"):
+            # If the auspice config JSON (`config`) explicitly defines a scale for this coloring
+            # then we use this instead of any colors provided via a TSV file (`provided_colors`)
+            values_in_tree = get_values_across_nodes(node_attrs, key)
+            scale = []
+            provided_values_unseen_in_tree = []
+            for info in config[key]['scale']:
+                if info[0] in values_in_tree:
+                    scale.append(info)
+                else:
+                    provided_values_unseen_in_tree.append(info[0])
+            if len(scale):
+                coloring["scale"] = scale
+                if len(provided_values_unseen_in_tree):
+                    warn(f"The configuration JSON specifies colors for \"{key}\" which aren't found in the tree:\n\t{', '.join(provided_values_unseen_in_tree)}.")
+                return coloring
+            warn(f"The configuration JSON specifies a color scale for {key} however none of the values in the tree are in this scale! Auspice will generate its own color scale for this trait.")
+        elif key.lower() in provided_colors:
+            # `provided_colors` typically originates from a colors.tsv file
             scale = []
             trait_values = {str(val).lower(): val for val in get_values_across_nodes(node_attrs, key)}
             trait_values_unseen = {k for k in trait_values}
@@ -223,9 +254,10 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
             if len(scale):
                 coloring["scale"] = scale
                 if len(trait_values_unseen):
-                    warn("These values for trait {} were not specified in your provided color scale: {}. Auspice will create colors for them.".format(key, ", ".join(trait_values_unseen)))
-            else:
-                warn("You've specified a color scale for {} but none of the values found on the tree had associated colors. Auspice will generate its own color scale for this trait.".format(key))
+                    warn(f"These values for trait {key} were not specified in the colors file you provided:\n\t{', '.join(trait_values_unseen)}.\n\tAuspice will create colors for them.")
+                return coloring
+            warn(f"You've supplied a colors file with information for {key} but none of the values found on the tree had associated colors. Auspice will generate its own color scale for this trait.")
+        # Fallthrough (no scale information provided means that auspice will generate its own scale)
         return coloring
 
     def _add_legend(coloring):
