@@ -34,6 +34,33 @@
                         "description": "Defines how the color scale should be constructed",
                         "type": "string",
                         "enum": ["continuous", "ordinal", "categorical", "boolean"]
+                    },
+                    "legend": {
+                        "description": "Specify the entries displayed in the legend. This can be used to restrict the entries in the legend for display without otherwise affecting the data viz",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["value"],
+                            "properties": {
+                                "value": {
+                                    "description": "value to associate with this legend entry. Used to determine colour. For non-continuous scales this also determines the matching between legend items and data.",
+                                    "type": ["string", "number"],
+                                    "$comment": "Continuous scales must use a numeric value. Other scales can use either."
+                                },
+                                "display": {
+                                    "description": "Label to display in the legend. Optional - `value` will be used if this is not provided.",
+                                    "type": ["string", "number"]
+                                },
+                                "bounds": {
+                                    "description": "(for continuous scales only) provide the lower & upper bounds to match data to this legend entry. Bounds from different legend entries must not overlap. Matching is (a, b] - exclusive of the lower bound, inclusive of the upper.",
+                                    "type": "array",
+                                    "items": [
+                                        {"type": "number", "description": "lower bound"},
+                                        {"type": "number", "description": "upper bound"}
+                                    ]
+                                }
+                            }
+                        }
                     }
                 }
             }

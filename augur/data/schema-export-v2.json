@@ -160,7 +160,7 @@
                     "minItems": 1,
                     "items": {
                         "type": "object",
-                        "description": "Each object here is an indiviual coloring, which will populate the sidebar dropdown in auspice",
+                        "description": "Each object here is an individual coloring, which will populate the sidebar dropdown in auspice",
                         "required": ["key", "type"],
                         "properties": {
                             "key": {
@@ -187,6 +187,33 @@
                                         {"type": "string", "description": "value of trait (should exist on >= 1 nodes)"},
                                         {"type": "string", "description": "color hex value", "pattern": "^#[0-9A-Fa-f]{6}$"}
                                     ]
+                                }
+                            },
+                            "legend": {
+                                "description": "Specify the entries displayed in the legend. This can be used to restrict the entries in the legend for display without otherwise affecting the data viz",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": ["value"],
+                                    "properties": {
+                                        "value": {
+                                            "description": "value to associate with this legend entry. Used to determine colour. For non-continuous scales this also determines the matching between legend items and data.",
+                                            "type": ["string", "number"],
+                                            "$comment": "Continuous scales must use a numeric value. Other scales can use either."
+                                        },
+                                        "display": {
+                                            "description": "Label to display in the legend. Optional - `value` will be used if this is not provided.",
+                                            "type": ["string", "number"]
+                                        },
+                                        "bounds": {
+                                            "description": "(for continuous scales only) provide the lower & upper bounds to match data to this legend entry. Bounds from different legend entries must not overlap. Matching is (a, b] - exclusive of the lower bound, inclusive of the upper.",
+                                            "type": "array",
+                                            "items": [
+                                                {"type": "number", "description": "lower bound"},
+                                                {"type": "number", "description": "upper bound"}
+                                            ]
+                                        }
+                                    }
                                 }
                             }
                         }
