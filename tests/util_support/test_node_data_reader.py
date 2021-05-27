@@ -60,7 +60,7 @@ class TestNodeDataFile:
             "file1.json",
             """
             {
-                "nodes": {},
+                "nodes": {"node_name": "some_value"},
                 "a": {}
             }
             """,
@@ -69,7 +69,7 @@ class TestNodeDataFile:
             "file2.json",
             """
             {
-                "nodes": {},
+                "nodes": {"node_name": "some_other_value"},
                 "a": "nah"
             }
             """,

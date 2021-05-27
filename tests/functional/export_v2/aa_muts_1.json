@@ -1,0 +1,33 @@
+{
+  "annotations": {
+    "gene1": {
+      "end": 150,
+      "start": 50,
+      "strand": "+"
+    },
+    "gene2": {
+      "end": 300,
+      "start": 200,
+      "strand": "+"
+    },
+    "nuc": {
+      "end": 500,
+      "start": 1,
+      "strand": "+"
+    }
+  },
+  "nodes": {
+    "internalBC": {
+      "aa_muts": {
+        "gene1": ["S10G", "P20S"],
+        "gene2": []
+      }
+    },
+    "internalDEF": {
+      "aa_muts": {
+        "gene1": ["P20S"],
+        "gene2": []
+      }
+    }
+  }
+}
