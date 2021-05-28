@@ -217,18 +217,17 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map,
 
     Returns
     -------
-    int or float :
-        distance between node sequences based on the given map where the
-        returned type matches the type of the default value
+    float :
+        distance between node sequences based on the given map
 
     >>> node_a_sequences = {"gene": "ACTG"}
     >>> node_b_sequences = {"gene": "ACGG"}
     >>> distance_map = {"default": 0, "map": {}}
     >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
-    0
+    0.0
     >>> distance_map = {"default": 1, "map": {}}
     >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
-    1
+    1.0
     >>> distance_map = {"default": 0.0, "map": {"gene": {3: 1.0}}}
     >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
     0.0
@@ -253,13 +252,13 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map,
     >>> node_b_sequences = {"gene": "A--G"}
     >>> distance_map = {"default": 1, "map": {}}
     >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
-    1
+    1.0
 
     Use the maximum weight of all sites affected by an indel with a site-specific distance map.
 
     >>> distance_map = {"default": 0, "map": {"gene": {1: 1, 2: 2}}}
     >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
-    2
+    2.0
 
     Use the maximum weight of all mutations at all sites affected by an indel with a mutation-specific distance map.
 
@@ -279,7 +278,7 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map,
     ...     }
     ... }
     >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
-    3
+    3.0
 
     Use the maximum weight of gaps at all sites affected by an indel with a mutation-specific distance map.
 
@@ -299,7 +298,7 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map,
     ...     }
     ... }
     >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
-    2
+    2.0
 
     If the default value is greater than any of the site-specific mismatches and
     the specific mismatch does not have a weighted defined, use the default
@@ -321,7 +320,7 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map,
     ...     }
     ... }
     >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
-    4
+    4.0
 
     Count mismatches adjacent to indel events.
 
@@ -329,7 +328,7 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map,
     >>> node_b_sequences = {"gene": "A--CCA"}
     >>> distance_map = {"default": 1, "map": {}}
     >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
-    3
+    3.0
 
     Ignore specific characters defined in the distance map.
 
@@ -337,13 +336,13 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map,
     >>> node_b_sequences = {"gene": "A--GN"}
     >>> distance_map = {"default": 1, "ignored_characters":["-"], "map": {}}
     >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
-    1
+    1.0
     >>> distance_map = {"default": 1, "ignored_characters":["-", "N"], "map": {}}
     >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
-    0
+    0.0
 
     """
-    distance_type = type(distance_map["default"])
+    distance_type = float
     distance = distance_type(0)
     ignored_characters = distance_map.get("ignored_characters",[])
 
