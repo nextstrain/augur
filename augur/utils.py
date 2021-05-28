@@ -13,6 +13,8 @@ from pkg_resources import resource_stream
 from io import TextIOWrapper
 from .__version__ import __version__
 
+from augur.io import open_file
+
 from augur.util_support.color_parser import ColorParser
 from augur.util_support.date_disambiguator import DateDisambiguator
 from augur.util_support.metadata_file import MetadataFile
@@ -23,19 +25,6 @@ from augur.util_support.shell_command_runner import ShellCommandRunner
 class AugurException(Exception):
     pass
 
-
-@contextmanager
-def open_file(fname, mode):
-    """Open a file using either gzip.open() or open() depending on file name. Semantics identical to open()"""
-    if fname.endswith('.gz'):
-        if "t" not in mode:
-            # For interoperability, gzip needs to open files in "text" mode
-            mode = mode + "t"
-        with gzip.open(fname, mode, encoding='utf-8') as fh:
-            yield fh
-    else:
-        with open(fname, mode, encoding='utf-8') as fh:
-            yield fh
 
 def is_vcf(fname):
     """Convenience method to check if a file is a vcf file.
@@ -713,7 +702,7 @@ def read_strains(*files, comment_char="#"):
     """
     strains = set()
     for input_file in files:
-        with open(input_file, 'r', encoding='utf-8') as ifile:
+        with open_file(input_file, 'r') as ifile:
             for line in ifile:
                 # Allow comments anywhere in a given line.
                 strain_name = line.split(comment_char)[0].strip()
