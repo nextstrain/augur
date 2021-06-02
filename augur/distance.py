@@ -35,19 +35,35 @@ calculations, limiting the computationally complexity of the comparisons.
 Distance maps
 =============
 
-Distance maps are defined in JSON format with two required top-level keys. The
-`default` key specifies the numeric value (integer or float) to assign to all
-mismatches by default. The `map` key specifies a dictionary of weights to use
-for distance calculations. These weights are indexed hierarchically by gene name
-and one-based gene coordinate and are assigned in either a sequence-independent
-or sequence-dependent manner. The simplest possible distance map calculates
-Hamming distance between sequences without any site-specific weights, as shown
-below::
+Distance maps are defined in JSON format with two required top-level keys.
+The `default` key specifies the numeric (floating point) value to assign to all mismatches by default.
+The `map` key specifies a dictionary of weights to use for distance calculations.
+These weights are indexed hierarchically by gene name and one-based gene coordinate and are assigned in either a sequence-independent or sequence-dependent manner.
+The simplest possible distance map calculates Hamming distance between sequences without any site-specific weights, as shown below::
 
     {
         "name": "Hamming distance",
         "default": 1,
         "map": {}
+    }
+
+By default, distances are floating point values whose precision can be controlled with the `precision` key that defines the number of decimal places to retain for each distance.
+The following example shows how to specify a precision of two decimal places in the final output.::
+
+    {
+        "name": "Hamming distance",
+        "default": 1,
+        "map": {},
+        "precision": 2
+    }
+
+Distances can be reported as integer values by specifying an `output_type` as `integer` or `int` as follows.::
+
+    {
+        "name": "Hamming distance",
+        "default": 1,
+        "map": {},
+        "output_type": "integer"
     }
 
 Sequence-independent distances are defined by gene and position using a numeric
@@ -231,9 +247,23 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map,
     >>> distance_map = {"default": 0.0, "map": {"gene": {3: 1.0}}}
     >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
     0.0
-    >>> distance_map = {"default": 0.0, "map": {"gene": {2: 0.5, 3: 1.0}}}
+    >>> distance_map = {"default": 0.0, "map": {"gene": {2: 3.14159, 3: 1.0}}}
     >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
-    0.5
+    3.14159
+    >>> distance_map = {"default": 0.0, "precision": 2, "map": {"gene": {2: 3.14159, 3: 1.0}}}
+    >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
+    3.14
+    >>> distance_map = {"default": 0.0, "output_type": "integer", "map": {"gene": {2: 3.14159, 3: 1.0}}}
+    >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
+    3
+    >>> distance_map = {"default": 0.0, "output_type": "int", "map": {"gene": {2: 3.14159, 3: 1.0}}}
+    >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
+    3
+    >>> distance_map = {"default": 0.0, "output_type": "unsupported", "map": {"gene": {2: 3.14159, 3: 1.0}}}
+    >>> get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map)
+    Traceback (most recent call last):
+        ...
+    ValueError: Unsupported output type of 'unsupported' provided in the distance map
 
     For site- and sequence-specific maps, the order of the input sequences
     matters; the first sequence is treated as the ancestral sequence while the
@@ -342,9 +372,10 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map,
     0.0
 
     """
-    distance_type = float
-    distance = distance_type(0)
-    ignored_characters = distance_map.get("ignored_characters",[])
+    distance = 0.0
+    ignored_characters = distance_map.get("ignored_characters", [])
+    output_type = distance_map.get("output_type", "float")
+    precision = distance_map.get("precision")
 
     for gene in node_a_sequences:
         gene_length = len(node_a_sequences[gene])
@@ -415,7 +446,15 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map,
             # Aggregate the distances for all sites in the current mismatch.
             distance += aggregate_function(mismatch_distances)
 
-    return distance_type(np.round(distance, 2))
+    if output_type in ("integer", "int"):
+        return int(distance)
+    elif output_type != "float":
+        raise ValueError(f"Unsupported output type of '{output_type}' provided in the distance map")
+
+    if precision is not None:
+        distance = round(distance, precision)
+
+    return distance
 
 
 def get_distances_to_root(tree, sequences_by_node_and_gene, distance_map):
