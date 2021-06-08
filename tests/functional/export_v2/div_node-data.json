@@ -1,0 +1,31 @@
+{
+  "nodes": {
+    "ROOT": {
+      "mutation_length": 0
+    },
+    "tipA": {
+      "mutation_length": 1
+    },
+    "internalBC": {
+      "mutation_length": 2
+    },
+    "tipB": {
+      "mutation_length": 1
+    },
+    "tipC": {
+      "mutation_length": 1
+    },
+    "internalDEF": {
+      "mutation_length": 5
+    },
+    "tipD": {
+      "mutation_length": 3
+    },
+    "tipE": {
+      "mutation_length": 4
+    },
+    "tipF": {
+      "mutation_length": 1
+    }
+  }
+} 
