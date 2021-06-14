@@ -34,6 +34,48 @@
                         "description": "Defines how the color scale should be constructed",
                         "type": "string",
                         "enum": ["continuous", "ordinal", "categorical", "boolean"]
+                    },
+                    "scale": {
+                        "description": "Provided mapping between trait values & hex values",
+                        "$comment": "NOTE: if supplied here, we will not use information supplied to `augur export` via `--colors` for this coloring.",
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": [
+                                {
+                                    "type": ["string", "number"],
+                                    "description": "For categorical/ordinal scales, this is the (string) value of the trait to associate with the colour. For continuous scales this is the (numeric) value to associate to with the colour, and interpolation will be used to span the domain"
+                                },
+                                {"type": "string", "description": "color hex value", "pattern": "^#[0-9A-Fa-f]{6}$"}
+                            ]
+                        }
+                    },
+                    "legend": {
+                        "description": "Specify the entries displayed in the legend. This can be used to restrict the entries in the legend for display without otherwise affecting the data viz",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["value"],
+                            "properties": {
+                                "value": {
+                                    "description": "value to associate with this legend entry. Used to determine colour. For non-continuous scales this also determines the matching between legend items and data.",
+                                    "type": ["string", "number"],
+                                    "$comment": "Continuous scales must use a numeric value. Other scales can use either."
+                                },
+                                "display": {
+                                    "description": "Label to display in the legend. Optional - `value` will be used if this is not provided.",
+                                    "type": ["string", "number"]
+                                },
+                                "bounds": {
+                                    "description": "(for continuous scales only) provide the lower & upper bounds to match data to this legend entry. Bounds from different legend entries must not overlap. Matching is (a, b] - exclusive of the lower bound, inclusive of the upper.",
+                                    "type": "array",
+                                    "items": [
+                                        {"type": "number", "description": "lower bound"},
+                                        {"type": "number", "description": "upper bound"}
+                                    ]
+                                }
+                            }
+                        }
                     }
                 }
             }

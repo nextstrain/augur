@@ -1,0 +1,80 @@
+{
+  "meta": {
+    "colorings": [],
+    "filters": [],
+    "panels": [
+      "tree"
+    ],
+    "updated": "2021-06-09"
+  },
+  "tree": {
+    "branch_attrs": {},
+    "children": [
+      {
+        "branch_attrs": {},
+        "name": "tipA",
+        "node_attrs": {
+          "div": 1
+        }
+      },
+      {
+        "branch_attrs": {},
+        "children": [
+          {
+            "branch_attrs": {},
+            "name": "tipB",
+            "node_attrs": {
+              "div": 3
+            }
+          },
+          {
+            "branch_attrs": {},
+            "name": "tipC",
+            "node_attrs": {
+              "div": 3
+            }
+          }
+        ],
+        "name": "internalBC",
+        "node_attrs": {
+          "div": 2
+        }
+      },
+      {
+        "branch_attrs": {},
+        "children": [
+          {
+            "branch_attrs": {},
+            "name": "tipD",
+            "node_attrs": {
+              "div": 8
+            }
+          },
+          {
+            "branch_attrs": {},
+            "name": "tipE",
+            "node_attrs": {
+              "div": 9
+            }
+          },
+          {
+            "branch_attrs": {},
+            "name": "tipF",
+            "node_attrs": {
+              "div": 6
+            }
+          }
+        ],
+        "name": "internalDEF",
+        "node_attrs": {
+          "div": 5
+        }
+      }
+    ],
+    "name": "ROOT",
+    "node_attrs": {
+      "div": 0
+    }
+  },
+  "version": "v2"
+}
