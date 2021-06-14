@@ -126,7 +126,7 @@ def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_a
     return T
 
 
-def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nthreads=1, tree_builder_args=""):
+def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nthreads=1, tree_builder_args="-ninit 2 -n 2 -me 0.05"):
     '''
     build tree using IQ-Tree with parameters "-fast"
     arguments:
@@ -173,9 +173,6 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     # Refer to the handling of -fast in utils/tools.cpp:
     #   https://github.com/Cibiv/IQ-TREE/blob/44753aba/utils/tools.cpp#L2926-L2936
     fast_opts = [
-        "-ninit", "2",
-        "-n",     "2",
-        "-me",    "0.05"
     ]
 
     # Use IQ-TREE's auto-scaling of threads when the user has requested more
