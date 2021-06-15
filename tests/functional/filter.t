@@ -3,6 +3,17 @@ Integration tests for augur filter.
   $ pushd "$TESTDIR" > /dev/null
   $ export AUGUR="../../bin/augur"
 
+Filter with subsampling, requesting 1 sequence per group (for a group with 3 distinct values).
+
+  $ ${AUGUR} filter \
+  >  --metadata filter/metadata.tsv \
+  >  --group-by region \
+  >  --sequences-per-group 1 \
+  >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
+  $ wc -l "$TMP/filtered_strains.txt"
+  \s*3 .* (re)
+  $ rm -f "$TMP/filtered_strains.txt"
+
 Filter with subsampling, requesting no more than 10 sequences.
 With 10 groups to subsample from, this should produce one sequence per group.
 

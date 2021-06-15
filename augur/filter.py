@@ -376,6 +376,14 @@ def run(args):
     if args.subsample_seed:
         random.seed(args.subsample_seed)
     num_excluded_subsamp = 0
+
+    # Disable probabilistic sampling when user's request a specific number of
+    # sequences per group. In this case, users expect deterministic behavior and
+    # probabilistic behavior is surprising.
+    probabilistic_sampling = args.probabilistic_sampling
+    if args.sequences_per_group:
+        probabilistic_sampling = False
+
     if args.subsample_max_sequences or (args.group_by and args.sequences_per_group):
         
         #set groups to group_by values
@@ -448,7 +456,7 @@ def run(args):
                         for sequences_in_group in seq_names_by_group.values()
                     ]
 
-                    if args.probabilistic_sampling:
+                    if probabilistic_sampling:
                         spg = _calculate_fractional_sequences_per_group(
                             args.subsample_max_sequences,
                             length_of_sequences_per_group
@@ -463,7 +471,7 @@ def run(args):
                     sys.exit(1)
                 print("sampling at {} per group.".format(spg))
 
-            if args.probabilistic_sampling:
+            if probabilistic_sampling:
                 random_generator = np.random.default_rng()
 
             # subsample each groups, either by taking the spg highest priority strains or
@@ -480,7 +488,7 @@ def run(args):
                 subsampling_attempts += 1
 
                 for group, sequences_in_group in seq_names_by_group.items():
-                    if args.probabilistic_sampling:
+                    if probabilistic_sampling:
                         tmp_spg = random_generator.poisson(spg)
                     else:
                         tmp_spg = spg
