@@ -211,9 +211,10 @@ This should produce no results because the intersection of metadata and sequence
   $ ${AUGUR} filter \
   >  --sequences "$TMP/dummy.fasta" \
   >  --metadata filter/metadata.tsv \
+  >  --min-length 4 \
   >  --max-date 2020-01-30 \
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
-  WARNING: A sequence index was not provided, so we are generating one. Generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
+  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   ERROR: All samples have been dropped! Check filter rules and metadata file format.
   [1]
   $ wc -l "$TMP/filtered_strains.txt"
@@ -228,7 +229,6 @@ Repeat with sequence and strain outputs. We should get the same results.
   >  --max-date 2020-01-30 \
   >  --output-strains "$TMP/filtered_strains.txt" \
   >  --output-sequences "$TMP/filtered.fasta" > /dev/null
-  WARNING: A sequence index was not provided, so we are generating one. Generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   ERROR: All samples have been dropped! Check filter rules and metadata file format.
   [1]
   $ wc -l "$TMP/filtered_strains.txt"
