@@ -137,7 +137,12 @@ disable=print-statement,
         missing-docstring,
         bad-whitespace,
         line-too-long,
-        invalid-name
+        invalid-name,
+        wrong-import-order,
+        multiple-imports,
+        no-else-return,
+        unscriptable-object,
+        relative-beyond-top-level
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
