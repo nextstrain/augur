@@ -165,18 +165,8 @@ class TestFilter:
                                           ("SEQ_2","colorado","bad"),
                                           ("SEQ_3","nevada","good")))
         metadata, columns = read_metadata(meta_fn, as_data_frame=True)
-        filtered = augur.filter.filter_by_query(set(sequences.keys()), metadata, 'quality=="good"')
+        filtered = augur.filter.filter_by_query(metadata, 'quality=="good"')
         assert sorted(filtered) == ["SEQ_1", "SEQ_3"]
-
-    def test_filter_on_query_subset(self, tmpdir):
-        """Test filtering on query works when given fewer strains than metadata"""
-        meta_fn = write_metadata(tmpdir, (("strain","location","quality"),
-                                          ("SEQ_1","colorado","good"),
-                                          ("SEQ_2","colorado","bad"),
-                                          ("SEQ_3","nevada","good")))
-        metadata, columns = read_metadata(meta_fn, as_data_frame=True)
-        filtered = augur.filter.filter_by_query({"SEQ_2"}, metadata, 'quality=="bad" & location=="colorado"')
-        assert sorted(filtered) == ["SEQ_2"]
 
     def test_filter_run_with_query(self, tmpdir, fasta_fn, argparser):
         """Test that filter --query works as expected"""
