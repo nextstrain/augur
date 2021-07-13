@@ -98,15 +98,15 @@ def filter_by_exclude_all(metadata):
     return set()
 
 
-def filter_by_exclude(metadata, excluded_strains):
+def filter_by_exclude(metadata, exclude_files):
     """Exclude the given set of strains from the given metadata.
 
     Parameters
     ----------
     metadata : pandas.DataFrame
         Metadata indexed by strain name
-    excluded_strains : set[str]
-        Set of strain names to exclude from the given metadata
+    exclude_files : list[str]
+        List of filenames with strain names to exclude from the given metadata
 
     Returns
     -------
@@ -114,9 +114,13 @@ def filter_by_exclude(metadata, excluded_strains):
         Strains that pass the filter
 
     >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
-    >>> filter_by_exclude(metadata, {"strain1"})
+    >>> with NamedTemporaryFile(delete=False) as exclude_file:
+    ...     characters_written = exclude_file.write(b'strain1')
+    >>> filter_by_exclude(metadata, [exclude_file.name])
     {'strain2'}
+    >>> os.unlink(exclude_file.name)
     """
+    excluded_strains = read_strains(*exclude_files)
     return set(metadata.index.values) - excluded_strains
 
 
@@ -180,15 +184,25 @@ def filter_by_exclude_where(metadata, exclude_where):
     >>> filter_by_exclude_where(metadata, "region=europe")
     {'strain1'}
 
+    If the column referenced in the given query does not exist, skip the filter.
+
+    >>> sorted(filter_by_exclude_where(metadata, "missing_column=value"))
+    ['strain1', 'strain2']
+
     """
     column, op, value = parse_filter_query(exclude_where)
-    excluded = op(metadata[column].astype(str).str.lower(), value.lower())
+    if column in metadata.columns:
+        excluded = op(metadata[column].astype(str).str.lower(), value.lower())
 
-    # Negate the boolean index of excluded strains to get the index of strains
-    # that passed the filter.
-    included = ~excluded
-    return set(metadata[included].index.values)
+        # Negate the boolean index of excluded strains to get the index of strains
+        # that passed the filter.
+        included = ~excluded
+        filtered = set(metadata[included].index.values)
+    else:
+        # Skip the filter, if the requested column does not exist.
+        filtered = set(metadata.index.values)
 
+    return filtered
 
 def filter_by_query(metadata, query):
     """Filter metadata in the given pandas DataFrame with a query string and return
@@ -240,11 +254,21 @@ def filter_by_ambiguous_date(metadata, date_column="date", ambiguity="any"):
     >>> sorted(filter_by_ambiguous_date(metadata, ambiguity="month"))
     ['strain1', 'strain2']
 
+    If the requested date column does not exist, we quietly skip this filter.
+
+    >>> sorted(filter_by_ambiguous_date(metadata, date_column="missing_column"))
+    ['strain1', 'strain2']
+
     """
-    date_is_ambiguous = metadata[date_column].apply(
-        lambda date: is_date_ambiguous(date, ambiguity)
-    )
-    return set(metadata[~date_is_ambiguous].index.values)
+    if date_column in metadata.columns:
+        date_is_ambiguous = metadata[date_column].apply(
+            lambda date: is_date_ambiguous(date, ambiguity)
+        )
+        filtered = set(metadata[~date_is_ambiguous].index.values)
+    else:
+        filtered = set(metadata.index.values)
+
+    return filtered
 
 
 def filter_by_date(metadata, date_column="date", min_date=None, max_date=None):
@@ -278,12 +302,20 @@ def filter_by_date(metadata, date_column="date", min_date=None, max_date=None):
     >>> sorted(filter_by_date(metadata))
     ['strain1', 'strain2']
 
+    If the requested date column does not exist, we quietly skip this filter.
+
+    >>> sorted(filter_by_date(metadata, date_column="missing_column", min_date=numeric_date("2020-01-02")))
+    ['strain1', 'strain2']
+
     """
     strains = set(metadata.index.values)
-    if not min_date and not max_date:
+
+    # Skip this filter if no valid min/max date is given or the date column does
+    # not exist.
+    if (not min_date and not max_date) or date_column not in metadata.columns:
         return strains
 
-    dates = get_numerical_dates(metadata, fmt="%Y-%m-%d")
+    dates = get_numerical_dates(metadata, date_col=date_column, fmt="%Y-%m-%d")
     filtered = {strain for strain in strains if dates[strain] is not None}
 
     if min_date:
@@ -295,10 +327,39 @@ def filter_by_date(metadata, date_column="date", min_date=None, max_date=None):
     return filtered
 
 
+def filter_by_sequence_index(metadata, sequence_index):
+    """Filter metadata by presence of corresponding entries in a given sequence
+    index. This filter effectively intersects the strain ids in the metadata and
+    sequence index.
+
+    Parameters
+    ----------
+    metadata : pandas.DataFrame
+        Metadata indexed by strain name
+    sequence_index : pandas.DataFrame
+        Sequence index
+
+    Returns
+    -------
+    set[str]:
+        Strains that pass the filter
+
+    >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "ACGT": 28000}]).set_index("strain")
+    >>> filter_by_sequence_index(metadata, sequence_index)
+    {'strain1'}
+
+    """
+    metadata_strains = set(metadata.index.values)
+    sequence_index_strains = set(sequence_index.index.values)
+
+    return metadata_strains & sequence_index_strains
+
+
 def filter_by_sequence_length(metadata, sequence_index, min_length=0):
     """Filter metadata by sequence length from a given sequence index.
 
-     Parameters
+    Parameters
     ----------
     metadata : pandas.DataFrame
         Metadata indexed by strain name
@@ -313,13 +374,13 @@ def filter_by_sequence_length(metadata, sequence_index, min_length=0):
         Strains that pass the filter
 
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "ACGT": 28000}, {"strain": "strain2", "ACGT": 26000}]).set_index("strain")
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
     >>> filter_by_sequence_length(metadata, sequence_index, min_length=27000)
     {'strain1'}
 
     It is possible for the sequence index to be missing strains present in the metadata.
 
-    >>> sequence_index = pd.DataFrame([{"strain": "strain3", "ACGT": 28000}, {"strain": "strain2", "ACGT": 26000}]).set_index("strain")
+    >>> sequence_index = pd.DataFrame([{"strain": "strain3", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
     >>> filter_by_sequence_length(metadata, sequence_index, min_length=27000)
     set()
 
@@ -328,6 +389,7 @@ def filter_by_sequence_length(metadata, sequence_index, min_length=0):
     filtered_sequence_index = sequence_index.loc[
         sequence_index.index.intersection(strains)
     ]
+    filtered_sequence_index["ACGT"] = filtered_sequence_index.loc[:, ["A", "C", "G", "T"]].sum(axis=1)
 
     return set(filtered_sequence_index[filtered_sequence_index["ACGT"] >= min_length].index.values)
 
@@ -335,7 +397,7 @@ def filter_by_sequence_length(metadata, sequence_index, min_length=0):
 def filter_by_non_nucleotide(metadata, sequence_index):
     """Filter metadata for strains with invalid nucleotide content.
 
-     Parameters
+    Parameters
     ----------
     metadata : pandas.DataFrame
         Metadata indexed by strain name
@@ -360,6 +422,33 @@ def filter_by_non_nucleotide(metadata, sequence_index):
     no_invalid_nucleotides = filtered_sequence_index["invalid_nucleotides"] == 0
 
     return set(filtered_sequence_index[no_invalid_nucleotides].index.values)
+
+
+def include(metadata, include_files):
+    """Include strains in the given list of text files from the given metadata.
+
+    Parameters
+    ----------
+    metadata : pandas.DataFrame
+        Metadata indexed by strain name
+    include_files : list[str]
+        List of filenames with strain names to include from the given metadata
+
+    Returns
+    -------
+    set[str]:
+        Strains that pass the filter
+
+    >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
+    >>> with NamedTemporaryFile(delete=False) as include_file:
+    ...     characters_written = include_file.write(b'strain1')
+    >>> include(metadata, [include_file.name])
+    {'strain1'}
+    >>> os.unlink(include_file.name)
+
+    """
+    included_strains = read_strains(*include_files)
+    return set(metadata.index.values) & included_strains
 
 
 def include_by_query(metadata, include_where):
@@ -390,10 +479,323 @@ def include_by_query(metadata, include_where):
     >>> include_by_query(metadata, "region=europe")
     {'strain2'}
 
+    If the column referenced in the given query does not exist, skip the filter.
+
+    >>> include_by_query(metadata, "missing_column=value")
+    set()
+
     """
     column, op, value = parse_filter_query(include_where)
-    included = op(metadata[column].astype(str).str.lower(), value.lower())
-    return set(metadata[included].index.values)
+
+    if column in metadata.columns:
+        included_index = op(metadata[column].astype(str).str.lower(), value.lower())
+        included = set(metadata[included_index].index.values)
+    else:
+        # Skip the inclusion filter if the requested column does not exist.
+        included = set()
+
+    return included
+
+
+def construct_filters(args, sequence_index):
+    """Construct lists of filters and inclusion criteria based on user-provided arguments.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Command line arguments provided by the user.
+    sequence_index : pandas.DataFrame
+        Sequence index for the provided arguments.
+
+    Returns
+    -------
+    list :
+        A list of 2-element tuples with a callable to use as a filter and a
+        dictionary of kwargs to pass to the callable.
+    list :
+        A list of 2-element tuples with a callable and dictionary of kwargs that
+        determines whether to force include strains in the final output.
+
+    """
+    exclude_by = []
+    include_by = []
+
+    # Force include sequences specified in file(s).
+    if args.include:
+        # Collect the union of all given strains to include.
+        include_by.append((
+            include,
+            {
+                "include_files": args.include,
+            }
+        ))
+
+    # Add sequences with particular metadata attributes.
+    if args.include_where:
+        for include_where in args.include_where:
+            include_by.append((
+                include_by_query,
+                {
+                    "include_where": include_where,
+                }
+            ))
+
+    # Exclude all strains by default.
+    if args.exclude_all:
+        exclude_by.append((filter_by_exclude_all, {}))
+
+        # Stop processing all other filters, if excluding all strains. This
+        # filter is used in combination with include criteria to skip all
+        # filtering logic.
+        return exclude_by, include_by
+
+    # Remove strains explicitly excluded by name.
+    if args.exclude:
+        try:
+            exclude_by.append((
+                filter_by_exclude,
+                {
+                    "exclude_files": args.exclude,
+                }
+            ))
+        except FileNotFoundError as e:
+            print("ERROR: Could not open file of excluded strains '%s'" % args.exclude, file=sys.stderr)
+            sys.exit(1)
+
+    # Exclude strain my metadata field like 'host=camel'.
+    if args.exclude_where:
+        for exclude_where in args.exclude_where:
+            exclude_by.append((
+                filter_by_exclude_where,
+                {"exclude_where": exclude_where}
+            ))
+
+    # Exclude strains by metadata, using pandas querying.
+    if args.query:
+        exclude_by.append((
+            filter_by_query,
+            {"query": args.query}
+        ))
+
+    # Filter by ambiguous dates.
+    if args.exclude_ambiguous_dates_by:
+        exclude_by.append((
+            filter_by_ambiguous_date,
+            {
+                "date_column": "date",
+                "ambiguity": args.exclude_ambiguous_dates_by,
+            }
+        ))
+
+    # Filter by date.
+    if args.min_date or args.max_date:
+        exclude_by.append((
+            filter_by_date,
+            {
+                "date_column": "date",
+                "min_date": args.min_date,
+                "max_date": args.max_date,
+            }
+        ))
+
+    # Filter by sequence index.
+    if sequence_index is not None:
+        exclude_by.append((
+            filter_by_sequence_index,
+            {
+                "sequence_index": sequence_index,
+            },
+        ))
+
+    # Filter by sequence length.
+    if args.min_length:
+        # Skip VCF files and warn the user that the min length filter does not
+        # make sense for VCFs.
+        is_vcf = args.sequences and any(
+            args.sequences.lower().endswith(x)
+            for x in ['.vcf', '.vcf.gz']
+        )
+
+        if is_vcf: #doesn't make sense for VCF, ignore.
+            print("WARNING: Cannot use min_length for VCF files. Ignoring...")
+        else:
+            exclude_by.append((
+                filter_by_sequence_length,
+                {
+                    "sequence_index": sequence_index,
+                    "min_length": args.min_length,
+                }
+            ))
+
+    # Exclude sequences with non-nucleotide characters.
+    if args.non_nucleotide:
+        exclude_by.append((
+            filter_by_non_nucleotide,
+            {
+                "sequence_index": sequence_index,
+            }
+        ))
+
+    return exclude_by, include_by
+
+
+def filter_kwargs_to_str(kwargs):
+    """Convert a dictionary of kwargs to a human-readable string representation for reporting.
+
+    This function excludes data types from arguments like pandas DataFrames and
+    also converts floating point numbers to a fixed precision for better
+    readability and reproducibility.
+
+    Parameters
+    ----------
+    kwargs : dict
+        Dictionary of kwargs passed to a given filter function.
+
+    Returns
+    -------
+    str :
+        String representation of the kwargs for reporting.
+
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "ACGT": 28000}, {"strain": "strain2", "ACGT": 26000}, {"strain": "strain3", "ACGT": 5000}]).set_index("strain")
+    >>> exclude_by = [(filter_by_sequence_length, {"sequence_index": sequence_index, "min_length": 27000})]
+    >>> filter_kwargs_to_str(exclude_by[0][1])
+    'min_length:27000'
+    >>> exclude_by = [(filter_by_date, {"max_date": numeric_date("2020-04-01"), "min_date": numeric_date("2020-03-01")})]
+    >>> filter_kwargs_to_str(exclude_by[0][1])
+    'max_date:2020.25,min_date:2020.17'
+
+    """
+    # Sort keys prior to processing to guarantee the same output order
+    # regardless of the input order.
+    sorted_keys = sorted(kwargs.keys())
+
+    kwarg_str_list = []
+    for key in sorted_keys:
+        value = kwargs[key]
+
+        # Handle special cases for data types that we want to represent
+        # differently from their defaults or not at all.
+        if isinstance(value, pd.DataFrame):
+            continue
+        elif isinstance(value, float):
+            value = round(value, 2)
+
+        kwarg_str_list.append(f"{key}:{value}")
+
+    return ",".join(kwarg_str_list)
+
+
+def apply_filters(metadata, exclude_by, include_by):
+    """Apply a list of filters to exclude or force-include records from the given
+    metadata and return the strains to keep, to exclude, and to force include.
+
+    Parameters
+    ----------
+    metadata : pandas.DataFrame
+        Metadata to filter
+    exclude_by : list[tuple]
+        A list of 2-element tuples with a callable to filter by in the first
+        index and a dictionary of kwargs to pass to the function in the second
+        index.
+    include_by : list[tuple]
+        A list of 2-element tuples in the same format as the ``exclude_by``
+        argument.
+
+    Returns
+    -------
+    set :
+        Strains to keep (those that passed all filters)
+    list[dict] :
+        Strains to exclude along with the function that filtered them and the arguments used to run the function.
+    list[dict] :
+        Strains to force-include along with the function that filtered them and the arguments used to run the function.
+
+    For example, filter data by minimum date, but force the include of strains
+    from Africa.
+
+    >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-10-02"}, {"region": "North America", "date": "2020-01-01"}], index=["strain1", "strain2", "strain3"])
+    >>> exclude_by = [(filter_by_date, {"min_date": numeric_date("2020-04-01")})]
+    >>> include_by = [(include_by_query, {"include_where": "region=Africa"})]
+    >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
+    >>> strains_to_keep
+    {'strain2'}
+    >>> sorted(strains_to_exclude, key=lambda record: record["strain"])
+    [{'strain': 'strain1', 'filter': 'filter_by_date', 'kwargs': 'min_date:2020.25'}, {'strain': 'strain3', 'filter': 'filter_by_date', 'kwargs': 'min_date:2020.25'}]
+    >>> strains_to_include
+    [{'strain': 'strain1', 'filter': 'include_by_query', 'kwargs': 'include_where:region=Africa'}]
+
+    We also want to filter by characteristics of the sequence data that we've
+    annotated in a sequence index.
+
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}, {"strain": "strain3", "A": 1250, "C": 1250, "G": 1250, "T": 1250}]).set_index("strain")
+    >>> exclude_by = [(filter_by_sequence_length, {"sequence_index": sequence_index, "min_length": 27000})]
+    >>> include_by = [(include_by_query, {"include_where": "region=Europe"})]
+    >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
+    >>> strains_to_keep
+    {'strain1'}
+    >>> sorted(strains_to_exclude, key=lambda record: record["strain"])
+    [{'strain': 'strain2', 'filter': 'filter_by_sequence_length', 'kwargs': 'min_length:27000'}, {'strain': 'strain3', 'filter': 'filter_by_sequence_length', 'kwargs': 'min_length:27000'}]
+    >>> strains_to_include
+    [{'strain': 'strain2', 'filter': 'include_by_query', 'kwargs': 'include_where:region=Europe'}]
+
+    """
+    strains_to_keep = set(metadata.index.values)
+    strains_to_filter = []
+    strains_to_force_include = []
+    distinct_strains_to_force_include = set()
+
+    # Track strains that should be included regardless of filters.
+    for include_function, include_kwargs in include_by:
+        passed = metadata.pipe(
+            include_function,
+            **include_kwargs,
+        )
+        distinct_strains_to_force_include = distinct_strains_to_force_include | passed
+
+        # Track the reason why strains were included.
+        if len(passed) > 0:
+            include_name = include_function.__name__
+            include_kwargs_str = filter_kwargs_to_str(include_kwargs)
+            for strain in passed:
+                strains_to_force_include.append({
+                    "strain": strain,
+                    "filter": include_name,
+                    "kwargs": include_kwargs_str,
+                })
+
+    for filter_function, filter_kwargs in exclude_by:
+        # Use a human-readable name for each filter when reporting why a strain
+        # was excluded.
+        filter_name = filter_function.__name__
+
+        # Apply the current function with its given arguments. Each function
+        # returns a set of strains that passed the corresponding filter.
+        passed = metadata.pipe(
+            filter_function,
+            **filter_kwargs,
+        )
+
+        # Track the strains that failed this filter, so we can explain why later
+        # on and update the list of strains to keep to intersect with the
+        # strains that passed.
+        failed = strains_to_keep - passed
+        strains_to_keep = (strains_to_keep & passed)
+
+        # Track the reason each strain was filtered for downstream reporting.
+        if len(failed) > 0:
+            filter_kwargs_str = filter_kwargs_to_str(filter_kwargs)
+            for strain in failed:
+                strains_to_filter.append({
+                    "strain": strain,
+                    "filter": filter_name,
+                    "kwargs": filter_kwargs_str,
+                })
+
+        # Stop applying filters if no strains remain.
+        if len(strains_to_keep) == 0:
+            break
+
+    return strains_to_keep, strains_to_filter, strains_to_force_include
 
 
 def subsample(metadata,
@@ -625,6 +1027,7 @@ def register_arguments(parser):
     output_group.add_argument('--output', '--output-sequences', '-o', help="filtered sequences in FASTA format")
     output_group.add_argument('--output-metadata', help="metadata for strains that passed filters")
     output_group.add_argument('--output-strains', help="list of strains that passed filters (no header)")
+    output_group.add_argument('--output-log', help="tab-delimited file with one row for each filtered strain and the reason it was filtered")
 
     parser.set_defaults(probabilistic_sampling=True)
 
@@ -689,6 +1092,8 @@ def run(args):
 
     # Read in files
 
+    sequence_index = None
+
     # If VCF, open and get sequence names
     if is_vcf:
         vcf_sequences, _ = read_vcf(args.sequences)
@@ -726,115 +1131,28 @@ def run(args):
             os.unlink(sequence_index_path)
 
         # Calculate summary statistics needed for filtering.
-        sequence_index["ACGT"] = sequence_index.loc[:, ["A", "C", "G", "T"]].sum(axis=1)
         sequence_strains = set(sequence_index.index.values)
     else:
         sequence_strains = None
-
-    if sequence_strains is not None:
-        # Calculate the number of strains that don't exist in either metadata or sequences.
-        num_excluded_by_lack_of_metadata = len(sequence_strains - metadata_strains)
-        num_excluded_by_lack_of_sequences = len(metadata_strains - sequence_strains)
-
-        # Intersect sequence strain names with metadata strains.
-        available_strains = metadata_strains & sequence_strains
-    else:
-        num_excluded_by_lack_of_metadata = None
-        num_excluded_by_lack_of_sequences = None
-
-        # When no sequence data are available, we treat the metadata as the
-        # source of truth.
-        available_strains = metadata_strains
-
-    # Track the strains that are available to select by the filters below, after
-    # accounting for availability of metadata and sequences.
-    seq_keep = available_strains.copy()
 
     #####################################
     #Filtering steps
     #####################################
 
-    # Exclude all strains by default.
-    if args.exclude_all:
-        num_excluded_by_all = len(available_strains)
-        seq_keep = filter_by_exclude_all(metadata)
+    exclude_by, include_by = construct_filters(
+        args,
+        sequence_index,
+    )
+    seq_keep, sequences_to_filter, sequences_to_include = apply_filters(
+        metadata,
+        exclude_by,
+        include_by,
+    )
 
-    # remove strains explicitly excluded by name
-    # read list of strains to exclude from file and prune seq_keep
-    num_excluded_by_name = 0
-    if args.exclude:
-        try:
-            to_exclude = read_strains(*args.exclude)
-            filtered = seq_keep & filter_by_exclude(metadata, to_exclude)
-            num_excluded_by_name = len(seq_keep - filtered)
-            seq_keep = filtered
-        except FileNotFoundError as e:
-            print("ERROR: Could not open file of excluded strains '%s'" % args.exclude, file=sys.stderr)
-            sys.exit(1)
-
-    # exclude strain my metadata field like 'host=camel'
-    # match using lowercase
-    num_excluded_by_metadata = {}
-    if args.exclude_where:
-        for ex in args.exclude_where:
-            try:
-                filtered = seq_keep & filter_by_exclude_where(metadata, ex)
-                num_excluded_by_metadata[ex] = len(seq_keep - filtered)
-                seq_keep = filtered
-            except (ValueError,TypeError):
-                # TODO: this validation should happen at the argparse level and
-                # throw an error instead of trying to continue filtering with an
-                # invalid filter query.
-                print("invalid --exclude-where clause \"%s\", should be of from property=value or property!=value"%ex)
-
-    # exclude strains by metadata, using Pandas querying
-    num_excluded_by_query = 0
-    if args.query:
-        filtered = seq_keep & filter_by_query(metadata, args.query)
-        num_excluded_by_query = len(seq_keep - filtered)
-        seq_keep = filtered
-
-    # filter by ambiguous dates
-    num_excluded_by_ambiguous_date = 0
-    if args.exclude_ambiguous_dates_by and 'date' in meta_columns:
-        filtered = seq_keep & filter_by_ambiguous_date(
-            metadata,
-            ambiguity=args.exclude_ambiguous_dates_by
-        )
-        num_excluded_by_ambiguous_date = len(seq_keep - filtered)
-        seq_keep = filtered
-
-    # filter by date
-    num_excluded_by_date = 0
-    if (args.min_date or args.max_date) and 'date' in meta_columns:
-        filtered = seq_keep & filter_by_date(
-            metadata,
-            min_date=args.min_date,
-            max_date=args.max_date,
-        )
-        num_excluded_by_date = len(seq_keep - filtered)
-        seq_keep = filtered
-
-    # filter by sequence length
-    num_excluded_by_length = 0
-    if args.min_length:
-        if is_vcf: #doesn't make sense for VCF, ignore.
-            print("WARNING: Cannot use min_length for VCF files. Ignoring...")
-        else:
-            filtered = seq_keep & filter_by_sequence_length(
-                metadata,
-                sequence_index,
-                min_length=args.min_length
-            )
-            num_excluded_by_length = len(seq_keep - filtered)
-            seq_keep = filtered
-
-    # exclude sequences with non-nucleotide characters
-    num_excluded_by_nuc = 0
-    if args.non_nucleotide:
-        filtered = seq_keep & filter_by_non_nucleotide(metadata, sequence_index)
-        num_excluded_by_nuc = len(seq_keep - filtered)
-        seq_keep = filtered
+    # Convert lists of filtered and included records to data frames to simplify
+    # reporting.
+    sequences_to_filter = pd.DataFrame(sequences_to_filter)
+    sequences_to_include = pd.DataFrame(sequences_to_include)
 
     num_excluded_subsamp = 0
     if args.subsample_max_sequences or (args.group_by and args.sequences_per_group):
@@ -851,40 +1169,10 @@ def run(args):
         num_excluded_subsamp = len(seq_keep) - len(seq_subsample)
         seq_keep = seq_subsample
 
-    # force include sequences specified in file.
-    # Note that this might re-add previously excluded sequences
-    # Note that we are also not checking for existing meta data here
-    num_included_by_name = 0
-    if args.include:
-        # Collect the union of all given strains to include.
-        to_include = read_strains(*args.include)
-
-        # Find requested strains that can be included because they have metadata
-        # and sequences.
-        available_to_include = available_strains & to_include
-
-        # Track the number of strains that could and could not be included.
-        num_included_by_name = len(available_to_include)
-        num_not_included_by_name = len(to_include - available_to_include)
-
-        # Union the strains that can be included with the sequences to keep.
-        seq_keep = seq_keep | available_to_include
-
-    # add sequences with particular meta data attributes
-    num_included_by_metadata = 0
-    if args.include_where:
-        to_include = set()
-        for ex in args.include_where:
-            try:
-                to_include |= include_by_query(metadata, ex)
-            except (ValueError,TypeError):
-                # TODO: this validation should happen at the argparse level and
-                # throw an error instead of trying to continue filtering with an
-                # invalid filter query.
-                print("invalid --include-where clause \"%s\", should be of from property=value or property!=value"%ex)
-
-        num_included_by_metadata = len(to_include)
-        seq_keep = seq_keep | to_include
+    # Force inclusion of specific strains after filtering and subsampling.
+    if len(sequences_to_include) > 0:
+        distinct_sequences_to_include = set(sequences_to_include["strain"].values)
+        seq_keep = seq_keep | distinct_sequences_to_include
 
     # Write output starting with sequences, if they've been requested. It is
     # possible for the input sequences and sequence index to be out of sync
@@ -894,7 +1182,7 @@ def run(args):
     if is_vcf:
         if args.output:
             # Get the samples to be deleted, not to keep, for VCF
-            dropped_samps = list(available_strains - seq_keep)
+            dropped_samps = list(sequence_strains - seq_keep)
             write_vcf(args.sequences, args.output, dropped_samps)
     elif args.sequences:
         sequences = read_sequences(args.sequences)
@@ -925,16 +1213,19 @@ def run(args):
                     file=sys.stderr
                 )
 
-            # Update the set of available sequence strains and which of these
-            # strains passed filters. This prevents writing out strain lists or
-            # metadata for strains that have no sequences.
+            # Update the set of available sequence strains.
             sequence_strains = observed_sequence_strains
-            seq_keep = seq_keep & sequence_strains
 
-            # Calculate the number of strains that don't exist in either
-            # metadata or sequences.
-            num_excluded_by_lack_of_metadata = len(sequence_strains - metadata_strains)
-            num_excluded_by_lack_of_sequences = len(metadata_strains - sequence_strains)
+    # Calculate the number of strains that don't exist in either metadata or
+    # sequences.
+    num_excluded_by_lack_of_metadata = 0
+    if sequence_strains:
+        # Update strains to keep based on available sequence data. This prevents
+        # writing out strain lists or metadata for strains that have no
+        # sequences.
+        seq_keep = seq_keep & sequence_strains
+
+        num_excluded_by_lack_of_metadata = len(sequence_strains - metadata_strains)
 
     if args.output_metadata:
         metadata_df = metadata.loc[seq_keep]
@@ -949,14 +1240,32 @@ def run(args):
             for strain in sorted(seq_keep):
                 oh.write(f"{strain}\n")
 
-    # Calculate the number of strains passed and filtered.
-    if sequence_strains is not None:
-        all_strains = metadata_strains | sequence_strains
-    else:
-        all_strains = metadata_strains
+    if args.output_log:
+        # Log the names of strains that were filtered or force-included, so we
+        # can properly account for each strain (e.g., including those that were
+        # initially filtered for one reason and then included again for another
+        # reason).
+        with open_file(args.output_log, "w") as oh:
+            header = True
+            if len(sequences_to_filter) > 0:
+                sequences_to_filter.to_csv(
+                    oh,
+                    sep="\t",
+                    index=False,
+                )
+                header = False
 
+            if len(sequences_to_include) > 0:
+                sequences_to_include.to_csv(
+                    oh,
+                    sep="\t",
+                    header=header,
+                    index=False,
+                )
+
+    # Calculate the number of strains passed and filtered.
     total_strains_passed = len(seq_keep)
-    total_strains_filtered = len(all_strains) - total_strains_passed
+    total_strains_filtered = len(metadata_strains) + num_excluded_by_lack_of_metadata - total_strains_passed
 
     print(f"{total_strains_filtered} strains were dropped during filtering")
 
@@ -966,34 +1275,55 @@ def run(args):
     if num_excluded_by_lack_of_metadata:
         print(f"\t{num_excluded_by_lack_of_metadata} had no metadata")
 
-    if args.exclude_all:
-        print(f"\t{num_excluded_by_all} of these were dropped by `--exclude-all`")
-    if args.exclude:
-        print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
-    if args.exclude_where:
-        for key,val in num_excluded_by_metadata.items():
-            print("\t%i of these were dropped because of '%s'" % (val, key))
-    if args.query:
-        print("\t%i of these were filtered out by the query:\n\t\t\"%s\"" % (num_excluded_by_query, args.query))
-    if args.min_length:
-        print("\t%i of these were dropped because they were shorter than minimum length of %sbp" % (num_excluded_by_length, args.min_length))
-    if args.exclude_ambiguous_dates_by and num_excluded_by_ambiguous_date:
-        print("\t%i of these were dropped because of their ambiguous date in %s" % (num_excluded_by_ambiguous_date, args.exclude_ambiguous_dates_by))
-    if (args.min_date or args.max_date) and 'date' in meta_columns:
-        print("\t%i of these were dropped because of their date (or lack of date)" % (num_excluded_by_date))
-    if args.non_nucleotide:
-        print("\t%i of these were dropped because they had non-nucleotide characters" % (num_excluded_by_nuc))
-    if args.group_by and args.sequences_per_group:
+    if len(sequences_to_filter) > 0:
+        if args.exclude_all:
+            num_excluded_by_all = sequences_to_filter.query("filter == 'filter_by_exclude_all'").shape[0]
+            print(f"\t{num_excluded_by_all} of these were dropped by `--exclude-all`")
+
+        if args.exclude:
+            num_excluded_by_name = sequences_to_filter.query("filter == 'filter_by_exclude'").shape[0]
+            print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
+
+        if args.exclude_where:
+            num_excluded_by_metadata = sequences_to_filter.query("filter == 'filter_by_exclude_where'").groupby("kwargs")["strain"].count().to_dict()
+            for key,val in num_excluded_by_metadata.items():
+                print("\t%i of these were dropped because of '%s'" % (val, key.replace("exclude_where:", "")))
+
+        if args.query:
+            num_excluded_by_query = sequences_to_filter.query("filter == 'filter_by_query'").shape[0]
+            print("\t%i of these were filtered out by the query: \"%s\"" % (num_excluded_by_query, args.query))
+
+        if args.exclude_ambiguous_dates_by:
+            num_excluded_by_ambiguous_date = sequences_to_filter.query("filter == 'filter_by_ambiguous_date'").shape[0]
+            print("\t%i of these were dropped because of their ambiguous date in %s" % (num_excluded_by_ambiguous_date, args.exclude_ambiguous_dates_by))
+
+        if (args.min_date or args.max_date) and 'date' in meta_columns:
+            num_excluded_by_date = sequences_to_filter.query("filter == 'filter_by_date'").shape[0]
+            print("\t%i of these were dropped because of their date (or lack of date)" % (num_excluded_by_date))
+
+        if args.min_length:
+            num_excluded_by_length = sequences_to_filter.query("filter == 'filter_by_sequence_length'").shape[0]
+            print("\t%i of these were dropped because they were shorter than minimum length of %sbp" % (num_excluded_by_length, args.min_length))
+
+        if args.non_nucleotide:
+            num_excluded_by_nuc = sequences_to_filter.query("filter == 'filter_by_non_nucleotide'").shape[0]
+            print("\t%i of these were dropped because they had non-nucleotide characters" % (num_excluded_by_nuc))
+
+    if (args.group_by and args.sequences_per_group) or args.subsample_max_sequences:
         seed_txt = ", using seed {}".format(args.subsample_seed) if args.subsample_seed else ""
         print("\t%i of these were dropped because of subsampling criteria%s" % (num_excluded_subsamp, seed_txt))
 
-    if args.include:
-        print(f"\n\t{num_included_by_name} strains were added back because they were requested by include files")
+    if len(sequences_to_include) > 0:
+        print()
 
-        if num_not_included_by_name:
-            print(f"\t{num_not_included_by_name} strains from include files were not added because they lacked sequence or metadata")
-    if args.include_where:
-        print("\t%i sequences were added back because of '%s'" % (num_included_by_metadata, args.include_where))
+        if args.include:
+            num_included_by_name = sequences_to_include.query("filter == 'include'").shape[0]
+            print(f"\t{num_included_by_name} strains were added back because they were requested by include files")
+
+        if args.include_where:
+            num_included_by_metadata = sequences_to_include.query("filter == 'include_by_query'").groupby("kwargs")["strain"].count().to_dict()
+            for key,val in num_included_by_metadata.items():
+                print("\t%i sequences were added back because of '%s'" % (val, key.replace("include_where:", "")))
 
     if total_strains_passed == 0:
         print("ERROR: All samples have been dropped! Check filter rules and metadata file format.", file=sys.stderr)

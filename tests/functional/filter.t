@@ -269,22 +269,24 @@ The metadata are missing one strain that has a sequence.
 The list of strains to include has one strain with no metadata/sequence and one strain with information that would have been filtered by country.
 The query initially filters 3 strains from Colombia, one of which is added back by the include.
 
-  $ echo "NotReal" > "$TMP/include.txt"
-  $ echo "COL/FLR_00008/2015" >> "$TMP/include.txt"
   $ ${AUGUR} filter \
   >  --sequence-index filter/sequence_index.tsv \
   >  --metadata filter/metadata.tsv \
   >  --query "country != 'Colombia'" \
-  >  --include "$TMP/include.txt" \
-  >  --output-strains "$TMP/filtered_strains.txt"
+  >  --non-nucleotide \
+  >  --exclude-ambiguous-dates-by year \
+  >  --include filter/include.txt \
+  >  --output-strains "$TMP/filtered_strains.txt" \
+  >  --output-log "$TMP/filtered_log.tsv"
   4 strains were dropped during filtering
   \t1 had no sequence data (esc)
   \t1 had no metadata (esc)
-  \t3 of these were filtered out by the query: (esc)
-  \t\t"country != 'Colombia'" (esc)
+  \t3 of these were filtered out by the query: "country != 'Colombia'" (esc)
+  \t0 of these were dropped because of their ambiguous date in year (esc)
+  \t0 of these were dropped because they had non-nucleotide characters (esc)
    (esc)
   \t1 strains were added back because they were requested by include files (esc)
-  \t1 strains from include files were not added because they lacked sequence or metadata (esc)
   8 strains passed all filters
 
+  $ diff -u <(sort -k 1,1 filter/filtered_log.tsv) <(sort -k 1,1 "$TMP/filtered_log.tsv")
   $ rm -f "$TMP/filtered_strains.txt"
