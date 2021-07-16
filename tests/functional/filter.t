@@ -3,6 +3,19 @@ Integration tests for augur filter.
   $ pushd "$TESTDIR" > /dev/null
   $ export AUGUR="../../bin/augur"
 
+Filter with exclude query for two regions that comprise all but one strain.
+This filter should leave a single record from Oceania.
+Force include one South American record by country to get two total records.
+
+  $ ${AUGUR} filter \
+  >  --metadata filter/metadata.tsv \
+  >  --exclude-where "region=South America" "region=North America" \
+  >  --include-where "country=Ecuador" \
+  >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
+  $ wc -l "$TMP/filtered_strains.txt"
+  \s*2 .* (re)
+  $ rm -f "$TMP/filtered_strains.txt"
+
 Filter with subsampling, requesting 1 sequence per group (for a group with 3 distinct values).
 
   $ ${AUGUR} filter \
