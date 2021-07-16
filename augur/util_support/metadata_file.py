@@ -11,9 +11,10 @@ class MetadataFile:
     which is used to match metadata with samples.
     """
 
-    def __init__(self, fname, query=None):
+    def __init__(self, fname, query=None, as_data_frame=False):
         self.fname = fname
         self.query = query
+        self.as_data_frame = as_data_frame
 
         self.key_type = self.find_key_type()
 
@@ -26,8 +27,12 @@ class MetadataFile:
         # original "strain"/"name" remains in the output.
         self.metadata["_index"] = self.metadata[self.key_type]
 
-        metadata_dict = self.metadata.set_index("_index").to_dict("index")
-        return metadata_dict, self.columns
+        metadata = self.metadata.set_index("_index")
+
+        if self.as_data_frame:
+            return metadata, self.columns
+        else:
+            return metadata.to_dict("index"), self.columns
 
     @property
     @functools.lru_cache()

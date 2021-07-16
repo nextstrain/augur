@@ -72,25 +72,25 @@ def read_priority_scores(fname):
         print(f"ERROR: missing or malformed priority scores file {fname}", file=sys.stderr)
         raise e
 
-def filter_by_query(sequences, metadata_file, query):
-    """Filter a set of sequences using Pandas DataFrame querying against the metadata file.
+def filter_by_query(strains, metadata, query):
+    """Filter a set of strains using Pandas DataFrame querying against the metadata file.
 
     Parameters
     ----------
-    sequences : list[str]
-        List of sequence names to filter
-    metadata_file : str
-        Path to the metadata associated wtih the sequences
+    strains : set[str]
+        Set of strain names to filter
+    metadata : pandas.DataFrame
+        Metadata associated with the given strains
     query : str
         Query string for the dataframe.
 
     Returns
     -------
-    list[str]:
-        List of sequence names that match the given query
+    set[str]:
+        Set of strains that match the given query
     """
-    filtered_meta_dict, _ = read_metadata(metadata_file, query)
-    return [seq for seq in sequences if seq in filtered_meta_dict]
+    filtered_strains = set(metadata.query(query).index.values)
+    return strains & filtered_strains
 
 def register_arguments(parser):
     input_group = parser.add_argument_group("inputs", "metadata and sequences to be filtered")
@@ -177,8 +177,8 @@ def run(args):
     try:
         # Metadata are the source of truth for which sequences we want to keep
         # in filtered output.
-        meta_dict, meta_columns = read_metadata(args.metadata)
-        metadata_strains = set(meta_dict.keys())
+        metadata, meta_columns = read_metadata(args.metadata, as_data_frame=True)
+        metadata_strains = set(metadata.index.values)
     except ValueError as error:
         print("ERROR: Problem reading in {}:".format(args.metadata))
         print(error)
@@ -297,10 +297,10 @@ def run(args):
                 to_exclude = set()
                 for seq_name in seq_keep:
                     if "!=" in ex: # i.e. property!=value requested
-                        if meta_dict[seq_name].get(col,'unknown').lower() != val.lower():
+                        if metadata.loc[seq_name].get(col,'unknown').lower() != val.lower():
                             to_exclude.add(seq_name)
                     else: # i.e. property=value requested
-                        if meta_dict[seq_name].get(col,'unknown').lower() == val.lower():
+                        if metadata.loc[seq_name].get(col,'unknown').lower() == val.lower():
                             to_exclude.add(seq_name)
 
                 num_excluded_by_metadata[ex] = len(seq_keep & to_exclude)
@@ -309,9 +309,32 @@ def run(args):
     # exclude strains by metadata, using Pandas querying
     num_excluded_by_query = 0
     if args.query:
-        filtered = set(filter_by_query(list(seq_keep), args.metadata, args.query))
+        filtered = filter_by_query(seq_keep, metadata, args.query)
         num_excluded_by_query = len(seq_keep - filtered)
         seq_keep = filtered
+
+    # filter by ambiguous dates
+    num_excluded_by_ambiguous_date = 0
+    if args.exclude_ambiguous_dates_by and 'date' in meta_columns:
+        seq_keep_by_date = set()
+        for seq_name in seq_keep:
+            if not is_date_ambiguous(metadata.loc[seq_name]['date'], args.exclude_ambiguous_dates_by):
+                seq_keep_by_date.add(seq_name)
+
+        num_excluded_by_ambiguous_date = len(seq_keep) - len(seq_keep_by_date)
+        seq_keep = seq_keep_by_date
+
+    # filter by date
+    num_excluded_by_date = 0
+    if (args.min_date or args.max_date) and 'date' in meta_columns:
+        dates = get_numerical_dates(metadata, fmt="%Y-%m-%d")
+        tmp = {s for s in seq_keep if dates[s] is not None}
+        if args.min_date:
+            tmp = {s for s in tmp if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s])>=args.min_date}
+        if args.max_date:
+            tmp = {s for s in tmp if (np.isscalar(dates[s]) or all(dates[s])) and np.min(dates[s])<=args.max_date}
+        num_excluded_by_date = len(seq_keep) - len(tmp)
+        seq_keep = tmp
 
     # filter by sequence length
     num_excluded_by_length = 0
@@ -330,29 +353,6 @@ def run(args):
 
             num_excluded_by_length = len(seq_keep) - len(seq_keep_by_length)
             seq_keep = seq_keep_by_length
-
-    # filter by ambiguous dates
-    num_excluded_by_ambiguous_date = 0
-    if args.exclude_ambiguous_dates_by and 'date' in meta_columns:
-        seq_keep_by_date = set()
-        for seq_name in seq_keep:
-            if not is_date_ambiguous(meta_dict[seq_name]['date'], args.exclude_ambiguous_dates_by):
-                seq_keep_by_date.add(seq_name)
-
-        num_excluded_by_ambiguous_date = len(seq_keep) - len(seq_keep_by_date)
-        seq_keep = seq_keep_by_date
-
-    # filter by date
-    num_excluded_by_date = 0
-    if (args.min_date or args.max_date) and 'date' in meta_columns:
-        dates = get_numerical_dates(meta_dict, fmt="%Y-%m-%d")
-        tmp = {s for s in seq_keep if dates[s] is not None}
-        if args.min_date:
-            tmp = {s for s in tmp if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s])>=args.min_date}
-        if args.max_date:
-            tmp = {s for s in tmp if (np.isscalar(dates[s]) or all(dates[s])) and np.min(dates[s])<=args.max_date}
-        num_excluded_by_date = len(seq_keep) - len(tmp)
-        seq_keep = tmp
 
     # exclude sequences with non-nucleotide characters
     num_excluded_by_nuc = 0
@@ -385,7 +385,7 @@ def run(args):
         probabilistic_sampling = False
 
     if args.subsample_max_sequences or (args.group_by and args.sequences_per_group):
-        
+
         #set groups to group_by values
         if args.group_by:
             groups = args.group_by
@@ -398,7 +398,7 @@ def run(args):
 
         for seq_name in seq_keep:
             group = []
-            m = meta_dict[seq_name]
+            m = metadata.loc[seq_name].to_dict()
             # collect group specifiers
             for c in groups:
                 if c == "_dummy":
@@ -551,7 +551,7 @@ def run(args):
 
             # loop over all sequences and re-add sequences
             for seq_name in available_strains:
-                if meta_dict[seq_name].get(col)==val:
+                if metadata.loc[seq_name].get(col)==val:
                     to_include.add(seq_name)
 
         num_included_by_metadata = len(to_include)
@@ -608,7 +608,7 @@ def run(args):
             num_excluded_by_lack_of_sequences = len(metadata_strains - sequence_strains)
 
     if args.output_metadata:
-        metadata_df = pd.DataFrame([meta_dict[strain] for strain in seq_keep])
+        metadata_df = metadata.loc[seq_keep]
         metadata_df.to_csv(
             args.output_metadata,
             sep="\t",

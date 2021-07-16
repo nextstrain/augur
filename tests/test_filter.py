@@ -9,6 +9,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 import augur.filter
+from augur.utils import read_metadata
 
 @pytest.fixture
 def argparser():
@@ -163,8 +164,9 @@ class TestFilter:
                                           ("SEQ_1","colorado","good"),
                                           ("SEQ_2","colorado","bad"),
                                           ("SEQ_3","nevada","good")))
-        filtered = augur.filter.filter_by_query(sequences.keys(), meta_fn, 'quality=="good"')
-        assert filtered == ["SEQ_1", "SEQ_3"]
+        metadata, columns = read_metadata(meta_fn, as_data_frame=True)
+        filtered = augur.filter.filter_by_query(set(sequences.keys()), metadata, 'quality=="good"')
+        assert sorted(filtered) == ["SEQ_1", "SEQ_3"]
 
     def test_filter_on_query_subset(self, tmpdir):
         """Test filtering on query works when given fewer strains than metadata"""
@@ -172,8 +174,9 @@ class TestFilter:
                                           ("SEQ_1","colorado","good"),
                                           ("SEQ_2","colorado","bad"),
                                           ("SEQ_3","nevada","good")))
-        filtered = augur.filter.filter_by_query(["SEQ_2"], meta_fn, 'quality=="bad" & location=="colorado"')
-        assert filtered == ["SEQ_2"]
+        metadata, columns = read_metadata(meta_fn, as_data_frame=True)
+        filtered = augur.filter.filter_by_query({"SEQ_2"}, metadata, 'quality=="bad" & location=="colorado"')
+        assert sorted(filtered) == ["SEQ_2"]
 
     def test_filter_run_with_query(self, tmpdir, fasta_fn, argparser):
         """Test that filter --query works as expected"""

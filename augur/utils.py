@@ -1,6 +1,7 @@
 import argparse
 import Bio
 import Bio.Phylo
+from datetime import datetime
 import gzip
 import os, json, sys
 import pandas as pd
@@ -59,8 +60,8 @@ def get_json_name(args, default=None):
 def ambiguous_date_to_date_range(uncertain_date, fmt, min_max_year=None):
     return DateDisambiguator(uncertain_date, fmt=fmt, min_max_year=min_max_year).range()
 
-def read_metadata(fname, query=None):
-    return MetadataFile(fname, query).read()
+def read_metadata(fname, query=None, as_data_frame=False):
+    return MetadataFile(fname, query, as_data_frame).read()
 
 def is_date_ambiguous(date, ambiguous_by="any"):
     """
@@ -93,28 +94,63 @@ def is_date_ambiguous(date, ambiguous_by="any"):
         "X" in day and ambiguous_by in ("any", "day")
     ))
 
+def get_numerical_date_from_value(value, fmt=None, min_max_year=None, raise_error=True):
+    if type(value)!=str:
+        if raise_error:
+            raise ValueError(value)
+        else:
+            numerical_date = None
+    elif 'XX' in value:
+        ambig_date = ambiguous_date_to_date_range(value, fmt, min_max_year)
+        if ambig_date is None or None in ambig_date:
+            numerical_date = [None, None] #don't send to numeric_date or will be set to today
+        else:
+            numerical_date = [numeric_date(d) for d in ambig_date]
+    else:
+        try:
+            numerical_date = numeric_date(datetime.strptime(value, fmt))
+        except:
+            numerical_date = None
+
+    return numerical_date
+
 def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, min_max_year=None):
     if fmt:
-        from datetime import datetime
         numerical_dates = {}
-        for k,m in meta_dict.items():
-            v = m[date_col]
-            if type(v)!=str:
-                print("WARNING: %s has an invalid data string:"%k,v)
-                continue
-            elif 'XX' in v:
-                ambig_date = ambiguous_date_to_date_range(v, fmt, min_max_year)
-                if ambig_date is None or None in ambig_date:
-                    numerical_dates[k] = [None, None] #don't send to numeric_date or will be set to today
-                else:
-                    numerical_dates[k] = [numeric_date(d) for d in ambig_date]
-            else:
+
+        if isinstance(meta_dict, dict):
+            for k,m in meta_dict.items():
+                v = m[date_col]
                 try:
-                    numerical_dates[k] = numeric_date(datetime.strptime(v, fmt))
-                except:
-                    numerical_dates[k] = None
+                    numerical_dates[k] = get_numerical_date_from_value(
+                        v,
+                        fmt,
+                        min_max_year
+                    )
+                except ValueError:
+                    print(
+                        "WARNING: %s has an invalid data string: %s"% (k, v),
+                        file=sys.stderr
+                    )
+                    continue
+        elif isinstance(meta_dict, pd.DataFrame):
+            strains = meta_dict.index.values
+            dates = meta_dict[date_col].apply(
+                lambda date: get_numerical_date_from_value(
+                    date,
+                    fmt,
+                    min_max_year,
+                    raise_error=False
+                )
+            ).values
+            numerical_dates = dict(zip(strains, dates))
     else:
-        numerical_dates = {k:float(v) for k,v in meta_dict.items()}
+        if isinstance(meta_dict, dict):
+            numerical_dates = {k:float(v) for k,v in meta_dict.items()}
+        elif isinstance(meta_dict, pd.DataFrame):
+            strains = meta_dict.index.values
+            dates = meta_dict[date_col].astype(float)
+            numerical_dates = dict(zip(strains, dates))
 
     return numerical_dates
 
