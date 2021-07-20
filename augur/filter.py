@@ -1,25 +1,131 @@
 """
 Filter and subsample a sequence set.
 """
-
 from Bio import SeqIO
 from collections import defaultdict
-from typing import Collection
-import random, os, re
-import pandas as pd
+import csv
+import datetime
+import heapq
+import itertools
+import json
 import numpy as np
 import operator
+import os
+import pandas as pd
+import random
+import re
 import sys
-import datetime
 from tempfile import NamedTemporaryFile
 import treetime.utils
+from typing import Collection
 
 from .index import index_sequences
 from .io import open_file, read_sequences, write_sequences
-from .utils import read_metadata, read_strains, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
+from .utils import read_strains, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
 
 comment_char = '#'
 MAX_NUMBER_OF_PROBABILISTIC_SAMPLING_ATTEMPTS = 10
+
+SEQUENCE_ONLY_FILTERS = (
+    "min_length",
+    "non_nucleotide",
+)
+
+
+class FilterException(Exception):
+    """Representation of an error that occurred during filtering.
+    """
+    pass
+
+
+def read_metadata(metadata_file, **kwargs):
+    """Read metadata from a given filename and into a pandas `DataFrame` or
+    `TextFileReader` object.
+
+    Parameters
+    ----------
+    metadata_file : str
+        Path to a metadata file to load.
+
+    kwargs : dict
+        Keyword arguments to pass through to pandas.read_csv.
+
+    Returns
+    -------
+    pandas.DataFrame or pandas.TextFileReader
+
+    Raises
+    ------
+    FilterException :
+        When the metadata file does not have any valid index columns
+
+    """
+    default_kwargs = {
+        "sep": None,
+        "engine": "python",
+        "skipinitialspace": True,
+        "dtype": {
+            "strain": "string",
+            "name": "string,"
+        }
+    }
+    default_kwargs.update(kwargs)
+
+    # Try to index the data by "strain" or "name" or throw an error.
+    index_col = None
+    valid_index_cols = ("strain", "name")
+
+    for valid_index_col in valid_index_cols:
+        try:
+            chunk = pd.read_csv(
+                metadata_file,
+                index_col=valid_index_col,
+                iterator=True,
+                **default_kwargs,
+            ).read(nrows=1)
+
+            # If we could successfully load the first row with the current index
+            # column, this is a valid index column and we can stop looking.
+            index_col = valid_index_col
+            break
+        except KeyError:
+            # If we couldn't load the first row, try again with another valid
+            # index column.
+            pass
+
+    # If we couldn't find a valid index column in the metadata, alert the user.
+    if index_col is None:
+        raise FilterException(f"Could not find any valid index columns from the list of possible columns ({valid_index_cols})")
+
+    default_kwargs["index_col"] = index_col
+    return pd.read_csv(
+        metadata_file,
+        **default_kwargs
+    )
+
+
+def filename_is_vcf(filename):
+    """Returns whether the given file likely represents a VCF.
+
+    Parameters
+    ----------
+    filename : str
+        Filename to test.
+
+    Returns
+    -------
+    bool :
+        Whether filename represents a VCF or not.
+
+    >>> filename_is_vcf("my_data.vcf")
+    True
+    >>> filename_is_vcf("my_data.vcf.gz")
+    True
+    >>> filename_is_vcf("my_data.csv")
+    False
+
+    """
+    return filename and any(filename.lower().endswith(x) for x in ('.vcf', '.vcf.gz'))
 
 
 def read_vcf(filename):
@@ -98,15 +204,15 @@ def filter_by_exclude_all(metadata):
     return set()
 
 
-def filter_by_exclude(metadata, exclude_files):
+def filter_by_exclude(metadata, exclude_file):
     """Exclude the given set of strains from the given metadata.
 
     Parameters
     ----------
     metadata : pandas.DataFrame
         Metadata indexed by strain name
-    exclude_files : list[str]
-        List of filenames with strain names to exclude from the given metadata
+    exclude_file : str
+        Filename with strain names to exclude from the given metadata
 
     Returns
     -------
@@ -116,11 +222,11 @@ def filter_by_exclude(metadata, exclude_files):
     >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
     >>> with NamedTemporaryFile(delete=False) as exclude_file:
     ...     characters_written = exclude_file.write(b'strain1')
-    >>> filter_by_exclude(metadata, [exclude_file.name])
+    >>> filter_by_exclude(metadata, exclude_file.name)
     {'strain2'}
     >>> os.unlink(exclude_file.name)
     """
-    excluded_strains = read_strains(*exclude_files)
+    excluded_strains = read_strains(exclude_file)
     return set(metadata.index.values) - excluded_strains
 
 
@@ -203,6 +309,7 @@ def filter_by_exclude_where(metadata, exclude_where):
         filtered = set(metadata.index.values)
 
     return filtered
+
 
 def filter_by_query(metadata, query):
     """Filter metadata in the given pandas DataFrame with a query string and return
@@ -424,15 +531,15 @@ def filter_by_non_nucleotide(metadata, sequence_index):
     return set(filtered_sequence_index[no_invalid_nucleotides].index.values)
 
 
-def include(metadata, include_files):
-    """Include strains in the given list of text files from the given metadata.
+def include(metadata, include_file):
+    """Include strains in the given text file from the given metadata.
 
     Parameters
     ----------
     metadata : pandas.DataFrame
         Metadata indexed by strain name
-    include_files : list[str]
-        List of filenames with strain names to include from the given metadata
+    include_file : str
+        Filename with strain names to include from the given metadata
 
     Returns
     -------
@@ -442,16 +549,16 @@ def include(metadata, include_files):
     >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
     >>> with NamedTemporaryFile(delete=False) as include_file:
     ...     characters_written = include_file.write(b'strain1')
-    >>> include(metadata, [include_file.name])
+    >>> include(metadata, include_file.name)
     {'strain1'}
     >>> os.unlink(include_file.name)
 
     """
-    included_strains = read_strains(*include_files)
+    included_strains = read_strains(include_file)
     return set(metadata.index.values) & included_strains
 
 
-def include_by_query(metadata, include_where):
+def include_by_include_where(metadata, include_where):
     """Include all strains from the given metadata that match the given query.
 
     Unlike pandas query syntax, inclusion queries should follow the pattern of
@@ -472,16 +579,16 @@ def include_by_query(metadata, include_where):
         Strains that pass the filter
 
     >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
-    >>> include_by_query(metadata, "region!=Europe")
+    >>> include_by_include_where(metadata, "region!=Europe")
     {'strain1'}
-    >>> include_by_query(metadata, "region=Europe")
+    >>> include_by_include_where(metadata, "region=Europe")
     {'strain2'}
-    >>> include_by_query(metadata, "region=europe")
+    >>> include_by_include_where(metadata, "region=europe")
     {'strain2'}
 
     If the column referenced in the given query does not exist, skip the filter.
 
-    >>> include_by_query(metadata, "missing_column=value")
+    >>> include_by_include_where(metadata, "missing_column=value")
     set()
 
     """
@@ -523,18 +630,19 @@ def construct_filters(args, sequence_index):
     # Force include sequences specified in file(s).
     if args.include:
         # Collect the union of all given strains to include.
-        include_by.append((
-            include,
-            {
-                "include_files": args.include,
-            }
-        ))
+        for include_file in args.include:
+            include_by.append((
+                include,
+                {
+                    "include_file": include_file,
+                }
+            ))
 
     # Add sequences with particular metadata attributes.
     if args.include_where:
         for include_where in args.include_where:
             include_by.append((
-                include_by_query,
+                include_by_include_where,
                 {
                     "include_where": include_where,
                 }
@@ -551,16 +659,13 @@ def construct_filters(args, sequence_index):
 
     # Remove strains explicitly excluded by name.
     if args.exclude:
-        try:
+        for exclude_file in args.exclude:
             exclude_by.append((
                 filter_by_exclude,
                 {
-                    "exclude_files": args.exclude,
+                    "exclude_file": exclude_file,
                 }
             ))
-        except FileNotFoundError as e:
-            print("ERROR: Could not open file of excluded strains '%s'" % args.exclude, file=sys.stderr)
-            sys.exit(1)
 
     # Exclude strain my metadata field like 'host=camel'.
     if args.exclude_where:
@@ -611,10 +716,7 @@ def construct_filters(args, sequence_index):
     if args.min_length:
         # Skip VCF files and warn the user that the min length filter does not
         # make sense for VCFs.
-        is_vcf = args.sequences and any(
-            args.sequences.lower().endswith(x)
-            for x in ['.vcf', '.vcf.gz']
-        )
+        is_vcf = filename_is_vcf(args.sequences)
 
         if is_vcf: #doesn't make sense for VCF, ignore.
             print("WARNING: Cannot use min_length for VCF files. Ignoring...")
@@ -640,7 +742,10 @@ def construct_filters(args, sequence_index):
 
 
 def filter_kwargs_to_str(kwargs):
-    """Convert a dictionary of kwargs to a human-readable string representation for reporting.
+    """Convert a dictionary of kwargs to a JSON string for downstream reporting.
+
+    This structured string can be converted back into a Python data structure
+    later for more sophisticated reporting by specific kwargs.
 
     This function excludes data types from arguments like pandas DataFrames and
     also converts floating point numbers to a fixed precision for better
@@ -659,17 +764,17 @@ def filter_kwargs_to_str(kwargs):
     >>> sequence_index = pd.DataFrame([{"strain": "strain1", "ACGT": 28000}, {"strain": "strain2", "ACGT": 26000}, {"strain": "strain3", "ACGT": 5000}]).set_index("strain")
     >>> exclude_by = [(filter_by_sequence_length, {"sequence_index": sequence_index, "min_length": 27000})]
     >>> filter_kwargs_to_str(exclude_by[0][1])
-    'min_length:27000'
+    '[["min_length", 27000]]'
     >>> exclude_by = [(filter_by_date, {"max_date": numeric_date("2020-04-01"), "min_date": numeric_date("2020-03-01")})]
     >>> filter_kwargs_to_str(exclude_by[0][1])
-    'max_date:2020.25,min_date:2020.17'
+    '[["max_date", 2020.25], ["min_date", 2020.17]]'
 
     """
     # Sort keys prior to processing to guarantee the same output order
     # regardless of the input order.
     sorted_keys = sorted(kwargs.keys())
 
-    kwarg_str_list = []
+    kwarg_list = []
     for key in sorted_keys:
         value = kwargs[key]
 
@@ -680,9 +785,9 @@ def filter_kwargs_to_str(kwargs):
         elif isinstance(value, float):
             value = round(value, 2)
 
-        kwarg_str_list.append(f"{key}:{value}")
+        kwarg_list.append((key, value))
 
-    return ",".join(kwarg_str_list)
+    return json.dumps(kwarg_list)
 
 
 def apply_filters(metadata, exclude_by, include_by):
@@ -715,28 +820,28 @@ def apply_filters(metadata, exclude_by, include_by):
 
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-10-02"}, {"region": "North America", "date": "2020-01-01"}], index=["strain1", "strain2", "strain3"])
     >>> exclude_by = [(filter_by_date, {"min_date": numeric_date("2020-04-01")})]
-    >>> include_by = [(include_by_query, {"include_where": "region=Africa"})]
+    >>> include_by = [(include_by_include_where, {"include_where": "region=Africa"})]
     >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
     >>> strains_to_keep
     {'strain2'}
     >>> sorted(strains_to_exclude, key=lambda record: record["strain"])
-    [{'strain': 'strain1', 'filter': 'filter_by_date', 'kwargs': 'min_date:2020.25'}, {'strain': 'strain3', 'filter': 'filter_by_date', 'kwargs': 'min_date:2020.25'}]
+    [{'strain': 'strain1', 'filter': 'filter_by_date', 'kwargs': '[["min_date", 2020.25]]'}, {'strain': 'strain3', 'filter': 'filter_by_date', 'kwargs': '[["min_date", 2020.25]]'}]
     >>> strains_to_include
-    [{'strain': 'strain1', 'filter': 'include_by_query', 'kwargs': 'include_where:region=Africa'}]
+    [{'strain': 'strain1', 'filter': 'include_by_include_where', 'kwargs': '[["include_where", "region=Africa"]]'}]
 
     We also want to filter by characteristics of the sequence data that we've
     annotated in a sequence index.
 
     >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}, {"strain": "strain3", "A": 1250, "C": 1250, "G": 1250, "T": 1250}]).set_index("strain")
     >>> exclude_by = [(filter_by_sequence_length, {"sequence_index": sequence_index, "min_length": 27000})]
-    >>> include_by = [(include_by_query, {"include_where": "region=Europe"})]
+    >>> include_by = [(include_by_include_where, {"include_where": "region=Europe"})]
     >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
     >>> strains_to_keep
     {'strain1'}
     >>> sorted(strains_to_exclude, key=lambda record: record["strain"])
-    [{'strain': 'strain2', 'filter': 'filter_by_sequence_length', 'kwargs': 'min_length:27000'}, {'strain': 'strain3', 'filter': 'filter_by_sequence_length', 'kwargs': 'min_length:27000'}]
+    [{'strain': 'strain2', 'filter': 'filter_by_sequence_length', 'kwargs': '[["min_length", 27000]]'}, {'strain': 'strain3', 'filter': 'filter_by_sequence_length', 'kwargs': '[["min_length", 27000]]'}]
     >>> strains_to_include
-    [{'strain': 'strain2', 'filter': 'include_by_query', 'kwargs': 'include_where:region=Europe'}]
+    [{'strain': 'strain2', 'filter': 'include_by_include_where', 'kwargs': '[["include_where", "region=Europe"]]'}]
 
     """
     strains_to_keep = set(metadata.index.values)
@@ -798,68 +903,67 @@ def apply_filters(metadata, exclude_by, include_by):
     return strains_to_keep, strains_to_filter, strains_to_force_include
 
 
-def subsample(metadata,
-              strains_to_keep,
-              group_by=None,
-              sequences_per_group=None,
-              max_sequences=None,
-              probabilistic_sampling=False,
-              priority=None,
-              random_seed=None):
-    """Subsample metadata into a fixed number of strains per group. If the user
-    specifies a maximum number of subsampled strains, calculate the
-    corresponding sequences per group for the available groups. If no group is
-    defined, use a dummy group.
-
-    Optionally, sorts strains by a given priority score instead of returning
-    random strains for each group.
+def get_groups_for_subsampling(strains, metadata, group_by=None):
+    """Return a list of groups for each given strain based on the corresponding
+    metadata and group by column.
 
     Parameters
     ----------
+    strains : list
+        A list of strains to get groups for.
     metadata : pandas.DataFrame
-        Metadata to subsample
-    strains_to_keep : set[str]
-        Strain names to consider for subsampling from the given metadata
-    group_by : list[str]
-        Column(s) to group metadata by prior to subsampling. When omitted, subsampling uses a "_dummy" group.
-    sequences_per_group : int
-        Number of sequences to sample per group
-    max_sequences : int
-        Maximum number of sequences to sample total. Mutually exclusive of ``sequences_per_group``.
-    probabilistic_sampling : bool
-        Enable probabilistic subsampling
-    priority : str
-        Name of a tab-delimited file containing priorities assigned to strains such that higher numbers indicate higher priority.
-    random_seed : str
-        Random seed for subsampling
+        Metadata to inspect for the given strains.
+    group_by : list
+        A list of metadata (or calculated) columns to group records by.
 
     Returns
     -------
-    set[str]:
-        Strains that pass the filter
+    dict :
+        A mapping of strain names to tuples corresponding to the values of the strain's group.
+
+    >>> strains = ["strain1", "strain2"]
+    >>> metadata = pd.DataFrame([{"strain": "strain1", "date": "2020-01-01", "region": "Africa"}, {"strain": "strain2", "date": "2020-02-01", "region": "Europe"}]).set_index("strain")
+    >>> group_by = ["region"]
+    >>> get_groups_for_subsampling(strains, metadata, group_by)
+    {'strain1': ('Africa',), 'strain2': ('Europe',)}
+
+    If we group by year or month, these groups are calculated from the date
+    string.
+
+    >>> group_by = ["year", "month"]
+    >>> get_groups_for_subsampling(strains, metadata, group_by)
+    {'strain1': (2020, (2020, 1)), 'strain2': (2020, (2020, 2))}
+
+    If we omit the grouping columns, the result will group by a dummy column.
+
+    >>> get_groups_for_subsampling(strains, metadata)
+    {'strain1': ('_dummy',), 'strain2': ('_dummy',)}
+
+    If we try to group by columns that don't exist, we get an error.
+
+    >>> group_by = ["missing_column"]
+    >>> get_groups_for_subsampling(strains, metadata, group_by) # doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+      ...
+    FilterException: The specified group-by categories (["missing_column"]) were not found.
+
+    If we try to group by some columns that exist and some that don't, we allow
+    grouping to continue and print a warning message to stderr.
+
+    >>> group_by = ["year", "month", "missing_column"]
+    >>> get_groups_for_subsampling(strains, metadata, group_by)
+    {'strain1': (2020, (2020, 1), 'unknown'), 'strain2': (2020, (2020, 2), 'unknown')}
 
     """
-   # Set the random seed, for more reproducible results.
-    if random_seed:
-        random.seed(random_seed)
-
-    # Disable probabilistic sampling when user's request a specific number of
-    # sequences per group. In this case, users expect deterministic behavior and
-    # probabilistic behavior is surprising.
-    if sequences_per_group:
-        probabilistic_sampling = False
-
     if group_by:
         groups = group_by
     else:
-        groups = ["_dummy"]
+        groups = ("_dummy",)
 
-    spg = sequences_per_group
-    seq_names_by_group = defaultdict(list)
-
-    for seq_name in strains_to_keep:
+    group_by_strain = {}
+    for strain in strains:
         group = []
-        m = metadata.loc[seq_name].to_dict()
+        m = metadata.loc[strain].to_dict()
         # collect group specifiers
         for c in groups:
             if c == "_dummy":
@@ -870,7 +974,7 @@ def subsample(metadata,
                 try:
                     year = int(m["date"].split('-')[0])
                 except:
-                    print("WARNING: no valid year, skipping",seq_name, m["date"])
+                    print("WARNING: no valid year, skipping",strain, m["date"])
                     continue
                 if c=='month':
                     try:
@@ -882,102 +986,150 @@ def subsample(metadata,
                     group.append(year)
             else:
                 group.append('unknown')
-        seq_names_by_group[tuple(group)].append(seq_name)
 
-    #If didnt find any categories specified, all seqs will be in 'unknown' - but don't sample this!
-    if len(seq_names_by_group)==1 and ('unknown' in seq_names_by_group or ('unknown',) in seq_names_by_group):
-        print("WARNING: The specified group-by categories (%s) were not found."%groups,
-                "No sequences-per-group sampling will be done.")
-        if any([x in groups for x in ['year','month']]):
-            print("Note that using 'year' or 'year month' requires a column called 'date'.")
-        print("\n")
-        return strains_to_keep
+        group_by_strain[strain] = tuple(group)
+
+    # If we could not find any requested categories, we cannot complete subsampling.
+    distinct_groups = set(group_by_strain.values())
+    if len(distinct_groups) == 1 and ('unknown' in distinct_groups or ('unknown',) in distinct_groups):
+        error_message = f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done."
+
+        if any(x in groups for x in ('year', 'month')):
+            error_message += " Note that using 'year' or 'year month' requires a column called 'date'."
+
+        # Raise an exception, since we cannot find the requested groups.
+        raise FilterException(error_message)
 
     # Check to see if some categories are missing to warn the user
-    group_by = set(['date' if cat in ['year','month'] else cat
-                    for cat in groups])
+    group_by = {
+        'date' if cat in ('year', 'month') else cat
+        for cat in groups
+    }
     missing_cats = [cat for cat in group_by if cat not in metadata.columns.values and cat != "_dummy"]
     if missing_cats:
-        print("WARNING:")
-        if any([cat != 'date' for cat in missing_cats]):
-            print("\tSome of the specified group-by categories couldn't be found: ",
-                    ", ".join([str(cat) for cat in missing_cats if cat != 'date']))
-        if any([cat == 'date' for cat in missing_cats]):
-            print("\tA 'date' column could not be found to group-by year or month.")
-        print("\tFiltering by group may behave differently than expected!\n")
+        error_message = []
 
-    if priority: # read priorities
-        priorities = read_priority_scores(priority)
+        if any(cat != 'date' for cat in missing_cats):
+            error_message.append(
+                "Some of the specified group-by categories couldn't be found: %s" % ", ".join([str(cat) for cat in missing_cats if cat != 'date'])
+            )
 
-    if spg is None:
-        # this is only possible if we have imposed a maximum number of samples
-        # to produce.  we need binary search until we have the correct spg.
-        try:
-            length_of_sequences_per_group = [
-                len(sequences_in_group)
-                for sequences_in_group in seq_names_by_group.values()
-            ]
+        if any(cat == 'date' for cat in missing_cats):
+            error_message.append("A 'date' column could not be found to group-by year or month.")
 
-            if probabilistic_sampling:
-                spg = _calculate_fractional_sequences_per_group(
-                    max_sequences,
-                    length_of_sequences_per_group
-                )
-            else:
-                spg = _calculate_sequences_per_group(
-                    max_sequences,
-                    length_of_sequences_per_group
-                )
-        except TooManyGroupsError as ex:
-            print(f"ERROR: {ex}", file=sys.stderr)
-            sys.exit(1)
-        print("sampling at {} per group.".format(spg))
+        error_message.append("Filtering by group may behave differently than expected!")
 
-    if probabilistic_sampling:
-        random_generator = np.random.default_rng()
+        # Print a warning message, but allow grouping to continue.
+        print(
+            "WARNING: %s" % "\n".join(error_message),
+            file=sys.stderr,
+        )
 
-    # subsample each groups, either by taking the spg highest priority strains or
-    # sampling at random from the sequences in the group
-    seq_subsample = set()
-    subsampling_attempts = 0
+    return group_by_strain
 
-    # Attempt to subsample with the given constraints for a fixed number
-    # of times. For small values of maximum sequences, subsampling can
-    # randomly select zero sequences to keep. When this happens, we can
-    # usually find a non-zero number of samples by repeating the
-    # process.
-    while len(seq_subsample) == 0 and subsampling_attempts < MAX_NUMBER_OF_PROBABILISTIC_SAMPLING_ATTEMPTS:
-        subsampling_attempts += 1
 
-        for group, sequences_in_group in seq_names_by_group.items():
-            if probabilistic_sampling:
-                tmp_spg = random_generator.poisson(spg)
-            else:
-                tmp_spg = spg
+class PriorityQueue:
+    """A priority queue implementation that automatically replaces lower priority
+    items in the heap with incoming higher priority items.
 
-            if tmp_spg == 0:
-                continue
+    This implementation also allows the maximum size to be a fractional value
+    less than 1 in which case the heap size is sampled randomly from a Poisson
+    distribution with the given maximum size as the mean. This randomly sized
+    heap enables probabilistic subsampling.
 
-            if priority: #sort descending by priority
-                seq_subsample.update(
-                    set(
-                        sorted(
-                            sequences_in_group,
-                            key=lambda x: priorities[x],
-                            reverse=True
-                        )[:tmp_spg]
-                    )
-                )
-            else:
-                seq_subsample.update(
-                    set(
-                        sequences_in_group
-                        if len(sequences_in_group)<=tmp_spg
-                        else random.sample(sequences_in_group, tmp_spg)
-                    )
-                )
+    Add a single record to a heap with a maximum of 2 records.
 
-    return seq_subsample
+    >>> heap = PriorityQueue(max_size=2)
+    >>> heap.add({"strain": "strain1"}, 0.5)
+    1
+
+    Add another record with a higher priority. The heap should be at its maximum
+    size.
+
+    >>> heap.add({"strain": "strain2"}, 1.0)
+    2
+    >>> heap.heap
+    [(0.5, 0, {'strain': 'strain1'}), (1.0, 1, {'strain': 'strain2'})]
+    >>> list(heap.get_items())
+    [{'strain': 'strain1'}, {'strain': 'strain2'}]
+
+    Add a higher priority record that causes the heap to exceed its maximum
+    size. The resulting heap should contain the two highest priority records
+    after the lowest priority record is removed.
+
+    >>> heap.add({"strain": "strain3"}, 2.0)
+    2
+    >>> list(heap.get_items())
+    [{'strain': 'strain2'}, {'strain': 'strain3'}]
+
+    Add a record with the same priority as another record, forcing the duplicate
+    to be resolved by removing the oldest entry.
+
+    >>> heap.add({"strain": "strain4"}, 1.0)
+    2
+    >>> list(heap.get_items())
+    [{'strain': 'strain4'}, {'strain': 'strain3'}]
+
+    Assign a fractional maximum size such that the corresponding queue limit is
+    sampled randomly from a Poisson distribution. For small values, we should
+    get a max size that is no more than 10 (this is an arbitrarily high number
+    above what we see for Poisson samples drawn with a mean of 0.1).
+
+    >>> heap = PriorityQueue(max_size=0.1)
+    >>> heap.max_size in set(range(10))
+    True
+
+    """
+    def __init__(self, max_size):
+        """Create a fixed size heap (priority queue) that allows the maximum size to be
+        calculated probabilistically from a Poisson process.
+
+        """
+        # Fractional heap sizes indicate probabilistic sampling.
+        if max_size < 1.0:
+            random_generator = np.random.default_rng()
+            self.max_size = random_generator.poisson(max_size)
+        else:
+            self.max_size = max_size
+
+        self.heap = []
+        self.counter = itertools.count()
+
+    def add(self, item, priority):
+        """Add an item to the queue with a given priority.
+
+        If adding the item causes the queue to exceed its maximum size, replace
+        the lowest priority item with the given item. The queue stores items
+        with an additional heap id value (a count) to resolve ties between items
+        with equal priority (favoring the most recently added item).
+
+        """
+        heap_id = next(self.counter)
+
+        if len(self.heap) >= self.max_size:
+            heapq.heappushpop(self.heap, (priority, heap_id, item))
+        else:
+            heapq.heappush(self.heap, (priority, heap_id, item))
+
+        return len(self.heap)
+
+    def get_items(self):
+        """Return each item in the queue in order.
+
+        Yields
+        ------
+        Any
+            Item stored in the queue.
+
+        """
+        for priority, heap_id, item in self.heap:
+            yield item
+
+
+def priority_queue_factory(max_size):
+    """Return a callable for a priority queue with the given arguments.
+    """
+    return lambda: PriorityQueue(max_size=max_size)
 
 
 def register_arguments(parser):
@@ -985,6 +1137,7 @@ def register_arguments(parser):
     input_group.add_argument('--metadata', required=True, metavar="FILE", help="sequence metadata, as CSV or TSV")
     input_group.add_argument('--sequences', '-s', help="sequences in FASTA or VCF format")
     input_group.add_argument('--sequence-index', help="sequence composition report generated by augur index. If not provided, an index will be created on the fly.")
+    input_group.add_argument('--metadata-chunksize', type=int, default=100000, help="maximum number of metadata records to read into memory at a time. Increasing this number can speed up filtering at the cost of more memory used.")
 
     metadata_filter_group = parser.add_argument_group("metadata filters", "filters to apply to metadata")
     metadata_filter_group.add_argument(
@@ -1021,65 +1174,56 @@ def register_arguments(parser):
     When scores are provided, Augur converts scores to floating point values, sorts strains within each subsampling group from highest to lowest priority, and selects the top N strains per group where N is the calculated or requested number of strains per group.
     Higher numbers indicate higher priority.
     Since priorities represent relative values between strains, these values can be arbitrary.""")
-    subsample_group.add_argument('--subsample-seed', help="random number generator seed to allow reproducible sub-sampling (with same input data). Can be number or string.")
+    subsample_group.add_argument('--subsample-seed', type=int, help="random number generator seed to allow reproducible subsampling (with same input data).")
 
     output_group = parser.add_argument_group("outputs", "possible representations of filtered data (at least one required)")
     output_group.add_argument('--output', '--output-sequences', '-o', help="filtered sequences in FASTA format")
     output_group.add_argument('--output-metadata', help="metadata for strains that passed filters")
     output_group.add_argument('--output-strains', help="list of strains that passed filters (no header)")
-    output_group.add_argument('--output-log', help="tab-delimited file with one row for each filtered strain and the reason it was filtered")
+    output_group.add_argument('--output-log', help="tab-delimited file with one row for each filtered strain and the reason it was filtered. Keyword arguments used for a given filter are reported in JSON format in a `kwargs` column.")
 
     parser.set_defaults(probabilistic_sampling=True)
 
-def run(args):
-    '''
-    filter and subsample a set of sequences into an analysis set
-    '''
-    # Validate arguments before attempting any I/O.
+
+def validate_arguments(args):
+    """Validate arguments and return a boolean representing whether all validation
+    rules succeeded.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Parsed arguments from argparse
+
+    Returns
+    -------
+    bool :
+        Validation succeeded.
+
+    """
     # Don't allow sequence output when no sequence input is provided.
     if args.output and not args.sequences:
         print(
             "ERROR: You need to provide sequences to output sequences.",
             file=sys.stderr)
-        return 1
+        return False
 
     # Confirm that at least one output was requested.
     if not any((args.output, args.output_metadata, args.output_strains)):
         print(
             "ERROR: You need to select at least one output.",
             file=sys.stderr)
-        return 1
+        return False
 
     # Don't allow filtering on sequence-based information, if no sequences or
     # sequence index is provided.
-    SEQUENCE_ONLY_FILTERS = [
-        args.min_length,
-        args.non_nucleotide
-    ]
-    if not args.sequences and not args.sequence_index and any(SEQUENCE_ONLY_FILTERS):
+    if not args.sequences and not args.sequence_index and any(getattr(args, arg) for arg in SEQUENCE_ONLY_FILTERS):
         print(
             "ERROR: You need to provide a sequence index or sequences to filter on sequence-specific information.",
             file=sys.stderr)
-        return 1
+        return False
 
-    # Load inputs, starting with metadata.
-    try:
-        # Metadata are the source of truth for which sequences we want to keep
-        # in filtered output.
-        metadata, meta_columns = read_metadata(args.metadata, as_data_frame=True)
-        metadata_strains = set(metadata.index.values)
-    except ValueError as error:
-        print("ERROR: Problem reading in {}:".format(args.metadata))
-        print(error)
-        return 1
-
-    #Set flags if VCF
-    is_vcf = False
-    is_compressed = False
-    if args.sequences and any([args.sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
-        is_vcf = True
-        if args.sequences.lower().endswith('.gz'):
-            is_compressed = True
+    # Set flags if VCF
+    is_vcf = filename_is_vcf(args.sequences)
 
     ### Check users has vcftools. If they don't, a one-blank-line file is created which
     #   allows next step to run but error very badly.
@@ -1087,39 +1231,57 @@ def run(args):
         from shutil import which
         if which("vcftools") is None:
             print("ERROR: 'vcftools' is not installed! This is required for VCF data. "
-                  "Please see the augur install instructions to install it.")
-            return 1
+                  "Please see the augur install instructions to install it.",
+                  file=sys.stderr)
+            return False
 
-    # Read in files
+    return True
 
-    sequence_index = None
+
+def run(args):
+    '''
+    filter and subsample a set of sequences into an analysis set
+    '''
+    # Validate arguments before attempting any I/O.
+    if not validate_arguments(args):
+        return 1
+
+    # Load sequence names from VCF or a sequence index. Sequence information is
+    # optional. Determine whether the sequence index exists or whether should be
+    # generated. We need to generate an index if sequence output has been
+    # requested (so we can filter strains by sequences that are present) or if
+    # any other sequence-based filters have been requested.
+    sequence_strains = None
+    sequence_index_path = args.sequence_index
+    build_sequence_index = False
 
     # If VCF, open and get sequence names
+    is_vcf = filename_is_vcf(args.sequences)
+
     if is_vcf:
         vcf_sequences, _ = read_vcf(args.sequences)
         sequence_strains = set(vcf_sequences)
-    elif (args.sequences and any(SEQUENCE_ONLY_FILTERS)) or args.sequence_index:
-        # If FASTA, try to load the sequence composition details and strain
-        # names to be filtered.
-        index_is_autogenerated = False
-        sequence_index_path = args.sequence_index
+    elif sequence_index_path is None and args.sequences:
+        sequence_filters_requested = any(getattr(args, arg) for arg in SEQUENCE_ONLY_FILTERS)
+        if args.output or sequence_filters_requested:
+            build_sequence_index = True
 
+    if build_sequence_index:
         # Generate the sequence index on the fly, for backwards compatibility
         # with older workflows that don't generate the index ahead of time.
-        if sequence_index_path is None:
-            # Create a temporary index using a random filename to avoid
-            # collisions between multiple filter commands.
-            index_is_autogenerated = True
-            with NamedTemporaryFile(delete=False) as sequence_index_file:
-                sequence_index_path = sequence_index_file.name
+        # Create a temporary index using a random filename to avoid collisions
+        # between multiple filter commands.
+        with NamedTemporaryFile(delete=False) as sequence_index_file:
+            sequence_index_path = sequence_index_file.name
 
-            print(
-                "Note: You did not provide a sequence index, so Augur will generate one.",
-                "You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.",
-                file=sys.stderr
-            )
-            index_sequences(args.sequences, sequence_index_path)
+        print(
+            "Note: You did not provide a sequence index, so Augur will generate one.",
+            "You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.",
+            file=sys.stderr
+        )
+        index_sequences(args.sequences, sequence_index_path)
 
+    if sequence_index_path:
         sequence_index = pd.read_csv(
             sequence_index_path,
             sep="\t",
@@ -1127,52 +1289,294 @@ def run(args):
         )
 
         # Remove temporary index file, if it exists.
-        if index_is_autogenerated:
+        if build_sequence_index:
             os.unlink(sequence_index_path)
 
         # Calculate summary statistics needed for filtering.
         sequence_strains = set(sequence_index.index.values)
-    else:
-        sequence_strains = None
 
     #####################################
     #Filtering steps
     #####################################
 
+    # Setup filters.
     exclude_by, include_by = construct_filters(
         args,
         sequence_index,
     )
-    seq_keep, sequences_to_filter, sequences_to_include = apply_filters(
-        metadata,
-        exclude_by,
-        include_by,
-    )
 
-    # Convert lists of filtered and included records to data frames to simplify
-    # reporting.
-    sequences_to_filter = pd.DataFrame(sequences_to_filter)
-    sequences_to_include = pd.DataFrame(sequences_to_include)
+    # Setup grouping. We handle the following major use cases:
+    #
+    # 1. group by and maximum sequences defined -> use the first pass through
+    # the metadata to count the number of records in each group, calculate the
+    # sequences per group that satisfies the requested maximum, and use a second
+    # pass through the metadata to select that many sequences per group.
+    #
+    # 2. group by not defined but maximum sequences defined -> use a "dummy"
+    # group such that we select at most the requested maximum number of
+    # sequences in a single pass through the metadata.
+    #
+    # 3. group by and sequences per group defined -> use the given values by the
+    # user to identify the highest priority records from each group in a single
+    # pass through the metadata.
+    #
+    # Each case relies on a min heap to track the highest priority records per
+    # group. In the best case, we can track these records in a single pass
+    # through the metadata. In the worst case, we don't know how many sequences
+    # per group to limit the heaps to, so we need to calculate this number after
+    # the first pass and use a second pass to add records to the heap.
+    group_by = args.group_by
+    sequences_per_group = args.sequences_per_group
+    records_per_group = None
 
-    num_excluded_subsamp = 0
-    if args.subsample_max_sequences or (args.group_by and args.sequences_per_group):
-        seq_subsample = subsample(
-            metadata,
-            seq_keep,
-            args.group_by,
-            args.sequences_per_group,
-            args.subsample_max_sequences,
-            args.probabilistic_sampling,
-            args.priority,
-            args.subsample_seed,
+    if group_by and args.subsample_max_sequences:
+        records_per_group = defaultdict(int)
+    elif not group_by and args.subsample_max_sequences:
+        group_by = ("_dummy",)
+        sequences_per_group = args.subsample_max_sequences
+
+    # If we are grouping data, use heaps to store the highest priority strains
+    # for each group. When no priorities are provided, they will be randomly
+    # generated.
+    heaps_by_group = None
+    if group_by:
+        # Use user-defined priorities, if possible. Otherwise, setup a
+        # corresponding dictionary that returns a random float for each strain.
+        if args.priority:
+            priorities = read_priority_scores(args.priority)
+        else:
+            random_generator = np.random.default_rng(args.subsample_seed)
+            priorities = defaultdict(random_generator.random)
+
+    # Setup metadata output. We track whether any records have been written to
+    # disk yet through the following variables, to control whether we write the
+    # metadata's header and open a new file for writing.
+    metadata_header = True
+    metadata_mode = "w"
+
+    # Setup strain output.
+    if args.output_strains:
+        output_strains = open(args.output_strains, "w")
+
+    # Setup logging.
+    output_log_writer = None
+    if args.output_log:
+        # Log the names of strains that were filtered or force-included, so we
+        # can properly account for each strain (e.g., including those that were
+        # initially filtered for one reason and then included again for another
+        # reason).
+        output_log = open(args.output_log, "w", newline='')
+        output_log_header = ("strain", "filter", "kwargs")
+        output_log_writer = csv.DictWriter(
+            output_log,
+            fieldnames=output_log_header,
+            delimiter="\t",
+            lineterminator="\n",
         )
-        num_excluded_subsamp = len(seq_keep) - len(seq_subsample)
-        seq_keep = seq_subsample
+        output_log_writer.writeheader()
+
+    # Load metadata. Metadata are the source of truth for which sequences we
+    # want to keep in filtered output.
+    metadata_strains = set()
+    valid_strains = set() # TODO: rename this more clearly
+    all_sequences_to_include = set()
+    filter_counts = defaultdict(int)
+
+    metadata_reader = read_metadata(args.metadata, chunksize=args.metadata_chunksize)
+    for metadata in metadata_reader:
+        # Maintain list of all strains seen.
+        metadata_strains.update(set(metadata.index.values))
+
+        # Filter metadata.
+        seq_keep, sequences_to_filter, sequences_to_include = apply_filters(
+            metadata,
+            exclude_by,
+            include_by,
+        )
+        valid_strains.update(seq_keep)
+
+        # Track distinct strains to include, so we can write their
+        # corresponding metadata, strains, or sequences later, as needed.
+        distinct_sequences_to_include = {
+            record["strain"]
+            for record in sequences_to_include
+        }
+        all_sequences_to_include.update(distinct_sequences_to_include)
+
+        # Track reasons for filtered or force-included strains, so we can
+        # report total numbers filtered and included at the end. Optionally,
+        # write out these reasons to a log file.
+        for filtered_strain in itertools.chain(sequences_to_filter, sequences_to_include):
+            filter_counts[(filtered_strain["filter"], filtered_strain["kwargs"])] += 1
+
+            # Log the names of strains that were filtered or force-included,
+            # so we can properly account for each strain (e.g., including
+            # those that were initially filtered for one reason and then
+            # included again for another reason).
+            if output_log_writer:
+                output_log_writer.writerow(filtered_strain)
+
+        if group_by:
+            # If grouping, track the highest priority metadata records or
+            # count the number of records per group. First, we need to get
+            # the groups for the given records.
+            try:
+                group_by_strain = get_groups_for_subsampling(
+                    seq_keep,
+                    metadata,
+                    group_by,
+                )
+
+                if args.subsample_max_sequences and records_per_group is not None:
+                    # Count the number of records per group. We will use this
+                    # information to calculate the number of sequences per group
+                    # for the given maximum number of requested sequences.
+                    for group in group_by_strain.values():
+                        records_per_group[group] += 1
+                else:
+                    # Track the highest priority records, when we already
+                    # know the number of sequences allowed per group.
+                    if heaps_by_group is None:
+                        heaps_by_group = defaultdict(priority_queue_factory(
+                            max_size=sequences_per_group,
+                        ))
+
+                    for strain, group in group_by_strain.items():
+                        heaps_by_group[group].add(
+                            metadata.loc[strain],
+                            priorities[strain],
+                        )
+            except FilterException as error:
+                # When we cannot group by the requested columns, we print a
+                # warning to the user and continue without subsampling or
+                # grouping. TODO: We should consider treating this case as
+                # an actual error and exiting here with a nonzero code.
+                group_by = False
+                print(
+                    f"WARNING: {error}",
+                    file=sys.stderr,
+                )
+
+        # Always write out strains that are force-included. Additionally, if
+        # we are not grouping, write out metadata and strains that passed
+        # filters so far. TODO: This step does not filter strains by
+        # observed sequences (only by sequence index contents). This is a
+        # breaking change for the current interface.
+        strains_to_write = distinct_sequences_to_include
+        if not group_by:
+            strains_to_write = strains_to_write | seq_keep
+
+        if args.output_metadata:
+            # TODO: wrap logic to write metadata into its own function
+            metadata.loc[strains_to_write].to_csv(
+                args.output_metadata,
+                sep="\t",
+                header=metadata_header,
+                mode=metadata_mode,
+            )
+            metadata_header = False
+            metadata_mode = "a"
+
+        if args.output_strains:
+            # TODO: Output strains will no longer be ordered. This is a
+            # small breaking change.
+            for strain in strains_to_write:
+                output_strains.write(f"{strain}\n")
+
+    # In the worst case, we need to calculate sequences per group from the
+    # requested maximum number of sequences and the number of sequences per
+    # group. Then, we need to make a second pass through the metadata to find
+    # the requested number of records.
+    if args.subsample_max_sequences and records_per_group is not None:
+        # Calculate sequences per group. If there are more groups than maximum
+        # sequences requested, sequences per group will be a floating point
+        # value and subsampling will be probabilistic.
+        try:
+            sequences_per_group = calculate_sequences_per_group(
+                args.subsample_max_sequences,
+                records_per_group.values(),
+                args.probabilistic_sampling,
+            )
+            print(f"Sampling at {sequences_per_group} per group.")
+        except TooManyGroupsError as error:
+            print(f"ERROR: {error}", file=sys.stderr)
+            sys.exit(1)
+
+        if heaps_by_group is None:
+            heaps_by_group = defaultdict(priority_queue_factory(
+                max_size=sequences_per_group,
+            ))
+
+        # Make a second pass through the metadata, only considering records that
+        # have passed filters.
+        metadata_reader = read_metadata(args.metadata, chunksize=args.metadata_chunksize)
+        for metadata in metadata_reader:
+            # Recalculate groups for subsampling as we loop through the
+            # metadata a second time. TODO: We could store these in memory
+            # during the first pass, but we want to minimize overall memory
+            # usage at the moment.
+            seq_keep = set(metadata.index.values) & valid_strains
+            group_by_strain = get_groups_for_subsampling(
+                seq_keep,
+                metadata,
+                group_by,
+            )
+
+            for strain, group in group_by_strain.items():
+                heaps_by_group[group].add(
+                    metadata.loc[strain],
+                    priorities[strain],
+                )
+
+    # If we have any records in heaps, we have grouped results and need to
+    # stream the highest priority records to the requested outputs.
+    if heaps_by_group:
+        # Populate the set of strains to keep from the records in heaps.
+        subsampled_strains = set()
+        for group, heap in heaps_by_group.items():
+            heap_records = []
+            for record in heap.get_items():
+                # Each record is a pandas.Series instance. Track the name of the
+                # record, so we can output its sequences later.
+                subsampled_strains.add(record.name)
+
+                # Construct a data frame of records to simplify metadata output.
+                heap_records.append(record)
+
+                if args.output_strains:
+                    # TODO: Output strains will no longer be ordered. This is a
+                    # small breaking change.
+                    output_strains.write(f"{record.name}\n")
+
+            # Write records to metadata output, if requested.
+            if args.output_metadata and len(heap_records) > 0:
+                heap_records = pd.DataFrame(heap_records)
+                heap_records.to_csv(
+                    args.output_metadata,
+                    sep="\t",
+                    header=metadata_header,
+                    mode=metadata_mode,
+                )
+                metadata_header = False
+                metadata_mode = "a"
+
+        # Count and optionally log strains that were not included due to
+        # subsampling.
+        strains_filtered_by_subsampling = valid_strains - subsampled_strains
+        num_excluded_subsamp = len(strains_filtered_by_subsampling)
+        if output_log_writer:
+            for strain in strains_filtered_by_subsampling:
+                output_log_writer.writerow({
+                    "strain": strain,
+                    "filter": "subsampling",
+                    "kwargs": "",
+                })
+
+        valid_strains = subsampled_strains
 
     # Force inclusion of specific strains after filtering and subsampling.
-    if len(sequences_to_include) > 0:
-        distinct_sequences_to_include = set(sequences_to_include["strain"].values)
-        seq_keep = seq_keep | distinct_sequences_to_include
+    if len(all_sequences_to_include) > 0:
+        valid_strains = valid_strains | all_sequences_to_include
 
     # Write output starting with sequences, if they've been requested. It is
     # possible for the input sequences and sequence index to be out of sync
@@ -1182,7 +1586,7 @@ def run(args):
     if is_vcf:
         if args.output:
             # Get the samples to be deleted, not to keep, for VCF
-            dropped_samps = list(sequence_strains - seq_keep)
+            dropped_samps = list(sequence_strains - valid_strains)
             write_vcf(args.sequences, args.output, dropped_samps)
     elif args.sequences:
         sequences = read_sequences(args.sequences)
@@ -1198,7 +1602,7 @@ def run(args):
                 for sequence in sequences:
                     observed_sequence_strains.add(sequence.id)
 
-                    if sequence.id in seq_keep:
+                    if sequence.id in valid_strains:
                         write_sequences(sequence, output_handle, 'fasta')
         else:
             observed_sequence_strains = {sequence.id for sequence in sequences}
@@ -1223,107 +1627,44 @@ def run(args):
         # Update strains to keep based on available sequence data. This prevents
         # writing out strain lists or metadata for strains that have no
         # sequences.
-        seq_keep = seq_keep & sequence_strains
+        valid_strains = valid_strains & sequence_strains
 
         num_excluded_by_lack_of_metadata = len(sequence_strains - metadata_strains)
 
-    if args.output_metadata:
-        metadata_df = metadata.loc[seq_keep]
-        metadata_df.to_csv(
-            args.output_metadata,
-            sep="\t",
-            index=False
-        )
-
     if args.output_strains:
-        with open(args.output_strains, "w") as oh:
-            for strain in sorted(seq_keep):
-                oh.write(f"{strain}\n")
-
-    if args.output_log:
-        # Log the names of strains that were filtered or force-included, so we
-        # can properly account for each strain (e.g., including those that were
-        # initially filtered for one reason and then included again for another
-        # reason).
-        with open_file(args.output_log, "w") as oh:
-            header = True
-            if len(sequences_to_filter) > 0:
-                sequences_to_filter.to_csv(
-                    oh,
-                    sep="\t",
-                    index=False,
-                )
-                header = False
-
-            if len(sequences_to_include) > 0:
-                sequences_to_include.to_csv(
-                    oh,
-                    sep="\t",
-                    header=header,
-                    index=False,
-                )
+        output_strains.close()
 
     # Calculate the number of strains passed and filtered.
-    total_strains_passed = len(seq_keep)
+    total_strains_passed = len(valid_strains)
     total_strains_filtered = len(metadata_strains) + num_excluded_by_lack_of_metadata - total_strains_passed
 
     print(f"{total_strains_filtered} strains were dropped during filtering")
 
-    if num_excluded_by_lack_of_sequences:
-        print(f"\t{num_excluded_by_lack_of_sequences} had no sequence data")
-
     if num_excluded_by_lack_of_metadata:
         print(f"\t{num_excluded_by_lack_of_metadata} had no metadata")
 
-    if len(sequences_to_filter) > 0:
-        if args.exclude_all:
-            num_excluded_by_all = sequences_to_filter.query("filter == 'filter_by_exclude_all'").shape[0]
-            print(f"\t{num_excluded_by_all} of these were dropped by `--exclude-all`")
+    report_template_by_filter_name = {
+        "filter_by_sequence_index": "{count} had no sequence data",
+        "filter_by_exclude_all": "{count} of these were dropped by `--exclude-all`",
+        "filter_by_exclude": "{count} of these were dropped because they were in {exclude_file}",
+        "filter_by_exclude_where": "{count} of these were dropped because of '{exclude_where}'",
+        "filter_by_query": "{count} of these were filtered out by the query: \"{query}\"",
+        "filter_by_ambiguous_date": "{count} of these were dropped because of their ambiguous date in {ambiguity}",
+        "filter_by_date": "{count} of these were dropped because of their date (or lack of date)",
+        "filter_by_sequence_length": "{count} of these were dropped because they were shorter than minimum length of {min_length}bp",
+        "filter_by_non_nucleotide": "{count} of these were dropped because they had non-nucleotide characters",
+        "include": "{count} strains were added back because they were in {include_file}",
+        "include_by_include_where": "{count} sequences were added back because of '{include_where}'",
+    }
+    if len(filter_counts) > 0:
+        for (filter_name, filter_kwargs), count in filter_counts.items():
+            parameters = dict(json.loads(filter_kwargs))
+            parameters["count"] = count
+            print("\t" + report_template_by_filter_name[filter_name].format(**parameters))
 
-        if args.exclude:
-            num_excluded_by_name = sequences_to_filter.query("filter == 'filter_by_exclude'").shape[0]
-            print("\t%i of these were dropped because they were in %s" % (num_excluded_by_name, args.exclude))
-
-        if args.exclude_where:
-            num_excluded_by_metadata = sequences_to_filter.query("filter == 'filter_by_exclude_where'").groupby("kwargs")["strain"].count().to_dict()
-            for key,val in num_excluded_by_metadata.items():
-                print("\t%i of these were dropped because of '%s'" % (val, key.replace("exclude_where:", "")))
-
-        if args.query:
-            num_excluded_by_query = sequences_to_filter.query("filter == 'filter_by_query'").shape[0]
-            print("\t%i of these were filtered out by the query: \"%s\"" % (num_excluded_by_query, args.query))
-
-        if args.exclude_ambiguous_dates_by:
-            num_excluded_by_ambiguous_date = sequences_to_filter.query("filter == 'filter_by_ambiguous_date'").shape[0]
-            print("\t%i of these were dropped because of their ambiguous date in %s" % (num_excluded_by_ambiguous_date, args.exclude_ambiguous_dates_by))
-
-        if (args.min_date or args.max_date) and 'date' in meta_columns:
-            num_excluded_by_date = sequences_to_filter.query("filter == 'filter_by_date'").shape[0]
-            print("\t%i of these were dropped because of their date (or lack of date)" % (num_excluded_by_date))
-
-        if args.min_length:
-            num_excluded_by_length = sequences_to_filter.query("filter == 'filter_by_sequence_length'").shape[0]
-            print("\t%i of these were dropped because they were shorter than minimum length of %sbp" % (num_excluded_by_length, args.min_length))
-
-        if args.non_nucleotide:
-            num_excluded_by_nuc = sequences_to_filter.query("filter == 'filter_by_non_nucleotide'").shape[0]
-            print("\t%i of these were dropped because they had non-nucleotide characters" % (num_excluded_by_nuc))
-
-    if (args.group_by and args.sequences_per_group) or args.subsample_max_sequences:
+    if (group_by and args.sequences_per_group) or args.subsample_max_sequences:
         seed_txt = ", using seed {}".format(args.subsample_seed) if args.subsample_seed else ""
         print("\t%i of these were dropped because of subsampling criteria%s" % (num_excluded_subsamp, seed_txt))
-
-    if len(sequences_to_include) > 0:
-        print()
-
-        if args.include:
-            num_included_by_name = sequences_to_include.query("filter == 'include'").shape[0]
-            print(f"\t{num_included_by_name} strains were added back because they were requested by include files")
-
-        if args.include_where:
-            num_included_by_metadata = sequences_to_include.query("filter == 'include_by_query'").groupby("kwargs")["strain"].count().to_dict()
-            for key,val in num_included_by_metadata.items():
-                print("\t%i sequences were added back because of '%s'" % (val, key.replace("include_where:", "")))
 
     if total_strains_passed == 0:
         print("ERROR: All samples have been dropped! Check filter rules and metadata file format.", file=sys.stderr)
@@ -1352,6 +1693,47 @@ def numeric_date(date):
         return float(date)
     except ValueError:
         return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))
+
+
+def calculate_sequences_per_group(target_max_value, counts_per_group, probabilistic=True):
+    """Calculate the number of sequences per group for a given maximum number of
+    sequences to be returned and the number of sequences in each requested
+    group. Optionally, allow the result to be probabilistic such that the mean
+    result of a Poisson process achieves the calculated sequences per group for
+    the given maximum.
+
+    Parameters
+    ----------
+    target_max_value : int
+        Maximum number of sequences to return by subsampling at some calculated
+        number of sequences per group for the given counts per group.
+    counts_per_group : list[int]
+        A list with the number of sequences in each requested group.
+    probabilistic : bool
+        Whether to allow probabilistic subsampling when the number of groups
+        exceeds the requested maximum.
+
+    Returns
+    -------
+    int or float :
+        Number of sequences per group.
+
+    """
+    try:
+        sequences_per_group = _calculate_sequences_per_group(
+            target_max_value,
+            counts_per_group,
+        )
+    except TooManyGroupsError as error:
+        if probabilistic:
+            sequences_per_group = _calculate_fractional_sequences_per_group(
+                target_max_value,
+                counts_per_group,
+            )
+        else:
+            raise error
+
+    return sequences_per_group
 
 
 class TooManyGroupsError(ValueError):

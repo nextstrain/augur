@@ -27,8 +27,8 @@ Filter with subsampling, requesting 1 sequence per group (for a group with 3 dis
   \s*3 .* (re)
   $ rm -f "$TMP/filtered_strains.txt"
 
-Filter with subsampling, requesting no more than 10 sequences.
-With 10 groups to subsample from, this should produce one sequence per group.
+Filter with subsampling, requesting no more than 8 sequences.
+With 8 groups to subsample from (after filtering), this should produce one sequence per group.
 
   $ ${AUGUR} filter \
   >  --sequences filter/sequences.fasta \
@@ -36,12 +36,12 @@ With 10 groups to subsample from, this should produce one sequence per group.
   >  --metadata filter/metadata.tsv \
   >  --min-date 2012 \
   >  --group-by country year month \
-  >  --subsample-max-sequences 10 \
+  >  --subsample-max-sequences 8 \
   >  --subsample-seed 314159 \
   >  --no-probabilistic-sampling \
   >  --output "$TMP/filtered.fasta" > /dev/null
   $ grep ">" "$TMP/filtered.fasta" | wc -l
-  \s*10 (re)
+  \s*8 (re)
   $ rm -f "$TMP/filtered.fasta"
 
 Filter with subsampling where no more than 5 sequences are requested and no groups are specified.
@@ -259,6 +259,7 @@ Filter TB strains from VCF and save as a list of filtered strains.
   >  --min-date 2012 \
   >  --min-length 10500 \
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
+  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   $ wc -l "$TMP/filtered_strains.txt"
   \s*3 .* (re)
   $ rm -f "$TMP/filtered_strains.txt"
@@ -279,14 +280,25 @@ The query initially filters 3 strains from Colombia, one of which is added back 
   >  --output-strains "$TMP/filtered_strains.txt" \
   >  --output-log "$TMP/filtered_log.tsv"
   4 strains were dropped during filtering
-  \t1 had no sequence data (esc)
   \t1 had no metadata (esc)
+  \t1 had no sequence data (esc)
   \t3 of these were filtered out by the query: "country != 'Colombia'" (esc)
-  \t0 of these were dropped because of their ambiguous date in year (esc)
-  \t0 of these were dropped because they had non-nucleotide characters (esc)
-   (esc)
-  \t1 strains were added back because they were requested by include files (esc)
+  \t1 strains were added back because they were in filter/include.txt (esc)
   8 strains passed all filters
 
   $ diff -u <(sort -k 1,1 filter/filtered_log.tsv) <(sort -k 1,1 "$TMP/filtered_log.tsv")
+  $ rm -f "$TMP/filtered_strains.txt"
+
+Subsample one strain per year with priorities.
+There are two years (2015 and 2016) represented in the metadata.
+The two highest priority strains are in these two years.
+
+  $ ${AUGUR} filter \
+  >  --metadata filter/metadata.tsv \
+  >  --group-by year \
+  >  --priority filter/priorities.tsv \
+  >  --sequences-per-group 1 \
+  >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
+
+  $ diff -u <(sort -k 2,2rn -k 1,1 filter/priorities.tsv | head -n 2 | cut -f 1) <(sort -k 1,1 "$TMP/filtered_strains.txt")
   $ rm -f "$TMP/filtered_strains.txt"
