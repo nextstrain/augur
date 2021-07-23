@@ -242,6 +242,7 @@ Repeat with sequence and strain outputs. We should get the same results.
   >  --max-date 2020-01-30 \
   >  --output-strains "$TMP/filtered_strains.txt" \
   >  --output-sequences "$TMP/filtered.fasta" > /dev/null
+  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   ERROR: All samples have been dropped! Check filter rules and metadata file format.
   [1]
   $ wc -l "$TMP/filtered_strains.txt"
@@ -257,7 +258,6 @@ Filter TB strains from VCF and save as a list of filtered strains.
   >  --sequences filter/tb.vcf.gz \
   >  --metadata filter/tb_metadata.tsv \
   >  --min-date 2012 \
-  >  --min-length 10500 \
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
   Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   $ wc -l "$TMP/filtered_strains.txt"

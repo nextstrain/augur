@@ -19,9 +19,9 @@ from tempfile import NamedTemporaryFile
 import treetime.utils
 from typing import Collection
 
-from .index import index_sequences
+from .index import index_sequences, index_vcf
 from .io import open_file, read_sequences, write_sequences
-from .utils import read_strains, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
+from .utils import is_vcf as filename_is_vcf, read_vcf, read_strains, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
 
 comment_char = '#'
 MAX_NUMBER_OF_PROBABILISTIC_SAMPLING_ATTEMPTS = 10
@@ -102,46 +102,6 @@ def read_metadata(metadata_file, **kwargs):
         metadata_file,
         **default_kwargs
     )
-
-
-def filename_is_vcf(filename):
-    """Returns whether the given file likely represents a VCF.
-
-    Parameters
-    ----------
-    filename : str
-        Filename to test.
-
-    Returns
-    -------
-    bool :
-        Whether filename represents a VCF or not.
-
-    >>> filename_is_vcf("my_data.vcf")
-    True
-    >>> filename_is_vcf("my_data.vcf.gz")
-    True
-    >>> filename_is_vcf("my_data.csv")
-    False
-
-    """
-    return filename and any(filename.lower().endswith(x) for x in ('.vcf', '.vcf.gz'))
-
-
-def read_vcf(filename):
-    if filename.lower().endswith(".gz"):
-        import gzip
-        file = gzip.open(filename, mode="rt", encoding='utf-8')
-    else:
-        file = open(filename, encoding='utf-8')
-
-    chrom_line = next(line for line in file if line.startswith("#C"))
-    file.close()
-    headers = chrom_line.strip().split("\t")
-    sequences = headers[headers.index("FORMAT") + 1:]
-
-    # because we need 'seqs to remove' for VCF
-    return sequences, sequences.copy()
 
 
 def write_vcf(input_filename, output_filename, dropped_samps):
@@ -657,6 +617,15 @@ def construct_filters(args, sequence_index):
         # filtering logic.
         return exclude_by, include_by
 
+    # Filter by sequence index.
+    if sequence_index is not None:
+        exclude_by.append((
+            filter_by_sequence_index,
+            {
+                "sequence_index": sequence_index,
+            },
+        ))
+
     # Remove strains explicitly excluded by name.
     if args.exclude:
         for exclude_file in args.exclude:
@@ -701,15 +670,6 @@ def construct_filters(args, sequence_index):
                 "min_date": args.min_date,
                 "max_date": args.max_date,
             }
-        ))
-
-    # Filter by sequence index.
-    if sequence_index is not None:
-        exclude_by.append((
-            filter_by_sequence_index,
-            {
-                "sequence_index": sequence_index,
-            },
         ))
 
     # Filter by sequence length.
@@ -1246,24 +1206,19 @@ def run(args):
     if not validate_arguments(args):
         return 1
 
-    # Load sequence names from VCF or a sequence index. Sequence information is
-    # optional. Determine whether the sequence index exists or whether should be
-    # generated. We need to generate an index if sequence output has been
-    # requested (so we can filter strains by sequences that are present) or if
-    # any other sequence-based filters have been requested.
+    # Determine whether the sequence index exists or whether should be
+    # generated. We need to generate an index if the input sequences are in a
+    # VCF, if sequence output has been requested (so we can filter strains by
+    # sequences that are present), or if any other sequence-based filters have
+    # been requested.
     sequence_strains = None
     sequence_index_path = args.sequence_index
     build_sequence_index = False
-
-    # If VCF, open and get sequence names
     is_vcf = filename_is_vcf(args.sequences)
 
-    if is_vcf:
-        vcf_sequences, _ = read_vcf(args.sequences)
-        sequence_strains = set(vcf_sequences)
-    elif sequence_index_path is None and args.sequences:
+    if sequence_index_path is None and args.sequences:
         sequence_filters_requested = any(getattr(args, arg) for arg in SEQUENCE_ONLY_FILTERS)
-        if args.output or sequence_filters_requested:
+        if is_vcf or args.output or sequence_filters_requested:
             build_sequence_index = True
 
     if build_sequence_index:
@@ -1279,8 +1234,14 @@ def run(args):
             "You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.",
             file=sys.stderr
         )
-        index_sequences(args.sequences, sequence_index_path)
 
+        if is_vcf:
+            index_vcf(args.sequences, sequence_index_path)
+        else:
+            index_sequences(args.sequences, sequence_index_path)
+
+    # Load the sequence index, if a path exists.
+    sequence_index = None
     if sequence_index_path:
         sequence_index = pd.read_csv(
             sequence_index_path,

@@ -9,12 +9,48 @@ import sys
 import csv
 
 from .io import open_file, read_sequences
+from .utils import is_vcf, read_vcf
 
 
 def register_arguments(parser):
-    parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta format")
+    parser.add_argument('--sequences', '-s', required=True, help="sequences in FASTA or VCF formats. Augur will summarize the content of FASTA sequences and only report the names of strains found in a given VCF.")
     parser.add_argument('--output', '-o', help="tab-delimited file containing the number of bases per sequence in the given file. Output columns include strain, length, and counts for A, C, G, T, N, other valid IUPAC characters, ambiguous characters ('?' and '-'), and other invalid characters.", required=True)
     parser.add_argument('--verbose', '-v', action="store_true", help="print index statistics to stdout")
+
+
+def index_vcf(vcf_path, index_path):
+    """Create an index with a list of strain names from a given VCF. We do not
+    calculate any statistics for VCFs.
+
+    Parameters
+    ----------
+    vcf_path : str or Path-like
+        path to a VCF file to index.
+    index_path : str or Path-like
+        path to a tab-delimited file containing the composition details for each
+        sequence in the given input file.
+
+    Returns
+    -------
+    int :
+        number of strains indexed
+
+    """
+    strains, _ = read_vcf(vcf_path)
+    num_of_seqs = 0
+
+    with open_file(index_path, 'wt') as out_file:
+        tsv_writer = csv.writer(out_file, delimiter = '\t')
+
+        #write header i output file
+        header = ['strain']
+        tsv_writer.writerow(header)
+
+        for record in strains:
+            tsv_writer.writerow([record])
+            num_of_seqs += 1
+
+    return num_of_seqs
 
 
 def index_sequence(sequence, values):
@@ -165,11 +201,18 @@ def run(args):
     the composition as a data frame to the given sequence index path.
     '''
     try:
-        num_of_seqs, tot_length = index_sequences(args.sequences, args.output)
+        if is_vcf(args.sequences):
+            num_of_seqs = index_vcf(args.sequences, args.output)
+            tot_length = None
+        else:
+            num_of_seqs, tot_length = index_sequences(args.sequences, args.output)
     except ValueError as error:
         print("ERROR: Problem reading in {}:".format(sequences_path), file=sys.stderr)
         print(error, file=sys.stderr)
         return 1
 
     if args.verbose:
-        print("Analysed %i sequences with an average length of %i nucleotides." % (num_of_seqs, int(tot_length / num_of_seqs)))
+        if tot_length:
+            print("Analysed %i sequences with an average length of %i nucleotides." % (num_of_seqs, int(tot_length / num_of_seqs)))
+        else:
+            print("Analysed %i sequences" % num_of_seqs)
