@@ -1,10 +1,9 @@
 # Installation
 
-- [Installation](#installation)
-  - [Using conda](#using-conda)
-  - [Using pip from PyPi](#using-pip-from-pypi)
-  - [Install from source](#install-from-source)
-  - [Testing if it worked](#testing-if-it-worked)
+* [Using conda](#using-conda)
+* [Using pip from PyPi](#using-pip-from-pypi)
+* [Install from source](#install-from-source)
+* [Testing if it worked](#testing-if-it-worked)
 
 ---
 

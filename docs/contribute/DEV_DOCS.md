@@ -30,21 +30,15 @@ Please see the [project board](https://github.com/orgs/nextstrain/projects/6) fo
 [Install Miniconda with Python 3](https://docs.conda.io/en/latest/miniconda.html).
 If you already have Miniconda installed with Python 2, download the latest Python 3 version and [follow conda's installation instructions](https://conda.io/projects/conda/en/latest/user-guide/install/index.html). Any prior versions of conda should be updated before continuing installation.
 
-Create a new conda environment.
-```bash
-conda create -n nextstrain
-conda activate nextstrain
-```
-
-Install mamba, if you haven't already.
-This makes installation from conda-forge much faster.
+Install mamba, if you haven't already. This makes installation from conda-forge much faster.
 ```bash
 conda install -c conda-forge mamba
 ```
 
-Install augur from conda with external dependencies.
+Create the nextstrain environment with augur as an explicit requirement for the environment's dependency resolution. This will create the new environment and install augur with the most appropriate version of Python.
+
 ```bash
-mamba install -c conda-forge -c bioconda augur
+mamba create -n nextstrain -c conda-forge -c bioconda augur
 ```
 
 Get the latest augur source code.
