@@ -907,12 +907,7 @@ def set_description(data_json, cmd_line_description_file):
     except FileNotFoundError:
         fatal("Provided desciption file {} does not exist".format(cmd_line_description_file))
 
-def parse_node_data_and_metadata(T, node_data_files, metadata_file):
-    node_data = read_node_data(node_data_files) # node_data_files is an array of multiple files (or a single file)
-    if metadata_file is not None:
-        metadata, _ = read_metadata(metadata_file)
-    else:
-        metadata = {}
+def parse_node_data_and_metadata(T, node_data, metadata):
     node_data_names = set()
     metadata_names = set()
 
@@ -958,13 +953,25 @@ def run_v2(args):
     configure_warnings()
     data_json = {"version": "v2", "meta": {"updated": time.strftime('%Y-%m-%d')}}
 
+    #load input files
+    try:
+        node_data_file = read_node_data(args.node_data) # node_data_files is an array of multiple files (or a single file)
+    except FileNotFoundError:
+        print(f"ERROR: node data file ({args.node_data}) does not exist")
+        sys.exit(2)
+
+    if args.metadata is not None:
+        try:
+            metadata_file, _ = read_metadata(args.metadata)
+        except FileNotFoundError:
+            print(f"ERROR: meta data file ({args.metadata}) does not exist")
+            sys.exit(2)
+    else:
+        metadata_file = {}
+
     # parse input files
     T = Phylo.read(args.tree, 'newick')
-    try:
-        node_data, node_attrs, node_data_names, metadata_names = parse_node_data_and_metadata(T, args.node_data, args.metadata)
-    except FileNotFoundError:
-        print(f"ERROR: meta data file ({args.metadata}) does not exist")
-        sys.exit(2)
+    node_data, node_attrs, node_data_names, metadata_names = parse_node_data_and_metadata(T, node_data_file, metadata_file)
     config = get_config(args)
 
     # set metadata data structures
