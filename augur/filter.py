@@ -20,7 +20,7 @@ import treetime.utils
 from typing import Collection
 
 from .index import index_sequences, index_vcf
-from .io import open_file, read_sequences, write_sequences
+from .io import open_file, read_metadata, read_sequences, write_sequences
 from .utils import is_vcf as filename_is_vcf, read_vcf, read_strains, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
 
 comment_char = '#'
@@ -36,72 +36,6 @@ class FilterException(Exception):
     """Representation of an error that occurred during filtering.
     """
     pass
-
-
-def read_metadata(metadata_file, **kwargs):
-    """Read metadata from a given filename and into a pandas `DataFrame` or
-    `TextFileReader` object.
-
-    Parameters
-    ----------
-    metadata_file : str
-        Path to a metadata file to load.
-
-    kwargs : dict
-        Keyword arguments to pass through to pandas.read_csv.
-
-    Returns
-    -------
-    pandas.DataFrame or pandas.TextFileReader
-
-    Raises
-    ------
-    FilterException :
-        When the metadata file does not have any valid index columns
-
-    """
-    default_kwargs = {
-        "sep": None,
-        "engine": "python",
-        "skipinitialspace": True,
-        "dtype": {
-            "strain": "string",
-            "name": "string,"
-        }
-    }
-    default_kwargs.update(kwargs)
-
-    # Try to index the data by "strain" or "name" or throw an error.
-    index_col = None
-    valid_index_cols = ("strain", "name")
-
-    for valid_index_col in valid_index_cols:
-        try:
-            chunk = pd.read_csv(
-                metadata_file,
-                index_col=valid_index_col,
-                iterator=True,
-                **default_kwargs,
-            ).read(nrows=1)
-
-            # If we could successfully load the first row with the current index
-            # column, this is a valid index column and we can stop looking.
-            index_col = valid_index_col
-            break
-        except KeyError:
-            # If we couldn't load the first row, try again with another valid
-            # index column.
-            pass
-
-    # If we couldn't find a valid index column in the metadata, alert the user.
-    if index_col is None:
-        raise FilterException(f"Could not find any valid index columns from the list of possible columns ({valid_index_cols})")
-
-    default_kwargs["index_col"] = index_col
-    return pd.read_csv(
-        metadata_file,
-        **default_kwargs
-    )
 
 
 def write_vcf(input_filename, output_filename, dropped_samps):

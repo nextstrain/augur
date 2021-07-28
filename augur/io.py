@@ -4,6 +4,7 @@
 import Bio.SeqIO
 import Bio.SeqRecord
 from contextlib import contextmanager
+import pandas as pd
 from pathlib import Path
 from xopen import xopen
 
@@ -33,6 +34,66 @@ def open_file(path_or_buffer, mode="r", **kwargs):
             yield handle
     except TypeError:
         yield path_or_buffer
+
+
+def read_metadata(metadata_file, valid_index_cols=("strain", "name"), **kwargs):
+    """Read metadata from a given filename and into a pandas `DataFrame` or
+    `TextFileReader` object.
+
+    Parameters
+    ----------
+    metadata_file : str
+        Path to a metadata file to load.
+    valid_index_cols : list[str]
+        List of possible index column names to check for, ordered by priority.
+    kwargs : dict
+        Keyword arguments to pass through to pandas.read_csv.
+
+    Returns
+    -------
+    pandas.DataFrame or pandas.TextFileReader
+
+    Raises
+    ------
+    KeyError :
+        When the metadata file does not have any valid index columns.
+
+    """
+    default_kwargs = {
+        "sep": None,
+        "engine": "python",
+        "skipinitialspace": True,
+        "dtype": {
+            "strain": "string",
+            "name": "string,"
+        }
+    }
+    default_kwargs.update(kwargs)
+
+    # Inspect the first chunk of the metadata, to find any valid index columns.
+    chunk = pd.read_csv(
+        metadata_file,
+        iterator=True,
+        **default_kwargs,
+    ).read(nrows=1)
+
+    index_cols = [
+        valid_index_col
+        for valid_index_col in valid_index_cols
+        if valid_index_col in chunk.columns
+    ]
+
+    # If we couldn't find a valid index column in the metadata, alert the user.
+    if len(index_cols) == 0:
+        raise KeyError(f"Could not find any valid index columns from the list of possible columns ({valid_index_cols})")
+    else:
+        index_col = index_cols[0]
+
+    default_kwargs["index_col"] = index_col
+    return pd.read_csv(
+        metadata_file,
+        **default_kwargs
+    )
 
 
 def read_sequences(*paths, format="fasta"):
