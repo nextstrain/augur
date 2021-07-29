@@ -192,10 +192,16 @@ def filter_by_exclude_where(metadata, exclude_where):
     """
     column, op, value = parse_filter_query(exclude_where)
     if column in metadata.columns:
-        excluded = op(metadata[column].astype(str).str.lower(), value.lower())
+        # Apply a test operator (equality or inequality) to values from the
+        # column in the given query. This produces an array of boolean values we
+        # can index with.
+        excluded = op(
+            metadata[column].astype(str).str.lower(),
+            value.lower()
+        )
 
-        # Negate the boolean index of excluded strains to get the index of strains
-        # that passed the filter.
+        # Negate the boolean index of excluded strains to get the index of
+        # strains that passed the filter.
         included = ~excluded
         filtered = set(metadata[included].index.values)
     else:
@@ -489,7 +495,13 @@ def include_by_include_where(metadata, include_where):
     column, op, value = parse_filter_query(include_where)
 
     if column in metadata.columns:
-        included_index = op(metadata[column].astype(str).str.lower(), value.lower())
+        # Apply a test operator (equality or inequality) to values from the
+        # column in the given query. This produces an array of boolean values we
+        # can index with.
+        included_index = op(
+            metadata[column].astype(str).str.lower(),
+            value.lower()
+        )
         included = set(metadata[included_index].index.values)
     else:
         # Skip the inclusion filter if the requested column does not exist.
@@ -499,7 +511,8 @@ def include_by_include_where(metadata, include_where):
 
 
 def construct_filters(args, sequence_index):
-    """Construct lists of filters and inclusion criteria based on user-provided arguments.
+    """Construct lists of filters and inclusion criteria based on user-provided
+    arguments.
 
     Parameters
     ----------
@@ -545,11 +558,6 @@ def construct_filters(args, sequence_index):
     # Exclude all strains by default.
     if args.exclude_all:
         exclude_by.append((filter_by_exclude_all, {}))
-
-        # Stop processing all other filters, if excluding all strains. This
-        # filter is used in combination with include criteria to skip all
-        # filtering logic.
-        return exclude_by, include_by
 
     # Filter by sequence index.
     if sequence_index is not None:
@@ -763,10 +771,6 @@ def apply_filters(metadata, exclude_by, include_by):
                 })
 
     for filter_function, filter_kwargs in exclude_by:
-        # Use a human-readable name for each filter when reporting why a strain
-        # was excluded.
-        filter_name = filter_function.__name__
-
         # Apply the current function with its given arguments. Each function
         # returns a set of strains that passed the corresponding filter.
         passed = metadata.pipe(
@@ -782,6 +786,9 @@ def apply_filters(metadata, exclude_by, include_by):
 
         # Track the reason each strain was filtered for downstream reporting.
         if len(failed) > 0:
+            # Use a human-readable name for each filter when reporting why a strain
+            # was excluded.
+            filter_name = filter_function.__name__
             filter_kwargs_str = filter_kwargs_to_str(filter_kwargs)
             for strain in failed:
                 strains_to_filter.append({
@@ -933,35 +940,35 @@ class PriorityQueue:
 
     Add a single record to a heap with a maximum of 2 records.
 
-    >>> heap = PriorityQueue(max_size=2)
-    >>> heap.add({"strain": "strain1"}, 0.5)
+    >>> queue = PriorityQueue(max_size=2)
+    >>> queue.add({"strain": "strain1"}, 0.5)
     1
 
-    Add another record with a higher priority. The heap should be at its maximum
+    Add another record with a higher priority. The queue should be at its maximum
     size.
 
-    >>> heap.add({"strain": "strain2"}, 1.0)
+    >>> queue.add({"strain": "strain2"}, 1.0)
     2
-    >>> heap.heap
+    >>> queue.heap
     [(0.5, 0, {'strain': 'strain1'}), (1.0, 1, {'strain': 'strain2'})]
-    >>> list(heap.get_items())
+    >>> list(queue.get_items())
     [{'strain': 'strain1'}, {'strain': 'strain2'}]
 
-    Add a higher priority record that causes the heap to exceed its maximum
-    size. The resulting heap should contain the two highest priority records
+    Add a higher priority record that causes the queue to exceed its maximum
+    size. The resulting queue should contain the two highest priority records
     after the lowest priority record is removed.
 
-    >>> heap.add({"strain": "strain3"}, 2.0)
+    >>> queue.add({"strain": "strain3"}, 2.0)
     2
-    >>> list(heap.get_items())
+    >>> list(queue.get_items())
     [{'strain': 'strain2'}, {'strain': 'strain3'}]
 
     Add a record with the same priority as another record, forcing the duplicate
     to be resolved by removing the oldest entry.
 
-    >>> heap.add({"strain": "strain4"}, 1.0)
+    >>> queue.add({"strain": "strain4"}, 1.0)
     2
-    >>> list(heap.get_items())
+    >>> list(queue.get_items())
     [{'strain': 'strain4'}, {'strain': 'strain3'}]
 
     Assign a fractional maximum size such that the corresponding queue limit is
@@ -969,8 +976,8 @@ class PriorityQueue:
     get a max size that is no more than 10 (this is an arbitrarily high number
     above what we see for Poisson samples drawn with a mean of 0.1).
 
-    >>> heap = PriorityQueue(max_size=0.1)
-    >>> heap.max_size in set(range(10))
+    >>> queue = PriorityQueue(max_size=0.1)
+    >>> queue.max_size in set(range(10))
     True
 
     """
@@ -1202,38 +1209,40 @@ def run(args):
 
     # Setup grouping. We handle the following major use cases:
     #
-    # 1. group by and maximum sequences defined -> use the first pass through
+    # 1. group by and sequences per group defined -> use the given values by the
+    # user to identify the highest priority records from each group in a single
+    # pass through the metadata.
+    #
+    # 2. group by and maximum sequences defined -> use the first pass through
     # the metadata to count the number of records in each group, calculate the
     # sequences per group that satisfies the requested maximum, and use a second
     # pass through the metadata to select that many sequences per group.
     #
-    # 2. group by not defined but maximum sequences defined -> use a "dummy"
+    # 3. group by not defined but maximum sequences defined -> use a "dummy"
     # group such that we select at most the requested maximum number of
     # sequences in a single pass through the metadata.
     #
-    # 3. group by and sequences per group defined -> use the given values by the
-    # user to identify the highest priority records from each group in a single
-    # pass through the metadata.
-    #
-    # Each case relies on a min heap to track the highest priority records per
-    # group. In the best case, we can track these records in a single pass
+    # Each case relies on a priority queue to track the highest priority records
+    # per group. In the best case, we can track these records in a single pass
     # through the metadata. In the worst case, we don't know how many sequences
-    # per group to limit the heaps to, so we need to calculate this number after
-    # the first pass and use a second pass to add records to the heap.
+    # per group to use, so we need to calculate this number after the first pass
+    # and use a second pass to add records to the queue.
     group_by = args.group_by
     sequences_per_group = args.sequences_per_group
     records_per_group = None
 
     if group_by and args.subsample_max_sequences:
+        # In this case, we need two passes through the metadata with the first
+        # pass used to count the number of records per group.
         records_per_group = defaultdict(int)
     elif not group_by and args.subsample_max_sequences:
         group_by = ("_dummy",)
         sequences_per_group = args.subsample_max_sequences
 
-    # If we are grouping data, use heaps to store the highest priority strains
+    # If we are grouping data, use queues to store the highest priority strains
     # for each group. When no priorities are provided, they will be randomly
     # generated.
-    heaps_by_group = None
+    queues_by_group = None
     if group_by:
         # Use user-defined priorities, if possible. Otherwise, setup a
         # corresponding dictionary that returns a random float for each strain.
@@ -1308,7 +1317,7 @@ def run(args):
             # so we can properly account for each strain (e.g., including
             # those that were initially filtered for one reason and then
             # included again for another reason).
-            if output_log_writer:
+            if args.output_log:
                 output_log_writer.writerow(filtered_strain)
 
         if group_by:
@@ -1331,13 +1340,13 @@ def run(args):
                 else:
                     # Track the highest priority records, when we already
                     # know the number of sequences allowed per group.
-                    if heaps_by_group is None:
-                        heaps_by_group = defaultdict(priority_queue_factory(
+                    if queues_by_group is None:
+                        queues_by_group = defaultdict(priority_queue_factory(
                             max_size=sequences_per_group,
                         ))
 
                     for strain, group in group_by_strain.items():
-                        heaps_by_group[group].add(
+                        queues_by_group[group].add(
                             metadata.loc[strain],
                             priorities[strain],
                         )
@@ -1397,8 +1406,8 @@ def run(args):
             print(f"ERROR: {error}", file=sys.stderr)
             sys.exit(1)
 
-        if heaps_by_group is None:
-            heaps_by_group = defaultdict(priority_queue_factory(
+        if queues_by_group is None:
+            queues_by_group = defaultdict(priority_queue_factory(
                 max_size=sequences_per_group,
             ))
 
@@ -1418,25 +1427,25 @@ def run(args):
             )
 
             for strain, group in group_by_strain.items():
-                heaps_by_group[group].add(
+                queues_by_group[group].add(
                     metadata.loc[strain],
                     priorities[strain],
                 )
 
-    # If we have any records in heaps, we have grouped results and need to
+    # If we have any records in queues, we have grouped results and need to
     # stream the highest priority records to the requested outputs.
-    if heaps_by_group:
-        # Populate the set of strains to keep from the records in heaps.
+    if queues_by_group:
+        # Populate the set of strains to keep from the records in queues.
         subsampled_strains = set()
-        for group, heap in heaps_by_group.items():
-            heap_records = []
-            for record in heap.get_items():
+        for group, queue in queues_by_group.items():
+            records = []
+            for record in queue.get_items():
                 # Each record is a pandas.Series instance. Track the name of the
                 # record, so we can output its sequences later.
                 subsampled_strains.add(record.name)
 
                 # Construct a data frame of records to simplify metadata output.
-                heap_records.append(record)
+                records.append(record)
 
                 if args.output_strains:
                     # TODO: Output strains will no longer be ordered. This is a
@@ -1444,9 +1453,9 @@ def run(args):
                     output_strains.write(f"{record.name}\n")
 
             # Write records to metadata output, if requested.
-            if args.output_metadata and len(heap_records) > 0:
-                heap_records = pd.DataFrame(heap_records)
-                heap_records.to_csv(
+            if args.output_metadata and len(records) > 0:
+                records = pd.DataFrame(records)
+                records.to_csv(
                     args.output_metadata,
                     sep="\t",
                     header=metadata_header,
@@ -1470,8 +1479,7 @@ def run(args):
         valid_strains = subsampled_strains
 
     # Force inclusion of specific strains after filtering and subsampling.
-    if len(all_sequences_to_include) > 0:
-        valid_strains = valid_strains | all_sequences_to_include
+    valid_strains = valid_strains | all_sequences_to_include
 
     # Write output starting with sequences, if they've been requested. It is
     # possible for the input sequences and sequence index to be out of sync
@@ -1508,7 +1516,7 @@ def run(args):
             if sequence_strains is not None and observed_sequence_strains > sequence_strains:
                 print(
                     "WARNING: The sequence index is out of sync with the provided sequences.",
-                    "Augur will only output strains with available sequences.",
+                    "Metadata and strain output may not match sequence output.",
                     file=sys.stderr
                 )
 
@@ -1551,11 +1559,10 @@ def run(args):
         "include": "{count} strains were added back because they were in {include_file}",
         "include_by_include_where": "{count} sequences were added back because of '{include_where}'",
     }
-    if len(filter_counts) > 0:
-        for (filter_name, filter_kwargs), count in filter_counts.items():
-            parameters = dict(json.loads(filter_kwargs))
-            parameters["count"] = count
-            print("\t" + report_template_by_filter_name[filter_name].format(**parameters))
+    for (filter_name, filter_kwargs), count in filter_counts.items():
+        parameters = dict(json.loads(filter_kwargs))
+        parameters["count"] = count
+        print("\t" + report_template_by_filter_name[filter_name].format(**parameters))
 
     if (group_by and args.sequences_per_group) or args.subsample_max_sequences:
         seed_txt = ", using seed {}".format(args.subsample_seed) if args.subsample_seed else ""
@@ -1607,6 +1614,12 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, probabilis
     probabilistic : bool
         Whether to allow probabilistic subsampling when the number of groups
         exceeds the requested maximum.
+
+    Raises
+    ------
+    TooManyGroupsError :
+        When there are more groups than sequences per group and probabilistic
+        subsampling is not enabled.
 
     Returns
     -------
