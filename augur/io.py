@@ -36,7 +36,7 @@ def open_file(path_or_buffer, mode="r", **kwargs):
         yield path_or_buffer
 
 
-def read_metadata(metadata_file, valid_index_cols=("strain", "name"), **kwargs):
+def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None):
     """Read metadata from a given filename and into a pandas `DataFrame` or
     `TextFileReader` object.
 
@@ -44,10 +44,10 @@ def read_metadata(metadata_file, valid_index_cols=("strain", "name"), **kwargs):
     ----------
     metadata_file : str
         Path to a metadata file to load.
-    valid_index_cols : list[str]
-        List of possible index column names to check for, ordered by priority.
-    kwargs : dict
-        Keyword arguments to pass through to pandas.read_csv.
+    id_columns : list[str]
+        List of possible id column names to check for, ordered by priority.
+    chunk_size : int
+        Size of chunks to stream from disk with an iterator instead of loading the entire input file into memory.
 
     Returns
     -------
@@ -58,41 +58,66 @@ def read_metadata(metadata_file, valid_index_cols=("strain", "name"), **kwargs):
     KeyError :
         When the metadata file does not have any valid index columns.
 
+    For standard use, request a metadata file and get a pandas DataFrame.
+
+    >>> read_metadata("tests/functional/filter/metadata.tsv").index.values[0]
+    'COL/FLR_00024/2015'
+
+    Requesting an index column that doesn't exist should produce an error.
+
+    >>> read_metadata("tests/functional/filter/metadata.tsv", id_columns=("Virus name",)) # doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+      ...
+    KeyError: ...
+
+    We also allow iterating through metadata in fixed chunk sizes.
+
+    >>> for chunk in read_metadata("tests/functional/filter/metadata.tsv", chunk_size=5):
+    ...     print(chunk.shape)
+    ...
+    (5, 14)
+    (5, 14)
+    (1, 14)
+
     """
-    default_kwargs = {
+    kwargs = {
         "sep": None,
         "engine": "python",
         "skipinitialspace": True,
-        "dtype": {
-            "strain": "string",
-            "name": "string,"
-        }
     }
-    default_kwargs.update(kwargs)
+
+    if chunk_size:
+        kwargs["chunksize"] = chunk_size
 
     # Inspect the first chunk of the metadata, to find any valid index columns.
     chunk = pd.read_csv(
         metadata_file,
         iterator=True,
-        **default_kwargs,
+        **kwargs,
     ).read(nrows=1)
 
-    index_cols = [
-        valid_index_col
-        for valid_index_col in valid_index_cols
-        if valid_index_col in chunk.columns
+    id_columns = [
+        id_column
+        for id_column in id_columns
+        if id_column in chunk.columns
     ]
 
     # If we couldn't find a valid index column in the metadata, alert the user.
-    if len(index_cols) == 0:
-        raise KeyError(f"Could not find any valid index columns from the list of possible columns ({valid_index_cols})")
+    if len(id_columns) == 0:
+        raise KeyError(f"Could not find any valid id columns from the list of possible columns ({id_columns})")
     else:
-        index_col = index_cols[0]
+        index_col = id_columns[0]
 
-    default_kwargs["index_col"] = index_col
+    # If we found a valid column to index the DataFrame, specify that column and
+    # also tell pandas that the column should be treated like a string instead
+    # of having its type inferred. This latter argument allows users to provide
+    # numerical ids that don't get converted to numbers by pandas.
+    kwargs["index_col"] = index_col
+    kwargs["dtype"] = {index_col: "string"}
+
     return pd.read_csv(
         metadata_file,
-        **default_kwargs
+        **kwargs
     )
 
 
