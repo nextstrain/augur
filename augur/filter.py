@@ -1158,7 +1158,7 @@ def run(args):
     build_sequence_index = False
     is_vcf = filename_is_vcf(args.sequences)
 
-    if sequence_index_path is None and args.sequences:
+    if sequence_index_path is None and args.sequences and not args.exclude_all:
         sequence_filters_requested = any(getattr(args, arg) for arg in SEQUENCE_ONLY_FILTERS)
         if is_vcf or args.output or sequence_filters_requested:
             build_sequence_index = True
