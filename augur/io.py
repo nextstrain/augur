@@ -65,10 +65,10 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
 
     Requesting an index column that doesn't exist should produce an error.
 
-    >>> read_metadata("tests/functional/filter/metadata.tsv", id_columns=("Virus name",)) # doctest: +IGNORE_EXCEPTION_DETAIL
+    >>> read_metadata("tests/functional/filter/metadata.tsv", id_columns=("Virus name",))
     Traceback (most recent call last):
       ...
-    KeyError: ...
+    Exception: None of the possible id columns (('Virus name',)) were found in the metadata's columns ('strain', 'virus', 'accession', 'date', 'region', 'country', 'division', 'city', 'db', 'segment', 'authors', 'url', 'title', 'journal', 'paper_url')
 
     We also allow iterating through metadata in fixed chunk sizes.
 
@@ -96,17 +96,17 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
         **kwargs,
     ).read(nrows=1)
 
-    id_columns = [
+    id_columns_present = [
         id_column
         for id_column in id_columns
         if id_column in chunk.columns
     ]
 
     # If we couldn't find a valid index column in the metadata, alert the user.
-    if len(id_columns) == 0:
-        raise KeyError(f"Could not find any valid id columns from the list of possible columns ({id_columns})")
+    if not id_columns_present:
+        raise Exception(f"None of the possible id columns ({id_columns!r}) were found in the metadata's columns {tuple(chunk.columns)!r}")
     else:
-        index_col = id_columns[0]
+        index_col = id_columns_present[0]
 
     # If we found a valid column to index the DataFrame, specify that column and
     # also tell pandas that the column should be treated like a string instead
