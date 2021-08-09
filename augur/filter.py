@@ -843,10 +843,10 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     If we try to group by columns that don't exist, we get an error.
 
     >>> group_by = ["missing_column"]
-    >>> get_groups_for_subsampling(strains, metadata, group_by) # doctest: +IGNORE_EXCEPTION_DETAIL
+    >>> get_groups_for_subsampling(strains, metadata, group_by)
     Traceback (most recent call last):
       ...
-    FilterException: The specified group-by categories (["missing_column"]) were not found.
+    augur.filter.FilterException: The specified group-by categories (['missing_column']) were not found. No sequences-per-group sampling will be done.
 
     If we try to group by some columns that exist and some that don't, we allow
     grouping to continue and print a warning message to stderr.
