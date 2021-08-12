@@ -10,9 +10,7 @@ import pandas as pd
 import numpy as np
 import operator
 import sys
-import datetime
 from tempfile import NamedTemporaryFile
-import treetime.utils
 
 from .index import index_sequences
 from .io import open_file, read_sequences, write_sequences
@@ -267,13 +265,13 @@ def filter_by_date(metadata, date_column="date", min_date=None, max_date=None):
         Strains that pass the filter
 
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> filter_by_date(metadata, min_date=numeric_date("2020-01-02"))
+    >>> filter_by_date(metadata, min_date="2020-01-02")
     {'strain2'}
-    >>> filter_by_date(metadata, max_date=numeric_date("2020-01-01"))
+    >>> filter_by_date(metadata, max_date="2020-01-01")
     {'strain1'}
-    >>> filter_by_date(metadata, min_date=numeric_date("2020-01-03"), max_date=numeric_date("2020-01-10"))
+    >>> filter_by_date(metadata, min_date="2020-01-03", max_date="2020-01-10")
     set()
-    >>> sorted(filter_by_date(metadata, min_date=numeric_date("2019-12-30"), max_date=numeric_date("2020-01-10")))
+    >>> sorted(filter_by_date(metadata, min_date="2019-12-30", max_date="2020-01-10"))
     ['strain1', 'strain2']
     >>> sorted(filter_by_date(metadata))
     ['strain1', 'strain2']
@@ -1011,24 +1009,6 @@ def run(args):
 
 def _filename_gz(filename):
     return filename.lower().endswith(".gz")
-
-
-def numeric_date(date):
-    """
-    Converts the given *date* string to a :py:class:`float`.
-
-    *date* may be given as a number (a float) with year as the integer part, or
-    in the YYYY-MM-DD (ISO 8601) syntax.
-
-    >>> numeric_date("2020.42")
-    2020.42
-    >>> numeric_date("2020-06-04")
-    2020.42486...
-    """
-    try:
-        return float(date)
-    except ValueError:
-        return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))
 
 
 class TooManyGroupsError(ValueError):
