@@ -1366,9 +1366,7 @@ def run(args):
 
         # Always write out strains that are force-included. Additionally, if
         # we are not grouping, write out metadata and strains that passed
-        # filters so far. TODO: This step does not filter strains by
-        # observed sequences (only by sequence index contents). This is a
-        # breaking change for the current interface.
+        # filters so far.
         strains_to_write = distinct_sequences_to_include
         if not group_by:
             strains_to_write = strains_to_write | seq_keep
