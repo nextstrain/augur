@@ -16,7 +16,7 @@ import treetime.utils
 
 from .index import index_sequences
 from .io import open_file, read_sequences, write_sequences
-from .utils import get_numerical_date_from_value, read_metadata, read_strains, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
+from .utils import read_metadata, read_strains, get_numerical_dates, get_numerical_date_from_value, run_shell_command, shquote, is_date_ambiguous
 
 comment_char = '#'
 MAX_NUMBER_OF_PROBABILISTIC_SAMPLING_ATTEMPTS = 10
