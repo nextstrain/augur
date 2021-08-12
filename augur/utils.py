@@ -98,21 +98,22 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None, raise_erro
     if type(value)!=str:
         if raise_error:
             raise ValueError(value)
-        else:
-            numerical_date = None
-    elif 'XX' in value:
+        return None
+    if 'XX' in value:
         ambig_date = ambiguous_date_to_date_range(value, fmt, min_max_year)
         if ambig_date is None or None in ambig_date:
-            numerical_date = [None, None] #don't send to numeric_date or will be set to today
+            return [None, None] #don't send to numeric_date or will be set to today
         else:
-            numerical_date = [numeric_date(d) for d in ambig_date]
-    else:
-        try:
-            numerical_date = numeric_date(datetime.strptime(value, fmt))
-        except:
-            numerical_date = None
-
-    return numerical_date
+            return [numeric_date(d) for d in ambig_date]
+    try:
+        return float(value)
+    except ValueError:
+        pass
+    try:
+        return numeric_date(datetime.strptime(value, fmt))
+    except:
+        pass
+    return None
 
 def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, min_max_year=None):
     if fmt:
