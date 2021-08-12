@@ -289,13 +289,15 @@ def filter_by_date(metadata, date_column="date", min_date=None, max_date=None):
         min_date = get_numerical_date_from_value(min_date, fmt=date_fmt)
         if type(min_date) is list:
             min_date = min_date[0]
-        filtered = {s for s in filtered if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s]) >= min_date}
+        if min_date:
+            filtered = {s for s in filtered if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s]) >= min_date}
 
     if max_date:
         max_date = get_numerical_date_from_value(max_date, fmt=date_fmt)
         if type(max_date) is list:
             max_date = max_date[-1]
-        filtered = {s for s in filtered if (np.isscalar(dates[s]) or all(dates[s])) and np.min(dates[s]) <= max_date}
+        if max_date:
+            filtered = {s for s in filtered if (np.isscalar(dates[s]) or all(dates[s])) and np.min(dates[s]) <= max_date}
 
     return filtered
 
