@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 12.1.0 (12 August 2021)
+
 ### Features
 
 * export: Add support for custom legend and color scale specifications in Auspice config files [#727][] (@jameshadfield)
