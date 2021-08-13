@@ -2,6 +2,13 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* filter: Fix parsing of missing data in metadata [#758][]
+* filter: Fix probabilistic sampling with small values [#759][]
+
+[#758]: https://github.com/nextstrain/augur/pull/758
+[#759]: https://github.com/nextstrain/augur/pull/759
 
 ## 12.1.0 (12 August 2021)
 
