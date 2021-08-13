@@ -131,6 +131,27 @@ class TestUtils:
         assert not utils.is_date_ambiguous("2019", "year")
         assert not utils.is_date_ambiguous("2019-10", "month")
 
+    def test_to_numeric_data(self):
+        assert utils.to_numeric_date("2019.1") == 2019.1
+        assert round(utils.to_numeric_date("2019"), 8) == 2019.00136986
+        assert round(utils.to_numeric_date("2019-04"), 8) == 2019.24794521
+        assert round(utils.to_numeric_date(datetime.date(2019, 4, 11)), 8) == 2019.27534247
+        with pytest.raises(ValueError):
+            utils.to_numeric_date(False)
+
+    def test_numeric_iso_conversion(self):
+        orig_date = "2019-04-11"
+        numeric_date = utils.to_numeric_date(orig_date)
+        iso = utils.numeric_date_to_iso(numeric_date)
+        assert str(iso) == orig_date
+
+    def test_generate_ambiguous_date(self):
+        assert str(utils.generate_ambiguous_date("2019")) == "2019-XX-XX"
+        assert str(utils.generate_ambiguous_date("2019-04")) == "2019-04-XX"
+        assert str(utils.generate_ambiguous_date("2019-04-11")) == "2019-04-11"
+        with pytest.raises(ValueError):
+            utils.generate_ambiguous_date("2019-04-11-invalid")
+
     def test_read_strains(self, tmpdir):
         # Write one list of filenames with some unnecessary whitespace.
         strains1 = Path(tmpdir) / Path("strains1.txt")

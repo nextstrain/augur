@@ -14,7 +14,7 @@ from tempfile import NamedTemporaryFile
 
 from .index import index_sequences
 from .io import open_file, read_sequences, write_sequences
-from .utils import read_metadata, read_strains, get_numerical_dates, get_numerical_date_from_value, run_shell_command, shquote, is_date_ambiguous
+from .utils import read_metadata, read_strains, get_numerical_dates, to_numeric_date_min, to_numeric_date_max, run_shell_command, shquote, is_date_ambiguous
 
 comment_char = '#'
 MAX_NUMBER_OF_PROBABILISTIC_SAMPLING_ATTEMPTS = 10
@@ -281,23 +281,14 @@ def filter_by_date(metadata, date_column="date", min_date=None, max_date=None):
     if not min_date and not max_date:
         return strains
 
-    date_fmt = "%Y-%m-%d"
-    dates = get_numerical_dates(metadata, fmt=date_fmt)
+    dates = get_numerical_dates(metadata, fmt="%Y-%m-%d")
     filtered = {strain for strain in strains if dates[strain] is not None}
 
     if min_date:
-        min_date = get_numerical_date_from_value(min_date, fmt=date_fmt)
-        if type(min_date) is list:
-            min_date = min_date[0]
-        if min_date:
-            filtered = {s for s in filtered if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s]) >= min_date}
+        filtered = {s for s in filtered if (np.isscalar(dates[s]) or all(dates[s])) and np.max(dates[s]) >= min_date}
 
     if max_date:
-        max_date = get_numerical_date_from_value(max_date, fmt=date_fmt)
-        if type(max_date) is list:
-            max_date = max_date[-1]
-        if max_date:
-            filtered = {s for s in filtered if (np.isscalar(dates[s]) or all(dates[s])) and np.min(dates[s]) <= max_date}
+        filtered = {s for s in filtered if (np.isscalar(dates[s]) or all(dates[s])) and np.min(dates[s]) <= max_date}
 
     return filtered
 
@@ -598,8 +589,8 @@ def register_arguments(parser):
         Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.
         (e.g., --query "country == 'Colombia'" or --query "(country == 'USA' & (division == 'Washington'))")"""
     )
-    metadata_filter_group.add_argument('--min-date', type=str, help="minimal cutoff for date, the cutoff date is inclusive; may be specified as an Augur-style numeric date (with the year as the integer part) or YYYY-MM-DD")
-    metadata_filter_group.add_argument('--max-date', type=str, help="maximal cutoff for date, the cutoff date is inclusive; may be specified as an Augur-style numeric date (with the year as the integer part) or YYYY-MM-DD")
+    metadata_filter_group.add_argument('--min-date', type=to_numeric_date_min, help="minimal cutoff for date, the cutoff date is inclusive; may be specified as an Augur-style numeric date (with the year as the integer part) or YYYY-MM-DD")
+    metadata_filter_group.add_argument('--max-date', type=to_numeric_date_max, help="maximal cutoff for date, the cutoff date is inclusive; may be specified as an Augur-style numeric date (with the year as the integer part) or YYYY-MM-DD")
     metadata_filter_group.add_argument('--exclude-ambiguous-dates-by', choices=['any', 'day', 'month', 'year'],
                                 help='Exclude ambiguous dates by day (e.g., 2020-09-XX), month (e.g., 2020-XX-XX), year (e.g., 200X-10-01), or any date fields. An ambiguous year makes the corresponding month and day ambiguous, too, even if those fields have unambiguous values (e.g., "201X-10-01"). Similarly, an ambiguous month makes the corresponding day ambiguous (e.g., "2010-XX-01").')
     metadata_filter_group.add_argument('--exclude', type=str, nargs="+", help="file(s) with list of strains to exclude")

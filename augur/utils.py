@@ -1,14 +1,14 @@
 import argparse
 import Bio
 import Bio.Phylo
-from datetime import datetime
+import datetime
 import gzip
 import os, json, sys
 import pandas as pd
 import subprocess
 import shlex
 from contextlib import contextmanager
-from treetime.utils import numeric_date
+from treetime.utils import numeric_date, datetime_from_numeric
 from collections import defaultdict
 from pkg_resources import resource_stream
 from io import TextIOWrapper
@@ -110,7 +110,7 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None, raise_erro
     except ValueError:
         pass
     try:
-        return numeric_date(datetime.strptime(value, fmt))
+        return numeric_date(datetime.datetime.strptime(value, fmt))
     except:
         pass
     return None
@@ -154,6 +154,85 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, m
             numerical_dates = dict(zip(strains, dates))
 
     return numerical_dates
+
+
+def to_numeric_date_min(date):
+    return to_numeric_date(date, ambiguity_resolver='min')
+
+
+def to_numeric_date_max(date):
+    return to_numeric_date(date, ambiguity_resolver='max')
+
+
+def to_numeric_date(date, ambiguity_resolver='min'):
+    """Return numeric date from string, [incomplete] ISO date string, or datetime.date object.
+
+    Parameters
+    ----------
+    date : str | datetime.date
+    ambiguity_resolver : str
+        'min' or 'max'
+
+    Returns
+    -------
+    float
+    """
+    if ambiguity_resolver not in {'min', 'max'}:
+        raise ValueError()
+
+    if type(date) is str:
+        if '.' in date:
+            return float(date)
+        else:
+            ambiguous_date = generate_ambiguous_date(date)
+            ambiguous_date_resolved = get_numerical_date_from_value(ambiguous_date, "%Y-%m-%d")
+            if type(ambiguous_date_resolved) is float:
+                return ambiguous_date_resolved
+            if type(ambiguous_date_resolved) is list:
+                if ambiguity_resolver == 'min':
+                    return ambiguous_date_resolved[0]
+                if ambiguity_resolver == 'max':
+                    return ambiguous_date_resolved[1]
+    if type(date) is datetime.date:
+        return numeric_date(date)
+    raise ValueError()
+
+
+def numeric_date_to_iso(numeric_date):
+    """Wrapper on treetime.utils.datetime_from_numeric() that returns date part only.
+
+    Parameters
+    ----------
+    numeric_date : float
+
+    Returns
+    -------
+    datetime.date
+    """
+    return datetime_from_numeric(numeric_date).date()
+
+
+def generate_ambiguous_date(date_str):
+    """Return ambiguous date (YYYY-MM-DD) from incomplete ISO date string.
+
+    Parameters
+    ----------
+    date_str : str
+        ISO date string that can be incomplete (e.g. 2019, 2019-04, 2019-04-11)
+
+    Returns
+    -------
+    str
+        pad XX for month and/or day if missing
+    """
+    parts = date_str.split('-')
+    if len(parts) == 3:
+        return date_str
+    if len(parts) == 2:
+        return f'{date_str}-XX'
+    if len(parts) == 1:
+        return f'{date_str}-XX-XX'
+    raise ValueError()
 
 
 class InvalidTreeError(Exception):

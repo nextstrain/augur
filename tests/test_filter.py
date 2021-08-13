@@ -240,7 +240,7 @@ class TestFilter:
     def test_filter_run_min_date_ambiguous(self, tmpdir, fasta_fn, argparser):
         """Test that filter --min-date accepts ambiguous dates"""
         out_fn = str(tmpdir / "out.fasta")
-        min_date = "2019-XX-XX"
+        min_date = "2019"
         meta_fn = write_metadata(tmpdir, (("strain","date"),
                                           ("SEQ_1","2018-XX-XX"),
                                           ("SEQ_2","2019-XX-XX"),
@@ -251,10 +251,24 @@ class TestFilter:
         output = SeqIO.to_dict(SeqIO.parse(out_fn, "fasta"))
         assert list(output.keys()) == ["SEQ_2", "SEQ_3"]
 
+    def test_filter_run_min_date_ambiguous_2(self, tmpdir, fasta_fn, argparser):
+        """Test that filter --min-date accepts ambiguous dates"""
+        out_fn = str(tmpdir / "out.fasta")
+        min_date = "2019-04"
+        meta_fn = write_metadata(tmpdir, (("strain","date"),
+                                          ("SEQ_1","2019-XX-XX"),
+                                          ("SEQ_2","2019-03-XX"),
+                                          ("SEQ_3","2019-04-XX")))
+        args = argparser('-s %s --metadata %s -o %s --min-date %s'
+                         % (fasta_fn, meta_fn, out_fn, min_date))
+        augur.filter.run(args)
+        output = SeqIO.to_dict(SeqIO.parse(out_fn, "fasta"))
+        assert list(output.keys()) == ["SEQ_1", "SEQ_3"]
+
     def test_filter_run_max_date_ambiguous(self, tmpdir, fasta_fn, argparser):
         """Test that filter --max-date accepts ambiguous dates"""
         out_fn = str(tmpdir / "out.fasta")
-        max_date = "2019-XX-XX"
+        max_date = "2019"
         meta_fn = write_metadata(tmpdir, (("strain","date"),
                                           ("SEQ_1","2018-XX-XX"),
                                           ("SEQ_2","2019-XX-XX"),
@@ -264,6 +278,20 @@ class TestFilter:
         augur.filter.run(args)
         output = SeqIO.to_dict(SeqIO.parse(out_fn, "fasta"))
         assert list(output.keys()) == ["SEQ_1", "SEQ_2"]
+
+    def test_filter_run_max_date_ambiguous_2(self, tmpdir, fasta_fn, argparser):
+        """Test that filter --max-date accepts ambiguous dates"""
+        out_fn = str(tmpdir / "out.fasta")
+        max_date = "2019-04"
+        meta_fn = write_metadata(tmpdir, (("strain","date"),
+                                          ("SEQ_1","2019-XX-XX"),
+                                          ("SEQ_2","2019-05-XX"),
+                                          ("SEQ_3","2019-04-XX")))
+        args = argparser('-s %s --metadata %s -o %s --max-date %s'
+                         % (fasta_fn, meta_fn, out_fn, max_date))
+        augur.filter.run(args)
+        output = SeqIO.to_dict(SeqIO.parse(out_fn, "fasta"))
+        assert list(output.keys()) == ["SEQ_1", "SEQ_3"]
 
     def test_filter_run_min_date_numeric(self, tmpdir, fasta_fn, argparser):
         """Test that filter --min-date accepts numeric dates"""
