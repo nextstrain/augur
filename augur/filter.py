@@ -298,20 +298,20 @@ def filter_by_date(metadata, date_column="date", min_date=None, max_date=None):
         Strains that pass the filter
 
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> filter_by_date(metadata, min_date="2020-01-02")
+    >>> filter_by_date(metadata, min_date=to_numeric_date_min("2020-01-02"))
     {'strain2'}
-    >>> filter_by_date(metadata, max_date="2020-01-01")
+    >>> filter_by_date(metadata, max_date=to_numeric_date_max("2020-01-01"))
     {'strain1'}
-    >>> filter_by_date(metadata, min_date="2020-01-03", max_date="2020-01-10")
+    >>> filter_by_date(metadata, min_date=to_numeric_date_min("2020-01-03"), max_date=to_numeric_date_max("2020-01-10"))
     set()
-    >>> sorted(filter_by_date(metadata, min_date="2019-12-30", max_date="2020-01-10"))
+    >>> sorted(filter_by_date(metadata, min_date=to_numeric_date_min("2019-12-30"), max_date=to_numeric_date_max("2020-01-10")))
     ['strain1', 'strain2']
     >>> sorted(filter_by_date(metadata))
     ['strain1', 'strain2']
 
     If the requested date column does not exist, we quietly skip this filter.
 
-    >>> sorted(filter_by_date(metadata, date_column="missing_column", min_date=numeric_date("2020-01-02")))
+    >>> sorted(filter_by_date(metadata, date_column="missing_column", min_date=to_numeric_date_min("2020-01-2")))
     ['strain1', 'strain2']
 
     """
@@ -667,7 +667,7 @@ def filter_kwargs_to_str(kwargs):
     >>> exclude_by = [(filter_by_sequence_length, {"sequence_index": sequence_index, "min_length": 27000})]
     >>> filter_kwargs_to_str(exclude_by[0][1])
     '[["min_length", 27000]]'
-    >>> exclude_by = [(filter_by_date, {"max_date": numeric_date("2020-04-01"), "min_date": numeric_date("2020-03-01")})]
+    >>> exclude_by = [(filter_by_date, {"max_date": to_numeric_date_min("2020-04-01"), "min_date": to_numeric_date_max("2020-03-01")})]
     >>> filter_kwargs_to_str(exclude_by[0][1])
     '[["max_date", 2020.25], ["min_date", 2020.17]]'
 
@@ -721,7 +721,7 @@ def apply_filters(metadata, exclude_by, include_by):
     from Africa.
 
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-10-02"}, {"region": "North America", "date": "2020-01-01"}], index=["strain1", "strain2", "strain3"])
-    >>> exclude_by = [(filter_by_date, {"min_date": numeric_date("2020-04-01")})]
+    >>> exclude_by = [(filter_by_date, {"min_date": to_numeric_date_min("2020-04-01")})]
     >>> include_by = [(include_by_include_where, {"include_where": "region=Africa"})]
     >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
     >>> strains_to_keep
