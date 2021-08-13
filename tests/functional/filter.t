@@ -27,8 +27,8 @@ Filter with subsampling, requesting 1 sequence per group (for a group with 3 dis
   \s*3 .* (re)
   $ rm -f "$TMP/filtered_strains.txt"
 
-Filter with subsampling, requesting no more than 10 sequences.
-With 10 groups to subsample from, this should produce one sequence per group.
+Filter with subsampling, requesting no more than 8 sequences.
+With 8 groups to subsample from (after filtering), this should produce one sequence per group.
 
   $ ${AUGUR} filter \
   >  --sequences filter/sequences.fasta \
@@ -36,12 +36,12 @@ With 10 groups to subsample from, this should produce one sequence per group.
   >  --metadata filter/metadata.tsv \
   >  --min-date 2012 \
   >  --group-by country year month \
-  >  --subsample-max-sequences 10 \
+  >  --subsample-max-sequences 8 \
   >  --subsample-seed 314159 \
   >  --no-probabilistic-sampling \
   >  --output "$TMP/filtered.fasta" > /dev/null
   $ grep ">" "$TMP/filtered.fasta" | wc -l
-  \s*10 (re)
+  \s*8 (re)
   $ rm -f "$TMP/filtered.fasta"
 
 Filter with subsampling where no more than 5 sequences are requested and no groups are specified.
@@ -205,6 +205,26 @@ Finally, exclude all sequences except those from the two sets of strains (there 
   \s*4 (re)
   $ rm -f "$TMP/filtered.fasta"
 
+Repeat this filter without a sequence index.
+We should get the same outputs without building a sequence index on the fly, because the exclude-all flag tells us we only want to force-include strains and skip all other filters.
+
+  $ ${AUGUR} filter \
+  >  --sequences filter/sequences.fasta \
+  >  --metadata filter/metadata.tsv \
+  >  --exclude-all \
+  >  --include "$TMP/filtered_strains.brazil.txt" "$TMP/filtered_strains.colombia.txt" \
+  >  --output "$TMP/filtered.fasta" \
+  >  --output-metadata "$TMP/filtered.tsv" > /dev/null
+  $ grep "^>" "$TMP/filtered.fasta" | wc -l
+  \s*4 (re)
+  $ rm -f "$TMP/filtered.fasta"
+
+Metadata should have the same number of records as the sequences plus a header.
+
+  $ wc -l "$TMP/filtered.tsv"
+  \s*5 .* (re)
+  $ rm -f "$TMP/filtered.tsv"
+
 Alternately, exclude only the sequences from Brazil and Colombia (12 - 4 strains).
 
   $ ${AUGUR} filter \
@@ -242,6 +262,7 @@ Repeat with sequence and strain outputs. We should get the same results.
   >  --max-date 2020-01-30 \
   >  --output-strains "$TMP/filtered_strains.txt" \
   >  --output-sequences "$TMP/filtered.fasta" > /dev/null
+  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   ERROR: All samples have been dropped! Check filter rules and metadata file format.
   [1]
   $ wc -l "$TMP/filtered_strains.txt"
@@ -251,14 +272,28 @@ Repeat with sequence and strain outputs. We should get the same results.
   $ rm -f "$TMP/filtered_strains.txt"
   $ rm -f "$TMP/filtered.fasta"
 
+Repeat without any sequence-based filters.
+Since we expect metadata to be filtered by presence of strains in input sequences, this should produce no results because the intersection of metadata and sequences is empty.
+
+  $ ${AUGUR} filter \
+  >  --sequences "$TMP/dummy.fasta" \
+  >  --metadata filter/metadata.tsv \
+  >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
+  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
+  ERROR: All samples have been dropped! Check filter rules and metadata file format.
+  [1]
+  $ wc -l "$TMP/filtered_strains.txt"
+  \s*0 .* (re)
+  $ rm -f "$TMP/filtered_strains.txt"
+
 Filter TB strains from VCF and save as a list of filtered strains.
 
   $ ${AUGUR} filter \
   >  --sequences filter/tb.vcf.gz \
   >  --metadata filter/tb_metadata.tsv \
   >  --min-date 2012 \
-  >  --min-length 10500 \
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
+  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   $ wc -l "$TMP/filtered_strains.txt"
   \s*3 .* (re)
   $ rm -f "$TMP/filtered_strains.txt"
@@ -269,22 +304,35 @@ The metadata are missing one strain that has a sequence.
 The list of strains to include has one strain with no metadata/sequence and one strain with information that would have been filtered by country.
 The query initially filters 3 strains from Colombia, one of which is added back by the include.
 
-  $ echo "NotReal" > "$TMP/include.txt"
-  $ echo "COL/FLR_00008/2015" >> "$TMP/include.txt"
   $ ${AUGUR} filter \
   >  --sequence-index filter/sequence_index.tsv \
   >  --metadata filter/metadata.tsv \
   >  --query "country != 'Colombia'" \
-  >  --include "$TMP/include.txt" \
-  >  --output-strains "$TMP/filtered_strains.txt"
+  >  --non-nucleotide \
+  >  --exclude-ambiguous-dates-by year \
+  >  --include filter/include.txt \
+  >  --output-strains "$TMP/filtered_strains.txt" \
+  >  --output-log "$TMP/filtered_log.tsv"
   4 strains were dropped during filtering
-  \t1 had no sequence data (esc)
   \t1 had no metadata (esc)
-  \t3 of these were filtered out by the query: (esc)
-  \t\t"country != 'Colombia'" (esc)
-   (esc)
-  \t1 strains were added back because they were requested by include files (esc)
-  \t1 strains from include files were not added because they lacked sequence or metadata (esc)
+  \t1 had no sequence data (esc)
+  \t3 of these were filtered out by the query: "country != 'Colombia'" (esc)
+  \t1 strains were added back because they were in filter/include.txt (esc)
   8 strains passed all filters
 
+  $ diff -u <(sort -k 1,1 filter/filtered_log.tsv) <(sort -k 1,1 "$TMP/filtered_log.tsv")
+  $ rm -f "$TMP/filtered_strains.txt"
+
+Subsample one strain per year with priorities.
+There are two years (2015 and 2016) represented in the metadata.
+The two highest priority strains are in these two years.
+
+  $ ${AUGUR} filter \
+  >  --metadata filter/metadata.tsv \
+  >  --group-by year \
+  >  --priority filter/priorities.tsv \
+  >  --sequences-per-group 1 \
+  >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
+
+  $ diff -u <(sort -k 2,2rn -k 1,1 filter/priorities.tsv | head -n 2 | cut -f 1) <(sort -k 1,1 "$TMP/filtered_strains.txt")
   $ rm -f "$TMP/filtered_strains.txt"

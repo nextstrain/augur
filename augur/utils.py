@@ -27,9 +27,11 @@ class AugurException(Exception):
     pass
 
 
-def is_vcf(fname):
+def is_vcf(filename):
     """Convenience method to check if a file is a vcf file.
 
+    >>> is_vcf(None)
+    False
     >>> is_vcf("./foo")
     False
     >>> is_vcf("./foo.vcf")
@@ -37,7 +39,22 @@ def is_vcf(fname):
     >>> is_vcf("./foo.vcf.GZ")
     True
     """
-    return fname.lower().endswith(".vcf") or fname.lower().endswith(".vcf.gz")
+    return bool(filename) and any(filename.lower().endswith(x) for x in ('.vcf', '.vcf.gz'))
+
+def read_vcf(filename):
+    if filename.lower().endswith(".gz"):
+        import gzip
+        file = gzip.open(filename, mode="rt", encoding='utf-8')
+    else:
+        file = open(filename, encoding='utf-8')
+
+    chrom_line = next(line for line in file if line.startswith("#C"))
+    file.close()
+    headers = chrom_line.strip().split("\t")
+    sequences = headers[headers.index("FORMAT") + 1:]
+
+    # because we need 'seqs to remove' for VCF
+    return sequences, sequences.copy()
 
 def myopen(fname, mode):
     if fname.endswith('.gz'):

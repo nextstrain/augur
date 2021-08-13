@@ -3,6 +3,30 @@
 ## __NEXT__
 
 
+## 12.1.0 (12 August 2021)
+
+### Features
+
+* export: Add support for custom legend and color scale specifications in Auspice config files [#727][] (@jameshadfield)
+* utils: Add support for compressed strain name files (e.g., "include.txt.gz") [#730][] (@benjaminotter)
+* filter: Rewrite internal logic to use pandas DataFrames ([#743][]), define filters and subsampling logic as individual functions ([#745][] and [#746][]), and iterate through chunks of metadata instead of loading all records into memory at once ([#750][]) (@tsibley, @huddlej)
+
+### Bug Fixes
+
+* distance: Change numeric type of distance output to float [#729][] (@benjaminotter)
+* filter: Disable probabilistic sampling when users provide `--sequences-per-group` [#737][] (@benjaminotter)
+* export: Provide correct missing file error messages for metadata and node data JSON inputs [#752][] (@benjaminotter)
+
+[#727]: https://github.com/nextstrain/augur/pull/727
+[#729]: https://github.com/nextstrain/augur/pull/729
+[#730]: https://github.com/nextstrain/augur/pull/730
+[#737]: https://github.com/nextstrain/augur/pull/737
+[#743]: https://github.com/nextstrain/augur/pull/743
+[#745]: https://github.com/nextstrain/augur/pull/745
+[#746]: https://github.com/nextstrain/augur/pull/746
+[#750]: https://github.com/nextstrain/augur/pull/750
+[#752]: https://github.com/nextstrain/augur/pull/752
+
 ## 12.0.0 (13 April 2021)
 
 ### Major Changes
