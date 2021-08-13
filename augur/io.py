@@ -84,6 +84,7 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
         "sep": None,
         "engine": "python",
         "skipinitialspace": True,
+        "na_filter": False,
     }
 
     if chunk_size:
