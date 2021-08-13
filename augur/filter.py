@@ -863,6 +863,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     group_by_strain = {}
     for strain in strains:
+        skip_strain = False
         group = []
         m = metadata.loc[strain].to_dict()
         # collect group specifiers
@@ -875,8 +876,9 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                 try:
                     year = int(m["date"].split('-')[0])
                 except:
-                    print("WARNING: no valid year, skipping",strain, m["date"])
-                    continue
+                    print(f"WARNING: no valid year, skipping strain '{strain}' with date value of '{m['date']}'.", file=sys.stderr)
+                    skip_strain = True
+                    break
                 if c=='month':
                     try:
                         month = int(m["date"].split('-')[1])
@@ -888,7 +890,8 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             else:
                 group.append('unknown')
 
-        group_by_strain[strain] = tuple(group)
+        if not skip_strain:
+            group_by_strain[strain] = tuple(group)
 
     # If we could not find any requested categories, we cannot complete subsampling.
     distinct_groups = set(group_by_strain.values())

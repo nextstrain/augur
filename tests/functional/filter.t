@@ -333,6 +333,7 @@ The two highest priority strains are in these two years.
   >  --priority filter/priorities.tsv \
   >  --sequences-per-group 1 \
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
+  WARNING: no valid year, skipping strain 'COL/FLR_00024/2015' with date value of ''.
 
   $ diff -u <(sort -k 2,2rn -k 1,1 filter/priorities.tsv | head -n 2 | cut -f 1) <(sort -k 1,1 "$TMP/filtered_strains.txt")
   $ rm -f "$TMP/filtered_strains.txt"
