@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 12.1.1 (13 August 2021)
+
 ### Bug Fixes
 
 * filter: Fix parsing of missing data in metadata [#758][]
