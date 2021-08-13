@@ -131,13 +131,19 @@ class TestUtils:
         assert not utils.is_date_ambiguous("2019", "year")
         assert not utils.is_date_ambiguous("2019-10", "month")
 
-    def test_to_numeric_data(self):
+    def test_to_numeric_date(self):
         assert utils.to_numeric_date("2019.1") == 2019.1
         assert round(utils.to_numeric_date("2019"), 8) == 2019.00136986
         assert round(utils.to_numeric_date("2019-04"), 8) == 2019.24794521
         assert round(utils.to_numeric_date(datetime.date(2019, 4, 11)), 8) == 2019.27534247
         with pytest.raises(ValueError):
             utils.to_numeric_date(False)
+
+    def test_to_numeric_date_ambiguity(self):
+        assert utils.to_numeric_date_min("2019") == utils.to_numeric_date("2019-01-01")
+        assert utils.to_numeric_date_min("2019-04") == utils.to_numeric_date("2019-04-01")
+        assert utils.to_numeric_date_max("2019") == utils.to_numeric_date("2019-12-31")
+        assert utils.to_numeric_date_max("2019-01") == utils.to_numeric_date("2019-01-31")
 
     def test_numeric_iso_conversion(self):
         orig_date = "2019-04-11"
