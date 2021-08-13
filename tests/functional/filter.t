@@ -113,10 +113,10 @@ Filter using only metadata without sequence input or output and save results as 
   >  --min-length 10500 \
   >  --output-metadata "$TMP/filtered_metadata.tsv" > /dev/null
 
-Output should include the 8 sequences matching the filters and a header line.
+Output should include the 7 sequences matching the filters and a header line.
 
   $ wc -l "$TMP/filtered_metadata.tsv"
-  \s*9 .* (re)
+  \s*8 .* (re)
   $ rm -f "$TMP/filtered_metadata.tsv"
 
 Filter using only metadata and save results as a list of filtered strains.
@@ -128,10 +128,10 @@ Filter using only metadata and save results as a list of filtered strains.
   >  --min-length 10500 \
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
 
-Output should include only the 8 sequences matching the filters (without a header line).
+Output should include only the 7 sequences matching the filters (without a header line).
 
   $ wc -l "$TMP/filtered_strains.txt"
-  \s*8 .* (re)
+  \s*7 .* (re)
   $ rm -f "$TMP/filtered_strains.txt"
 
 Filter using only metadata without a sequence index.
@@ -333,6 +333,7 @@ The two highest priority strains are in these two years.
   >  --priority filter/priorities.tsv \
   >  --sequences-per-group 1 \
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
+  WARNING: no valid year, skipping strain 'COL/FLR_00024/2015' with date value of ''.
 
   $ diff -u <(sort -k 2,2rn -k 1,1 filter/priorities.tsv | head -n 2 | cut -f 1) <(sort -k 1,1 "$TMP/filtered_strains.txt")
   $ rm -f "$TMP/filtered_strains.txt"
