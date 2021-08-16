@@ -123,14 +123,9 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None, raise_erro
         else:
             return [numeric_date(d) for d in ambig_date]
     try:
-        return float(value)
-    except ValueError:
-        pass
-    try:
         return numeric_date(datetime.datetime.strptime(value, fmt))
     except:
-        pass
-    return None
+        return None
 
 def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, min_max_year=None):
     if fmt:
@@ -174,45 +169,48 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, m
 
 
 def to_numeric_date_min(date):
-    return to_numeric_date(date, ambiguity_resolver='min')
+    return to_numeric_date(date, ambiguity_resolver="min")
 
 
 def to_numeric_date_max(date):
-    return to_numeric_date(date, ambiguity_resolver='max')
+    return to_numeric_date(date, ambiguity_resolver="max")
 
 
-def to_numeric_date(date, ambiguity_resolver='min'):
+def to_numeric_date(date, ambiguity_resolver="min"):
     """Return numeric date from string, [incomplete] ISO date string, or datetime.date object.
 
     Parameters
     ----------
     date : str | datetime.date
     ambiguity_resolver : str
-        'min' or 'max'
+        "min" or "max"
+
+    Raises
+    ------
+    ValueError
+        If date is unparsable or ambiguity_resolver is not set properly.
 
     Returns
     -------
     float
     """
-    if ambiguity_resolver not in {'min', 'max'}:
-        raise ValueError()
-
-    if type(date) is str:
-        if '.' in date:
-            return float(date)
-        else:
-            ambiguous_date = generate_ambiguous_date(date)
-            ambiguous_date_resolved = get_numerical_date_from_value(ambiguous_date, "%Y-%m-%d")
-            if type(ambiguous_date_resolved) is float:
-                return ambiguous_date_resolved
-            if type(ambiguous_date_resolved) is list:
-                if ambiguity_resolver == 'min':
-                    return ambiguous_date_resolved[0]
-                if ambiguity_resolver == 'max':
-                    return ambiguous_date_resolved[1]
     if type(date) is datetime.date:
         return numeric_date(date)
-    raise ValueError()
+    if type(date) is str and "." in date:
+        return float(date)
+    if type(date) is str:
+        if ambiguity_resolver not in {"min", "max"}:
+            raise ValueError("Ambiguous date range must be resolved by taking either min or max date.")
+        ambiguous_date_str = generate_ambiguous_date_str(date)
+        ambiguous_date_resolved = get_numerical_date_from_value(ambiguous_date_str, "%Y-%m-%d")
+        if type(ambiguous_date_resolved) is float:
+            return ambiguous_date_resolved
+        if type(ambiguous_date_resolved) is list:
+            if ambiguity_resolver == "min":
+                return ambiguous_date_resolved[0]
+            if ambiguity_resolver == "max":
+                return ambiguous_date_resolved[1]
+    raise ValueError(f"Unparsable date value: {date!r}")
 
 
 def numeric_date_to_iso(numeric_date):
@@ -229,7 +227,7 @@ def numeric_date_to_iso(numeric_date):
     return datetime_from_numeric(numeric_date).date()
 
 
-def generate_ambiguous_date(date_str):
+def generate_ambiguous_date_str(date_str):
     """Return ambiguous date (YYYY-MM-DD) from incomplete ISO date string.
 
     Parameters
@@ -237,19 +235,24 @@ def generate_ambiguous_date(date_str):
     date_str : str
         ISO date string that can be incomplete (e.g. 2019, 2019-04, 2019-04-11)
 
+    Raises
+    ------
+    ValueError
+        If date_str is unparsable.
+
     Returns
     -------
     str
         pad XX for month and/or day if missing
     """
-    parts = date_str.split('-')
+    parts = date_str.split("-")
     if len(parts) == 3:
         return date_str
     if len(parts) == 2:
-        return f'{date_str}-XX'
+        return f"{date_str}-XX"
     if len(parts) == 1:
-        return f'{date_str}-XX-XX'
-    raise ValueError()
+        return f"{date_str}-XX-XX"
+    raise ValueError(f"Unparsable date value: {date_str!r}")
 
 
 class InvalidTreeError(Exception):

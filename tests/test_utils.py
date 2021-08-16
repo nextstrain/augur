@@ -138,6 +138,8 @@ class TestUtils:
         assert round(utils.to_numeric_date(datetime.date(2019, 4, 11)), 8) == 2019.27534247
         with pytest.raises(ValueError):
             utils.to_numeric_date(False)
+        with pytest.raises(ValueError):
+            utils.to_numeric_date("2019", ambiguity_resolver="invalid")
 
     def test_to_numeric_date_ambiguity(self):
         assert utils.to_numeric_date_min("2019") == utils.to_numeric_date("2019-01-01")
@@ -151,12 +153,12 @@ class TestUtils:
         iso = utils.numeric_date_to_iso(numeric_date)
         assert str(iso) == orig_date
 
-    def test_generate_ambiguous_date(self):
-        assert str(utils.generate_ambiguous_date("2019")) == "2019-XX-XX"
-        assert str(utils.generate_ambiguous_date("2019-04")) == "2019-04-XX"
-        assert str(utils.generate_ambiguous_date("2019-04-11")) == "2019-04-11"
+    def test_generate_ambiguous_date_str(self):
+        assert str(utils.generate_ambiguous_date_str("2019")) == "2019-XX-XX"
+        assert str(utils.generate_ambiguous_date_str("2019-04")) == "2019-04-XX"
+        assert str(utils.generate_ambiguous_date_str("2019-04-11")) == "2019-04-11"
         with pytest.raises(ValueError):
-            utils.generate_ambiguous_date("2019-04-11-invalid")
+            utils.generate_ambiguous_date_str("2019-04-11-invalid")
 
     def test_read_strains(self, tmpdir):
         # Write one list of filenames with some unnecessary whitespace.
