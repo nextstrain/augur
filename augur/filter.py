@@ -1202,6 +1202,14 @@ def validate_arguments(args):
                   file=sys.stderr)
             return False
 
+    # If user requested grouping, confirm that other required inputs are provided, too.
+    if args.group_by and not any((args.sequences_per_group, args.subsample_max_sequences)):
+        print(
+            "ERROR: You must specify a number of sequences per group or maximum sequences to subsample.",
+            file=sys.stderr
+        )
+        return False
+
     return True
 
 

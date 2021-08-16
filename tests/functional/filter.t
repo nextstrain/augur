@@ -352,3 +352,13 @@ Strains with ambiguous years or months should be dropped and logged.
   $ grep "COL/FLR_00024/2015" "$TMP/filtered_log.tsv" | cut -f 1-2
   COL/FLR_00024/2015\tskip_group_by_with_ambiguous_year (esc)
   COL/FLR_00024/2015\tsubsampling (esc)
+
+Try to group data without any grouping arguments.
+This should fail with a helpful error message.
+
+  $ ${AUGUR} filter \
+  >  --metadata filter/metadata.tsv \
+  >  --group-by year month \
+  >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
+  ERROR: You must specify a number of sequences per group or maximum sequences to subsample.
+  [1]
