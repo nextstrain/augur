@@ -348,10 +348,8 @@ Strains with ambiguous years or months should be dropped and logged.
   >  --output-log "$TMP/filtered_log.tsv" > /dev/null
   $ grep "SG_018" "$TMP/filtered_log.tsv" | cut -f 1-2
   SG_018\tskip_group_by_with_ambiguous_month (esc)
-  SG_018\tsubsampling (esc)
   $ grep "COL/FLR_00024/2015" "$TMP/filtered_log.tsv" | cut -f 1-2
   COL/FLR_00024/2015\tskip_group_by_with_ambiguous_year (esc)
-  COL/FLR_00024/2015\tsubsampling (esc)
 
 Try to group data without any grouping arguments.
 This should fail with a helpful error message.

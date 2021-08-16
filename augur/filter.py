@@ -1411,6 +1411,7 @@ def run(args):
                 # strains were excluded from the analysis.
                 for skipped_strain in skipped_strains:
                     filter_counts[(skipped_strain["filter"], skipped_strain["kwargs"])] += 1
+                    valid_strains.remove(skipped_strain["strain"])
 
                     if args.output_log:
                         output_log_writer.writerow(skipped_strain)
