@@ -916,7 +916,14 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                     try:
                         month = int(m["date"].split('-')[1])
                     except:
-                        month = random.randint(1,12)
+                        skipped_strains.append({
+                            "strain": strain,
+                            "filter": "skip_group_by_with_ambiguous_month",
+                            "kwargs": "",
+                        })
+                        skip_strain = True
+                        break
+
                     group.append((year, month))
                 else:
                     group.append(year)
