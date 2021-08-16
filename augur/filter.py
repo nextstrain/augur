@@ -1529,6 +1529,7 @@ def run(args):
 
     # If we have any records in queues, we have grouped results and need to
     # stream the highest priority records to the requested outputs.
+    num_excluded_subsamp = 0
     if queues_by_group:
         # Populate the set of strains to keep from the records in queues.
         subsampled_strains = set()
