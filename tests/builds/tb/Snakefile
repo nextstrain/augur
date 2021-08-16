@@ -40,7 +40,7 @@ rule filter:
         "results/filtered.vcf.gz"
     params:
         sequences_per_group = 10,
-        group_by = "year month",
+        group_by = "year",
         min_len = 200000
     shell:
         """
