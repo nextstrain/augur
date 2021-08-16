@@ -1048,8 +1048,8 @@ def register_arguments(parser):
         Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.
         (e.g., --query "country == 'Colombia'" or --query "(country == 'USA' & (division == 'Washington'))")"""
     )
-    metadata_filter_group.add_argument('--min-date', type=to_numeric_date_min, help="minimal cutoff for date, the cutoff date is inclusive; may be specified as an Augur-style numeric date (with the year as the integer part) or YYYY-MM-DD")
-    metadata_filter_group.add_argument('--max-date', type=to_numeric_date_max, help="maximal cutoff for date, the cutoff date is inclusive; may be specified as an Augur-style numeric date (with the year as the integer part) or YYYY-MM-DD")
+    metadata_filter_group.add_argument('--min-date', type=to_numeric_date_min, help="minimal cutoff for date (inclusive). May be specified as an Augur-style numeric date (with the year as the integer part), exact date (e.g. 2019-09-04), or incomplete date (e.g. 2019-09, 2019)")
+    metadata_filter_group.add_argument('--max-date', type=to_numeric_date_max, help="maximal cutoff for date (inclusive). May be specified as an Augur-style numeric date (with the year as the integer part), exact date (e.g. 2019-09-04), or incomplete date (e.g. 2019-09, 2019)")
     metadata_filter_group.add_argument('--exclude-ambiguous-dates-by', choices=['any', 'day', 'month', 'year'],
                                 help='Exclude ambiguous dates by day (e.g., 2020-09-XX), month (e.g., 2020-XX-XX), year (e.g., 200X-10-01), or any date fields. An ambiguous year makes the corresponding month and day ambiguous, too, even if those fields have unambiguous values (e.g., "201X-10-01"). Similarly, an ambiguous month makes the corresponding day ambiguous (e.g., "2010-XX-01").')
     metadata_filter_group.add_argument('--exclude', type=str, nargs="+", help="file(s) with list of strains to exclude")
