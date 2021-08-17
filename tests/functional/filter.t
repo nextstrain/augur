@@ -9,14 +9,14 @@ Force include one South American record by country to get two total records.
 
   $ ${AUGUR} filter \
   >  --metadata filter/metadata.tsv \
-  >  --exclude-where "region=South America" "region=North America" \
+  >  --exclude-where "region=South America" "region=North America" "region=Southeast Asia" \
   >  --include-where "country=Ecuador" \
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
   $ wc -l "$TMP/filtered_strains.txt"
   \s*2 .* (re)
   $ rm -f "$TMP/filtered_strains.txt"
 
-Filter with subsampling, requesting 1 sequence per group (for a group with 3 distinct values).
+Filter with subsampling, requesting 1 sequence per group (for a group with 4 distinct values).
 
   $ ${AUGUR} filter \
   >  --metadata filter/metadata.tsv \
@@ -24,7 +24,7 @@ Filter with subsampling, requesting 1 sequence per group (for a group with 3 dis
   >  --sequences-per-group 1 \
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
   $ wc -l "$TMP/filtered_strains.txt"
-  \s*3 .* (re)
+  \s*4 .* (re)
   $ rm -f "$TMP/filtered_strains.txt"
 
 Filter with subsampling, requesting no more than 8 sequences.
@@ -225,7 +225,7 @@ Metadata should have the same number of records as the sequences plus a header.
   \s*5 .* (re)
   $ rm -f "$TMP/filtered.tsv"
 
-Alternately, exclude only the sequences from Brazil and Colombia (12 - 4 strains).
+Alternately, exclude the sequences from Brazil and Colombia (N=4) and records without sequences (N=1) or metadata (N=1).
 
   $ ${AUGUR} filter \
   >  --sequences filter/sequences.fasta \
@@ -234,7 +234,7 @@ Alternately, exclude only the sequences from Brazil and Colombia (12 - 4 strains
   >  --exclude "$TMP/filtered_strains.brazil.txt" "$TMP/filtered_strains.colombia.txt" \
   >  --output "$TMP/filtered.fasta" > /dev/null
   $ grep "^>" "$TMP/filtered.fasta" | wc -l
-  \s*6 (re)
+  \s*7 (re)
   $ rm -f "$TMP/filtered.fasta"
 
 Try to filter with sequences that don't match any of the metadata.
@@ -318,7 +318,7 @@ The query initially filters 3 strains from Colombia, one of which is added back 
   \t1 had no sequence data (esc)
   \t3 of these were filtered out by the query: "country != 'Colombia'" (esc)
   \t1 strains were added back because they were in filter/include.txt (esc)
-  8 strains passed all filters
+  9 strains passed all filters
 
   $ diff -u <(sort -k 1,1 filter/filtered_log.tsv) <(sort -k 1,1 "$TMP/filtered_log.tsv")
   $ rm -f "$TMP/filtered_strains.txt"
@@ -333,7 +333,30 @@ The two highest priority strains are in these two years.
   >  --priority filter/priorities.tsv \
   >  --sequences-per-group 1 \
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
-  WARNING: no valid year, skipping strain 'COL/FLR_00024/2015' with date value of ''.
 
   $ diff -u <(sort -k 2,2rn -k 1,1 filter/priorities.tsv | head -n 2 | cut -f 1) <(sort -k 1,1 "$TMP/filtered_strains.txt")
   $ rm -f "$TMP/filtered_strains.txt"
+
+Try to subsample a maximum number of sequences by year and month, given metadata with ambiguous year and month values.
+Strains with ambiguous years or months should be dropped and logged.
+
+  $ ${AUGUR} filter \
+  >  --metadata filter/metadata.tsv \
+  >  --group-by year month \
+  >  --subsample-max-sequences 5 \
+  >  --output-strains "$TMP/filtered_strains.txt" \
+  >  --output-log "$TMP/filtered_log.tsv" > /dev/null
+  $ grep "SG_018" "$TMP/filtered_log.tsv" | cut -f 1-2
+  SG_018\tskip_group_by_with_ambiguous_month (esc)
+  $ grep "COL/FLR_00024/2015" "$TMP/filtered_log.tsv" | cut -f 1-2
+  COL/FLR_00024/2015\tskip_group_by_with_ambiguous_year (esc)
+
+Try to group data without any grouping arguments.
+This should fail with a helpful error message.
+
+  $ ${AUGUR} filter \
+  >  --metadata filter/metadata.tsv \
+  >  --group-by year month \
+  >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
+  ERROR: You must specify a number of sequences per group or maximum sequences to subsample.
+  [1]

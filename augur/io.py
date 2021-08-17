@@ -77,7 +77,7 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
     ...
     (5, 14)
     (5, 14)
-    (1, 14)
+    (2, 14)
 
     """
     kwargs = {

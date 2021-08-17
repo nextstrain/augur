@@ -820,23 +820,30 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     -------
     dict :
         A mapping of strain names to tuples corresponding to the values of the strain's group.
+    list :
+        A list of dictionaries with strains that were skipped from grouping and the reason why (see also: `apply_filters` output).
 
     >>> strains = ["strain1", "strain2"]
     >>> metadata = pd.DataFrame([{"strain": "strain1", "date": "2020-01-01", "region": "Africa"}, {"strain": "strain2", "date": "2020-02-01", "region": "Europe"}]).set_index("strain")
     >>> group_by = ["region"]
-    >>> get_groups_for_subsampling(strains, metadata, group_by)
+    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by)
+    >>> group_by_strain
     {'strain1': ('Africa',), 'strain2': ('Europe',)}
+    >>> skipped_strains
+    []
 
     If we group by year or month, these groups are calculated from the date
     string.
 
     >>> group_by = ["year", "month"]
-    >>> get_groups_for_subsampling(strains, metadata, group_by)
+    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by)
+    >>> group_by_strain
     {'strain1': (2020, (2020, 1)), 'strain2': (2020, (2020, 2))}
 
     If we omit the grouping columns, the result will group by a dummy column.
 
-    >>> get_groups_for_subsampling(strains, metadata)
+    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata)
+    >>> group_by_strain
     {'strain1': ('_dummy',), 'strain2': ('_dummy',)}
 
     If we try to group by columns that don't exist, we get an error.
@@ -851,8 +858,30 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     grouping to continue and print a warning message to stderr.
 
     >>> group_by = ["year", "month", "missing_column"]
-    >>> get_groups_for_subsampling(strains, metadata, group_by)
+    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by)
+    >>> group_by_strain
     {'strain1': (2020, (2020, 1), 'unknown'), 'strain2': (2020, (2020, 2), 'unknown')}
+
+    If we group by year month and some records don't have that information in
+    their date fields, we should skip those records from the group output and
+    track which records were skipped for which reasons.
+
+    >>> metadata = pd.DataFrame([{"strain": "strain1", "date": "", "region": "Africa"}, {"strain": "strain2", "date": "2020-02-01", "region": "Europe"}]).set_index("strain")
+    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, ["year"])
+    >>> group_by_strain
+    {'strain2': (2020,)}
+    >>> skipped_strains
+    [{'strain': 'strain1', 'filter': 'skip_group_by_with_ambiguous_year', 'kwargs': ''}]
+
+    Similarly, if we group by month, we should skip records that don't have
+    month information in their date fields.
+
+    >>> metadata = pd.DataFrame([{"strain": "strain1", "date": "2020", "region": "Africa"}, {"strain": "strain2", "date": "2020-02-01", "region": "Europe"}]).set_index("strain")
+    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, ["month"])
+    >>> group_by_strain
+    {'strain2': ((2020, 2),)}
+    >>> skipped_strains
+    [{'strain': 'strain1', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
 
     """
     if group_by:
@@ -861,6 +890,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
         groups = ("_dummy",)
 
     group_by_strain = {}
+    skipped_strains = []
     for strain in strains:
         skip_strain = False
         group = []
@@ -875,14 +905,25 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                 try:
                     year = int(m["date"].split('-')[0])
                 except:
-                    print(f"WARNING: no valid year, skipping strain '{strain}' with date value of '{m['date']}'.", file=sys.stderr)
+                    skipped_strains.append({
+                        "strain": strain,
+                        "filter": "skip_group_by_with_ambiguous_year",
+                        "kwargs": "",
+                    })
                     skip_strain = True
                     break
                 if c=='month':
                     try:
                         month = int(m["date"].split('-')[1])
                     except:
-                        month = random.randint(1,12)
+                        skipped_strains.append({
+                            "strain": strain,
+                            "filter": "skip_group_by_with_ambiguous_month",
+                            "kwargs": "",
+                        })
+                        skip_strain = True
+                        break
+
                     group.append((year, month))
                 else:
                     group.append(year)
@@ -928,7 +969,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             file=sys.stderr,
         )
 
-    return group_by_strain
+    return group_by_strain, skipped_strains
 
 
 class PriorityQueue:
@@ -1161,6 +1202,14 @@ def validate_arguments(args):
                   file=sys.stderr)
             return False
 
+    # If user requested grouping, confirm that other required inputs are provided, too.
+    if args.group_by and not any((args.sequences_per_group, args.subsample_max_sequences)):
+        print(
+            "ERROR: You must specify a number of sequences per group or maximum sequences to subsample.",
+            file=sys.stderr
+        )
+        return False
+
     return True
 
 
@@ -1352,11 +1401,20 @@ def run(args):
             # count the number of records per group. First, we need to get
             # the groups for the given records.
             try:
-                group_by_strain = get_groups_for_subsampling(
+                group_by_strain, skipped_strains = get_groups_for_subsampling(
                     seq_keep,
                     metadata,
                     group_by,
                 )
+
+                # Track strains skipped during grouping, so users know why those
+                # strains were excluded from the analysis.
+                for skipped_strain in skipped_strains:
+                    filter_counts[(skipped_strain["filter"], skipped_strain["kwargs"])] += 1
+                    valid_strains.remove(skipped_strain["strain"])
+
+                    if args.output_log:
+                        output_log_writer.writerow(skipped_strain)
 
                 if args.subsample_max_sequences and records_per_group is not None:
                     # Count the number of records per group. We will use this
@@ -1458,7 +1516,7 @@ def run(args):
             # during the first pass, but we want to minimize overall memory
             # usage at the moment.
             seq_keep = set(metadata.index.values) & valid_strains
-            group_by_strain = get_groups_for_subsampling(
+            group_by_strain, skipped_strains = get_groups_for_subsampling(
                 seq_keep,
                 metadata,
                 group_by,
@@ -1472,6 +1530,7 @@ def run(args):
 
     # If we have any records in queues, we have grouped results and need to
     # stream the highest priority records to the requested outputs.
+    num_excluded_subsamp = 0
     if queues_by_group:
         # Populate the set of strains to keep from the records in queues.
         subsampled_strains = set()
@@ -1594,11 +1653,17 @@ def run(args):
         "filter_by_date": "{count} of these were dropped because of their date (or lack of date)",
         "filter_by_sequence_length": "{count} of these were dropped because they were shorter than minimum length of {min_length}bp",
         "filter_by_non_nucleotide": "{count} of these were dropped because they had non-nucleotide characters",
+        "skip_group_by_with_ambiguous_year": "{count} were dropped during grouping due to ambiguous year information",
+        "skip_group_by_with_ambiguous_month": "{count} were dropped during grouping due to ambiguous month information",
         "include": "{count} strains were added back because they were in {include_file}",
         "include_by_include_where": "{count} sequences were added back because of '{include_where}'",
     }
     for (filter_name, filter_kwargs), count in filter_counts.items():
-        parameters = dict(json.loads(filter_kwargs))
+        if filter_kwargs:
+            parameters = dict(json.loads(filter_kwargs))
+        else:
+            parameters = {}
+
         parameters["count"] = count
         print("\t" + report_template_by_filter_name[filter_name].format(**parameters))
 
