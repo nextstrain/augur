@@ -18,6 +18,7 @@ command_strings = [
     "parse",
     "index",
     "filter",
+    "subsample",
     "mask",
     "align",
     "tree",

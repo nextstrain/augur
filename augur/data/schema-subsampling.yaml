@@ -1,0 +1,42 @@
+type: object
+title: YAML Schema for subsampling configuration to be consumed by `augur subsample`
+patternProperties:
+    "^[a-zA-Z0-9*_-]+$":
+        type: object
+        title: description of a sample
+        additionalProperties: false
+        properties:
+            group-by:
+                type: array
+                minItems: 1
+                items:
+                    type: string
+            group_by:
+                description: ncov workflow syntax for group-by
+                type: string
+            sequences-per-group:
+                type: integer
+            seq_per_group:
+                description: ncov workflow syntax for sequences-per-group
+                type: integer
+            exclude-where:
+                type: array
+                minItems: 1
+                items:
+                    type: string
+            exclude:
+                description: ncov syntax for exclude-where uses this and starts with --exclude-where
+                type: string
+            query:
+                description: ncov workflow syntax starts with --query
+                type: string
+            sampling_scheme:
+                description: used by the ncov workflow to express extra arguments to augur filter
+                type: string
+            subsample-max-sequences:
+                type: integer
+            max_sequences:
+                description: ncov workflow syntax for subsample-max-sequences
+                type: integer
+            priorities:
+                type: object
