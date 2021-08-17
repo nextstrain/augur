@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 13.0.0 (17 August 2021)
+
 ### Major Changes
 
 * filter: Skip metadata records with ambiguous month information in the `date` column when grouping by month instead of randomly generating month values for those records. This change alters the behavior of the `filter` command for metadata with ambiguous month values. For these data, consider using `--group-by year` instead of `--group-by year month`. [#761][] (@huddlej)
