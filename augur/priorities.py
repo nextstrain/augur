@@ -130,44 +130,55 @@ def calculate_distance_matrix(sparse_matrix_A, sparse_matrix_B, consensus):
 
     return d
 
-def get_distance_to_focal_set():
+
+def get_distance_to_focal_set(alignment, reference, focal_alignment, output, ignore_seqs=[], chunk_size=10000):
     """
     Calculate minimal distances between sequences in an alignment and a set of focal sequences
+
+    Parameters
+    ----------
+    alignment : string
+        Path to FASTA file of alignment
+    reference : string
+        path to reference sequence (FASTA)
+    focal_alignment : string
+        Path to FASTA of focal sample of sequences
+    output : string
+        FASTA file of output alignment
+    ignore_seqs : list[string], optional
+        sequences to ignore in distance calculation
+    chunk_size : int, default: 10000
+        number of samples in the global alignment to process at once. Reduce this number to
+        reduce memory usage at the cost of increased run-time.
+
+    Returns
+    -------
+    None
+
     """
-    parser = argparse.ArgumentParser(
-        description="generate priorities files based on genetic proximity to focal sample",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    parser.add_argument("--alignment", type=str, required=True, help="FASTA file of alignment")
-    parser.add_argument("--reference", type = str, required=True, help="reference sequence (FASTA)")
-    parser.add_argument("--ignore-seqs", type = str, nargs='+', help="sequences to ignore in distance calculation")
-    parser.add_argument("--focal-alignment", type = str, required=True, help="focal sample of sequences")
-    parser.add_argument("--chunk-size", type=int, default=10000, help="number of samples in the global alignment to process at once. Reduce this number to reduce memory usage at the cost of increased run-time.")
-    parser.add_argument("--output", type=str, required=True, help="FASTA file of output alignment")
-    args = parser.parse_args()
 
     # load entire alignment and the alignment of focal sequences (upper case -- probably not necessary)
-    ref = sequence_to_int_array(SeqIO.read(args.reference, 'fasta').seq)
+    ref = sequence_to_int_array(SeqIO.read(reference, 'fasta').seq)
     alignment_length = len(ref)
 
-    focal_seqs = read_sequences(args.focal_alignment)
-    focal_seqs_dict = calculate_snp_matrix(focal_seqs, consensus = ref, ignore_seqs=args.ignore_seqs)
+    focal_seqs = read_sequences(focal_alignment)
+    focal_seqs_dict = calculate_snp_matrix(focal_seqs, consensus = ref, ignore_seqs=ignore_seqs)
 
     if focal_seqs_dict is None:
         print(
-            f"ERROR: There are no valid sequences in the focal alignment, '{args.focal_alignment}', to compare against the full alignment.",
+            f"ERROR: There are no valid sequences in the focal alignment, '{focal_alignment}', to compare against the full alignment.",
             "Check your subsampling settings for the focal alignment or consider disabling proximity-based subsampling.",
             file=sys.stderr
         )
         sys.exit(1)
 
-    seqs = read_sequences(args.alignment)
+    seqs = read_sequences(alignment)
 
     # export priorities
-    fh_out = open(args.output, 'w')
+    fh_out = open(output, 'w')
     fh_out.write('strain\tclosest strain\tdistance\n')
 
-    chunk_size=args.chunk_size
+    chunk_size
     chunk_count = 0
     while True:
         context_seqs_dict = calculate_snp_matrix(seqs, consensus=ref, chunk_size=chunk_size)
@@ -199,23 +210,31 @@ def get_distance_to_focal_set():
 
 
 
-def proximities():
+def create_priorities(sequence_index_path, proximities_path, output_path, Nweight=0.003, crowding_penalty=0.01):
     """
     calculate priorties from index and proximities
-    """
-    parser = argparse.ArgumentParser(
-        description="generate priorities files based on genetic proximity to focal sample",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    parser.add_argument("--sequence-index", type=str, required=True, help="sequence index file")
-    parser.add_argument("--proximities", type = str, required=True, help="tsv file with proximities")
-    parser.add_argument("--Nweight", type = float, default=0.003, required=False, help="parameterizes de-prioritization of incomplete sequences")
-    parser.add_argument("--crowding-penalty", type = float, default=0.01, required=False, help="parameterizes how priorities decrease when there is many very similar sequences")
-    parser.add_argument("--output", type=str, required=True, help="tsv file with the priorities")
-    args = parser.parse_args()
 
-    proximities = pd.read_csv(args.proximities, sep='\t', index_col=0)
-    index = pd.read_csv(args.sequence_index, sep='\t', index_col=0)
+    Parameters
+    ----------
+    sequence_index_path : string
+        Path to sequence index file
+    proximities_path : string
+        path to tsv file with proximities
+    output_path : string
+        path to TSV file with the priorities
+    Nweight : float, default: 0.003
+        parameterizes de-prioritization of incomplete sequences
+    crowding_penalty : float, default: 0.01
+        parameterizes how priorities decrease when there is many very similar sequences
+
+    Returns
+    -------
+    None
+
+    """
+
+    proximities = pd.read_csv(proximities_path, sep='\t', index_col=0)
+    index = pd.read_csv(sequence_index_path, sep='\t', index_col=0)
     combined = pd.concat([proximities, index], axis=1)
 
     closest_matches = combined.groupby('closest strain')
@@ -223,14 +242,14 @@ def proximities():
     for focal_seq, seqs in closest_matches.groups.items():
         tmp = combined.loc[seqs, ["distance", "N"]]
         # penalize larger distances and more undetermined sites. 1/args.Nweight are 'as bad' as one extra mutation
-        tmp["priority"] = -tmp.distance - tmp.N*args.Nweight
+        tmp["priority"] = -tmp.distance - tmp.N*Nweight
         name_prior = [(name, d.priority) for name, d in tmp.iterrows()]
         shuffle(name_prior)
         candidates[focal_seq] = sorted(name_prior, key=lambda x:x[1])
 
     # export priorities
-    crowding = args.crowding_penalty
-    with open(args.output, 'w') as fh:
+    crowding = crowding_penalty
+    with open(output_path, 'w') as fh:
         # loop over lists of sequences that are closest to particular focal sequences
         for cs in candidates.values():
             # these sets have been shuffled -- reduce priorities in this shuffled random order
