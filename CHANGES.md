@@ -3,6 +3,28 @@
 ## __NEXT__
 
 
+## 13.0.0 (17 August 2021)
+
+### Major Changes
+
+* filter: Skip metadata records with ambiguous month information in the `date` column when grouping by month instead of randomly generating month values for those records. This change alters the behavior of the `filter` command for metadata with ambiguous month values. For these data, consider using `--group-by year` instead of `--group-by year month`. [#761][] (@huddlej)
+
+### Features
+
+* filter: When grouping by year or month, report the number of strains skipped due to ambiguous year and month both in the summary report at the end of filtering and in the `--output-log` contents [#761][] (@huddlej)
+
+[#761]: https://github.com/nextstrain/augur/pull/761
+
+## 12.1.1 (13 August 2021)
+
+### Bug Fixes
+
+* filter: Fix parsing of missing data in metadata [#758][] (@huddlej)
+* filter: Fix probabilistic sampling with small values [#759][] (@huddlej)
+
+[#758]: https://github.com/nextstrain/augur/pull/758
+[#759]: https://github.com/nextstrain/augur/pull/759
+
 ## 12.1.0 (12 August 2021)
 
 ### Features
