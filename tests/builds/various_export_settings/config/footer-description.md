@@ -16,8 +16,6 @@
 
 [external link](https://github.com) should open in a new tab.
 
-<script>alert("Do bad things")</script>
-
 ---
 horizontal
 ***
@@ -41,4 +39,3 @@ Markdown image renders as a centered image:
 Multiple images with one or no line breaks are centered together:
 
 [![Markdown img](https://nextstrain.org/static/nextstrain-logo-small.ea8c3e13.png)](https://nextstrain.org)[![Markdown img](https://nextstrain.org/static/nextstrain-logo-small.ea8c3e13.png)](https://nextstrain.org)
-
