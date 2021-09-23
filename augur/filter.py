@@ -1049,7 +1049,7 @@ class PriorityQueue:
             yield item
 
 
-def create_queues_by_group(groups, max_size, max_attempts=100):
+def create_queues_by_group(groups, max_size, max_attempts=100, random_seed=None):
     """Create a dictionary of priority queues per group for the given maximum size.
 
     When the maximum size is fractional, probabilistically sample the maximum
@@ -1067,8 +1067,16 @@ def create_queues_by_group(groups, max_size, max_attempts=100):
     Create queues for two groups with a fractional maximum size. Their total max
     size should still be an integer value greater than zero.
 
-    >>> queues = create_queues_by_group(groups, 0.1)
+    >>> seed = 314159
+    >>> queues = create_queues_by_group(groups, 0.1, random_seed=seed)
     >>> int(sum(queue.max_size for queue in queues.values())) > 0
+    True
+
+    A subsequent run of this function with the same groups and random seed
+    should produce the same queues and queue sizes.
+
+    >>> more_queues = create_queues_by_group(groups, 0.1, random_seed=seed)
+    >>> [queue.max_size for queue in queues.values()] == [queue.max_size for queue in more_queues.values()]
     True
 
     """
@@ -1077,14 +1085,14 @@ def create_queues_by_group(groups, max_size, max_attempts=100):
     attempts = 0
 
     if max_size < 1.0:
-        random_generator = np.random.default_rng()
+        random_generator = np.random.default_rng(random_seed)
 
     # For small fractional maximum sizes, it is possible to randomly select
     # maximum queue sizes that all equal zero. When this happens, filtering
     # fails unexpectedly. We make multiple attempts to create queues with
     # maximum sizes greater than zero for at least one queue.
     while total_max_size == 0 and attempts < max_attempts:
-        for group in groups:
+        for group in sorted(groups):
             if max_size < 1.0:
                 queue_max_size = random_generator.poisson(max_size)
             else:
@@ -1428,10 +1436,11 @@ def run(args):
                     if queues_by_group is None:
                         queues_by_group = {}
 
-                    for strain, group in group_by_strain.items():
+                    for strain in sorted(group_by_strain.keys()):
                         # During this first pass, we do not know all possible
                         # groups will be, so we need to build each group's queue
                         # as we first encounter the group.
+                        group = group_by_strain[strain]
                         if group not in queues_by_group:
                             queues_by_group[group] = PriorityQueue(
                                 max_size=sequences_per_group,
@@ -1501,6 +1510,7 @@ def run(args):
             queues_by_group = create_queues_by_group(
                 records_per_group.keys(),
                 sequences_per_group,
+                random_seed=args.subsample_seed,
             )
 
         # Make a second pass through the metadata, only considering records that
@@ -1522,7 +1532,8 @@ def run(args):
                 group_by,
             )
 
-            for strain, group in group_by_strain.items():
+            for strain in sorted(group_by_strain.keys()):
+                group = group_by_strain[strain]
                 queues_by_group[group].add(
                     metadata.loc[strain],
                     priorities[strain],

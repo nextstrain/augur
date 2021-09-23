@@ -22,10 +22,22 @@ Filter with subsampling, requesting 1 sequence per group (for a group with 4 dis
   >  --metadata filter/metadata.tsv \
   >  --group-by region \
   >  --sequences-per-group 1 \
+  >  --subsample-seed 314159 \
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
   $ wc -l "$TMP/filtered_strains.txt"
   \s*4 .* (re)
-  $ rm -f "$TMP/filtered_strains.txt"
+
+By setting the subsample seed above, we should guarantee that we get the same "random" strains as another run with the same command.
+
+  $ ${AUGUR} filter \
+  >  --metadata filter/metadata.tsv \
+  >  --group-by region \
+  >  --sequences-per-group 1 \
+  >  --subsample-seed 314159 \
+  >  --output-strains "$TMP/filtered_strains_repeated.txt" > /dev/null
+
+  $ diff -u <(sort "$TMP/filtered_strains.txt") <(sort "$TMP/filtered_strains_repeated.txt")
+  $ rm -f "$TMP/filtered_strains.txt" "$TMP/filtered_strains_repeated.txt"
 
 Filter with subsampling, requesting no more than 8 sequences.
 With 8 groups to subsample from (after filtering), this should produce one sequence per group.
@@ -88,8 +100,7 @@ Explicitly use probabilistic subsampling to handle the case when there are more 
   >  --subsample-max-sequences 5 \
   >  --subsample-seed 314159 \
   >  --probabilistic-sampling \
-  >  --output "$TMP/filtered.fasta" > /dev/null
-  $ rm -f "$TMP/filtered.fasta"
+  >  --output-strains "$TMP/filtered_strains_probabilistic.txt" > /dev/null
 
 Using the default probabilistic subsampling, should work the same as the previous case.
 
@@ -101,8 +112,12 @@ Using the default probabilistic subsampling, should work the same as the previou
   >  --group-by country year month \
   >  --subsample-max-sequences 5 \
   >  --subsample-seed 314159 \
-  >  --output "$TMP/filtered.fasta" > /dev/null
-  $ rm -f "$TMP/filtered.fasta"
+  >  --output-strains "$TMP/filtered_strains_default.txt" > /dev/null
+
+By setting the subsample seed above, we should get the same results for both runs.
+
+  $ diff -u <(sort "$TMP/filtered_strains_probabilistic.txt") <(sort "$TMP/filtered_strains_default.txt")
+  $ rm -f "$TMP/filtered_strains_probabilistic.txt" "$TMP/filtered_strains_default.txt"
 
 Filter using only metadata without sequence input or output and save results as filtered metadata.
 
