@@ -37,7 +37,7 @@ Geographic locations can be broken down, for example, into `region`, `country`, 
 
 It is important that these are spelled consistently.
 
-If you want to include locations where augur doesn't know the lat-long values, you can include them - see how [here](lat_longs).
+If you want to include locations where augur doesn't know the lat-long values, you can include them - see how [here](./lat_longs.html).
 
 ### Consistancy and Style
 
