@@ -2,6 +2,13 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* docs: Fix broken link to latitude/longitude documentation. [#766][] (@victorlin)
+* filter: Fix reproducibility of subsampling by using the user-defined random seed in all random function calls and by ordering strain sets as lists prior to adding strains to group-by priority queues. [#772][] (@huddlej)
+
+[#766]: https://github.com/nextstrain/augur/pull/766
+[#772]: https://github.com/nextstrain/augur/pull/772
 
 ## 13.0.0 (17 August 2021)
 
