@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 13.0.1 (1 October 2021)
+
 ### Bug Fixes
 
 * docs: Fix broken link to latitude/longitude documentation. [#766][] (@victorlin)
