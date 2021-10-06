@@ -195,7 +195,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         call = [iqtree, *fast_opts, "-nt", str(nthreads), "-s", shquote(tmp_aln_file),
                 "-m", substitution_model, tree_builder_args, ">", log_file]
     else:
-        call = [iqtree *fast_opts, "-nt", str(nthreads), "-s", shquote(tmp_aln_file), tree_builder_args, ">", shquote(log_file)]
+        call = [iqtree, *fast_opts, "-nt", str(nthreads), "-s", shquote(tmp_aln_file), tree_builder_args, ">", shquote(log_file)]
 
     cmd = " ".join(call)
 
@@ -203,7 +203,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
           "\n\tNguyen et al: IQ-TREE: A fast and effective stochastic algorithm for estimating maximum likelihood phylogenies."
           "\n\tMol. Biol. Evol., 32:268-274. https://doi.org/10.1093/molbev/msu300\n")
     if substitution_model.lower() == "none":
-        print("Conducting a model test... see iqtree.log for the result. You can specify this with --substitution-model in future runs.")
+        print(f"Conducting a model test... see '{shquote(log_file)}' for the result. You can specify this with --substitution-model in future runs.")
 
     try:
         run_shell_command(cmd, raise_errors = True)
@@ -216,10 +216,6 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
             n.name = tmp_name
         #this allows the user to check intermediate output, as tree.nwk will be
         if clean_up:
-            #allow user to see chosen model if modeltest was run
-            if substitution_model.lower() == 'none':
-                shutil.copyfile(log_file, out_file.replace(out_file.split('/')[-1],"iqtree.log"))
-
             if os.path.isfile(tmp_aln_file):
                 os.remove(tmp_aln_file)
 
@@ -344,7 +340,7 @@ def register_arguments(parser):
     parser.add_argument('--alignment', '-a', required=True, help="alignment in fasta or VCF format")
     parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
     parser.add_argument('--output', '-o', type=str, help='file name to write tree to')
-    parser.add_argument('--substitution-model', default="GTR", choices=["HKY", "GTR", "HKY+G", "GTR+G", "GTR+R10"],
+    parser.add_argument('--substitution-model', default="GTR",
                                 help='substitution model to use. Specify \'none\' to run ModelTest. Currently, only available for IQTREE.')
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                                 help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
