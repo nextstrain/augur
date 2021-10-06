@@ -191,7 +191,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
             file=sys.stderr
         )
 
-    if substitution_model.lower() != "none":
+    if substitution_model.lower() != "auto":
         call = [iqtree, *fast_opts, "-nt", str(nthreads), "-s", shquote(tmp_aln_file),
                 "-m", substitution_model, tree_builder_args, ">", log_file]
     else:
@@ -202,7 +202,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     print("Building a tree via:\n\t" + cmd +
           "\n\tNguyen et al: IQ-TREE: A fast and effective stochastic algorithm for estimating maximum likelihood phylogenies."
           "\n\tMol. Biol. Evol., 32:268-274. https://doi.org/10.1093/molbev/msu300\n")
-    if substitution_model.lower() == "none":
+    if substitution_model.lower() == "auto":
         print(f"Conducting a model test... see '{shquote(log_file)}' for the result. You can specify this with --substitution-model in future runs.")
 
     try:
@@ -341,7 +341,7 @@ def register_arguments(parser):
     parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
     parser.add_argument('--output', '-o', type=str, help='file name to write tree to')
     parser.add_argument('--substitution-model', default="GTR",
-                                help='substitution model to use. Specify \'none\' to run ModelTest. Currently, only available for IQTREE.')
+                                help='substitution model to use. Specify \'auto\' to run ModelTest. Currently, only available for IQTREE.')
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                                 help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
