@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 13.0.2 (12 October 2021)
+
 ### Bug Fixes
 
 * dependencies: Support latest versions of BioPython. [#777][] (@huddlej)
