@@ -2,6 +2,13 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* dependencies: Support latest versions of BioPython. [#777][] (@huddlej)
+* tree: Allow users to specify arbitrary IQ-TREE models. [#776][] (@huddlej)
+
+[#776]: https://github.com/nextstrain/augur/pull/776
+[#777]: https://github.com/nextstrain/augur/pull/777
 
 ## 13.0.1 (1 October 2021)
 
