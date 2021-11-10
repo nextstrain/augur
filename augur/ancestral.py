@@ -168,7 +168,7 @@ def run(args):
     else:
         aln = args.alignment
 
-    # Enfore treetime 0.7 or later
+    # Enforce treetime 0.7 or later
     from distutils.version import StrictVersion
     import treetime
     if StrictVersion(treetime.version) < StrictVersion('0.7.0'):
