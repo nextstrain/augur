@@ -345,7 +345,7 @@ def register_arguments(parser):
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                                 help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    parser.add_argument('--exclude-sites', type=str, help='file name of one-based sites to exclude for raw tree building (BED format in .bed files, DRM format in tab-delimited files, or one position per line)')
+    parser.add_argument('--exclude-sites', type=str, help='file name of one-based sites to exclude for raw tree building (BED format in .bed files, second column in tab-delimited files, or one position per line)')
     parser.add_argument('--tree-builder-args', type=str, default='', help='extra arguments to be passed directly to the executable of the requested tree method (e.g., --tree-builder-args="-czb")')
 
 
