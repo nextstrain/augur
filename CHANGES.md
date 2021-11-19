@@ -2,6 +2,14 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* tree: Handle compressed alignment when excluding sites. [#786][] (@huddlej)
+* docs: Fix typos ([ce0834c][]) and clarify exclude sites inputs ([5ad1574][]). (@corneliusroemer)
+
+[#786]: https://github.com/nextstrain/augur/pull/786
+[ce0834c]: https://github.com/nextstrain/augur/commit/ce0834c476abc9ee99785fa930608218b7d78990
+[5ad1574]: https://github.com/nextstrain/augur/commit/5ad157485015623883c6b637d247459f906b63cb
 
 ## 13.0.2 (12 October 2021)
 
