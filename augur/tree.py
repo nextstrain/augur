@@ -13,6 +13,7 @@ import numpy as np
 from treetime.vcf_utils import read_vcf
 from pathlib import Path
 
+from .io import read_sequences
 from .utils import run_shell_command, nthreads_value, shquote, load_mask_sites
 
 def find_executable(names, default = None):
@@ -315,7 +316,7 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
 
     # Load alignment as FASTA generator to prevent loading the whole alignment
     # into memory.
-    alignment = Bio.SeqIO.parse(alignment_file, "fasta")
+    alignment = read_sequences(alignment_file)
 
     # Write the masked alignment to disk one record at a time.
     alignment_file_path = Path(alignment_file)
