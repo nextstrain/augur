@@ -29,6 +29,13 @@ Try building a tree with IQ-TREE using its ModelTest functionality, by supplying
   >  --output "$TMP/tree_raw.nwk" \
   >  --nthreads 1 > /dev/null
 
+Build a tree with excluded sites using a compressed input file.
+
+  $ ${AUGUR} tree \
+  >  --alignment tree/aligned.fasta.xz \
+  >  --exclude-sites tree/excluded_sites.txt \
+  >  --output "$TMP/tree_raw.nwk" &> /dev/null
+
 Clean up tree log files.
 
   $ rm -f tree/*.log
