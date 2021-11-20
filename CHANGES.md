@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 13.0.3 (19 November 2021)
+
 ### Bug Fixes
 
 * tree: Handle compressed alignment when excluding sites. [#786][] (@huddlej)
