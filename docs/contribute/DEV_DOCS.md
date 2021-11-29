@@ -230,7 +230,7 @@ It can sometimes be useful to verify the config is parsed as you expect using
 
 ## Contributing documentation
 
-[Documentation](https://nextstrain-augur.readthedocs.io) is built using [Sphinx](http://sphinx-doc.org/) and hosted on [Read The Docs](https://readthedocs.org/).
+[Documentation](https://docs.nextstrain.org/projects/augur) is built using [Sphinx](http://sphinx-doc.org/) and hosted on [Read The Docs](https://readthedocs.org/).
 Versions of the documentation for each augur release and git branch are available and preserved.
 Read The Docs is updated automatically from commits and releases on GitHub.
 

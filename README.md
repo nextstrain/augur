@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.com/nextstrain/augur.svg?branch=master)](https://travis-ci.com/nextstrain/augur)
 [![PyPI version](https://badge.fury.io/py/nextstrain-augur.svg)](https://pypi.org/project/nextstrain-augur/)
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/augur/README.html)
-[![Documentation Status](https://readthedocs.org/projects/nextstrain-augur/badge/?version=latest)](https://nextstrain-augur.readthedocs.io/en/stable/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/nextstrain-augur/badge/?version=latest)](https://docs.nextstrain.org/projects/augur/en/stable/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.02906/status.svg)](https://doi.org/10.21105/joss.02906)
 
@@ -24,14 +24,14 @@ The output of augur is a series of JSONs that can be used to visualize your resu
 
 ## Quickstart
 
-[Follow instructions to install Augur](https://nextstrain-augur.readthedocs.io/en/stable/installation/installation.html).
+[Follow instructions to install Augur](https://docs.nextstrain.org/projects/augur/en/stable/installation/installation.html).
 Try out an analysis of real virus data by [completing the Zika tutorial](https://nextstrain.org/docs/tutorials/zika).
 
 ## Documentation
 
 * [Overview of how Augur fits together with other Nextstrain tools](https://nextstrain.org/docs/getting-started/introduction#open-source-tools-for-the-community)
 * [Overview of Augur usage](https://nextstrain.org/docs/bioinformatics/introduction-to-augur)
-* [Technical documentation for Augur](https://nextstrain-augur.readthedocs.io/en/stable/installation/installation.html)
+* [Technical documentation for Augur](https://docs.nextstrain.org/projects/augur/en/stable/installation/installation.html)
 * [Contributor guide](https://github.com/nextstrain/.github/blob/master/CONTRIBUTING.md)
 * [Project board with available issues](https://github.com/orgs/nextstrain/projects/6)
 * [Developer docs for Augur](./docs/contribute/DEV_DOCS.md)
