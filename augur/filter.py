@@ -1499,7 +1499,7 @@ def run(args):
                 records_per_group.values(),
                 args.probabilistic_sampling,
             )
-            print(f"Sampling at {sequences_per_group} per group.")
+            print(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
         except TooManyGroupsError as error:
             print(f"ERROR: {error}", file=sys.stderr)
             sys.exit(1)
@@ -1748,6 +1748,7 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, probabilis
         )
     except TooManyGroupsError as error:
         if probabilistic:
+            print(f"WARNING: {error}")
             sequences_per_group = _calculate_fractional_sequences_per_group(
                 target_max_value,
                 counts_per_group,
