@@ -1499,10 +1499,14 @@ def run(args):
                 records_per_group.values(),
                 args.probabilistic_sampling,
             )
-            print(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
         except TooManyGroupsError as error:
             print(f"ERROR: {error}", file=sys.stderr)
             sys.exit(1)
+
+        if (args.probabilistic_sampling):
+            print(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
+        else:
+            print(f"Sampling at {sequences_per_group} per group.")
 
         if queues_by_group is None:
             # We know all of the possible groups now from the first pass through
