@@ -891,50 +891,39 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     group_by_strain = {}
     skipped_strains = []
-    for strain in strains:
-        skip_strain = False
-        group = []
-        m = metadata.loc[strain].to_dict()
-        # collect group specifiers
-        for c in groups:
-            if c == "_dummy":
-                group.append(c)
-            elif c in m:
-                group.append(m[c])
-            elif c in ['month', 'year'] and 'date' in m:
-                try:
-                    year = int(m["date"].split('-')[0])
-                except:
-                    skipped_strains.append({
-                        "strain": strain,
-                        "filter": "skip_group_by_with_ambiguous_year",
-                        "kwargs": "",
-                    })
-                    skip_strain = True
-                    break
-                if c=='month':
-                    try:
-                        month = int(m["date"].split('-')[1])
-                    except:
-                        skipped_strains.append({
-                            "strain": strain,
-                            "filter": "skip_group_by_with_ambiguous_month",
-                            "kwargs": "",
-                        })
-                        skip_strain = True
-                        break
+    # TODO: strains
+    # replace date with year/month/date
+    if 'date' in metadata:
+        date_cols = ['year', 'month', 'date']
+        df_dates = metadata['date'].str.split('-', expand=True).set_axis(date_cols, axis=1)
+        for col in date_cols:
+            df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
+        metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
+    # skip ambiguous years
+    if 'year' in groups:
+        df_skip = metadata[metadata['year'].isnull()]
+        metadata.dropna(subset=['month'], inplace=True)
+        for strain in df_skip.index:
+            skipped_strains.append({
+                "strain": strain,
+                "filter": "skip_group_by_with_ambiguous_year",
+                "kwargs": "",
+            })
+    # skip ambiguous months
+    if 'month' in groups:
+        df_skip = metadata[metadata['month'].isnull()]
+        metadata.dropna(subset=['month'], inplace=True)
+        for strain in df_skip.index:
+            skipped_strains.append({
+                "strain": strain,
+                "filter": "skip_group_by_with_ambiguous_month",
+                "kwargs": "",
+            })
+    # TODO: _dummy, unknown
 
-                    group.append((year, month))
-                else:
-                    group.append(year)
-            else:
-                group.append('unknown')
-
-        if not skip_strain:
-            group_by_strain[strain] = tuple(group)
-
+    group_by_strain = dict(zip(metadata.index, metadata[groups].apply(tuple, axis=1)))
     # If we could not find any requested categories, we cannot complete subsampling.
-    distinct_groups = set(group_by_strain.values())
+    distinct_groups = list(metadata.groupby(groups).groups)
     if len(distinct_groups) == 1 and ('unknown' in distinct_groups or ('unknown',) in distinct_groups):
         error_message = f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done."
 
