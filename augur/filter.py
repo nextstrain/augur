@@ -895,14 +895,13 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
         group_by_strain = {strain: ('_dummy',) for strain in strains}
         return group_by_strain, skipped_strains
 
-    groups = group_by
-    groups_set = set(groups)
+    groups_set = set(group_by)
 
     # If we could not find any requested categories, we cannot complete subsampling.
     if 'date' not in metadata and groups_set <= {'year', 'month'}:
-        raise FilterException(f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done. Note that using 'year' or 'year month' requires a column called 'date'.")
+        raise FilterException(f"The specified group-by categories ({group_by}) were not found. No sequences-per-group sampling will be done. Note that using 'year' or 'year month' requires a column called 'date'.")
     if not groups_set & (set(metadata.columns) | {'year', 'month'}):
-        raise FilterException(f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done.")
+        raise FilterException(f"The specified group-by categories ({group_by}) were not found. No sequences-per-group sampling will be done.")
 
     # date requested
     if 'year' in groups_set or 'month' in groups_set:
@@ -951,7 +950,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
         for group in unknown_groups:
             metadata[group] = 'unknown'
 
-    group_by_strain = dict(zip(metadata.index, metadata[groups].apply(tuple, axis=1)))
+    group_by_strain = dict(zip(metadata.index, metadata[group_by].apply(tuple, axis=1)))
     return group_by_strain, skipped_strains
 
 
