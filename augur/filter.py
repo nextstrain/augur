@@ -898,9 +898,9 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     date_requested = ('year' in groups_set or 'month' in groups_set)
 
     # If we could not find any requested categories, we cannot complete subsampling.
-    if 'date' not in metadata and (date_requested and len(groups) == 1) or groups_set == {'year', 'month'}:
+    if 'date' not in metadata and groups_set <= {'year', 'month'}:
         raise FilterException(f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done. Note that using 'year' or 'year month' requires a column called 'date'.")
-    if not groups_set & set(metadata.columns):
+    if not groups_set & (set(metadata.columns) | {'year', 'month'}):
         raise FilterException(f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done.")
 
     # date column missing when requested
@@ -915,9 +915,9 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
         df_dates = pd.DataFrame({'year': 'unknown', 'month': 'unknown'}, index=metadata.index)
         metadata = pd.concat([metadata, df_dates], axis=1)
     else:
-        # replace date with year/month/date
+        # replace date with year/month/day
         if 'date' in metadata:
-            date_cols = ['year', 'month', 'date']
+            date_cols = ['year', 'month', 'day']
             df_dates = metadata['date'].str.split('-', n=2, expand=True).set_axis(date_cols, axis=1)
             for col in date_cols:
                 df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
@@ -944,6 +944,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                 })
         # month = (year, month)
         metadata['month'] = list(zip(metadata['year'], metadata['month']))
+        # TODO: support group by day
 
     unknown_groups = groups_set - set(metadata.columns)
     if unknown_groups:
