@@ -68,7 +68,6 @@ class TestFilterGroupBy:
         metadata.at["SEQ_2", "date"] = "XXXX-02-01"
         strains = metadata.index.tolist()
         group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
-        print(group_by_strain)
         assert group_by_strain == {
             'SEQ_1': ('A', 2020, (2020, 1)),
             'SEQ_3': ('B', 2020, (2020, 3)),

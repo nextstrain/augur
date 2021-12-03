@@ -918,14 +918,14 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
         # replace date with year/month/date
         if 'date' in metadata:
             date_cols = ['year', 'month', 'date']
-            df_dates = metadata['date'].str.split('-', expand=True).set_axis(date_cols, axis=1)
+            df_dates = metadata['date'].str.split('-', n=2, expand=True).set_axis(date_cols, axis=1)
             for col in date_cols:
                 df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
             metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
         # skip ambiguous years
         if 'year' in groups:
             df_skip = metadata[metadata['year'].isnull()]
-            metadata.dropna(subset=['month'], inplace=True)
+            metadata.dropna(subset=['year'], inplace=True)
             for strain in df_skip.index:
                 skipped_strains.append({
                     "strain": strain,
@@ -942,10 +942,22 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                     "filter": "skip_group_by_with_ambiguous_month",
                     "kwargs": "",
                 })
+        # month = (year, month)
+        metadata['month'] = list(zip(metadata['year'], metadata['month']))
 
     unknown_groups = groups_set - set(metadata.columns)
-    for group in unknown_groups:
-        metadata[group] = 'unknown'
+    if unknown_groups:
+        error_message = []
+        error_message.append(
+            "Some of the specified group-by categories couldn't be found: %s" % ", ".join([str(cat) for cat in unknown_groups])
+        )
+        error_message.append("Filtering by group may behave differently than expected!")
+        print(
+            "WARNING: %s" % "\n".join(error_message),
+            file=sys.stderr,
+        )
+        for group in unknown_groups:
+            metadata[group] = 'unknown'
 
     group_by_strain = dict(zip(metadata.index, metadata[groups].apply(tuple, axis=1)))
     return group_by_strain, skipped_strains
