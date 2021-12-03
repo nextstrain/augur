@@ -903,60 +903,50 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     if not groups_set & (set(metadata.columns) | {'year', 'month'}):
         raise FilterException(f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done.")
 
-    # date column missing when requested
-    if 'date' not in metadata and date_requested:
-        error_message = []
-        error_message.append("A 'date' column could not be found to group-by year or month.")
-        error_message.append("Filtering by group may behave differently than expected!")
-        print(
-            "WARNING: %s" % "\n".join(error_message),
-            file=sys.stderr,
-        )
-        df_dates = pd.DataFrame({'year': 'unknown', 'month': 'unknown'}, index=metadata.index)
-        metadata = pd.concat([metadata, df_dates], axis=1)
-    else:
-        # replace date with year/month/day
-        if 'date' in metadata:
-            date_cols = ['year', 'month', 'day']
-            df_dates = metadata['date'].str.split('-', n=2, expand=True).set_axis(date_cols, axis=1)
-            for col in date_cols:
-                df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
-            metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
-        # skip ambiguous years
-        if 'year' in groups:
-            df_skip = metadata[metadata['year'].isnull()]
-            metadata.dropna(subset=['year'], inplace=True)
-            for strain in df_skip.index:
-                skipped_strains.append({
-                    "strain": strain,
-                    "filter": "skip_group_by_with_ambiguous_year",
-                    "kwargs": "",
-                })
-        # skip ambiguous months
-        if 'month' in groups:
-            df_skip = metadata[metadata['month'].isnull()]
-            metadata.dropna(subset=['month'], inplace=True)
-            for strain in df_skip.index:
-                skipped_strains.append({
-                    "strain": strain,
-                    "filter": "skip_group_by_with_ambiguous_month",
-                    "kwargs": "",
-                })
-        # month = (year, month)
-        metadata['month'] = list(zip(metadata['year'], metadata['month']))
-        # TODO: support group by day
+    if date_requested:
+        if 'date' not in metadata:
+            # set year/month/day = unknown
+            print(f"WARNING: A 'date' column could not be found to group-by year or month.", file=sys.stderr)
+            print(f"Filtering by group may behave differently than expected!", file=sys.stderr)
+            df_dates = pd.DataFrame({'year': 'unknown', 'month': 'unknown'}, index=metadata.index)
+            metadata = pd.concat([metadata, df_dates], axis=1)
+        else:
+            if 'date' in metadata:
+                # replace date with year/month/day as nullable ints
+                date_cols = ['year', 'month', 'day']
+                df_dates = (metadata['date'].str.split('-', n=2, expand=True)
+                                                .set_axis(date_cols, axis=1))
+                for col in date_cols:
+                    df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
+                metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
+            if 'year' in groups:
+                # skip ambiguous years
+                df_skip = metadata[metadata['year'].isnull()]
+                metadata.dropna(subset=['year'], inplace=True)
+                for strain in df_skip.index:
+                    skipped_strains.append({
+                        "strain": strain,
+                        "filter": "skip_group_by_with_ambiguous_year",
+                        "kwargs": "",
+                    })
+            if 'month' in groups:
+                # skip ambiguous months
+                df_skip = metadata[metadata['month'].isnull()]
+                metadata.dropna(subset=['month'], inplace=True)
+                for strain in df_skip.index:
+                    skipped_strains.append({
+                        "strain": strain,
+                        "filter": "skip_group_by_with_ambiguous_month",
+                        "kwargs": "",
+                    })
+                # month = (year, month)
+                metadata['month'] = list(zip(metadata['year'], metadata['month']))
+            # TODO: support group by day
 
     unknown_groups = groups_set - set(metadata.columns)
     if unknown_groups:
-        error_message = []
-        error_message.append(
-            "Some of the specified group-by categories couldn't be found: %s" % ", ".join([str(cat) for cat in unknown_groups])
-        )
-        error_message.append("Filtering by group may behave differently than expected!")
-        print(
-            "WARNING: %s" % "\n".join(error_message),
-            file=sys.stderr,
-        )
+        print(f"WARNING: Some of the specified group-by categories couldn't be found: {', '.join(unknown_groups)}", file=sys.stderr)
+        print("Filtering by group may behave differently than expected!", file=sys.stderr)
         for group in unknown_groups:
             metadata[group] = 'unknown'
 
