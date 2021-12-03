@@ -898,15 +898,14 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     groups = group_by
     groups_set = set(groups)
 
-    date_requested = ('year' in groups_set or 'month' in groups_set)
-
     # If we could not find any requested categories, we cannot complete subsampling.
     if 'date' not in metadata and groups_set <= {'year', 'month'}:
         raise FilterException(f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done. Note that using 'year' or 'year month' requires a column called 'date'.")
     if not groups_set & (set(metadata.columns) | {'year', 'month'}):
         raise FilterException(f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done.")
 
-    if date_requested:
+    # date requested
+    if 'year' in groups_set or 'month' in groups_set:
         if 'date' not in metadata:
             # set year/month/day = unknown
             print(f"WARNING: A 'date' column could not be found to group-by year or month.", file=sys.stderr)
