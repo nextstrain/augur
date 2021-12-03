@@ -885,13 +885,15 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     """
     metadata = metadata.loc[strains]
+    group_by_strain = {}
+    skipped_strains = []
+
     if group_by:
         groups = group_by
     else:
-        groups = ("_dummy",)
+        group_by_strain = {strain: ('_dummy',) for strain in strains}
+        return group_by_strain, skipped_strains
 
-    group_by_strain = {}
-    skipped_strains = []
     # replace date with year/month/date
     if 'date' in metadata:
         date_cols = ['year', 'month', 'date']
@@ -919,7 +921,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                 "filter": "skip_group_by_with_ambiguous_month",
                 "kwargs": "",
             })
-    # TODO: _dummy, unknown
+    # TODO: unknown
 
     group_by_strain = dict(zip(metadata.index, metadata[groups].apply(tuple, axis=1)))
     # If we could not find any requested categories, we cannot complete subsampling.
