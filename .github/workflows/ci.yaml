@@ -1,0 +1,30 @@
+name: CI
+on:
+  push:
+    branches:
+      - master
+      - release
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.6', '3.7', '3.8']
+    steps:
+    - uses: actions/checkout@v2
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+        mamba-version: "*"
+        channels: conda-forge,bioconda
+        channel-priority: true
+        activate-environment: test
+    - shell: bash -l {0}
+      run: |
+        conda info
+        conda list
+    - shell: bash -l {0}
+      run: mamba install mafft raxml fasttree iqtree vcftools pip
+    - shell: bash -l {0}
+      run: pip install -e .[dev]
