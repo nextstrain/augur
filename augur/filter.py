@@ -911,14 +911,13 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             df_dates = pd.DataFrame({'year': 'unknown', 'month': 'unknown'}, index=metadata.index)
             metadata = pd.concat([metadata, df_dates], axis=1)
         else:
-            if 'date' in metadata:
-                # replace date with year/month/day as nullable ints
-                date_cols = ['year', 'month', 'day']
-                df_dates = (metadata['date'].str.split('-', n=2, expand=True)
-                                                .set_axis(date_cols, axis=1))
-                for col in date_cols:
-                    df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
-                metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
+            # replace date with year/month/day as nullable ints
+            date_cols = ['year', 'month', 'day']
+            df_dates = (metadata['date'].str.split('-', n=2, expand=True)
+                                            .set_axis(date_cols, axis=1))
+            for col in date_cols:
+                df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
+            metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
             if 'year' in groups:
                 # skip ambiguous years
                 df_skip = metadata[metadata['year'].isnull()]
