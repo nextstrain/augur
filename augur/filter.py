@@ -884,6 +884,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     [{'strain': 'strain1', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
 
     """
+    metadata = metadata.loc[strains]
     if group_by:
         groups = group_by
     else:
@@ -891,7 +892,6 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     group_by_strain = {}
     skipped_strains = []
-    # TODO: strains
     # replace date with year/month/date
     if 'date' in metadata:
         date_cols = ['year', 'month', 'date']
