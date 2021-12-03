@@ -76,7 +76,7 @@ class TestFilterGroupBy:
         }
         assert skipped_strains == [{'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_year', 'kwargs': ''}]
 
-    def test_filter_groupby_skip_month(self, valid_metadata: pd.DataFrame):
+    def test_filter_groupby_skip_ambiguous_month(self, valid_metadata: pd.DataFrame):
         groups = ['country', 'year', 'month']
         metadata = valid_metadata.copy()
         metadata.at["SEQ_2", "date"] = "2020-XX-01"
@@ -90,7 +90,7 @@ class TestFilterGroupBy:
         }
         assert skipped_strains == [{'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
 
-    def test_filter_groupby_skip_month_2(self, valid_metadata: pd.DataFrame):
+    def test_filter_groupby_skip_missing_month(self, valid_metadata: pd.DataFrame):
         groups = ['country', 'year', 'month']
         metadata = valid_metadata.copy()
         metadata.at["SEQ_2", "date"] = "2020"
