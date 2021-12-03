@@ -890,76 +890,64 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     if group_by:
         groups = group_by
+        groups_set = set(groups)
     else:
         group_by_strain = {strain: ('_dummy',) for strain in strains}
         return group_by_strain, skipped_strains
 
-    # replace date with year/month/date
-    if 'date' in metadata:
-        date_cols = ['year', 'month', 'date']
-        df_dates = metadata['date'].str.split('-', expand=True).set_axis(date_cols, axis=1)
-        for col in date_cols:
-            df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
-        metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
-    # skip ambiguous years
-    if 'year' in groups:
-        df_skip = metadata[metadata['year'].isnull()]
-        metadata.dropna(subset=['month'], inplace=True)
-        for strain in df_skip.index:
-            skipped_strains.append({
-                "strain": strain,
-                "filter": "skip_group_by_with_ambiguous_year",
-                "kwargs": "",
-            })
-    # skip ambiguous months
-    if 'month' in groups:
-        df_skip = metadata[metadata['month'].isnull()]
-        metadata.dropna(subset=['month'], inplace=True)
-        for strain in df_skip.index:
-            skipped_strains.append({
-                "strain": strain,
-                "filter": "skip_group_by_with_ambiguous_month",
-                "kwargs": "",
-            })
-    # TODO: unknown
+    date_requested = ('year' in groups_set or 'month' in groups_set)
 
-    group_by_strain = dict(zip(metadata.index, metadata[groups].apply(tuple, axis=1)))
     # If we could not find any requested categories, we cannot complete subsampling.
-    distinct_groups = list(metadata.groupby(groups).groups)
-    if len(distinct_groups) == 1 and ('unknown' in distinct_groups or ('unknown',) in distinct_groups):
-        error_message = f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done."
+    if 'date' not in metadata and date_requested and len(groups) == 1:
+        raise FilterException(f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done. Note that using 'year' or 'year month' requires a column called 'date'.")
+    if not groups_set & set(metadata.columns):
+        raise FilterException(f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done.")
 
-        if any(x in groups for x in ('year', 'month')):
-            error_message += " Note that using 'year' or 'year month' requires a column called 'date'."
-
-        # Raise an exception, since we cannot find the requested groups.
-        raise FilterException(error_message)
-
-    # Check to see if some categories are missing to warn the user
-    group_by = {
-        'date' if cat in ('year', 'month') else cat
-        for cat in groups
-    }
-    missing_cats = [cat for cat in group_by if cat not in metadata.columns.values and cat != "_dummy"]
-    if missing_cats:
+    # date column missing when requested
+    if 'date' not in metadata and date_requested:
         error_message = []
-
-        if any(cat != 'date' for cat in missing_cats):
-            error_message.append(
-                "Some of the specified group-by categories couldn't be found: %s" % ", ".join([str(cat) for cat in missing_cats if cat != 'date'])
-            )
-
-        if any(cat == 'date' for cat in missing_cats):
-            error_message.append("A 'date' column could not be found to group-by year or month.")
-
+        error_message.append("A 'date' column could not be found to group-by year or month.")
         error_message.append("Filtering by group may behave differently than expected!")
-
-        # Print a warning message, but allow grouping to continue.
         print(
             "WARNING: %s" % "\n".join(error_message),
             file=sys.stderr,
         )
+        df_dates = pd.DataFrame({'year': 'unknown', 'month': 'unknown'}, index=metadata.index)
+        metadata = pd.concat([metadata, df_dates], axis=1)
+    else:
+        # replace date with year/month/date
+        if 'date' in metadata:
+            date_cols = ['year', 'month', 'date']
+            df_dates = metadata['date'].str.split('-', expand=True).set_axis(date_cols, axis=1)
+            for col in date_cols:
+                df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
+            metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
+        # skip ambiguous years
+        if 'year' in groups:
+            df_skip = metadata[metadata['year'].isnull()]
+            metadata.dropna(subset=['month'], inplace=True)
+            for strain in df_skip.index:
+                skipped_strains.append({
+                    "strain": strain,
+                    "filter": "skip_group_by_with_ambiguous_year",
+                    "kwargs": "",
+                })
+        # skip ambiguous months
+        if 'month' in groups:
+            df_skip = metadata[metadata['month'].isnull()]
+            metadata.dropna(subset=['month'], inplace=True)
+            for strain in df_skip.index:
+                skipped_strains.append({
+                    "strain": strain,
+                    "filter": "skip_group_by_with_ambiguous_month",
+                    "kwargs": "",
+                })
 
+    unknown_groups = groups_set - set(metadata.columns)
+    for group in unknown_groups:
+        metadata[group] = 'unknown'
+
+    group_by_strain = dict(zip(metadata.index, metadata[groups].apply(tuple, axis=1)))
     return group_by_strain, skipped_strains
 
 
