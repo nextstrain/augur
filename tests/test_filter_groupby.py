@@ -15,6 +15,17 @@ def valid_metadata() -> pd.DataFrame:
     return pd.DataFrame.from_records(data, columns=columns).set_index('strain')
 
 class TestFilterGroupBy:
+    def test_filter_groupby_strain_subset(self, valid_metadata: pd.DataFrame):
+        metadata = valid_metadata.copy()
+        strains = ['SEQ_1', 'SEQ_3', 'SEQ_5']
+        group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata)
+        assert group_by_strain == {
+            'SEQ_1': ('_dummy',),
+            'SEQ_3': ('_dummy',),
+            'SEQ_5': ('_dummy',)
+        }
+        assert skipped_strains == []
+
     def test_filter_groupby_dummy(self, valid_metadata: pd.DataFrame):
         metadata = valid_metadata.copy()
         strains = metadata.index.tolist()
