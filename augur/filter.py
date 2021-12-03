@@ -888,6 +888,9 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     group_by_strain = {}
     skipped_strains = []
 
+    if metadata.empty:
+        return group_by_strain, skipped_strains
+
     if not group_by or group_by == ('_dummy',):
         group_by_strain = {strain: ('_dummy',) for strain in strains}
         return group_by_strain, skipped_strains

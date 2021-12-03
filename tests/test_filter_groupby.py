@@ -147,3 +147,11 @@ class TestFilterGroupBy:
         captured = capsys.readouterr()
         assert captured.err == "WARNING: A 'date' column could not be found to group-by year or month.\nFiltering by group may behave differently than expected!\n"
         assert skipped_strains == []
+
+    def test_filter_groupby_no_strains(self, valid_metadata: pd.DataFrame):
+        groups = ['country', 'year', 'month']
+        metadata = valid_metadata.copy()
+        strains = []
+        group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
+        assert group_by_strain == {}
+        assert skipped_strains == []
