@@ -888,12 +888,12 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     group_by_strain = {}
     skipped_strains = []
 
-    if group_by:
-        groups = group_by
-        groups_set = set(groups)
-    else:
+    if not group_by or group_by == ('_dummy',):
         group_by_strain = {strain: ('_dummy',) for strain in strains}
         return group_by_strain, skipped_strains
+
+    groups = group_by
+    groups_set = set(groups)
 
     date_requested = ('year' in groups_set or 'month' in groups_set)
 
