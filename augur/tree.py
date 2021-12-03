@@ -8,6 +8,7 @@ import sys
 import time
 import uuid
 import Bio
+from Bio.Seq import MutableSeq
 from Bio import Phylo
 import numpy as np
 from treetime.vcf_utils import read_vcf
@@ -324,7 +325,7 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
     with open(masked_alignment_file, "w", encoding='utf-8') as oh:
         for record in alignment:
             # Convert to a mutable sequence to enable masking with Ns.
-            sequence = record.seq.tomutable()
+            sequence = MutableSeq(record.seq)
 
             # Replace all excluded sites with Ns.
             for site in excluded_sites:

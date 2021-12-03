@@ -10,6 +10,7 @@ from shlex import quote
 from Bio import SeqIO
 from Bio.Align import MultipleSeqAlignment
 from Bio.Seq import Seq
+from Bio.Seq import MutableSeq
 from Bio.SeqRecord import SeqRecord
 
 from augur import align
@@ -366,7 +367,7 @@ class TestAlign:
     def test_postprocess_strip_non_reference(self, tmpdir, ref_seq, ref_file):
         """Postprocess should strip gaps in the reference sequence from other sequences, but not gaps in those sequences"""
         expected_length = len(ref_seq.seq) - ref_seq.seq.count("-")
-        gapped_seq = ref_seq.seq.tomutable()
+        gapped_seq = MutableSeq(ref_seq.seq)
         gapped_seq[1] = "-"
         gapped = SeqRecord(gapped_seq, "GAP")
         gap_file = write_strains(tmpdir, "gaps", [ref_seq, gapped])
