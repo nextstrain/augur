@@ -920,7 +920,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             for col in date_cols:
                 df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
             metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
-            if 'year' in groups:
+            if 'year' in groups_set:
                 # skip ambiguous years
                 df_skip = metadata[metadata['year'].isnull()]
                 metadata.dropna(subset=['year'], inplace=True)
@@ -930,7 +930,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                         "filter": "skip_group_by_with_ambiguous_year",
                         "kwargs": "",
                     })
-            if 'month' in groups:
+            if 'month' in groups_set:
                 # skip ambiguous months
                 df_skip = metadata[metadata['month'].isnull()]
                 metadata.dropna(subset=['month'], inplace=True)
