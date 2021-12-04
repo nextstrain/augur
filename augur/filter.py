@@ -895,18 +895,16 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
         group_by_strain = {strain: ('_dummy',) for strain in strains}
         return group_by_strain, skipped_strains
 
-    groups = group_by
-    groups_set = set(groups)
-
-    date_requested = ('year' in groups_set or 'month' in groups_set)
+    group_by_set = set(group_by)
 
     # If we could not find any requested categories, we cannot complete subsampling.
-    if 'date' not in metadata and groups_set <= {'year', 'month'}:
-        raise FilterException(f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done. Note that using 'year' or 'year month' requires a column called 'date'.")
-    if not groups_set & (set(metadata.columns) | {'year', 'month'}):
-        raise FilterException(f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done.")
+    if 'date' not in metadata and group_by_set <= {'year', 'month'}:
+        raise FilterException(f"The specified group-by categories ({group_by}) were not found. No sequences-per-group sampling will be done. Note that using 'year' or 'year month' requires a column called 'date'.")
+    if not group_by_set & (set(metadata.columns) | {'year', 'month'}):
+        raise FilterException(f"The specified group-by categories ({group_by}) were not found. No sequences-per-group sampling will be done.")
 
-    if date_requested:
+    # date requested
+    if 'year' in group_by_set or 'month' in group_by_set:
         if 'date' not in metadata:
             # set year/month/day = unknown
             print(f"WARNING: A 'date' column could not be found to group-by year or month.", file=sys.stderr)
@@ -921,7 +919,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             for col in date_cols:
                 df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
             metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
-            if 'year' in groups:
+            if 'year' in group_by_set:
                 # skip ambiguous years
                 df_skip = metadata[metadata['year'].isnull()]
                 metadata.dropna(subset=['year'], inplace=True)
@@ -931,7 +929,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                         "filter": "skip_group_by_with_ambiguous_year",
                         "kwargs": "",
                     })
-            if 'month' in groups:
+            if 'month' in group_by_set:
                 # skip ambiguous months
                 df_skip = metadata[metadata['month'].isnull()]
                 metadata.dropna(subset=['month'], inplace=True)
@@ -945,14 +943,14 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                 metadata['month'] = list(zip(metadata['year'], metadata['month']))
             # TODO: support group by day
 
-    unknown_groups = groups_set - set(metadata.columns)
+    unknown_groups = group_by_set - set(metadata.columns)
     if unknown_groups:
         print(f"WARNING: Some of the specified group-by categories couldn't be found: {', '.join(unknown_groups)}", file=sys.stderr)
         print("Filtering by group may behave differently than expected!", file=sys.stderr)
         for group in unknown_groups:
             metadata[group] = 'unknown'
 
-    group_by_strain = dict(zip(metadata.index, metadata[groups].apply(tuple, axis=1)))
+    group_by_strain = dict(zip(metadata.index, metadata[group_by].apply(tuple, axis=1)))
     return group_by_strain, skipped_strains
 
 
