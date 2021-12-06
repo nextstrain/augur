@@ -34,7 +34,7 @@ jobs:
       uses: codecov/codecov-action@v2
       with:
         fail_ci_if_error: true
-  publish:
+  deploy:
     if: ${{ github.ref == 'refs/heads/release' }}
     needs: [test]
     runs-on: ubuntu-latest
