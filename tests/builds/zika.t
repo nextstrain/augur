@@ -54,7 +54,7 @@ Align filtered sequences to a specific reference sequence and fill any gaps.
   >  --output "$TMP/out/aligned.fasta" \
   >  --fill-gaps > /dev/null
 
-  $ diff -u "results/aligned.fasta" "$TMP/out/aligned.fasta"
+  $ diff --ignore-matching-lines=".*KX369547.1.*" -u "results/aligned.fasta" "$TMP/out/aligned.fasta"
 
 Build a tree from the multiple sequence alignment.
 
