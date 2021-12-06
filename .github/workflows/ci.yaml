@@ -23,10 +23,10 @@ jobs:
         channels: conda-forge,bioconda
         channel-priority: true
         activate-environment: test
-    - run: conda info
-    - run: conda list
     - run: mamba install mafft raxml fasttree iqtree vcftools pip
     - run: pip install -e .[dev]
+    - run: conda info
+    - run: conda list
     - run: pytest -c pytest.python3.ini  --cov-report= --cov=augur
     - run: cram --shell=/bin/bash tests/functional/*.t tests/builds/*.t
     - run: bash tests/builds/runner.sh
