@@ -30,6 +30,9 @@ jobs:
     - run: pytest -c pytest.python3.ini  --cov-report= --cov=augur
     - run: cram --shell=/bin/bash tests/functional/*.t tests/builds/*.t
     - run: bash tests/builds/runner.sh
+    - uses: codecov/codecov-action@v2
+      with:
+        fail_ci_if_error: true
   publish:
     if: ${{ github.ref == 'refs/heads/release' }}
     needs: [test]
