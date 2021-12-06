@@ -24,8 +24,9 @@ jobs:
         - conda config --set always_yes yes --set changeps1 no
         - conda update -q conda
         - conda info -a
-        - conda create -n augur -c bioconda python=$TRAVIS_PYTHON_VERSION mafft raxml fasttree iqtree vcftools pip
+        - conda create -n augur -c bioconda python=$TRAVIS_PYTHON_VERSION mafft raxml fasttree iqtree vcftools pip numpy
         - source activate augur
+        - pip install biopython==1.67
       install:
         - pip install -e .[dev]
       script:
