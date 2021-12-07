@@ -228,13 +228,13 @@ class TestAlign:
         
     def test_read_sequences(self):
         data_file = pathlib.Path('tests/data/align/test_aligned_sequences.fasta')
-        result = align.read_sequences(data_file)
+        result = align.read_sequences(str(data_file))
         assert len(result) == 4
 
     def test_read_seq_compare(self):
         data_file = pathlib.Path("tests/data/align/aa-seq_h3n2_ha_2y_2HA1_dup.fasta")
         with pytest.raises(align.AlignmentError):
-            assert align.read_sequences(data_file)
+            assert align.read_sequences(str(data_file))
 
     def test_prepare_no_alignment_or_ref(self, test_file, test_seqs, out_file):
         _, output, _ = align.prepare([test_file,], None, out_file, None, None)
@@ -367,7 +367,7 @@ class TestAlign:
     def test_postprocess_strip_non_reference(self, tmpdir, ref_seq, ref_file):
         """Postprocess should strip gaps in the reference sequence from other sequences, but not gaps in those sequences"""
         expected_length = len(ref_seq.seq) - ref_seq.seq.count("-")
-        gapped_seq = MutableSeq(ref_seq.seq)
+        gapped_seq = MutableSeq(str(ref_seq.seq))
         gapped_seq[1] = "-"
         gapped = SeqRecord(gapped_seq, "GAP")
         gap_file = write_strains(tmpdir, "gaps", [ref_seq, gapped])
