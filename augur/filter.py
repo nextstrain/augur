@@ -1476,7 +1476,7 @@ def run(args):
         # sequences requested, sequences per group will be a floating point
         # value and subsampling will be probabilistic.
         try:
-            sequences_per_group = calculate_sequences_per_group(
+            sequences_per_group, probabilistic_used = calculate_sequences_per_group(
                 args.subsample_max_sequences,
                 records_per_group.values(),
                 args.probabilistic_sampling,
@@ -1485,7 +1485,7 @@ def run(args):
             print(f"ERROR: {error}", file=sys.stderr)
             sys.exit(1)
 
-        if (args.probabilistic_sampling):
+        if (probabilistic_used):
             print(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
         else:
             print(f"Sampling at {sequences_per_group} per group.")
@@ -1725,8 +1725,12 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, probabilis
     -------
     int or float :
         Number of sequences per group.
+    bool :
+        Whether probabilistic subsampling was used.
 
     """
+    probabilistic_used = False
+
     try:
         sequences_per_group = _calculate_sequences_per_group(
             target_max_value,
@@ -1739,10 +1743,11 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, probabilis
                 target_max_value,
                 counts_per_group,
             )
+            probabilistic_used = True
         else:
             raise error
 
-    return sequences_per_group
+    return sequences_per_group, probabilistic_used
 
 
 class TooManyGroupsError(ValueError):
