@@ -1697,7 +1697,7 @@ def numeric_date(date):
         return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))
 
 
-def calculate_sequences_per_group(target_max_value, counts_per_group, probabilistic=True):
+def calculate_sequences_per_group(target_max_value, counts_per_group, allow_probabilistic=True):
     """Calculate the number of sequences per group for a given maximum number of
     sequences to be returned and the number of sequences in each requested
     group. Optionally, allow the result to be probabilistic such that the mean
@@ -1711,7 +1711,7 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, probabilis
         number of sequences per group for the given counts per group.
     counts_per_group : list[int]
         A list with the number of sequences in each requested group.
-    probabilistic : bool
+    allow_probabilistic : bool
         Whether to allow probabilistic subsampling when the number of groups
         exceeds the requested maximum.
 
@@ -1719,7 +1719,7 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, probabilis
     ------
     TooManyGroupsError :
         When there are more groups than sequences per group and probabilistic
-        subsampling is not enabled.
+        subsampling is not allowed.
 
     Returns
     -------
@@ -1737,7 +1737,7 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, probabilis
             counts_per_group,
         )
     except TooManyGroupsError as error:
-        if probabilistic:
+        if allow_probabilistic:
             print(f"WARNING: {error}")
             sequences_per_group = _calculate_fractional_sequences_per_group(
                 target_max_value,
