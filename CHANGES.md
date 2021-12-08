@@ -2,6 +2,20 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* dependencies: Replace deprecated mutable sequence interface for BioPython. [#788][] (@Carlosbogo)
+* dependencies: Fix backward compatibility with BioPython. [#801][] (@huddlej)
+* data: Add latitude and longitude details for "Reunion". [#791][] (@corneliusroemer)
+* filter: Use pandas functions to determine subsample groups. [#794][] and [#797][] (@victorlin)
+* filter: Add clarity to help message and output of probabilistic sampling. [#792][] (@victorlin)
+
+[#788]: https://github.com/nextstrain/augur/pull/788
+[#791]: https://github.com/nextstrain/augur/pull/791
+[#792]: https://github.com/nextstrain/augur/pull/792
+[#794]: https://github.com/nextstrain/augur/pull/794
+[#797]: https://github.com/nextstrain/augur/pull/797
+[#801]: https://github.com/nextstrain/augur/pull/801
 
 ## 13.0.3 (19 November 2021)
 
