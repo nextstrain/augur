@@ -1,7 +1,6 @@
 {
-    "type" : "object",
     "$schema": "http://json-schema.org/draft-06/schema#",
-    "version": "0.1",
+    "type": "object",
     "title": "Nextstrain minimal metadata JSON schema",
     "description": "This is the validation schema for the augur produced metadata JSON, for consumption in Auspice. Note that every field is optional, but excluding fields may disable certain features in Auspice.",
     "additionalProperties": true,

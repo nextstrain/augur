@@ -1,6 +1,6 @@
 {
-    "type" : "object",
     "$schema": "http://json-schema.org/draft-06/schema#",
+    "type": "object",
     "title": "Nextstrain tree JSON schema",
     "additionalProperties": false,
     "required": ["attr", "strain"],
