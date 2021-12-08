@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 13.0.4 (8 December 2021)
+
 ### Bug Fixes
 
 * dependencies: Replace deprecated mutable sequence interface for BioPython. [#788][] (@Carlosbogo)
