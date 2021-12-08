@@ -17,7 +17,7 @@ import re
 import sys
 from tempfile import NamedTemporaryFile
 import treetime.utils
-from typing import Collection
+from typing import Collection, List, Tuple
 
 from .index import index_sequences, index_vcf
 from .io import open_file, read_metadata, read_sequences, write_sequences
@@ -912,36 +912,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             df_dates = pd.DataFrame({'year': 'unknown', 'month': 'unknown'}, index=metadata.index)
             metadata = pd.concat([metadata, df_dates], axis=1)
         else:
-            # replace date with year/month/day as nullable ints
-            date_cols = ['year', 'month', 'day']
-            df_dates = (metadata['date'].str.split('-', n=2, expand=True)
-                                            .set_axis(date_cols, axis=1))
-            for col in date_cols:
-                df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
-            metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
-            if 'year' in group_by_set:
-                # skip ambiguous years
-                df_skip = metadata[metadata['year'].isnull()]
-                metadata.dropna(subset=['year'], inplace=True)
-                for strain in df_skip.index:
-                    skipped_strains.append({
-                        "strain": strain,
-                        "filter": "skip_group_by_with_ambiguous_year",
-                        "kwargs": "",
-                    })
-            if 'month' in group_by_set:
-                # skip ambiguous months
-                df_skip = metadata[metadata['month'].isnull()]
-                metadata.dropna(subset=['month'], inplace=True)
-                for strain in df_skip.index:
-                    skipped_strains.append({
-                        "strain": strain,
-                        "filter": "skip_group_by_with_ambiguous_month",
-                        "kwargs": "",
-                    })
-                # month = (year, month)
-                metadata['month'] = list(zip(metadata['year'], metadata['month']))
-            # TODO: support group by day
+            metadata, skipped_strains = expand_date_col(metadata, group_by_set)
 
     unknown_groups = group_by_set - set(metadata.columns)
     if unknown_groups:
@@ -953,6 +924,57 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     group_by_strain = dict(zip(metadata.index, metadata[group_by].apply(tuple, axis=1)))
     return group_by_strain, skipped_strains
 
+
+def expand_date_col(metadata: pd.DataFrame, group_by_set: set) -> Tuple[pd.DataFrame, List[dict]]:
+    """Expand the date column of a DataFrame to year=year, month=(year, month).
+
+    Parameters
+    ----------
+    metadata : pandas.DataFrame
+        Metadata containing date column.
+    group_by_set : set
+        A set of metadata columns to group records by.
+
+    Returns
+    -------
+    pandas.DataFrame :
+        The input metadata with expanded date columns.
+    list :
+        A list of dictionaries with strains that were skipped from grouping and the reason why (see also: `apply_filters` output).
+    """
+    metadata_new = metadata.copy()
+    skipped_strains = []
+    # replace date with year/month/day as nullable ints
+    date_cols = ['year', 'month', 'day']
+    df_dates = (metadata_new['date'].str.split('-', n=2, expand=True)
+                                    .set_axis(date_cols, axis=1))
+    for col in date_cols:
+        df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
+    metadata_new = pd.concat([metadata_new.drop('date', axis=1), df_dates], axis=1)
+    if 'year' in group_by_set:
+        # skip ambiguous years
+        df_skip = metadata_new[metadata_new['year'].isnull()]
+        metadata_new.dropna(subset=['year'], inplace=True)
+        for strain in df_skip.index:
+            skipped_strains.append({
+                "strain": strain,
+                "filter": "skip_group_by_with_ambiguous_year",
+                "kwargs": "",
+            })
+    if 'month' in group_by_set:
+        # skip ambiguous months
+        df_skip = metadata_new[metadata_new['month'].isnull()]
+        metadata_new.dropna(subset=['month'], inplace=True)
+        for strain in df_skip.index:
+            skipped_strains.append({
+                "strain": strain,
+                "filter": "skip_group_by_with_ambiguous_month",
+                "kwargs": "",
+            })
+        # month = (year, month)
+        metadata_new['month'] = list(zip(metadata_new['year'], metadata_new['month']))
+    # TODO: support group by day
+    return metadata_new, skipped_strains
 
 class PriorityQueue:
     """A priority queue implementation that automatically replaces lower priority
