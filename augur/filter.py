@@ -1125,7 +1125,7 @@ def register_arguments(parser):
     subsample_limits_group.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     subsample_limits_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences; can be used without the group_by argument")
     probabilistic_sampling_group = subsample_group.add_mutually_exclusive_group()
-    probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true', help="Enable probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.")
+    probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true', help="Allow probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.")
     probabilistic_sampling_group.add_argument('--no-probabilistic-sampling', action='store_false', dest='probabilistic_sampling')
     subsample_group.add_argument('--priority', type=str, help="""tab-delimited file with list of priority scores for strains (e.g., "<strain>\\t<priority>") and no header.
     When scores are provided, Augur converts scores to floating point values, sorts strains within each subsampling group from highest to lowest priority, and selects the top N strains per group where N is the calculated or requested number of strains per group.
@@ -1476,15 +1476,19 @@ def run(args):
         # sequences requested, sequences per group will be a floating point
         # value and subsampling will be probabilistic.
         try:
-            sequences_per_group = calculate_sequences_per_group(
+            sequences_per_group, probabilistic_used = calculate_sequences_per_group(
                 args.subsample_max_sequences,
                 records_per_group.values(),
                 args.probabilistic_sampling,
             )
-            print(f"Sampling at {sequences_per_group} per group.")
         except TooManyGroupsError as error:
             print(f"ERROR: {error}", file=sys.stderr)
             sys.exit(1)
+
+        if (probabilistic_used):
+            print(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
+        else:
+            print(f"Sampling at {sequences_per_group} per group.")
 
         if queues_by_group is None:
             # We know all of the possible groups now from the first pass through
@@ -1693,7 +1697,7 @@ def numeric_date(date):
         return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))
 
 
-def calculate_sequences_per_group(target_max_value, counts_per_group, probabilistic=True):
+def calculate_sequences_per_group(target_max_value, counts_per_group, allow_probabilistic=True):
     """Calculate the number of sequences per group for a given maximum number of
     sequences to be returned and the number of sequences in each requested
     group. Optionally, allow the result to be probabilistic such that the mean
@@ -1707,7 +1711,7 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, probabilis
         number of sequences per group for the given counts per group.
     counts_per_group : list[int]
         A list with the number of sequences in each requested group.
-    probabilistic : bool
+    allow_probabilistic : bool
         Whether to allow probabilistic subsampling when the number of groups
         exceeds the requested maximum.
 
@@ -1715,29 +1719,35 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, probabilis
     ------
     TooManyGroupsError :
         When there are more groups than sequences per group and probabilistic
-        subsampling is not enabled.
+        subsampling is not allowed.
 
     Returns
     -------
     int or float :
         Number of sequences per group.
+    bool :
+        Whether probabilistic subsampling was used.
 
     """
+    probabilistic_used = False
+
     try:
         sequences_per_group = _calculate_sequences_per_group(
             target_max_value,
             counts_per_group,
         )
     except TooManyGroupsError as error:
-        if probabilistic:
+        if allow_probabilistic:
+            print(f"WARNING: {error}")
             sequences_per_group = _calculate_fractional_sequences_per_group(
                 target_max_value,
                 counts_per_group,
             )
+            probabilistic_used = True
         else:
             raise error
 
-    return sequences_per_group
+    return sequences_per_group, probabilistic_used
 
 
 class TooManyGroupsError(ValueError):
