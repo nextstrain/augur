@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-06/schema#",
+    "$id": "https://nextstrain.org/schemas/dataset/v2",
     "type": "object",
     "title": "Nextstrain metadata JSON schema proposal (meta + tree together)",
     "additionalProperties": false,

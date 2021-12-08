@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-06/schema#",
+    "$id": "https://nextstrain.org/schemas/auspice/config/v2",
     "type": "object",
     "title": "Auspice config file to be supplied to `augur export v2`",
     "$comment": "This schema includes deprecated-but-handled-by-augur-export-v1 properties, but their schema definitions are somewhat incomplete",
