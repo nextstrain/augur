@@ -821,6 +821,8 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     Returns
     -------
+    set :
+        A set of all distinct group values.
     dict :
         A mapping of strain names to tuples corresponding to the values of the strain's group.
     list :
@@ -829,7 +831,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> strains = ["strain1", "strain2"]
     >>> metadata = pd.DataFrame([{"strain": "strain1", "date": "2020-01-01", "region": "Africa"}, {"strain": "strain2", "date": "2020-02-01", "region": "Europe"}]).set_index("strain")
     >>> group_by = ["region"]
-    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by)
+    >>> groups, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
     {'strain1': ('Africa',), 'strain2': ('Europe',)}
     >>> skipped_strains
@@ -839,13 +841,13 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     string.
 
     >>> group_by = ["year", "month"]
-    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by)
+    >>> groups, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
     {'strain1': (2020, (2020, 1)), 'strain2': (2020, (2020, 2))}
 
     If we omit the grouping columns, the result will group by a dummy column.
 
-    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata)
+    >>> groups, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata)
     >>> group_by_strain
     {'strain1': ('_dummy',), 'strain2': ('_dummy',)}
 
@@ -861,7 +863,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     grouping to continue and print a warning message to stderr.
 
     >>> group_by = ["year", "month", "missing_column"]
-    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by)
+    >>> groups, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
     {'strain1': (2020, (2020, 1), 'unknown'), 'strain2': (2020, (2020, 2), 'unknown')}
 
@@ -870,7 +872,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     track which records were skipped for which reasons.
 
     >>> metadata = pd.DataFrame([{"strain": "strain1", "date": "", "region": "Africa"}, {"strain": "strain2", "date": "2020-02-01", "region": "Europe"}]).set_index("strain")
-    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, ["year"])
+    >>> groups, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, ["year"])
     >>> group_by_strain
     {'strain2': (2020,)}
     >>> skipped_strains
@@ -880,7 +882,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     month information in their date fields.
 
     >>> metadata = pd.DataFrame([{"strain": "strain1", "date": "2020", "region": "Africa"}, {"strain": "strain2", "date": "2020-02-01", "region": "Europe"}]).set_index("strain")
-    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, ["month"])
+    >>> groups, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, ["month"])
     >>> group_by_strain
     {'strain2': ((2020, 2),)}
     >>> skipped_strains
@@ -888,15 +890,17 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     """
     metadata = metadata.loc[strains]
+    group_values = set()
     group_by_strain = {}
     skipped_strains = []
 
     if metadata.empty:
-        return group_by_strain, skipped_strains
+        return group_values, group_by_strain, skipped_strains
 
     if not group_by or group_by == dummy_group:
+        group_values = set(dummy_group_value)
         group_by_strain = {strain: dummy_group_value for strain in strains}
-        return group_by_strain, skipped_strains
+        return group_values, group_by_strain, skipped_strains
 
     group_by_set = set(group_by)
 
@@ -924,8 +928,12 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
         for group in unknown_groups:
             metadata[group] = 'unknown'
 
+    group_values = set(metadata.groupby(group_by).groups.keys())
+    if len(group_by) == 1:
+        # force tuple for single column group values
+        group_values = {(x,) for x in group_values}
     group_by_strain = dict(zip(metadata.index, metadata[group_by].apply(tuple, axis=1)))
-    return group_by_strain, skipped_strains
+    return group_values, group_by_strain, skipped_strains
 
 
 def expand_date_col(metadata: pd.DataFrame, group_by_set: set) -> Tuple[pd.DataFrame, List[dict]]:
@@ -1239,6 +1247,7 @@ def run(args):
     # per group to use, so we need to calculate this number after the first pass
     # and use a second pass to add records to the priority DataFrame.
     group_by = args.group_by
+    groups = set()
     sequences_per_group = args.sequences_per_group
     records_per_group = None
 
@@ -1338,11 +1347,13 @@ def run(args):
             # count the number of records per group. First, we need to get
             # the groups for the given records.
             try:
-                group_by_strain, skipped_strains = get_groups_for_subsampling(
+                chunk_groups, group_by_strain, skipped_strains = get_groups_for_subsampling(
                     seq_keep,
                     metadata,
                     group_by,
                 )
+
+                groups.update(chunk_groups)
 
                 # Track strains skipped during grouping, so users know why those
                 # strains were excluded from the analysis.
@@ -1395,6 +1406,7 @@ def run(args):
             for strain in strains_to_write:
                 output_strains.write(f"{strain}\n")
 
+    probabilistic_used = False
     # In the worst case, we need to calculate sequences per group from the
     # requested maximum number of sequences and the number of sequences per
     # group. Then, we need to make a second pass through the metadata to find
@@ -1419,6 +1431,10 @@ def run(args):
             print(f"Sampling at {sequences_per_group} per group.")
 
     if group_by and valid_strains:
+        if probabilistic_used:
+            # sort groups to eliminate set order randomness
+            sizes_per_group = create_sizes_per_group(sorted(groups), sequences_per_group, random_seed=args.subsample_seed)
+
         # Make a second pass through the metadata.
         metadata_reader = read_metadata(
             args.metadata,
@@ -1446,8 +1462,9 @@ def run(args):
                 for group in unknown_groups:
                     metadata_copy[group] = 'unknown'
             # apply priorities
-            poisson_max = 5 # TODO: get this from first pass along with sequences_per_group
-            int_group_size = sequences_per_group if sequences_per_group >= 1 else poisson_max
+            int_group_size = sequences_per_group
+            if probabilistic_used:
+                int_group_size = max(sizes_per_group.values())
             # get index of dataframe with top n priority per group, breaking ties by last occurrence in metadata
             chunk_top_priorities_index = (
                 metadata_copy.groupby(group_by, sort=False)['priority']
@@ -1471,12 +1488,7 @@ def run(args):
                 # get prioritized strains
                 prioritized_metadata = prioritized_metadata.loc[global_top_priorities_index]
 
-        # probabilistic subsampling
-        if sequences_per_group < 1:
-            groups = prioritized_metadata.groupby(group_by).groups.keys()
-            if len(group_by) == 1:
-                groups = [(x,) for x in groups]
-            sequences_per_group_map = create_sizes_per_group(groups, sequences_per_group, random_seed=args.subsample_seed)
+        if probabilistic_used:
             prioritized_metadata['group'] = list(zip(*[prioritized_metadata[col] for col in group_by]))
             prioritized_metadata['group_size'] = prioritized_metadata['group'].map(sizes_per_group)
             prioritized_metadata['group_cumcount'] = prioritized_metadata.sort_values('priority', ascending=False).groupby(group_by + ['group_size']).cumcount()
