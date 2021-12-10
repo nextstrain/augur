@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 13.1.0 (10 December 2021)
+
 ### Features
 
 * schemas: Add "$id" key to Auspice config schemas so we have a way of referring to these. [#806][] (@tsibley)
