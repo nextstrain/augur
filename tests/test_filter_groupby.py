@@ -169,3 +169,48 @@ class TestFilterGroupBy:
         groups, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {}
         assert skipped_strains == []
+
+    def test_filter_groupby_only_year_provided(self, valid_metadata: pd.DataFrame):
+        groups = ['country', 'year']
+        metadata = valid_metadata.copy()
+        metadata['date'] = '2020'
+        strains = metadata.index.tolist()
+        _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
+        assert group_by_strain == {
+            'SEQ_1': ('A', 2020),
+            'SEQ_2': ('A', 2020),
+            'SEQ_3': ('B', 2020),
+            'SEQ_4': ('B', 2020),
+            'SEQ_5': ('B', 2020)
+        }
+        assert skipped_strains == []
+
+    def test_filter_groupby_month_with_only_year_provided(self, valid_metadata: pd.DataFrame):
+        groups = ['country', 'year', 'month']
+        metadata = valid_metadata.copy()
+        metadata['date'] = '2020'
+        strains = metadata.index.tolist()
+        _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
+        assert group_by_strain == {}
+        assert skipped_strains == [
+            {'strain': 'SEQ_1', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''},
+            {'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''},
+            {'strain': 'SEQ_3', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''},
+            {'strain': 'SEQ_4', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''},
+            {'strain': 'SEQ_5', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}
+        ]
+
+    def test_filter_groupby_only_year_month_provided(self, valid_metadata: pd.DataFrame):
+        groups = ['country', 'year', 'month']
+        metadata = valid_metadata.copy()
+        metadata['date'] = '2020-01'
+        strains = metadata.index.tolist()
+        _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
+        assert group_by_strain == {
+            'SEQ_1': ('A', 2020, (2020, 1)),
+            'SEQ_2': ('A', 2020, (2020, 1)),
+            'SEQ_3': ('B', 2020, (2020, 1)),
+            'SEQ_4': ('B', 2020, (2020, 1)),
+            'SEQ_5': ('B', 2020, (2020, 1))
+        }
+        assert skipped_strains == []

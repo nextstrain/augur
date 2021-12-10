@@ -3,6 +3,19 @@
 ## __NEXT__
 
 
+## 13.1.0 (10 December 2021)
+
+### Features
+
+* schemas: Add "$id" key to Auspice config schemas so we have a way of referring to these. [#806][] (@tsibley)
+
+### Bug Fixes
+
+* filter: Fix groupby with incomplete dates. [#808][] (@victorlin)
+
+[#806]: https://github.com/nextstrain/augur/pull/806
+[#808]: https://github.com/nextstrain/augur/pull/808
+
 ## 13.0.4 (8 December 2021)
 
 ### Bug Fixes
