@@ -25,6 +25,9 @@ from .utils import is_vcf as filename_is_vcf, read_vcf, read_strains, get_numeri
 
 comment_char = '#'
 
+dummy_group = ['_dummy',]
+dummy_group_value = ('_dummy',)
+
 SEQUENCE_ONLY_FILTERS = (
     "min_length",
     "non_nucleotide",
@@ -891,8 +894,8 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     if metadata.empty:
         return group_by_strain, skipped_strains
 
-    if not group_by or group_by == ('_dummy',):
-        group_by_strain = {strain: ('_dummy',) for strain in strains}
+    if not group_by or group_by == dummy_group:
+        group_by_strain = {strain: dummy_group_value for strain in strains}
         return group_by_strain, skipped_strains
 
     group_by_set = set(group_by)
@@ -976,115 +979,39 @@ def expand_date_col(metadata: pd.DataFrame, group_by_set: set) -> Tuple[pd.DataF
     # TODO: support group by day
     return metadata_new, skipped_strains
 
-class PriorityQueue:
-    """A priority queue implementation that automatically replaces lower priority
-    items in the heap with incoming higher priority items.
 
-    Add a single record to a heap with a maximum of 2 records.
-
-    >>> queue = PriorityQueue(max_size=2)
-    >>> queue.add({"strain": "strain1"}, 0.5)
-    1
-
-    Add another record with a higher priority. The queue should be at its maximum
-    size.
-
-    >>> queue.add({"strain": "strain2"}, 1.0)
-    2
-    >>> queue.heap
-    [(0.5, 0, {'strain': 'strain1'}), (1.0, 1, {'strain': 'strain2'})]
-    >>> list(queue.get_items())
-    [{'strain': 'strain1'}, {'strain': 'strain2'}]
-
-    Add a higher priority record that causes the queue to exceed its maximum
-    size. The resulting queue should contain the two highest priority records
-    after the lowest priority record is removed.
-
-    >>> queue.add({"strain": "strain3"}, 2.0)
-    2
-    >>> list(queue.get_items())
-    [{'strain': 'strain2'}, {'strain': 'strain3'}]
-
-    Add a record with the same priority as another record, forcing the duplicate
-    to be resolved by removing the oldest entry.
-
-    >>> queue.add({"strain": "strain4"}, 1.0)
-    2
-    >>> list(queue.get_items())
-    [{'strain': 'strain4'}, {'strain': 'strain3'}]
-
-    """
-    def __init__(self, max_size):
-        """Create a fixed size heap (priority queue)
-
-        """
-        self.max_size = max_size
-        self.heap = []
-        self.counter = itertools.count()
-
-    def add(self, item, priority):
-        """Add an item to the queue with a given priority.
-
-        If adding the item causes the queue to exceed its maximum size, replace
-        the lowest priority item with the given item. The queue stores items
-        with an additional heap id value (a count) to resolve ties between items
-        with equal priority (favoring the most recently added item).
-
-        """
-        heap_id = next(self.counter)
-
-        if len(self.heap) >= self.max_size:
-            heapq.heappushpop(self.heap, (priority, heap_id, item))
-        else:
-            heapq.heappush(self.heap, (priority, heap_id, item))
-
-        return len(self.heap)
-
-    def get_items(self):
-        """Return each item in the queue in order.
-
-        Yields
-        ------
-        Any
-            Item stored in the queue.
-
-        """
-        for priority, heap_id, item in self.heap:
-            yield item
-
-
-def create_queues_by_group(groups, max_size, max_attempts=100, random_seed=None):
-    """Create a dictionary of priority queues per group for the given maximum size.
+def create_sizes_per_group(groups, max_size, max_attempts=100, random_seed=None):
+    """Create a dictionary of sizes per group for the given maximum size.
 
     When the maximum size is fractional, probabilistically sample the maximum
     size from a Poisson distribution. Make at least the given number of maximum
-    attempts to create queues for which the sum of their maximum sizes is
+    attempts to create groups for which the sum of their maximum sizes is
     greater than zero.
 
-    Create queues for two groups with a fixed maximum size.
+    Create sizes for two groups with a fixed maximum size.
 
     >>> groups = ("2015", "2016")
-    >>> queues = create_queues_by_group(groups, 2)
-    >>> sum(queue.max_size for queue in queues.values())
+    >>> sizes = create_sizes_per_group(groups, 2)
+    >>> sum(sizes.values())
     4
 
-    Create queues for two groups with a fractional maximum size. Their total max
+    Create sizes for two groups with a fractional maximum size. Their total max
     size should still be an integer value greater than zero.
 
     >>> seed = 314159
-    >>> queues = create_queues_by_group(groups, 0.1, random_seed=seed)
-    >>> int(sum(queue.max_size for queue in queues.values())) > 0
+    >>> sizes = create_sizes_per_group(groups, 0.1, random_seed=seed)
+    >>> int(sum(sizes.values())) > 0
     True
 
     A subsequent run of this function with the same groups and random seed
-    should produce the same queues and queue sizes.
+    should produce the same sizes.
 
-    >>> more_queues = create_queues_by_group(groups, 0.1, random_seed=seed)
-    >>> [queue.max_size for queue in queues.values()] == [queue.max_size for queue in more_queues.values()]
+    >>> more_sizes = create_sizes_per_group(groups, 0.1, random_seed=seed)
+    >>> list(sizes.values()) == list(more_sizes.values())
     True
 
     """
-    queues_by_group = {}
+    size_per_group = {}
     total_max_size = 0
     attempts = 0
 
@@ -1092,22 +1019,22 @@ def create_queues_by_group(groups, max_size, max_attempts=100, random_seed=None)
         random_generator = np.random.default_rng(random_seed)
 
     # For small fractional maximum sizes, it is possible to randomly select
-    # maximum queue sizes that all equal zero. When this happens, filtering
-    # fails unexpectedly. We make multiple attempts to create queues with
-    # maximum sizes greater than zero for at least one queue.
+    # maximum sizes that all equal zero. When this happens, filtering
+    # fails unexpectedly. We make multiple attempts to create sizes with
+    # maximum sizes greater than zero for at least one group.
     while total_max_size == 0 and attempts < max_attempts:
-        for group in sorted(groups):
+        for group in groups:
             if max_size < 1.0:
-                queue_max_size = random_generator.poisson(max_size)
+                group_max_size = random_generator.poisson(max_size)
             else:
-                queue_max_size = max_size
+                group_max_size = max_size
 
-            queues_by_group[group] = PriorityQueue(queue_max_size)
+            size_per_group[group] = group_max_size
 
-        total_max_size = sum(queue.max_size for queue in queues_by_group.values())
+        total_max_size = sum(size_per_group.values())
         attempts += 1
 
-    return queues_by_group
+    return size_per_group
 
 
 def register_arguments(parser):
@@ -1306,27 +1233,25 @@ def run(args):
     # group such that we select at most the requested maximum number of
     # sequences in a single pass through the metadata.
     #
-    # Each case relies on a priority queue to track the highest priority records
+    # Each case relies on a priority DataFrame to track the highest priority records
     # per group. In the best case, we can track these records in a single pass
     # through the metadata. In the worst case, we don't know how many sequences
     # per group to use, so we need to calculate this number after the first pass
-    # and use a second pass to add records to the queue.
+    # and use a second pass to add records to the priority DataFrame.
     group_by = args.group_by
     sequences_per_group = args.sequences_per_group
     records_per_group = None
 
-    if group_by and args.subsample_max_sequences:
-        # In this case, we need two passes through the metadata with the first
-        # pass used to count the number of records per group.
+    if args.subsample_max_sequences:
         records_per_group = defaultdict(int)
-    elif not group_by and args.subsample_max_sequences:
-        group_by = ("_dummy",)
-        sequences_per_group = args.subsample_max_sequences
+        if not group_by:
+            group_by = dummy_group
+            sequences_per_group = args.subsample_max_sequences
 
-    # If we are grouping data, use queues to store the highest priority strains
+    # If we are grouping data, use DataFrame to store the highest priority strains
     # for each group. When no priorities are provided, they will be randomly
     # generated.
-    queues_by_group = None
+    prioritized_metadata = pd.DataFrame()
     if group_by:
         # Use user-defined priorities, if possible. Otherwise, setup a
         # corresponding dictionary that returns a random float for each strain.
@@ -1428,32 +1353,13 @@ def run(args):
                     if args.output_log:
                         output_log_writer.writerow(skipped_strain)
 
-                if args.subsample_max_sequences and records_per_group is not None:
+                if args.subsample_max_sequences and group_by:
                     # Count the number of records per group. We will use this
                     # information to calculate the number of sequences per group
                     # for the given maximum number of requested sequences.
+                    # TODO: use pandas logic
                     for group in group_by_strain.values():
                         records_per_group[group] += 1
-                else:
-                    # Track the highest priority records, when we already
-                    # know the number of sequences allowed per group.
-                    if queues_by_group is None:
-                        queues_by_group = {}
-
-                    for strain in sorted(group_by_strain.keys()):
-                        # During this first pass, we do not know all possible
-                        # groups will be, so we need to build each group's queue
-                        # as we first encounter the group.
-                        group = group_by_strain[strain]
-                        if group not in queues_by_group:
-                            queues_by_group[group] = PriorityQueue(
-                                max_size=sequences_per_group,
-                            )
-
-                        queues_by_group[group].add(
-                            metadata.loc[strain],
-                            priorities[strain],
-                        )
             except FilterException as error:
                 # When we cannot group by the requested columns, we print a
                 # warning to the user and continue without subsampling or
@@ -1493,7 +1399,7 @@ def run(args):
     # requested maximum number of sequences and the number of sequences per
     # group. Then, we need to make a second pass through the metadata to find
     # the requested number of records.
-    if args.subsample_max_sequences and records_per_group is not None:
+    if args.subsample_max_sequences and group_by:
         # Calculate sequences per group. If there are more groups than maximum
         # sequences requested, sequences per group will be a floating point
         # value and subsampling will be probabilistic.
@@ -1509,76 +1415,98 @@ def run(args):
 
         if (probabilistic_used):
             print(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
-        else:
+        elif group_by != dummy_group:
             print(f"Sampling at {sequences_per_group} per group.")
 
-        if queues_by_group is None:
-            # We know all of the possible groups now from the first pass through
-            # the metadata, so we can create queues for all groups at once.
-            queues_by_group = create_queues_by_group(
-                records_per_group.keys(),
-                sequences_per_group,
-                random_seed=args.subsample_seed,
-            )
-
-        # Make a second pass through the metadata, only considering records that
-        # have passed filters.
+    if group_by and valid_strains:
+        # Make a second pass through the metadata.
         metadata_reader = read_metadata(
             args.metadata,
             id_columns=args.metadata_id_columns,
             chunk_size=args.metadata_chunk_size,
         )
         for metadata in metadata_reader:
-            # Recalculate groups for subsampling as we loop through the
-            # metadata a second time. TODO: We could store these in memory
-            # during the first pass, but we want to minimize overall memory
-            # usage at the moment.
             seq_keep = set(metadata.index.values) & valid_strains
-            group_by_strain, skipped_strains = get_groups_for_subsampling(
-                seq_keep,
-                metadata,
-                group_by,
+            if not seq_keep:
+                continue
+            # create a copy of metadata, only considering records that have passed filters
+            seq_keep_ordered = [seq for seq in metadata.index if seq in seq_keep]
+            metadata_copy = metadata.loc[seq_keep_ordered].copy()
+            # add columns for priority and expanded date
+            metadata_copy['priority'] = metadata_copy.index.to_series().apply(lambda x: priorities[x])
+            metadata_with_dates, _ = expand_date_col(metadata_copy, set(group_by)) # TODO: don't drop date col in this function so we don't need this intermediate var
+            metadata_copy = (pd.concat([metadata_copy, metadata_with_dates[['year','month','day']]], axis=1)
+                               .reindex(metadata_copy.index)) # not needed after pandas>=1.2.0 https://pandas.pydata.org/docs/whatsnew/v1.2.0.html#index-column-name-preservation-when-aggregating
+            # add column for dummy group
+            if group_by == dummy_group:
+                metadata_copy[dummy_group[0]] = dummy_group_value[0]
+            # add columns for unknown groups
+            unknown_groups = set(group_by) - set(metadata_copy.columns)
+            if unknown_groups:
+                for group in unknown_groups:
+                    metadata_copy[group] = 'unknown'
+            # apply priorities
+            poisson_max = 5 # TODO: get this from first pass along with sequences_per_group
+            int_group_size = sequences_per_group if sequences_per_group >= 1 else poisson_max
+            # get index of dataframe with top n priority per group, breaking ties by last occurrence in metadata
+            chunk_top_priorities_index = (
+                metadata_copy.groupby(group_by, sort=False)['priority']
+                    .nlargest(int_group_size, keep='last')
+                    .index.get_level_values('strain')
             )
+            # get prioritized strains
+            chunk_prioritized_metadata = metadata_copy.loc[chunk_top_priorities_index]
 
-            for strain in sorted(group_by_strain.keys()):
-                group = group_by_strain[strain]
-                queues_by_group[group].add(
-                    metadata.loc[strain],
-                    priorities[strain],
+            # update global priority
+            if prioritized_metadata.empty:
+                prioritized_metadata = chunk_prioritized_metadata
+            else:
+                prioritized_metadata = prioritized_metadata.append(chunk_prioritized_metadata)
+                # get index of dataframe with top n priority per group, breaking ties by last occurrence in metadata
+                global_top_priorities_index = (
+                    prioritized_metadata.groupby(group_by, sort=False)['priority']
+                        .nlargest(int_group_size, keep='last')
+                        .index.get_level_values('strain')
                 )
+                # get prioritized strains
+                prioritized_metadata = prioritized_metadata.loc[global_top_priorities_index]
 
-    # If we have any records in queues, we have grouped results and need to
-    # stream the highest priority records to the requested outputs.
+        # probabilistic subsampling
+        if sequences_per_group < 1:
+            groups = prioritized_metadata.groupby(group_by).groups.keys()
+            if len(group_by) == 1:
+                groups = [(x,) for x in groups]
+            sequences_per_group_map = create_sizes_per_group(groups, sequences_per_group, random_seed=args.subsample_seed)
+            prioritized_metadata['group'] = list(zip(*[prioritized_metadata[col] for col in group_by]))
+            prioritized_metadata['group_size'] = prioritized_metadata['group'].map(sizes_per_group)
+            prioritized_metadata['group_cumcount'] = prioritized_metadata.sort_values('priority', ascending=False).groupby(group_by + ['group_size']).cumcount()
+            prioritized_metadata = prioritized_metadata[prioritized_metadata['group_cumcount'] < prioritized_metadata['group_size']]
+
+        # drop intermediate columns before writing to output
+        prioritized_metadata = prioritized_metadata[metadata.columns]
+
+    # If we have any sequences in the prioritized metadata, we have grouped results and need to
+    # stream the highest priority sequences to the requested outputs.
     num_excluded_subsamp = 0
-    if queues_by_group:
-        # Populate the set of strains to keep from the records in queues.
-        subsampled_strains = set()
-        for group, queue in queues_by_group.items():
-            records = []
-            for record in queue.get_items():
-                # Each record is a pandas.Series instance. Track the name of the
-                # record, so we can output its sequences later.
-                subsampled_strains.add(record.name)
+    if not prioritized_metadata.empty:
+        subsampled_strains = set(prioritized_metadata.index)
 
-                # Construct a data frame of records to simplify metadata output.
-                records.append(record)
+        if args.output_strains:
+            # TODO: Output strains will no longer be ordered. This is a
+            # small breaking change.
+            for strain in prioritized_metadata.index:
+                output_strains.write(f"{strain}\n")
 
-                if args.output_strains:
-                    # TODO: Output strains will no longer be ordered. This is a
-                    # small breaking change.
-                    output_strains.write(f"{record.name}\n")
-
-            # Write records to metadata output, if requested.
-            if args.output_metadata and len(records) > 0:
-                records = pd.DataFrame(records)
-                records.to_csv(
-                    args.output_metadata,
-                    sep="\t",
-                    header=metadata_header,
-                    mode=metadata_mode,
-                )
-                metadata_header = False
-                metadata_mode = "a"
+        # Write records to metadata output, if requested.
+        if args.output_metadata:
+            prioritized_metadata.to_csv(
+                args.output_metadata,
+                sep="\t",
+                header=metadata_header,
+                mode=metadata_mode,
+            )
+            metadata_header = False
+            metadata_mode = "a"
 
         # Count and optionally log strains that were not included due to
         # subsampling.
