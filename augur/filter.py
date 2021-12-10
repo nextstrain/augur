@@ -914,8 +914,11 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
         else:
             # replace date with year/month/day as nullable ints
             date_cols = ['year', 'month', 'day']
-            df_dates = (metadata['date'].str.split('-', n=2, expand=True)
-                                            .set_axis(date_cols, axis=1))
+            df_dates = metadata['date'].str.split('-', n=2, expand=True)
+            df_dates = df_dates.set_axis(date_cols[:len(df_dates.columns)], axis=1)
+            missing_date_cols = set(date_cols) - set(df_dates.columns)
+            for col in missing_date_cols:
+                df_dates[col] = pd.NA
             for col in date_cols:
                 df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
             metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
