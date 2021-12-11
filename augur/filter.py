@@ -888,6 +888,12 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> skipped_strains
     [{'strain': 'strain1', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
 
+    Distinct groups are returned as a set.
+
+    >>> metadata = pd.DataFrame([{"strain": "strain1", "date": "2020", "region": "Africa"}, {"strain": "strain2", "date": "2020-02-01", "region": "Europe"}]).set_index("strain")
+    >>> groups, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, ["region"])
+    >>> list(sorted(groups))
+    [('Africa',), ('Europe',)]
     """
     metadata = metadata.loc[strains]
     group_values = set()
