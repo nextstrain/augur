@@ -242,7 +242,10 @@ def run(args):
             elif args.root in ['least-squares', 'min_dev', 'oldest']:
                 raise TypeError("The rooting option '%s' is only available when inferring a timetree. Please specify an explicit outgroup."%args.root)
             else:
-                T.root_with_outgroup(args.root)
+                try:
+                    T.root_with_outgroup(args.root)
+                except ValueError as err:
+                    raise ValueError(f"{err}\nHINT: This error may be because your specified root with name '{args.root}' was not found in your alignment file")
 
         tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=1)
 
