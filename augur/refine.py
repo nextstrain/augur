@@ -245,7 +245,7 @@ def run(args):
                 try:
                     T.root_with_outgroup(args.root)
                 except ValueError as err:
-                    raise ValueError(f"{err}\nHINT: This error may be because your specified root with name '{args.root}' was not found in your alignment file")
+                    raise ValueError(f"HINT: This error may be because your specified root with name '{args.root}' was not found in your alignment file") from err
 
         tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=1)
 
