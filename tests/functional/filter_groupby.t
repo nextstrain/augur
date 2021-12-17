@@ -108,6 +108,20 @@ Try grouping with year only
   \t0 of these were dropped because of subsampling criteria, using seed 314159 (esc)
   10 strains passed all filters
 
+Try grouping with month only
+
+  $ ${AUGUR} filter \
+  >  --metadata filter/metadata.tsv \
+  >  --group-by month \
+  >  --sequences-per-group 10 \
+  >  --subsample-seed 314159 \
+  >  --output-strains "$TMP/filtered_strains.txt"
+  2 strains were dropped during filtering
+  \t1 were dropped during grouping due to ambiguous year information (esc)
+  \t1 were dropped during grouping due to ambiguous month information (esc)
+  \t0 of these were dropped because of subsampling criteria, using seed 314159 (esc)
+  10 strains passed all filters
+
 Try grouping with year, month
 
   $ ${AUGUR} filter \
