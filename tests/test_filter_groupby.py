@@ -53,11 +53,11 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         _, group_by_strain, _ = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1), 'unknown'),
-            'SEQ_2': ('A', 2020, (2020, 2), 'unknown'),
-            'SEQ_3': ('B', 2020, (2020, 3), 'unknown'),
-            'SEQ_4': ('B', 2020, (2020, 4), 'unknown'),
-            'SEQ_5': ('B', 2020, (2020, 5), 'unknown')
+            'SEQ_1': ('A', 2020, 1, 'unknown'),
+            'SEQ_2': ('A', 2020, 2, 'unknown'),
+            'SEQ_3': ('B', 2020, 3, 'unknown'),
+            'SEQ_4': ('B', 2020, 4, 'unknown'),
+            'SEQ_5': ('B', 2020, 5, 'unknown')
         }
         captured = capsys.readouterr()
         assert captured.err == "WARNING: Some of the specified group-by categories couldn't be found: invalid\nFiltering by group may behave differently than expected!\n"
@@ -69,10 +69,10 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1)),
-            'SEQ_3': ('B', 2020, (2020, 3)),
-            'SEQ_4': ('B', 2020, (2020, 4)),
-            'SEQ_5': ('B', 2020, (2020, 5))
+            'SEQ_1': ('A', 2020, 1),
+            'SEQ_3': ('B', 2020, 3),
+            'SEQ_4': ('B', 2020, 4),
+            'SEQ_5': ('B', 2020, 5)
         }
         assert skipped_strains == [{'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_year', 'kwargs': ''}]
 
@@ -83,10 +83,10 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1)),
-            'SEQ_3': ('B', 2020, (2020, 3)),
-            'SEQ_4': ('B', 2020, (2020, 4)),
-            'SEQ_5': ('B', 2020, (2020, 5))
+            'SEQ_1': ('A', 2020, 1),
+            'SEQ_3': ('B', 2020, 3),
+            'SEQ_4': ('B', 2020, 4),
+            'SEQ_5': ('B', 2020, 5)
         }
         assert skipped_strains == [{'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_year', 'kwargs': ''}]
 
@@ -97,10 +97,10 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1)),
-            'SEQ_3': ('B', 2020, (2020, 3)),
-            'SEQ_4': ('B', 2020, (2020, 4)),
-            'SEQ_5': ('B', 2020, (2020, 5))
+            'SEQ_1': ('A', 2020, 1),
+            'SEQ_3': ('B', 2020, 3),
+            'SEQ_4': ('B', 2020, 4),
+            'SEQ_5': ('B', 2020, 5)
         }
         assert skipped_strains == [{'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
 
@@ -111,10 +111,10 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1)),
-            'SEQ_3': ('B', 2020, (2020, 3)),
-            'SEQ_4': ('B', 2020, (2020, 4)),
-            'SEQ_5': ('B', 2020, (2020, 5))
+            'SEQ_1': ('A', 2020, 1),
+            'SEQ_3': ('B', 2020, 3),
+            'SEQ_4': ('B', 2020, 4),
+            'SEQ_5': ('B', 2020, 5)
         }
         assert skipped_strains == [{'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
 
@@ -207,10 +207,10 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1)),
-            'SEQ_2': ('A', 2020, (2020, 1)),
-            'SEQ_3': ('B', 2020, (2020, 1)),
-            'SEQ_4': ('B', 2020, (2020, 1)),
-            'SEQ_5': ('B', 2020, (2020, 1))
+            'SEQ_1': ('A', 2020, 1),
+            'SEQ_2': ('A', 2020, 1),
+            'SEQ_3': ('B', 2020, 1),
+            'SEQ_4': ('B', 2020, 1),
+            'SEQ_5': ('B', 2020, 1)
         }
         assert skipped_strains == []

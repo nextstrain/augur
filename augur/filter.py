@@ -843,7 +843,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> group_by = ["year", "month"]
     >>> groups, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
-    {'strain1': (2020, (2020, 1)), 'strain2': (2020, (2020, 2))}
+    {'strain1': (2020, 1), 'strain2': (2020, 2)}
 
     If we omit the grouping columns, the result will group by a dummy column.
 
@@ -865,7 +865,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> group_by = ["year", "month", "missing_column"]
     >>> groups, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
-    {'strain1': (2020, (2020, 1), 'unknown'), 'strain2': (2020, (2020, 2), 'unknown')}
+    {'strain1': (2020, 1, 'unknown'), 'strain2': (2020, 2, 'unknown')}
 
     If we group by year month and some records don't have that information in
     their date fields, we should skip those records from the group output and
@@ -884,7 +884,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> metadata = pd.DataFrame([{"strain": "strain1", "date": "2020", "region": "Africa"}, {"strain": "strain2", "date": "2020-02-01", "region": "Europe"}]).set_index("strain")
     >>> groups, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, ["month"])
     >>> group_by_strain
-    {'strain2': ((2020, 2),)}
+    {'strain2': (2,)}
     >>> skipped_strains
     [{'strain': 'strain1', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
 
@@ -894,6 +894,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> groups, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, ["region"])
     >>> list(sorted(groups))
     [('Africa',), ('Europe',)]
+
     """
     metadata = metadata.loc[strains]
     group_values = set()
