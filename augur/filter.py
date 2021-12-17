@@ -991,8 +991,7 @@ def expand_date_col(metadata: pd.DataFrame, group_by_set: set) -> Tuple[pd.DataF
                 "filter": "skip_group_by_with_ambiguous_month",
                 "kwargs": "",
             })
-        # month = (year, month)
-        metadata_new['month'] = list(zip(metadata_new['year'], metadata_new['month']))
+
     # TODO: support group by day
     return metadata_new, skipped_strains
 
@@ -1278,6 +1277,11 @@ def run(args):
         else:
             random_generator = np.random.default_rng(args.subsample_seed)
             priorities = defaultdict(random_generator.random)
+
+        # When grouping by month, we implicitly group by year and month to avoid
+        # grouping across years meaninglessly.
+        if len(group_by) == 1 and group_by[0] == "month":
+            group_by = ["year", "month"]
 
     # Setup metadata output. We track whether any records have been written to
     # disk yet through the following variables, to control whether we write the
