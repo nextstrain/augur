@@ -884,91 +884,76 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     [{'strain': 'strain1', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
 
     """
-    if group_by:
-        groups = group_by
-    else:
-        groups = ("_dummy",)
-
+    metadata = metadata.loc[strains]
     group_by_strain = {}
     skipped_strains = []
-    for strain in strains:
-        skip_strain = False
-        group = []
-        m = metadata.loc[strain].to_dict()
-        # collect group specifiers
-        for c in groups:
-            if c == "_dummy":
-                group.append(c)
-            elif c in m:
-                group.append(m[c])
-            elif c in ['month', 'year'] and 'date' in m:
-                try:
-                    year = int(m["date"].split('-')[0])
-                except:
+
+    if metadata.empty:
+        return group_by_strain, skipped_strains
+
+    if not group_by or group_by == ('_dummy',):
+        group_by_strain = {strain: ('_dummy',) for strain in strains}
+        return group_by_strain, skipped_strains
+
+    group_by_set = set(group_by)
+
+    # If we could not find any requested categories, we cannot complete subsampling.
+    if 'date' not in metadata and group_by_set <= {'year', 'month'}:
+        raise FilterException(f"The specified group-by categories ({group_by}) were not found. No sequences-per-group sampling will be done. Note that using 'year' or 'year month' requires a column called 'date'.")
+    if not group_by_set & (set(metadata.columns) | {'year', 'month'}):
+        raise FilterException(f"The specified group-by categories ({group_by}) were not found. No sequences-per-group sampling will be done.")
+
+    # date requested
+    if 'year' in group_by_set or 'month' in group_by_set:
+        if 'date' not in metadata:
+            # set year/month/day = unknown
+            print(f"WARNING: A 'date' column could not be found to group-by year or month.", file=sys.stderr)
+            print(f"Filtering by group may behave differently than expected!", file=sys.stderr)
+            df_dates = pd.DataFrame({'year': 'unknown', 'month': 'unknown'}, index=metadata.index)
+            metadata = pd.concat([metadata, df_dates], axis=1)
+        else:
+            # replace date with year/month/day as nullable ints
+            date_cols = ['year', 'month', 'day']
+            df_dates = metadata['date'].str.split('-', n=2, expand=True)
+            df_dates = df_dates.set_axis(date_cols[:len(df_dates.columns)], axis=1)
+            missing_date_cols = set(date_cols) - set(df_dates.columns)
+            for col in missing_date_cols:
+                df_dates[col] = pd.NA
+            for col in date_cols:
+                df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
+            metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
+            if 'year' in group_by_set:
+                # skip ambiguous years
+                df_skip = metadata[metadata['year'].isnull()]
+                metadata.dropna(subset=['year'], inplace=True)
+                for strain in df_skip.index:
                     skipped_strains.append({
                         "strain": strain,
                         "filter": "skip_group_by_with_ambiguous_year",
                         "kwargs": "",
                     })
-                    skip_strain = True
-                    break
-                if c=='month':
-                    try:
-                        month = int(m["date"].split('-')[1])
-                    except:
-                        skipped_strains.append({
-                            "strain": strain,
-                            "filter": "skip_group_by_with_ambiguous_month",
-                            "kwargs": "",
-                        })
-                        skip_strain = True
-                        break
+            if 'month' in group_by_set:
+                # skip ambiguous months
+                df_skip = metadata[metadata['month'].isnull()]
+                metadata.dropna(subset=['month'], inplace=True)
+                for strain in df_skip.index:
+                    skipped_strains.append({
+                        "strain": strain,
+                        "filter": "skip_group_by_with_ambiguous_month",
+                        "kwargs": "",
+                    })
+                # month = (year, month)
+                metadata['month'] = list(zip(metadata['year'], metadata['month']))
+            # TODO: support group by day
 
-                    group.append((year, month))
-                else:
-                    group.append(year)
-            else:
-                group.append('unknown')
+    unknown_groups = group_by_set - set(metadata.columns)
+    if unknown_groups:
+        print(f"WARNING: Some of the specified group-by categories couldn't be found: {', '.join(unknown_groups)}", file=sys.stderr)
+        print("Filtering by group may behave differently than expected!", file=sys.stderr)
+        for group in unknown_groups:
+            metadata[group] = 'unknown'
 
-        if not skip_strain:
-            group_by_strain[strain] = tuple(group)
-
-    # If we could not find any requested categories, we cannot complete subsampling.
-    distinct_groups = set(group_by_strain.values())
-    if len(distinct_groups) == 1 and ('unknown' in distinct_groups or ('unknown',) in distinct_groups):
-        error_message = f"The specified group-by categories ({groups}) were not found. No sequences-per-group sampling will be done."
-
-        if any(x in groups for x in ('year', 'month')):
-            error_message += " Note that using 'year' or 'year month' requires a column called 'date'."
-
-        # Raise an exception, since we cannot find the requested groups.
-        raise FilterException(error_message)
-
-    # Check to see if some categories are missing to warn the user
-    group_by = {
-        'date' if cat in ('year', 'month') else cat
-        for cat in groups
-    }
-    missing_cats = [cat for cat in group_by if cat not in metadata.columns.values and cat != "_dummy"]
-    if missing_cats:
-        error_message = []
-
-        if any(cat != 'date' for cat in missing_cats):
-            error_message.append(
-                "Some of the specified group-by categories couldn't be found: %s" % ", ".join([str(cat) for cat in missing_cats if cat != 'date'])
-            )
-
-        if any(cat == 'date' for cat in missing_cats):
-            error_message.append("A 'date' column could not be found to group-by year or month.")
-
-        error_message.append("Filtering by group may behave differently than expected!")
-
-        # Print a warning message, but allow grouping to continue.
-        print(
-            "WARNING: %s" % "\n".join(error_message),
-            file=sys.stderr,
-        )
-
+    group_by_strain = dict(zip(metadata.index, metadata[group_by].apply(tuple, axis=1)))
     return group_by_strain, skipped_strains
 
 
@@ -1143,7 +1128,7 @@ def register_arguments(parser):
     subsample_limits_group.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     subsample_limits_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences; can be used without the group_by argument")
     probabilistic_sampling_group = subsample_group.add_mutually_exclusive_group()
-    probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true', help="Enable probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.")
+    probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true', help="Allow probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.")
     probabilistic_sampling_group.add_argument('--no-probabilistic-sampling', action='store_false', dest='probabilistic_sampling')
     subsample_group.add_argument('--priority', type=str, help="""tab-delimited file with list of priority scores for strains (e.g., "<strain>\\t<priority>") and no header.
     When scores are provided, Augur converts scores to floating point values, sorts strains within each subsampling group from highest to lowest priority, and selects the top N strains per group where N is the calculated or requested number of strains per group.
@@ -1494,15 +1479,19 @@ def run(args):
         # sequences requested, sequences per group will be a floating point
         # value and subsampling will be probabilistic.
         try:
-            sequences_per_group = calculate_sequences_per_group(
+            sequences_per_group, probabilistic_used = calculate_sequences_per_group(
                 args.subsample_max_sequences,
                 records_per_group.values(),
                 args.probabilistic_sampling,
             )
-            print(f"Sampling at {sequences_per_group} per group.")
         except TooManyGroupsError as error:
             print(f"ERROR: {error}", file=sys.stderr)
             sys.exit(1)
+
+        if (probabilistic_used):
+            print(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
+        else:
+            print(f"Sampling at {sequences_per_group} per group.")
 
         if queues_by_group is None:
             # We know all of the possible groups now from the first pass through
@@ -1711,7 +1700,7 @@ def numeric_date(date):
         return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))
 
 
-def calculate_sequences_per_group(target_max_value, counts_per_group, probabilistic=True):
+def calculate_sequences_per_group(target_max_value, counts_per_group, allow_probabilistic=True):
     """Calculate the number of sequences per group for a given maximum number of
     sequences to be returned and the number of sequences in each requested
     group. Optionally, allow the result to be probabilistic such that the mean
@@ -1725,7 +1714,7 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, probabilis
         number of sequences per group for the given counts per group.
     counts_per_group : list[int]
         A list with the number of sequences in each requested group.
-    probabilistic : bool
+    allow_probabilistic : bool
         Whether to allow probabilistic subsampling when the number of groups
         exceeds the requested maximum.
 
@@ -1733,29 +1722,35 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, probabilis
     ------
     TooManyGroupsError :
         When there are more groups than sequences per group and probabilistic
-        subsampling is not enabled.
+        subsampling is not allowed.
 
     Returns
     -------
     int or float :
         Number of sequences per group.
+    bool :
+        Whether probabilistic subsampling was used.
 
     """
+    probabilistic_used = False
+
     try:
         sequences_per_group = _calculate_sequences_per_group(
             target_max_value,
             counts_per_group,
         )
     except TooManyGroupsError as error:
-        if probabilistic:
+        if allow_probabilistic:
+            print(f"WARNING: {error}")
             sequences_per_group = _calculate_fractional_sequences_per_group(
                 target_max_value,
                 counts_per_group,
             )
+            probabilistic_used = True
         else:
             raise error
 
-    return sequences_per_group
+    return sequences_per_group, probabilistic_used
 
 
 class TooManyGroupsError(ValueError):

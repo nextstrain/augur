@@ -119,6 +119,39 @@ By setting the subsample seed above, we should get the same results for both run
   $ diff -u <(sort "$TMP/filtered_strains_probabilistic.txt") <(sort "$TMP/filtered_strains_default.txt")
   $ rm -f "$TMP/filtered_strains_probabilistic.txt" "$TMP/filtered_strains_default.txt"
 
+Check output of probabilistic sampling.
+
+  $ ${AUGUR} filter \
+  >  --metadata filter/metadata.tsv \
+  >  --group-by region year month \
+  >  --subsample-max-sequences 3 \
+  >  --probabilistic-sampling \
+  >  --subsample-seed 314159 \
+  >  --output-metadata "$TMP/filtered_metadata.tsv"
+  WARNING: Asked to provide at most 3 sequences, but there are 8 groups.
+  Sampling probabilistically at 0.3633 sequences per group, meaning it is possible to have more than the requested maximum of 3 sequences after filtering.
+  10 strains were dropped during filtering
+  \t1 were dropped during grouping due to ambiguous year information (esc)
+  \t1 were dropped during grouping due to ambiguous month information (esc)
+  \t8 of these were dropped because of subsampling criteria, using seed 314159 (esc)
+  2 strains passed all filters
+
+Ensure probabilistic sampling is not used when unnecessary.
+
+  $ ${AUGUR} filter \
+  >  --metadata filter/metadata.tsv \
+  >  --group-by region year month \
+  >  --subsample-max-sequences 10 \
+  >  --probabilistic-sampling \
+  >  --subsample-seed 314159 \
+  >  --output-metadata "$TMP/filtered_metadata.tsv"
+  Sampling at 10 per group.
+  2 strains were dropped during filtering
+  \t1 were dropped during grouping due to ambiguous year information (esc)
+  \t1 were dropped during grouping due to ambiguous month information (esc)
+  \t0 of these were dropped because of subsampling criteria, using seed 314159 (esc)
+  10 strains passed all filters
+
 Filter using only metadata without sequence input or output and save results as filtered metadata.
 
   $ ${AUGUR} filter \
