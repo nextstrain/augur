@@ -40,7 +40,7 @@ mamba install -c conda-forge -c bioconda augur
 
 ## Using pip from PyPi
 
-Augur is written in Python 3 and requires at least Python 3.6.
+Augur is written in Python 3 and requires at least Python 3.7.
 It's published on [PyPi](https://pypi.org) as [nextstrain-augur](https://pypi.org/project/nextstrain-augur), so you can install it with `pip` like so:
 
 ```bash

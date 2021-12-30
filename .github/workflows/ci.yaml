@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.6', '3.7', '3.8']
+        python-version: ['3.7', '3.8', '3.9', '3.10']
     defaults:
       run:
         shell: bash -l {0}
@@ -26,7 +26,7 @@ jobs:
     - run: pytest -c pytest.python3.ini  --cov-report=xml --cov=augur
     - run: cram --shell=/bin/bash tests/functional/*.t tests/builds/*.t
     - run: bash tests/builds/runner.sh
-    - if: matrix.python-version == 3.8
+    - if: matrix.python-version == 3.10
       uses: codecov/codecov-action@v2
       with:
         fail_ci_if_error: true
