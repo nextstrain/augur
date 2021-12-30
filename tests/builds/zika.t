@@ -64,7 +64,7 @@ Build a tree from the multiple sequence alignment.
   >  --method iqtree \
   >  --tree-builder-args "-seed 314159" > /dev/null
 
-  $ python3 "$TESTDIR/../../scripts/diff_trees.py" "results/tree_raw.nwk" "$TMP/out/tree_raw.nwk" --significant-digits 3
+  $ python3 "$TESTDIR/../../scripts/diff_trees.py" "results/tree_raw.nwk" "$TMP/out/tree_raw.nwk" --significant-digits 4
   {}
 
 Confirm that tree log file exists.
