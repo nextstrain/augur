@@ -147,13 +147,13 @@ For example, the following command only runs unit tests related to augur mask.
 
 Troubleshooting tip: As tests run on the development code in the augur repository, your environment should not have an existing augur installation that could cause a conflict in pytest.
 
-We use continuous integration with Travis CI to run tests on every pull request submitted to the project.
+We use continuous integration with GitHub Actions to run tests on every pull request submitted to the project.
 We use [codecov](https://codecov.io/) to automatically produce test coverage for new contributions and the project as a whole.
 
 ### Releasing
 
 Before you create a new release, run all tests from a fresh conda environment to verify that nothing has broken since the last CI build on GitHub.
-The following commands will setup the equivalent conda environment to the Travis CI environment, run unit and integration tests, and deactivate the environment.
+The following commands will setup the equivalent conda environment to the GitHub Actions environment, run unit and integration tests, and deactivate the environment.
 
 ```bash
 # Update Conda.
@@ -203,28 +203,22 @@ You will need to update the existing recipe YAML locally and create a pull reque
 Add your GitHub username to the `recipe_maintainers` list, if this is your first time modifying the augur recipe.
 After a successful pull request review, Bioconda will automatically update the augur package that users download.
 
-### Travis CI
+### Continuous Integration (CI)
 
-Branches and PRs are tested by Travis CI jobs configured in `.travis.yml`.
+Branches and PRs are tested by GitHub Actions workflows configured in `.github/workflows`.
 
-Our Travis config uses two build stages: _test_ and _deploy_.  Jobs in the
-_test_ stage always run, but _deploy_ jobs only run sometimes (see below).
+Our GitHub Actions workflow is comprised of two jobs: _test_ and _deploy_.  Steps in the
+_test_ job always run, but _deploy_ steps only run sometimes (see below).
 
-The set of _test_ jobs are explicitly defined instead of auto-expanded from the
-implicit job property matrix. Since top-level properties are inherited by all
-jobs regardless of build stage, making the matrix explicit is less confusing
-and easier to reason about. YAML's anchor (`&foo`) and alias merge key (`<<:
-*foo`) syntax let us do this without repeating ourselves unnecessarily.
+The _test_ job runs tests and uploads the the coverage report to Codecov.
+Currently, only `pytest` results are included in the report.
 
 New releases, via pushes to the `release` branch, trigger a new [docker-base][]
 build to keep the Docker image up-to-date. This trigger is implemented in the
-_deploy_ stage, which is implicitly conditioned on the previous _test_ stage's
+_deploy_ job, which is implicitly conditioned on the previous _test_ job's
 successful completion and explicitly conditioned on a non-PR trigger on the
-`release` branch. Note that currently we cannot test this _deploy_ stage
+`release` branch. Note that currently we cannot test this _deploy_ job
 without making a release.
-
-It can sometimes be useful to verify the config is parsed as you expect using
-<https://config.travis-ci.com/explore>.
 
 [docker-base]: https://github.com/nextstrain/docker-base
 

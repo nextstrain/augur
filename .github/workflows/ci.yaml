@@ -1,0 +1,57 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.6', '3.7', '3.8']
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+        mamba-version: "*"
+        channels: conda-forge,bioconda
+        channel-priority: true
+        activate-environment: test
+    - run: mamba install mafft raxml fasttree iqtree vcftools pip numpy
+    - run: pip install biopython==1.67
+    - run: pip install -e .[dev]
+    - run: conda info
+    - run: conda list
+    - run: pytest -c pytest.python3.ini  --cov-report=xml --cov=augur
+    - run: cram --shell=/bin/bash tests/functional/*.t tests/builds/*.t
+    - run: bash tests/builds/runner.sh
+    - if: matrix.python-version == 3.8
+      uses: codecov/codecov-action@v2
+      with:
+        fail_ci_if_error: true
+  deploy:
+    if: ${{ github.ref == 'refs/heads/release' }}
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          TRAVIS_AUTH_TOKEN: ${{ secrets.TRAVIS_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          echo "Pinging Travis CI to rebuild Docker image"
+
+          body='{
+            "request": {
+              "branch": "master",
+              "message": "Build triggered from augur"
+            }
+          }'
+
+          curl -X POST https://api.travis-ci.com/repo/nextstrain%2Fdocker-base/requests \
+            -H "Content-Type: application/json" \
+            -H "Accept: application/json" \
+            -H "Travis-API-Version: 3" \
+            -H "Authorization: token $TRAVIS_AUTH_TOKEN" \
+            -d "$body"

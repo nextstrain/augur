@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Runs tests in a sandboxed environment that loosely replicates the Travis CI
+# Runs tests in a sandboxed environment that loosely replicates the GitHub Actions
 # environment.
 set -euo pipefail
 

@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/nextstrain/augur.svg?branch=master)](https://travis-ci.com/nextstrain/augur)
+[![Build Status](https://github.com/nextstrain/augur/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/nextstrain/augur/actions/workflows/ci.yaml)
 [![PyPI version](https://badge.fury.io/py/nextstrain-augur.svg)](https://pypi.org/project/nextstrain-augur/)
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/augur/README.html)
 [![Documentation Status](https://readthedocs.org/projects/nextstrain-augur/badge/?version=latest)](https://docs.nextstrain.org/projects/augur/en/stable/)
