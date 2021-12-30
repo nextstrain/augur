@@ -3,7 +3,7 @@ import setuptools
 import sys
 
 py_min_version = (3, 7)  # minimal supported python version
-since_augur_version = (7, 0)  # py_min_version is required since this augur version
+since_augur_version = (14, 0)  # py_min_version is required since this augur version
 
 if sys.version_info < py_min_version:
     error = """
