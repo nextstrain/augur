@@ -47,37 +47,37 @@ setuptools.setup(
     package_data = {'augur': ['data/*']},
     python_requires = '>={}'.format('.'.join(str(n) for n in min_version)),
     install_requires = [
-        "bcbio-gff >=0.6.0, ==0.6.*",
+        "bcbio-gff >=0.6.0",
         "biopython >=1.67, !=1.77, !=1.78",
-        "jsonschema >=3.0.0, ==3.*",
+        "jsonschema >=3.0.0",
         "packaging >=19.2",
-        "pandas >=1.0.0, ==1.*",
-        "phylo-treetime ==0.8.*",
-        "xopen >=1.0.1, ==1.*"
+        "pandas >=1.0.0",
+        "phylo-treetime",
+        "xopen >=1.0.1"
     ],
     extras_require = {
         'full': [
-            "cvxopt >=1.1.9, ==1.*",
-            "matplotlib >=2.0, ==2.*",
-            "seaborn >=0.9.0, ==0.9.*"
+            "cvxopt >=1.1.9",
+            "matplotlib >=2.0",
+            "seaborn >=0.9.0"
         ],
         'dev': [
-            "cram >=0.7, ==0.*",
-            "deepdiff >=4.3.2, ==4.3.*",
-            "freezegun >=0.3.15, ==0.3.*",
+            "cram >=0.7",
+            "deepdiff >=4.3.2",
+            "freezegun >=0.3.15",
             "nextstrain-sphinx-theme >=2020.3",
-            "pylint >=1.7.6, ==1.7.*",
-            "pytest >=5.4.1, ==5.4.*",
-            "pytest-cov >=2.8.1, ==2.8.*",
-            "pytest-mock >= 2.0.0, ==2.0.*",
-            "recommonmark >=0.5.0, ==0.*",
-            "snakemake >=5.4.0, <5.27",
-            "Sphinx >=2.0.1, ==2.*",
-            "sphinx-argparse >=0.2.5, ==0.*",
+            "pylint >=1.7.6",
+            "pytest >=5.4.1",
+            "pytest-cov >=2.8.1",
+            "pytest-mock >= 2.0.0",
+            "recommonmark >=0.5.0",
+            "snakemake >=5.4.0",
+            "Sphinx >=2.0.1",
+            "sphinx-argparse >=0.2.5",
             "sphinx-markdown-tables >= 0.0.9",
-            "sphinx-rtd-theme >=0.4.3, ==0.*",
-            "wheel >=0.32.3, ==0.32.*",
-            "ipdb >=0.10.1, ==0.*"
+            "sphinx-rtd-theme >=0.4.3",
+            "wheel >=0.32.3",
+            "ipdb >=0.10.1"
         ]
     },
     classifiers = [
