@@ -1,0 +1,126 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$id": "https://nextstrain.org/schemas/multiplot/v1",
+    "title": "Nextstrain multiplot data schema proposal",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["config", "collections"],
+    "properties": {
+        "config": {
+            "description": "Config for display text and display options",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["collections", "groupings"],
+            "properties": {
+                "collections": {
+                    "description": "The available collection options and their display titles",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "description": "A single collection option",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["key"],
+                        "properties": {
+                            "key": {
+                                "description": "The property name of the collection",
+                                "type": "string"
+                            },
+                            "title": {
+                                "description": "The title to display in the collections dropdown. Optional -- if not provided, then `key` will be used",
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "groupings": {
+                    "description": "The available group by options and their display titles",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "description": "A single group by option",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["key"],
+                        "properties": {
+                            "key": {
+                                "description": "The property name of the group by option",
+                                "type": "string"
+                            },
+                            "title": {
+                                "description": "The title to display in the group by dropdown. Optional -- if not provided, then `key` will be used",
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "display_defaults": {
+                    "description": "Default display options of the multiplot panel",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "minProperty": 1,
+                    "properties": {
+                        "group_by": {
+                            "description": "Default group by option where the value must be the `key` in one of the objects of the groupings array. Optional -- if not provided, first group by option will be used",
+                            "type": "string"
+                        },
+                        "collection": {
+                            "descriptions": "Default collection option where the value must be the `key` in one of the objects of the collections array. Optional -- if not provided, first collection option will be used",
+                            "type": "string"
+                        },
+                        "threshold": {
+                            "description": "Default options for the measurement threshold. Optional -- if not provided then threshold will not be included and threshold controls will be hidden",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["show", "value"],
+                            "properties": {
+                                "show": {
+                                    "description": "Should the threshold line be displayed by default?",
+                                    "type": "boolean"
+                                },
+                                "value": {
+                                    "description": "The numeric value of the measurements threshold",
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "collections": {
+            "description": "Collections of measurements of different types, conditions, adn/or experiments",
+            "type": "object",
+            "minProperties": 1,
+            "patternProperties": {
+                "^.*$": {
+                    "description": "A single collection of measurements",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "description": "A single measurement for a sample and it's associated metadata. At least one of the metadata properties should be a group by option",
+                        "type": "object",
+                        "required": ["strain", "value"],
+                        "minProperties": 3,
+                        "properties": {
+                            "strain": {
+                                "description": "The name of the sample that matches the name of the sample within the tree",
+                                "type": "string"
+                            },
+                            "value": {
+                                "description": "The numeric value of the measurement",
+                                "type": "number"
+                            }
+                        },
+                        "patternProperties": {
+                            "^.*$": {
+                                "description": "Metadata associated with the measurement. Only metadata properties included in the groupings config will be included in the group by dropdown, but all metadata properties will be available as a filter",
+                                "type": ["string", "number", "boolean"]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
