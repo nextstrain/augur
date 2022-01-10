@@ -237,3 +237,17 @@ class TestFilter:
         augur.filter.run(args)
         output = SeqIO.to_dict(SeqIO.parse(out_fn, "fasta"))
         assert list(output.keys()) == ["SEQ_1", "SEQ_2"]
+
+    def test_filter_incomplete_year(self, tmpdir, fasta_fn, argparser):
+        """Test that 2020 is evaluated as 2020-XX-XX"""
+        out_fn = str(tmpdir / "out.fasta")
+        min_date = "2020-02-01"
+        meta_fn = write_metadata(tmpdir, (("strain","date"),
+                                          ("SEQ_1","2020.0"),
+                                          ("SEQ_2","2020"),
+                                          ("SEQ_3","2020-XX-XX")))
+        args = argparser('-s %s --metadata %s -o %s --min-date %s'
+                         % (fasta_fn, meta_fn, out_fn, min_date))
+        augur.filter.run(args)
+        output = SeqIO.to_dict(SeqIO.parse(out_fn, "fasta"))
+        assert list(output.keys()) == ["SEQ_2", "SEQ_3"]
