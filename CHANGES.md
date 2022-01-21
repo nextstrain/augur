@@ -2,6 +2,16 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* dependencies: Relax upper bounds on development dependencies. [#821][] and [#830][] (@victorlin, @huddlej)
+* refine: Inform users when their requested root sequence is not present in the alignment. [#816][] (@corneliusroemer)
+* utils: Fix crash with `read_metadata` when numexpr is installed. [#826][] (@victorlin)
+
+[#816]: https://github.com/nextstrain/augur/pull/816
+[#821]: https://github.com/nextstrain/augur/pull/821
+[#826]: https://github.com/nextstrain/augur/pull/826
+[#830]: https://github.com/nextstrain/augur/pull/830
 
 ## 13.1.0 (10 December 2021)
 
