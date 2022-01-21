@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 13.1.1 (21 January 2022)
+
 ### Bug Fixes
 
 * dependencies: Relax upper bounds on development dependencies. [#821][] and [#830][] (@victorlin, @huddlej)
