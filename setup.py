@@ -47,19 +47,19 @@ setuptools.setup(
     package_data = {'augur': ['data/*']},
     python_requires = '>={}'.format('.'.join(str(n) for n in min_version)),
     install_requires = [
-        "bcbio-gff >=0.6.0",
+        "bcbio-gff >=0.6.0, ==0.6.*",
         "biopython >=1.67, !=1.77, !=1.78",
-        "jsonschema >=3.0.0",
+        "jsonschema >=3.0.0, ==3.*",
         "packaging >=19.2",
-        "pandas >=1.0.0",
-        "phylo-treetime",
-        "xopen >=1.0.1"
+        "pandas >=1.0.0, ==1.*",
+        "phylo-treetime ==0.8.*",
+        "xopen >=1.0.1, ==1.*"
     ],
     extras_require = {
         'full': [
-            "cvxopt >=1.1.9",
-            "matplotlib >=2.0",
-            "seaborn >=0.9.0"
+            "cvxopt >=1.1.9, ==1.*",
+            "matplotlib >=2.0, ==2.*",
+            "seaborn >=0.9.0, ==0.9.*"
         ],
         'dev': [
             "cram >=0.7",
