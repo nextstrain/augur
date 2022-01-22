@@ -18,7 +18,7 @@ class TestFilterGroupBy:
     def test_filter_groupby_strain_subset(self, valid_metadata: pd.DataFrame):
         metadata = valid_metadata.copy()
         strains = ['SEQ_1', 'SEQ_3', 'SEQ_5']
-        group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata)
+        _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata)
         assert group_by_strain == {
             'SEQ_1': ('_dummy',),
             'SEQ_3': ('_dummy',),
@@ -29,7 +29,7 @@ class TestFilterGroupBy:
     def test_filter_groupby_dummy(self, valid_metadata: pd.DataFrame):
         metadata = valid_metadata.copy()
         strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata)
+        _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata)
         assert group_by_strain == {
             'SEQ_1': ('_dummy',),
             'SEQ_2': ('_dummy',),
@@ -51,13 +51,13 @@ class TestFilterGroupBy:
         groups = ['country', 'year', 'month', 'invalid']
         metadata = valid_metadata.copy()
         strains = metadata.index.tolist()
-        group_by_strain, _ = get_groups_for_subsampling(strains, metadata, group_by=groups)
+        _, group_by_strain, _ = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1), 'unknown'),
-            'SEQ_2': ('A', 2020, (2020, 2), 'unknown'),
-            'SEQ_3': ('B', 2020, (2020, 3), 'unknown'),
-            'SEQ_4': ('B', 2020, (2020, 4), 'unknown'),
-            'SEQ_5': ('B', 2020, (2020, 5), 'unknown')
+            'SEQ_1': ('A', 2020, 1, 'unknown'),
+            'SEQ_2': ('A', 2020, 2, 'unknown'),
+            'SEQ_3': ('B', 2020, 3, 'unknown'),
+            'SEQ_4': ('B', 2020, 4, 'unknown'),
+            'SEQ_5': ('B', 2020, 5, 'unknown')
         }
         captured = capsys.readouterr()
         assert captured.err == "WARNING: Some of the specified group-by categories couldn't be found: invalid\nFiltering by group may behave differently than expected!\n"
@@ -67,12 +67,12 @@ class TestFilterGroupBy:
         metadata = valid_metadata.copy()
         metadata.at["SEQ_2", "date"] = "XXXX-02-01"
         strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
+        _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1)),
-            'SEQ_3': ('B', 2020, (2020, 3)),
-            'SEQ_4': ('B', 2020, (2020, 4)),
-            'SEQ_5': ('B', 2020, (2020, 5))
+            'SEQ_1': ('A', 2020, 1),
+            'SEQ_3': ('B', 2020, 3),
+            'SEQ_4': ('B', 2020, 4),
+            'SEQ_5': ('B', 2020, 5)
         }
         assert skipped_strains == [{'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_year', 'kwargs': ''}]
 
@@ -81,12 +81,12 @@ class TestFilterGroupBy:
         metadata = valid_metadata.copy()
         metadata.at["SEQ_2", "date"] = None
         strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
+        _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1)),
-            'SEQ_3': ('B', 2020, (2020, 3)),
-            'SEQ_4': ('B', 2020, (2020, 4)),
-            'SEQ_5': ('B', 2020, (2020, 5))
+            'SEQ_1': ('A', 2020, 1),
+            'SEQ_3': ('B', 2020, 3),
+            'SEQ_4': ('B', 2020, 4),
+            'SEQ_5': ('B', 2020, 5)
         }
         assert skipped_strains == [{'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_year', 'kwargs': ''}]
 
@@ -95,12 +95,12 @@ class TestFilterGroupBy:
         metadata = valid_metadata.copy()
         metadata.at["SEQ_2", "date"] = "2020-XX-01"
         strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
+        _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1)),
-            'SEQ_3': ('B', 2020, (2020, 3)),
-            'SEQ_4': ('B', 2020, (2020, 4)),
-            'SEQ_5': ('B', 2020, (2020, 5))
+            'SEQ_1': ('A', 2020, 1),
+            'SEQ_3': ('B', 2020, 3),
+            'SEQ_4': ('B', 2020, 4),
+            'SEQ_5': ('B', 2020, 5)
         }
         assert skipped_strains == [{'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
 
@@ -109,12 +109,12 @@ class TestFilterGroupBy:
         metadata = valid_metadata.copy()
         metadata.at["SEQ_2", "date"] = "2020"
         strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
+        _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1)),
-            'SEQ_3': ('B', 2020, (2020, 3)),
-            'SEQ_4': ('B', 2020, (2020, 4)),
-            'SEQ_5': ('B', 2020, (2020, 5))
+            'SEQ_1': ('A', 2020, 1),
+            'SEQ_3': ('B', 2020, 3),
+            'SEQ_4': ('B', 2020, 4),
+            'SEQ_5': ('B', 2020, 5)
         }
         assert skipped_strains == [{'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
 
@@ -150,7 +150,7 @@ class TestFilterGroupBy:
         metadata = valid_metadata.copy()
         metadata = metadata.drop('date', axis='columns')
         strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
+        _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
             'SEQ_1': ('A', 'unknown', 'unknown'),
             'SEQ_2': ('A', 'unknown', 'unknown'),
@@ -166,7 +166,7 @@ class TestFilterGroupBy:
         groups = ['country', 'year', 'month']
         metadata = valid_metadata.copy()
         strains = []
-        group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
+        _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {}
         assert skipped_strains == []
 
@@ -175,7 +175,7 @@ class TestFilterGroupBy:
         metadata = valid_metadata.copy()
         metadata['date'] = '2020'
         strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
+        _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
             'SEQ_1': ('A', 2020),
             'SEQ_2': ('A', 2020),
@@ -190,7 +190,7 @@ class TestFilterGroupBy:
         metadata = valid_metadata.copy()
         metadata['date'] = '2020'
         strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
+        _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {}
         assert skipped_strains == [
             {'strain': 'SEQ_1', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''},
@@ -205,12 +205,12 @@ class TestFilterGroupBy:
         metadata = valid_metadata.copy()
         metadata['date'] = '2020-01'
         strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
+        _, group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1)),
-            'SEQ_2': ('A', 2020, (2020, 1)),
-            'SEQ_3': ('B', 2020, (2020, 1)),
-            'SEQ_4': ('B', 2020, (2020, 1)),
-            'SEQ_5': ('B', 2020, (2020, 1))
+            'SEQ_1': ('A', 2020, 1),
+            'SEQ_2': ('A', 2020, 1),
+            'SEQ_3': ('B', 2020, 1),
+            'SEQ_4': ('B', 2020, 1),
+            'SEQ_5': ('B', 2020, 1)
         }
         assert skipped_strains == []
