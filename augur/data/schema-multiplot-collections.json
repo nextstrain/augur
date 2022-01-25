@@ -11,7 +11,7 @@
             "type": "string"
         },
         "collections": {
-            "description": "Collections of measurements and their configurations for display in auspice",
+            "description": "Collections of measurements and their configurations for display in auspice. Order of the collections determines the order they are shown in the collections dropdown.",
             "type": "array",
             "minItems": 1,
             "items": {
@@ -28,25 +28,42 @@
                         "description": "The title to display in the collections dropdown and panel title. Optional -- if not provided, then `key` will be used",
                         "type": "string"
                     },
-                    "groupings": {
-                        "description": "The available group by options and their display titles",
+                    "fields": {
+                        "description": "The fields included in each measurement and their display titles. Order of the fields determines the order they are shown in the measurement hover display. Optional -- if not provided, then the key of the field will be displayed in alphabetical order.",
                         "type": "array",
                         "minItems": 1,
                         "items": {
-                            "description": "A single group by option",
+                            "description": "A single field of the measurement",
                             "type": "object",
                             "additionalProperties": false,
-                            "required": ["key"],
                             "properties": {
                                 "key": {
-                                    "description": "The property name of the group by option",
+                                    "description": "The property name of the field within the measurement object",
                                     "type": "string"
                                 },
                                 "title": {
-                                    "description": "The title to display in the group by dropdown. Optional -- if not provided, then `key` will be used",
+                                    "description": "The display title for the field. Optional -- if not provided, then `key` will be used",
                                     "type": "string"
                                 }
                             }
+                        }
+                    },
+                    "groupings": {
+                        "description": "The available group by options for measurements. Order of the group by options determines the order they are shown in the group by dropdown.",
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                            "description": "The property name of the group by field within the measurement object",
+                            "type": "string"
+                        }
+                    },
+                    "filters": {
+                        "description": "The available filter options for measurements. Order of the filter options determines the order they are shown in the filter dropdown. Optional -- if not provided, then all fields will be available as filters.",
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                            "description": "The property name of the filter field within the measurement object",
+                            "type": "string"
                         }
                     },
                     "x_axis_label": {
