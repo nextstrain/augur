@@ -88,6 +88,10 @@
                                 "description": "Default group by option where the value must be the `key` in one of the objects of the groupings array. Optional -- if not provided, first group by option will be used",
                                 "type": "string"
                             },
+                            "show_overall_mean": {
+                                "description": "Should the overall mean per group be displayed by default?",
+                                "type": "boolean"
+                            },
                             "show_threshold": {
                                 "description": "Should the threshold line be displayed by default? Ignored if no threshold has been provided for collection",
                                 "type": "boolean"
