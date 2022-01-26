@@ -400,7 +400,7 @@
                             "description": "Sequence accession number",
                             "$comment": "terminal nodes only",
                             "type": "string",
-                            "pattern": "^[0-9A-Za-z-_]+$"
+                            "pattern": "^[0-9A-Za-z-_.]+$"
                         }
                     },
                     "patternProperties": {
