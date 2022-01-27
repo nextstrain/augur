@@ -884,7 +884,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     [{'strain': 'strain1', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
 
     """
-    metadata = metadata.loc[strains]
+    metadata = metadata.loc[list(strains)]
     group_by_strain = {}
     skipped_strains = []
 
@@ -1455,7 +1455,7 @@ def run(args):
 
         if args.output_metadata:
             # TODO: wrap logic to write metadata into its own function
-            metadata.loc[strains_to_write].to_csv(
+            metadata.loc[list(strains_to_write)].to_csv(
                 args.output_metadata,
                 sep="\t",
                 header=metadata_header,
