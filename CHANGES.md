@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 13.1.2 (28 January 2022)
+
 ### Features
 
 ### Bug Fixes
