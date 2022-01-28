@@ -2,6 +2,17 @@
 
 ## __NEXT__
 
+### Features
+
+### Bug Fixes
+
+* filter: Set default filter priority to negative infinity instead of 0. [#835][] (@huddlej)
+* filter: Cast strains to list when subsetting metadata to prevent pandas FutureWarning. [#833][] (@victorlin)
+* export v2: Allow periods (.) in accession numbers. [#832][] (@tsibley)
+
+[#835]: https://github.com/nextstrain/augur/pull/835
+[#833]: https://github.com/nextstrain/augur/pull/833
+[#832]: https://github.com/nextstrain/augur/pull/832
 
 ## 13.1.1 (21 January 2022)
 
