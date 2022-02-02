@@ -215,7 +215,7 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         ## consider various sources to find any user-provided scale information
         key = coloring["key"]
         scale_type = coloring["type"]
-        if scale_type is "continuous":
+        if scale_type == "continuous":
             ## continuous scale information can only come from an auspice config JSON
             if config.get(key, {}).get("scale"):
                 # enforce numeric values (we can't use the schema for this)

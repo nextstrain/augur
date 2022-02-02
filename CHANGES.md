@@ -3,6 +3,33 @@
 ## __NEXT__
 
 
+## 13.1.2 (28 January 2022)
+
+### Features
+
+### Bug Fixes
+
+* filter: Set default filter priority to negative infinity instead of 0. [#835][] (@huddlej)
+* filter: Cast strains to list when subsetting metadata to prevent pandas FutureWarning. [#833][] (@victorlin)
+* export v2: Allow periods (.) in accession numbers. [#832][] (@tsibley)
+
+[#835]: https://github.com/nextstrain/augur/pull/835
+[#833]: https://github.com/nextstrain/augur/pull/833
+[#832]: https://github.com/nextstrain/augur/pull/832
+
+## 13.1.1 (21 January 2022)
+
+### Bug Fixes
+
+* dependencies: Relax upper bounds on development dependencies. [#821][] and [#830][] (@victorlin, @huddlej)
+* refine: Inform users when their requested root sequence is not present in the alignment. [#816][] (@corneliusroemer)
+* utils: Fix crash with `read_metadata` when numexpr is installed. [#826][] (@victorlin)
+
+[#816]: https://github.com/nextstrain/augur/pull/816
+[#821]: https://github.com/nextstrain/augur/pull/821
+[#826]: https://github.com/nextstrain/augur/pull/826
+[#830]: https://github.com/nextstrain/augur/pull/830
+
 ## 13.1.0 (10 December 2021)
 
 ### Features

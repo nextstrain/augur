@@ -62,9 +62,12 @@ def write_vcf(input_filename, output_filename, dropped_samps):
         pass
 
 def read_priority_scores(fname):
+    def constant_factory(value):
+        return lambda: value
+
     try:
         with open(fname, encoding='utf-8') as pfile:
-            return defaultdict(float, {
+            return defaultdict(constant_factory(-np.inf), {
                 elems[0]: float(elems[1])
                 for elems in (line.strip().split('\t') if '\t' in line else line.strip().split() for line in pfile.readlines())
             })
@@ -884,7 +887,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     [{'strain': 'strain1', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
 
     """
-    metadata = metadata.loc[strains]
+    metadata = metadata.loc[list(strains)]
     group_by_strain = {}
     skipped_strains = []
 
@@ -1455,7 +1458,7 @@ def run(args):
 
         if args.output_metadata:
             # TODO: wrap logic to write metadata into its own function
-            metadata.loc[strains_to_write].to_csv(
+            metadata.loc[list(strains_to_write)].to_csv(
                 args.output_metadata,
                 sep="\t",
                 header=metadata_header,

@@ -56,15 +56,9 @@ class MetadataFile:
         return metadata
 
     def check_metadata_duplicates(self):
-        duplicates = (
-            self.metadata[self.key_type]
-            .value_counts()
-            .reset_index()
-            .query(f"{self.key_type} > 1")["index"]
-            .values
-        )
-
-        if len(duplicates) > 0:
+        duplicate_rows = self.metadata[self.key_type].duplicated()
+        if any(duplicate_rows):
+            duplicates = self.metadata.loc[duplicate_rows, self.key_type].values
             raise ValueError(
                 f"Duplicated {self.key_type} in metadata: {', '.join(duplicates)}"
             )
