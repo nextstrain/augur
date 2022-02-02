@@ -18,7 +18,9 @@ jobs:
         channels: conda-forge,bioconda
         channel-priority: true
         activate-environment: test
-    - run: mamba install mafft raxml fasttree iqtree vcftools pip=21 numpy
+    - run: mamba install mafft raxml fasttree iqtree vcftools numpy
+    - if: matrix.python-version == 3.6
+      run: mamba install pip=21
     - run: pip install biopython==1.67
     - run: pip install -e .[dev]
     - run: conda info
