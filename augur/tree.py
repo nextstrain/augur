@@ -349,6 +349,7 @@ def register_arguments(parser):
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--exclude-sites', type=str, help='file name of one-based sites to exclude for raw tree building (BED format in .bed files, second column in tab-delimited files, or one position per line)')
     parser.add_argument('--tree-builder-args', type=str, default='', help='extra arguments to be passed directly to the executable of the requested tree method (e.g., --tree-builder-args="-czb")')
+    parser.add_argument('--keep-builder-files', action="store_true", help='keep intermediate and alternate builder output files instead of cleaning them up after tree building')
 
 
 def run(args):
@@ -390,12 +391,14 @@ def run(args):
     if args.substitution_model and not args.method=='iqtree':
         print("Cannot specify model unless using IQTree. Model specification ignored.")
 
+    clean_up = not args.keep_builder_files
+
     if args.method=='raxml':
-        T = build_raxml(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
+        T = build_raxml(fasta, tree_fname, clean_up=clean_up, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
     elif args.method=='iqtree':
-        T = build_iqtree(fasta, tree_fname, args.substitution_model, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
+        T = build_iqtree(fasta, tree_fname, args.substitution_model, clean_up=clean_up, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
     elif args.method=='fasttree':
-        T = build_fasttree(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
+        T = build_fasttree(fasta, tree_fname, clean_up=clean_up, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
     else:
         print("ERROR: unknown tree builder provided to --method: %s" % args.method, file = sys.stderr)
         return 1
