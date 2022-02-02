@@ -3,6 +3,7 @@ Build a tree using a variety of methods.
 """
 
 import os
+import shlex
 import shutil
 import sys
 import time
@@ -16,6 +17,53 @@ from pathlib import Path
 
 from .io import read_sequences
 from .utils import run_shell_command, nthreads_value, shquote, load_mask_sites
+
+class ConflictingArgumentsException(Exception):
+    """Exception when user-provided tree builder arguments conflict with the
+    requested tree builder's hardcoded defaults (e.g., the path to the
+    alignment, etc.).
+
+    """
+    pass
+
+def check_conflicting_args(tree_builder_args, defaults):
+    """Checks the given user-provided tree builder arguments for hardcoded default
+    arguments and raise an exception with a list of any that are found.
+
+    Arguments
+    ---------
+    tree_builder_args : str
+        User-provided tree builder arguments
+    defaults : list or tuple
+        List of hardcoded default arguments (e.g., ['-nt'])
+
+    Raises
+    ------
+    ConflictingArgumentsException
+        When any user-provided arguments match those in the defaults.
+
+    >>> defaults = ("-nt", "-m", "-s")
+    >>> check_conflicting_args("-czb -n 2", defaults)
+    >>> check_conflicting_args("-czb -nt 2", defaults)
+    Traceback (most recent call last):
+        ...
+    augur.tree.ConflictingArgumentsException: The following tree builder arguments conflict with hardcoded defaults. Remove these arguments and try again: -nt
+
+    """
+    # Parse tree builder argument string into a list of shell arguments. This
+    # allows us to search a list of arguments instead of a string where we might
+    # find partial prefix matches to some of the given defaults.
+    tree_builder_args_list = shlex.split(tree_builder_args)
+    conflicting_args = [
+        default
+        for default in defaults
+        if default in tree_builder_args_list
+    ]
+
+    if len(conflicting_args) > 0:
+        raise ConflictingArgumentsException(
+            f"The following tree builder arguments conflict with hardcoded defaults. Remove these arguments and try again: {', '.join(conflicting_args)}"
+        )
 
 def find_executable(names, default = None):
     """
@@ -64,6 +112,9 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args
 
     if tree_builder_args is None:
         tree_builder_args = DEFAULT_RAXML_ARGS
+
+    # Check tree builder arguments for conflicts with hardcoded defaults.
+    check_conflicting_args(tree_builder_args, ("-T", "-n", "-s"))
 
     call = [raxml,"-T",str(nthreads), "-n %s -s"%(random_string), shquote(aln_file), tree_builder_args, "> RAxML_log.%s"%(random_string)]
     cmd = " ".join(call)
@@ -187,6 +238,9 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
 
     if tree_builder_args is None:
         tree_builder_args = DEFAULT_IQTREE_ARGS
+
+    # Check tree builder arguments for conflicts with hardcoded defaults.
+    check_conflicting_args(tree_builder_args, ("-nt", "-s", "-m"))
 
     # Use IQ-TREE's auto-scaling of threads when the user has requested more
     # threads than there are sequences. This approach avoids an error from
@@ -401,14 +455,15 @@ def run(args):
     if args.substitution_model and not args.method=='iqtree':
         print("Cannot specify model unless using IQTree. Model specification ignored.")
 
-    if args.method=='raxml':
-        T = build_raxml(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
-    elif args.method=='iqtree':
-        T = build_iqtree(fasta, tree_fname, args.substitution_model, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
-    elif args.method=='fasttree':
-        T = build_fasttree(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
-    else:
-        print("ERROR: unknown tree builder provided to --method: %s" % args.method, file = sys.stderr)
+    try:
+        if args.method=='raxml':
+            T = build_raxml(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
+        elif args.method=='iqtree':
+            T = build_iqtree(fasta, tree_fname, args.substitution_model, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
+        elif args.method=='fasttree':
+            T = build_fasttree(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=args.tree_builder_args)
+    except ConflictingArgumentsException as error:
+        print(f"ERROR:", error, file=sys.stderr)
         return 1
 
     end = time.time()
