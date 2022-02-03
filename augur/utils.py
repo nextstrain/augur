@@ -119,8 +119,7 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
         return float(value)
     if value.isnumeric():
         # year-only date is ambiguous
-        # TODO: fmt
-        value = f'{value}-XX-XX'
+        value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
     if 'XX' in value:
         ambig_date = ambiguous_date_to_date_range(value, fmt, min_max_year)
         if ambig_date is None or None in ambig_date:
