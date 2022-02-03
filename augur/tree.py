@@ -410,11 +410,16 @@ def register_arguments(parser):
                                 help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--exclude-sites', type=str, help='file name of one-based sites to exclude for raw tree building (BED format in .bed files, second column in tab-delimited files, or one position per line)')
-    parser.add_argument('--tree-builder-args', type=str, help=f"""arguments to pass to the tree builder overriding the default arguments except for input alignment path, number of threads, and substitution model (e.g., --tree-builder-args="-czb" for IQ-TREE).
+    parser.add_argument('--tree-builder-args', type=str, help=f"""arguments to pass to the tree builder overriding the default arguments except for input alignment path, number of threads, and substitution model.
+    Use the assignment operator (e.g., --tree-builder-args="-czb" for IQ-TREE) to avoid unexpected errors.
     FastTree defaults: "{DEFAULT_FASTTREE_ARGS}".
     RAxML defaults: "{DEFAULT_RAXML_ARGS}".
     IQ-TREE defaults: "{DEFAULT_IQTREE_ARGS}".
     """)
+
+    parser.epilog = """For example, to build a tree with IQ-TREE, use the following format:
+    augur tree --method iqtree --alignment <alignment> --substitution-model <model> --output <tree> --tree-builder-args="<extra arguments>"
+    """
 
 def run(args):
     # check alignment type, set flags, read in if VCF
