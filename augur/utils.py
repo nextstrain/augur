@@ -1,4 +1,5 @@
 import argparse
+import re
 import Bio
 import Bio.Phylo
 from datetime import datetime
@@ -112,8 +113,14 @@ def is_date_ambiguous(date, ambiguous_by="any"):
     ))
 
 def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
-    if type(value)!=str:
-        return None
+    value = str(value)
+    if re.match(r'^-*\d+\.\d+$', value):
+        # numeric date which can be negative
+        return float(value)
+    if value.isnumeric():
+        # year-only date is ambiguous
+        # TODO: fmt
+        value = f'{value}-XX-XX'
     if 'XX' in value:
         ambig_date = ambiguous_date_to_date_range(value, fmt, min_max_year)
         if ambig_date is None or None in ambig_date:
