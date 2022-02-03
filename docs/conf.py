@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
+from augur.__version__ import __version__ as augur_version
 from datetime import date
 import subprocess
 
@@ -44,6 +45,8 @@ def prose_list(items):
         return ", ".join([*items[0:-1], "and " + items[-1]])
 
 project = 'Augur'
+version = augur_version
+release = version
 copyright = '2014–%d Trevor Bedford and Richard Neher' % (date.today().year)
 author = prose_list(git_authors())
 
