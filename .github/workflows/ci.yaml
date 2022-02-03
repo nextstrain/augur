@@ -11,7 +11,7 @@ jobs:
           - {python: '3.7', biopython: '1.73'}
           - {python: '3.8', biopython: '1.76'}
           - {python: '3.9', biopython: '1.79'}
-          - {python: '3.10', biopython: ''}
+          - {python: '3.10', biopython: ''} # empty string = latest supported
     defaults:
       run:
         shell: bash -l {0}
