@@ -111,12 +111,9 @@ def is_date_ambiguous(date, ambiguous_by="any"):
         "X" in day and ambiguous_by in ("any", "day")
     ))
 
-def get_numerical_date_from_value(value, fmt=None, min_max_year=None, raise_error=True):
+def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
     if type(value)!=str:
-        if raise_error:
-            raise ValueError(value)
-        else:
-            numerical_date = None
+        numerical_date = None
     elif 'XX' in value:
         ambig_date = ambiguous_date_to_date_range(value, fmt, min_max_year)
         if ambig_date is None or None in ambig_date:
@@ -156,8 +153,7 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, m
                 lambda date: get_numerical_date_from_value(
                     date,
                     fmt,
-                    min_max_year,
-                    raise_error=False
+                    min_max_year
                 )
             ).values
             numerical_dates = dict(zip(strains, dates))
