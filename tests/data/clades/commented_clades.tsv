@@ -1,0 +1,7 @@
+clade	gene	site	alt
+# Comment 
+Clade_1	ctpE	81	D
+# Comment
+Clade_2	nuc	30642	T
+Clade_3	nuc	444296	A# Comment
+Clade_3	pks8	634	T

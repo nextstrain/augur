@@ -7,19 +7,32 @@ from Bio import Phylo
 import pandas as pd
 import numpy as np
 from collections import defaultdict
+import networkx as nx
+from itertools import islice
 from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json, get_json_name
 
 def read_in_clade_definitions(clade_file):
     '''
     Reads in tab-seperated file that defines clades by amino acid or nucleotide mutations
 
+    Inheritance is allowed, but needs to be acyclic. Alleles can be overwritten by inheriting clades.
+
+    Sites are 1 indexed in the file, and are converted to 0 indexed in the output
+    
+    Empty lines are ignored, comments after # are ignored
+
     Format
     ------
-    clade    gene    site alt
-    Clade_1    ctpE    81  D
-    Clade_2    nuc 30642   T
-    Clade_3    nuc 444296  A
-    Clade_4    pks8    634 T
+    clade      gene    site     alt
+    Clade_1    ctpE    81       D
+    Clade_2    nuc     30642    T
+    Clade_3    nuc     444296   A
+    Clade_3    S       1        P
+    \\# Clade_4 inherits from Clade_3
+    Clade_4    clade   Clade_3
+    Clade_4    pks8    634      T
+    \\# Inherited allele can be overwritten
+    Clade_4    S       1        L
 
     Parameters
     ----------
@@ -32,12 +45,40 @@ def read_in_clade_definitions(clade_file):
         clade definitions as :code:`{clade_name:[(gene, site, allele),...]}`
     '''
 
-    clades = defaultdict(list)
-    df = pd.read_csv(clade_file, sep='\t' if clade_file.endswith('.tsv') else ',')
-    for index, row in df.iterrows():
-        allele = (row.gene, row.site-1, row.alt)
-        clades[row.clade].append(allele)
-    clades.default_factory = None
+    clades = defaultdict(lambda: defaultdict(str))
+    df = pd.read_csv(
+        clade_file,
+        sep='\t' if clade_file.endswith('.tsv') else ',',
+        comment='#'
+    )
+
+    G = nx.DiGraph()
+    root = 0
+    # For every clade, add edge from root as default
+    for clade in df.clade.unique():
+        G.add_edge(root, clade)
+    
+    for _, row in df[df.gene == 'clade'].iterrows():
+        try:
+            G.remove_edge(root, row.clade)
+        except nx.NetworkXError:
+            raise ValueError(f"Clade {row.clade} seems to inherit from more than one clade, that's not allowed")
+        G.add_edge(row.site, row.clade)
+    
+    if not nx.is_directed_acyclic_graph(G):
+        raise ValueError(f"Clade definitions contain cycles {list(nx.simple_cycles(G))}")
+
+    for clade in islice(nx.topological_sort(G),1,None):
+        try:
+            clades[clade] = clades[next(G.predecessors(clade))].copy()
+        except StopIteration:
+            raise ValueError(f"Clade {next(G.successors(clade))} inherits from non-existent clade {clade}")
+        for _, row in df[(df.clade == clade) & (df.gene != 'clade')].iterrows():
+            clades[clade][(row.gene, int(row.site)-1)] = row.alt
+    
+    # Convert items from dict of tuples to list of tuples
+    for clade in clades:
+        clades[clade] = list(map(lambda k: k[0] + (k[1],),clades[clade].items()))
 
     return clades
 
