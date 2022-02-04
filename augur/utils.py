@@ -137,18 +137,11 @@ def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, m
         if isinstance(meta_dict, dict):
             for k,m in meta_dict.items():
                 v = m[date_col]
-                try:
-                    numerical_dates[k] = get_numerical_date_from_value(
-                        v,
-                        fmt,
-                        min_max_year
-                    )
-                except ValueError:
-                    print(
-                        "WARNING: %s has an invalid data string: %s"% (k, v),
-                        file=sys.stderr
-                    )
-                    continue
+                numerical_dates[k] = get_numerical_date_from_value(
+                    v,
+                    fmt,
+                    min_max_year
+                )
         elif isinstance(meta_dict, pd.DataFrame):
             strains = meta_dict.index.values
             dates = meta_dict[date_col].apply(
