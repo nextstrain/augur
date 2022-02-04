@@ -2,6 +2,7 @@ name: CI
 on: [push, pull_request]
 jobs:
   test:
+    name: test (python=${{ matrix.python-version }} biopython=${{ matrix.biopython-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
