@@ -45,7 +45,7 @@ To to test your local changes (without installing them to your system), run the 
 
 Note that the `./bin/augur` convenience script is not installing `augur` system-wide with pip.
 
-As an alternative to using the convenience script, you can install augur from source
+As an alternative to using the convenience script and to install the dev dependencies, you can install augur from source
 as an **editable package** so that your global `augur` command always uses your
 local source code copy:
 
