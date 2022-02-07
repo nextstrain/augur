@@ -52,34 +52,44 @@ def read_in_clade_definitions(clade_file):
         comment='#'
     )
 
+    clade_inheritance_rows = df[df['gene'] == 'clade']
+    clades_with_multiple_inheritance = clade_inheritance_rows[clade_inheritance_rows.duplicated(subset=["clade"])]['clade'].tolist()
+    if len(clades_with_multiple_inheritance) > 0:
+        raise ValueError(f"Clades {clades_with_multiple_inheritance} have multiple inheritance, that's not allowed")
+    
+
+    missing_parent_clades = set(clade_inheritance_rows['site']) - set(df["clade"])
+    if len(missing_parent_clades) > 0:
+        raise ValueError(f"Clades {missing_parent_clades} are inherited from but are not defined")
+
     G = nx.DiGraph()
     root = 0
     # For every clade, add edge from root as default
     for clade in df.clade.unique():
         G.add_edge(root, clade)
     
-    for _, row in df[df.gene == 'clade'].iterrows():
-        try:
-            G.remove_edge(root, row.clade)
-        except nx.NetworkXError:
-            raise ValueError(f"Clade {row.clade} seems to inherit from more than one clade, that's not allowed")
+    for _, row in clade_inheritance_rows.iterrows():
+        G.remove_edge(root, row.clade)
         G.add_edge(row.site, row.clade)
     
     if not nx.is_directed_acyclic_graph(G):
         raise ValueError(f"Clade definitions contain cycles {list(nx.simple_cycles(G))}")
 
     for clade in islice(nx.topological_sort(G),1,None):
-        try:
-            clades[clade] = clades[next(G.predecessors(clade))].copy()
-        except StopIteration:
-            raise ValueError(f"Clade {next(G.successors(clade))} inherits from non-existent clade {clade}")
+        clades[clade] = clades[next(G.predecessors(clade))].copy()
         for _, row in df[(df.clade == clade) & (df.gene != 'clade')].iterrows():
             clades[clade][(row.gene, int(row.site)-1)] = row.alt
     
-    # Convert items from dict of tuples to list of tuples
-    for clade in clades:
-        clades[clade] = list(map(lambda k: k[0] + (k[1],),clades[clade].items()))
-
+    # Convert items from dict[str, dict[(str,int),str]] to dict[str, list[(str,int,str)]]
+    clades = {
+        clade: [
+            gene_site + (alt,)
+            for gene_site, alt in clade_definition.items()
+        ]
+        for clade, clade_definition in clades.items()
+        if clade != root
+    }
+    
     return clades
 
 
