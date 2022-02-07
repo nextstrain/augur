@@ -54,6 +54,7 @@ setuptools.setup(
         "bcbio-gff >=0.6.0, ==0.6.*",
         "biopython >=1.67, !=1.77, !=1.78",
         "jsonschema >=3.0.0, ==3.*",
+        "networkx >= 2.5, ==2.*",
         "packaging >=19.2",
         "pandas >=1.0.0, ==1.*",
         "phylo-treetime ==0.8.*",
