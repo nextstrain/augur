@@ -53,21 +53,31 @@ def read_in_clade_definitions(clade_file):
     )
 
     clade_inheritance_rows = df[df['gene'] == 'clade']
+
+    # Identify clades that inherit more than once
     clades_with_multiple_inheritance = clade_inheritance_rows[clade_inheritance_rows.duplicated(subset=["clade"])]['clade'].tolist()
     if len(clades_with_multiple_inheritance) > 0:
         raise ValueError(f"Clades {clades_with_multiple_inheritance} have multiple inheritance, that's not allowed")
-    
 
+    # Identify clades that inherit from non-existent clades
     missing_parent_clades = set(clade_inheritance_rows['site']) - set(df["clade"])
     if len(missing_parent_clades) > 0:
         raise ValueError(f"Clades {missing_parent_clades} are inherited from but are not defined")
 
+
     G = nx.DiGraph()
+
+    # Use integer 0 as root so as not to conflict with any string clade names
+    # String '0' can still be used this way
     root = 0
     # For every clade, add edge from root as default
+    # This way all clades can be reached by traversal
     for clade in df.clade.unique():
         G.add_edge(root, clade)
     
+    # Build inheritance graph
+    # For clades that inherit, disconnect from root
+    # Add edge from parent
     for _, row in clade_inheritance_rows.iterrows():
         G.remove_edge(root, row.clade)
         G.add_edge(row.site, row.clade)
@@ -75,9 +85,19 @@ def read_in_clade_definitions(clade_file):
     if not nx.is_directed_acyclic_graph(G):
         raise ValueError(f"Clade definitions contain cycles {list(nx.simple_cycles(G))}")
 
+    # Traverse graph top down, so that children can inherit from parents and grandparents
+    # Topological sort ensures parents are visited before children
+    # islice is used to skip the root node (which has no parent)
     for clade in islice(nx.topological_sort(G),1,None):
-        clades[clade] = clades[next(G.predecessors(clade))].copy()
+        # Get name of parent clade 
+        # G.predecessors(clade) returns iterator, thus next() necessary
+        # despite the fact that there should only be one parent
+        parent_clade = next(G.predecessors(clade))
+        # Inheritance from parents happens here
+        # Allele dict is initialized with alleles from parent
+        clades[clade] = clades[parent_clade].copy()
         for _, row in df[(df.clade == clade) & (df.gene != 'clade')].iterrows():
+            # Overwrite of parent alleles is possible and happens here
             clades[clade][(row.gene, int(row.site)-1)] = row.alt
     
     # Convert items from dict[str, dict[(str,int),str]] to dict[str, list[(str,int,str)]]
@@ -87,6 +107,7 @@ def read_in_clade_definitions(clade_file):
             for gene_site, alt in clade_definition.items()
         ]
         for clade, clade_definition in clades.items()
+        # If clause avoids root (helper) from being emmitted
         if clade != root
     }
     
