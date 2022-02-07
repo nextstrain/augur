@@ -1,0 +1,14 @@
+clade	gene	site	alt
+
+A	nuc	2517	C
+A	nuc	3972	T
+
+B	CA	107	E
+B	NS1	324	W
+
+# Inherited, nested clade
+A.1	clade	A	
+A.1	nuc	5298	G
+
+B.1	clade	B	
+B.1	nuc	2895	A
