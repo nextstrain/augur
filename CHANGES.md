@@ -2,6 +2,27 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* Drop support for Python 3.6, add support for 3.9 and 3.10 [#822][] (@victorlin)
+
+### Features
+
+* refine: Enable bootstrap support by passing confidence values through to Auspice JSONs from `augur refine` node data JSONs [#839][] (@huddlej)
+* tree: Allow users to override default tree builder arguments with a new `--override-default-args` flag [#839][] (@huddlej)
+* clades: Allow descendant clades to be defined by explicitly inheriting from ancestral clade names [#846][] (@corneliusroemer)
+
+### Bug Fixes
+
+* tree: Fix segmentation fault that can occur when user-provided tree builder args conflict hardcoded defaults for IQ-TREE's. The new `--override-default-args` flag allows users to override the defaults that conflict with their values. [#839][] (@huddlej)
+* filter/utils: fix year-only and numeric date handling [#841][] (@victorlin)
+* CI: test earliest supported Biopython versions in matrix, remove redundant installs [#843][] (@victorlin)
+
+[#822]: https://github.com/nextstrain/augur/pull/822
+[#841]: https://github.com/nextstrain/augur/pull/841
+[#843]: https://github.com/nextstrain/augur/pull/843
+[#846]: https://github.com/nextstrain/augur/pull/846
+[#839]: https://github.com/nextstrain/augur/pull/839
 
 ## 13.1.2 (28 January 2022)
 
