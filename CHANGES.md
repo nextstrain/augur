@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 14.0.0 (8 February 2022)
+
 ### Major Changes
 
 * Drop support for Python 3.6, add support for 3.9 and 3.10 [#822][] (@victorlin)
