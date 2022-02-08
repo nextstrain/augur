@@ -36,6 +36,24 @@ Build a tree with excluded sites using a compressed input file.
   >  --exclude-sites tree/excluded_sites.txt \
   >  --output "$TMP/tree_raw.nwk" &> /dev/null
 
+Build a tree, augmenting existing default arguments with custom arguments.
+
+  $ ${AUGUR} tree \
+  >  --method iqtree \
+  >  --alignment tree/aligned.fasta \
+  >  --tree-builder-args="-czb" \
+  >  --output "$TMP/tree_raw.nwk" > /dev/null
+
+Build a tree, replacing existing default arguments with custom arguments.
+Since the following custom arguments are incompatible with the default IQ-TREE arguments, this command will only work with the `--override-default-args` flag.
+
+  $ ${AUGUR} tree \
+  >  --method iqtree \
+  >  --alignment tree/full_aligned.fasta \
+  >  --tree-builder-args="-czb -bb 1000 -bnni" \
+  >  --override-default-args \
+  >  --output "$TMP/tree_raw.nwk" > /dev/null
+
 Clean up tree log files.
 
   $ rm -f tree/*.log

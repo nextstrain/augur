@@ -82,8 +82,11 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
 def collect_node_data(T, attributes):
     data = {}
     for n in T.find_clades():
-        data[n.name] = {attr:n.__getattribute__(attr)
-                        for attr in attributes if hasattr(n,attr)}
+        data[n.name] = {
+            attr: getattr(n, attr)
+            for attr in attributes
+            if getattr(n, attr, None) is not None
+        }
     return data
 
 
@@ -135,7 +138,7 @@ def run(args):
     # node data is the dict that will be exported as json
     node_data = {'alignment': args.alignment}
     # list of node attributes that are to be exported, will grow
-    attributes = ['branch_length']
+    attributes = ['branch_length', 'confidence']
 
     try:
         T = read_tree(args.tree)
@@ -286,7 +289,7 @@ def run(args):
 
     # Export refined tree and node data
     import json
-    tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
+    tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f', branch_length_only=True)
     print("updated tree written to",tree_fname, file=sys.stdout)
 
     if args.output_node_data:
