@@ -754,39 +754,6 @@ def node_data_prop_is_normal_trait(name):
 
     return True
 
-def get_root_sequence(root_node, ref=None, translations=None):
-    '''
-    create a json structure that contains the sequence of the root, both as
-    nucleotide and as translations. This allows look-up of the sequence for
-    all states, including those that are not variable.
-
-    Parameters
-    ----------
-    root_node : dict
-    	data associated with the node
-    ref : str, optional
-        filename of the root sequence
-    translations : str, optional
-        file name of translations
-
-    Returns
-    -------
-    dict
-        dict of nucleotide sequence and translations
-    '''
-    root_sequence = {}
-    if ref and translations:
-        from Bio import SeqIO
-        refseq = SeqIO.read(ref, 'fasta')
-        root_sequence['nuc']=str(refseq.seq)
-        for gene in SeqIO.parse(translations, 'fasta'):
-            root_sequence[gene.id] = str(gene.seq)
-    else:
-        root_sequence["nuc"] = root_node["sequence"]
-        root_sequence.update(root_node["aa_sequences"])
-
-    return root_sequence
-
 
 def register_arguments_v2(subparsers):
     v2 = subparsers.add_parser("v2", help="Export version 2 JSON schema")
