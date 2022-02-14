@@ -299,6 +299,19 @@
             }
         },
         "tree": {
+            "description": "One or more phylogenies using a nested JSON structure",
+            "oneOf": [
+                {"$ref": "#/$defs/tree"},
+                {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {"$ref": "#/$defs/tree"}
+                }
+            ]
+        }
+    },
+    "$defs": {
+        "tree": {
             "type" : "object",
             "$comment": "The phylogeny in a nested JSON structure",
             "additionalProperties": false,
@@ -500,7 +513,7 @@
                     "$comment": "Polytomies (more than 2 items) allowed, as are nodes with a single child.",
                     "type": "array",
                     "minItems": 1,
-                    "items": {"$ref": "#/properties/tree"}
+                    "items": {"$ref": "#/$defs/tree"}
                 }
             }
         }
