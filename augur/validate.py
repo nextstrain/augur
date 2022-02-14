@@ -46,7 +46,7 @@ def load_json_schema(path):
     try:
         jsonschema.Draft6Validator.check_schema(schema)
     except jsonschema.exceptions.SchemaError as err:
-        raise ValidateError("Schema {} is not a valid JSON file. Error: {}".format(path, err))
+        raise ValidateError("Schema {} is not a valid JSON Schema (draft 6). Error: {}".format(path, err))
     return jsonschema.Draft6Validator(schema)
 
 def load_json(path):
