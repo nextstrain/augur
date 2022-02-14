@@ -8,9 +8,8 @@
     "required": ["version", "meta", "tree"],
     "properties": {
         "version" : {
-            "description": "JSON schema version",
-            "type" : "string",
-            "pattern": "^v[0-9]+$"
+            "description": "Major schema version",
+            "const": "v2"
         },
         "meta": {
             "type": "object",
