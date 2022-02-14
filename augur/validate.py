@@ -43,11 +43,12 @@ def load_json_schema(path):
     except json.JSONDecodeError as err:
         raise ValidateError("Schema {} is not a valid JSON file. Error: {}".format(path, err))
     # check loaded schema is itself valid -- see http://python-jsonschema.readthedocs.io/en/latest/errors/
+    Validator = jsonschema.validators.validator_for(schema)
     try:
-        jsonschema.Draft6Validator.check_schema(schema)
+        Validator.check_schema(schema)
     except jsonschema.exceptions.SchemaError as err:
-        raise ValidateError("Schema {} is not a valid JSON Schema (draft 6). Error: {}".format(path, err))
-    return jsonschema.Draft6Validator(schema)
+        raise ValidateError(f"Schema {path} is not a valid JSON Schema ({Validator.META_SCHEMA['$schema']}). Error: {err}")
+    return Validator(schema)
 
 def load_json(path):
     with open(path, 'rb') as fh:
