@@ -3,6 +3,7 @@
   "$id": "https://nextstrain.org/schemas/augur/frequencies",
   "title": "`augur frequencies` output",
   "description": "This schema describes the various forms of `augur frequencies` output when using the default `--output-format=auspice`.  The specific form used depends on the input parameters, as noted for each possible form below.  One of the forms is compatible with the Nextstrain tip-frequencies sidecar described by <https://nextstrain.org/schemas/tip-frequencies>.",
+  "$comment": "For historical context (some, not complete) on the development of this format, see <https://github.com/nextstrain/augur/pull/83> and <https://github.com/nextstrain/augur/issues/84>.",
   "oneOf": [
     {
       "description": "`augur frequencies` with an input `--tree` and `--method=diffusion`",

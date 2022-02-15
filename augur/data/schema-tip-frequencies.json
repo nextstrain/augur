@@ -4,6 +4,7 @@
   "$id": "https://nextstrain.org/schemas/dataset/tip-frequencies",
   "title": "Nextstrain tip-frequencies sidecar for datasets",
   "description": "Typically produced by Augur (with `augur frequencies --method kde --tree …`) and consumed by Auspice.  Note that the full range of output forms from `augur frequencies` is broader than this, see <https://nextstrain.org/schemas/augur/frequencies>.",
+  "$comment": "For historical context (some, not complete) on the development of this format, see <https://github.com/nextstrain/augur/pull/83> and <https://github.com/nextstrain/augur/issues/84>.",
   "type": "object",
   "required": ["pivots"],
   "properties": {
