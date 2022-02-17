@@ -17,14 +17,14 @@
       "required": ["nuc"],
       "properties": {
         "nuc": {
-          "description": "Nucleotide sequence of whole genome",
+          "description": "Nucleotide sequence of whole genome (from the output of `augur ancestral`)",
           "type": "string"
         }
       },
       "patternProperties": {
         "^[a-zA-Z0-9*_-]+$": {
           "$comment": "This pattern is the same pattern used in the corresponding parts of schema-export-v2.json.",
-          "description": "Amino acid sequence of genome annotation (e.g. gene) identified by this key",
+          "description": "Amino acid sequence of genome annotation (e.g. gene) identified by this key (from the output of `augur translate`)",
           "type": "string"
         }
       }
