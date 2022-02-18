@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$id": "https://nextstrain.org/schemas/augur/frequencies",
+  "title": "`augur frequencies` output",
+  "description": "This schema describes the various forms of `augur frequencies` output when using the default `--output-format=auspice`.  The specific form used depends on the input parameters, as noted for each possible form below.  One of the forms is compatible with the Nextstrain tip-frequencies sidecar described by <https://nextstrain.org/schemas/tip-frequencies>.",
+  "$comment": "For historical context (some, not complete) on the development of this format, see <https://github.com/nextstrain/augur/pull/83> and <https://github.com/nextstrain/augur/issues/84>.",
+  "oneOf": [
+    {
+      "description": "`augur frequencies` with an input `--tree` and `--method=diffusion`",
+      "type": "object",
+      "required": ["pivots", "counts"],
+      "properties": {
+        "counts": {
+          "description": "Counts by region",
+          "type": "object",
+          "additionalProperties": {
+            "description": "Counts for region identified by this key",
+            "type": "array",
+            "items": {"type": "integer"}
+          }
+        },
+        "pivots": {"$ref": "#/$defs/pivots"},
+        "generated_by": {"$ref": "#/$defs/generated_by"}
+      },
+      "additionalProperties": {
+        "description": "Estimated frequencies by region for tip (or node) identified by this key",
+        "type": "object",
+        "additionalProperties": {
+          "description": "Estimated frequencies for region identified by this key",
+          "type": "array",
+          "items": {"type": "number"}
+        }
+      }
+    },
+    {
+      "description": "`augur frequencies` with an input `--tree` and `--method=kde`, compatible with <https://nextstrain.org/schemas/tip-frequencies>",
+      "type": "object",
+      "required": ["pivots"],
+      "properties": {
+        "pivots": {"$ref": "#/$defs/pivots"},
+        "generated_by": {"$ref": "#/$defs/generated_by"}
+      },
+      "additionalProperties": {
+        "description": "Estimated frequencies for tip (or node) identified by this key",
+        "type": "object",
+        "properties": {
+          "frequencies": {
+            "type": "array",
+            "items": {"type": "number"}
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "`augur frequencies` with input gene `--alignments` and `--method=diffusion`",
+      "type": "object",
+      "required": ["pivots"],
+      "properties": {
+        "pivots": {"$ref": "#/$defs/pivots"},
+        "generated_by": {"$ref": "#/$defs/generated_by"}
+      },
+      "patternProperties": {
+        "^(.+):counts$": {
+          "description": "Counts for gene alignment position+state identified by this key (<GENE>:counts)",
+          "type": "array",
+          "items": {"type": "integer"}
+        },
+        "^(.+):([0-9]+)(.+)$": {
+          "description": "Estimated frequencies for gene alignment position+state identified by this key (<GENE>:<POSITION><STATE>)",
+          "type": "array",
+          "items": {"type": "number"}
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "`augur frequencies` with input gene `--alignments` and `--method=kde`",
+      "type": "object",
+      "required": ["pivots"],
+      "properties": {
+        "pivots": {"$ref": "#/$defs/pivots"},
+        "generated_by": {"$ref": "#/$defs/generated_by"}
+      },
+      "patternProperties": {
+        "^(.+):([0-9]+)(.+)$": {
+          "description": "Estimated frequencies for gene alignment position+state identified by this key (<GENE>:<POSITION><STATE>)",
+          "type": "array",
+          "items": {"type": "number"}
+        }
+      },
+      "additionalProperties": false
+    }
+  ],
+  "$defs": {
+    "pivots": {
+      "description": "Pivot dates as floating point numbers (YYYY.nnnnnn)",
+      "type": "array",
+      "items": {"type": "number"},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "generated_by": {
+      "description": "Information about the software which produced the file",
+      "type": "object",
+      "properties": {
+        "program": {"type": "string"},
+        "version": {"type": "string"}
+      }
+    }
+  }
+}

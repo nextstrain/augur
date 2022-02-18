@@ -1,0 +1,42 @@
+
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$id": "https://nextstrain.org/schemas/dataset/tip-frequencies",
+  "title": "Nextstrain tip-frequencies sidecar for datasets",
+  "description": "Typically produced by Augur (with `augur frequencies --method kde --tree …`) and consumed by Auspice.  Note that the full range of output forms from `augur frequencies` is broader than this, see <https://nextstrain.org/schemas/augur/frequencies>.",
+  "$comment": "For historical context (some, not complete) on the development of this format, see <https://github.com/nextstrain/augur/pull/83> and <https://github.com/nextstrain/augur/issues/84>.",
+  "type": "object",
+  "required": ["pivots"],
+  "properties": {
+    "pivots": {
+      "description": "Pivot dates as floating point numbers (YYYY.nnnnnn)",
+      "type": "array",
+      "items": {"type": "number"},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "projection_pivot": {
+      "description": "Pivot at which estimates are projected into the future.  This property is understood by Auspice but only produced by custom generators; it is not produced by `augur frequencies`.",
+      "type": "number"
+    },
+    "generated_by": {
+      "description": "Information about the software which produced the file",
+      "type": "object",
+      "properties": {
+        "program": {"type": "string"},
+        "version": {"type": "string"}
+      }
+    }
+  },
+  "additionalProperties": {
+    "description": "Estimated frequencies for tip (or node) identified by this key",
+    "type": "object",
+    "properties": {
+      "frequencies": {
+        "type": "array",
+        "items": {"type": "number"}
+      }
+    },
+    "additionalProperties": false
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$id": "https://nextstrain.org/schemas/dataset/root-sequence",
+  "title": "Nextstrain root-sequence sidecar for datasets",
+  "description": "Typically produced by Augur and consumed by Auspice.  Applicable to the `--root-sequence` output of `augur export v2` as well as the `--output-sequence` option of `augur export v1`.",
+  "oneOf": [
+    {
+      "$comment": "This is sort of weird, but `augur export v1` can explicitly produce an empty object.",
+      "description": "An empty object",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    {
+      "description": "An object containing at least a \"nuc\" key and optionally additional keys for genome annotations (e.g. genes)",
+      "type": "object",
+      "required": ["nuc"],
+      "properties": {
+        "nuc": {
+          "description": "Nucleotide sequence of whole genome (from the output of `augur ancestral`)",
+          "type": "string"
+        }
+      },
+      "patternProperties": {
+        "^[a-zA-Z0-9*_-]+$": {
+          "$comment": "This pattern is the same pattern used in the corresponding parts of schema-export-v2.json.",
+          "description": "Amino acid sequence of genome annotation (e.g. gene) identified by this key (from the output of `augur translate`)",
+          "type": "string"
+        }
+      }
+    }
+  ]
+}
