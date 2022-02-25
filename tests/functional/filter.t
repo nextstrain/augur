@@ -352,6 +352,7 @@ Confirm that filtering omits strains without metadata or sequences.
 The input sequences are missing one strain that is in the metadata.
 The metadata are missing one strain that has a sequence.
 The list of strains to include has one strain with no metadata/sequence and one strain with information that would have been filtered by country.
+The sequence index has one strain with invalid nucleotides.
 The query initially filters 3 strains from Colombia, one of which is added back by the include.
 
   $ ${AUGUR} filter \
@@ -363,12 +364,13 @@ The query initially filters 3 strains from Colombia, one of which is added back 
   >  --include filter/include.txt \
   >  --output-strains "$TMP/filtered_strains.txt" \
   >  --output-log "$TMP/filtered_log.tsv"
-  4 strains were dropped during filtering
+  5 strains were dropped during filtering
   \t1 had no metadata (esc)
   \t1 had no sequence data (esc)
   \t3 of these were filtered out by the query: "country != 'Colombia'" (esc)
+  \t1 of these were dropped because they had non-nucleotide characters (esc)
   \t1 strains were added back because they were in filter/include.txt (esc)
-  9 strains passed all filters
+  8 strains passed all filters
 
   $ diff -u <(sort -k 1,1 filter/filtered_log.tsv) <(sort -k 1,1 "$TMP/filtered_log.tsv")
   $ rm -f "$TMP/filtered_strains.txt"
@@ -411,6 +413,16 @@ This should fail with a helpful error message.
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
   ERROR: You must specify a number of sequences per group or maximum sequences to subsample.
   [1]
+
+Filter out a sequence with invalid nucleotides.
+
+  $ ${AUGUR} filter \
+  >  --sequence-index filter/sequence_index.tsv \
+  >  --metadata filter/metadata.tsv \
+  >  --non-nucleotide \
+  >  --output-metadata "$TMP/filtered_metadata.tsv" > /dev/null
+  $ wc -l "$TMP/filtered_metadata.tsv"
+  \s*11 .* (re)
 
 Error on duplicates in metadata within same chunk.
 
