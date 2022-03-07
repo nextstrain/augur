@@ -1,0 +1,150 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$id": "https://nextstrain.org/schemas/dataset/measurements",
+    "title": "Nextstrain measurements sidecar for datasets",
+    "description": "Typically produced by Augur and consumed by Auspice.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["collections"],
+    "properties": {
+        "default_collection": {
+            "description": "Default collection to display. The value must be a `key` in one of the objects of the collections array. Optional -- if not provided, first collection will be displayed",
+            "type": "string"
+        },
+        "collections": {
+            "description": "Collections of measurements and their configurations for display in Auspice. Order of the collections determines the order they are shown in the collections dropdown.",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "description": "A single collection of related measurements and the collection's display config",
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["key", "groupings", "x_axis_label", "measurements"],
+                "properties": {
+                    "key": {
+                        "description": "The short name of the collection that is only used internally within Auspice. Each collection is expected to have a unique key.",
+                        "type": "string"
+                    },
+                    "title": {
+                        "description": "The title to display in the collections dropdown and panel title. Optional -- if not provided, then `key` will be used",
+                        "type": "string"
+                    },
+                    "fields": {
+                        "description": "Custom field order and display titles. Order of the fields determines the order they are shown in the measurement hover display. Optional -- if not provided, then the key of the field will be displayed in alphabetical order.",
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                            "description": "A single field of the measurements",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["key"],
+                            "properties": {
+                                "key": {
+                                    "description": "The property name of the field within the measurement object",
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "description": "The display title for the field. Optional -- if not provided, then `key` will be used",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "groupings": {
+                        "description": "The available group by fields for measurements. Order of the group by fields determines the order they are shown in the group by dropdown.",
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                            "description": "A single group by field for measurements",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["key"],
+                            "properties": {
+                                "key": {
+                                    "description": "The property name of the group by field within the measurement object",
+                                    "type": "string"
+                                },
+                                "order": {
+                                    "description": "A custom order of group by values to customize the display order of the subplots when using group by field",
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                        "description": "A single value of the group by field present in measurements",
+                                        "type": ["string", "number", "boolean"]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "filters": {
+                        "description": "The available filter options for measurements. Order of the filter options determines the order they are shown in the filter dropdown. Optional -- if not provided, then all fields will be available as filters.",
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                            "description": "The property name of the filter field within the measurement object",
+                            "type": "string"
+                        }
+                    },
+                    "x_axis_label": {
+                        "description": "The short label to display for the x-axis that describes the `value` of the measurements in a collection",
+                        "type": "string"
+                    },
+                    "threshold": {
+                        "description": "A numeric measurement threshold to be displayed as a single grey line shared across subplots. Optional -- if not provided, no threshold will be displayed",
+                        "type": "number"
+                    },
+                    "display_defaults": {
+                        "description": "Default display options of the collection",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "minProperty": 1,
+                        "properties": {
+                            "group_by": {
+                                "description": "Default group by field name that must be included as a group by option in the groupings array. Optional -- if not provided, first group by option will be used",
+                                "type": "string"
+                            },
+                            "measurements_display": {
+                                "description": "Dictates how the measurements are displayed, either as the raw data points or as the means of values grouped by the tree color-by attribute",
+                                "type": "string",
+                                "enum": ["raw", "mean"]
+                            },
+                            "show_overall_mean": {
+                                "description": "Should the overall mean per group be displayed by default?",
+                                "type": "boolean"
+                            },
+                            "show_threshold": {
+                                "description": "Should the threshold line be displayed by default? Ignored if no threshold has been provided for collection",
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "measurements": {
+                        "description": "All measurements for a single collection",
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                            "description": "A single measurement for a sample and it's associated metadata. At least one of the metadata properties should be a group by option",
+                            "type": "object",
+                            "required": ["strain", "value"],
+                            "minProperties": 3,
+                            "properties": {
+                                "strain": {
+                                    "description": "The name of the sample that matches the name of the sample within the tree",
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "description": "The numeric value of the measurement",
+                                    "type": "number"
+                                }
+                            },
+                            "additionalProperties": {
+                                "description": "Metadata associated with the measurement. Only metadata properties included in the groupings config will be included in the group by dropdown, but all metadata properties will be available as a filter",
+                                "type": ["string", "number", "boolean"]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
