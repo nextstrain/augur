@@ -792,6 +792,7 @@ def register_arguments_v2(subparsers):
     )
     optional_settings.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
     optional_settings.add_argument('--include-root-sequence', action="store_true", help="Export an additional JSON containing the root sequence (reference sequence for vcf) used to identify mutations. The filename will follow the pattern of <OUTPUT>_root-sequence.json for a main auspice JSON of <OUTPUT>.json")
+    optional_settings.add_argument('--skip-validation', action="store_true", help="skip validation of input/output files. Use at your own risk!")
 
     return v2
 
@@ -903,12 +904,13 @@ def get_config(args):
     if not args.auspice_config:
         return {}
     config = read_config(args.auspice_config)
-    try:
-        print("Validating config file {} against the JSON schema".format(args.auspice_config))
-        validate_auspice_config_v2(args.auspice_config)
-    except ValidateError:
-        print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
-        sys.exit(2)
+    if not args.skip_validation:
+        try:
+            print("Validating config file {} against the JSON schema".format(args.auspice_config))
+            validate_auspice_config_v2(args.auspice_config)
+        except ValidateError:
+            print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
+            sys.exit(2)
     # Print a warning about the inclusion of "vaccine_choices" which are _unused_ by `export v2`
     # (They are in the schema as this allows v1-compat configs to be used)
     if config.get("vaccine_choices"):
@@ -993,7 +995,8 @@ def run_v2(args):
             fatal("Root sequence output was requested, but the node data provided is missing a 'reference' key.")
 
     # validate outputs
-    validate_data_json(args.output)
+    if not args.skip_validation:
+        validate_data_json(args.output)
 
     if deprecationWarningsEmitted:
         print("\n------------------------")
