@@ -31,3 +31,15 @@ Export with auspice config JSON which defines scale & legend settings
   $ python3 "$TESTDIR/../../scripts/diff_jsons.py"  export_v2/dataset1.json "$TMP/dataset1.json" \
   >   --exclude-paths "root['meta']['updated']"
   {}
+
+
+Export with auspice config JSON with an extensions block
+  $ ${AUGUR} export v2 \
+  >   --tree export_v2/tree.nwk \
+  >   --node-data export_v2/div_node-data.json export_v2/location_node-data.json \
+  >   --auspice-config export_v2/auspice_config2.json \
+  >   --output "$TMP/dataset2.json" &>/dev/null
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py"  export_v2/dataset2.json "$TMP/dataset2.json" \
+  >   --exclude-paths "root['meta']['updated']"
+  {}

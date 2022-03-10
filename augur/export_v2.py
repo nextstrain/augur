@@ -972,6 +972,10 @@ def run_v2(args):
     set_panels(data_json, config, args.panels)
     set_data_provenance(data_json, config)
 
+    # pass through any extensions block in the auspice config JSON without any changes / checking
+    if config.get("extensions"):
+        data_json["extensions"] = config["extensions"]
+
     # Write outputs - the (unified) dataset JSON intended for auspice & perhaps the ref root-sequence JSON
     indent = {"indent": None} if args.minify_json else {}
     write_json(data=data_json, file_name=args.output, include_version=False, **indent)
