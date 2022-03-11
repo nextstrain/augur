@@ -623,7 +623,7 @@ def construct_filters(args, sequence_index):
         is_vcf = filename_is_vcf(args.sequences)
 
         if is_vcf: #doesn't make sense for VCF, ignore.
-            print("WARNING: Cannot use min_length for VCF files. Ignoring...")
+            print("WARNING: Cannot use min_length for VCF files. Ignoring...", file=sys.stderr)
         else:
             exclude_by.append((
                 filter_by_sequence_length,
@@ -1744,7 +1744,7 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, allow_prob
         )
     except TooManyGroupsError as error:
         if allow_probabilistic:
-            print(f"WARNING: {error}")
+            print(f"WARNING: {error}", file=sys.stderr)
             sequences_per_group = _calculate_fractional_sequences_per_group(
                 target_max_value,
                 counts_per_group,

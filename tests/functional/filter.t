@@ -101,6 +101,7 @@ Explicitly use probabilistic subsampling to handle the case when there are more 
   >  --subsample-seed 314159 \
   >  --probabilistic-sampling \
   >  --output-strains "$TMP/filtered_strains_probabilistic.txt" > /dev/null
+  WARNING: Asked to provide at most 5 sequences, but there are 8 groups.
 
 Using the default probabilistic subsampling, should work the same as the previous case.
 
@@ -113,6 +114,7 @@ Using the default probabilistic subsampling, should work the same as the previou
   >  --subsample-max-sequences 5 \
   >  --subsample-seed 314159 \
   >  --output-strains "$TMP/filtered_strains_default.txt" > /dev/null
+  WARNING: Asked to provide at most 5 sequences, but there are 8 groups.
 
 By setting the subsample seed above, we should get the same results for both runs.
 
@@ -394,6 +396,7 @@ Strains with ambiguous years or months should be dropped and logged.
   >  --subsample-max-sequences 5 \
   >  --output-strains "$TMP/filtered_strains.txt" \
   >  --output-log "$TMP/filtered_log.tsv" > /dev/null
+  WARNING: Asked to provide at most 5 sequences, but there are 6 groups.
   $ grep "SG_018" "$TMP/filtered_log.tsv" | cut -f 1-2
   SG_018\tskip_group_by_with_ambiguous_month (esc)
   $ grep "COL/FLR_00024/2015" "$TMP/filtered_log.tsv" | cut -f 1-2
