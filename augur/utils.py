@@ -10,7 +10,7 @@ import subprocess
 import shlex
 from contextlib import contextmanager
 from treetime.utils import numeric_date
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from pkg_resources import resource_stream
 from io import TextIOWrapper
 from .__version__ import __version__
@@ -256,9 +256,9 @@ def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSO
 
     if include_version:
         data["generated_by"] = {"program": "augur", "version": get_augur_version()}
-
     with open(file_name, 'w', encoding='utf-8') as handle:
-        json.dump(data, handle, indent=indent, sort_keys=True)
+        sort_keys = False if isinstance(data, OrderedDict) else True
+        json.dump(data, handle, indent=indent, sort_keys=sort_keys)
 
 
 def load_features(reference, feature_names=None):
