@@ -230,6 +230,10 @@
                     }
                 }
             }
+        },
+        "extensions": {
+            "description": "Data to be passed through to the the resulting dataset JSON",
+            "$comment": "Any type is accepted"
         }
     }
 }

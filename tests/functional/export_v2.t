@@ -31,3 +31,37 @@ Export with auspice config JSON which defines scale & legend settings
   $ python3 "$TESTDIR/../../scripts/diff_jsons.py"  export_v2/dataset1.json "$TMP/dataset1.json" \
   >   --exclude-paths "root['meta']['updated']"
   {}
+
+
+Export with auspice config JSON with an extensions block
+  $ ${AUGUR} export v2 \
+  >   --tree export_v2/tree.nwk \
+  >   --node-data export_v2/div_node-data.json export_v2/location_node-data.json \
+  >   --auspice-config export_v2/auspice_config2.json \
+  >   --output "$TMP/dataset2.json" &>/dev/null
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py"  export_v2/dataset2.json "$TMP/dataset2.json" \
+  >   --exclude-paths "root['meta']['updated']"
+  {}
+
+# auspice_config3.json is the same as auspice_config2.json but with an extra key which the schema does not allow.
+# Running without --skip-validation should result in an error
+# Message printed: "Validation of export_v2/auspice_config3.json failed."
+  $ ${AUGUR} export v2 \
+  >   --tree export_v2/tree.nwk \
+  >   --node-data export_v2/div_node-data.json export_v2/location_node-data.json \
+  >   --auspice-config export_v2/auspice_config3.json \
+  >   --output "$TMP/dataset2.json" &>/dev/null
+  [2]
+
+# Skipping validation gives us the same results as `auspice_config2.json`
+  $ ${AUGUR} export v2 \
+  >   --tree export_v2/tree.nwk \
+  >   --node-data export_v2/div_node-data.json export_v2/location_node-data.json \
+  >   --auspice-config export_v2/auspice_config3.json \
+  >   --output "$TMP/dataset3.json" \
+  >   --skip-validation &>/dev/null
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py"  export_v2/dataset2.json "$TMP/dataset3.json" \
+  >   --exclude-paths "root['meta']['updated']"
+  {}

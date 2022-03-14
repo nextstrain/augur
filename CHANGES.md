@@ -2,6 +2,17 @@
 
 ## __NEXT__
 
+### Major Changes
+
+### Features
+
+* export: allow an extensions block in auspice config & dataset JSONs [#865][] (@jameshadfield)
+* export: allow skipping of input/output schema validation [#865][] (@jameshadfield)
+
+### Bug Fixes
+
+[#865]: https://github.com/nextstrain/augur/pull/865
+
 
 ## 14.0.0 (8 February 2022)
 

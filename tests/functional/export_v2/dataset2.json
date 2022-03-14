@@ -1,0 +1,228 @@
+{
+  "meta": {
+    "colorings": [
+      {
+        "key": "location",
+        "legend": [
+          {
+            "display": "\u03b1",
+            "value": "alpha"
+          },
+          {
+            "value": "beta"
+          }
+        ],
+        "scale": [
+          [
+            "beta",
+            "#bd0026"
+          ],
+          [
+            "gamma",
+            "#6a51a3"
+          ]
+        ],
+        "title": "Location",
+        "type": "categorical"
+      },
+      {
+        "key": "mutation_length",
+        "legend": [
+          {
+            "bounds": [
+              -1,
+              2
+            ],
+            "display": "0-2",
+            "value": 1
+          },
+          {
+            "bounds": [
+              2,
+              5
+            ],
+            "display": "3-5",
+            "value": 3
+          },
+          {
+            "bounds": [
+              5,
+              10
+            ],
+            "display": ">5",
+            "value": 5
+          }
+        ],
+        "scale": [
+          [
+            1,
+            "#081d58"
+          ],
+          [
+            3,
+            "#1d91c0"
+          ],
+          [
+            5,
+            "#c7e9b4"
+          ]
+        ],
+        "title": "Mutations per branch",
+        "type": "continuous"
+      },
+      {
+        "key": "location",
+        "legend": [
+          {
+            "display": "\u03b1",
+            "value": "alpha"
+          },
+          {
+            "value": "beta"
+          }
+        ],
+        "scale": [
+          [
+            "beta",
+            "#bd0026"
+          ],
+          [
+            "gamma",
+            "#6a51a3"
+          ]
+        ],
+        "title": "Location",
+        "type": "categorical"
+      }
+    ],
+    "filters": [
+      "location"
+    ],
+    "panels": [
+      "tree"
+    ],
+    "title": "Minimal config with an extensions block",
+    "updated": "2021-06-09"
+  },
+  "tree": {
+    "branch_attrs": {},
+    "children": [
+      {
+        "branch_attrs": {},
+        "name": "tipA",
+        "node_attrs": {
+          "div": 1,
+          "location": {
+            "value": "delta"
+          },
+          "mutation_length": {
+            "value": 1
+          }
+        }
+      },
+      {
+        "branch_attrs": {},
+        "children": [
+          {
+            "branch_attrs": {},
+            "name": "tipB",
+            "node_attrs": {
+              "div": 3,
+              "location": {
+                "value": "gamma"
+              },
+              "mutation_length": {
+                "value": 1
+              }
+            }
+          },
+          {
+            "branch_attrs": {},
+            "name": "tipC",
+            "node_attrs": {
+              "div": 3,
+              "location": {
+                "value": "gamma"
+              },
+              "mutation_length": {
+                "value": 1
+              }
+            }
+          }
+        ],
+        "name": "internalBC",
+        "node_attrs": {
+          "div": 2,
+          "mutation_length": {
+            "value": 2
+          }
+        }
+      },
+      {
+        "branch_attrs": {},
+        "children": [
+          {
+            "branch_attrs": {},
+            "name": "tipD",
+            "node_attrs": {
+              "div": 8,
+              "location": {
+                "value": "alpha"
+              },
+              "mutation_length": {
+                "value": 3
+              }
+            }
+          },
+          {
+            "branch_attrs": {},
+            "name": "tipE",
+            "node_attrs": {
+              "div": 9,
+              "location": {
+                "value": "alpha"
+              },
+              "mutation_length": {
+                "value": 4
+              }
+            }
+          },
+          {
+            "branch_attrs": {},
+            "name": "tipF",
+            "node_attrs": {
+              "div": 6,
+              "location": {
+                "value": "beta"
+              },
+              "mutation_length": {
+                "value": 1
+              }
+            }
+          }
+        ],
+        "name": "internalDEF",
+        "node_attrs": {
+          "div": 5,
+          "location": {
+            "value": "alpha"
+          },
+          "mutation_length": {
+            "value": 5
+          }
+        }
+      }
+    ],
+    "name": "ROOT",
+    "node_attrs": {
+      "div": 0,
+      "mutation_length": {
+        "value": 0
+      }
+    }
+  },
+  "version": "v2",
+  "extensions": {
+    "some_key": "some_value"
+  }
+}
