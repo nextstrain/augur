@@ -1106,7 +1106,7 @@ def register_arguments(parser):
     metadata_filter_group.add_argument(
         '--query',
         help="""Filter samples by attribute.
-        Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.
+        Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#the-query-method for syntax.
         (e.g., --query "country == 'Colombia'" or --query "(country == 'USA' & (division == 'Washington'))")"""
     )
     metadata_filter_group.add_argument('--min-date', type=numeric_date, help="minimal cutoff for date, the cutoff date is inclusive; may be specified as an Augur-style numeric date (with the year as the integer part) or YYYY-MM-DD")
