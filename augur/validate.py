@@ -126,6 +126,13 @@ def measurements(measurements_json, **kwargs):
     return measurements
 
 
+def measurements_collection_config(collection_config_json, **kwargs):
+    schema = load_json_schema("schema-measurements-collection-config.json")
+    collection_config = load_json(collection_config_json)
+    validate_json(collection_config, schema, collection_config_json)
+    return collection_config
+
+
 def register_arguments(parser):
     subparsers = parser.add_subparsers(dest="subcommand", help="Which file(s) do you want to validate?")
 
@@ -141,6 +148,9 @@ def register_arguments(parser):
 
     subparsers.add_parser("measurements", help="validate measurements JSON intended for auspice measurements panel") \
         .add_argument("measurements_json", metavar="JSON", help="exported measurements JSON")
+
+    subparsers.add_parser("measurements-collection-config", help="validate measurement collection config intended for `augur measurements export`") \
+        .add_argument("collection_config_json", metavar="JSON", help="collection config JSON")
 
 def run(args):
     try:
