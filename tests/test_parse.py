@@ -13,17 +13,17 @@ from augur import parse
 class TestParse:
     def test_fix_dates(self):
         full_date = "4-5-2020"
-        assert parse.fix_dates(full_date) == "2020-05-04"
-        assert parse.fix_dates(full_date, dayfirst=False) == "2020-04-05"
+        assert parse.fix_date_func(full_date) == "2020-05-04"
+        assert parse.fix_date_func(full_date, dayfirst=False) == "2020-04-05"
         partial_date_no_month = "2020-04"
-        assert parse.fix_dates(partial_date_no_month) == "2020-04-XX"
-        assert parse.fix_dates(partial_date_no_month, dayfirst=False) == "2020-04-XX"
+        assert parse.fix_date_func(partial_date_no_month) == "2020-04-XX"
+        assert parse.fix_date_func(partial_date_no_month, dayfirst=False) == "2020-04-XX"
 
         partial_date_only_year = "2020"
-        assert parse.fix_dates(partial_date_only_year) == "2020-XX-XX"
+        assert parse.fix_date_func(partial_date_only_year) == "2020-XX-XX"
 
         malformed_date = "Aaasd123AS"
-        assert(parse.fix_dates(malformed_date)) == malformed_date
+        assert(parse.fix_date_func(malformed_date)) == malformed_date
         print('here')
 
     def test_prettify(self):
