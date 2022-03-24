@@ -17,7 +17,7 @@ forbidden_characters = str.maketrans(
      '\\': '_'}
 )
 
-def fix_dates(d, dayfirst=True):
+def fix_date_func(d, dayfirst=True):
     '''
     attempt to parse a date string using pandas date parser. If ambiguous,
     the argument 'dayfirst' determines whether month or day is assumed to be
@@ -115,7 +115,7 @@ def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettif
 
     # parse dates and convert to a canonical format
     if fix_dates and 'date' in metadata:
-        metadata['date'] = fix_dates(
+        metadata['date'] = fix_date_func(
             metadata['date'],
             dayfirst=fix_dates=='dayfirst'
         )
