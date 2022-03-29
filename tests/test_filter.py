@@ -9,6 +9,8 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
+from freezegun import freeze_time
+
 import augur.filter
 from augur.utils import read_metadata
 
@@ -265,3 +267,92 @@ class TestFilter:
         augur.filter.run(args)
         output = SeqIO.to_dict(SeqIO.parse(out_fn, "fasta"))
         assert list(output.keys()) == ["SEQ_1", "SEQ_2", "SEQ_3"]
+
+    @freeze_time("2020-03-25")
+    @pytest.mark.parametrize(
+        "argparse_params, metadata_rows, output_sorted_expected",
+        [
+            (
+                "--min-date 1M",
+                (
+                    ("SEQ_1","2020-01-25"),
+                    ("SEQ_2","2020-02-25"),
+                    ("SEQ_3","2020-03-25"),
+                ),
+                ["SEQ_2", "SEQ_3"],
+            ),
+            (
+                "--min-date P1M",
+                (
+                    ("SEQ_1","2020-01-25"),
+                    ("SEQ_2","2020-02-25"),
+                    ("SEQ_3","2020-03-25"),
+                ),
+                ["SEQ_2", "SEQ_3"],
+            ),
+            (
+                "--min-date 2Y",
+                (
+                    ("SEQ_1","2017-03-25"),
+                    ("SEQ_2","2018-03-25"),
+                    ("SEQ_3","2019-03-25"),
+                ),
+                ["SEQ_2", "SEQ_3"],
+            ),
+            (
+                "--min-date 4W",
+                (
+                    ("SEQ_1","2020-02-25"),
+                    ("SEQ_2","2020-02-26"),
+                    ("SEQ_3","2020-03-25"),
+                ),
+                ["SEQ_2", "SEQ_3"],
+            ),
+            (
+                "--min-date 1Y2W5D",
+                (
+                    ("SEQ_1","2019-03-05"),
+                    ("SEQ_2","2019-03-06"),
+                    ("SEQ_3","2019-03-07"),
+                ),
+                ["SEQ_2", "SEQ_3"],
+            ),
+            (
+                "--max-date 1M",
+                (
+                    ("SEQ_1","2020-01-25"),
+                    ("SEQ_2","2020-02-25"),
+                    ("SEQ_3","2020-03-25"),
+                ),
+                ["SEQ_1", "SEQ_2"],
+            ),
+            (
+                "--max-date P1M",
+                (
+                    ("SEQ_1","2020-01-25"),
+                    ("SEQ_2","2020-02-25"),
+                    ("SEQ_3","2020-03-25"),
+                ),
+                ["SEQ_1", "SEQ_2"],
+            ),
+            (
+                "--max-date 1D",
+                (
+                    ("SEQ_1","2020-03-23"),
+                    ("SEQ_2","2020-03-24"),
+                    ("SEQ_3","2020-03-25"),
+                ),
+                ["SEQ_1", "SEQ_2"],
+            ),
+        ],
+    )
+    def test_filter_relative_dates(self, tmpdir, argparser, argparse_params, metadata_rows, output_sorted_expected):
+        """Test that various relative dates work"""
+        out_fn = str(tmpdir / "filtered.txt")
+        meta_fn = write_metadata(tmpdir, (("strain","date"),
+                                          *metadata_rows))
+        args = argparser(f'--metadata {meta_fn} --output-strains {out_fn} {argparse_params}')
+        augur.filter.run(args)
+        with open(out_fn) as f:
+            output_sorted = sorted(line.rstrip() for line in f)
+        assert output_sorted == output_sorted_expected
