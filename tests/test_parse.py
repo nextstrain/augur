@@ -11,7 +11,7 @@ from augur import parse
 
 
 class TestParse:
-    def test_fix_dates(self):
+    def test_fix_dates(self, capsys):
         full_date = "4-5-2020"
         assert parse.fix_dates(full_date) == "2020-05-04"
         assert parse.fix_dates(full_date, dayfirst=False) == "2020-04-05"
@@ -22,9 +22,17 @@ class TestParse:
         partial_date_only_year = "2020"
         assert parse.fix_dates(partial_date_only_year) == "2020-XX-XX"
 
+        # We should allow valid ambiguous dates to pass through the function
+        # without a warning to the user.
+        valid_ambiguous_date = "2020-XX-XX"
+        assert parse.fix_dates(valid_ambiguous_date) == valid_ambiguous_date
+        assert "WARNING" not in capsys.readouterr().err
+
+        # We should warn the user when their dates cannot be parsed by pandas or
+        # as a valid ambiguous date.
         malformed_date = "Aaasd123AS"
         assert(parse.fix_dates(malformed_date)) == malformed_date
-        print('here')
+        assert "WARNING" in capsys.readouterr().err
 
     def test_prettify(self):
         # test trim
