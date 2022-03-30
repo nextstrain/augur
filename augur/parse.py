@@ -68,7 +68,7 @@ def prettify(x, trim=0, camelCase=False, etal=None, removeComma=False):
     return res
 
 
-def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettify_fields=None, fix_dates=None):
+def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettify_fields=None, fix_dates_format=None):
     """Parse a single sequence record into a sequence record and associated metadata.
 
     Parameters
@@ -88,7 +88,7 @@ def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettif
     prettify_fields : list or tuple
         a list of field names for which the values in those fields should be prettified.
 
-    fix_dates : str
+    fix_dates_format : str
         parse "date" field into the requested canonical format ("dayfirst" or "monthfirst").
 
     Returns
@@ -117,7 +117,7 @@ def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettif
     if fix_dates and 'date' in metadata:
         metadata['date'] = fix_dates(
             metadata['date'],
-            dayfirst=fix_dates=='dayfirst'
+            dayfirst=fix_dates_format=='dayfirst'
         )
 
     metadata["strain"] = sequence.id
