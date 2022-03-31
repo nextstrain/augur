@@ -1735,6 +1735,10 @@ def numeric_date(date):
     except (ValueError, isodate.ISO8601Error):
         pass
 
+    # This currently doesn't get exposed since argparse raises a SystemExit on invalid arguments.
+    # TODO: find a way to provide better errors for invalid dates.
+    raise ValueError(f"Unable to determine date from {date}.")
+
 
 def calculate_sequences_per_group(target_max_value, counts_per_group, allow_probabilistic=True):
     """Calculate the number of sequences per group for a given maximum number of

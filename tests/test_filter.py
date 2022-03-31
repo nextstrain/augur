@@ -356,3 +356,19 @@ class TestFilter:
         with open(out_fn) as f:
             output_sorted = sorted(line.rstrip() for line in f)
         assert output_sorted == output_sorted_expected
+
+    @freeze_time("2020-03-25")
+    @pytest.mark.parametrize(
+        "argparse_params",
+        [
+            "--max-date 3000Y",
+            "--max-date invalid",
+        ],
+    )
+    def test_filter_relative_dates_error(self, tmpdir, argparser, argparse_params):
+        """Test that invalid dates fail"""
+        out_fn = str(tmpdir / "filtered.txt")
+        meta_fn = write_metadata(tmpdir, (("strain","date"),
+                                          ("SEQ_1","2020-03-23")))
+        with pytest.raises(SystemExit):
+            argparser(f'--metadata {meta_fn} --output-strains {out_fn} {argparse_params}')
