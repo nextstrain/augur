@@ -364,7 +364,7 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
     str
         path to the new FASTA file from which sites have been excluded
     """
-    # Load zero-based excluded sites.
+    # Read 1-based excluded sites and store as 0-based sites.
     excluded_sites = load_mask_sites(excluded_sites_file)
 
     # Return the original alignment file, if no excluded sites were found.
