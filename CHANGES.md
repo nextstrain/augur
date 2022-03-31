@@ -2,17 +2,27 @@
 
 ## __NEXT__
 
-### Major Changes
-
 ### Features
 
-* export: allow an extensions block in auspice config & dataset JSONs [#865][] (@jameshadfield)
-* export: allow skipping of input/output schema validation [#865][] (@jameshadfield)
+* schemas: Extend export v2 schema to support an array of trees [#851][] (@tsibley)
+* schemas: Add JSON schemas for our root-sequence and tip-frequencies sidecars [#852][] (@tsibley)
+* schemas: Add JSON schema for measurements sidecar [#859][] (@joverlee521)
+* filter: Send warnings to stderr to be consistent with other warnings [#862][] (@victorlin)
+* export: Allow an extensions block in auspice config & dataset JSONs [#865][] (@jameshadfield)
+* export: Allow skipping of input/output schema validation [#865][] (@jameshadfield)
+* export:  Order keys in dataset for easier reading [#868][] (@jameshadfield)
 
 ### Bug Fixes
 
-[#865]: https://github.com/nextstrain/augur/pull/865
+* parse: Fix typo in internal variable name [#850][] (@emmahodcroft)
 
+[#850]: https://github.com/nextstrain/augur/pull/850
+[#851]: https://github.com/nextstrain/augur/pull/851
+[#852]: https://github.com/nextstrain/augur/pull/852
+[#859]: https://github.com/nextstrain/augur/pull/859
+[#862]: https://github.com/nextstrain/augur/pull/862
+[#865]: https://github.com/nextstrain/augur/pull/865
+[#868]: https://github.com/nextstrain/augur/pull/868
 
 ## 14.0.0 (8 February 2022)
 
