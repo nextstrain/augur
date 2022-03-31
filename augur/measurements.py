@@ -257,6 +257,22 @@ def export_measurements(args):
     validate_output_json(args['output_json'])
 
 
+def concat_measurements(args):
+    output = {
+        'collections': []
+    }
+    if args.get("default_collection"):
+        output['default_collection'] = args['default_collection']
+
+    for json in args['jsons']:
+        measurements = validate_measurements_json(json)
+        output['collections'].extend(measurements['collections'])
+
+    indent = {"indent": None} if args['minify_json'] else {}
+    write_json(output, args['output_json'], include_version=False, **indent)
+    validate_output_json(args['output_json'])
+
+
 def register_arguments(parser):
     subparsers = parser.add_subparsers(dest='subcommand')
     subparsers.required = True
@@ -329,7 +345,20 @@ def register_arguments(parser):
         help="Export JSON without indentation or line returns.")
 
 
+    concat = subparsers.add_parser("concat", help="Concatenate multiple measurements JSONs into a single JSON file")
+    concat.add_argument("--jsons", required=True, type=str, nargs="+", metavar="JSONs",
+        help="Measurement JSON files to concatenate.")
+    concat.add_argument("--default-collection", type=str,
+        help="The key of the default collection to display. " +
+             "If not provided, the first collection of the first JSON file will be displayed")
+    concat.add_argument("--minify-json", action="store_true",
+        help="Concat JSONs without indentation or line returns.")
+    concat.add_argument("--output-json", required=True, metavar="JSON", type=str,
+        help="Output JSON file")
+
 
 def run(args):
     if args.subcommand == 'export':
         return export_measurements(vars(args))
+    if args.subcommand == "concat":
+        return concat_measurements(vars(args))
