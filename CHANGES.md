@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 14.1.0 (31 March 2022)
+
 ### Features
 
 * schemas: Extend export v2 schema to support an array of trees [#851][] (@tsibley)
