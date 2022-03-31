@@ -1,0 +1,75 @@
+{
+  "collections": [
+    {
+      "display_defaults": {
+        "group_by": "field_1",
+        "measurements_display": "mean",
+        "show_overall_mean": true,
+        "show_threshold": true
+      },
+      "fields": [
+        {
+          "key": "field_1",
+          "title": "field_title_1"
+        },
+        {
+          "key": "field_2",
+          "title": "field_title_2"
+        },
+        {
+          "key": "field_3",
+          "title": "field_title_3"
+        }
+      ],
+      "filters": [
+        "field_1",
+        "field_2"
+      ],
+      "groupings": [
+        {
+          "key": "field_1",
+          "order": [
+            "value_3",
+            "value_1",
+            "value_2"
+          ]
+        },
+        {
+          "key": "field_2",
+          "order": [
+            "value_2",
+            "value_3",
+            "value_1"
+          ]
+        }
+      ],
+      "key": "config-collection",
+      "measurements": [
+        {
+          "field_1": "value_1",
+          "field_2": "value_1",
+          "field_3": "value_1",
+          "strain": "strain_1",
+          "value": 1.0
+        },
+        {
+          "field_1": "value_2",
+          "field_2": "value_2",
+          "field_3": "value_2",
+          "strain": "strain_2",
+          "value": 2.0
+        },
+        {
+          "field_1": "value_3",
+          "field_2": "value_3",
+          "field_3": "value_3",
+          "strain": "strain_3",
+          "value": 3.0
+        }
+      ],
+      "threshold": 2.0,
+      "title": "collection-display-title",
+      "x_axis_label": "label"
+    }
+  ]
+}

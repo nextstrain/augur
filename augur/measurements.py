@@ -1,12 +1,25 @@
 """
 Create JSON files suitable for visualization within the measurements panel of Auspice.
 """
+import argparse
 import os
 import pandas as pd
 import sys
 
 from .utils import write_json
-from .validate import measurements as validate_measurements_json, ValidateError
+from .validate import (
+    measurements as validate_measurements_json,
+    measurements_collection_config as validate_collection_config_json,
+    ValidateError
+)
+
+class HideAsFalseAction(argparse.Action):
+    """
+    Custom argparse Action that stores False for arguments passed as `--hide*`
+    and stores True for all other argument patterns.
+    """
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, option_string[2:6] != 'hide')
 
 
 def column_exists(collection, column, column_purpose):
@@ -114,6 +127,56 @@ def load_collection(collection, strain_column, value_column):
     return collection_df
 
 
+def get_collection_groupings(collection, grouping_columns):
+    """
+    Creates the groupings for the provided collection using the provided
+    grouping columns after verifying the columns exist in the collection.
+
+    Parameters
+    ----------
+    collection: pandas.DataFrame
+        The collection used to validate groupings
+    grouping_columns: list[str]
+        List of grouping column names
+
+    Returns
+    -------
+    list[dict] or None
+        The groupings for the collection config or None if all grouping columns are invalid
+    """
+    groupings = [{'key': col} for col in grouping_columns if column_exists(collection, col, "grouping")]
+
+    if not groupings:
+        print("ERROR: Provided grouping columns were invalid for provided collection.", file=sys.stderr)
+        return None
+
+    return groupings
+
+
+def override_config_with_args(config, args):
+    """
+    Overrides values in the config with values of provided command line args.
+
+    Parameter
+    ---------
+    config: dict
+        A collection config
+    args: dict
+        The __dict__ attribute of the parsed arguments from argparse
+    """
+    config_key_args = ['key', 'title', 'filters', 'x_axis_label', 'threshold']
+    display_default_args = ['group_by', 'measurements_display', 'show_overall_mean', 'show_threshold']
+
+    for key_arg in config_key_args:
+        if args.get(key_arg) is not None:
+            config[key_arg] = args[key_arg]
+
+    for default_arg in display_default_args:
+        if args.get(default_arg) is not None:
+            config['display_defaults'] = config.get('display_defaults', {})
+            config['display_defaults'][default_arg] = args[default_arg]
+
+
 def validate_output_json(output_json):
     """
     Validate the output JSON against the measurements schema
@@ -143,12 +206,42 @@ def export_measurements(args):
         print("ERROR: Loading of collection TSV was unsuccessful. See detailed errors above.", file=sys.stderr)
         sys.exit(1)
 
-    # Create collection output object with required keys
+    collection_config = {}
+    if args.get('collection_config'):
+        try:
+            collection_config = validate_collection_config_json(args['collection_config'])
+        except ValidateError:
+            print(
+                f"Validation of provided collection config JSON {args['collection_config']} failed. " +
+                "Please check the formatting of this file.",
+                file=sys.stderr
+            )
+            sys.exit(1)
+
+    groupings = collection_config.pop('groupings', None)
+    if args.get('grouping_column'):
+        groupings = get_collection_groupings(collection_df, args['grouping_column'])
+        if collection_config.get('display_defaults', {}).pop('group_by', None):
+            print(
+                "WARNING: The default group-by in the collection config has been removed " +
+                "because new groupings have been provided via the --grouping-column option.",
+                file=sys.stderr
+            )
+
+    if not groupings:
+        print("ERROR: Cannot create measurements JSON without valid groupings", file=sys.stderr)
+        sys.exit(1)
+
+    # Combine collection config with command line args
+    override_config_with_args(collection_config, args)
+
+    # Create collection output object with default values for required keys
     collection_output = {
-        'key': os.path.basename(args['collection']),
-        'groupings': [{'key': col} for col in args['grouping_column'] if column_exists(collection_df, col, "grouping")],
-        'x_axis_label': 'measurement values',
-        'measurements': collection_df.to_dict(orient='records')
+        'key': collection_config.pop('key', os.path.basename(args['collection'])),
+        'groupings': groupings,
+        'x_axis_label': collection_config.pop('x_axis_label', 'measurement values'),
+        'measurements': collection_df.to_dict(orient='records'),
+        **collection_config
     }
 
     # Create final output with single collection
@@ -169,24 +262,72 @@ def register_arguments(parser):
     subparsers.required = True
 
     export = subparsers.add_parser("export", help="Export a measurements JSON for a single collection")
-    export.add_argument("--collection", required=True, metavar="TSV",
+
+    required = export.add_argument_group(
+        title="REQUIRED"
+    )
+    required.add_argument("--collection", required=True, metavar="TSV",
         help="Collection of measurements and metadata in a TSV file. " +
              "Keep in mind duplicate columns will be renamed as 'X', 'X.1', 'X.2'...'X.N'")
-    export.add_argument("--strain-column", default="strain",
+    required.add_argument("--strain-column", default="strain",
         help="Name of the column containing strain names. " +
              "Provided column will be renamed to `strain` so please make sure no other columns are named `strain`. " +
-             "Strain names in this column should match the strain names in the corresponding Auspice dataset JSON.")
-    export.add_argument("--value-column", default="value",
+             "Strain names in this column should match the strain names in the corresponding Auspice dataset JSON. " +
+             "(default: %(default)s)")
+    required.add_argument("--value-column", default="value",
         help="Name of the column containing the numeric values to be plotted for the given collection. " +
-             "Provided column will be renamed to `value` so please make sure no other columns are named `value`. ")
-    export.add_argument("--grouping-column", required=True, nargs="+",
-        help="Name of the column(s) that should be used as grouping(s) for measurements.")
-    export.add_argument("--minify-json", action="store_true",
-        help="Export JSON without indentation or line returns.")
-    export.add_argument("--output-json", required=True, metavar="JSON", type=str,
+             "Provided column will be renamed to `value` so please make sure no other columns are named `value`. " +
+             "(default: %(default)s)")
+    required.add_argument("--output-json", required=True, metavar="JSON", type=str,
         help="Output JSON file. " +
              "The file name must follow the Auspice sidecar file naming convention to be recognized as a sidecar file. " +
              "See Nextstrain data format docs for more details.")
+
+    config = export.add_argument_group(
+        title="COLLECTION CONFIGURATION",
+        description="These options control the configuration of the collection for auspice." +
+                    "You can provide a config JSON (which includes all available options) or " +
+                    "command line arguments (which are more limited). " +
+                    "Command line arguments will override the values set in the config JSON."
+    )
+    config.add_argument("--collection-config", metavar="JSON",
+        help="Collection configuration file for advanced configurations. ")
+    config.add_argument("--grouping-column", nargs="+",
+        help="Name of the column(s) that should be used as grouping(s) for measurements. " +
+             "Note that if groupings are provided via command line args, the default group-by " +
+             "field in the config JSON will be dropped.")
+    config.add_argument("--key",
+        help="A short key name of the collection for internal use within auspice." +
+             "If not provided via config or command line option, the collection TSV filename will be used. ")
+    config.add_argument("--title",
+        help="The full title of the collection to display in the measurements panel title. " +
+             "If not provided via config or command line option, the panel's default title is 'Measurements'.")
+    config.add_argument("--x-axis-label",
+        help="The short label to display for the x-axis that describles the value of the measurements. " +
+             "If not provided via config or command line option, the panel's default x-axis label is 'measurements values'.")
+    config.add_argument("--threshold", type=float,
+        help="A measurements value threshold to be displayed as a single grey line shared across subplots.")
+    config.add_argument("--filters", nargs="+",
+        help="The columns that are to be used a filters for measurements. " +
+             "If not provided, all columns will be available as filters.")
+    config.add_argument("--group-by", type=str,
+        help="The default grouping column. If not provided, the first grouping will be used.")
+    config.add_argument("--measurements-display", type=str, choices=["raw", "mean"],
+        help="The default display of the measurements")
+
+    config.add_argument("--show-overall-mean", "--hide-overall-mean",
+        dest="show_overall_mean", action=HideAsFalseAction, nargs=0,
+        help="Show or hide the overall mean per group by default")
+    config.add_argument("--show-threshold", "--hide-threshold",
+        dest="show_threshold", action=HideAsFalseAction, nargs=0,
+        help="Show or hide the threshold by default. This will be ignored if no threshold is provided.")
+
+    optional_settings = export.add_argument_group(
+        title="OPTIONAL SETTINGS"
+    )
+    optional_settings.add_argument("--minify-json", action="store_true",
+        help="Export JSON without indentation or line returns.")
+
 
 
 def run(args):

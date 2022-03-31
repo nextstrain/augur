@@ -52,3 +52,52 @@ This is expected to fail.
   ERROR: The strain column and value column cannot be the same column.
   ERROR: Loading of collection TSV was unsuccessful. See detailed errors above.
   [1]
+
+Measurements export for a single collection using only command line configs.
+
+  $ ${AUGUR} measurements export \
+  >   --collection measurements_export/collection.tsv \
+  >   --grouping-column field_1 field_2 \
+  >   --key args-collection \
+  >   --title collection-display-title \
+  >   --x-axis-label label \
+  >   --threshold 2.0 \
+  >   --filters field_1 field_2 \
+  >   --group-by field_1 \
+  >   --measurements-display mean \
+  >   --show-overall-mean \
+  >   --show-threshold \
+  >   --output-json "$TMP/single_collection_with_args_measurements.json" &>/dev/null
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" measurements_export/single_collection_with_args_measurements.json "$TMP/single_collection_with_args_measurements.json"
+  {}
+
+Measurements export for a single collection using a collection config.
+
+  $ ${AUGUR} measurements export \
+  >   --collection measurements_export/collection.tsv \
+  >   --collection-config measurements_export/collection_config.json \
+  >   --output-json "$TMP/single_collection_with_config_measurements.json" &>/dev/null
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" measurements_export/single_collection_with_config_measurements.json "$TMP/single_collection_with_config_measurements.json"
+  {}
+
+Measurements export for a single collection using a collection config and command-line overrides.
+
+  $ ${AUGUR} measurements export \
+  >   --collection measurements_export/collection.tsv \
+  >   --collection-config measurements_export/collection_config.json \
+  >   --grouping-column field_3 \
+  >   --key override-collection \
+  >   --title override-collection-display-title \
+  >   --x-axis-label override-label \
+  >   --threshold 10.0 \
+  >   --filters field_3 \
+  >   --group-by field_3 \
+  >   --measurements-display raw \
+  >   --hide-overall-mean \
+  >   --hide-threshold \
+  >   --output-json "$TMP/single_collection_with_overrides_measurements.json" &>/dev/null
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" measurements_export/single_collection_with_overrides_measurements.json "$TMP/single_collection_with_overrides_measurements.json"
+  {}
