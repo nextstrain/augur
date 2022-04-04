@@ -10,7 +10,8 @@ Parse Zika sequences into sequences and metadata.
   >   --output-sequences "$TMP/sequences.fasta" \
   >   --output-metadata "$TMP/metadata.tsv" \
   >   --fields strain virus accession date region country division city db segment authors url title journal paper_url \
-  >   --prettify-fields region country division city
+  >   --prettify-fields region country division city \
+  >   --fix-dates monthfirst
 
   $ diff -u "parse/sequences.fasta" "$TMP/sequences.fasta"
   $ diff -u "parse/metadata.tsv" "$TMP/metadata.tsv"
@@ -23,7 +24,8 @@ Parse compressed Zika sequences into sequences and metadata.
   >   --output-sequences "$TMP/sequences.fasta" \
   >   --output-metadata "$TMP/metadata.tsv" \
   >   --fields strain virus accession date region country division city db segment authors url title journal paper_url \
-  >   --prettify-fields region country division city
+  >   --prettify-fields region country division city \
+  >   --fix-dates monthfirst
 
   $ diff -u "parse/sequences.fasta" "$TMP/sequences.fasta"
   $ diff -u "parse/metadata.tsv" "$TMP/metadata.tsv"

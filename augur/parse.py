@@ -2,8 +2,10 @@
 Parse delimited fields from FASTA sequence names into a TSV and FASTA file.
 """
 import pandas as pd
+import sys
 
 from .io import open_file, read_sequences, write_sequences
+from .utils import get_numerical_date_from_value
 
 forbidden_characters = str.maketrans(
     {' ': None,
@@ -38,8 +40,17 @@ def fix_dates(d, dayfirst=True):
             return "%d-%02d-XX"%(dto.year, dto.month)
         else:
             return "%d-%02d-%02d"%(dto.year, dto.month, dto.day)
-    except Exception as e:
-        print("WARNING: unable to parse %s as date"%d, e)
+    except ValueError as e:
+        # If the date can't be parsed by pandas above or as our own ambiguous
+        # date format (e.g., "2020-XX-XX"), let the user know.
+        try:
+            parsed_date = get_numerical_date_from_value(d, "%Y-%m-%d")
+        except ValueError:
+            parsed_date = None
+
+        if parsed_date is None:
+            print("WARNING: unable to parse %s as date"%d, e, file=sys.stderr)
+
         return d
 
 def prettify(x, trim=0, camelCase=False, etal=None, removeComma=False):
@@ -68,7 +79,7 @@ def prettify(x, trim=0, camelCase=False, etal=None, removeComma=False):
     return res
 
 
-def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettify_fields=None, fix_dates=None):
+def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettify_fields=None, fix_dates_format=None):
     """Parse a single sequence record into a sequence record and associated metadata.
 
     Parameters
@@ -88,7 +99,7 @@ def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettif
     prettify_fields : list or tuple
         a list of field names for which the values in those fields should be prettified.
 
-    fix_dates : str
+    fix_dates_format : str
         parse "date" field into the requested canonical format ("dayfirst" or "monthfirst").
 
     Returns
@@ -117,7 +128,7 @@ def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettif
     if fix_dates and 'date' in metadata:
         metadata['date'] = fix_dates(
             metadata['date'],
-            dayfirst=fix_dates=='dayfirst'
+            dayfirst=fix_dates_format=='dayfirst'
         )
 
     metadata["strain"] = sequence.id
