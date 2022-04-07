@@ -32,6 +32,7 @@ Submodules
    augur.import
    augur.import_beast
    augur.index
+   augur.io
    augur.lbi
    augur.mask
    augur.parse
