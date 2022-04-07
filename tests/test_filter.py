@@ -1,4 +1,5 @@
 import argparse
+from textwrap import dedent
 import numpy as np
 import random
 import shlex
@@ -359,16 +360,22 @@ class TestFilter:
 
     @freeze_time("2020-03-25")
     @pytest.mark.parametrize(
-        "argparse_params",
+        "argparse_flag, argparse_value",
         [
-            "--max-date 3000Y",
-            "--max-date invalid",
+            ("--max-date", "3000Y"),
+            ("--max-date", "invalid"),
         ],
     )
-    def test_filter_relative_dates_error(self, tmpdir, argparser, argparse_params):
+    def test_filter_relative_dates_error(self, tmpdir, argparser, argparse_flag, argparse_value):
         """Test that invalid dates fail"""
         out_fn = str(tmpdir / "filtered.txt")
         meta_fn = write_metadata(tmpdir, (("strain","date"),
                                           ("SEQ_1","2020-03-23")))
-        with pytest.raises(SystemExit):
-            argparser(f'--metadata {meta_fn} --output-strains {out_fn} {argparse_params}')
+        with pytest.raises(SystemExit) as e_info:
+            argparser(f'--metadata {meta_fn} --output-strains {out_fn} {argparse_flag} {argparse_value}')
+        assert e_info.value.__context__.message == dedent(f"""\
+            Unable to determine date from '{argparse_value}'. Ensure it is in one of the supported formats:
+            1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or
+            2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or
+            3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')
+        """)

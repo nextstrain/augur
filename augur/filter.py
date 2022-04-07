@@ -1,6 +1,7 @@
 """
 Filter and subsample a sequence set.
 """
+import argparse
 from Bio import SeqIO
 from collections import defaultdict
 import csv
@@ -18,6 +19,7 @@ import re
 import sys
 from tempfile import NamedTemporaryFile
 import treetime.utils
+from textwrap import dedent
 from typing import Collection
 
 from .index import index_sequences, index_vcf
@@ -30,6 +32,12 @@ SEQUENCE_ONLY_FILTERS = (
     "min_length",
     "non_nucleotide",
 )
+
+SUPPORTED_DATE_HELP_TEXT = dedent("""\
+    1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or
+    2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or
+    3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')
+""")
 
 
 class FilterException(Exception):
@@ -1111,15 +1119,9 @@ def register_arguments(parser):
         (e.g., --query "country == 'Colombia'" or --query "(country == 'USA' & (division == 'Washington'))")"""
     )
     metadata_filter_group.add_argument('--min-date', type=numeric_date,
-        help="""minimal cutoff for date, the cutoff date is inclusive; may be specified as:
-        1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42)
-        2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04')
-        3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')""")
+        help=f"""minimal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}""")
     metadata_filter_group.add_argument('--max-date', type=numeric_date,
-        help="""maximal cutoff for date, the cutoff date is inclusive; may be specified as:
-        1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42)
-        2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04')
-        3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')""")
+        help=f"""maximal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}""")
     metadata_filter_group.add_argument('--exclude-ambiguous-dates-by', choices=['any', 'day', 'month', 'year'],
                                 help='Exclude ambiguous dates by day (e.g., 2020-09-XX), month (e.g., 2020-XX-XX), year (e.g., 200X-10-01), or any date fields. An ambiguous year makes the corresponding month and day ambiguous, too, even if those fields have unambiguous values (e.g., "201X-10-01"). Similarly, an ambiguous month makes the corresponding day ambiguous (e.g., "2010-XX-01").')
     metadata_filter_group.add_argument('--exclude', type=str, nargs="+", help="file(s) with list of strains to exclude")
@@ -1735,9 +1737,7 @@ def numeric_date(date):
     except (ValueError, isodate.ISO8601Error):
         pass
 
-    # This currently doesn't get exposed since argparse raises a SystemExit on invalid arguments.
-    # TODO: find a way to provide better errors for invalid dates.
-    raise ValueError(f"Unable to determine date from {date}.")
+    raise argparse.ArgumentTypeError(f"""Unable to determine date from '{date}'. Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}""")
 
 
 def calculate_sequences_per_group(target_max_value, counts_per_group, allow_probabilistic=True):
