@@ -101,6 +101,9 @@
     "panels": [
       "tree"
     ],
+    "extensions": {
+      "some_key": "some_value"
+    },
     "title": "Minimal config with an extensions block",
     "updated": "2021-06-09"
   },
@@ -221,8 +224,5 @@
       }
     }
   },
-  "version": "v2",
-  "extensions": {
-    "some_key": "some_value"
-  }
+  "version": "v2"
 }
