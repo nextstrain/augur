@@ -35,6 +35,7 @@ class TiterCollection(object):
         tuple (dict, list, list)
             tuple of a dict of titer measurements, list of strains, list of sources
 
+
         >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv")
         >>> type(measurements)
         <class 'dict'>
@@ -107,6 +108,7 @@ class TiterCollection(object):
         dict
             number of measurements per strain
 
+
         >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv")
         >>> titer_counts = TiterCollection.count_strains(measurements)
         >>> titer_counts["A/Acores/11/2013"]
@@ -141,6 +143,7 @@ class TiterCollection(object):
         dict
             reduced dictionary of titer measurements containing only those were
             test and reference virus are part of the strain list
+
 
         >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv")
         >>> len(measurements)

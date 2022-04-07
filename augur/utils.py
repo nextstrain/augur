@@ -646,8 +646,8 @@ def read_bed_file(bed_file):
     bed_file : str
         Path to the BED file
 
-    Returns:
-    --------
+    Returns
+    -------
     list[int]:
         Sorted list of unique zero-indexed sites
     """
@@ -677,8 +677,8 @@ def read_mask_file(mask_file):
     mask_file : str
         Path to the masking file
 
-    Returns:
-    --------
+    Returns
+    -------
     list[int]:
         Sorted list of unique zero-indexed sites
     """
@@ -726,7 +726,7 @@ def read_strains(*files, comment_char="#"):
     set of distinct strains.
 
     Strain names can be commented with full-line or inline comments. For
-    example, the following is a valid strain names file:
+    example, the following is a valid strain names file::
 
         # this is a comment at the top of the file
         strain1  # exclude strain1 because it isn't sequenced properly
