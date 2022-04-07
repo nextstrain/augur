@@ -312,10 +312,6 @@
                     "items": {"$ref": "#/$defs/tree"}
                 }
             ]
-        },
-        "extensions": {
-            "description": "Data for use by applications other than auspice",
-            "$comment": "Any type is accepted"
         }
     },
     "$defs": {
