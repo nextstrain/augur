@@ -14,6 +14,7 @@ Exclude sites
 Augur tree allows you to mask certain problematic sites before tree-building via  `augur tree --exclude-sites <exclude_file> --alignment <alignment>` , where each line in `<exclude_file>` is a 1-based nucleotide position to mask from the alignment. We can recreate this via the following command:
 
 .. code-block:: bash
+
   augur mask --sequences <alignment> --mask <exclude_file> --output <masked_alignment>
 
 
