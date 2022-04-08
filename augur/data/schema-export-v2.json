@@ -108,6 +108,10 @@
                     "uniqueItems": true,
                     "minItems": 1
                 },
+                "extensions": {
+                    "description": "Data to be passed through to the the resulting dataset JSON",
+                    "$comment": "Any type is accepted"
+                },
                 "geo_resolutions": {
                     "description": "The available options for the geographic resolution dropdown, and their lat/long information",
                     "type": "array",
@@ -308,10 +312,6 @@
                     "items": {"$ref": "#/$defs/tree"}
                 }
             ]
-        },
-        "extensions": {
-            "description": "Data for use by applications other than auspice",
-            "$comment": "Any type is accepted"
         }
     },
     "$defs": {

@@ -1037,7 +1037,7 @@ def run_v2(args):
 
     # pass through any extensions block in the auspice config JSON without any changes / checking
     if config.get("extensions"):
-        data_json["extensions"] = config["extensions"]
+        data_json["meta"]["extensions"] = config["extensions"]
 
     # Write outputs - the (unified) dataset JSON intended for auspice & perhaps the ref root-sequence JSON
     indent = {"indent": None} if args.minify_json else {}
