@@ -1,13 +1,10 @@
 """
 Filter and subsample a sequence set.
 """
-import argparse
 from Bio import SeqIO
 from collections import defaultdict
 import csv
-import datetime
 import heapq
-import isodate
 import itertools
 import json
 import numpy as np
@@ -18,10 +15,9 @@ import random
 import re
 import sys
 from tempfile import NamedTemporaryFile
-import treetime.utils
-from textwrap import dedent
 from typing import Collection
 
+from .dates import numeric_date, numeric_date_type, SUPPORTED_DATE_HELP_TEXT
 from .index import index_sequences, index_vcf
 from .io import open_file, read_metadata, read_sequences, write_sequences
 from .utils import is_vcf as filename_is_vcf, read_vcf, read_strains, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
@@ -32,12 +28,6 @@ SEQUENCE_ONLY_FILTERS = (
     "min_length",
     "non_nucleotide",
 )
-
-SUPPORTED_DATE_HELP_TEXT = dedent("""\
-    1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or
-    2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or
-    3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')
-""")
 
 
 class FilterException(Exception):
@@ -1118,8 +1108,8 @@ def register_arguments(parser):
         Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.
         (e.g., --query "country == 'Colombia'" or --query "(country == 'USA' & (division == 'Washington'))")"""
     )
-    metadata_filter_group.add_argument('--min-date', type=numeric_date, help=f"minimal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
-    metadata_filter_group.add_argument('--max-date', type=numeric_date, help=f"maximal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
+    metadata_filter_group.add_argument('--min-date', type=numeric_date_type, help=f"minimal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
+    metadata_filter_group.add_argument('--max-date', type=numeric_date_type, help=f"maximal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
     metadata_filter_group.add_argument('--exclude-ambiguous-dates-by', choices=['any', 'day', 'month', 'year'],
                                 help='Exclude ambiguous dates by day (e.g., 2020-09-XX), month (e.g., 2020-XX-XX), year (e.g., 200X-10-01), or any date fields. An ambiguous year makes the corresponding month and day ambiguous, too, even if those fields have unambiguous values (e.g., "201X-10-01"). Similarly, an ambiguous month makes the corresponding day ambiguous (e.g., "2010-XX-01").')
     metadata_filter_group.add_argument('--exclude', type=str, nargs="+", help="file(s) with list of strains to exclude")
@@ -1692,50 +1682,6 @@ def run(args):
 
 def _filename_gz(filename):
     return filename.lower().endswith(".gz")
-
-
-def numeric_date(date):
-    """
-    Converts the given *date* string to a :py:class:`float`.
-
-    *date* may be given as:
-    1. A string or float (number) with year as the integer part
-    2. A string in the YYYY-MM-DD (ISO 8601) syntax
-    3. A string representing a relative date (duration before datetime.date.today())
-
-    >>> numeric_date("2020.42")
-    2020.42
-    >>> numeric_date("2020-06-04")
-    2020.42486...
-    >>> import datetime, isodate, treetime
-    >>> numeric_date("1W") == treetime.utils.numeric_date(datetime.date.today() - isodate.parse_duration("P1W"))
-    True
-    """
-    # date is numeric
-    try:
-        return float(date)
-    except ValueError:
-        pass
-
-    # date is in YYYY-MM-DD form
-    try:
-        return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))
-    except ValueError:
-        pass
-
-    # date is a duration treated as a backwards-looking relative date
-    try:
-        # make a copy of date for this block
-        duration_str = str(date)
-        if duration_str.startswith('P'):
-            duration_str = duration_str
-        else:
-            duration_str = 'P'+duration_str
-        return treetime.utils.numeric_date(datetime.date.today() - isodate.parse_duration(duration_str))
-    except (ValueError, isodate.ISO8601Error):
-        pass
-
-    raise argparse.ArgumentTypeError(f"""Unable to determine date from '{date}'. Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}""")
 
 
 def calculate_sequences_per_group(target_max_value, counts_per_group, allow_probabilistic=True):
