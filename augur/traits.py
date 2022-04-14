@@ -55,12 +55,12 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
     unique_states = list(set(traits.values()))
 
     if len(unique_states)==0:
-        print("WARNING: no states found for discrete state reconstruction.")
+        print("WARNING: no states found for discrete state reconstruction.", file=sys.stderr)
         for node in T.find_clades():
             node.__setattr__(field, None)
         return T, None, {}
     elif len(unique_states)==1:
-        print("WARNING: only one state found for discrete state reconstruction:", unique_states)
+        print("WARNING: only one state found for discrete state reconstruction:", unique_states, file=sys.stderr)
         for node in T.find_clades():
             node.__setattr__(field, unique_states[0])
         return T, None, {}
@@ -69,11 +69,11 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
             reconstruct_discrete_traits(T, traits, missing_data=missing,
                  sampling_bias_correction=sampling_bias_correction, weights=weights)
     else:
-        print("ERROR: 300 or more distinct discrete states found. TreeTime is currently not set up to handle that many states.")
+        print("ERROR: 300 or more distinct discrete states found. TreeTime is currently not set up to handle that many states.", file=sys.stderr)
         sys.exit(1)
 
     if tt is None:
-        print("ERROR in discrete state reconstruction in TreeTime. Please look for errors above.")
+        print("ERROR in discrete state reconstruction in TreeTime. Please look for errors above.", file=sys.stderr)
         sys.exit(1)
 
     # attach inferred states as e.g. node.region = 'africa'
@@ -135,12 +135,12 @@ def run(args):
     T = Phylo.read(tree_fname, 'newick')
     missing_internal_node_names = [n.name is None for n in T.get_nonterminals()]
     if np.all(missing_internal_node_names):
-        print("\n*** WARNING: Tree has no internal node names!")
-        print("*** Without internal node names, ancestral traits can't be linked up to the correct node later.")
-        print("*** If you want to use 'augur export' later, re-run this command with the output of 'augur refine'.")
-        print("*** If you haven't run 'augur refine', you can add node names to your tree by running:")
-        print("*** augur refine --tree %s --output-tree <filename>.nwk"%(tree_fname) )
-        print("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'")
+        print("\n*** WARNING: Tree has no internal node names!", file=sys.stderr)
+        print("*** Without internal node names, ancestral traits can't be linked up to the correct node later.", file=sys.stderr)
+        print("*** If you want to use 'augur export' later, re-run this command with the output of 'augur refine'.", file=sys.stderr)
+        print("*** If you haven't run 'augur refine', you can add node names to your tree by running:", file=sys.stderr)
+        print("*** augur refine --tree %s --output-tree <filename>.nwk" % (tree_fname), file=sys.stderr)
+        print("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'", file=sys.stderr)
 
     if args.weights:
         weight_dict = {c:{} for c in args.columns}
