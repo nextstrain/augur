@@ -174,10 +174,16 @@ def run(args):
             continue
 
         for node in T.find_clades():
-            mugration_states[node.name][column] = node.__getattribute__(column)
+            mugration_states[node.name][column] = getattr(node, column)
+
             if args.confidence:
-                mugration_states[node.name][column+'_confidence'] = node.__getattribute__(column+'_confidence')
-                mugration_states[node.name][column+'_entropy'] = node.__getattribute__(column+'_entropy')
+                confidence = getattr(node, f"{column}_confidence", None)
+                if confidence:
+                    mugration_states[node.name][f"{column}_confidence"] = confidence
+
+                entropy = getattr(node, f"{column}_entropy", None)
+                if entropy:
+                    mugration_states[node.name][f"{column}_entropy"] = entropy
 
         if gtr:
             # add gtr models to json structure for export
