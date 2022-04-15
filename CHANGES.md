@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 15.0.0 (15 April 2022)
+
 ### Major Changes
 
 * export: Move extensions block to meta [#888][] (@corneliusroemer)
