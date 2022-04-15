@@ -32,7 +32,11 @@ Pivots get calculated from the requested date range.
   $ rm -f "$TMP/tip-frequencies.json"
 
 Calculate KDE-based tip frequencies for a time period with relative dates.
+Testing relative dates deterministically from the shell is tricky.
+To keep these tests simple and avoid freezing the system date to specific values, this test checks the logical consistency of the requested relative dates and pivot interval.
 With a minimum date of 1 year (12 months) ago, a maximum date of 6 months ago, and a pivot interval of 3 months, we expect only 2 pivots in the final output.
+Since the test data are much older than the time period requested, all strains will always have frequencies of 0 for the 2 requested pivots.
+As long as we always calculate 2 pivots with frequencies of 0 for all strains, we can ignore the actual pivot values calculated for the relative dates in the diff below.
 
   $ ${AUGUR} frequencies \
   >  --method kde \
@@ -42,9 +46,6 @@ With a minimum date of 1 year (12 months) ago, a maximum date of 6 months ago, a
   >  --min-date 1Y \
   >  --max-date 6M \
   >  --output "$TMP/tip-frequencies.json" > /dev/null
-
-Since the test data are much older than the time period requested, all strains will have frequencies of 0 for the 2 requested pivots.
-We can ignore the values of the calculated pivots which will vary based on when the test is run.
 
   $ python3 "$TESTDIR/../../scripts/diff_jsons.py" \
   >  --exclude-paths "root['generated_by']['version']" "root['pivots']" -- \
