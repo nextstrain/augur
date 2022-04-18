@@ -178,11 +178,11 @@ def run(args):
 
             if args.confidence:
                 confidence = getattr(node, f"{column}_confidence", None)
-                if confidence:
+                if confidence is not None:
                     mugration_states[node.name][f"{column}_confidence"] = confidence
 
                 entropy = getattr(node, f"{column}_entropy", None)
-                if entropy:
+                if entropy is not None:
                     mugration_states[node.name][f"{column}_entropy"] = entropy
 
         if gtr:
