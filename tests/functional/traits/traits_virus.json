@@ -1,0 +1,63 @@
+{
+  "generated_by": {
+    "program": "augur",
+    "version": "14.1.0"
+  },
+  "models": {},
+  "nodes": {
+    "BRA/2016/FC_6706": {
+      "virus": "zika"
+    },
+    "COL/FLR_00008/2015": {
+      "virus": "zika"
+    },
+    "Colombia/2016/ZC204Se": {
+      "virus": "zika"
+    },
+    "DOM/2016/BB_0183": {
+      "virus": "zika"
+    },
+    "EcEs062_16": {
+      "virus": "zika"
+    },
+    "HND/2016/HU_ME59": {
+      "virus": "zika"
+    },
+    "NODE_0000001": {
+      "virus": "zika"
+    },
+    "NODE_0000002": {
+      "virus": "zika"
+    },
+    "NODE_0000003": {
+      "virus": "zika"
+    },
+    "NODE_0000004": {
+      "virus": "zika"
+    },
+    "NODE_0000005": {
+      "virus": "zika"
+    },
+    "NODE_0000006": {
+      "virus": "zika"
+    },
+    "NODE_0000007": {
+      "virus": "zika"
+    },
+    "NODE_0000008": {
+      "virus": "zika"
+    },
+    "PAN/CDC_259359_V1_V3/2015": {
+      "virus": "zika"
+    },
+    "PRVABC59": {
+      "virus": "zika"
+    },
+    "VEN/UF_1/2016": {
+      "virus": "zika"
+    },
+    "ZKC2/2016": {
+      "virus": "zika"
+    }
+  }
+}
