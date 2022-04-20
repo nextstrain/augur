@@ -157,8 +157,8 @@ def override_config_with_args(config, args):
     """
     Overrides values in the config with values of provided command line args.
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     config: dict
         A collection config
     args: dict
