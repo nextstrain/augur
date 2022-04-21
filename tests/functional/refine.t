@@ -1,7 +1,8 @@
 Integration tests for augur refine.
 
   $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="../../bin/augur"
+  $ export COVERAGE_FILE="$TESTDIR/../../.coverage"
+  $ export AUGUR="coverage run -a --rcfile=$TESTDIR/../../.coveragerc ../../bin/augur"
 
 Try building a time tree.
 

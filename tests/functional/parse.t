@@ -1,7 +1,8 @@
 Integration tests for augur parse.
 
   $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="../../bin/augur"
+  $ export COVERAGE_FILE="$TESTDIR/../../.coverage"
+  $ export AUGUR="coverage run -a --rcfile=$TESTDIR/../../.coveragerc ../../bin/augur"
 
 Parse Zika sequences into sequences and metadata.
 
