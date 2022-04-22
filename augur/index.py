@@ -206,9 +206,8 @@ def run(args):
             tot_length = None
         else:
             num_of_seqs, tot_length = index_sequences(args.sequences, args.output)
-    except ValueError as error:
-        print("ERROR: Problem reading in {}:".format(sequences_path), file=sys.stderr)
-        print(error, file=sys.stderr)
+    except FileNotFoundError:
+        print(f"ERROR: Could not open sequences file '{args.sequences}'.", file=sys.stderr)
         return 1
 
     if args.verbose:
