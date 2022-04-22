@@ -420,6 +420,7 @@ The user should get a warning about these duplicate sequences.
   >  --sequences filter/sequences_with_duplicate.fasta \
   >  --output-sequences "$TMP/filtered_sequences.fasta" > /dev/null
   Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
+  WARNING: Found duplicate sequence for strain 'PRVABC59'. Only the first sequence for this strain will be indexed.
   WARNING: Found duplicate sequence for strain 'PRVABC59'. Only the first sequence for this strain will be included in the output sequences.
 
   $ grep "PRVABC59" "$TMP/filtered_sequences.fasta" | wc -l
