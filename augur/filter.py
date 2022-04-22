@@ -1602,10 +1602,20 @@ def run(args):
             observed_sequence_strains = set()
             with open_file(args.output, "wt") as output_handle:
                 for sequence in sequences:
-                    observed_sequence_strains.add(sequence.id)
-
                     if sequence.id in valid_strains:
-                        write_sequences(sequence, output_handle, 'fasta')
+                        # Do not emit sequences for strains we've already
+                        # observed. These duplicates should likely be addressed
+                        # upstream, but at least warn the user about specific
+                        # duplicates to support debugging.
+                        if sequence.id in observed_sequence_strains:
+                            print(
+                                f"WARNING: Found duplicate sequence for strain '{sequence.id}'.",
+                                "Only the first sequence for this strain will be included in the output sequences.",
+                                file=sys.stderr,
+                            )
+                        else:
+                            write_sequences(sequence, output_handle, 'fasta')
+                            observed_sequence_strains.add(sequence.id)
         else:
             observed_sequence_strains = {sequence.id for sequence in sequences}
 

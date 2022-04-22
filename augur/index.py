@@ -183,11 +183,21 @@ def index_sequences(sequences_path, sequence_index_path):
         header = ['strain', 'length']+labels+['invalid_nucleotides']
         tsv_writer.writerow(header)
 
+        observed_sequence_ids = set()
         for record in seqs:
+            if record.id in observed_sequence_ids:
+                print(
+                    f"WARNING: Found duplicate sequence for strain '{record.id}'.",
+                    "Only the first sequence for this strain will be indexed.",
+                    file=sys.stderr,
+                )
+                continue
+
             #index the sequence and write row in output file
             row = index_sequence(record, values)
             tsv_writer.writerow(row)
 
+            observed_sequence_ids.add(record.id)
             tot_length += row[1]
             num_of_seqs += 1
 
