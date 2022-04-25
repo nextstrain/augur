@@ -14,3 +14,4 @@ common questions and problems users run into.
    metadata
    clades
    Specifying `refine` rates <refine>
+   Creating a tree using your own tree builder <skip_augur_tree>

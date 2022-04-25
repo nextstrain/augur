@@ -3,6 +3,32 @@
 ## __NEXT__
 
 
+## 15.0.0 (15 April 2022)
+
+### Major Changes
+
+* export: Move extensions block to meta [#888][] (@corneliusroemer)
+
+    Note: this is technically a breaking change, but the misplaced extensions block was added in version 14.1.0 and intended for internal use by Nextclade. We don't expect any users to be impacted by this.
+
+### Features
+
+* filter: Support relative dates for `--min-date` and `--max-date` [#740][] (@benjaminotter, @victorlin)
+* frequencies: Support relative dates for `--min-date` and `--max-date` [#890][] (@victorlin, @huddlej)
+* docs: Add page describing how to use your own tree builder [#884][] (@jameshadfield, @joverlee521)
+
+### Bug Fixes
+
+* parse: Fix `--fix-dates` [#878][] (@huddlej)
+* tree: Fix internal comment on excluded sites [#880][] (@jameshadfield)
+
+[#888]: https://github.com/nextstrain/augur/pull/888
+[#740]: https://github.com/nextstrain/augur/pull/740
+[#890]: https://github.com/nextstrain/augur/pull/890
+[#884]: https://github.com/nextstrain/augur/pull/884
+[#878]: https://github.com/nextstrain/augur/pull/878
+[#880]: https://github.com/nextstrain/augur/pull/880
+
 ## 14.1.0 (31 March 2022)
 
 ### Features

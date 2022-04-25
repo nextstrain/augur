@@ -53,6 +53,7 @@ setuptools.setup(
     install_requires = [
         "bcbio-gff >=0.6.0, ==0.6.*",
         "biopython >=1.67, !=1.77, !=1.78",
+        "isodate ==0.6.*",
         "jsonschema >=3.0.0, ==3.*",
         "networkx >= 2.5, ==2.*",
         "packaging >=19.2",
