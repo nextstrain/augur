@@ -110,4 +110,26 @@ This should fail with a helpful error message.
   ERROR: None of the possible id columns (('strain', 'name')) were found in the metadata's columns ('invalid_id', 'div', 'mutation_length')
   [1]
 
+# export_v2/location_node-data2.json was produced by a mismatched version
+# Running without --skip-validation should result in an error
+# Message printed: "Validation of auspice_config3.json failed."
+  $ ${AUGUR} export v2 \
+  >   --tree export_v2/tree.nwk \
+  >   --node-data export_v2/div_node-data.json export_v2/location_node-data2.json \
+  >   --auspice-config export_v2/auspice_config3.json \
+  >   --output "$TMP/dataset4.json" &>/dev/null
+  [2]
+
+# Skipping validation gives us the same results as `location_node-data.json`
+  $ ${AUGUR} export v2 \
+  >   --tree export_v2/tree.nwk \
+  >   --node-data export_v2/div_node-data.json export_v2/location_node-data2.json \
+  >   --auspice-config export_v2/auspice_config2.json \
+  >   --output "$TMP/dataset5.json" \
+  >   --skip-validation &>/dev/null
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py"  export_v2/dataset2.json "$TMP/dataset5.json" \
+  >   --exclude-paths "root['meta']['updated']"
+  {}
+
   $ popd > /dev/null

@@ -988,7 +988,7 @@ def run(args):
 
     #load input files
     try:
-        node_data_file = read_node_data(args.node_data) # node_data_files is an array of multiple files (or a single file)
+        node_data_file = read_node_data(args.node_data, skip_validation=args.skip_validation) # node_data_files is an array of multiple files (or a single file)
     except FileNotFoundError:
         print(f"ERROR: node data file ({args.node_data}) does not exist")
         sys.exit(2)
