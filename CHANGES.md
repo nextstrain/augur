@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 15.0.1 (25 April 2022)
+
 ### Bug Fixes
 
 * traits: Fix crash when inferring traits with a single value. [#891][] (@huddlej)
