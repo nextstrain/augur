@@ -2,6 +2,14 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* traits: Fix crash when inferring traits with a single value. [#891][] (@huddlej)
+* index: Properly handle missing inputs. [#900][] (@huddlej)
+* index: Use standard UNIX-style line endings for output. [#900][] (@huddlej)
+
+[#891]: https://github.com/nextstrain/augur/pull/891
+[#900]: https://github.com/nextstrain/augur/pull/900
 
 ## 15.0.0 (15 April 2022)
 
