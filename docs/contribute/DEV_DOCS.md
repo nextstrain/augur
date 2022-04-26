@@ -30,9 +30,6 @@ Please see the [project board](https://github.com/orgs/nextstrain/projects/6) fo
 We currently target compatibility with Python 3.7 and higher. As Python releases new versions,
 the minimum target compatibility may be increased in the future.
 
-Versions for this project, Augur, from 3.0.0 onwards aim to follow the
-[Semantic Versioning rules](https://semver.org).
-
 ### Running local changes
 
 While you are making code changes, you will want to run augur to see it behavior with those changes.
@@ -158,27 +155,64 @@ We use [codecov](https://codecov.io/) to automatically produce test coverage for
 
 ### Releasing
 
-Before you create a new release, run all tests from a fresh conda environment to verify that nothing has broken since the last CI build on GitHub.
-The following commands will setup the equivalent conda environment to the GitHub Actions environment, run unit and integration tests, and deactivate the environment.
+Versions for this project, Augur, from 3.0.0 onwards aim to follow the
+[Semantic Versioning rules](https://semver.org).
 
-```bash
-# Update Conda.
-conda activate base
-conda update conda
+#### Steps
 
-# Create an Augur environment.
-conda create -n augur -c conda-forge -c bioconda augur
-conda activate augur
-python3 -m pip install -e .[dev]
+##### 1. Gather PRs and draft release notes
 
-# Run tests.
-./run_tests.sh
-bash tests/builds/runner.sh
+1. Compare changes to find PRs and direct commits since the previous tag (e.g. https://github.com/nextstrain/augur/compare/14.1.0...15.0.0, replacing `14.1.0` with previous tag and `15.0.0` with `master`)
+2. Add the PRs to the open GitHub milestone.
+3. Define a new version number `X.X.X` based on changes and Semantic Versioning rules.
+4. Rename the milestone as `<Major|Feature|Patch> release X.X.X`.
+5. Draft changes in the milestone description using Markdown. Keep headers and formatting consistent with [CHANGES.md](../../CHANGES.md).
 
-# Clean up.
-conda deactivate
-conda env remove -n augur
-```
+##### 2. Update change log
+
+In your local copy of `augur`:
+
+1. Run `git switch master`.
+2. Run `git pull`.
+3. In `CHANGES.md`, add milestone description under the `__NEXT__` header.
+4. Stage changes.
+5. Run `git commit -m 'Update change log for X.X.X'`.
+
+##### 3. Run build/test/release scripts
+
+In your local copy of `augur`:
+
+1. Run `devel/release X.X.X`.
+2. Run `devel/test`.
+    - Verify successful run.
+3. Run `git push origin master release tag X.X.X`.
+4. Run `twine upload dist/*`.
+
+##### 4. Update GitHub milestones
+
+1. Close current release milestone.
+2. Create new milestone named `Next release X.X.X`.
+
+##### 5. Update on Bioconda
+
+For versions without dependency changes:
+
+1. Wait for an auto-bump PR in [bioconda-recipes][].
+2. Add a comment `@BiocondaBot please add label`.
+3. Wait for a bioconda maintainer to approve and merge.
+
+For versions with dependency changes:
+
+1. Create a new PR in [bioconda-recipes][] following instructions at [nextstrain/bioconda-recipes/README.md](https://github.com/nextstrain/bioconda-recipes/blob/readme/README.md).
+    - [Example](https://github.com/bioconda/bioconda-recipes/pull/34344)
+2. Add a comment `@BiocondaBot please add label`.
+3. Wait for a bioconda maintainer to approve and merge.
+4. Wait for an auto-bump PR in [bioconda-recipes][].
+5. Add a comment in the auto-bump PR `Please close this in favor of #<your PR number>`.
+
+[bioconda-recipes]: https://github.com/bioconda/bioconda-recipes/pull/34509
+
+#### Notes
 
 New releases are tagged in git using an "annotated" tag.  If the git option
 `user.signingKey` is set, the tag will also be [signed][].  Signed tags are
