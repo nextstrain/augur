@@ -170,23 +170,23 @@ Versions for this project, Augur, from 3.0.0 onwards aim to follow the
 
 ##### 2. Update change log
 
-In your local copy of `augur`:
-
-1. Run `git switch master`.
-2. Run `git pull`.
-3. In `CHANGES.md`, add milestone description under the `__NEXT__` header.
-4. Stage changes.
-5. Run `git commit -m 'Update change log for X.X.X'`.
+1. Visit [this link](https://github.com/nextstrain/augur/edit/master/CHANGES.md) to open `CHANGES.md` for edit.
+2. Add the milestone description under the `__NEXT__` header.
+3. At the bottom of the page:
+    1. Title: `Update change log for X.X.X`
+    2. Description: leave empty
+    3. Select the option **Commit directly to the `master` branch.**
+4. Select **Commit changes**.
 
 ##### 3. Run build/test/release scripts
 
-In your local copy of `augur`:
-
-1. Run `devel/release X.X.X`.
-2. Run `devel/test`.
-    - Verify successful run.
-3. Run `git push origin master release tag X.X.X`.
-4. Run `twine upload dist/*`.
+1. Go to [this GitHub Actions workflow](https://github.com/nextstrain/augur/actions/workflows/release.yaml).
+2. Select **Run workflow**. In the new menu:
+    1. Ensure `master` branch is selected.
+    2. In **New version X.X.X**, provide the new version number.
+    3. Set **PyPI instance for publishing** as *PyPI* (default) or *TestPyPI*. [More info](https://packaging.python.org/en/latest/guides/using-testpypi)
+    4. Select **Run workflow**.
+3. Ensure workflow runs successfully.
 
 ##### 4. Update GitHub milestones
 
