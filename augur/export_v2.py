@@ -940,15 +940,22 @@ def parse_node_data_and_metadata(T, node_data, metadata):
     node_data_names = set()
     metadata_names = set()
 
+    # Determine if metadata file uses "strain" or "name" for strain name
+    try:
+        list(metadata.values())[0]["strain"]
+        strain_column = "strain"
+    except LookupError:
+        strain_column = "name"
+
     # assign everything to node_attrs, exclusions considered later
     node_attrs = {clade.name: {} for clade in T.root.find_clades()}
 
     # first pass: metadata
     for node in metadata.values():
-        if node["strain"] in node_attrs: # i.e. this node name is in the tree
+        if node[strain_column] in node_attrs: # i.e. this node name is in the tree
             for key, value in node.items():
                 corrected_key = update_deprecated_names(key)
-                node_attrs[node["strain"]][corrected_key] = value
+                node_attrs[node[strain_column]][corrected_key] = value
                 metadata_names.add(corrected_key)
 
     # second pass: node data JSONs (overwrites keys of same name found in metadata)
