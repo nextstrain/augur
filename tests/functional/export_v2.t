@@ -1,8 +1,7 @@
 Integration tests for augur export v2.
 
   $ pushd "$TESTDIR" > /dev/null
-  $ export COVERAGE_FILE="$TESTDIR/../../.coverage"
-  $ export AUGUR="coverage run -a --rcfile=$TESTDIR/../../.coveragerc ../../bin/augur"
+  $ export AUGUR="${AUGUR:-../../bin/augur}"
 
 Minimal export
 

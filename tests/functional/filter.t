@@ -1,8 +1,7 @@
 Integration tests for augur filter.
 
   $ pushd "$TESTDIR" > /dev/null
-  $ export COVERAGE_FILE="$TESTDIR/../../.coverage"
-  $ export AUGUR="coverage run -a --rcfile=$TESTDIR/../../.coveragerc ../../bin/augur"
+  $ export AUGUR="${AUGUR:-../../bin/augur}"
 
 Filter with exclude query for two regions that comprise all but one strain.
 This filter should leave a single record from Oceania.

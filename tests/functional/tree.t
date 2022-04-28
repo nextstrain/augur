@@ -1,8 +1,7 @@
 Integration tests for augur tree.
 
   $ pushd "$TESTDIR" > /dev/null
-  $ export COVERAGE_FILE="$TESTDIR/../../.coverage"
-  $ export AUGUR="coverage run -a --rcfile=$TESTDIR/../../.coveragerc ../../bin/augur"
+  $ export AUGUR="${AUGUR:-../../bin/augur}"
 
 Try building a tree with IQ-TREE.
 

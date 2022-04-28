@@ -1,8 +1,7 @@
 Integration tests for augur traits.
 
   $ pushd "$TESTDIR" > /dev/null
-  $ export COVERAGE_FILE="$TESTDIR/../../.coverage"
-  $ export AUGUR="coverage run -a --rcfile=$TESTDIR/../../.coveragerc ../../bin/augur"
+  $ export AUGUR="${AUGUR:-../../bin/augur}"
 
 Infer the ancestral region for a given tree and metadata.
 
