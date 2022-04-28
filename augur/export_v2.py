@@ -9,7 +9,9 @@ import warnings
 import numbers
 import re
 from Bio import Phylo
-from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
+
+from .io import read_metadata
+from .utils import read_node_data, write_json, read_config, read_lat_longs, read_colors
 from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
 
 # Set up warnings & exceptions
@@ -992,7 +994,10 @@ def run_v2(args):
 
     if args.metadata is not None:
         try:
-            metadata_file, _ = read_metadata(args.metadata)
+            metadata_file = read_metadata(args.metadata).to_dict(orient="index")
+            for strain in metadata_file.keys():
+                if "strain" not in metadata_file[strain]:
+                    metadata_file[strain]["strain"] = strain
         except FileNotFoundError:
             print(f"ERROR: meta data file ({args.metadata}) does not exist")
             sys.exit(2)
