@@ -301,7 +301,7 @@ def register_arguments(parser):
 
     config = export.add_argument_group(
         title="COLLECTION CONFIGURATION",
-        description="These options control the configuration of the collection for auspice." +
+        description="These options control the configuration of the collection for Auspice. " +
                     "You can provide a config JSON (which includes all available options) or " +
                     "command line arguments (which are more limited). " +
                     "Command line arguments will override the values set in the config JSON."
@@ -313,7 +313,7 @@ def register_arguments(parser):
              "Note that if groupings are provided via command line args, the default group-by " +
              "field in the config JSON will be dropped.")
     config.add_argument("--key",
-        help="A short key name of the collection for internal use within auspice." +
+        help="A short key name of the collection for internal use within Auspice. " +
              "If not provided via config or command line option, the collection TSV filename will be used. ")
     config.add_argument("--title",
         help="The full title of the collection to display in the measurements panel title. " +
@@ -322,7 +322,7 @@ def register_arguments(parser):
         help="The short label to display for the x-axis that describles the value of the measurements. " +
              "If not provided via config or command line option, the panel's default x-axis label is 'measurements values'.")
     config.add_argument("--threshold", type=float,
-        help="A measurements value threshold to be displayed as a single grey line shared across subplots.")
+        help="A measurements value threshold to be displayed in the measurements panel.")
     config.add_argument("--filters", nargs="+",
         help="The columns that are to be used a filters for measurements. " +
              "If not provided, all columns will be available as filters.")
@@ -352,7 +352,7 @@ def register_arguments(parser):
         help="The key of the default collection to display. " +
              "If not provided, the first collection of the first JSON file will be displayed")
     concat.add_argument("--minify-json", action="store_true",
-        help="Concat JSONs without indentation or line returns.")
+        help="Concatenate JSONs without indentation or line returns.")
     concat.add_argument("--output-json", required=True, metavar="JSON", type=str,
         help="Output JSON file")
 
