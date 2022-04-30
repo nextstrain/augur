@@ -44,7 +44,7 @@ def column_exists(collection, column, column_purpose):
     column_in_df = column in collection.columns
     if not column_in_df:
         print(
-            f"ERROR: Provided {column_purpose} column «{column}» does not exist in collection TSV.",
+            f"ERROR: Provided {column_purpose} column {column!r} does not exist in collection TSV.",
             file=sys.stderr,
         )
     return column_in_df
@@ -76,7 +76,7 @@ def load_collection(collection, strain_column, value_column):
         collection_df = pd.read_csv(collection, sep="\t")
     except FileNotFoundError:
         print(
-            f"ERROR: collection TSV file ({collection}) does not exist",
+            f"ERROR: collection TSV file {collection!r} does not exist",
             file=sys.stderr,
         )
         return None
@@ -105,8 +105,8 @@ def load_collection(collection, strain_column, value_column):
         if (required_column in collection_df.columns and
             provided_column != required_column):
             print(
-                f"ERROR: Cannot use provided '{provided_column}' column as the {required_column} column " +
-                f"because a '{required_column}' column already exists in collection TSV.",
+                f"ERROR: Cannot use provided {provided_column!r} column as the {required_column} column",
+                f"because a {required_column!r} column already exists in collection TSV.",
                 file=sys.stderr,
             )
             checks_passed = False
@@ -121,7 +121,7 @@ def load_collection(collection, strain_column, value_column):
     try:
         collection_df['value'] = pd.to_numeric(collection_df['value'])
     except ValueError as e:
-        print(f"ERROR: Found a non-numeric measurement value: {e}", file=sys.stderr)
+        print(f"ERROR: Found a non-numeric measurement value: {e!r}", file=sys.stderr)
         return None
 
     return collection_df
@@ -212,7 +212,7 @@ def export_measurements(args):
             collection_config = validate_collection_config_json(args['collection_config'])
         except ValidateError:
             print(
-                f"Validation of provided collection config JSON {args['collection_config']} failed. " +
+                f"Validation of provided collection config JSON {args['collection_config']!r} failed.",
                 "Please check the formatting of this file.",
                 file=sys.stderr
             )
@@ -223,7 +223,7 @@ def export_measurements(args):
         groupings = get_collection_groupings(collection_df, args['grouping_column'])
         if collection_config.get('display_defaults', {}).pop('group_by', None):
             print(
-                "WARNING: The default group-by in the collection config has been removed " +
+                "WARNING: The default group-by in the collection config has been removed",
                 "because new groupings have been provided via the --grouping-column option.",
                 file=sys.stderr
             )

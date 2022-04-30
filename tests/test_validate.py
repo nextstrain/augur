@@ -87,4 +87,4 @@ class TestValidateMeasurements():
             "default_collection": "invalid_collection"
         }
         assert not validate_measurements_config(measurements)
-        assert capsys.readouterr().err == "ERROR: The default collection key «invalid_collection» does not match any of the collections' keys.\n"
+        assert capsys.readouterr().err == "ERROR: The default collection key 'invalid_collection' does not match any of the collections' keys.\n"

@@ -169,7 +169,7 @@ def validate_collection_config_fields(collection, index=None):
             valid_collection_config_fields = False
             include_index = f"(at index {index}) " if index is not None else ""
             print(
-                f"ERROR: Collection {include_index}includes {config_field} that " +
+                f"ERROR: Collection {include_index}includes {config_field} that",
                 f"do not exist as fields in measurements: {invalid_fields}.",
                 file=sys.stderr
             )
@@ -206,7 +206,7 @@ def validate_collection_display_defaults(collection, index=None):
         valid_display_defaults = False
         include_index = f"(at index {index}) " if index is not None else ""
         print(
-            f"ERROR: Collection {include_index}has a default group-by field " +
+            f"ERROR: Collection {include_index}has a default group-by field",
             f"'{default_grouping}' that is not included in the groupings' fields.",
             file=sys.stderr
         )
@@ -263,7 +263,7 @@ def validate_measurements_config(measurements):
     if default_collection and default_collection not in collection_keys.keys():
         valid_measurements_config = False
         print(
-            f"ERROR: The default collection key «{default_collection}» does not match any of the collections' keys.",
+            f"ERROR: The default collection key {default_collection!r} does not match any of the collections' keys.",
             file=sys.stderr
         )
 
