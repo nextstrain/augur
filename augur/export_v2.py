@@ -565,6 +565,7 @@ def set_data_provenance(data_json, config):
     config : dict
         config JSON with an expected ``data_provenance`` key
 
+
     >>> config = {"data_provenance": [{"name": "GISAID"}, {"name": "INSDC"}]}
     >>> data_json = {"meta": {}}
     >>> set_data_provenance(data_json, config)
