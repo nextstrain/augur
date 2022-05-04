@@ -13,6 +13,14 @@ from .validate import (
     ValidateError
 )
 
+# Default values for optional arguments that can also be provided via config file
+# Setting as global dict instead of using argparse default so that the
+# config file does not always get overwritten by the default values
+DEFAULT_ARGS = {
+    'title': 'Measurements',
+    'x_axis_label': 'measurement values',
+}
+
 class HideAsFalseAction(argparse.Action):
     """
     Custom argparse Action that stores False for arguments passed as `--hide*`
@@ -238,8 +246,9 @@ def export_measurements(args):
     # Create collection output object with default values for required keys
     collection_output = {
         'key': collection_config.pop('key', os.path.basename(args['collection'])),
+        'title': collection_config.pop('title', DEFAULT_ARGS['title']),
         'groupings': groupings,
-        'x_axis_label': collection_config.pop('x_axis_label', 'measurement values'),
+        'x_axis_label': collection_config.pop('x_axis_label', DEFAULT_ARGS['x_axis_label']),
         'measurements': collection_df.to_dict(orient='records'),
         **collection_config
     }
@@ -317,10 +326,11 @@ def register_arguments(parser):
              "If not provided via config or command line option, the collection TSV filename will be used. ")
     config.add_argument("--title",
         help="The full title of the collection to display in the measurements panel title. " +
-             "If not provided via config or command line option, the panel's default title is 'Measurements'.")
+             f"If not provided via config or command line option, the panel's default title is {DEFAULT_ARGS['title']!r}.")
     config.add_argument("--x-axis-label",
         help="The short label to display for the x-axis that describles the value of the measurements. " +
-             "If not provided via config or command line option, the panel's default x-axis label is 'measurements values'.")
+             "If not provided via config or command line option, the panel's default " +
+             f"x-axis label is {DEFAULT_ARGS['x_axis_label']!r}.")
     config.add_argument("--threshold", type=float,
         help="A measurements value threshold to be displayed in the measurements panel.")
     config.add_argument("--filters", nargs="+",
