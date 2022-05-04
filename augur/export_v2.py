@@ -999,8 +999,11 @@ def run_v2(args):
                 if "strain" not in metadata_file[strain]:
                     metadata_file[strain]["strain"] = strain
         except FileNotFoundError:
-            print(f"ERROR: meta data file ({args.metadata}) does not exist")
+            print(f"ERROR: meta data file ({args.metadata}) does not exist", file=sys.stderr)
             sys.exit(2)
+        except Exception as error:
+            print(f"ERROR: {error}", file=sys.stderr)
+            sys.exit(1)
     else:
         metadata_file = {}
 
