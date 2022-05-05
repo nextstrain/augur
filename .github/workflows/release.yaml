@@ -28,7 +28,7 @@ jobs:
         with:
           name: dist
           path: dist/
-      - run: git push origin master release tag ${{ github.event.inputs.version}}
+      - run: git push origin master tag ${{ github.event.inputs.version}}
       - name: 'Publish to PyPI'
         run: twine upload dist/*
         env:

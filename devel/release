@@ -35,7 +35,6 @@ main() {
     update-version $version
     update-changelog $version
     commit-and-tag $version
-    merge-to-release-branch $version
     build-dist
     remind-to-push $version
 }
@@ -149,15 +148,6 @@ commit-and-tag() {
     fi
 }
 
-merge-to-release-branch() {
-    local version="$1"
-
-    git checkout release
-    git pull --ff-only
-    git merge --ff-only "$version"
-    git checkout -
-}
-
 build-dist() {
     rm -rfv build/ dist/ nextstrain_augur.egg-info
     python3 -m build
@@ -172,7 +162,7 @@ remind-to-push() {
     echo
     echo "Please remember to push, including tags:"
     echo
-    echo "   git push origin master release tag $version"
+    echo "   git push origin master tag $version"
     echo
     echo "You'll also want to upload the built releases to PyPi:"
     echo
