@@ -7,7 +7,7 @@
 * docs: Fix API documentation rendering and add page for `io` module [#896][] (@joverlee521)
 * CI: Use GitHub Actions for release process [#904][] (@victorlin)
 * utils: Fix branch length annotations in `json_to_tree` function [#908][] (@huddlej)
-* export v2: Use io.read_metadata during export [#909][] (@huddlej)
+* export v2: Use io.read_metadata during export, fixing a bug caused when the user's input metadata does not have any valid strain id columns [#909][] (@huddlej)
 * CI: Call new GitHub Actions workflow to rebuild images [#910][] (@victorlin)
 
 [#910]: https://github.com/nextstrain/augur/pull/910
