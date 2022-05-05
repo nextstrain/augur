@@ -2,9 +2,6 @@
 
 ## __NEXT__
 
-
-## 15.0.2 (5 May 2022)
-
 ### Bug Fixes
 
 * docs: Fix API documentation rendering and add page for `io` module [#896][] (@joverlee521)
