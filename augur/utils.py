@@ -540,3 +540,11 @@ def read_strains(*files, comment_char="#"):
                     strains.add(strain_name)
 
     return strains
+
+class HideAsFalseAction(argparse.Action):
+    """
+    Custom argparse Action that stores False for arguments passed as `--hide*`
+    and stores True for all other argument patterns.
+    """
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, option_string[2:6] != 'hide')

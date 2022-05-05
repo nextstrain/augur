@@ -1,12 +1,11 @@
 """
 Create JSON files suitable for visualization within the measurements panel of Auspice.
 """
-import argparse
 import os
 import pandas as pd
 import sys
 
-from .utils import write_json
+from .utils import write_json, HideAsFalseAction
 from .validate import (
     measurements as validate_measurements_json,
     measurements_collection_config as validate_collection_config_json,
@@ -20,14 +19,6 @@ DEFAULT_ARGS = {
     'title': 'Measurements',
     'x_axis_label': 'measurement values',
 }
-
-class HideAsFalseAction(argparse.Action):
-    """
-    Custom argparse Action that stores False for arguments passed as `--hide*`
-    and stores True for all other argument patterns.
-    """
-    def __call__(self, parser, namespace, values, option_string=None):
-        setattr(namespace, self.dest, option_string[2:6] != 'hide')
 
 
 def column_exists(collection, column, column_purpose):
