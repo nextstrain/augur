@@ -65,3 +65,49 @@ Export with auspice config JSON with an extensions block
   $ python3 "$TESTDIR/../../scripts/diff_jsons.py"  export_v2/dataset2.json "$TMP/dataset3.json" \
   >   --exclude-paths "root['meta']['updated']"
   {}
+
+Run export with metadata using the default id column of "strain".
+
+  $ ${AUGUR} export v2 \
+  >  --tree export_v2/tree.nwk \
+  >  --metadata export_v2/dataset1_metadata_with_strain.tsv \
+  >  --node-data export_v2/div_node-data.json export_v2/location_node-data.json \
+  >  --auspice-config export_v2/auspice_config1.json \
+  >  --maintainers "Nextstrain Team" \
+  >  --output "$TMP/dataset1.json" > /dev/null
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" export_v2/dataset1.json "$TMP/dataset1.json" \
+  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  {}
+  $ rm -f "$TMP/dataset1.json"
+
+Run export with metadata that uses a different id column other than "strain".
+In this case, the column is "name" (one of the default columns expected by Augur's `io.read_metadata` function).
+
+  $ ${AUGUR} export v2 \
+  >  --tree export_v2/tree.nwk \
+  >  --metadata export_v2/dataset1_metadata_with_name.tsv \
+  >  --node-data export_v2/div_node-data.json export_v2/location_node-data.json \
+  >  --auspice-config export_v2/auspice_config1.json \
+  >  --maintainers "Nextstrain Team" \
+  >  --output "$TMP/dataset1.json" > /dev/null
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" export_v2/dataset1.json "$TMP/dataset1.json" \
+  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  {}
+  $ rm -f "$TMP/dataset1.json"
+
+Run export with metadata that uses an invalid id column.
+This should fail with a helpful error message.
+
+  $ ${AUGUR} export v2 \
+  >  --tree export_v2/tree.nwk \
+  >  --metadata export_v2/dataset1_metadata_without_valid_id.tsv \
+  >  --node-data export_v2/div_node-data.json export_v2/location_node-data.json \
+  >  --auspice-config export_v2/auspice_config1.json \
+  >  --maintainers "Nextstrain Team" \
+  >  --output "$TMP/dataset1.json" > /dev/null
+  ERROR: None of the possible id columns (('strain', 'name')) were found in the metadata's columns ('invalid_id', 'div', 'mutation_length')
+  [1]
+
+  $ popd > /dev/null

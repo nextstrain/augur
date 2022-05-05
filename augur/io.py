@@ -92,11 +92,13 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
         kwargs["chunksize"] = chunk_size
 
     # Inspect the first chunk of the metadata, to find any valid index columns.
-    chunk = pd.read_csv(
+    metadata = pd.read_csv(
         metadata_file,
         iterator=True,
         **kwargs,
-    ).read(nrows=1)
+    )
+    chunk = metadata.read(nrows=1)
+    metadata.close()
 
     id_columns_present = [
         id_column
