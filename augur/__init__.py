@@ -83,6 +83,9 @@ def run(argv):
     except RecursionError:
         print_err("FATAL: Maximum recursion depth reached. You can set the env variable AUGUR_RECURSION_LIMIT to adjust this (current limit: {})".format(sys.getrecursionlimit()))
         sys.exit(2)
+    except FileNotFoundError as e:
+        print_err(f"ERROR: {e.strerror}: '{e.filename}'")
+        sys.exit(2)
     except Exception:
         traceback.print_exc(file=sys.stderr)
         print_err("\n")
