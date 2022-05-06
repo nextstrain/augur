@@ -7,8 +7,8 @@ import sys
 
 from .utils import write_json, HideAsFalseAction
 from .validate import (
-    measurements as validate_measurements_json,
-    measurements_collection_config as validate_collection_config_json,
+    measurements as read_measurements_json,
+    measurements_collection_config as read_collection_config_json,
     ValidateError
 )
 
@@ -169,7 +169,7 @@ def validate_output_json(output_json):
     """
     print("Validating produced measurements JSON")
     try:
-        validate_measurements_json(measurements_json=output_json)
+        read_measurements_json(measurements_json=output_json)
     except ValidateError:
         print(
             "ERROR: Validation of output JSON failed. See detailed errors above.",
@@ -189,7 +189,7 @@ def export_measurements(args):
     collection_config = {}
     if args.get('collection_config'):
         try:
-            collection_config = validate_collection_config_json(args['collection_config'])
+            collection_config = read_collection_config_json(args['collection_config'])
         except ValidateError:
             print(
                 f"Validation of provided collection config JSON {args['collection_config']!r} failed.",
@@ -246,7 +246,7 @@ def concat_measurements(args):
         output['default_collection'] = args['default_collection']
 
     for json in args['jsons']:
-        measurements = validate_measurements_json(json)
+        measurements = read_measurements_json(json)
         output['collections'].extend(measurements['collections'])
 
     indent = {"indent": None} if args['minify_json'] else {}
