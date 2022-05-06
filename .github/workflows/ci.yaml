@@ -49,9 +49,3 @@ jobs:
       uses: codecov/codecov-action@v2
       with:
         fail_ci_if_error: true
-  deploy:
-    if: github.repository == 'nextstrain/augur' && github.ref == 'refs/heads/release'
-    needs: [test]
-    runs-on: ubuntu-latest
-    steps:
-    - run: gh workflow run ci.yml --repo nextstrain/docker-base

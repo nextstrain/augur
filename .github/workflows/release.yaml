@@ -52,3 +52,8 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
           TWINE_REPOSITORY_URL: https://upload.pypi.org/legacy/
+  rebuild-docker-image:
+    needs: [run]
+    runs-on: ubuntu-latest
+    steps:
+    - run: gh workflow run ci.yml --repo nextstrain/docker-base
