@@ -117,21 +117,18 @@ def get_collection_groupings(collection, grouping_columns):
     Returns
     -------
     list[dict] or None
-        The groupings for the collection config or None if all grouping columns are invalid
+        The groupings for the collection config or None any grouping columns are invalid
     """
     groupings = []
     for column in grouping_columns:
-        if column in collection.columns:
-            groupings.append({'key': column})
-        else:
+        if column not in collection.columns:
             print(
                 f"ERROR: Provided grouping column {column!r} does not exist in collection TSV.",
                 file=sys.stderr,
             )
+            return None
 
-    if not groupings:
-        print("ERROR: Provided grouping columns were invalid for provided collection.", file=sys.stderr)
-        return None
+        groupings.append({'key': column})
 
     return groupings
 

@@ -53,6 +53,17 @@ This is expected to fail.
   ERROR: Loading of collection TSV was unsuccessful. See detailed errors above.
   [1]
 
+Try measurements export with invalid grouping columns.
+This is expected to fail.
+
+  $ ${AUGUR} measurements export \
+  >   --collection measurements_export/collection.tsv \
+  >   --grouping-column bad_field \
+  >   --output-json "$TMP/minimal_measurements.json"
+  ERROR: Provided grouping column 'bad_field' does not exist in collection TSV.
+  ERROR: Cannot create measurements JSON without valid groupings
+  [1]
+
 Measurements export for a single collection using only command line configs.
 
   $ ${AUGUR} measurements export \
