@@ -231,8 +231,8 @@ If any tests fail, run the `./devel/rewind-release` script to undo the release, 
 New releases trigger a new [docker-base][] build to keep the Docker image
 up-to-date. This trigger is implemented as the _rebuild-docker-image_ job in
 the release workflow, which is explicitly conditioned on the previous _run_
-job's successful completion. Note that currently we cannot test this
-_rebuild-docker-image_ job without making a release.
+job's successful completion. To trigger a Docker image rebuild without making a
+release, see [this section of the docker-base README](https://github.com/nextstrain/docker-base#rebuilding-an-image-and-pushing-to-docker-hub).
 
 [signed]: https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work
 [a PyPi account]: https://pypi.org/account/register/
