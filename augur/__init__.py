@@ -7,6 +7,8 @@ import re
 import os
 import sys
 import importlib
+import traceback
+from textwrap import dedent
 from types import SimpleNamespace
 
 from .io import print_err
@@ -80,6 +82,15 @@ def run(argv):
         sys.exit(2)
     except RecursionError:
         print_err("FATAL: Maximum recursion depth reached. You can set the env variable AUGUR_RECURSION_LIMIT to adjust this (current limit: {})".format(sys.getrecursionlimit()))
+        sys.exit(2)
+    except Exception:
+        traceback.print_exc(file=sys.stderr)
+        print_err("\n")
+        print_err(dedent("""\
+            An error occurred (see above) that has not been properly handled by Augur.
+            To report this, please open a new issue including the original command and the error above:
+                <https://github.com/nextstrain/augur/issues/new/choose>
+            """))
         sys.exit(2)
 
 
