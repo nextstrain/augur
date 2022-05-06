@@ -260,83 +260,91 @@ def register_arguments(parser):
 
     export = subparsers.add_parser("export", help="Export a measurements JSON for a single collection")
 
-    required = export.add_argument_group(
+    export_required = export.add_argument_group(
         title="REQUIRED"
     )
-    required.add_argument("--collection", required=True, metavar="TSV",
+    export_required.add_argument("--collection", required=True, metavar="TSV",
         help="Collection of measurements and metadata in a TSV file. " +
              "Keep in mind duplicate columns will be renamed as 'X', 'X.1', 'X.2'...'X.N'")
-    required.add_argument("--strain-column", default="strain",
+    export_required.add_argument("--strain-column", default="strain",
         help="Name of the column containing strain names. " +
              "Provided column will be renamed to `strain` so please make sure no other columns are named `strain`. " +
              "Strain names in this column should match the strain names in the corresponding Auspice dataset JSON. " +
              "(default: %(default)s)")
-    required.add_argument("--value-column", default="value",
+    export_required.add_argument("--value-column", default="value",
         help="Name of the column containing the numeric values to be plotted for the given collection. " +
              "Provided column will be renamed to `value` so please make sure no other columns are named `value`. " +
              "(default: %(default)s)")
-    required.add_argument("--output-json", required=True, metavar="JSON", type=str,
+    export_required.add_argument("--output-json", required=True, metavar="JSON", type=str,
         help="Output JSON file. " +
              "The file name must follow the Auspice sidecar file naming convention to be recognized as a sidecar file. " +
              "See Nextstrain data format docs for more details.")
 
-    config = export.add_argument_group(
+    export_config = export.add_argument_group(
         title="COLLECTION CONFIGURATION",
         description="These options control the configuration of the collection for Auspice. " +
                     "You can provide a config JSON (which includes all available options) or " +
                     "command line arguments (which are more limited). " +
                     "Command line arguments will override the values set in the config JSON."
     )
-    config.add_argument("--collection-config", metavar="JSON",
+    export_config.add_argument("--collection-config", metavar="JSON",
         help="Collection configuration file for advanced configurations. ")
-    config.add_argument("--grouping-column", nargs="+",
+    export_config.add_argument("--grouping-column", nargs="+",
         help="Name of the column(s) that should be used as grouping(s) for measurements. " +
              "Note that if groupings are provided via command line args, the default group-by " +
              "field in the config JSON will be dropped.")
-    config.add_argument("--key",
+    export_config.add_argument("--key",
         help="A short key name of the collection for internal use within Auspice. " +
              "If not provided via config or command line option, the collection TSV filename will be used. ")
-    config.add_argument("--title",
+    export_config.add_argument("--title",
         help="The full title of the collection to display in the measurements panel title. " +
              f"If not provided via config or command line option, the panel's default title is {DEFAULT_ARGS['title']!r}.")
-    config.add_argument("--x-axis-label",
+    export_config.add_argument("--x-axis-label",
         help="The short label to display for the x-axis that describles the value of the measurements. " +
              "If not provided via config or command line option, the panel's default " +
              f"x-axis label is {DEFAULT_ARGS['x_axis_label']!r}.")
-    config.add_argument("--threshold", type=float,
+    export_config.add_argument("--threshold", type=float,
         help="A measurements value threshold to be displayed in the measurements panel.")
-    config.add_argument("--filters", nargs="+",
+    export_config.add_argument("--filters", nargs="+",
         help="The columns that are to be used a filters for measurements. " +
              "If not provided, all columns will be available as filters.")
-    config.add_argument("--group-by", type=str,
+    export_config.add_argument("--group-by", type=str,
         help="The default grouping column. If not provided, the first grouping will be used.")
-    config.add_argument("--measurements-display", type=str, choices=["raw", "mean"],
+    export_config.add_argument("--measurements-display", type=str, choices=["raw", "mean"],
         help="The default display of the measurements")
 
-    config.add_argument("--show-overall-mean", "--hide-overall-mean",
+    export_config.add_argument("--show-overall-mean", "--hide-overall-mean",
         dest="show_overall_mean", action=HideAsFalseAction, nargs=0,
         help="Show or hide the overall mean per group by default")
-    config.add_argument("--show-threshold", "--hide-threshold",
+    export_config.add_argument("--show-threshold", "--hide-threshold",
         dest="show_threshold", action=HideAsFalseAction, nargs=0,
         help="Show or hide the threshold by default. This will be ignored if no threshold is provided.")
 
-    optional_settings = export.add_argument_group(
+    export_optional = export.add_argument_group(
         title="OPTIONAL SETTINGS"
     )
-    optional_settings.add_argument("--minify-json", action="store_true",
+    export_optional.add_argument("--minify-json", action="store_true",
         help="Export JSON without indentation or line returns.")
 
 
     concat = subparsers.add_parser("concat", help="Concatenate multiple measurements JSONs into a single JSON file")
-    concat.add_argument("--jsons", required=True, type=str, nargs="+", metavar="JSONs",
+    concat_required = concat.add_argument_group(
+        title="REQUIRED"
+    )
+    concat_required.add_argument("--jsons", required=True, type=str, nargs="+", metavar="JSONs",
         help="Measurement JSON files to concatenate.")
-    concat.add_argument("--default-collection", type=str,
+    concat_required.add_argument("--output-json", required=True, metavar="JSON", type=str,
+        help="Output JSON file")
+
+    concat_optional = concat.add_argument_group(
+        title="OPTIONAL SETTINGS"
+    )
+    concat_optional.add_argument("--default-collection", type=str,
         help="The key of the default collection to display. " +
              "If not provided, the first collection of the first JSON file will be displayed")
-    concat.add_argument("--minify-json", action="store_true",
+    concat_optional.add_argument("--minify-json", action="store_true",
         help="Concatenate JSONs without indentation or line returns.")
-    concat.add_argument("--output-json", required=True, metavar="JSON", type=str,
-        help="Output JSON file")
+
 
 
 def run(args):
