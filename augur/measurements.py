@@ -141,20 +141,22 @@ def override_config_with_args(config, args):
     ----------
     config: dict
         A collection config
-    args: dict
-        The __dict__ attribute of the parsed arguments from argparse
+    args: argparse.Namespace
+        Command line arguments provided by the user.
     """
     config_key_args = ['key', 'title', 'filters', 'x_axis_label', 'threshold']
     display_default_args = ['group_by', 'measurements_display', 'show_overall_mean', 'show_threshold']
 
     for key_arg in config_key_args:
-        if args.get(key_arg) is not None:
-            config[key_arg] = args[key_arg]
+        key_arg_value = getattr(args, key_arg)
+        if key_arg_value is not None:
+            config[key_arg] = key_arg_value
 
     for default_arg in display_default_args:
-        if args.get(default_arg) is not None:
+        default_arg_value = getattr(args, default_arg)
+        if default_arg_value is not None:
             config['display_defaults'] = config.get('display_defaults', {})
-            config['display_defaults'][default_arg] = args[default_arg]
+            config['display_defaults'][default_arg] = default_arg_value
 
 
 def validate_output_json(output_json):
@@ -180,27 +182,27 @@ def validate_output_json(output_json):
 
 def export_measurements(args):
     # Load input collection TSV file
-    collection_df = load_collection(args['collection'], args['strain_column'], args['value_column'])
+    collection_df = load_collection(args.collection, args.strain_column, args.value_column)
 
     if collection_df is None:
         print("ERROR: Loading of collection TSV was unsuccessful. See detailed errors above.", file=sys.stderr)
         sys.exit(1)
 
     collection_config = {}
-    if args.get('collection_config'):
+    if args.collection_config is not None:
         try:
-            collection_config = read_collection_config_json(args['collection_config'])
+            collection_config = read_collection_config_json(args.collection_config)
         except ValidateError:
             print(
-                f"Validation of provided collection config JSON {args['collection_config']!r} failed.",
+                f"Validation of provided collection config JSON {args.collection_config!r} failed.",
                 "Please check the formatting of this file.",
                 file=sys.stderr
             )
             sys.exit(1)
 
     groupings = collection_config.pop('groupings', None)
-    if args.get('grouping_column'):
-        groupings = get_collection_groupings(collection_df, args['grouping_column'])
+    if args.grouping_column is not None:
+        groupings = get_collection_groupings(collection_df, args.grouping_column)
         if collection_config.get('display_defaults', {}).pop('group_by', None):
             print(
                 "WARNING: The default group-by in the collection config has been removed",
@@ -217,7 +219,7 @@ def export_measurements(args):
 
     # Create collection output object with default values for required keys
     collection_output = {
-        'key': collection_config.pop('key', os.path.basename(args['collection'])),
+        'key': collection_config.pop('key', os.path.basename(args.collection)),
         'title': collection_config.pop('title', DEFAULT_ARGS['title']),
         'groupings': groupings,
         'x_axis_label': collection_config.pop('x_axis_label', DEFAULT_ARGS['x_axis_label']),
@@ -231,27 +233,27 @@ def export_measurements(args):
     }
 
     # Set indentation to None to create compact JSON if specified
-    indent = {"indent": None} if args['minify_json'] else {}
+    indent = {"indent": None} if args.minify_json else {}
     # Create output JSON
-    write_json(output, args['output_json'], include_version=False, **indent)
+    write_json(output, args.output_json, include_version=False, **indent)
     # Verify the produced output is a valid measurements JSON
-    validate_output_json(args['output_json'])
+    validate_output_json(args.output_json)
 
 
 def concat_measurements(args):
     output = {
         'collections': []
     }
-    if args.get("default_collection"):
-        output['default_collection'] = args['default_collection']
+    if args.default_collection is not None:
+        output['default_collection'] = args.default_collection
 
-    for json in args['jsons']:
+    for json in args.jsons:
         measurements = read_measurements_json(json)
         output['collections'].extend(measurements['collections'])
 
-    indent = {"indent": None} if args['minify_json'] else {}
-    write_json(output, args['output_json'], include_version=False, **indent)
-    validate_output_json(args['output_json'])
+    indent = {"indent": None} if args.minify_json else {}
+    write_json(output, args.output_json, include_version=False, **indent)
+    validate_output_json(args.output_json)
 
 
 def register_arguments(parser):
@@ -349,6 +351,6 @@ def register_arguments(parser):
 
 def run(args):
     if args.subcommand == 'export':
-        return export_measurements(vars(args))
+        return export_measurements(args)
     if args.subcommand == "concat":
-        return concat_measurements(vars(args))
+        return concat_measurements(args)
