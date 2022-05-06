@@ -21,34 +21,6 @@ DEFAULT_ARGS = {
 }
 
 
-def column_exists(collection, column, column_purpose):
-    """
-    Checks the provided column exists in the provided collection.
-    Prints an error message to stderr if the column does not exist.
-
-    Parameters
-    ----------
-    collection: pandas.DataFrame
-        Collection of measurements and metadata
-    column: str
-        Column to check exists in the collection
-    column_purpose: str
-        Purpose of provided column for detailed error message
-
-    Returns
-    -------
-    bool
-        True if column exists in collection
-    """
-    column_in_df = column in collection.columns
-    if not column_in_df:
-        print(
-            f"ERROR: Provided {column_purpose} column {column!r} does not exist in collection TSV.",
-            file=sys.stderr,
-        )
-    return column_in_df
-
-
 def load_collection(collection, strain_column, value_column):
     """
     Loads the provided collection TSV as a pandas DataFrame.
@@ -98,7 +70,11 @@ def load_collection(collection, strain_column, value_column):
     checks_passed = True
     for provided_column, required_column in required_column_map.items():
         # Confirm the provided column exists
-        if not column_exists(collection_df, provided_column, required_column):
+        if provided_column not in collection_df.columns:
+            print(
+                f"ERROR: Provided {required_column} column {provided_column!r} does not exist in collection TSV.",
+                file=sys.stderr,
+            )
             checks_passed = False
         # Confirm the provided column does not overwrite an existing column
         if (required_column in collection_df.columns and
@@ -143,7 +119,15 @@ def get_collection_groupings(collection, grouping_columns):
     list[dict] or None
         The groupings for the collection config or None if all grouping columns are invalid
     """
-    groupings = [{'key': col} for col in grouping_columns if column_exists(collection, col, "grouping")]
+    groupings = []
+    for column in grouping_columns:
+        if column in collection.columns:
+            groupings.append({'key': column})
+        else:
+            print(
+                f"ERROR: Provided grouping column {column!r} does not exist in collection TSV.",
+                file=sys.stderr,
+            )
 
     if not groupings:
         print("ERROR: Provided grouping columns were invalid for provided collection.", file=sys.stderr)
