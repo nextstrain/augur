@@ -29,7 +29,9 @@ This is expected to fail.
   $ ${AUGUR} measurements concat \
   >   --jsons measurements_concat/single_collection_measurements_1.json measurements_concat/single_collection_measurements_1.json \
   >   --default-collection collection_1 \
-  >   --output-json "$TMP/multiple_collections_measurements.json" &>/dev/null
+  >   --output-json "$TMP/multiple_collections_measurements.json" 1>/dev/null
+  ERROR: Collections at indexes [0, 1] share the same collection key 'collection_1'.
+  ERROR: Validation of output JSON failed. See detailed errors above.
   [1]
 
 Measurements concat with an invalid default collection.
@@ -38,5 +40,7 @@ This is expected to fail.
   $ ${AUGUR} measurements concat \
   >   --jsons measurements_concat/single_collection_measurements_1.json measurements_concat/single_collection_measurements_2.json \
   >   --default-collection collection_3 \
-  >   --output-json "$TMP/multiple_collections_measurements.json" &>/dev/null
+  >   --output-json "$TMP/multiple_collections_measurements.json" 1>/dev/null
+  ERROR: The default collection key 'collection_3' does not match any of the collections' keys.
+  ERROR: Validation of output JSON failed. See detailed errors above.
   [1]
