@@ -264,6 +264,25 @@
                         "transmission_lines": {
                             "description": "Should transmission lines (if available) be displaye by default",
                             "type": "boolean"
+                        },
+                        "language": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "A BCP 47 language tag specifying the default language in which to display Auspice's interface (if supported)"
+                        },
+                        "sidebar": {
+                            "type": "string",
+                            "enum": ["open", "closed"]
+                        },
+                        "panels": {
+                            "type": "array",
+                            "description": "The panels to display by default.",
+                            "$comment": "optional, but if present must not be empty",
+                            "minItems": 1,
+                            "items": {
+                                "type": "string",
+                                "enum": ["tree", "map", "frequencies", "entropy"]
+                            }
                         }
                     }
                 },
