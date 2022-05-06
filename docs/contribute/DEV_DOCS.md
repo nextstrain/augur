@@ -253,10 +253,7 @@ After a successful pull request review, Bioconda will automatically update the a
 
 Branches and PRs are tested by GitHub Actions workflows configured in `.github/workflows`.
 
-Our GitHub Actions workflow is comprised of two jobs: _test_ and _deploy_.  Steps in the
-_test_ job always run, but _deploy_ steps only run sometimes (see below).
-
-The _test_ job runs tests and uploads the the coverage report to Codecov.
+Our CI GitHub Actions workflow is comprised of a _test_ job that runs tests and uploads the coverage report to Codecov.
 Currently, only `pytest` results are included in the report.
 
 ## Contributing documentation
