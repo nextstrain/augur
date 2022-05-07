@@ -21,59 +21,34 @@ DEFAULT_ARGS = {
 }
 
 
-def load_collection(collection, strain_column, value_column, include_columns):
-    """
-    Loads the provided collection TSV as a pandas DataFrame.
-    Renames the provided strain and value columns if needed and ensures the
-    value column has a numeric dtype.
-
-    Loads all columns by default. If columns are provided via *include_columns*
-    then only use listed columns (plus *strain_column* and *value_column*).
-
-    Prints any error messages to stderr.
-
-    Parameters
-    ----------
-    collection: str
-        Filepath to the collection TSV file
-    strain_column: str
-        The name of the strain column within the collection TSV
-    value_column: str
-        The name of the value column within the collection TSV
-    include_columns: list[str]
-        List of columns to include in the collections DataFrame
-
-    Returns
-    -------
-    pandas.DataFrame or None
-        The collection DataFrame or None if any errors were encountered during loading
-    """
+def export_measurements(args):
     # Default value to None so all columns will be read
     columns_to_include = None
-    if include_columns:
-        columns_to_include = set([strain_column, value_column] + include_columns)
+    if args.include_columns is not None:
+        columns_to_include = set([args.strain_column, args.value_column] + args.include_columns)
 
+    # Load input collection TSV file
     try:
-        collection_df = pd.read_csv(collection, sep="\t", usecols=columns_to_include)
+        collection_df = pd.read_csv(args.collection, sep="\t", usecols=columns_to_include)
     except FileNotFoundError:
         print(
-            f"ERROR: collection TSV file {collection!r} does not exist",
+            f"ERROR: collection TSV file {args.collection!r} does not exist",
             file=sys.stderr,
         )
-        return None
+        sys.exit(1)
 
     # Verify the strain and value columns are different
-    if strain_column == value_column:
+    if args.strain_column == args.value_column:
         print(
             "ERROR: The strain column and value column cannot be the same column.",
             file=sys.stderr
         )
-        return None
+        sys.exit(1)
 
-    # Define mapping of requried columns to user provided columns
+    # Define mapping of required columns to user provided columns
     required_column_map = {
-        strain_column: 'strain',
-        value_column: 'value',
+        args.strain_column: 'strain',
+        args.value_column: 'value',
     }
 
     # Check all required columns are included in collection TSV
@@ -97,7 +72,7 @@ def load_collection(collection, strain_column, value_column, include_columns):
             checks_passed = False
 
     if not checks_passed:
-        return None
+        sys.exit(1)
 
     # Rename user provided columns to expected columns
     collection_df = collection_df.rename(columns=required_column_map)
@@ -107,108 +82,6 @@ def load_collection(collection, strain_column, value_column, include_columns):
         collection_df['value'] = pd.to_numeric(collection_df['value'])
     except ValueError as e:
         print(f"ERROR: Found a non-numeric measurement value: {e!r}", file=sys.stderr)
-        return None
-
-    return collection_df
-
-
-def get_collection_groupings(collection, include_columns, grouping_columns):
-    """
-    Creates the groupings for the provided collection using the provided
-    grouping columns after verifying the columns exist the user provided
-    include_columns and in the collection.
-
-    Parameters
-    ----------
-    collection: pandas.DataFrame
-        The collection used to validate groupings
-    include_columns: list[str]
-        List of user provided columns to include in collection
-    grouping_columns: list[str]
-        List of grouping column names
-
-    Returns
-    -------
-    list[dict] or None
-        The groupings for the collection config or None any grouping columns are invalid
-    """
-    groupings = []
-    for column in grouping_columns:
-        # If the user specified columns to include, verify the grouping column was included
-        if include_columns and column not in include_columns:
-            print(
-                f"ERROR: Provided grouping column {column!r} was not in the",
-                f"list of columns to include: {include_columns}.",
-                file=sys.stderr,
-            )
-            return None
-
-        # Verify the grouping column is included in the collection
-        if column not in collection.columns:
-            print(
-                f"ERROR: Provided grouping column {column!r} does not exist in collection TSV.",
-                file=sys.stderr,
-            )
-            return None
-
-        groupings.append({'key': column})
-
-    return groupings
-
-
-def override_config_with_args(config, args):
-    """
-    Overrides values in the config with values of provided command line args.
-
-    Parameters
-    ----------
-    config: dict
-        A collection config
-    args: argparse.Namespace
-        Command line arguments provided by the user.
-    """
-    config_key_args = ['key', 'title', 'filters', 'x_axis_label', 'threshold']
-    display_default_args = ['group_by', 'measurements_display', 'show_overall_mean', 'show_threshold']
-
-    for key_arg in config_key_args:
-        key_arg_value = getattr(args, key_arg)
-        if key_arg_value is not None:
-            config[key_arg] = key_arg_value
-
-    for default_arg in display_default_args:
-        default_arg_value = getattr(args, default_arg)
-        if default_arg_value is not None:
-            config['display_defaults'] = config.get('display_defaults', {})
-            config['display_defaults'][default_arg] = default_arg_value
-
-
-def validate_output_json(output_json):
-    """
-    Validate the output JSON against the measurements schema
-
-    Parameters
-    ----------
-    output_json: str
-        Filepath to output JSON
-
-    """
-    print("Validating produced measurements JSON")
-    try:
-        read_measurements_json(measurements_json=output_json)
-    except ValidateError:
-        print(
-            "ERROR: Validation of output JSON failed. See detailed errors above.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
-
-def export_measurements(args):
-    # Load input collection TSV file
-    collection_df = load_collection(args.collection, args.strain_column, args.value_column, args.include_columns)
-
-    if collection_df is None:
-        print("ERROR: Loading of collection TSV was unsuccessful. See detailed errors above.", file=sys.stderr)
         sys.exit(1)
 
     collection_config = {}
@@ -225,7 +98,27 @@ def export_measurements(args):
 
     groupings = collection_config.pop('groupings', None)
     if args.grouping_column is not None:
-        groupings = get_collection_groupings(collection_df, args.include_columns, args.grouping_column)
+        groupings = []
+        for column in args.grouping_column:
+            # If the user specified columns to include, verify the grouping column was included
+            if args.include_columns and column not in args.include_columns:
+                print(
+                    f"ERROR: Provided grouping column {column!r} was not in the",
+                    f"list of columns to include: {args.include_columns}.",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+
+            # Verify the grouping column is included in the collection
+            if column not in collection_df.columns:
+                print(
+                    f"ERROR: Provided grouping column {column!r} does not exist in collection TSV.",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+
+            groupings.append({'key': column})
+
         if collection_config.get('display_defaults', {}).pop('group_by', None):
             print(
                 "WARNING: The default group-by in the collection config has been removed",
@@ -238,7 +131,19 @@ def export_measurements(args):
         sys.exit(1)
 
     # Combine collection config with command line args
-    override_config_with_args(collection_config, args)
+    config_key_args = ['key', 'title', 'filters', 'x_axis_label', 'threshold']
+    display_default_args = ['group_by', 'measurements_display', 'show_overall_mean', 'show_threshold']
+
+    for key_arg in config_key_args:
+        key_arg_value = getattr(args, key_arg)
+        if key_arg_value is not None:
+            collection_config[key_arg] = key_arg_value
+
+    for default_arg in display_default_args:
+        default_arg_value = getattr(args, default_arg)
+        if default_arg_value is not None:
+            collection_config['display_defaults'] = collection_config.get('display_defaults', {})
+            collection_config['display_defaults'][default_arg] = default_arg_value
 
     # Create collection output object with default values for required keys
     collection_output = {
@@ -260,7 +165,14 @@ def export_measurements(args):
     # Create output JSON
     write_json(output, args.output_json, include_version=False, **indent)
     # Verify the produced output is a valid measurements JSON
-    validate_output_json(args.output_json)
+    try:
+        read_measurements_json(measurements_json=args.output_json)
+    except ValidateError:
+        print(
+            "ERROR: Validation of output JSON failed. See detailed errors above.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
 
 def concat_measurements(args):
@@ -276,7 +188,14 @@ def concat_measurements(args):
 
     indent = {"indent": None} if args.minify_json else {}
     write_json(output, args.output_json, include_version=False, **indent)
-    validate_output_json(args.output_json)
+    try:
+        read_measurements_json(measurements_json=args.output_json)
+    except ValidateError:
+        print(
+            "ERROR: Validation of output JSON failed. See detailed errors above.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
 
 def register_arguments(parser):

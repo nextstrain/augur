@@ -37,7 +37,6 @@ This is expected to fail.
   >   --output-json "$TMP/minimal_measurements.json"
   ERROR: Cannot use provided 'field_1' column as the strain column because a 'strain' column already exists in collection TSV.
   ERROR: Cannot use provided 'field_2' column as the value column because a 'value' column already exists in collection TSV.
-  ERROR: Loading of collection TSV was unsuccessful. See detailed errors above.
   [1]
 
 Try measurements export with user provided strain and value columns that are the same column.
@@ -50,7 +49,6 @@ This is expected to fail.
   >   --grouping-column field_1 \
   >   --output-json "$TMP/minimal_measurements.json"
   ERROR: The strain column and value column cannot be the same column.
-  ERROR: Loading of collection TSV was unsuccessful. See detailed errors above.
   [1]
 
 Minimal measurements export with user provided strain, value, and subset of columns.
@@ -77,7 +75,6 @@ This is expected to fail.
   >   --include-columns field_3 \
   >   --output-json "$TMP/minimal_measurements_subset.json" 1>/dev/null
   ERROR: Provided grouping column 'field_1' was not in the list of columns to include: ['field_3'].
-  ERROR: Cannot create measurements JSON without valid groupings
   [1]
 
 Try measurements export with invalid grouping columns.
@@ -88,7 +85,6 @@ This is expected to fail.
   >   --grouping-column bad_field \
   >   --output-json "$TMP/minimal_measurements.json"
   ERROR: Provided grouping column 'bad_field' does not exist in collection TSV.
-  ERROR: Cannot create measurements JSON without valid groupings
   [1]
 
 Measurements export for a single collection using only command line configs.
