@@ -53,6 +53,33 @@ This is expected to fail.
   ERROR: Loading of collection TSV was unsuccessful. See detailed errors above.
   [1]
 
+Minimal measurements export with user provided strain, value, and subset of columns.
+
+  $ ${AUGUR} measurements export \
+  >   --collection measurements_export/collection_without_strain_value_columns.tsv \
+  >   --strain-column strain_field \
+  >   --value-column value_field \
+  >   --grouping-column field_1 \
+  >   --include-columns field_1 field_3 \
+  >   --output-json "$TMP/minimal_measurements_subset.json" &>/dev/null
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" measurements_export/minimal_measurements_subset.json "$TMP/minimal_measurements_subset.json"
+  {}
+
+Try measurements export with grouping column missing from include columns list
+This is expected to fail.
+
+  $ ${AUGUR} measurements export \
+  >   --collection measurements_export/collection_without_strain_value_columns.tsv \
+  >   --strain-column strain_field \
+  >   --value-column value_field \
+  >   --grouping-column field_1 \
+  >   --include-columns field_3 \
+  >   --output-json "$TMP/minimal_measurements_subset.json" 1>/dev/null
+  ERROR: Provided grouping column 'field_1' was not in the list of columns to include: ['field_3'].
+  ERROR: Cannot create measurements JSON without valid groupings
+  [1]
+
 Try measurements export with invalid grouping columns.
 This is expected to fail.
 

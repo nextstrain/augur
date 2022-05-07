@@ -21,11 +21,14 @@ DEFAULT_ARGS = {
 }
 
 
-def load_collection(collection, strain_column, value_column):
+def load_collection(collection, strain_column, value_column, include_columns):
     """
     Loads the provided collection TSV as a pandas DataFrame.
     Renames the provided strain and value columns if needed and ensures the
     value column has a numeric dtype.
+
+    Loads all columns by default. If columns are provided via *include_columns*
+    then only use listed columns (plus *strain_column* and *value_column*).
 
     Prints any error messages to stderr.
 
@@ -37,14 +40,21 @@ def load_collection(collection, strain_column, value_column):
         The name of the strain column within the collection TSV
     value_column: str
         The name of the value column within the collection TSV
+    include_columns: list[str]
+        List of columns to include in the collections DataFrame
 
     Returns
     -------
     pandas.DataFrame or None
         The collection DataFrame or None if any errors were encountered during loading
     """
+    # Default value to None so all columns will be read
+    columns_to_include = None
+    if include_columns:
+        columns_to_include = set([strain_column, value_column] + include_columns)
+
     try:
-        collection_df = pd.read_csv(collection, sep="\t")
+        collection_df = pd.read_csv(collection, sep="\t", usecols=columns_to_include)
     except FileNotFoundError:
         print(
             f"ERROR: collection TSV file {collection!r} does not exist",
@@ -102,15 +112,18 @@ def load_collection(collection, strain_column, value_column):
     return collection_df
 
 
-def get_collection_groupings(collection, grouping_columns):
+def get_collection_groupings(collection, include_columns, grouping_columns):
     """
     Creates the groupings for the provided collection using the provided
-    grouping columns after verifying the columns exist in the collection.
+    grouping columns after verifying the columns exist the user provided
+    include_columns and in the collection.
 
     Parameters
     ----------
     collection: pandas.DataFrame
         The collection used to validate groupings
+    include_columns: list[str]
+        List of user provided columns to include in collection
     grouping_columns: list[str]
         List of grouping column names
 
@@ -121,6 +134,16 @@ def get_collection_groupings(collection, grouping_columns):
     """
     groupings = []
     for column in grouping_columns:
+        # If the user specified columns to include, verify the grouping column was included
+        if include_columns and column not in include_columns:
+            print(
+                f"ERROR: Provided grouping column {column!r} was not in the",
+                f"list of columns to include: {include_columns}.",
+                file=sys.stderr,
+            )
+            return None
+
+        # Verify the grouping column is included in the collection
         if column not in collection.columns:
             print(
                 f"ERROR: Provided grouping column {column!r} does not exist in collection TSV.",
@@ -182,7 +205,7 @@ def validate_output_json(output_json):
 
 def export_measurements(args):
     # Load input collection TSV file
-    collection_df = load_collection(args.collection, args.strain_column, args.value_column)
+    collection_df = load_collection(args.collection, args.strain_column, args.value_column, args.include_columns)
 
     if collection_df is None:
         print("ERROR: Loading of collection TSV was unsuccessful. See detailed errors above.", file=sys.stderr)
@@ -202,7 +225,7 @@ def export_measurements(args):
 
     groupings = collection_config.pop('groupings', None)
     if args.grouping_column is not None:
-        groupings = get_collection_groupings(collection_df, args.grouping_column)
+        groupings = get_collection_groupings(collection_df, args.include_columns, args.grouping_column)
         if collection_config.get('display_defaults', {}).pop('group_by', None):
             print(
                 "WARNING: The default group-by in the collection config has been removed",
@@ -325,6 +348,10 @@ def register_arguments(parser):
     export_optional = export.add_argument_group(
         title="OPTIONAL SETTINGS"
     )
+    export_optional.add_argument("--include-columns", nargs="+",
+        help="The columns to include from the collection TSV in the measurements JSON. " +
+             "Be sure to list columns that are used as groupings and/or filters. " +
+             "If no columns are provided, then all columns will be included by default.")
     export_optional.add_argument("--minify-json", action="store_true",
         help="Export JSON without indentation or line returns.")
 
