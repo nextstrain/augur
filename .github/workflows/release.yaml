@@ -1,0 +1,59 @@
+name: Publish to PyPI
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New version X.X.X'
+        required: true
+        type: string
+      pypi_instance:
+        # PyPI has a separate instance which can be used for testing purposes.
+        description: 'PyPI instance for publishing'
+        required: true
+        default: 'PyPI'
+        type: choice
+        options:
+        - 'TestPyPI'
+        - 'PyPI'
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          # Fetch all branches and tags.
+          fetch-depth: 0
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+      - name: Set Nextstrain bot as git user
+        run: |
+          git config --global user.email "hello@nextstrain.org"
+          git config --global user.name "Nextstrain bot"
+      - run: python3 -m pip install --upgrade build twine
+      - run: devel/release ${{ github.event.inputs.version}}
+      - run: devel/test
+      - uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist/
+      - run: git push origin master release tag ${{ github.event.inputs.version}}
+      - name: 'Publish to TestPyPI'
+        if: ${{ github.event.inputs.pypi_instance == 'TestPyPI' }}
+        run: twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
+      - name: 'Publish to PyPI'
+        if: ${{ github.event.inputs.pypi_instance == 'PyPI' }}
+        run: twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+          TWINE_REPOSITORY_URL: https://upload.pypi.org/legacy/
+  rebuild-docker-image:
+    needs: [run]
+    runs-on: ubuntu-latest
+    steps:
+    - run: gh workflow run ci.yml --repo nextstrain/docker-base

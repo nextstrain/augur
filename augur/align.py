@@ -266,6 +266,7 @@ def strip_non_reference(aln, reference, insertion_csv=None):
     list
         list of trimmed sequences, effectively a multiple alignment
 
+
     Tests
     -----
     >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps")]

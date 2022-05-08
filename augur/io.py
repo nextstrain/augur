@@ -58,6 +58,7 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
     KeyError :
         When the metadata file does not have any valid index columns.
 
+
     For standard use, request a metadata file and get a pandas DataFrame.
 
     >>> read_metadata("tests/functional/filter/metadata.tsv").index.values[0]
@@ -91,11 +92,13 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
         kwargs["chunksize"] = chunk_size
 
     # Inspect the first chunk of the metadata, to find any valid index columns.
-    chunk = pd.read_csv(
+    metadata = pd.read_csv(
         metadata_file,
         iterator=True,
         **kwargs,
-    ).read(nrows=1)
+    )
+    chunk = metadata.read(nrows=1)
+    metadata.close()
 
     id_columns_present = [
         id_column

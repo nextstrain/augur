@@ -177,7 +177,7 @@ def index_sequences(sequences_path, sequence_index_path):
     num_of_seqs = 0
 
     with open_file(sequence_index_path, 'wt') as out_file:
-        tsv_writer = csv.writer(out_file, delimiter = '\t')
+        tsv_writer = csv.writer(out_file, delimiter = '\t', lineterminator='\n')
 
         #write header i output file
         header = ['strain', 'length']+labels+['invalid_nucleotides']
@@ -206,9 +206,8 @@ def run(args):
             tot_length = None
         else:
             num_of_seqs, tot_length = index_sequences(args.sequences, args.output)
-    except ValueError as error:
-        print("ERROR: Problem reading in {}:".format(sequences_path), file=sys.stderr)
-        print(error, file=sys.stderr)
+    except FileNotFoundError:
+        print(f"ERROR: Could not open sequences file '{args.sequences}'.", file=sys.stderr)
         return 1
 
     if args.verbose:

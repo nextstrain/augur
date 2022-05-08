@@ -3,6 +3,33 @@
 ## __NEXT__
 
 
+## 15.0.2 (5 May 2022)
+
+### Bug Fixes
+
+* docs: Fix API documentation rendering and add page for `io` module [#896][] (@joverlee521)
+* CI: Use GitHub Actions for release process [#904][] (@victorlin)
+* utils: Fix branch length annotations in `json_to_tree` function [#908][] (@huddlej)
+* export v2: Use io.read_metadata during export, fixing a bug caused when the user's input metadata does not have any valid strain id columns [#909][] (@huddlej)
+* CI: Call new GitHub Actions workflow to rebuild images [#910][] (@victorlin)
+
+[#910]: https://github.com/nextstrain/augur/pull/910
+[#909]: https://github.com/nextstrain/augur/pull/909
+[#908]: https://github.com/nextstrain/augur/pull/908
+[#904]: https://github.com/nextstrain/augur/pull/904
+[#896]: https://github.com/nextstrain/augur/pull/896
+
+## 15.0.1 (25 April 2022)
+
+### Bug Fixes
+
+* traits: Fix crash when inferring traits with a single value. [#891][] (@huddlej)
+* index: Properly handle missing inputs. [#900][] (@huddlej)
+* index: Use standard UNIX-style line endings for output. [#900][] (@huddlej)
+
+[#891]: https://github.com/nextstrain/augur/pull/891
+[#900]: https://github.com/nextstrain/augur/pull/900
+
 ## 15.0.0 (15 April 2022)
 
 ### Major Changes

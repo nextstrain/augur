@@ -18,21 +18,21 @@ def read_in_clade_definitions(clade_file):
     Inheritance is allowed, but needs to be acyclic. Alleles can be overwritten by inheriting clades.
 
     Sites are 1 indexed in the file, and are converted to 0 indexed in the output
-    
+
     Empty lines are ignored, comments after # are ignored
 
-    Format
-    ------
-    clade      gene    site     alt
-    Clade_1    ctpE    81       D
-    Clade_2    nuc     30642    T
-    Clade_3    nuc     444296   A
-    Clade_3    S       1        P
-    \\# Clade_4 inherits from Clade_3
-    Clade_4    clade   Clade_3
-    Clade_4    pks8    634      T
-    \\# Inherited allele can be overwritten
-    Clade_4    S       1        L
+    Format::
+
+        clade      gene    site     alt
+        Clade_1    ctpE    81       D
+        Clade_2    nuc     30642    T
+        Clade_3    nuc     444296   A
+        Clade_3    S       1        P
+        # Clade_4 inherits from Clade_3
+        Clade_4    clade   Clade_3
+        Clade_4    pks8    634      T
+        # Inherited allele can be overwritten
+        Clade_4    S       1        L
 
     Parameters
     ----------
@@ -74,14 +74,14 @@ def read_in_clade_definitions(clade_file):
     # This way all clades can be reached by traversal
     for clade in df.clade.unique():
         G.add_edge(root, clade)
-    
+
     # Build inheritance graph
     # For clades that inherit, disconnect from root
     # Add edge from parent
     for _, row in clade_inheritance_rows.iterrows():
         G.remove_edge(root, row.clade)
         G.add_edge(row.site, row.clade)
-    
+
     if not nx.is_directed_acyclic_graph(G):
         raise ValueError(f"Clade definitions contain cycles {list(nx.simple_cycles(G))}")
 
@@ -89,7 +89,7 @@ def read_in_clade_definitions(clade_file):
     # Topological sort ensures parents are visited before children
     # islice is used to skip the root node (which has no parent)
     for clade in islice(nx.topological_sort(G),1,None):
-        # Get name of parent clade 
+        # Get name of parent clade
         # G.predecessors(clade) returns iterator, thus next() necessary
         # despite the fact that there should only be one parent
         parent_clade = next(G.predecessors(clade))
@@ -99,7 +99,7 @@ def read_in_clade_definitions(clade_file):
         for _, row in df[(df.clade == clade) & (df.gene != 'clade')].iterrows():
             # Overwrite of parent alleles is possible and happens here
             clades[clade][(row.gene, int(row.site)-1)] = row.alt
-    
+
     # Convert items from dict[str, dict[(str,int),str]] to dict[str, list[(str,int,str)]]
     clades = {
         clade: [
@@ -110,7 +110,7 @@ def read_in_clade_definitions(clade_file):
         # If clause avoids root (helper) from being emmitted
         if clade != root
     }
-    
+
     return clades
 
 

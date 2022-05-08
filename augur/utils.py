@@ -551,7 +551,7 @@ def annotate_parents_for_tree(tree):
     return tree
 
 
-def json_to_tree(json_dict, root=True):
+def json_to_tree(json_dict, root=True, parent_cumulative_branch_length=None):
     """Returns a Bio.Phylo tree corresponding to the given JSON dictionary exported
     by `tree_to_json`.
 
@@ -589,6 +589,17 @@ def json_to_tree(json_dict, root=True):
     True
     >>> tree.clades[0].branch_length > 0
     True
+
+    Branch lengths should be the length of the branch to each node and not the
+    length from the root. The cumulative branch length from the root gets its
+    own attribute.
+
+    >>> tip = [tip for tip in tree.find_clades(terminal=True) if tip.name == "USA/2016/FLWB042"][0]
+    >>> round(tip.cumulative_branch_length, 6)
+    0.004747
+    >>> round(tip.branch_length, 6)
+    0.000186
+
     """
     # Check for v2 JSON which has combined metadata and tree data.
     if root and "meta" in json_dict and "tree" in json_dict:
@@ -602,10 +613,6 @@ def json_to_tree(json_dict, root=True):
     else:
         node.name = json_dict["strain"]
 
-    if "children" in json_dict:
-        # Recursively add children to the current node.
-        node.clades = [json_to_tree(child, root=False) for child in json_dict["children"]]
-
     # Assign all non-children attributes.
     for attr, value in json_dict.items():
         if attr != "children":
@@ -614,12 +621,27 @@ def json_to_tree(json_dict, root=True):
     # Only v1 JSONs support a single `attr` attribute.
     if hasattr(node, "attr"):
         node.numdate = node.attr.get("num_date")
-        node.branch_length = node.attr.get("div")
+        node.cumulative_branch_length = node.attr.get("div")
 
         if "translations" in node.attr:
             node.translations = node.attr["translations"]
     elif hasattr(node, "node_attrs"):
-        node.branch_length = node.node_attrs.get("div")
+        node.cumulative_branch_length = node.node_attrs.get("div")
+
+    node.branch_length = 0.0
+    if parent_cumulative_branch_length is not None and hasattr(node, "cumulative_branch_length"):
+        node.branch_length = node.cumulative_branch_length - parent_cumulative_branch_length
+
+    if "children" in json_dict:
+        # Recursively add children to the current node.
+        node.clades = [
+            json_to_tree(
+                child,
+                root=False,
+                parent_cumulative_branch_length=node.cumulative_branch_length
+            )
+            for child in json_dict["children"]
+        ]
 
     if root:
         node = annotate_parents_for_tree(node)
@@ -646,8 +668,8 @@ def read_bed_file(bed_file):
     bed_file : str
         Path to the BED file
 
-    Returns:
-    --------
+    Returns
+    -------
     list[int]:
         Sorted list of unique zero-indexed sites
     """
@@ -677,8 +699,8 @@ def read_mask_file(mask_file):
     mask_file : str
         Path to the masking file
 
-    Returns:
-    --------
+    Returns
+    -------
     list[int]:
         Sorted list of unique zero-indexed sites
     """
@@ -726,7 +748,7 @@ def read_strains(*files, comment_char="#"):
     set of distinct strains.
 
     Strain names can be commented with full-line or inline comments. For
-    example, the following is a valid strain names file:
+    example, the following is a valid strain names file::
 
         # this is a comment at the top of the file
         strain1  # exclude strain1 because it isn't sequenced properly

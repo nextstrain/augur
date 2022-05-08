@@ -49,28 +49,3 @@ jobs:
       uses: codecov/codecov-action@v2
       with:
         fail_ci_if_error: true
-  deploy:
-    if: github.repository == 'nextstrain/augur' && github.ref == 'refs/heads/release'
-    needs: [test]
-    runs-on: ubuntu-latest
-    steps:
-      - env:
-          TRAVIS_AUTH_TOKEN: ${{ secrets.TRAVIS_AUTH_TOKEN }}
-        run: |
-          set -euo pipefail
-
-          echo "Pinging Travis CI to rebuild Docker image"
-
-          body='{
-            "request": {
-              "branch": "master",
-              "message": "Build triggered from augur"
-            }
-          }'
-
-          curl -X POST https://api.travis-ci.com/repo/nextstrain%2Fdocker-base/requests \
-            -H "Content-Type: application/json" \
-            -H "Accept: application/json" \
-            -H "Travis-API-Version: 3" \
-            -H "Authorization: token $TRAVIS_AUTH_TOKEN" \
-            -d "$body"
