@@ -5,7 +5,7 @@ import pandas as pd
 import sys
 
 from .io import open_file, read_sequences, write_sequences
-from .utils import get_numerical_date_from_value
+from .utils import AugurError, get_numerical_date_from_value
 
 forbidden_characters = str.maketrans(
     {' ': None,
@@ -176,6 +176,8 @@ def run(args):
                 args.prettify_fields,
                 args.fix_dates
             )
+            if sequence_record.id in meta_data:
+                raise AugurError(f"Duplicate found for '{sequence_record.id}'.")
             meta_data[sequence_record.id] = sequence_metadata
 
             sequences_written = write_sequences(
