@@ -20,7 +20,7 @@ from typing import Collection
 from .dates import numeric_date, numeric_date_type, SUPPORTED_DATE_HELP_TEXT
 from .index import index_sequences, index_vcf
 from .io import open_file, read_metadata, read_sequences, write_sequences
-from .utils import is_vcf as filename_is_vcf, read_vcf, read_strains, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
+from .utils import AugurError, is_vcf as filename_is_vcf, read_vcf, read_strains, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
 
 comment_char = '#'
 
@@ -30,7 +30,7 @@ SEQUENCE_ONLY_FILTERS = (
 )
 
 
-class FilterException(Exception):
+class FilterException(AugurError):
     """Representation of an error that occurred during filtering.
     """
     pass
