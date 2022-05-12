@@ -8,7 +8,9 @@ import os
 import sys
 import importlib
 from types import SimpleNamespace
-from .utils import first_line
+
+from .io import print_err
+from .utils import AugurError, first_line
 
 recursion_limit = os.environ.get("AUGUR_RECURSION_LIMIT")
 if recursion_limit:
@@ -73,8 +75,11 @@ def run(argv):
     args = make_parser().parse_args(argv)
     try:
         return args.__command__.run(args)
+    except AugurError as e:
+        print_err(f"ERROR: {e}")
+        sys.exit(2)
     except RecursionError:
-        print("FATAL: Maximum recursion depth reached. You can set the env variable AUGUR_RECURSION_LIMIT to adjust this (current limit: {})".format(sys.getrecursionlimit()))
+        print_err("FATAL: Maximum recursion depth reached. You can set the env variable AUGUR_RECURSION_LIMIT to adjust this (current limit: {})".format(sys.getrecursionlimit()))
         sys.exit(2)
 
 

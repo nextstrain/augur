@@ -3,6 +3,7 @@
 """
 import Bio.SeqIO
 import Bio.SeqRecord
+import sys
 from contextlib import contextmanager
 import pandas as pd
 from pathlib import Path
@@ -194,3 +195,7 @@ def write_sequences(sequences, path_or_buffer, format="fasta"):
         )
 
     return sequences_written
+
+
+def print_err(*args):
+    print(*args, file=sys.stderr)

@@ -20,7 +20,7 @@ from typing import Collection
 from .dates import numeric_date, numeric_date_type, SUPPORTED_DATE_HELP_TEXT
 from .index import index_sequences, index_vcf
 from .io import open_file, read_metadata, read_sequences, write_sequences
-from .utils import is_vcf as filename_is_vcf, read_vcf, read_strains, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
+from .utils import AugurError, is_vcf as filename_is_vcf, read_vcf, read_strains, get_numerical_dates, run_shell_command, shquote, is_date_ambiguous
 
 comment_char = '#'
 
@@ -30,7 +30,7 @@ SEQUENCE_ONLY_FILTERS = (
 )
 
 
-class FilterException(Exception):
+class FilterException(AugurError):
     """Representation of an error that occurred during filtering.
     """
     pass
@@ -1375,6 +1375,9 @@ def run(args):
         chunk_size=args.metadata_chunk_size,
     )
     for metadata in metadata_reader:
+        if any(metadata.index.duplicated()) or any(metadata.index.isin(metadata_strains)):
+            _cleanup_outputs(args)
+            raise AugurError(f"Duplicate found in '{args.metadata}'.")
         # Maintain list of all strains seen.
         metadata_strains.update(set(metadata.index.values))
 
@@ -1873,3 +1876,23 @@ def _calculate_fractional_sequences_per_group(
             hi = mid
 
     return (lo + hi) / 2
+
+
+def _cleanup_outputs(args):
+    """Remove output files. Useful when terminating midway through a loop of metadata chunks."""
+    if args.output:
+        _try_remove(args.output)
+    if args.output_metadata:
+        _try_remove(args.output_metadata)
+    if args.output_strains:
+        _try_remove(args.output_strains)
+    if args.output_log:
+        _try_remove(args.output_log)
+
+
+def _try_remove(filepath):
+    """Remove a file if it exists."""
+    try:
+        os.remove(filepath)
+    except FileNotFoundError:
+        pass

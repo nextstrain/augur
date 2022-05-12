@@ -31,4 +31,24 @@ Parse compressed Zika sequences into sequences and metadata.
   $ diff -u "parse/metadata.tsv" "$TMP/metadata.tsv"
   $ rm -f "$TMP/sequences.fasta" "$TMP/metadata.tsv"
 
+Error on the first duplicate.
+
+  $ cat >$TMP/data.fasta <<~~
+  > >SEQ1
+  > AAA
+  > >SEQ1
+  > AAA
+  > >SEQ2
+  > AAA
+  > >SEQ2
+  > AAA
+  > ~~
+  $ ${AUGUR} parse \
+  >   --sequences $TMP/data.fasta \
+  >   --output-sequences "$TMP/sequences.fasta" \
+  >   --output-metadata "$TMP/metadata.tsv" \
+  >   --fields strain
+  ERROR: Duplicate found for 'SEQ1'.
+  [2]
+
   $ popd > /dev/null
