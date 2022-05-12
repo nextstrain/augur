@@ -1,6 +1,7 @@
 import json
 
 from augur.__version__ import __version__
+from augur.utils import AugurError
 from augur.util_support.node_data_file import NodeDataFile
 
 import pytest
@@ -45,7 +46,7 @@ class TestNodeDataFile:
         )
 
     def test_validate_invalid_annotation(self, build_node_data_file):
-        with pytest.raises(RuntimeError, match="annotations.*invalid JSON format"):
+        with pytest.raises(AugurError, match="annotations.*invalid JSON format"):
             build_node_data_file(
                 """
                 {
@@ -56,11 +57,11 @@ class TestNodeDataFile:
             )
 
     def test_validate_nodes_not_dict(self, build_node_data_file):
-        with pytest.raises(RuntimeError, match="is not a dictionary"):
+        with pytest.raises(AugurError, match="is not a dictionary"):
             build_node_data_file('{ "nodes": "hhh" }')
 
     def test_validate_incompatible_augur_version(self, build_node_data_file):
-        with pytest.raises(RuntimeError, match="incompatibility detected"):
+        with pytest.raises(AugurError, match="incompatibility detected"):
             build_node_data_file(
                 """
                 {
