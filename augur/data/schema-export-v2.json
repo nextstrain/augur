@@ -258,8 +258,10 @@
                             "type": "boolean"
                         },
                         "branch_label": {
-                            "description": "What branch label should be displayed by default.",
-                            "type": "string"
+                            "description": "What branch label should be displayed by default, or 'none' to hide labels by default.",
+                            "$comment": "Should be a key present in the per-node branch_attrs.labels object of the exported JSON; pattern is from the schema for that object",
+                            "type": "string",
+                            "pattern": "^(none|[a-zA-Z0-9]+)$"
                         },
                         "transmission_lines": {
                             "description": "Should transmission lines (if available) be displaye by default",
