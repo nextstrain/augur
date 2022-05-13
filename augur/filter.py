@@ -1203,8 +1203,7 @@ def validate_arguments(args):
     # Set flags if VCF
     is_vcf = filename_is_vcf(args.sequences)
 
-    ### Check users has vcftools. If they don't, a one-blank-line file is created which
-    #   allows next step to run but error very badly.
+    # Confirm that vcftools is installed.
     if is_vcf:
         from shutil import which
         if which("vcftools") is None:
