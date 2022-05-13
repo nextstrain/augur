@@ -5,7 +5,8 @@ import pandas as pd
 import sys
 
 from .io import open_file, read_sequences, write_sequences
-from .utils import AugurError, get_numerical_date_from_value
+from .dates import get_numerical_date_from_value
+from .utils import AugurError
 
 forbidden_characters = str.maketrans(
     {' ': None,

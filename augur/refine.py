@@ -4,7 +4,8 @@ Refine an initial tree using sequence metadata.
 import numpy as np
 import os, shutil, time, sys
 from Bio import Phylo
-from .utils import read_metadata, read_tree, get_numerical_dates, write_json, InvalidTreeError
+from .dates import get_numerical_dates
+from .utils import read_metadata, read_tree, write_json, InvalidTreeError
 from treetime.vcf_utils import read_vcf, write_vcf
 from treetime.seq_utils import profile_maps
 
