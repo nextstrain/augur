@@ -2,7 +2,11 @@ import argparse
 import datetime
 from textwrap import dedent
 import isodate
+import pandas as pd
+import re
 import treetime.utils
+
+from augur.util_support.date_disambiguator import DateDisambiguator
 
 SUPPORTED_DATE_HELP_TEXT = dedent("""\
     1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or
@@ -63,3 +67,87 @@ def numeric_date_type(date):
         return numeric_date(date)
     except ValueError as e:
         raise argparse.ArgumentTypeError(str(e)) from e
+
+def ambiguous_date_to_date_range(uncertain_date, fmt, min_max_year=None):
+    return DateDisambiguator(uncertain_date, fmt=fmt, min_max_year=min_max_year).range()
+
+def is_date_ambiguous(date, ambiguous_by="any"):
+    """
+    Returns whether a given date string in the format of YYYY-MM-DD is ambiguous by a given part of the date (e.g., day, month, year, or any parts).
+
+    Parameters
+    ----------
+    date : str
+        Date string in the format of YYYY-MM-DD
+    ambiguous_by : str
+        Field of the date string to test for ambiguity ("day", "month", "year", "any")
+    """
+    date_components = date.split('-', 2)
+
+    if len(date_components) == 3:
+        year, month, day = date_components
+    elif len(date_components) == 2:
+        year, month = date_components
+        day = "XX"
+    else:
+        year = date_components[0]
+        month = "XX"
+        day = "XX"
+
+    # Determine ambiguity hierarchically such that, for example, an ambiguous
+    # month implicates an ambiguous day even when day information is available.
+    return any((
+        "X" in year,
+        "X" in month and ambiguous_by in ("any", "month", "day"),
+        "X" in day and ambiguous_by in ("any", "day")
+    ))
+
+def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
+    value = str(value)
+    if re.match(r'^-*\d+\.\d+$', value):
+        # numeric date which can be negative
+        return float(value)
+    if value.isnumeric():
+        # year-only date is ambiguous
+        value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
+    if 'XX' in value:
+        ambig_date = ambiguous_date_to_date_range(value, fmt, min_max_year)
+        if ambig_date is None or None in ambig_date:
+            return [None, None] #don't send to numeric_date or will be set to today
+        return [treetime.utils.numeric_date(d) for d in ambig_date]
+    try:
+        return treetime.utils.numeric_date(datetime.datetime.strptime(value, fmt))
+    except:
+        return None
+
+def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, min_max_year=None):
+    if fmt:
+        numerical_dates = {}
+
+        if isinstance(meta_dict, dict):
+            for k,m in meta_dict.items():
+                v = m[date_col]
+                numerical_dates[k] = get_numerical_date_from_value(
+                    v,
+                    fmt,
+                    min_max_year
+                )
+        elif isinstance(meta_dict, pd.DataFrame):
+            strains = meta_dict.index.values
+            dates = meta_dict[date_col].apply(
+                lambda date: get_numerical_date_from_value(
+                    date,
+                    fmt,
+                    min_max_year
+                )
+            ).values
+            numerical_dates = dict(zip(strains, dates))
+    else:
+        if isinstance(meta_dict, dict):
+            numerical_dates = {k:float(v) for k,v in meta_dict.items()}
+        elif isinstance(meta_dict, pd.DataFrame):
+            strains = meta_dict.index.values
+            dates = meta_dict[date_col].astype(float)
+            numerical_dates = dict(zip(strains, dates))
+
+    return numerical_dates

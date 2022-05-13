@@ -1,15 +1,12 @@
 import argparse
-import re
 import Bio
 import Bio.Phylo
-from datetime import datetime
 import gzip
 import os, json, sys
 import pandas as pd
 import subprocess
 import shlex
 from contextlib import contextmanager
-from treetime.utils import numeric_date
 from collections import defaultdict, OrderedDict
 from pkg_resources import resource_stream
 from io import TextIOWrapper
@@ -18,7 +15,6 @@ from .__version__ import __version__
 from augur.io import open_file
 
 from augur.util_support.color_parser import ColorParser
-from augur.util_support.date_disambiguator import DateDisambiguator
 from augur.util_support.metadata_file import MetadataFile
 from augur.util_support.node_data_reader import NodeDataReader
 from augur.util_support.shell_command_runner import ShellCommandRunner
@@ -75,92 +71,8 @@ def get_json_name(args, default=None):
             raise ValueError("Please specify a name for the JSON file containing the results.")
 
 
-def ambiguous_date_to_date_range(uncertain_date, fmt, min_max_year=None):
-    return DateDisambiguator(uncertain_date, fmt=fmt, min_max_year=min_max_year).range()
-
 def read_metadata(fname, query=None, as_data_frame=False):
     return MetadataFile(fname, query, as_data_frame).read()
-
-def is_date_ambiguous(date, ambiguous_by="any"):
-    """
-    Returns whether a given date string in the format of YYYY-MM-DD is ambiguous by a given part of the date (e.g., day, month, year, or any parts).
-
-    Parameters
-    ----------
-    date : str
-        Date string in the format of YYYY-MM-DD
-    ambiguous_by : str
-        Field of the date string to test for ambiguity ("day", "month", "year", "any")
-    """
-    date_components = date.split('-', 2)
-
-    if len(date_components) == 3:
-        year, month, day = date_components
-    elif len(date_components) == 2:
-        year, month = date_components
-        day = "XX"
-    else:
-        year = date_components[0]
-        month = "XX"
-        day = "XX"
-
-    # Determine ambiguity hierarchically such that, for example, an ambiguous
-    # month implicates an ambiguous day even when day information is available.
-    return any((
-        "X" in year,
-        "X" in month and ambiguous_by in ("any", "month", "day"),
-        "X" in day and ambiguous_by in ("any", "day")
-    ))
-
-def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
-    value = str(value)
-    if re.match(r'^-*\d+\.\d+$', value):
-        # numeric date which can be negative
-        return float(value)
-    if value.isnumeric():
-        # year-only date is ambiguous
-        value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
-    if 'XX' in value:
-        ambig_date = ambiguous_date_to_date_range(value, fmt, min_max_year)
-        if ambig_date is None or None in ambig_date:
-            return [None, None] #don't send to numeric_date or will be set to today
-        return [numeric_date(d) for d in ambig_date]
-    try:
-        return numeric_date(datetime.strptime(value, fmt))
-    except:
-        return None
-
-def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, min_max_year=None):
-    if fmt:
-        numerical_dates = {}
-
-        if isinstance(meta_dict, dict):
-            for k,m in meta_dict.items():
-                v = m[date_col]
-                numerical_dates[k] = get_numerical_date_from_value(
-                    v,
-                    fmt,
-                    min_max_year
-                )
-        elif isinstance(meta_dict, pd.DataFrame):
-            strains = meta_dict.index.values
-            dates = meta_dict[date_col].apply(
-                lambda date: get_numerical_date_from_value(
-                    date,
-                    fmt,
-                    min_max_year
-                )
-            ).values
-            numerical_dates = dict(zip(strains, dates))
-    else:
-        if isinstance(meta_dict, dict):
-            numerical_dates = {k:float(v) for k,v in meta_dict.items()}
-        elif isinstance(meta_dict, pd.DataFrame):
-            strains = meta_dict.index.values
-            dates = meta_dict[date_col].astype(float)
-            numerical_dates = dict(zip(strains, dates))
-
-    return numerical_dates
 
 
 class InvalidTreeError(Exception):
