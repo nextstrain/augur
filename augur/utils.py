@@ -24,7 +24,7 @@ from augur.util_support.node_data_reader import NodeDataReader
 from augur.util_support.shell_command_runner import ShellCommandRunner
 
 
-class AugurException(Exception):
+class AugurError(Exception):
     pass
 
 
