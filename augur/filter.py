@@ -19,7 +19,7 @@ from augur.filter_support.exceptions import FilterException
 from augur.filter_support.output import filter_kwargs_to_str
 from augur.filter_support.subsample import TooManyGroupsError, calculate_sequences_per_group
 
-from .dates import numeric_date, numeric_date_type, SUPPORTED_DATE_HELP_TEXT, is_date_ambiguous, get_numerical_dates
+from .dates import any_to_numeric, any_to_numeric_type_min, any_to_numeric_type_max, SUPPORTED_DATE_HELP_TEXT, is_date_ambiguous, get_numerical_dates
 from .errors import AugurError
 from .index import index_sequences, index_vcf
 from .io import open_file, print_err, read_metadata, read_sequences, write_sequences, is_vcf as filename_is_vcf, write_vcf
@@ -52,8 +52,8 @@ def register_arguments(parser):
         Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.
         (e.g., --query "country == 'Colombia'" or --query "(country == 'USA' & (division == 'Washington'))")"""
     )
-    metadata_filter_group.add_argument('--min-date', type=numeric_date_type, help=f"minimal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
-    metadata_filter_group.add_argument('--max-date', type=numeric_date_type, help=f"maximal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
+    metadata_filter_group.add_argument('--min-date', type=any_to_numeric_type_min, help=f"minimal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
+    metadata_filter_group.add_argument('--max-date', type=any_to_numeric_type_max, help=f"maximal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
     metadata_filter_group.add_argument('--exclude-ambiguous-dates-by', choices=['any', 'day', 'month', 'year'],
                                 help='Exclude ambiguous dates by day (e.g., 2020-09-XX), month (e.g., 2020-XX-XX), year (e.g., 200X-10-01), or any date fields. An ambiguous year makes the corresponding month and day ambiguous, too, even if those fields have unambiguous values (e.g., "201X-10-01"). Similarly, an ambiguous month makes the corresponding day ambiguous (e.g., "2010-XX-01").')
     metadata_filter_group.add_argument('--exclude', type=str, nargs="+", help="file(s) with list of strains to exclude")
@@ -345,20 +345,20 @@ def filter_by_date(metadata, date_column="date", min_date=None, max_date=None):
 
 
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> filter_by_date(metadata, min_date=numeric_date("2020-01-02"))
+    >>> filter_by_date(metadata, min_date=any_to_numeric("2020-01-02"))
     {'strain2'}
-    >>> filter_by_date(metadata, max_date=numeric_date("2020-01-01"))
+    >>> filter_by_date(metadata, max_date=any_to_numeric("2020-01-01"))
     {'strain1'}
-    >>> filter_by_date(metadata, min_date=numeric_date("2020-01-03"), max_date=numeric_date("2020-01-10"))
+    >>> filter_by_date(metadata, min_date=any_to_numeric("2020-01-03"), max_date=any_to_numeric("2020-01-10"))
     set()
-    >>> sorted(filter_by_date(metadata, min_date=numeric_date("2019-12-30"), max_date=numeric_date("2020-01-10")))
+    >>> sorted(filter_by_date(metadata, min_date=any_to_numeric("2019-12-30"), max_date=any_to_numeric("2020-01-10")))
     ['strain1', 'strain2']
     >>> sorted(filter_by_date(metadata))
     ['strain1', 'strain2']
 
     If the requested date column does not exist, we quietly skip this filter.
 
-    >>> sorted(filter_by_date(metadata, date_column="missing_column", min_date=numeric_date("2020-01-02")))
+    >>> sorted(filter_by_date(metadata, date_column="missing_column", min_date=any_to_numeric("2020-01-02")))
     ['strain1', 'strain2']
 
     """
@@ -749,7 +749,7 @@ def apply_filters(metadata, exclude_by, include_by):
 
 
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-10-02"}, {"region": "North America", "date": "2020-01-01"}], index=["strain1", "strain2", "strain3"])
-    >>> exclude_by = [(filter_by_date, {"min_date": numeric_date("2020-04-01")})]
+    >>> exclude_by = [(filter_by_date, {"min_date": any_to_numeric("2020-04-01")})]
     >>> include_by = [(force_include_where, {"include_where": "region=Africa"})]
     >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
     >>> strains_to_keep
