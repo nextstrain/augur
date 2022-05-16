@@ -7,7 +7,7 @@ import re
 import treetime.utils
 from textwrap import dedent
 from functools import lru_cache
-from typing import Any
+from typing import Any, List
 
 
 class InvalidDateFormat(ValueError):
@@ -52,6 +52,45 @@ RE_YEAR_ONLY = re.compile(r'^[1-9][\dX]*$')
 CACHE_SIZE = 8192
 # Some functions below use @lru_cache to minimize redundant operations on
 # large datasets that are likely to have multiple entries with the same date value.
+
+
+@lru_cache(maxsize=CACHE_SIZE)
+def get_year(date_in:Any):
+    """Get the year from a date. Only works for ISO dates.
+
+    This function is intended to be registered as a user-defined function in sqlite3.
+    """
+    date_in = str(date_in)
+    try:
+        return int(date_in.split('-')[0])
+    except (ValueError, IndexError):
+        return None
+
+
+@lru_cache(maxsize=CACHE_SIZE)
+def get_month(date_in:Any):
+    """Get the month from a date. Only works for ISO dates.
+
+    This function is intended to be registered as a user-defined function in sqlite3.
+    """
+    date_in = str(date_in)
+    try:
+        return int(date_in.split('-')[1])
+    except (ValueError, IndexError):
+        return None
+
+
+@lru_cache(maxsize=CACHE_SIZE)
+def get_day(date_in:Any):
+    """Get the day from a date. Only works for ISO dates.
+
+    This function is intended to be registered as a user-defined function in sqlite3.
+    """
+    date_in = str(date_in)
+    try:
+        return int(date_in.split('-')[2])
+    except (ValueError, IndexError):
+        return None
 
 
 def iso_to_numeric(date_in:str, ambiguity_resolver:str=None):
@@ -215,6 +254,87 @@ def any_to_numeric_type_max(date_in:Any):
         return any_to_numeric(date_in, ambiguity_resolver='max')
     except InvalidDateFormat as e:
         raise argparse.ArgumentTypeError(str(e)) from e
+
+
+@lru_cache(maxsize=CACHE_SIZE)
+def try_get_numeric_date_min(date_in:Any):
+    """Get the numeric date from any supported date format, taking the minimum possible value if ambiguous.
+
+    This function is intended to be registered as a user-defined function in sqlite3.
+    """
+    try:
+        return any_to_numeric(date_in, ambiguity_resolver='min')
+    except ValueError:
+        return None
+
+
+@lru_cache(maxsize=CACHE_SIZE)
+def try_get_numeric_date_max(date_in:Any):
+    """Get the numeric date from any supported date format, taking the maximum possible value if ambiguous.
+
+    This function is intended to be registered as a user-defined function in sqlite3.
+    """
+    try:
+        return any_to_numeric(date_in, ambiguity_resolver='max')
+    except ValueError:
+        return None
+
+
+@lru_cache(maxsize=CACHE_SIZE)
+def get_date_errors(date_in:Any):
+    """Check date for any errors.
+
+    assert_only_less_significant_ambiguity:
+
+    If an exception is raised here, it will result in a `sqlite3.OperationalError`
+    without trace to the original exception. For this reason, if the check raises
+    :class:`InvalidDateFormat`, return a constant string
+    `ASSERT_ONLY_LESS_SIGNIFICANT_AMBIGUITY_VALUE` which sqlite3 can then "handle".
+
+    This function is intended to be registered as a user-defined function in sqlite3.
+    """
+    date_in = str(date_in)
+    if not date_in:
+        # let empty string pass silently
+        return None
+    if RE_NUMERIC_DATE.match(date_in):
+        # let numeric dates pass silently
+        return None
+    if date_in[0] == '-':
+        # let negative ISO dates pass silently
+        return None
+    date_parts = date_in.split('-', maxsplit=2)
+    try:
+        assert_only_less_significant_ambiguity(date_parts)
+    except InvalidDateFormat as e:
+        return str(e)
+
+
+ASSERT_ONLY_LESS_SIGNIFICANT_AMBIGUITY_ERROR = 'assert_only_less_significant_ambiguity'
+
+
+def assert_only_less_significant_ambiguity(date_parts:List[str]):
+    """
+    Raise an exception if a constrained digit appears in a less-significant place
+    than an uncertain digit.
+
+    These patterns are valid:
+        2000-01-01
+        2000-01-XX
+        2000-XX-XX
+
+    but this is invalid, because month is uncertain but day is constrained:
+        2000-XX-01
+
+    These invalid cases are assumed to be unintended use of the tool.
+    """
+    has_exact_year = date_parts[0].isnumeric()
+    has_exact_month = len(date_parts) > 1 and date_parts[1].isnumeric()
+    has_exact_day = len(date_parts) > 2 and date_parts[2].isnumeric()
+    if has_exact_day and not (has_exact_month and has_exact_year):
+        raise InvalidDateFormat(ASSERT_ONLY_LESS_SIGNIFICANT_AMBIGUITY_ERROR)
+    if has_exact_month and not has_exact_year:
+        raise InvalidDateFormat(ASSERT_ONLY_LESS_SIGNIFICANT_AMBIGUITY_ERROR)
 
 
 ### date_to_numeric logic ###
