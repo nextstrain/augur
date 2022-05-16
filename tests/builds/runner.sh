@@ -19,7 +19,7 @@ mkdir auspice
 for snakefile in ./*/Snakefile; do
     echo -e "\nRunning ${snakefile} (quietly)\n"
     pushd $(dirname "${snakefile}") >/dev/null
-    snakemake --cores 1 --quiet clean 1>/dev/null
+    snakemake --cores 1 clean --quiet 1>/dev/null
     snakemake --cores 1 --quiet 1>/dev/null
     cp auspice/*.json ../auspice
     popd >/dev/null
