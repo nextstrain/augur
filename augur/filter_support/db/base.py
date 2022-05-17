@@ -37,8 +37,6 @@ class FilterBase(abc.ABC):
             raise e
 
     def run(self, cleanup=True):
-        # Validate arguments before attempting any I/O.
-        self.validate_arguments()
         self.set_metadata_columns()
         self.db_load_metadata()
         self.add_attributes()
@@ -53,39 +51,6 @@ class FilterBase(abc.ABC):
         self.write_report()
         if cleanup:
             self.db_cleanup()
-
-    def validate_arguments(self):
-        """Validate arguments and return a boolean representing whether all validation
-        rules succeeded.
-
-        Returns
-        -------
-        bool :
-            Validation succeeded.
-
-        """
-        # Don't allow sequence output when no sequence input is provided.
-        if self.args.output and not self.args.sequences:
-            raise FilterException("You need to provide sequences to output sequences.")
-
-        # Confirm that at least one output was requested.
-        if not any((self.args.output, self.args.output_metadata, self.args.output_strains)):
-            raise FilterException("You need to select at least one output.")
-
-        # Don't allow filtering on sequence-based information, if no sequences or
-        # sequence index is provided.
-        if not self.args.sequences and not self.args.sequence_index and any(getattr(self.args, arg) for arg in SEQUENCE_ONLY_FILTERS):
-            raise FilterException("You need to provide a sequence index or sequences to filter on sequence-specific information.")
-
-        # Confirm that vcftools is installed.
-        if is_vcf(self.args.sequences):
-            from shutil import which
-            if which("vcftools") is None:
-                raise FilterException("'vcftools' is not installed! This is required for VCF data. Please see the augur install instructions to install it.")
-
-        # If user requested grouping, confirm that other required inputs are provided, too.
-        if self.args.group_by and not any((self.args.sequences_per_group, self.args.subsample_max_sequences)):
-            raise FilterException("You must specify a number of sequences per group or maximum sequences to subsample.")
 
     def set_metadata_columns(self):
         """Set column names for strain and date, to be used for metadata and intermediate database tables."""
