@@ -216,9 +216,8 @@ For versions with dependency changes:
 
 New releases are tagged in git using an "annotated" tag.  If the git option
 `user.signingKey` is set, the tag will also be [signed][].  Signed tags are
-preferred, but it can be hard to setup GPG correctly.  The `release` branch
-should always point to the latest release tag.  Source and wheel (binary)
-distributions are uploaded to [the nextstrain-augur project on
+preferred, but it can be hard to setup GPG correctly.  Source and wheel
+(binary) distributions are uploaded to [the nextstrain-augur project on
 PyPi](https://pypi.org/project/nextstrain-augur).
 
 There is a `./devel/release` script which will prepare a new release from your
@@ -229,9 +228,16 @@ need [a PyPi account][] and [twine][] installed to do the latter.
 After you create a new release and before you push it to GitHub, run all tests again as described above to confirm that nothing broke with the new release.
 If any tests fail, run the `./devel/rewind-release` script to undo the release, then fix the tests before trying again.
 
+New releases trigger a new [docker-base][] build to keep the Docker image
+up-to-date. This trigger is implemented as the _rebuild-docker-image_ job in
+the release workflow, which is explicitly conditioned on the previous _run_
+job's successful completion. To trigger a Docker image rebuild without making a
+release, see [this section of the docker-base README](https://github.com/nextstrain/docker-base#rebuilding-an-image-and-pushing-to-docker-hub).
+
 [signed]: https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work
 [a PyPi account]: https://pypi.org/account/register/
 [twine]: https://pypi.org/project/twine
+[docker-base]: https://github.com/nextstrain/docker-base
 
 ### Maintaining Bioconda package
 
@@ -247,20 +253,8 @@ After a successful pull request review, Bioconda will automatically update the a
 
 Branches and PRs are tested by GitHub Actions workflows configured in `.github/workflows`.
 
-Our GitHub Actions workflow is comprised of two jobs: _test_ and _deploy_.  Steps in the
-_test_ job always run, but _deploy_ steps only run sometimes (see below).
-
-The _test_ job runs tests and uploads the the coverage report to Codecov.
+Our CI GitHub Actions workflow is comprised of a _test_ job that runs tests and uploads the coverage report to Codecov.
 Currently, only `pytest` results are included in the report.
-
-New releases, via pushes to the `release` branch, trigger a new [docker-base][]
-build to keep the Docker image up-to-date. This trigger is implemented in the
-_deploy_ job, which is implicitly conditioned on the previous _test_ job's
-successful completion and explicitly conditioned on a non-PR trigger on the
-`release` branch. Note that currently we cannot test this _deploy_ job
-without making a release.
-
-[docker-base]: https://github.com/nextstrain/docker-base
 
 ## Contributing documentation
 
