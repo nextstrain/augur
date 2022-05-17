@@ -6,7 +6,8 @@ import numpy as np
 from collections import defaultdict
 import os, sys
 import pandas as pd
-from .utils import read_metadata, write_json, get_json_name
+from .io import read_metadata
+from .utils import write_json, get_json_name
 TINY = 1e-12
 
 def mugration_inference(tree=None, seq_meta=None, field='country', confidence=True,
@@ -18,7 +19,7 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
     ----------
     tree : str
         name of tree file
-    seq_meta : dict
+    seq_meta : pandas.DataFrame
         meta data associated with sequences
     field : str, optional
         meta data field to use
@@ -49,7 +50,7 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
     T = Phylo.read(tree, 'newick')
     traits = {}
     nodes = {n.name:n for n in T.get_terminals()}
-    for name, meta in seq_meta.items():
+    for name, meta in seq_meta.iterrows():
         if field in meta and name in nodes:
             traits[name] = meta[field]
     unique_states = list(set(traits.values()))
@@ -129,7 +130,7 @@ def run(args):
         command line arguments are parsed by argparse
     """
     tree_fname = args.tree
-    traits, columns = read_metadata(args.metadata)
+    traits = read_metadata(args.metadata)
 
     from Bio import Phylo
     T = Phylo.read(tree_fname, 'newick')
