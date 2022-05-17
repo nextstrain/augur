@@ -5,7 +5,8 @@ import numpy as np
 import os, shutil, time, sys
 from Bio import Phylo
 from .dates import get_numerical_dates
-from .utils import read_metadata, read_tree, write_json, InvalidTreeError
+from .io import read_metadata
+from .utils import read_tree, write_json, InvalidTreeError
 from treetime.vcf_utils import read_vcf, write_vcf
 from treetime.seq_utils import profile_maps
 
@@ -196,7 +197,7 @@ def run(args):
         if args.metadata is None:
             print("ERROR: meta data with dates is required for time tree reconstruction", file=sys.stderr)
             return 1
-        metadata, columns = read_metadata(args.metadata)
+        metadata = read_metadata(args.metadata)
         if args.year_bounds:
             args.year_bounds.sort()
         dates = get_numerical_dates(metadata, fmt=args.date_format,
@@ -204,8 +205,8 @@ def run(args):
 
         # save input state string for later export
         for n in T.get_terminals():
-            if n.name in metadata and 'date' in metadata[n.name]:
-                n.raw_date = metadata[n.name]['date']
+            if n.name in metadata.index and 'date' in metadata.columns:
+                n.raw_date = metadata.loc[n.name, 'date']
 
         tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                     reroot=args.root, # or 'best', # We now have a default in param spec - this just adds confusion.
