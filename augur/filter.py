@@ -870,7 +870,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> get_groups_for_subsampling(strains, metadata, group_by)
     Traceback (most recent call last):
       ...
-    augur.filter.FilterException: The specified group-by categories (['missing_column']) were not found. No sequences-per-group sampling will be done.
+    augur.filter.FilterException: The specified group-by categories (['missing_column']) were not found.
 
     If we try to group by some columns that exist and some that don't, we allow
     grouping to continue and print a warning message to stderr.
@@ -917,9 +917,9 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     # If we could not find any requested categories, we cannot complete subsampling.
     if 'date' not in metadata and group_by_set <= {'year', 'month'}:
-        raise FilterException(f"The specified group-by categories ({group_by}) were not found. No sequences-per-group sampling will be done. Note that using 'year' or 'year month' requires a column called 'date'.")
+        raise FilterException(f"The specified group-by categories ({group_by}) were not found. Note that using 'year' or 'year month' requires a column called 'date'.")
     if not group_by_set & (set(metadata.columns) | {'year', 'month'}):
-        raise FilterException(f"The specified group-by categories ({group_by}) were not found. No sequences-per-group sampling will be done.")
+        raise FilterException(f"The specified group-by categories ({group_by}) were not found.")
 
     # date requested
     if 'year' in group_by_set or 'month' in group_by_set:
@@ -1413,58 +1413,47 @@ def run(args):
             # If grouping, track the highest priority metadata records or
             # count the number of records per group. First, we need to get
             # the groups for the given records.
-            try:
-                group_by_strain, skipped_strains = get_groups_for_subsampling(
-                    seq_keep,
-                    metadata,
-                    group_by,
-                )
+            group_by_strain, skipped_strains = get_groups_for_subsampling(
+                seq_keep,
+                metadata,
+                group_by,
+            )
 
-                # Track strains skipped during grouping, so users know why those
-                # strains were excluded from the analysis.
-                for skipped_strain in skipped_strains:
-                    filter_counts[(skipped_strain["filter"], skipped_strain["kwargs"])] += 1
-                    valid_strains.remove(skipped_strain["strain"])
+            # Track strains skipped during grouping, so users know why those
+            # strains were excluded from the analysis.
+            for skipped_strain in skipped_strains:
+                filter_counts[(skipped_strain["filter"], skipped_strain["kwargs"])] += 1
+                valid_strains.remove(skipped_strain["strain"])
 
-                    if args.output_log:
-                        output_log_writer.writerow(skipped_strain)
+                if args.output_log:
+                    output_log_writer.writerow(skipped_strain)
 
-                if args.subsample_max_sequences and records_per_group is not None:
-                    # Count the number of records per group. We will use this
-                    # information to calculate the number of sequences per group
-                    # for the given maximum number of requested sequences.
-                    for group in group_by_strain.values():
-                        records_per_group[group] += 1
-                else:
-                    # Track the highest priority records, when we already
-                    # know the number of sequences allowed per group.
-                    if queues_by_group is None:
-                        queues_by_group = {}
+            if args.subsample_max_sequences and records_per_group is not None:
+                # Count the number of records per group. We will use this
+                # information to calculate the number of sequences per group
+                # for the given maximum number of requested sequences.
+                for group in group_by_strain.values():
+                    records_per_group[group] += 1
+            else:
+                # Track the highest priority records, when we already
+                # know the number of sequences allowed per group.
+                if queues_by_group is None:
+                    queues_by_group = {}
 
-                    for strain in sorted(group_by_strain.keys()):
-                        # During this first pass, we do not know all possible
-                        # groups will be, so we need to build each group's queue
-                        # as we first encounter the group.
-                        group = group_by_strain[strain]
-                        if group not in queues_by_group:
-                            queues_by_group[group] = PriorityQueue(
-                                max_size=sequences_per_group,
-                            )
-
-                        queues_by_group[group].add(
-                            metadata.loc[strain],
-                            priorities[strain],
+                for strain in sorted(group_by_strain.keys()):
+                    # During this first pass, we do not know all possible
+                    # groups will be, so we need to build each group's queue
+                    # as we first encounter the group.
+                    group = group_by_strain[strain]
+                    if group not in queues_by_group:
+                        queues_by_group[group] = PriorityQueue(
+                            max_size=sequences_per_group,
                         )
-            except FilterException as error:
-                # When we cannot group by the requested columns, we print a
-                # warning to the user and continue without subsampling or
-                # grouping. TODO: We should consider treating this case as
-                # an actual error and exiting here with a nonzero code.
-                group_by = False
-                print(
-                    f"WARNING: {error}",
-                    file=sys.stderr,
-                )
+
+                    queues_by_group[group].add(
+                        metadata.loc[strain],
+                        priorities[strain],
+                    )
 
         # Always write out strains that are force-included. Additionally, if
         # we are not grouping, write out metadata and strains that passed
