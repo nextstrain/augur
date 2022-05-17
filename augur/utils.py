@@ -53,6 +53,33 @@ def read_vcf(filename):
     # because we need 'seqs to remove' for VCF
     return sequences, sequences.copy()
 
+def write_vcf(input_filename, output_filename, dropped_samps):
+    if _filename_gz(input_filename):
+        input_arg = "--gzvcf"
+    else:
+        input_arg = "--vcf"
+
+    if _filename_gz(output_filename):
+        output_pipe = "| gzip -c"
+    else:
+        output_pipe = ""
+
+    drop_args = ["--remove-indv " + shquote(s) for s in dropped_samps]
+
+    call = ["vcftools"] + drop_args + [input_arg, shquote(input_filename), "--recode --stdout", output_pipe, ">", shquote(output_filename)]
+
+    print("Filtering samples using VCFTools with the call:")
+    print(" ".join(call))
+    run_shell_command(" ".join(call), raise_errors = True)
+    # remove vcftools log file
+    try:
+        os.remove('out.log')
+    except OSError:
+        pass
+
+def _filename_gz(filename):
+    return filename.lower().endswith(".gz")
+
 def get_json_name(args, default=None):
     if args.output_node_data:
         return args.output_node_data
