@@ -120,34 +120,19 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
     except:
         return None
 
-def get_numerical_dates(meta_dict, name_col = None, date_col='date', fmt=None, min_max_year=None):
+def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date', fmt=None, min_max_year=None):
+    if not isinstance(metadata, pd.DataFrame):
+        return {}
     if fmt:
-        numerical_dates = {}
-
-        if isinstance(meta_dict, dict):
-            for k,m in meta_dict.items():
-                v = m[date_col]
-                numerical_dates[k] = get_numerical_date_from_value(
-                    v,
-                    fmt,
-                    min_max_year
-                )
-        elif isinstance(meta_dict, pd.DataFrame):
-            strains = meta_dict.index.values
-            dates = meta_dict[date_col].apply(
-                lambda date: get_numerical_date_from_value(
-                    date,
-                    fmt,
-                    min_max_year
-                )
-            ).values
-            numerical_dates = dict(zip(strains, dates))
+        strains = metadata.index.values
+        dates = metadata[date_col].apply(
+            lambda date: get_numerical_date_from_value(
+                date,
+                fmt,
+                min_max_year
+            )
+        ).values
     else:
-        if isinstance(meta_dict, dict):
-            numerical_dates = {k:float(v) for k,v in meta_dict.items()}
-        elif isinstance(meta_dict, pd.DataFrame):
-            strains = meta_dict.index.values
-            dates = meta_dict[date_col].astype(float)
-            numerical_dates = dict(zip(strains, dates))
-
-    return numerical_dates
+        strains = metadata.index.values
+        dates = metadata[date_col].astype(float)
+    return dict(zip(strains, dates))
