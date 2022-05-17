@@ -10,7 +10,8 @@ import numpy as np
 from Bio import Phylo
 from argparse import SUPPRESS
 from collections import defaultdict
-from .utils import read_metadata, read_node_data, write_json, read_config, read_lat_longs, read_colors
+from .io import read_metadata
+from .utils import read_node_data, write_json, read_config, read_lat_longs, read_colors
 
 def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
     """
@@ -227,7 +228,7 @@ def construct_author_info_v1(metadata, tree, nodes):
 
     author_info = defaultdict(lambda: {"n": 0})
     no_authors = 0
-    for strain, data in metadata.items():
+    for strain, data in metadata.iterrows():
         if "authors" not in data:
             no_authors += 1
             continue
@@ -265,12 +266,12 @@ def add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json, extra_fields=['authors
         fields += meta_json["geo"]
 
     for strain, node in nodes.items():
-        if strain not in meta_tsv:
+        if strain not in meta_tsv.index:
             continue
         for field in fields:
             # Allow fields to have value of 0! - but prevent from having value of "" (breaks auspice v1)
-            if field not in node and field in meta_tsv[strain] and (meta_tsv[strain][field] or meta_tsv[strain][field]==0):
-                node[field] = meta_tsv[strain][field]
+            if field not in node and field in meta_tsv.columns and (meta_tsv.loc[strain, field] or meta_tsv.loc[strain, field]==0):
+                node[field] = meta_tsv.loc[strain, field]
 
 
 def get_root_sequence(root_node, ref=None, translations=None):
@@ -363,7 +364,7 @@ def run_v1(args):
 
     meta_json = read_config(args.auspice_config)
     ensure_config_is_v1(meta_json)
-    meta_tsv, _ = read_metadata(args.metadata)
+    meta_tsv = read_metadata(args.metadata)
     add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json)
 
     tree_layout(T)
