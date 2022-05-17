@@ -15,7 +15,7 @@ This should produce no results because the intersection of metadata and sequence
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
   Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   ERROR: All samples have been dropped! Check filter rules and metadata file format.
-  [1]
+  [2]
   $ wc -l "$TMP/filtered_strains.txt"
   \s*0 .* (re)
   $ rm -f "$TMP/filtered_strains.txt"
@@ -30,7 +30,7 @@ Repeat with sequence and strain outputs. We should get the same results.
   >  --output-sequences "$TMP/filtered.fasta" > /dev/null
   Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   ERROR: All samples have been dropped! Check filter rules and metadata file format.
-  [1]
+  [2]
   $ wc -l "$TMP/filtered_strains.txt"
   \s*0 .* (re)
   $ grep "^>" "$TMP/filtered.fasta" | wc -l
@@ -47,7 +47,7 @@ Since we expect metadata to be filtered by presence of strains in input sequence
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
   Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   ERROR: All samples have been dropped! Check filter rules and metadata file format.
-  [1]
+  [2]
   $ wc -l "$TMP/filtered_strains.txt"
   \s*0 .* (re)
   $ rm -f "$TMP/filtered_strains.txt"
