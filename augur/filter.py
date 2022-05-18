@@ -17,6 +17,8 @@ import sys
 from tempfile import NamedTemporaryFile
 from typing import Collection
 
+from augur.filter_support.exceptions import FilterException
+
 from .dates import numeric_date, numeric_date_type, SUPPORTED_DATE_HELP_TEXT, is_date_ambiguous, get_numerical_dates
 from .index import index_sequences, index_vcf
 from .io import open_file, read_metadata, read_sequences, write_sequences, is_vcf as filename_is_vcf, write_vcf
@@ -28,12 +30,6 @@ SEQUENCE_ONLY_FILTERS = (
     "min_length",
     "non_nucleotide",
 )
-
-
-class FilterException(AugurError):
-    """Representation of an error that occurred during filtering.
-    """
-    pass
 
 
 def read_priority_scores(fname):
@@ -869,7 +865,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> get_groups_for_subsampling(strains, metadata, group_by)
     Traceback (most recent call last):
       ...
-    augur.filter.FilterException: The specified group-by categories (['missing_column']) were not found.
+    augur.filter_support.exceptions.FilterException: The specified group-by categories (['missing_column']) were not found.
 
     If we try to group by some columns that exist and some that don't, we allow
     grouping to continue and print a warning message to stderr.
