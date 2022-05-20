@@ -21,7 +21,9 @@ from augur.filter_support.db.sqlite import (
     GROUP_SIZES_TABLE_NAME,
     METADATA_FILTER_REASON_TABLE_NAME,
     METADATA_TABLE_NAME,
+    OUTPUT_METADATA_TABLE_NAME,
     PRIORITIES_TABLE_NAME,
+    SEQUENCE_INDEX_TABLE_NAME,
 )
 
 
@@ -872,6 +874,93 @@ class TestDataLoading:
         filter_obj = get_filter_obj_run(args)
         with pytest.raises(FileNotFoundError):
             filter_obj.db_load_priorities_table()
+
+    def test_load_invalid_id_column(self, tmpdir):
+        data = [
+            ("invalid_name","date","country"),
+            ("SEQ_1","2020-01-XX","A"),
+        ]
+        args = get_valid_args(data, tmpdir)
+        with pytest.raises(ValueError) as e_info:
+            get_filter_obj_run(args)
+        assert str(e_info.value) == "None of the possible id columns (['strain', 'name']) were found in the metadata's columns ('invalid_name', 'date', 'country')"
+
+    def test_load_custom_id_column(self, tmpdir):
+        data = [
+            ("custom_id_col","date","country"),
+            ("SEQ_1","2020-01-XX","A"),
+        ]
+        args = get_valid_args(data, tmpdir)
+        args.metadata_id_columns = ["custom_id_col"]
+        filter_obj = get_filter_obj_run(args)
+        results = query_fetchall(filter_obj, f"""
+            SELECT custom_id_col FROM {METADATA_TABLE_NAME}
+        """)
+        assert results == [("SEQ_1",)]
+
+    def test_load_custom_id_column_with_spaces(self, tmpdir):
+        data = [
+            ("strain name with spaces","date","country"),
+            ("SEQ_1","2020-01-XX","A"),
+        ]
+        args = get_valid_args(data, tmpdir)
+        args.metadata_id_columns = ["strain name with spaces"]
+        filter_obj = get_filter_obj_run(args)
+        results = query_fetchall(filter_obj, f"""
+            SELECT "strain name with spaces" FROM {METADATA_TABLE_NAME}
+        """)
+        assert results == [("SEQ_1",)]
+
+    def test_load_priority_scores_extra_column(self, tmpdir):
+        """Attempt to load a priority score file with an extra column raises a ValueError."""
+        content = "strain1\t5\tbad_col\n"
+        filter_obj = get_filter_obj_with_priority_loaded(tmpdir, content)
+        with pytest.raises(ValueError) as e_info:
+            filter_obj.db_load_priorities_table()
+        assert str(e_info.value) == f"Failed to parse priority file {filter_obj.args.priority}."
+
+    def test_load_priority_scores_missing_column(self, tmpdir):
+        """Attempt to load a priority score file with a missing column raises a ValueError."""
+        content = "strain1\n"
+        filter_obj = get_filter_obj_with_priority_loaded(tmpdir, content)
+        with pytest.raises(ValueError) as e_info:
+            filter_obj.db_load_priorities_table()
+        assert str(e_info.value) == f"Failed to parse priority file {filter_obj.args.priority}."
+
+    def test_load_sequences_subset_strains(self, tmpdir):
+        """Loading sequences filters output to the intersection of strains from metadata and sequences."""
+        data = [("strain",),
+                ("SEQ_1",),
+                ("SEQ_2",),
+                ("SEQ_3",)]
+        args = get_valid_args(data, tmpdir)
+        fasta_lines = [
+            ">SEQ_1", "aaaa",
+            ">SEQ_3", "aaaa",
+            ">SEQ_4", "nnnn",
+        ]
+        args.sequences = write_file(tmpdir, "sequences.fasta", "\n".join(fasta_lines))
+        filter_obj = get_filter_obj_run(args)
+        results = query_fetchall(filter_obj, f"SELECT strain FROM {OUTPUT_METADATA_TABLE_NAME}")
+        assert results == [("SEQ_1",), ("SEQ_3",)]
+
+    def test_generate_sequence_index(self, tmpdir):
+        """Loading sequences filters output to the intersection of strains from metadata and sequences."""
+        data = [("strain",),
+                ("SEQ_1",),
+                ("SEQ_2",),
+                ("SEQ_3",)]
+        args = get_valid_args(data, tmpdir)
+        fasta_lines = [
+            ">SEQ_1", "aaaa",
+            ">SEQ_3", "aaaa",
+            ">SEQ_4", "nnnn",
+        ]
+        args.sequences = write_file(tmpdir, "sequences.fasta", "\n".join(fasta_lines))
+        filter_obj = get_filter_obj_run(args)
+        results = query_fetchall(filter_obj, f"SELECT strain, A, N FROM {SEQUENCE_INDEX_TABLE_NAME}")
+        print(results)
+        assert results == [("SEQ_1", 4, 0), ("SEQ_3", 4, 0), ("SEQ_4", 0, 4)]
 
 
 def get_filter_obj_with_priority_loaded(tmpdir, content:str):
