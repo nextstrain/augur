@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from augur import utils
-from test_filter import write_metadata
+from test_filter_pandas import write_metadata
 
 
 class TestUtils:
