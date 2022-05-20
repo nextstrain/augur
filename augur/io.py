@@ -62,19 +62,19 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
 
     For standard use, request a metadata file and get a pandas DataFrame.
 
-    >>> read_metadata("tests/functional/filter/metadata.tsv").index.values[0]
+    >>> read_metadata("tests/functional/filter/data/metadata.tsv").index.values[0]
     'COL/FLR_00024/2015'
 
     Requesting an index column that doesn't exist should produce an error.
 
-    >>> read_metadata("tests/functional/filter/metadata.tsv", id_columns=("Virus name",))
+    >>> read_metadata("tests/functional/filter/data/metadata.tsv", id_columns=("Virus name",))
     Traceback (most recent call last):
       ...
     Exception: None of the possible id columns (('Virus name',)) were found in the metadata's columns ('strain', 'virus', 'accession', 'date', 'region', 'country', 'division', 'city', 'db', 'segment', 'authors', 'url', 'title', 'journal', 'paper_url')
 
     We also allow iterating through metadata in fixed chunk sizes.
 
-    >>> for chunk in read_metadata("tests/functional/filter/metadata.tsv", chunk_size=5):
+    >>> for chunk in read_metadata("tests/functional/filter/data/metadata.tsv", chunk_size=5):
     ...     print(chunk.shape)
     ...
     (5, 14)
