@@ -5,6 +5,7 @@ import pytest
 
 from augur import utils
 
+
 class TestUtils:
     @pytest.mark.parametrize("extension", ["bed","BED"])
     @patch('augur.utils.read_bed_file')

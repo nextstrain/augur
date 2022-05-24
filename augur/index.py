@@ -8,8 +8,7 @@ import Bio.SeqRecord
 import sys
 import csv
 
-from .io import open_file, read_sequences
-from .utils import is_vcf, read_vcf
+from .io import open_file, read_sequences, is_vcf, read_vcf
 
 
 def register_arguments(parser):

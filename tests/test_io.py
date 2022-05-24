@@ -10,6 +10,7 @@ import pytest
 import random
 import sys
 
+import augur.io as io
 from augur.io import open_file, read_sequences, write_sequences
 
 
@@ -76,6 +77,10 @@ def lzma_fasta_filename(tmpdir, sequences):
 @pytest.fixture
 def genbank_reference():
     return "tests/builds/zika/config/zika_outgroup.gb"
+
+@pytest.fixture
+def mock_run_shell_command(mocker):
+    mocker.patch("augur.io.run_shell_command")
 
 
 class TestReadSequences:
@@ -231,3 +236,71 @@ class TestOpenFile:
             f_write.write('foo\nbar\n')
         with lzma.open(path, 'rt') as f_read:
             assert f_read.read() == 'foo\nbar\n'
+
+
+class TestVCF:
+    def test_read_vcf_compressed(self):
+        seq_keep, all_seq = io.read_vcf(
+            "tests/builds/tb/data/lee_2015.vcf.gz"
+        )
+
+        assert len(seq_keep) == 150
+        assert seq_keep[149] == "G22733"
+        assert seq_keep == all_seq
+
+    def test_read_vcf_uncompressed(self):
+        seq_keep, all_seq = io.read_vcf("tests/builds/tb/data/lee_2015.vcf")
+
+        assert len(seq_keep) == 150
+        assert seq_keep[149] == "G22733"
+        assert seq_keep == all_seq
+
+    def test_write_vcf_compressed_input(self, mock_run_shell_command):
+        io.write_vcf(
+            "tests/builds/tb/data/lee_2015.vcf.gz", "output_file.vcf.gz", []
+        )
+
+        io.run_shell_command.assert_called_once_with(
+            "vcftools --gzvcf tests/builds/tb/data/lee_2015.vcf.gz --recode --stdout | gzip -c > output_file.vcf.gz",
+            raise_errors=True,
+        )
+
+    def test_write_vcf_uncompressed_input(self, mock_run_shell_command):
+        io.write_vcf(
+            "tests/builds/tb/data/lee_2015.vcf", "output_file.vcf.gz", []
+        )
+
+        io.run_shell_command.assert_called_once_with(
+            "vcftools --vcf tests/builds/tb/data/lee_2015.vcf --recode --stdout | gzip -c > output_file.vcf.gz",
+            raise_errors=True,
+        )
+
+    def test_write_vcf_compressed_output(self, mock_run_shell_command):
+        io.write_vcf(
+            "tests/builds/tb/data/lee_2015.vcf", "output_file.vcf.gz", []
+        )
+
+        io.run_shell_command.assert_called_once_with(
+            "vcftools --vcf tests/builds/tb/data/lee_2015.vcf --recode --stdout | gzip -c > output_file.vcf.gz",
+            raise_errors=True,
+        )
+
+    def test_write_vcf_uncompressed_output(self, mock_run_shell_command):
+        io.write_vcf(
+            "tests/builds/tb/data/lee_2015.vcf", "output_file.vcf", []
+        )
+
+        io.run_shell_command.assert_called_once_with(
+            "vcftools --vcf tests/builds/tb/data/lee_2015.vcf --recode --stdout  > output_file.vcf",
+            raise_errors=True,
+        )
+
+    def test_write_vcf_dropped_samples(self, mock_run_shell_command):
+        io.write_vcf(
+            "tests/builds/tb/data/lee_2015.vcf", "output_file.vcf", ["x", "y", "z"]
+        )
+
+        io.run_shell_command.assert_called_once_with(
+            "vcftools --remove-indv x --remove-indv y --remove-indv z --vcf tests/builds/tb/data/lee_2015.vcf --recode --stdout  > output_file.vcf",
+            raise_errors=True,
+        )
