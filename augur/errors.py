@@ -1,0 +1,2 @@
+class AugurError(Exception):
+    pass

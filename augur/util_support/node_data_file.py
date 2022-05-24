@@ -2,7 +2,7 @@ import json
 
 from augur.__version__ import __version__
 from augur.__version__ import is_augur_version_compatible
-from augur.utils import AugurError
+from augur.errors import AugurError
 from augur.validate import validate_json, ValidateError, load_json_schema
 
 

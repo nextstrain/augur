@@ -11,8 +11,9 @@ import traceback
 from textwrap import dedent
 from types import SimpleNamespace
 
+from .errors import AugurError
 from .io import print_err
-from .utils import AugurError, first_line
+from .utils import first_line
 
 recursion_limit = os.environ.get("AUGUR_RECURSION_LIMIT")
 if recursion_limit:

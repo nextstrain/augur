@@ -1,7 +1,7 @@
 import json
 
 from augur.__version__ import __version__
-from augur.utils import AugurError
+from augur.errors import AugurError
 from augur.util_support.node_data_file import NodeDataFile
 
 import pytest
