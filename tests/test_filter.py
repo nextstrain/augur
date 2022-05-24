@@ -13,7 +13,7 @@ from Bio.SeqRecord import SeqRecord
 from freezegun import freeze_time
 
 import augur.filter
-from augur.utils import read_metadata
+from augur.io import read_metadata
 
 @pytest.fixture
 def argparser():
@@ -168,7 +168,7 @@ class TestFilter:
                                           ("SEQ_1","colorado","good"),
                                           ("SEQ_2","colorado","bad"),
                                           ("SEQ_3","nevada","good")))
-        metadata, columns = read_metadata(meta_fn, as_data_frame=True)
+        metadata = read_metadata(meta_fn)
         filtered = augur.filter.filter_by_query(metadata, 'quality=="good"')
         assert sorted(filtered) == ["SEQ_1", "SEQ_3"]
 

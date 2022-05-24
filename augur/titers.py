@@ -9,7 +9,7 @@ from Bio import Phylo
 
 from .reconstruct_sequences import load_alignments
 from .titer_model import InsufficientDataException
-from .utils import read_metadata, read_node_data, write_json
+from .utils import read_node_data, write_json
 
 
 def register_arguments(parser):

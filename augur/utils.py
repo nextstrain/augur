@@ -15,7 +15,6 @@ from .__version__ import __version__
 from augur.io import open_file
 
 from augur.util_support.color_parser import ColorParser
-from augur.util_support.metadata_file import MetadataFile
 from augur.util_support.node_data_reader import NodeDataReader
 from augur.util_support.shell_command_runner import ShellCommandRunner
 
@@ -62,10 +61,6 @@ def get_json_name(args, default=None):
             return default
         else:
             raise ValueError("Please specify a name for the JSON file containing the results.")
-
-
-def read_metadata(fname, query=None, as_data_frame=False):
-    return MetadataFile(fname, query, as_data_frame).read()
 
 
 class InvalidTreeError(Exception):

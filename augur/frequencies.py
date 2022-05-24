@@ -10,7 +10,8 @@ from Bio.Align import MultipleSeqAlignment
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
 from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
-from .utils import read_metadata, read_node_data, write_json
+from .io import read_metadata
+from .utils import read_node_data, write_json
 
 
 def register_arguments(parser):
@@ -77,7 +78,7 @@ def format_frequencies(freq):
 
 
 def run(args):
-    metadata, columns = read_metadata(args.metadata)
+    metadata = read_metadata(args.metadata)
     dates = get_numerical_dates(metadata, fmt='%Y-%m-%d')
     stiffness = args.stiffness
     inertia = args.inertia
@@ -102,7 +103,7 @@ def run(args):
 
             # Annotate tips with metadata to enable filtering and weighting of
             # frequencies by metadata attributes.
-            for key, value in metadata[tip.name].items():
+            for key, value in metadata.loc[tip.name].items():
                 tip.attr[key] = value
 
         if args.method == "diffusion":
