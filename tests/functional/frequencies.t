@@ -1,7 +1,7 @@
 Integration tests for augur frequencies.
 
   $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="../../bin/augur"
+  $ export AUGUR="${AUGUR:-../../bin/augur}"
 
 Calculate KDE-based tip frequencies from a refined tree.
 Timepoints used to estimate frequencies (i.e., "pivots") get calculated from the range of dates in the given metadata.

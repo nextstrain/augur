@@ -1,7 +1,7 @@
 Integration tests for augur mask.
 
   $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="../../bin/augur"
+  $ export AUGUR="${AUGUR:-../../bin/augur}"
 
 Try masking a VCF without any specified mask.
 

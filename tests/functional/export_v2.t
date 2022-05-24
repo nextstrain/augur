@@ -1,7 +1,7 @@
 Integration tests for augur export v2.
 
   $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="../../bin/augur"
+  $ export AUGUR="${AUGUR:-../../bin/augur}"
 
 Minimal export
 

@@ -1,7 +1,7 @@
 Integration tests for augur clades.
 
   $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="../../bin/augur"
+  $ export AUGUR="${AUGUR:-../../bin/augur}"
 
 Test augur clades with simple Zika input files and hierarchical clades.
 

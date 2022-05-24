@@ -42,8 +42,13 @@ jobs:
     - run: pip install -e .[dev]
     - run: conda info
     - run: conda list
-    - run: pytest -c pytest.python3.ini  --cov-report=xml --cov=augur
+    - run: pytest -c pytest.python3.ini --cov=augur
     - run: cram --shell=/bin/bash tests/functional/*.t tests/builds/*.t
+      env:
+        AUGUR: coverage run -a ${{ github.workspace }}/bin/augur
+        COVERAGE_FILE: ${{ github.workspace }}/.coverage
+        COVERAGE_RCFILE: ${{ github.workspace }}/.coveragerc
+    - run: coverage xml
     - run: bash tests/builds/runner.sh
     - if: github.repository == 'nextstrain/augur' && matrix.python-version == '3.10' && matrix.biopython-version == ''
       uses: codecov/codecov-action@v2

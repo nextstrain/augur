@@ -7,7 +7,7 @@ Running from the test data directory allows us to use relative paths that won't 
   $ TEST_DATA_DIR="$TESTDIR/zika"
   $ mkdir -p "$TMP/out"
   $ pushd "$TEST_DATA_DIR" > /dev/null
-  $ export AUGUR="../../../bin/augur"
+  $ export AUGUR="${AUGUR:-../../../bin/augur}"
 
 Parse a FASTA whose defline contains metadata into separate sequence and metadata files.
 

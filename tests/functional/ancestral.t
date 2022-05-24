@@ -1,7 +1,7 @@
 Integration tests for augur ancestral.
 
   $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="../../bin/augur"
+  $ export AUGUR="${AUGUR:-../../bin/augur}"
 
 Infer ancestral sequences for the given tree and alignment.
 The default is to infer ambiguous bases, so there should not be N bases in the inferred output sequences.

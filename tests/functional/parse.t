@@ -1,7 +1,7 @@
 Integration tests for augur parse.
 
   $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="../../bin/augur"
+  $ export AUGUR="${AUGUR:-../../bin/augur}"
 
 Parse Zika sequences into sequences and metadata.
 

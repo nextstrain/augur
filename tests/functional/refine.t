@@ -1,7 +1,7 @@
 Integration tests for augur refine.
 
   $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="../../bin/augur"
+  $ export AUGUR="${AUGUR:-../../bin/augur}"
 
 Try building a time tree.
 
