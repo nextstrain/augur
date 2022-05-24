@@ -10,11 +10,11 @@ except ImportError:
     # A non-POSIX platform
     SIGKILL = None
 
-class ShellCommandRunner:
+
+def run_shell_command(cmd, raise_errors=False, extra_env=None):
     """
     Run the given command string via Bash with error checking.
 
-    TODO move to method docstrings
     Returns True if the command exits normally.  Returns False if the command
     exits with failure and "raise_errors" is False (the default).  When
     "raise_errors" is True, exceptions are rethrown.
@@ -22,7 +22,10 @@ class ShellCommandRunner:
     If an *extra_env* mapping is passed, the provided keys and values are
     overlayed onto the default subprocess environment.
     """
+    return ShellCommandRunner(cmd, raise_errors=raise_errors, extra_env=extra_env).run()
 
+
+class ShellCommandRunner:
     def __init__(self, cmd, *, raise_errors=False, extra_env=None):
         self.cmd = cmd
         self.raise_errors = raise_errors
