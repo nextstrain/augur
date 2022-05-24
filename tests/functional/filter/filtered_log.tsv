@@ -4,3 +4,4 @@ COL/FLR_00008/2015	filter_by_query	"[[""query"", ""country != 'Colombia'""]]"
 Colombia/2016/ZC204Se	filter_by_query	"[[""query"", ""country != 'Colombia'""]]"
 COL/FLR_00024/2015	filter_by_query	"[[""query"", ""country != 'Colombia'""]]"
 COL/FLR_00008/2015	include	"[[""include_file"", ""filter/include.txt""]]"
+PRVABC59	filter_by_non_nucleotide	[]
