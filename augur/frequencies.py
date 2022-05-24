@@ -9,8 +9,8 @@ from Bio.Align import MultipleSeqAlignment
 
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
-from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT
-from .utils import read_metadata, read_node_data, write_json, get_numerical_dates
+from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
+from .utils import read_metadata, read_node_data, write_json
 
 
 def register_arguments(parser):
