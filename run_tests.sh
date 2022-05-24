@@ -22,7 +22,7 @@ python3 -m pytest -c pytest.python3.ini $coverage_arg "$@"
 # Only run functional tests if we are not running a subset of tests for pytest.
 if [ "$partial_test" = 0 ]; then
     echo "Running functional tests with cram"
-    cram --shell=/bin/bash tests/functional/*.t tests/builds/*.t
+    cram --shell=/bin/bash tests/
 else
     echo "Skipping functional tests when running a subset of unit tests"
 fi
