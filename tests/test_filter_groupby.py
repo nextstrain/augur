@@ -45,7 +45,7 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         with pytest.raises(FilterException) as e_info:
             get_groups_for_subsampling(strains, metadata, group_by=groups)
-        assert str(e_info.value) == "The specified group-by categories (['invalid']) were not found. No sequences-per-group sampling will be done."
+        assert str(e_info.value) == "The specified group-by categories (['invalid']) were not found."
 
     def test_filter_groupby_invalid_warn(self, valid_metadata: pd.DataFrame, capsys):
         groups = ['country', 'year', 'month', 'invalid']
@@ -125,7 +125,7 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         with pytest.raises(FilterException) as e_info:
             get_groups_for_subsampling(strains, metadata, group_by=groups)
-        assert str(e_info.value) == "The specified group-by categories (['year']) were not found. No sequences-per-group sampling will be done. Note that using 'year' or 'year month' requires a column called 'date'."
+        assert str(e_info.value) == "The specified group-by categories (['year']) were not found. Note that using 'year' or 'year month' requires a column called 'date'."
 
     def test_filter_groupby_missing_month_error(self, valid_metadata: pd.DataFrame):
         groups = ['month']
@@ -134,7 +134,7 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         with pytest.raises(FilterException) as e_info:
             get_groups_for_subsampling(strains, metadata, group_by=groups)
-        assert str(e_info.value) == "The specified group-by categories (['month']) were not found. No sequences-per-group sampling will be done. Note that using 'year' or 'year month' requires a column called 'date'."
+        assert str(e_info.value) == "The specified group-by categories (['month']) were not found. Note that using 'year' or 'year month' requires a column called 'date'."
 
     def test_filter_groupby_missing_year_and_month_error(self, valid_metadata: pd.DataFrame):
         groups = ['year', 'month']
@@ -143,7 +143,7 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         with pytest.raises(FilterException) as e_info:
             get_groups_for_subsampling(strains, metadata, group_by=groups)
-        assert str(e_info.value) == "The specified group-by categories (['year', 'month']) were not found. No sequences-per-group sampling will be done. Note that using 'year' or 'year month' requires a column called 'date'."
+        assert str(e_info.value) == "The specified group-by categories (['year', 'month']) were not found. Note that using 'year' or 'year month' requires a column called 'date'."
 
     def test_filter_groupby_missing_date_warn(self, valid_metadata: pd.DataFrame, capsys):
         groups = ['country', 'year', 'month']
