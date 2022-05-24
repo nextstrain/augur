@@ -10,8 +10,8 @@ import pandas as pd
 from Bio import SeqIO
 from Bio.Seq import MutableSeq
 
-from .io import open_file, read_sequences, write_sequences
-from .utils import run_shell_command, shquote, is_vcf, load_mask_sites, VALID_NUCLEOTIDES
+from .io import open_file, read_sequences, write_sequences, run_shell_command, shquote, is_vcf
+from .utils import load_mask_sites, VALID_NUCLEOTIDES
 
 def get_chrom_name(vcf_file):
     """Read the CHROM field from the first non-header line of a vcf file.

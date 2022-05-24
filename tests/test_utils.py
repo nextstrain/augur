@@ -7,11 +7,6 @@ from augur import utils
 from test_filter import write_metadata
 
 
-@pytest.fixture
-def mock_run_shell_command(mocker):
-    mocker.patch("augur.utils.run_shell_command")
-
-
 class TestUtils:
     @pytest.mark.parametrize("extension", ["bed","BED"])
     @patch('augur.utils.read_bed_file')
@@ -111,69 +106,3 @@ class TestUtils:
         with pytest.raises(ValueError) as e_info:
             utils.read_metadata(meta_fn, as_data_frame=True)
         assert str(e_info.value) == "Duplicated strain in metadata: SEQ_1"
-
-    def test_read_vcf_compressed(self):
-        seq_keep, all_seq = utils.read_vcf(
-            "tests/builds/tb/data/lee_2015.vcf.gz"
-        )
-
-        assert len(seq_keep) == 150
-        assert seq_keep[149] == "G22733"
-        assert seq_keep == all_seq
-
-    def test_read_vcf_uncompressed(self):
-        seq_keep, all_seq = utils.read_vcf("tests/builds/tb/data/lee_2015.vcf")
-
-        assert len(seq_keep) == 150
-        assert seq_keep[149] == "G22733"
-        assert seq_keep == all_seq
-
-    def test_write_vcf_compressed_input(self, mock_run_shell_command):
-        utils.write_vcf(
-            "tests/builds/tb/data/lee_2015.vcf.gz", "output_file.vcf.gz", []
-        )
-
-        utils.run_shell_command.assert_called_once_with(
-            "vcftools --gzvcf tests/builds/tb/data/lee_2015.vcf.gz --recode --stdout | gzip -c > output_file.vcf.gz",
-            raise_errors=True,
-        )
-
-    def test_write_vcf_uncompressed_input(self, mock_run_shell_command):
-        utils.write_vcf(
-            "tests/builds/tb/data/lee_2015.vcf", "output_file.vcf.gz", []
-        )
-
-        utils.run_shell_command.assert_called_once_with(
-            "vcftools --vcf tests/builds/tb/data/lee_2015.vcf --recode --stdout | gzip -c > output_file.vcf.gz",
-            raise_errors=True,
-        )
-
-    def test_write_vcf_compressed_output(self, mock_run_shell_command):
-        utils.write_vcf(
-            "tests/builds/tb/data/lee_2015.vcf", "output_file.vcf.gz", []
-        )
-
-        utils.run_shell_command.assert_called_once_with(
-            "vcftools --vcf tests/builds/tb/data/lee_2015.vcf --recode --stdout | gzip -c > output_file.vcf.gz",
-            raise_errors=True,
-        )
-
-    def test_write_vcf_uncompressed_output(self, mock_run_shell_command):
-        utils.write_vcf(
-            "tests/builds/tb/data/lee_2015.vcf", "output_file.vcf", []
-        )
-
-        utils.run_shell_command.assert_called_once_with(
-            "vcftools --vcf tests/builds/tb/data/lee_2015.vcf --recode --stdout  > output_file.vcf",
-            raise_errors=True,
-        )
-
-    def test_write_vcf_dropped_samples(self, mock_run_shell_command):
-        utils.write_vcf(
-            "tests/builds/tb/data/lee_2015.vcf", "output_file.vcf", ["x", "y", "z"]
-        )
-
-        utils.run_shell_command.assert_called_once_with(
-            "vcftools --remove-indv x --remove-indv y --remove-indv z --vcf tests/builds/tb/data/lee_2015.vcf --recode --stdout  > output_file.vcf",
-            raise_errors=True,
-        )
