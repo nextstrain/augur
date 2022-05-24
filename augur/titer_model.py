@@ -7,7 +7,7 @@ import pandas as pd
 from pprint import pprint
 import sys
 
-from .utils import myopen
+from augur.io import open_file
 
 TITER_ROUND=4
 
@@ -67,7 +67,7 @@ class TiterCollection(object):
         titer_files = [filenames] if type(filenames)==str else filenames
 
         for fname in titer_files:
-            with myopen(fname, 'r') as infile:
+            with open_file(fname, 'r') as infile:
                 for line in infile:
                     entries = line.strip().split('\t')
                     try:
