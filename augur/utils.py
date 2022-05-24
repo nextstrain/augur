@@ -53,13 +53,6 @@ def read_vcf(filename):
     # because we need 'seqs to remove' for VCF
     return sequences, sequences.copy()
 
-def myopen(fname, mode):
-    if fname.endswith('.gz'):
-        import gzip
-        return gzip.open(fname, mode, encoding='utf-8')
-    else:
-        return open(fname, mode, encoding='utf-8')
-
 def get_json_name(args, default=None):
     if args.output_node_data:
         return args.output_node_data
