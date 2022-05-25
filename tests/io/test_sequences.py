@@ -10,7 +10,6 @@ import pytest
 import random
 
 import augur.io.sequences
-from augur.io.file import open_file
 
 
 def random_seq(k):
@@ -166,7 +165,7 @@ class TestWriteSequences:
     def test_write_sequences_by_external_handle(self, tmpdir, sequences):
         output_filename = Path(tmpdir) / Path("new_sequences.fasta")
 
-        with open_file(output_filename, "w") as handle:
+        with open(output_filename, "w") as handle:
             total_sequences_written = 0
             for sequence in sequences:
                 sequences_written = augur.io.sequences.write_sequences(
