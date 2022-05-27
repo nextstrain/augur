@@ -18,11 +18,6 @@ from augur.util_support.color_parser import ColorParser
 from augur.util_support.node_data_reader import NodeDataReader
 
 
-class AugurError(Exception):
-    pass
-
-
-
 def get_json_name(args, default=None):
     if args.output_node_data:
         return args.output_node_data
