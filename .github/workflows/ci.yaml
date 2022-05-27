@@ -39,7 +39,7 @@ jobs:
         activate-environment: test
     - run: mamba install mafft raxml fasttree iqtree vcftools
     - run: mamba install biopython=${{ matrix.biopython-version }}
-    - run: pip install -e .[dev]
+    - run: pip install .[dev]
     - run: conda info
     - run: conda list
     - run: pytest -c pytest.python3.ini --cov=augur

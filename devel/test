@@ -26,7 +26,7 @@ fi
 echo Setting up Conda test environment with ${CONDA}
 ${CONDA} create --yes --quiet -n ${ENV_NAME} -c conda-forge -c bioconda augur
 conda activate ${ENV_NAME}
-python3 -m pip install -e .[dev]
+python3 -m pip install .[dev]
 
 # Run unit and functional tests.
 echo Running tests
