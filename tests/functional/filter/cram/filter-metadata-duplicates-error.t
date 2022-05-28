@@ -3,7 +3,12 @@ Setup
   $ pushd "$TESTDIR" > /dev/null
   $ source _setup.sh
 
-Error on duplicates in metadata within same chunk.
+Error on duplicates in metadata.
+
+Pandas engine
+-------------
+
+Within same chunk:
 
   $ cat >$TMP/metadata-duplicates.tsv <<~~
   > strain	date
@@ -26,7 +31,7 @@ Error on duplicates in metadata within same chunk.
   cat: .*: No such file or directory (re)
   [1]
 
-Error on duplicates in metadata in separate chunks.
+Separate chunks:
 
   $ ${AUGUR} filter \
   >   --metadata $TMP/metadata-duplicates.tsv \
@@ -34,6 +39,21 @@ Error on duplicates in metadata in separate chunks.
   >   --sequences-per-group 2 \
   >   --subsample-seed 0 \
   >   --metadata-chunk-size 1 \
+  >   --output-metadata $TMP/metadata-filtered.tsv > /dev/null
+  ERROR: Duplicate found in .* (re)
+  [2]
+  $ cat $TMP/metadata-filtered.tsv
+  cat: .*: No such file or directory (re)
+  [1]
+
+SQLite engine
+-------------
+
+  $ ${AUGUR} filter --engine sqlite \
+  >   --metadata $TMP/metadata-duplicates.tsv \
+  >   --group-by year \
+  >   --sequences-per-group 2 \
+  >   --subsample-seed 0 \
   >   --output-metadata $TMP/metadata-filtered.tsv > /dev/null
   ERROR: Duplicate found in .* (re)
   [2]
