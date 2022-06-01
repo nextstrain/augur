@@ -1,4 +1,11 @@
 {
+  "annotations": {
+    "nuc": {
+      "end": 10769,
+      "start": 1,
+      "strand": "+"
+    }
+  },
   "generated_by": {
     "program": "augur",
     "version": "7.0.2"

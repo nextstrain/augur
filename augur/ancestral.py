@@ -207,6 +207,8 @@ def run(args):
     if anc_seqs.get("mask") is not None:
         anc_seqs["mask"] = "".join(['1' if x else '0' for x in anc_seqs["mask"]])
 
+    anc_seqs['annotations'] = {'nuc': {'start': 1, 'end': len(anc_seqs['reference']['nuc']), 'strand': '+'}}
+
     out_name = get_json_name(args, '.'.join(args.alignment.split('.')[:-1]) + '_mutations.json')
     write_json(anc_seqs, out_name)
     print("ancestral mutations written to", out_name, file=sys.stdout)
