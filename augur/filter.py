@@ -1157,7 +1157,10 @@ def register_arguments(parser):
     sequence_filter_group.add_argument('--non-nucleotide', action='store_true', help="exclude sequences that contain illegal characters")
 
     subsample_group = parser.add_argument_group("subsampling", "options to subsample filtered data")
-    subsample_group.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
+    subsample_group.add_argument('--group-by', nargs='+', help="""
+        categories with respect to subsample.
+        Grouping by 'year' and/or 'month' is only supported when there is a 'date' column in the metadata.
+        Custom 'year' and 'month' columns in the metadata are ignored for grouping. Please rename them if you want to use their values for grouping.""")
     subsample_limits_group = subsample_group.add_mutually_exclusive_group()
     subsample_limits_group.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     subsample_limits_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences; can be used without the group_by argument")
