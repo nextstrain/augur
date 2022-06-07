@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* translate: Fix annotation of `-` strands in augur/auspice genemap format [#966][] (@corneliusroemer)
+
+[#966]: https://github.com/nextstrain/augur/pull/966
 
 ## 15.0.2 (5 May 2022)
 
