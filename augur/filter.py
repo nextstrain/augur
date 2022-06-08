@@ -931,6 +931,14 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     # date requested
     if 'year' in group_by_set or 'month' in group_by_set:
+
+        if 'year' in metadata.columns and 'year' in group_by_set:
+            print(f"WARNING: `--group-by year` uses the generated year value from the 'date' column. The custom 'year' column in the metadata is ignored for grouping purposes.", file=sys.stderr)
+            metadata.drop('year', axis=1, inplace=True)
+        if 'month' in metadata.columns and 'month' in group_by_set:
+            print(f"WARNING: `--group-by month` uses the generated month value from the 'date' column. The custom 'month' column in the metadata is ignored for grouping purposes.", file=sys.stderr)
+            metadata.drop('month', axis=1, inplace=True)
+
         if 'date' not in metadata:
             # set year/month/day = unknown
             print(f"WARNING: A 'date' column could not be found to group-by year or month.", file=sys.stderr)
