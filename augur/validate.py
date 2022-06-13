@@ -119,11 +119,173 @@ def export_v1(meta_json, tree_json, **kwargs):
         print("Validation of {!r} and {!r} succeeded, but there were warnings you may want to resolve.".format(meta_json, tree_json))
 
 
+def get_unique_keys(list_of_dicts):
+    """
+    Returns a set of unique keys from a list of dicts
+
+    >>> list_of_dicts = [{"key1": "val1", "key2": "val2"}, {"key1": "val1", "key3": "val3"}]
+    >>> sorted(get_unique_keys(list_of_dicts))
+    ['key1', 'key2', 'key3']
+    """
+    return set().union(*(single_dict.keys() for single_dict in list_of_dicts))
+
+
+def validate_collection_config_fields(collection, index=None):
+    """
+    Validates a single collection's config field keys provided in fields,
+    groupings, and filters are valid fields that exist in measurements' fields.
+
+    Prints any validation errors to stderr.
+
+    Parameters
+    ----------
+    collection: dict
+        A single collection to validate. Assumes that the collection has already passed the schema validation.
+    index: int, optional
+        the index of the collection within a list of collections in a measurements JSON.
+        Used to print more detailed error messages.
+
+    Returns
+    -------
+    bool
+        True if collection's config is valid
+    """
+    valid_collection_config_fields = True
+    nested_config_fields = ['fields', 'groupings']
+    flat_config_fields = ['filters']
+    # Create set of all measurements' fields for verifying field configs
+    all_measurement_fields = get_unique_keys(collection['measurements'])
+
+    for config_field in (nested_config_fields + flat_config_fields):
+        invalid_fields = set()
+        for config_value in collection.get(config_field, []):
+            # config value can be a field name string (i.e. flat_config_fields)
+            # or a dict with the field name in 'key' (i.e. nested_config_fields)
+            field_name = config_value['key'] if config_field in nested_config_fields else config_value
+            if field_name not in all_measurement_fields:
+                invalid_fields.add(field_name)
+
+        if invalid_fields:
+            valid_collection_config_fields = False
+            include_index = f"(at index {index}) " if index is not None else ""
+            print(
+                f"ERROR: Collection {include_index}includes {config_field} that",
+                f"do not exist as fields in measurements: {invalid_fields}.",
+                file=sys.stderr
+            )
+
+    return valid_collection_config_fields
+
+
+def validate_collection_display_defaults(collection, index=None):
+    """
+    Validates a single collection's display defaults. If a default group-by
+    field is provided, the field must be included in groupings.
+
+    Prints validation errors to stderr.
+
+    Parameters
+    ----------
+    collection: dict
+        A single collection to validate. Assumest htat the collection has already passed the schema validation.
+    index: int, optional
+        The index of the collection within a list of collections in a measurements JSON.
+        Used to print more detailed error messages.
+
+    Returns
+    -------
+    bool
+        True if collection's display defaults are valid
+    """
+    valid_display_defaults = True
+
+    grouping_fields = {grouping['key'] for grouping in collection['groupings']}
+    default_grouping = collection.get('display_defaults', {}).get('group_by')
+
+    if default_grouping and default_grouping not in grouping_fields:
+        valid_display_defaults = False
+        include_index = f"(at index {index}) " if index is not None else ""
+        print(
+            f"ERROR: Collection {include_index}has a default group-by field",
+            f"'{default_grouping}' that is not included in the groupings' fields.",
+            file=sys.stderr
+        )
+
+    return valid_display_defaults
+
+
+def validate_measurements_config(measurements):
+    """
+    Validate measurements' config values meet expectations described in the
+    measurements JSON schema descriptions that cannot be verified via
+    `validate_json`:
+    1. Individual collections have valid config values
+    2. All collections have unique keys
+    3. If a default collection is provided, it matches one of the collections
+
+    Prints any validation errors to stderr.
+
+    Parameters
+    ----------
+    measurements: dict
+        Loaded measurements JSON to validate. Assumes the measurements JSON has already passed the schema validation.
+
+    Returns
+    -------
+    bool
+        True if measurements' config is valid
+    """
+    valid_measurements_config = True
+    collection_keys = defaultdict(list)
+
+    # First check configs for individual collections
+    for index, collection in enumerate(measurements['collections']):
+        # Save the collection key and index of collection to verify unique keys later
+        collection_keys[collection['key']].append(index)
+
+        if not all([
+            validate_collection_config_fields(collection, index),
+            validate_collection_display_defaults(collection, index)
+        ]):
+            valid_measurements_config = False
+
+    # Check collections have unique keys
+    for collection_key, collection_indexes in collection_keys.items():
+        if len(collection_indexes) > 1:
+            valid_measurements_config = False
+            print(
+                f"ERROR: Collections at indexes {collection_indexes} share the same collection key '{collection_key}'.",
+                file=sys.stderr
+            )
+
+    # Check the default collection value matches a collection's key value
+    default_collection = measurements.get('default_collection')
+    if default_collection and default_collection not in collection_keys.keys():
+        valid_measurements_config = False
+        print(
+            f"ERROR: The default collection key {default_collection!r} does not match any of the collections' keys.",
+            file=sys.stderr
+        )
+
+    return valid_measurements_config
+
+
 def measurements(measurements_json, **kwargs):
     schema = load_json_schema("schema-measurements.json")
     measurements = load_json(measurements_json)
     validate_json(measurements, schema, measurements_json)
+    if not validate_measurements_config(measurements):
+        raise ValidateError("Validation of the measurements' config values failed.")
     return measurements
+
+
+def measurements_collection_config(collection_config_json, **kwargs):
+    schema = load_json_schema("schema-measurements-collection-config.json")
+    collection_config = load_json(collection_config_json)
+    validate_json(collection_config, schema, collection_config_json)
+    if not validate_collection_display_defaults(collection_config):
+        raise ValidateError("Validation of the collection config display defaults failed.")
+    return collection_config
 
 
 def register_arguments(parser):
@@ -141,6 +303,9 @@ def register_arguments(parser):
 
     subparsers.add_parser("measurements", help="validate measurements JSON intended for auspice measurements panel") \
         .add_argument("measurements_json", metavar="JSON", help="exported measurements JSON")
+
+    subparsers.add_parser("measurements-collection-config", help="validate measurement collection config intended for `augur measurements export`") \
+        .add_argument("collection_config_json", metavar="JSON", help="collection config JSON")
 
 def run(args):
     try:

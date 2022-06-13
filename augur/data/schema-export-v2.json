@@ -103,7 +103,7 @@
                     "type": "array",
                     "items": {
                         "type": "string",
-                        "enum": ["tree", "map", "frequencies", "entropy"]
+                        "enum": ["tree", "map", "frequencies", "entropy", "measurements"]
                     },
                     "uniqueItems": true,
                     "minItems": 1

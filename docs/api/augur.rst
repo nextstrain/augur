@@ -35,6 +35,7 @@ Submodules
    augur.io
    augur.lbi
    augur.mask
+   augur.measurements
    augur.parse
    augur.reconstruct_sequences
    augur.refine
