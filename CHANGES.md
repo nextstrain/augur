@@ -2,6 +2,69 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* filter: Error when any group-by column is not found [#933][] (@victorlin)
+    * Check your workflows for any new errors that may arise from this.
+* parse: Error on duplicates instead of silently passing [#918][] (@victorlin)
+    * Check your workflows for any new errors that may arise from this.
+* utils: Remove `utils.myopen()` [#926][] (@victorlin)
+    * Use `io.open_file()` going forwards.
+* Moved the following internal functions:
+    * `utils.read_vcf` -> `io.read_vcf`
+    * `utils.run_shell_command` -> `io.run_shell_command`
+    * `utils.shquote` -> `io.shquote`
+    * `filter.write_vcf` -> `io.write_vcf`
+
+### Features
+
+* Add the measurements subcommand with two sub-subcommands, export and concat [#879][] (@joverlee521)
+* filter: Report min and max date separately [#930][] (@victorlin)
+* export v2: Allow the color scale type to be temporal [#969][] (@jameshadfield)
+* Handle `FileNotFoundError` and unexpected exceptions gracefully [#914][] (@victorlin)
+
+### Bug Fixes
+
+* filter: Properly handle error on duplicates [#918][] (@victorlin)
+* filter: Reorganize Cram test files [#943][] (@victorlin)
+* filter: Reword comment on vcftools [#924][] (@victorlin)
+* dates: Move date logic from utils to dates [#923][] (@victorlin)
+* io: Split io.py into smaller files under new io/ [#949][] (@victorlin)
+* io: Add tests for `io.open_file()` [#926][] (@victorlin)
+* Move AugurError to new errors.py, replace RuntimeError [#921][] (@victorlin)
+* Remove internal usage of `utils.read_metadata()` [#934][], [#972][] (@victorlin)
+* schemas: Add missing display_default properties for Auspice config v2 [#916][] (@tsibley)
+* CI: Split codecov into separate job, combine coverage of all matrix jobs [#968][] (@tsibley)
+* CI: Temporarily disable failing test [#962][] (@victorlin)
+* CI: pip install without editable mode, fix `ModuleNotFoundError` [#956][] (@victorlin)
+* CI: Include functional tests in code coverage [#899][] (@huddlej)
+* CI: Move --quiet flag to accommodate snakemake=7.7.0 behavior [#927][] (@victorlin)
+* CI: Move docker rebuild step to release workflow [#912][] (@victorlin)
+* Update release process [#913][] (@victorlin)
+
+[#968]: https://github.com/nextstrain/augur/pull/968
+[#949]: https://github.com/nextstrain/augur/pull/949
+[#879]: https://github.com/nextstrain/augur/pull/879
+[#962]: https://github.com/nextstrain/augur/pull/962
+[#956]: https://github.com/nextstrain/augur/pull/956
+[#921]: https://github.com/nextstrain/augur/pull/921
+[#943]: https://github.com/nextstrain/augur/pull/943
+[#929]: https://github.com/nextstrain/augur/pull/929
+[#934]: https://github.com/nextstrain/augur/pull/934
+[#930]: https://github.com/nextstrain/augur/pull/930
+[#926]: https://github.com/nextstrain/augur/pull/926
+[#933]: https://github.com/nextstrain/augur/pull/933
+[#899]: https://github.com/nextstrain/augur/pull/899
+[#923]: https://github.com/nextstrain/augur/pull/923
+[#914]: https://github.com/nextstrain/augur/pull/914
+[#913]: https://github.com/nextstrain/augur/pull/913
+[#927]: https://github.com/nextstrain/augur/pull/927
+[#924]: https://github.com/nextstrain/augur/pull/924
+[#916]: https://github.com/nextstrain/augur/pull/916
+[#918]: https://github.com/nextstrain/augur/pull/918
+[#912]: https://github.com/nextstrain/augur/pull/912
+[#969]: https://github.com/nextstrain/augur/pull/969
+[#972]: https://github.com/nextstrain/augur/pull/972
 
 ## 15.0.2 (5 May 2022)
 
