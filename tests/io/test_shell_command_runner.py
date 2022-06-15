@@ -2,7 +2,7 @@ import os
 import re
 import subprocess
 
-from augur.io_support.shell_command_runner import ShellCommandRunner
+from augur.io.shell_command_runner import ShellCommandRunner
 
 import pytest
 
@@ -69,7 +69,7 @@ class TestShellCommandRunner:
     )
     def test_print_error_message(self, mocker, exception, expected_message):
         mock_print_error = mocker.patch(
-            "augur.io_support.shell_command_runner.ShellCommandRunner.print_error"
+            "augur.io.shell_command_runner.ShellCommandRunner.print_error"
         )
 
         ShellCommandRunner("cmd").print_error_message(exception)
