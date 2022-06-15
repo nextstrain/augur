@@ -180,7 +180,7 @@
                                 "description": "Dictates how the color scale should be constructed",
                                 "$comment": "The trait values (defined on tree nodes) must be numeric for continuous types, True / False for boolean, string or numeric for ordinal / categorical",
                                 "type": "string",
-                                "enum": ["continuous", "ordinal", "categorical", "boolean"]
+                                "enum": ["continuous", "temporal", "ordinal", "categorical", "boolean"]
                             },
                             "scale": {
                                 "description": "Provided mapping between trait values & hex values",
