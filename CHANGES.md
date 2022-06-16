@@ -43,7 +43,7 @@
 * schemas: Add missing display_default properties for Auspice config v2 [#916][] (@tsibley)
 * CI: Split codecov into separate job, combine coverage of all matrix jobs [#968][] (@tsibley)
 * CI: Temporarily disable failing test [#962][] (@victorlin)
-* CI: pip install without editable mode, fix `ModuleNotFoundError` [#956][] (@victorlin)
+* CI: pip install without editable mode [#956][] (@victorlin)
 * CI: Include functional tests in code coverage [#899][] (@huddlej)
 * CI: Move --quiet flag to accommodate snakemake=7.7.0 behavior [#927][] (@victorlin)
 * CI: Move docker rebuild step to release workflow [#912][] (@victorlin)
