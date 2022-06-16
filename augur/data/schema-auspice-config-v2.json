@@ -33,7 +33,7 @@
                     "type": {
                         "description": "Defines how the color scale should be constructed",
                         "type": "string",
-                        "enum": ["continuous", "ordinal", "categorical", "boolean"]
+                        "enum": ["continuous", "temporal", "ordinal", "categorical", "boolean"]
                     },
                     "scale": {
                         "description": "Provided mapping between trait values & hex values",

@@ -236,7 +236,7 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
 
         if config.get(key, {}).get("type"):
             t = config.get(key).get("type")
-            allowedTypes = ["continuous", "ordinal", "categorical", "boolean"]
+            allowedTypes = ["continuous", "temporal", "ordinal", "categorical", "boolean"]
             if t not in allowedTypes:
                 warn("[config file] In trait {}, coloring type '{}' is not valid. Please choose from: '{}'. This trait has been excluded!".format(key, t, ", ".join(allowedTypes)))
                 raise InvalidOption()
