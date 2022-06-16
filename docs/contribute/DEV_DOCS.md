@@ -189,8 +189,7 @@ Here is how to do that using the GitHub website:
 2. Select **Run workflow**. In the new menu:
     1. Ensure `master` branch is selected.
     2. In **New version X.X.X**, provide the new version number.
-    3. Set **PyPI instance for publishing** as *PyPI* (default) or *TestPyPI*. [More info](https://packaging.python.org/en/latest/guides/using-testpypi)
-    4. Select **Run workflow**.
+    3. Select **Run workflow**.
 3. Ensure workflow runs successfully.
 
 ##### 4. Update GitHub milestones
