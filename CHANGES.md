@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 16.0.0 (16 June 2022)
+
 ### Major Changes
 
 * filter: Error when any group-by column is not found [#933][] (@victorlin)
