@@ -13,10 +13,15 @@
     * Check your workflows for any new errors that may arise from this.
 * utils: Remove `utils.myopen()` [#926][] (@victorlin)
     * Use `io.open_file()` going forwards.
-* Moved the following internal functions:
+* Moved the following internal functions [#929][], [#923][] (@victorlin):
     * `utils.read_vcf` -> `io.read_vcf`
     * `utils.run_shell_command` -> `io.run_shell_command`
     * `utils.shquote` -> `io.shquote`
+    * `utils.ambiguous_date_to_date_range` -> `dates.ambiguous_date_to_date_range`
+    * `utils.is_date_ambiguous` -> `dates.is_date_ambiguous`
+    * `utils.get_numerical_date_from_value` -> `dates.get_numerical_date_from_value`
+    * `utils.get_numerical_dates` -> `dates.get_numerical_dates`
+        * Drop support for dict type as the first parameter [#934][]
     * `filter.write_vcf` -> `io.write_vcf`
 
 ### Features
@@ -31,7 +36,6 @@
 * filter: Properly handle error on duplicates [#918][] (@victorlin)
 * filter: Reorganize Cram test files [#943][] (@victorlin)
 * filter: Reword comment on vcftools [#924][] (@victorlin)
-* dates: Move date logic from utils to dates [#923][] (@victorlin)
 * io: Split io.py into smaller files under new io/ [#949][] (@victorlin)
 * io: Add tests for `io.open_file()` [#926][] (@victorlin)
 * Move AugurError to new errors.py, replace RuntimeError [#921][] (@victorlin)
@@ -39,7 +43,7 @@
 * schemas: Add missing display_default properties for Auspice config v2 [#916][] (@tsibley)
 * CI: Split codecov into separate job, combine coverage of all matrix jobs [#968][] (@tsibley)
 * CI: Temporarily disable failing test [#962][] (@victorlin)
-* CI: pip install without editable mode, fix `ModuleNotFoundError` [#956][] (@victorlin)
+* CI: pip install without editable mode [#956][] (@victorlin)
 * CI: Include functional tests in code coverage [#899][] (@huddlej)
 * CI: Move --quiet flag to accommodate snakemake=7.7.0 behavior [#927][] (@victorlin)
 * CI: Move docker rebuild step to release workflow [#912][] (@victorlin)
