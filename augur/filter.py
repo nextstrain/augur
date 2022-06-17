@@ -789,10 +789,18 @@ def apply_filters(metadata, exclude_by, include_by):
     for filter_function, filter_kwargs in exclude_by:
         # Apply the current function with its given arguments. Each function
         # returns a set of strains that passed the corresponding filter.
-        passed = metadata.pipe(
-            filter_function,
-            **filter_kwargs,
-        )
+        try:
+            passed = metadata.pipe(
+                filter_function,
+                **filter_kwargs,
+            )
+        except Exception as e:
+            if filter_function.__name__ == 'filter_by_query':
+                if isinstance(e, pd.core.computation.ops.UndefinedVariableError):
+                    raise AugurError(f"Query contains a column that does not exist in metadata.") from e
+                raise AugurError(f"Error when applying query. Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.") from e
+            else:
+                raise
 
         # Track the strains that failed this filter, so we can explain why later
         # on and update the list of strains to keep to intersect with the

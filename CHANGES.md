@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+## Bug Fixes
+
+* filter: Handle errors from `filter_by_query` [#942][] (@victorlin)
+
+[#942]: https://github.com/nextstrain/augur/pull/942
 
 ## 16.0.0 (16 June 2022)
 
