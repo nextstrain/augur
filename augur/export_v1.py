@@ -269,8 +269,8 @@ def add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json, extra_fields=['authors
             continue
         for field in fields:
             # Allow fields to have value of 0! - but prevent from having value of "" (breaks auspice v1)
-            if field not in node and field in meta_tsv.columns and (meta_tsv.loc[strain, field] or meta_tsv.loc[strain, field]==0):
-                node[field] = meta_tsv.loc[strain, field]
+            if field not in node and field in meta_tsv.columns and (meta_tsv.at[strain, field] or meta_tsv.at[strain, field]==0):
+                node[field] = meta_tsv.at[strain, field]
 
 
 def get_root_sequence(root_node, ref=None, translations=None):
