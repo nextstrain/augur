@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* translate: output nuc annotation when reading from gff3 gene map [#976][] (@corneliusroemer)
 
 ## 16.0.0 (16 June 2022)
 
