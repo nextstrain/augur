@@ -6,9 +6,13 @@
 
 * filter: Handle errors from `filter_by_query` [#942][] (@victorlin)
 * translate: output nuc annotation when reading from gff3 gene map [#976][] (@corneliusroemer)
+* CI: Remove step for selecting PyPI instance [#974][] (@victorlin)
+* CI: Add token to use GitHub CLI [#958][] (@victorlin)
 
 [#942]: https://github.com/nextstrain/augur/pull/942
 [#976]: https://github.com/nextstrain/augur/pull/976
+[#974]: https://github.com/nextstrain/augur/pull/974
+[#958]: https://github.com/nextstrain/augur/pull/958
 
 ## 16.0.0 (16 June 2022)
 
