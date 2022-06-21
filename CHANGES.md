@@ -5,6 +5,7 @@
 ## Bug Fixes
 
 * filter: Handle errors from `filter_by_query` [#942][] (@victorlin)
+* translate: output nuc annotation when reading from gff3 gene map [#976][] (@corneliusroemer)
 
 [#942]: https://github.com/nextstrain/augur/pull/942
 
