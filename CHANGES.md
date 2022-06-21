@@ -8,6 +8,7 @@
 * translate: output nuc annotation when reading from gff3 gene map [#976][] (@corneliusroemer)
 
 [#942]: https://github.com/nextstrain/augur/pull/942
+[#976]: https://github.com/nextstrain/augur/pull/976
 
 ## 16.0.0 (16 June 2022)
 
