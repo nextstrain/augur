@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 16.0.1 (21 June 2022)
+
 ### Bug Fixes
 
 * filter: Handle errors from `filter_by_query` [#942][] (@victorlin)
