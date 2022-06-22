@@ -1409,11 +1409,11 @@ def run(args):
 
         # Track distinct strains to include, so we can write their
         # corresponding metadata, strains, or sequences later, as needed.
-        distinct_sequences_to_include = {
+        distinct_force_included_strains = {
             record["strain"]
             for record in sequences_to_include
         }
-        all_sequences_to_include.update(distinct_sequences_to_include)
+        all_sequences_to_include.update(distinct_force_included_strains)
 
         # Track reasons for filtered or force-included strains, so we can
         # report total numbers filtered and included at the end. Optionally,
@@ -1477,13 +1477,13 @@ def run(args):
         # Always write out strains that are force-included. Additionally, if
         # we are not grouping, write out metadata and strains that passed
         # filters so far.
-        strains_to_write = distinct_sequences_to_include
+        force_included_strains_to_write = distinct_force_included_strains
         if not group_by:
-            strains_to_write = strains_to_write | seq_keep
+            force_included_strains_to_write = force_included_strains_to_write | seq_keep
 
         if args.output_metadata:
             # TODO: wrap logic to write metadata into its own function
-            metadata.loc[list(strains_to_write)].to_csv(
+            metadata.loc[list(force_included_strains_to_write)].to_csv(
                 args.output_metadata,
                 sep="\t",
                 header=metadata_header,
@@ -1495,7 +1495,7 @@ def run(args):
         if args.output_strains:
             # TODO: Output strains will no longer be ordered. This is a
             # small breaking change.
-            for strain in strains_to_write:
+            for strain in force_included_strains_to_write:
                 output_strains.write(f"{strain}\n")
 
     # In the worst case, we need to calculate sequences per group from the
