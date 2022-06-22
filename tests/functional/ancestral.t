@@ -15,6 +15,16 @@ The default is to infer ambiguous bases, so there should not be N bases in the i
   $ grep N "$TMP/ancestral_sequences.fasta"
   >NODE_0000000
 
+Check that the reference length was correctly exported as the nuc annotation
+  $ grep -A 6 'annotations' "$TMP/ancestral_mutations.json"
+    "annotations": {
+      "nuc": {
+        "end": 10769,
+        "start": 1,
+        "strand": "+"
+      }
+    },
+
 Infer ancestral sequences for the given tree and alignment, explicitly requesting that ambiguous bases are inferred.
 There should not be N bases in the inferred output sequences.
 

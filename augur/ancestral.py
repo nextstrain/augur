@@ -124,7 +124,7 @@ def register_arguments(parser):
     parser.add_argument('--output-sequences', type=str, help='name of FASTA file to save ancestral sequences to (FASTA alignments only)')
     parser.add_argument('--inference', default='joint', choices=["joint", "marginal"],
                                     help="calculate joint or marginal maximum likelihood ancestral sequence states")
-    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to (only used if a VCF is provided as the alignment)')
     parser.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
     ambiguous = parser.add_mutually_exclusive_group()
     ambiguous.add_argument('--keep-ambiguous', action="store_true",
@@ -136,7 +136,7 @@ def register_arguments(parser):
 
 def run(args):
     # check alignment type, set flags, read in if VCF
-    is_vcf = False
+    is_vcf = any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])
     ref = None
     anc_seqs = {}
 
@@ -149,22 +149,21 @@ def run(args):
     import numpy as np
     missing_internal_node_names = [n.name is None for n in T.get_nonterminals()]
     if np.all(missing_internal_node_names):
-        print("\n*** WARNING: Tree has no internal node names!")
-        print("*** Without internal node names, ancestral sequences can't be linked up to the correct node later.")
-        print("*** If you want to use 'augur export' or `augur translate` later, re-run this command with the output of 'augur refine'.")
-        print("*** If you haven't run 'augur refine', you can add node names to your tree by running:")
-        print("*** augur refine --tree %s --output-tree <filename>.nwk"%(args.tree) )
-        print("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'")
+        print("\n*** WARNING: Tree has no internal node names!", file=sys.stderr)
+        print("*** Without internal node names, ancestral sequences can't be linked up to the correct node later.", file=sys.stderr)
+        print("*** If you want to use 'augur export' or `augur translate` later, re-run this command with the output of 'augur refine'.", file=sys.stderr)
+        print("*** If you haven't run 'augur refine', you can add node names to your tree by running:", file=sys.stderr)
+        print("*** augur refine --tree %s --output-tree <filename>.nwk"%(args.tree) , file=sys.stderr)
+        print("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'", file=sys.stderr)
 
-    if any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
+    if is_vcf:
         if not args.vcf_reference:
-            print("ERROR: a reference Fasta is required with VCF-format alignments")
+            print("ERROR: a reference Fasta is required with VCF-format alignments", file=sys.stderr)
             return 1
 
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
         aln = compress_seq['sequences']
         ref = compress_seq['reference']
-        is_vcf = True
     else:
         aln = args.alignment
 
@@ -172,7 +171,7 @@ def run(args):
     from distutils.version import StrictVersion
     import treetime
     if StrictVersion(treetime.version) < StrictVersion('0.7.0'):
-        print("ERROR: this version of augur requires TreeTime 0.7 or later.")
+        print("ERROR: this version of augur requires TreeTime 0.7 or later.", file=sys.stderr)
         return 1
 
     # Infer ambiguous bases if the user has requested that we infer them (either
@@ -207,6 +206,8 @@ def run(args):
 
     if anc_seqs.get("mask") is not None:
         anc_seqs["mask"] = "".join(['1' if x else '0' for x in anc_seqs["mask"]])
+
+    anc_seqs['annotations'] = {'nuc': {'start': 1, 'end': len(anc_seqs['reference']['nuc']), 'strand': '+'}}
 
     out_name = get_json_name(args, '.'.join(args.alignment.split('.')[:-1]) + '_mutations.json')
     write_json(anc_seqs, out_name)
