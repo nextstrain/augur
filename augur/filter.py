@@ -1429,6 +1429,10 @@ def run(args):
                 output_log_writer.writerow(filtered_strain)
 
         if group_by:
+            # Prevent force-included sequences from being included again during
+            # subsampling.
+            seq_keep = seq_keep - distinct_force_included_strains
+
             # If grouping, track the highest priority metadata records or
             # count the number of records per group. First, we need to get
             # the groups for the given records.
