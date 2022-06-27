@@ -316,11 +316,9 @@ def is_date_ambiguous(date, ambiguous_by="any"):
 
 def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
     value = str(value)
-    if re.match(r'^-*\d+\.\d+$', value):
-        # numeric date which can be negative
+    if RE_NUMERIC_DATE.match(value):
         return float(value)
-    if value.isnumeric():
-        # year-only date is ambiguous
+    if RE_YEAR_ONLY.match(value):
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
     if 'XX' in value:
         ambig_date = ambiguous_date_to_date_range(value, fmt, min_max_year)
