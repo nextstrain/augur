@@ -2,15 +2,21 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* filter: Explicitly drop date/year/month columns from metadata during grouping. [#967][] (@victorlin)
+    * This fixes a bug [#871][] where `augur filter` would crash with a cryptic `ValueError` if `year` and/or `month` is a custom column in the input metadata and also included in `--group-by`.
+* filter: Fix duplicates that may appear in metadata when using `--include`/`--include-where` with subsampling [#986][] (@victorlin)
+
+[#967]: https://github.com/nextstrain/augur/pull/967
+[#871]: https://github.com/nextstrain/augur/issues/871
+[#986]: https://github.com/nextstrain/augur/pull/986
 
 ## 16.0.1 (21 June 2022)
 
 ### Bug Fixes
 
 * filter: Handle errors from `filter_by_query` [#942][] (@victorlin)
-* filter: Explicitly drop date/year/month columns from metadata during grouping. [#967][] (@victorlin)
-    * This fixes a bug [#871][] where `augur filter` would crash with a cryptic `ValueError` if `year` and/or `month` is a custom column in the input metadata and also included in `--group-by`.
-* filter: Fix duplicates that may appear in metadata when using `--include`/`--include-where` with subsampling [#986][] (@victorlin)
 * translate: output nuc annotation when reading from gff3 gene map [#976][] (@corneliusroemer)
 * CI: Remove step for selecting PyPI instance [#974][] (@victorlin)
 * CI: Add token to use GitHub CLI [#958][] (@victorlin)
@@ -19,9 +25,6 @@
 [#976]: https://github.com/nextstrain/augur/pull/976
 [#974]: https://github.com/nextstrain/augur/pull/974
 [#958]: https://github.com/nextstrain/augur/pull/958
-[#967]: https://github.com/nextstrain/augur/pull/967
-[#871]: https://github.com/nextstrain/augur/issues/871
-[#986]: https://github.com/nextstrain/augur/pull/986
 
 ## 16.0.0 (16 June 2022)
 
