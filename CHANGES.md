@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 16.0.2 (30 June 2022)
+
 ### Bug Fixes
 
 * The entropy panel was unavailable if mutations were not translated [#881][]. This has been fixed by creating an additional `annotations` block in `augur ancestral` containing (nucleotide) genome annotations in the node-data [#961][] (@jameshadfield)
