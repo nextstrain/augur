@@ -931,6 +931,14 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     # date requested
     if 'year' in group_by_set or 'month' in group_by_set:
+
+        if 'year' in metadata.columns and 'year' in group_by_set:
+            print(f"WARNING: `--group-by year` uses the generated year value from the 'date' column. The custom 'year' column in the metadata is ignored for grouping purposes.", file=sys.stderr)
+            metadata.drop('year', axis=1, inplace=True)
+        if 'month' in metadata.columns and 'month' in group_by_set:
+            print(f"WARNING: `--group-by month` uses the generated month value from the 'date' column. The custom 'month' column in the metadata is ignored for grouping purposes.", file=sys.stderr)
+            metadata.drop('month', axis=1, inplace=True)
+
         if 'date' not in metadata:
             # set year/month/day = unknown
             print(f"WARNING: A 'date' column could not be found to group-by year or month.", file=sys.stderr)
@@ -1149,7 +1157,10 @@ def register_arguments(parser):
     sequence_filter_group.add_argument('--non-nucleotide', action='store_true', help="exclude sequences that contain illegal characters")
 
     subsample_group = parser.add_argument_group("subsampling", "options to subsample filtered data")
-    subsample_group.add_argument('--group-by', nargs='+', help="categories with respect to subsample; two virtual fields, \"month\" and \"year\", are supported if they don't already exist as real fields but a \"date\" field does exist")
+    subsample_group.add_argument('--group-by', nargs='+', help="""
+        categories with respect to subsample.
+        Grouping by 'year' and/or 'month' is only supported when there is a 'date' column in the metadata.
+        Custom 'year' and 'month' columns in the metadata are ignored for grouping. Please rename them if you want to use their values for grouping.""")
     subsample_limits_group = subsample_group.add_mutually_exclusive_group()
     subsample_limits_group.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     subsample_limits_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences; can be used without the group_by argument")
