@@ -4,10 +4,14 @@
 
 ### Bug Fixes
 
+* The entropy panel was unavailable if mutations were not translated [#881][]. This has been fixed by creating an additional `annotations` block in `augur ancestral` containing (nucleotide) genome annotations in the node-data [#961][] (@jameshadfield)
+* ancestral: WARNINGs to stdout have been updated to print to stderr [#961][] (@jameshadfield)
 * filter: Explicitly drop date/year/month columns from metadata during grouping. [#967][] (@victorlin)
     * This fixes a bug [#871][] where `augur filter` would crash with a cryptic `ValueError` if `year` and/or `month` is a custom column in the input metadata and also included in `--group-by`.
 * filter: Fix duplicates that may appear in metadata when using `--include`/`--include-where` with subsampling [#986][] (@victorlin)
 
+[#881]: https://github.com/nextstrain/augur/issues/881
+[#961]: https://github.com/nextstrain/augur/pull/961
 [#967]: https://github.com/nextstrain/augur/pull/967
 [#871]: https://github.com/nextstrain/augur/issues/871
 [#986]: https://github.com/nextstrain/augur/pull/986
