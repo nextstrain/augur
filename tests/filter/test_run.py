@@ -15,6 +15,7 @@ from freezegun import freeze_time
 
 import augur.filter
 import augur.filter._run
+import augur.filter.io
 from augur.io.metadata import read_metadata
 from augur.errors import AugurError
 
@@ -69,7 +70,7 @@ def mock_priorities_file_valid_with_spaces_and_tabs(mocker):
 class TestFilter:
     def test_read_priority_scores_valid(self, mock_priorities_file_valid):
         # builtins.open is stubbed, but we need a valid file to satisfy the existence check
-        priorities = augur.filter._run.read_priority_scores(
+        priorities = augur.filter.io.read_priority_scores(
             "tests/builds/tb/data/lee_2015.vcf"
         )
 
@@ -80,11 +81,11 @@ class TestFilter:
     def test_read_priority_scores_malformed(self, mock_priorities_file_malformed):
         with pytest.raises(ValueError):
             # builtins.open is stubbed, but we need a valid file to satisfy the existence check
-            augur.filter._run.read_priority_scores("tests/builds/tb/data/lee_2015.vcf")
+            augur.filter.io.read_priority_scores("tests/builds/tb/data/lee_2015.vcf")
 
     def test_read_priority_scores_valid_with_spaces_and_tabs(self, mock_priorities_file_valid_with_spaces_and_tabs):
         # builtins.open is stubbed, but we need a valid file to satisfy the existence check
-        priorities = augur.filter._run.read_priority_scores(
+        priorities = augur.filter.io.read_priority_scores(
             "tests/builds/tb/data/lee_2015.vcf"
         )
 
@@ -92,7 +93,7 @@ class TestFilter:
 
     def test_read_priority_scores_does_not_exist(self):
         with pytest.raises(FileNotFoundError):
-            augur.filter._run.read_priority_scores("/does/not/exist.txt")
+            augur.filter.io.read_priority_scores("/does/not/exist.txt")
 
     def test_filter_on_query_good(self, tmpdir, sequences):
         """Basic filter_on_query test"""
