@@ -1,7 +1,6 @@
 """
 Filter and subsample a sequence set.
 """
-from Bio import SeqIO
 from collections import defaultdict
 import csv
 import heapq
@@ -11,7 +10,6 @@ import numpy as np
 import operator
 import os
 import pandas as pd
-import random
 import re
 import sys
 import uuid
@@ -26,8 +24,6 @@ from .io.metadata import read_metadata
 from .io.sequences import read_sequences, write_sequences
 from .io.vcf import is_vcf as filename_is_vcf, write_vcf
 from .utils import read_strains
-
-comment_char = '#'
 
 SEQUENCE_ONLY_FILTERS = (
     "min_length",
