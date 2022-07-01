@@ -16,14 +16,14 @@ import uuid
 from tempfile import NamedTemporaryFile
 from typing import Collection
 
-from .dates import numeric_date, numeric_date_type, SUPPORTED_DATE_HELP_TEXT, is_date_ambiguous, get_numerical_dates, get_iso_year_week
-from .errors import AugurError
-from .index import index_sequences, index_vcf
-from .io.file import open_file
-from .io.metadata import read_metadata
-from .io.sequences import read_sequences, write_sequences
-from .io.vcf import is_vcf as filename_is_vcf, write_vcf
-from .utils import read_strains
+from augur.dates import numeric_date, numeric_date_type, SUPPORTED_DATE_HELP_TEXT, is_date_ambiguous, get_numerical_dates, get_iso_year_week
+from augur.errors import AugurError
+from augur.index import index_sequences, index_vcf
+from augur.io.file import open_file
+from augur.io.metadata import read_metadata
+from augur.io.sequences import read_sequences, write_sequences
+from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
+from augur.utils import read_strains
 
 SEQUENCE_ONLY_FILTERS = (
     "min_length",
