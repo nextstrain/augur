@@ -16,6 +16,7 @@ from freezegun import freeze_time
 import augur.filter
 import augur.filter._run
 import augur.filter.io
+import augur.filter.include_exclude_rules
 from augur.io.metadata import read_metadata
 from augur.errors import AugurError
 
@@ -102,7 +103,7 @@ class TestFilter:
                                           ("SEQ_2","colorado","bad"),
                                           ("SEQ_3","nevada","good")))
         metadata = read_metadata(meta_fn)
-        filtered = augur.filter._run.filter_by_query(metadata, 'quality=="good"')
+        filtered = augur.filter.include_exclude_rules.filter_by_query(metadata, 'quality=="good"')
         assert sorted(filtered) == ["SEQ_1", "SEQ_3"]
 
     def test_filter_run_with_query(self, tmpdir, fasta_fn, argparser):
