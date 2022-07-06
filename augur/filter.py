@@ -1547,6 +1547,11 @@ def run(args):
             # during the first pass, but we want to minimize overall memory
             # usage at the moment.
             seq_keep = set(metadata.index.values) & valid_strains
+
+            # Prevent force-included strains from being considered in this
+            # second pass, as in the first pass.
+            seq_keep = seq_keep - all_sequences_to_include
+
             group_by_strain, skipped_strains = get_groups_for_subsampling(
                 seq_keep,
                 metadata,
