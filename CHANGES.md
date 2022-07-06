@@ -2,6 +2,13 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* filter: Move `register_arguments` to the top of the module for better readability [#995][]. (@victorlin)
+* filter: Fix a regression [introduced in 16.0.2](https://github.com/nextstrain/augur/commit/4859b5d70e77cc9a0bb99e741fefb29952058b71) that caused grouping with subsampled max sequences and force-included strains to fail in a data-specific way [#1000][]. (@huddlej)
+
+[#995]: https://github.com/nextstrain/augur/pull/995
+[#1000]: https://github.com/nextstrain/augur/pull/1000
 
 ## 16.0.2 (30 June 2022)
 
