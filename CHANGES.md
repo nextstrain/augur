@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 16.0.3 (6 July 2022)
+
 ### Bug Fixes
 
 * filter: Move `register_arguments` to the top of the module for better readability [#995][]. (@victorlin)
