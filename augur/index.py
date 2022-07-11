@@ -9,12 +9,14 @@ import sys
 import csv
 
 from .io import open_file, read_sequences, is_vcf, read_vcf
+from .utils import first_line
 
-
-def register_arguments(parser):
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("index", help=first_line(__doc__))
     parser.add_argument('--sequences', '-s', required=True, help="sequences in FASTA or VCF formats. Augur will summarize the content of FASTA sequences and only report the names of strains found in a given VCF.")
     parser.add_argument('--output', '-o', help="tab-delimited file containing the number of bases per sequence in the given file. Output columns include strain, length, and counts for A, C, G, T, N, other valid IUPAC characters, ambiguous characters ('?' and '-'), and other invalid characters.", required=True)
     parser.add_argument('--verbose', '-v', action="store_true", help="print index statistics to stdout")
+    return parser
 
 
 def index_vcf(vcf_path, index_path):

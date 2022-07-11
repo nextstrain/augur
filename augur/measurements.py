@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import sys
 
-from .utils import write_json, HideAsFalseAction
+from .utils import first_line, write_json, HideAsFalseAction
 from .validate import (
     measurements as read_measurements_json,
     measurements_collection_config as read_collection_config_json,
@@ -198,7 +198,8 @@ def concat_measurements(args):
         sys.exit(1)
 
 
-def register_arguments(parser):
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("measurements", help=first_line(__doc__))
     subparsers = parser.add_subparsers(dest='subcommand')
     subparsers.required = True
 
@@ -292,6 +293,7 @@ def register_arguments(parser):
              "If not provided, the first collection of the first JSON file will be displayed")
     concat_optional.add_argument("--minify-json", action="store_true",
         help="Concatenate JSONs without indentation or line returns.")
+    return parser
 
 
 

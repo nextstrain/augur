@@ -9,7 +9,7 @@ import numpy as np
 from collections import defaultdict
 import networkx as nx
 from itertools import islice
-from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json, get_json_name
+from .utils import first_line, get_parent_name_by_child_name_for_tree, read_node_data, write_json, get_json_name
 
 def read_in_clade_definitions(clade_file):
     '''
@@ -248,12 +248,14 @@ def get_reference_sequence_from_root_node(all_muts, root_name):
     return ref
 
 
-def register_arguments(parser):
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("clades", help=first_line(__doc__))
     parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
     parser.add_argument('--mutations', nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
     parser.add_argument('--reference', nargs='+', help='fasta files containing reference and tip nucleotide and/or amino-acid sequences ')
     parser.add_argument('--clades', type=str, help='TSV file containing clade definitions by amino-acid')
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save clade assignments to')
+    return parser
 
 
 def run(args):

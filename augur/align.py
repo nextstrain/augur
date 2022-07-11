@@ -7,7 +7,7 @@ from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
 from .io import run_shell_command, shquote
-from .utils import nthreads_value
+from .utils import first_line, nthreads_value
 from collections import defaultdict
 
 class AlignmentError(Exception):
@@ -17,6 +17,11 @@ class AlignmentError(Exception):
     pass
 
 def register_arguments(parser):
+    """
+    Add arguments to parser.
+    Kept as a separate function than `register_parser` to continue to support
+    unit tests that use this function to create argparser.
+    """
     parser.add_argument('--sequences', '-s', required=True, nargs="+", metavar="FASTA", help="sequences to align")
     parser.add_argument('--output', '-o', default="alignment.fasta", help="output file (default: %(default)s)")
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
@@ -28,6 +33,13 @@ def register_arguments(parser):
     parser.add_argument('--fill-gaps', action="store_true", default=False, help="If gaps represent missing data rather than true indels, replace by N after aligning.")
     parser.add_argument('--existing-alignment', metavar="FASTA", default=False, help="An existing alignment to which the sequences will be added. The ouput alignment will be the same length as this existing alignment.")
     parser.add_argument('--debug', action="store_true", default=False, help="Produce extra files (e.g. pre- and post-aligner files) which can help with debugging poor alignments.")
+
+
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("align", help=first_line(__doc__))
+    register_arguments(parser)
+    return parser
+
 
 def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
     """Prepare the sequences, existing alignment, and reference sequence for alignment.

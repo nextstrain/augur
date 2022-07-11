@@ -21,7 +21,7 @@ from .dates import numeric_date, numeric_date_type, SUPPORTED_DATE_HELP_TEXT, is
 from .errors import AugurError
 from .index import index_sequences, index_vcf
 from .io import open_file, read_metadata, read_sequences, write_sequences, is_vcf as filename_is_vcf, write_vcf
-from .utils import read_strains
+from .utils import first_line, read_strains
 
 comment_char = '#'
 
@@ -30,8 +30,12 @@ SEQUENCE_ONLY_FILTERS = (
     "non_nucleotide",
 )
 
-
 def register_arguments(parser):
+    """
+    Add arguments to parser.
+    Kept as a separate function than `register_parser` to continue to support
+    unit tests that use this function to create argparser.
+    """
     input_group = parser.add_argument_group("inputs", "metadata and sequences to be filtered")
     input_group.add_argument('--metadata', required=True, metavar="FILE", help="sequence metadata, as CSV or TSV")
     input_group.add_argument('--sequences', '-s', help="sequences in FASTA or VCF format")
@@ -86,6 +90,12 @@ def register_arguments(parser):
     output_group.add_argument('--output-log', help="tab-delimited file with one row for each filtered strain and the reason it was filtered. Keyword arguments used for a given filter are reported in JSON format in a `kwargs` column.")
 
     parser.set_defaults(probabilistic_sampling=True)
+
+
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("filter", help=first_line(__doc__))
+    register_arguments(parser)
+    return parser
 
 
 class FilterException(AugurError):

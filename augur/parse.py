@@ -7,6 +7,7 @@ import sys
 from .io import open_file, read_sequences, write_sequences
 from .dates import get_numerical_date_from_value
 from .errors import AugurError
+from .utils import first_line
 
 forbidden_characters = str.maketrans(
     {' ': None,
@@ -137,7 +138,8 @@ def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettif
     return sequence, metadata
 
 
-def register_arguments(parser):
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("parse", help=first_line(__doc__))
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
     parser.add_argument('--output-sequences', help="output sequences file")
     parser.add_argument('--output-metadata', help="output metadata file")
@@ -146,6 +148,7 @@ def register_arguments(parser):
     parser.add_argument('--separator', default='|', help="separator of fasta header")
     parser.add_argument('--fix-dates', choices=['dayfirst', 'monthfirst'],
                                 help="attempt to parse non-standard dates and output them in standard YYYY-MM-DD format")
+    return parser
 
 
 def run(args):

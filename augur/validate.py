@@ -288,7 +288,9 @@ def measurements_collection_config(collection_config_json, **kwargs):
     return collection_config
 
 
-def register_arguments(parser):
+def register_parser(parent_subparsers):
+    # Not using utils.first_line for help here because it results in a circular import
+    parser = parent_subparsers.add_parser("validate", help=__doc__)
     subparsers = parser.add_subparsers(dest="subcommand", help="Which file(s) do you want to validate?")
 
     subparsers.add_parser("export-v2", help="validate JSON intended for auspice v2") \
@@ -306,6 +308,8 @@ def register_arguments(parser):
 
     subparsers.add_parser("measurements-collection-config", help="validate measurement collection config intended for `augur measurements export`") \
         .add_argument("collection_config_json", metavar="JSON", help="collection config JSON")
+    return parser
+
 
 def run(args):
     try:

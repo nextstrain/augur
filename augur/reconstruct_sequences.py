@@ -6,12 +6,13 @@ import os, sys
 import numpy as np
 from collections import defaultdict
 from Bio import SeqIO, Seq, SeqRecord, Phylo
-from .utils import read_node_data, write_json
+from .utils import first_line, read_node_data, write_json
 from treetime.vcf_utils import read_vcf
 
 
 
-def register_arguments(parser):
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("reconstruct-sequences", help=first_line(__doc__))
     parser.add_argument('--tree', required=True, help="tree as Newick file")
     parser.add_argument('--gene', type=str, help="gene to translate (list or file containing list)")
     parser.add_argument('--mutations', required=True, type=str, help="json file containing mutations "
@@ -19,6 +20,7 @@ def register_arguments(parser):
     parser.add_argument('--vcf-aa-reference', type=str, help='fasta file of the reference gene translations for VCF format')
     parser.add_argument('--internal-nodes', action='store_true', help="include sequences of internal nodes in output")
     parser.add_argument('--output', type=str)
+    return parser
 
 
 def get_sequence(pseq, muts):

@@ -6,7 +6,7 @@ import os, sys
 import numpy as np
 from Bio import SeqIO, SeqFeature, Seq, SeqRecord, Phylo
 from .io import write_VCF_translation
-from .utils import read_node_data, load_features, write_json, get_json_name
+from .utils import first_line, read_node_data, load_features, write_json, get_json_name
 from treetime.vcf_utils import read_vcf
 
 class MissingNodeError(Exception):
@@ -302,7 +302,8 @@ def get_genes_from_file(fname):
     return unique_genes
 
 
-def register_arguments(parser):
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("translate", help=first_line(__doc__))
     parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
     parser.add_argument('--ancestral-sequences', type=str, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
     parser.add_argument('--reference-sequence', required=True,
@@ -314,6 +315,7 @@ def register_arguments(parser):
                                    "like so: 'my_alignment_%%GENE.fasta', where '%%GENE' will be replaced by the name of the gene")
     parser.add_argument('--vcf-reference-output', type=str, help="fasta file where reference sequence translations for VCF input will be written")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    return parser
 
 
 def run(args):
