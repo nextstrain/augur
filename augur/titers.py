@@ -10,11 +10,10 @@ from Bio import Phylo
 from .reconstruct_sequences import load_alignments
 from .titer_model import InsufficientDataException
 from .utils import read_node_data, write_json
+from .argparse_ import add_default_command
 
 
 def register_arguments(parser):
-    from . import add_default_command
-
     subparsers = parser.add_subparsers()
     add_default_command(parser)
 

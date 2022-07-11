@@ -14,6 +14,7 @@ from types import SimpleNamespace
 from .errors import AugurError
 from .io import print_err
 from .utils import first_line
+from .argparse_ import add_default_command
 
 recursion_limit = os.environ.get("AUGUR_RECURSION_LIMIT")
 if recursion_limit:
@@ -97,18 +98,6 @@ def run(argv):
                 <https://github.com/nextstrain/augur/issues/new/choose>
             """))
         sys.exit(2)
-
-
-def add_default_command(parser):
-    """
-    Sets the default command to run when none is provided.
-    """
-    class default_command():
-        def run(args):
-            parser.print_help()
-            return 2
-
-    parser.set_defaults(__command__ = default_command)
 
 
 def add_version_alias(parser):
