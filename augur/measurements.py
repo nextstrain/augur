@@ -5,7 +5,8 @@ import os
 import pandas as pd
 import sys
 
-from .utils import first_line, write_json, HideAsFalseAction
+from .argparse_ import HideAsFalseAction
+from .utils import first_line, write_json
 from .validate import (
     measurements as read_measurements_json,
     measurements_collection_config as read_collection_config_json,

@@ -1,7 +1,7 @@
 """
 Custom helpers for the argparse standard library.
 """
-from argparse import ArgumentDefaultsHelpFormatter
+from argparse import Action, ArgumentDefaultsHelpFormatter
 
 
 def add_default_command(parser):
@@ -48,3 +48,12 @@ def add_command_subparsers(subparsers, commands):
         # If a command doesn't have its own run() function, then print its help when called.
         if not getattr(command, "run", None):
             add_default_command(subparser)
+
+
+class HideAsFalseAction(Action):
+    """
+    Custom argparse Action that stores False for arguments passed as `--hide*`
+    and stores True for all other argument patterns.
+    """
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, option_string[2:6] != 'hide')
