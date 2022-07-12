@@ -39,7 +39,7 @@ command_strings = [
     "export",
     "validate",
     "version",
-    "import",
+    "import_",
     "measurements",
 ]
 
