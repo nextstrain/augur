@@ -261,7 +261,7 @@ def add_tsv_metadata_to_nodes(nodes, meta_tsv, meta_json, extra_fields=['authors
         fields = [x for x in meta_json["color_options"].keys() if x != "gt"] + extra_fields
     else:
         fields = list(extra_fields)
-        
+
     if "geo" in meta_json:
         fields += meta_json["geo"]
 
@@ -331,15 +331,15 @@ def add_option_args(parser):
     return options
 
 
-def register_arguments_v1(subparsers):
-    # V1 sub-command
-    v1 = subparsers.add_parser('v1', help="Export version 1 JSON schema (separate meta and tree JSONs)")
-    v1_core = add_core_args(v1)
-    v1_options = add_option_args(v1)
-    v1.add_argument("--v1", help=SUPPRESS, default=True)
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("v1", help="Export version 1 JSON schema (separate meta and tree JSONs)")
+    add_core_args(parser)
+    add_option_args(parser)
+    parser.add_argument("--v1", help=SUPPRESS, default=True)
+    return parser
 
 
-def run_v1(args):
+def run(args):
     T = Phylo.read(args.tree, 'newick')
     node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
     nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
