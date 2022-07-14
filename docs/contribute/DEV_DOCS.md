@@ -167,21 +167,12 @@ Versions for this project, Augur, from 3.0.0 onwards aim to follow the
 3. Define a new version number `X.X.X` based on changes and Semantic Versioning rules.
 4. Rename the milestone as `<Major|Feature|Patch> release X.X.X`.
 
-##### 2. Update change log
+##### 2. Curate [CHANGES.md](../../CHANGES.md)
 
-Open a PR updating [CHANGES.md](../../CHANGES.md) with a summary of new changes. Keep headers and formatting consistent with the rest of the file.
-
-Here is how to do that using the GitHub website:
-
-1. Visit [this link](https://github.com/nextstrain/augur/edit/master/CHANGES.md) to open `CHANGES.md` for edit.
-2. Add the milestone description under the `__NEXT__` header.
-3. At the bottom of the page:
-    1. Title: `Update change log for X.X.X`
-    2. Description: leave empty
-    3. Select the option **Create a new branch for this commit and start a pull request.**
-    4. Give the new branch a name such as `next`.
-    5. Select **Propose changes**.
-4. Create a PR and add [nextstrain/core](https://github.com/orgs/nextstrain/teams/core) as a reviewer.
+1. Go through each PR in the GitHub milestone and note the PRs that didn't provide an update to [CHANGES.md](../../CHANGES.md).
+2. For the PRs missing a changelog update, add an entry summarizing the changes in the PR.
+    - Keep headers and formatting consistent with the rest of the file.
+3. Open a PR with these changes. If changes are clear and you feel confident in the release notes, merge without PR approval. Otherwise, or if unsure, add [nextstrain/core](https://github.com/orgs/nextstrain/teams/core) as a reviewer and wait for approval before proceeding with the release.
 
 ##### 3. Run build/test/release scripts
 
