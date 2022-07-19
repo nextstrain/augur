@@ -6,7 +6,7 @@ import os, shutil, time, sys
 from Bio import Phylo
 from .dates import get_numerical_dates
 from .io import read_metadata
-from .utils import first_line, read_tree, write_json, InvalidTreeError
+from .utils import read_tree, write_json, InvalidTreeError
 from treetime.vcf_utils import read_vcf, write_vcf
 from treetime.seq_utils import profile_maps
 
@@ -93,7 +93,7 @@ def collect_node_data(T, attributes):
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("refine", help=first_line(__doc__))
+    parser = parent_subparsers.add_parser("refine", help=__doc__)
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     parser.add_argument('--metadata', type=str, metavar="FILE", help="sequence metadata, as CSV or TSV")

@@ -5,7 +5,7 @@ import Bio.Phylo
 from collections import defaultdict
 import json
 import numpy as np
-from .utils import first_line, write_json
+from .utils import write_json
 
 
 def select_nodes_in_season(tree, timepoint, time_window=0.6):
@@ -80,7 +80,7 @@ def calculate_LBI(tree, attr="lbi", tau=0.4, transform=lambda x:x, normalize=Tru
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("lbi", help=first_line(__doc__))
+    parser = parent_subparsers.add_parser("lbi", help=__doc__)
     parser.add_argument("--tree", help="Newick tree", required=True)
     parser.add_argument("--branch-lengths", help="JSON with branch lengths and internal node dates estimated by TreeTime", required=True)
     parser.add_argument("--output", help="JSON file with calculated distances stored by node name and attribute name", required=True)

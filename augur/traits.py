@@ -7,7 +7,7 @@ from collections import defaultdict
 import os, sys
 import pandas as pd
 from .io import read_metadata
-from .utils import first_line, write_json, get_json_name
+from .utils import write_json, get_json_name
 TINY = 1e-12
 
 def mugration_inference(tree=None, seq_meta=None, field='country', confidence=True,
@@ -105,7 +105,7 @@ def register_parser(parent_subparsers):
     parser : argparse
         subcommand argument parser
     """
-    parser = parent_subparsers.add_parser("traits", help=first_line(__doc__))
+    parser = parent_subparsers.add_parser("traits", help=__doc__)
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
     parser.add_argument('--metadata', required=True, metavar="FILE", help="table with metadata, as CSV or TSV")
     parser.add_argument('--weights', required=False, help="tsv/csv table with equilibrium probabilities of discrete states")

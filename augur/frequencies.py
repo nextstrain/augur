@@ -11,11 +11,11 @@ from .frequency_estimators import get_pivots, alignment_frequencies, tree_freque
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
 from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
 from .io import read_metadata
-from .utils import first_line, read_node_data, write_json
+from .utils import read_node_data, write_json
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("frequencies", help=first_line(__doc__))
+    parser = parent_subparsers.add_parser("frequencies", help=__doc__)
     # Shared arguments
     parser.add_argument('--method', choices=["diffusion", "kde"], required=True,
                         help="method by which frequencies should be estimated")

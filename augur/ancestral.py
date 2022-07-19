@@ -7,7 +7,7 @@ import numpy as np
 from Bio import Phylo, SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from .utils import first_line, read_tree, InvalidTreeError, write_json, get_json_name
+from .utils import read_tree, InvalidTreeError, write_json, get_json_name
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
 
@@ -118,7 +118,7 @@ def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, 
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("ancestral", help=first_line(__doc__))
+    parser = parent_subparsers.add_parser("ancestral", help=__doc__)
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save mutations and ancestral sequences to')

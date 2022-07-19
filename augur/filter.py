@@ -21,7 +21,7 @@ from .dates import numeric_date, numeric_date_type, SUPPORTED_DATE_HELP_TEXT, is
 from .errors import AugurError
 from .index import index_sequences, index_vcf
 from .io import open_file, read_metadata, read_sequences, write_sequences, is_vcf as filename_is_vcf, write_vcf
-from .utils import first_line, read_strains
+from .utils import read_strains
 
 comment_char = '#'
 
@@ -93,7 +93,7 @@ def register_arguments(parser):
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("filter", help=first_line(__doc__))
+    parser = parent_subparsers.add_parser("filter", help=__doc__)
     register_arguments(parser)
     return parser
 

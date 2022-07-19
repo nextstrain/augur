@@ -6,13 +6,13 @@ import os, sys
 import numpy as np
 from collections import defaultdict
 from Bio import SeqIO, Seq, SeqRecord, Phylo
-from .utils import first_line, read_node_data, write_json
+from .utils import read_node_data, write_json
 from treetime.vcf_utils import read_vcf
 
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("reconstruct-sequences", help=first_line(__doc__))
+    parser = parent_subparsers.add_parser("reconstruct-sequences", help=__doc__)
     parser.add_argument('--tree', required=True, help="tree as Newick file")
     parser.add_argument('--gene', type=str, help="gene to translate (list or file containing list)")
     parser.add_argument('--mutations', required=True, type=str, help="json file containing mutations "

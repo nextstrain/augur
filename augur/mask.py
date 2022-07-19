@@ -11,7 +11,7 @@ from Bio import SeqIO
 from Bio.Seq import MutableSeq
 
 from .io import open_file, read_sequences, write_sequences, run_shell_command, shquote, is_vcf
-from .utils import first_line, load_mask_sites, VALID_NUCLEOTIDES
+from .utils import load_mask_sites, VALID_NUCLEOTIDES
 
 def get_chrom_name(vcf_file):
     """Read the CHROM field from the first non-header line of a vcf file.
@@ -182,7 +182,7 @@ def register_arguments(parser):
                         help="Leave intermediate files around. May be useful for debugging")
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("mask", help=first_line(__doc__))
+    parser = parent_subparsers.add_parser("mask", help=__doc__)
     register_arguments(parser)
     return parser
 

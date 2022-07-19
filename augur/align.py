@@ -7,7 +7,7 @@ from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
 from .io import run_shell_command, shquote
-from .utils import first_line, nthreads_value
+from .utils import nthreads_value
 from collections import defaultdict
 
 class AlignmentError(Exception):
@@ -36,7 +36,7 @@ def register_arguments(parser):
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("align", help=first_line(__doc__))
+    parser = parent_subparsers.add_parser("align", help=__doc__)
     register_arguments(parser)
     return parser
 

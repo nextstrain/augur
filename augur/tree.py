@@ -16,7 +16,7 @@ from treetime.vcf_utils import read_vcf
 from pathlib import Path
 
 from .io import read_sequences, run_shell_command, shquote
-from .utils import first_line, nthreads_value, load_mask_sites
+from .utils import nthreads_value, load_mask_sites
 
 DEFAULT_ARGS = {
     "fasttree": "-nt -nosupport",
@@ -396,7 +396,7 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("tree", help=first_line(__doc__))
+    parser = parent_subparsers.add_parser("tree", help=__doc__)
     parser.add_argument('--alignment', '-a', required=True, help="alignment in fasta or VCF format")
     parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
     parser.add_argument('--output', '-o', type=str, help='file name to write tree to')

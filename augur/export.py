@@ -2,7 +2,6 @@
 Export JSON files suitable for visualization with auspice.
 """
 from .argparse_ import add_command_subparsers
-from .utils import first_line
 from . import export_v1, export_v2
 
 SUBCOMMANDS = [
@@ -12,7 +11,7 @@ SUBCOMMANDS = [
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("export", help=first_line(__doc__))
+    parser = parent_subparsers.add_parser("export", help=__doc__)
     # Add subparsers for subcommands
     metavar_msg ="Augur export now needs you to define the JSON version " + \
                  "you want, e.g. `augur export v2`."
