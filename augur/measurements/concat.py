@@ -13,21 +13,21 @@ from augur.validate import (
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("concat", help=first_line(__doc__))
 
-    concat_required = parser.add_argument_group(
+    required = parser.add_argument_group(
         title="REQUIRED"
     )
-    concat_required.add_argument("--jsons", required=True, type=str, nargs="+", metavar="JSONs",
+    required.add_argument("--jsons", required=True, type=str, nargs="+", metavar="JSONs",
         help="Measurement JSON files to concatenate.")
-    concat_required.add_argument("--output-json", required=True, metavar="JSON", type=str,
+    required.add_argument("--output-json", required=True, metavar="JSON", type=str,
         help="Output JSON file")
 
-    concat_optional = parser.add_argument_group(
+    optional = parser.add_argument_group(
         title="OPTIONAL SETTINGS"
     )
-    concat_optional.add_argument("--default-collection", type=str,
+    optional.add_argument("--default-collection", type=str,
         help="The key of the default collection to display. " +
              "If not provided, the first collection of the first JSON file will be displayed")
-    concat_optional.add_argument("--minify-json", action="store_true",
+    optional.add_argument("--minify-json", action="store_true",
         help="Concatenate JSONs without indentation or line returns.")
 
     return parser
