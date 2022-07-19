@@ -1,5 +1,5 @@
 """
-Export JSON files suitable for visualization with auspice.
+Export version 2 JSON schema for visualization with Auspice
 """
 from pathlib import Path
 import os, sys
@@ -820,7 +820,7 @@ def node_data_prop_is_normal_trait(name):
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("v2", help="Export version 2 JSON schema")
+    parser = parent_subparsers.add_parser("v2", help=__doc__)
 
     required = parser.add_argument_group(
         title="REQUIRED"

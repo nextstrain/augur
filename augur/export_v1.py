@@ -1,6 +1,5 @@
 """
-Augur Version 1-specific helpers for exporting JSON files suitable for
-visualization with auspice.
+Export version 1 JSON schema (separate meta and tree JSONs) for visualization with Auspice
 """
 
 import os, sys
@@ -332,7 +331,7 @@ def add_option_args(parser):
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("v1", help="Export version 1 JSON schema (separate meta and tree JSONs)")
+    parser = parent_subparsers.add_parser("v1", help=__doc__)
     add_core_args(parser)
     add_option_args(parser)
     parser.add_argument("--v1", help=SUPPRESS, default=True)
