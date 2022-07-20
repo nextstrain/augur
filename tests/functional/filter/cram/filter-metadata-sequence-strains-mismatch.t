@@ -34,6 +34,10 @@ Pandas engine
 SQLite engine
 -------------
 
+The output is slightly different because the SQLite engine only reports one row
+per strain, in contrast to the pandas engine which reports the same strain
+being both excluded then re-included.
+
   $ ${AUGUR} filter --engine sqlite \
   >  --sequence-index filter/data/sequence_index.tsv \
   >  --metadata filter/data/metadata.tsv \
@@ -45,10 +49,10 @@ SQLite engine
   >  --output-log "$TMP/filtered_log.tsv"
   4 strains were dropped during filtering
   \t1 had no metadata (esc)
+  \t2 of these were filtered out by the query: "country != 'Colombia'" (esc)
   \t1 had no sequence data (esc)
-  \t3 of these were filtered out by the query: "country != 'Colombia'" (esc)
   \t1 strains were added back because they were in filter/data/include.txt (esc)
   9 strains passed all filters
 
-  $ diff -u <(sort -k 1,1 filter/data/filtered_log.tsv) <(sort -k 1,1 "$TMP/filtered_log.tsv")
+  $ diff -u <(sort -k 1,1 filter/data/filtered_log_sqlite_engine.tsv) <(sort -k 1,1 "$TMP/filtered_log.tsv")
   $ rm -f "$TMP/filtered_strains.txt"
