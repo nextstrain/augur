@@ -14,7 +14,12 @@
     * `utils.HideAsFalseAction` -> `argparse_.HideAsFalseAction`
 * Subcommands must include a `register_parser` function to add their own parser instead of a `register_arguments` function [#1002][]. (@joverlee521)
 
+### Bug Fixes
+
+* filter: Rename internal force inclusion filtering functions [#1006][] (@victorlin)
+
 [#1002]: https://github.com/nextstrain/augur/pull/1002
+[#1006]: https://github.com/nextstrain/augur/pull/1006
 
 ## 16.0.3 (6 July 2022)
 
