@@ -502,7 +502,7 @@ def filter_by_non_nucleotide(metadata, sequence_index):
     return set(filtered_sequence_index[no_invalid_nucleotides].index.values)
 
 
-def include(metadata, include_file):
+def force_include_strains(metadata, include_file):
     """Include strains in the given text file from the given metadata.
 
     Parameters
@@ -521,7 +521,7 @@ def include(metadata, include_file):
     >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
     >>> with NamedTemporaryFile(delete=False) as include_file:
     ...     characters_written = include_file.write(b'strain1')
-    >>> include(metadata, include_file.name)
+    >>> force_include_strains(metadata, include_file.name)
     {'strain1'}
     >>> os.unlink(include_file.name)
 
@@ -530,7 +530,7 @@ def include(metadata, include_file):
     return set(metadata.index.values) & included_strains
 
 
-def include_by_include_where(metadata, include_where):
+def force_include_where(metadata, include_where):
     """Include all strains from the given metadata that match the given query.
 
     Unlike pandas query syntax, inclusion queries should follow the pattern of
@@ -552,16 +552,16 @@ def include_by_include_where(metadata, include_where):
 
 
     >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
-    >>> include_by_include_where(metadata, "region!=Europe")
+    >>> force_include_where(metadata, "region!=Europe")
     {'strain1'}
-    >>> include_by_include_where(metadata, "region=Europe")
+    >>> force_include_where(metadata, "region=Europe")
     {'strain2'}
-    >>> include_by_include_where(metadata, "region=europe")
+    >>> force_include_where(metadata, "region=europe")
     {'strain2'}
 
     If the column referenced in the given query does not exist, skip the filter.
 
-    >>> include_by_include_where(metadata, "missing_column=value")
+    >>> force_include_where(metadata, "missing_column=value")
     set()
 
     """
@@ -612,7 +612,7 @@ def construct_filters(args, sequence_index):
         # Collect the union of all given strains to include.
         for include_file in args.include:
             include_by.append((
-                include,
+                force_include_strains,
                 {
                     "include_file": include_file,
                 }
@@ -622,7 +622,7 @@ def construct_filters(args, sequence_index):
     if args.include_where:
         for include_where in args.include_where:
             include_by.append((
-                include_by_include_where,
+                force_include_where,
                 {
                     "include_where": include_where,
                 }
@@ -805,28 +805,28 @@ def apply_filters(metadata, exclude_by, include_by):
 
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-10-02"}, {"region": "North America", "date": "2020-01-01"}], index=["strain1", "strain2", "strain3"])
     >>> exclude_by = [(filter_by_date, {"min_date": numeric_date("2020-04-01")})]
-    >>> include_by = [(include_by_include_where, {"include_where": "region=Africa"})]
+    >>> include_by = [(force_include_where, {"include_where": "region=Africa"})]
     >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
     >>> strains_to_keep
     {'strain2'}
     >>> sorted(strains_to_exclude, key=lambda record: record["strain"])
     [{'strain': 'strain1', 'filter': 'filter_by_date', 'kwargs': '[["min_date", 2020.25]]'}, {'strain': 'strain3', 'filter': 'filter_by_date', 'kwargs': '[["min_date", 2020.25]]'}]
     >>> strains_to_include
-    [{'strain': 'strain1', 'filter': 'include_by_include_where', 'kwargs': '[["include_where", "region=Africa"]]'}]
+    [{'strain': 'strain1', 'filter': 'force_include_where', 'kwargs': '[["include_where", "region=Africa"]]'}]
 
     We also want to filter by characteristics of the sequence data that we've
     annotated in a sequence index.
 
     >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}, {"strain": "strain3", "A": 1250, "C": 1250, "G": 1250, "T": 1250}]).set_index("strain")
     >>> exclude_by = [(filter_by_sequence_length, {"sequence_index": sequence_index, "min_length": 27000})]
-    >>> include_by = [(include_by_include_where, {"include_where": "region=Europe"})]
+    >>> include_by = [(force_include_where, {"include_where": "region=Europe"})]
     >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
     >>> strains_to_keep
     {'strain1'}
     >>> sorted(strains_to_exclude, key=lambda record: record["strain"])
     [{'strain': 'strain2', 'filter': 'filter_by_sequence_length', 'kwargs': '[["min_length", 27000]]'}, {'strain': 'strain3', 'filter': 'filter_by_sequence_length', 'kwargs': '[["min_length", 27000]]'}]
     >>> strains_to_include
-    [{'strain': 'strain2', 'filter': 'include_by_include_where', 'kwargs': '[["include_where", "region=Europe"]]'}]
+    [{'strain': 'strain2', 'filter': 'force_include_where', 'kwargs': '[["include_where", "region=Europe"]]'}]
 
     """
     strains_to_keep = set(metadata.index.values)
@@ -1703,8 +1703,8 @@ def run(args):
         "filter_by_non_nucleotide": "{count} of these were dropped because they had non-nucleotide characters",
         "skip_group_by_with_ambiguous_year": "{count} were dropped during grouping due to ambiguous year information",
         "skip_group_by_with_ambiguous_month": "{count} were dropped during grouping due to ambiguous month information",
-        "include": "{count} strains were added back because they were in {include_file}",
-        "include_by_include_where": "{count} sequences were added back because of '{include_where}'",
+        "force_include_strains": "{count} strains were added back because they were in {include_file}",
+        "force_include_where": "{count} sequences were added back because of '{include_where}'",
     }
     for (filter_name, filter_kwargs), count in filter_counts.items():
         if filter_kwargs:
