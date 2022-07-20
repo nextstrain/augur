@@ -117,7 +117,8 @@ def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, 
     return {"nodes": data, "mask": mask}
 
 
-def register_arguments(parser):
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("ancestral", help=__doc__)
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save mutations and ancestral sequences to')
@@ -133,6 +134,7 @@ def register_arguments(parser):
                                 help='infer nucleotides at ambiguous (N,W,R,..) sites on tip sequences and replace with most likely state.')
     parser.add_argument('--keep-overhangs', action="store_true", default=False,
                                 help='do not infer nucleotides for gaps (-) on either side of the alignment')
+    return parser
 
 def run(args):
     # check alignment type, set flags, read in if VCF

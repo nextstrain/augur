@@ -92,7 +92,8 @@ def collect_node_data(T, attributes):
     return data
 
 
-def register_arguments(parser):
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("refine", help=__doc__)
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     parser.add_argument('--metadata', type=str, metavar="FILE", help="sequence metadata, as CSV or TSV")
@@ -128,6 +129,8 @@ def register_arguments(parser):
                         default='mutations-per-site', help='Units in which sequence divergences is exported.')
     parser.add_argument('--seed', type=int, help='seed for random number generation')
     parser.set_defaults(covariance=True)
+    return parser
+
 
 def run(args):
     if args.seed is not None:

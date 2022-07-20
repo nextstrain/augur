@@ -2,6 +2,19 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* Moved the following modules to subpackages [#1002][]. (@joverlee521)
+  These are technically breaking changes for the API, but they do not change the Augur CLI commands.
+    * `import.py` -> `import_/__init__.py`
+    * `import_beast.py` -> `import_/beast.py`
+    * `measurements.py` -> `measurements/__init__.py` + `measurements/concat.py` + `measurements/export.py`
+* Move the following internal functions/classes [#1002][]. (@joverlee521)
+    * `augur.add_default_command` -> `argparse_.add_default_command`
+    * `utils.HideAsFalseAction` -> `argparse_.HideAsFalseAction`
+* Subcommands must include a `register_parser` function to add their own parser instead of a `register_arguments` function [#1002][]. (@joverlee521)
+
+[#1002]: https://github.com/nextstrain/augur/pull/1002
 
 ## 16.0.3 (6 July 2022)
 

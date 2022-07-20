@@ -159,7 +159,7 @@ import sys
 
 from .frequency_estimators import timestamp_to_float
 from .reconstruct_sequences import load_alignments
-from .utils import annotate_parents_for_tree, read_node_data, write_json
+from .utils import annotate_parents_for_tree, first_line, read_node_data, write_json
 
 
 def read_distance_map(map_file):
@@ -626,7 +626,8 @@ def get_distances_to_all_pairs(tree, sequences_by_node_and_gene, distance_map, e
     return distances_by_node
 
 
-def register_arguments(parser):
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("distance", help=first_line(__doc__))
     parser.add_argument("--tree", help="Newick tree", required=True)
     parser.add_argument("--alignment", nargs="+", help="sequence(s) to be used, supplied as FASTA files", required=True)
     parser.add_argument('--gene-names', nargs="+", type=str, help="names of the sequences in the alignment, same order assumed", required=True)
@@ -637,6 +638,7 @@ def register_arguments(parser):
     parser.add_argument("--earliest-date", help="earliest date at which samples are considered to be from previous seasons (e.g., 2019-01-01). This date is only used in pairwise comparisons. If omitted, all samples prior to the latest date will be considered.")
     parser.add_argument("--latest-date", help="latest date at which samples are considered to be from previous seasons (e.g., 2019-01-01); samples from any date after this are considered part of the current season")
     parser.add_argument("--output", help="JSON file with calculated distances stored by node name and attribute name", required=True)
+    return parser
 
 
 def run(args):

@@ -97,7 +97,7 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
     return tt.tree, tt.gtr, letter_to_state
 
 
-def register_arguments(parser):
+def register_parser(parent_subparsers):
     """Add subcommand specific arguments
 
     Parameters
@@ -105,6 +105,7 @@ def register_arguments(parser):
     parser : argparse
         subcommand argument parser
     """
+    parser = parent_subparsers.add_parser("traits", help=__doc__)
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
     parser.add_argument('--metadata', required=True, metavar="FILE", help="table with metadata, as CSV or TSV")
     parser.add_argument('--weights', required=False, help="tsv/csv table with equilibrium probabilities of discrete states")
@@ -120,6 +121,8 @@ def register_arguments(parser):
                              '(or rather the time spent in a particular state on the tree)')
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save trait inferences to')
     parser.epilog = "Note that missing data must be represented by a `?` character. Missing data will currently be inferred."
+    return parser
+
 
 def run(args):
     """run mugration inference

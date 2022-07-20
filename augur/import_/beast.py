@@ -11,13 +11,13 @@ from collections import defaultdict
 import numpy as np
 from Bio import Phylo
 from treetime import TreeAnc
-from .utils import write_json
+from augur.utils import write_json
 
-def register_arguments_beast(subparsers):
+def register_parser(parent_subparsers):
     """
     Arguments available to `augur import beast`
     """
-    beast_parser = subparsers.add_parser('beast', help="Import beast analysis")
+    beast_parser = parent_subparsers.add_parser('beast', help="Import beast analysis")
     beast_parser.add_argument("--beast", help=SUPPRESS, default=True) # used to disambiguate subcommands
     beast_parser.add_argument('--mcc', required=True, help="BEAST MCC tree")
     beast_parser.add_argument('--most-recent-tip-date', default=0, type=float, help='Numeric date of most recent tip in tree (--tip-date-regex, --tip-date-format and --tip-date-delimeter are ignored if this is set)')
@@ -28,6 +28,8 @@ def register_arguments_beast(subparsers):
     beast_parser.add_argument('--recursion-limit', default=False, type=int, help="Set a custom recursion limit (dangerous!)")
     beast_parser.add_argument('--output-tree', required=True, type=str, help='file name to write tree to')
     beast_parser.add_argument('--output-node-data', required=True, type=str, help='file name to write (temporal) branch lengths & BEAST traits as node data')
+    return beast_parser
+
 
 def parse_beast_tree(data, tipMap, verbose=False):
     """
@@ -568,7 +570,7 @@ def print_what_to_do_next(nodes, mcc_path, tree_path, node_data_path):
 
 
 
-def run_beast(args):
+def run(args):
     '''
     BEAST MCC tree to newick and node-data JSON for further augur processing / export
     '''

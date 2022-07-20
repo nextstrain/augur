@@ -10,11 +10,11 @@ from Bio import Phylo
 from .reconstruct_sequences import load_alignments
 from .titer_model import InsufficientDataException
 from .utils import read_node_data, write_json
+from .argparse_ import add_default_command
 
 
-def register_arguments(parser):
-    from . import add_default_command
-
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("titers", help=__doc__)
     subparsers = parser.add_subparsers()
     add_default_command(parser)
 
@@ -37,6 +37,7 @@ def register_arguments(parser):
     sub_model.set_defaults(
         __command__ = infer_substitution_model
     )
+    return parser
 
 
 class infer_substitution_model():

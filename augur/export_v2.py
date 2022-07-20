@@ -1,5 +1,5 @@
 """
-Export JSON files suitable for visualization with auspice.
+Export version 2 JSON schema for visualization with Auspice
 """
 from pathlib import Path
 import os, sys
@@ -819,17 +819,17 @@ def node_data_prop_is_normal_trait(name):
     return True
 
 
-def register_arguments_v2(subparsers):
-    v2 = subparsers.add_parser("v2", help="Export version 2 JSON schema")
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("v2", help=__doc__)
 
-    required = v2.add_argument_group(
+    required = parser.add_argument_group(
         title="REQUIRED"
     )
     required.add_argument('--tree','-t', metavar="newick", required=True, help="Phylogenetic tree, usually output from `augur refine`")
     required.add_argument('--node-data', metavar="JSON", required=True, nargs='+', help="JSON files containing metadata for nodes in the tree")
     required.add_argument('--output', metavar="JSON", required=True, help="Ouput file (typically for visualisation in auspice)")
 
-    config = v2.add_argument_group(
+    config = parser.add_argument_group(
         title="DISPLAY CONFIGURATION",
         description="These control the display settings for auspice. \
             You can supply a config JSON (which has all available options) or command line arguments (which are more limited but great to get started). \
@@ -844,21 +844,21 @@ def register_arguments_v2(subparsers):
     config.add_argument('--color-by-metadata', metavar="trait", nargs='+', help="Metadata columns to include as coloring options")
     config.add_argument('--panels', metavar="panels", nargs='+', choices=['tree', 'map', 'entropy', 'frequencies', 'measurements'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
 
-    optional_inputs = v2.add_argument_group(
+    optional_inputs = parser.add_argument_group(
         title="OPTIONAL INPUT FILES"
     )
     optional_inputs.add_argument('--metadata', metavar="FILE", help="Additional metadata for strains in the tree, as CSV or TSV")
     optional_inputs.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
     optional_inputs.add_argument('--lat-longs', metavar="TSV", help="Latitudes and longitudes for geography traits (overrides built in mappings)")
 
-    optional_settings = v2.add_argument_group(
+    optional_settings = parser.add_argument_group(
         title="OPTIONAL SETTINGS"
     )
     optional_settings.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
     optional_settings.add_argument('--include-root-sequence', action="store_true", help="Export an additional JSON containing the root sequence (reference sequence for vcf) used to identify mutations. The filename will follow the pattern of <OUTPUT>_root-sequence.json for a main auspice JSON of <OUTPUT>.json")
     optional_settings.add_argument('--skip-validation', action="store_true", help="skip validation of input/output files. Use at your own risk!")
 
-    return v2
+    return parser
 
 
 def set_display_defaults(data_json, config):
@@ -982,7 +982,7 @@ def get_config(args):
         del config["vaccine_choices"]
     return config
 
-def run_v2(args):
+def run(args):
     configure_warnings()
     data_json = {"version": "v2", "meta": {"updated": time.strftime('%Y-%m-%d')}}
 

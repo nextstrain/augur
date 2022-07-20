@@ -30,8 +30,12 @@ SEQUENCE_ONLY_FILTERS = (
     "non_nucleotide",
 )
 
-
 def register_arguments(parser):
+    """
+    Add arguments to parser.
+    Kept as a separate function than `register_parser` to continue to support
+    unit tests that use this function to create argparser.
+    """
     input_group = parser.add_argument_group("inputs", "metadata and sequences to be filtered")
     input_group.add_argument('--metadata', required=True, metavar="FILE", help="sequence metadata, as CSV or TSV")
     input_group.add_argument('--sequences', '-s', help="sequences in FASTA or VCF format")
@@ -86,6 +90,12 @@ def register_arguments(parser):
     output_group.add_argument('--output-log', help="tab-delimited file with one row for each filtered strain and the reason it was filtered. Keyword arguments used for a given filter are reported in JSON format in a `kwargs` column.")
 
     parser.set_defaults(probabilistic_sampling=True)
+
+
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("filter", help=__doc__)
+    register_arguments(parser)
+    return parser
 
 
 class FilterException(AugurError):

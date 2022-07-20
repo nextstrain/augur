@@ -14,7 +14,8 @@ from .io import read_metadata
 from .utils import read_node_data, write_json
 
 
-def register_arguments(parser):
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("frequencies", help=__doc__)
     # Shared arguments
     parser.add_argument('--method', choices=["diffusion", "kde"], required=True,
                         help="method by which frequencies should be estimated")
@@ -71,6 +72,7 @@ def register_arguments(parser):
                         help="format to export frequencies JSON depending on the viewing interface")
     parser.add_argument('--output', '-o', type=str,
                         help='JSON file to save estimated frequencies to')
+    return parser
 
 
 def format_frequencies(freq):

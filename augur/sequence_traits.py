@@ -290,7 +290,8 @@ def attach_features(annotations, label, count):
     return seq_feature_dict
 
 
-def register_arguments(parser):
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("sequence-traits", help=__doc__)
     parser.add_argument('--ancestral-sequences', type=str, help="nucleotide alignment (VCF) to search for sequence traits in (can be generated from 'ancestral' using '--output-vcf')")
     parser.add_argument('--translations', type=str, help="AA alignment to search for sequence traits in (can include ancestral sequences)")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the nucleotide VCF was mapped to')
@@ -300,6 +301,7 @@ def register_arguments(parser):
     parser.add_argument('--count', type=str, choices=['traits','mutations'], default='traits', help='Whether to count traits (ex: # drugs resistant to) or mutations')
     parser.add_argument('--label', type=str, default="# Traits", help='How to label the counts (ex: Drug_Resistance)')
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save sequence features to')
+    return parser
 
 
 def run(args):

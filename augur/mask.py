@@ -165,8 +165,12 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
         "fasta"
     )
 
-
 def register_arguments(parser):
+    """
+    Add arguments to parser.
+    Kept as a separate function than `register_parser` to continue to support
+    unit tests that use this function to create argparser.
+    """
     parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF or FASTA format")
     parser.add_argument('--mask', dest="mask_file", required=False, help="locations to be masked in either BED file format, DRM format, or one 1-indexed site per line.")
     parser.add_argument('--mask-from-beginning', type=int, default=0, help="FASTA Only: Number of sites to mask from beginning")
@@ -176,6 +180,12 @@ def register_arguments(parser):
     parser.add_argument('--output', '-o', help="output file")
     parser.add_argument('--no-cleanup', dest="cleanup", action="store_false",
                         help="Leave intermediate files around. May be useful for debugging")
+
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("mask", help=__doc__)
+    register_arguments(parser)
+    return parser
+
 
 def run(args):
     '''
