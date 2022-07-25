@@ -155,6 +155,8 @@ def load_features(reference, feature_names=None):
                     if feature_names is not None: #check both tags; user may have used either
                         if "gene" in feat.qualifiers and feat.qualifiers["gene"][0] in feature_names:
                             fname = feat.qualifiers["gene"][0]
+                        elif "gene_name" in feat.qualifiers and feat.qualifiers["gene_name"][0] in feature_names:
+                            fname = feat.qualifiers["gene_name"][0]
                         elif "locus_tag" in feat.qualifiers and feat.qualifiers["locus_tag"][0] in feature_names:
                             fname = feat.qualifiers["locus_tag"][0]
                         else:
@@ -162,6 +164,8 @@ def load_features(reference, feature_names=None):
                     else:
                         if "gene" in feat.qualifiers:
                             fname = feat.qualifiers["gene"][0]
+                        elif "gene_name" in feat.qualifiers:
+                            fname = feat.qualifiers["gene_name"][0]
                         else:
                             fname = feat.qualifiers["locus_tag"][0]
                     if feat.type == "source":
