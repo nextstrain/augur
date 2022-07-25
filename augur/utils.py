@@ -147,9 +147,15 @@ def load_features(reference, feature_names=None):
         with open(reference, encoding='utf-8') as in_handle:
             for rec in GFF.parse(in_handle, limit_info=limit_info):
                 for feat in rec.features:
-                    if feature_names is not None: #check both tags; user may have used either
+                    # Check for gene names stored in qualifiers commonly used by
+                    # virus-specific gene maps first (e.g., 'gene',
+                    # 'gene_name'). Then, check for qualifiers used by non-viral
+                    # pathogens (e.g., 'locus_tag').
+                    if feature_names is not None:
                         if "gene" in feat.qualifiers and feat.qualifiers["gene"][0] in feature_names:
                             fname = feat.qualifiers["gene"][0]
+                        elif "gene_name" in feat.qualifiers and feat.qualifiers["gene_name"][0] in feature_names:
+                            fname = feat.qualifiers["gene_name"][0]
                         elif "locus_tag" in feat.qualifiers and feat.qualifiers["locus_tag"][0] in feature_names:
                             fname = feat.qualifiers["locus_tag"][0]
                         else:
@@ -157,6 +163,8 @@ def load_features(reference, feature_names=None):
                     else:
                         if "gene" in feat.qualifiers:
                             fname = feat.qualifiers["gene"][0]
+                        elif "gene_name" in feat.qualifiers:
+                            fname = feat.qualifiers["gene_name"][0]
                         else:
                             fname = feat.qualifiers["locus_tag"][0]
                     if feat.type == "source":
