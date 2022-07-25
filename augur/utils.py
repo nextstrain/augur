@@ -172,6 +172,7 @@ def load_features(reference, feature_names=None):
                         fname = "nuc"
 
                     if fname:
+                        feat.seqid = rec.id
                         features[fname] = feat
 
             if feature_names is not None:
@@ -181,7 +182,9 @@ def load_features(reference, feature_names=None):
 
     else:
         from Bio import SeqIO
-        for feat in SeqIO.read(reference, 'genbank').features:
+        reference_record = SeqIO.read(reference, 'genbank')
+        for feat in reference_record.features:
+            feat.seqid = reference_record.name
             if feat.type=='CDS':
                 if "locus_tag" in feat.qualifiers:
                     fname = feat.qualifiers["locus_tag"][0]
