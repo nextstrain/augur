@@ -35,6 +35,7 @@ Try out an analysis of real virus data by [completing the Zika tutorial](https:/
 * [Contributor guide](https://github.com/nextstrain/.github/blob/master/CONTRIBUTING.md)
 * [Project board with available issues](https://github.com/orgs/nextstrain/projects/6)
 * [Developer docs for Augur](./docs/contribute/DEV_DOCS.md)
+* [Changelog](./CHANGES.md)
 
 ## Citation
 
@@ -42,6 +43,6 @@ Huddleston J, Hadfield J, Sibley TR, Lee J, Fay K, Ilcisin M, Harkins E, Bedford
 
 ## License and copyright
 
-Copyright 2014-2019 Trevor Bedford and Richard Neher.
+Copyright 2014-2022 Trevor Bedford and Richard Neher.
 
 Source code to Nextstrain is made available under the terms of the [GNU Affero General Public License](LICENSE.txt) (AGPL). Nextstrain is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
