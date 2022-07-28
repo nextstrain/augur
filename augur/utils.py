@@ -91,8 +91,8 @@ def read_tree(fname, min_terminals=3):
     return T
 
 
-def read_node_data(fnames, tree=None):
-    return NodeDataReader(fnames, tree).read()
+def read_node_data(fnames, tree=None, skip_validation=False):
+    return NodeDataReader(fnames, tree, skip_validation).read()
 
 
 def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 2), include_version=True):

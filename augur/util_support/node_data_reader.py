@@ -14,13 +14,16 @@ class NodeDataReader:
     not included in the resulting data structure.
 
     If a tree file is specified, it is used to verify the node names.
+
+    If skip_validation is set to true, Augur version of node data files is not checked.
     """
 
-    def __init__(self, filenames, tree_file=None):
+    def __init__(self, filenames, tree_file=None, skip_validation=False):
         if not isinstance(filenames, list):
             filenames = [filenames]
         self.filenames = filenames
         self.tree_file = tree_file
+        self.skip_validation = skip_validation
 
     def read(self):
         node_data = self.build_node_data()
@@ -48,7 +51,7 @@ class NodeDataReader:
 
     @property
     def node_data_files(self):
-        return (NodeDataFile(fname) for fname in self.filenames)
+        return (NodeDataFile(fname, skip_validation = self.skip_validation) for fname in self.filenames)
 
     def check_against_tree_file(self, node_data):
         if not self.tree_file:

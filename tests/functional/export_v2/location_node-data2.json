@@ -1,0 +1,29 @@
+{
+  "generated_by": {
+    "program": "augur",
+    "version": "13.1.2"
+  },
+  "nodes": {
+    "tipA": {
+      "location": "delta"
+    },
+    "tipB": {
+      "location": "gamma"
+    },
+    "tipC": {
+      "location": "gamma"
+    },
+    "internalDEF": {
+      "location": "alpha"
+    },
+    "tipD": {
+      "location": "alpha"
+    },
+    "tipE": {
+      "location": "alpha"
+    },
+    "tipF": {
+      "location": "beta"
+    }
+  }
+} 
