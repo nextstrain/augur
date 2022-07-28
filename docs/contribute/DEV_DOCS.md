@@ -162,14 +162,19 @@ Versions for this project, Augur, from 3.0.0 onwards aim to follow the
 
 ##### 1. Gather PRs.
 
-1. Compare changes to find PRs and direct commits since the previous tag (e.g. https://github.com/nextstrain/augur/compare/14.1.0...15.0.0, replacing `14.1.0` with previous tag and `15.0.0` with `master`)
-2. Add the PRs to the open GitHub milestone.
-3. Define a new version number `X.X.X` based on changes and Semantic Versioning rules.
-4. Rename the milestone as `<Major|Feature|Patch> release X.X.X`.
+1. Compare changes to find PRs and direct commits since the previous tag (replacing `X.X.X` with previous tag)
+    - For all changes: open https://github.com/nextstrain/augur/compare/X.X.X...HEAD
+    - For PRs: run the commands below and paste the output URL in your browser:
+      ```sh
+      previous_tag="X.X.X"
+      previous_tag_date=$(git log -1 $previous_tag --format=%cd --date=format:'%Y-%m-%dT%H:%M:%SZ')
+      echo "https://github.com/nextstrain/augur/pulls?q=is:pr%20is:closed%20merged:>$previous_tag_date"
+      ```
+2. Define a new version number `X.X.X` based on changes and Semantic Versioning rules.
 
 ##### 2. Curate [CHANGES.md](../../CHANGES.md)
 
-1. Go through each PR in the GitHub milestone and note the PRs that didn't provide an update to [CHANGES.md](../../CHANGES.md).
+1. Go through each PR and note the PRs that didn't provide an update to [CHANGES.md](../../CHANGES.md).
 2. For the PRs missing a changelog update, add an entry summarizing the changes in the PR.
     - Keep headers and formatting consistent with the rest of the file.
 3. Open a PR with these changes. If changes are clear and you feel confident in the release notes, merge without PR approval. Otherwise, or if unsure, add [nextstrain/core](https://github.com/orgs/nextstrain/teams/core) as a reviewer and wait for approval before proceeding with the release.
@@ -183,12 +188,7 @@ Versions for this project, Augur, from 3.0.0 onwards aim to follow the
     3. Select **Run workflow**.
 3. Ensure workflow runs successfully.
 
-##### 4. Update GitHub milestones
-
-1. Close current release milestone.
-2. Create new milestone named `Next release X.X.X`.
-
-##### 5. Update on Bioconda
+##### 4. Update on Bioconda
 
 For versions without dependency changes:
 
