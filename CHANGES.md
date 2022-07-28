@@ -17,14 +17,16 @@
 ### Features
 
 * export: `--skip-validation` now also skips version compatibility checks [#902][]. (@corneliusroemer)
+* filter: Report names of duplicate strains found during metadata parsing [#1008][] (@huddlej)
 
 ### Bug Fixes
 
 * filter: Rename internal force inclusion filtering functions [#1006][] (@victorlin)
 
+[#902]: https://github.com/nextstrain/augur/pull/902
 [#1002]: https://github.com/nextstrain/augur/pull/1002
 [#1006]: https://github.com/nextstrain/augur/pull/1006
-[#902]: https://github.com/nextstrain/augur/pull/902
+[#1008]: https://github.com/nextstrain/augur/pull/1008
 
 ## 16.0.3 (6 July 2022)
 

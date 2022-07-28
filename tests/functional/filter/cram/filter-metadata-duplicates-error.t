@@ -20,7 +20,8 @@ Error on duplicates in metadata within same chunk.
   >   --subsample-seed 0 \
   >   --metadata-chunk-size 10 \
   >   --output-metadata $TMP/metadata-filtered.tsv > /dev/null
-  ERROR: Duplicate found in .* (re)
+  ERROR: The following strains are duplicated in .* (re)
+  a
   [2]
   $ cat $TMP/metadata-filtered.tsv
   cat: .*: No such file or directory (re)
@@ -35,7 +36,8 @@ Error on duplicates in metadata in separate chunks.
   >   --subsample-seed 0 \
   >   --metadata-chunk-size 1 \
   >   --output-metadata $TMP/metadata-filtered.tsv > /dev/null
-  ERROR: Duplicate found in .* (re)
+  ERROR: The following strains are duplicated in .* (re)
+  a
   [2]
   $ cat $TMP/metadata-filtered.tsv
   cat: .*: No such file or directory (re)

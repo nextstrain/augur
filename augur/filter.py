@@ -1403,9 +1403,14 @@ def run(args):
         chunk_size=args.metadata_chunk_size,
     )
     for metadata in metadata_reader:
-        if any(metadata.index.duplicated()) or any(metadata.index.isin(metadata_strains)):
+        duplicate_strains = (
+            set(metadata.index[metadata.index.duplicated()]) |
+            set(metadata.index[metadata.index.isin(metadata_strains)])
+        )
+        if len(duplicate_strains) > 0:
             _cleanup_outputs(args)
-            raise AugurError(f"Duplicate found in '{args.metadata}'.")
+            raise AugurError(f"The following strains are duplicated in '{args.metadata}':\n" + "\n".join(sorted(duplicate_strains)))
+
         # Maintain list of all strains seen.
         metadata_strains.update(set(metadata.index.values))
 
