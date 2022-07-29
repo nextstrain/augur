@@ -13,6 +13,21 @@
     * `augur.add_default_command` -> `argparse_.add_default_command`
     * `utils.HideAsFalseAction` -> `argparse_.HideAsFalseAction`
 * Subcommands must include a `register_parser` function to add their own parser instead of a `register_arguments` function [#1002][]. (@joverlee521)
+* utils: Remove internal function `utils.read_metadata()` [#978][]. (@victorlin)
+    * Use `io.read_metadata()` going forwards.
+    * To switch to using metadata as a pandas DataFrame (recommended):
+        * Iterate through strains: `metadata.items()` -> `metadata.iterrows()`
+        * Check strain presence: `strain in metadata` -> `strain in metadata.index`
+        * Check field presence: `field in metadata[strain]` -> `field in metadata.columns`
+        * Get metadata for a strain: `metadata[strain]` -> `metadata.loc[strain]`
+        * Get field for a strain: `metadata[strain][field]` -> `metadata.at[strain, field]`
+    * To keep using metadata in a dictionary:
+        ```py
+        metadata = read_metadata(args.metadata)
+        metadata.insert(0, "strain", metadata.index.values)
+        columns = metadata.columns
+        metadata = metadata.to_dict(orient="index")
+        ```
 
 ### Features
 
@@ -24,6 +39,7 @@
 * filter: Rename internal force inclusion filtering functions [#1006][] (@victorlin)
 
 [#902]: https://github.com/nextstrain/augur/pull/902
+[#978]: https://github.com/nextstrain/augur/pull/978
 [#1002]: https://github.com/nextstrain/augur/pull/1002
 [#1006]: https://github.com/nextstrain/augur/pull/1006
 [#1008]: https://github.com/nextstrain/augur/pull/1008

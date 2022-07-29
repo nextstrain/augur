@@ -4,7 +4,6 @@ from unittest.mock import patch
 import pytest
 
 from augur import utils
-from test_filter import write_metadata
 
 
 class TestUtils:
@@ -91,18 +90,3 @@ class TestUtils:
         strains = utils.read_strains(strains1, strains2)
         assert len(strains) == 3
         assert "strain1" in strains
-
-    def test_read_metadata(self, tmpdir):
-        meta_fn = write_metadata(tmpdir, (("strain","location","quality"),
-                                          ("SEQ_1","colorado","good"),
-                                          ("SEQ_2","colorado","bad"),
-                                          ("SEQ_3","nevada","good")))
-        utils.read_metadata(meta_fn, as_data_frame=True)
-        # duplicates SEQ_1 raises ValueError
-        meta_fn = write_metadata(tmpdir, (("strain","location","quality"),
-                                          ("SEQ_1","colorado","good"),
-                                          ("SEQ_1","colorado","bad"),
-                                          ("SEQ_3","nevada","good")))
-        with pytest.raises(ValueError) as e_info:
-            utils.read_metadata(meta_fn, as_data_frame=True)
-        assert str(e_info.value) == "Duplicated strain in metadata: SEQ_1"
