@@ -2,91 +2,91 @@
   "annotations": {
     "2K": {
       "end": 6897,
-      "seqid": "config/zika_outgroup.gb",
+      "seqid": "PF13/251013_18",
       "start": 6829,
       "strand": "+",
       "type": "CDS"
     },
     "CA": {
       "end": 456,
-      "seqid": "config/zika_outgroup.gb",
+      "seqid": "PF13/251013_18",
       "start": 91,
       "strand": "+",
       "type": "CDS"
     },
     "ENV": {
       "end": 2472,
-      "seqid": "config/zika_outgroup.gb",
+      "seqid": "PF13/251013_18",
       "start": 961,
       "strand": "+",
       "type": "CDS"
     },
     "MP": {
       "end": 960,
-      "seqid": "config/zika_outgroup.gb",
+      "seqid": "PF13/251013_18",
       "start": 736,
       "strand": "+",
       "type": "CDS"
     },
     "NS1": {
       "end": 3528,
-      "seqid": "config/zika_outgroup.gb",
+      "seqid": "PF13/251013_18",
       "start": 2473,
       "strand": "+",
       "type": "CDS"
     },
     "NS2A": {
       "end": 4206,
-      "seqid": "config/zika_outgroup.gb",
+      "seqid": "PF13/251013_18",
       "start": 3529,
       "strand": "+",
       "type": "CDS"
     },
     "NS2B": {
       "end": 4596,
-      "seqid": "config/zika_outgroup.gb",
+      "seqid": "PF13/251013_18",
       "start": 4207,
       "strand": "+",
       "type": "CDS"
     },
     "NS3": {
       "end": 6447,
-      "seqid": "config/zika_outgroup.gb",
+      "seqid": "PF13/251013_18",
       "start": 4597,
       "strand": "+",
       "type": "CDS"
     },
     "NS4A": {
       "end": 6828,
-      "seqid": "config/zika_outgroup.gb",
+      "seqid": "PF13/251013_18",
       "start": 6448,
       "strand": "+",
       "type": "CDS"
     },
     "NS4B": {
       "end": 7650,
-      "seqid": "config/zika_outgroup.gb",
+      "seqid": "PF13/251013_18",
       "start": 6898,
       "strand": "+",
       "type": "CDS"
     },
     "NS5": {
       "end": 10359,
-      "seqid": "config/zika_outgroup.gb",
+      "seqid": "PF13/251013_18",
       "start": 7651,
       "strand": "+",
       "type": "CDS"
     },
     "PRO": {
       "end": 735,
-      "seqid": "config/zika_outgroup.gb",
+      "seqid": "PF13/251013_18",
       "start": 457,
       "strand": "+",
       "type": "CDS"
     },
     "nuc": {
       "end": 10769,
-      "seqid": "config/zika_outgroup.gb",
+      "seqid": "PF13/251013_18",
       "start": 1,
       "strand": "+",
       "type": "source"
