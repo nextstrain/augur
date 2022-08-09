@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 17.0.0 (9 August 2022)
+
 ### Major Changes
 
 * Moved the following modules to subpackages [#1002][]. (@joverlee521)
