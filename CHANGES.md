@@ -33,6 +33,7 @@
 
 * export: `--skip-validation` now also skips version compatibility checks [#902][]. (@corneliusroemer)
 * filter: Report names of duplicate strains found during metadata parsing [#1008][] (@huddlej)
+* translate: Add support for Nextclade gene map GFFs [#1017][] (@huddlej)
 
 ### Bug Fixes
 
@@ -43,6 +44,7 @@
 [#1002]: https://github.com/nextstrain/augur/pull/1002
 [#1006]: https://github.com/nextstrain/augur/pull/1006
 [#1008]: https://github.com/nextstrain/augur/pull/1008
+[#1017]: https://github.com/nextstrain/augur/pull/1017
 
 ## 16.0.3 (6 July 2022)
 
