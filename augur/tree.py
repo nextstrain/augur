@@ -330,6 +330,10 @@ def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
 
     #Rotate and convert to SeqRecord
     sites = np.asarray(sites)
+    if len(sites.shape)!=2:
+        print("ERROR: NO VALID SITES REMAIN AFTER IGNORING UNCALLED SITES")
+        raise Exception
+
     align = np.rot90(sites)
     seqNamesCorr = list(reversed(seqNames))
     toFasta = [ SeqRecord(id=seqNamesCorr[i], seq=Seq("".join(align[i])), description='') for i in range(len(sequences.keys()))]
