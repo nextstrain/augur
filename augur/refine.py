@@ -7,6 +7,7 @@ from Bio import Phylo
 from .dates import get_numerical_dates
 from .io import read_metadata
 from .utils import read_tree, write_json, InvalidTreeError
+from .errors import AugurError
 from treetime.vcf_utils import read_vcf, write_vcf
 from treetime.seq_utils import profile_maps
 
