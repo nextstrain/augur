@@ -222,9 +222,7 @@ def run(args):
                         clock_filter_iqd=args.clock_filter_iqd,
                         covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies))
         except BaseException as err:
-            print("ERROR: Was unable to refine time trees:\n", file=sys.stderr)
-            print(err, file=sys.stderr)
-            return 1
+            raise AugurError(f"Was unable to refine time trees:\n\n{err}")
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
