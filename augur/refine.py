@@ -7,6 +7,7 @@ from Bio import Phylo
 from .dates import get_numerical_dates
 from .io import read_metadata
 from .utils import read_tree, write_json, InvalidTreeError
+from .errors import AugurError
 from treetime.vcf_utils import read_vcf, write_vcf
 from treetime.seq_utils import profile_maps
 
@@ -211,15 +212,18 @@ def run(args):
             if n.name in metadata.index and 'date' in metadata.columns:
                 n.raw_date = metadata.loc[n.name, 'date']
 
-        tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
-                    reroot=args.root, # or 'best', # We now have a default in param spec - this just adds confusion.
-                    Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
-                    use_marginal = args.date_inference == 'marginal',
-                    branch_length_inference = args.branch_length_inference or 'auto',
-                    precision = 'auto' if args.precision is None else args.precision,
-                    clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
-                    clock_filter_iqd=args.clock_filter_iqd,
-                    covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies))
+        try:
+            tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
+                        reroot=args.root, # or 'best', # We now have a default in param spec - this just adds confusion.
+                        Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
+                        use_marginal = args.date_inference == 'marginal',
+                        branch_length_inference = args.branch_length_inference or 'auto',
+                        precision = 'auto' if args.precision is None else args.precision,
+                        clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
+                        clock_filter_iqd=args.clock_filter_iqd,
+                        covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies))
+        except BaseException as err:
+            raise AugurError(f"Was unable to refine time trees:\n\n{err}")
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
