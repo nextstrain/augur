@@ -100,7 +100,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--metadata', type=str, metavar="FILE", help="sequence metadata, as CSV or TSV")
     parser.add_argument('--output-tree', type=str, help='file name to write tree to')
     parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
-    parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")
+    parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime, requires tree where branch length is in units of average number of nucleotide or protein substitutions per site (and branch lengths do not exceed 4)")
     parser.add_argument('--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
     parser.add_argument('--gen-per-year', default=50, type=float, help="number of generations per year, relevant for skyline output('skyline')")
     parser.add_argument('--clock-rate', type=float, help="fixed clock rate")
