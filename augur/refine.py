@@ -2,7 +2,7 @@
 Refine an initial tree using sequence metadata.
 """
 import numpy as np
-import os, shutil, time, sys
+import sys
 from Bio import Phylo
 from .dates import get_numerical_dates
 from .io import read_metadata
@@ -13,7 +13,7 @@ from treetime.seq_utils import profile_maps
 
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
              confidence=False, resolve_polytomies=True, max_iter=2, precision='auto',
-             infer_gtr=True, Tc=0.01, reroot=None, use_marginal=False, fixed_pi=None,
+             infer_gtr=True, Tc=0.01, reroot=None, use_marginal='always', fixed_pi=None, use_fft=True,
              clock_rate=None, clock_std=None, clock_filter_iqd=None, verbosity=1, covariance=True, **kwarks):
     from treetime import TreeTime
 
@@ -36,7 +36,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
             branch_length_inference = 'joint'
 
     #send ref, if is None, does no harm
-    tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates,
+    tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates, use_fft=use_fft,
                   verbose=verbosity, gtr='JC69', precision=precision)
 
     # conditionally run clock-filter and remove bad tips
@@ -100,6 +100,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--metadata', type=str, metavar="FILE", help="sequence metadata, as CSV or TSV")
     parser.add_argument('--output-tree', type=str, help='file name to write tree to')
     parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
+    parser.add_argument('--use-fft', action="store_true", help="produce timetree using FFT for convolutions")
     parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime, requires tree where branch length is in units of average number of nucleotide or protein substitutions per site (and branch lengths do not exceed 4)")
     parser.add_argument('--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
     parser.add_argument('--gen-per-year', default=50, type=float, help="number of generations per year, relevant for skyline output('skyline')")
@@ -212,11 +213,15 @@ def run(args):
             if n.name in metadata.index and 'date' in metadata.columns:
                 n.raw_date = metadata.loc[n.name, 'date']
 
+        if args.date_confidence:
+            time_inference_mode = 'always' if args.date_inference=='marginal' else 'only-final'
+        else:
+            time_inference_mode = 'always' if args.date_inference=='marginal' else 'never'
         try:
             tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                         reroot=args.root, # or 'best', # We now have a default in param spec - this just adds confusion.
                         Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
-                        use_marginal = args.date_inference == 'marginal',
+                        use_marginal = time_inference_mode, use_fft=args.use_fft,
                         branch_length_inference = args.branch_length_inference or 'auto',
                         precision = 'auto' if args.precision is None else args.precision,
                         clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
