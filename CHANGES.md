@@ -6,6 +6,12 @@
 
 * Upgrade treetime from 0.8.6 to >= 0.9.2 which enables a speedup of timetree inference in marginal mode due to the use of Fast Fourier Transforms [#1018][]. (@rneher and @anna-parker)
 
+### Bug Fixes
+
+* refine, export v1: Use pandas.DataFrame.at instead of .loc for single values [#979][]. (@victorlin)
+
+[#979]: https://github.com/nextstrain/augur/pull/979
+
 ## 17.0.0 (9 August 2022)
 
 ### Major Changes
