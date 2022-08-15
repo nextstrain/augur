@@ -211,7 +211,7 @@ def run(args):
         # save input state string for later export
         for n in T.get_terminals():
             if n.name in metadata.index and 'date' in metadata.columns:
-                n.raw_date = metadata.loc[n.name, 'date']
+                n.raw_date = metadata.at[n.name, 'date']
 
         if args.date_confidence:
             time_inference_mode = 'always' if args.date_inference=='marginal' else 'only-final'
