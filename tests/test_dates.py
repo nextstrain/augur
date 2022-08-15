@@ -1,6 +1,8 @@
 import datetime
+import pytest
 from freezegun import freeze_time
 from augur import dates
+from augur.errors import AugurError
 
 
 class TestDates:
@@ -57,3 +59,14 @@ class TestDates:
         # Test incomplete date strings without ambiguous dates for the requested fields.
         assert not dates.is_date_ambiguous("2019", "year")
         assert not dates.is_date_ambiguous("2019-10", "month")
+
+    def test_get_numerical_dates_dict_error(self):
+        """Using get_numerical_dates with metadata represented as a dict should raise an error."""
+        metadata = {
+            "example": {
+                "strain": "example",
+                "date": "2000-03-29"
+            }
+        }
+        with pytest.raises(AugurError):
+            dates.get_numerical_dates(metadata)
