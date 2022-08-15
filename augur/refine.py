@@ -7,7 +7,8 @@ from Bio import Phylo
 from .dates import get_numerical_dates
 from .io import read_metadata
 from .utils import read_tree, write_json, InvalidTreeError
-from treetime.vcf_utils import read_vcf
+from .errors import AugurError
+from treetime.vcf_utils import read_vcf, write_vcf
 from treetime.seq_utils import profile_maps
 
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
@@ -99,8 +100,8 @@ def register_parser(parent_subparsers):
     parser.add_argument('--metadata', type=str, metavar="FILE", help="sequence metadata, as CSV or TSV")
     parser.add_argument('--output-tree', type=str, help='file name to write tree to')
     parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
-    parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime")
     parser.add_argument('--use-fft', action="store_true", help="produce timetree using FFT for convolutions")
+    parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime, requires tree where branch length is in units of average number of nucleotide or protein substitutions per site (and branch lengths do not exceed 4)")
     parser.add_argument('--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
     parser.add_argument('--gen-per-year', default=50, type=float, help="number of generations per year, relevant for skyline output('skyline')")
     parser.add_argument('--clock-rate', type=float, help="fixed clock rate")
@@ -216,16 +217,18 @@ def run(args):
             time_inference_mode = 'always' if args.date_inference=='marginal' else 'only-final'
         else:
             time_inference_mode = 'always' if args.date_inference=='marginal' else 'never'
-
-        tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
-                    reroot=args.root, # or 'best', # We now have a default in param spec - this just adds confusion.
-                    Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
-                    use_marginal = time_inference_mode, use_fft=args.use_fft,
-                    branch_length_inference = args.branch_length_inference or 'auto',
-                    precision = 'auto' if args.precision is None else args.precision,
-                    clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
-                    clock_filter_iqd=args.clock_filter_iqd,
-                    covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies))
+        try:
+            tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
+                        reroot=args.root, # or 'best', # We now have a default in param spec - this just adds confusion.
+                        Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
+                        use_marginal = time_inference_mode, use_fft=args.use_fft,
+                        branch_length_inference = args.branch_length_inference or 'auto',
+                        precision = 'auto' if args.precision is None else args.precision,
+                        clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
+                        clock_filter_iqd=args.clock_filter_iqd,
+                        covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies))
+        except BaseException as err:
+            raise AugurError(f"Was unable to refine time trees:\n\n{err}")
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
