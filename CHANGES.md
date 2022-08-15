@@ -12,6 +12,7 @@
 * dates: Raise an error when metadata to `get_numerical_dates()` is not a pandas DataFrame [#1026][]. (@victorlin)
 
 [#979]: https://github.com/nextstrain/augur/pull/979
+[#1018]: https://github.com/nextstrain/augur/pull/1018
 [#1026]: https://github.com/nextstrain/augur/pull/1026
 
 ## 17.0.0 (9 August 2022)
