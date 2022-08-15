@@ -5,6 +5,7 @@ import isodate
 import pandas as pd
 import re
 import treetime.utils
+from .errors import AugurError
 
 from augur.util_support.date_disambiguator import DateDisambiguator
 
@@ -122,7 +123,7 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
 
 def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date', fmt=None, min_max_year=None):
     if not isinstance(metadata, pd.DataFrame):
-        return {}
+        raise AugurError("Metadata should be a pandas.DataFrame.")
     if fmt:
         strains = metadata.index.values
         dates = metadata[date_col].apply(
