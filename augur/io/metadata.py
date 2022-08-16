@@ -1,5 +1,6 @@
 import csv
 import pandas as pd
+import pyfastx
 
 from augur.errors import AugurError
 from augur.io.print import print_err
@@ -182,3 +183,64 @@ def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, i
             raise AugurError(duplicates_message)
         else:
             raise ValueError(f"Encountered unhandled duplicate reporting method: {duplicate_reporting!r}")
+
+
+def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequence'):
+    """
+    Read rows from *metadata* file and yield each row as a single dict that has
+    been updated with their corresponding sequence from the *fasta* file.
+    Matches the metadata record with sequences using the sequence id provided
+    in the *seq_id_column*. To ensure that the sequences can be matched with
+    the metadata, the FASTA headers must contain the matching sequence id. The
+    FASTA headers may include additional description parts after the id, but
+    they will not be used to match the metadata.
+
+    Note that metadata and sequence records that do not have a matching record
+    are skipped.
+
+    Reads the *fasta* file with `pyfastx.Fasta`, which creates an index for
+    the file to allow random access of sequences via the sequence id.
+    See pyfastx docs for more details:
+    https://pyfastx.readthedocs.io/en/latest/usage.html#fasta
+
+    Parameters
+    ----------
+    metadata: str
+        Path to a CSV or TSV metadata file
+
+    fasta: str
+        Path to a plain or gzipped FASTA file
+
+    seq_id_column: str
+        The column in the metadata file that contains the sequence id for
+        matching sequences
+
+    seq_field: str, optional
+        The field name to use for the sequence in the updated record
+
+    Yields
+    ------
+    dict
+        The parsed metadata record with the sequence
+    """
+    sequences = pyfastx.Fasta(fasta)
+    sequence_ids = set(sequences.keys())
+
+    # Silencing duplicate reporting here because we will need to handle duplicates
+    # in both the metadata and FASTA files after processing all the records here.
+    for record in read_table_to_dict(metadata, duplicate_reporting=DataErrorMethod.SILENT):
+        seq_id = record.get(seq_id_column)
+
+        if seq_id is None:
+            raise AugurError(f"The provided sequence id column {seq_id_column!r} does not exist in the metadata.")
+
+        # Skip records that do not have a matching sequence
+        # TODO: change this to try/except to fetch sequences and catch
+        # KeyError for non-existing sequences when https://github.com/lmdu/pyfastx/issues/50 is resolved
+        if seq_id not in sequence_ids:
+            continue
+
+        sequence_record = sequences[seq_id]
+        record[seq_field] = str(sequence_record.seq).upper()
+
+        yield record
