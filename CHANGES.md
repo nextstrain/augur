@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 17.1.0 (19 August 2022)
+
 ### Features
 
 * refine: Upgrade TreeTime from 0.8.6 to >= 0.9.2 which enables a speedup of timetree inference in marginal mode due to the use of Fast Fourier Transforms [#1018][]. (@rneher and @anna-parker)
