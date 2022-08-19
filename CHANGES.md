@@ -10,11 +10,13 @@
 
 * refine, export v1: Use pandas.DataFrame.at instead of .loc for single values [#979][]. (@victorlin)
 * refine: Gracefully handle all exceptions from TreeTime [#1023][]. (@anna-parker)
+* refine: Document branch length units `treetime` expects [#1024][]. (@anna-parker)
 * dates: Raise an error when metadata to `get_numerical_dates()` is not a pandas DataFrame [#1026][]. (@victorlin)
 
 [#979]: https://github.com/nextstrain/augur/pull/979
 [#1018]: https://github.com/nextstrain/augur/pull/1018
 [#1023]: https://github.com/nextstrain/augur/pull/1023
+[#1024]: https://github.com/nextstrain/augur/pull/1024
 [#1026]: https://github.com/nextstrain/augur/pull/1026
 
 ## 17.0.0 (9 August 2022)
