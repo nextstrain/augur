@@ -134,7 +134,7 @@ rule export:
         auspice = rules.all.input.auspice
     shell:
         """
-        snakemake --cores 1 check
+        snakemake --cores all check
         augur export v2 \
             --tree {input.tree} \
             --metadata {input.metadata} \
