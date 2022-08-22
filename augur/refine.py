@@ -228,7 +228,12 @@ def run(args):
                         clock_filter_iqd=args.clock_filter_iqd,
                         covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies))
         except BaseException as err:
-            raise AugurError(f"Was unable to refine time trees:\n\n{err}")
+            if type(err).__name__ == "TreeTimeError":
+                raise AugurError(f"Was unable to refine time trees:\n\n{err}")
+            else:
+                import traceback 
+                traceback.format_exc()
+                raise err
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
