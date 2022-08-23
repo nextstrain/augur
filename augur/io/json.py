@@ -42,7 +42,7 @@ def as_json(value):
 def load_json(value):
     """
     Converts *value* from a JSON string with better error messages.
-    Raises an :exc:`id3c.json.JSONDecodeError` which provides improved error
+    Raises an :exc:`augur.io.json.JSONDecodeError` which provides improved error
     messaging, compared to :exc:`json.JSONDecodeError`, when stringified.
     """
     try:
@@ -114,27 +114,27 @@ class JSONDecodeError(json.JSONDecodeError):
     >>> load_json('{foo: "bar"}')
     Traceback (most recent call last):
         ...
-    id3c.json.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1): '{▸▸▸f◂◂◂oo: "bar"}'
+    augur.io.json.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1): '{▸▸▸f◂◂◂oo: "bar"}'
     >>> load_json('not json')
     Traceback (most recent call last):
         ...
-    id3c.json.JSONDecodeError: Expecting value: line 1 column 1 (char 0): 'not json'
+    augur.io.json.JSONDecodeError: Expecting value: line 1 column 1 (char 0): 'not json'
     >>> load_json("[0, 1, 2, 3, 4, 5")
     Traceback (most recent call last):
         ...
-    id3c.json.JSONDecodeError: Expecting ',' delimiter: line 1 column 18 (char 17): unexpected end of document: '…, 3, 4, 5'
+    augur.io.json.JSONDecodeError: Expecting ',' delimiter: line 1 column 18 (char 17): unexpected end of document: '…, 3, 4, 5'
     >>> load_json("[\\n")
     Traceback (most recent call last):
         ...
-    id3c.json.JSONDecodeError: Expecting value: line 2 column 1 (char 2): unexpected end of document: '[\\n'
+    augur.io.json.JSONDecodeError: Expecting value: line 2 column 1 (char 2): unexpected end of document: '[\\n'
     >>> load_json("\\n")
     Traceback (most recent call last):
         ...
-    id3c.json.JSONDecodeError: Expecting value: line 2 column 1 (char 1): unexpected end of document: '\\n'
+    augur.io.json.JSONDecodeError: Expecting value: line 2 column 1 (char 1): unexpected end of document: '\\n'
     >>> load_json('')
     Traceback (most recent call last):
         ...
-    id3c.json.JSONDecodeError: Expecting value: line 1 column 1 (char 0): (empty source document)
+    augur.io.json.JSONDecodeError: Expecting value: line 1 column 1 (char 0): (empty source document)
     """
     CONTEXT_LENGTH = 10
 
