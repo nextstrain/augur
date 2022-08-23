@@ -55,9 +55,9 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
     if confidence and use_marginal:
         # estimate confidence intervals via marginal ML and assign
         # marginal ML times to nodes
-        marginal = 'assign'
+        marginal = 'always' if use_fft else 'assign'
     else:
-        marginal = confidence
+        marginal = 'only-final' if confidence else False
 
     # uncertainty of the the clock rate is relevant if confidence intervals are estimated
     if confidence and clock_std:
