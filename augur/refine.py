@@ -10,6 +10,7 @@ from .utils import read_tree, write_json, InvalidTreeError
 from .errors import AugurError
 from treetime.vcf_utils import read_vcf, write_vcf
 from treetime.seq_utils import profile_maps
+from treetime import TreeTimeError
 
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
              confidence=False, resolve_polytomies=True, max_iter=2, precision='auto',
@@ -130,6 +131,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--divergence-units', type=str, choices=['mutations', 'mutations-per-site'],
                         default='mutations-per-site', help='Units in which sequence divergences is exported.')
     parser.add_argument('--seed', type=int, help='seed for random number generation')
+    parser.add_argument('--verbosity', type=int, default=1, help='treetime verbosity, between 0 and 6 (higher values more output)')
     parser.set_defaults(covariance=True)
     return parser
 
@@ -226,14 +228,15 @@ def run(args):
                         precision = 'auto' if args.precision is None else args.precision,
                         clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
                         clock_filter_iqd=args.clock_filter_iqd,
-                        covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies))
+                        covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies), 
+                        verbosity=args.verbosity)
+        except TreeTimeError as err:
+            raise AugurError(f"Was unable to refine time trees:\n\n{err}")
         except BaseException as err:
-            if type(err).__name__ == "TreeTimeError":
-                raise AugurError(f"Was unable to refine time trees:\n\n{err}")
-            else:
-                import traceback 
-                traceback.format_exc()
-                raise err
+            import traceback 
+            traceback.format_exc()
+            print("ERROR: Was unable to refine time trees:\n")
+            raise err
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
@@ -269,7 +272,7 @@ def run(args):
                 except ValueError as err:
                     raise ValueError(f"HINT: This error may be because your specified root with name '{args.root}' was not found in your alignment file") from err
 
-        tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=1)
+        tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=args.verbosity)
 
     node_data['nodes'] = collect_node_data(T, attributes)
     if args.divergence_units=='mutations-per-site': #default
