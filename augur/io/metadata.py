@@ -1,4 +1,8 @@
+import csv
 import pandas as pd
+
+from augur.errors import AugurError
+from .file import open_file
 
 
 def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None):
@@ -88,3 +92,39 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
         metadata_file,
         **kwargs
     )
+
+
+def read_table_to_dict(table):
+    """
+    Read rows from *table* file and yield each row as a single dict
+
+    Parameters
+    ----------
+    table: str
+        Path to a CSV or TSV file
+
+    Yields
+    ------
+    dict:
+        The parsed row as a single record
+
+    Raises
+    ------
+    AugurError:
+        When there are parsing errors from the csv standard library
+    """
+    valid_delimiters = [',', '\t']
+    with open_file(table) as handle:
+        # Get sample to determine delimiter
+        table_sample = handle.read(1024)
+        handle.seek(0)
+
+        try:
+            dialect = csv.Sniffer().sniff(table_sample, valid_delimiters)
+        except csv.Error as err:
+            raise AugurError(
+                f"Could not determine the delimiter of {table!r}. "
+                "File must be a CSV or TSV."
+            ) from err
+
+        yield from csv.DictReader(handle, dialect=dialect)
