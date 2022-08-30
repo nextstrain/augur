@@ -9,6 +9,7 @@ import importlib
 import traceback
 from textwrap import dedent
 from types import SimpleNamespace
+from treetime import TreeTimeError
 
 from .errors import AugurError
 from .io import print_err
@@ -71,6 +72,9 @@ def run(argv):
         sys.exit(2)
     except FileNotFoundError as e:
         print_err(f"ERROR: {e.strerror}: '{e.filename}'")
+        sys.exit(2)
+    except TreeTimeError as e:
+        print_err(f"ERROR from TreeTime: {e}")
         sys.exit(2)
     except Exception:
         traceback.print_exc(file=sys.stderr)
