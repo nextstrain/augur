@@ -53,6 +53,7 @@ setuptools.setup(
     install_requires = [
         "bcbio-gff >=0.6.0, ==0.6.*",
         "biopython >=1.67, !=1.77, !=1.78",
+        "cvxopt >=1.1.9, ==1.*",
         "isodate ==0.6.*",
         "jsonschema >=3.0.0, ==3.*",
         "networkx >= 2.5, ==2.*",
@@ -63,7 +64,6 @@ setuptools.setup(
     ],
     extras_require = {
         'full': [
-            "cvxopt >=1.1.9, ==1.*",
             "matplotlib >=2.0, ==2.*",
             "seaborn >=0.9.0, ==0.9.*"
         ],
