@@ -63,10 +63,6 @@ setuptools.setup(
         "xopen >=1.0.1, ==1.*"
     ],
     extras_require = {
-        'full': [
-            "matplotlib >=2.0, ==2.*",
-            "seaborn >=0.9.0, ==0.9.*"
-        ],
         'dev': [
             "cram >=0.7",
             "deepdiff >=4.3.2",
