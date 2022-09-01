@@ -185,7 +185,8 @@ def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, i
             raise ValueError(f"Encountered unhandled duplicate reporting method: {duplicate_reporting!r}")
 
 
-def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequence'):
+def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequence',
+    unmatched_reporting=DataErrorMethod.ERROR_FIRST):
     """
     Read rows from *metadata* file and yield each row as a single dict that has
     been updated with their corresponding sequence from the *fasta* file.
@@ -195,8 +196,10 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
     FASTA headers may include additional description parts after the id, but
     they will not be used to match the metadata.
 
-    Note that metadata and sequence records that do not have a matching record
-    are skipped.
+    Will report unmatched records if requested via *unmatched_reporting*.
+    Note the ERROR_FIRST method will raise an error at the first unmatched metadata record
+    but not for an unmatched sequence record because we can only check for unmatched sequences
+    after exhausting the metadata generator.
 
     Reads the *fasta* file with `pyfastx.Fasta`, which creates an index for
     the file to allow random access of sequences via the sequence id.
@@ -218,6 +221,9 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
     seq_field: str, optional
         The field name to use for the sequence in the updated record
 
+    unmatched_reporting: DataErrorMethod, optional
+        How should unmatched records be reported
+
     Yields
     ------
     dict
@@ -225,6 +231,9 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
     """
     sequences = pyfastx.Fasta(fasta)
     sequence_ids = set(sequences.keys())
+
+    processed_sequence_ids = set()
+    unmatched_metadata_ids = set()
 
     # Silencing duplicate reporting here because we will need to handle duplicates
     # in both the metadata and FASTA files after processing all the records here.
@@ -238,9 +247,44 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
         # TODO: change this to try/except to fetch sequences and catch
         # KeyError for non-existing sequences when https://github.com/lmdu/pyfastx/issues/50 is resolved
         if seq_id not in sequence_ids:
+            # Immediately raise an error if requested to error on the first unmatched record
+            if unmatched_reporting is DataErrorMethod.ERROR_FIRST:
+                raise AugurError(f"Encountered metadata record {seq_id!r} without a matching sequence.")
+
+            # Give immediate feedback on unmatched records if requested to warn on unmatched
+            # We'll also print a full summary of unmatched records at the end of the command
+            if unmatched_reporting is DataErrorMethod.WARN:
+                print_err(f"WARNING: Encountered metadata record {seq_id!r} without a matching sequence.")
+
+            # Save unmatched metadata ids to report unmatched records if requested
+            unmatched_metadata_ids.add(seq_id)
             continue
 
         sequence_record = sequences[seq_id]
         record[seq_field] = str(sequence_record.seq).upper()
+        # Save processed sequence ids to be able to determine if sequences were unmatched
+        processed_sequence_ids.add(seq_id)
 
         yield record
+
+
+    unmatched_sequence_ids = sequence_ids - processed_sequence_ids
+    if unmatched_reporting is not DataErrorMethod.SILENT and (unmatched_metadata_ids or unmatched_sequence_ids):
+        unmatched_message = "The output may be incomplete because there were unmatched records."
+
+        if unmatched_metadata_ids:
+            unmatched_message += "\nThe following metadata records did not have a matching sequence:\n"
+            unmatched_message += "\n".join(map(repr, sorted(unmatched_metadata_ids)))
+
+        if unmatched_sequence_ids:
+            unmatched_message += "\nThe following sequence records did not have a matching metadata record:\n"
+            unmatched_message += "\n".join(map(repr, sorted(unmatched_sequence_ids)))
+
+        if unmatched_reporting is DataErrorMethod.WARN:
+            print_err(f"WARNING: {unmatched_message}")
+        # We need to check ERROR_FIRST here for unmatched sequences since we
+        # need to process all metadata records to know which sequences are unmatched
+        elif unmatched_reporting in {DataErrorMethod.ERROR_FIRST, DataErrorMethod.ERROR_ALL}:
+            raise AugurError(unmatched_message)
+        else:
+            raise ValueError(f"Encountered unhandled unmatched reporting method: {unmatched_reporting!r}")

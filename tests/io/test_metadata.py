@@ -113,27 +113,33 @@ def metadata_file(tmpdir):
         ])
     return path
 
-@pytest.fixture
-def fasta_file_with_unmatched(tmpdir, fasta_file):
-    path = str(tmpdir / 'extra-sequences.fasta')
-    shutil.copy(fasta_file, path)
-    with open(path, 'a') as fh:
-        fh.writelines([
-            ">SEQ_EXTRA_A\nAAAA\n",
-            ">SEQ_EXTRA_T\nTTTT\n"
-        ])
-    return path
+def unmatched_sequences():
+    return [
+        '>EXTRA_SEQ_A\nAAAAA\n',
+        '>EXTRA_SEQ_T\nTTTTT\n'
+    ]
+
+def unmatched_metadata():
+    return [
+        'EXTRA_METADATA_A\tUSA\t2020-10-01\n',
+        'EXTRA_METADATA_T\tUSA\t2020-10-02\n',
+    ]
+
+def copy_and_append_to_file(src, dst, appended_content):
+    shutil.copy(src, dst)
+    with open(dst, 'a') as fh:
+        fh.writelines(appended_content)
+    return dst
 
 @pytest.fixture
-def metadata_file_with_unmatched(tmpdir, metadata_file):
+def fasta_with_unmatched(tmpdir, fasta_file):
+    path = str(tmpdir / 'extra-sequences.fasta')
+    return copy_and_append_to_file(fasta_file, path, unmatched_sequences())
+
+@pytest.fixture
+def metadata_with_unmatched(tmpdir, metadata_file):
     path = str(tmpdir / 'extra-metadata.tsv')
-    shutil.copy(metadata_file, path)
-    with open(path, 'a') as fh:
-        fh.writelines([
-            "SEQ_EXTRA_1\tUSA\t2020-10-01\n",
-            "SEQ_EXTRA_2\tUSA\t2020-10-02\n"
-        ])
-    return path
+    return copy_and_append_to_file(metadata_file, path, unmatched_metadata())
 
 class TestReadMetadataWithSequence:
     def test_read_metadata_with_sequence(self, metadata_file, fasta_file):
@@ -150,17 +156,52 @@ class TestReadMetadataWithSequence:
             next(read_metadata_with_sequences(metadata_file, fasta_file, id_field))
         assert str(e_info.value) == f"The provided sequence id column {id_field!r} does not exist in the metadata."
 
-    def test_read_metadata_with_sequences_with_unmatched_sequences(self, metadata_file, fasta_file_with_unmatched):
-        records = list(read_metadata_with_sequences(metadata_file, fasta_file_with_unmatched, 'strain'))
+    def test_read_metadata_with_sequences_with_unmatched(self, metadata_with_unmatched, fasta_with_unmatched):
+        with pytest.raises(AugurError) as e_info:
+            list(read_metadata_with_sequences(metadata_with_unmatched, fasta_with_unmatched, 'strain'))
+        assert str(e_info.value) == "Encountered metadata record 'EXTRA_METADATA_A' without a matching sequence."
+
+    def test_read_metadata_with_sequences_with_unmatched_error_all(self, metadata_with_unmatched, fasta_with_unmatched):
+        with pytest.raises(AugurError) as e_info:
+            list(read_metadata_with_sequences(
+                metadata_with_unmatched,
+                fasta_with_unmatched,
+                'strain',
+                unmatched_reporting=DataErrorMethod.ERROR_ALL))
+        assert str(e_info.value) == (
+            "The output may be incomplete because there were unmatched records.\n"
+            "The following metadata records did not have a matching sequence:\n"
+            "'EXTRA_METADATA_A'\n'EXTRA_METADATA_T'\n"
+            "The following sequence records did not have a matching metadata record:\n"
+            "'EXTRA_SEQ_A'\n'EXTRA_SEQ_T'"
+        )
+
+    def test_read_metadata_with_sequences_with_unmatched_warning(self, capsys, metadata_with_unmatched, fasta_with_unmatched):
+        records = list(read_metadata_with_sequences(
+            metadata_with_unmatched,
+            fasta_with_unmatched,
+            'strain',
+            unmatched_reporting=DataErrorMethod.WARN))
         assert len(records) == 4
         assert [record['strain'] for record in records] == ['SEQ_A', 'SEQ_T', 'SEQ_C', 'SEQ_G']
 
-    def test_read_metadata_with_sequences_with_unmatched_metadata(self, metadata_file_with_unmatched, fasta_file):
-        records = list(read_metadata_with_sequences(metadata_file_with_unmatched, fasta_file, 'strain'))
-        assert len(records) == 4
-        assert [record['strain'] for record in records] == ['SEQ_A', 'SEQ_T', 'SEQ_C', 'SEQ_G']
+        captured = capsys.readouterr()
+        assert captured.err == (
+            "WARNING: Encountered metadata record 'EXTRA_METADATA_A' without a matching sequence.\n"
+            "WARNING: Encountered metadata record 'EXTRA_METADATA_T' without a matching sequence.\n"
+            "WARNING: The output may be incomplete because there were unmatched records.\n"
+            "The following metadata records did not have a matching sequence:\n"
+            "'EXTRA_METADATA_A'\n'EXTRA_METADATA_T'\n"
+            "The following sequence records did not have a matching metadata record:\n"
+            "'EXTRA_SEQ_A'\n'EXTRA_SEQ_T'\n"
+        )
 
-    def test_read_metadata_with_sequences_with_unmatched_in_both(self, metadata_file_with_unmatched, fasta_file_with_unmatched):
-        records = list(read_metadata_with_sequences(metadata_file_with_unmatched, fasta_file_with_unmatched, 'strain'))
+    def test_read_metadata_with_sequences_with_unmatched_silent(self, capsys, metadata_with_unmatched, fasta_with_unmatched):
+        records = list(read_metadata_with_sequences(
+            metadata_with_unmatched,
+            fasta_with_unmatched,
+            'strain',
+            unmatched_reporting=DataErrorMethod.SILENT))
         assert len(records) == 4
         assert [record['strain'] for record in records] == ['SEQ_A', 'SEQ_T', 'SEQ_C', 'SEQ_G']
+        assert "WARNING" not in capsys.readouterr().err
