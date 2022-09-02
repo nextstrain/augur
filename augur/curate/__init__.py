@@ -7,7 +7,7 @@ import sys
 from augur.argparse_ import add_command_subparsers
 from augur.errors import AugurError
 from augur.io.json import dump_ndjson, load_ndjson
-from augur.io.metadata import read_table_to_dict
+from augur.io.metadata import read_table_to_dict, read_metadata_with_sequences
 from augur.types import DataErrorMethod
 from . import passthru
 
@@ -45,7 +45,21 @@ def create_shared_parser():
         help="Input metadata file, as CSV or TSV.")
     shared_inputs.add_argument("--id-column",
         help="Name of the metadata column that contains the record identifier for reporting duplicate records. "
-             "Uses the first column of the metadata file if not provided.")
+             "Uses the first column of the metadata file if not provided. "
+             "Ignored if also providing a FASTA file input.")
+
+    shared_inputs.add_argument("--fasta",
+        help="Plain or gzipped FASTA file. Headers can only contain the sequence id used to match a metadata record. " +
+             "Note that an index file will be generated for the FASTA file as <filename>.fasta.fxi")
+    shared_inputs.add_argument("--seq-id-column",
+        help="Name of metadata column that contains the sequence id to match sequences in the FASTA file.")
+    shared_inputs.add_argument("--seq-field",
+        help="The name to use for the sequence field when joining sequences from a FASTA file.")
+
+    shared_inputs.add_argument("--unmatched-reporting",
+        choices=[ method.value for method in DataErrorMethod ],
+        default=DataErrorMethod.ERROR_FIRST.value,
+        help="How unmatched records from combined metadata/FASTA input should be reported.")
     shared_inputs.add_argument("--duplicate-reporting",
         choices=[ method.value for method in DataErrorMethod ],
         default=DataErrorMethod.ERROR_FIRST.value,
@@ -79,8 +93,23 @@ def run(args):
     if not getattr(args, SUBCOMMAND_ATTRIBUTE, None):
         return args.print_help()
 
+    # Check provided args are valid and required combination of args are provided
+    if not args.fasta and (args.seq_id_column or args.seq_field):
+        raise AugurError("The `seq-id-column` and `seq-field` options should only be used when providing a FASTA file.")
+
+    if args.fasta and (not args.seq_id_column or not args.seq_field):
+        raise AugurError("The `seq-id-column` and `seq-field` options are required for a FASTA file input.")
+
     # Read inputs
-    if args.metadata:
+    if args.metadata and args.fasta:
+        records = read_metadata_with_sequences(
+            args.metadata,
+            args.fasta,
+            args.seq_id_column,
+            args.seq_field,
+            DataErrorMethod(args.unmatched_reporting),
+            DataErrorMethod(args.duplicate_reporting))
+    elif args.metadata:
         records = read_table_to_dict(args.metadata, DataErrorMethod(args.duplicate_reporting), args.id_column)
     elif not sys.stdin.isatty():
         records = load_ndjson(sys.stdin)
