@@ -9,7 +9,7 @@ import importlib
 import traceback
 from textwrap import dedent
 from types import SimpleNamespace
-from treetime import TreeTimeError
+from treetime import TreeTimeError, TreeTimeOtherError
 
 from .errors import AugurError
 from .io import print_err
@@ -73,8 +73,17 @@ def run(argv):
     except FileNotFoundError as e:
         print_err(f"ERROR: {e.strerror}: '{e.filename}'")
         sys.exit(2)
+    except TreeTimeOtherError as e:
+        print_err(dedent("""\
+            ERROR from TreeTime: An error occurred in TreeTime (see above) that has not been properly handled by Augur.
+            This may be due to an issue with TreeTime or Augur. To report this, please open a new issue including the original command and the error above:
+                <https://github.com/nextstrain/augur/issues/new/choose>
+            """))
+        sys.exit(2)
     except TreeTimeError as e:
-        print_err(f"ERROR from TreeTime: {e}")
+        print_err(f"ERROR from TreeTime: This error is most likely due to a problem with your input data. "
+            "Please check your input data and try again. If you continue to have problems, please open a new issue including "
+            "the original command and the error above: \n  <https://github.com/nextstrain/augur/issues/new/choose>")
         sys.exit(2)
     except Exception:
         traceback.print_exc(file=sys.stderr)

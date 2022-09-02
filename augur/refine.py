@@ -71,7 +71,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
     tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
            branch_length_mode=branch_length_inference, resolve_polytomies=resolve_polytomies,
            max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
-           vary_rate=vary_rate, use_covariation=covariance, **kwarks)
+           vary_rate=vary_rate, use_covariation=covariance, augur=True, **kwarks)
 
     if confidence:
         for n in tt.tree.find_clades():
@@ -219,24 +219,17 @@ def run(args):
             time_inference_mode = 'always' if args.date_inference=='marginal' else 'only-final'
         else:
             time_inference_mode = 'always' if args.date_inference=='marginal' else 'never'
-        try:
-            tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
-                        reroot=args.root, # or 'best', # We now have a default in param spec - this just adds confusion.
-                        Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
-                        use_marginal = time_inference_mode, use_fft=args.use_fft,
-                        branch_length_inference = args.branch_length_inference or 'auto',
-                        precision = 'auto' if args.precision is None else args.precision,
-                        clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
-                        clock_filter_iqd=args.clock_filter_iqd,
-                        covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies), 
-                        verbosity=args.verbosity)
-        except TreeTimeError as err:
-            raise AugurError(f"Was unable to refine time trees:\n\n{err}")
-        except BaseException as err:
-            import traceback 
-            traceback.format_exc()
-            print("ERROR: Was unable to refine time trees:\n")
-            raise err
+        
+        tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
+                    reroot=args.root, # or 'best', # We now have a default in param spec - this just adds confusion.
+                    Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
+                    use_marginal = time_inference_mode, use_fft=args.use_fft,
+                    branch_length_inference = args.branch_length_inference or 'auto',
+                    precision = 'auto' if args.precision is None else args.precision,
+                    clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
+                    clock_filter_iqd=args.clock_filter_iqd,
+                    covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies), 
+                    verbosity=args.verbosity)
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
