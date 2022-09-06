@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+- Make cvxopt as a required dependency, since it is required for titer models to work [#1035]. (@victorlin)
+
+[#1035]: https://github.com/nextstrain/augur/pull/1035
 
 ## 17.1.0 (19 August 2022)
 
