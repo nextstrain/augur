@@ -4,9 +4,11 @@
 
 ### Bug Fixes
 
- * 17.1.0 updated TreeTime to version 0.9.2 and introduced the flag `--use-fft`. This makes previously costly marginal date inference cheaper. This update adjusts when `refine` runs marginal date inference during its iterative optimization. Without the `use-fft` flag, it will now have as it did before 17.1.0 (marginal inference only during final iterations). With the `--use-fft` flag, marginal date inference will be used at every step during the iteration if refine is run with `--date-inference marginal` [#1034][]. (@rneher)
+* 17.1.0 updated TreeTime to version 0.9.2 and introduced the flag `--use-fft`. This makes previously costly marginal date inference cheaper. This update adjusts when `refine` runs marginal date inference during its iterative optimization. Without the `use-fft` flag, it will now have as it did before 17.1.0 (marginal inference only during final iterations). With the `--use-fft` flag, marginal date inference will be used at every step during the iteration if refine is run with `--date-inference marginal` [#1034][]. (@rneher)
+* Make cvxopt as a required dependency, since it is required for titer models to work [#1035]. (@victorlin)
 
 [#1034]: https://github.com/nextstrain/augur/pull/1034
+[#1035]: https://github.com/nextstrain/augur/pull/1035
 
 ## 17.1.0 (19 August 2022)
 

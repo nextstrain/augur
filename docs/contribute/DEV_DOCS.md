@@ -190,6 +190,8 @@ Versions for this project, Augur, from 3.0.0 onwards aim to follow the
 
 ##### 4. Update on Bioconda
 
+First, check if the dependency list in [setup.py](https://github.com/nextstrain/augur/blob/HEAD/setup.py) had any changes since the previous version.
+
 For versions without dependency changes:
 
 1. Wait for an auto-bump PR in [bioconda-recipes][].

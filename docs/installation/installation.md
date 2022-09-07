@@ -80,12 +80,6 @@ python3 -m pip install .
 ```
 
 This install depends on a fairly minimal set of external Python libraries.
-There are some functions in augur that require a larger set of dependencies.
-These can be installed via:
-
-```bash
-python3 -m pip install '.[full]'
-```
 
 If you wish to also install the development dependencies, and install augur in an "editable" mode whereby changes to the source code are reflected in your version of `augur` then run:
 

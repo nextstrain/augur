@@ -29,11 +29,10 @@ Try out an analysis of real virus data by [completing the Zika tutorial](https:/
 
 ## Documentation
 
-* [Overview of how Augur fits together with other Nextstrain tools](https://nextstrain.org/docs/getting-started/introduction#open-source-tools-for-the-community)
-* [Overview of Augur usage](https://nextstrain.org/docs/bioinformatics/introduction-to-augur)
+* [Overview of how Augur fits together with other Nextstrain tools](https://docs.nextstrain.org/en/latest/learn/parts.html)
+* [Overview of Augur usage](https://docs.nextstrain.org/projects/augur/en/stable/usage/usage.html)
 * [Technical documentation for Augur](https://docs.nextstrain.org/projects/augur/en/stable/installation/installation.html)
 * [Contributor guide](https://github.com/nextstrain/.github/blob/master/CONTRIBUTING.md)
-* [Project board with available issues](https://github.com/orgs/nextstrain/projects/6)
 * [Developer docs for Augur](./docs/contribute/DEV_DOCS.md)
 * [Changelog](./CHANGES.md)
 
