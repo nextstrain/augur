@@ -74,6 +74,7 @@ def run(argv):
         print_err(f"ERROR: {e.strerror}: '{e.filename}'")
         sys.exit(2)
     except TreeTimeOtherError as e:
+        print_err(e)
         print_err(dedent("""\
             ERROR from TreeTime: An error occurred in TreeTime (see above) that has not been properly handled by Augur.
             This may be due to an issue with TreeTime or Augur. To report this, please open a new issue including the original command and the error above:
