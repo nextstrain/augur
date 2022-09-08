@@ -9,7 +9,7 @@ import importlib
 import traceback
 from textwrap import dedent
 from types import SimpleNamespace
-from treetime import TreeTimeError, TreeTimeOtherError
+from treetime import TreeTimeError, TreeTimeUnknownError
 
 from .errors import AugurError
 from .io import print_err
@@ -73,19 +73,20 @@ def run(argv):
     except FileNotFoundError as e:
         print_err(f"ERROR: {e.strerror}: '{e.filename}'")
         sys.exit(2)
-    except TreeTimeOtherError as e:
-        print_err(e)
+    except TreeTimeUnknownError as e:
         print_err(dedent("""\
-            ERROR from TreeTime: An error occurred in TreeTime (see above) that has not been properly handled by Augur.
-            This may be due to an issue with TreeTime or Augur. To report this, please open a new issue including the original command and the error above:
-                <https://github.com/nextstrain/augur/issues/new/choose>
+            ERROR from TreeTime: An error occurred in TreeTime (see above). This may be due to an issue with TreeTime or Augur.
+            Please report you are calling TreeTime via Augur. 
             """))
         sys.exit(2)
     except TreeTimeError as e:
-        print_err(f"ERROR from TreeTime: This error is most likely due to a problem with your input data. "
-            "Please check your input data and try again. If you continue to have problems, please open a new issue including "
-            "the original command and the error above: \n  <https://github.com/nextstrain/augur/issues/new/choose>")
-        sys.exit(2)
+        print_err(f"ERROR: {e}")
+        print_err("\n")
+        print_err(dedent("""\
+            ERROR from TreeTime: This error is most likely due to a problem with your input data.
+            Please check your input data and try again. If you continue to have problems, please open a new issue including
+            the original command and the error above:  <https://github.com/nextstrain/augur/issues/new/choose>
+            """))
     except Exception:
         traceback.print_exc(file=sys.stderr)
         print_err("\n")
