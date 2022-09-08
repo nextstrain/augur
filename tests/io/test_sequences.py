@@ -8,6 +8,7 @@ import lzma
 from pathlib import Path
 import pytest
 import random
+from augur.errors import AugurError
 
 import augur.io.sequences
 
@@ -176,3 +177,37 @@ class TestWriteSequences:
 
         with open(output_filename, "r") as handle:
             assert total_sequences_written == len([line for line in handle if line.startswith(">")])
+
+
+@pytest.fixture()
+def sequence_records():
+    return [
+        {"strain": "SEQ_A", "sequence": "AAAA"},
+        {"strain": "SEQ_T", "sequence": "TTTT"},
+        {"strain": "SEQ_C", "sequence": "CCCC"},
+        {"strain": "SEQ_G", "sequence": "GGGG"},
+    ]
+
+class TestWriteFastaFromRecords:
+    def test_write_records_to_fasta(self, tmpdir, sequence_records):
+        output_fasta = str(tmpdir / "sequences.fasta")
+        records = list(augur.io.sequences.write_records_to_fasta(sequence_records, output_fasta))
+
+        assert all("sequence" not in record for record in records)
+
+        with open(output_fasta, 'r') as handle:
+            assert len(records) == len([line for line in handle if line.startswith(">")])
+
+    def test_write_records_to_fasta_with_bad_id_field(self, tmpdir, sequence_records):
+        output_fasta = str(tmpdir / "sequences.fasta")
+        seq_id_field = "bogus_id"
+        with pytest.raises(AugurError) as e_info:
+            list(augur.io.sequences.write_records_to_fasta(sequence_records, output_fasta, seq_id_field=seq_id_field))
+        assert str(e_info.value) == f"Provided sequence identifier field {seq_id_field!r} does not exist."
+
+    def test_write_records_to_fasta_with_bad_seq_field(self, tmpdir, sequence_records):
+        output_fasta = str(tmpdir / "sequences.fasta")
+        seq_field = "bogus_sequence"
+        with pytest.raises(AugurError) as e_info:
+            list(augur.io.sequences.write_records_to_fasta(sequence_records, output_fasta, seq_field=seq_field))
+        assert str(e_info.value) == f"Provided sequence field {seq_field!r} does not exist."

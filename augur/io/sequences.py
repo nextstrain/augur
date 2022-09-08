@@ -1,5 +1,6 @@
 import Bio.SeqIO
 
+from augur.errors import AugurError
 from .file import open_file
 
 
@@ -72,3 +73,51 @@ def write_sequences(sequences, path_or_buffer, format="fasta"):
         )
 
     return sequences_written
+
+
+def write_records_to_fasta(records, fasta, seq_id_field='strain', seq_field='sequence'):
+    """
+    Write sequences from dict *records* to a *fasta* file.
+    Yields the records with the *seq_field* dropped so that they can be consumed downstream.
+
+    Parameters
+    ----------
+    records: iterator[dict]
+        Iterator that yields dict that contains sequences
+
+    fasta: str
+        Path to FASTA file
+
+    seq_id_field: str, optional
+        Field name for the sequence identifier
+
+    seq_field: str, optional
+        Field name for the genomic sequence
+
+    Yields
+    ------
+    dict:
+        A copy of the record with *seq_field* dropped
+
+    Raises
+    ------
+    AugurError:
+        When the sequence id field or sequence field does not exist in a record
+    """
+    with open_file(fasta, "w") as output_fasta:
+        for record in records:
+            if seq_id_field not in record:
+                raise AugurError(f"Provided sequence identifier field {seq_id_field!r} does not exist.")
+            if seq_field not in record:
+                raise AugurError(f"Provided sequence field {seq_field!r} does not exist.")
+
+            output_fasta.writelines([
+                f">{record[seq_id_field]}\n",
+                f"{record[seq_field]}\n"
+            ])
+
+            yield {
+                key: value
+                for key, value in record.items()
+                if key != seq_field
+            }
