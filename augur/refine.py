@@ -70,7 +70,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
     tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
            branch_length_mode=branch_length_inference, resolve_polytomies=resolve_polytomies,
            max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
-           vary_rate=vary_rate, use_covariation=covariance, augur=True, **kwarks)
+           vary_rate=vary_rate, use_covariation=covariance, raise_uncaught_exceptions=True, **kwarks)
 
     if confidence:
         for n in tt.tree.find_clades():
