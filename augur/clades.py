@@ -1,10 +1,14 @@
 """
 Assign clades to nodes in a tree based on amino-acid or nucleotide signatures.
 
-Membership of a clade (i.e. the coloring) will be stored in
-<OUTPUT_NODE_DATA> → nodes → <node_name> → clade_membership.
-Branch labels defining the clade will be stored in
+Nodes which are members of a clade are stored via 
+<OUTPUT_NODE_DATA> → nodes → <node_name> → clade_membership
+and if this file is used in `augur export v2` these will automatically become a coloring.
+
+The basal nodes of each clade are also given a branch label which is stored via
 <OUTPUT_NODE_DATA> → branches → <node_name> → labels → clade.
+
+The keys "clade_membership" and "clade" are customisable via command line arguments.
 """
 
 import sys
@@ -263,6 +267,8 @@ def register_parser(parent_subparsers):
     parser.add_argument('--reference', nargs='+', help='fasta files containing reference and tip nucleotide and/or amino-acid sequences ')
     parser.add_argument('--clades', type=str, help='TSV file containing clade definitions by amino-acid')
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save clade assignments to')
+    parser.add_argument('--membership-name', type=str, default="clade_membership", help='Key to store clade membership under; use "None" to not export this')
+    parser.add_argument('--label-name', type=str, default="clade", help='Key to store clade labels under; use "None" to not export this')
     return parser
 
 
@@ -289,16 +295,17 @@ def run(args):
 
     membership, labels = assign_clades(clade_designations, all_muts, tree, ref)
 
-    membership_key="clade_membership"
-    label_key = "clade"
+    membership_key= args.membership_name if args.membership_name.upper() != "NONE" else None
+    label_key= args.label_name if args.label_name.upper() != "NONE" else None
 
-    node_data_json = {
-        'nodes': {node: {membership_key: clade} for node,clade in membership.items()},
-        'branches': {node: {'labels': {label_key: label}} for node,label in labels.items()}
-    }
+    node_data_json = {}
+    if membership_key:
+        node_data_json['nodes'] = {node: {membership_key: clade} for node,clade in membership.items()}
+        print(f"Clade membership stored on nodes → <node_name> → {membership_key}", file=sys.stdout)
+    if label_key:
+        node_data_json['branches'] = {node: {'labels': {label_key: label}} for node,label in labels.items()}
+        print(f"Clade labels stored on branches → <node_name> → labels → {label_key}", file=sys.stdout)
 
     out_name = get_json_name(args)
     write_json(node_data_json, out_name)
     print(f"Clades written to {out_name}", file=sys.stdout)
-    print(f"\tClade membership was stored on nodes → <node_name> → {membership_key}", file=sys.stdout)
-    print(f"\tClade labels were stored on branches → <node_name> → labels → {label_key}", file=sys.stdout)
