@@ -2,6 +2,8 @@ import csv
 import pandas as pd
 import pyfastx
 import sys
+from io import StringIO
+from itertools import chain
 
 from augur.errors import AugurError
 from augur.io.print import print_err
@@ -108,7 +110,7 @@ def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, i
     Parameters
     ----------
     table: str
-        Path to a CSV or TSV file
+        Path to a CSV or TSV file or IO buffer
 
     duplicate_reporting: DataErrorMethod, optional
         How should duplicate records be reported
@@ -136,7 +138,12 @@ def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, i
     with open_file(table) as handle:
         # Get sample to determine delimiter
         table_sample = handle.read(1024)
-        handle.seek(0)
+
+        if handle.seekable():
+            handle.seek(0)
+        else:
+            table_sample_file = StringIO(table_sample)
+            handle = chain(table_sample_file, handle)
 
         try:
             dialect = csv.Sniffer().sniff(table_sample, valid_delimiters)
