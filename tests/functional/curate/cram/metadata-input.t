@@ -23,6 +23,15 @@ Test TSV metadata input
   {"strain": "sequence_B", "country": "USA", "date": "2020-10-02"}
   {"strain": "sequence_C", "country": "USA", "date": "2020-10-03"}
 
+Test TSV metadata input from stdin
+
+  $ cat $TMP/metadata.tsv \
+  >   | ${AUGUR} curate normalize-strings \
+  >     --metadata -
+  {"strain": "sequence_A", "country": "USA", "date": "2020-10-01"}
+  {"strain": "sequence_B", "country": "USA", "date": "2020-10-02"}
+  {"strain": "sequence_C", "country": "USA", "date": "2020-10-03"}
+
 Create metadata CSV file for testing.
 
   $ cat >$TMP/metadata.csv <<~~
@@ -39,6 +48,16 @@ Test CSV metadata input
   {"strain": "sequence_A", "country": "USA", "date": "2020-10-01"}
   {"strain": "sequence_B", "country": "USA", "date": "2020-10-02"}
   {"strain": "sequence_C", "country": "USA", "date": "2020-10-03"}
+
+Test CSV metadata input from stdin
+
+  $ cat $TMP/metadata.csv \
+  >   | ${AUGUR} curate normalize-strings \
+  >     --metadata -
+  {"strain": "sequence_A", "country": "USA", "date": "2020-10-01"}
+  {"strain": "sequence_B", "country": "USA", "date": "2020-10-02"}
+  {"strain": "sequence_C", "country": "USA", "date": "2020-10-03"}
+
 
 Create a metadata TSV file with duplicate records
 

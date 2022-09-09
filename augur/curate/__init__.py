@@ -44,7 +44,7 @@ def create_shared_parser():
             If no input options are provided, commands will try to read NDJSON records from stdin.
         """)
     shared_inputs.add_argument("--metadata",
-        help="Input metadata file, as CSV or TSV.")
+        help="Input metadata file, as CSV or TSV. Accepts '-' to read metadata from stdin.")
     shared_inputs.add_argument("--id-column",
         help="Name of the metadata column that contains the record identifier for reporting duplicate records. "
              "Uses the first column of the metadata file if not provided. "
@@ -126,6 +126,10 @@ def run(args):
         raise AugurError("The `output-id-field` and `output-seq-field` options are required for a FASTA output.")
 
     # Read inputs
+    # Special case single hyphen as stdin
+    if args.metadata == '-':
+        args.metadata = sys.stdin
+
     if args.metadata and args.fasta:
         records = read_metadata_with_sequences(
             args.metadata,
