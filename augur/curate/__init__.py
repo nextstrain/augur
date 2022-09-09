@@ -3,11 +3,13 @@ A suite of commands to help with data curation.
 """
 import argparse
 import sys
+from collections import deque
 
 from augur.argparse_ import add_command_subparsers
 from augur.errors import AugurError
 from augur.io.json import dump_ndjson, load_ndjson
 from augur.io.metadata import read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
+from augur.io.sequences import write_records_to_fasta
 from augur.types import DataErrorMethod
 from . import passthru
 
@@ -74,6 +76,14 @@ def create_shared_parser():
     shared_outputs.add_argument("--output-metadata",
         help="Output metadata TSV file. Accepts '-' to output TSV to stdout.")
 
+    shared_outputs.add_argument("--output-fasta",
+        help="Output FASTA file.")
+    shared_outputs.add_argument("--output-id-field",
+        help="The record field to use as the sequence identifier in the FASTA output.")
+    shared_outputs.add_argument("--output-seq-field",
+        help="The record field that contains the sequence for the FASTA output. "
+             "This field will be deleted from the metadata output.")
+
     return shared_parser
 
 
@@ -109,6 +119,12 @@ def run(args):
     if args.fasta and (not args.seq_id_column or not args.seq_field):
         raise AugurError("The `seq-id-column` and `seq-field` options are required for a FASTA file input.")
 
+    if not args.output_fasta and (args.output_id_field or args.output_seq_field):
+        raise AugurError("The `output-id-field` and `output-seq-field` options should only be used when requesting a FASTA output.")
+
+    if args.output_fasta and (not args.output_id_field or not args.output_seq_field):
+        raise AugurError("The `output-id-field` and `output-seq-field` options are required for a FASTA output.")
+
     # Read inputs
     if args.metadata and args.fasta:
         records = read_metadata_with_sequences(
@@ -129,7 +145,21 @@ def run(args):
     modified_records = getattr(args, SUBCOMMAND_ATTRIBUTE).run(args, records)
 
     # Output modified records
+    # First output FASTA, since the write fasta function yields the records again
+    # and removes the sequences from the records
+    if args.output_fasta:
+        modified_records = write_records_to_fasta(
+            modified_records,
+            args.output_fasta,
+            args.output_id_field,
+            args.output_seq_field)
+
     if args.output_metadata:
         write_records_to_tsv(modified_records, args.output_metadata)
-    else:
+
+    if not (args.output_fasta or args.output_metadata):
         dump_ndjson(modified_records)
+    else:
+        # Exhaust generator to ensure we run through all records
+        # when only a FASTA output is requested but not a metadata output
+        deque(modified_records, maxlen=0)
