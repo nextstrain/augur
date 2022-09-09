@@ -23,18 +23,15 @@
       "clade_membership": "A.1"
     },
     "NODE_0000001": {
-      "clade_annotation": "B",
       "clade_membership": "B"
     },
     "NODE_0000002": {
       "clade_membership": "A"
     },
     "NODE_0000003": {
-      "clade_annotation": "A",
       "clade_membership": "A"
     },
     "NODE_0000004": {
-      "clade_annotation": "A.1",
       "clade_membership": "A.1"
     },
     "NODE_0000005": {
@@ -47,7 +44,6 @@
       "clade_membership": "B"
     },
     "NODE_0000008": {
-      "clade_annotation": "B.1",
       "clade_membership": "B.1"
     },
     "PAN/CDC_259359_V1_V3/2015": {
@@ -61,6 +57,28 @@
     },
     "ZKC2/2016": {
       "clade_membership": "A"
+    }
+  },
+  "branches": {
+    "NODE_0000001": {
+      "labels": {
+        "clade": "B"
+      }
+    },
+    "NODE_0000003": {
+      "labels": {
+        "clade": "A"
+      }
+    },
+    "NODE_0000004": {
+      "labels": {
+        "clade": "A.1"
+      }
+    },
+    "NODE_0000008": {
+      "labels": {
+        "clade": "B.1"
+      }
     }
   }
 }

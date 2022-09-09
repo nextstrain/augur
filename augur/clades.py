@@ -1,5 +1,10 @@
 """
 Assign clades to nodes in a tree based on amino-acid or nucleotide signatures.
+
+Membership of a clade (i.e. the coloring) will be stored in
+<OUTPUT_NODE_DATA> → nodes → <node_name> → clade_membership.
+Branch labels defining the clade will be stored in
+<OUTPUT_NODE_DATA> → branches → <node_name> → labels → clade.
 """
 
 import sys
@@ -152,8 +157,8 @@ def is_node_in_clade(clade_alleles, node, ref):
 def assign_clades(clade_designations, all_muts, tree, ref=None):
     '''
     Ensures all nodes have an entry (or auspice doesn't display nicely), tests each node
-    to see if it's the first member of a clade (assigns 'clade_annotation'), and sets
-    all nodes's clade_membership to the value of their parent. This will change if later found to be
+    to see if it's the first member of a clade (this is the label), and sets the membership of each
+    node to the value of their parent. This will change if later found to be
     the first member of a clade.
 
     Parameters
@@ -169,16 +174,18 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
 
     Returns
     -------
-    dict
-        mapping of node to clades
+    (dict, dict)
+        [0]: mapping of node to clade membership (where applicable)
+        [1]: mapping of node to clade label (where applicable)
     '''
 
     clade_membership = {}
+    clade_labels = {}
     parents = get_parent_name_by_child_name_for_tree(tree)
 
     # first pass to set all nodes to unassigned as precaution to ensure attribute is set
     for node in tree.find_clades(order = 'preorder'):
-        clade_membership[node.name] = {'clade_membership': 'unassigned'}
+        clade_membership[node.name] = 'unassigned'
 
     # count leaves
     for node in tree.find_clades(order = 'postorder'):
@@ -208,7 +215,7 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
                     node.sequences[gene][pos] = d
 
 
-    # second pass to assign 'clade_annotation' to basal nodes within each clade
+    # second pass to assign basal nodes within each clade to the clade_labels dict
     # if multiple nodes match, assign annotation to largest
     # otherwise occasional unwanted cousin nodes get assigned the annotation
     for clade_name, clade_alleles in clade_designations.items():
@@ -219,16 +226,17 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
         sorted_nodes = sorted(node_counts, key=lambda x: x.leaf_count, reverse=True)
         if len(sorted_nodes) > 0:
             target_node = sorted_nodes[0]
-            clade_membership[target_node.name] = {'clade_annotation': clade_name, 'clade_membership': clade_name}
+            clade_membership[target_node.name] = clade_name
+            clade_labels[target_node.name] = clade_name
 
-    # third pass to propagate 'clade_membership'
-    # don't propagate if encountering 'clade_annotation'
+    # third pass to propagate clade_membership to descendant nodes
+    # (until we encounter a node with its own clade_membership)
     for node in tree.find_clades(order = 'preorder'):
         for child in node:
-            if 'clade_annotation' not in clade_membership[child.name]:
-                clade_membership[child.name]['clade_membership'] = clade_membership[node.name]['clade_membership']
+            if child.name not in clade_labels:
+                clade_membership[child.name] = clade_membership[node.name]
 
-    return clade_membership
+    return (clade_membership, clade_labels)
 
 
 def get_reference_sequence_from_root_node(all_muts, root_name):
@@ -279,8 +287,18 @@ def run(args):
 
     clade_designations = read_in_clade_definitions(args.clades)
 
-    clade_membership = assign_clades(clade_designations, all_muts, tree, ref)
+    membership, labels = assign_clades(clade_designations, all_muts, tree, ref)
+
+    membership_key="clade_membership"
+    label_key = "clade"
+
+    node_data_json = {
+        'nodes': {node: {membership_key: clade} for node,clade in membership.items()},
+        'branches': {node: {'labels': {label_key: label}} for node,label in labels.items()}
+    }
 
     out_name = get_json_name(args)
-    write_json({'nodes': clade_membership}, out_name)
-    print("clades written to", out_name, file=sys.stdout)
+    write_json(node_data_json, out_name)
+    print(f"Clades written to {out_name}", file=sys.stdout)
+    print(f"\tClade membership was stored on nodes → <node_name> → {membership_key}", file=sys.stdout)
+    print(f"\tClade labels were stored on branches → <node_name> → labels → {label_key}", file=sys.stdout)
