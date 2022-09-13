@@ -32,7 +32,9 @@ DEFAULT_ARGS = {
     # with -fast, although there's probably no particular reason we have to.
     # Refer to the handling of -fast in utils/tools.cpp:
     #   https://github.com/Cibiv/IQ-TREE/blob/44753aba/utils/tools.cpp#L2926-L2936
-    "iqtree": "-ninit 2 -n 2 -me 0.05",
+    # Increasing threads (nt) can cause IQtree to run longer, hence use AUTO by default
+    # Auto makes IQtree chose the optimal number of threads
+    "iqtree": "-ninit 2 -n 2 -me 0.05 -nt AUTO",
 }
 
 class ConflictingArgumentsException(Exception):
@@ -60,12 +62,12 @@ def check_conflicting_args(tree_builder_args, defaults):
         When any user-provided arguments match those in the defaults.
 
 
-    >>> defaults = ("-nt", "-m", "-s")
+    >>> defaults = ("-ntmax", "-m", "-s")
     >>> check_conflicting_args("-czb -n 2", defaults)
-    >>> check_conflicting_args("-czb -nt 2", defaults)
+    >>> check_conflicting_args("-czb -ntmax 2", defaults)
     Traceback (most recent call last):
         ...
-    augur.tree.ConflictingArgumentsException: The following tree builder arguments conflict with hardcoded defaults. Remove these arguments and try again: -nt
+    augur.tree.ConflictingArgumentsException: The following tree builder arguments conflict with hardcoded defaults. Remove these arguments and try again: -ntmax
 
     """
     # Parse tree builder argument string into a list of shell arguments. This
@@ -235,7 +237,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
             ofile.write(tmp_line)
 
     # Check tree builder arguments for conflicts with hardcoded defaults.
-    check_conflicting_args(tree_builder_args, ("-nt", "-s", "-m"))
+    check_conflicting_args(tree_builder_args, ("-ntmax", "-s", "-m"))
 
     # Use IQ-TREE's auto-scaling of threads when the user has requested more
     # threads than there are sequences. This approach avoids an error from
@@ -244,17 +246,17 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     # requesting as many threads as there are sequences when there may be fewer
     # available threads on the current machine.
     if num_seqs < nthreads:
-        nthreads = "AUTO"
+        tree_builder_args = tree_builder_args + " -nt AUTO"
         print(
             "WARNING: more threads requested than there are sequences; falling back to IQ-TREE's `-nt AUTO` mode.",
             file=sys.stderr
         )
 
     if substitution_model.lower() != "auto":
-        call = [iqtree, "-nt", str(nthreads), "-s", shquote(tmp_aln_file),
+        call = [iqtree, "-ntmax", str(nthreads), "-s", shquote(tmp_aln_file),
                 "-m", substitution_model, tree_builder_args, ">", log_file]
     else:
-        call = [iqtree, "-nt", str(nthreads), "-s", shquote(tmp_aln_file), tree_builder_args, ">", shquote(log_file)]
+        call = [iqtree, "-ntmax", str(nthreads), "-s", shquote(tmp_aln_file), tree_builder_args, ">", shquote(log_file)]
 
     cmd = " ".join(call)
 
