@@ -34,7 +34,8 @@ DEFAULT_ARGS = {
     #   https://github.com/Cibiv/IQ-TREE/blob/44753aba/utils/tools.cpp#L2926-L2936
     # Increasing threads (nt) can cause IQtree to run longer, hence use AUTO by default
     # Auto makes IQtree chose the optimal number of threads
-    "iqtree": "-ninit 2 -n 2 -me 0.05 -nt AUTO",
+    # Redo prevents IQtree errors when a run was aborted and restarted
+    "iqtree": "-ninit 2 -n 2 -me 0.05 -nt AUTO -redo",
 }
 
 class ConflictingArgumentsException(Exception):
@@ -239,19 +240,6 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     # Check tree builder arguments for conflicts with hardcoded defaults.
     check_conflicting_args(tree_builder_args, ("-ntmax", "-s", "-m"))
 
-    # Use IQ-TREE's auto-scaling of threads when the user has requested more
-    # threads than there are sequences. This approach avoids an error from
-    # IQ-TREE when num_seq < nthreads (as when users request `-nthreads auto` on
-    # a machine with many cores and fewer input sequences) and also avoids
-    # requesting as many threads as there are sequences when there may be fewer
-    # available threads on the current machine.
-    if num_seqs < nthreads:
-        tree_builder_args = tree_builder_args + " -nt AUTO"
-        print(
-            "WARNING: more threads requested than there are sequences; falling back to IQ-TREE's `-nt AUTO` mode.",
-            file=sys.stderr
-        )
-
     if substitution_model.lower() != "auto":
         call = [iqtree, "-ntmax", str(nthreads), "-s", shquote(tmp_aln_file),
                 "-m", substitution_model, tree_builder_args, ">", log_file]
@@ -409,7 +397,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--substitution-model', default="GTR",
                                 help='substitution model to use. Specify \'auto\' to run ModelTest. Currently, only available for IQTREE.')
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
-                                help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
+                                help="maximum number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--exclude-sites', type=str, help='file name of one-based sites to exclude for raw tree building (BED format in .bed files, second column in tab-delimited files, or one position per line)')
     parser.add_argument('--tree-builder-args', type=str, help=f"""arguments to pass to the tree builder either augmenting or overriding the default arguments (except for input alignment path, number of threads, and substitution model).
