@@ -17,4 +17,3 @@ Submodules
    augur.util_support.node_data
    augur.util_support.node_data_file
    augur.util_support.node_data_reader
-   augur.util_support.shell_command_runner
