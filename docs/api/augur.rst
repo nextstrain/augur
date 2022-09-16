@@ -30,7 +30,6 @@ Submodules
    augur.frequencies
    augur.frequency_estimators
    augur.import
-   augur.import_beast
    augur.index
    augur.io
    augur.lbi
