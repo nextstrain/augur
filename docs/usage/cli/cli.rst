@@ -30,3 +30,4 @@ We're in the process of adding examples and more extensive documentation for eac
 	validate
 	version
 	import
+	measurements
