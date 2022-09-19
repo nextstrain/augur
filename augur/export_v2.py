@@ -10,6 +10,7 @@ import numbers
 import re
 from Bio import Phylo
 
+from .argparse_ import ExtendAction
 from .io import read_metadata
 from .utils import read_node_data, write_json, read_config, read_lat_longs, read_colors
 from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
@@ -826,7 +827,7 @@ def register_parser(parent_subparsers):
         title="REQUIRED"
     )
     required.add_argument('--tree','-t', metavar="newick", required=True, help="Phylogenetic tree, usually output from `augur refine`")
-    required.add_argument('--node-data', metavar="JSON", required=True, nargs='+', help="JSON files containing metadata for nodes in the tree")
+    required.add_argument('--node-data', metavar="JSON", required=True, nargs='+', action=ExtendAction, help="JSON files containing metadata for nodes in the tree")
     required.add_argument('--output', metavar="JSON", required=True, help="Ouput file (typically for visualisation in auspice)")
 
     config = parser.add_argument_group(

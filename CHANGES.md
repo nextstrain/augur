@@ -57,6 +57,7 @@
         columns = metadata.columns
         metadata = metadata.to_dict(orient="index")
         ```
+* export: The `--node-data` option may now be given multiple times to provide additional `.json` files.  Previously, subsequent occurrences of the option overrode prior occurrences.  This is a **breaking change**, although we expect few usages to be impacted.  Each occurrence of the option may still specify multiple files at a time. [#1010][] (@tsibley)
 
 ### Features
 
@@ -73,6 +74,7 @@
 [#1002]: https://github.com/nextstrain/augur/pull/1002
 [#1006]: https://github.com/nextstrain/augur/pull/1006
 [#1008]: https://github.com/nextstrain/augur/pull/1008
+[#1010]: https://github.com/nextstrain/augur/pull/1010
 [#1017]: https://github.com/nextstrain/augur/pull/1017
 
 ## 16.0.3 (6 July 2022)
