@@ -35,6 +35,12 @@ Try masking sequences without any specified mask.
   No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites
   [1]
 
+Try masking a VCF with a FASTA-only argument
+
+  $ ${AUGUR} mask --sequences mask/variants.vcf.gz --mask-gaps all --mask-sites 1 2 3
+  Cannot use --mask-from-beginning, --mask-from-end, --mask-gaps or --mask-invalid with VCF files!
+  [1]
+
 Mask sequences with a BED file and no specified output file.
 Since no output is provided, the input file is overridden with the masked sequences.
 

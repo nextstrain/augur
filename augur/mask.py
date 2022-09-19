@@ -1,5 +1,5 @@
 """
-Mask specified sites from a VCF or FASTA file.
+Mask specified sites from a VCF or FASTA file by replacing them with the 'N' character.
 """
 import os
 import sys
@@ -75,7 +75,7 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
                 pass
 
 
-def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask_invalid):
+def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask_gaps, mask_invalid):
     """Mask characters at the given sites in a single sequence record, modifying the
     record in place.
 
@@ -89,6 +89,11 @@ def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask
         Number of sites to mask from the beginning of each sequence (default 0)
     mask_from_end: int
         Number of sites to mask from the end of each sequence (default 0)
+    mask_gaps: False || None || list[string]
+        Approaches to masking gaps in sequences. Each provided approach is used:
+        'all': Mask gaps in all sequences 
+        'if-only-gaps': Mask gaps in sequences which have gaps but no N characters 
+        'terminal': Mask terminal runs of gaps (3' and 5')
     mask_invalid: bool
         Mask invalid nucleotides (default False)
 
@@ -99,13 +104,27 @@ def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask
 
     """
     # Convert to a mutable sequence to enable masking with Ns.
+    sequence_string = str(sequence.seq)
     sequence_length = len(sequence.seq)
     beginning, end = mask_from_beginning, mask_from_end
+
+    # replace gaps (if they exist). Note that the 'in' string membership operator will return as soon as the first match is found
+    if "-" in sequence_string and mask_gaps:
+        if ("all" in mask_gaps) or ("if-only-gaps" in mask_gaps and 'N' not in sequence_string and 'n' not in sequence_string):
+            sequence_string = sequence_string.replace('-', 'N')
+        if "terminal" in mask_gaps:
+            # original implementation by Richard Neher, https://github.com/nextstrain/ncov/blob/f2a8b9f02da5940c0167c89a39791f96a2e71c9f/scripts/mask-alignment.py
+            L = len(sequence_string)
+            seq_trimmed = sequence_string.lstrip('-')
+            left_gaps = L - len(seq_trimmed)
+            seq_trimmed = seq_trimmed.rstrip('-')
+            right_gaps = L - len(seq_trimmed) - left_gaps
+            sequence_string = "N"*left_gaps + seq_trimmed + "N"*right_gaps
 
     if beginning + end > sequence_length:
         beginning, end = sequence_length, 0
 
-    seq = str(sequence.seq)[beginning:-end or None]
+    seq = sequence_string[beginning:-end or None]
 
     if mask_invalid:
         seq = "".join(nuc if nuc in VALID_NUCLEOTIDES else "N" for nuc in seq)
@@ -122,7 +141,7 @@ def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask
     return sequence
 
 
-def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_end=0, mask_invalid=False):
+def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_end=0, mask_gaps=False, mask_invalid=False):
     """Mask the provided site list from a FASTA file and write to a new file.
 
     Masked sites are overwritten as "N"s.
@@ -155,6 +174,7 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
             mask_sites,
             mask_from_beginning,
             mask_from_end,
+            mask_gaps,
             mask_invalid,
         )
         for sequence in alignment
@@ -176,6 +196,9 @@ def register_arguments(parser):
     parser.add_argument('--mask-from-beginning', type=int, default=0, help="FASTA Only: Number of sites to mask from beginning")
     parser.add_argument('--mask-from-end', type=int, default=0, help="FASTA Only: Number of sites to mask from end")
     parser.add_argument('--mask-invalid', action='store_true', help="FASTA Only: Mask invalid nucleotides")
+    parser.add_argument("--mask-gaps", nargs='+', choices=["all", "if-only-gaps", "terminal"],
+        help="FASTA Only: 'all' will mask all gap characters in all sequences; 'if-only-gaps' will mask gap characters in sequences which do not use Ns (as some pipelines use '-' for missing data); \
+            'terminal' will mask any stretches of gaps at the 3' or 5' ends. Multiple options can be selected and the union of their behavior will be used.")
     parser.add_argument("--mask-sites", nargs='+', type = int,  help="1-indexed list of sites to mask")
     parser.add_argument('--output', '-o', help="output file")
     parser.add_argument('--no-cleanup', dest="cleanup", action="store_false",
@@ -213,7 +236,7 @@ def run(args):
         if os.path.getsize(args.mask_file) == 0:
             print("ERROR: {} is an empty file.".format(args.mask_file))
             sys.exit(1)
-    if not any((args.mask_file, args.mask_from_beginning, args.mask_from_end, args.mask_sites, args.mask_invalid)):
+    if not any((args.mask_file, args.mask_from_beginning, args.mask_from_end, args.mask_gaps, args.mask_sites, args.mask_invalid)):
         print("No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites")
         sys.exit(1)
 
@@ -233,14 +256,15 @@ def run(args):
                                 "masked_" + os.path.basename(args.sequences))
 
     if is_vcf(args.sequences):
-        if args.mask_from_beginning or args.mask_from_end or args.mask_invalid:
-            print("Cannot use --mask-from-beginning, --mask-from-end, or --mask-invalid with VCF files!")
+        if args.mask_from_beginning or args.mask_from_end or args.mask_invalid or args.mask_gaps:
+            print("Cannot use --mask-from-beginning, --mask-from-end, --mask-gaps or --mask-invalid with VCF files!")
             sys.exit(1)
         mask_vcf(mask_sites, args.sequences, out_file, args.cleanup)
     else:
         mask_fasta(mask_sites, args.sequences, out_file,
                    mask_from_beginning=args.mask_from_beginning,
                    mask_from_end=args.mask_from_end,
+                   mask_gaps=args.mask_gaps,
                    mask_invalid=args.mask_invalid)
 
     if args.output is None:

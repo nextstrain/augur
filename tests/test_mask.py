@@ -26,6 +26,14 @@ def sequences():
     }
 
 @pytest.fixture
+def sequences_with_gaps():
+    return {
+        "NO_GAPS_NO_NS": SeqRecord(Seq("ATGCATGCATGC"), id="NO_GAPS_NO_NS"),
+        "GAPS_NO_NS": SeqRecord(Seq("--GC--GC--GC"), id="GAPS_NO_NS"),
+        "GAPS_AND_NS": SeqRecord(Seq("AT--ATNNAT--"), id="GAPS_AND_NS")
+    }
+
+@pytest.fixture
 def fasta_file(tmpdir, sequences):
     fasta_file = str(tmpdir / "test.fasta")
     with open(fasta_file, "w") as fh:
@@ -235,6 +243,37 @@ class TestMask:
                     assert output[name][site] == "N"
                 else:
                     assert output[name][site] == nucleotide
+
+    def test_remove_all_gaps(self, sequences_with_gaps):
+        modified = {k: mask.mask_sequence(v, [], 0, 0, ['all'], False) for k, v in sequences_with_gaps.items()}
+        assert(modified['NO_GAPS_NO_NS'].seq==sequences_with_gaps['NO_GAPS_NO_NS'].seq)
+        assert(modified['GAPS_NO_NS'].seq=="NNGCNNGCNNGC")
+        assert(modified['GAPS_AND_NS'].seq=="ATNNATNNATNN")
+
+    def test_remove_gaps_if_no_ns(self, sequences_with_gaps):
+        modified = {k: mask.mask_sequence(v, [], 0, 0, ['if-only-gaps'], False) for k, v in sequences_with_gaps.items()}
+        assert(modified['NO_GAPS_NO_NS'].seq==sequences_with_gaps['NO_GAPS_NO_NS'].seq)
+        assert(modified['GAPS_NO_NS'].seq=="NNGCNNGCNNGC")
+        assert(modified['GAPS_AND_NS'].seq==sequences_with_gaps['GAPS_AND_NS'].seq)
+
+    def test_remove_terminal_gaps(self, sequences_with_gaps):
+        modified = {k: mask.mask_sequence(v, [], 0, 0, ['terminal'], False) for k, v in sequences_with_gaps.items()}
+        assert(modified['NO_GAPS_NO_NS'].seq==sequences_with_gaps['NO_GAPS_NO_NS'].seq)
+        assert(modified['GAPS_NO_NS'].seq=="NNGC--GC--GC")
+        assert(modified['GAPS_AND_NS'].seq=="AT--ATNNATNN")
+
+    def test_remove_all_and_terminal_gaps(self, sequences_with_gaps):
+        ## requesting terminal gap masking and all gap masking is somewhat strange, but we should handle it
+        modified = {k: mask.mask_sequence(v, [], 0, 0, ['all', 'terminal'], False) for k, v in sequences_with_gaps.items()}
+        assert(modified['NO_GAPS_NO_NS'].seq==sequences_with_gaps['NO_GAPS_NO_NS'].seq)
+        assert(modified['GAPS_NO_NS'].seq=="NNGCNNGCNNGC")
+        assert(modified['GAPS_AND_NS'].seq=="ATNNATNNATNN")
+
+    def test_remove_gaps_if_no_ns_and_terminal_gaps(self, sequences_with_gaps):
+        modified = {k: mask.mask_sequence(v, [], 0, 0, ['if-only-gaps', 'terminal'], False) for k, v in sequences_with_gaps.items()}
+        assert(modified['NO_GAPS_NO_NS'].seq==sequences_with_gaps['NO_GAPS_NO_NS'].seq)
+        assert(modified['GAPS_NO_NS'].seq=="NNGCNNGCNNGC")
+        assert(modified['GAPS_AND_NS'].seq=="AT--ATNNATNN")
 
     def test_run_handle_missing_sequence_file(self, vcf_file, argparser):
         os.remove(vcf_file)
