@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 18.0.0 (21 September 2022)
+
 ### Major Changes
 
 * export: The `--node-data` option may now be given multiple times to provide additional `.json` files.  Previously, subsequent occurrences of the option overrode prior occurrences.  This is a **breaking change**, although we expect few usages to be impacted.  Each occurrence of the option may still specify multiple files at a time. [#1010][] (@tsibley)
