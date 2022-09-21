@@ -13,9 +13,11 @@
 * tree: When using IQtree as tre builder, `--nthreads` now sets the maximum number of threads (IQtree argument `-ntmax`). The actual number of threads to use can be specified by the user through the tree-builder-arg `-nt` which defaults to `-nt AUTO`, causing IQtree to automatically chose the best number of threads to use [#1042][] (@corneliusroemer)
 * Make cvxopt as a required dependency, since it is required for titer models to work [#1035][]. (@victorlin)
 * filter: Fix compatibility with Pandas 1.5.0 which could cause an unexpected `AttributeError` with an invalid `--query` given to `augur filter`. [#1050][] (@tsibley)
-
+* refine: Add `--verbosity` argument that is passed down to TreeTime to facilitate monitoring and debugging. [#1033][] (@anna-parker)
+* Improve handling of errors from TreeTime. [#1033][] (@anna-parker)
 
 [#1010]: https://github.com/nextstrain/augur/pull/1010
+[#1033]: https://github.com/nextstrain/augur/pull/1033
 [#1034]: https://github.com/nextstrain/augur/pull/1034
 [#1035]: https://github.com/nextstrain/augur/pull/1035
 [#1042]: https://github.com/nextstrain/augur/pull/1042

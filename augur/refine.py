@@ -8,7 +8,7 @@ from .dates import get_numerical_dates
 from .io import read_metadata
 from .utils import read_tree, write_json, InvalidTreeError
 from .errors import AugurError
-from treetime.vcf_utils import read_vcf, write_vcf
+from treetime.vcf_utils import read_vcf
 from treetime.seq_utils import profile_maps
 
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
@@ -70,7 +70,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
     tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
            branch_length_mode=branch_length_inference, resolve_polytomies=resolve_polytomies,
            max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
-           vary_rate=vary_rate, use_covariation=covariance, **kwarks)
+           vary_rate=vary_rate, use_covariation=covariance, raise_uncaught_exceptions=True, **kwarks)
 
     if confidence:
         for n in tt.tree.find_clades():
@@ -130,6 +130,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--divergence-units', type=str, choices=['mutations', 'mutations-per-site'],
                         default='mutations-per-site', help='Units in which sequence divergences is exported.')
     parser.add_argument('--seed', type=int, help='seed for random number generation')
+    parser.add_argument('--verbosity', type=int, default=1, help='treetime verbosity, between 0 and 6 (higher values more output)')
     parser.set_defaults(covariance=True)
     return parser
 
@@ -217,18 +218,17 @@ def run(args):
             time_inference_mode = 'always' if args.date_inference=='marginal' else 'only-final'
         else:
             time_inference_mode = 'always' if args.date_inference=='marginal' else 'never'
-        try:
-            tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
-                        reroot=args.root, # or 'best', # We now have a default in param spec - this just adds confusion.
-                        Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
-                        use_marginal = time_inference_mode, use_fft=args.use_fft,
-                        branch_length_inference = args.branch_length_inference or 'auto',
-                        precision = 'auto' if args.precision is None else args.precision,
-                        clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
-                        clock_filter_iqd=args.clock_filter_iqd,
-                        covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies))
-        except BaseException as err:
-            raise AugurError(f"Was unable to refine time trees:\n\n{err}")
+
+        tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
+                    reroot=args.root, # or 'best', # We now have a default in param spec - this just adds confusion.
+                    Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
+                    use_marginal = time_inference_mode, use_fft=args.use_fft,
+                    branch_length_inference = args.branch_length_inference or 'auto',
+                    precision = 'auto' if args.precision is None else args.precision,
+                    clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
+                    clock_filter_iqd=args.clock_filter_iqd,
+                    covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies),
+                    verbosity=args.verbosity)
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
@@ -264,7 +264,7 @@ def run(args):
                 except ValueError as err:
                     raise ValueError(f"HINT: This error may be because your specified root with name '{args.root}' was not found in your alignment file") from err
 
-        tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=1)
+        tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=args.verbosity)
 
     node_data['nodes'] = collect_node_data(T, attributes)
     if args.divergence_units=='mutations-per-site': #default

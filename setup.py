@@ -59,7 +59,7 @@ setuptools.setup(
         "networkx >= 2.5, ==2.*",
         "packaging >=19.2",
         "pandas >=1.0.0, ==1.*",
-        "phylo-treetime >=0.9.2, ==0.9.*",
+        "phylo-treetime >=0.9.3, ==0.9.*",
         "xopen >=1.0.1, ==1.*"
     ],
     extras_require = {
