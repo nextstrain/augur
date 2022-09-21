@@ -2,15 +2,25 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* export: The `--node-data` option may now be given multiple times to provide additional `.json` files.  Previously, subsequent occurrences of the option overrode prior occurrences.  This is a **breaking change**, although we expect few usages to be impacted.  Each occurrence of the option may still specify multiple files at a time. [#1010][] (@tsibley)
+
 ### Bug Fixes
+
 
 * refine: 17.1.0 updated TreeTime to version 0.9.2 and introduced the `refine` flag `--use-fft`. This makes previously costly marginal date inference cheaper. This update adjusts when `refine` runs marginal date inference during its iterative optimization. Without the `use-fft` flag, it will now behave as it did before 17.1.0 (marginal inference only during final iterations). With the `--use-fft` flag, marginal date inference will be used at every step during the iteration if refine is run with `--date-inference marginal` [#1034][]. (@rneher)
 * tree: When using IQtree as tre builder, `--nthreads` now sets the maximum number of threads (IQtree argument `-ntmax`). The actual number of threads to use can be specified by the user through the tree-builder-arg `-nt` which defaults to `-nt AUTO`, causing IQtree to automatically chose the best number of threads to use [#1042][] (@corneliusroemer)
 * Make cvxopt as a required dependency, since it is required for titer models to work [#1035][]. (@victorlin)
+* filter: Fix compatibility with Pandas 1.5.0 which could cause an unexpected `AttributeError` with an invalid `--query` given to `augur filter`. [#1050][] (@tsibley)
 
+
+[#1010]: https://github.com/nextstrain/augur/pull/1010
 [#1034]: https://github.com/nextstrain/augur/pull/1034
 [#1035]: https://github.com/nextstrain/augur/pull/1035
 [#1042]: https://github.com/nextstrain/augur/pull/1042
+[#1050]: https://github.com/nextstrain/augur/pull/1050
+
 
 ## 17.1.0 (19 August 2022)
 
