@@ -82,5 +82,10 @@ def run(args):
     '''
     filter and subsample a set of sequences into an analysis set
     '''
+    from .validate_arguments import validate_arguments
+    # Validate arguments before attempting any I/O.
+    if not validate_arguments(args):
+        return 1
+
     from ._run import run as _run
     return _run(args)
