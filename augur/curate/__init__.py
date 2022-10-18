@@ -4,6 +4,7 @@ A suite of commands to help with data curation.
 import argparse
 import sys
 from collections import deque
+from textwrap import dedent
 
 from augur.argparse_ import add_command_subparsers
 from augur.errors import AugurError
@@ -143,7 +144,11 @@ def run(args):
     elif not sys.stdin.isatty():
         records = load_ndjson(sys.stdin)
     else:
-        raise AugurError("No valid inputs were provided.")
+        raise AugurError(dedent("""\
+            No valid inputs were provided.
+            NDJSON records can be streamed from stdin or
+            input files can be provided via the command line options `--metadata` and `--fasta`.
+            See the command's help message for more details."""))
 
     # Run subcommand to get modified records
     modified_records = getattr(args, SUBCOMMAND_ATTRIBUTE).run(args, records)
