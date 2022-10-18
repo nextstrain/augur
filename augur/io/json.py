@@ -65,10 +65,11 @@ def load_ndjson(file: Iterable[str], ignore_empty_lines = True) -> Iterable:
     in the file by default.
     """
     for line in file:
-        if ignore_empty_lines and line.strip():
-            yield load_json(line)
-        elif not ignore_empty_lines:
-            yield load_json(line)
+        # Skip empty lines when requested
+        if ignore_empty_lines and not line.strip():
+            continue
+
+        yield load_json(line)
 
 
 class JsonEncoder(json.JSONEncoder):
