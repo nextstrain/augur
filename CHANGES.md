@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* filter: Add support to group by ISO week (`--group-by week`) during subsampling. [#1067][] (@victorlin)
+
+[#1067]: https://github.com/nextstrain/augur/pull/1067
 
 ## 18.0.0 (21 September 2022)
 
