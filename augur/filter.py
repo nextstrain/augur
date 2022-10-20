@@ -1050,7 +1050,6 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                     })
                 # month = (year, month)
                 metadata['month'] = list(zip(metadata['year'], metadata['month']))
-            # TODO: support group by day
 
     unknown_groups = group_by_set - set(metadata.columns)
     if unknown_groups:
