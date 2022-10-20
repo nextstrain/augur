@@ -16,7 +16,7 @@ Error on missing group-by columns.
   >   --group-by year \
   >   --sequences-per-group 1 \
   >   --output-metadata $TMP/metadata-filtered.tsv > /dev/null
-  ERROR: The specified group-by categories (['year']) were not found. Note that using 'year' or 'year month' requires a column called 'date'.
+  ERROR: The specified group-by categories (['year']) were not found. Note that using any of ['month', 'year'] requires a column called 'date'.
   [2]
   $ cat $TMP/metadata-filtered.tsv
   cat: .*: No such file or directory (re)
