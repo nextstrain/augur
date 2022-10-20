@@ -17,3 +17,26 @@ Strains with ambiguous years or months should be dropped and logged.
   SG_018\tskip_group_by_with_ambiguous_month (esc)
   $ grep "COL/FLR_00024/2015" "$TMP/filtered_log.tsv" | cut -f 1-2
   COL/FLR_00024/2015\tskip_group_by_with_ambiguous_year (esc)
+
+Group by 'year month week'. Using 'week' has some restrictions - 'year' should warn and 'month' should error.
+
+  $ ${AUGUR} filter \
+  >  --metadata filter/data/metadata.tsv \
+  >  --group-by year month week \
+  >  --sequences-per-group 1 \
+  >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
+  WARNING: 'year' grouping will be ignored since 'week' includes ISO year.
+  ERROR: 'month' and 'week' grouping cannot be used together.
+  [2]
+
+Group by 'week'. Check the number of strains that have been dropped due to ambiguous day.
+
+  $ ${AUGUR} filter \
+  >  --metadata filter/data/metadata.tsv \
+  >  --group-by week \
+  >  --sequences-per-group 1 \
+  >  --subsample-seed 0 \
+  >  --output-strains "$TMP/filtered_strains.txt" \
+  >  --output-log "$TMP/filtered_log.tsv" > /dev/null
+  $ grep "skip_group_by_with_ambiguous_day" "$TMP/filtered_log.tsv" | wc -l
+  \s*5 (re)

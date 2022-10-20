@@ -17,7 +17,7 @@ import sys
 from tempfile import NamedTemporaryFile
 from typing import Collection
 
-from .dates import numeric_date, numeric_date_type, SUPPORTED_DATE_HELP_TEXT, is_date_ambiguous, get_numerical_dates
+from .dates import numeric_date, numeric_date_type, SUPPORTED_DATE_HELP_TEXT, is_date_ambiguous, get_numerical_dates, get_iso_year_week
 from .errors import AugurError
 from .index import index_sequences, index_vcf
 from .io import open_file, read_metadata, read_sequences, write_sequences, is_vcf as filename_is_vcf, write_vcf
@@ -31,7 +31,7 @@ SEQUENCE_ONLY_FILTERS = (
 )
 
 # Use sorted() for reproducible output
-GROUP_BY_GENERATED_COLUMNS = {'year', 'month'}
+GROUP_BY_GENERATED_COLUMNS = {'year', 'month', 'week'}
 
 def register_arguments(parser):
     """
@@ -72,8 +72,11 @@ def register_arguments(parser):
     subsample_group = parser.add_argument_group("subsampling", "options to subsample filtered data")
     subsample_group.add_argument('--group-by', nargs='+', help=f"""
         categories with respect to subsample.
-        Grouping by {sorted(GROUP_BY_GENERATED_COLUMNS)} is only supported when there is a 'date' column in the metadata.
-        Custom columns {sorted(GROUP_BY_GENERATED_COLUMNS)} in the metadata are ignored for grouping. Please rename them if you want to use their values for grouping.""")
+        Notes:
+        (1) Grouping by {sorted(GROUP_BY_GENERATED_COLUMNS)} is only supported when there is a 'date' column in the metadata.
+        (2) 'week' uses the ISO week numbering system, where a week starts on a Monday and ends on a Sunday.
+        (3) 'month' and 'week' grouping cannot be used together.
+        (4) Custom columns {sorted(GROUP_BY_GENERATED_COLUMNS)} in the metadata are ignored for grouping. Please rename them if you want to use their values for grouping.""")
     subsample_limits_group = subsample_group.add_mutually_exclusive_group()
     subsample_limits_group.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     subsample_limits_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences; can be used without the group_by argument")
@@ -1005,6 +1008,16 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     if not group_by_set & (set(metadata.columns) | GROUP_BY_GENERATED_COLUMNS):
         raise FilterException(f"The specified group-by categories ({group_by}) were not found.")
 
+    # Warn/error based on other columns grouped with 'week'.
+    if 'week' in group_by_set:
+        if 'year' in group_by_set:
+            print(f"WARNING: 'year' grouping will be ignored since 'week' includes ISO year.", file=sys.stderr)
+            group_by.remove('year')
+            group_by_set.remove('year')
+            generated_columns_requested.remove('year')
+        if 'month' in group_by_set:
+            raise AugurError("'month' and 'week' grouping cannot be used together.")
+
     if generated_columns_requested:
 
         for col in sorted(generated_columns_requested):
@@ -1051,6 +1064,20 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                     })
                 # month = (year, month)
                 metadata['month'] = list(zip(metadata['year'], metadata['month']))
+            if 'week' in generated_columns_requested:
+                # skip ambiguous days
+                df_skip = metadata[metadata['day'].isnull()]
+                metadata.dropna(subset=['day'], inplace=True)
+                for strain in df_skip.index:
+                    skipped_strains.append({
+                        "strain": strain,
+                        "filter": "skip_group_by_with_ambiguous_day",
+                        "kwargs": "",
+                    })
+                # Note that week = (year, week) from the date.isocalendar().
+                # Do not combine the raw year with the ISO week number alone,
+                # since raw year ≠ ISO year.
+                metadata['week'] = metadata.apply(lambda row: get_iso_year_week(row['year'], row['month'], row['day']), axis=1)
 
     unknown_groups = group_by_set - set(metadata.columns)
     if unknown_groups:
@@ -1713,6 +1740,7 @@ def run(args):
         "filter_by_non_nucleotide": "{count} of these were dropped because they had non-nucleotide characters",
         "skip_group_by_with_ambiguous_year": "{count} were dropped during grouping due to ambiguous year information",
         "skip_group_by_with_ambiguous_month": "{count} were dropped during grouping due to ambiguous month information",
+        "skip_group_by_with_ambiguous_day": "{count} were dropped during grouping due to ambiguous day information",
         "force_include_strains": "{count} strains were added back because they were in {include_file}",
         "force_include_where": "{count} sequences were added back because of '{include_where}'",
     }

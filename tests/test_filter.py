@@ -473,7 +473,7 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         with pytest.raises(FilterException) as e_info:
             augur.filter.get_groups_for_subsampling(strains, metadata, group_by=groups)
-        assert str(e_info.value) == "The specified group-by categories (['year']) were not found. Note that using any of ['month', 'year'] requires a column called 'date'."
+        assert str(e_info.value) == "The specified group-by categories (['year']) were not found. Note that using any of ['month', 'week', 'year'] requires a column called 'date'."
 
     def test_filter_groupby_missing_month_error(self, valid_metadata: pd.DataFrame):
         groups = ['month']
@@ -482,7 +482,7 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         with pytest.raises(FilterException) as e_info:
             augur.filter.get_groups_for_subsampling(strains, metadata, group_by=groups)
-        assert str(e_info.value) == "The specified group-by categories (['month']) were not found. Note that using any of ['month', 'year'] requires a column called 'date'."
+        assert str(e_info.value) == "The specified group-by categories (['month']) were not found. Note that using any of ['month', 'week', 'year'] requires a column called 'date'."
 
     def test_filter_groupby_missing_year_and_month_error(self, valid_metadata: pd.DataFrame):
         groups = ['year', 'month']
@@ -491,7 +491,7 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         with pytest.raises(FilterException) as e_info:
             augur.filter.get_groups_for_subsampling(strains, metadata, group_by=groups)
-        assert str(e_info.value) == "The specified group-by categories (['year', 'month']) were not found. Note that using any of ['month', 'year'] requires a column called 'date'."
+        assert str(e_info.value) == "The specified group-by categories (['year', 'month']) were not found. Note that using any of ['month', 'week', 'year'] requires a column called 'date'."
 
     def test_filter_groupby_missing_date_warn(self, valid_metadata: pd.DataFrame, capsys):
         groups = ['country', 'year', 'month']
