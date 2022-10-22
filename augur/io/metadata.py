@@ -2,6 +2,8 @@ import csv
 import pandas as pd
 
 from augur.errors import AugurError
+from augur.io.print import print_err
+from augur.types import DataErrorMethod
 from .file import open_file
 
 
@@ -94,14 +96,24 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
     )
 
 
-def read_table_to_dict(table):
+def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, id_column=None):
     """
-    Read rows from *table* file and yield each row as a single dict
+    Read rows from *table* file and yield each row as a single dict.
+
+    Will report duplicate records based on the *id_column* if requested via
+    *duplicate_reporting* after the generator has been exhausted.
 
     Parameters
     ----------
     table: str
         Path to a CSV or TSV file
+
+    duplicate_reporting: DataErrorMethod, optional
+        How should duplicate records be reported
+
+    id_column: str, optional
+        Name of the column that contains the record identifier used for reporting duplicates.
+        Uses the first column of the metadata if not provided.
 
     Yields
     ------
@@ -111,9 +123,14 @@ def read_table_to_dict(table):
     Raises
     ------
     AugurError:
-        When there are parsing errors from the csv standard library
+        Raised for any of the following reasons:
+        1. There are parsing errors from the csv standard library
+        2. The provided *id_column* does not exist in the *metadata*
+        3. The *duplicate_reporting* method is set to ERROR_FIRST or ERROR_ALL and duplicate(s) are found
     """
     valid_delimiters = [',', '\t']
+    seen_ids = set()
+    duplicate_ids = set()
     with open_file(table) as handle:
         # Get sample to determine delimiter
         table_sample = handle.read(1024)
@@ -127,4 +144,41 @@ def read_table_to_dict(table):
                 "File must be a CSV or TSV."
             ) from err
 
-        yield from csv.DictReader(handle, dialect=dialect)
+        metadata_reader = csv.DictReader(handle, dialect=dialect)
+        if duplicate_reporting is DataErrorMethod.SILENT:
+            # Directly yield from metadata reader since we do not need to check for duplicate ids
+            yield from metadata_reader
+        else:
+            if id_column is None:
+                id_column = metadata_reader.fieldnames[0]
+
+            for record in metadata_reader:
+                record_id = record.get(id_column)
+                if record_id is None:
+                    raise AugurError(f"The provided id column {id_column!r} does not exist in {table!r}.")
+
+                if record_id in seen_ids:
+                    # Immediately raise an error if requested to error on the first duplicate
+                    if duplicate_reporting is DataErrorMethod.ERROR_FIRST:
+                        raise AugurError(f"Encountered record with duplicate id {record_id!r} in {table!r}")
+
+                    # Give immediate feedback on duplicates if requested to warn on duplicates
+                    # We'll also print a full summary of duplicates once the generator is exhausted
+                    if duplicate_reporting is DataErrorMethod.WARN:
+                        print_err(f"WARNING: Encountered record with duplicate id {record_id!r} in {table!r}")
+
+                    duplicate_ids.add(record_id)
+                else:
+                    seen_ids.add(record_id)
+
+                yield record
+
+    if duplicate_reporting is not DataErrorMethod.SILENT and duplicate_ids:
+        duplicates_message = f"The following records are duplicated in {table!r}:\n" + "\n".join(map(repr, sorted(duplicate_ids)))
+
+        if duplicate_reporting is DataErrorMethod.WARN:
+            print_err(f"WARNING: {duplicates_message}")
+        elif duplicate_reporting is DataErrorMethod.ERROR_ALL:
+            raise AugurError(duplicates_message)
+        else:
+            raise ValueError(f"Encountered unhandled duplicate reporting method: {duplicate_reporting!r}")
