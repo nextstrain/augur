@@ -8,6 +8,7 @@ from augur.argparse_ import add_command_subparsers
 from augur.errors import AugurError
 from augur.io.json import dump_ndjson, load_ndjson
 from augur.io.metadata import read_table_to_dict
+from augur.types import DataErrorMethod
 from . import passthru
 
 
@@ -42,6 +43,13 @@ def create_shared_parser():
         """)
     shared_inputs.add_argument("--metadata",
         help="Input metadata file, as CSV or TSV.")
+    shared_inputs.add_argument("--id-column",
+        help="Name of the metadata column that contains the record identifier for reporting duplicate records. "
+             "Uses the first column of the metadata file if not provided.")
+    shared_inputs.add_argument("--duplicate-reporting",
+        choices=[ method.value for method in DataErrorMethod ],
+        default=DataErrorMethod.ERROR_FIRST.value,
+        help="How should duplicate records be reported.")
 
     return shared_parser
 
@@ -73,7 +81,7 @@ def run(args):
 
     # Read inputs
     if args.metadata:
-        records = read_table_to_dict(args.metadata)
+        records = read_table_to_dict(args.metadata, DataErrorMethod(args.duplicate_reporting), args.id_column)
     elif not sys.stdin.isatty():
         records = load_ndjson(sys.stdin)
     else:
