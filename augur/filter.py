@@ -1052,7 +1052,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             if 'year' in generated_columns_requested:
                 # Skip ambiguous years.
                 df_skip = metadata[metadata[f'{temp_prefix}year'].isnull()]
-                metadata.dropna(subset=[f'{temp_prefix}year'], inplace=True)
+                metadata.drop(df_skip.index, inplace=True)
                 for strain in df_skip.index:
                     skipped_strains.append({
                         "strain": strain,
@@ -1066,7 +1066,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             if 'month' in generated_columns_requested:
                 # Skip ambiguous months.
                 df_skip = metadata[metadata[f'{temp_prefix}month'].isnull()]
-                metadata.dropna(subset=[f'{temp_prefix}month'], inplace=True)
+                metadata.drop(df_skip.index, inplace=True)
                 for strain in df_skip.index:
                     skipped_strains.append({
                         "strain": strain,
@@ -1083,7 +1083,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             if 'week' in generated_columns_requested:
                 # Skip ambiguous days.
                 df_skip = metadata[metadata[f'{temp_prefix}day'].isnull()]
-                metadata.dropna(subset=[f'{temp_prefix}day'], inplace=True)
+                metadata.drop(df_skip.index, inplace=True)
                 for strain in df_skip.index:
                     skipped_strains.append({
                         "strain": strain,
