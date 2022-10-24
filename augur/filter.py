@@ -14,6 +14,7 @@ import pandas as pd
 import random
 import re
 import sys
+import uuid
 from tempfile import NamedTemporaryFile
 from typing import Collection
 
@@ -1032,52 +1033,78 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             df_dates = pd.DataFrame({col: 'unknown' for col in GROUP_BY_GENERATED_COLUMNS}, index=metadata.index)
             metadata = pd.concat([metadata, df_dates], axis=1)
         else:
-            # Replace date with year/month/day as nullable ints.
-            date_cols = ['year', 'month', 'day']
+            # Create a DataFrame with year/month/day columns as nullable ints.
+            # These columns are prefixed to note temporary usage. They are used
+            # to generate other columns, and will be discarded at the end.
+            temp_prefix = str(uuid.uuid4())
+            temp_date_cols = [f'{temp_prefix}year', f'{temp_prefix}month', f'{temp_prefix}day']
             df_dates = metadata['date'].str.split('-', n=2, expand=True)
-            df_dates = df_dates.set_axis(date_cols[:len(df_dates.columns)], axis=1)
-            missing_date_cols = set(date_cols) - set(df_dates.columns)
+            df_dates = df_dates.set_axis(temp_date_cols[:len(df_dates.columns)], axis=1)
+            missing_date_cols = set(temp_date_cols) - set(df_dates.columns)
             for col in missing_date_cols:
                 df_dates[col] = pd.NA
-            for col in date_cols:
+            for col in temp_date_cols:
                 df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
+
+            # Extend metadata with generated date columns
+            # Drop the 'date' column since it should not be used for grouping.
             metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
             if 'year' in generated_columns_requested:
                 # Skip ambiguous years.
-                df_skip = metadata[metadata['year'].isnull()]
-                metadata.dropna(subset=['year'], inplace=True)
+                df_skip = metadata[metadata[f'{temp_prefix}year'].isnull()]
+                metadata.dropna(subset=[f'{temp_prefix}year'], inplace=True)
                 for strain in df_skip.index:
                     skipped_strains.append({
                         "strain": strain,
                         "filter": "skip_group_by_with_ambiguous_year",
                         "kwargs": "",
                     })
+
+                # Make a generated 'year' column available for grouping.
+                metadata['year'] = metadata[f'{temp_prefix}year']
+
             if 'month' in generated_columns_requested:
                 # Skip ambiguous months.
-                df_skip = metadata[metadata['month'].isnull()]
-                metadata.dropna(subset=['month'], inplace=True)
+                df_skip = metadata[metadata[f'{temp_prefix}month'].isnull()]
+                metadata.dropna(subset=[f'{temp_prefix}month'], inplace=True)
                 for strain in df_skip.index:
                     skipped_strains.append({
                         "strain": strain,
                         "filter": "skip_group_by_with_ambiguous_month",
                         "kwargs": "",
                     })
-                # month = (year, month)
-                metadata['month'] = list(zip(metadata['year'], metadata['month']))
+
+                # Make a generated 'month' column available for grouping.
+                metadata['month'] = list(zip(
+                    metadata[f'{temp_prefix}year'],
+                    metadata[f'{temp_prefix}month']
+                ))
+
             if 'week' in generated_columns_requested:
                 # Skip ambiguous days.
-                df_skip = metadata[metadata['day'].isnull()]
-                metadata.dropna(subset=['day'], inplace=True)
+                df_skip = metadata[metadata[f'{temp_prefix}day'].isnull()]
+                metadata.dropna(subset=[f'{temp_prefix}day'], inplace=True)
                 for strain in df_skip.index:
                     skipped_strains.append({
                         "strain": strain,
                         "filter": "skip_group_by_with_ambiguous_day",
                         "kwargs": "",
                     })
+
+                # Make a generated 'week' column available for grouping.
                 # Note that week = (year, week) from the date.isocalendar().
                 # Do not combine the raw year with the ISO week number alone,
                 # since raw year ≠ ISO year.
-                metadata['week'] = metadata.apply(lambda row: get_iso_year_week(row['year'], row['month'], row['day']), axis=1)
+                metadata['week'] = metadata.apply(lambda row: get_iso_year_week(
+                    row[f'{temp_prefix}year'],
+                    row[f'{temp_prefix}month'],
+                    row[f'{temp_prefix}day']
+                    ), axis=1
+                )
+
+            # Drop the internally used columns.
+            for col in temp_date_cols:
+                metadata.drop(col, axis=1, inplace=True)
 
     unknown_groups = group_by_set - set(metadata.columns)
     if unknown_groups:
@@ -1086,6 +1113,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
         for group in unknown_groups:
             metadata[group] = 'unknown'
 
+    # Finally, determine groups.
     group_by_strain = dict(zip(metadata.index, metadata[group_by].apply(tuple, axis=1)))
     return group_by_strain, skipped_strains
 
