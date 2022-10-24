@@ -1026,13 +1026,13 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                 metadata.drop(col, axis=1, inplace=True)
 
         if 'date' not in metadata:
-            # set generated columns to 'unknown'
+            # Set generated columns to 'unknown'.
             print(f"WARNING: A 'date' column could not be found to group-by {sorted(generated_columns_requested)}.", file=sys.stderr)
             print(f"Filtering by group may behave differently than expected!", file=sys.stderr)
             df_dates = pd.DataFrame({col: 'unknown' for col in GROUP_BY_GENERATED_COLUMNS}, index=metadata.index)
             metadata = pd.concat([metadata, df_dates], axis=1)
         else:
-            # replace date with year/month/day as nullable ints
+            # Replace date with year/month/day as nullable ints.
             date_cols = ['year', 'month', 'day']
             df_dates = metadata['date'].str.split('-', n=2, expand=True)
             df_dates = df_dates.set_axis(date_cols[:len(df_dates.columns)], axis=1)
@@ -1043,7 +1043,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                 df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
             metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
             if 'year' in generated_columns_requested:
-                # skip ambiguous years
+                # Skip ambiguous years.
                 df_skip = metadata[metadata['year'].isnull()]
                 metadata.dropna(subset=['year'], inplace=True)
                 for strain in df_skip.index:
@@ -1053,7 +1053,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                         "kwargs": "",
                     })
             if 'month' in generated_columns_requested:
-                # skip ambiguous months
+                # Skip ambiguous months.
                 df_skip = metadata[metadata['month'].isnull()]
                 metadata.dropna(subset=['month'], inplace=True)
                 for strain in df_skip.index:
@@ -1065,7 +1065,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                 # month = (year, month)
                 metadata['month'] = list(zip(metadata['year'], metadata['month']))
             if 'week' in generated_columns_requested:
-                # skip ambiguous days
+                # Skip ambiguous days.
                 df_skip = metadata[metadata['day'].isnull()]
                 metadata.dropna(subset=['day'], inplace=True)
                 for strain in df_skip.index:
