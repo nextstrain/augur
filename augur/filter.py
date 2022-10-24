@@ -1049,8 +1049,10 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             # Extend metadata with generated date columns
             # Drop the 'date' column since it should not be used for grouping.
             metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
-            if 'year' in generated_columns_requested:
-                # Skip ambiguous years.
+
+            # Skip ambiguous dates.
+            if True:
+                # Skip ambiguous years (always, since generated columns are requested).
                 df_skip = metadata[metadata[f'{temp_prefix}year'].isnull()]
                 metadata.drop(df_skip.index, inplace=True)
                 for strain in df_skip.index:
@@ -1059,11 +1061,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                         "filter": "skip_group_by_with_ambiguous_year",
                         "kwargs": "",
                     })
-
-                # Make a generated 'year' column available for grouping.
-                metadata['year'] = metadata[f'{temp_prefix}year']
-
-            if 'month' in generated_columns_requested:
+            if 'month' in generated_columns_requested or 'week' in generated_columns_requested:
                 # Skip ambiguous months.
                 df_skip = metadata[metadata[f'{temp_prefix}month'].isnull()]
                 metadata.drop(df_skip.index, inplace=True)
@@ -1073,13 +1071,6 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                         "filter": "skip_group_by_with_ambiguous_month",
                         "kwargs": "",
                     })
-
-                # Make a generated 'month' column available for grouping.
-                metadata['month'] = list(zip(
-                    metadata[f'{temp_prefix}year'],
-                    metadata[f'{temp_prefix}month']
-                ))
-
             if 'week' in generated_columns_requested:
                 # Skip ambiguous days.
                 df_skip = metadata[metadata[f'{temp_prefix}day'].isnull()]
@@ -1091,7 +1082,15 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                         "kwargs": "",
                     })
 
-                # Make a generated 'week' column available for grouping.
+            # Generate columns.
+            if 'year' in generated_columns_requested:
+                metadata['year'] = metadata[f'{temp_prefix}year']
+            if 'month' in generated_columns_requested:
+                metadata['month'] = list(zip(
+                    metadata[f'{temp_prefix}year'],
+                    metadata[f'{temp_prefix}month']
+                ))
+            if 'week' in generated_columns_requested:
                 # Note that week = (year, week) from the date.isocalendar().
                 # Do not combine the raw year with the ISO week number alone,
                 # since raw year ≠ ISO year.
