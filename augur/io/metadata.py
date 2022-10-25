@@ -186,7 +186,7 @@ def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, i
 
 
 def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequence',
-    unmatched_reporting=DataErrorMethod.ERROR_FIRST):
+    unmatched_reporting=DataErrorMethod.ERROR_FIRST, duplicate_reporting=DataErrorMethod.ERROR_FIRST):
     """
     Read rows from *metadata* file and yield each row as a single dict that has
     been updated with their corresponding sequence from the *fasta* file.
@@ -200,6 +200,8 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
     Note the ERROR_FIRST method will raise an error at the first unmatched metadata record
     but not for an unmatched sequence record because we can only check for unmatched sequences
     after exhausting the metadata generator.
+
+    Will report duplicate records if requested via *duplicate_reporting*.
 
     Reads the *fasta* file with `pyfastx.Fasta`, which creates an index for
     the file to allow random access of sequences via the sequence id.
@@ -224,6 +226,9 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
     unmatched_reporting: DataErrorMethod, optional
         How should unmatched records be reported
 
+    duplicate_reporting: DataErrorMethod, optional
+        How should duplicate records be reported
+
     Yields
     ------
     dict
@@ -232,8 +237,34 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
     sequences = pyfastx.Fasta(fasta)
     sequence_ids = set(sequences.keys())
 
+    # Used for determining unmatched records
     processed_sequence_ids = set()
     unmatched_metadata_ids = set()
+
+    # Used for determining duplicate records
+    processed_metadata_ids = set()
+    duplicate_metadata_ids = set()
+    duplicate_sequence_ids = set()
+
+    # First check for duplicates in FASTA first since pyfastx will only return
+    # the first sequence of duplicates, which may lead to unexpected results.
+    # Look for duplicate sequence ids if the number of sequences does not match the number of unique ids
+    if duplicate_reporting is not DataErrorMethod.SILENT and len(sequences) != len(sequence_ids):
+        seen_sequence_ids = set()
+        for seq_id in sequences.keys():
+            if seq_id in seen_sequence_ids:
+                # Immediately raise an error if requested to error on the first duplicate
+                if duplicate_reporting is DataErrorMethod.ERROR_FIRST:
+                    raise AugurError(f"Encountered sequence record with duplicate id {seq_id!r}.")
+
+                # Give immediate feedback on duplicates if requested to warn on duplicates
+                # We'll also print a full summary of duplicates at the end of the command
+                if duplicate_reporting is DataErrorMethod.WARN:
+                    print_err(f"WARNING: Encountered sequence record with duplicate id {seq_id!r}.")
+
+                duplicate_sequence_ids.add(seq_id)
+            else:
+                seen_sequence_ids.add(seq_id)
 
     # Silencing duplicate reporting here because we will need to handle duplicates
     # in both the metadata and FASTA files after processing all the records here.
@@ -242,6 +273,21 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
 
         if seq_id is None:
             raise AugurError(f"The provided sequence id column {seq_id_column!r} does not exist in the metadata.")
+
+        # Keep track of duplicate ids to report duplicate records if requested
+        if seq_id in processed_metadata_ids:
+            # Immediately raise an error if requested to error on the first duplicate
+            if duplicate_reporting is DataErrorMethod.ERROR_FIRST:
+                raise AugurError(f"Encountered metadata record with duplicate id {seq_id!r}.")
+
+            # Give immediate feedback on duplicates if requested to warn on duplicates
+            # We'll also print a full summary of duplicates at the end of the command
+            if duplicate_reporting is DataErrorMethod.WARN:
+                print_err(f"WARNING: Encountered metadata record with duplicate id {seq_id!r}.")
+
+            duplicate_metadata_ids.add(seq_id)
+        else:
+            processed_metadata_ids.add(seq_id)
 
         # Skip records that do not have a matching sequence
         # TODO: change this to try/except to fetch sequences and catch
@@ -267,7 +313,22 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
 
         yield record
 
+    # Create summary of duplicate records if requested
+    duplicates_message = None
+    if duplicate_reporting is not DataErrorMethod.SILENT and (duplicate_metadata_ids or duplicate_sequence_ids):
+        duplicates_message = "The output may not match expectations because there were records with duplicate sequence ids."
 
+        if duplicate_metadata_ids:
+            duplicates_message += f"\nThe following sequence ids were duplicated in {metadata!r}:\n"
+            duplicates_message += "\n".join(map(repr, sorted(duplicate_metadata_ids)))
+
+        if duplicate_sequence_ids:
+            duplicates_message += f"\nThe following sequence ids were duplicated in {fasta!r}:\n"
+            duplicates_message += "\n".join(map(repr, sorted(duplicate_sequence_ids)))
+
+    # Create summary for unmatched records if requested
+    # Note this is where we find unmatched sequences because we can only do so after looping through all of the metadata
+    unmatched_message = None
     unmatched_sequence_ids = sequence_ids - processed_sequence_ids
     if unmatched_reporting is not DataErrorMethod.SILENT and (unmatched_metadata_ids or unmatched_sequence_ids):
         unmatched_message = "The output may be incomplete because there were unmatched records."
@@ -280,11 +341,24 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
             unmatched_message += "\nThe following sequence records did not have a matching metadata record:\n"
             unmatched_message += "\n".join(map(repr, sorted(unmatched_sequence_ids)))
 
-        if unmatched_reporting is DataErrorMethod.WARN:
-            print_err(f"WARNING: {unmatched_message}")
-        # We need to check ERROR_FIRST here for unmatched sequences since we
-        # need to process all metadata records to know which sequences are unmatched
-        elif unmatched_reporting in {DataErrorMethod.ERROR_FIRST, DataErrorMethod.ERROR_ALL}:
-            raise AugurError(unmatched_message)
-        else:
-            raise ValueError(f"Encountered unhandled unmatched reporting method: {unmatched_reporting!r}")
+
+    # Handle all the different combinations for warnings and errors for unmatched and duplicate records
+    # Make sure we output warnings before raising any errors
+    if duplicate_reporting is DataErrorMethod.WARN and duplicates_message is not None:
+        print_err(f"WARNING: {duplicates_message}")
+
+    if unmatched_reporting is DataErrorMethod.WARN and unmatched_message is not None:
+        print_err(f"WARNING: {unmatched_message}")
+
+    # Combine error messages so both messages can be included in the final error
+    error_message = ""
+    if duplicate_reporting is DataErrorMethod.ERROR_ALL and duplicates_message is not None:
+        error_message += "\n" + duplicates_message
+
+    # We need to check ERROR_FIRST here for unmatched sequences since we
+    # need to process all metadata records to know which sequences are unmatched
+    if unmatched_reporting in {DataErrorMethod.ERROR_FIRST, DataErrorMethod.ERROR_ALL} and unmatched_message is not None:
+        error_message += "\n" + unmatched_message
+
+    if error_message:
+        raise AugurError(f"Encountered the following error(s) when parsing metadata with sequences:{error_message}")
