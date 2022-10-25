@@ -22,7 +22,7 @@ Group by generated year column, and ensure all original columns are still in the
   >  --sequences-per-group 1 \
   >  --subsample-seed 0 \
   >  --output-metadata "$TMP/filtered_metadata.tsv" > /dev/null
-  WARNING: `--group-by year` uses the generated year value from the 'date' column. The custom 'year' column in the metadata is ignored for grouping purposes.
+  WARNING: `--group-by year` uses a generated year value from the 'date' column. The custom 'year' column in the metadata is ignored for grouping purposes.
   $ cat "$TMP/filtered_metadata.tsv"
   strain\tdate\tyear\tmonth (esc)
   SEQ1\t2021-01-01\todd\tJanuary (esc)
@@ -36,8 +36,8 @@ Group by generated year and month columns, and ensure all original columns are s
   >  --sequences-per-group 1 \
   >  --subsample-seed 0 \
   >  --output-metadata "$TMP/filtered_metadata.tsv" > /dev/null
-  WARNING: `--group-by year` uses the generated year value from the 'date' column. The custom 'year' column in the metadata is ignored for grouping purposes.
-  WARNING: `--group-by month` uses the generated month value from the 'date' column. The custom 'month' column in the metadata is ignored for grouping purposes.
+  WARNING: `--group-by month` uses a generated month value from the 'date' column. The custom 'month' column in the metadata is ignored for grouping purposes.
+  WARNING: `--group-by year` uses a generated year value from the 'date' column. The custom 'year' column in the metadata is ignored for grouping purposes.
   $ cat "$TMP/filtered_metadata.tsv"
   strain\tdate\tyear\tmonth (esc)
   SEQ1\t2021-01-01\todd\tJanuary (esc)
