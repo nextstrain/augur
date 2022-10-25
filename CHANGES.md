@@ -6,7 +6,12 @@
 
 * filter: Add support to group by ISO week (`--group-by week`) during subsampling. [#1067][] (@victorlin)
 
+### Bug Fixes
+
+* filter: Fixed unintended behavior in which grouping by `day` would "work" when used with `month` and/or `year`. Updated so it will be ignored. [#1070][] (@victorlin)
+
 [#1067]: https://github.com/nextstrain/augur/pull/1067
+[#1070]: https://github.com/nextstrain/augur/pull/1070
 
 ## 18.0.0 (21 September 2022)
 
