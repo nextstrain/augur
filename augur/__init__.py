@@ -66,19 +66,19 @@ def run(argv):
         return args.__command__.run(args)
     except AugurError as e:
         print_err(f"ERROR: {e}")
-        sys.exit(2)
+        sys.exit(1)
     except RecursionError:
         print_err("FATAL: Maximum recursion depth reached. You can set the env variable AUGUR_RECURSION_LIMIT to adjust this (current limit: {})".format(sys.getrecursionlimit()))
-        sys.exit(2)
+        sys.exit(1)
     except FileNotFoundError as e:
         print_err(f"ERROR: {e.strerror}: '{e.filename}'")
-        sys.exit(2)
+        sys.exit(1)
     except TreeTimeUnknownError as e:
         print_err(dedent("""\
             ERROR from TreeTime: An error occurred in TreeTime (see above). This may be due to an issue with TreeTime or Augur.
             Please report you are calling TreeTime via Augur. 
             """))
-        sys.exit(2)
+        sys.exit(1)
     except TreeTimeError as e:
         print_err(f"ERROR: {e}")
         print_err("\n")
@@ -95,7 +95,7 @@ def run(argv):
             To report this, please open a new issue including the original command and the error above:
                 <https://github.com/nextstrain/augur/issues/new/choose>
             """))
-        sys.exit(2)
+        sys.exit(1)
 
 
 def add_version_alias(parser):

@@ -27,7 +27,7 @@ Group by 'year month week'. Using 'week' has some restrictions - 'year' should w
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
   WARNING: 'year' grouping will be ignored since 'week' includes ISO year.
   ERROR: 'month' and 'week' grouping cannot be used together.
-  [2]
+  [1]
 
 Group by 'week'. Check the number of strains that have been dropped due to ambiguous day.
 

@@ -49,6 +49,6 @@ Error on the first duplicate.
   >   --output-metadata "$TMP/metadata.tsv" \
   >   --fields strain
   ERROR: Duplicate found for 'SEQ1'.
-  [2]
+  [1]
 
   $ popd > /dev/null
