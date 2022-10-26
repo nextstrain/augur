@@ -14,6 +14,7 @@ from Bio.Seq import MutableSeq
 from Bio.SeqRecord import SeqRecord
 
 from augur import align
+from augur.errors import AugurError
 
 
 def write_strains(tmpdir, name, strains):
@@ -131,7 +132,7 @@ class TestAlign:
         assert align.check_duplicates(alignment, "TGTT") is None
 
     def test_check_duplicates_string_with_duplicates(self):
-        with pytest.raises(align.AlignmentError):
+        with pytest.raises(AugurError):
             assert align.check_duplicates("GTAC", "CGTT", "CGTT")
 
     def test_check_duplicates_MSA_with_duplicates(self):
@@ -143,7 +144,7 @@ class TestAlign:
                 SeqRecord(Seq("TAGC"), name="seq3"),
             ]
         )
-        with pytest.raises(align.AlignmentError):
+        with pytest.raises(AugurError):
             assert align.check_duplicates(alignment)
 
     def test_check_duplicates_MSA_and_string_with_duplicates(self):
@@ -154,7 +155,7 @@ class TestAlign:
                 SeqRecord(Seq("TAGC"), name="seq3"),
             ]
         )
-        with pytest.raises(align.AlignmentError):
+        with pytest.raises(AugurError):
             assert align.check_duplicates(alignment, "seq3")
 
     def test_prune_seqs_matching_alignment(self):
@@ -186,7 +187,7 @@ class TestAlign:
         assert "crick_strand" in seqs
 
     def test_generate_alignment_cmd_non_mafft(self):
-        with pytest.raises(align.AlignmentError):
+        with pytest.raises(AugurError):
             assert align.generate_alignment_cmd('no-mafft', 1, None, None, None, None)
             
     def test_generate_alignment_cmd_mafft_existing_aln_fname(self):
@@ -233,7 +234,7 @@ class TestAlign:
 
     def test_read_seq_compare(self):
         data_file = pathlib.Path("tests/data/align/aa-seq_h3n2_ha_2y_2HA1_dup.fasta")
-        with pytest.raises(align.AlignmentError):
+        with pytest.raises(AugurError):
             assert align.read_sequences(str(data_file))
 
     def test_prepare_no_alignment_or_ref(self, test_file, test_seqs, out_file):
@@ -244,12 +245,12 @@ class TestAlign:
     
     def test_prepare_no_alignment_with_named_ref_missing(self, test_file, ref_seq):
         """We're given a ref_name, but it does not exist in the test file"""
-        with pytest.raises(align.AlignmentError):
+        with pytest.raises(AugurError):
             align.prepare([test_file,], None, "dontcare", ref_seq.id, None)
 
     def test_prepare_with_alignment_with_named_ref_missing(self, test_with_ref, existing_file, ref_seq):
         """We're given a ref_name and an existing alignment, but the ref doesn't exist in the existing alignment."""
-        with pytest.raises(align.AlignmentError):
+        with pytest.raises(AugurError):
             align.prepare([test_with_ref,], existing_file, "dontcare", ref_seq.id, None)
 
     def test_prepare_no_alignment_with_ref_file(self, test_file, test_seqs, ref_file, ref_seq, out_file):
@@ -334,7 +335,7 @@ class TestAlign:
         ref_seq.seq = ref_seq.seq[:-3]
         with open(ref_file, "w") as fh:
             SeqIO.write(ref_seq, fh, "fasta")
-        with pytest.raises(align.AlignmentError):
+        with pytest.raises(AugurError):
             align.prepare([test_file,], existing_file, "out", None, ref_file)
     
     def test_postprocess_prettify_alignment(self, tmpdir, existing_aln, ref_seq):
