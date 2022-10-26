@@ -15,6 +15,7 @@ import numpy as np
 from treetime.vcf_utils import read_vcf
 from pathlib import Path
 
+from .errors import AugurError
 from .io import read_sequences, run_shell_command, shquote
 from .utils import nthreads_value, load_mask_sites
 
@@ -421,8 +422,7 @@ def run(args):
         # Prepare a multiple sequence alignment from the given variants VCF and
         # reference FASTA.
         if not args.vcf_reference:
-            print("ERROR: a reference Fasta is required with VCF-format alignments")
-            return 1
+            raise AugurError("a reference Fasta is required with VCF-format alignments")
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
         sequences = compress_seq['sequences']
         ref = compress_seq['reference']
@@ -468,8 +468,7 @@ def run(args):
         elif args.method=='fasttree':
             T = build_fasttree(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=tree_builder_args)
     except ConflictingArgumentsException as error:
-        print(f"ERROR:", error, file=sys.stderr)
-        return 1
+        raise AugurError(error) from error
 
     end = time.time()
     print("\nBuilding original tree took {} seconds".format(str(end-start)))
@@ -478,4 +477,5 @@ def run(args):
         import json
         tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
     else:
+        # TODO: raise AugurError with a useful message instead of returning a non-zero exit code.
         return 1
