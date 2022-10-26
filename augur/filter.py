@@ -1269,25 +1269,17 @@ def validate_arguments(args):
     """
     # Don't allow sequence output when no sequence input is provided.
     if args.output and not args.sequences:
-        print(
-            "ERROR: You need to provide sequences to output sequences.",
-            file=sys.stderr)
-        return False
+        raise AugurError("You need to provide sequences to output sequences.")
 
     # Confirm that at least one output was requested.
     if not any((args.output, args.output_metadata, args.output_strains)):
-        print(
-            "ERROR: You need to select at least one output.",
-            file=sys.stderr)
-        return False
+        raise AugurError("You need to select at least one output.")
 
     # Don't allow filtering on sequence-based information, if no sequences or
     # sequence index is provided.
     if not args.sequences and not args.sequence_index and any(getattr(args, arg) for arg in SEQUENCE_ONLY_FILTERS):
-        print(
-            "ERROR: You need to provide a sequence index or sequences to filter on sequence-specific information.",
-            file=sys.stderr)
-        return False
+        raise AugurError(
+            "You need to provide a sequence index or sequences to filter on sequence-specific information.")
 
     # Set flags if VCF
     is_vcf = filename_is_vcf(args.sequences)
@@ -1296,20 +1288,14 @@ def validate_arguments(args):
     if is_vcf:
         from shutil import which
         if which("vcftools") is None:
-            print("ERROR: 'vcftools' is not installed! This is required for VCF data. "
-                  "Please see the augur install instructions to install it.",
-                  file=sys.stderr)
-            return False
+            raise AugurError("'vcftools' is not installed! This is required for VCF data. "
+                  "Please see the augur install instructions to install it.")
 
     # If user requested grouping, confirm that other required inputs are provided, too.
     if args.group_by and not any((args.sequences_per_group, args.subsample_max_sequences)):
-        print(
-            "ERROR: You must specify a number of sequences per group or maximum sequences to subsample.",
-            file=sys.stderr
+        raise AugurError(
+            "You must specify a number of sequences per group or maximum sequences to subsample."
         )
-        return False
-
-    return True
 
 
 def run(args):
@@ -1317,8 +1303,7 @@ def run(args):
     filter and subsample a set of sequences into an analysis set
     '''
     # Validate arguments before attempting any I/O.
-    if not validate_arguments(args):
-        return 1
+    validate_arguments(args)
 
     # Determine whether the sequence index exists or whether should be
     # generated. We need to generate an index if the input sequences are in a
@@ -1592,8 +1577,7 @@ def run(args):
                 args.probabilistic_sampling,
             )
         except TooManyGroupsError as error:
-            print(f"ERROR: {error}", file=sys.stderr)
-            sys.exit(1)
+            raise AugurError(error)
 
         if (probabilistic_used):
             print(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
@@ -1786,8 +1770,7 @@ def run(args):
         print("\t%i of these were dropped because of subsampling criteria%s" % (num_excluded_subsamp, seed_txt))
 
     if total_strains_passed == 0:
-        print("ERROR: All samples have been dropped! Check filter rules and metadata file format.", file=sys.stderr)
-        return 1
+        raise AugurError("All samples have been dropped! Check filter rules and metadata file format.")
 
     print(f"{total_strains_passed} strains passed all filters")
 
