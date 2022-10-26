@@ -7,6 +7,8 @@ import numpy as np
 from Bio import Phylo, SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+
+from .errors import AugurError
 from .utils import read_tree, InvalidTreeError, write_json, get_json_name
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
@@ -145,8 +147,7 @@ def run(args):
     try:
         T = read_tree(args.tree)
     except (FileNotFoundError, InvalidTreeError) as error:
-        print("ERROR: %s" % error, file=sys.stderr)
-        return 1
+        raise AugurError(error) from error
 
     import numpy as np
     missing_internal_node_names = [n.name is None for n in T.get_nonterminals()]
@@ -160,8 +161,7 @@ def run(args):
 
     if is_vcf:
         if not args.vcf_reference:
-            print("ERROR: a reference Fasta is required with VCF-format alignments", file=sys.stderr)
-            return 1
+            raise AugurError("a reference Fasta is required with VCF-format alignments")
 
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
         aln = compress_seq['sequences']
@@ -173,8 +173,7 @@ def run(args):
     from distutils.version import StrictVersion
     import treetime
     if StrictVersion(treetime.version) < StrictVersion('0.7.0'):
-        print("ERROR: this version of augur requires TreeTime 0.7 or later.", file=sys.stderr)
-        return 1
+        raise AugurError("this version of augur requires TreeTime 0.7 or later.")
 
     # Infer ambiguous bases if the user has requested that we infer them (either
     # explicitly or by default) and the user has not explicitly requested that
