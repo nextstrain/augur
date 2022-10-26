@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 18.1.0 (26 October 2022)
+
 ### Features
 
 * filter: Add support to group by ISO week (`--group-by week`) during subsampling. [#1067][] (@victorlin)
