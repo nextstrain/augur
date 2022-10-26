@@ -152,17 +152,14 @@ def run(args):
         T = read_tree(args.tree)
         node_data['input_tree'] = args.tree
     except (FileNotFoundError, InvalidTreeError) as error:
-        print("ERROR: %s" % error, file=sys.stderr)
-        return 1
+        raise AugurError(error) from error
 
     if not args.alignment:
         if args.timetree:
-            print("ERROR: alignment is required for ancestral reconstruction or timetree inference", file=sys.stderr)
-            return 1
+            raise AugurError("alignment is required for ancestral reconstruction or timetree inference")
 
         if args.divergence_units=='mutations':
-            print("ERROR: alignment is required for divergence in units of mutations", file=sys.stderr)
-            return 1
+            raise AugurError("alignment is required for divergence in units of mutations")
 
         # fake alignment to appease treetime when only using it for naming nodes...
         from Bio import SeqRecord, Seq, Align
@@ -172,8 +169,7 @@ def run(args):
         aln = Align.MultipleSeqAlignment(seqs)
     elif any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
         if not args.vcf_reference:
-            print("ERROR: a reference Fasta is required with VCF-format alignments", file=sys.stderr)
-            return 1
+            raise AugurError("a reference Fasta is required with VCF-format alignments")
 
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
         aln = compress_seq['sequences']
@@ -201,8 +197,7 @@ def run(args):
     if args.timetree:
         # load meta data and covert dates to numeric
         if args.metadata is None:
-            print("ERROR: meta data with dates is required for time tree reconstruction", file=sys.stderr)
-            return 1
+            raise AugurError("meta data with dates is required for time tree reconstruction")
         metadata = read_metadata(args.metadata)
         if args.year_bounds:
             args.year_bounds.sort()
@@ -239,12 +234,10 @@ def run(args):
                 node_data['skyline'] = [[float(x) for x in skyline.x], [float(y) for y in conf[0]],
                                         [float(y) for y in skyline.y], [float(y) for y in conf[1]]]
             except:
-                print(
-                    "ERROR: skyline optimization by TreeTime has failed.",
-                    "To avoid this error, try running without coalescent optimization or with `--coalescent opt` instead of `--coalescent skyline`.",
-                    file=sys.stderr
+                raise AugurError(
+                    "skyline optimization by TreeTime has failed. "
+                    "To avoid this error, try running without coalescent optimization or with `--coalescent opt` instead of `--coalescent skyline`."
                 )
-                return 1
 
         attributes.extend(['numdate', 'clock_length', 'mutation_length', 'raw_date', 'date'])
         if args.date_confidence:
@@ -298,8 +291,7 @@ def run(args):
 
             node_data['nodes'][node.name]['branch_length'] = n_muts
     else:
-        print("ERROR: divergence unit",args.divergence_units,"not supported!", file=sys.stderr)
-        return 1
+        raise AugurError(f"divergence unit {args.divergence_units} not supported!")
 
     # Export refined tree and node data
     import json
@@ -316,4 +308,5 @@ def run(args):
     write_json(node_data, node_data_fname)
     print("node attributes written to",node_data_fname, file=sys.stdout)
 
+    # TODO: raise AugurError with a useful message instead of returning a non-zero exit code.
     return 0 if tree_success else 1
