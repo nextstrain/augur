@@ -8,6 +8,7 @@ import Bio.SeqRecord
 import sys
 import csv
 
+from .errors import AugurError
 from .io import open_file, read_sequences, is_vcf, read_vcf
 
 def register_parser(parent_subparsers):
@@ -207,8 +208,7 @@ def run(args):
         else:
             num_of_seqs, tot_length = index_sequences(args.sequences, args.output)
     except FileNotFoundError:
-        print(f"ERROR: Could not open sequences file '{args.sequences}'.", file=sys.stderr)
-        return 1
+        raise AugurError(f"Could not open sequences file '{args.sequences}'.")
 
     if args.verbose:
         if tot_length:
