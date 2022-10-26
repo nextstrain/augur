@@ -7,7 +7,7 @@ import sys
 from augur.argparse_ import add_command_subparsers
 from augur.errors import AugurError
 from augur.io.json import dump_ndjson, load_ndjson
-from augur.io.metadata import read_table_to_dict, read_metadata_with_sequences
+from augur.io.metadata import read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
 from augur.types import DataErrorMethod
 from . import passthru
 
@@ -65,6 +65,15 @@ def create_shared_parser():
         default=DataErrorMethod.ERROR_FIRST.value,
         help="How should duplicate records be reported.")
 
+    shared_outputs = shared_parser.add_argument_group(
+        title="OUTPUTS",
+        description="""
+            Output options shared by all `augur curate` commands.
+            If no output options are provided, commands will output NDJSON records to stdout.
+        """)
+    shared_outputs.add_argument("--output-metadata",
+        help="Output metadata TSV file. Accepts '-' to output TSV to stdout.")
+
     return shared_parser
 
 
@@ -120,4 +129,7 @@ def run(args):
     modified_records = getattr(args, SUBCOMMAND_ATTRIBUTE).run(args, records)
 
     # Output modified records
-    dump_ndjson(modified_records)
+    if args.output_metadata:
+        write_records_to_tsv(modified_records, args.output_metadata)
+    else:
+        dump_ndjson(modified_records)
