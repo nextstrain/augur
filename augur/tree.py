@@ -39,7 +39,7 @@ DEFAULT_ARGS = {
     "iqtree": "-ninit 2 -n 2 -me 0.05 -nt AUTO -redo",
 }
 
-class ConflictingArgumentsException(Exception):
+class ConflictingArgumentsException(AugurError):
     """Exception when user-provided tree builder arguments conflict with the
     requested tree builder's hardcoded defaults (e.g., the path to the
     alignment, etc.).
@@ -460,15 +460,12 @@ def run(args):
     else:
         tree_builder_args = f"{DEFAULT_ARGS[args.method]} {args.tree_builder_args}"
 
-    try:
-        if args.method=='raxml':
-            T = build_raxml(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=tree_builder_args)
-        elif args.method=='iqtree':
-            T = build_iqtree(fasta, tree_fname, args.substitution_model, nthreads=args.nthreads, tree_builder_args=tree_builder_args)
-        elif args.method=='fasttree':
-            T = build_fasttree(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=tree_builder_args)
-    except ConflictingArgumentsException as error:
-        raise AugurError(error) from error
+    if args.method=='raxml':
+        T = build_raxml(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=tree_builder_args)
+    elif args.method=='iqtree':
+        T = build_iqtree(fasta, tree_fname, args.substitution_model, nthreads=args.nthreads, tree_builder_args=tree_builder_args)
+    elif args.method=='fasttree':
+        T = build_fasttree(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=tree_builder_args)
 
     end = time.time()
     print("\nBuilding original tree took {} seconds".format(str(end-start)))
