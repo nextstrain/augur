@@ -1,6 +1,7 @@
 import csv
 import pandas as pd
 import pyfastx
+import sys
 
 from augur.errors import AugurError
 from augur.io.print import print_err
@@ -362,3 +363,43 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
 
     if error_message:
         raise AugurError(f"Encountered the following error(s) when parsing metadata with sequences:{error_message}")
+
+
+def write_records_to_tsv(records, output_file):
+    """
+    Write each record from *records* as a single row to a TSV *output_file*.
+    Uses the keys of the first record as output column names.
+    Ignores extra keys in other records.
+    If records are missing keys, they will have an empty string as the value.
+
+    Parameters
+    ----------
+    records: iterator[dict]
+        Iterator that yields dict that contains sequences
+
+    output_file: str
+        Path to the output TSV file.
+        Accepts '-' to output TSV to stdout.
+    """
+    # Use the keys of the first record as output fields
+    first_record = next(records)
+    # Use the record keys as output columns since as of python 3.7 dicts retain insertion order
+    output_columns = list(first_record.keys())
+
+    # Special case single hyphen as stdout
+    if output_file == '-':
+        output_file = sys.stdout
+
+    with open_file(output_file, 'w', newline='') as output_metadata:
+        tsv_writer = csv.DictWriter(
+            output_metadata,
+            output_columns,
+            extrasaction='ignore',
+            delimiter='\t',
+            lineterminator='\n'
+        )
+        tsv_writer.writeheader()
+        tsv_writer.writerow(first_record)
+
+        for record in records:
+            tsv_writer.writerow(record)

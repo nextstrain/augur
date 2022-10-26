@@ -2,7 +2,7 @@ import pytest
 import shutil
 
 from augur.errors import AugurError
-from augur.io.metadata import read_table_to_dict, read_metadata_with_sequences
+from augur.io.metadata import read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
 from augur.types import DataErrorMethod
 
 
@@ -425,4 +425,57 @@ class TestReadMetadataWithSequence:
             "'EXTRA_METADATA_A'\n'EXTRA_METADATA_T'\n"
             "The following sequence records did not have a matching metadata record:\n"
             "'EXTRA_SEQ_A'\n'EXTRA_SEQ_T'\n"
+        )
+
+@pytest.fixture
+def output_records():
+    return iter([
+        {"strain": "SEQ_A", "country": "USA", "date": "2020-10-01"},
+        {"strain": "SEQ_T", "country": "USA", "date": "2020-10-02"}
+    ])
+
+@pytest.fixture
+def expected_output_tsv():
+    return (
+        "strain\tcountry\tdate\n"
+        "SEQ_A\tUSA\t2020-10-01\n"
+        "SEQ_T\tUSA\t2020-10-02\n"
+    )
+
+class TestWriteRecordsToTsv:
+    def test_write_records_to_tsv(self, tmpdir, output_records, expected_output_tsv):
+        output_tsv = tmpdir / "output.tsv"
+        write_records_to_tsv(output_records, output_tsv)
+        with open(output_tsv, 'r') as output_fh:
+            assert output_fh.read() == expected_output_tsv
+
+    def test_write_records_to_tsv_stdout(self, capsys, output_records, expected_output_tsv):
+        write_records_to_tsv(output_records, '-')
+        captured = capsys.readouterr()
+        assert captured.out == expected_output_tsv
+
+    def test_write_records_to_tsv_with_extra_keys(self, capsys):
+        records_with_extra_keys = iter([
+            {"key_1": "value_1", "key_2": "value_2"},
+            {"key_1": "value_1", "key_2": "value_2", "key_3": "value_3"}
+        ])
+        write_records_to_tsv(records_with_extra_keys, '-')
+        captured = capsys.readouterr()
+        assert captured.out == (
+            "key_1\tkey_2\n"
+            "value_1\tvalue_2\n"
+            "value_1\tvalue_2\n"
+        )
+
+    def test_write_records_to_tsv_with_missing_keys(self, capsys):
+        records_with_missing_keys = iter([
+            {"key_1": "value_1", "key_2": "value_2"},
+            {"key_2": "value_2"}
+        ])
+        write_records_to_tsv(records_with_missing_keys, '-')
+        captured = capsys.readouterr()
+        assert captured.out == (
+            "key_1\tkey_2\n"
+            "value_1\tvalue_2\n"
+            "\tvalue_2\n"
         )
