@@ -38,5 +38,9 @@ Group by 'week'. Check the number of strains that have been dropped due to ambig
   >  --subsample-seed 0 \
   >  --output-strains "$TMP/filtered_strains.txt" \
   >  --output-log "$TMP/filtered_log.tsv" > /dev/null
+  $ grep "skip_group_by_with_ambiguous_year" "$TMP/filtered_log.tsv" | wc -l
+  \s*1 (re)
+  $ grep "skip_group_by_with_ambiguous_month" "$TMP/filtered_log.tsv" | wc -l
+  \s*1 (re)
   $ grep "skip_group_by_with_ambiguous_day" "$TMP/filtered_log.tsv" | wc -l
-  \s*5 (re)
+  \s*3 (re)

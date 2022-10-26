@@ -9,9 +9,11 @@
 ### Bug Fixes
 
 * filter: Fixed unintended behavior in which grouping by `day` would "work" when used with `month` and/or `year`. Updated so it will be ignored. [#1070][] (@victorlin)
+* filter: Fixed unintended behavior in which grouping by `month` with ambiguous years would "work". Updated so date ambiguity is checked properly for all generated columns. [#1072][] (@victorlin)
 
 [#1067]: https://github.com/nextstrain/augur/pull/1067
 [#1070]: https://github.com/nextstrain/augur/pull/1070
+[#1072]: https://github.com/nextstrain/augur/pull/1072
 
 ## 18.0.0 (21 September 2022)
 
