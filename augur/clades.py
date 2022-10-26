@@ -9,6 +9,8 @@ import numpy as np
 from collections import defaultdict
 import networkx as nx
 from itertools import islice
+
+from .errors import AugurError
 from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json, get_json_name
 
 def read_in_clade_definitions(clade_file):
@@ -259,12 +261,11 @@ def register_parser(parent_subparsers):
 
 
 def run(args):
-    ## read tree and data, if reading data fails, return with error code
+    ## read tree and data, if reading data fails, raise an error
     tree = Phylo.read(args.tree, 'newick')
     node_data = read_node_data(args.mutations, args.tree)
     if node_data is None:
-        print("ERROR: could not read node data (incl sequences)")
-        return 1
+        raise AugurError("could not read node data (incl sequences)")
     all_muts = node_data['nodes']
 
     if args.reference:
