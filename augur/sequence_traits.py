@@ -163,7 +163,7 @@ def read_in_features(drm_file):
 
     mutPositions = defaultdict(list)
 
-    df = pd.read_csv(drm_file, sep='\t' if drm_file.endswith('.tsv') else ',')
+    df = pd.read_csv(drm_file, sep=None)
     for mi, m in df.iterrows():
         pos = m.SITE-1 #put in python numbering
         gene = m.GENE if hasattr(m, 'GENE') else 'nuc'
