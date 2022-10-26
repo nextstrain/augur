@@ -6,6 +6,8 @@ import os, sys
 import numpy as np
 from collections import defaultdict
 from Bio import SeqIO, Seq, SeqRecord, Phylo
+
+from .errors import AugurError
 from .utils import read_node_data, write_json
 from treetime.vcf_utils import read_vcf
 
@@ -58,7 +60,7 @@ def load_alignments(sequence_files, gene_names):
 
 
 def run(args):
-    ## read tree and data, if reading data fails, return with error code
+    ## read tree and data, if reading data fails, raise an error
     tree = Phylo.read(args.tree, 'newick')
 
     #check whether VCF - by existance of VCF reference file
@@ -67,8 +69,7 @@ def run(args):
     ## check file format and read in sequences
     node_data = read_node_data(args.mutations, args.tree)
     if node_data is None:
-        print("ERROR: could not read mutation data "+ ("(incl sequences)" if not is_vcf else ""))
-        return 1
+        raise AugurError("could not read mutation data "+ ("(incl sequences)" if not is_vcf else ""))
 
     root_node = tree.root.name
 
@@ -83,11 +84,9 @@ def run(args):
 
     # check that root node has sequences for each requested gene
     if "aa_sequences" not in node_data["nodes"][root_node]:
-        print("ERROR: ancestral sequences are not provided")
-        return 1
+        raise AugurError("ancestral sequences are not provided")
     if not args.gene in node_data["nodes"][root_node]['aa_sequences']:
-        print("ERROR: ancestral sequences missing for gene",args.gene)
-        return 1
+        raise AugurError(f"ancestral sequences missing for gene {args.gene}")
 
     # gather all reconstructed sequences
     sequences = dict()
