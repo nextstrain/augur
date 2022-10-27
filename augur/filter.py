@@ -1058,6 +1058,10 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             metadata.drop([record['strain'] for record in ambiguous_date_strains], inplace=True)
             skipped_strains.extend(ambiguous_date_strains)
 
+            # Check again if metadata is empty after dropping ambiguous dates.
+            if metadata.empty:
+                return group_by_strain, skipped_strains
+
             # Generate columns.
             if 'year' in generated_columns_requested:
                 metadata['year'] = metadata[f'{temp_prefix}year']
