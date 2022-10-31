@@ -25,7 +25,7 @@ In this case, a sample from Panama (North America) has its region inferred as "S
   >  --columns region \
   >  --output-node-data "$TMP/traits.json" > /dev/null
 
-  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" "traits/traits_with_missing_region.json" "$TMP/traits.json" --significant-digits 5
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" "traits/traits_with_missing_region.json" "$TMP/traits.json" --significant-digits 2
   {}
   $ rm -f "$TMP/traits.json"
 
