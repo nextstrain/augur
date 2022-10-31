@@ -1,4 +1,5 @@
 import csv
+import os
 import pandas as pd
 import pyfastx
 import sys
@@ -213,6 +214,8 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
 
     Reads the *fasta* file with `pyfastx.Fasta`, which creates an index for
     the file to allow random access of sequences via the sequence id.
+    Will remove any existing index file named `<fasta>.fxi` to force the
+    rebuilding of the index so that there's no chance of using stale cached indexes.
     See pyfastx docs for more details:
     https://pyfastx.readthedocs.io/en/latest/usage.html#fasta
 
@@ -242,6 +245,13 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
     dict
         The parsed metadata record with the sequence
     """
+    # Remove the old Pyfastx index to force rebuild of index
+    # so we don't have to worry about a stale cached index
+    try:
+        os.remove(f"{fasta}.fxi")
+    except FileNotFoundError:
+        pass
+
     sequences = pyfastx.Fasta(fasta)
     sequence_ids = set(sequences.keys())
 

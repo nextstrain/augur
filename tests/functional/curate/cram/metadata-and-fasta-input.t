@@ -6,11 +6,6 @@ Setup
 Testing combined metadata and FASTA inputs for the curate command.
 Running the `passthru` subcommand since it does not do any data transformations.
 
-NOTE: when using combined metadata and FASTA inputs, pyfastx creates an index
-file named <fasta_filename>.fasta.fxi. If you are using the same FASTA file
-for separate tests and you do NOT want to reuse the same index file, make sure
-to remove the index file before running the Augur command.
-
 Create FASTA file for testing.
 
   $ cat >$TMP/sequences.fasta <<~~
@@ -34,7 +29,6 @@ Create metadata TSV file for testing.
 Test metadata input with extra FASTA input options without a FASTA file.
 This is expected to fail with an error.
 
-  $ rm -f $TMP/sequences.fasta.fxi 2> /dev/null
   $ ${AUGUR} curate passthru \
   > --metadata $TMP/metadata.tsv \
   > --seq-id-column name \
@@ -46,7 +40,6 @@ This is expected to fail with an error.
 Test metadata and FASTA inputs without required FASTA input options.
 This is expected to fail with an error.
 
-  $ rm -f $TMP/sequences.fasta.fxi 2> /dev/null
   $ ${AUGUR} curate passthru \
   > --metadata $TMP/metadata.tsv \
   > --fasta $TMP/sequences.fasta
@@ -55,7 +48,6 @@ This is expected to fail with an error.
 
 Test metadata and FASTA inputs with required FASTA input options.
 
-  $ rm -f $TMP/sequences.fasta.fxi 2> /dev/null
   $ ${AUGUR} curate passthru \
   > --metadata $TMP/metadata.tsv \
   > --fasta $TMP/sequences.fasta \
@@ -89,7 +81,6 @@ Create new FASTA file with duplicate and extra sequence records.
 Test metadata and FASTA inputs with duplicate and extra records and default `ERROR_FIRST` reporting.
 This is expected to fail with an error, so redirecting stdout since we don't care about the output.
 
-  $ rm -f $TMP/sequences.fasta.fxi 2> /dev/null
   $ ${AUGUR} curate passthru \
   > --metadata $TMP/metadata-with-duplicate-and-unmatched-records.tsv \
   > --fasta $TMP/sequences-with-duplicate-and-unmatched-records.fasta \
@@ -101,7 +92,6 @@ This is expected to fail with an error, so redirecting stdout since we don't car
 Test metadata and FASTA inputs with duplicate and extra records with `ERROR_ALL` reporting.
 This is expected to fail with an error, so redirecting stdout since we don't care about the output.
 
-  $ rm -f $TMP/sequences.fasta.fxi 2> /dev/null
   $ ${AUGUR} curate passthru \
   > --metadata $TMP/metadata-with-duplicate-and-unmatched-records.tsv \
   > --fasta $TMP/sequences-with-duplicate-and-unmatched-records.fasta \
@@ -128,7 +118,6 @@ Test metadata and FASTA inputs with unmatched records, but ask to only warn on u
 This is expected run without error and only print a warning.
 Notice the duplicate sequence "sequence_A" will always use the first sequence in the FASTA file because of pyfastx.
 
-  $ rm -f $TMP/sequences.fasta.fxi 2> /dev/null
   $ ${AUGUR} curate passthru \
   > --metadata $TMP/metadata-with-duplicate-and-unmatched-records.tsv \
   > --fasta $TMP/sequences-with-duplicate-and-unmatched-records.fasta \
@@ -160,7 +149,6 @@ Notice the duplicate sequence "sequence_A" will always use the first sequence in
 Test metadata and FASTA inputs with unmatched records in both, but ask to silent unmatched and duplicates.
 Notice the duplicate sequence "sequence_A" will always use the first sequence in the FASTA file because of pyfastx.
 
-  $ rm -f $TMP/sequences.fasta.fxi 2> /dev/null
   $ ${AUGUR} curate passthru \
   > --metadata $TMP/metadata-with-duplicate-and-unmatched-records.tsv \
   > --fasta $TMP/sequences-with-duplicate-and-unmatched-records.fasta \
