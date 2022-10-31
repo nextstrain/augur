@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* traits: Fix trait inference when tips have missing values. [#1081][] (@huddlej)
+
+[#1081]: https://github.com/nextstrain/augur/pull/1081
 
 ## 18.1.0 (26 October 2022)
 
