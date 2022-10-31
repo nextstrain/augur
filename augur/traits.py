@@ -51,7 +51,7 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
     traits = {}
     nodes = {n.name:n for n in T.get_terminals()}
     for name, meta in seq_meta.iterrows():
-        if field in meta and name in nodes:
+        if field in meta and name in nodes and meta[field] != missing:
             traits[name] = meta[field]
     unique_states = list(set(traits.values()))
 
