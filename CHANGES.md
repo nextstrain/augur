@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 18.1.2 (1 November 2022)
+
 ### Bug Fixes
 
 * traits: Fix trait inference when tips have missing values. [#1081][] (@huddlej)
