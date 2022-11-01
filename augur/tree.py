@@ -2,6 +2,7 @@
 Build a tree using a variety of methods.
 """
 
+from glob import escape
 import os
 import shlex
 import shutil
@@ -255,8 +256,23 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
             tmp_line = line
             if line.startswith(">"):
                 num_seqs += 1
-                for c,v in escape_dict.items():
-                    tmp_line = tmp_line.replace(c,v)
+                pos = 1
+                for i in range(1, len(line)):
+                    l = line[i]
+                    #check if l is a character that IQ-tree changes
+                    if l.isalnum()==False and l !='_' and l != '-' and l != '.' and l !='\n':
+                        if l not in escape_dict: #characters outside of escape dictionary might not be properly handled in treetime 
+                            print("WARNING: Offending character: \'%s\' detected in taxon name: %s Replacing character with '_'. " 
+                                "To avoid issues downstream replace offending characters with '_' in alignment file."
+                                % (l, format(line))
+                            )
+                            tmp_line = tmp_line[:pos] + '_' + line[(i+1):]  # replace offending characters
+                            pos = pos + 1
+                        else:
+                            tmp_line = tmp_line[:pos] + escape_dict[l] + line[(i+1):]  # replace offending characters
+                            pos = pos + len(escape_dict[l])
+                    else:
+                        pos += 1
 
             ofile.write(tmp_line)
 
