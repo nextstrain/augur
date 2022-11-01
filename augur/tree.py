@@ -2,7 +2,6 @@
 Build a tree using a variety of methods.
 """
 
-from glob import escape
 import os
 import shlex
 import shutil
