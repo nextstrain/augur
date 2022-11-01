@@ -259,6 +259,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
                 for i in range(1, len(line)):
                     l = line[i]
                     #check if l is a character that IQ-tree changes
+                    # See IQtree function renameBool https://github.com/iqtree/iqtree2/blob/3bbc304263cb2f85574a9163e8f2e5c5b597a147/utils/tools.cpp#L585
                     if l.isalnum()==False and l !='_' and l != '-' and l != '.' and l.isspace()== False:
                         if l not in escape_dict: #characters outside of escape dictionary might not be properly handled in treetime 
                             print("WARNING: Potentially offending character: \'%s\' detected in taxon name: %s" 
