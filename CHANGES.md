@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* filter: Fixed a bug where `--group-by week` would fail when all samples in a chunk have been dropped due to ambiguous dates. [#1080][] (@victorlin)
+
+[#1080]: https://github.com/nextstrain/augur/pull/1080
 
 ## 18.1.0 (26 October 2022)
 
