@@ -259,7 +259,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
                 for i in range(1, len(line)):
                     l = line[i]
                     #check if l is a character that IQ-tree changes
-                    if l.isalnum()==False and l !='_' and l != '-' and l != '.' and l !='\n':
+                    if l.isalnum()==False and l !='_' and l != '-' and l != '.' and l.isspace()== False:
                         if l not in escape_dict: #characters outside of escape dictionary might not be properly handled in treetime 
                             print("WARNING: Potentially offending character: \'%s\' detected in taxon name: %s" 
                                 "We recommend replacing offending characters with '_' in the alignment file to avoid issues downstream."
@@ -267,8 +267,8 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
                             )
                             escape_dict[l] = f'_{prefix}-{random_string(20)}_'
                             reverse_escape_dict[escape_dict[l]] = l
-                            tmp_line = tmp_line[:pos] + escape_dict[l] + line[(i+1):]  # replace offending characters
-                            pos = pos + len(escape_dict[l])
+                        tmp_line = tmp_line[:pos] + escape_dict[l] + line[(i+1):]  # replace offending characters
+                        pos = pos + len(escape_dict[l])
                     else:
                         pos += 1
 
