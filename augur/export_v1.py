@@ -403,4 +403,3 @@ def run(args):
     meta_json["panels"] = process_panels(None, meta_json)
 
     write_json(meta_json, args.output_meta, indent=json_indent, include_version=False)
-    return 0

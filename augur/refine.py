@@ -308,5 +308,6 @@ def run(args):
     write_json(node_data, node_data_fname)
     print("node attributes written to",node_data_fname, file=sys.stdout)
 
-    # TODO: raise AugurError with a useful message instead of returning a non-zero exit code.
-    return 0 if tree_success else 1
+    if not tree_success:
+        # TODO: raise AugurError with a useful message instead of returning a non-zero exit code.
+        return 1

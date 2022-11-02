@@ -233,5 +233,3 @@ def run(args):
             vcf_fname = '.'.join(args.alignment.split('.')[:-1]) + '.vcf'
         write_vcf(tt.get_tree_dict(keep_var_ambigs=True), vcf_fname)
         print("ancestral sequences as vcf-file written to",vcf_fname, file=sys.stdout)
-
-    return 0
