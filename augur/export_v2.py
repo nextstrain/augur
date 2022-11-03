@@ -11,6 +11,7 @@ import re
 from Bio import Phylo
 
 from .argparse_ import ExtendAction
+from .errors import AugurError
 from .io import read_metadata
 from .utils import read_node_data, write_json, read_config, read_lat_longs, read_colors
 from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
@@ -28,8 +29,7 @@ def warning(message):
     warn(message, UserWarning, stacklevel=2)
 
 def fatal(message):
-    print("FATAL ERROR: {}".format(message))
-    sys.exit(2)
+    raise AugurError(message)
 
 def configure_warnings():
     # we must only set these when someone runs `augur export v2` (i.e. run_v2() is called)
@@ -528,10 +528,7 @@ def validate_data_json(filename):
         validate_v2(main_json=filename)
     except ValidateError as e:
         print(e)
-        print("\n------------------------")
-        print("Validation of {} failed. Please check this in a local instance of `auspice`, as it is not expected to display correctly. ".format(filename))
-        print("------------------------")
-        sys.exit(2)
+        raise AugurError("Validation of {} failed. Please check this in a local instance of `auspice`, as it is not expected to display correctly. ".format(filename))
 
 
 def set_panels(data_json, config, cmd_line_panels):
@@ -974,8 +971,7 @@ def get_config(args):
             print("Validating config file {} against the JSON schema".format(args.auspice_config))
             validate_auspice_config_v2(args.auspice_config)
         except ValidateError:
-            print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
-            sys.exit(2)
+            raise AugurError("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
     # Print a warning about the inclusion of "vaccine_choices" which are _unused_ by `export v2`
     # (They are in the schema as this allows v1-compat configs to be used)
     if config.get("vaccine_choices"):
@@ -991,8 +987,7 @@ def run(args):
     try:
         node_data_file = read_node_data(args.node_data, skip_validation=args.skip_validation) # node_data_files is an array of multiple files (or a single file)
     except FileNotFoundError:
-        print(f"ERROR: node data file ({args.node_data}) does not exist")
-        sys.exit(2)
+        raise AugurError(f"node data file ({args.node_data}) does not exist")
 
     if args.metadata is not None:
         try:
@@ -1001,11 +996,9 @@ def run(args):
                 if "strain" not in metadata_file[strain]:
                     metadata_file[strain]["strain"] = strain
         except FileNotFoundError:
-            print(f"ERROR: meta data file ({args.metadata}) does not exist", file=sys.stderr)
-            sys.exit(2)
+            raise AugurError(f"meta data file ({args.metadata}) does not exist")
         except Exception as error:
-            print(f"ERROR: {error}", file=sys.stderr)
-            sys.exit(1)
+            raise AugurError(error)
     else:
         metadata_file = {}
 
@@ -1034,8 +1027,7 @@ def run(args):
             node_attrs=node_attrs
         )
     except FileNotFoundError as e:
-        print(f"ERROR: required file could not be read: {e}")
-        sys.exit(2)
+        raise AugurError(f"required file could not be read: {e}")
     set_filters(data_json, config)
 
     # set tree structure
