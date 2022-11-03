@@ -116,16 +116,16 @@ def run(args):
 
     # Check provided args are valid and required combination of args are provided
     if not args.fasta and (args.seq_id_column or args.seq_field):
-        raise AugurError("The `seq-id-column` and `seq-field` options should only be used when providing a FASTA file.")
+        raise AugurError("The --seq-id-column and --seq-field options should only be used when providing a FASTA file.")
 
     if args.fasta and (not args.seq_id_column or not args.seq_field):
-        raise AugurError("The `seq-id-column` and `seq-field` options are required for a FASTA file input.")
+        raise AugurError("The --seq-id-column and --seq-field options are required for a FASTA file input.")
 
     if not args.output_fasta and (args.output_id_field or args.output_seq_field):
-        raise AugurError("The `output-id-field` and `output-seq-field` options should only be used when requesting a FASTA output.")
+        raise AugurError("The --output-id-field and --output-seq-field options should only be used when requesting a FASTA output.")
 
     if args.output_fasta and (not args.output_id_field or not args.output_seq_field):
-        raise AugurError("The `output-id-field` and `output-seq-field` options are required for a FASTA output.")
+        raise AugurError("The --output-id-field and --output-seq-field options are required for a FASTA output.")
 
     # Read inputs
     # Special case single hyphen as stdin

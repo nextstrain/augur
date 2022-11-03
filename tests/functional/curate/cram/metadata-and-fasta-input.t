@@ -33,7 +33,7 @@ This is expected to fail with an error.
   > --metadata $TMP/metadata.tsv \
   > --seq-id-column name \
   > --seq-field sequences
-  ERROR: The `seq-id-column` and `seq-field` options should only be used when providing a FASTA file.
+  ERROR: The --seq-id-column and --seq-field options should only be used when providing a FASTA file.
   [2]
 
 
@@ -43,7 +43,7 @@ This is expected to fail with an error.
   $ ${AUGUR} curate passthru \
   > --metadata $TMP/metadata.tsv \
   > --fasta $TMP/sequences.fasta
-  ERROR: The `seq-id-column` and `seq-field` options are required for a FASTA file input.
+  ERROR: The --seq-id-column and --seq-field options are required for a FASTA file input.
   [2]
 
 Test metadata and FASTA inputs with required FASTA input options.

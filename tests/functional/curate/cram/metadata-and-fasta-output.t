@@ -21,7 +21,7 @@ This is expected to fail immediately with an error.
   >     --output-metadata $TMP/metadata.tsv \
   >     --output-id-field strain \
   >     --output-seq-field sequence
-  ERROR: The `output-id-field` and `output-seq-field` options should only be used when requesting a FASTA output.
+  ERROR: The --output-id-field and --output-seq-field options should only be used when requesting a FASTA output.
   [2]
 
 Test metadata and FASTA outputs without requried FASTA output options.
@@ -30,7 +30,7 @@ This is expected to fail immediately with an error.
   >   | ${AUGUR} curate passthru \
   >     --output-metadata $TMP/metadata.tsv \
   >     --output-fasta $TMP/sequences.fasta
-  ERROR: The `output-id-field` and `output-seq-field` options are required for a FASTA output.
+  ERROR: The --output-id-field and --output-seq-field options are required for a FASTA output.
   [2]
 
 Test metadata and FASTA outputs
