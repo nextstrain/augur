@@ -1,5 +1,5 @@
-augur.parse module
-==================
+augur.parse
+===========
 
 .. automodule:: augur.parse
    :members:

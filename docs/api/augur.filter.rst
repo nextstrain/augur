@@ -1,5 +1,5 @@
-augur.filter module
-===================
+augur.filter
+============
 
 .. automodule:: augur.filter
    :members:

@@ -1,5 +1,5 @@
-augur.version module
-====================
+augur.version
+=============
 
 .. automodule:: augur.version
    :members:

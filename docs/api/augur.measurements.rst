@@ -1,5 +1,5 @@
-augur.measurements module
-=========================
+augur.measurements
+==================
 
 .. automodule:: augur.measurements
    :members:

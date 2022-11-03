@@ -1,5 +1,5 @@
-augur.ancestral module
-======================
+augur.ancestral
+===============
 
 .. automodule:: augur.ancestral
    :members:

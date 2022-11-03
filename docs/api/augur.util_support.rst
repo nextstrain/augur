@@ -1,13 +1,10 @@
-augur.util\_support package
-===========================
+augur.util\_support
+===================
 
 .. automodule:: augur.util_support
    :members:
    :undoc-members:
    :show-inheritance:
-
-Submodules
-----------
 
 .. toctree::
 

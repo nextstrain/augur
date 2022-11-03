@@ -1,5 +1,5 @@
-augur.distance module
-=====================
+augur.distance
+==============
 
 .. automodule:: augur.distance
    :members:

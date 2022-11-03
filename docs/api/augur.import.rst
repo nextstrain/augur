@@ -1,5 +1,5 @@
-augur.import module
-===================
+augur.import
+============
 
 .. automodule:: augur.import_
    :members:

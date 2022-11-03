@@ -1,5 +1,5 @@
-augur.util\_support.date\_disambiguator module
-==============================================
+augur.util\_support.date\_disambiguator
+=======================================
 
 .. automodule:: augur.util_support.date_disambiguator
    :members:

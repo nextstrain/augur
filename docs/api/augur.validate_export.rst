@@ -1,5 +1,5 @@
-augur.validate\_export module
-=============================
+augur.validate\_export
+======================
 
 .. automodule:: augur.validate_export
    :members:

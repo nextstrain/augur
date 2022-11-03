@@ -1,5 +1,5 @@
-augur.traits module
-===================
+augur.traits
+============
 
 .. automodule:: augur.traits
    :members:

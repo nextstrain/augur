@@ -1,5 +1,5 @@
-augur.align module
-==================
+augur.align
+===========
 
 .. automodule:: augur.align
    :members:

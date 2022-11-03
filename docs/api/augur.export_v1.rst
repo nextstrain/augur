@@ -1,5 +1,5 @@
-augur.export\_v1 module
-=======================
+augur.export\_v1
+================
 
 .. automodule:: augur.export_v1
    :members:

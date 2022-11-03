@@ -1,20 +1,10 @@
-augur package
-=============
+augur
+=====
 
 .. automodule:: augur
    :members:
    :undoc-members:
    :show-inheritance:
-
-Subpackages
------------
-
-.. toctree::
-
-   augur.util_support
-
-Submodules
-----------
 
 .. toctree::
 
@@ -44,6 +34,7 @@ Submodules
    augur.traits
    augur.translate
    augur.tree
+   augur.util_support
    augur.utils
    augur.validate
    augur.validate_export

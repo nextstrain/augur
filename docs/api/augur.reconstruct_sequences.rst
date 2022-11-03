@@ -1,5 +1,5 @@
-augur.reconstruct\_sequences module
-===================================
+augur.reconstruct\_sequences
+============================
 
 .. automodule:: augur.reconstruct_sequences
    :members:

@@ -1,5 +1,5 @@
-augur.mask module
-=================
+augur.mask
+==========
 
 .. automodule:: augur.mask
    :members:

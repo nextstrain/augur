@@ -1,5 +1,5 @@
-augur.tree module
-=================
+augur.tree
+==========
 
 .. automodule:: augur.tree
    :members:

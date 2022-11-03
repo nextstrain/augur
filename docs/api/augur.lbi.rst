@@ -1,5 +1,5 @@
-augur.lbi module
-================
+augur.lbi
+=========
 
 .. automodule:: augur.lbi
    :members:
