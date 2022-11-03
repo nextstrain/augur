@@ -10,6 +10,7 @@ from Bio import Phylo
 from argparse import SUPPRESS
 from collections import defaultdict
 from .argparse_ import ExtendAction
+from .errors import AugurError
 from .io import read_metadata
 from .utils import read_node_data, write_json, read_config, read_lat_longs, read_colors
 
@@ -211,9 +212,8 @@ def ensure_config_is_v1(config):
     Side effects: may print a warning & exit
     """
     if config.get("maintainers") or config.get("geo_resolutions") or config.get("display_defaults") or config.get("colorings"):
-        print("ERROR. It appears that your provided config file is using a newer schema than required for `augur export v1`.")
+        raise AugurError("It appears that your provided config file is using a newer schema than required for `augur export v1`.")
         # TODO: print documentation URL when we have one available
-        sys.exit(2)
 
 def construct_author_info_v1(metadata, tree, nodes):
     """
@@ -391,8 +391,7 @@ def run(args):
     try:
         color_mapping = read_colors(args.colors)
     except FileNotFoundError as e:
-        print(f"ERROR: required file could not be read: {e}")
-        sys.exit(2)
+        raise AugurError(f"required file could not be read: {e}")
     meta_json["updated"] = time.strftime("%d %b %Y")
     meta_json["virus_count"] = len(list(T.get_terminals()))
     meta_json["author_info"] = construct_author_info_v1(meta_tsv, T, nodes)
