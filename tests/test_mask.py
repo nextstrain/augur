@@ -14,6 +14,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from augur import mask
+from augur.errors import AugurError
 from augur.utils import VALID_NUCLEOTIDES
 
 # Test inputs for the commands. Writing these here so tests are self-contained.
@@ -116,11 +117,11 @@ class TestMask:
         assert mask.get_chrom_name(vcf_file) is None
     
     def test_mask_vcf_bails_on_no_chrom(self, tmpdir):
-        """mask_vcf should pull a sys.exit() if get_chrom_name returns None"""
+        """mask_vcf should raise an error if get_chrom_name returns None"""
         bad_vcf = str(tmpdir / "bad.vcf")
         with open(bad_vcf, "w") as fh:
             fh.write("#")
-        with pytest.raises(SystemExit) as err:
+        with pytest.raises(AugurError) as err:
             mask.mask_vcf([], bad_vcf, "")
     
     def test_mask_vcf_creates_maskfile(self, vcf_file, mp_context):

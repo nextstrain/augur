@@ -7,6 +7,7 @@ import numpy as np
 from collections import defaultdict
 from Bio import Phylo
 
+from .errors import AugurError
 from .reconstruct_sequences import load_alignments
 from .titer_model import InsufficientDataException
 from .utils import read_node_data, write_json
@@ -64,8 +65,7 @@ class infer_substitution_model():
                           'substitution':{}}
                 print("Writing empty model.", file=sys.stderr)
             else:
-                print("Exiting", file=sys.stderr)
-                sys.exit(1)
+                raise AugurError("Exiting")
 
         # Annotate nodes with inferred titer drops, if a tree is given.
         if args.tree:
@@ -114,8 +114,7 @@ class infer_tree_model():
                               'nodes':{n.name:{"dTiter": n.dTiter, "cTiter":n.cTiter}
                                           for n in T.find_clades()}}
             else:
-                print("Exiting.")
-                sys.exit(1)
+                raise AugurError("Exiting.")
 
         # export the tree model
         write_json(tree_model, args.output)

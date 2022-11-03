@@ -6,6 +6,7 @@ import os, sys
 import numpy as np
 from Bio import SeqIO, SeqFeature, Seq, SeqRecord, Phylo
 from .io import write_VCF_translation
+from .errors import AugurError
 from .utils import read_node_data, load_features, write_json, get_json_name
 from treetime.vcf_utils import read_vcf
 
@@ -319,7 +320,7 @@ def register_parser(parent_subparsers):
 
 
 def run(args):
-    ## read tree and data, if reading data fails, return with error code
+    ## read tree and data, if reading data fails, raise an error
     tree = Phylo.read(args.tree, 'newick')
 
     # If genes is a file, read in the genes to translate
@@ -332,8 +333,7 @@ def run(args):
     is_vcf = False
     if any([args.ancestral_sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
         if not args.vcf_reference:
-            print("ERROR: a reference Fasta is required with VCF-format input")
-            return 1
+            raise AugurError("a reference Fasta is required with VCF-format input")
         compress_seq = read_vcf(args.ancestral_sequences, args.vcf_reference)
         sequences = compress_seq['sequences']
         ref = compress_seq['reference']
@@ -341,8 +341,7 @@ def run(args):
     else:
         node_data = read_node_data(args.ancestral_sequences, args.tree)
         if node_data is None:
-            print("ERROR: could not read node data (incl sequences)")
-            return 1
+            raise AugurError("could not read node data (incl sequences)")
         # extract sequences from node meta data
         sequences = {}
         for k,v in node_data['nodes'].items():
@@ -353,8 +352,7 @@ def run(args):
     features = load_features(args.reference_sequence, genes)
     print("Read in {} features from reference sequence file".format(len(features)))
     if features is None:
-        print("ERROR: could not read features of reference sequence file")
-        return 1
+        raise AugurError("could not read features of reference sequence file")
 
     ### translate every feature - but not 'nuc'!
     translations = {}
@@ -404,12 +402,12 @@ def run(args):
         print("*** If you haven't run 'augur refine', please add node names to your tree by running:")
         print("*** augur refine --tree %s --output-tree <filename>.nwk"%(args.tree) )
         print("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'")
-        return 1
+        raise AugurError from err
     except MismatchNodeError as err:
         print("\n*** ERROR: Mismatch between node names in %s and in %s"%(args.tree, args.ancestral_sequences))
         print("*** Ensure you are using the same tree you used to run 'ancestral' as input here.")
         print("*** Or, re-run 'ancestral' using %s, then use the new %s as input here."%(args.tree, args.ancestral_sequences))
-        return 1
+        raise AugurError from err
 
     output_data = {'annotations':annotations, 'nodes':aa_muts}
     if is_vcf:
@@ -440,4 +438,4 @@ def run(args):
                                  for sname, s in seqs.items()],
                                  args.alignment_output.replace('%GENE', fname), 'fasta')
             else:
-                print("ERROR: alignment output file does not contain '%GENE', so will not be written.")
+                raise AugurError("alignment output file does not contain '%GENE', so will not be written.")

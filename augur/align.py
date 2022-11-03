@@ -6,15 +6,12 @@ import os
 from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
+
+from .errors import AugurError
 from .io import run_shell_command, shquote
 from .utils import nthreads_value
 from collections import defaultdict
 
-class AlignmentError(Exception):
-    # TODO: this exception should potentially be renamed and made augur-wide
-    # thus allowing any module to raise it and have the message printed & augur
-    # exit with code 1
-    pass
 
 def register_arguments(parser):
     """
@@ -82,7 +79,7 @@ def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
         ref_name = ref_seq.id
         if existing_aln:
             if len(ref_seq) != existing_aln.get_alignment_length():
-                raise AlignmentError("ERROR: Provided existing alignment ({}bp) is not the same length as the reference sequence ({}bp)".format(existing_aln.get_alignment_length(), len(ref_seq)))
+                raise AugurError("Provided existing alignment ({}bp) is not the same length as the reference sequence ({}bp)".format(existing_aln.get_alignment_length(), len(ref_seq)))
             existing_aln_fname = existing_aln_fname + ".ref.fasta"
             existing_aln.append(ref_seq)
             write_seqs(existing_aln, existing_aln_fname)
@@ -113,35 +110,29 @@ def run(args):
     '''
     temp_files_to_remove = []
 
-    try:
-        check_arguments(args)
-        existing_aln_fname, seqs_to_align_fname, ref_name = prepare(args.sequences, args.existing_alignment, args.output, args.reference_name, args.reference_sequence)
-        temp_files_to_remove.append(seqs_to_align_fname)
-        if existing_aln_fname != args.existing_alignment:
-            temp_files_to_remove.append(existing_aln_fname)
-        # -- existing_aln_fname, seqs_to_align_fname, ref_name --
+    check_arguments(args)
+    existing_aln_fname, seqs_to_align_fname, ref_name = prepare(args.sequences, args.existing_alignment, args.output, args.reference_name, args.reference_sequence)
+    temp_files_to_remove.append(seqs_to_align_fname)
+    if existing_aln_fname != args.existing_alignment:
+        temp_files_to_remove.append(existing_aln_fname)
+    # -- existing_aln_fname, seqs_to_align_fname, ref_name --
 
-        # before aligning, make a copy of the data that the aligner receives as input (very useful for debugging purposes)
-        if args.debug and not existing_aln_fname:
-            copyfile(seqs_to_align_fname, args.output+".pre_aligner.fasta")
+    # before aligning, make a copy of the data that the aligner receives as input (very useful for debugging purposes)
+    if args.debug and not existing_aln_fname:
+        copyfile(seqs_to_align_fname, args.output+".pre_aligner.fasta")
 
-        # generate alignment command & run
-        log = args.output + ".log"
-        cmd = generate_alignment_cmd(args.method, args.nthreads, existing_aln_fname, seqs_to_align_fname, args.output, log)
-        success = run_shell_command(cmd)
-        if not success:
-            raise AlignmentError(f"Error during alignment: please see the log file {log!r} for more details")
+    # generate alignment command & run
+    log = args.output + ".log"
+    cmd = generate_alignment_cmd(args.method, args.nthreads, existing_aln_fname, seqs_to_align_fname, args.output, log)
+    success = run_shell_command(cmd)
+    if not success:
+        raise AugurError(f"Error during alignment: please see the log file {log!r} for more details")
 
-        # after aligning, make a copy of the data that the aligner produced (useful for debugging)
-        if args.debug:
-            copyfile(args.output, args.output+".post_aligner.fasta")
+    # after aligning, make a copy of the data that the aligner produced (useful for debugging)
+    if args.debug:
+        copyfile(args.output, args.output+".post_aligner.fasta")
 
-        postprocess(args.output, ref_name, not args.remove_reference, args.fill_gaps)
-
-
-    except AlignmentError as e:
-        print(str(e))
-        return 1
+    postprocess(args.output, ref_name, not args.remove_reference, args.fill_gaps)
 
     # finally, remove any temporary files
     for fname in temp_files_to_remove:
@@ -196,35 +187,35 @@ def read_sequences(*fnames):
         for fname in fnames:
             for record in SeqIO.parse(fname, 'fasta'):
                 if record.name in seqs and record.seq != seqs[record.name].seq:
-                    raise AlignmentError("Detected duplicate input strains \"%s\" but the sequences are different." % record.name)
+                    raise AugurError("Detected duplicate input strains \"%s\" but the sequences are different." % record.name)
                     # if the same sequence then we can proceed (and we only take one)
                 seqs[record.name] = record
     except FileNotFoundError:
-        raise AlignmentError("\nCannot read sequences -- make sure the file %s exists and contains sequences in fasta format" % fname)
+        raise AugurError("Cannot read sequences -- make sure the file %s exists and contains sequences in fasta format" % fname)
     except ValueError as error:
-        raise AlignmentError("\nERROR: Problem reading in {}: {}".format(fname, str(error)))
+        raise AugurError("Problem reading in {}: {}".format(fname, str(error)))
     return list(seqs.values())
 
 def check_arguments(args):
     # Simple error checking related to a reference name/sequence
     if args.reference_name and args.reference_sequence:
-        raise AlignmentError("ERROR: You cannot provide both --reference-name and --reference-sequence")
+        raise AugurError("You cannot provide both --reference-name and --reference-sequence")
     if args.remove_reference and not (args.reference_name or args.reference_sequence):
-        raise AlignmentError("ERROR: You've asked to remove the reference but haven't specified one!")
+        raise AugurError("You've asked to remove the reference but haven't specified one!")
 
 def read_alignment(fname):
     try:
         return AlignIO.read(fname, 'fasta')
     except Exception as error:
-        raise AlignmentError("\nERROR: Problem reading in {}: {}".format(fname, str(error)))
+        raise AugurError("Problem reading in {}: {}".format(fname, str(error)))
 
 def ensure_reference_strain_present(ref_name, existing_alignment, seqs):
     if existing_alignment:
         if ref_name not in {x.name for x in existing_alignment}:
-            raise AlignmentError("ERROR: Specified reference name %s (via --reference-name) is not in the supplied alignment."%ref_name)
+            raise AugurError("Specified reference name %s (via --reference-name) is not in the supplied alignment."%ref_name)
     else:
         if ref_name not in {x.name for x in seqs}:
-            raise AlignmentError("ERROR: Specified reference name %s (via --reference-name) is not in the sequence sample."%ref_name)
+            raise AugurError("Specified reference name %s (via --reference-name) is not in the sequence sample."%ref_name)
 
 
     # align
@@ -235,12 +226,12 @@ def ensure_reference_strain_present(ref_name, existing_alignment, seqs):
 
 def read_reference(ref_fname):
     if not os.path.isfile(ref_fname):
-        raise AlignmentError("ERROR: Cannot read reference sequence."
+        raise AugurError("Cannot read reference sequence."
                              "\n\tmake sure the file \"%s\" exists"%ref_fname)
     try:
         ref_seq = SeqIO.read(ref_fname, 'genbank' if ref_fname.split('.')[-1] in ['gb', 'genbank'] else 'fasta')
     except:
-        raise AlignmentError("ERROR: Cannot read reference sequence."
+        raise AugurError("Cannot read reference sequence."
                 "\n\tmake sure the file %s contains one sequence in genbank or fasta format"%ref_fname)
     return ref_seq
 
@@ -254,7 +245,7 @@ def generate_alignment_cmd(method, nthreads, existing_aln_fname, seqs_to_align_f
               " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"
               "\n\thttps://doi.org/10.1093%2Fnar%2Fgkf436\n")
     else:
-        raise AlignmentError('ERROR: alignment method %s not implemented'%method)
+        raise AugurError('alignment method %s not implemented'%method)
     return cmd
 
 
@@ -291,7 +282,7 @@ def strip_non_reference(aln, reference, insertion_csv=None):
     >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "missing")]
     Traceback (most recent call last):
       ...
-    augur.align.AlignmentError: ERROR: reference missing not found in alignment
+    augur.errors.AugurError: reference missing not found in alignment
     '''
     seqs = {s.name:s for s in aln}
     if reference in seqs:
@@ -301,7 +292,7 @@ def strip_non_reference(aln, reference, insertion_csv=None):
         ungapped = ref_array!='-'
         ref_aln_array = np.array(aln)[:,ungapped]
     else:
-        raise AlignmentError("ERROR: reference %s not found in alignment"%reference)
+        raise AugurError("reference %s not found in alignment"%reference)
 
     if False in ungapped and insertion_csv:
         analyse_insertions(aln, ungapped, insertion_csv)
@@ -406,7 +397,7 @@ def check_duplicates(*values):
     names = set()
     def add(name):
         if name in names:
-            raise AlignmentError("Duplicate strains of \"{}\" detected".format(name))
+            raise AugurError("Duplicate strains of \"{}\" detected".format(name))
         names.add(name)
     for sample in values:
         if not sample:
@@ -426,7 +417,7 @@ def write_seqs(seqs, fname):
     try:
         SeqIO.write(seqs, fname, 'fasta')
     except FileNotFoundError:
-        raise AlignmentError('ERROR: Couldn\'t write "{}" -- perhaps the directory doesn\'t exist?'.format(fname))
+        raise AugurError('Couldn\'t write "{}" -- perhaps the directory doesn\'t exist?'.format(fname))
 
 
 def prune_seqs_matching_alignment(seqs, aln):

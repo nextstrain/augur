@@ -6,6 +6,7 @@ import sys
 import numpy as np
 from treetime.vcf_utils import read_vcf
 from collections import defaultdict
+from .errors import AugurError
 from .utils import write_json, get_json_name
 
 def read_in_translate_vcf(vcf_file, ref_file):
@@ -316,8 +317,7 @@ def run(args):
         (args.translations and any([args.translations.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])) ):
         if ((args.ancestral_sequences and not args.vcf_reference) or
             (args.translations and not args.vcf_translate_reference)):
-            print("ERROR: a reference Fasta is required with VCF-format alignments")
-            return 1
+            raise AugurError("A reference Fasta is required with VCF-format alignments")
         is_vcf = True
         compress_seq = defaultdict(dict)
         if args.translations:
@@ -327,8 +327,7 @@ def run(args):
     else:
         # TO-DO fill in fasta-format processing
         aln = args.ancestral_sequences
-        print("\nERROR: Unfortunately this feature currently only works with VCF input! It will be expanded to work with Fasta-input soon.")
-        return 1
+        raise AugurError("Unfortunately this feature currently only works with VCF input! It will be expanded to work with Fasta-input soon.")
 
     features = read_in_features(args.features)
     annotations = annotate_strains(features, compress_seq)

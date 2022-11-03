@@ -9,11 +9,13 @@ from scipy.stats import norm
 import sys
 import time
 
+from .errors import AugurError
+
 debug = False
 log_thres = 10.0
 
 
-class TreeKdeFrequenciesError(Exception):
+class TreeKdeFrequenciesError(AugurError):
     """Represents an error estimating KDE frequencies for a tree.
     """
     pass

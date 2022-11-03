@@ -6,6 +6,7 @@ import numpy as np
 from collections import defaultdict
 import os, sys
 import pandas as pd
+from .errors import AugurError
 from .io import read_metadata
 from .utils import write_json, get_json_name
 TINY = 1e-12
@@ -70,12 +71,10 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
             reconstruct_discrete_traits(T, traits, missing_data=missing,
                  sampling_bias_correction=sampling_bias_correction, weights=weights)
     else:
-        print("ERROR: 300 or more distinct discrete states found. TreeTime is currently not set up to handle that many states.", file=sys.stderr)
-        sys.exit(1)
+        raise AugurError("300 or more distinct discrete states found. TreeTime is currently not set up to handle that many states.")
 
     if tt is None:
-        print("ERROR in discrete state reconstruction in TreeTime. Please look for errors above.", file=sys.stderr)
-        sys.exit(1)
+        raise AugurError("in discrete state reconstruction in TreeTime. Please look for errors above.")
 
     # attach inferred states as e.g. node.region = 'africa'
     for node in tt.tree.find_clades():

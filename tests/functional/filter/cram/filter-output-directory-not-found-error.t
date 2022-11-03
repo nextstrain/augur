@@ -11,4 +11,4 @@ Try to output to a directory that does not exist.
   >  --sequences-per-group 1 \
   >  --output-strains "directory-does-not-exist/filtered_strains.txt" > /dev/null
   ERROR: No such file or directory: 'directory-does-not-exist/filtered_strains.txt'
-  [2]
+  [1]

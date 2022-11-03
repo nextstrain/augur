@@ -22,7 +22,7 @@ Error on duplicates in metadata within same chunk.
   >   --output-metadata $TMP/metadata-filtered.tsv > /dev/null
   ERROR: The following strains are duplicated in .* (re)
   a
-  [2]
+  [1]
   $ cat $TMP/metadata-filtered.tsv
   cat: .*: No such file or directory (re)
   [1]
@@ -38,7 +38,7 @@ Error on duplicates in metadata in separate chunks.
   >   --output-metadata $TMP/metadata-filtered.tsv > /dev/null
   ERROR: The following strains are duplicated in .* (re)
   a
-  [2]
+  [1]
   $ cat $TMP/metadata-filtered.tsv
   cat: .*: No such file or directory (re)
   [1]

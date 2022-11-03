@@ -10,6 +10,7 @@ from Bio.Align import MultipleSeqAlignment
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
 from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
+from .errors import AugurError
 from .io import read_metadata
 from .utils import read_node_data, write_json
 
@@ -152,8 +153,8 @@ def run(args):
 
         elif args.method == "kde":
             if args.output_format == "nextflu":
-                print("ERROR: nextflu format is not supported for KDE frequencies", file=sys.stderr)
-                return 1
+                
+                raise AugurError("nextflu format is not supported for KDE frequencies")
 
             # Estimate frequencies.
             kde_frequencies = TreeKdeFrequencies(
@@ -170,11 +171,7 @@ def run(args):
                 censored=args.censored
             )
 
-            try:
-                frequencies = kde_frequencies.estimate(tree)
-            except TreeKdeFrequenciesError as e:
-                print("ERROR: %s" % str(e), file=sys.stderr)
-                return 1
+            frequencies = kde_frequencies.estimate(tree)
 
             # Export frequencies in auspice-format by strain name.
             frequency_dict = {"pivots": list(kde_frequencies.pivots)}
@@ -189,8 +186,7 @@ def run(args):
         frequencies = None
         for gene, fname in zip(args.gene_names, args.alignments):
             if not os.path.isfile(fname):
-                print("ERROR: alignment file not found", file=sys.stderr)
-                return 1
+                raise AugurError("alignment file not found")
 
             aln = MultipleSeqAlignment([seq for seq in AlignIO.read(fname, 'fasta')
                                         if not seq.name.startswith('NODE_')])

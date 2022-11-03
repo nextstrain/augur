@@ -10,6 +10,7 @@ import pandas as pd
 from Bio import SeqIO
 from Bio.Seq import MutableSeq
 
+from .errors import AugurError
 from .io import open_file, read_sequences, write_sequences, run_shell_command, shquote, is_vcf
 from .utils import load_mask_sites, VALID_NUCLEOTIDES
 
@@ -47,9 +48,8 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
     # Need CHROM name from VCF file:
     chrom_name = get_chrom_name(in_file)
     if chrom_name is None:
-        print("ERROR: Something went wrong reading your VCF file: a CHROM column could not be found. "
-              "Please check the file is valid VCF format.")
-        sys.exit(1)
+        raise AugurError("Something went wrong reading your VCF file: a CHROM column could not be found. "
+                         "Please check the file is valid VCF format.")
 
     # mask_sites is zero-indexed, VCFTools expects 1-indexed.
     exclude = [chrom_name + "\t" + str(pos + 1) for pos in mask_sites]
@@ -200,22 +200,17 @@ def run(args):
     '''
     # Check files exist and are not empty
     if not os.path.isfile(args.sequences):
-        print("ERROR: File {} does not exist!".format(args.sequences))
-        sys.exit(1)
+        raise AugurError("File {} does not exist!".format(args.sequences))
     if os.path.getsize(args.sequences) == 0:
-        print("ERROR: {} is empty. Please check how this file was produced. "
-              "Did an error occur in an earlier step?".format(args.sequences))
-        sys.exit(1)
+        raise AugurError("{} is empty. Please check how this file was produced. "
+                         "Did an error occur in an earlier step?".format(args.sequences))
     if args.mask_file:
         if not os.path.isfile(args.mask_file):
-            print("ERROR: File {} does not exist!".format(args.mask_file))
-            sys.exit(1)
+            raise AugurError("File {} does not exist!".format(args.mask_file))
         if os.path.getsize(args.mask_file) == 0:
-            print("ERROR: {} is an empty file.".format(args.mask_file))
-            sys.exit(1)
+            raise AugurError("{} is an empty file.".format(args.mask_file))
     if not any((args.mask_file, args.mask_from_beginning, args.mask_from_end, args.mask_sites, args.mask_invalid)):
-        print("No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites")
-        sys.exit(1)
+        raise AugurError("No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites")
 
     mask_sites = set()
     if args.mask_sites:
@@ -234,8 +229,7 @@ def run(args):
 
     if is_vcf(args.sequences):
         if args.mask_from_beginning or args.mask_from_end or args.mask_invalid:
-            print("Cannot use --mask-from-beginning, --mask-from-end, or --mask-invalid with VCF files!")
-            sys.exit(1)
+            raise AugurError("Cannot use --mask-from-beginning, --mask-from-end, or --mask-invalid with VCF files!")
         mask_vcf(mask_sites, args.sequences, out_file, args.cleanup)
     else:
         mask_fasta(mask_sites, args.sequences, out_file,

@@ -11,4 +11,4 @@ Try to filter on an metadata file that does not exist.
   >  --sequences-per-group 1 \
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
   ERROR: No such file or directory: 'file-does-not-exist.tsv'
-  [2]
+  [1]

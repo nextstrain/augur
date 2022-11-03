@@ -8,4 +8,3 @@ def register_parser(parent_subparsers):
 
 def run(args):
     print("augur", __version__)
-    return 0
