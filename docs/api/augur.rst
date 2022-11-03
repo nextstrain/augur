@@ -11,6 +11,7 @@ augur
    augur.align
    augur.ancestral
    augur.clades
+   augur.dates
    augur.distance
    augur.export
    augur.export_v1
