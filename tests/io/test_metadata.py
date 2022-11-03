@@ -498,3 +498,10 @@ class TestWriteRecordsToTsv:
             "value_1\tvalue_2\n"
             "\tvalue_2\n"
         )
+
+    def test_write_records_to_tsv_with_empty_records(self, tmpdir):
+        output_file = tmpdir / "output.tsv"
+        with pytest.raises(AugurError) as e_info:
+            write_records_to_tsv(iter([]), output_file)
+
+        assert str(e_info.value) == f"Unable to write records to {output_file} because provided records were empty."

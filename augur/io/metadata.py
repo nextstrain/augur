@@ -399,7 +399,11 @@ def write_records_to_tsv(records, output_file):
         Accepts '-' to output TSV to stdout.
     """
     # Use the keys of the first record as output fields
-    first_record = next(records)
+    try:
+        first_record = next(records)
+    except StopIteration:
+        raise AugurError(f"Unable to write records to {output_file} because provided records were empty.")
+
     # Use the record keys as output columns since as of python 3.7 dicts retain insertion order
     output_columns = list(first_record.keys())
 
