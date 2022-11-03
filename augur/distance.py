@@ -157,6 +157,7 @@ import numpy as np
 import pandas as pd
 import sys
 
+from .errors import AugurError
 from .frequency_estimators import timestamp_to_float
 from .reconstruct_sequences import load_alignments
 from .utils import annotate_parents_for_tree, first_line, read_node_data, write_json
@@ -670,11 +671,7 @@ def run(args):
     # Load date annotations if any date ranges have been requested.
     if earliest_date or latest_date:
         if args.date_annotations is None:
-            print(
-                "ERROR: date annotations JSON from augur refine (e.g., branch_lengths.json) is required",
-                file=sys.stderr
-            )
-            sys.exit(1)
+            raise AugurError("date annotations JSON from augur refine (e.g., branch_lengths.json) is required")
 
         date_annotations = read_node_data(args.date_annotations)
 
@@ -721,8 +718,7 @@ def run(args):
         else:
             # If the command line argument choices are defined properly above,
             # this block should never execute.
-            print("ERROR: the comparison method '%s' is not supported" % compare_to, file=sys.stderr)
-            sys.exit(1)
+            raise AugurError("the comparison method '%s' is not supported" % compare_to)
 
         # Map distances to the requested attribute name.
         # Convert data like:
