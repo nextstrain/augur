@@ -1,0 +1,57 @@
+# Authoritative list of redirects we have configured in RTD.  See the
+# docs.nextstrain.org repo's README.md¹ for more information on maintaining
+# redirects.
+#
+# ¹ https://github.com/nextstrain/docs.nextstrain.org#configuring-redirects
+---
+- type: page
+  from_url: /faq/augur_snakemake.html
+  to_url: https://docs.nextstrain.org/en/latest/guides/bioinformatics/augur_snakemake.html
+
+- type: page
+  from_url: /faq/colors.html
+  to_url: https://docs.nextstrain.org/en/latest/guides/bioinformatics/colors.html
+
+- type: page
+  from_url: /faq/community_hosting.html
+  to_url: https://docs.nextstrain.org/en/latest/guides/share/community-builds.html
+
+- type: page
+  from_url: /faq/fasta_input.html
+  to_url: https://docs.nextstrain.org/en/latest/guides/bioinformatics/fasta_input.html
+
+- type: page
+  from_url: /faq/import-beast.html
+  to_url: https://docs.nextstrain.org/en/latest/guides/bioinformatics/import-beast.html
+
+- type: page
+  from_url: /faq/lat_longs.html
+  to_url: https://docs.nextstrain.org/en/latest/guides/bioinformatics/lat_longs.html
+
+- type: page
+  from_url: /faq/seq_traits.html
+  to_url: https://docs.nextstrain.org/en/latest/guides/bioinformatics/seq_traits.html
+
+- type: page
+  from_url: /faq/translate_ref.html
+  to_url: https://docs.nextstrain.org/en/latest/guides/bioinformatics/translate_ref.html
+
+- type: page
+  from_url: /faq/vcf_input.html
+  to_url: https://docs.nextstrain.org/en/latest/guides/bioinformatics/vcf_input.html
+
+- type: page
+  from_url: /tutorials/tb_tutorial.html
+  to_url: https://docs.nextstrain.org/en/latest/tutorials/tb_tutorial.html
+
+- type: page
+  from_url: /tutorials/tutorials.html
+  to_url: https://docs.nextstrain.org/en/latest/tutorials/index.html
+
+- type: page
+  from_url: /tutorials/zika_tutorial.html
+  to_url: https://docs.nextstrain.org/en/latest/tutorials/zika_tutorial.html
+
+- type: page
+  from_url: /usage/augur_snakemake.html
+  to_url: https://docs.nextstrain.org/en/latest/guides/bioinformatics/augur_snakemake.html
