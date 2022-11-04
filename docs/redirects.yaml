@@ -55,3 +55,159 @@
 - type: page
   from_url: /usage/augur_snakemake.html
   to_url: https://docs.nextstrain.org/en/latest/guides/bioinformatics/augur_snakemake.html
+
+- type: page
+  from_url: /api/api.html
+  to_url: /api/developer/
+
+- type: page
+  from_url: /api/augur.align.html
+  to_url: /api/developer/augur.align.html
+
+- type: page
+  from_url: /api/augur.ancestral.html
+  to_url: /api/developer/augur.ancestral.html
+
+- type: page
+  from_url: /api/augur.clades.html
+  to_url: /api/developer/augur.clades.html
+
+- type: page
+  from_url: /api/augur.distance.html
+  to_url: /api/developer/augur.distance.html
+
+- type: page
+  from_url: /api/augur.export.html
+  to_url: /api/developer/augur.export.html
+
+- type: page
+  from_url: /api/augur.export_v1.html
+  to_url: /api/developer/augur.export_v1.html
+
+- type: page
+  from_url: /api/augur.export_v2.html
+  to_url: /api/developer/augur.export_v2.html
+
+- type: page
+  from_url: /api/augur.filenames.html
+  to_url: /api/developer/augur.filenames.html
+
+- type: page
+  from_url: /api/augur.filter.html
+  to_url: /api/developer/augur.filter.html
+
+- type: page
+  from_url: /api/augur.frequencies.html
+  to_url: /api/developer/augur.frequencies.html
+
+- type: page
+  from_url: /api/augur.frequency_estimators.html
+  to_url: /api/developer/augur.frequency_estimators.html
+
+- type: page
+  from_url: /api/augur.html
+  to_url: /api/developer/augur.html
+
+- type: page
+  from_url: /api/augur.import.html
+  to_url: /api/developer/augur.import.html
+
+- type: page
+  from_url: /api/augur.index.html
+  to_url: /api/developer/augur.index.html
+
+- type: page
+  from_url: /api/augur.io.html
+  to_url: /api/developer/augur.io.html
+
+- type: page
+  from_url: /api/augur.lbi.html
+  to_url: /api/developer/augur.lbi.html
+
+- type: page
+  from_url: /api/augur.mask.html
+  to_url: /api/developer/augur.mask.html
+
+- type: page
+  from_url: /api/augur.measurements.html
+  to_url: /api/developer/augur.measurements.html
+
+- type: page
+  from_url: /api/augur.parse.html
+  to_url: /api/developer/augur.parse.html
+
+- type: page
+  from_url: /api/augur.reconstruct_sequences.html
+  to_url: /api/developer/augur.reconstruct_sequences.html
+
+- type: page
+  from_url: /api/augur.refine.html
+  to_url: /api/developer/augur.refine.html
+
+- type: page
+  from_url: /api/augur.sequence_traits.html
+  to_url: /api/developer/augur.sequence_traits.html
+
+- type: page
+  from_url: /api/augur.titer_model.html
+  to_url: /api/developer/augur.titer_model.html
+
+- type: page
+  from_url: /api/augur.titers.html
+  to_url: /api/developer/augur.titers.html
+
+- type: page
+  from_url: /api/augur.traits.html
+  to_url: /api/developer/augur.traits.html
+
+- type: page
+  from_url: /api/augur.translate.html
+  to_url: /api/developer/augur.translate.html
+
+- type: page
+  from_url: /api/augur.tree.html
+  to_url: /api/developer/augur.tree.html
+
+- type: page
+  from_url: /api/augur.util_support.color_parser.html
+  to_url: /api/developer/augur.util_support.color_parser.html
+
+- type: page
+  from_url: /api/augur.util_support.color_parser_line.html
+  to_url: /api/developer/augur.util_support.color_parser_line.html
+
+- type: page
+  from_url: /api/augur.util_support.date_disambiguator.html
+  to_url: /api/developer/augur.util_support.date_disambiguator.html
+
+- type: page
+  from_url: /api/augur.util_support.html
+  to_url: /api/developer/augur.util_support.html
+
+- type: page
+  from_url: /api/augur.util_support.node_data.html
+  to_url: /api/developer/augur.util_support.node_data.html
+
+- type: page
+  from_url: /api/augur.util_support.node_data_file.html
+  to_url: /api/developer/augur.util_support.node_data_file.html
+
+- type: page
+  from_url: /api/augur.util_support.node_data_reader.html
+  to_url: /api/developer/augur.util_support.node_data_reader.html
+
+- type: page
+  from_url: /api/augur.utils.html
+  to_url: /api/developer/augur.utils.html
+
+- type: page
+  from_url: /api/augur.validate.html
+  to_url: /api/developer/augur.validate.html
+
+- type: page
+  from_url: /api/augur.validate_export.html
+  to_url: /api/developer/augur.validate_export.html
+
+- type: page
+  from_url: /api/augur.version.html
+  to_url: /api/developer/augur.version.html
