@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* Add the curate subcommand with two sub-subcommands, passthru and normalize-strings. The curate subcommand is intended to be a suite of commands to help users with data curation prior to running Nextstrain analyses. We will continue to add more subcommands as we identify other common data curation tasks. Please see the [usage docs](https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/curate) for details. [#1039][] (@joverlee521)
+
+[#1039]: https://github.com/nextstrain/augur/pull/1039
 
 ## 18.1.2 (1 November 2022)
 

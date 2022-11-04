@@ -21,6 +21,7 @@ if recursion_limit:
 
 command_strings = [
     "parse",
+    "curate",
     "index",
     "filter",
     "mask",

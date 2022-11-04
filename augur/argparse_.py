@@ -16,7 +16,7 @@ def add_default_command(parser):
     parser.set_defaults(__command__ = default_command)
 
 
-def add_command_subparsers(subparsers, commands):
+def add_command_subparsers(subparsers, commands, command_attribute='__command__'):
     """
     Add subparsers for each command module.
 
@@ -30,13 +30,18 @@ def add_command_subparsers(subparsers, commands):
         A list of modules that are commands that require their own subparser.
         Each module is required to have a `register_parser` function to add its own
         subparser and arguments.
+
+    command_attribute: str, optional
+        Optional attribute name for the commands. The default is `__command__`,
+        which allows top level augur to run commands directly via `args.__command__.run()`.
     """
     for command in commands:
         # Allow each command to register its own subparser
         subparser = command.register_parser(subparsers)
 
-        # Allows us to run commands directly with `args.__command__.run()`
-        subparser.set_defaults(__command__ = command)
+        # Add default attribute for command module
+        if command_attribute:
+            subparser.set_defaults(**{command_attribute: command})
 
         # Use the same formatting class for every command for consistency.
         # Set here to avoid repeating it in every command's register_parser().
