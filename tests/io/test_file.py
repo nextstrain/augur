@@ -45,7 +45,7 @@ class TestFile:
         with augur.io.file.open_file(path) as f_read:
             assert f_read.read() == 'foo\nbar\n'
 
-    def test_open_file_read_lzma(self, tmpdir):
+    def test_open_file_write_lzma(self, tmpdir):
         """Write a text file compressed with LZMA."""
         import lzma
         path = str(tmpdir / 'test.txt.xz')
