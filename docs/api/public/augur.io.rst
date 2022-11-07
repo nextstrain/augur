@@ -1,7 +1,10 @@
 augur.io
 ========
 
+.. The public API portion of augur.io is everything that is exposed by io/__init__.py.
+
 .. automodule:: augur.io
-   :members: read_metadata, read_sequences
+   :members:
+   :imported-members:
    :undoc-members:
    :show-inheritance:
