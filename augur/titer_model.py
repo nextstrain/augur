@@ -7,7 +7,7 @@ import pandas as pd
 from pprint import pprint
 import sys
 
-from augur.io import open_file
+from augur.io.file import open_file
 
 TITER_ROUND=4
 

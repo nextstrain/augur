@@ -15,7 +15,9 @@ import numpy as np
 from treetime.vcf_utils import read_vcf
 from pathlib import Path
 
-from .io import read_sequences, run_shell_command, shquote
+from .io.sequences import read_sequences
+from .io.shell_command_runner import run_shell_command
+from .io.vcf import shquote
 from .utils import nthreads_value, load_mask_sites
 
 DEFAULT_ARGS = {

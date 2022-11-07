@@ -10,7 +10,7 @@ from Bio import Phylo
 from argparse import SUPPRESS
 from collections import defaultdict
 from .argparse_ import ExtendAction
-from .io import read_metadata
+from .io.metadata import read_metadata
 from .utils import read_node_data, write_json, read_config, read_lat_longs, read_colors
 
 def convert_tree_to_json_structure(node, metadata, div=0, strains=None):

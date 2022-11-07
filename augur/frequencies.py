@@ -10,7 +10,7 @@ from Bio.Align import MultipleSeqAlignment
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
 from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
-from .io import read_metadata
+from .io.metadata import read_metadata
 from .utils import read_node_data, write_json
 
 

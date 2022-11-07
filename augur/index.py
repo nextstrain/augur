@@ -8,7 +8,9 @@ import Bio.SeqRecord
 import sys
 import csv
 
-from .io import open_file, read_sequences, is_vcf, read_vcf
+from .io.file import open_file
+from .io.sequences import read_sequences
+from .io.vcf import is_vcf, read_vcf
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("index", help=__doc__)

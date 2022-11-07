@@ -6,7 +6,8 @@ import os
 from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
-from .io import run_shell_command, shquote
+from .io.shell_command_runner import run_shell_command
+from .io.vcf import shquote
 from .utils import nthreads_value
 from collections import defaultdict
 

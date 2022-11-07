@@ -5,7 +5,7 @@ Translate gene regions from nucleotides to amino acids.
 import os, sys
 import numpy as np
 from Bio import SeqIO, SeqFeature, Seq, SeqRecord, Phylo
-from .io import write_VCF_translation
+from .io.vcf import write_VCF_translation
 from .utils import read_node_data, load_features, write_json, get_json_name
 from treetime.vcf_utils import read_vcf
 

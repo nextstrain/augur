@@ -6,7 +6,7 @@ import numpy as np
 from collections import defaultdict
 import os, sys
 import pandas as pd
-from .io import read_metadata
+from .io.metadata import read_metadata
 from .utils import write_json, get_json_name
 TINY = 1e-12
 

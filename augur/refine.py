@@ -5,7 +5,7 @@ import numpy as np
 import sys
 from Bio import Phylo
 from .dates import get_numerical_dates
-from .io import read_metadata
+from .io.metadata import read_metadata
 from .utils import read_tree, write_json, InvalidTreeError
 from .errors import AugurError
 from treetime.vcf_utils import read_vcf
