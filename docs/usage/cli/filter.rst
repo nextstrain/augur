@@ -15,7 +15,7 @@ augur filter
 How we subsample sequences in the zika-tutoral
 ==============================================
 
-As an example, we'll look that the ``filter`` command in greater detail using material from the :doc:`Zika tutorial <docs.nextstrain.org:tutorials/zika>`.
+As an example, we'll look that the ``filter`` command in greater detail using material from the :doc:`Zika tutorial <docs.nextstrain.org:tutorials/creating-a-workflow>`.
 The filter command allows you to selected various subsets of your input data for different types of analysis.
 A simple example use of this command would be
 
@@ -45,7 +45,7 @@ To drop such strains, you can pass the name of this file to the augur filter com
              --output filtered.fasta
 
 (To improve legibility, we have wrapped the command across multiple lines.)
-If you run this command (you should be able to copy-paste this into your terminal) on the data provided in the :doc:`Zika tutorial <docs.nextstrain.org:tutorials/zika>`, you should see that one of the sequences in the data set was dropped since its name was in the ``dropped_strains.txt`` file.
+If you run this command (you should be able to copy-paste this into your terminal) on the data provided in the :doc:`Zika tutorial <docs.nextstrain.org:tutorials/creating-a-workflow>`, you should see that one of the sequences in the data set was dropped since its name was in the ``dropped_strains.txt`` file.
 
 Another common filtering operation is subsetting of data to a achieve a more even spatio-temporal distribution or to cut-down data set size to more manageable numbers.
 The filter command allows you to select a specific number of sequences from specific groups, for example one sequence per month from each country:
