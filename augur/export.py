@@ -5,8 +5,8 @@ from .argparse_ import add_command_subparsers
 from . import export_v1, export_v2
 
 SUBCOMMANDS = [
-    export_v1,
     export_v2,
+    export_v1,
 ]
 
 
