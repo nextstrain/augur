@@ -5,12 +5,14 @@ import pyfastx
 import sys
 from io import StringIO
 from itertools import chain
+from typing import List
 
 from augur.errors import AugurError
 from augur.io.defaults import POTENTIAL_STRAIN_ID_COLUMNS
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
 from .file import open_file
+from .tabular_file import TabularFile
 
 
 def read_metadata(metadata_file, id_columns=POTENTIAL_STRAIN_ID_COLUMNS, chunk_size=None):
@@ -425,3 +427,22 @@ def write_records_to_tsv(records, output_file):
 
         for record in records:
             tsv_writer.writerow(record)
+
+
+class Metadata(TabularFile):
+    """Represents a metadata file."""
+
+    def __init__(self, file: str, header: bool = None, names: List[str] = None):
+        super().__init__(file, header, names)
+
+        self.id_column = self._get_first_valid_column(POTENTIAL_STRAIN_ID_COLUMNS)
+        """Strain ID column."""
+
+    def _get_first_valid_column(self, potential_column_names: List[str]):
+        """Returns the first column in `potential_column_names` that is present in the metadata.
+        Raises a `ValueError` when none of `potential_column_names` are found.
+        """
+        for col in potential_column_names:
+            if col in self.names:
+                return col
+        raise ValueError(f"Reading {self.file}: None of ({potential_column_names!r}) were found in the columns {tuple(self.names)!r}.")

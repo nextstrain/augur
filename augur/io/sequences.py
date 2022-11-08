@@ -1,7 +1,8 @@
+from typing import Iterable
 import Bio.SeqIO
 
 from augur.errors import AugurError
-from .file import open_file
+from .file import File, open_file
 
 
 def read_sequences(*paths, format="fasta"):
@@ -121,3 +122,22 @@ def write_records_to_fasta(records, fasta, seq_id_field='strain', seq_field='seq
                 for key, value in record.items()
                 if key != seq_field
             }
+
+
+class Sequences(File):
+    """Represents a sequences file."""
+
+    def __init__(self, file: str, format: str = None):
+        super().__init__(file)
+
+        supported_formats = {"fasta"}
+        default_format = "fasta"
+
+        self.format = format or default_format
+        """Sequences file format (e.g. FASTA)."""
+
+        if self.format not in supported_formats:
+            raise AugurError(f"Format {format} not supported.")
+
+    def __iter__(self) -> Iterable[Bio.SeqIO.SeqRecord]:
+        return Bio.SeqIO.parse(self.file, self.format)

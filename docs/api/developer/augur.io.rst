@@ -13,4 +13,6 @@ augur.io
    augur.io.print
    augur.io.sequences
    augur.io.shell_command_runner
+   augur.io.sqlite3
+   augur.io.tabular_file
    augur.io.vcf
