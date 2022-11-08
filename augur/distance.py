@@ -39,7 +39,9 @@ Distance maps are defined in JSON format with two required top-level keys.
 The `default` key specifies the numeric (floating point) value to assign to all mismatches by default.
 The `map` key specifies a dictionary of weights to use for distance calculations.
 These weights are indexed hierarchically by gene name and one-based gene coordinate and are assigned in either a sequence-independent or sequence-dependent manner.
-The simplest possible distance map calculates Hamming distance between sequences without any site-specific weights, as shown below::
+The simplest possible distance map calculates Hamming distance between sequences without any site-specific weights, as shown below:
+
+.. code-block:: json
 
     {
         "name": "Hamming distance",
@@ -48,7 +50,9 @@ The simplest possible distance map calculates Hamming distance between sequences
     }
 
 By default, distances are floating point values whose precision can be controlled with the `precision` key that defines the number of decimal places to retain for each distance.
-The following example shows how to specify a precision of two decimal places in the final output.::
+The following example shows how to specify a precision of two decimal places in the final output:
+
+.. code-block:: json
 
     {
         "name": "Hamming distance",
@@ -57,7 +61,9 @@ The following example shows how to specify a precision of two decimal places in 
         "precision": 2
     }
 
-Distances can be reported as integer values by specifying an `output_type` as `integer` or `int` as follows.::
+Distances can be reported as integer values by specifying an `output_type` as `integer` or `int` as follows:
+
+.. code-block:: json
 
     {
         "name": "Hamming distance",
@@ -70,7 +76,9 @@ Sequence-independent distances are defined by gene and position using a numeric
 value of the same type as the default value (integer or float). The following
 example is a distance map for antigenic amino acid substitutions near influenza
 A/H3N2 HA's receptor binding sites. This map calculates the Hamming distance
-between amino acid sequences only at seven positions in the HA1 gene::
+between amino acid sequences only at seven positions in the HA1 gene:
+
+.. code-block:: json
 
     {
         "name": "Koel epitope sites",
@@ -92,7 +100,9 @@ Sequence-dependent distances are defined by gene, position, and sequence pairs
 where the `from` sequence in each pair is interpreted as the ancestral state and
 the `to` sequence as the derived state. The following example is a distance map
 that assigns asymmetric weights to specific amino acid substitutions at a
-specific position in the influenza gene HA1::
+specific position in the influenza gene HA1:
+
+.. code-block:: json
 
     {
         "default": 0.0,
@@ -119,7 +129,9 @@ that can be passed to `augur export`. In addition to the standard `nodes` field,
 the JSON includes a `params` field that describes the mapping of attribute names
 to requested comparisons and distance maps and any date parameters specified by
 the user. The following example JSON shows a sample output when the distance
-command is run with multiple comparisons and distance maps::
+command is run with multiple comparisons and distance maps:
+
+.. code-block:: json
 
     {
         "params": {
