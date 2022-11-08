@@ -93,3 +93,9 @@ jobs:
       - uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
+
+  build-docs:
+    uses: nextstrain/.github/.github/workflows/docs-ci.yaml@master
+    with:
+      docs-directory: docs/
+      pip-install-target: .[dev]
