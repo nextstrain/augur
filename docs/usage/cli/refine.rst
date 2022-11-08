@@ -3,11 +3,8 @@ augur refine
 ===========================
 
 
-* `How we use refine in the zika tutorial <#how-we-use-refine-in-the-zika-tutorial>`__
-* `Specify the evolutionary rate <#specify-the-evolutionary-rate>`__
-* `Confidence intervals for divergence times <#confidence-intervals-for-divergence-times>`__
-* `Specifying the root of the tree <#specifying-the-root-of-the-tree>`__
-* `Polytomy resolution <#polytomy-resolution>`__
+.. contents:: Table of Contents
+   :local:
 
 ----
 

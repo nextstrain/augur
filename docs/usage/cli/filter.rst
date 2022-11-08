@@ -2,7 +2,8 @@
 augur filter
 ============
 
-* `How we subsample sequences in the zika-tutoral <#how-we-subsample-sequences-in-the-zika-tutoral>`__
+.. contents:: Table of Contents
+   :local:
 
 ----
 
