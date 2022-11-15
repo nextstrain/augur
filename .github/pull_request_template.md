@@ -14,4 +14,4 @@ If you added or changed behavior in the codebase, did you update the tests, or d
 
 ### Checklist
 
-- [ ] Add a message in [CHANGES.md](https://github.com/nextstrain/augur/blob/HEAD/CHANGES.md) summarizing the changes in this PR. Keep headers and formatting consistent with the rest of the file.
+- [ ] Add a message in [CHANGES.md](https://github.com/nextstrain/augur/blob/HEAD/CHANGES.md) summarizing the changes in this PR that are end user focused. Keep headers and formatting consistent with the rest of the file.
