@@ -143,8 +143,9 @@ Skipping validation allows mismatched augur versions to be used without error.
   >   --output "$TMP/dataset5.json" \
   >   --skip-validation
   WARNING: You didn't provide information on who is maintaining this analysis.
-  
-  
+  \s{0} (re)
+  \s{0} (re)
+
 Check the output from the above command against its expected contents
   $ python3 "$TESTDIR/../../scripts/diff_jsons.py"  export_v2/dataset2.json "$TMP/dataset5.json" \
   >   --exclude-paths "root['meta']['updated']"
