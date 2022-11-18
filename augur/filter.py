@@ -21,7 +21,10 @@ from typing import Collection
 from .dates import numeric_date, numeric_date_type, SUPPORTED_DATE_HELP_TEXT, is_date_ambiguous, get_numerical_dates, get_iso_year_week
 from .errors import AugurError
 from .index import index_sequences, index_vcf
-from .io import open_file, read_metadata, read_sequences, write_sequences, is_vcf as filename_is_vcf, write_vcf
+from .io.file import open_file
+from .io.metadata import read_metadata
+from .io.sequences import read_sequences, write_sequences
+from .io.vcf import is_vcf as filename_is_vcf, write_vcf
 from .utils import read_strains
 
 comment_char = '#'

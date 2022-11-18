@@ -1,8 +1,6 @@
 """Interfaces for reading and writing data also known as input/output (I/O)
 """
-
-from .file import *
-from .metadata import *
-from .print import *
-from .sequences import *
-from .vcf import *
+# Functions and variables exposed here are part of Augur's public Python API.
+# To use functions internally, import directly from the submodule.
+from .metadata import read_metadata
+from .sequences import read_sequences

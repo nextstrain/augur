@@ -14,7 +14,7 @@ from Bio.SeqRecord import SeqRecord
 from freezegun import freeze_time
 
 import augur.filter
-from augur.io import read_metadata
+from augur.io.metadata import read_metadata
 from augur.filter import FilterException
 
 @pytest.fixture

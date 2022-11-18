@@ -12,7 +12,7 @@ from pkg_resources import resource_stream
 from io import TextIOWrapper
 from .__version__ import __version__
 
-from augur.io import open_file
+from augur.io.file import open_file
 
 from augur.util_support.color_parser import ColorParser
 from augur.util_support.node_data_reader import NodeDataReader

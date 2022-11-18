@@ -12,7 +12,7 @@ from types import SimpleNamespace
 from treetime import TreeTimeError, TreeTimeUnknownError
 
 from .errors import AugurError
-from .io import print_err
+from .io.print import print_err
 from .argparse_ import add_command_subparsers, add_default_command
 
 recursion_limit = os.environ.get("AUGUR_RECURSION_LIMIT")

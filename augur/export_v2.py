@@ -11,7 +11,7 @@ import re
 from Bio import Phylo
 
 from .argparse_ import ExtendAction
-from .io import read_metadata
+from .io.metadata import read_metadata
 from .utils import read_node_data, write_json, read_config, read_lat_longs, read_colors
 from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
 

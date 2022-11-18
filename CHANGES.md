@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* docs: Update the API documentation to reflect the latest state of things in the codebase. [#1087][] (@victorlin)
+
+[#1087]: https://github.com/nextstrain/augur/pull/1087
 
 ## 18.2.0 (15 November 2022)
 

@@ -4,7 +4,8 @@ Parse delimited fields from FASTA sequence names into a TSV and FASTA file.
 import pandas as pd
 import sys
 
-from .io import open_file, read_sequences, write_sequences
+from .io.file import open_file
+from .io.sequences import read_sequences, write_sequences
 from .dates import get_numerical_date_from_value
 from .errors import AugurError
 

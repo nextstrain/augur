@@ -10,7 +10,10 @@ import pandas as pd
 from Bio import SeqIO
 from Bio.Seq import MutableSeq
 
-from .io import open_file, read_sequences, write_sequences, run_shell_command, shquote, is_vcf
+from .io.file import open_file
+from .io.sequences import read_sequences, write_sequences
+from .io.shell_command_runner import run_shell_command
+from .io.vcf import shquote, is_vcf
 from .utils import load_mask_sites, VALID_NUCLEOTIDES
 
 def get_chrom_name(vcf_file):
