@@ -15,7 +15,7 @@ from freezegun import freeze_time
 
 import augur.filter
 from augur.io.metadata import read_metadata
-from augur.filter import FilterException
+from augur.errors import AugurError
 
 @pytest.fixture
 def argparser():
@@ -391,7 +391,7 @@ class TestFilterGroupBy:
         groups = ['invalid']
         metadata = valid_metadata.copy()
         strains = metadata.index.tolist()
-        with pytest.raises(FilterException) as e_info:
+        with pytest.raises(AugurError) as e_info:
             augur.filter.get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert str(e_info.value) == "The specified group-by categories (['invalid']) were not found."
 
@@ -471,7 +471,7 @@ class TestFilterGroupBy:
         metadata = valid_metadata.copy()
         metadata = metadata.drop('date', axis='columns')
         strains = metadata.index.tolist()
-        with pytest.raises(FilterException) as e_info:
+        with pytest.raises(AugurError) as e_info:
             augur.filter.get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert str(e_info.value) == "The specified group-by categories (['year']) were not found. Note that using any of ['month', 'week', 'year'] requires a column called 'date'."
 
@@ -480,7 +480,7 @@ class TestFilterGroupBy:
         metadata = valid_metadata.copy()
         metadata = metadata.drop('date', axis='columns')
         strains = metadata.index.tolist()
-        with pytest.raises(FilterException) as e_info:
+        with pytest.raises(AugurError) as e_info:
             augur.filter.get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert str(e_info.value) == "The specified group-by categories (['month']) were not found. Note that using any of ['month', 'week', 'year'] requires a column called 'date'."
 
@@ -489,7 +489,7 @@ class TestFilterGroupBy:
         metadata = valid_metadata.copy()
         metadata = metadata.drop('date', axis='columns')
         strains = metadata.index.tolist()
-        with pytest.raises(FilterException) as e_info:
+        with pytest.raises(AugurError) as e_info:
             augur.filter.get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert str(e_info.value) == "The specified group-by categories (['year', 'month']) were not found. Note that using any of ['month', 'week', 'year'] requires a column called 'date'."
 

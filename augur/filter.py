@@ -108,12 +108,6 @@ def register_parser(parent_subparsers):
     return parser
 
 
-class FilterException(AugurError):
-    """Representation of an error that occurred during filtering.
-    """
-    pass
-
-
 def read_priority_scores(fname):
     def constant_factory(value):
         return lambda: value
@@ -960,7 +954,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> get_groups_for_subsampling(strains, metadata, group_by)
     Traceback (most recent call last):
       ...
-    augur.filter.FilterException: The specified group-by categories (['missing_column']) were not found.
+    augur.errors.AugurError: The specified group-by categories (['missing_column']) were not found.
 
     If we try to group by some columns that exist and some that don't, we allow
     grouping to continue and print a warning message to stderr.
@@ -1008,9 +1002,9 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     # If we could not find any requested categories, we cannot complete subsampling.
     if 'date' not in metadata and group_by_set <= GROUP_BY_GENERATED_COLUMNS:
-        raise FilterException(f"The specified group-by categories ({group_by}) were not found. Note that using any of {sorted(GROUP_BY_GENERATED_COLUMNS)} requires a column called 'date'.")
+        raise AugurError(f"The specified group-by categories ({group_by}) were not found. Note that using any of {sorted(GROUP_BY_GENERATED_COLUMNS)} requires a column called 'date'.")
     if not group_by_set & (set(metadata.columns) | GROUP_BY_GENERATED_COLUMNS):
-        raise FilterException(f"The specified group-by categories ({group_by}) were not found.")
+        raise AugurError(f"The specified group-by categories ({group_by}) were not found.")
 
     # Warn/error based on other columns grouped with 'week'.
     if 'week' in group_by_set:
