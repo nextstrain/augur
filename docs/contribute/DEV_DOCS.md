@@ -303,6 +303,12 @@ Build the HTML output format by running:
 make -C docs html
 ```
 
+To monitor the source files for changes and automatically rebuild as necessary, run:
+
+```bash
+make -C docs livehtml
+```
+
 Sphinx can build other formats, such as epub. To see other available formats, run:
 
 ```bash

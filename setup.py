@@ -76,6 +76,7 @@ setuptools.setup(
             "recommonmark >=0.5.0",
             "snakemake >=5.4.0",
             "Sphinx >=2.0.1",
+            "sphinx-autobuild >=2021.3.14",
             "sphinx-argparse >=0.2.5",
             "sphinx-markdown-tables >= 0.0.9",
             "sphinx-rtd-theme >=0.4.3",
