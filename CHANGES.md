@@ -5,8 +5,10 @@
 ### Bug Fixes
 
 * docs: Update the API documentation to reflect the latest state of things in the codebase. [#1087][] (@victorlin)
+* Fix support for Biopython version 1.80 which deprecated `Bio.Seq.Seq.ungap()`. [#1102][] (@victorlin)
 
 [#1087]: https://github.com/nextstrain/augur/pull/1087
+[#1102]: https://github.com/nextstrain/augur/pull/1102
 
 ## 18.2.0 (15 November 2022)
 
