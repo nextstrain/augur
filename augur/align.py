@@ -337,7 +337,11 @@ def analyse_insertions(aln, ungapped, insertion_csv):
     insertions = [defaultdict(list) for ins in insertion_coords]
     for idx, insertion_coord in enumerate(insertion_coords):
         for seq in aln:
-            s = seq[insertion_coord[0]:insertion_coord[1]].seq.ungap("-").ungap("N").ungap("?")
+            s = (seq[insertion_coord[0]:insertion_coord[1]].seq
+                .ungap("-")
+                .ungap("N")
+                .ungap("?")
+            )
             if len(s):
                 insertions[idx][str(s)].append(seq.name)
 
