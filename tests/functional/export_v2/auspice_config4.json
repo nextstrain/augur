@@ -1,0 +1,41 @@
+{
+  "colorings": [
+    {
+      "key": "location",
+      "title": "Location",
+      "type": "categorical",
+      "legend": [
+          {"value": "alpha", "display": "α"},
+          {"value": "beta"}
+      ],
+      "scale": [
+          ["beta", "#bd0026"],
+          ["gamma", "#6a51a3"]
+      ]
+    },
+    {
+      "key": "mutation_length",
+      "title": "Mutations per branch",
+      "type": "continuous",
+      "legend": [
+          {"value": 1, "display": "0-2", "bounds": [-1,2]},
+          {"value": 3, "display": "3-5", "bounds": [2,5]},
+          {"value": 5, "display": ">5", "bounds": [5, 10]}
+      ],
+      "scale": [
+          [1, "#081d58"],
+          [3, "#1d91c0"],
+          [5, "#c7e9b4"]
+      ]
+    },
+    {
+      "key": "zero_value",
+      "title": "Zero",
+      "type": "ordinal"
+    }
+  ],
+  "filters": [
+    "location",
+    "zero_value"
+  ]
+}

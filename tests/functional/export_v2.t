@@ -143,11 +143,27 @@ Skipping validation allows mismatched augur versions to be used without error.
   >   --output "$TMP/dataset5.json" \
   >   --skip-validation
   WARNING: You didn't provide information on who is maintaining this analysis.
-  
-  
+  \s{0} (re)
+  \s{0} (re)
+
 Check the output from the above command against its expected contents
   $ python3 "$TESTDIR/../../scripts/diff_jsons.py"  export_v2/dataset2.json "$TMP/dataset5.json" \
   >   --exclude-paths "root['meta']['updated']"
   {}
+
+Run export with metadata and external colors TSV that contains zero values.
+  $ ${AUGUR} export v2 \
+  >   --tree export_v2/tree.nwk \
+  >   --node-data export_v2/div_node-data.json export_v2/location_node-data.json \
+  >   --auspice-config export_v2/auspice_config4.json \
+  >   --metadata export_v2/zero_value_metadata.tsv \
+  >   --colors export_v2/zero_value_colors.tsv \
+  >   --output "$TMP/dataset6.json" &> /dev/null
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" export_v2/dataset3.json "$TMP/dataset6.json" \
+  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  {}
+  $ rm -f "$TMP/dataset6.json"
+
 
   $ popd > /dev/null
