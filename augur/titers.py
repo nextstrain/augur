@@ -22,6 +22,7 @@ def register_parser(parent_subparsers):
     tree_model.add_argument('--titers', nargs='+', type=str, required=True, help="file with titer measurements")
     tree_model.add_argument('--tree', '-t', type=str, required=True, help="tree to perform fit titer model to")
     tree_model.add_argument('--allow-empty-model', action="store_true", help="allow model to be empty")
+    tree_model.add_argument('--attribute-prefix', default="", help="prefix for attributes in the JSON output")
     tree_model.add_argument('--output', '-o', type=str, required=True, help='JSON file to save titer model')
     tree_model.set_defaults(
         __command__ = infer_tree_model
@@ -33,6 +34,7 @@ def register_parser(parent_subparsers):
     sub_model.add_argument('--gene-names', nargs='+', type=str, required=True, help="names of the sequences in the alignment, same order assumed")
     sub_model.add_argument('--tree', '-t', type=str, help="optional tree to annotate fit titer model to")
     sub_model.add_argument('--allow-empty-model', action="store_true", help="allow model to be empty")
+    sub_model.add_argument('--attribute-prefix', default="", help="prefix for attributes in the JSON output")
     sub_model.add_argument('--output', '-o', type=str, required=True, help='JSON file to save titer model')
     sub_model.set_defaults(
         __command__ = infer_substitution_model
@@ -75,8 +77,8 @@ class infer_substitution_model():
             # Store annotations for export to JSON.
             nodes = {
                 node.name: {
-                    "dTiterSub": node.dTiterSub,
-                    "cTiterSub": node.cTiterSub
+                    f"{args.attribute_prefix}dTiterSub": node.dTiterSub,
+                    f"{args.attribute_prefix}cTiterSub": node.cTiterSub
                 }
                 for node in tree.find_clades()
             }
@@ -99,11 +101,18 @@ class infer_tree_model():
         try:
             TM_tree.prepare()
             TM_tree.train()
-            tree_model = {'titers':TM_tree.compile_titers(),
-                          'potency':TM_tree.compile_potencies(),
-                          'avidity':TM_tree.compile_virus_effects(),
-                          'nodes':{n.name:{"dTiter": n.dTiter, "cTiter":n.cTiter}
-                                      for n in T.find_clades()}}
+            tree_model = {
+                'titers':TM_tree.compile_titers(),
+                'potency':TM_tree.compile_potencies(),
+                'avidity':TM_tree.compile_virus_effects(),
+                'nodes':{
+                    n.name: {
+                        f"{args.attribute_prefix}dTiter": n.dTiter,
+                        f"{args.attribute_prefix}cTiter": n.cTiter
+                    }
+                    for n in T.find_clades()
+                }
+            }
         except InsufficientDataException:
             print("Unable to train tree model.", file=sys.stderr)
             if args.allow_empty_model:
