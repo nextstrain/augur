@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* titers: Allow users to specify a custom prefix for attributes in the JSON output (e.g., `cTiter` can be changed to `custom_prefix_cTiter`). [#1106][] (@huddlej)
+
+[#1106]: https://github.com/nextstrain/augur/pull/1106
 
 ## 19.1.0 (14 December 2022)
 
