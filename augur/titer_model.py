@@ -74,6 +74,10 @@ class TiterCollection(object):
                         val = float(entries[4])
                     except:
                         continue
+                        if entries[4].startswith("<") and len(entries[4]) > 1:
+                            val = float(entries[4][1:]) / 2.0
+                        else:
+                            continue
                     test, ref_virus, serum, src_id = (entries[0], entries[1],entries[2],
                                                       entries[3])
 
