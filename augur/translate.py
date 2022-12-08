@@ -144,11 +144,6 @@ def translate_vcf_feature(sequences, ref, feature):
     prot['positions'] = []
 
     refNuc = str(feature.extract( SeqRecord(seq=Seq(ref)) ).seq)
-    # Need to get ref translation to store. check if multiple of 3 for sanity.
-    # will be padded in safe_translate if not
-    if len(refNuc)%3:
-        print("Gene length of {} is not a multiple of 3. will pad with N".format(feature.qualifiers['Name'][0]), file=sys.stderr)
-
     ref_aa_seq = safe_translate(refNuc)
     prot['reference'] = ref_aa_seq
 
@@ -360,14 +355,18 @@ def run(args):
     translations = {}
     deleted = []
     for fname, feat in features.items():
-        if is_vcf:
-            trans = translate_vcf_feature(sequences, ref, feat)
-            if trans:
-                translations[fname] = trans
+        if feat.type != 'source':
+            if is_vcf:
+                # Check if multiple of 3 for sanity. 
+                # will be padded in safe_translate if not
+                if len(str(feat.extract( SeqRecord(seq=Seq(ref)) ).seq))%3:
+                    print(f"Gene length of {fname} is not a multiple of 3. will pad with N", file=sys.stderr)
+                trans = translate_vcf_feature(sequences, ref, feat)
+                if trans:
+                    translations[fname] = trans
+                else:
+                    deleted.append(fname)
             else:
-                deleted.append(fname)
-        else:
-            if feat.type != 'source':
                 translations[fname] = translate_feature(sequences, feat)
 
     if len(deleted) != 0:
