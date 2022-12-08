@@ -21,18 +21,34 @@ class Sqlite3Database:
     """Represents a SQLite3 database.
 
     Provides useful methods to manage connections and general I/O.
+
+    If a file is not provided, an in-memory database will be used.
     """
 
-    def __init__(self, file: str):
+    def __init__(self, file: str = None):
 
-        self.file = file
-        """Database file."""
+        self.file = file or ""
+        """Database file. Empty string if using an in-memory database."""
+
+        self.use_in_memory_db = not self.file
+        """Whether to use an in-memory database."""
+
+        if self.use_in_memory_db:
+            # More info: https://www.sqlite.org/inmemorydb.html
+            self.in_memory_db_connection = sqlite3.connect(":memory:")
+            """Persistent connection to an in-memory database."""
 
         self.connection: sqlite3.Connection = None
         """SQLite3 database connection."""
 
     def connect(self, **connect_kwargs) -> sqlite3.Connection:
-        """Return a new connection to the SQLite database."""
+        """Return a connection to the SQLite database.
+
+        If using an in-memory database, the same connection is returned for all calls to this method.
+        Otherwise, a new connection is returned every time.
+        """
+        if self.use_in_memory_db:
+            return self.in_memory_db_connection
         return sqlite3.connect(self.file, **connect_kwargs)
 
     def __enter__(self):
