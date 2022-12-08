@@ -359,7 +359,7 @@ def run(args):
             if is_vcf:
                 # Check if multiple of 3 for sanity. 
                 # will be padded in safe_translate if not
-                if len(str(feat.extract( SeqRecord(seq=Seq(ref)) ).seq))%3:
+                if len(str(feat.extract( SeqRecord.SeqRecord(seq=Seq.Seq(ref)) ).seq))%3:
                     print(f"Gene length of {fname} is not a multiple of 3. will pad with N", file=sys.stderr)
                 trans = translate_vcf_feature(sequences, ref, feat)
                 if trans:
