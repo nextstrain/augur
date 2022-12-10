@@ -138,7 +138,7 @@ def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, i
     duplicate_ids = set()
     with open_file(table) as handle:
         # Get sample to determine delimiter
-        table_sample = handle.read(1024)
+        table_sample = handle.readline()
 
         if handle.seekable():
             handle.seek(0)
