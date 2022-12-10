@@ -9,28 +9,28 @@ Running the `passthru` subcommand since it does not do any data transformations.
 Create metadata TSV file for testing.
 
   $ cat >$TMP/metadata.tsv <<~~
-  > strain	country	date
-  > sequence_A	USA	2020-10-01
-  > sequence_B	USA	2020-10-02
-  > sequence_C	USA	2020-10-03
+  > strain	country	date	authors
+  > sequence_A	USA	2020-10-01	A,B,C,D,E,F,G,H,I,J,K
+  > sequence_B	USA	2020-10-02	A,B,C,D,E,F,G,H,I,J,K
+  > sequence_C	USA	2020-10-03	A,B,C,D,E,F,G,H,I,J,K
   > ~~
 
 Test TSV metadata input
 
   $ ${AUGUR} curate passthru \
   > --metadata $TMP/metadata.tsv
-  {"strain": "sequence_A", "country": "USA", "date": "2020-10-01"}
-  {"strain": "sequence_B", "country": "USA", "date": "2020-10-02"}
-  {"strain": "sequence_C", "country": "USA", "date": "2020-10-03"}
+  {"strain": "sequence_A", "country": "USA", "date": "2020-10-01", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
+  {"strain": "sequence_B", "country": "USA", "date": "2020-10-02", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
+  {"strain": "sequence_C", "country": "USA", "date": "2020-10-03", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
 
 Test TSV metadata input from stdin
 
   $ cat $TMP/metadata.tsv \
   >   | ${AUGUR} curate normalize-strings \
   >     --metadata -
-  {"strain": "sequence_A", "country": "USA", "date": "2020-10-01"}
-  {"strain": "sequence_B", "country": "USA", "date": "2020-10-02"}
-  {"strain": "sequence_C", "country": "USA", "date": "2020-10-03"}
+  {"strain": "sequence_A", "country": "USA", "date": "2020-10-01", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
+  {"strain": "sequence_B", "country": "USA", "date": "2020-10-02", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
+  {"strain": "sequence_C", "country": "USA", "date": "2020-10-03", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
 
 Create metadata CSV file for testing.
 
