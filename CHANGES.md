@@ -7,10 +7,12 @@
 * docs: Update the API documentation to reflect the latest state of things in the codebase. [#1087][] (@victorlin)
 * Fix support for Biopython version 1.80 which deprecated `Bio.Seq.Seq.ungap()`. [#1102][] (@victorlin)
 * export v2: Fixed a bug where colorings for zero values via `--colors` would not get applied to the exported Auspice JSON. [#1100][] (@joverlee521)
+* curate: Fixed a bug where metadata TSVs failed to parse if data within a column included comma separated values [#1110][] (@joverlee521)
 
 [#1087]: https://github.com/nextstrain/augur/pull/1087
 [#1100]: https://github.com/nextstrain/augur/pull/1100
 [#1102]: https://github.com/nextstrain/augur/pull/1102
+[#1110]: https://github.com/nextstrain/augur/pull/1110
 
 ## 18.2.0 (15 November 2022)
 
