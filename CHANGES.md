@@ -2,6 +2,10 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* io: Only `read_metadata` and `read_sequences` are available as part of the Python Public API. Other Python API functions of the `augur.io` module are no longer directly available. This is a breaking change, although we suspect few users to be impacted. If you still need to use other imports in your scripts, they can be imported from the [Developer API](https://docs.nextstrain.org/projects/augur/en/stable/api/developer/index.html) but note that they are no longer part of the [Public API](https://docs.nextstrain.org/projects/augur/en/stable/api/public/index.html). [#1087][] (@victorlin)
+
 ### Bug Fixes
 
 * docs: Update the API documentation to reflect the latest state of things in the codebase. [#1087][] (@victorlin)
