@@ -1,4 +1,4 @@
-__version__ = '18.2.0'
+__version__ = '19.0.0'
 
 
 def is_augur_version_compatible(version):
