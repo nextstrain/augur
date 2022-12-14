@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* io: Add `open_file` and `write_sequences` to the Python Pubic API. [#1114][] (@joverlee521)
+
+[#1114]: https://github.com/nextstrain/augur/pull/1114
 
 ## 19.0.0 (13 December 2022)
 
