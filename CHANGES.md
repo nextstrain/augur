@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 19.1.0 (14 December 2022)
+
 ### Features
 
 * io: Add `open_file` and `write_sequences` to the Python Pubic API. [#1114][] (@joverlee521)
