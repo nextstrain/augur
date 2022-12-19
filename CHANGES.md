@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 19.2.0 (19 December 2022)
+
 ### Features
 
 * titers: Allow users to specify a custom prefix for attributes in the JSON output (e.g., `cTiter` can be changed to `custom_prefix_cTiter`). [#1106][] (@huddlej)
