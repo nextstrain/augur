@@ -22,7 +22,7 @@ def register_parser(parent_subparsers):
     tree_model.add_argument('--titers', nargs='+', type=str, required=True, help="file with titer measurements")
     tree_model.add_argument('--tree', '-t', type=str, required=True, help="tree to perform fit titer model to")
     tree_model.add_argument('--allow-empty-model', action="store_true", help="allow model to be empty")
-    tree_model.add_argument('--attribute-prefix', default="", help="prefix for attributes in the JSON output")
+    tree_model.add_argument('--attribute-prefix', default="", help="prefix for node attributes in the JSON output including cumulative titer drop ('cTiter') and per-branch titer drop ('dTiter'). Set a prefix to disambiguate annotations from multiple tree model JSONs in the final Auspice JSON.")
     tree_model.add_argument('--output', '-o', type=str, required=True, help='JSON file to save titer model')
     tree_model.set_defaults(
         __command__ = infer_tree_model
@@ -34,7 +34,7 @@ def register_parser(parent_subparsers):
     sub_model.add_argument('--gene-names', nargs='+', type=str, required=True, help="names of the sequences in the alignment, same order assumed")
     sub_model.add_argument('--tree', '-t', type=str, help="optional tree to annotate fit titer model to")
     sub_model.add_argument('--allow-empty-model', action="store_true", help="allow model to be empty")
-    sub_model.add_argument('--attribute-prefix', default="", help="prefix for attributes in the JSON output")
+    sub_model.add_argument('--attribute-prefix', default="", help="prefix for node attributes in the JSON output including cumulative titer drop ('cTiterSub') and per-substitution titer drop ('dTiterSub'). Set a prefix to disambiguate annotations from multiple substitution model JSONs in the final Auspice JSON.")
     sub_model.add_argument('--output', '-o', type=str, required=True, help='JSON file to save titer model')
     sub_model.set_defaults(
         __command__ = infer_substitution_model
