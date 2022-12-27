@@ -12,8 +12,8 @@ Test titer substitution model with alignment and tree inputs.
   >   --gene-names HA1 \
   >   --output $TMP/titers-sub.json > /dev/null
   Read titers from ../data/titers.tsv, found:
-   --- 61 strains
+   --- 62 strains
    --- 15 data sources
-   --- 232 total measurements
+   --- 272 total measurements
   $ grep cTiterSub $TMP/titers-sub.json | wc -l
   \s*120 (re)
