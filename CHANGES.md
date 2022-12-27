@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* titers: Support parsing of thresholded values (e.g., "<80" or ">2560"). [#1118][] (@huddlej)
+
+[#1118]: https://github.com/nextstrain/augur/pull/1118
 
 ## 19.2.0 (19 December 2022)
 
