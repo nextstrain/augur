@@ -41,22 +41,51 @@ class TiterCollection(object):
         <class 'dict'>
         >>> len(measurements)
         11
-        >>> measurements[("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10"))]
-        [80.0]
         >>> len(strains)
         13
         >>> len(sources)
         5
+
+        Inspect specific measurements. First, inspect a measurement that has a
+        specific value in the input.
+
+        >>> measurements[("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10"))]
+        [80.0]
+
+        Next, inspect a measurement that has a thresholded value at the lower
+        bound of detection (e.g., "<80"). This measurement should be reported as
+        one half of its threshold value (e.g., 40.0).
+
+        >>> measurements[("A/Acores/11/2013", ("A/Victoria/208/2009", "F7/10"))]
+        [40.0]
+
+        Inspect a measurement that has a thresholded value at the upper bound of
+        detection (">1280"). This measurement should be reported as twice its
+        threshold value (e.g., 2560.0).
+
+        >>> measurements[("A/Acores/SU43/2012", ("A/Texas/50/2012", "F36/12"))]
+        [2560.0]
+
+        Confirm that excluding sources produces fewer measurements.
+
         >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv", excluded_sources=["NIMR_Sep2013_7-11.csv"])
         >>> len(measurements)
         5
+
+        Request measurements for a test/reference/serum tuple that should not
+        exist after excluding its source.
+
         >>> measurements.get(("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10")))
         >>>
+
+        Missing titer data should produce an error.
+
         >>> output = TiterCollection.load_from_file("tests/data/titer_model/missing.tsv")
         Traceback (most recent call last):
           File "<ipython-input-2-0ea96a90d45d>", line 1, in <module>
             open("tests/data/titer_model/missing.tsv", "r")
         FileNotFoundError: [Errno 2] No such file or directory: 'tests/data/titer_model/missing.tsv'
+
         """
         if excluded_sources is None:
             excluded_sources = []
@@ -70,10 +99,21 @@ class TiterCollection(object):
             with open_file(fname, 'r') as infile:
                 for line in infile:
                     entries = line.strip().split('\t')
+                    titer = entries[4]
                     try:
-                        val = float(entries[4])
-                    except:
+                        # Convert values below or above the measurement
+                        # threshold (e.g., "<80" or ">2560") to half or twice
+                        # their thresholded value, respectively, so they can be
+                        # included in models instead of being discarded.
+                        if titer.startswith("<"):
+                            val = float(titer[1:]) / 2
+                        elif titer.startswith(">"):
+                            val = float(titer[1:]) * 2
+                        else:
+                            val = float(titer)
+                    except ValueError:
                         continue
+
                     test, ref_virus, serum, src_id = (entries[0], entries[1],entries[2],
                                                       entries[3])
 

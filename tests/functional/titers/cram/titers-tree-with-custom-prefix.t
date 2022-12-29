@@ -11,8 +11,8 @@ Test titer tree model with a custom prefix for the node data attributes in the o
   >   --attribute-prefix custom_prefix_ \
   >   --output $TMP/titers-tree.json > /dev/null
   Read titers from ../data/titers.tsv, found:
-   --- 61 strains
+   --- 62 strains
    --- 15 data sources
-   --- 232 total measurements
+   --- 272 total measurements
   $ grep custom_prefix_cTiter $TMP/titers-tree.json | wc -l
   \s*120 (re)

@@ -10,8 +10,8 @@ Test titer tree model.
   >   --titers ../data/titers.tsv \
   >   --output $TMP/titers-tree.json > /dev/null
   Read titers from ../data/titers.tsv, found:
-   --- 61 strains
+   --- 62 strains
    --- 15 data sources
-   --- 232 total measurements
+   --- 272 total measurements
   $ grep cTiter $TMP/titers-tree.json | wc -l
   \s*120 (re)
