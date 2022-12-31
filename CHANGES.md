@@ -6,7 +6,12 @@
 
 * titers: Support parsing of thresholded values (e.g., "<80" or ">2560"). [#1118][] (@huddlej)
 
+### Bug Fixes
+
+* utils: Serialize common numpy data types in `write_json`. [#1119][] (@victorlin)
+
 [#1118]: https://github.com/nextstrain/augur/pull/1118
+[#1119]: https://github.com/nextstrain/augur/pull/1119
 
 ## 19.2.0 (19 December 2022)
 
