@@ -14,6 +14,9 @@ def register_parser(parent_subparsers):
     parser.add_argument('--output-db', help="Destination SQLite3 database file.")
     parser.add_argument('--metadata-table', default=DEFAULT_IMPORTED_METADATA_TABLE, help="Table name to store metadata in.")
     parser.add_argument('--sequences-table', default=DEFAULT_IMPORTED_SEQUENCES_TABLE, help="Table name to store sequences in.")
+    parser.add_argument('--skip-strain-indexing', action='store_true', help="""
+            Skip adding an index on strain names. This speeds up data importing and saves some disk space, but
+            comes at the cost of increased execution time for queries on strain name.""")
     return parser
 
 
@@ -22,7 +25,7 @@ def run(args):
 
     import_sqlite3(args.metadata, args.metadata_table,
         args.sequences, args.sequences_table,
-        args.output_db)
+        args.output_db, args.skip_strain_indexing)
 
 
 def validate_args(args):

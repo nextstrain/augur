@@ -9,7 +9,7 @@ from ..defaults import DEFAULT_SEQUENCES_ID_COLUMN, DEFAULT_SEQUENCES_SEQ_COLUMN
 
 def import_(metadata_file: str, metadata_table_name: str,
         sequences_file: str, sequences_table_name: str,
-        db_file: str):
+        db_file: str, skip_strain_indexing: bool):
     """Import data into a SQLite3 database file."""
     if metadata_file:
         db_file_existed = os.path.exists(db_file)
@@ -17,7 +17,8 @@ def import_(metadata_file: str, metadata_table_name: str,
             try:
                 metadata = Metadata(metadata_file)
                 import_metadata(metadata, metadata_table_name, database)
-                database.create_unique_index(metadata_table_name, metadata.id_column)
+                if not skip_strain_indexing:
+                    database.create_unique_index(metadata_table_name, metadata.id_column)
             except Sqlite3DatabaseError as e:
                 # Delete the database file if it was created for this import.
                 if not db_file_existed:
@@ -32,7 +33,8 @@ def import_(metadata_file: str, metadata_table_name: str,
 
                 sequences = Sequences(sequences_file)
                 import_sequences(sequences, id_column, sequences_table_name, database)
-                database.create_unique_index(sequences_table_name, id_column)
+                if not skip_strain_indexing:
+                    database.create_unique_index(sequences_table_name, id_column)
             except Sqlite3DatabaseError as e:
                 # Delete the database file if it was created for this import.
                 if not db_file_existed:
