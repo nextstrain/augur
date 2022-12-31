@@ -17,6 +17,7 @@ def import_(metadata_file: str, metadata_table_name: str,
             try:
                 metadata = Metadata(metadata_file)
                 import_metadata(metadata, metadata_table_name, database)
+                database.create_unique_index(metadata_table_name, metadata.id_column)
             except Sqlite3DatabaseError as e:
                 # Delete the database file if it was created for this import.
                 if not db_file_existed:
@@ -31,6 +32,7 @@ def import_(metadata_file: str, metadata_table_name: str,
 
                 sequences = Sequences(sequences_file)
                 import_sequences(sequences, id_column, sequences_table_name, database)
+                database.create_unique_index(sequences_table_name, id_column)
             except Sqlite3DatabaseError as e:
                 # Delete the database file if it was created for this import.
                 if not db_file_existed:

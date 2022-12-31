@@ -110,6 +110,18 @@ class Sqlite3Database:
         except sqlite3.ProgrammingError as e:
             raise Sqlite3DatabaseError("Failed to import rows.") from e
 
+    def create_unique_index(self, table_name: str, column: str):
+        """Create a unique index on a column in a table."""
+        self.check_table_existence(table_name)
+        index_name = f'index_{table_name}_{column}'
+        try:
+            self.execute(f"""
+                CREATE UNIQUE INDEX {sanitize_identifier(index_name)}
+                ON {sanitize_identifier(table_name)} ({sanitize_identifier(column)})
+            """)
+        except sqlite3.IntegrityError as e:
+            raise Sqlite3DatabaseError(f"Duplicate found in column '{column}' of table '{table_name}'.") from e
+
     def table_to_csv(self, table_name: str, path: str, header: bool = True, chunksize: int = 10000, **to_csv_kwargs):
         """Output a table's contents to a tabular file.
 
