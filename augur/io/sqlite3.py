@@ -9,6 +9,11 @@ from urllib.parse import urlencode
 from .file import open_file
 
 
+class DuplicateError(Exception):
+    def __init__(self, duplicated_values: Iterable):
+        self.duplicated_values = duplicated_values
+
+
 class Sqlite3Database(AbstractContextManager):
     """Represents a SQLite3 database.
 
@@ -116,6 +121,58 @@ class Sqlite3Database(AbstractContextManager):
             self.connection.executemany(insert_statement, rows_with_placeholders)
         except sqlite3.ProgrammingError as e:
             raise Exception("Failed to insert rows.") from e
+
+    def create_primary_index(self, table: str, column: str):
+        """Create a primary index in a table with a unique constraint.
+
+        This defines a "primary index" as a singular index per table that can be added after table creation.
+
+        If SQLite allowed setting PRIMARY KEYs after table creation, this would not be necessary.
+
+        Avoid setting PRIMARY KEYs before inserting data for optimal data insertion speeds¹.
+        ¹ https://stackoverflow.com/q/1711631/4410590
+        """
+        self._assert_table_existence(table)
+        index = f'primary_index_{table}'
+        try:
+            self.connection.execute(f"""
+                CREATE UNIQUE INDEX {sanitize_identifier(index)}
+                ON {sanitize_identifier(table)} ({sanitize_identifier(column)})
+            """)
+        except sqlite3.IntegrityError:
+            results = self.connection.execute(f"""
+                SELECT
+                    {sanitize_identifier(column)} as id,
+                    COUNT(*) AS count
+                FROM {table}
+                GROUP BY {sanitize_identifier(column)}
+                HAVING count > 1
+            """)
+            duplicates = (row['id'] for row in results)
+            raise DuplicateError(duplicates)
+
+    def get_primary_index(self, table: str):
+        """Get the primary index of a table."""
+
+        index = f'primary_index_{table}'
+
+        results = self.connection.execute(f"""
+        SELECT
+            ii.name
+        FROM sqlite_master AS m,
+            pragma_index_list(m.name) AS il,
+            pragma_index_info(il.name) AS ii
+        WHERE 
+            m.type = 'table'
+            AND m.tbl_name = '{table}'
+            AND il.name = '{index}';
+        """)
+        columns = [result[0] for result in results]
+
+        # Check that there is exactly one primary index.
+        assert len(columns) == 1
+
+        return columns[0]
 
     def query_to_file(self, query: str, path: str, header: bool = True, delimiter: str = '\t'):
         """Query the database and write results to a tabular file.
