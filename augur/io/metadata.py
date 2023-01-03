@@ -7,12 +7,13 @@ from io import StringIO
 from itertools import chain
 
 from augur.errors import AugurError
+from augur.io.defaults import POTENTIAL_STRAIN_ID_COLUMNS
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
 from .file import open_file
 
 
-def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None):
+def read_metadata(metadata_file, id_columns=POTENTIAL_STRAIN_ID_COLUMNS, chunk_size=None):
     """Read metadata from a given filename and into a pandas `DataFrame` or
     `TextFileReader` object.
 
