@@ -57,10 +57,12 @@ setuptools.setup(
         "isodate ==0.6.*",
         "jsonschema >=3.0.0, ==3.*",
         "networkx >= 2.5, ==2.*",
+        "numpy ==1.*",
         "packaging >=19.2",
         "pandas >=1.0.0, ==1.*",
         "phylo-treetime >=0.9.3, ==0.9.*",
         "pyfastx >=0.8.4, ==0.8.*",
+        "scipy ==1.*",
         "xopen[zstd] >=1.7.0, ==1.*"
     ],
     extras_require = {
