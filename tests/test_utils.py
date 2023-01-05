@@ -1,3 +1,5 @@
+import json
+import numpy as np
 from pathlib import Path
 from unittest.mock import patch
 
@@ -90,3 +92,19 @@ class TestUtils:
         strains = utils.read_strains(strains1, strains2)
         assert len(strains) == 3
         assert "strain1" in strains
+
+    def test_write_json_numpy_types(self, tmpdir):
+        """write_json should be able to serialize numpy data types."""
+        data = {
+            'int': np.int64(1),
+            'float': np.float64(2.0),
+            'array': np.array([3,4,5])
+        }
+        file = Path(tmpdir) / Path("data.json")
+        utils.write_json(data, file, include_version=False)
+        with open(file) as f:
+            assert json.load(f) == {
+                'int': 1,
+                'float': 2.0,
+                'array': [3,4,5]
+            }
