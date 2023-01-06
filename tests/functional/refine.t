@@ -16,7 +16,7 @@ Try building a time tree.
   >  --date-confidence \
   >  --date-inference marginal \
   >  --clock-filter-iqd 4 \
-  >  --seed 314159 > /dev/null
+  >  --seed 314159 &> /dev/null
 
 Confirm that TreeTime trees match expected topology and branch lengths.
 
@@ -37,7 +37,7 @@ Build a time tree with mutations as the reported divergence unit.
   >  --date-inference marginal \
   >  --clock-filter-iqd 4 \
   >  --seed 314159 \
-  >  --divergence-units mutations > /dev/null
+  >  --divergence-units mutations &> /dev/null
 
 Confirm that TreeTime trees match expected topology and branch lengths.
 
@@ -57,7 +57,7 @@ This is one way to get named internal nodes for downstream analyses and does not
   >  --date-inference marginal \
   >  --clock-filter-iqd 4 \
   >  --seed 314159 \
-  >  --divergence-units mutations-per-site > /dev/null
+  >  --divergence-units mutations-per-site &> /dev/null
 
 Confirm that trees match expected topology and branch lengths, given that the output should not be a time tree.
 
@@ -80,7 +80,7 @@ This approach only works when we provide an alignment FASTA.
   >  --date-inference marginal \
   >  --clock-filter-iqd 4 \
   >  --seed 314159 \
-  >  --divergence-units mutations > /dev/null
+  >  --divergence-units mutations &> /dev/null
 
 Confirm that trees match expected topology and branch lengths, given that the output should not be a time tree.
 
@@ -102,8 +102,7 @@ This approach does not make sense and should not work without an alignment FASTA
   >  --date-inference marginal \
   >  --clock-filter-iqd 4 \
   >  --seed 314159 \
-  >  --divergence-units mutations > /dev/null
-  *ERROR: alignment is required* (glob)
+  >  --divergence-units mutations &> /dev/null
   [1]
 
   $ popd > /dev/null

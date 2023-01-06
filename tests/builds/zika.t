@@ -86,7 +86,7 @@ Build a time tree from the existing tree topology, the multiple sequence alignme
   >  --date-confidence \
   >  --date-inference marginal \
   >  --clock-filter-iqd 4 \
-  >  --seed 314159 > /dev/null
+  >  --seed 314159 &> /dev/null
 
 Confirm that TreeTime trees match expected topology and branch lengths.
 
