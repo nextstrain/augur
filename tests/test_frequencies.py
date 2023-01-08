@@ -12,7 +12,8 @@ import os
 # we assume (and assert) that this script is running from the tests/ directory
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from augur.frequency_estimators import get_pivots, TreeKdeFrequencies, AlignmentKdeFrequencies, TreeKdeFrequenciesError
+from augur.dates import numeric_date
+from augur.frequency_estimators import float_to_datestring, get_pivots, TreeKdeFrequencies, AlignmentKdeFrequencies, TreeKdeFrequenciesError
 from augur.utils import json_to_tree
 
 # Define regions to use for testing weighted frequencies.
@@ -87,16 +88,45 @@ def test_get_pivots_by_months():
     """
     pivots = get_pivots(observations=[], pivot_interval=1, start_date=2015.0, end_date=2016.0, pivot_interval_units="months")
     # Pivots should include all 12 months of the year plus the month represented
-    # by the end date, since the pandas month interval uses "month starts". See
-    # pandas date offsets documentation for more details:
-    # https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
+    # by the end date because pivots represent time slices through data and we
+    # want to evaluate frequencies at the start and end time slices.
     assert len(pivots) == 13
+    assert float_to_datestring(pivots[-1]) == "2016-01-01"
+
+def test_get_pivots_by_months_with_realistic_start_end_dates():
+    """Get pivots where intervals are defined by months and realistic start and end dates.
+    """
+    # 6 years (72 months) of pivots with 3-month intervals should produce 24 + 1
+    # pivots (4 pivots per year plus the pivot for the beginning of the year
+    # associated with the end date).
+    pivots = get_pivots(
+        observations=[],
+        pivot_interval=3,
+        start_date=numeric_date("2017-01-06"),
+        end_date=numeric_date("2023-01-06"),
+        pivot_interval_units="months"
+    )
+    assert len(pivots) == 25
+    assert float_to_datestring(pivots[-1]) == "2023-01-06"
 
 def test_get_pivots_by_weeks():
     """Get pivots where intervals are defined as weeks instead of months.
     """
+    # As with monthly pivots, weekly pivots should include the first and last
+    # values in the range. So, a 1-year interval will represent 52 weekly pivots
+    # from the beginning plus the first pivot from the next year.
     pivots = get_pivots(observations=[], pivot_interval=1, start_date=2015.0, end_date=2016.0, pivot_interval_units="weeks")
-    assert len(pivots) == 52
+    assert len(pivots) == 53
+
+    pivots = get_pivots(
+        observations=[],
+        pivot_interval=1,
+        start_date=numeric_date("2022-01-06"),
+        end_date=numeric_date("2023-01-06"),
+        pivot_interval_units="weeks"
+    )
+    assert len(pivots) == 53
+
 
 def test_get_pivots_by_invalid_unit():
     with pytest.raises(ValueError, match=r".*invalid_unit.*is not supported.*"):
