@@ -61,9 +61,15 @@ def test_get_pivots_from_tree_only(tree):
     pivots = get_pivots(observations, pivot_frequency)
     assert isinstance(pivots, np.ndarray)
 
-    # Floating point pivot values should be separated by the given number of
-    # months divided by number of months in a year.
-    assert pivots[1] - pivots[0] == pivot_frequency / 12.0
+    # Floating point pivot values should be roughly separated by the given
+    # number of months divided by number of months in a year. Numeric dates from
+    # pivots calculate decimal fractions as the proportion of days in the year,
+    # instead of months in the year (e.g., the fraction for the first three
+    # months of a non-leap year is (31 + 28 + 31) / 365 or 0.246575 instead of 3
+    # / 12 or 0.25). As a result of this difference in how we calculate
+    # fractions, we need to round to pivots to 2 decimal places which is the
+    # precision of month-based fractions.
+    assert np.round(pivots[1] - pivots[0], 2) == (pivot_frequency / 12.0)
 
 def test_get_pivots_from_start_and_end_date():
     """
@@ -163,7 +169,7 @@ class TestTreeKdeFrequencies(object):
         )
         frequencies = kde_frequencies.estimate(tree)
         assert hasattr(kde_frequencies, "pivots")
-        assert kde_frequencies.pivots[0] == 2015.5833
+        assert kde_frequencies.pivots[0] == 2015.5
         assert hasattr(kde_frequencies, "frequencies")
         assert list(frequencies.values())[0].shape == kde_frequencies.pivots.shape
 
@@ -437,9 +443,16 @@ class TestAlignmentKdeFrequencies(object):
         frequencies = kde_frequencies.estimate(alignment, observations)
 
         assert hasattr(kde_frequencies, "pivots")
-        assert np.around(kde_frequencies.pivots[1] - kde_frequencies.pivots[0], 2) == np.around(1 / 12.0, 2)
+        pivots = kde_frequencies.pivots
+
+        # Pivot decimal fractions represent fractions of a year by days, so
+        # comparisons with fractions of a year by months need to take into
+        # account rounding error between these calculations. In this test, we
+        # allow pivots to be spaced apart by a value that is "close" to 1 / 12
+        # months by the rounding error of the month-based precision.
+        assert np.isclose((pivots[-1] - pivots[-2]), 1 / 12.0, atol=0.005)
         assert hasattr(kde_frequencies, "frequencies")
-        assert list(frequencies.values())[0].shape == kde_frequencies.pivots.shape
+        assert list(frequencies.values())[0].shape == pivots.shape
 
         # Find a position with frequencies estimated for multiple bases.
         position = list(frequencies.keys())[0].split(":")[0]
