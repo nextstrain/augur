@@ -2,7 +2,7 @@
 from __future__ import division, print_function
 from collections import defaultdict, deque
 import datetime
-from dateutil.relativedelta import relativedelta
+import isodate
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
@@ -59,9 +59,9 @@ def get_pivots(observations, pivot_interval, start_date=None, end_date=None, piv
     pivot_end = end_date if end_date else np.ceil(np.max(observations) / pivot_frequency) * pivot_frequency
 
     if pivot_interval_units == "months":
-        delta_keywords = {"months": pivot_interval}
+        duration_str = f'P{pivot_interval}M'
     elif pivot_interval_units == "weeks":
-        delta_keywords = {"weeks": pivot_interval}
+        duration_str = f'P{pivot_interval}W'
     else:
         raise ValueError(f"The given interval unit '{pivot_interval_units}' is not supported.")
 
@@ -69,7 +69,7 @@ def get_pivots(observations, pivot_interval, start_date=None, end_date=None, piv
     # dates and the corresponding delta time for the interval between pivots.
     start = datetime.datetime.strptime(float_to_datestring(pivot_start), "%Y-%m-%d")
     end = datetime.datetime.strptime(float_to_datestring(pivot_end), "%Y-%m-%d")
-    delta = relativedelta(**delta_keywords)
+    delta = isodate.parse_duration(duration_str)
 
     # Start calculating pivots from the end date (inclusive), working backwards
     # in time by a time delta that matches the user-requested interval. Include
