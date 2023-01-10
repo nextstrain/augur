@@ -6,6 +6,20 @@ from augur.errors import AugurError
 
 
 class TestDates:
+    @freeze_time("2000-02-20")
+    def test_numeric_date(self):
+        # Test different representations of February 20, 2000.
+        assert dates.numeric_date("2000.138") == pytest.approx(2000.138, abs=1e-3)
+        assert dates.numeric_date("2000-02-20") == pytest.approx(2000.138, abs=1e-3)
+        assert dates.numeric_date(datetime.date(year=2000, month=2, day=20)) == pytest.approx(2000.138, abs=1e-3)
+
+        # Test relative dates based on freeze_time.
+        assert dates.numeric_date("1D") == pytest.approx(2000.135, abs=1e-3)
+        assert dates.numeric_date("1W") == pytest.approx(2000.119, abs=1e-3)
+        assert dates.numeric_date("1M") == pytest.approx(2000.053, abs=1e-3)
+        assert dates.numeric_date("1Y") == pytest.approx(1999.138, abs=1e-3)
+        assert dates.numeric_date("1Y1M1W") == pytest.approx(1999.034, abs=1e-3)
+
     def test_ambiguous_date_to_date_range_not_ambiguous(self):
         assert dates.ambiguous_date_to_date_range("2000-03-29", "%Y-%m-%d") == (
             datetime.date(year=2000, month=3, day=29),
