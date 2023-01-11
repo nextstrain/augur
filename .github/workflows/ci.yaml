@@ -42,7 +42,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         channels: conda-forge,bioconda
-        channel-priority: true
         activate-environment: test
     - run: |
         conda install -n base conda-libmamba-solver
