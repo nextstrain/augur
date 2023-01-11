@@ -41,12 +41,18 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         python-version: ${{ matrix.python-version }}
-        mamba-version: "*"
-        channels: conda-forge,bioconda
-        channel-priority: true
         activate-environment: test
-    - run: mamba install mafft raxml fasttree iqtree vcftools
-    - run: mamba install biopython=${{ matrix.biopython-version }}
+    - run: |
+        conda install -n base conda-libmamba-solver
+        conda config --set solver libmamba
+    - run: |
+        conda install -c bioconda -c conda-forge \
+          mafft \
+          raxml \
+          fasttree \
+          iqtree \
+          vcftools \
+          biopython=${{ matrix.biopython-version }}
     - run: pip install .[dev]
     - run: conda info
     - run: conda list
