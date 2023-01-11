@@ -108,7 +108,7 @@ def find_executable(names, default = None):
 
 def build_raxml(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args=None):
     '''
-    build tree using RAxML with parameters '-f d -m GTRCAT -c 25 -p 235813 -n tre"
+    build tree using RAxML
     '''
 
     raxml = find_executable([
@@ -161,7 +161,7 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args
 
 def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args=None):
     '''
-    build tree using fasttree with parameters "-nt"
+    build tree using fasttree
     '''
     log_file = out_file + ".log"
 
@@ -206,7 +206,7 @@ def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_a
 
 def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nthreads=1, tree_builder_args=None):
     '''
-    build tree using IQ-Tree with parameters "-fast"
+    build tree using IQ-Tree
     arguments:
         aln_file    file name of input aligment
         out_file    file name to write tree to
