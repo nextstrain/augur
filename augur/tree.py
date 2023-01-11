@@ -15,6 +15,7 @@ import numpy as np
 from treetime.vcf_utils import read_vcf
 from pathlib import Path
 
+from .errors import AugurError
 from .io.sequences import read_sequences
 from .io.shell_command_runner import run_shell_command
 from .io.vcf import shquote
@@ -145,13 +146,26 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args
           "\n\tIn Bioinformatics, 2014\n")
     try:
         run_shell_command(cmd, raise_errors = True)
-        shutil.copy("RAxML_bestTree.%s"%(random_string), out_file)
+
+        # When bootstrapping is enabled by custom tree_builder_args, RAxML
+        # outputs the tree with support values to a different file,
+        # "bipartitions".  If it exists, then use it; otherwise use "bestTree".
+        possible_tree_files = [
+            Path(f"RAxML_bipartitions.{random_string}"),    # best-scoring ML tree with support values
+            Path(f"RAxML_bestTree.{random_string}"),        # best-scoring ML tree
+        ]
+
+        tree = next((t for t in possible_tree_files if t.exists()), None)
+
+        if not tree:
+            raise AugurError(f"No RAxML output tree files found; looked for: {', '.join(map(repr, map(str, possible_tree_files)))}")
+
+        shutil.copy(str(tree), out_file)
         T = Phylo.read(out_file, 'newick')
+
         if clean_up:
-            os.remove("RAxML_bestTree.%s"%(random_string))
-            os.remove("RAxML_info.%s"%(random_string))
-            os.remove("RAxML_parsimonyTree.%s"%(random_string))
-            os.remove("RAxML_result.%s"%(random_string))
+            for f in Path().glob(f"RAxML_*.{random_string}"):
+                f.unlink()
 
     except Exception as error:
         print("ERROR: TREE BUILDING FAILED")
