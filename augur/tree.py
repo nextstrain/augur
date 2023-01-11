@@ -40,6 +40,9 @@ DEFAULT_ARGS = {
     "iqtree": "-ninit 2 -n 2 -me 0.05 -nt AUTO -redo",
 }
 
+# IQ-TREE only; see usage below
+DEFAULT_SUBSTITUTION_MODEL = "GTR"
+
 class ConflictingArgumentsException(Exception):
     """Exception when user-provided tree builder arguments conflict with the
     requested tree builder's hardcoded defaults (e.g., the path to the
@@ -396,7 +399,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--alignment', '-a', required=True, help="alignment in fasta or VCF format")
     parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
     parser.add_argument('--output', '-o', type=str, help='file name to write tree to')
-    parser.add_argument('--substitution-model', default="GTR",
+    parser.add_argument('--substitution-model', default=DEFAULT_SUBSTITUTION_MODEL,
                                 help='substitution model to use. Specify \'auto\' to run ModelTest. Currently, only available for IQTREE.')
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                                 help="maximum number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
@@ -451,8 +454,8 @@ def run(args):
     else:
         fasta = aln
 
-    if args.substitution_model and not args.method=='iqtree':
-        print("Cannot specify model unless using IQTree. Model specification ignored.")
+    if args.method != "iqtree" and args.substitution_model is not DEFAULT_SUBSTITUTION_MODEL:
+        print(f"Cannot specify --substitution-model unless using IQTree. Model specification {args.substitution_model!r} ignored.", file=sys.stderr)
 
     # Allow users to keep default args, override them, or augment them.
     if args.tree_builder_args is None:
