@@ -400,7 +400,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
     parser.add_argument('--output', '-o', type=str, help='file name to write tree to')
     parser.add_argument('--substitution-model', default=DEFAULT_SUBSTITUTION_MODEL,
-                                help='substitution model to use. Specify \'auto\' to run ModelTest. Currently, only available for IQTREE.')
+                                help='substitution model to use. Specify \'auto\' to run ModelTest. Currently, only available for IQ-TREE.')
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                                 help="maximum number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
@@ -455,7 +455,7 @@ def run(args):
         fasta = aln
 
     if args.method != "iqtree" and args.substitution_model is not DEFAULT_SUBSTITUTION_MODEL:
-        print(f"Cannot specify --substitution-model unless using IQTree. Model specification {args.substitution_model!r} ignored.", file=sys.stderr)
+        print(f"Cannot specify --substitution-model unless using IQ-TREE. Model specification {args.substitution_model!r} ignored.", file=sys.stderr)
 
     # Allow users to keep default args, override them, or augment them.
     if args.tree_builder_args is None:
