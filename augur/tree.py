@@ -153,8 +153,9 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args
             os.remove("RAxML_parsimonyTree.%s"%(random_string))
             os.remove("RAxML_result.%s"%(random_string))
 
-    except:
+    except Exception as error:
         print("ERROR: TREE BUILDING FAILED")
+        print(f"ERROR: {error}")
         if os.path.isfile("RAxML_log.%s"%(random_string)):
             print("Please see the log file for more details: {}".format("RAxML_log.%s"%(random_string)))
         T=None
@@ -198,8 +199,9 @@ def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_a
     try:
         run_shell_command(cmd, raise_errors = True, extra_env = extra_env)
         T = Phylo.read(out_file, 'newick')
-    except:
+    except Exception as error:
         print("ERROR: TREE BUILDING FAILED")
+        print(f"ERROR: {error}")
         if os.path.isfile(log_file):
             print("Please see the log file for more details: {}".format(log_file))
         T=None
@@ -276,8 +278,9 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
             for ext in [".bionj",".ckp.gz",".iqtree",".mldist",".model.gz",".treefile",".uniqueseq.phy",".model"]:
                 if os.path.isfile(tmp_aln_file + ext):
                     os.remove(tmp_aln_file + ext)
-    except:
+    except Exception as error:
         print("ERROR: TREE BUILDING FAILED")
+        print(f"ERROR: {error}")
         if os.path.isfile(log_file):
             print("Please see the log file for more details: {}".format(log_file))
         T=None
