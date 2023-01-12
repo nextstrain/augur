@@ -12,6 +12,7 @@ augur
    augur.ancestral
    augur.clades
    augur.dates
+   augur.db
    augur.distance
    augur.export
    augur.export_v1

@@ -27,3 +27,15 @@ def open_file(path_or_buffer, mode="r", **kwargs):
             yield handle
     except TypeError:
         yield path_or_buffer
+
+
+class File:
+    """Represents a file."""
+
+    def __init__(self, file: str):
+        self.file = file
+        """File to be loaded."""
+
+    def open(self, **kwargs):
+        """Open the file with auto-compression/decompression."""
+        return open_file(self.file, **kwargs)

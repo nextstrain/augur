@@ -23,6 +23,7 @@ command_strings = [
     "parse",
     "curate",
     "index",
+    "db",
     "filter",
     "mask",
     "align",

@@ -12,6 +12,7 @@ We're in the process of adding examples and more extensive documentation for eac
 	parse
 	curate/index
 	index
+	db
 	filter
 	mask
 	align
