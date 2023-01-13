@@ -256,8 +256,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
             if line.startswith(">"):
                 num_seqs += 1
                 pos = 1
-                for i in range(1, len(line)):
-                    l = line[i]
+                for l in line[1:]:
                     #check if l is a character that IQ-tree changes
                     # See IQtree function renameBool https://github.com/iqtree/iqtree2/blob/3bbc304263cb2f85574a9163e8f2e5c5b597a147/utils/tools.cpp#L585
                     if l.isalnum()==False and l !='_' and l != '-' and l != '.' and l.isspace()== False:
