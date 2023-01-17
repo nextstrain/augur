@@ -1,11 +1,11 @@
 import operator
 import re
-import sys
 import numpy as np
 import pandas as pd
 
 from augur.dates import numeric_date, is_date_ambiguous, get_numerical_dates
 from augur.errors import AugurError
+from augur.io.print import print_err
 from augur.io.vcf import is_vcf as filename_is_vcf
 from augur.utils import read_strains
 from .io import filter_kwargs_to_str
@@ -596,7 +596,7 @@ def construct_filters(args, sequence_index):
         is_vcf = filename_is_vcf(args.sequences)
 
         if is_vcf: #doesn't make sense for VCF, ignore.
-            print("WARNING: Cannot use min_length for VCF files. Ignoring...", file=sys.stderr)
+            print_err("WARNING: Cannot use min_length for VCF files. Ignoring...")
         else:
             exclude_by.append((
                 filter_by_sequence_length,

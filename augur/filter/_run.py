@@ -5,7 +5,6 @@ import json
 import numpy as np
 import os
 import pandas as pd
-import sys
 from tempfile import NamedTemporaryFile
 
 from augur.errors import AugurError
@@ -13,6 +12,7 @@ from augur.index import index_sequences, index_vcf
 from augur.io.file import open_file
 from augur.io.metadata import read_metadata
 from augur.io.sequences import read_sequences, write_sequences
+from augur.io.print import print_err
 from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
 from .io import cleanup_outputs, read_priority_scores
 from .include_exclude_rules import apply_filters, construct_filters
@@ -41,10 +41,9 @@ def run(args):
         with NamedTemporaryFile(delete=False) as sequence_index_file:
             sequence_index_path = sequence_index_file.name
 
-        print(
+        print_err(
             "Note: You did not provide a sequence index, so Augur will generate one.",
-            "You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.",
-            file=sys.stderr
+            "You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`."
         )
 
         if is_vcf:
@@ -292,8 +291,7 @@ def run(args):
                 args.probabilistic_sampling,
             )
         except TooManyGroupsError as error:
-            print(f"ERROR: {error}", file=sys.stderr)
-            sys.exit(1)
+            raise AugurError(error)
 
         if (probabilistic_used):
             print(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
@@ -423,10 +421,9 @@ def run(args):
             # Warn the user if the expected strains from the sequence index are
             # not a superset of the observed strains.
             if sequence_strains is not None and observed_sequence_strains > sequence_strains:
-                print(
+                print_err(
                     "WARNING: The sequence index is out of sync with the provided sequences.",
-                    "Metadata and strain output may not match sequence output.",
-                    file=sys.stderr
+                    "Metadata and strain output may not match sequence output."
                 )
 
             # Update the set of available sequence strains.
@@ -486,7 +483,6 @@ def run(args):
         print("\t%i of these were dropped because of subsampling criteria%s" % (num_excluded_subsamp, seed_txt))
 
     if total_strains_passed == 0:
-        print("ERROR: All samples have been dropped! Check filter rules and metadata file format.", file=sys.stderr)
-        return 1
+        raise AugurError("All samples have been dropped! Check filter rules and metadata file format.")
 
     print(f"{total_strains_passed} strains passed all filters")

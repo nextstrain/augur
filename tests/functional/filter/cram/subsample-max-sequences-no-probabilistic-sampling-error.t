@@ -16,5 +16,5 @@ This should fail, as probabilistic sampling is explicitly disabled.
   >  --no-probabilistic-sampling \
   >  --output "$TMP/filtered.fasta"
   ERROR: Asked to provide at most 5 sequences, but there are 8 groups.
-  [1]
+  [2]
   $ rm -f "$TMP/filtered.fasta"

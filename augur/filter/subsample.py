@@ -1,6 +1,5 @@
 import heapq
 import itertools
-import sys
 import uuid
 import numpy as np
 import pandas as pd
@@ -8,6 +7,7 @@ from typing import Collection
 
 from augur.dates import get_iso_year_week
 from augur.errors import AugurError
+from augur.io.print import print_err
 from . import GROUP_BY_GENERATED_COLUMNS
 
 
@@ -116,7 +116,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     # Warn/error based on other columns grouped with 'week'.
     if 'week' in group_by_set:
         if 'year' in group_by_set:
-            print(f"WARNING: 'year' grouping will be ignored since 'week' includes ISO year.", file=sys.stderr)
+            print_err(f"WARNING: 'year' grouping will be ignored since 'week' includes ISO year.")
             group_by.remove('year')
             group_by_set.remove('year')
             generated_columns_requested.remove('year')
@@ -127,13 +127,13 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
         for col in sorted(generated_columns_requested):
             if col in metadata.columns:
-                print(f"WARNING: `--group-by {col}` uses a generated {col} value from the 'date' column. The custom '{col}' column in the metadata is ignored for grouping purposes.", file=sys.stderr)
+                print_err(f"WARNING: `--group-by {col}` uses a generated {col} value from the 'date' column. The custom '{col}' column in the metadata is ignored for grouping purposes.")
                 metadata.drop(col, axis=1, inplace=True)
 
         if 'date' not in metadata:
             # Set generated columns to 'unknown'.
-            print(f"WARNING: A 'date' column could not be found to group-by {sorted(generated_columns_requested)}.", file=sys.stderr)
-            print(f"Filtering by group may behave differently than expected!", file=sys.stderr)
+            print_err(f"WARNING: A 'date' column could not be found to group-by {sorted(generated_columns_requested)}.")
+            print_err(f"Filtering by group may behave differently than expected!")
             df_dates = pd.DataFrame({col: 'unknown' for col in GROUP_BY_GENERATED_COLUMNS}, index=metadata.index)
             metadata = pd.concat([metadata, df_dates], axis=1)
         else:
@@ -191,8 +191,8 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     unknown_groups = group_by_set - set(metadata.columns)
     if unknown_groups:
-        print(f"WARNING: Some of the specified group-by categories couldn't be found: {', '.join(unknown_groups)}", file=sys.stderr)
-        print("Filtering by group may behave differently than expected!", file=sys.stderr)
+        print_err(f"WARNING: Some of the specified group-by categories couldn't be found: {', '.join(unknown_groups)}")
+        print_err("Filtering by group may behave differently than expected!")
         for group in unknown_groups:
             metadata[group] = 'unknown'
 
@@ -424,7 +424,7 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, allow_prob
         )
     except TooManyGroupsError as error:
         if allow_probabilistic:
-            print(f"WARNING: {error}", file=sys.stderr)
+            print_err(f"WARNING: {error}")
             sequences_per_group = _calculate_fractional_sequences_per_group(
                 target_max_value,
                 counts_per_group,

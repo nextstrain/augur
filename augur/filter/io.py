@@ -1,9 +1,10 @@
 import json
 import os
-import sys
 import numpy as np
 import pandas as pd
 from collections import defaultdict
+
+from augur.errors import AugurError
 
 
 def read_priority_scores(fname):
@@ -16,9 +17,8 @@ def read_priority_scores(fname):
                 elems[0]: float(elems[1])
                 for elems in (line.strip().split('\t') if '\t' in line else line.strip().split() for line in pfile.readlines())
             })
-    except Exception as e:
-        print(f"ERROR: missing or malformed priority scores file {fname}", file=sys.stderr)
-        raise e
+    except Exception:
+        raise AugurError(f"missing or malformed priority scores file {fname}")
 
 
 def filter_kwargs_to_str(kwargs):
