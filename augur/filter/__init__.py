@@ -84,8 +84,7 @@ def run(args):
     '''
     from .validate_arguments import validate_arguments
     # Validate arguments before attempting any I/O.
-    if not validate_arguments(args):
-        return 1
+    validate_arguments(args)
 
     from ._run import run as _run
     return _run(args)
