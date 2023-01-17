@@ -3,6 +3,8 @@ Custom helpers for the argparse standard library.
 """
 from argparse import Action, ArgumentDefaultsHelpFormatter
 
+from augur.utils import first_line
+
 
 def add_default_command(parser):
     """
@@ -48,7 +50,7 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
         subparser.formatter_class = ArgumentDefaultsHelpFormatter
 
         if not subparser.description and command.__doc__:
-            subparser.description = command.__doc__
+            subparser.description = first_line(command.__doc__)
 
         # If a command doesn't have its own run() function, then print its help when called.
         if not getattr(command, "run", None):
