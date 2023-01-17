@@ -54,6 +54,23 @@ Using an "editable package" is not recommended if you want to be able to compare
 from a stable, released version of augur with your development version (e.g. comparing
 output of `augur` installed with pip and `./bin/augur` from your local source code).
 
+### Writing a command
+
+#### Docstring
+
+Each command must start with a module docstring.
+
+- **Required:** The first line is used in the help output of `augur -h` and that of other subcommands.
+- Optional: All other content is rendered as reStructuredText in the CLI usage and Python developer docs. Doctests are encouraged but not required.
+
+#### Functions
+
+Each command must include a function `register_parser(parent_subparsers, **kwargs)`. See the docstring of `augur.argparse_.add_command_subparsers` for more information.
+
+If a command has sub-commands, those should be added with `augur.argparse_.add_command_subparsers`.
+
+Most commands should define a `run(args)` function which serves as the indirect entrypoint from the CLI, where `args` is the value given back by `argparse.ArgumentParser.parse_args()`. If this function is not defined, the help output will be shown.
+
 ### Testing
 
 Writing good tests and running tests helps maintain code quality and eases future refactoring.
