@@ -12,6 +12,7 @@ from Bio.SeqRecord import SeqRecord
 
 from freezegun import freeze_time
 
+from augur.errors import AugurError
 import augur.filter
 import augur.filter._run
 import augur.filter.io
@@ -78,9 +79,10 @@ class TestFilter:
         assert priorities["strain42"] == -np.inf, "Default priority is negative infinity for unlisted sequences"
 
     def test_read_priority_scores_malformed(self, mock_priorities_file_malformed):
-        with pytest.raises(ValueError):
+        with pytest.raises(AugurError) as e_info:
             # builtins.open is stubbed, but we need a valid file to satisfy the existence check
             augur.filter.io.read_priority_scores("tests/builds/tb/data/lee_2015.vcf")
+        assert str(e_info.value) == "missing or malformed priority scores file tests/builds/tb/data/lee_2015.vcf"
 
     def test_read_priority_scores_valid_with_spaces_and_tabs(self, mock_priorities_file_valid_with_spaces_and_tabs):
         # builtins.open is stubbed, but we need a valid file to satisfy the existence check
@@ -91,8 +93,9 @@ class TestFilter:
         assert priorities == {"strain 1": 5, "strain 2": 6, "strain 3": 8}
 
     def test_read_priority_scores_does_not_exist(self):
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(AugurError) as e_info:
             augur.filter.io.read_priority_scores("/does/not/exist.txt")
+        assert str(e_info.value) == "missing or malformed priority scores file /does/not/exist.txt"
 
     def test_filter_on_query_good(self, tmpdir, sequences):
         """Basic filter_on_query test"""

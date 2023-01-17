@@ -9,7 +9,9 @@
 ### Bug Fixes
 
 * utils: Serialize common numpy data types in `write_json`. [#1119][] (@victorlin)
+* filter: Standardize exit codes from internal error handling. [#931][] (@victorlin)
 
+[#931]: https://github.com/nextstrain/augur/pull/931
 [#1118]: https://github.com/nextstrain/augur/pull/1118
 [#1119]: https://github.com/nextstrain/augur/pull/1119
 

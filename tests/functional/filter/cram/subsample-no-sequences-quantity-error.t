@@ -11,4 +11,4 @@ This should fail with a helpful error message.
   >  --group-by year month \
   >  --output-strains "$TMP/filtered_strains.txt" > /dev/null
   ERROR: You must specify a number of sequences per group or maximum sequences to subsample.
-  [1]
+  [2]

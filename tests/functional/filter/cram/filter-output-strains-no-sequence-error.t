@@ -12,4 +12,4 @@ This should fail.
   >  --min-length 10000 \
   >  --output "$TMP/filtered.fasta" > /dev/null
   ERROR: You need to provide sequences to output sequences.
-  [1]
+  [2]
