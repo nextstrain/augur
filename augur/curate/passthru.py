@@ -4,10 +4,10 @@ Useful for testing, troubleshooting, or just converting file formats.
 """
 
 
-def register_parser(parent_subparsers):
+def register_parser(parent_subparsers, **kwargs):
     return parent_subparsers.add_parser("passthru",
         parents=[parent_subparsers.shared_parser],
-        help=__doc__)
+        **kwargs)
 
 
 def run(args, records):

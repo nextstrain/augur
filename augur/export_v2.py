@@ -820,8 +820,8 @@ def node_data_prop_is_normal_trait(name):
     return True
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("v2", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("v2", **kwargs)
 
     required = parser.add_argument_group(
         title="REQUIRED"

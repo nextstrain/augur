@@ -14,8 +14,8 @@ from .io.metadata import read_metadata
 from .utils import read_node_data, write_json
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("frequencies", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("frequencies", **kwargs)
     # Shared arguments
     parser.add_argument('--method', choices=["diffusion", "kde"], required=True,
                         help="method by which frequencies should be estimated")

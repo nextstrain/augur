@@ -36,8 +36,8 @@ def register_arguments(parser):
     parser.add_argument('--debug', action="store_true", default=False, help="Produce extra files (e.g. pre- and post-aligner files) which can help with debugging poor alignments.")
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("align", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("align", **kwargs)
     register_arguments(parser)
     return parser
 

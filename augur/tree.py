@@ -411,8 +411,8 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
     return masked_alignment_file
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("tree", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("tree", **kwargs)
     parser.add_argument('--alignment', '-a', required=True, help="alignment in fasta or VCF format")
     parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
     parser.add_argument('--output', '-o', type=str, help='file name to write tree to')

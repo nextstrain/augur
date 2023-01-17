@@ -302,8 +302,8 @@ def get_genes_from_file(fname):
     return unique_genes
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("translate", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("translate", **kwargs)
     parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
     parser.add_argument('--ancestral-sequences', type=str, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
     parser.add_argument('--reference-sequence', required=True,

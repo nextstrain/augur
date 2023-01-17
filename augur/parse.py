@@ -138,8 +138,8 @@ def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettif
     return sequence, metadata
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("parse", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("parse", **kwargs)
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
     parser.add_argument('--output-sequences', help="output sequences file")
     parser.add_argument('--output-metadata', help="output metadata file")

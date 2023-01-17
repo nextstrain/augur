@@ -159,7 +159,7 @@ import sys
 
 from .frequency_estimators import timestamp_to_float
 from .reconstruct_sequences import load_alignments
-from .utils import annotate_parents_for_tree, first_line, read_node_data, write_json
+from .utils import annotate_parents_for_tree, read_node_data, write_json
 
 
 def read_distance_map(map_file):
@@ -626,8 +626,8 @@ def get_distances_to_all_pairs(tree, sequences_by_node_and_gene, distance_map, e
     return distances_by_node
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("distance", help=first_line(__doc__))
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("distance", **kwargs)
     parser.add_argument("--tree", help="Newick tree", required=True)
     parser.add_argument("--alignment", nargs="+", help="sequence(s) to be used, supplied as FASTA files", required=True)
     parser.add_argument('--gene-names', nargs="+", type=str, help="names of the sequences in the alignment, same order assumed", required=True)

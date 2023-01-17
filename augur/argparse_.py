@@ -39,7 +39,7 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
     """
     for command in commands:
         # Allow each command to register its own subparser
-        subparser = command.register_parser(subparsers)
+        subparser = command.register_parser(subparsers, help=first_line(command.__doc__))
 
         # Add default attribute for command module
         if command_attribute:

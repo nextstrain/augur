@@ -6,13 +6,11 @@ in cases where strings contain diacritics (see https://unicode.org/faq/normaliza
 """
 import unicodedata
 
-from augur.utils import first_line
 
-
-def register_parser(parent_subparsers):
+def register_parser(parent_subparsers, **kwargs):
     parser = parent_subparsers.add_parser("normalize-strings",
         parents=[parent_subparsers.shared_parser],
-        help=first_line(__doc__))
+        **kwargs)
 
     optional = parser.add_argument_group(title="OPTIONAL")
     optional.add_argument("--form", default="NFC", choices=["NFC", "NFKC", "NFD", "NFKD"],

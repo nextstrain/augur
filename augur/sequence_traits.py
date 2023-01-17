@@ -290,8 +290,8 @@ def attach_features(annotations, label, count):
     return seq_feature_dict
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("sequence-traits", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("sequence-traits", **kwargs)
     parser.add_argument('--ancestral-sequences', type=str, help="nucleotide alignment (VCF) to search for sequence traits in (can be generated from 'ancestral' using '--output-vcf')")
     parser.add_argument('--translations', type=str, help="AA alignment to search for sequence traits in (can include ancestral sequences)")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the nucleotide VCF was mapped to')

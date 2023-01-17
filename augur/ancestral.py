@@ -117,8 +117,8 @@ def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, 
     return {"nodes": data, "mask": mask}
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("ancestral", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("ancestral", **kwargs)
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save mutations and ancestral sequences to')

@@ -12,8 +12,8 @@ from .io.file import open_file
 from .io.sequences import read_sequences
 from .io.vcf import is_vcf, read_vcf
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("index", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("index", **kwargs)
     parser.add_argument('--sequences', '-s', required=True, help="sequences in FASTA or VCF formats. Augur will summarize the content of FASTA sequences and only report the names of strains found in a given VCF.")
     parser.add_argument('--output', '-o', help="tab-delimited file containing the number of bases per sequence in the given file. Output columns include strain, length, and counts for A, C, G, T, N, other valid IUPAC characters, ambiguous characters ('?' and '-'), and other invalid characters.", required=True)
     parser.add_argument('--verbose', '-v', action="store_true", help="print index statistics to stdout")

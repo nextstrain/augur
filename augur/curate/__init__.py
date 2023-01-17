@@ -89,9 +89,9 @@ def create_shared_parser():
     return shared_parser
 
 
-def register_parser(parent_subparsers):
+def register_parser(parent_subparsers, **kwargs):
     shared_parser = create_shared_parser()
-    parser = parent_subparsers.add_parser("curate", help=__doc__)
+    parser = parent_subparsers.add_parser("curate", **kwargs)
 
     # Add print_help so we can run it when no subcommands are called
     parser.set_defaults(print_help = parser.print_help)

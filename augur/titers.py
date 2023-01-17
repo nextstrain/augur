@@ -13,8 +13,8 @@ from .utils import read_node_data, write_json
 from .argparse_ import add_default_command
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("titers", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("titers", **kwargs)
     subparsers = parser.add_subparsers()
     add_default_command(parser)
 

@@ -331,8 +331,8 @@ def add_option_args(parser):
     return options
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("v1", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("v1", **kwargs)
     add_core_args(parser)
     add_option_args(parser)
     parser.add_argument("--v1", help=SUPPRESS, default=True)

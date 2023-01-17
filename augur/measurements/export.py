@@ -6,7 +6,7 @@ import pandas as pd
 import sys
 
 from augur.argparse_ import HideAsFalseAction
-from augur.utils import first_line, write_json
+from augur.utils import write_json
 from augur.validate import (
     measurements as read_measurements_json,
     measurements_collection_config as read_collection_config_json,
@@ -22,8 +22,8 @@ DEFAULT_ARGS = {
 }
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("export", help=first_line(__doc__))
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("export", **kwargs)
 
     required = parser.add_argument_group(
         title="REQUIRED"

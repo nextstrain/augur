@@ -1,4 +1,5 @@
-"""
+"""Import BEAST analysis.
+
 Parse a BEAST MCC tree for further analysis in augur or
 export for auspice v2+ (using `augur export v2` or greater).
 """
@@ -13,11 +14,11 @@ from Bio import Phylo
 from treetime import TreeAnc
 from augur.utils import write_json
 
-def register_parser(parent_subparsers):
+def register_parser(parent_subparsers, **kwargs):
     """
     Arguments available to `augur import beast`
     """
-    beast_parser = parent_subparsers.add_parser('beast', help="Import beast analysis")
+    beast_parser = parent_subparsers.add_parser('beast', **kwargs)
     beast_parser.add_argument("--beast", help=SUPPRESS, default=True) # used to disambiguate subcommands
     beast_parser.add_argument('--mcc', required=True, help="BEAST MCC tree")
     beast_parser.add_argument('--most-recent-tip-date', default=0, type=float, help='Numeric date of most recent tip in tree (--tip-date-regex, --tip-date-format and --tip-date-delimeter are ignored if this is set)')

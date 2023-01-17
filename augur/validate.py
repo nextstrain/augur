@@ -288,9 +288,9 @@ def measurements_collection_config(collection_config_json, **kwargs):
     return collection_config
 
 
-def register_parser(parent_subparsers):
+def register_parser(parent_subparsers, **kwargs):
     # Not using utils.first_line for help here because it results in a circular import
-    parser = parent_subparsers.add_parser("validate", help=__doc__)
+    parser = parent_subparsers.add_parser("validate", **kwargs)
     subparsers = parser.add_subparsers(dest="subcommand", help="Which file(s) do you want to validate?")
 
     subparsers.add_parser("export-v2", help="validate JSON intended for auspice v2") \

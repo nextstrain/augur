@@ -10,8 +10,8 @@ SUBCOMMANDS = [
 ]
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("export", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("export", **kwargs)
     # Add subparsers for subcommands
     metavar_msg ="Augur export now needs you to define the JSON version " + \
                  "you want, e.g. `augur export v2`."
