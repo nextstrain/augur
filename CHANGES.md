@@ -5,15 +5,19 @@
 ### Features
 
 * titers: Support parsing of thresholded values (e.g., "<80" or ">2560"). [#1118][] (@huddlej)
+* tree: Support bootstrapped trees generated with RAxML via user-provided `--tree-builder-args`. [#1127][] (@tsibley)
 
 ### Bug Fixes
 
 * utils: Serialize common numpy data types in `write_json`. [#1119][] (@victorlin)
 * filter: Standardize exit codes from internal error handling. [#931][] (@victorlin)
+* tree: Suppress the `Cannot specify --substitution-model unless using IQTree` warning when `--substitution-model` is left at its default. [#1127][] (@tsibley)
+* tree: Print the underlying error message when tree building fails. [#1127][] (@tsibley)
 
 [#931]: https://github.com/nextstrain/augur/pull/931
 [#1118]: https://github.com/nextstrain/augur/pull/1118
 [#1119]: https://github.com/nextstrain/augur/pull/1119
+[#1127]: https://github.com/nextstrain/augur/pull/1127
 
 ## 19.2.0 (19 December 2022)
 

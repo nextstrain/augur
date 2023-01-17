@@ -15,6 +15,7 @@ import numpy as np
 from treetime.vcf_utils import read_vcf
 from pathlib import Path
 
+from .errors import AugurError
 from .io.sequences import read_sequences
 from .io.shell_command_runner import run_shell_command
 from .io.vcf import shquote
@@ -39,6 +40,9 @@ DEFAULT_ARGS = {
     # Redo prevents IQtree errors when a run was aborted and restarted
     "iqtree": "-ninit 2 -n 2 -me 0.05 -nt AUTO -redo",
 }
+
+# IQ-TREE only; see usage below
+DEFAULT_SUBSTITUTION_MODEL = "GTR"
 
 class ConflictingArgumentsException(Exception):
     """Exception when user-provided tree builder arguments conflict with the
@@ -108,7 +112,7 @@ def find_executable(names, default = None):
 
 def build_raxml(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args=None):
     '''
-    build tree using RAxML with parameters '-f d -m GTRCAT -c 25 -p 235813 -n tre"
+    build tree using RAxML
     '''
 
     raxml = find_executable([
@@ -142,16 +146,30 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args
           "\n\tIn Bioinformatics, 2014\n")
     try:
         run_shell_command(cmd, raise_errors = True)
-        shutil.copy("RAxML_bestTree.%s"%(random_string), out_file)
-        T = Phylo.read(out_file, 'newick')
-        if clean_up:
-            os.remove("RAxML_bestTree.%s"%(random_string))
-            os.remove("RAxML_info.%s"%(random_string))
-            os.remove("RAxML_parsimonyTree.%s"%(random_string))
-            os.remove("RAxML_result.%s"%(random_string))
 
-    except:
+        # When bootstrapping is enabled by custom tree_builder_args, RAxML
+        # outputs the tree with support values to a different file,
+        # "bipartitions".  If it exists, then use it; otherwise use "bestTree".
+        possible_tree_files = [
+            Path(f"RAxML_bipartitions.{random_string}"),    # best-scoring ML tree with support values
+            Path(f"RAxML_bestTree.{random_string}"),        # best-scoring ML tree
+        ]
+
+        tree = next((t for t in possible_tree_files if t.exists()), None)
+
+        if not tree:
+            raise AugurError(f"No RAxML output tree files found; looked for: {', '.join(map(repr, map(str, possible_tree_files)))}")
+
+        shutil.copy(str(tree), out_file)
+        T = Phylo.read(out_file, 'newick')
+
+        if clean_up:
+            for f in Path().glob(f"RAxML_*.{random_string}"):
+                f.unlink()
+
+    except Exception as error:
         print("ERROR: TREE BUILDING FAILED")
+        print(f"ERROR: {error}")
         if os.path.isfile("RAxML_log.%s"%(random_string)):
             print("Please see the log file for more details: {}".format("RAxML_log.%s"%(random_string)))
         T=None
@@ -161,7 +179,7 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args
 
 def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args=None):
     '''
-    build tree using fasttree with parameters "-nt"
+    build tree using fasttree
     '''
     log_file = out_file + ".log"
 
@@ -195,8 +213,9 @@ def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_a
     try:
         run_shell_command(cmd, raise_errors = True, extra_env = extra_env)
         T = Phylo.read(out_file, 'newick')
-    except:
+    except Exception as error:
         print("ERROR: TREE BUILDING FAILED")
+        print(f"ERROR: {error}")
         if os.path.isfile(log_file):
             print("Please see the log file for more details: {}".format(log_file))
         T=None
@@ -206,7 +225,7 @@ def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_a
 
 def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nthreads=1, tree_builder_args=None):
     '''
-    build tree using IQ-Tree with parameters "-fast"
+    build tree using IQ-Tree
     arguments:
         aln_file    file name of input aligment
         out_file    file name to write tree to
@@ -273,8 +292,9 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
             for ext in [".bionj",".ckp.gz",".iqtree",".mldist",".model.gz",".treefile",".uniqueseq.phy",".model"]:
                 if os.path.isfile(tmp_aln_file + ext):
                     os.remove(tmp_aln_file + ext)
-    except:
+    except Exception as error:
         print("ERROR: TREE BUILDING FAILED")
+        print(f"ERROR: {error}")
         if os.path.isfile(log_file):
             print("Please see the log file for more details: {}".format(log_file))
         T=None
@@ -396,8 +416,8 @@ def register_parser(parent_subparsers):
     parser.add_argument('--alignment', '-a', required=True, help="alignment in fasta or VCF format")
     parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
     parser.add_argument('--output', '-o', type=str, help='file name to write tree to')
-    parser.add_argument('--substitution-model', default="GTR",
-                                help='substitution model to use. Specify \'auto\' to run ModelTest. Currently, only available for IQTREE.')
+    parser.add_argument('--substitution-model', default=DEFAULT_SUBSTITUTION_MODEL,
+                                help='substitution model to use. Specify \'auto\' to run ModelTest. Currently, only available for IQ-TREE.')
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                                 help="maximum number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
@@ -451,8 +471,8 @@ def run(args):
     else:
         fasta = aln
 
-    if args.substitution_model and not args.method=='iqtree':
-        print("Cannot specify model unless using IQTree. Model specification ignored.")
+    if args.method != "iqtree" and args.substitution_model is not DEFAULT_SUBSTITUTION_MODEL:
+        print(f"Cannot specify --substitution-model unless using IQ-TREE. Model specification {args.substitution_model!r} ignored.", file=sys.stderr)
 
     # Allow users to keep default args, override them, or augment them.
     if args.tree_builder_args is None:
