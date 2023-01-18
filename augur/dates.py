@@ -32,6 +32,10 @@ def numeric_date(date):
     >>> numeric_date("1W") == treetime.utils.numeric_date(datetime.date.today() - isodate.parse_duration("P1W"))
     True
     """
+    # date is a datetime.date
+    if isinstance(date, datetime.date):
+        return treetime.utils.numeric_date(date)
+
     # date is numeric
     try:
         return float(date)
