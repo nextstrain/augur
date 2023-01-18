@@ -5,6 +5,7 @@ augur.io
    :members:
    :undoc-members:
    :show-inheritance:
+   :noindex:
 
 .. toctree::
 
