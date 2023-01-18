@@ -7,6 +7,8 @@ def clade_to_items(clade, attrs=("name", "branch_length")):
     """Recursively convert a clade of a tree to a list of nested lists according to
     the topology of the clade with the requested attributes per node.
 
+    Examples
+    --------
     >>> from io import StringIO
     >>> treedata = "(A, (B, C), (D, E))"
     >>> handle = StringIO(treedata)

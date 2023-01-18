@@ -118,6 +118,8 @@ class JSONDecodeError(json.JSONDecodeError):
     raised by :func:`load_json` and be caught by except blocks which catch the
     standard :class:`json.JSONDecodeError`.
 
+    Examples
+    --------
     >>> load_json('{foo: "bar"}')
     Traceback (most recent call last):
         ...
@@ -218,6 +220,8 @@ def shorten_left(text, length, placeholder):
     intended for shortening sentences and works at the word, not character,
     level.
 
+    Examples
+    --------
     >>> shorten_left("foobar", 6, "...")
     'foobar'
     >>> shorten_left("foobarbaz", 6, "...")
@@ -244,6 +248,8 @@ def contextualize_char(text, idx, context = 10):
     Avoids making a copy of *text* before snipping, in case *text* is very
     large.
 
+    Examples
+    --------
     >>> contextualize_char('hello world', 0, context = 4)
     '▸▸▸h◂◂◂ello…'
     >>> contextualize_char('hello world', 5, context = 3)
@@ -277,6 +283,8 @@ def mark_char(text, idx):
     """
     Prominently marks the *idx* char in *text*.
 
+    Examples
+    --------
     >>> mark_char('hello world', 0)
     '▸▸▸h◂◂◂ello world'
     >>> mark_char('hello world', 2)

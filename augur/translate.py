@@ -33,6 +33,8 @@ def safe_translate(sequence, report_exceptions=False):
     Optionally, returns a tuple of the translated sequence and whether an
     exception was raised during initial translation.
 
+    Examples
+    --------
     >>> safe_translate("ATG")
     'M'
     >>> safe_translate("ATGGT-")

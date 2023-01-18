@@ -187,7 +187,8 @@ def read_distance_map(map_file):
     dict :
         Python representation of the distance map JSON
 
-
+    Examples
+    --------
     >>> sorted(read_distance_map("tests/data/distance_map_weight_per_site.json").items())
     [('default', 0), ('map', {'HA1': {144: 1}})]
     >>> sorted(read_distance_map("tests/data/distance_map_weight_per_site_and_sequence.json").items())
@@ -247,7 +248,8 @@ def get_distance_between_nodes(node_a_sequences, node_b_sequences, distance_map,
     float :
         distance between node sequences based on the given map
 
-
+    Examples
+    --------
     >>> node_a_sequences = {"gene": "ACTG"}
     >>> node_b_sequences = {"gene": "ACGG"}
     >>> distance_map = {"default": 0, "map": {}}

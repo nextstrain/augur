@@ -852,6 +852,8 @@ def timestamp_to_float(time):
     This is not entirely accurate as it doesn't account for months with different
     numbers of days, but should be close enough to be accurate for weekly pivots.
 
+    Examples
+    --------
     >>> import datetime
     >>> time = datetime.date(2010, 10, 1)
     >>> timestamp_to_float(time)

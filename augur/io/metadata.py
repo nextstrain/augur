@@ -34,6 +34,8 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
     KeyError :
         When the metadata file does not have any valid index columns.
 
+    Examples
+    --------
 
     For standard use, request a metadata file and get a pandas DataFrame.
 

@@ -25,6 +25,8 @@ def numeric_date(date):
     2. A string in the YYYY-MM-DD (ISO 8601) syntax
     3. A string representing a relative date (duration before datetime.date.today())
 
+    Examples
+    --------
     >>> numeric_date("2020.42")
     2020.42
     >>> numeric_date("2020-06-04")

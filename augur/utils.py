@@ -318,6 +318,8 @@ def get_parent_name_by_child_name_for_tree(tree):
 def annotate_parents_for_tree(tree):
     """Annotate each node in the given tree with its parent.
 
+    Examples
+    --------
     >>> import io
     >>> tree = Bio.Phylo.read(io.StringIO("(A, (B, C))"), "newick")
     >>> not any([hasattr(node, "parent") for node in tree.find_clades()])
@@ -342,6 +344,9 @@ def json_to_tree(json_dict, root=True, parent_cumulative_branch_length=None):
     by `tree_to_json`.
 
     Assigns links back to parent nodes for the root of the tree.
+
+    Examples
+    --------
 
     Test opening a JSON from augur export v1.
 

@@ -27,7 +27,8 @@ def filter_by_exclude_all(metadata):
     set[str]:
         Empty set of strains
 
-
+    Examples
+    --------
     >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
     >>> filter_by_exclude_all(metadata)
     set()
@@ -50,7 +51,8 @@ def filter_by_exclude(metadata, exclude_file):
     set[str]:
         Strains that pass the filter
 
-
+    Examples
+    --------
     >>> import os
     >>> from tempfile import NamedTemporaryFile
     >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
@@ -82,7 +84,8 @@ def parse_filter_query(query):
     str :
         Value of column to query
 
-
+    Examples
+    --------
     >>> parse_filter_query("property=value")
     ('property', <built-in function eq>, 'value')
     >>> parse_filter_query("property!=value")
@@ -117,7 +120,8 @@ def filter_by_exclude_where(metadata, exclude_where):
     set[str]:
         Strains that pass the filter
 
-
+    Examples
+    --------
     >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
     >>> filter_by_exclude_where(metadata, "region!=Europe")
     {'strain2'}
@@ -169,7 +173,8 @@ def filter_by_query(metadata, query):
     set[str]:
         Strains that pass the filter
 
-
+    Examples
+    --------
     >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
     >>> filter_by_query(metadata, "region == 'Africa'")
     {'strain1'}
@@ -198,7 +203,8 @@ def filter_by_ambiguous_date(metadata, date_column="date", ambiguity="any"):
     set[str]:
         Strains that pass the filter
 
-
+    Examples
+    --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-XX"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
     >>> filter_by_ambiguous_date(metadata)
     {'strain2'}
@@ -241,7 +247,8 @@ def filter_by_date(metadata, date_column="date", min_date=None, max_date=None):
     set[str]:
         Strains that pass the filter
 
-
+    Examples
+    --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
     >>> filter_by_date(metadata, min_date=numeric_date("2020-01-02"))
     {'strain2'}
@@ -312,7 +319,8 @@ def filter_by_sequence_index(metadata, sequence_index):
     set[str]:
         Strains that pass the filter
 
-
+    Examples
+    --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
     >>> sequence_index = pd.DataFrame([{"strain": "strain1", "ACGT": 28000}]).set_index("strain")
     >>> filter_by_sequence_index(metadata, sequence_index)
@@ -342,7 +350,8 @@ def filter_by_sequence_length(metadata, sequence_index, min_length=0):
     set[str]:
         Strains that pass the filter
 
-
+    Examples
+    --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
     >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
     >>> filter_by_sequence_length(metadata, sequence_index, min_length=27000)
@@ -379,7 +388,8 @@ def filter_by_non_nucleotide(metadata, sequence_index):
     set[str]:
         Strains that pass the filter
 
-
+    Examples
+    --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
     >>> sequence_index = pd.DataFrame([{"strain": "strain1", "invalid_nucleotides": 0}, {"strain": "strain2", "invalid_nucleotides": 1}]).set_index("strain")
     >>> filter_by_non_nucleotide(metadata, sequence_index)
@@ -410,7 +420,8 @@ def force_include_strains(metadata, include_file):
     set[str]:
         Strains that pass the filter
 
-
+    Examples
+    --------
     >>> import os
     >>> from tempfile import NamedTemporaryFile
     >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
@@ -445,7 +456,8 @@ def force_include_where(metadata, include_where):
     set[str]:
         Strains that pass the filter
 
-
+    Examples
+    --------
     >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
     >>> force_include_where(metadata, "region!=Europe")
     {'strain1'}
@@ -647,7 +659,8 @@ def apply_filters(metadata, exclude_by, include_by):
     For example, filter data by minimum date, but force the include of strains
     from Africa.
 
-
+    Examples
+    --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-10-02"}, {"region": "North America", "date": "2020-01-01"}], index=["strain1", "strain2", "strain3"])
     >>> exclude_by = [(filter_by_date, {"min_date": numeric_date("2020-04-01")})]
     >>> include_by = [(force_include_where, {"include_where": "region=Africa"})]

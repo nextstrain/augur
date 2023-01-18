@@ -74,7 +74,8 @@ def index_sequence(sequence, values):
         for the given values, and a final column with the number of characters
         that didn't match any of those in the given values.
 
-
+    Examples
+    --------
     >>> other_IUPAC = {'r', 'y', 's', 'w', 'k', 'm', 'd', 'h', 'b', 'v'}
     >>> values = [{'a'},{'c'},{'g'},{'t'},{'n'}, other_IUPAC, {'-'}, {'?'}]
     >>> sequence_a = Bio.SeqRecord.SeqRecord(seq=Bio.Seq.Seq("ACTGN-?XWN"), id="seq_A")
