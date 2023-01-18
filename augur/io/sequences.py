@@ -82,7 +82,7 @@ def write_records_to_fasta(records, fasta, seq_id_field='strain', seq_field='seq
 
     Parameters
     ----------
-    records: iterator[dict]
+    records: iterable of dict
         Iterator that yields dict that contains sequences
 
     fasta: str

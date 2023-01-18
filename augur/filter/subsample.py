@@ -402,7 +402,7 @@ def calculate_sequences_per_group(target_max_value, group_sizes, allow_probabili
     target_max_value : int
         Maximum number of sequences to return by subsampling at some calculated
         number of sequences per group for the given counts per group.
-    group_sizes : list[int]
+    group_sizes : list of int
         A list with the number of sequences in each requested group.
     allow_probabilistic : bool
         Whether to allow probabilistic subsampling when the number of groups

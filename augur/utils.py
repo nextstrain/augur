@@ -461,7 +461,7 @@ def read_bed_file(bed_file):
 
     Returns
     -------
-    list[int]:
+    list of int:
         Sorted list of unique zero-indexed sites
     """
     mask_sites = []
@@ -492,7 +492,7 @@ def read_mask_file(mask_file):
 
     Returns
     -------
-    list[int]:
+    list of int:
         Sorted list of unique zero-indexed sites
     """
     mask_sites = []
@@ -518,7 +518,7 @@ def load_mask_sites(mask_file):
 
     Returns
     -------
-    list[int]
+    list of int
         Sorted list of unique zero-indexed sites
     """
     if mask_file.lower().endswith(".bed"):

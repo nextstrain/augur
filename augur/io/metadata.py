@@ -20,7 +20,7 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
     ----------
     metadata_file : str
         Path to a metadata file to load.
-    id_columns : list[str]
+    id_columns : list of str
         List of possible id column names to check for, ordered by priority.
     chunk_size : int
         Size of chunks to stream from disk with an iterator instead of loading the entire input file into memory.
@@ -393,7 +393,7 @@ def write_records_to_tsv(records, output_file):
 
     Parameters
     ----------
-    records: iterator[dict]
+    records: iterable of dict
         Iterator that yields dict that contains sequences
 
     output_file: str

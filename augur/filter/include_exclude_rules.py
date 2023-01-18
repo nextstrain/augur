@@ -24,7 +24,7 @@ def filter_by_exclude_all(metadata):
 
     Returns
     -------
-    set[str]:
+    set of str:
         Empty set of strains
 
     Examples
@@ -48,7 +48,7 @@ def filter_by_exclude(metadata, exclude_file):
 
     Returns
     -------
-    set[str]:
+    set of str:
         Strains that pass the filter
 
     Examples
@@ -117,7 +117,7 @@ def filter_by_exclude_where(metadata, exclude_where):
 
     Returns
     -------
-    set[str]:
+    set of str:
         Strains that pass the filter
 
     Examples
@@ -170,7 +170,7 @@ def filter_by_query(metadata, query):
 
     Returns
     -------
-    set[str]:
+    set of str:
         Strains that pass the filter
 
     Examples
@@ -200,7 +200,7 @@ def filter_by_ambiguous_date(metadata, date_column="date", ambiguity="any"):
 
     Returns
     -------
-    set[str]:
+    set of str:
         Strains that pass the filter
 
     Examples
@@ -244,7 +244,7 @@ def filter_by_date(metadata, date_column="date", min_date=None, max_date=None):
 
     Returns
     -------
-    set[str]:
+    set of str:
         Strains that pass the filter
 
     Examples
@@ -316,7 +316,7 @@ def filter_by_sequence_index(metadata, sequence_index):
 
     Returns
     -------
-    set[str]:
+    set of str:
         Strains that pass the filter
 
     Examples
@@ -347,7 +347,7 @@ def filter_by_sequence_length(metadata, sequence_index, min_length=0):
 
     Returns
     -------
-    set[str]:
+    set of str:
         Strains that pass the filter
 
     Examples
@@ -385,7 +385,7 @@ def filter_by_non_nucleotide(metadata, sequence_index):
 
     Returns
     -------
-    set[str]:
+    set of str:
         Strains that pass the filter
 
     Examples
@@ -417,7 +417,7 @@ def force_include_strains(metadata, include_file):
 
     Returns
     -------
-    set[str]:
+    set of str:
         Strains that pass the filter
 
     Examples
@@ -453,7 +453,7 @@ def force_include_where(metadata, include_where):
 
     Returns
     -------
-    set[str]:
+    set of str:
         Strains that pass the filter
 
     Examples
@@ -638,11 +638,11 @@ def apply_filters(metadata, exclude_by, include_by):
     ----------
     metadata : pandas.DataFrame
         Metadata to filter
-    exclude_by : list[tuple]
+    exclude_by : list of tuple
         A list of 2-element tuples with a callable to filter by in the first
         index and a dictionary of kwargs to pass to the function in the second
         index.
-    include_by : list[tuple]
+    include_by : list of tuple
         A list of 2-element tuples in the same format as the ``exclude_by``
         argument.
 
@@ -650,9 +650,9 @@ def apply_filters(metadata, exclude_by, include_by):
     -------
     set :
         Strains to keep (those that passed all filters)
-    list[dict] :
+    list of dict :
         Strains to exclude along with the function that filtered them and the arguments used to run the function.
-    list[dict] :
+    list of dict :
         Strains to force-include along with the function that filtered them and the arguments used to run the function.
 
 

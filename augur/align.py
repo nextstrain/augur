@@ -54,7 +54,7 @@ def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
 
     Parameters
     ----------
-    sequences : list[str]
+    sequences : list of str
         List of paths to FASTA-formatted sequences to align.
     existing_aln_fname : str
         Path of an existing alignment to use, or None
