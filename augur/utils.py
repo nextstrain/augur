@@ -543,7 +543,7 @@ def read_strains(*files, comment_char="#"):
 
     Parameters
     ----------
-    files : one or more str
+    files : iterable of str
         one or more names of text files with one strain name per line
 
     Returns

@@ -32,7 +32,7 @@ class TiterCollection(object):
 
         Returns
         -------
-        tuple (dict, list, list)
+        tuple
             tuple of a dict of titer measurements, list of strains, list of sources
 
 
@@ -139,7 +139,7 @@ class TiterCollection(object):
 
         Parameters
         ----------
-        titers : defaultdict
+        titers : collections.defaultdict
             titer measurements indexed by test, reference,
             and serum
 

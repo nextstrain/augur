@@ -44,7 +44,7 @@ def write_sequences(sequences, path_or_buffer, format="fasta"):
 
     Parameters
     ----------
-    sequences : iterable of Bio.SeqRecord.SeqRecord objects
+    sequences : iterable of Bio.SeqRecord.SeqRecord
         A list-like collection of sequences to write
 
     path_or_buffer : str or Path-like object or IO buffer

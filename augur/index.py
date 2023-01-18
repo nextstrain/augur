@@ -63,7 +63,7 @@ def index_sequence(sequence, values):
     sequence : Bio.SeqRecord.SeqRecord
         sequence record to index.
 
-    values : list of sets of str
+    values : list of set of str
         values to count; sets must be non-overlapping and contain only
         single-character, lowercase strings
 

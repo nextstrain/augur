@@ -124,7 +124,7 @@ def running_average(obs, ws):
 
     Parameters
     ----------
-    obs : list/np.array(bool)
+    obs : list or np.array(bool)
         observations
     ws : int
         window size as measured in number of consecutive points
@@ -200,11 +200,11 @@ class frequency_estimator(object):
 
         Parameters
         ----------
-        tps : list/np.array(float)
+        tps : list or np.array(float)
             array with numerical dates
-        obs : list/np.array(bool)
+        obs : list or np.array(bool)
             array with boolean observations
-        pivots : int/np.array(float)
+        pivots : int or np.array(float)
             either integer specifying the number of pivot values,
             or list of explicity pivots
         stiffness : float, optional
@@ -476,9 +476,9 @@ class tree_frequencies(object):
 
         Parameters
         ----------
-        tree : Bio.Phylo.calde
+        tree : Bio.Phylo
             Biopython tree
-        pivots : int/array
+        pivots : int or array
             number or list of pivots
         node_filter : callable, optional
             function that evaluates to true/false to filter nodes
@@ -676,7 +676,7 @@ class alignment_frequencies(object):
         ----------
         min_freq : float, optional
             minimal all-time frequency for an aligment column to be considered
-        include_set : list/set, optional
+        include_set : list or set, optional
             set of alignment column that will be used regardless of variation
         ignore_char : str, optional
             ignore this character in an alignment column (missing data)
@@ -1133,7 +1133,7 @@ class TreeKdeFrequencies(KdeFrequencies):
             tree (Bio.Phylo): annotated tree whose nodes all have an `attr` attribute with at least  "num_date" key
 
         Returns:
-            frequencies (dict): node frequencies by clade
+            dict: node frequencies by clade
 
         """
         # Calculate pivots for the given tree.

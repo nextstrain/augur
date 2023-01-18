@@ -129,7 +129,7 @@ def run(args):
 
     Parameters
     ----------
-    args : namespace
+    args : argparse.Namespace
         command line arguments are parsed by argparse
     """
     tree_fname = args.tree

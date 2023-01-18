@@ -126,7 +126,7 @@ def is_node_in_clade(clade_alleles, node, ref):
         list of clade defining alleles
     node : Phylo.Node
         node to check, assuming sequences (as mutations) are attached to node
-    ref : str/list
+    ref : str or list
         positions
 
     Returns
@@ -164,7 +164,7 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
         mutations in each node
     tree : Phylo.Tree
         phylogenetic tree to process
-    ref : str/list, optional
+    ref : str or list, optional
         reference sequence to look up state when not mutated
 
     Returns
