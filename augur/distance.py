@@ -4,8 +4,7 @@ Distance calculations require selection of a comparison method (to determine
 which sequences to compare) and a distance map (to determine the weight of a
 mismatch between any two sequences).
 
-Comparison methods
-==================
+**Comparison methods**
 
 Comparison methods include:
 
@@ -32,8 +31,7 @@ tips sampled from previous seasons prior to the given date. These two date
 parameters allow users to specify a fixed time interval for pairwise
 calculations, limiting the computationally complexity of the comparisons.
 
-Distance maps
-=============
+**Distance maps**
 
 Distance maps are defined in JSON format with two required top-level keys.
 The `default` key specifies the numeric (floating point) value to assign to all mismatches by default.
