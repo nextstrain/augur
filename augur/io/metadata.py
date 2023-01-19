@@ -27,7 +27,7 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
 
     Returns
     -------
-    pandas.DataFrame or pandas.TextFileReader
+    pandas.DataFrame or `pandas.io.parsers.TextFileReader`
 
     Raises
     ------
