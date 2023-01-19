@@ -130,5 +130,10 @@ nitpick_ignore = [
 # -- Cross-project references ------------------------------------------------
 
 intersphinx_mapping = {
+    'Bio': ('https://biopython.org/docs/latest/api/', None),
     'docs.nextstrain.org': ('https://docs.nextstrain.org/en/latest/', None),
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable', None),
+    'pandas': ('https://pandas.pydata.org/docs', None),
+    'treetime': ('https://treetime.readthedocs.io/en/stable/', None),
 }
