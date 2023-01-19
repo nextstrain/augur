@@ -269,7 +269,7 @@ def strip_non_reference(aln, reference, insertion_csv=None):
 
     Parameters
     ----------
-    aln : MultipleSeqAlign
+    aln : Bio.Align.MultipleSeqAlignment
         Biopython Alignment
     reference : str
         name of reference sequence, assumed to be part of the alignment
@@ -382,7 +382,7 @@ def prettify_alignment(aln):
 
     Parameters
     ----------
-    aln : MultipleSeqAlign
+    aln : Bio.Align.MultipleSeqAlignment
         Biopython Alignment
     '''
     for seq in aln:
@@ -405,7 +405,7 @@ def make_gaps_ambiguous(aln):
 
     Parameters
     ----------
-    aln : MultipleSeqAlign
+    aln : Bio.Align.MultipleSeqAlignment
         Biopython Alignment
     '''
     for seq in aln:
