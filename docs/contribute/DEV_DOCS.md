@@ -220,7 +220,7 @@ For versions with dependency changes:
 
 1. Wait for the bioconda-recipe PR to be merged.
 2. Wait for the new version of Augur to be available in on bioconda.
-3. Manually run the [conda-base CI workflow](https://github.com/nextstrain/conda-base/actions/workflows/ci.yaml) on the `master` branch.
+3. Manually run the [conda-base CI workflow](https://github.com/nextstrain/conda-base/actions/workflows/ci.yaml) on the `main` branch.
 4. Ensure workflow runs successfully.
 
 #### Notes
