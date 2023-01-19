@@ -124,7 +124,7 @@ def is_node_in_clade(clade_alleles, node, ref):
     ----------
     clade_alleles : list
         list of clade defining alleles
-    node : Phylo.Node
+    node : Bio.Phylo.BaseTree.Clade
         node to check, assuming sequences (as mutations) are attached to node
     ref : str or list
         positions
