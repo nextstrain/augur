@@ -329,25 +329,25 @@ class freq_est_clipped(object):
 
     Attributes
     ----------
-    dtps : TYPE
+    dtps
         Description
-    fe : TYPE
+    fe
         Description
-    good_pivots : TYPE
+    good_pivots
         Description
-    good_tps : TYPE
+    good_tps
         Description
-    obs : TYPE
+    obs
         Description
-    pivot_freq : TYPE
+    pivot_freq
         Description
-    pivot_lower_cutoff : TYPE
+    pivot_lower_cutoff
         Description
-    pivot_upper_cutoff : TYPE
+    pivot_upper_cutoff
         Description
-    pivots : TYPE
+    pivots
         Description
-    tps : TYPE
+    tps
         Description
     valid : bool
         Description

@@ -217,7 +217,7 @@ class TiterCollection(object):
 
         Parameters
         ----------
-        titers : TYPE
+        titers
             Description
         **kwargs
             Description
@@ -251,9 +251,9 @@ class TiterCollection(object):
 
         Parameters
         ----------
-        ref : TYPE
+        ref
             Description
-        val : TYPE
+        val
             Description
 
         Returns
@@ -338,7 +338,7 @@ class TiterCollection(object):
 
         Parameters
         ----------
-        titers : TYPE
+        titers
             Description
 
         Returns
@@ -812,7 +812,7 @@ class TreeModel(TiterModel):
 
         Parameters
         ----------
-        n : TYPE
+        n
             Description
         **kwargs
             Description
@@ -848,9 +848,9 @@ class TreeModel(TiterModel):
 
         Parameters
         ----------
-        v1 : TYPE
+        v1
             Description
-        v2 : TYPE
+        v2
             Description
 
         Returns
@@ -1034,9 +1034,9 @@ class SubstitutionModel(TiterModel):
 
         Parameters
         ----------
-        strain1 : TYPE
+        strain1
             Description
-        strain2 : TYPE
+        strain2
             Description
 
         Returns
@@ -1139,7 +1139,7 @@ class SubstitutionModel(TiterModel):
 
         Parameters
         ----------
-        colin_thres : TYPE
+        colin_thres
             Description
         '''
         TT = self.design_matrix[:,:self.genetic_params].T
