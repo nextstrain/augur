@@ -256,7 +256,7 @@ def attach_features(annotations, label, count):
     ----------
     annotations : dict
         annotations fo stgrains as globed together by `annotate_strains`
-    label : label
+    label : str
         label of the feature set as specified by as command line argument
     count : str
         if equal to traits, will count the number of distinct features that
