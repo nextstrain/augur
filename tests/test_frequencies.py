@@ -12,7 +12,8 @@ import os
 # we assume (and assert) that this script is running from the tests/ directory
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from augur.frequency_estimators import get_pivots, TreeKdeFrequencies, AlignmentKdeFrequencies, TreeKdeFrequenciesError
+from augur.dates import numeric_date
+from augur.frequency_estimators import float_to_datestring, get_pivots, TreeKdeFrequencies, AlignmentKdeFrequencies, TreeKdeFrequenciesError
 from augur.utils import json_to_tree
 
 # Define regions to use for testing weighted frequencies.
@@ -60,9 +61,15 @@ def test_get_pivots_from_tree_only(tree):
     pivots = get_pivots(observations, pivot_frequency)
     assert isinstance(pivots, np.ndarray)
 
-    # Floating point pivot values should be separated by the given number of
-    # months divided by number of months in a year.
-    assert pivots[1] - pivots[0] == pivot_frequency / 12.0
+    # Floating point pivot values should be roughly separated by the given
+    # number of months divided by number of months in a year. Numeric dates from
+    # pivots calculate decimal fractions as the proportion of days in the year,
+    # instead of months in the year (e.g., the fraction for the first three
+    # months of a non-leap year is (31 + 28 + 31) / 365 or 0.246575 instead of 3
+    # / 12 or 0.25). As a result of this difference in how we calculate
+    # fractions, we need to round to pivots to 2 decimal places which is the
+    # precision of month-based fractions.
+    assert np.round(pivots[1] - pivots[0], 2) == (pivot_frequency / 12.0)
 
 def test_get_pivots_from_start_and_end_date():
     """
@@ -87,16 +94,45 @@ def test_get_pivots_by_months():
     """
     pivots = get_pivots(observations=[], pivot_interval=1, start_date=2015.0, end_date=2016.0, pivot_interval_units="months")
     # Pivots should include all 12 months of the year plus the month represented
-    # by the end date, since the pandas month interval uses "month starts". See
-    # pandas date offsets documentation for more details:
-    # https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
+    # by the end date because pivots represent time slices through data and we
+    # want to evaluate frequencies at the start and end time slices.
     assert len(pivots) == 13
+    assert float_to_datestring(pivots[-1]) == "2016-01-01"
+
+def test_get_pivots_by_months_with_realistic_start_end_dates():
+    """Get pivots where intervals are defined by months and realistic start and end dates.
+    """
+    # 6 years (72 months) of pivots with 3-month intervals should produce 24 + 1
+    # pivots (4 pivots per year plus the pivot for the beginning of the year
+    # associated with the end date).
+    pivots = get_pivots(
+        observations=[],
+        pivot_interval=3,
+        start_date=numeric_date("2017-01-06"),
+        end_date=numeric_date("2023-01-06"),
+        pivot_interval_units="months"
+    )
+    assert len(pivots) == 25
+    assert float_to_datestring(pivots[-1]) == "2023-01-06"
 
 def test_get_pivots_by_weeks():
     """Get pivots where intervals are defined as weeks instead of months.
     """
+    # As with monthly pivots, weekly pivots should include the first and last
+    # values in the range. So, a 1-year interval will represent 52 weekly pivots
+    # from the beginning plus the first pivot from the next year.
     pivots = get_pivots(observations=[], pivot_interval=1, start_date=2015.0, end_date=2016.0, pivot_interval_units="weeks")
-    assert len(pivots) == 52
+    assert len(pivots) == 53
+
+    pivots = get_pivots(
+        observations=[],
+        pivot_interval=1,
+        start_date=numeric_date("2022-01-06"),
+        end_date=numeric_date("2023-01-06"),
+        pivot_interval_units="weeks"
+    )
+    assert len(pivots) == 53
+
 
 def test_get_pivots_by_invalid_unit():
     with pytest.raises(ValueError, match=r".*invalid_unit.*is not supported.*"):
@@ -133,7 +169,7 @@ class TestTreeKdeFrequencies(object):
         )
         frequencies = kde_frequencies.estimate(tree)
         assert hasattr(kde_frequencies, "pivots")
-        assert kde_frequencies.pivots[0] == 2015.5833
+        assert kde_frequencies.pivots[0] == 2015.5
         assert hasattr(kde_frequencies, "frequencies")
         assert list(frequencies.values())[0].shape == kde_frequencies.pivots.shape
 
@@ -407,9 +443,16 @@ class TestAlignmentKdeFrequencies(object):
         frequencies = kde_frequencies.estimate(alignment, observations)
 
         assert hasattr(kde_frequencies, "pivots")
-        assert np.around(kde_frequencies.pivots[1] - kde_frequencies.pivots[0], 2) == np.around(1 / 12.0, 2)
+        pivots = kde_frequencies.pivots
+
+        # Pivot decimal fractions represent fractions of a year by days, so
+        # comparisons with fractions of a year by months need to take into
+        # account rounding error between these calculations. In this test, we
+        # allow pivots to be spaced apart by a value that is "close" to 1 / 12
+        # months by the rounding error of the month-based precision.
+        assert np.isclose((pivots[-1] - pivots[-2]), 1 / 12.0, atol=0.005)
         assert hasattr(kde_frequencies, "frequencies")
-        assert list(frequencies.values())[0].shape == kde_frequencies.pivots.shape
+        assert list(frequencies.values())[0].shape == pivots.shape
 
         # Find a position with frequencies estimated for multiple bases.
         position = list(frequencies.keys())[0].split(":")[0]

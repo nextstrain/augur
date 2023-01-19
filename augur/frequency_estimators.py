@@ -1,13 +1,16 @@
 # estimates clade frequencies
 from __future__ import division, print_function
-from collections import defaultdict
+from collections import defaultdict, deque
 import datetime
+import isodate
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
 from scipy.stats import norm
 import sys
 import time
+
+from .dates import numeric_date
 
 debug = False
 log_thres = 10.0
@@ -24,7 +27,9 @@ def get_pivots(observations, pivot_interval, start_date=None, end_date=None, piv
     interval between pivots.
 
     Start and end pivots will be based on the range of given observed dates,
-    unless a start or end date are provided to override these defaults.
+    unless a start or end date are provided to override these defaults. Pivots
+    include the end date and, where possible for the given interval, the start
+    date.
 
     Parameters
     ----------
@@ -54,18 +59,29 @@ def get_pivots(observations, pivot_interval, start_date=None, end_date=None, piv
     pivot_end = end_date if end_date else np.ceil(np.max(observations) / pivot_frequency) * pivot_frequency
 
     if pivot_interval_units == "months":
-        offset = "%sMS" % pivot_interval
+        duration_str = f'P{pivot_interval}M'
     elif pivot_interval_units == "weeks":
-        offset = "%sW" % pivot_interval
+        duration_str = f'P{pivot_interval}W'
     else:
         raise ValueError(f"The given interval unit '{pivot_interval_units}' is not supported.")
 
-    datetime_pivots = pd.date_range(
-        float_to_datestring(pivot_start),
-        float_to_datestring(pivot_end),
-        freq = offset
-    )
-    pivots = np.array([timestamp_to_float(pivot) for pivot in datetime_pivots])
+    # Construct standard Python date instances from numeric dates via ISO-8601
+    # dates and the corresponding delta time for the interval between pivots.
+    start = datetime.datetime.strptime(float_to_datestring(pivot_start), "%Y-%m-%d")
+    end = datetime.datetime.strptime(float_to_datestring(pivot_end), "%Y-%m-%d")
+    delta = isodate.parse_duration(duration_str)
+
+    # Start calculating pivots from the end date (inclusive), working backwards
+    # in time by a time delta that matches the user-requested interval. Include
+    # the start date in the final pivots when the interval spacing allows that
+    # date to be included.
+    pivots = deque([])
+    pivot = end
+    while pivot >= start:
+        pivots.appendleft(pivot)
+        pivot = pivot - delta
+
+    pivots = np.array([numeric_date(pivot) for pivot in pivots])
 
     return np.around(pivots, 4)
 

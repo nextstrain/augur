@@ -2,11 +2,13 @@
   "BRA/2016/FC_6706": {
     "frequencies": [
       0.0,
+      0.0,
       0.0
     ]
   },
   "COL/FLR_00008/2015": {
     "frequencies": [
+      0.0,
       0.0,
       0.0
     ]
@@ -14,11 +16,13 @@
   "Colombia/2016/ZC204Se": {
     "frequencies": [
       0.0,
+      0.0,
       0.0
     ]
   },
   "DOM/2016/BB_0183": {
     "frequencies": [
+      0.0,
       0.0,
       0.0
     ]
@@ -26,11 +30,13 @@
   "EcEs062_16": {
     "frequencies": [
       0.0,
+      0.0,
       0.0
     ]
   },
   "HND/2016/HU_ME59": {
     "frequencies": [
+      0.0,
       0.0,
       0.0
     ]
@@ -38,11 +44,13 @@
   "PAN/CDC_259359_V1_V3/2015": {
     "frequencies": [
       0.0,
+      0.0,
       0.0
     ]
   },
   "PRVABC59": {
     "frequencies": [
+      0.0,
       0.0,
       0.0
     ]
@@ -50,21 +58,24 @@
   "VEN/UF_1/2016": {
     "frequencies": [
       0.0,
+      0.0,
       0.0
     ]
   },
   "ZKC2/2016": {
     "frequencies": [
       0.0,
+      0.0,
       0.0
     ]
   },
   "generated_by": {
     "program": "augur",
-    "version": "14.1.0"
+    "version": "19.2.0"
   },
   "pivots": [
-    2021.3333,
-    2021.5833
+    2022.0178,
+    2022.2644,
+    2022.5137
   ]
 }
