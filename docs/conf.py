@@ -116,6 +116,16 @@ html_css_files = [
     'css/custom.css',
 ]
 
+# -- Resolve build warnings --------------------------------------------------
+
+nitpick_ignore = [
+    # These are valid numpydoc keywords¹, but somehow they are not recognized by
+    # napoleon.
+    # ¹ https://numpydoc.readthedocs.io/en/v1.5.0/format.html#parameters
+    ('py:class', 'optional'),
+    ('py:class', 'iterable'),
+]
+
 # -- Cross-project references ------------------------------------------------
 
 intersphinx_mapping = {
