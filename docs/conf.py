@@ -61,6 +61,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinxarg.ext',
     'sphinx.ext.napoleon',
+    'sphinx_autodoc_typehints', # must come after napoleon https://github.com/tox-dev/sphinx-autodoc-typehints/blob/1.21.4/README.md#compatibility-with-sphinxextnapoleon
     'sphinx_markdown_tables',
     'sphinx.ext.intersphinx',
     'nextstrain.sphinx.theme',
