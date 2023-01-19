@@ -84,7 +84,7 @@ def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask
 
     Parameters
     ----------
-    sequence : Bio.SeqIO.SeqRecord
+    sequence : Bio.SeqRecord.SeqRecord
         A sequence to be masked
     mask_sites: list of int
         A list of site indexes to exclude from the FASTA.
@@ -97,7 +97,7 @@ def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask
 
     Returns
     -------
-    Bio.SeqIO.SeqRecord
+    Bio.SeqRecord.SeqRecord
         Masked sequence in its original record object
 
     """
