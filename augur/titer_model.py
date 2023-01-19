@@ -1131,11 +1131,11 @@ class SubstitutionModel(TiterModel):
 
         Parameters
         ----------
-        tree : Bio.Phylo
+        tree : Bio.Phylo.BaseTree.Tree
 
         Returns
         -------
-        Bio.Phylo
+        Bio.Phylo.BaseTree.Tree
             input tree instance with nodes annotated by per-branch and
             cumulative antigenic advance attributes `dTiterSub` and
             `cTiterSub`

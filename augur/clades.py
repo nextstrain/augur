@@ -162,7 +162,7 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
         clade definitions as :code:`{clade_name:[(gene, site, allele),...]}`
     all_muts : dict
         mutations in each node
-    tree : Phylo.Tree
+    tree : Bio.Phylo.BaseTree.Tree
         phylogenetic tree to process
     ref : str or list, optional
         reference sequence to look up state when not mutated

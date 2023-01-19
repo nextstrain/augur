@@ -477,7 +477,7 @@ def get_distances_to_root(tree, sequences_by_node_and_gene, distance_map):
 
     Parameters
     ----------
-    tree : Bio.Phylo
+    tree : Bio.Phylo.BaseTree.Tree
         a rooted tree whose node names match the given dictionary of sequences
         by node and gene
 
@@ -517,7 +517,7 @@ def get_distances_to_last_ancestor(tree, sequences_by_node_and_gene, distance_ma
 
     Parameters
     ----------
-    tree : Bio.Phylo
+    tree : Bio.Phylo.BaseTree.Tree
         a rooted tree whose node names match the given dictionary of sequences
         by node and gene
 
@@ -577,7 +577,7 @@ def get_distances_to_all_pairs(tree, sequences_by_node_and_gene, distance_map, e
 
     Parameters
     ----------
-    tree : Bio.Phylo
+    tree : Bio.Phylo.BaseTree.Tree
         a rooted tree whose node names match the given dictionary of sequences
         by node and gene
 

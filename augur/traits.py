@@ -34,7 +34,7 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
 
     Returns
     -------
-    T : Phylo.Tree
+    T : Bio.Phylo.BaseTree.Tree
         Biophyton tree
     gtr : treetime.GTR
         GTR model

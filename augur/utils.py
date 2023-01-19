@@ -58,7 +58,7 @@ def read_tree(fname, min_terminals=3):
 
     Returns
     -------
-    Bio.Phylo :
+    Bio.Phylo.BaseTree.Tree :
         BioPython tree instance
 
     """

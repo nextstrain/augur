@@ -28,7 +28,7 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
 
     Parameters
     ----------
-    tree : Bio.Phylo or str
+    tree : Bio.Phylo.BaseTree.Tree or str
         tree or filename of tree
     aln : Bio.Align.MultipleSeqAlignment or str
         alignment or filename of alignment

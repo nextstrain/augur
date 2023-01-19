@@ -476,7 +476,7 @@ class tree_frequencies(object):
 
         Parameters
         ----------
-        tree : Bio.Phylo
+        tree : Bio.Phylo.BaseTree.Tree
             Biopython tree
         pivots : int or array
             number or list of pivots
@@ -1076,7 +1076,7 @@ class TreeKdeFrequencies(KdeFrequencies):
         If no filters are defined, returns True.
 
         Args:
-            tip (Bio.Phylo): tip from a Bio.Phylo tree annotated with attributes in `tip.attr`
+            tip (Bio.Phylo.BaseTree.Tree): tip from a Bio.Phylo tree annotated with attributes in `tip.attr`
 
         Returns:
             bool: whether the given tip passes the defined filters or not
@@ -1132,7 +1132,7 @@ class TreeKdeFrequencies(KdeFrequencies):
         values in attribute defined by `self.weights_attribute`.
 
         Args:
-            tree (Bio.Phylo): annotated tree whose nodes all have an `attr` attribute with at least  "num_date" key
+            tree (Bio.Phylo.BaseTree.Tree): annotated tree whose nodes all have an `attr` attribute with at least  "num_date" key
 
         Returns:
             dict: node frequencies by clade
