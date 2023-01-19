@@ -2,6 +2,7 @@
 Format date fields to ISO 8601 dates (YYYY-MM-DD), where incomplete dates
 are masked with 'XX' (e.g. 2023 -> 2023-XX-XX).
 """
+import re
 from datetime import datetime
 from augur.io.print import print_err
 from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEAR_MONTH_DAY_DIRECTIVES
@@ -49,13 +50,19 @@ def directive_is_included(potential_directives, date_format):
     False
     >>> directive_is_included(potential_directives, '%y-%m')
     False
+    >>> directive_is_included(potential_directives, '%%y-%m-%d')
+    False
     >>> directive_is_included(potential_directives, '%y-%m-%d')
     True
     >>> directive_is_included(potential_directives, '%y-%m-%dT%H:%M:%SZ')
     True
     """
     return any(
-        all(sub_directive in date_format for sub_directive in directive)
+        all(
+            # Exclude escaped directives (e.g. '%%Y' means literal '%Y' not a four digit year)
+            bool(re.search(f"(?<!%){re.escape(sub_directive)}", date_format))
+            for sub_directive in directive
+        )
         for directive in potential_directives
     )
 
