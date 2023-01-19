@@ -49,7 +49,7 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
 
     Returns
     -------
-    TreeAnc
+    treetime.TreeAnc
         treetime.TreeAnc instance
     """
 
@@ -78,7 +78,7 @@ def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, 
 
     Parameters
     ----------
-    tt : treetime
+    tt : treetime.TreeTime
         instance of treetime with valid ancestral reconstruction
     infer_tips : bool, optional
         if true, request the reconstructed tip sequences from treetime, otherwise retain input ambiguities
