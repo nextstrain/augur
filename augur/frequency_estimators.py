@@ -92,7 +92,7 @@ def make_pivots(pivots, tps):
 
     Parameters
     ----------
-    pivots : scalar or iterable
+    pivots : int or iterable
         either number of pivots (a scalar) or the actual pivots
         (will be cast to array and returned)
     tps : np.array
@@ -103,7 +103,7 @@ def make_pivots(pivots, tps):
     pivots : np.array
         array of pivot values
     '''
-    if np.isscalar(pivots):
+    if isinstance(pivots, int):
         dt = np.max(tps)-np.min(tps)
         return np.linspace(np.min(tps)-0.01*dt, np.max(tps)+0.01*dt, pivots)
     else:
