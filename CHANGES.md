@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* frequencies: Changes the logic for calculating the time points when frequencies are estimated to ensure that the user-provided "end date" is always included. This change in the behavior of the frequencies command fixes a bug where large intervals between time points (e.g., 3 months) could cause recent data to be omitted from frequency calculations. See the pull request for more details included the scientific implications of this bug. [#1121][] (@huddlej)
+
+[#1121]: https://github.com/nextstrain/augur/pull/1121
 
 ## 19.3.0 (19 January 2023)
 
