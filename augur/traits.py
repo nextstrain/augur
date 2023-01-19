@@ -98,13 +98,6 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
 
 
 def register_parser(parent_subparsers):
-    """Add subcommand specific arguments
-
-    Parameters
-    ----------
-    parser : argparse
-        subcommand argument parser
-    """
     parser = parent_subparsers.add_parser("traits", help=__doc__)
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
     parser.add_argument('--metadata', required=True, metavar="FILE", help="table with metadata, as CSV or TSV")
