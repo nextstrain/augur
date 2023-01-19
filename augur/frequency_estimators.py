@@ -81,7 +81,7 @@ def get_pivots(observations, pivot_interval, start_date=None, end_date=None, piv
         pivots.appendleft(pivot)
         pivot = pivot - delta
 
-    pivots = np.array([numeric_date(pivot.strftime("%Y-%m-%d")) for pivot in pivots])
+    pivots = np.array([numeric_date(pivot) for pivot in pivots])
 
     return np.around(pivots, 4)
 
