@@ -125,6 +125,11 @@ nitpick_ignore = [
     # ¹ https://numpydoc.readthedocs.io/en/v1.5.0/format.html#parameters
     ('py:class', 'optional'),
     ('py:class', 'iterable'),
+
+     # Some references get translated to these, but somehow they can't get
+     # resolved by intersphinx for a proper link.
+     ("py:class", "json.decoder.JSONDecodeError"),
+     ("py:class", "json.encoder.JSONEncoder"),
 ]
 
 # -- Cross-project references ------------------------------------------------
