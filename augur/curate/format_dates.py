@@ -32,7 +32,7 @@ def directive_is_included(potential_directives, date_format):
 
     Parameters
     ----------
-    potential_directives: set[str] or set[tuple[str, ...]]
+    potential_directives: set[tuple[str, ...]]
         Set of potential directives to check
     date_format: str
         Date format string to check for directives
@@ -54,10 +54,7 @@ def directive_is_included(potential_directives, date_format):
     True
     """
     return any(
-        (
-            (isinstance(directive, str) and directive in date_format) or
-            (isinstance(directive, tuple) and all(sub_directive in date_format for sub_directive in directive))
-        )
+        all(sub_directive in date_format for sub_directive in directive)
         for directive in potential_directives
     )
 
@@ -101,21 +98,34 @@ def format_date(date_string, expected_formats):
     >>> format_date("2020-01-15T00:00:00Z", expected_formats)
     '2020-01-15'
     """
-    # Potential directives that datetime accepts that can return the correct year, month, day fields
-    # see https://docs.python.org/3.9/library/datetime.html#strftime-and-strptime-format-codes
-    #
-    # Allows us to check if year/month/day are included in the date format so we
-    # know when to mask incomplete dates with 'XX'
-    all_field_directives = {'%c', '%x',
-        ('%G', '%V', '%A'), ('%G', '%V', '%a'), ('%G', '%V', '%w'), ('%G', '%V', '%u')
+    # Set of directives that can be converted to complete date with year, month, and day
+    year_month_day_directives = {
+        # Locale's full date representation
+        ('%c',),('%x',),
+        # Dates with ISO 8601 week dates for year ('%G' is NOT interchangeable with '%Y'), ISO 8601 week ('%V'), and weekdays
+        ('%G', '%V', '%A'),('%G', '%V', '%a'),('%G', '%V', '%w'),('%G', '%V', '%u'),
+        # Dates with year, week, and weekday
+        ('%y', '%U', '%A'), ('%y', '%U', '%a'), ('%y', '%U', '%w'), ('%y', '%U', '%u'),
+        ('%y', '%W', '%A'), ('%y', '%W', '%a'), ('%y', '%W', '%w'), ('%y', '%W', '%u'),
+        ('%Y', '%U', '%A'), ('%Y', '%U', '%a'), ('%Y', '%U', '%w'), ('%Y', '%U', '%u'),
+        ('%Y', '%W', '%A'), ('%Y', '%W', '%a'), ('%Y', '%W', '%w'), ('%Y', '%W', '%u'),
+        # Dates with year and day of the year
+        ('%y', '%j'), ('%Y', '%j'),
+        # Dates with year, month, and day
+        ('%y', '%b', '%d'), ('%y', '%B', '%d'), ('%y', '%m', '%d'),
+        ('%Y', '%b', '%d'), ('%Y', '%B', '%d'), ('%Y', '%m', '%d'),
     }
-    month_and_day_directives = {'%j',
-        ('%U', '%A'), ('%U', '%a'), ('%U', '%w'), ('%U', '%u'),
-        ('%W', '%A'), ('%W', '%a'), ('%W', '%w'), ('%W', '%u')
+
+    # Set of directives that can be converted to incomplete dates, missing the day
+    year_month_directives = {
+        ('%y', '%b'), ('%y', '%B'), ('%y', '%m'),
+        ('%Y', '%b'), ('%Y', '%B'), ('%Y', '%m'),
     }
-    year_directives = {'%y', '%Y'}
-    month_directives = {'%b', '%B', '%m'}
-    day_directives = {'%d'}
+
+    # Set of directives that can be converted to incomplete dates, missing the month and day
+    year_directives = {
+        ('%y',), ('%Y',)
+    }
 
     for date_format in expected_formats:
         try:
@@ -131,32 +141,23 @@ def format_date(date_string, expected_formats):
         parsed_month_string = str(parsed_date.month).zfill(2)
         parsed_day_string = str(parsed_date.day).zfill(2)
 
-        # If a directive for ALL fields is included in date format,
+        # If directives for all year,month,day fields are included in date_format,
         # then use all of the parsed field strings
-        if (directive_is_included(all_field_directives, date_format)):
+        if directive_is_included(year_month_day_directives, date_format):
             year_string = parsed_year_string
             month_string = parsed_month_string
             day_string = parsed_day_string
 
-        # If not all fields directives are included, then check year
-        # directive was included in date format
-        elif(directive_is_included(year_directives, date_format)):
+        # If directives only include year and month are included in date_format,
+        # then only use the parsed year and month field strings
+        elif directive_is_included(year_month_directives, date_format):
             year_string = parsed_year_string
+            month_string = parsed_month_string
 
-            # Only check for month and day directives if year is included
-            # Check if directive for BOTH month and year is included in date format
-            if (directive_is_included(month_and_day_directives, date_format)):
-                month_string = parsed_month_string
-                day_string = parsed_day_string
-
-            # If not directives for BOTH month and day are included, then check
-            # month directive was included in date format
-            elif(directive_is_included(month_directives, date_format)):
-                month_string = parsed_month_string
-
-                # Only check for day directives if month is included
-                if(directive_is_included(day_directives, date_format)):
-                    day_string = parsed_day_string
+        # If directives only include year in date_format, the only use the
+        # parsed year field string
+        elif directive_is_included(year_directives, date_format):
+            year_string = parsed_year_string
 
         return f"{year_string}-{month_string}-{day_string}"
 
