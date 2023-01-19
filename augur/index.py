@@ -26,9 +26,9 @@ def index_vcf(vcf_path, index_path):
 
     Parameters
     ----------
-    vcf_path : str or Path-like
+    vcf_path : str or `os.PathLike`
         path to a VCF file to index.
-    index_path : str or Path-like
+    index_path : str or `os.PathLike`
         path to a tab-delimited file containing the composition details for each
         sequence in the given input file.
 
@@ -154,10 +154,10 @@ def index_sequences(sequences_path, sequence_index_path):
 
     Parameters
     ----------
-    sequences_path : str or Path-like
+    sequences_path : str or `os.PathLike`
         path to a sequence file to index.
 
-    sequence_index_path : str or Path-like
+    sequence_index_path : str or `os.PathLike`
         path to a tab-delimited file containing the composition details for each
         sequence in the given input file.
 
