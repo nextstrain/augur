@@ -46,7 +46,7 @@ def get_pivots(observations, pivot_interval, start_date=None, end_date=None, piv
 
     Returns
     -------
-    pivots : ndarray
+    pivots : numpy.ndarray
         floating point pivots spanning the given the dates
 
     """
@@ -95,12 +95,12 @@ def make_pivots(pivots, tps):
     pivots : int or iterable
         either number of pivots (a scalar) or the actual pivots
         (will be cast to array and returned)
-    tps : np.array
+    tps : numpy.ndarray
         observation time points. Will generate pivots spanning min/max
 
     Returns
     -------
-    pivots : np.array
+    pivots : numpy.ndarray
         array of pivot values
     '''
     if isinstance(pivots, int):
@@ -124,14 +124,14 @@ def running_average(obs, ws):
 
     Parameters
     ----------
-    obs : list or np.array(bool)
+    obs : list or numpy.ndarray(bool)
         observations
     ws : int
         window size as measured in number of consecutive points
 
     Returns
     -------
-    np.array(float)
+    numpy.ndarray(float)
         running average of the boolean observations
     '''
     ws=int(ws)
@@ -157,14 +157,14 @@ def fix_freq(freq, pc):
 
     Parameters
     ----------
-    freq : np.array
+    freq : numpy.ndarray
         frequency trajectory to be thresholded
     pc : float
         threshold value
 
     Returns
     -------
-    np.array
+    numpy.ndarray
         thresholded frequency trajectory
     '''
     freq[np.isnan(freq)]=pc
@@ -200,11 +200,11 @@ class frequency_estimator(object):
 
         Parameters
         ----------
-        tps : list or np.array(float)
+        tps : list or numpy.ndarray(float)
             array with numerical dates
-        obs : list or np.array(bool)
+        obs : list or numpy.ndarray(bool)
             array with boolean observations
-        pivots : int or np.array(float)
+        pivots : int or numpy.ndarray(float)
             either integer specifying the number of pivot values,
             or list of explicity pivots
         stiffness : float, optional
@@ -426,11 +426,11 @@ class nested_frequencies(object):
 
         Parameters
         ----------
-        tps : np.array
+        tps : numpy.ndarray
             array of numerical dates
-        obs : np.array(bool)
+        obs : numpy.ndarray(bool)
             array of true/false observations
-        pivots : np.array
+        pivots : numpy.ndarray
             pivot values
         **kwargs
             Description
@@ -625,10 +625,10 @@ class alignment_frequencies(object):
         ----------
         aln : Bio.Align.MultipleSeqAlignment
             alignment
-        tps : np.array(float)
+        tps : np.ndarray(float)
             Array of numerical dates, one for each sequence in the
             alignment in the SAME ORDER!
-        pivots : np.array(float)
+        pivots : np.ndarray(float)
             pivot values for which frequencies are estimated
         **kwargs
             Description
@@ -653,7 +653,7 @@ class alignment_frequencies(object):
 
         Returns
         -------
-        np.array
+        numpy.ndarray
             frequency trajectory
         '''
         match = []
