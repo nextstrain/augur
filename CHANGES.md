@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 19.3.0 (19 January 2023)
+
 ### Features
 
 * titers: Support parsing of thresholded values (e.g., "<80" or ">2560"). [#1118][] (@huddlej)
