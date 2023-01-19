@@ -410,7 +410,7 @@ def calculate_sequences_per_group(target_max_value, group_sizes, allow_probabili
 
     Raises
     ------
-    TooManyGroupsError :
+    TooManyGroupsError
         When there are more groups than sequences per group and probabilistic
         subsampling is not allowed.
 

@@ -31,7 +31,7 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
 
     Raises
     ------
-    KeyError :
+    KeyError
         When the metadata file does not have any valid index columns.
 
     Examples
@@ -129,7 +129,7 @@ def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, i
 
     Raises
     ------
-    AugurError:
+    AugurError
         Raised for any of the following reasons:
         1. There are parsing errors from the csv standard library
         2. The provided *id_column* does not exist in the *metadata*

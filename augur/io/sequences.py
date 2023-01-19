@@ -101,7 +101,7 @@ def write_records_to_fasta(records, fasta, seq_id_field='strain', seq_field='seq
 
     Raises
     ------
-    AugurError:
+    AugurError
         When the sequence id field or sequence field does not exist in a record
     """
     with open_file(fasta, "w") as output_fasta:
