@@ -218,9 +218,7 @@ class TiterCollection(object):
         Parameters
         ----------
         titers
-            Description
         **kwargs
-            Description
         """
         self.kwargs = kwargs
 
@@ -252,14 +250,7 @@ class TiterCollection(object):
         Parameters
         ----------
         ref
-            Description
         val
-            Description
-
-        Returns
-        -------
-        TYPE
-            Description
         '''
         consensus_func = np.mean
         return consensus_func(np.log2(self.autologous_titers[ref]['val'])) \
@@ -339,12 +330,6 @@ class TiterCollection(object):
         Parameters
         ----------
         titers
-            Description
-
-        Returns
-        -------
-        TYPE
-            Description
         """
         sera = set()
         ref_strains = set()
@@ -464,15 +449,10 @@ class TiterModel(object):
         Parameters
         ----------
         method : str, optional
-            Description
         lam_drop : float, optional
-            Description
         lam_pot : float, optional
-            Description
         lam_avi : float, optional
-            Description
         **kwargs
-            Description
         '''
         self.lam_pot = lam_pot
         self.lam_avi = lam_avi
@@ -515,18 +495,9 @@ class TiterModel(object):
         Parameters
         ----------
         plot : bool, optional
-            Description
         cutoff : float, optional
-            Description
         validation_set : None, optional
-            Description
         fname : None, optional
-            Description
-
-        Returns
-        -------
-        TYPE
-            Description
         '''
         from scipy.stats import linregress, pearsonr
         if validation_set is None:
@@ -597,11 +568,6 @@ class TiterModel(object):
         during visualization, we need the average distance of a test virus from
         a reference virus across sera. hence the hierarchy [ref][test][serum]
         NOTE: this uses node.name instead of node.clade
-
-        Returns
-        -------
-        TYPE
-            Description
         '''
         def dstruct():
             return defaultdict(dict)
@@ -619,11 +585,6 @@ class TiterModel(object):
         compile a json structure containing potencies for visualization
         we need rapid access to all sera for a given reference virus, hence
         the structure is organized by [ref][serum]
-
-        Returns
-        -------
-        TYPE
-            Description
         '''
         potency_json = defaultdict(dict)
         for (ref_clade, serum), val in self.serum_potency.items():
@@ -644,11 +605,6 @@ class TiterModel(object):
     def compile_virus_effects(self):
         '''
         compile a json structure containing virus_effects for visualization
-
-        Returns
-        -------
-        TYPE
-            Description
         '''
         return {test_vir:np.round(val,TITER_ROUND) for test_vir, val in self.virus_effect.items()}
 
@@ -659,11 +615,6 @@ class TiterModel(object):
     def fit_l1reg(self):
         '''
         regularize genetic parameters with an l1 norm regardless of sign
-
-        Returns
-        -------
-        TYPE
-            Description
         '''
         try:
             from cvxopt import matrix, solvers
@@ -723,11 +674,6 @@ class TiterModel(object):
 
     def fit_nnl1reg(self):
         '''l1 regularization of titer drops with non-negativity constraints
-
-        Returns
-        -------
-        TYPE
-            Description
         '''
         try:
             from cvxopt import matrix, solvers
@@ -813,14 +759,7 @@ class TreeModel(TiterModel):
         Parameters
         ----------
         n
-            Description
         **kwargs
-            Description
-
-        Returns
-        -------
-        TYPE
-            Description
         '''
 
         model_performance = []
@@ -849,14 +788,7 @@ class TreeModel(TiterModel):
         Parameters
         ----------
         v1
-            Description
         v2
-            Description
-
-        Returns
-        -------
-        TYPE
-            Description
         '''
         if v1 in self.strain_lookup and v2 in self.strain_lookup:
             p1 = [self.strain_lookup[v1]]
@@ -886,7 +818,6 @@ class TreeModel(TiterModel):
         Parameters
         ----------
         criterium : None, optional
-            Description
         '''
         if criterium is None:
             criterium = lambda x:True
@@ -1035,14 +966,7 @@ class SubstitutionModel(TiterModel):
         Parameters
         ----------
         strain1
-            Description
         strain2
-            Description
-
-        Returns
-        -------
-        TYPE
-            Description
         '''
         if strain1 in self.sequences and strain2 in self.sequences:
             muts = []
@@ -1089,7 +1013,6 @@ class SubstitutionModel(TiterModel):
         Parameters
         ----------
         colin_thres : int, optional
-            Description
         '''
         seq_graph = []
         titer_dist = []
@@ -1140,7 +1063,6 @@ class SubstitutionModel(TiterModel):
         Parameters
         ----------
         colin_thres
-            Description
         '''
         TT = self.design_matrix[:,:self.genetic_params].T
         mutation_clusters = []
@@ -1175,7 +1097,6 @@ class SubstitutionModel(TiterModel):
         Parameters
         ----------
         **kwargs
-            Description
         '''
         self._train(**kwargs)
         for mi, mut in enumerate(self.relevant_muts):
@@ -1200,12 +1121,6 @@ class SubstitutionModel(TiterModel):
         Parameters
         ----------
         cutoff : float, optional
-            Description
-
-        Returns
-        -------
-        TYPE
-            Description
         '''
         return {mut[0]+':'+mut[1]:np.round(val,int(-np.log10(cutoff)))
                 for mut, val in self.substitution_effect.items() if val>cutoff}
