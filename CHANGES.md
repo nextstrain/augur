@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 20.0.0 (20 January 2023)
+
 ### Major Changes
 
 * frequencies: Changes the logic for calculating the time points when frequencies are estimated to ensure that the user-provided "end date" is always included. This change in the behavior of the frequencies command fixes a bug where large intervals between time points (e.g., 3 months) could cause recent data to be omitted from frequency calculations. See the pull request for more details included the scientific implications of this bug. [#1121][] (@huddlej)
