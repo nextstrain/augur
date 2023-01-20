@@ -8,7 +8,12 @@ import pandas as pd
 from tempfile import NamedTemporaryFile
 
 from augur.errors import AugurError
-from augur.index import index_sequences, index_vcf
+from augur.index import (
+    index_sequences,
+    index_vcf,
+    ID_COLUMN as SEQUENCE_INDEX_ID_COLUMN,
+    DELIMITER as SEQUENCE_INDEX_DELIMITER,
+)
 from augur.io.file import open_file
 from augur.io.metadata import read_metadata
 from augur.io.sequences import read_sequences, write_sequences
@@ -57,8 +62,8 @@ def run(args):
     if sequence_index_path:
         sequence_index = pd.read_csv(
             sequence_index_path,
-            sep="\t",
-            index_col="strain",
+            sep=SEQUENCE_INDEX_DELIMITER,
+            index_col=SEQUENCE_INDEX_ID_COLUMN,
         )
 
         # Remove temporary index file, if it exists.
