@@ -4,7 +4,10 @@ are masked with 'XX' (e.g. 2023 -> 2023-XX-XX).
 """
 import re
 from datetime import datetime
+
+from augur.errors import AugurError
 from augur.io.print import print_err
+from augur.types import DataErrorMethod
 from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEAR_MONTH_DAY_DIRECTIVES
 
 
@@ -21,6 +24,14 @@ def register_parser(parent_subparsers):
              "defined by standard format codes as listed at " +
              "https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes. " +
              "If a date string matches multiple formats, it will be parsed as the first format in the list.")
+
+    optional = parser.add_argument_group(title="OPTIONAL")
+    optional.add_argument("--failure-reporting",
+        type=DataErrorMethod.argtype,
+        choices=list(DataErrorMethod),
+        default=DataErrorMethod.ERROR_FIRST,
+        help="How should failed date formatting be reported.")
+
     return parser
 
 
@@ -81,9 +92,8 @@ def format_date(date_string, expected_formats):
 
     Returns
     -------
-    str :
-        Formatted date string.
-        If *date_string* does not match *expected_formats*, returns original *date_string*.
+    str or None:
+        Formatted date string or None if the parsing of the date string failed.
         If *date_string* is an incomplete date, the date is masked with 'XX'.
         Dates without year will be formatted as 'XXXX-XX-XX', even if month/day are known.
         Dates without month will be formatted as 'YYYY-XX-XX', even if day is known.
@@ -141,22 +151,52 @@ def format_date(date_string, expected_formats):
 
         return f"{year_string}-{month_string}-{day_string}"
 
-    if date_string:
-        print_err(
-            f"WARNING: Unable to transform date string {date_string!r} because it does not match",
-            f"any of the expected formats {expected_formats}."
-        )
-
-    return date_string
+    return None
 
 
 def run(args, records):
-    for record in records:
+    failures = []
+    failure_reporting = args.failure_reporting
+    for index, record in enumerate(records):
         record = record.copy()
+        record_id = index
 
         for field in args.date_fields:
             date_string = record.get(field)
-            if date_string:
-                record[field] = format_date(date_string, args.expected_date_formats)
+
+            if not date_string:
+                continue
+
+            formatted_date_string = format_date(date_string, args.expected_date_formats)
+            if formatted_date_string is None:
+
+                if failure_reporting is DataErrorMethod.SILENT:
+                    continue
+
+                failure_message = f"Unable to format date string {date_string!r} in field {field!r} of record {record_id!r}."
+                if failure_reporting is DataErrorMethod.ERROR_FIRST:
+                    raise AugurError(failure_message)
+
+                if failure_reporting is DataErrorMethod.WARN:
+                    print_err(f"WARNING: {failure_message}")
+
+                # Keep track of failures for final summary
+                failures.append((record_id, field, date_string))
+            else:
+                record[field] = formatted_date_string
 
         yield record
+
+    if failure_reporting is not DataErrorMethod.SILENT and failures:
+        failure_message = (
+            "Unable to format dates for the following (record, field, date string):\n" + \
+            '\n'.join(map(repr, failures))
+        )
+        if failure_reporting is DataErrorMethod.ERROR_ALL:
+            raise AugurError(failure_message)
+
+        elif failure_reporting is DataErrorMethod.WARN:
+            print_err(f"WARNING: {failure_message}")
+
+        else:
+            raise ValueError(f"Encountered unhandled failure reporting method: {failure_reporting!r}")
