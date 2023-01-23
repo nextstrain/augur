@@ -1,6 +1,0 @@
-strain	filter	kwargs
-HND/2016/HU_ME59	filter_by_sequence_index	[]
-COL/FLR_00008/2015	filter_by_query	"[[""query"", ""country != 'Colombia'""]]"
-Colombia/2016/ZC204Se	filter_by_query	"[[""query"", ""country != 'Colombia'""]]"
-COL/FLR_00024/2015	filter_by_query	"[[""query"", ""country != 'Colombia'""]]"
-COL/FLR_00008/2015	force_include_strains	"[[""include_file"", ""filter/data/include.txt""]]"
