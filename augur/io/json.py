@@ -1,30 +1,35 @@
 """
-A copy of id3c/lib/id3c/json.py and the additional util functions from
-id3c/lib/id3c/utils.py of the seattleflu/id3c repo as of commit 911e7d7 and
-licensed under the MIT License. The License file included in the repo is
-copied below verbatim.
+This file, augur/io/json.py, started as a copy of lib/id3c/json.py and the
+functions shorten_left(), contextualize_char(), and mark_char() from
+lib/id3c/utils.py in the https://github.com/seattleflu/id3c repo as of commit
+911e7d7bfccc4d050e63e6f73d7a7e59fa1a80e8, licensed under the MIT License.
 
-MIT License
+Subsequent modifications (as recorded in Augur's own version control history)
+are licensed under the same terms as the rest of Augur, the GNU AGPL 3.0.
 
-Copyright (c) 2018 Brotman Baty Institute
+The LICENSE file included in ID3C's repo is copied below verbatim::
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+    MIT License
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+    Copyright (c) 2018 Brotman Baty Institute
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
 """
 import json
 from datetime import datetime
