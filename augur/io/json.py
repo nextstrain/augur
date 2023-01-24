@@ -117,6 +117,7 @@ class JSONDecodeError(json.JSONDecodeError):
     Typically you won't need to ever reference this class directly.  It will be
     raised by :func:`load_json` and be caught by except blocks which catch the
     standard :class:`json.JSONDecodeError`.
+
     >>> load_json('{foo: "bar"}')
     Traceback (most recent call last):
         ...
