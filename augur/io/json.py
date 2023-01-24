@@ -165,6 +165,48 @@ class JSONDecodeError(json.JSONDecodeError):
         return f"{error}: {context}"
 
 
+def shorten_as_json(value, length, placeholder) -> str:
+    """
+    Converts *value* to JSON with :py:func:`as_json` and then truncates it to a
+    maximum *length* (if necessary), indicating truncation with the given
+    *placeholder*.
+
+    >>> shorten_as_json({'hello': 'world', 'x': 42}, 100, '…')
+    '{"hello": "world", "x": 42}'
+    >>> shorten_as_json({'hello': 'world', 'x': 42}, 21, '…')
+    '{"hello": "world", …}'
+
+    For readability, the outermost JSON value delimiter at the right hand side,
+    i.e. ``}``, ``]``, or ``"``, is preserved, such that *placeholder* will put
+    placed "inside" *value*'s JSON representation.
+
+    >>> shorten_as_json([1,2,3,'four',5,6], 20, '…')
+    '[1, 2, 3, "four", …]'
+    >>> shorten_as_json([1,2,3,'four',5,6], 15, '…')
+    '[1, 2, 3, "fo…]'
+
+    The maximum *length* must be at least two characters longer than the length
+    of the *placeholder*.
+
+    >>> shorten_as_json({'foo': 'bar'}, 4, '...')
+    Traceback (most recent call last):
+        ...
+    ValueError: maximum length (4) must be two greater than length of placeholder (3), i.e. at least 5
+    >>> shorten_as_json({'foo': 'bar'}, 5, '...')
+    '{...}'
+    """
+    min_length = len(placeholder) + 2
+    if length < min_length:
+        raise ValueError(f"maximum length ({length}) must be two greater than length of placeholder ({len(placeholder)}), i.e. at least {min_length}")
+
+    json_value = as_json(value)
+
+    if len(json_value) > length:
+        return json_value[0:length - len(placeholder) - 1] + placeholder + json_value[-1:]
+    else:
+        return json_value
+
+
 def shorten_left(text, length, placeholder):
     """
     Truncate the left end of *text* to a maximum *length* (if necessary),
