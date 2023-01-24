@@ -166,8 +166,14 @@ class JSONDecodeError(json.JSONDecodeError):
 
 def shorten_left(text, length, placeholder):
     """
-    A variant of :py:func:`shorten` which shortens from the left end of *text*
-    instead of the right.
+    Truncate the left end of *text* to a maximum *length* (if necessary),
+    indicating truncation with the given *placeholder*.
+
+    The maximum *length* must be longer than the length of the *placeholder*.
+
+    Behaviour is slightly different than :py:func:`textwrap.shorten` which is
+    intended for shortening sentences and works at the word, not character,
+    level.
 
     >>> shorten_left("foobar", 6, "...")
     'foobar'
