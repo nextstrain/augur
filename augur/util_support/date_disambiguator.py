@@ -3,6 +3,8 @@ import datetime
 import functools
 import re
 
+from augur.errors import InvalidDate
+
 
 def tuple_to_date(year, month, day):
     month = min(month, 12)
@@ -67,8 +69,8 @@ class DateDisambiguator:
         matches = re.search(self.regex, self.uncertain_date)
 
         if matches is None:
-            raise ValueError(
-                f"Malformed uncertain date `{self.uncertain_date}` for format `{self.fmt}`"
+            raise InvalidDate(self.uncertain_date,
+                f"Date does not match format `{self.fmt}`."
             )
 
         return dict(zip(self.fmt_components, matches.groups()))
@@ -113,11 +115,11 @@ class DateDisambiguator:
                 self.uncertain_date_components["m"] != "XX"
                 or self.uncertain_date_components["d"] != "XX"
             ):
-                raise ValueError(
-                    "Invalid date: Year contains uncertainty, so month and day must also be uncertain."
+                raise InvalidDate(self.uncertain_date,
+                    "Year contains uncertainty, so month and day must also be uncertain."
                 )
         elif "X" in self.uncertain_date_components["m"]:
             if self.uncertain_date_components["d"] != "XX":
-                raise ValueError(
-                    "Invalid date: Month contains uncertainty, so day must also be uncertain."
+                raise InvalidDate(self.uncertain_date,
+                    "Month contains uncertainty, so day must also be uncertain."
                 )
