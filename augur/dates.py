@@ -73,8 +73,8 @@ def numeric_date_type(date):
     except ValueError as e:
         raise argparse.ArgumentTypeError(str(e)) from e
 
-def ambiguous_date_to_date_range(uncertain_date, fmt, min_max_year=None):
-    return DateDisambiguator(uncertain_date, fmt=fmt, min_max_year=min_max_year).range()
+def ambiguous_date_to_date_range(uncertain_date, fmt):
+    return DateDisambiguator(uncertain_date, fmt=fmt).range()
 
 def is_date_ambiguous(date, ambiguous_by="any"):
     """
@@ -107,7 +107,7 @@ def is_date_ambiguous(date, ambiguous_by="any"):
         "X" in day and ambiguous_by in ("any", "day")
     ))
 
-def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
+def get_numerical_date_from_value(value, fmt=None):
     value = str(value)
     if re.match(r'^-*\d+\.\d+$', value):
         # numeric date which can be negative
@@ -116,7 +116,7 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
         # year-only date is ambiguous
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
     if 'XX' in value:
-        ambig_date = ambiguous_date_to_date_range(value, fmt, min_max_year)
+        ambig_date = ambiguous_date_to_date_range(value, fmt)
         if ambig_date is None or None in ambig_date:
             return [None, None] #don't send to numeric_date or will be set to today
         return [treetime.utils.numeric_date(d) for d in ambig_date]
@@ -125,7 +125,7 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
     except:
         return None
 
-def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date', fmt=None, min_max_year=None):
+def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date', fmt=None):
     if not isinstance(metadata, pd.DataFrame):
         raise AugurError("Metadata should be a pandas.DataFrame.")
     if fmt:
@@ -133,8 +133,7 @@ def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date',
         dates = metadata[date_col].apply(
             lambda date: get_numerical_date_from_value(
                 date,
-                fmt,
-                min_max_year
+                fmt
             )
         ).values
     else:
