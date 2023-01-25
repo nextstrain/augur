@@ -56,24 +56,65 @@ def numeric_date(date):
 
     # Handle an absolute date in ISO 8601 date format.
     try:
-        return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))
+        date = iso_to_datetime_date(date)
+        return treetime.utils.numeric_date(date)
     except ValueError:
         pass
 
     # Finally, handle a backwards-looking relative date in ISO 8601 duration format.
     # Since this is handled last, there is no need to check the format as done for other formats above.
     try:
-        # make a copy of date for this block
-        duration_str = str(date)
-        if duration_str.startswith('P'):
-            duration_str = duration_str
-        else:
-            duration_str = 'P'+duration_str
-        return treetime.utils.numeric_date(datetime.date.today() - isodate.parse_duration(duration_str))
+        date = relative_iso_to_datetime_date(date)
+        return treetime.utils.numeric_date(date)
     except (ValueError, isodate.ISO8601Error):
         pass
 
     raise InvalidDate(date, f"""Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}""")
+
+
+def iso_to_datetime_date(date: str):
+    """Convert ISO 8601 date string to a datetime.date.
+
+    Parameters
+    ----------
+    date
+        Date string in ISO 8601 format.
+
+
+    >>> round(iso_to_numeric('2018-01-01'), 3)
+    2018.001
+    >>> round(iso_to_numeric('2018-03-25'), 2)
+    2018.23
+    """
+    return datetime.date(*map(int, date.split("-", 2)))
+
+
+def relative_iso_to_datetime_date(backwards_duration_str: str, from_date: datetime.date = None):
+    """Compute datetime.date from a ISO 8601 duration string relative to a specified date.
+
+    Parameters
+    ----------
+    backwards_duration_str
+        ISO 8601 duration string specifying the duration to go back. The 'P' duration designator is optional.
+    from_date
+        The date to go back from. Default is current date.
+
+
+    >>> relative_iso_to_datetime_date('5D', from_date=datetime.date(2018, 3, 25))
+    datetime.date(2018, 3, 20)
+    >>> relative_iso_to_datetime_date('P5D', from_date=datetime.date(2018, 3, 25))
+    datetime.date(2018, 3, 20)
+    >>> relative_iso_to_datetime_date('5W', from_date=datetime.date(2018, 3, 25))
+    datetime.date(2018, 2, 18)
+    >>> relative_iso_to_datetime_date('5Y', from_date=datetime.date(2018, 3, 25))
+    datetime.date(2013, 3, 25)
+    """
+    if from_date is None:
+        from_date = datetime.date.today()
+    if not backwards_duration_str.startswith('P'):
+        backwards_duration_str = 'P'+backwards_duration_str
+    return from_date - isodate.parse_duration(backwards_duration_str)
+
 
 def numeric_date_type(date):
     """Get the numeric date from any supported date format.
