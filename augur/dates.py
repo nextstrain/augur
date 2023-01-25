@@ -33,23 +33,25 @@ def numeric_date(date):
     >>> numeric_date("1W") == treetime.utils.numeric_date(datetime.date.today() - isodate.parse_duration("P1W"))
     True
     """
-    # date is a datetime.date
+    # Absolute date as a datetime.date.
     if isinstance(date, datetime.date):
+        # Use a treetime utility function to convert the datetime.date to a
+        # numeric representation.
         return treetime.utils.numeric_date(date)
 
-    # date is numeric
+    # Absolute date in numeric format.
     try:
         return float(date)
     except ValueError:
         pass
 
-    # date is in YYYY-MM-DD form
+    # Absolute date in ISO 8601 date format.
     try:
         return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))
     except ValueError:
         pass
 
-    # date is a duration treated as a backwards-looking relative date
+    # Backwards-looking relative date in ISO 8601 duration format.
     try:
         # make a copy of date for this block
         duration_str = str(date)
