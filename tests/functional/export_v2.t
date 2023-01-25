@@ -144,6 +144,7 @@ Skipping validation allows mismatched augur versions to be used without error.
   >   --skip-validation
   WARNING: You didn't provide information on who is maintaining this analysis.
   \s{0} (re)
+  Skipping validation of produced JSON due to --validation-mode=skip or --skip-validation.
   \s{0} (re)
 
 Check the output from the above command against its expected contents
