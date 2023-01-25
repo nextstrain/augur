@@ -350,5 +350,7 @@ class TestFilter:
             Unable to determine date from '{argparse_value}'. Ensure it is in one of the supported formats:
             1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or
             2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or
-            3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')
+            3. an ambiguous date in ISO 8601-like format (e.g. '2020-06-XX', '2020-XX-XX') or
+            4. an incomplete date in ISO 8601-like format (e.g. '2020-06', '2020') or
+            5. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')
         """)
