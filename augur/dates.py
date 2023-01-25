@@ -9,6 +9,11 @@ from .errors import AugurError
 
 from augur.util_support.date_disambiguator import DateDisambiguator
 
+
+class InvalidDateFormat(ValueError):
+    pass
+
+
 SUPPORTED_DATE_HELP_TEXT = dedent("""\
     1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or
     2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or
@@ -60,7 +65,7 @@ def numeric_date(date):
     except (ValueError, isodate.ISO8601Error):
         pass
 
-    raise ValueError(f"""Unable to determine date from '{date}'. Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}""")
+    raise InvalidDateFormat(f"""Unable to determine date from '{date}'. Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}""")
 
 
 def iso_to_numeric(date: str):
@@ -112,12 +117,12 @@ def numeric_date_type(date):
 
     This function is intended to be used as the `type` parameter in `argparse.ArgumentParser.add_argument()`
 
-    This raises an ArgumentTypeError, otherwise the custom exception message won't be shown in console output due to:
+    This raises an ArgumentTypeError from InvalidDateFormat exceptions, otherwise the custom exception message won't be shown in console output due to:
     https://github.com/python/cpython/blob/5c4d1f6e0e192653560ae2941a6677fbf4fbd1f2/Lib/argparse.py#L2503-L2513
     """
     try:
         return numeric_date(date)
-    except ValueError as e:
+    except InvalidDateFormat as e:
         raise argparse.ArgumentTypeError(str(e)) from e
 
 def ambiguous_date_to_date_range(uncertain_date, fmt, min_max_year=None):
