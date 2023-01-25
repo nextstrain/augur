@@ -18,12 +18,13 @@ SUPPORTED_DATE_HELP_TEXT = dedent("""\
 
 def numeric_date(date):
     """
-    Converts the given *date* string to a :py:class:`float`.
+    Converts the given *date* to a :py:class:`float`.
 
-    *date* may be given as:
-    1. A string or float (number) with year as the integer part
-    2. A string in the YYYY-MM-DD (ISO 8601) syntax
-    3. A string representing a relative date (duration before datetime.date.today())
+    Parameters
+    ----------
+    date
+        Date in any of the supported formats.
+
 
     Examples
     --------
@@ -66,9 +67,11 @@ def numeric_date(date):
     raise InvalidDate(date, f"""Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}""")
 
 def numeric_date_type(date):
-    """Wraps numeric_date() for argparse usage.
+    """Get the numeric date from any supported date format.
 
-    This raises an ArgumentTypeError from InvalidDateFormat exceptions, otherwise the custom exception message won't be shown in console output due to:
+    This function is intended to be used as the `type` parameter in `argparse.ArgumentParser.add_argument()`
+
+    This raises an ArgumentTypeError from InvalidDate exceptions, otherwise the custom exception message won't be shown in console output due to:
     https://github.com/python/cpython/blob/5c4d1f6e0e192653560ae2941a6677fbf4fbd1f2/Lib/argparse.py#L2503-L2513
     """
     try:
