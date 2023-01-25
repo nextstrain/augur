@@ -17,21 +17,6 @@ from augur.io.print import print_err
 from augur.io.json import shorten_as_json
 from .validate_export import verifyMainJSONIsInternallyConsistent, verifyMetaAndOrTreeJSONsAreInternallyConsistent
 
-class ValidationWarnings:
-    def __init__(self):
-        self.seen = defaultdict(set)
-    def add(self, warningType, message):
-        self.seen[warningType].add(message)
-    def show(self):
-        print("WARNINGS")
-        print(self.seen)
-
-class ValidationErrors(ValidationWarnings):
-    def show(self):
-        print("ERRORS")
-        print(self.seen)
-        sys.exit(2)
-
 def fatal(message):
     print("FATAL ERROR: {}".format(message))
     sys.exit(2)
@@ -178,8 +163,6 @@ def auspice_config_v2(config_json, **kwargs):
     validate(config, schema, config_json)
 
 def export_v2(main_json, **kwargs):
-    # validationWarnings = ValidationWarnings()
-    # validationErrors = ValidationErrors()
     main_schema = load_json_schema("schema-export-v2.json")
 
     if main_json.endswith("frequencies.json") or main_json.endswith("entropy.json") or main_json.endswith("sequences.json"):
