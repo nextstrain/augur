@@ -2,7 +2,7 @@
 Filter and subsample a sequence set.
 """
 from augur.argparse_ import ExtendOverwriteDefault
-from augur.dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT
+from augur.dates import numeric_date_type_min, numeric_date_type_max, SUPPORTED_DATE_HELP_TEXT
 from augur.filter.io import ACCEPTED_TYPES, column_type_pair
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN
 from augur.types import EmptyOutputReportingMethod
@@ -35,8 +35,8 @@ def register_arguments(parser):
         Automatic type inference will be attempted on all unspecified columns used in the query.
         Example: region:str coverage:float.
     """)
-    metadata_filter_group.add_argument('--min-date', type=numeric_date_type, help=f"minimal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
-    metadata_filter_group.add_argument('--max-date', type=numeric_date_type, help=f"maximal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
+    metadata_filter_group.add_argument('--min-date', type=numeric_date_type_min, help=f"minimal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
+    metadata_filter_group.add_argument('--max-date', type=numeric_date_type_max, help=f"maximal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
     metadata_filter_group.add_argument('--exclude-ambiguous-dates-by', choices=['any', 'day', 'month', 'year'],
                                 help='Exclude ambiguous dates by day (e.g., 2020-09-XX), month (e.g., 2020-XX-XX), year (e.g., 200X-10-01), or any date fields. An ambiguous year makes the corresponding month and day ambiguous, too, even if those fields have unambiguous values (e.g., "201X-10-01"). Similarly, an ambiguous month makes the corresponding day ambiguous (e.g., "2010-XX-01").')
     metadata_filter_group.add_argument('--exclude', type=str, nargs="+", action=ExtendOverwriteDefault, help="file(s) with list of strains to exclude")
