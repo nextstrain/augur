@@ -36,23 +36,29 @@ def numeric_date(date):
     >>> numeric_date("1W") == treetime.utils.numeric_date(datetime.date.today() - isodate.parse_duration("P1W"))
     True
     """
-    # date is a datetime.date
+    # Handle an absolute date as a datetime.date.
     if isinstance(date, datetime.date):
+        # Use a treetime utility function to convert the datetime.date to a
+        # numeric representation.
         return treetime.utils.numeric_date(date)
 
-    # date is numeric
+    # Handle an absolute date in numeric format.
+    # Note that year-only dates will represent the start of the year (e.g.
+    # 2018 => 2018.0 ≈> 2018-01-01 ). This causes a bug with --max-date¹.
+    # ¹ https://github.com/nextstrain/augur/issues/893
     try:
         return float(date)
     except ValueError:
         pass
 
-    # date is in YYYY-MM-DD form
+    # Handle an absolute date in ISO 8601 date format.
     try:
         return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))
     except ValueError:
         pass
 
-    # date is a duration treated as a backwards-looking relative date
+    # Finally, handle a backwards-looking relative date in ISO 8601 duration format.
+    # Since this is handled last, there is no need to check the format as done for other formats above.
     try:
         # make a copy of date for this block
         duration_str = str(date)
