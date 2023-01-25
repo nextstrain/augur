@@ -20,11 +20,16 @@ SUPPORTED_DATE_HELP_TEXT = dedent("""\
     3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')
 """)
 
-# Matches integers and floats (e.g. -1, 0, 123, 2018.0, -2018.0).
-RE_NUMERIC_DATE = re.compile(r'^-?[0-9]*\.?[0-9]*$')
+# Matches floats (e.g. 2018.0, -2018.0).
+# Note that a year-only value is treated as incomplete ambiguous and must be
+# non-negative (see RE_YEAR_ONLY).
+RE_NUMERIC_DATE = re.compile(r'^-?[0-9]*\.[0-9]*$')
 
 # Matches complete ISO 8601 dates (e.g. 2018-03-25).
 RE_ISO_8601_DATE = re.compile(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+
+# Matches positive integers (e.g. 1, 123, 1234, 12345)
+RE_YEAR_ONLY = re.compile(r'^0*[1-9][0-9]*$')
 
 # Relative dates (ISO 8601 durations) are also supported - see numeric_date().
 
@@ -57,7 +62,10 @@ def numeric_date(date):
     date = str(date)
 
     # Absolute date in numeric format.
-    if (RE_NUMERIC_DATE.match(date)):
+    # Note that year-only dates will represent the start of the year (e.g.
+    # 2018 => 2018.0 ≈> 2018-01-01 ). This causes a bug with --max-date¹.
+    # ¹ https://github.com/nextstrain/augur/issues/893
+    if (RE_NUMERIC_DATE.match(date) or RE_YEAR_ONLY.match(date)):
         return float(date)
 
     # Absolute date in ISO 8601 date format.
