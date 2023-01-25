@@ -247,16 +247,36 @@ def relative_iso_to_numeric(backwards_duration_str: str, from_date: datetime.dat
     return numeric_date(from_date - isodate.parse_duration(backwards_duration_str))
 
 
-def numeric_date_type(date):
-    """Get the numeric date from any supported date format.
+def numeric_date_type_min(date):
+    """Get the numeric date from any supported date format, taking the minimum possible value if ambiguous.
 
     This function is intended to be used as the `type` parameter in `argparse.ArgumentParser.add_argument()`
 
     This raises an ArgumentTypeError from InvalidDateFormat exceptions, otherwise the custom exception message won't be shown in console output due to:
     https://github.com/python/cpython/blob/5c4d1f6e0e192653560ae2941a6677fbf4fbd1f2/Lib/argparse.py#L2503-L2513
+
+    >>> round(numeric_date_type_min(2018), 3)
+    2018.001
     """
     try:
-        return numeric_date(date)
+        return numeric_date(date, ambiguity_resolver='min')
+    except InvalidDateFormat as e:
+        raise argparse.ArgumentTypeError(str(e)) from e
+
+
+def numeric_date_type_max(date):
+    """Get the numeric date from any supported date format, taking the maximum possible value if ambiguous.
+
+    This function is intended to be used as the `type` parameter in `argparse.ArgumentParser.add_argument()`
+
+    This raises an ArgumentTypeError from InvalidDateFormat exceptions, otherwise the custom exception message won't be shown in console output due to:
+    https://github.com/python/cpython/blob/5c4d1f6e0e192653560ae2941a6677fbf4fbd1f2/Lib/argparse.py#L2503-L2513
+
+    >>> round(numeric_date_type_max(2018), 3)
+    2018.999
+    """
+    try:
+        return numeric_date(date, ambiguity_resolver='max')
     except InvalidDateFormat as e:
         raise argparse.ArgumentTypeError(str(e)) from e
 
