@@ -42,6 +42,9 @@ def numeric_date(date):
         # numeric representation.
         return treetime.utils.numeric_date(date)
 
+    # All other formats are treated as strings.
+    date = str(date)
+
     # Handle an absolute date in numeric format.
     # Note that year-only dates will represent the start of the year (e.g.
     # 2018 => 2018.0 ≈> 2018-01-01 ). This causes a bug with --max-date¹.
