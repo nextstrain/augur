@@ -20,6 +20,15 @@ SUPPORTED_DATE_HELP_TEXT = dedent("""\
     3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')
 """)
 
+# Matches integers and floats (e.g. -1, 0, 123, 2018.0, -2018.0).
+RE_NUMERIC_DATE = re.compile(r'^-?[0-9]*\.?[0-9]*$')
+
+# Matches complete ISO 8601 dates (e.g. 2018-03-25).
+RE_ISO_8601_DATE = re.compile(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+
+# Relative dates (ISO 8601 durations) are also supported - see numeric_date().
+
+
 def numeric_date(date):
     """
     Converts the given *date* to a :py:class:`float`.
@@ -48,18 +57,19 @@ def numeric_date(date):
     date = str(date)
 
     # Absolute date in numeric format.
-    try:
+    if (RE_NUMERIC_DATE.match(date)):
         return float(date)
-    except ValueError:
-        pass
 
     # Absolute date in ISO 8601 date format.
-    try:
-        return iso_to_numeric(date)
-    except ValueError:
-        pass
+    if RE_ISO_8601_DATE.match(date):
+        try:
+            return iso_to_numeric(date)
+        except ValueError:
+            pass
 
     # Backwards-looking relative date in ISO 8601 duration format.
+    # No regex for this - it would be too complex - just try evaluating last and
+    # let any errors pass to raise the InvalidDateFormat.
     try:
         return relative_iso_to_numeric(date)
     except (ValueError, isodate.ISO8601Error):
