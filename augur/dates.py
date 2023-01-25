@@ -39,6 +39,9 @@ def numeric_date(date):
         # numeric representation.
         return treetime.utils.numeric_date(date)
 
+    # All other formats are treated as strings.
+    date = str(date)
+
     # Absolute date in numeric format.
     try:
         return float(date)
