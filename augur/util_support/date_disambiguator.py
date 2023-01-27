@@ -37,6 +37,7 @@ def resolve_uncertain_int(uncertain_string, min_or_max):
     return result
 
 
+# This was originally from treetime.utils.ambiguous_date_to_date_range.
 class DateDisambiguator:
     """Transforms a date string with uncertainty into the range of possible dates."""
 
