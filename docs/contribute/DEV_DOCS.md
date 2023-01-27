@@ -145,7 +145,7 @@ For example, the following command only runs unit tests related to augur mask.
 To run a specific integration test with cram, you can use the following command:
 
 ```bash
-cram --shell=/bin/bash tests/functional/clades.t
+cram tests/functional/clades.t
 ```
 
 Troubleshooting tip: As tests run on the development code in the augur repository, your environment should not have an existing augur installation that could cause a conflict in pytest.
