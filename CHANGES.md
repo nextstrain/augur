@@ -5,7 +5,9 @@
 ### Bug Fixes
 
 * filter, frequencies, refine, parse: Properly handle invalid date errors and output the bad date. [#1140][] (@victorlin)
+* export, validate: Validation errors are now much more human-readable and actually pinpoint the problems. [#1134][] (@tsibley)
 
+[#1134]: https://github.com/nextstrain/augur/pull/1134
 [#1140]: https://github.com/nextstrain/augur/pull/1140
 
 ## 20.0.0 (20 January 2023)
