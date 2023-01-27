@@ -346,9 +346,4 @@ class TestFilter:
                                           ("SEQ_1","2020-03-23")))
         with pytest.raises(SystemExit) as e_info:
             argparser(f'--metadata {meta_fn} --output-strains {out_fn} {argparse_flag} {argparse_value}')
-        assert e_info.value.__context__.message == dedent(f"""\
-            Unable to determine date from '{argparse_value}'. Ensure it is in one of the supported formats:
-            1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or
-            2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or
-            3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')
-        """)
+        assert f"Invalid date '{argparse_value}'" in e_info.value.__context__.message
