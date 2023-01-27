@@ -1,6 +1,7 @@
 import Bio.Phylo
 import sys
 
+from augur.types import ValidationMode
 from augur.util_support.node_data import DuplicatedNonDictAttributeError
 from augur.util_support.node_data import NodeData
 from augur.util_support.node_data_file import NodeDataFile
@@ -15,15 +16,15 @@ class NodeDataReader:
 
     If a tree file is specified, it is used to verify the node names.
 
-    If skip_validation is set to true, Augur version of node data files is not checked.
+    If validation_mode is set to :py:attr:`ValidationMode.SKIP`, Augur version of node data files is not checked.
     """
 
-    def __init__(self, filenames, tree_file=None, skip_validation=False):
+    def __init__(self, filenames, tree_file=None, validation_mode=ValidationMode.ERROR):
         if not isinstance(filenames, list):
             filenames = [filenames]
         self.filenames = filenames
         self.tree_file = tree_file
-        self.skip_validation = skip_validation
+        self.validation_mode = validation_mode
 
     def read(self):
         node_data = self.build_node_data()
@@ -51,7 +52,7 @@ class NodeDataReader:
 
     @property
     def node_data_files(self):
-        return (NodeDataFile(fname, skip_validation = self.skip_validation) for fname in self.filenames)
+        return (NodeDataFile(fname, validation_mode = self.validation_mode) for fname in self.filenames)
 
     def check_against_tree_file(self, node_data):
         if not self.tree_file:

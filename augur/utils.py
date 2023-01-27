@@ -15,6 +15,8 @@ from .__version__ import __version__
 
 from augur.io.file import open_file
 
+from augur.types import ValidationMode
+
 from augur.util_support.color_parser import ColorParser
 from augur.util_support.node_data_reader import NodeDataReader
 
@@ -87,8 +89,8 @@ def read_tree(fname, min_terminals=3):
     return T
 
 
-def read_node_data(fnames, tree=None, skip_validation=False):
-    return NodeDataReader(fnames, tree, skip_validation).read()
+def read_node_data(fnames, tree=None, validation_mode=ValidationMode.ERROR):
+    return NodeDataReader(fnames, tree, validation_mode).read()
 
 
 def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 2), include_version=True):

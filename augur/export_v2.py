@@ -12,6 +12,7 @@ from Bio import Phylo
 
 from .argparse_ import ExtendAction
 from .io.metadata import read_metadata
+from .types import ValidationMode
 from .utils import read_node_data, write_json, read_config, read_lat_longs, read_colors
 from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
 
@@ -522,7 +523,11 @@ def set_filters(data_json, config):
                       if coloring["type"] != "continuous" and coloring["key"] != 'gt'}
         data_json['meta']['filters'] = list(potentials)
 
-def validate_data_json(filename):
+def validate_data_json(filename, validation_mode=ValidationMode.ERROR):
+    if validation_mode is ValidationMode.SKIP:
+        print(f"Skipping validation of produced JSON due to --validation-mode={validation_mode.value} or --skip-validation.")
+        return
+
     print("Validating produced JSON")
     try:
         validate_v2(main_json=filename)
@@ -531,7 +536,18 @@ def validate_data_json(filename):
         print("\n------------------------")
         print("Validation of {} failed. Please check this in a local instance of `auspice`, as it is not expected to display correctly. ".format(filename))
         print("------------------------")
+        validation_failure(validation_mode)
+
+def validation_failure(mode: ValidationMode):
+    if mode is ValidationMode.ERROR:
         sys.exit(2)
+    elif mode is ValidationMode.WARN:
+        print(f"Continuing due to --validation-mode={mode.value} even though there were validation errors.")
+    elif mode is ValidationMode.SKIP:
+        # Shouldn't be doing validation under skip, but if we're called anyway just do nothing.
+        return
+    else:
+        raise ValueError(f"unknown validation mode: {mode!r}")
 
 
 def set_panels(data_json, config, cmd_line_panels):
@@ -857,7 +873,31 @@ def register_parser(parent_subparsers):
     )
     optional_settings.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
     optional_settings.add_argument('--include-root-sequence', action="store_true", help="Export an additional JSON containing the root sequence (reference sequence for vcf) used to identify mutations. The filename will follow the pattern of <OUTPUT>_root-sequence.json for a main auspice JSON of <OUTPUT>.json")
-    optional_settings.add_argument('--skip-validation', action="store_true", help="skip validation of input/output files. Use at your own risk!")
+    optional_settings.add_argument(
+        '--validation-mode',
+        dest="validation_mode",
+        type=ValidationMode,
+        choices=[mode for mode in ValidationMode],
+        default=ValidationMode.ERROR,
+        help="""
+            Control if optional validation checks are performed and what
+            happens if they fail.
+
+            'error' and 'warn' modes perform validation and emit messages about
+            failed validation checks.  'error' mode causes a non-zero exit
+            status if any validation checks failed, while 'warn' does not.
+
+            'skip' mode performs no validation.
+
+            Note that some validation checks are non-optional and as such are
+            not affected by this setting.
+        """)
+    optional_settings.add_argument(
+        '--skip-validation',
+        dest="validation_mode",
+        action="store_const",
+        const=ValidationMode.SKIP,
+        help="Skip validation of input/output files, equivalent to --validation-mode=skip. Use at your own risk!")
 
     return parser
 
@@ -969,13 +1009,13 @@ def get_config(args):
     if not args.auspice_config:
         return {}
     config = read_config(args.auspice_config)
-    if not args.skip_validation:
+    if args.validation_mode is not ValidationMode.SKIP:
         try:
             print("Validating config file {} against the JSON schema".format(args.auspice_config))
             validate_auspice_config_v2(args.auspice_config)
         except ValidateError:
             print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
-            sys.exit(2)
+            validation_failure(args.validation_mode)
     # Print a warning about the inclusion of "vaccine_choices" which are _unused_ by `export v2`
     # (They are in the schema as this allows v1-compat configs to be used)
     if config.get("vaccine_choices"):
@@ -989,7 +1029,7 @@ def run(args):
 
     #load input files
     try:
-        node_data_file = read_node_data(args.node_data, skip_validation=args.skip_validation) # node_data_files is an array of multiple files (or a single file)
+        node_data_file = read_node_data(args.node_data, validation_mode=args.validation_mode) # node_data_files is an array of multiple files (or a single file)
     except FileNotFoundError:
         print(f"ERROR: node data file ({args.node_data}) does not exist")
         sys.exit(2)
@@ -1066,8 +1106,7 @@ def run(args):
             fatal("Root sequence output was requested, but the node data provided is missing a 'reference' key.")
 
     # validate outputs
-    if not args.skip_validation:
-        validate_data_json(args.output)
+    validate_data_json(args.output, args.validation_mode)
 
     if deprecationWarningsEmitted:
         print("\n------------------------")
