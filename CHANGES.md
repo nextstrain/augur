@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* filter, frequencies, refine, parse: Properly handle invalid date errors and output the bad date. [#1140][] (@victorlin)
+
+[#1140]: https://github.com/nextstrain/augur/pull/1140
 
 ## 20.0.0 (20 January 2023)
 
