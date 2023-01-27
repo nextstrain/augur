@@ -3,7 +3,7 @@ import datetime
 import functools
 import re
 
-from .errors import InvalidDate
+from .errors import InvalidDate, InvalidYearBounds
 
 
 def tuple_to_date(year, month, day):
@@ -41,14 +41,13 @@ def resolve_uncertain_int(uncertain_string, min_or_max):
 class AmbiguousDate:
     """Transforms a date string with uncertainty into the range of possible dates."""
 
-    def __init__(self, uncertain_date, fmt="%Y-%m-%d", min_max_year=None):
+    def __init__(self, uncertain_date, fmt="%Y-%m-%d"):
         self.uncertain_date = uncertain_date
         self.fmt = fmt
-        self.min_max_year = min_max_year
 
         self.assert_only_less_significant_uncertainty()
 
-    def range(self):
+    def range(self, min_max_year=None):
         """Return the range of possible dates defined by the ambiguous date.
 
         Impose an upper limit of today's date.
@@ -64,6 +63,24 @@ class AmbiguousDate:
             resolve_uncertain_int(self.uncertain_date_components["m"], "max"),
             resolve_uncertain_int(self.uncertain_date_components["d"], "max"),
         )
+
+        # Limit dates with ambiguous years to the given bounds.
+        if "X" in self.uncertain_date_components["Y"] and min_max_year:
+            lower_bound, upper_bound = get_bounds(min_max_year)
+            if lower_bound:
+                # lower_bound should always be truth-y, but add indentation here for readability.
+                if max_date < lower_bound:
+                    raise InvalidDate(self.uncertain_date, f"Not possible for date to fall within bounds [{lower_bound}, {upper_bound}]")
+
+                if min_date < lower_bound:
+                    min_date = lower_bound
+
+            if upper_bound:
+                if upper_bound < min_date:
+                    raise InvalidDate(self.uncertain_date, f"Not possible for date to fall within bounds [{lower_bound}, {upper_bound}]")
+
+                if max_date > upper_bound:
+                    max_date = upper_bound
 
         # Limit the min and max dates to be no later than today's date.
         min_date = min(min_date, datetime.date.today())
@@ -131,3 +148,43 @@ class AmbiguousDate:
                 raise InvalidDate(self.uncertain_date,
                     "Month contains uncertainty, so day must also be uncertain."
                 )
+
+
+def get_bounds(min_max_year):
+    """Get exact date bounds based on given years."""
+    # This must be an iterable with at least one value.
+    assert len(min_max_year) > 0
+
+    if len(min_max_year) > 2:
+        raise InvalidYearBounds(f"The year bounds {min_max_year!r} must have only one (lower) or two (lower, upper) bounds.")
+
+    lower_year = int(min_max_year[0])
+
+    if len(min_max_year) == 2:
+        upper_year = int(min_max_year[1])
+    else:
+        upper_year = None
+
+    # Ensure years are properly ordered.
+    if lower_year and upper_year and lower_year > upper_year:
+        lower_year, upper_year = upper_year, lower_year
+
+    try:
+        lower_bound = datetime.date(lower_year, 1, 1)
+    except ValueError as error:
+        if str(error).startswith("year"):
+            raise InvalidYearBounds(f"{lower_year} is not a valid year.") from error
+        else:
+            raise
+    if upper_year:
+        try:
+            upper_bound = datetime.date(upper_year, 12, 31)
+        except ValueError as error:
+            if str(error).startswith("year"):
+                raise InvalidYearBounds(f"{upper_year} is not a valid year.") from error
+            else:
+                raise
+    else:
+        upper_bound = None
+
+    return (lower_bound, upper_bound)
