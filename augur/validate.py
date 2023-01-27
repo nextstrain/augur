@@ -7,7 +7,14 @@ import os
 from collections import defaultdict
 import json
 import jsonschema
+import jsonschema.exceptions
+import re
+from itertools import groupby
 from pkg_resources import resource_string
+from textwrap import indent
+from typing import Iterable, Union
+from augur.io.print import print_err
+from augur.io.json import shorten_as_json
 from .validate_export import verifyMainJSONIsInternallyConsistent, verifyMetaAndOrTreeJSONsAreInternallyConsistent
 
 class ValidationWarnings:
@@ -59,17 +66,107 @@ def load_json(path):
     return jsonToValidate
 
 def validate_json(jsonToValidate, schema, filename):
+    # See <https://python-jsonschema.readthedocs.io/en/v3.2.0/errors/> and
+    # <https://python-jsonschema.readthedocs.io/en/v3.2.0/validate/> for the
+    # jsonschema APIs we use here.
     print("Validating schema of {!r}...".format(filename))
-    try:
-        schema.validate(jsonToValidate) # https://python-jsonschema.readthedocs.io/en/latest/validate/
-    except jsonschema.exceptions.ValidationError:
-        for error in sorted(schema.iter_errors(jsonToValidate), key=str):
-            trace = list(error.schema_path) # this may be really long for nested tree structures
-            if len(trace) > 6:
-                trace = ["..."] + trace[-5:]
-            trace = [str(x) for x in trace]
-            print("\tERROR: {}. Trace: {}".format(error.message, " - ".join(trace)), file=sys.stderr)
+
+    # Find all errors.  This is what schema.validate() uses internally, before
+    # raising just one "best" error.  We want to report ~everything at once, so
+    # the user isn't stuck playing whack-a-mole.
+    errors = list(schema.iter_errors(jsonToValidate))
+
+    def print_errors(errors, level=1):
+        prefix = "  "
+
+        for error in sorted(errors, key=jsonschema.exceptions.relevance):
+            path = elide_path(error.absolute_path)
+            value = shorten_as_json(error.instance, 50, "…")
+
+            validator = error.validator
+            validator_value = shorten_as_json(error.validator_value, 100, "…")
+
+            print_err(indent(f"{path} {value} failed {validator} validation for {validator_value}", prefix*level))
+
+            # Report sub-errors, as they're often closer to what needs fixing.
+            #
+            # We special case the oneOf and anyOf validators to partition
+            # errors by the validation arm, so it's clear why every arm of the
+            # oneOf/anyOf validator failed.  This is particularly useful for
+            # our top-level "tree" property, which uses oneOf.
+            #
+            # In theory this special handling could also apply to allOf, not,
+            # if/then/else, items, etc. validators which take subschemas, but
+            # jsonschema 3.2.0 doesn't include context for those.  We currently
+            # only use oneOf any how.
+            #   -trs, 23 Jan 2023
+            if error.context:
+                if error.validator in {"oneOf", "anyOf"}:
+                    validator_value_idx = lambda e: e.schema_path[0]
+                    for idx, ctx in grouped(error.context, key=validator_value_idx):
+                        validator_subvalue = shorten_as_json(error.validator_value[idx], 100, "…")
+                        print_err(indent(f"validation for arm {idx}: {validator_subvalue}", prefix*(level+1)))
+                        print_errors(ctx, level+2)
+                else:
+                    print_errors(error.context, level+1)
+
+    print_errors(errors)
+
+    if errors:
         raise ValidateError("Validation of {!r} failed.".format(filename))
+
+def elide_path(path: Iterable[Union[str, int]]) -> str:
+    """
+    Elide recursive ``.children[N]`` selectors from *path* after formatting
+    with :py:func:`format_path`.
+
+    Our tree JSONs are highly nested and the exact path to a node in the tree
+    is often more noisy than useful in error messages.
+
+    >>> format_path(("tree", "children", 1, "children", 0, "children", 1, "children", 0, "node_attrs", "x"))
+    '.tree.children[1].children[0].children[1].children[0].node_attrs.x'
+    >>> elide_path(("tree", "children", 1, "children", 0, "children", 1, "children", 0, "node_attrs", "x"))
+    '.tree.children[…].node_attrs.x'
+
+    Elision is only used with more than a single level of ``.children[N]``.
+
+    >>> elide_path(("tree", "children", 1, "node_attrs", "x"))
+    '.tree.children[1].node_attrs.x'
+    """
+    return re.sub(r'([.]children\[[0-9]+\]){2,}', r'.children[…]', format_path(path))
+
+def format_path(path: Iterable[Union[str, int]]) -> str:
+    """
+    Format an iterable of *path* segments, which index into a JSON document,
+    into a more human-readable string.
+
+    Intended for folks who aren't necessarily programmers, so this doesn't try
+    to construct a valid JS property accessor chain or valid JSON Path
+    selector.
+
+    >>> format_path(("a", "b", "c"))
+    '.a.b.c'
+    >>> format_path(("l", "m-n-o", "p"))
+    ".l.'m-n-o'.p"
+    >>> format_path(("x", "y", 42, "z"))
+    '.x.y[42].z'
+    """
+    def valid_identifier(x) -> bool:
+        return isinstance(x, str) and re.search(r'^[a-zA-Z$_][a-zA-Z0-9_$]*$', x)
+
+    def fmt(x) -> str:
+        return (f"[{x}]"  if isinstance(x, int)  else
+                f".{x}"   if valid_identifier(x) else
+                f".{x!r}")
+
+    return "".join(map(fmt, path))
+
+def grouped(iterable, key):
+    """
+    Version of :py:func:`itertools.groupby` which doesn't require the caller to
+    remember to sort first.
+    """
+    return groupby(sorted(iterable, key=key), key=key)
 
 
 validate = validate_json  # TODO update uses and drop this alias

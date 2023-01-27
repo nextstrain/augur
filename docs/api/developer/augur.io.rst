@@ -9,6 +9,7 @@ augur.io
 .. toctree::
 
    augur.io.file
+   augur.io.json
    augur.io.metadata
    augur.io.print
    augur.io.sequences
