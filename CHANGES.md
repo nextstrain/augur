@@ -2,12 +2,17 @@
 
 ## __NEXT__
 
+### Features
+
+* export v2: Add `--validation-mode={error,warn,skip}` option for more nuanced control of validation.  The new "warn" mode performs validation and emits messages about potential problems, but it does not cause the export command to fail even if there are problems. [#1135][] (@tsibley)
+
 ### Bug Fixes
 
 * filter, frequencies, refine, parse: Properly handle invalid date errors and output the bad date. [#1140][] (@victorlin)
 * export, validate: Validation errors are now much more human-readable and actually pinpoint the problems. [#1134][] (@tsibley)
 
 [#1134]: https://github.com/nextstrain/augur/pull/1134
+[#1135]: https://github.com/nextstrain/augur/pull/1135
 [#1140]: https://github.com/nextstrain/augur/pull/1140
 
 ## 20.0.0 (20 January 2023)
