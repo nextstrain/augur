@@ -82,12 +82,14 @@ def numeric_date(date, ambiguity_resolver: str = None):
     if isinstance(date, datetime.date):
         # Use a treetime utility function to convert the datetime.date to a
         # numeric representation.
-        return treetime.utils.numeric_date(date)
+        unbounded_date = treetime.utils.numeric_date(date)
+        # Make one more call to the base case.
+        return numeric_date(unbounded_date)
 
     # All other formats are treated as strings.
     date = str(date)
 
-    # Absolute date in numeric format.
+    # Base case: Absolute date in numeric format.
     if RE_NUMERIC_DATE.match(date):
         return float(date)
 
@@ -189,7 +191,7 @@ def iso_to_numeric(date: str, ambiguity_resolver: str = None):
                 day = max_day
 
     try:
-        return treetime.utils.numeric_date(datetime.date(year, month, day))
+        return numeric_date(datetime.date(year, month, day))
     except ValueError as error:
         # Month/day out of bounds errors are user errors.
         if str(error) == "month must be in 1..12":
@@ -242,7 +244,7 @@ def relative_iso_to_numeric(backwards_duration_str: str, from_date: datetime.dat
         from_date = datetime.date.today()
     if not backwards_duration_str.startswith('P'):
         backwards_duration_str = 'P'+backwards_duration_str
-    return treetime.utils.numeric_date(from_date - isodate.parse_duration(backwards_duration_str))
+    return numeric_date(from_date - isodate.parse_duration(backwards_duration_str))
 
 
 def numeric_date_type(date):
