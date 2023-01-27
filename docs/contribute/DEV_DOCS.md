@@ -125,6 +125,13 @@ To compare JSON outputs with stochastic numerical values, use `scripts/diff_json
 
 Both tree and JSON comparison scripts rely on [deepdiff](https://deepdiff.readthedocs.io/en/latest/) for underlying comparisons.
 
+##### Tips for writing Cram tests
+
+Cram is a simple testing framework that is also very versatile. Over time, we have changed the way we design and organize Augur's Cram tests. You might find older practices in existing tests that haven't been updated yet, but these are the latest guidelines that we've discovered to be helpful.
+
+1. Keep cram files modular. This makes it easier to see which command is failing.
+2. Create files in the initial working directory, as it is a temporary working directory unique to the test. Note that the name of the `$TMP` directory is misleading - although it is temporary, it is shared across all tests so you'll have to explicitly remove files at the end of each test to avoid affecting other tests. The initial directory of each test is a unique directory within `$TMP`.
+
 #### Running Tests
 
 You've written tests and now you want to run them to see if they are passing.
