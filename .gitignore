@@ -23,6 +23,9 @@ tests/functional/tree/full_aligned-delim.fasta.ufboot
 tests/functional/tree/masked_aligned-delim.iqtree.log.xz
 tests/functional/tree/masked_aligned.fasta.xz
 
+# Transient error outputs from tests
+/tests/**/*.t.err
+
 # For Python #
 ##############
 *.pyc
