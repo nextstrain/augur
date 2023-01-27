@@ -73,9 +73,6 @@ def numeric_date_type(date):
     except ValueError as e:
         raise argparse.ArgumentTypeError(str(e)) from e
 
-def ambiguous_date_to_date_range(uncertain_date, fmt, min_max_year=None):
-    return DateDisambiguator(uncertain_date, fmt=fmt, min_max_year=min_max_year).range()
-
 def is_date_ambiguous(date, ambiguous_by="any"):
     """
     Returns whether a given date string in the format of YYYY-MM-DD is ambiguous by a given part of the date (e.g., day, month, year, or any parts).
@@ -116,7 +113,7 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
         # year-only date is ambiguous
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
     if 'XX' in value:
-        ambig_date = ambiguous_date_to_date_range(value, fmt, min_max_year)
+        ambig_date = DateDisambiguator(value, fmt=fmt, min_max_year=min_max_year).range()
         if ambig_date is None or None in ambig_date:
             return [None, None] #don't send to numeric_date or will be set to today
         return [treetime.utils.numeric_date(d) for d in ambig_date]
