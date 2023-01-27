@@ -1,4 +1,5 @@
 import datetime
+from augur.errors import InvalidDate
 
 from augur.util_support import date_disambiguator
 from augur.util_support.date_disambiguator import DateDisambiguator
@@ -49,7 +50,7 @@ class TestDateDisambiguator:
         )
 
     def test_uncertain_date_components_error(self):
-        with pytest.raises(ValueError, match="Malformed uncertain date"):
+        with pytest.raises(InvalidDate, match="Date does not match format"):
             DateDisambiguator("5-5-5-5-5").uncertain_date_components
 
     @pytest.mark.parametrize(
@@ -78,5 +79,5 @@ class TestDateDisambiguator:
         ],
     )
     def test_assert_only_less_significant_uncertainty(self, date_str, expected_error):
-        with pytest.raises(ValueError, match=expected_error):
+        with pytest.raises(InvalidDate, match=expected_error):
             DateDisambiguator(date_str)

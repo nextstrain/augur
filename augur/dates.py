@@ -5,7 +5,7 @@ import isodate
 import pandas as pd
 import re
 import treetime.utils
-from .errors import AugurError
+from .errors import AugurError, InvalidDate
 
 from augur.util_support.date_disambiguator import DateDisambiguator
 
@@ -60,21 +60,18 @@ def numeric_date(date):
     except (ValueError, isodate.ISO8601Error):
         pass
 
-    raise ValueError(f"""Unable to determine date from '{date}'. Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}""")
+    raise InvalidDate(date, f"""Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}""")
 
 def numeric_date_type(date):
     """Wraps numeric_date() for argparse usage.
 
-    This raises an ArgumentTypeError, otherwise the custom exception message won't be shown in console output due to:
+    This raises an ArgumentTypeError from InvalidDateFormat exceptions, otherwise the custom exception message won't be shown in console output due to:
     https://github.com/python/cpython/blob/5c4d1f6e0e192653560ae2941a6677fbf4fbd1f2/Lib/argparse.py#L2503-L2513
     """
     try:
         return numeric_date(date)
-    except ValueError as e:
-        raise argparse.ArgumentTypeError(str(e)) from e
-
-def ambiguous_date_to_date_range(uncertain_date, fmt, min_max_year=None):
-    return DateDisambiguator(uncertain_date, fmt=fmt, min_max_year=min_max_year).range()
+    except InvalidDate as error:
+        raise argparse.ArgumentTypeError(str(error)) from error
 
 def is_date_ambiguous(date, ambiguous_by="any"):
     """
@@ -116,7 +113,10 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
         # year-only date is ambiguous
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
     if 'XX' in value:
-        ambig_date = ambiguous_date_to_date_range(value, fmt, min_max_year)
+        try:
+            ambig_date = DateDisambiguator(value, fmt=fmt, min_max_year=min_max_year).range()
+        except InvalidDate as error:
+            raise AugurError(str(error)) from error
         if ambig_date is None or None in ambig_date:
             return [None, None] #don't send to numeric_date or will be set to today
         return [treetime.utils.numeric_date(d) for d in ambig_date]
