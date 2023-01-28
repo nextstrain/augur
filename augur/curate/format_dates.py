@@ -5,6 +5,7 @@ are masked with 'XX' (e.g. 2023 -> 2023-XX-XX).
 import re
 from datetime import datetime
 
+from augur.argparse_ import SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
@@ -31,6 +32,10 @@ def register_parser(parent_subparsers):
         choices=list(DataErrorMethod),
         default=DataErrorMethod.ERROR_FIRST,
         help="How should failed date formatting be reported.")
+    optional.add_argument("--no-mask-failure", dest="mask_failure",
+        action="store_false",
+        help="Do not mask dates with 'XXXX-XX-XX' and return original date string if date formatting failed. " +
+             f"(default: False{SKIP_AUTO_DEFAULT_IN_HELP})")
 
     return parser
 
@@ -169,6 +174,10 @@ def run(args, records):
 
             formatted_date_string = format_date(date_string, args.expected_date_formats)
             if formatted_date_string is None:
+                # Mask failed date formatting before processing error methods
+                # to ensure failures are masked even when failures are "silent"
+                if args.mask_failure:
+                    record[field] = "XXXX-XX-XX"
 
                 if failure_reporting is DataErrorMethod.SILENT:
                     continue

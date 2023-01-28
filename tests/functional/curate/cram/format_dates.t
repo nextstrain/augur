@@ -41,7 +41,7 @@ This is expected to fail with an error, so redirecting stdout since we don't car
   [2]
 
 Test output with unmatched expected date formats while warning on failures.
-This is expected to print warnings for failures and return the date strings in their original format.
+This is expected to print warnings for failures and return the masked date strings for failures.
 
   $ cat $TMP/records.ndjson \
   >   | ${AUGUR} curate format-dates \
@@ -53,16 +53,27 @@ This is expected to print warnings for failures and return the date strings in t
   WARNING: Unable to format dates for the following (record, field, date string):
   (0, 'collectionDate', '2020-01')
   (0, 'releaseDate', '2020-01')
-  {"record": 1, "date": "2020-XX-XX", "collectionDate": "2020-01", "releaseDate": "2020-01", "updateDate": "2020-07-18"}
+  {"record": 1, "date": "2020-XX-XX", "collectionDate": "XXXX-XX-XX", "releaseDate": "XXXX-XX-XX", "updateDate": "2020-07-18"}
 
 Test output with unmatched expected date formats while silencing failures.
-This is expected to return the date strings in their original format.
+This is expected to return the masked date strings for failures.
 
   $ cat $TMP/records.ndjson \
   >   | ${AUGUR} curate format-dates \
   >     --date-fields "date" "collectionDate" "releaseDate" "updateDate" \
   >     --expected-date-formats "%Y" "%Y-%m-%dT%H:%M:%SZ" \
   >     --failure-reporting "silent"
+  {"record": 1, "date": "2020-XX-XX", "collectionDate": "XXXX-XX-XX", "releaseDate": "XXXX-XX-XX", "updateDate": "2020-07-18"}
+
+Test output with unmatched expected date formats while silencing failures with `--no-mask-failure`.
+This is expected to return the date strings in their original format.
+
+  $ cat $TMP/records.ndjson \
+  >   | ${AUGUR} curate format-dates \
+  >     --date-fields "date" "collectionDate" "releaseDate" "updateDate" \
+  >     --expected-date-formats "%Y" "%Y-%m-%dT%H:%M:%SZ" \
+  >     --failure-reporting "silent" \
+  >     --no-mask-failure
   {"record": 1, "date": "2020-XX-XX", "collectionDate": "2020-01", "releaseDate": "2020-01", "updateDate": "2020-07-18"}
 
 Test output with multiple matching expected date formats.

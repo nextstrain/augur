@@ -4,6 +4,20 @@ Custom helpers for the argparse standard library.
 from argparse import Action, ArgumentDefaultsHelpFormatter
 
 
+# Include this in an argument help string to suppress the automatic appending
+# of the default value by argparse.ArgumentDefaultsHelpFormatter.  This works
+# because the automatic appending is conditional on the presence of %(default),
+# so we include it but then format it as a zero-length string .0s.  🙃
+#
+# Another solution would be to add an extra attribute to the argument (the
+# argparse.Action instance) and then subclass ArgumentDefaultsHelpFormatter to
+# condition on that new attribute, but that seems more brittle.
+#
+# Copied from the Nextstrain CLI repo
+# https://github.com/nextstrain/cli/blob/017c53805e8317951327d24c04184615cc400b09/nextstrain/cli/argparse.py#L13-L21
+SKIP_AUTO_DEFAULT_IN_HELP = "%(default).0s"
+
+
 def add_default_command(parser):
     """
     Sets the default command to run when none is provided.
