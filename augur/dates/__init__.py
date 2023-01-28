@@ -6,7 +6,7 @@ import pandas as pd
 import re
 import treetime.utils
 from augur.errors import AugurError
-from .errors import InvalidDate
+from .errors import InvalidDate, InvalidDateMessage
 
 from .date_disambiguator import DateDisambiguator
 
@@ -34,6 +34,15 @@ def numeric_date(date):
     >>> numeric_date("1W") == treetime.utils.numeric_date(datetime.date.today() - isodate.parse_duration("P1W"))
     True
     """
+    try:
+        # Put all logic in another function to have the original date string for
+        # any errors that may arise.
+        return _numeric_date(date)
+    except InvalidDateMessage as error:
+        raise InvalidDate(date, str(error))
+
+
+def _numeric_date(date):
     # Handle an absolute date as a datetime.date.
     if isinstance(date, datetime.date):
         # Use a treetime utility function to convert the datetime.date to a
@@ -67,7 +76,7 @@ def numeric_date(date):
     except (ValueError, isodate.ISO8601Error):
         pass
 
-    raise InvalidDate(date, f"""Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}""")
+    raise InvalidDateMessage(f"Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}")
 
 
 def iso_to_datetime_date(date: str):
@@ -187,8 +196,8 @@ def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date',
         dates = metadata[date_col].apply(
             lambda date: get_numerical_date_from_value(
                 date,
-                fmt,
-                min_max_year
+                fmt=fmt,
+                min_max_year=min_max_year
             )
         ).values
     else:
