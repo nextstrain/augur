@@ -1,13 +1,12 @@
 Setup
 
-  $ pushd "$TESTDIR" > /dev/null
-  $ source _setup.sh
+  $ source "$TESTDIR"/_setup.sh
 
 SEQ1 and SEQ2 translate to week=(2003, 1).
 SEQ3 and SEQ4 translate to week=(2004, 1).
 These should be in separate groups.
 
-  $ cat >$TMP/metadata.tsv <<~~
+  $ cat >metadata.tsv <<~~
   > strain	date
   > SEQ1	2003-01-01
   > SEQ2	2003-01-02
@@ -16,22 +15,22 @@ These should be in separate groups.
   > ~~
 
   $ ${AUGUR} filter \
-  >   --metadata $TMP/metadata.tsv \
+  >   --metadata metadata.tsv \
   >   --group-by week \
   >   --sequences-per-group 1 \
   >   --subsample-seed 0 \
-  >   --output-metadata $TMP/metadata-filtered.tsv
+  >   --output-metadata metadata-filtered.tsv
   2 strains were dropped during filtering
   \t2 of these were dropped because of subsampling criteria (esc)
   2 strains passed all filters
-  $ cat $TMP/metadata-filtered.tsv
+  $ cat metadata-filtered.tsv
   strain	date
   SEQ1	2003-01-01
   SEQ3	2003-12-30
 
 ISO year from 'week' takes precedence over 'year'.
 
-  $ cat >$TMP/metadata.tsv <<~~
+  $ cat >metadata.tsv <<~~
   > strain	date
   > SEQ1	2003-12-30
   > SEQ2	2003-12-31
@@ -40,15 +39,15 @@ ISO year from 'week' takes precedence over 'year'.
   > ~~
 
   $ ${AUGUR} filter \
-  >   --metadata $TMP/metadata.tsv \
+  >   --metadata metadata.tsv \
   >   --group-by year week \
   >   --sequences-per-group 1 \
   >   --subsample-seed 0 \
-  >   --output-metadata $TMP/metadata-filtered.tsv
+  >   --output-metadata metadata-filtered.tsv
   WARNING: 'year' grouping will be ignored since 'week' includes ISO year.
   3 strains were dropped during filtering
   \t3 of these were dropped because of subsampling criteria (esc)
   1 strains passed all filters
-  $ cat $TMP/metadata-filtered.tsv
+  $ cat metadata-filtered.tsv
   strain	date
   SEQ1	2003-12-30
