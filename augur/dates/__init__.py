@@ -5,9 +5,10 @@ import isodate
 import pandas as pd
 import re
 import treetime.utils
-from .errors import AugurError, InvalidDate
+from augur.errors import AugurError
+from .errors import InvalidDate
 
-from augur.util_support.date_disambiguator import DateDisambiguator
+from .date_disambiguator import DateDisambiguator
 
 SUPPORTED_DATE_HELP_TEXT = dedent("""\
     1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or

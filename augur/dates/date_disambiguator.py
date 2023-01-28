@@ -3,7 +3,7 @@ import datetime
 import functools
 import re
 
-from augur.errors import InvalidDate
+from .errors import InvalidDate
 
 
 def tuple_to_date(year, month, day):

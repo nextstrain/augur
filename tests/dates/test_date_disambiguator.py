@@ -1,8 +1,8 @@
 import datetime
-from augur.errors import InvalidDate
 
-from augur.util_support import date_disambiguator
-from augur.util_support.date_disambiguator import DateDisambiguator
+from augur.dates import date_disambiguator
+from augur.dates.date_disambiguator import DateDisambiguator
+from augur.dates.errors import InvalidDate
 
 from freezegun import freeze_time
 import pytest

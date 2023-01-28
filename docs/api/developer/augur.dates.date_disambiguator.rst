@@ -1,7 +1,7 @@
-augur.util\_support.date\_disambiguator
+augur.dates.date\_disambiguator
 =======================================
 
-.. automodule:: augur.util_support.date_disambiguator
+.. automodule:: augur.dates.date_disambiguator
    :members:
    :undoc-members:
    :show-inheritance:
