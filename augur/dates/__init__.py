@@ -28,6 +28,13 @@ def numeric_date(date, **kwargs):
     fmt
         Date format string valid for the datetime library
         https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+    min_max_year
+        Minimum and maximum year bounds for ambiguous dates.
+    ambiguity_resolver
+        None: Assume the given date string is an exact date.
+        'min': Resolve to minimum of ambiguous range.
+        'max': Resolve to maximum of ambiguous range.
+        'both': Resolve to (min, max) of ambiguous range.
 
 
     Examples
@@ -48,7 +55,7 @@ def numeric_date(date, **kwargs):
         raise InvalidDate(date, str(error))
 
 
-def _numeric_date(date, fmt=None):
+def _numeric_date(date, fmt=None, min_max_year=None, ambiguity_resolver=None):
     # Handle an absolute date as a datetime.date.
     if isinstance(date, datetime.date):
         # Use a treetime utility function to convert the datetime.date to a
@@ -67,15 +74,25 @@ def _numeric_date(date, fmt=None):
     except ValueError:
         pass
 
-    # Handle an absolute date in ISO 8601 date format.
+    # Handle an absolute date in a custom date format.
     if fmt:
-        # TODO: support custom formats
-        assert fmt == "%Y-%m-%d"
-        try:
-            date = iso_to_datetime_date(date)
-            return treetime.utils.numeric_date(date)
-        except ValueError:
-            pass
+        ambiguous_date = AmbiguousDate(date, fmt, min_max_year=min_max_year)
+
+        if ambiguous_date.date_matches_format():
+            ambiguous_date.assert_only_less_significant_uncertainty()
+
+            if not 'X' in date:
+                # Date is exact and can be parsed given the format.
+                date = custom_strptime(date, fmt)
+                return treetime.utils.numeric_date(date)
+
+            min_date, max_date = ambiguous_date.range()
+            if ambiguity_resolver == 'min':
+                return treetime.utils.numeric_date(min_date)
+            if ambiguity_resolver == 'max':
+                return treetime.utils.numeric_date(max_date)
+            if ambiguity_resolver == 'both':
+                return (treetime.utils.numeric_date(min_date), treetime.utils.numeric_date(max_date))
 
     # Finally, handle a backwards-looking relative date in ISO 8601 duration format.
     # Since this is handled last, there is no need to check the format as done for other formats above.
@@ -88,21 +105,18 @@ def _numeric_date(date, fmt=None):
     raise InvalidDateMessage(f"Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}")
 
 
-def iso_to_datetime_date(date: str):
-    """Convert ISO 8601 date string to a datetime.date.
-
-    Parameters
-    ----------
-    date
-        Date string in ISO 8601 format.
-
-
-    >>> round(iso_to_numeric('2018-01-01'), 3)
-    2018.001
-    >>> round(iso_to_numeric('2018-03-25'), 2)
-    2018.23
-    """
-    return datetime.date(*map(int, date.split("-", 2)))
+def custom_strptime(date, fmt):
+    """datetime.datetime.strptime with custom error messages."""
+    try:
+        return datetime.datetime.strptime(date, fmt)
+    except ValueError as error:
+        if "day is out of range for month" in str(error):
+            invalid_date_message = str(error)
+        elif "does not match format" in str(error):
+            invalid_date_message = f"Date is invalid for format {fmt}. Check if any parts are out of bounds."
+        else:
+            invalid_date_message = f"Unknown error: {error}"
+        raise InvalidDateMessage(invalid_date_message) from error
 
 
 def relative_iso_to_datetime_date(backwards_duration_str: str, from_date: datetime.date = None):

@@ -3,7 +3,7 @@ import datetime
 import functools
 import re
 
-from .errors import InvalidDate, InvalidYearBounds
+from .errors import InvalidDate, InvalidYearBounds, InvalidDateMessage
 
 
 # 'X' followed by a specific digit does not make sense.
@@ -102,9 +102,7 @@ class AmbiguousDate:
         matches = re.search(self.regex, self.uncertain_date)
 
         if matches is None:
-            raise InvalidDate(self.uncertain_date,
-                f"Date does not match format `{self.fmt}`."
-            )
+            raise InvalidDateMessage(f"Date does not match format `{self.fmt}`.")
 
         return dict(zip(self.fmt_components, matches.groups()))
 
@@ -148,14 +146,10 @@ class AmbiguousDate:
                 self.uncertain_date_components["m"] != "XX"
                 or self.uncertain_date_components["d"] != "XX"
             ):
-                raise InvalidDate(self.uncertain_date,
-                    "Year contains uncertainty, so month and day must also be uncertain."
-                )
+                raise InvalidDateMessage("Year contains uncertainty, so month and day must also be uncertain.")
         elif "X" in self.uncertain_date_components["m"]:
             if self.uncertain_date_components["d"] != "XX":
-                raise InvalidDate(self.uncertain_date,
-                    "Month contains uncertainty, so day must also be uncertain."
-                )
+                raise InvalidDateMessage("Month contains uncertainty, so day must also be uncertain.")
 
         # Also check if an X is followed immediately by a digit, to catch
         # improper significance within date parts.

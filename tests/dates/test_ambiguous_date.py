@@ -2,7 +2,7 @@ import datetime
 
 from augur.dates import ambiguous_date
 from augur.dates.ambiguous_date import AmbiguousDate
-from augur.dates.errors import InvalidDate
+from augur.dates.errors import InvalidDateMessage
 
 from freezegun import freeze_time
 import pytest
@@ -50,7 +50,7 @@ class TestAmbiguousDate:
         )
 
     def test_uncertain_date_components_error(self):
-        with pytest.raises(InvalidDate, match="Date does not match format"):
+        with pytest.raises(InvalidDateMessage, match="Date does not match format"):
             AmbiguousDate("5-5-5-5-5", fmt="%Y-%m-%d").uncertain_date_components
 
     @pytest.mark.parametrize(
@@ -79,7 +79,7 @@ class TestAmbiguousDate:
         ],
     )
     def test_assert_only_less_significant_uncertainty(self, date_str, expected_error):
-        with pytest.raises(InvalidDate, match=expected_error):
+        with pytest.raises(InvalidDateMessage, match=expected_error):
             AmbiguousDate(date_str, fmt="%Y-%m-%d").assert_only_less_significant_uncertainty()
 
     @freeze_time("2020-05-05")

@@ -99,3 +99,108 @@ class TestDates:
         }
         with pytest.raises(AugurError):
             dates.get_numerical_dates(metadata)
+
+    def test_ambiguous_day(self):
+        """Ambiguous day yields a certain min/max range."""
+        date_min, date_max = dates.numeric_date("2018-01-XX", fmt="%Y-%m-%d", ambiguity_resolver='both')
+        assert date_min == pytest.approx(2018.001, abs=1e-3)
+        assert date_max == pytest.approx(2018.083, abs=1e-3)
+
+    def test_year_only(self):
+        """Date without month/day yields a range equivalent to ambiguous month/day."""
+        date_min_1, date_max_1 = dates.numeric_date("2018", fmt="%Y-%m-%d", ambiguity_resolver='both')
+        date_min_2, date_max_2 = dates.numeric_date("2018-XX-XX", fmt="%Y-%m-%d", ambiguity_resolver='both')
+        assert date_min_1 == date_min_2 == pytest.approx(2018.001, abs=1e-3)
+        assert date_max_1 == date_max_2 == pytest.approx(2018.999, abs=1e-3)
+
+    def test_numerical_exact_year(self):
+        """Numerical year ending in .0 should be interpreted as exact."""
+        assert dates.numeric_date("2018.0") == pytest.approx(2018.001, abs=1e-3)
+
+    def test_ambiguous_year(self):
+        """Ambiguous year replaces X with 0 (min) and 9 (max)."""
+        date_min, date_max = dates.numeric_date("201X-XX-XX", fmt="%Y-%m-%d", ambiguity_resolver='both')
+        assert date_min == pytest.approx(2010.001, abs=1e-3)
+        assert date_max == pytest.approx(2019.999, abs=1e-3)
+
+    def test_ambiguous_year_incomplete_date(self):
+        """Ambiguous year without month/day yields a range equivalent to ambiguous month/day counterpart."""
+        date_min, date_max = dates.numeric_date("201X", fmt="%Y-%m-%d", ambiguity_resolver='both')
+        assert date_min == pytest.approx(2010.001, abs=1e-3)
+        assert date_max == pytest.approx(2019.999, abs=1e-3)
+
+    @pytest.mark.parametrize(
+        "date",
+        [
+            ("201X-01-01"),
+            ("201X-01-XX"),
+            ("201X-XX-01"),
+            ("2010-XX-01"),
+        ],
+    )
+    def test_invalid_ambiguity_between_date_parts(self, date):
+        """Test various forms of invalid ambiguity between date parts."""
+        with pytest.raises(dates.InvalidDate):
+            dates.numeric_date(date, fmt="%Y-%m-%d", ambiguity_resolver='both')
+
+    @pytest.mark.parametrize(
+        "date",
+        [
+            ("20X0"),
+            ("20X0-XX-XX"),
+            ("2010-X1-XX"),
+            ("2010-01-X0"),
+        ],
+    )
+    def test_invalid_ambiguity_within_date_part(self, date):
+        """Test various forms of invalid ambiguity within date parts."""
+        with pytest.raises(dates.InvalidDate):
+            dates.numeric_date(date, fmt="%Y-%m-%d", ambiguity_resolver='both')
+
+    def test_ambiguous_year_lowercase_x(self):
+        """Ambiguous year with a lowercase x raises an error."""
+        with pytest.raises(dates.InvalidDate):
+            dates.numeric_date("201x", fmt="%Y-%m-%d", ambiguity_resolver='both')
+
+    @pytest.mark.parametrize(
+        "date, error_match",
+        [
+            ("2018-00-01", "Check if any parts are out of bounds"),
+            ("2018-13-01", "Check if any parts are out of bounds"),
+            ("2018-01-00", "Check if any parts are out of bounds"),
+            ("2018-02-30", "day is out of range for month"),
+        ],
+    )
+    def test_out_of_bounds_error(self, date, error_match):
+        """Out-of-bounds month/day cannot be parsed."""
+        with pytest.raises(dates.InvalidDate, match=error_match):
+            dates.numeric_date(date, fmt="%Y-%m-%d", ambiguity_resolver='both')
+
+    @pytest.mark.parametrize(
+        "date",
+        [
+            ("-2018-01-01"),
+            ("-2018-XX-XX"),
+            ("-2018-01"),
+            ("-2018"),
+        ],
+    )
+    def test_negative_iso_date_error(self, date):
+        """All forms of negative ISO dates are unsupported."""
+        with pytest.raises(dates.InvalidDate):
+            dates.numeric_date(date, fmt="%Y-%m-%d", ambiguity_resolver='both')
+
+    def test_negative_numeric_date(self):
+        """Parse negative numeric date."""
+        date = dates.numeric_date("-2018.0")
+        assert date == pytest.approx(-2018.0, abs=1e-3)
+
+    def test_zero_year_incomplete_error(self):
+        """Zero year-only date is unsupported."""
+        with pytest.raises(dates.InvalidDate):
+            dates.numeric_date("0", fmt="%Y-%m-%d", ambiguity_resolver='both')
+
+    def test_zero_year_exact(self):
+        """Parse the date 0.0."""
+        date = dates.numeric_date("0.0")
+        assert date == pytest.approx(0.0, abs=1e-3)
