@@ -41,7 +41,7 @@ def resolve_uncertain_int(uncertain_string, min_or_max):
 class AmbiguousDate:
     """Transforms a date string with uncertainty into the range of possible dates."""
 
-    def __init__(self, uncertain_date, fmt="%Y-%m-%d", min_max_year=None):
+    def __init__(self, uncertain_date, fmt, min_max_year=None):
         self.uncertain_date = uncertain_date
         self.fmt = fmt
         self.min_max_year = min_max_year
