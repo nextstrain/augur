@@ -117,7 +117,7 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
     if 'XX' in value:
         try:
-            ambig_date = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
+            ambig_date = AmbiguousDate(value, fmt).range(min_max_year=min_max_year)
         except InvalidDate as error:
             raise AugurError(str(error)) from error
         return [treetime.utils.numeric_date(d) for d in ambig_date]
