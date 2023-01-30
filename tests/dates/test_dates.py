@@ -10,7 +10,7 @@ class TestDates:
     def test_numeric_date(self):
         # Test different representations of February 20, 2000.
         assert dates.numeric_date("2000.138") == pytest.approx(2000.138, abs=1e-3)
-        assert dates.numeric_date("2000-02-20") == pytest.approx(2000.138, abs=1e-3)
+        assert dates.numeric_date("2000-02-20", fmt="%Y-%m-%d") == pytest.approx(2000.138, abs=1e-3)
         assert dates.numeric_date(datetime.date(year=2000, month=2, day=20)) == pytest.approx(2000.138, abs=1e-3)
 
         # Test relative dates based on freeze_time.

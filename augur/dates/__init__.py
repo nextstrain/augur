@@ -16,21 +16,25 @@ SUPPORTED_DATE_HELP_TEXT = dedent("""\
     3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')
 """)
 
-def numeric_date(date):
+def numeric_date(date, **kwargs):
     """
     Converts the given *date* to a :py:class:`float`.
 
     Parameters
     ----------
     date
-        Date in any of the supported formats.
+        Date in any of the pre-supported formats or custom format.
+        Ambiguous dates must follow the custom format.
+    fmt
+        Date format string valid for the datetime library
+        https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
 
 
     Examples
     --------
     >>> numeric_date("2020.42")
     2020.42
-    >>> numeric_date("2020-06-04")
+    >>> numeric_date("2020-06-04", fmt="%Y-%m-%d")
     2020.42486...
     >>> import datetime, isodate, treetime
     >>> numeric_date("1W") == treetime.utils.numeric_date(datetime.date.today() - isodate.parse_duration("P1W"))
@@ -39,12 +43,12 @@ def numeric_date(date):
     try:
         # Put all logic in another function to have the original date string for
         # any errors that may arise.
-        return _numeric_date(date)
+        return _numeric_date(date, **kwargs)
     except InvalidDateMessage as error:
         raise InvalidDate(date, str(error))
 
 
-def _numeric_date(date):
+def _numeric_date(date, fmt=None):
     # Handle an absolute date as a datetime.date.
     if isinstance(date, datetime.date):
         # Use a treetime utility function to convert the datetime.date to a
@@ -64,11 +68,14 @@ def _numeric_date(date):
         pass
 
     # Handle an absolute date in ISO 8601 date format.
-    try:
-        date = iso_to_datetime_date(date)
-        return treetime.utils.numeric_date(date)
-    except ValueError:
-        pass
+    if fmt:
+        # TODO: support custom formats
+        assert fmt == "%Y-%m-%d"
+        try:
+            date = iso_to_datetime_date(date)
+            return treetime.utils.numeric_date(date)
+        except ValueError:
+            pass
 
     # Finally, handle a backwards-looking relative date in ISO 8601 duration format.
     # Since this is handled last, there is no need to check the format as done for other formats above.
@@ -134,7 +141,8 @@ def numeric_date_type(date):
     https://github.com/python/cpython/blob/5c4d1f6e0e192653560ae2941a6677fbf4fbd1f2/Lib/argparse.py#L2503-L2513
     """
     try:
-        return numeric_date(date)
+        # TODO: support custom formats
+        return numeric_date(date, fmt="%Y-%m-%d")
     except InvalidDate as error:
         raise argparse.ArgumentTypeError(str(error)) from error
 
