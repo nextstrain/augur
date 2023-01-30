@@ -45,8 +45,6 @@ class AmbiguousDate:
         self.uncertain_date = uncertain_date
         self.fmt = fmt
 
-        self.assert_only_less_significant_uncertainty()
-
     def range(self, min_max_year=None):
         """Return the range of possible dates defined by the ambiguous date.
 
