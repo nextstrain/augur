@@ -46,8 +46,6 @@ class AmbiguousDate:
         self.fmt = fmt
         self.min_max_year = min_max_year
 
-        self.assert_only_less_significant_uncertainty()
-
     def range(self):
         min_date = tuple_to_date(
             resolve_uncertain_int(self.uncertain_date_components["Y"], "min"),

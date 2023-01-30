@@ -80,4 +80,4 @@ class TestAmbiguousDate:
     )
     def test_assert_only_less_significant_uncertainty(self, date_str, expected_error):
         with pytest.raises(InvalidDate, match=expected_error):
-            AmbiguousDate(date_str, fmt="%Y-%m-%d")
+            AmbiguousDate(date_str, fmt="%Y-%m-%d").assert_only_less_significant_uncertainty()
