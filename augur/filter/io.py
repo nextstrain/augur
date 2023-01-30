@@ -48,7 +48,7 @@ def filter_kwargs_to_str(kwargs):
     >>> exclude_by = [(filter_by_sequence_length, {"sequence_index": sequence_index, "min_length": 27000})]
     >>> filter_kwargs_to_str(exclude_by[0][1])
     '[["min_length", 27000]]'
-    >>> exclude_by = [(filter_by_date, {"max_date": numeric_date("2020-04-01"), "min_date": numeric_date("2020-03-01")})]
+    >>> exclude_by = [(filter_by_date, {"max_date": numeric_date("2020-04-01", fmt="%Y-%m-%d"), "min_date": numeric_date("2020-03-01", fmt="%Y-%m-%d")})]
     >>> filter_kwargs_to_str(exclude_by[0][1])
     '[["max_date", 2020.25], ["min_date", 2020.17]]'
 

@@ -243,20 +243,20 @@ def filter_by_date(metadata, date_column="date", min_date=None, max_date=None):
 
 
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> filter_by_date(metadata, min_date=numeric_date("2020-01-02"))
+    >>> filter_by_date(metadata, min_date=numeric_date("2020-01-02", fmt="%Y-%m-%d"))
     {'strain2'}
-    >>> filter_by_date(metadata, max_date=numeric_date("2020-01-01"))
+    >>> filter_by_date(metadata, max_date=numeric_date("2020-01-01", fmt="%Y-%m-%d"))
     {'strain1'}
-    >>> filter_by_date(metadata, min_date=numeric_date("2020-01-03"), max_date=numeric_date("2020-01-10"))
+    >>> filter_by_date(metadata, min_date=numeric_date("2020-01-03", fmt="%Y-%m-%d"), max_date=numeric_date("2020-01-10", fmt="%Y-%m-%d"))
     set()
-    >>> sorted(filter_by_date(metadata, min_date=numeric_date("2019-12-30"), max_date=numeric_date("2020-01-10")))
+    >>> sorted(filter_by_date(metadata, min_date=numeric_date("2019-12-30", fmt="%Y-%m-%d"), max_date=numeric_date("2020-01-10", fmt="%Y-%m-%d")))
     ['strain1', 'strain2']
     >>> sorted(filter_by_date(metadata))
     ['strain1', 'strain2']
 
     If the requested date column does not exist, we quietly skip this filter.
 
-    >>> sorted(filter_by_date(metadata, date_column="missing_column", min_date=numeric_date("2020-01-02")))
+    >>> sorted(filter_by_date(metadata, date_column="missing_column", min_date=numeric_date("2020-01-02", fmt="%Y-%m-%d")))
     ['strain1', 'strain2']
 
     """
@@ -649,7 +649,7 @@ def apply_filters(metadata, exclude_by, include_by):
 
 
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-10-02"}, {"region": "North America", "date": "2020-01-01"}], index=["strain1", "strain2", "strain3"])
-    >>> exclude_by = [(filter_by_date, {"min_date": numeric_date("2020-04-01")})]
+    >>> exclude_by = [(filter_by_date, {"min_date": numeric_date("2020-04-01", fmt="%Y-%m-%d")})]
     >>> include_by = [(force_include_where, {"include_where": "region=Africa"})]
     >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
     >>> strains_to_keep
