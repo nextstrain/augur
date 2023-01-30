@@ -6,6 +6,10 @@ import re
 from .errors import InvalidDate, InvalidYearBounds
 
 
+# 'X' followed by a specific digit does not make sense.
+RE_INVALID_AMBIGUITY = re.compile(r'.*X[0-9]+.*')
+
+
 def tuple_to_date(year, month, day):
     month = min(month, 12)
     day = min(day, max_day_for_year_month(year, month))
@@ -146,6 +150,11 @@ class AmbiguousDate:
                 raise InvalidDate(self.uncertain_date,
                     "Month contains uncertainty, so day must also be uncertain."
                 )
+
+        # Also check if an X is followed immediately by a digit, to catch
+        # improper significance within date parts.
+        if RE_INVALID_AMBIGUITY.match(self.uncertain_date):
+            raise InvalidDate(self.uncertain_date, "Ambiguity can not be followed by an exact digit.")
 
 
 def get_bounds(min_max_year):
