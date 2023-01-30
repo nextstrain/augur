@@ -16,6 +16,18 @@ SUPPORTED_DATE_HELP_TEXT = dedent("""\
     3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')
 """)
 
+
+# Matches floats (e.g. 2018.0, -2018.0).
+# Note that a year-only value is treated as incomplete ambiguous and must be
+# non-negative (see RE_YEAR_ONLY).
+RE_NUMERIC_DATE = re.compile(r'^-?[0-9]*\.[0-9]*$')
+
+# Matches
+# 1. Incomplete dates that are missing both the month and day parts (e.g. 2018)
+# 2. Other positive integers (e.g. 1, 123, 12345)
+RE_YEAR_ONLY = re.compile(r'^0*[1-9][0-9X]*$')
+
+
 def numeric_date(date, **kwargs):
     """
     Converts the given *date* to a :py:class:`float`.
@@ -66,16 +78,15 @@ def _numeric_date(date, fmt=None, min_max_year=None, ambiguity_resolver=None):
     date = str(date)
 
     # Handle an absolute date in numeric format.
-    # Note that year-only dates will represent the start of the year (e.g.
-    # 2018 => 2018.0 ≈> 2018-01-01 ). This causes a bug with --max-date¹.
-    # ¹ https://github.com/nextstrain/augur/issues/893
-    try:
+    if RE_NUMERIC_DATE.match(date):
         return float(date)
-    except ValueError:
-        pass
 
     # Handle an absolute date in a custom date format.
     if fmt:
+        # Convert year-only dates to a proper ambiguous format.
+        if RE_YEAR_ONLY.match(date):
+            date = incomplete_to_ambiguous(fmt, year=date)
+
         ambiguous_date = AmbiguousDate(date, fmt, min_max_year=min_max_year)
 
         if ambiguous_date.date_matches_format():
@@ -238,3 +249,18 @@ def get_year_month(year, month):
 def get_year_week(year, month, day):
     year, week = datetime.date(year, month, day).isocalendar()[:2]
     return f"{year}-{str(week).zfill(2)}"
+
+def incomplete_to_ambiguous(fmt, year=None, month=None, day=None):
+    """Convert incomplete date parts to an ambiguous date in the given format."""
+    if not year:
+        year = 'XXXX'
+    if not month:
+        month = 'XX'
+    if not day:
+        day = 'XX'
+
+    return (fmt
+        .replace("%Y", year)
+        .replace("%m", month)
+        .replace("%d", day)
+    )
