@@ -50,6 +50,12 @@ class AmbiguousDate:
         self.fmt = fmt
         self.min_max_year = min_max_year
 
+    def date_matches_format(self):
+        """Returns a boolean indicating whether the date matches the format."""
+        if re.search(self.regex, self.uncertain_date):
+            return True
+        return False
+
     def range(self):
         min_date = tuple_to_date(
             resolve_uncertain_int(self.uncertain_date_components["Y"], "min"),
