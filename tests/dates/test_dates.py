@@ -20,14 +20,14 @@ class TestDates:
         assert dates.numeric_date("1Y") == pytest.approx(1999.138, abs=1e-3)
         assert dates.numeric_date("1Y1M1W") == pytest.approx(1999.034, abs=1e-3)
 
-    def test_get_numerical_date_from_value_not_ambiguous(self):
-        assert (dates.get_numerical_date_from_value("2000-03-29", "%Y-%m-%d")
+    def test_numeric_date_not_ambiguous(self):
+        assert (dates.numeric_date("2000-03-29", fmt="%Y-%m-%d")
             == pytest.approx(dates.numeric_date(datetime.date(year=2000, month=3, day=29)), abs=1e-3)
             == pytest.approx(2000.242, abs=1e-3)
         )
 
-    def test_get_numerical_date_from_value_ambiguous_day(self):
-        min_date, max_date = dates.get_numerical_date_from_value("2000-01-XX", "%Y-%m-%d")
+    def test_numeric_date_ambiguous_day(self):
+        min_date, max_date = dates.numeric_date("2000-01-XX", fmt="%Y-%m-%d", ambiguity_resolver='both')
         assert (min_date
             == pytest.approx(dates.numeric_date(datetime.date(year=2000, month=1, day=1)), abs=1e-3)
             == pytest.approx(2000.001, abs=1e-3)
@@ -37,8 +37,8 @@ class TestDates:
             == pytest.approx(2000.083, abs=1e-3)
         )
 
-    def test_get_numerical_date_from_value_ambiguous_month_and_day(self):
-        min_date, max_date = dates.get_numerical_date_from_value("2000-XX-XX", "%Y-%m-%d")
+    def test_numeric_date_ambiguous_month_and_day(self):
+        min_date, max_date = dates.numeric_date("2000-XX-XX", fmt="%Y-%m-%d", ambiguity_resolver='both')
         assert (min_date
             == pytest.approx(dates.numeric_date(datetime.date(year=2000, month=1, day=1)), abs=1e-3)
             == pytest.approx(2000.001, abs=1e-3)
@@ -49,8 +49,8 @@ class TestDates:
         )
 
     @freeze_time("2000-02-20")
-    def test_get_numerical_date_from_value_current_day_limit(self):
-        min_date, max_date = dates.get_numerical_date_from_value("2000-03-XX", "%Y-%m-%d")
+    def test_numeric_date_current_day_limit(self):
+        min_date, max_date = dates.numeric_date("2000-03-XX", fmt="%Y-%m-%d", ambiguity_resolver='both')
         assert (min_date
             == pytest.approx(dates.numeric_date(datetime.date(year=2000, month=2, day=20)), abs=1e-3)
             == pytest.approx(2000.138, abs=1e-3)

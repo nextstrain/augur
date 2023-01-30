@@ -207,40 +207,17 @@ def is_date_ambiguous(date, ambiguous_by):
         "X" in day and ambiguous_by in ("any", "day")
     ))
 
-def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
-    value = str(value)
-    if re.match(r'^-*\d+\.\d+$', value):
-        # numeric date which can be negative
-        return float(value)
-    if value.isnumeric():
-        # year-only date is ambiguous
-        value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
-    if 'XX' in value:
-        # FIXME: remove addition of min_max_year=min_max_year here
-        ambig_date = AmbiguousDate(value, fmt=fmt, min_max_year=min_max_year)
-        try:
-            ambig_date.assert_only_less_significant_uncertainty()
-            ambig_date_range = ambig_date.range(min_max_year=min_max_year)
-        except InvalidDate as error:
-            raise AugurError(str(error)) from error
-        if ambig_date_range is None or None in ambig_date_range:
-            return [None, None] #don't send to numeric_date or will be set to today
-        return [treetime.utils.numeric_date(d) for d in ambig_date_range]
-    try:
-        return treetime.utils.numeric_date(datetime.datetime.strptime(value, fmt))
-    except:
-        return None
-
 def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date', fmt=None, min_max_year=None):
     if not isinstance(metadata, pd.DataFrame):
         raise AugurError("Metadata should be a pandas.DataFrame.")
     if fmt:
         strains = metadata.index.values
         dates = metadata[date_col].apply(
-            lambda date: get_numerical_date_from_value(
+            lambda date: numeric_date(
                 date,
                 fmt,
-                min_max_year
+                min_max_year,
+                ambiguity_resolver='both'
             )
         ).values
     else:
