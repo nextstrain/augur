@@ -8,5 +8,6 @@ augur.dates
 
 .. toctree::
 
-   augur.dates.date_disambiguator
+   augur.dates.ambiguous_date
+   augur.dates.argparse
    augur.dates.errors

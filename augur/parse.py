@@ -6,7 +6,8 @@ import sys
 
 from .io.file import open_file
 from .io.sequences import read_sequences, write_sequences
-from .dates import get_numerical_date_from_value
+from .dates import numeric_date
+from .dates.errors import InvalidDate
 from .errors import AugurError
 
 forbidden_characters = str.maketrans(
@@ -46,8 +47,8 @@ def fix_dates(d, dayfirst=True):
         # If the date can't be parsed by pandas above or as our own ambiguous
         # date format (e.g., "2020-XX-XX"), let the user know.
         try:
-            parsed_date = get_numerical_date_from_value(d, "%Y-%m-%d")
-        except ValueError:
+            parsed_date = numeric_date(d, fmt="%Y-%m-%d")
+        except InvalidDate:
             parsed_date = None
 
         if parsed_date is None:

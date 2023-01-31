@@ -9,3 +9,8 @@ class InvalidDate(Exception):
     def __str__(self):
         """Return a human-readable summary of the error."""
         return f"Invalid date '{self.date}': {self.message}"
+
+
+class InvalidDateMessage(Exception):
+    """To be caught and raised as an InvalidDate exception which includes the original date."""
+    pass
