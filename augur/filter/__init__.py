@@ -1,7 +1,7 @@
 """
 Filter and subsample a sequence set.
 """
-from augur.dates import numeric_date_type_min, numeric_date_type_max, SUPPORTED_DATE_HELP_TEXT
+from augur.dates.argparse import numeric_date_type_min, numeric_date_type_max, SUPPORTED_DATE_HELP_TEXT
 
 
 # Use sorted() for reproducible output
