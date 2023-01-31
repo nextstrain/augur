@@ -113,7 +113,9 @@ def _numeric_date(date, fmt=None, min_max_year=None, ambiguity_resolver=None):
     except (ValueError, isodate.ISO8601Error):
         pass
 
-    raise InvalidDateMessage(f"Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}")
+    # If all formats have been checked and there were no unhandled errors, return None.
+    # This happens for "N/A-like" strings (e.g. '', '?') but can also happen if fmt is not properly specified.
+    return None
 
 
 def custom_strptime(date, fmt):
@@ -167,9 +169,12 @@ def numeric_date_type(date):
     """
     try:
         # TODO: support custom formats
-        return numeric_date(date, fmt="%Y-%m-%d")
+        converted_date = numeric_date(date, fmt="%Y-%m-%d")
+        if converted_date is None:
+            raise InvalidDate(date, f"Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}")
     except InvalidDate as error:
         raise argparse.ArgumentTypeError(str(error)) from error
+    return converted_date
 
 def is_date_ambiguous(date, ambiguous_by):
     """
