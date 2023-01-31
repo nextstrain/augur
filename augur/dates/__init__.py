@@ -8,7 +8,7 @@ import treetime.utils
 from augur.errors import AugurError
 from .errors import InvalidDate
 
-from .date_disambiguator import DateDisambiguator
+from .ambiguous_date import AmbiguousDate
 
 SUPPORTED_DATE_HELP_TEXT = dedent("""\
     1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or
@@ -115,7 +115,7 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
     if 'XX' in value:
         try:
-            ambig_date = DateDisambiguator(value, fmt=fmt, min_max_year=min_max_year).range()
+            ambig_date = AmbiguousDate(value, fmt=fmt, min_max_year=min_max_year).range()
         except InvalidDate as error:
             raise AugurError(str(error)) from error
         if ambig_date is None or None in ambig_date:
