@@ -10,7 +10,8 @@ from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
-from .dates import numeric_date_type_min, numeric_date_type_max, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
+from .dates import get_numerical_dates
+from .dates.argparse import numeric_date_type_min, numeric_date_type_max, SUPPORTED_DATE_HELP_TEXT
 from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
 from .utils import write_json

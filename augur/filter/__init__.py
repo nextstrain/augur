@@ -2,7 +2,7 @@
 Filter and subsample a sequence set.
 """
 from augur.argparse_ import ExtendOverwriteDefault
-from augur.dates import numeric_date_type_min, numeric_date_type_max, SUPPORTED_DATE_HELP_TEXT
+from augur.dates.argparse import numeric_date_type_min, numeric_date_type_max, SUPPORTED_DATE_HELP_TEXT
 from augur.filter.io import ACCEPTED_TYPES, column_type_pair
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN
 from augur.types import EmptyOutputReportingMethod
