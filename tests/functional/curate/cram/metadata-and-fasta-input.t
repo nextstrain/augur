@@ -1,14 +1,13 @@
 Setup
 
-  $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="${AUGUR:-../../../../bin/augur}"
+  $ source "$TESTDIR"/_setup.sh
 
 Testing combined metadata and FASTA inputs for the curate command.
 Running the `passthru` subcommand since it does not do any data transformations.
 
 Create FASTA file for testing.
 
-  $ cat >$TMP/sequences.fasta <<~~
+  $ cat >sequences.fasta <<~~
   > >sequence_A
   > ATCG
   > >sequence_B
@@ -19,7 +18,7 @@ Create FASTA file for testing.
 
 Create metadata TSV file for testing.
 
-  $ cat >$TMP/metadata.tsv <<~~
+  $ cat >metadata.tsv <<~~
   > strain	country	date
   > sequence_A	USA	2020-10-01
   > sequence_B	USA	2020-10-02
@@ -30,7 +29,7 @@ Test metadata input with extra FASTA input options without a FASTA file.
 This is expected to fail with an error.
 
   $ ${AUGUR} curate passthru \
-  > --metadata $TMP/metadata.tsv \
+  > --metadata metadata.tsv \
   > --seq-id-column name \
   > --seq-field sequences
   ERROR: The --seq-id-column and --seq-field options should only be used when providing a FASTA file.
@@ -41,16 +40,16 @@ Test metadata and FASTA inputs without required FASTA input options.
 This is expected to fail with an error.
 
   $ ${AUGUR} curate passthru \
-  > --metadata $TMP/metadata.tsv \
-  > --fasta $TMP/sequences.fasta
+  > --metadata metadata.tsv \
+  > --fasta sequences.fasta
   ERROR: The --seq-id-column and --seq-field options are required for a FASTA file input.
   [2]
 
 Test metadata and FASTA inputs with required FASTA input options.
 
   $ ${AUGUR} curate passthru \
-  > --metadata $TMP/metadata.tsv \
-  > --fasta $TMP/sequences.fasta \
+  > --metadata metadata.tsv \
+  > --fasta sequences.fasta \
   > --seq-id-column strain \
   > --seq-field seq
   {"strain": "sequence_A", "country": "USA", "date": "2020-10-01", "seq": "ATCG"}
@@ -59,8 +58,8 @@ Test metadata and FASTA inputs with required FASTA input options.
 
 Create new metadata file with duplicate and extra metadata records.
 
-  $ cp $TMP/metadata.tsv $TMP/metadata-with-duplicate-and-unmatched-records.tsv
-  $ cat >>$TMP/metadata-with-duplicate-and-unmatched-records.tsv <<~~
+  $ cp metadata.tsv metadata-with-duplicate-and-unmatched-records.tsv
+  $ cat >>metadata-with-duplicate-and-unmatched-records.tsv <<~~
   > sequence_A	USA	2020-10-XX
   > extra_metadata_A	USA	2020-10-01
   > extra_metadata_B	USA	2020-10-02
@@ -68,8 +67,8 @@ Create new metadata file with duplicate and extra metadata records.
 
 Create new FASTA file with duplicate and extra sequence records.
 
-  $ cp $TMP/sequences.fasta $TMP/sequences-with-duplicate-and-unmatched-records.fasta
-  $ cat >>$TMP/sequences-with-duplicate-and-unmatched-records.fasta <<~~
+  $ cp sequences.fasta sequences-with-duplicate-and-unmatched-records.fasta
+  $ cat >>sequences-with-duplicate-and-unmatched-records.fasta <<~~
   > >sequence_A
   > NNNN
   > >extra_sequence_A
@@ -82,8 +81,8 @@ Test metadata and FASTA inputs with duplicate and extra records and default `ERR
 This is expected to fail with an error, so redirecting stdout since we don't care about the output.
 
   $ ${AUGUR} curate passthru \
-  > --metadata $TMP/metadata-with-duplicate-and-unmatched-records.tsv \
-  > --fasta $TMP/sequences-with-duplicate-and-unmatched-records.fasta \
+  > --metadata metadata-with-duplicate-and-unmatched-records.tsv \
+  > --fasta sequences-with-duplicate-and-unmatched-records.fasta \
   > --seq-id-column strain \
   > --seq-field seq 1> /dev/null
   ERROR: Encountered sequence record with duplicate id 'sequence_A'.
@@ -93,8 +92,8 @@ Test metadata and FASTA inputs with duplicate and extra records with `ERROR_ALL`
 This is expected to fail with an error, so redirecting stdout since we don't care about the output.
 
   $ ${AUGUR} curate passthru \
-  > --metadata $TMP/metadata-with-duplicate-and-unmatched-records.tsv \
-  > --fasta $TMP/sequences-with-duplicate-and-unmatched-records.fasta \
+  > --metadata metadata-with-duplicate-and-unmatched-records.tsv \
+  > --fasta sequences-with-duplicate-and-unmatched-records.fasta \
   > --seq-id-column strain \
   > --seq-field seq \
   > --unmatched-reporting error_all \
@@ -119,8 +118,8 @@ This is expected run without error and only print a warning.
 Notice the duplicate sequence "sequence_A" will always use the first sequence in the FASTA file because of pyfastx.
 
   $ ${AUGUR} curate passthru \
-  > --metadata $TMP/metadata-with-duplicate-and-unmatched-records.tsv \
-  > --fasta $TMP/sequences-with-duplicate-and-unmatched-records.fasta \
+  > --metadata metadata-with-duplicate-and-unmatched-records.tsv \
+  > --fasta sequences-with-duplicate-and-unmatched-records.fasta \
   > --seq-id-column strain \
   > --seq-field seq \
   > --unmatched-reporting warn \
@@ -150,8 +149,8 @@ Test metadata and FASTA inputs with unmatched records in both, but ask to silent
 Notice the duplicate sequence "sequence_A" will always use the first sequence in the FASTA file because of pyfastx.
 
   $ ${AUGUR} curate passthru \
-  > --metadata $TMP/metadata-with-duplicate-and-unmatched-records.tsv \
-  > --fasta $TMP/sequences-with-duplicate-and-unmatched-records.fasta \
+  > --metadata metadata-with-duplicate-and-unmatched-records.tsv \
+  > --fasta sequences-with-duplicate-and-unmatched-records.fasta \
   > --seq-id-column strain \
   > --seq-field seq \
   > --unmatched-reporting silent \

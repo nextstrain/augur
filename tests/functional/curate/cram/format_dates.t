@@ -1,17 +1,16 @@
 Setup
 
-  $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="${AUGUR:-../../../../bin/augur}"
+  $ source "$TESTDIR"/_setup.sh
 
 Create NDJSON file for testing format_dates with different forms
 
-  $ cat >$TMP/records.ndjson <<~~
+  $ cat >records.ndjson <<~~
   > {"record": 1, "date": "2020", "collectionDate": "2020-01", "releaseDate": "2020-01","updateDate": "2020-07-18T00:00:00Z"}
   > ~~
 
 Test output with matching expected date formats.
 
-  $ cat $TMP/records.ndjson \
+  $ cat records.ndjson \
   >   | ${AUGUR} curate format-dates \
   >     --date-fields "date" "collectionDate" "releaseDate" "updateDate" \
   >     --expected-date-formats "%Y" "%Y-%m" "%Y-%m-%dT%H:%M:%SZ"
@@ -20,7 +19,7 @@ Test output with matching expected date formats.
 Test output with unmatched expected date formats with default `ERROR_FIRST` failure reporting.
 This is expected to fail with an error, so redirecting stdout since we don't care about the output.
 
-  $ cat $TMP/records.ndjson \
+  $ cat records.ndjson \
   >   | ${AUGUR} curate format-dates \
   >     --date-fields "date" "collectionDate" "releaseDate" "updateDate" \
   >     --expected-date-formats "%Y" "%Y-%m-%dT%H:%M:%SZ" 1> /dev/null
@@ -30,7 +29,7 @@ This is expected to fail with an error, so redirecting stdout since we don't car
 Test output with unmatched expected date formats with `ERROR_ALL` failure reporting.
 This is expected to fail with an error, so redirecting stdout since we don't care about the output.
 
-  $ cat $TMP/records.ndjson \
+  $ cat records.ndjson \
   >   | ${AUGUR} curate format-dates \
   >     --date-fields "date" "collectionDate" "releaseDate" "updateDate" \
   >     --expected-date-formats "%Y" "%Y-%m-%dT%H:%M:%SZ" \
@@ -43,7 +42,7 @@ This is expected to fail with an error, so redirecting stdout since we don't car
 Test output with unmatched expected date formats while warning on failures.
 This is expected to print warnings for failures and return the masked date strings for failures.
 
-  $ cat $TMP/records.ndjson \
+  $ cat records.ndjson \
   >   | ${AUGUR} curate format-dates \
   >     --date-fields "date" "collectionDate" "releaseDate" "updateDate" \
   >     --expected-date-formats "%Y" "%Y-%m-%dT%H:%M:%SZ" \
@@ -58,7 +57,7 @@ This is expected to print warnings for failures and return the masked date strin
 Test output with unmatched expected date formats while silencing failures.
 This is expected to return the masked date strings for failures.
 
-  $ cat $TMP/records.ndjson \
+  $ cat records.ndjson \
   >   | ${AUGUR} curate format-dates \
   >     --date-fields "date" "collectionDate" "releaseDate" "updateDate" \
   >     --expected-date-formats "%Y" "%Y-%m-%dT%H:%M:%SZ" \
@@ -68,7 +67,7 @@ This is expected to return the masked date strings for failures.
 Test output with unmatched expected date formats while silencing failures with `--no-mask-failure`.
 This is expected to return the date strings in their original format.
 
-  $ cat $TMP/records.ndjson \
+  $ cat records.ndjson \
   >   | ${AUGUR} curate format-dates \
   >     --date-fields "date" "collectionDate" "releaseDate" "updateDate" \
   >     --expected-date-formats "%Y" "%Y-%m-%dT%H:%M:%SZ" \
@@ -80,7 +79,7 @@ Test output with multiple matching expected date formats.
 Date with multiple matches will be parsed according to first matching format.
 The "collectionDate" and "releaseDate" will match the first "%Y-%j" format, which is a complete date.
 
-  $ cat $TMP/records.ndjson \
+  $ cat records.ndjson \
   >   | ${AUGUR} curate format-dates \
   >     --date-fields "date" "collectionDate" "releaseDate" "updateDate" \
   >     --expected-date-formats "%Y" "%Y-%j" "%Y-%m" "%Y-%m-%dT%H:%M:%SZ"
@@ -90,7 +89,7 @@ Test output with chained format-dates commands that parses different fields with
 Since "collectionDate" and "releaseDate" have expected formats overlap,
 we can split them into two chained commands that parses them with different expected formats to produce the desired results.
 
-  $ cat $TMP/records.ndjson \
+  $ cat records.ndjson \
   >   | ${AUGUR} curate format-dates \
   >     --date-fields "date" "releaseDate" "updateDate" \
   >     --expected-date-formats "%Y" "%Y-%m" "%Y-%m-%dT%H:%M:%SZ" \
