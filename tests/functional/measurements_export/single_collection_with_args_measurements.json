@@ -43,7 +43,7 @@
           "value": 3.0
         }
       ],
-      "threshold": 2.0,
+      "thresholds": [2.0],
       "title": "collection-display-title",
       "x_axis_label": "label"
     }

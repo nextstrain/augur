@@ -68,8 +68,8 @@ def register_parser(parent_subparsers):
         help="The short label to display for the x-axis that describles the value of the measurements. " +
              "If not provided via config or command line option, the panel's default " +
              f"x-axis label is {DEFAULT_ARGS['x_axis_label']!r}.")
-    config.add_argument("--threshold", type=float,
-        help="A measurements value threshold to be displayed in the measurements panel.")
+    config.add_argument("--threshold", type=float, nargs="+", dest="thresholds",
+        help="Measurements value threshold(s) to be displayed in the measurements panel.")
     config.add_argument("--filters", nargs="+",
         help="The columns that are to be used a filters for measurements. " +
              "If not provided, all columns will be available as filters.")
@@ -207,8 +207,13 @@ def run(args):
         print("ERROR: Cannot create measurements JSON without valid groupings", file=sys.stderr)
         sys.exit(1)
 
+    # Convert deprecated single threshold value to list if "thresholds" not provided
+    single_threshold = collection_config.pop("threshold", None)
+    if single_threshold is not None and "thresholds" not in collection_config:
+        collection_config["thresholds"] = [single_threshold]
+
     # Combine collection config with command line args
-    config_key_args = ['key', 'title', 'filters', 'x_axis_label', 'threshold']
+    config_key_args = ['key', 'title', 'filters', 'x_axis_label', 'thresholds']
     display_default_args = ['group_by', 'measurements_display', 'show_overall_mean', 'show_threshold']
 
     for key_arg in config_key_args:
