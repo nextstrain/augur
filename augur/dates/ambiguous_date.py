@@ -3,7 +3,7 @@ import datetime
 import functools
 import re
 
-from augur.errors import InvalidDate
+from .errors import InvalidDate
 
 
 def tuple_to_date(year, month, day):
@@ -38,7 +38,7 @@ def resolve_uncertain_int(uncertain_string, min_or_max):
 
 
 # This was originally from treetime.utils.ambiguous_date_to_date_range.
-class DateDisambiguator:
+class AmbiguousDate:
     """Transforms a date string with uncertainty into the range of possible dates."""
 
     def __init__(self, uncertain_date, fmt="%Y-%m-%d", min_max_year=None):

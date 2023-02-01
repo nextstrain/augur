@@ -1,14 +1,14 @@
 import datetime
-from augur.errors import InvalidDate
 
-from augur.util_support import date_disambiguator
-from augur.util_support.date_disambiguator import DateDisambiguator
+from augur.dates import ambiguous_date
+from augur.dates.ambiguous_date import AmbiguousDate
+from augur.dates.errors import InvalidDate
 
 from freezegun import freeze_time
 import pytest
 
 
-class TestDateDisambiguator:
+class TestAmbiguousDate:
     @freeze_time("2111-05-05")
     @pytest.mark.parametrize(
         "date_str, expected_range",
@@ -19,7 +19,7 @@ class TestDateDisambiguator:
         ],
     )
     def test_range(self, date_str, expected_range):
-        assert DateDisambiguator(date_str).range() == expected_range
+        assert AmbiguousDate(date_str).range() == expected_range
 
     @pytest.mark.parametrize(
         "date_str, fmt",
@@ -31,7 +31,7 @@ class TestDateDisambiguator:
         ],
     )
     def test_range_separators(self, date_str, fmt):
-        assert DateDisambiguator(date_str, fmt=fmt).range() == (
+        assert AmbiguousDate(date_str, fmt=fmt).range() == (
             datetime.date(2005, 2, 1),
             datetime.date(2005, 2, 28),
         )
@@ -46,12 +46,12 @@ class TestDateDisambiguator:
     )
     def test_uncertain_date_components(self, date_str, expected_components):
         assert (
-            DateDisambiguator(date_str).uncertain_date_components == expected_components
+            AmbiguousDate(date_str).uncertain_date_components == expected_components
         )
 
     def test_uncertain_date_components_error(self):
         with pytest.raises(InvalidDate, match="Date does not match format"):
-            DateDisambiguator("5-5-5-5-5").uncertain_date_components
+            AmbiguousDate("5-5-5-5-5").uncertain_date_components
 
     @pytest.mark.parametrize(
         "date_str, min_or_max, expected",
@@ -68,7 +68,7 @@ class TestDateDisambiguator:
     )
     def test_resolve_uncertain_int(self, date_str, min_or_max, expected):
         assert (
-            date_disambiguator.resolve_uncertain_int(date_str, min_or_max) == expected
+            ambiguous_date.resolve_uncertain_int(date_str, min_or_max) == expected
         )
 
     @pytest.mark.parametrize(
@@ -80,4 +80,4 @@ class TestDateDisambiguator:
     )
     def test_assert_only_less_significant_uncertainty(self, date_str, expected_error):
         with pytest.raises(InvalidDate, match=expected_error):
-            DateDisambiguator(date_str)
+            AmbiguousDate(date_str)
