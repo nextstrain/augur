@@ -8,4 +8,4 @@ class InvalidDate(Exception):
 
     def __str__(self):
         """Return a human-readable summary of the error."""
-        return f"Invalid date '{self.date}': {self.message}"
+        return f"Invalid date {self.date!r}: {self.message}"
