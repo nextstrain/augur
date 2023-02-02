@@ -4,6 +4,7 @@ import functools
 import re
 
 from .errors import InvalidDate
+from .exact_date import from_datetime
 
 
 def tuple_to_date(year, month, day):
@@ -61,6 +62,9 @@ class AmbiguousDate:
             resolve_uncertain_int(self.uncertain_date_components["d"], "max"),
         )
         max_date = min(max_date, datetime.date.today())
+
+        min_date = from_datetime(min_date, self.fmt)
+        max_date = from_datetime(max_date, self.fmt)
 
         return (min_date, max_date)
 

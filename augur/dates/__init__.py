@@ -1,67 +1,65 @@
 import argparse
 import datetime
-from textwrap import dedent
 import isodate
 import pandas as pd
-import re
 import treetime.utils
 from augur.errors import AugurError
+
+from .augur_date import AugurDate
 from .errors import InvalidDate
 
-from .ambiguous_date import AmbiguousDate
+SUPPORTED_DATE_HELP_TEXT = None
 
-SUPPORTED_DATE_HELP_TEXT = dedent("""\
-    1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or
-    2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or
-    3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')
-""")
 
-def numeric_date(date):
-    """
-    Converts the given *date* string to a :py:class:`float`.
-
-    *date* may be given as:
-    1. A string or float (number) with year as the integer part
-    2. A string in the YYYY-MM-DD (ISO 8601) syntax
-    3. A string representing a relative date (duration before datetime.date.today())
-
-    >>> numeric_date("2020.42")
-    2020.42
-    >>> numeric_date("2020-06-04")
-    2020.42486...
-    >>> import datetime, isodate, treetime
-    >>> numeric_date("1W") == treetime.utils.numeric_date(datetime.date.today() - isodate.parse_duration("P1W"))
-    True
-    """
+def numeric_date(date, possible_formats=None, ambiguity_resolver=None):
     # date is a datetime.date
     if isinstance(date, datetime.date):
         return treetime.utils.numeric_date(date)
 
-    # date is numeric
+    # If parse-able as a duration, return the relative date.
     try:
-        return float(date)
-    except ValueError:
-        pass
-
-    # date is in YYYY-MM-DD form
-    try:
-        return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))
-    except ValueError:
-        pass
-
-    # date is a duration treated as a backwards-looking relative date
-    try:
-        # make a copy of date for this block
-        duration_str = str(date)
-        if duration_str.startswith('P'):
-            duration_str = duration_str
-        else:
-            duration_str = 'P'+duration_str
-        return treetime.utils.numeric_date(datetime.date.today() - isodate.parse_duration(duration_str))
+        return treetime.utils.numeric_date(relative_iso_to_datetime_date(date))
     except (ValueError, isodate.ISO8601Error):
         pass
 
-    raise InvalidDate(date, f"""Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}""")
+    # Handle custom formats.
+    augur_date = AugurDate(date, possible_formats=possible_formats)
+    min_date, max_date = augur_date.range()
+    if ambiguity_resolver == None:
+        if min_date != max_date:
+            raise AugurError("Date is ambiguous but no method to resolve ambiguity was provided.")
+        return min_date.as_numeric
+    if ambiguity_resolver == 'min':
+        return min_date.as_numeric
+    if ambiguity_resolver == 'max':
+        return max_date.as_numeric
+    if ambiguity_resolver == 'both':
+        return (min_date.as_numeric, max_date.as_numeric)
+
+
+def relative_iso_to_datetime_date(backwards_duration_str: str, from_date: datetime.date = None):
+    """Compute datetime.date from a ISO 8601 duration string relative to a specified date.
+    Parameters
+    ----------
+    backwards_duration_str
+        ISO 8601 duration string specifying the duration to go back. The 'P' duration designator is optional.
+    from_date
+        The date to go back from. Default is current date.
+    >>> round(relative_iso_to_numeric('5D', from_date=datetime.date(2018, 3, 25)), 3)
+    2018.215
+    >>> round(relative_iso_to_numeric('P5D', from_date=datetime.date(2018, 3, 25)), 3)
+    2018.215
+    >>> round(relative_iso_to_numeric('5W', from_date=datetime.date(2018, 3, 25)), 3)
+    2018.133
+    >>> round(relative_iso_to_numeric('5Y', from_date=datetime.date(2018, 3, 25)), 3)
+    2013.229
+    """
+    if from_date is None:
+        from_date = datetime.date.today()
+    if not backwards_duration_str.startswith('P'):
+        backwards_duration_str = 'P'+backwards_duration_str
+    return from_date - isodate.parse_duration(backwards_duration_str)
+
 
 def numeric_date_type(date):
     """Wraps numeric_date() for argparse usage.
@@ -70,9 +68,10 @@ def numeric_date_type(date):
     https://github.com/python/cpython/blob/5c4d1f6e0e192653560ae2941a6677fbf4fbd1f2/Lib/argparse.py#L2503-L2513
     """
     try:
-        return numeric_date(date)
+        return numeric_date(date, ambiguity_resolver="min")
     except InvalidDate as error:
         raise argparse.ArgumentTypeError(str(error)) from error
+
 
 def is_date_ambiguous(date, ambiguous_by="any"):
     """
@@ -85,46 +84,36 @@ def is_date_ambiguous(date, ambiguous_by="any"):
     ambiguous_by : str
         Field of the date string to test for ambiguity ("day", "month", "year", "any")
     """
-    date_components = date.split('-', 2)
-
-    if len(date_components) == 3:
-        year, month, day = date_components
-    elif len(date_components) == 2:
-        year, month = date_components
-        day = "XX"
-    else:
-        year = date_components[0]
-        month = "XX"
-        day = "XX"
+    date = AugurDate(date)
+    if date.is_null:
+        return True
+    date_min = date.min.as_datetime
+    date_max = date.max.as_datetime
 
     # Determine ambiguity hierarchically such that, for example, an ambiguous
     # month implicates an ambiguous day even when day information is available.
-    return any((
-        "X" in year,
-        "X" in month and ambiguous_by in ("any", "month", "day"),
-        "X" in day and ambiguous_by in ("any", "day")
-    ))
+    # TODO: remove the above comment with an explanation that it isn't appropriate when using AmbiguousDate
+    if ambiguous_by in {"any", "day"}:
+        return date_min != date_max
+    if ambiguous_by in {"any", "month", "day"}:
+        return date_min.month != date_max.month
+    if ambiguous_by in {"any", "day", "month", "year"}:
+        return date_min.year != date_max.year
+
 
 def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
-    value = str(value)
-    if re.match(r'^-*\d+\.\d+$', value):
-        # numeric date which can be negative
-        return float(value)
-    if value.isnumeric():
-        # year-only date is ambiguous
-        value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
-    if 'XX' in value:
-        try:
-            ambig_date = AmbiguousDate(value, fmt=fmt, min_max_year=min_max_year).range()
-        except InvalidDate as error:
-            raise AugurError(str(error)) from error
-        if ambig_date is None or None in ambig_date:
-            return [None, None] #don't send to numeric_date or will be set to today
-        return [treetime.utils.numeric_date(d) for d in ambig_date]
-    try:
-        return treetime.utils.numeric_date(datetime.datetime.strptime(value, fmt))
-    except:
+    # TODO: min_max_year
+    possible_formats = None
+    if fmt:
+        possible_formats = [fmt]
+    date = AugurDate(value, possible_formats=possible_formats)
+    if date.is_null:
         return None
+    if date.min == date.max:
+        return date.min.as_numeric
+    else:
+        return (date.min.as_numeric, date.max.as_numeric)
+
 
 def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date', fmt=None, min_max_year=None):
     if not isinstance(metadata, pd.DataFrame):
@@ -143,5 +132,6 @@ def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date',
         dates = metadata[date_col].astype(float)
     return dict(zip(strains, dates))
 
+
 def get_iso_year_week(year, month, day):
-    return datetime.date(year, month, day).isocalendar()[:2]
+    pass

@@ -7,19 +7,25 @@ from augur.dates.errors import InvalidDate
 from freezegun import freeze_time
 import pytest
 
+from augur.dates.exact_date import ExactDate
+
 
 class TestAmbiguousDate:
     @freeze_time("2111-05-05")
     @pytest.mark.parametrize(
         "date_str, expected_range",
         [
-            ("2000-01-01", (datetime.date(2000, 1, 1), datetime.date(2000, 1, 1))),
-            ("2000-02-XX", (datetime.date(2000, 2, 1), datetime.date(2000, 2, 29))),
-            ("2000-XX-XX", (datetime.date(2000, 1, 1), datetime.date(2000, 12, 31))),
+            ("2000-01-01", ("2000-01-01", "2000-01-01")),
+            ("2000-02-XX", ("2000-02-01", "2000-02-29")),
+            ("2000-XX-XX", ("2000-01-01", "2000-12-31")),
         ],
     )
     def test_range(self, date_str, expected_range):
-        assert AmbiguousDate(date_str).range() == expected_range
+        format = '%Y-%m-%d'
+        assert AmbiguousDate(date_str, fmt=format).range() == (
+            ExactDate(expected_range[0], [format]),
+            ExactDate(expected_range[1], [format]),
+        )
 
     @pytest.mark.parametrize(
         "date_str, fmt",
@@ -32,8 +38,8 @@ class TestAmbiguousDate:
     )
     def test_range_separators(self, date_str, fmt):
         assert AmbiguousDate(date_str, fmt=fmt).range() == (
-            datetime.date(2005, 2, 1),
-            datetime.date(2005, 2, 28),
+            ExactDate('2005-02-01', ["%Y-%m-%d"]),
+            ExactDate('2005-02-28', ["%Y-%m-%d"]),
         )
 
     @pytest.mark.parametrize(

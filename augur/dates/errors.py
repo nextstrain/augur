@@ -9,3 +9,15 @@ class InvalidDate(Exception):
     def __str__(self):
         """Return a human-readable summary of the error."""
         return f"Invalid date '{self.date}': {self.message}"
+
+
+class UnsupportedDateFormat(Exception):
+    """Custom exception class to handle unsupported date formats."""
+
+
+class NotAnExactDate(Exception):
+    pass
+
+
+class NotAScalarAmbiguousDate(Exception):
+    pass
