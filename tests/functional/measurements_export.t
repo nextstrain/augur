@@ -145,7 +145,7 @@ Measurements export for a single collection using a collection config and comman
   >   --key override-collection \
   >   --title override-collection-display-title \
   >   --x-axis-label override-label \
-  >   --threshold 2.0 0.0 \
+  >   --thresholds 2.0 0.0 \
   >   --filters field_3 \
   >   --group-by field_3 \
   >   --measurements-display raw \

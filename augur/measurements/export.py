@@ -68,7 +68,7 @@ def register_parser(parent_subparsers):
         help="The short label to display for the x-axis that describles the value of the measurements. " +
              "If not provided via config or command line option, the panel's default " +
              f"x-axis label is {DEFAULT_ARGS['x_axis_label']!r}.")
-    config.add_argument("--threshold", type=float, nargs="+", dest="thresholds",
+    config.add_argument("--thresholds", type=float, nargs="+",
         help="Measurements value threshold(s) to be displayed in the measurements panel.")
     config.add_argument("--filters", nargs="+",
         help="The columns that are to be used a filters for measurements. " +
