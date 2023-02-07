@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 21.0.0 (7 February 2023)
+
 ### Major Changes
 
 * measurements export: Supports exporting multiple thresholds per collection via the measurements config and the `--thresholds` option. This change is backwards compatible with previous uses of the `--threshold` option. However, due to the updates to the JSON schema, users will need to update to Auspice v2.43.0 for thresholds to be displayed properly in the measurements panel. [#1148][] (@joverlee521)
