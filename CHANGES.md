@@ -2,6 +2,10 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* measurements export: Supports exporting multiple thresholds per collection via the measurements config and the `--thresholds` option. This change is backwards compatible with previous uses of the `--threshold` option. However, due to the updates to the JSON schema, users will need to update to Auspice v2.43.0 for thresholds to be displayed properly in the measurements panel. [#1148][] (@joverlee521)
+
 ### Features
 
 * export v2: Add `--validation-mode={error,warn,skip}` option for more nuanced control of validation.  The new "warn" mode performs validation and emits messages about potential problems, but it does not cause the export command to fail even if there are problems. [#1135][] (@tsibley)
@@ -14,6 +18,7 @@
 [#1134]: https://github.com/nextstrain/augur/pull/1134
 [#1135]: https://github.com/nextstrain/augur/pull/1135
 [#1140]: https://github.com/nextstrain/augur/pull/1140
+[#1148]: https://github.com/nextstrain/augur/pull/1148
 
 ## 20.0.0 (20 January 2023)
 

@@ -53,7 +53,7 @@
           "value": 3.0
         }
       ],
-      "thresholds": [10.0],
+      "thresholds": [2.0, 0.0],
       "title": "override-collection-display-title",
       "x_axis_label": "override-label"
     }

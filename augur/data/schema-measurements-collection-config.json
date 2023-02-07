@@ -74,8 +74,18 @@
             "description": "The short label to display for the x-axis that describes the `value` of the measurements in a collection",
             "type": "string"
         },
+        "thresholds": {
+            "description": "Numeric measurement thresholds to be displayed as solid grey lines across subplots. Optional -- if not provided, no threshold will be displayed.",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "description": "A numeric measurement threshold value.",
+                "type": "number"
+            }
+        },
         "threshold": {
-            "description": "A numeric measurement threshold to be displayed as a single grey line shared across subplots. Optional -- if not provided, no threshold will be displayed",
+            "deprecated": true,
+            "description": "DEPRECATED - A numeric measurement threshold to be displayed as a single grey line shared across subplots. Will be ignored if 'thresholds' is provided.",
             "type": "number"
         },
         "display_defaults": {
