@@ -83,7 +83,7 @@ def register_parser(parent_subparsers):
         help="Show or hide the overall mean per group by default")
     config.add_argument("--show-threshold", "--hide-threshold",
         dest="show_threshold", action=HideAsFalseAction, nargs=0,
-        help="Show or hide the threshold by default. This will be ignored if no threshold is provided.")
+        help="Show or hide the threshold(s) by default. This will be ignored if no threshold(s) are provided.")
 
     optional = parser.add_argument_group(
         title="OPTIONAL SETTINGS"
