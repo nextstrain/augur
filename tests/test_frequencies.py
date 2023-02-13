@@ -150,17 +150,23 @@ def test_get_pivots_by_invalid_unit():
         (
             "2022-01-31",
             "2022-03-31",
-            ("2022-02-28", "2022-03-31")
+            ("2022-01-31", "2022-02-28", "2022-03-31")
         ),
+        # Note that Jan 31 to Apr 30 gives the same amount of pivot points as
+        # Jan 31 to Mar 31.
         (
             "2022-01-31",
             "2022-04-30",
             ("2022-02-28", "2022-03-30", "2022-04-30")
         ),
+        # However, in practice, the interval is more likely to be Jan 30 to Apr
+        # 30 as long as the start date is calculated relative to the end date
+        # (i.e. start date = 3 months before Apr 30 = Jan 30).
+        # That interval includes an additional pivot point as expected.
         (
             "2022-01-30",
             "2022-04-30",
-            ("2022-02-28", "2022-03-30", "2022-04-30")
+            ("2022-01-30", "2022-02-28", "2022-03-30", "2022-04-30")
         ),
     ]
 )
