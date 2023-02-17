@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* Constrain Biopython version to <=1.80 so that `augur translate` is not broken by a deprecation of `UnknownSeq` in 1.81. When running `augur translate` with Biopython 1.81, the user will receive an error starting with `ERROR: Package BCBio.GFF not found!` and ending with `TypeError: object of type 'NoneType' has no len()`. [#1152][] (@corneliusroemer)
+
+[#1152]: https://github.com/nextstrain/augur/pull/1152
 
 ## 21.0.0 (7 February 2023)
 
