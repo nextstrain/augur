@@ -74,7 +74,16 @@ class AmbiguousDate:
                 f"Date does not match format `{self.fmt}`."
             )
 
-        return dict(zip(self.fmt_components, matches.groups()))
+        components_map = dict(zip(self.fmt_components, matches.groups()))
+
+        if "Y" not in components_map:
+            components_map["Y"] = "XXXX"
+        if "m" not in components_map:
+            components_map["m"] = "XX"
+        if "d" not in components_map:
+            components_map["d"] = "XX"
+
+        return components_map
 
     @property
     @functools.lru_cache()
