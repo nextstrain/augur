@@ -63,13 +63,13 @@ class TestDates:
     def test_is_date_ambiguous(self):
         """is_date_ambiguous should return true for ambiguous dates and false for valid dates."""
         # Test complete date strings with ambiguous values.
-        assert dates.is_date_ambiguous("2019-0X-0X", "any")
-        assert dates.is_date_ambiguous("2019-XX-09", "month")
+        assert dates.is_date_ambiguous("2019-0X-XX", "any")
+        assert dates.is_date_ambiguous("2019-XX-XX", "month")
         assert dates.is_date_ambiguous("2019-03-XX", "day")
-        assert dates.is_date_ambiguous("201X-03-09", "year")
-        assert dates.is_date_ambiguous("20XX-01-09", "month")
-        assert dates.is_date_ambiguous("2019-XX-03", "day")
-        assert dates.is_date_ambiguous("20XX-01-03", "day")
+        assert dates.is_date_ambiguous("201X-XX-XX", "year")
+        assert dates.is_date_ambiguous("20XX-XX-XX", "month")
+        assert dates.is_date_ambiguous("2019-XX-XX", "day")
+        assert dates.is_date_ambiguous("20XX-XX-XX", "day")
 
         # Test incomplete date strings with ambiguous values.
         assert dates.is_date_ambiguous("2019", "any")
