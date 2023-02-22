@@ -20,7 +20,7 @@ Pay particular attention to the color-variable types, which can either be "conti
 4. Extra metadata can be included here -- either as an additional node-data JSON file, or in TSV format.
 Any additional metadata must be both specified in the `auspice-config.json` file and provided to `augur export`.
 
-5. Export auspice-compatable JSONs using `augur export`.
+5. Export auspice-compatible JSONs using `augur export`.
 A basic example of what options to supply to this command is provided as terminal output from step (1).
 
 
