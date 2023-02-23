@@ -87,7 +87,7 @@ setuptools.setup(
         ]
     },
     classifiers = [
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production/Stable",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "License :: OSI Approved :: GNU Affero General Public License v3",
 
