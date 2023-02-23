@@ -1,0 +1,14 @@
+# Dependabot configuration file
+# Reference: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# Each ecosystem is checked on a scheduled interval defined below.
+# To trigger a check manually, go to https://github.com/nextstrain/augur/network/updates
+# and click "Last checked …" then "Check for updates".
+
+version: 2
+updates:
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
