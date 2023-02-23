@@ -195,12 +195,6 @@ Versions for this project, Augur, from 3.0.0 onwards aim to follow the
     3. Select **Run workflow**.
 3. Ensure workflow runs successfully.
     - Ensure the [docker-base CI action triggered by nextstrain-bot](https://github.com/nextstrain/docker-base/actions/workflows/ci.yml?query=branch%3Amaster+actor%3Anextstrain-bot) runs successfully.
-4. Create a [new GitHub release](https://github.com/nextstrain/augur/releases/new).
-    1. Choose the tag for the new version number.
-    2. In **Release title**, provide the new version number.
-    3. In **Describe this release**, copy over changes for this new version from [CHANGES.md](../../CHANGES.md).
-    4. Ensure **Set as the latest release** is checked.
-    5. Publish release.
 
 ##### 4. Update on Bioconda
 

@@ -14,11 +14,11 @@ def main(version = "__NEXT__"):
     with CHANGELOG.open(encoding = "utf-8") as file:
         for line in file:
             # Find the heading for this version
-            if line.rstrip("\n") == f"# {version}" or line.startswith(f"# {version} "):
+            if line.rstrip("\n") == f"## {version}" or line.startswith(f"## {version} "):
 
                 # Print subsequent lines until we reach the next version heading
                 for line in file:
-                    if line.startswith("# "):
+                    if line.startswith("## "):
                         break
                     stdout.write(line)
                 return 0

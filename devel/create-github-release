@@ -27,7 +27,7 @@ main() {
 
     gh release create \
         "$version" \
-        --repo "${GITHUB_REPOSITORY:-nextstrain/cli}" \
+        --repo "${GITHUB_REPOSITORY:-nextstrain/augur}" \
         --title "$version" \
         --target "$commit" \
         ${pre_release:+--prerelease} \
@@ -55,7 +55,7 @@ preamble() {
 
 _These release notes are automatically extracted from the full [changelog][]._
 
-[changelog]: https://github.com/nextstrain/cli/blob/master/CHANGES.md#readme
+[changelog]: https://github.com/nextstrain/augur/blob/-/CHANGES.md#readme
 
 ~~
 }
