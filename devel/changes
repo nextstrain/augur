@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+"""
+Extract changelog for a specified version (or __NEXT__ if no version
+specified).
+"""
+from pathlib import Path
+from sys import argv, exit, stdout, stderr
+
+
+CHANGELOG = Path(__file__).parent / "../CHANGES.md"
+
+
+def main(version = "__NEXT__"):
+    with CHANGELOG.open(encoding = "utf-8") as file:
+        for line in file:
+            # Find the heading for this version
+            if line.rstrip("\n") == f"# {version}" or line.startswith(f"# {version} "):
+
+                # Print subsequent lines until we reach the next version heading
+                for line in file:
+                    if line.startswith("# "):
+                        break
+                    stdout.write(line)
+                return 0
+
+        print(f"No changes found for {version!r}.", file = stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    exit(main(*argv[1:]))
