@@ -351,10 +351,10 @@ def run(args):
 
     ## load features; only requested features if genes given
     features = load_features(args.reference_sequence, genes)
-    print("Read in {} features from reference sequence file".format(len(features)))
     if features is None:
         print("ERROR: could not read features of reference sequence file")
         return 1
+    print("Read in {} features from reference sequence file".format(len(features)))
 
     ### translate every feature - but not 'nuc'!
     translations = {}
