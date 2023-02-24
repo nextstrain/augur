@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* translate: Fix error handling when features cannot be read from reference sequence file. [#1168][] (@victorlin)
+
+[#1168]: https://github.com/nextstrain/augur/pull/1168
 
 ## 21.0.1 (17 February 2023)
 
