@@ -152,11 +152,7 @@ def load_features(reference, feature_names=None):
     features = {}
     if '.gff' in reference.lower():
         #looks for 'gene' and 'gene' as best for TB
-        try:
-            from BCBio import GFF #Package name is confusing - tell user exactly what they need!
-        except ImportError:
-            print("ERROR: Package BCBio.GFF not found! Please install using \'pip install bcbio-gff\' before re-running.")
-            return None
+        from BCBio import GFF
         limit_info = dict( gff_type = ['gene', 'source'] )
 
         with open(reference, encoding='utf-8') as in_handle:
