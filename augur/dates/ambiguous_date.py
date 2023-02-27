@@ -65,7 +65,8 @@ class AmbiguousDate:
             resolve_uncertain_int(self.uncertain_date_components["d"], "max"),
         )
 
-        # Limit the max date to be no later than today's date.
+        # Limit the min and max dates to be no later than today's date.
+        min_date = min(min_date, datetime.date.today())
         max_date = min(max_date, datetime.date.today())
 
         return (min_date, max_date)
