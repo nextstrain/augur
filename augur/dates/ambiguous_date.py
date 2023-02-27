@@ -49,6 +49,10 @@ class AmbiguousDate:
         self.assert_only_less_significant_uncertainty()
 
     def range(self):
+        """Return the range of possible dates defined by the ambiguous date.
+
+        Impose an upper limit of today's date.
+        """
         min_date = tuple_to_date(
             resolve_uncertain_int(self.uncertain_date_components["Y"], "min"),
             resolve_uncertain_int(self.uncertain_date_components["m"], "min"),
@@ -60,6 +64,8 @@ class AmbiguousDate:
             resolve_uncertain_int(self.uncertain_date_components["m"], "max"),
             resolve_uncertain_int(self.uncertain_date_components["d"], "max"),
         )
+
+        # Limit the max date to be no later than today's date.
         max_date = min(max_date, datetime.date.today())
 
         return (min_date, max_date)
