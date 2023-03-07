@@ -33,6 +33,17 @@ class DataErrorMethod(ArgparseEnum):
 
 
 @enum.unique
+class EmptyOutputReportingMethod(ArgparseEnum):
+    """
+    Enum representation of string values that represent how empty outputs should
+    be reported.
+    """
+    ERROR = 'error'
+    WARN  = 'warn'
+    SILENT  = 'silent'
+
+
+@enum.unique
 class ValidationMode(ArgparseEnum):
     """
     Enum representation of string values that represent how validation should

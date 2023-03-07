@@ -14,6 +14,7 @@ from augur.io.metadata import read_metadata
 from augur.io.sequences import read_sequences, write_sequences
 from augur.io.print import print_err
 from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
+from augur.types import EmptyOutputReportingMethod
 from .io import cleanup_outputs, read_priority_scores
 from .include_exclude_rules import apply_filters, construct_filters
 from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, create_queues_by_group, get_groups_for_subsampling
@@ -483,6 +484,14 @@ def run(args):
         print("\t%i of these were dropped because of subsampling criteria%s" % (num_excluded_subsamp, seed_txt))
 
     if total_strains_passed == 0:
-        raise AugurError("All samples have been dropped! Check filter rules and metadata file format.")
+        empty_results_message = "All samples have been dropped! Check filter rules and metadata file format."
+        if args.empty_output_reporting is EmptyOutputReportingMethod.ERROR:
+            raise AugurError(empty_results_message)
+        elif args.empty_output_reporting is EmptyOutputReportingMethod.WARN:
+            print_err(f"WARNING: {empty_results_message}")
+        elif args.empty_output_reporting is EmptyOutputReportingMethod.SILENT:
+            pass
+        else:
+            raise ValueError(f"Encountered unhandled --empty-output-reporting method {args.empty_output_reporting!r}")
 
     print(f"{total_strains_passed} strains passed all filters")
