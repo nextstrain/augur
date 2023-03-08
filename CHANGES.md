@@ -6,7 +6,9 @@
 
 * translate: Fix error handling when features cannot be read from reference sequence file. [#1168][] (@victorlin)
 * translate: Remove an unnecessary check which allowed for inaccurate error messages to be shown. [#1169][] (@victorlin)
+* frequencies: Previously, monthly pivot points calculated from the end of a month may have been shifted by 1-3 days. This is now fixed. [#1150][] (@victorlin)
 
+[#1150]: https://github.com/nextstrain/augur/pull/1150
 [#1168]: https://github.com/nextstrain/augur/pull/1168
 [#1169]: https://github.com/nextstrain/augur/pull/1169
 

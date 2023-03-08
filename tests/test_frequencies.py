@@ -138,6 +138,51 @@ def test_get_pivots_by_invalid_unit():
     with pytest.raises(ValueError, match=r".*invalid_unit.*is not supported.*"):
         pivots = get_pivots(observations=[], pivot_interval=1, start_date=2015.0, end_date=2016.0, pivot_interval_units="invalid_unit")
 
+
+@pytest.mark.parametrize(
+    "start, end, expected_pivots",
+    [
+        (
+            "2022-01-01",
+            "2022-04-01",
+            ("2022-01-01", "2022-02-01", "2022-03-01", "2022-04-01")
+        ),
+        (
+            "2022-01-31",
+            "2022-03-31",
+            ("2022-01-31", "2022-02-28", "2022-03-31")
+        ),
+        # Note that Jan 31 to Apr 30 gives the same amount of pivot points as
+        # Jan 31 to Mar 31.
+        (
+            "2022-01-31",
+            "2022-04-30",
+            ("2022-02-28", "2022-03-30", "2022-04-30")
+        ),
+        # However, in practice, the interval is more likely to be Jan 30 to Apr
+        # 30 as long as the start date is calculated relative to the end date
+        # (i.e. start date = 3 months before Apr 30 = Jan 30).
+        # That interval includes an additional pivot point as expected.
+        (
+            "2022-01-30",
+            "2022-04-30",
+            ("2022-01-30", "2022-02-28", "2022-03-30", "2022-04-30")
+        ),
+    ]
+)
+def test_get_pivots_on_month_boundaries(start, end, expected_pivots):
+    """Get pivots where the start/end dates are on month boundaries.
+    """
+    pivots = get_pivots(
+        observations=[],
+        pivot_interval=1,
+        start_date=numeric_date(start),
+        end_date=numeric_date(end),
+        pivot_interval_units="months"
+    )
+    assert len(pivots) == len(expected_pivots)
+    assert np.allclose(pivots, [numeric_date(date) for date in expected_pivots], rtol=0, atol=1e-4)
+
 #
 # Test KDE frequency estimation for trees
 #
