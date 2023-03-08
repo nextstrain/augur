@@ -2,6 +2,10 @@
 
 ## __NEXT__
 
+### Features
+
+* filter: Add `--empty-output-reporting={error,warn,silent}` option to allow filter to produce empty outputs without raising an error. The default behavior is still to raise an error when filter produces an empty output, so users will have to explicitly pass the "warn" or "silent" value to bypass the error. [#1175][] (@joverlee521)
+
 ### Bug fixes
 
 * translate: Fix error handling when features cannot be read from reference sequence file. [#1168][] (@victorlin)
@@ -13,6 +17,7 @@
 [#1160]: https://github.com/nextstrain/augur/pull/1160
 [#1168]: https://github.com/nextstrain/augur/pull/1168
 [#1169]: https://github.com/nextstrain/augur/pull/1169
+[#1175]: https://github.com/nextstrain/augur/pull/1175
 
 ## 21.0.1 (17 February 2023)
 
