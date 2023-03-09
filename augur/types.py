@@ -1,3 +1,4 @@
+from argparse import ArgumentTypeError
 import enum
 
 
@@ -18,6 +19,22 @@ class ArgparseEnum(enum.Enum):
         enum class name to users.
         """
         return self.value
+
+    @classmethod
+    def argtype(cls, input_string):
+        """
+        Intended to be used as the argument type converter for argparse options
+        that use the enum values as inputs.
+
+        Raises a custom `argparse.ArgumentTypeError` so that the error
+        message can include a helpful list of the all valid enum values.
+        """
+        try:
+            return cls(input_string)
+        except ValueError as error:
+            choices = ", ".join(f"{str(x)!r}" for x in cls)
+            raise ArgumentTypeError(
+                f"invalid choice: {input_string!r} (choose from {choices})") from error
 
 
 @enum.unique

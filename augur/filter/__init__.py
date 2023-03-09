@@ -71,7 +71,7 @@ def register_arguments(parser):
     output_group.add_argument('--output-log', help="tab-delimited file with one row for each filtered strain and the reason it was filtered. Keyword arguments used for a given filter are reported in JSON format in a `kwargs` column.")
     output_group.add_argument(
         '--empty-output-reporting',
-        type=EmptyOutputReportingMethod,
+        type=EmptyOutputReportingMethod.argtype,
         choices=list(EmptyOutputReportingMethod),
         default=EmptyOutputReportingMethod.ERROR,
         help="How should empty outputs be reported when no strains pass filtering and/or subsampling.")
