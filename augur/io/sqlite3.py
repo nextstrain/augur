@@ -1,4 +1,5 @@
 import csv
+import pandas as pd
 import random
 import re
 import string
@@ -173,6 +174,12 @@ class Sqlite3Database(AbstractContextManager):
         assert len(columns) == 1
 
         return columns[0]
+
+    def show_query(self, query: str, nrows=10):
+        """Print the first nrows of query results."""
+        # Use pandas for a nicely formatted output.
+        df_chunks = pd.read_sql_query(query, self.connection, chunksize=nrows)
+        print(next(df_chunks))
 
     def query_to_file(self, query: str, path: str, header: bool = True, delimiter: str = '\t'):
         """Query the database and write results to a tabular file.
