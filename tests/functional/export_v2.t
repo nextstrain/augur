@@ -180,8 +180,7 @@ Run export with metadata and color by a metadata column ("custom_trait") in addi
   \s{0} (re)
 
   $ python3 "$TESTDIR/../../scripts/diff_jsons.py" export_v2/dataset_with_color_from_metadata.json "$TMP/dataset_with_color_from_metadata.json" \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
-  {}
+  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']" --pretty
   $ rm -f "$TMP/dataset1.json"
 
   $ popd > /dev/null
