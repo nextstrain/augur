@@ -107,7 +107,7 @@ def is_date_ambiguous(date, ambiguous_by):
         "X" in day and ambiguous_by in ("any", "day")
     ))
 
-def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
+def get_numerical_date_from_value(value, fmt=None, min_max_year=None, ambiguity_resolver='both'):
     value = str(value)
     if re.match(r'^-*\d+\.\d+$', value):
         # numeric date which can be negative
@@ -120,7 +120,15 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
             ambig_date = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
         except InvalidDate as error:
             raise AugurError(str(error)) from error
-        return [treetime.utils.numeric_date(d) for d in ambig_date]
+        ambig_date_numeric = [treetime.utils.numeric_date(d) for d in ambig_date]
+        if ambiguity_resolver == 'both':
+            return ambig_date_numeric
+        elif ambiguity_resolver == 'min':
+            return ambig_date_numeric[0]
+        elif ambiguity_resolver == 'max':
+            return ambig_date_numeric[1]
+        else:
+            raise Exception(f"Invalid value for ambiguity_resolver: {ambiguity_resolver!r}.")
     try:
         return treetime.utils.numeric_date(datetime.datetime.strptime(value, fmt))
     except:
