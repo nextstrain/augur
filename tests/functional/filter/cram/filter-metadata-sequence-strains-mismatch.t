@@ -24,7 +24,7 @@ The query initially filters 3 strains from Colombia, one of which is added back 
   \\t1 strains were added back because they were in .*include\.txt.* (re)
   9 strains passed all filters
 
-  $ (head -n1; sort -k 1,1) < filtered_log.tsv
+  $ head -n 1 filtered_log.tsv; tail -n +2 filtered_log.tsv | sort -k 1,1
   strain	filter	kwargs
   COL/FLR_00008/2015	filter_by_query	"[[""query"", ""country != 'Colombia'""]]"
   COL/FLR_00008/2015\tforce_include_strains\t"[[""include_file"", ""*/data/include.txt""]]" (esc) (glob)
