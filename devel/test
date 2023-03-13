@@ -18,8 +18,6 @@ then
     CONDA="mamba"
 else
     CONDA="conda"
-
-    echo Install Mamba with `conda install -n base -c conda-forge mamba` for a faster test experience.
 fi
 
 # Install Augur from the current directory into a new conda environment.
