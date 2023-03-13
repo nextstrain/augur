@@ -1,5 +1,16 @@
 """
 Infer ancestral sequences based on a tree.
+
+The ancestral sequences are inferred using `TreeTime <https://academic.oup.com/ve/article/4/1/vex042/4794731>`_.
+Each internal node gets assigned a nucleotide sequence that maximizes a
+likelihood on the tree given its descendants and its parent node.
+Each node then gets assigned a list of nucleotide mutations for any position
+that has a mismatch between its own sequence and its parent's sequence.
+The node sequences and mutations are output to a node-data JSON file.
+
+.. note::
+
+    The mutation positions in the node-data JSON are one-based.
 """
 
 import os, shutil, time, json, sys

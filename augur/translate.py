@@ -1,5 +1,16 @@
 """
 Translate gene regions from nucleotides to amino acids.
+
+Translates nucleotide sequences of nodes in a tree to amino acids for gene
+regions of the annotated features of the provided reference sequence.
+Each node then gets assigned a list of amino acid mutations for any position
+that has a mismatch between its own amino acid sequence and its parent's sequence.
+The reference amino acid sequences, genome annotations, and node amino acid
+mutations are output to a node-data JSON file.
+
+.. note::
+
+    The mutation positions in the node-data JSON are one-based.
 """
 
 import os, sys
