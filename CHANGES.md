@@ -2,6 +2,12 @@
 
 ## __NEXT__
 
+### Features
+
+* Constrain `bcbio-gff` to >=0.7.0 and allow `Biopython` >=1.81 again. We had to introduce the `Biopython` constraint in v21.0.1 (see [#1152][]) due to `bcbio-gff` <0.7.0 relying on the removed `Biopython` feature `UnknownSeq`. [#1178][] (@corneliusroemer)
+
+[#1152]: https://github.com/nextstrain/augur/pull/1152
+[#1178]: https://github.com/nextstrain/augur/pull/1178
 
 ## 21.1.0 (14 March 2023)
 
