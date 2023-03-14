@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 21.1.0 (14 March 2023)
+
 ### Features
 
 * filter: Add `--empty-output-reporting={error,warn,silent}` option to allow filter to produce empty outputs without raising an error. The default behavior is still to raise an error when filter produces an empty output, so users will have to explicitly pass the "warn" or "silent" value to bypass the error. [#1175][] (@joverlee521)
