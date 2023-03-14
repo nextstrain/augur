@@ -13,16 +13,15 @@ source "${conda_dir}/etc/profile.d/conda.sh"
 
 ENV_NAME="test-augur"
 
-if [[ -e "`which mamba`" ]]
-then
-    CONDA="mamba"
-else
-    CONDA="conda"
+# Install mamba if not available to avoid Conda solver issues
+if [[ ! -e "`which mamba`" ]]; then
+    echo Installing Mamba
+    conda install --yes -n base -c conda-forge mamba
 fi
 
 # Install Augur from the current directory into a new conda environment.
-echo Setting up Conda test environment with ${CONDA}
-${CONDA} create --yes --quiet -n ${ENV_NAME} -c conda-forge -c bioconda augur
+echo Setting up Conda test environment with mamba
+mamba create --yes --quiet -n ${ENV_NAME} -c conda-forge -c bioconda augur
 conda activate ${ENV_NAME}
 python3 -m pip install .[dev]
 
