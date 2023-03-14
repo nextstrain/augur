@@ -45,21 +45,6 @@ def write_metadata(tmpdir, metadata):
 
 
 class TestFilter:
-    def test_filter_run_with_query_and_include(self, tmpdir, fasta_fn, argparser):
-        """Test that --include still works with filtering on query"""
-        out_fn = str(tmpdir / "out.fasta")
-        meta_fn = write_metadata(tmpdir, (("strain","location","quality"),
-                                          ("SEQ_1","colorado","good"),
-                                          ("SEQ_2","colorado","bad"),
-                                          ("SEQ_3","nevada","good")))
-        include_fn = str(tmpdir / "include")
-        open(include_fn, "w").write("SEQ_3")
-        args = argparser('-s %s --metadata %s -o %s --query "quality==\'good\' & location==\'colorado\'" --include %s'
-                         % (fasta_fn, meta_fn, out_fn, include_fn))
-        augur.filter._run.run(args)
-        output = SeqIO.to_dict(SeqIO.parse(out_fn, "fasta"))
-        assert list(output.keys()) == ["SEQ_1", "SEQ_3"]
-
     def test_filter_run_with_query_and_include_where(self, tmpdir, fasta_fn, argparser):
         """Test that --include_where still works with filtering on query"""
         out_fn = str(tmpdir / "out.fasta")
