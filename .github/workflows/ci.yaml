@@ -92,7 +92,7 @@ jobs:
 
       - uses: codecov/codecov-action@v3
         with:
-          fail_ci_if_error: true
+          fail_ci_if_error: false
 
   build-docs:
     uses: nextstrain/.github/.github/workflows/docs-ci.yaml@master
