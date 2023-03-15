@@ -1,3 +1,9 @@
+# This file contains functional tests that would normally be written as
+# Cram-style tests. However, pytest is nice here since it is easy to use with
+# parameterized inputs/outputs and mocked system time (things that are not
+# straightforward to set up for Cram tests¹).
+# ¹ https://github.com/nextstrain/augur/pull/1183#discussion_r1142687476
+
 import argparse
 from freezegun import freeze_time
 import pytest
