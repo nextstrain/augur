@@ -5,12 +5,12 @@ import pytest
 
 from freezegun import freeze_time
 
-import augur.filter
-import augur.filter._run
+from augur.filter import register_arguments
+from augur.filter._run import run
 
 def parse_args(args):
     parser = argparse.ArgumentParser()
-    augur.filter.register_arguments(parser)
+    register_arguments(parser)
     return parser.parse_args(shlex.split(args))
 
 def write_metadata(tmpdir, metadata):
@@ -141,7 +141,7 @@ class TestFilter:
         meta_fn = write_metadata(tmpdir, (("strain","date"),
                                           *metadata_rows))
         args = parse_args(f'--metadata {meta_fn} --output-strains {out_fn} {argparse_params}')
-        augur.filter._run.run(args)
+        run(args)
         with open(out_fn) as f:
             output_sorted = sorted(line.rstrip() for line in f)
         assert output_sorted == output_sorted_expected
