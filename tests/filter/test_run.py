@@ -8,13 +8,10 @@ from freezegun import freeze_time
 import augur.filter
 import augur.filter._run
 
-@pytest.fixture
-def argparser():
+def parse_args(args):
     parser = argparse.ArgumentParser()
     augur.filter.register_arguments(parser)
-    def parse(args):
-        return parser.parse_args(shlex.split(args))
-    return parse
+    return parser.parse_args(shlex.split(args))
 
 def write_metadata(tmpdir, metadata):
     fn = str(tmpdir / "metadata.tsv")
@@ -138,12 +135,12 @@ class TestFilter:
             ),
         ],
     )
-    def test_filter_relative_dates(self, tmpdir, argparser, argparse_params, metadata_rows, output_sorted_expected):
+    def test_filter_relative_dates(self, tmpdir, argparse_params, metadata_rows, output_sorted_expected):
         """Test that various relative dates work"""
         out_fn = str(tmpdir / "filtered.txt")
         meta_fn = write_metadata(tmpdir, (("strain","date"),
                                           *metadata_rows))
-        args = argparser(f'--metadata {meta_fn} --output-strains {out_fn} {argparse_params}')
+        args = parse_args(f'--metadata {meta_fn} --output-strains {out_fn} {argparse_params}')
         augur.filter._run.run(args)
         with open(out_fn) as f:
             output_sorted = sorted(line.rstrip() for line in f)
@@ -159,11 +156,11 @@ class TestFilter:
             ("--max-date", "invalid"),
         ],
     )
-    def test_filter_relative_dates_error(self, tmpdir, argparser, argparse_flag, argparse_value):
+    def test_filter_relative_dates_error(self, tmpdir, argparse_flag, argparse_value):
         """Test that invalid dates fail"""
         out_fn = str(tmpdir / "filtered.txt")
         meta_fn = write_metadata(tmpdir, (("strain","date"),
                                           ("SEQ_1","2020-03-23")))
         with pytest.raises(SystemExit) as e_info:
-            argparser(f'--metadata {meta_fn} --output-strains {out_fn} {argparse_flag} {argparse_value}')
+            parse_args(f'--metadata {meta_fn} --output-strains {out_fn} {argparse_flag} {argparse_value}')
         assert f"Invalid date '{argparse_value}'" in e_info.value.__context__.message
