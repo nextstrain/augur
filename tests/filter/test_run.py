@@ -1,12 +1,7 @@
 import argparse
-import random
 import shlex
 
 import pytest
-
-from Bio import SeqIO
-from Bio.Seq import Seq
-from Bio.SeqRecord import SeqRecord
 
 from freezegun import freeze_time
 
@@ -20,22 +15,6 @@ def argparser():
     def parse(args):
         return parser.parse_args(shlex.split(args))
     return parse
-
-@pytest.fixture
-def sequences():
-    def random_seq(k):
-        return "".join(random.choices(("A","T","G","C"), k=k))
-    return {
-        "SEQ_1": SeqRecord(Seq(random_seq(10)), id="SEQ_1"),
-        "SEQ_2": SeqRecord(Seq(random_seq(10)), id="SEQ_2"),
-        "SEQ_3": SeqRecord(Seq(random_seq(10)), id="SEQ_3"),
-    }
-
-@pytest.fixture
-def fasta_fn(tmpdir, sequences):
-    fn = str(tmpdir / "sequences.fasta")
-    SeqIO.write(sequences.values(), fn, "fasta")
-    return fn
 
 def write_metadata(tmpdir, metadata):
     fn = str(tmpdir / "metadata.tsv")
