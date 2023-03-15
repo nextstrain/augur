@@ -1,5 +1,4 @@
 import argparse
-import numpy as np
 import random
 import shlex
 
@@ -11,10 +10,8 @@ from Bio.SeqRecord import SeqRecord
 
 from freezegun import freeze_time
 
-from augur.errors import AugurError
 import augur.filter
 import augur.filter._run
-import augur.filter.io
 import augur.filter.include_exclude_rules
 from augur.io.metadata import read_metadata
 
@@ -48,54 +45,8 @@ def write_metadata(tmpdir, metadata):
         fh.write("\n".join(("\t".join(md) for md in metadata)))
     return fn
 
-@pytest.fixture
-def mock_priorities_file_valid(mocker):
-    mocker.patch(
-        "builtins.open", mocker.mock_open(read_data="strain1 5\nstrain2 6\nstrain3 8\n")
-    )
-
-
-@pytest.fixture
-def mock_priorities_file_malformed(mocker):
-    mocker.patch("builtins.open", mocker.mock_open(read_data="strain1 X\n"))
-
-
-@pytest.fixture
-def mock_priorities_file_valid_with_spaces_and_tabs(mocker):
-    mocker.patch(
-        "builtins.open", mocker.mock_open(read_data="strain 1\t5\nstrain 2\t6\nstrain 3\t8\n")
-    )
 
 class TestFilter:
-    def test_read_priority_scores_valid(self, mock_priorities_file_valid):
-        # builtins.open is stubbed, but we need a valid file to satisfy the existence check
-        priorities = augur.filter.io.read_priority_scores(
-            "tests/builds/tb/data/lee_2015.vcf"
-        )
-
-        assert priorities == {"strain1": 5, "strain2": 6, "strain3": 8}
-        assert priorities["strain1"] == 5
-        assert priorities["strain42"] == -np.inf, "Default priority is negative infinity for unlisted sequences"
-
-    def test_read_priority_scores_malformed(self, mock_priorities_file_malformed):
-        with pytest.raises(AugurError) as e_info:
-            # builtins.open is stubbed, but we need a valid file to satisfy the existence check
-            augur.filter.io.read_priority_scores("tests/builds/tb/data/lee_2015.vcf")
-        assert str(e_info.value) == "missing or malformed priority scores file tests/builds/tb/data/lee_2015.vcf"
-
-    def test_read_priority_scores_valid_with_spaces_and_tabs(self, mock_priorities_file_valid_with_spaces_and_tabs):
-        # builtins.open is stubbed, but we need a valid file to satisfy the existence check
-        priorities = augur.filter.io.read_priority_scores(
-            "tests/builds/tb/data/lee_2015.vcf"
-        )
-
-        assert priorities == {"strain 1": 5, "strain 2": 6, "strain 3": 8}
-
-    def test_read_priority_scores_does_not_exist(self):
-        with pytest.raises(AugurError) as e_info:
-            augur.filter.io.read_priority_scores("/does/not/exist.txt")
-        assert str(e_info.value) == "missing or malformed priority scores file /does/not/exist.txt"
-
     def test_filter_on_query_good(self, tmpdir, sequences):
         """Basic filter_on_query test"""
         meta_fn = write_metadata(tmpdir, (("strain","location","quality"),
