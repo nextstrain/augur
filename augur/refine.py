@@ -205,8 +205,6 @@ def run(args):
             print("ERROR: meta data with dates is required for time tree reconstruction", file=sys.stderr)
             return 1
         metadata = read_metadata(args.metadata)
-        if args.year_bounds:
-            args.year_bounds.sort()
         try:
             dates = get_numerical_dates(metadata, fmt=args.date_format,
                                         min_max_year=args.year_bounds)
