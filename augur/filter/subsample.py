@@ -383,7 +383,7 @@ def create_queues_by_group(groups, max_size, max_attempts=100, random_seed=None)
     return queues_by_group
 
 
-def calculate_sequences_per_group(target_max_value, counts_per_group, allow_probabilistic=True):
+def calculate_sequences_per_group(target_max_value, group_sizes, allow_probabilistic=True):
     """Calculate the number of sequences per group for a given maximum number of
     sequences to be returned and the number of sequences in each requested
     group. Optionally, allow the result to be probabilistic such that the mean
@@ -395,7 +395,7 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, allow_prob
     target_max_value : int
         Maximum number of sequences to return by subsampling at some calculated
         number of sequences per group for the given counts per group.
-    counts_per_group : list[int]
+    group_sizes : list[int]
         A list with the number of sequences in each requested group.
     allow_probabilistic : bool
         Whether to allow probabilistic subsampling when the number of groups
@@ -420,14 +420,14 @@ def calculate_sequences_per_group(target_max_value, counts_per_group, allow_prob
     try:
         sequences_per_group = _calculate_sequences_per_group(
             target_max_value,
-            counts_per_group,
+            group_sizes,
         )
     except TooManyGroupsError as error:
         if allow_probabilistic:
             print_err(f"WARNING: {error}")
             sequences_per_group = _calculate_fractional_sequences_per_group(
                 target_max_value,
-                counts_per_group,
+                group_sizes,
             )
             probabilistic_used = True
         else:
@@ -445,18 +445,18 @@ class TooManyGroupsError(ValueError):
 
 
 def _calculate_total_sequences(
-        hypothetical_spg: float, sequence_lengths: Collection[int],
+        hypothetical_spg: float, group_sizes: Collection[int],
 ) -> float:
     # calculate how many sequences we'd keep given a hypothetical spg.
     return sum(
-        min(hypothetical_spg, sequence_length)
-        for sequence_length in sequence_lengths
+        min(hypothetical_spg, group_count)
+        for group_count in group_sizes
     )
 
 
 def _calculate_sequences_per_group(
         target_max_value: int,
-        sequence_lengths: Collection[int]
+        group_sizes: Collection[int]
 ) -> int:
     """This is partially inspired by
     https://github.com/python/cpython/blob/3.8/Lib/bisect.py
@@ -468,7 +468,7 @@ def _calculate_sequences_per_group(
     ----------
     target_max_value : int
         the total number of sequences allowed across all groups
-    sequence_lengths : Collection[int]
+    group_sizes : Collection[int]
         the number of sequences in each group
 
     Returns
@@ -487,25 +487,25 @@ def _calculate_sequences_per_group(
     augur.filter.subsample.TooManyGroupsError: Asked to provide at most 1 sequences, but there are 2 groups.
     """
 
-    if len(sequence_lengths) > target_max_value:
+    if len(group_sizes) > target_max_value:
         # we have more groups than sequences we are allowed, which is an
         # error.
 
         raise TooManyGroupsError(
             "Asked to provide at most {} sequences, but there are {} "
-            "groups.".format(target_max_value, len(sequence_lengths)))
+            "groups.".format(target_max_value, len(group_sizes)))
 
     lo = 1
     hi = target_max_value
 
     while hi - lo > 2:
         mid = (hi + lo) // 2
-        if _calculate_total_sequences(mid, sequence_lengths) <= target_max_value:
+        if _calculate_total_sequences(mid, group_sizes) <= target_max_value:
             lo = mid
         else:
             hi = mid
 
-    if _calculate_total_sequences(hi, sequence_lengths) <= target_max_value:
+    if _calculate_total_sequences(hi, group_sizes) <= target_max_value:
         return int(hi)
     else:
         return int(lo)
@@ -513,7 +513,7 @@ def _calculate_sequences_per_group(
 
 def _calculate_fractional_sequences_per_group(
         target_max_value: int,
-        sequence_lengths: Collection[int]
+        group_sizes: Collection[int]
 ) -> float:
     """Returns the fractional sequences per group for the given list of group
     sequences such that the total doesn't exceed the requested number of
@@ -523,7 +523,7 @@ def _calculate_fractional_sequences_per_group(
     ----------
     target_max_value : int
         the total number of sequences allowed across all groups
-    sequence_lengths : Collection[int]
+    group_sizes : Collection[int]
         the number of sequences in each group
 
     Returns
@@ -550,7 +550,7 @@ def _calculate_fractional_sequences_per_group(
 
     while (hi / lo) > 1.1:
         mid = (lo + hi) / 2
-        if _calculate_total_sequences(mid, sequence_lengths) <= target_max_value:
+        if _calculate_total_sequences(mid, group_sizes) <= target_max_value:
             lo = mid
         else:
             hi = mid
