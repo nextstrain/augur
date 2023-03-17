@@ -18,6 +18,21 @@ def valid_metadata() -> pd.DataFrame:
     return pd.DataFrame.from_records(data, columns=columns).set_index('strain')
 
 
+class TestSequencesPerGroup:
+    @pytest.mark.parametrize(
+        "target_max_value, counts_per_group, expected_sequences_per_group",
+        [
+            (3, [2, 2], 1),
+            (3, [2, 1], 3),
+            (9, [5, 5], 3),
+            (9, [5, 4], 9),
+            (9, [5, 3], 9),
+        ],
+    )
+    def test_sequences_per_group(self, target_max_value, counts_per_group, expected_sequences_per_group):
+        assert augur.filter.subsample._calculate_sequences_per_group(target_max_value, counts_per_group) == expected_sequences_per_group
+
+
 class TestFilterGroupBy:
     def test_filter_groupby_strain_subset(self, valid_metadata: pd.DataFrame):
         metadata = valid_metadata.copy()
