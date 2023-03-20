@@ -8,7 +8,7 @@ from typing import Collection
 from augur.dates import get_iso_year_week
 from augur.errors import AugurError
 from augur.io.print import print_err
-from . import GROUP_BY_GENERATED_COLUMNS
+from . import constants
 
 
 def get_groups_for_subsampling(strains, metadata, group_by=None):
@@ -79,12 +79,12 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
         return group_by_strain
 
     group_by_set = set(group_by)
-    generated_columns_requested = GROUP_BY_GENERATED_COLUMNS & group_by_set
+    generated_columns_requested = constants.GROUP_BY_GENERATED_COLUMNS & group_by_set
 
     # If we could not find any requested categories, we cannot complete subsampling.
-    if 'date' not in metadata and group_by_set <= GROUP_BY_GENERATED_COLUMNS:
-        raise AugurError(f"The specified group-by categories ({group_by}) were not found. Note that using any of {sorted(GROUP_BY_GENERATED_COLUMNS)} requires a column called 'date'.")
-    if not group_by_set & (set(metadata.columns) | GROUP_BY_GENERATED_COLUMNS):
+    if 'date' not in metadata and group_by_set <= constants.GROUP_BY_GENERATED_COLUMNS:
+        raise AugurError(f"The specified group-by categories ({group_by}) were not found. Note that using any of {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} requires a column called 'date'.")
+    if not group_by_set & (set(metadata.columns) | constants.GROUP_BY_GENERATED_COLUMNS):
         raise AugurError(f"The specified group-by categories ({group_by}) were not found.")
 
     # Warn/error based on other columns grouped with 'week'.
@@ -108,7 +108,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             # Set generated columns to 'unknown'.
             print_err(f"WARNING: A 'date' column could not be found to group-by {sorted(generated_columns_requested)}.")
             print_err(f"Filtering by group may behave differently than expected!")
-            df_dates = pd.DataFrame({col: 'unknown' for col in GROUP_BY_GENERATED_COLUMNS}, index=metadata.index)
+            df_dates = pd.DataFrame({col: 'unknown' for col in constants.GROUP_BY_GENERATED_COLUMNS}, index=metadata.index)
             metadata = pd.concat([metadata, df_dates], axis=1)
         else:
             # Create a DataFrame with year/month/day columns as nullable ints.

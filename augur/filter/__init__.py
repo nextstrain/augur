@@ -4,10 +4,8 @@ Filter and subsample a sequence set.
 from augur.dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT
 from augur.io.metadata import VALID_ID_COLUMNS
 from augur.types import EmptyOutputReportingMethod
+from . import constants
 
-
-# Use sorted() for reproducible output
-GROUP_BY_GENERATED_COLUMNS = {'year', 'month', 'week'}
 
 def register_arguments(parser):
     """
@@ -49,10 +47,10 @@ def register_arguments(parser):
     subsample_group.add_argument('--group-by', nargs='+', help=f"""
         categories with respect to subsample.
         Notes:
-        (1) Grouping by {sorted(GROUP_BY_GENERATED_COLUMNS)} is only supported when there is a 'date' column in the metadata.
+        (1) Grouping by {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} is only supported when there is a 'date' column in the metadata.
         (2) 'week' uses the ISO week numbering system, where a week starts on a Monday and ends on a Sunday.
         (3) 'month' and 'week' grouping cannot be used together.
-        (4) Custom columns {sorted(GROUP_BY_GENERATED_COLUMNS)} in the metadata are ignored for grouping. Please rename them if you want to use their values for grouping.""")
+        (4) Custom columns {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} in the metadata are ignored for grouping. Please rename them if you want to use their values for grouping.""")
     subsample_limits_group = subsample_group.add_mutually_exclusive_group()
     subsample_limits_group.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     subsample_limits_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences; can be used without the group_by argument")
