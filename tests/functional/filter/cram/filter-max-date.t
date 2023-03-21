@@ -6,16 +6,16 @@ Create metadata TSV file for testing.
 
   $ cat >metadata.tsv <<~~
   > strain	date
-  > SEQ_1	2020-02-XX
-  > SEQ_2	2020-02-26
-  > SEQ_3	2020-02-25
+  > SEQ_1	2020-03-XX
+  > SEQ_2	2020-03-01
+  > SEQ_3	2020-03-02
   > ~~
 
-Test that --min-date is inclusive.
+Test that --max-date is inclusive.
 
   $ ${AUGUR} filter \
   >  --metadata metadata.tsv \
-  >  --min-date 2020-02-26 \
+  >  --max-date 2020-03-01 \
   >  --output-strains filtered_strains.txt > /dev/null
   $ sort filtered_strains.txt
   SEQ_1
