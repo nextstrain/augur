@@ -20,20 +20,22 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
     ----------
     metadata_file : str
         Path to a metadata file to load.
-    id_columns : list[str]
+    id_columns : list of str
         List of possible id column names to check for, ordered by priority.
     chunk_size : int
         Size of chunks to stream from disk with an iterator instead of loading the entire input file into memory.
 
     Returns
     -------
-    pandas.DataFrame or pandas.TextFileReader
+    pandas.DataFrame or `pandas.io.parsers.TextFileReader`
 
     Raises
     ------
-    KeyError :
+    KeyError
         When the metadata file does not have any valid index columns.
 
+    Examples
+    --------
 
     For standard use, request a metadata file and get a pandas DataFrame.
 
@@ -127,7 +129,7 @@ def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, i
 
     Raises
     ------
-    AugurError:
+    AugurError
         Raised for any of the following reasons:
         1. There are parsing errors from the csv standard library
         2. The provided *id_column* does not exist in the *metadata*
@@ -391,7 +393,7 @@ def write_records_to_tsv(records, output_file):
 
     Parameters
     ----------
-    records: iterator[dict]
+    records: iterable of dict
         Iterator that yields dict that contains sequences
 
     output_file: str

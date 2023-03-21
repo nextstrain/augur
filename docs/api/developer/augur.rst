@@ -13,6 +13,7 @@ augur
    augur.clades
    augur.dates
    augur.distance
+   augur.errors
    augur.export
    augur.export_v1
    augur.export_v2
@@ -35,6 +36,7 @@ augur
    augur.traits
    augur.translate
    augur.tree
+   augur.types
    augur.util_support
    augur.utils
    augur.validate

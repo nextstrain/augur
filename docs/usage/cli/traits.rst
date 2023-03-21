@@ -2,7 +2,10 @@
 augur traits
 ============
 
-.. contents::
+.. contents:: Table of Contents
+   :local:
+
+----
 
 .. argparse::
     :module: augur

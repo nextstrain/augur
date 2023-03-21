@@ -41,7 +41,8 @@ def filter_kwargs_to_str(kwargs):
     str :
         String representation of the kwargs for reporting.
 
-
+    Examples
+    --------
     >>> from augur.dates import numeric_date
     >>> from augur.filter.include_exclude_rules import filter_by_sequence_length, filter_by_date
     >>> sequence_index = pd.DataFrame([{"strain": "strain1", "ACGT": 28000}, {"strain": "strain2", "ACGT": 26000}, {"strain": "strain3", "ACGT": 5000}]).set_index("strain")

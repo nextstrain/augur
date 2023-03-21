@@ -61,6 +61,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinxarg.ext',
     'sphinx.ext.napoleon',
+    'sphinx_autodoc_typehints', # must come after napoleon https://github.com/tox-dev/sphinx-autodoc-typehints/blob/1.21.4/README.md#compatibility-with-sphinxextnapoleon
     'sphinx_markdown_tables',
     'sphinx.ext.intersphinx',
     'nextstrain.sphinx.theme',
@@ -116,8 +117,28 @@ html_css_files = [
     'css/custom.css',
 ]
 
+# -- Resolve build warnings --------------------------------------------------
+
+nitpick_ignore = [
+    # These are valid numpydoc keywords¹, but somehow they are not recognized by
+    # napoleon.
+    # ¹ https://numpydoc.readthedocs.io/en/v1.5.0/format.html#parameters
+    ('py:class', 'optional'),
+    ('py:class', 'iterable'),
+
+     # Some references get translated to these, but somehow they can't get
+     # resolved by intersphinx for a proper link.
+     ("py:class", "json.decoder.JSONDecodeError"),
+     ("py:class", "json.encoder.JSONEncoder"),
+]
+
 # -- Cross-project references ------------------------------------------------
 
 intersphinx_mapping = {
+    'Bio': ('https://biopython.org/docs/latest/api/', None),
     'docs.nextstrain.org': ('https://docs.nextstrain.org/en/latest/', None),
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable', None),
+    'pandas': ('https://pandas.pydata.org/docs', None),
+    'treetime': ('https://treetime.readthedocs.io/en/stable/', None),
 }

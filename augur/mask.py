@@ -35,7 +35,7 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
 
     Parameters
     ----------
-    mask_sites: list[int]
+    mask_sites: list of int
         A list of site indexes to exclude from the vcf.
     in_file: str
         The path to the vcf file you wish to mask.
@@ -84,9 +84,9 @@ def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask
 
     Parameters
     ----------
-    sequence : Bio.SeqIO.SeqRecord
+    sequence : Bio.SeqRecord.SeqRecord
         A sequence to be masked
-    mask_sites: list[int]
+    mask_sites: list of int
         A list of site indexes to exclude from the FASTA.
     mask_from_beginning: int
         Number of sites to mask from the beginning of each sequence (default 0)
@@ -97,7 +97,7 @@ def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask
 
     Returns
     -------
-    Bio.SeqIO.SeqRecord
+    Bio.SeqRecord.SeqRecord
         Masked sequence in its original record object
 
     """
@@ -132,7 +132,7 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
 
     Parameters
     ----------
-    mask_sites: list[int]
+    mask_sites: list of int
         A list of site indexes to exclude from the FASTA.
     in_file: str
         The path to the FASTA file you wish to mask.

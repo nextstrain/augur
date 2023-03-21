@@ -68,7 +68,8 @@ def check_conflicting_args(tree_builder_args, defaults):
     ConflictingArgumentsException
         When any user-provided arguments match those in the defaults.
 
-
+    Examples
+    --------
     >>> defaults = ("-ntmax", "-m", "-s")
     >>> check_conflicting_args("-czb -n 2", defaults)
     >>> check_conflicting_args("-czb -ntmax 2", defaults)

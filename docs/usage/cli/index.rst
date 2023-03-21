@@ -2,6 +2,11 @@
 augur index
 ============
 
+.. contents:: Table of Contents
+   :local:
+
+----
+
 .. argparse::
     :module: augur
     :func: make_parser
@@ -11,7 +16,7 @@ augur index
 Speed up filtering with a sequence index
 ========================================
 
-As we describe in :doc:`the zika tutorial <docs.nextstrain.org:tutorials/zika>`, augur index precalculates the composition of the sequences (e.g., numbers of nucleotides, gaps, invalid characters, and total sequence length) prior to filtering.
+As we describe in :doc:`the zika tutorial <docs.nextstrain.org:tutorials/creating-a-workflow>`, augur index precalculates the composition of the sequences (e.g., numbers of nucleotides, gaps, invalid characters, and total sequence length) prior to filtering.
 The resulting sequence index speeds up subsequent filter steps especially in more complex workflows.
 
 .. code-block:: bash

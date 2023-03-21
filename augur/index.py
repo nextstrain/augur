@@ -26,9 +26,9 @@ def index_vcf(vcf_path, index_path):
 
     Parameters
     ----------
-    vcf_path : str or Path-like
+    vcf_path : str or `os.PathLike`
         path to a VCF file to index.
-    index_path : str or Path-like
+    index_path : str or `os.PathLike`
         path to a tab-delimited file containing the composition details for each
         sequence in the given input file.
 
@@ -63,7 +63,7 @@ def index_sequence(sequence, values):
     sequence : Bio.SeqRecord.SeqRecord
         sequence record to index.
 
-    values : list of sets of str
+    values : list of set of str
         values to count; sets must be non-overlapping and contain only
         single-character, lowercase strings
 
@@ -74,7 +74,8 @@ def index_sequence(sequence, values):
         for the given values, and a final column with the number of characters
         that didn't match any of those in the given values.
 
-
+    Examples
+    --------
     >>> other_IUPAC = {'r', 'y', 's', 'w', 'k', 'm', 'd', 'h', 'b', 'v'}
     >>> values = [{'a'},{'c'},{'g'},{'t'},{'n'}, other_IUPAC, {'-'}, {'?'}]
     >>> sequence_a = Bio.SeqRecord.SeqRecord(seq=Bio.Seq.Seq("ACTGN-?XWN"), id="seq_A")
@@ -153,10 +154,10 @@ def index_sequences(sequences_path, sequence_index_path):
 
     Parameters
     ----------
-    sequences_path : str or Path-like
+    sequences_path : str or `os.PathLike`
         path to a sequence file to index.
 
-    sequence_index_path : str or Path-like
+    sequence_index_path : str or `os.PathLike`
         path to a tab-delimited file containing the composition details for each
         sequence in the given input file.
 

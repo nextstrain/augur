@@ -2,7 +2,8 @@
 augur parse
 ===========
 
-* `Example: how to parse metadata from fasta-headers <#example-how-to-parse-metadata-from-fasta-headers>`__
+.. contents:: Table of Contents
+   :local:
 
 ----
 

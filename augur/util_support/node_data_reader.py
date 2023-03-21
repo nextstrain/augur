@@ -16,7 +16,7 @@ class NodeDataReader:
 
     If a tree file is specified, it is used to verify the node names.
 
-    If validation_mode is set to :py:attr:`ValidationMode.SKIP`, Augur version of node data files is not checked.
+    If validation_mode is set to :py:attr:`augur.types.ValidationMode.SKIP`, Augur version of node data files is not checked.
     """
 
     def __init__(self, filenames, tree_file=None, validation_mode=ValidationMode.ERROR):

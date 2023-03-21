@@ -31,7 +31,8 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     list :
         A list of dictionaries with strains that were skipped from grouping and the reason why (see also: `apply_filters` output).
 
-
+    Examples
+    --------
     >>> strains = ["strain1", "strain2"]
     >>> metadata = pd.DataFrame([{"strain": "strain1", "date": "2020-01-01", "region": "Africa"}, {"strain": "strain2", "date": "2020-02-01", "region": "Europe"}]).set_index("strain")
     >>> group_by = ["region"]
@@ -253,6 +254,9 @@ class PriorityQueue:
     """A priority queue implementation that automatically replaces lower priority
     items in the heap with incoming higher priority items.
 
+    Examples
+    --------
+
     Add a single record to a heap with a maximum of 2 records.
 
     >>> queue = PriorityQueue(max_size=2)
@@ -334,6 +338,9 @@ def create_queues_by_group(groups, max_size, max_attempts=100, random_seed=None)
     attempts to create queues for which the sum of their maximum sizes is
     greater than zero.
 
+    Examples
+    --------
+
     Create queues for two groups with a fixed maximum size.
 
     >>> groups = ("2015", "2016")
@@ -395,7 +402,7 @@ def calculate_sequences_per_group(target_max_value, group_sizes, allow_probabili
     target_max_value : int
         Maximum number of sequences to return by subsampling at some calculated
         number of sequences per group for the given counts per group.
-    group_sizes : list[int]
+    group_sizes : list of int
         A list with the number of sequences in each requested group.
     allow_probabilistic : bool
         Whether to allow probabilistic subsampling when the number of groups
@@ -403,7 +410,7 @@ def calculate_sequences_per_group(target_max_value, group_sizes, allow_probabili
 
     Raises
     ------
-    TooManyGroupsError :
+    TooManyGroupsError
         When there are more groups than sequences per group and probabilistic
         subsampling is not allowed.
 
@@ -477,6 +484,8 @@ def _calculate_sequences_per_group(
         maximum number of sequences allowed per group to meet the required maximum total
         sequences allowed
 
+    Examples
+    --------
     >>> _calculate_sequences_per_group(4, [4, 2])
     2
     >>> _calculate_sequences_per_group(2, [4, 2])
@@ -532,6 +541,8 @@ def _calculate_fractional_sequences_per_group(
         fractional maximum number of sequences allowed per group to meet the
         required maximum total sequences allowed
 
+    Examples
+    --------
     >>> np.around(_calculate_fractional_sequences_per_group(4, [4, 2]), 4)
     1.9375
     >>> np.around(_calculate_fractional_sequences_per_group(2, [4, 2]), 4)

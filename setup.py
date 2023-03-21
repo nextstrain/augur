@@ -82,6 +82,7 @@ setuptools.setup(
             "sphinx-argparse >=0.2.5",
             "sphinx-markdown-tables >= 0.0.9",
             "sphinx-rtd-theme >=0.4.3",
+            "sphinx-autodoc-typehints >=1.21.4",
             "wheel >=0.32.3",
             "ipdb >=0.10.1"
         ]

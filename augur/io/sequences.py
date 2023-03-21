@@ -12,7 +12,7 @@ def read_sequences(*paths, format="fasta"):
 
     Parameters
     ----------
-    paths : list of str or Path-like objects
+    paths : list of str or `os.PathLike`
         One or more paths to sequence files of any type supported by BioPython.
 
     format : str
@@ -44,10 +44,10 @@ def write_sequences(sequences, path_or_buffer, format="fasta"):
 
     Parameters
     ----------
-    sequences : iterable of Bio.SeqRecord.SeqRecord objects
+    sequences : iterable of Bio.SeqRecord.SeqRecord
         A list-like collection of sequences to write
 
-    path_or_buffer : str or Path-like object or IO buffer
+    path_or_buffer : str or `os.PathLike` or `io.StringIO`
         A path to a file to write the given sequences in the given format.
 
     format : str
@@ -82,7 +82,7 @@ def write_records_to_fasta(records, fasta, seq_id_field='strain', seq_field='seq
 
     Parameters
     ----------
-    records: iterator[dict]
+    records: iterable of dict
         Iterator that yields dict that contains sequences
 
     fasta: str
@@ -101,7 +101,7 @@ def write_records_to_fasta(records, fasta, seq_id_field='strain', seq_field='seq
 
     Raises
     ------
-    AugurError:
+    AugurError
         When the sequence id field or sequence field does not exist in a record
     """
     with open_file(fasta, "w") as output_fasta:

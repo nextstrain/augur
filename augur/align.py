@@ -54,7 +54,7 @@ def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
 
     Parameters
     ----------
-    sequences : list[str]
+    sequences : list of str
         List of paths to FASTA-formatted sequences to align.
     existing_aln_fname : str
         Path of an existing alignment to use, or None
@@ -67,7 +67,8 @@ def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
 
     Returns
     -------
-        tuple: The existing alignment filename, the new sequences filename, and the name of the reference sequence.
+    tuple of str
+        The existing alignment filename, the new sequences filename, and the name of the reference sequence.
     """
     seqs = read_sequences(*sequences)
     seqs_to_align_fname = output + ".to_align.fasta"
@@ -104,7 +105,7 @@ def run(args):
     '''
     Parameters
     ----------
-    args : namespace
+    args : argparse.Namespace
         arguments passed in via the command-line from augur
 
     Returns
@@ -152,6 +153,8 @@ def run(args):
 def postprocess(output_file, ref_name, keep_reference, fill_gaps):
     """Postprocessing of the combined alignment file.
 
+    The modified alignment is written directly to output_file.
+
     Parameters
     ----------
     output_file: str
@@ -162,10 +165,6 @@ def postprocess(output_file, ref_name, keep_reference, fill_gaps):
         If the reference was provided, whether it should be kept in the alignment
     fill_gaps: bool
         Replace all gaps in the alignment with "N" to indicate ambiguous sites.
-
-    Returns
-    -------
-        None - the modified alignment is written directly to output_file
     """
     # -- ref_name --
     # reads the new alignment
@@ -270,7 +269,7 @@ def strip_non_reference(aln, reference, insertion_csv=None):
 
     Parameters
     ----------
-    aln : MultipleSeqAlign
+    aln : Bio.Align.MultipleSeqAlignment
         Biopython Alignment
     reference : str
         name of reference sequence, assumed to be part of the alignment
@@ -280,9 +279,8 @@ def strip_non_reference(aln, reference, insertion_csv=None):
     list
         list of trimmed sequences, effectively a multiple alignment
 
-
-    Tests
-    -----
+    Examples
+    --------
     >>> [s.name for s in strip_non_reference(read_alignment("tests/data/align/test_aligned_sequences.fasta"), "with_gaps")]
     Trimmed gaps in with_gaps from the alignment
     ['with_gaps', 'no_gaps', 'some_other_seq', '_R_crick_strand']
@@ -384,7 +382,7 @@ def prettify_alignment(aln):
 
     Parameters
     ----------
-    aln : MultipleSeqAlign
+    aln : Bio.Align.MultipleSeqAlignment
         Biopython Alignment
     '''
     for seq in aln:
@@ -407,7 +405,7 @@ def make_gaps_ambiguous(aln):
 
     Parameters
     ----------
-    aln : MultipleSeqAlign
+    aln : Bio.Align.MultipleSeqAlignment
         Biopython Alignment
     '''
     for seq in aln:

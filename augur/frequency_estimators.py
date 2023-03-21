@@ -46,7 +46,7 @@ def get_pivots(observations, pivot_interval, start_date=None, end_date=None, piv
 
     Returns
     -------
-    pivots : ndarray
+    pivots : numpy.ndarray
         floating point pivots spanning the given the dates
 
     """
@@ -92,18 +92,18 @@ def make_pivots(pivots, tps):
 
     Parameters
     ----------
-    pivots : scalar or iterable
+    pivots : int or iterable
         either number of pivots (a scalar) or the actual pivots
         (will be cast to array and returned)
-    tps : np.array
+    tps : numpy.ndarray
         observation time points. Will generate pivots spanning min/max
 
     Returns
     -------
-    pivots : np.array
+    pivots : numpy.ndarray
         array of pivot values
     '''
-    if np.isscalar(pivots):
+    if isinstance(pivots, int):
         dt = np.max(tps)-np.min(tps)
         return np.linspace(np.min(tps)-0.01*dt, np.max(tps)+0.01*dt, pivots)
     else:
@@ -124,14 +124,14 @@ def running_average(obs, ws):
 
     Parameters
     ----------
-    obs : list/np.array(bool)
+    obs : list or numpy.ndarray(bool)
         observations
     ws : int
         window size as measured in number of consecutive points
 
     Returns
     -------
-    np.array(float)
+    numpy.ndarray(float)
         running average of the boolean observations
     '''
     ws=int(ws)
@@ -157,14 +157,14 @@ def fix_freq(freq, pc):
 
     Parameters
     ----------
-    freq : np.array
+    freq : numpy.ndarray
         frequency trajectory to be thresholded
     pc : float
         threshold value
 
     Returns
     -------
-    np.array
+    numpy.ndarray
         thresholded frequency trajectory
     '''
     freq[np.isnan(freq)]=pc
@@ -200,11 +200,11 @@ class frequency_estimator(object):
 
         Parameters
         ----------
-        tps : list/np.array(float)
+        tps : list or numpy.ndarray(float)
             array with numerical dates
-        obs : list/np.array(bool)
+        obs : list or numpy.ndarray(bool)
             array with boolean observations
-        pivots : int/np.array(float)
+        pivots : int or numpy.ndarray(float)
             either integer specifying the number of pivot values,
             or list of explicity pivots
         stiffness : float, optional
@@ -329,25 +329,25 @@ class freq_est_clipped(object):
 
     Attributes
     ----------
-    dtps : TYPE
+    dtps
         Description
-    fe : TYPE
+    fe
         Description
-    good_pivots : TYPE
+    good_pivots
         Description
-    good_tps : TYPE
+    good_tps
         Description
-    obs : TYPE
+    obs
         Description
-    pivot_freq : TYPE
+    pivot_freq
         Description
-    pivot_lower_cutoff : TYPE
+    pivot_lower_cutoff
         Description
-    pivot_upper_cutoff : TYPE
+    pivot_upper_cutoff
         Description
-    pivots : TYPE
+    pivots
         Description
-    tps : TYPE
+    tps
         Description
     valid : bool
         Description
@@ -426,11 +426,11 @@ class nested_frequencies(object):
 
         Parameters
         ----------
-        tps : np.array
+        tps : numpy.ndarray
             array of numerical dates
-        obs : np.array(bool)
+        obs : numpy.ndarray(bool)
             array of true/false observations
-        pivots : np.array
+        pivots : numpy.ndarray
             pivot values
         **kwargs
             Description
@@ -476,9 +476,9 @@ class tree_frequencies(object):
 
         Parameters
         ----------
-        tree : Bio.Phylo.calde
+        tree : Bio.Phylo.BaseTree.Tree
             Biopython tree
-        pivots : int/array
+        pivots : int or array
             number or list of pivots
         node_filter : callable, optional
             function that evaluates to true/false to filter nodes
@@ -625,10 +625,10 @@ class alignment_frequencies(object):
         ----------
         aln : Bio.Align.MultipleSeqAlignment
             alignment
-        tps : np.array(float)
+        tps : np.ndarray(float)
             Array of numerical dates, one for each sequence in the
             alignment in the SAME ORDER!
-        pivots : np.array(float)
+        pivots : np.ndarray(float)
             pivot values for which frequencies are estimated
         **kwargs
             Description
@@ -653,7 +653,7 @@ class alignment_frequencies(object):
 
         Returns
         -------
-        np.array
+        numpy.ndarray
             frequency trajectory
         '''
         match = []
@@ -676,7 +676,7 @@ class alignment_frequencies(object):
         ----------
         min_freq : float, optional
             minimal all-time frequency for an aligment column to be considered
-        include_set : list/set, optional
+        include_set : list or set, optional
             set of alignment column that will be used regardless of variation
         ignore_char : str, optional
             ignore this character in an alignment column (missing data)
@@ -852,6 +852,8 @@ def timestamp_to_float(time):
     This is not entirely accurate as it doesn't account for months with different
     numbers of days, but should be close enough to be accurate for weekly pivots.
 
+    Examples
+    --------
     >>> import datetime
     >>> time = datetime.date(2010, 10, 1)
     >>> timestamp_to_float(time)
@@ -1074,7 +1076,7 @@ class TreeKdeFrequencies(KdeFrequencies):
         If no filters are defined, returns True.
 
         Args:
-            tip (Bio.Phylo): tip from a Bio.Phylo tree annotated with attributes in `tip.attr`
+            tip (Bio.Phylo.BaseTree.Tree): tip from a Bio.Phylo tree annotated with attributes in `tip.attr`
 
         Returns:
             bool: whether the given tip passes the defined filters or not
@@ -1130,10 +1132,10 @@ class TreeKdeFrequencies(KdeFrequencies):
         values in attribute defined by `self.weights_attribute`.
 
         Args:
-            tree (Bio.Phylo): annotated tree whose nodes all have an `attr` attribute with at least  "num_date" key
+            tree (Bio.Phylo.BaseTree.Tree): annotated tree whose nodes all have an `attr` attribute with at least  "num_date" key
 
         Returns:
-            frequencies (dict): node frequencies by clade
+            dict: node frequencies by clade
 
         """
         # Calculate pivots for the given tree.

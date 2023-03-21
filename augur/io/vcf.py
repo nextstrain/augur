@@ -10,6 +10,8 @@ shquote = shlex.quote
 def is_vcf(filename):
     """Convenience method to check if a file is a vcf file.
 
+    Examples
+    --------
     >>> is_vcf(None)
     False
     >>> is_vcf("./foo")

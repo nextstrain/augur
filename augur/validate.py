@@ -203,6 +203,8 @@ def get_unique_keys(list_of_dicts):
     """
     Returns a set of unique keys from a list of dicts
 
+    Examples
+    --------
     >>> list_of_dicts = [{"key1": "val1", "key2": "val2"}, {"key1": "val1", "key3": "val3"}]
     >>> sorted(get_unique_keys(list_of_dicts))
     ['key1', 'key2', 'key3']

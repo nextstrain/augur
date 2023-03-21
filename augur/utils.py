@@ -58,7 +58,7 @@ def read_tree(fname, min_terminals=3):
 
     Returns
     -------
-    Bio.Phylo :
+    Bio.Phylo.BaseTree.Tree :
         BioPython tree instance
 
     """
@@ -318,6 +318,8 @@ def get_parent_name_by_child_name_for_tree(tree):
 def annotate_parents_for_tree(tree):
     """Annotate each node in the given tree with its parent.
 
+    Examples
+    --------
     >>> import io
     >>> tree = Bio.Phylo.read(io.StringIO("(A, (B, C))"), "newick")
     >>> not any([hasattr(node, "parent") for node in tree.find_clades()])
@@ -342,6 +344,9 @@ def json_to_tree(json_dict, root=True, parent_cumulative_branch_length=None):
     by `tree_to_json`.
 
     Assigns links back to parent nodes for the root of the tree.
+
+    Examples
+    --------
 
     Test opening a JSON from augur export v1.
 
@@ -456,7 +461,7 @@ def read_bed_file(bed_file):
 
     Returns
     -------
-    list[int]:
+    list of int:
         Sorted list of unique zero-indexed sites
     """
     mask_sites = []
@@ -487,7 +492,7 @@ def read_mask_file(mask_file):
 
     Returns
     -------
-    list[int]:
+    list of int:
         Sorted list of unique zero-indexed sites
     """
     mask_sites = []
@@ -513,7 +518,7 @@ def load_mask_sites(mask_file):
 
     Returns
     -------
-    list[int]
+    list of int
         Sorted list of unique zero-indexed sites
     """
     if mask_file.lower().endswith(".bed"):
@@ -543,7 +548,7 @@ def read_strains(*files, comment_char="#"):
 
     Parameters
     ----------
-    files : one or more str
+    files : iterable of str
         one or more names of text files with one strain name per line
 
     Returns
