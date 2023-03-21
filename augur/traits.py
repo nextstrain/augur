@@ -97,7 +97,7 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
     return tt.tree, tt.gtr, letter_to_state
 
 
-def register_parser(parent_subparsers):
+def register_parser(parent_subparsers, **kwargs):
     """Add subcommand specific arguments
 
     Parameters
@@ -105,7 +105,7 @@ def register_parser(parent_subparsers):
     parser : argparse
         subcommand argument parser
     """
-    parser = parent_subparsers.add_parser("traits", help=__doc__)
+    parser = parent_subparsers.add_parser("traits", **kwargs)
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
     parser.add_argument('--metadata', required=True, metavar="FILE", help="table with metadata, as CSV or TSV")
     parser.add_argument('--weights', required=False, help="tsv/csv table with equilibrium probabilities of discrete states")

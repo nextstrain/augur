@@ -93,8 +93,8 @@ def collect_node_data(T, attributes):
     return data
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("refine", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("refine", **kwargs)
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     parser.add_argument('--metadata', type=str, metavar="FILE", help="sequence metadata, as CSV or TSV")

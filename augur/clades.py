@@ -248,8 +248,8 @@ def get_reference_sequence_from_root_node(all_muts, root_name):
     return ref
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("clades", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("clades", **kwargs)
     parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
     parser.add_argument('--mutations', nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
     parser.add_argument('--reference', nargs='+', help='fasta files containing reference and tip nucleotide and/or amino-acid sequences ')

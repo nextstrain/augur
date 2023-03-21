@@ -184,8 +184,8 @@ def register_arguments(parser):
     parser.add_argument('--no-cleanup', dest="cleanup", action="store_false",
                         help="Leave intermediate files around. May be useful for debugging")
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("mask", help=__doc__)
+def register_parser(parent_subparsers, **kwargs):
+    parser = parent_subparsers.add_parser("mask", **kwargs)
     register_arguments(parser)
     return parser
 
