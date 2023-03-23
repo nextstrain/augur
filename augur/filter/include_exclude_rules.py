@@ -298,15 +298,10 @@ def filter_by_max_date(date_column, max_date) -> FilterFunctionReturn:
     return filtered
 
 
-def filter_by_sequence_index(sequence_index) -> FilterFunctionReturn:
+def filter_by_sequence_index() -> FilterFunctionReturn:
     """Filter by presence of corresponding entries in a given sequence
     index. This filter effectively intersects the strain ids in the metadata and
     sequence index.
-
-    Parameters
-    ----------
-    sequence_index : pandas.DataFrame
-        Sequence index
     """
     metadata_strains = set(metadata.index.values)
     sequence_index_strains = set(sequence_index.index.values)
@@ -314,13 +309,12 @@ def filter_by_sequence_index(sequence_index) -> FilterFunctionReturn:
     return metadata_strains & sequence_index_strains
 
 
-def filter_by_min_length(metadata, sequence_index, min_length) -> FilterFunctionReturn:
+# FIXME: remove metadata in previous commit
+def filter_by_min_length(min_length) -> FilterFunctionReturn:
     """Filter by sequence length from a given sequence index.
 
     Parameters
     ----------
-    sequence_index : pandas.DataFrame
-        Sequence index
     min_length : int
         Minimum number of standard nucleotide characters (A, C, G, or T) in each sequence
     """
@@ -333,13 +327,11 @@ def filter_by_min_length(metadata, sequence_index, min_length) -> FilterFunction
     return set(filtered_sequence_index[filtered_sequence_index["ACGT"] >= min_length].index.values)
 
 
-def filter_by_max_length(sequence_index, max_length) -> FilterFunctionReturn:
+def filter_by_max_length(max_length) -> FilterFunctionReturn:
     """Filter metadata by sequence length from a given sequence index.
 
     Parameters
     ----------
-    sequence_index : pandas.DataFrame
-        Sequence index
     max_length : int
         Maximum number of standard nucleotide characters (A, C, G, or T) in each sequence
     """
@@ -352,13 +344,8 @@ def filter_by_max_length(sequence_index, max_length) -> FilterFunctionReturn:
     return set(filtered_sequence_index[filtered_sequence_index["ACGT"] <= max_length].index.values)
 
 
-def filter_by_non_nucleotide(sequence_index) -> FilterFunctionReturn:
+def filter_by_non_nucleotide() -> FilterFunctionReturn:
     """Filter for strains with invalid nucleotide content.
-
-    Parameters
-    ----------
-    sequence_index : pandas.DataFrame
-        Sequence index
     """
     strains = set(metadata.index.values)
     filtered_sequence_index = sequence_index.loc[
@@ -451,12 +438,7 @@ def construct_filters(args) -> Tuple[List[FilterOption], List[FilterOption]]:
 
     # Filter by sequence index.
     if constants.sequence_index is not None:
-        exclude_by.append((
-            filter_by_sequence_index,
-            {
-                "sequence_index": constants.sequence_index,
-            },
-        ))
+        exclude_by.append((filter_by_sequence_index, {}))
 
     # Remove strains explicitly excluded by name.
     if args.exclude:
@@ -526,7 +508,6 @@ def construct_filters(args) -> Tuple[List[FilterOption], List[FilterOption]]:
             exclude_by.append((
                 filter_by_min_length,
                 {
-                    "sequence_index": constants.sequence_index,
                     "min_length": args.min_length,
                 }
             ))
@@ -537,19 +518,13 @@ def construct_filters(args) -> Tuple[List[FilterOption], List[FilterOption]]:
             exclude_by.append((
                 filter_by_max_length,
                 {
-                    "sequence_index": sequence_index,
                     "max_length": args.max_length,
                 }
             ))
 
     # Exclude sequences with non-nucleotide characters.
     if args.non_nucleotide:
-        exclude_by.append((
-            filter_by_non_nucleotide,
-            {
-                "sequence_index": constants.sequence_index,
-            }
-        ))
+        exclude_by.append((filter_by_non_nucleotide, {}))
 
     if args.group_by:
         # The order in which these are applied later should be broad → specific
@@ -674,8 +649,7 @@ def _filter_kwargs_to_str(kwargs: FilterFunctionKwargs):
     --------
     >>> from augur.dates import numeric_date
     >>> from augur.filter.include_exclude_rules import filter_by_min_length, filter_by_min_date
-    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "ACGT": 28000}, {"strain": "strain2", "ACGT": 26000}, {"strain": "strain3", "ACGT": 5000}]).set_index("strain")
-    >>> exclude_by = [(filter_by_min_length, {"sequence_index": sequence_index, "min_length": 27000})]
+    >>> exclude_by = [(filter_by_min_length, {"min_length": 27000})]
     >>> _filter_kwargs_to_str(exclude_by[0][1])
     '[["min_length", 27000]]'
     >>> exclude_by = [(filter_by_min_date, {"date_column": "date", "min_date": numeric_date("2020-03-01")})]
@@ -692,10 +666,8 @@ def _filter_kwargs_to_str(kwargs: FilterFunctionKwargs):
         value = kwargs[key]
 
         # Handle special cases for data types that we want to represent
-        # differently from their defaults or not at all.
-        if isinstance(value, pd.DataFrame):
-            continue
-        elif isinstance(value, float):
+        # differently from their defaults.
+        if isinstance(value, float):
             value = round(value, 2)
 
         kwarg_list.append((key, value))
