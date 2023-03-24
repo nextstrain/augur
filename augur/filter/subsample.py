@@ -87,15 +87,15 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     if not group_by_set & (set(metadata.columns) | constants.GROUP_BY_GENERATED_COLUMNS):
         raise AugurError(f"The specified group-by categories ({group_by}) were not found.")
 
-    # Warn/error based on other columns grouped with 'week'.
-    if 'week' in group_by_set:
-        if 'year' in group_by_set:
-            print_err(f"WARNING: 'year' grouping will be ignored since 'week' includes ISO year.")
-            group_by.remove('year')
-            group_by_set.remove('year')
-            generated_columns_requested.remove('year')
-        if 'month' in group_by_set:
-            raise AugurError("'month' and 'week' grouping cannot be used together.")
+    # Warn/error based on other columns grouped with week.
+    if constants.DATE_WEEK_COLUMN in group_by_set:
+        if constants.DATE_YEAR_COLUMN in group_by_set:
+            print_err(f"WARNING: {constants.DATE_YEAR_COLUMN!r} grouping will be ignored since {constants.DATE_WEEK_COLUMN!r} includes ISO year.")
+            group_by.remove(constants.DATE_YEAR_COLUMN)
+            group_by_set.remove(constants.DATE_YEAR_COLUMN)
+            generated_columns_requested.remove(constants.DATE_YEAR_COLUMN)
+        if constants.DATE_MONTH_COLUMN in group_by_set:
+            raise AugurError(f"{constants.DATE_MONTH_COLUMN!r} and {constants.DATE_WEEK_COLUMN!r} grouping cannot be used together.")
 
     if generated_columns_requested:
 
@@ -133,18 +133,18 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                 return group_by_strain
 
             # Generate columns.
-            if 'year' in generated_columns_requested:
-                metadata['year'] = metadata[f'{temp_prefix}year']
-            if 'month' in generated_columns_requested:
-                metadata['month'] = list(zip(
+            if constants.DATE_YEAR_COLUMN in generated_columns_requested:
+                metadata[constants.DATE_YEAR_COLUMN] = metadata[f'{temp_prefix}year']
+            if constants.DATE_MONTH_COLUMN in generated_columns_requested:
+                metadata[constants.DATE_MONTH_COLUMN] = list(zip(
                     metadata[f'{temp_prefix}year'],
                     metadata[f'{temp_prefix}month']
                 ))
-            if 'week' in generated_columns_requested:
+            if constants.DATE_WEEK_COLUMN in generated_columns_requested:
                 # Note that week = (year, week) from the date.isocalendar().
                 # Do not combine the raw year with the ISO week number alone,
                 # since raw year ≠ ISO year.
-                metadata['week'] = metadata.apply(lambda row: get_iso_year_week(
+                metadata[constants.DATE_WEEK_COLUMN] = metadata.apply(lambda row: get_iso_year_week(
                     row[f'{temp_prefix}year'],
                     row[f'{temp_prefix}month'],
                     row[f'{temp_prefix}day']

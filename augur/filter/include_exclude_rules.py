@@ -607,17 +607,17 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
         # The order in which these are applied later should be broad → specific
         # ambiguity (e.g. year then month), otherwise broad ambiguity will be
         # captured by specific ambiguity.
-        if {"year", "month", "week"} & set(args.group_by):
+        if {constants.DATE_YEAR_COLUMN, constants.DATE_MONTH_COLUMN, constants.DATE_WEEK_COLUMN} & set(args.group_by):
             exclude_by.append((
                 skip_group_by_with_ambiguous_year,
                 {"date_column": constants.METADATA_DATE_COLUMN}
             ))
-        if {"month", "week"} & set(args.group_by):
+        if {constants.DATE_MONTH_COLUMN, constants.DATE_WEEK_COLUMN} & set(args.group_by):
             exclude_by.append((
                 skip_group_by_with_ambiguous_month,
                 {"date_column": constants.METADATA_DATE_COLUMN}
             ))
-        if "week" in args.group_by:
+        if constants.DATE_WEEK_COLUMN in args.group_by:
             exclude_by.append((
                 skip_group_by_with_ambiguous_day,
                 {"date_column": constants.METADATA_DATE_COLUMN}
