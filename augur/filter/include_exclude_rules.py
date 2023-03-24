@@ -185,7 +185,7 @@ def filter_by_query(metadata, query):
     return set(metadata.query(query).index.values)
 
 
-def filter_by_ambiguous_date(metadata, date_column="date", ambiguity="any"):
+def filter_by_ambiguous_date(metadata, date_column, ambiguity):
     """Filter metadata in the given pandas DataFrame where values in the given date
     column have a given level of ambiguity.
 
@@ -206,14 +206,14 @@ def filter_by_ambiguous_date(metadata, date_column="date", ambiguity="any"):
     Examples
     --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-XX"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> filter_by_ambiguous_date(metadata)
+    >>> filter_by_ambiguous_date(metadata, date_column="date", ambiguity="any")
     {'strain2'}
-    >>> sorted(filter_by_ambiguous_date(metadata, ambiguity="month"))
+    >>> sorted(filter_by_ambiguous_date(metadata, date_column="date", ambiguity="month"))
     ['strain1', 'strain2']
 
     If the requested date column does not exist, we quietly skip this filter.
 
-    >>> sorted(filter_by_ambiguous_date(metadata, date_column="missing_column"))
+    >>> sorted(filter_by_ambiguous_date(metadata, date_column="missing_column", ambiguity="any"))
     ['strain1', 'strain2']
 
     """
@@ -228,7 +228,7 @@ def filter_by_ambiguous_date(metadata, date_column="date", ambiguity="any"):
     return filtered
 
 
-def filter_by_date(metadata, date_column="date", min_date=None, max_date=None):
+def filter_by_date(metadata, date_column, min_date=None, max_date=None):
     """Filter metadata by minimum or maximum date.
 
     Parameters
@@ -250,15 +250,15 @@ def filter_by_date(metadata, date_column="date", min_date=None, max_date=None):
     Examples
     --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> filter_by_date(metadata, min_date=numeric_date("2020-01-02"))
+    >>> filter_by_date(metadata, date_column="date", min_date=numeric_date("2020-01-02"))
     {'strain2'}
-    >>> filter_by_date(metadata, max_date=numeric_date("2020-01-01"))
+    >>> filter_by_date(metadata, date_column="date", max_date=numeric_date("2020-01-01"))
     {'strain1'}
-    >>> filter_by_date(metadata, min_date=numeric_date("2020-01-03"), max_date=numeric_date("2020-01-10"))
+    >>> filter_by_date(metadata, date_column="date", min_date=numeric_date("2020-01-03"), max_date=numeric_date("2020-01-10"))
     set()
-    >>> sorted(filter_by_date(metadata, min_date=numeric_date("2019-12-30"), max_date=numeric_date("2020-01-10")))
+    >>> sorted(filter_by_date(metadata, date_column="date", min_date=numeric_date("2019-12-30"), max_date=numeric_date("2020-01-10")))
     ['strain1', 'strain2']
-    >>> sorted(filter_by_date(metadata))
+    >>> sorted(filter_by_date(metadata, date_column="date"))
     ['strain1', 'strain2']
 
     If the requested date column does not exist, we quietly skip this filter.
@@ -333,7 +333,7 @@ def filter_by_sequence_index(metadata, sequence_index):
     return metadata_strains & sequence_index_strains
 
 
-def filter_by_sequence_length(metadata, sequence_index, min_length=0):
+def filter_by_sequence_length(metadata, sequence_index, min_length):
     """Filter metadata by sequence length from a given sequence index.
 
     Parameters
@@ -662,13 +662,13 @@ def apply_filters(metadata, exclude_by, include_by):
     Examples
     --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-10-02"}, {"region": "North America", "date": "2020-01-01"}], index=["strain1", "strain2", "strain3"])
-    >>> exclude_by = [(filter_by_date, {"min_date": numeric_date("2020-04-01")})]
+    >>> exclude_by = [(filter_by_date, {"date_column": "date", "min_date": numeric_date("2020-04-01")})]
     >>> include_by = [(force_include_where, {"include_where": "region=Africa"})]
     >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
     >>> strains_to_keep
     {'strain2'}
     >>> sorted(strains_to_exclude, key=lambda record: record["strain"])
-    [{'strain': 'strain1', 'filter': 'filter_by_date', 'kwargs': '[["min_date", 2020.25]]'}, {'strain': 'strain3', 'filter': 'filter_by_date', 'kwargs': '[["min_date", 2020.25]]'}]
+    [{'strain': 'strain1', 'filter': 'filter_by_date', 'kwargs': '[["date_column", "date"], ["min_date", 2020.25]]'}, {'strain': 'strain3', 'filter': 'filter_by_date', 'kwargs': '[["date_column", "date"], ["min_date", 2020.25]]'}]
     >>> strains_to_include
     [{'strain': 'strain1', 'filter': 'force_include_where', 'kwargs': '[["include_where", "region=Africa"]]'}]
 
@@ -786,9 +786,9 @@ def _filter_kwargs_to_str(kwargs):
     >>> exclude_by = [(filter_by_sequence_length, {"sequence_index": sequence_index, "min_length": 27000})]
     >>> _filter_kwargs_to_str(exclude_by[0][1])
     '[["min_length", 27000]]'
-    >>> exclude_by = [(filter_by_date, {"max_date": numeric_date("2020-04-01"), "min_date": numeric_date("2020-03-01")})]
+    >>> exclude_by = [(filter_by_date, {"date_column": "date", "max_date": numeric_date("2020-04-01"), "min_date": numeric_date("2020-03-01")})]
     >>> _filter_kwargs_to_str(exclude_by[0][1])
-    '[["max_date", 2020.25], ["min_date", 2020.17]]'
+    '[["date_column", "date"], ["max_date", 2020.25], ["min_date", 2020.17]]'
 
     """
     # Sort keys prior to processing to guarantee the same output order
