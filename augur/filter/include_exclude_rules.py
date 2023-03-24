@@ -673,7 +673,7 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
                 **filter_kwargs,
             )
         except Exception as e:
-            if filter_function.__name__ == 'filter_by_query':
+            if filter_function is filter_by_query:
                 try:
                     # pandas ≥1.5.0 only
                     UndefinedVariableError = pd.errors.UndefinedVariableError
