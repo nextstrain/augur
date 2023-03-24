@@ -212,20 +212,11 @@ def run(args):
             # If grouping, track the highest priority metadata records or
             # count the number of records per group. First, we need to get
             # the groups for the given records.
-            group_by_strain, skipped_strains = get_groups_for_subsampling(
+            group_by_strain = get_groups_for_subsampling(
                 seq_keep,
                 metadata,
                 group_by,
             )
-
-            # Track strains skipped during grouping, so users know why those
-            # strains were excluded from the analysis.
-            for skipped_strain in skipped_strains:
-                filter_counts[(skipped_strain["filter"], skipped_strain["kwargs"])] += 1
-                valid_strains.remove(skipped_strain["strain"])
-
-                if args.output_log:
-                    output_log_writer.writerow(skipped_strain)
 
             if args.subsample_max_sequences and records_per_group is not None:
                 # Count the number of records per group. We will use this
@@ -327,7 +318,7 @@ def run(args):
             # second pass, as in the first pass.
             seq_keep = seq_keep - all_sequences_to_include
 
-            group_by_strain, skipped_strains = get_groups_for_subsampling(
+            group_by_strain = get_groups_for_subsampling(
                 seq_keep,
                 metadata,
                 group_by,
@@ -465,9 +456,9 @@ def run(args):
         include_exclude_rules.filter_by_max_date.__name__: "{count} of these were dropped because they were later than {max_date} or missing a date",
         include_exclude_rules.filter_by_sequence_length.__name__: "{count} of these were dropped because they were shorter than minimum length of {min_length}bp",
         include_exclude_rules.filter_by_non_nucleotide.__name__: "{count} of these were dropped because they had non-nucleotide characters",
-        "skip_group_by_with_ambiguous_year": "{count} were dropped during grouping due to ambiguous year information",
-        "skip_group_by_with_ambiguous_month": "{count} were dropped during grouping due to ambiguous month information",
-        "skip_group_by_with_ambiguous_day": "{count} were dropped during grouping due to ambiguous day information",
+        include_exclude_rules.skip_group_by_with_ambiguous_year.__name__: "{count} were dropped during grouping due to ambiguous year information",
+        include_exclude_rules.skip_group_by_with_ambiguous_month.__name__: "{count} were dropped during grouping due to ambiguous month information",
+        include_exclude_rules.skip_group_by_with_ambiguous_day.__name__: "{count} were dropped during grouping due to ambiguous day information",
         include_exclude_rules.force_include_strains.__name__: "{count} strains were added back because they were in {include_file}",
         include_exclude_rules.force_include_where.__name__: "{count} sequences were added back because of '{include_where}'",
     }

@@ -217,6 +217,21 @@ def filter_by_ambiguous_date(metadata, date_column, ambiguity) -> FilterFunction
     return filtered
 
 
+def skip_group_by_with_ambiguous_year(metadata, date_column) -> FilterFunctionReturn:
+    """Alias to filter_by_ambiguous_date for year. This is to have a named function available for the filter reason."""
+    return filter_by_ambiguous_date(metadata, date_column, ambiguity="year")
+
+
+def skip_group_by_with_ambiguous_month(metadata, date_column) -> FilterFunctionReturn:
+    """Alias to filter_by_ambiguous_date for month. This is to have a named function available for the filter reason."""
+    return filter_by_ambiguous_date(metadata, date_column, ambiguity="month")
+
+
+def skip_group_by_with_ambiguous_day(metadata, date_column) -> FilterFunctionReturn:
+    """Alias to filter_by_ambiguous_date for day. This is to have a named function available for the filter reason."""
+    return filter_by_ambiguous_date(metadata, date_column, ambiguity="day")
+
+
 def filter_by_min_date(metadata, date_column, min_date) -> FilterFunctionReturn:
     """Filter metadata by minimum date.
 
@@ -586,6 +601,26 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
                 "sequence_index": sequence_index,
             }
         ))
+
+    if args.group_by:
+        # The order in which these are applied later should be broad → specific
+        # ambiguity (e.g. year then month), otherwise broad ambiguity will be
+        # captured by specific ambiguity.
+        if {"year", "month", "week"} & set(args.group_by):
+            exclude_by.append((
+                skip_group_by_with_ambiguous_year,
+                {"date_column": "date"}
+            ))
+        if {"month", "week"} & set(args.group_by):
+            exclude_by.append((
+                skip_group_by_with_ambiguous_month,
+                {"date_column": "date"}
+            ))
+        if "week" in args.group_by:
+            exclude_by.append((
+                skip_group_by_with_ambiguous_day,
+                {"date_column": "date"}
+            ))
 
     return exclude_by, include_by
 

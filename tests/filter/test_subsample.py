@@ -37,18 +37,17 @@ class TestFilterGroupBy:
     def test_filter_groupby_strain_subset(self, valid_metadata: pd.DataFrame):
         metadata = valid_metadata.copy()
         strains = ['SEQ_1', 'SEQ_3', 'SEQ_5']
-        group_by_strain, skipped_strains = augur.filter.subsample.get_groups_for_subsampling(strains, metadata)
+        group_by_strain = augur.filter.subsample.get_groups_for_subsampling(strains, metadata)
         assert group_by_strain == {
             'SEQ_1': ('_dummy',),
             'SEQ_3': ('_dummy',),
             'SEQ_5': ('_dummy',)
         }
-        assert skipped_strains == []
 
     def test_filter_groupby_dummy(self, valid_metadata: pd.DataFrame):
         metadata = valid_metadata.copy()
         strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = augur.filter.subsample.get_groups_for_subsampling(strains, metadata)
+        group_by_strain = augur.filter.subsample.get_groups_for_subsampling(strains, metadata)
         assert group_by_strain == {
             'SEQ_1': ('_dummy',),
             'SEQ_2': ('_dummy',),
@@ -56,7 +55,6 @@ class TestFilterGroupBy:
             'SEQ_4': ('_dummy',),
             'SEQ_5': ('_dummy',)
         }
-        assert skipped_strains == []
 
     def test_filter_groupby_invalid_error(self, valid_metadata: pd.DataFrame):
         groups = ['invalid']
@@ -70,7 +68,7 @@ class TestFilterGroupBy:
         groups = ['country', 'year', 'month', 'invalid']
         metadata = valid_metadata.copy()
         strains = metadata.index.tolist()
-        group_by_strain, _ = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
+        group_by_strain = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
             'SEQ_1': ('A', 2020, (2020, 1), 'unknown'),
             'SEQ_2': ('A', 2020, (2020, 2), 'unknown'),
@@ -80,62 +78,6 @@ class TestFilterGroupBy:
         }
         captured = capsys.readouterr()
         assert captured.err == "WARNING: Some of the specified group-by categories couldn't be found: invalid\nFiltering by group may behave differently than expected!\n"
-
-    def test_filter_groupby_skip_ambiguous_year(self, valid_metadata: pd.DataFrame):
-        groups = ['country', 'year', 'month']
-        metadata = valid_metadata.copy()
-        metadata.at["SEQ_2", "date"] = "XXXX-02-01"
-        strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
-        assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1)),
-            'SEQ_3': ('B', 2020, (2020, 3)),
-            'SEQ_4': ('B', 2020, (2020, 4)),
-            'SEQ_5': ('B', 2020, (2020, 5))
-        }
-        assert skipped_strains == [{'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_year', 'kwargs': ''}]
-
-    def test_filter_groupby_skip_missing_date(self, valid_metadata: pd.DataFrame):
-        groups = ['country', 'year', 'month']
-        metadata = valid_metadata.copy()
-        metadata.at["SEQ_2", "date"] = None
-        strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
-        assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1)),
-            'SEQ_3': ('B', 2020, (2020, 3)),
-            'SEQ_4': ('B', 2020, (2020, 4)),
-            'SEQ_5': ('B', 2020, (2020, 5))
-        }
-        assert skipped_strains == [{'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_year', 'kwargs': ''}]
-
-    def test_filter_groupby_skip_ambiguous_month(self, valid_metadata: pd.DataFrame):
-        groups = ['country', 'year', 'month']
-        metadata = valid_metadata.copy()
-        metadata.at["SEQ_2", "date"] = "2020-XX-01"
-        strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
-        assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1)),
-            'SEQ_3': ('B', 2020, (2020, 3)),
-            'SEQ_4': ('B', 2020, (2020, 4)),
-            'SEQ_5': ('B', 2020, (2020, 5))
-        }
-        assert skipped_strains == [{'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
-
-    def test_filter_groupby_skip_missing_month(self, valid_metadata: pd.DataFrame):
-        groups = ['country', 'year', 'month']
-        metadata = valid_metadata.copy()
-        metadata.at["SEQ_2", "date"] = "2020"
-        strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
-        assert group_by_strain == {
-            'SEQ_1': ('A', 2020, (2020, 1)),
-            'SEQ_3': ('B', 2020, (2020, 3)),
-            'SEQ_4': ('B', 2020, (2020, 4)),
-            'SEQ_5': ('B', 2020, (2020, 5))
-        }
-        assert skipped_strains == [{'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
 
     def test_filter_groupby_missing_year_error(self, valid_metadata: pd.DataFrame):
         groups = ['year']
@@ -169,7 +111,7 @@ class TestFilterGroupBy:
         metadata = valid_metadata.copy()
         metadata = metadata.drop('date', axis='columns')
         strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
+        group_by_strain = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
             'SEQ_1': ('A', 'unknown', 'unknown'),
             'SEQ_2': ('A', 'unknown', 'unknown'),
@@ -179,22 +121,20 @@ class TestFilterGroupBy:
         }
         captured = capsys.readouterr()
         assert captured.err == "WARNING: A 'date' column could not be found to group-by ['month', 'year'].\nFiltering by group may behave differently than expected!\n"
-        assert skipped_strains == []
 
     def test_filter_groupby_no_strains(self, valid_metadata: pd.DataFrame):
         groups = ['country', 'year', 'month']
         metadata = valid_metadata.copy()
         strains = []
-        group_by_strain, skipped_strains = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
+        group_by_strain = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {}
-        assert skipped_strains == []
 
     def test_filter_groupby_only_year_provided(self, valid_metadata: pd.DataFrame):
         groups = ['country', 'year']
         metadata = valid_metadata.copy()
         metadata['date'] = '2020'
         strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
+        group_by_strain = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
             'SEQ_1': ('A', 2020),
             'SEQ_2': ('A', 2020),
@@ -202,29 +142,13 @@ class TestFilterGroupBy:
             'SEQ_4': ('B', 2020),
             'SEQ_5': ('B', 2020)
         }
-        assert skipped_strains == []
-
-    def test_filter_groupby_month_with_only_year_provided(self, valid_metadata: pd.DataFrame):
-        groups = ['country', 'year', 'month']
-        metadata = valid_metadata.copy()
-        metadata['date'] = '2020'
-        strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
-        assert group_by_strain == {}
-        assert skipped_strains == [
-            {'strain': 'SEQ_1', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''},
-            {'strain': 'SEQ_2', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''},
-            {'strain': 'SEQ_3', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''},
-            {'strain': 'SEQ_4', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''},
-            {'strain': 'SEQ_5', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}
-        ]
 
     def test_filter_groupby_only_year_month_provided(self, valid_metadata: pd.DataFrame):
         groups = ['country', 'year', 'month']
         metadata = valid_metadata.copy()
         metadata['date'] = '2020-01'
         strains = metadata.index.tolist()
-        group_by_strain, skipped_strains = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
+        group_by_strain = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
             'SEQ_1': ('A', 2020, (2020, 1)),
             'SEQ_2': ('A', 2020, (2020, 1)),
@@ -232,4 +156,3 @@ class TestFilterGroupBy:
             'SEQ_4': ('B', 2020, (2020, 1)),
             'SEQ_5': ('B', 2020, (2020, 1))
         }
-        assert skipped_strains == []
