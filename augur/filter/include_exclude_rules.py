@@ -1,3 +1,4 @@
+import json
 import operator
 import re
 import numpy as np
@@ -8,7 +9,6 @@ from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.io.vcf import is_vcf as filename_is_vcf
 from augur.utils import read_strains
-from .io import filter_kwargs_to_str
 
 
 def filter_by_exclude_all(metadata):
@@ -703,7 +703,7 @@ def apply_filters(metadata, exclude_by, include_by):
         # Track the reason why strains were included.
         if len(passed) > 0:
             include_name = include_function.__name__
-            include_kwargs_str = filter_kwargs_to_str(include_kwargs)
+            include_kwargs_str = _filter_kwargs_to_str(include_kwargs)
             for strain in passed:
                 strains_to_force_include.append({
                     "strain": strain,
@@ -743,7 +743,7 @@ def apply_filters(metadata, exclude_by, include_by):
             # Use a human-readable name for each filter when reporting why a strain
             # was excluded.
             filter_name = filter_function.__name__
-            filter_kwargs_str = filter_kwargs_to_str(filter_kwargs)
+            filter_kwargs_str = _filter_kwargs_to_str(filter_kwargs)
             for strain in failed:
                 strains_to_filter.append({
                     "strain": strain,
@@ -756,3 +756,56 @@ def apply_filters(metadata, exclude_by, include_by):
             break
 
     return strains_to_keep, strains_to_filter, strains_to_force_include
+
+
+def _filter_kwargs_to_str(kwargs):
+    """Convert a dictionary of kwargs to a JSON string for downstream reporting.
+
+    This structured string can be converted back into a Python data structure
+    later for more sophisticated reporting by specific kwargs.
+
+    This function excludes data types from arguments like pandas DataFrames and
+    also converts floating point numbers to a fixed precision for better
+    readability and reproducibility.
+
+    Parameters
+    ----------
+    kwargs : dict
+        Dictionary of kwargs passed to a given filter function.
+
+    Returns
+    -------
+    str :
+        String representation of the kwargs for reporting.
+
+    Examples
+    --------
+    >>> from augur.dates import numeric_date
+    >>> from augur.filter.include_exclude_rules import filter_by_sequence_length, filter_by_date
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "ACGT": 28000}, {"strain": "strain2", "ACGT": 26000}, {"strain": "strain3", "ACGT": 5000}]).set_index("strain")
+    >>> exclude_by = [(filter_by_sequence_length, {"sequence_index": sequence_index, "min_length": 27000})]
+    >>> _filter_kwargs_to_str(exclude_by[0][1])
+    '[["min_length", 27000]]'
+    >>> exclude_by = [(filter_by_date, {"max_date": numeric_date("2020-04-01"), "min_date": numeric_date("2020-03-01")})]
+    >>> _filter_kwargs_to_str(exclude_by[0][1])
+    '[["max_date", 2020.25], ["min_date", 2020.17]]'
+
+    """
+    # Sort keys prior to processing to guarantee the same output order
+    # regardless of the input order.
+    sorted_keys = sorted(kwargs.keys())
+
+    kwarg_list = []
+    for key in sorted_keys:
+        value = kwargs[key]
+
+        # Handle special cases for data types that we want to represent
+        # differently from their defaults or not at all.
+        if isinstance(value, pd.DataFrame):
+            continue
+        elif isinstance(value, float):
+            value = round(value, 2)
+
+        kwarg_list.append((key, value))
+
+    return json.dumps(kwarg_list)
