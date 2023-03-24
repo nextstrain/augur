@@ -10,6 +10,7 @@ from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.io.vcf import is_vcf as filename_is_vcf
 from augur.utils import read_strains
+from . import constants
 
 
 # The strains to keep as a result of applying a filter function.
@@ -553,7 +554,7 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
         exclude_by.append((
             filter_by_ambiguous_date,
             {
-                "date_column": "date",
+                "date_column": constants.METADATA_DATE_COLUMN,
                 "ambiguity": args.exclude_ambiguous_dates_by,
             }
         ))
@@ -564,7 +565,7 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
             filter_by_min_date,
             {
                 "min_date": args.min_date,
-                "date_column": "date",
+                "date_column": constants.METADATA_DATE_COLUMN,
             }
         ))
     if args.max_date:
@@ -572,7 +573,7 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
             filter_by_max_date,
             {
                 "max_date": args.max_date,
-                "date_column": "date",
+                "date_column": constants.METADATA_DATE_COLUMN,
             }
         ))
 
@@ -609,17 +610,17 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
         if {"year", "month", "week"} & set(args.group_by):
             exclude_by.append((
                 skip_group_by_with_ambiguous_year,
-                {"date_column": "date"}
+                {"date_column": constants.METADATA_DATE_COLUMN}
             ))
         if {"month", "week"} & set(args.group_by):
             exclude_by.append((
                 skip_group_by_with_ambiguous_month,
-                {"date_column": "date"}
+                {"date_column": constants.METADATA_DATE_COLUMN}
             ))
         if "week" in args.group_by:
             exclude_by.append((
                 skip_group_by_with_ambiguous_day,
-                {"date_column": "date"}
+                {"date_column": constants.METADATA_DATE_COLUMN}
             ))
 
     return exclude_by, include_by

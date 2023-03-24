@@ -82,8 +82,8 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     generated_columns_requested = constants.GROUP_BY_GENERATED_COLUMNS & group_by_set
 
     # If we could not find any requested categories, we cannot complete subsampling.
-    if 'date' not in metadata and group_by_set <= constants.GROUP_BY_GENERATED_COLUMNS:
-        raise AugurError(f"The specified group-by categories ({group_by}) were not found. Note that using any of {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} requires a column called 'date'.")
+    if constants.METADATA_DATE_COLUMN not in metadata and group_by_set <= constants.GROUP_BY_GENERATED_COLUMNS:
+        raise AugurError(f"The specified group-by categories ({group_by}) were not found. Note that using any of {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} requires a column called {constants.METADATA_DATE_COLUMN!r}.")
     if not group_by_set & (set(metadata.columns) | constants.GROUP_BY_GENERATED_COLUMNS):
         raise AugurError(f"The specified group-by categories ({group_by}) were not found.")
 
@@ -101,12 +101,12 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
         for col in sorted(generated_columns_requested):
             if col in metadata.columns:
-                print_err(f"WARNING: `--group-by {col}` uses a generated {col} value from the 'date' column. The custom '{col}' column in the metadata is ignored for grouping purposes.")
+                print_err(f"WARNING: `--group-by {col}` uses a generated {col} value from the {constants.METADATA_DATE_COLUMN!r} column. The custom '{col}' column in the metadata is ignored for grouping purposes.")
                 metadata.drop(col, axis=1, inplace=True)
 
-        if 'date' not in metadata:
+        if constants.METADATA_DATE_COLUMN not in metadata:
             # Set generated columns to 'unknown'.
-            print_err(f"WARNING: A 'date' column could not be found to group-by {sorted(generated_columns_requested)}.")
+            print_err(f"WARNING: A {constants.METADATA_DATE_COLUMN!r} column could not be found to group-by {sorted(generated_columns_requested)}.")
             print_err(f"Filtering by group may behave differently than expected!")
             df_dates = pd.DataFrame({col: 'unknown' for col in constants.GROUP_BY_GENERATED_COLUMNS}, index=metadata.index)
             metadata = pd.concat([metadata, df_dates], axis=1)
@@ -116,7 +116,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             # to generate other columns, and will be discarded at the end.
             temp_prefix = str(uuid.uuid4())
             temp_date_cols = [f'{temp_prefix}year', f'{temp_prefix}month', f'{temp_prefix}day']
-            df_dates = metadata['date'].str.split('-', n=2, expand=True)
+            df_dates = metadata[constants.METADATA_DATE_COLUMN].str.split('-', n=2, expand=True)
             df_dates = df_dates.set_axis(temp_date_cols[:len(df_dates.columns)], axis=1)
             missing_date_cols = set(temp_date_cols) - set(df_dates.columns)
             for col in missing_date_cols:
@@ -125,8 +125,8 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
                 df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
 
             # Extend metadata with generated date columns
-            # Drop the 'date' column since it should not be used for grouping.
-            metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
+            # Drop the date column since it should not be used for grouping.
+            metadata = pd.concat([metadata.drop(constants.METADATA_DATE_COLUMN, axis=1), df_dates], axis=1)
 
             # Check again if metadata is empty after dropping ambiguous dates.
             if metadata.empty:

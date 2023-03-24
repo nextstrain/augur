@@ -47,7 +47,7 @@ def register_arguments(parser):
     subsample_group.add_argument('--group-by', nargs='+', help=f"""
         categories with respect to subsample.
         Notes:
-        (1) Grouping by {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} is only supported when there is a 'date' column in the metadata.
+        (1) Grouping by {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} is only supported when there is a {constants.METADATA_DATE_COLUMN!r} column in the metadata.
         (2) 'week' uses the ISO week numbering system, where a week starts on a Monday and ends on a Sunday.
         (3) 'month' and 'week' grouping cannot be used together.
         (4) Custom columns {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} in the metadata are ignored for grouping. Please rename them if you want to use their values for grouping.""")
