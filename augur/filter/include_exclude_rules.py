@@ -589,7 +589,7 @@ def force_include_where(metadata, include_where) -> FilterFunctionReturn:
     return included
 
 
-def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[FilterOption]]:
+def construct_filters(args) -> Tuple[List[FilterOption], List[FilterOption]]:
     """Construct lists of filters and inclusion criteria based on user-provided
     arguments.
 
@@ -597,8 +597,6 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
     ----------
     args : argparse.Namespace
         Command line arguments provided by the user.
-    sequence_index : pandas.DataFrame
-        Sequence index for the provided arguments.
     """
     exclude_by: List[FilterOption] = []
     include_by: List[FilterOption] = []
@@ -629,11 +627,11 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
         exclude_by.append((filter_by_exclude_all, {}))
 
     # Filter by sequence index.
-    if sequence_index is not None:
+    if constants.sequence_index is not None:
         exclude_by.append((
             filter_by_sequence_index,
             {
-                "sequence_index": sequence_index,
+                "sequence_index": constants.sequence_index,
             },
         ))
 
@@ -705,7 +703,7 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
             exclude_by.append((
                 filter_by_min_length,
                 {
-                    "sequence_index": sequence_index,
+                    "sequence_index": constants.sequence_index,
                     "min_length": args.min_length,
                 }
             ))
@@ -726,7 +724,7 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
         exclude_by.append((
             filter_by_non_nucleotide,
             {
-                "sequence_index": sequence_index,
+                "sequence_index": constants.sequence_index,
             }
         ))
 
