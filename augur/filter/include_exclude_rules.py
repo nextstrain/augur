@@ -34,46 +34,22 @@ FilterFunctionKwargs = Dict[str, Any]
 FilterOption = Tuple[FilterFunction, FilterFunctionKwargs]
 
 
-def filter_by_exclude_all(metadata) -> FilterFunctionReturn:
+def filter_by_exclude_all() -> FilterFunctionReturn:
     """Exclude all strains regardless of the given metadata content.
 
     This is a placeholder function that can be called as part of a generalized
     loop through all possible functions.
-
-    Parameters
-    ----------
-    metadata : pandas.DataFrame
-        Metadata indexed by strain name
-
-    Examples
-    --------
-    >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
-    >>> filter_by_exclude_all(metadata)
-    set()
     """
     return set()
 
 
-def filter_by_exclude(metadata, exclude_file) -> FilterFunctionReturn:
-    """Exclude the given set of strains from the given metadata.
+def filter_by_exclude(exclude_file) -> FilterFunctionReturn:
+    """Exclude the given strains.
 
     Parameters
     ----------
-    metadata : pandas.DataFrame
-        Metadata indexed by strain name
     exclude_file : str
-        Filename with strain names to exclude from the given metadata
-
-    Examples
-    --------
-    >>> import os
-    >>> from tempfile import NamedTemporaryFile
-    >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
-    >>> with NamedTemporaryFile(delete=False) as exclude_file:
-    ...     characters_written = exclude_file.write(b'strain1')
-    >>> filter_by_exclude(metadata, exclude_file.name)
-    {'strain2'}
-    >>> os.unlink(exclude_file.name)
+        Filename with strain names to exclude
     """
     excluded_strains = read_strains(exclude_file)
     return set(metadata.index.values) - excluded_strains
@@ -113,8 +89,8 @@ def parse_filter_query(query):
     return column, op, value
 
 
-def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
-    """Exclude all strains from the given metadata that match the given exclusion query.
+def filter_by_exclude_where(exclude_where) -> FilterFunctionReturn:
+    """Exclude all strains that match the given exclusion query.
 
     Unlike pandas query syntax, exclusion queries should follow the pattern of
     `"property=value"` or `"property!=value"`. Additionally, this filter treats
@@ -123,26 +99,8 @@ def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
 
     Parameters
     ----------
-    metadata : pandas.DataFrame
-        Metadata indexed by strain name
     exclude_where : str
         Filter query used to exclude strains
-
-    Examples
-    --------
-    >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
-    >>> filter_by_exclude_where(metadata, "region!=Europe")
-    {'strain2'}
-    >>> filter_by_exclude_where(metadata, "region=Europe")
-    {'strain1'}
-    >>> filter_by_exclude_where(metadata, "region=europe")
-    {'strain1'}
-
-    If the column referenced in the given query does not exist, skip the filter.
-
-    >>> sorted(filter_by_exclude_where(metadata, "missing_column=value"))
-    ['strain1', 'strain2']
-
     """
     column, op, value = parse_filter_query(exclude_where)
     if column in metadata.columns:
@@ -165,27 +123,16 @@ def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
     return filtered
 
 
-def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[Dict[str, str]] = None) -> FilterFunctionReturn:
+def filter_by_query(query: str, column_types: Optional[Dict[str, str]] = None) -> FilterFunctionReturn:
     """Filter metadata in the given pandas DataFrame with a query string and return
     the strain names that pass the filter.
 
     Parameters
     ----------
-    metadata : pandas.DataFrame
-        Metadata indexed by strain name
     query : str
         Query string for the dataframe.
     column_types : str
         Dict mapping of data type
-
-    Examples
-    --------
-    >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
-    >>> filter_by_query(metadata, "region == 'Africa'")
-    {'strain1'}
-    >>> filter_by_query(metadata, "region == 'North America'")
-    set()
-
     """
     # Create a copy to prevent modification of the original DataFrame.
     metadata_copy = metadata.copy()
@@ -263,32 +210,15 @@ def _string_to_boolean(s: str):
     raise ValueError(f"Unable to convert {s!r} to a boolean value.")
 
 
-def filter_by_ambiguous_date(metadata, date_column, ambiguity) -> FilterFunctionReturn:
-    """Filter metadata in the given pandas DataFrame where values in the given date
-    column have a given level of ambiguity.
+def filter_by_ambiguous_date(date_column, ambiguity) -> FilterFunctionReturn:
+    """Filter where values in the given date column have a given level of ambiguity.
 
     Parameters
     ----------
-    metadata : pandas.DataFrame
-        Metadata indexed by strain name
     date_column : str
         Column in the dataframe with dates.
     ambiguity : str
-        Level of date ambiguity to filter metadata by
-
-    Examples
-    --------
-    >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-XX"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> filter_by_ambiguous_date(metadata, date_column="date", ambiguity="any")
-    {'strain2'}
-    >>> sorted(filter_by_ambiguous_date(metadata, date_column="date", ambiguity="month"))
-    ['strain1', 'strain2']
-
-    If the requested date column does not exist, we quietly skip this filter.
-
-    >>> sorted(filter_by_ambiguous_date(metadata, date_column="missing_column", ambiguity="any"))
-    ['strain1', 'strain2']
-
+        Level of date ambiguity to filter by
     """
     if date_column in metadata.columns:
         date_is_ambiguous = metadata[date_column].apply(
@@ -301,45 +231,30 @@ def filter_by_ambiguous_date(metadata, date_column, ambiguity) -> FilterFunction
     return filtered
 
 
-def skip_group_by_with_ambiguous_year(metadata, date_column) -> FilterFunctionReturn:
+def skip_group_by_with_ambiguous_year(date_column) -> FilterFunctionReturn:
     """Alias to filter_by_ambiguous_date for year. This is to have a named function available for the filter reason."""
-    return filter_by_ambiguous_date(metadata, date_column, ambiguity="year")
+    return filter_by_ambiguous_date(date_column, ambiguity="year")
 
 
-def skip_group_by_with_ambiguous_month(metadata, date_column) -> FilterFunctionReturn:
+def skip_group_by_with_ambiguous_month(date_column) -> FilterFunctionReturn:
     """Alias to filter_by_ambiguous_date for month. This is to have a named function available for the filter reason."""
-    return filter_by_ambiguous_date(metadata, date_column, ambiguity="month")
+    return filter_by_ambiguous_date(date_column, ambiguity="month")
 
 
-def skip_group_by_with_ambiguous_day(metadata, date_column) -> FilterFunctionReturn:
+def skip_group_by_with_ambiguous_day(date_column) -> FilterFunctionReturn:
     """Alias to filter_by_ambiguous_date for day. This is to have a named function available for the filter reason."""
-    return filter_by_ambiguous_date(metadata, date_column, ambiguity="day")
+    return filter_by_ambiguous_date(date_column, ambiguity="day")
 
 
-def filter_by_min_date(metadata, date_column, min_date) -> FilterFunctionReturn:
-    """Filter metadata by minimum date.
+def filter_by_min_date(date_column, min_date) -> FilterFunctionReturn:
+    """Filter by minimum date.
 
     Parameters
     ----------
-    metadata : pandas.DataFrame
-        Metadata indexed by strain name
     date_column : str
         Column in the dataframe with dates.
     min_date : float
         Minimum date
-
-    Examples
-    --------
-    >>> from augur.dates import numeric_date
-    >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> filter_by_min_date(metadata, date_column="date", min_date=numeric_date("2020-01-02"))
-    {'strain2'}
-
-    If the requested date column does not exist, we quietly skip this filter.
-
-    >>> sorted(filter_by_min_date(metadata, date_column="missing_column", min_date=numeric_date("2020-01-02")))
-    ['strain1', 'strain2']
-
     """
     strains = set(metadata.index.values)
 
@@ -357,30 +272,15 @@ def filter_by_min_date(metadata, date_column, min_date) -> FilterFunctionReturn:
     return filtered
 
 
-def filter_by_max_date(metadata, date_column, max_date) -> FilterFunctionReturn:
-    """Filter metadata by maximum date.
+def filter_by_max_date(date_column, max_date) -> FilterFunctionReturn:
+    """Filter by maximum date.
 
     Parameters
     ----------
-    metadata : pandas.DataFrame
-        Metadata indexed by strain name
     date_column : str
         Column in the dataframe with dates.
     max_date : float
         Maximum date
-
-    Examples
-    --------
-    >>> from augur.dates import numeric_date
-    >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> filter_by_max_date(metadata, date_column="date", max_date=numeric_date("2020-01-01"))
-    {'strain1'}
-
-    If the requested date column does not exist, we quietly skip this filter.
-
-    >>> sorted(filter_by_max_date(metadata, date_column="missing_column", max_date=numeric_date("2020-01-01")))
-    ['strain1', 'strain2']
-
     """
     strains = set(metadata.index.values)
 
@@ -398,25 +298,15 @@ def filter_by_max_date(metadata, date_column, max_date) -> FilterFunctionReturn:
     return filtered
 
 
-def filter_by_sequence_index(metadata, sequence_index) -> FilterFunctionReturn:
-    """Filter metadata by presence of corresponding entries in a given sequence
+def filter_by_sequence_index(sequence_index) -> FilterFunctionReturn:
+    """Filter by presence of corresponding entries in a given sequence
     index. This filter effectively intersects the strain ids in the metadata and
     sequence index.
 
     Parameters
     ----------
-    metadata : pandas.DataFrame
-        Metadata indexed by strain name
     sequence_index : pandas.DataFrame
         Sequence index
-
-    Examples
-    --------
-    >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "ACGT": 28000}]).set_index("strain")
-    >>> filter_by_sequence_index(metadata, sequence_index)
-    {'strain1'}
-
     """
     metadata_strains = set(metadata.index.values)
     sequence_index_strains = set(sequence_index.index.values)
@@ -425,30 +315,14 @@ def filter_by_sequence_index(metadata, sequence_index) -> FilterFunctionReturn:
 
 
 def filter_by_min_length(metadata, sequence_index, min_length) -> FilterFunctionReturn:
-    """Filter metadata by sequence length from a given sequence index.
+    """Filter by sequence length from a given sequence index.
 
     Parameters
     ----------
-    metadata : pandas.DataFrame
-        Metadata indexed by strain name
     sequence_index : pandas.DataFrame
         Sequence index
     min_length : int
         Minimum number of standard nucleotide characters (A, C, G, or T) in each sequence
-
-    Examples
-    --------
-    >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
-    >>> filter_by_min_length(metadata, sequence_index, min_length=27000)
-    {'strain1'}
-
-    It is possible for the sequence index to be missing strains present in the metadata.
-
-    >>> sequence_index = pd.DataFrame([{"strain": "strain3", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
-    >>> filter_by_min_length(metadata, sequence_index, min_length=27000)
-    set()
-
     """
     strains = set(metadata.index.values)
     filtered_sequence_index = sequence_index.loc[
@@ -459,24 +333,15 @@ def filter_by_min_length(metadata, sequence_index, min_length) -> FilterFunction
     return set(filtered_sequence_index[filtered_sequence_index["ACGT"] >= min_length].index.values)
 
 
-def filter_by_max_length(metadata, sequence_index, max_length) -> FilterFunctionReturn:
+def filter_by_max_length(sequence_index, max_length) -> FilterFunctionReturn:
     """Filter metadata by sequence length from a given sequence index.
 
     Parameters
     ----------
-    metadata : pandas.DataFrame
-        Metadata indexed by strain name
     sequence_index : pandas.DataFrame
         Sequence index
     max_length : int
         Maximum number of standard nucleotide characters (A, C, G, or T) in each sequence
-
-    Examples
-    --------
-    >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
-    >>> filter_by_max_length(metadata, sequence_index, max_length=27000)
-    {'strain2'}
     """
     strains = set(metadata.index.values)
     filtered_sequence_index = sequence_index.loc[
@@ -487,23 +352,13 @@ def filter_by_max_length(metadata, sequence_index, max_length) -> FilterFunction
     return set(filtered_sequence_index[filtered_sequence_index["ACGT"] <= max_length].index.values)
 
 
-def filter_by_non_nucleotide(metadata, sequence_index) -> FilterFunctionReturn:
-    """Filter metadata for strains with invalid nucleotide content.
+def filter_by_non_nucleotide(sequence_index) -> FilterFunctionReturn:
+    """Filter for strains with invalid nucleotide content.
 
     Parameters
     ----------
-    metadata : pandas.DataFrame
-        Metadata indexed by strain name
     sequence_index : pandas.DataFrame
         Sequence index
-
-    Examples
-    --------
-    >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "invalid_nucleotides": 0}, {"strain": "strain2", "invalid_nucleotides": 1}]).set_index("strain")
-    >>> filter_by_non_nucleotide(metadata, sequence_index)
-    {'strain1'}
-
     """
     strains = set(metadata.index.values)
     filtered_sequence_index = sequence_index.loc[
@@ -514,34 +369,20 @@ def filter_by_non_nucleotide(metadata, sequence_index) -> FilterFunctionReturn:
     return set(filtered_sequence_index[no_invalid_nucleotides].index.values)
 
 
-def force_include_strains(metadata, include_file) -> FilterFunctionReturn:
-    """Include strains in the given text file from the given metadata.
+def force_include_strains(include_file) -> FilterFunctionReturn:
+    """Include strains in the given text file.
 
     Parameters
     ----------
-    metadata : pandas.DataFrame
-        Metadata indexed by strain name
     include_file : str
-        Filename with strain names to include from the given metadata
-
-    Examples
-    --------
-    >>> import os
-    >>> from tempfile import NamedTemporaryFile
-    >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
-    >>> with NamedTemporaryFile(delete=False) as include_file:
-    ...     characters_written = include_file.write(b'strain1')
-    >>> force_include_strains(metadata, include_file.name)
-    {'strain1'}
-    >>> os.unlink(include_file.name)
-
+        Filename with strain names to include
     """
     included_strains = read_strains(include_file)
     return set(metadata.index.values) & included_strains
 
 
-def force_include_where(metadata, include_where) -> FilterFunctionReturn:
-    """Include all strains from the given metadata that match the given query.
+def force_include_where(include_where) -> FilterFunctionReturn:
+    """Include all strains that match the given query.
 
     Unlike pandas query syntax, inclusion queries should follow the pattern of
     `"property=value"` or `"property!=value"`. Additionally, this filter treats
@@ -550,26 +391,8 @@ def force_include_where(metadata, include_where) -> FilterFunctionReturn:
 
     Parameters
     ----------
-    metadata : pandas.DataFrame
-        Metadata indexed by strain name
     include_where : str
         Filter query used to include strains
-
-    Examples
-    --------
-    >>> metadata = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=["strain1", "strain2"])
-    >>> force_include_where(metadata, "region!=Europe")
-    {'strain1'}
-    >>> force_include_where(metadata, "region=Europe")
-    {'strain2'}
-    >>> force_include_where(metadata, "region=europe")
-    {'strain2'}
-
-    If the column referenced in the given query does not exist, skip the filter.
-
-    >>> force_include_where(metadata, "missing_column=value")
-    set()
-
     """
     column, op, value = parse_filter_query(include_where)
 
@@ -768,39 +591,6 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
         Strains to exclude along with the function that filtered them and the arguments used to run the function.
     list of dict :
         Strains to force-include along with the function that filtered them and the arguments used to run the function.
-
-
-    For example, filter data by minimum date, but force the include of strains
-    from Africa.
-
-    Examples
-    --------
-    >>> from augur.dates import numeric_date
-    >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-10-02"}, {"region": "North America", "date": "2020-01-01"}], index=["strain1", "strain2", "strain3"])
-    >>> exclude_by = [(filter_by_min_date, {"date_column": "date", "min_date": numeric_date("2020-04-01")})]
-    >>> include_by = [(force_include_where, {"include_where": "region=Africa"})]
-    >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
-    >>> strains_to_keep
-    {'strain2'}
-    >>> sorted(strains_to_exclude, key=lambda record: record["strain"])
-    [{'strain': 'strain1', 'filter': 'filter_by_min_date', 'kwargs': '[["date_column", "date"], ["min_date", 2020.25]]'}, {'strain': 'strain3', 'filter': 'filter_by_min_date', 'kwargs': '[["date_column", "date"], ["min_date", 2020.25]]'}]
-    >>> strains_to_include
-    [{'strain': 'strain1', 'filter': 'force_include_where', 'kwargs': '[["include_where", "region=Africa"]]'}]
-
-    We also want to filter by characteristics of the sequence data that we've
-    annotated in a sequence index.
-
-    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}, {"strain": "strain3", "A": 1250, "C": 1250, "G": 1250, "T": 1250}]).set_index("strain")
-    >>> exclude_by = [(filter_by_min_length, {"sequence_index": sequence_index, "min_length": 27000})]
-    >>> include_by = [(force_include_where, {"include_where": "region=Europe"})]
-    >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
-    >>> strains_to_keep
-    {'strain1'}
-    >>> sorted(strains_to_exclude, key=lambda record: record["strain"])
-    [{'strain': 'strain2', 'filter': 'filter_by_min_length', 'kwargs': '[["min_length", 27000]]'}, {'strain': 'strain3', 'filter': 'filter_by_min_length', 'kwargs': '[["min_length", 27000]]'}]
-    >>> strains_to_include
-    [{'strain': 'strain2', 'filter': 'force_include_where', 'kwargs': '[["include_where", "region=Europe"]]'}]
-
     """
     strains_to_keep = set(metadata.index.values)
     strains_to_filter = []
