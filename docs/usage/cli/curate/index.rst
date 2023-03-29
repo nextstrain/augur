@@ -17,6 +17,7 @@ We will continue to add more subcommands as we identify other common data curati
     :maxdepth: 1
 
     normalize-strings
+    titlecase
     format-dates
     passthru
 
