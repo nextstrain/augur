@@ -18,7 +18,7 @@ Comma-delimited metadata is allowed. However, the output metadata will be tab-de
   strain\tcolumn (esc)
   SEQ_2\tB (esc)
 
-Colon-delimited metadata is allowed. However, the output metadata will be tab-delimited.
+Colon-delimited metadata is not allowed.
 
   $ cat >metadata.txt <<~~
   > strain:column
@@ -30,6 +30,5 @@ Colon-delimited metadata is allowed. However, the output metadata will be tab-de
   >  --metadata metadata.txt \
   >  --exclude-where column=A \
   >  --output-metadata filtered.txt > /dev/null
-  $ cat filtered.txt
-  strain\tcolumn (esc)
-  SEQ_2\tB (esc)
+  ERROR: Could not determine the delimiter of 'metadata.txt'. File must be a CSV or TSV.
+  [2]

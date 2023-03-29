@@ -60,7 +60,7 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
 
     """
     kwargs = {
-        "sep": None,
+        "sep": _get_delimiter(metadata_file),
         "engine": "python",
         "skipinitialspace": True,
         "na_filter": False,
@@ -149,6 +149,8 @@ def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, i
             handle = chain(table_sample_file, handle)
 
         try:
+            # Note: this sort of duplicates _get_delimiter(), but it's easier if
+            # this is separate since it handles non-seekable buffers.
             dialect = csv.Sniffer().sniff(table_sample, valid_delimiters)
         except csv.Error as err:
             raise AugurError(
@@ -426,3 +428,16 @@ def write_records_to_tsv(records, output_file):
 
         for record in records:
             tsv_writer.writerow(record)
+
+
+def _get_delimiter(path: str):
+    """Get the delimiter of a file."""
+    with open_file(path) as file:
+        try:
+            # Infer the delimiter from the first line.
+            return csv.Sniffer().sniff(file.readline(), delimiters=[',', '\t']).delimiter
+        except csv.Error as err:
+            raise AugurError(
+                f"Could not determine the delimiter of {path!r}. "
+                "File must be a CSV or TSV."
+            ) from err
