@@ -6,7 +6,14 @@
 
 * Constrain `bcbio-gff` to >=0.7.0 and allow `Biopython` >=1.81 again. We had to introduce the `Biopython` constraint in v21.0.1 (see [#1152][]) due to `bcbio-gff` <0.7.0 relying on the removed `Biopython` feature `UnknownSeq`. [#1178][] (@corneliusroemer)
 
+### Bug fixes
+
+* filter, frequencies, refine, parse: Previously, ambiguous dates in the future had a limit of today's date imposed on the upper value but not the lower value. It is now imposed on the lower value as well. [#1171][] (@victorlin)
+* refine: `--year-bounds` was ignored in versions 9.0.0 through 20.0.0. It now works. [#1136][] (@victorlin)
+
+[#1136]: https://github.com/nextstrain/augur/issues/1136
 [#1152]: https://github.com/nextstrain/augur/pull/1152
+[#1171]: https://github.com/nextstrain/augur/issues/1171
 [#1178]: https://github.com/nextstrain/augur/pull/1178
 
 ## 21.1.0 (14 March 2023)

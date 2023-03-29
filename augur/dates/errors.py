@@ -9,3 +9,6 @@ class InvalidDate(Exception):
     def __str__(self):
         """Return a human-readable summary of the error."""
         return f"Invalid date {self.date!r}: {self.message}"
+
+class InvalidYearBounds(Exception):
+    """Custom exception class to handle year bounds in unsupported formats."""

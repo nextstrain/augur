@@ -5,6 +5,7 @@ import numpy as np
 import sys
 from Bio import Phylo
 from .dates import get_numerical_dates
+from .dates.errors import InvalidYearBounds
 from .io.metadata import read_metadata
 from .utils import read_tree, write_json, InvalidTreeError
 from .errors import AugurError
@@ -204,10 +205,11 @@ def run(args):
             print("ERROR: meta data with dates is required for time tree reconstruction", file=sys.stderr)
             return 1
         metadata = read_metadata(args.metadata)
-        if args.year_bounds:
-            args.year_bounds.sort()
-        dates = get_numerical_dates(metadata, fmt=args.date_format,
-                                    min_max_year=args.year_bounds)
+        try:
+            dates = get_numerical_dates(metadata, fmt=args.date_format,
+                                        min_max_year=args.year_bounds)
+        except InvalidYearBounds as error:
+            raise AugurError(f"Invalid value for --year-bounds: {error}")
 
         # save input state string for later export
         for n in T.get_terminals():

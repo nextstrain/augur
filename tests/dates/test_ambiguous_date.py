@@ -81,3 +81,38 @@ class TestAmbiguousDate:
     def test_assert_only_less_significant_uncertainty(self, date_str, expected_error):
         with pytest.raises(InvalidDate, match=expected_error):
             AmbiguousDate(date_str)
+
+    @freeze_time("2020-05-05")
+    @pytest.mark.parametrize(
+        "date_str, min_max_year, expected_range",
+        [
+            ("20XX-XX-XX", [2000, 2010], (datetime.date(2000, 1, 1), datetime.date(2010, 12, 31))),
+
+            # This option does not apply when the year is exact. However, a separate limit of the current date is applied.
+            ("2020-XX-XX", [2000, 2010], (datetime.date(2020, 1, 1), datetime.date(2020, 5, 5))),
+            ("2020-12-XX", [2000, 2010], (datetime.date(2020, 5, 5), datetime.date(2020, 5, 5))),
+            ("2020-12-01", [2000, 2010], (datetime.date(2020, 5, 5), datetime.date(2020, 5, 5))),
+
+            # The upper bound is in the future, which is valid. However, a separate limit of the current date is applied.
+            ("20XX-XX-XX", [2010, 2030], (datetime.date(2010, 1, 1), datetime.date(2020, 5, 5))),
+
+            # When there is no upper bound, a date can appear in the future. However, a separate limit of the current date is applied.
+            ("20XX-XX-XX", [2010], (datetime.date(2010, 1, 1), datetime.date(2020, 5, 5))),
+        ],
+    )
+    def test_min_max_year(self, date_str, min_max_year, expected_range):
+        assert (
+            AmbiguousDate(date_str).range(min_max_year=min_max_year) == expected_range
+        )
+
+    @freeze_time("2020-05-05")
+    @pytest.mark.parametrize(
+        "date_str, min_max_year",
+        [
+            ("20XX-XX-XX", [1950, 1960]),
+            ("19XX-XX-XX", [2000, 2010]),
+        ],
+    )
+    def test_min_max_year_date_error(self, date_str, min_max_year):
+        with pytest.raises(InvalidDate, match="Not possible for date to fall within bounds"):
+            AmbiguousDate(date_str).range(min_max_year=min_max_year)
