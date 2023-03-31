@@ -12,6 +12,10 @@ from augur.types import DataErrorMethod
 from .file import open_file
 
 
+# List of valid delimiters when reading a metadata file.
+VALID_DELIMITERS = (',', '\t')
+
+
 def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None):
     """Read metadata from a given filename and into a pandas `DataFrame` or
     `TextFileReader` object.
@@ -60,8 +64,8 @@ def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None)
 
     """
     kwargs = {
-        "sep": None,
-        "engine": "python",
+        "sep": _get_delimiter(metadata_file),
+        "engine": "c",
         "skipinitialspace": True,
         "na_filter": False,
     }
@@ -135,7 +139,6 @@ def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, i
         2. The provided *id_column* does not exist in the *metadata*
         3. The *duplicate_reporting* method is set to ERROR_FIRST or ERROR_ALL and duplicate(s) are found
     """
-    valid_delimiters = [',', '\t']
     seen_ids = set()
     duplicate_ids = set()
     with open_file(table) as handle:
@@ -149,7 +152,9 @@ def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, i
             handle = chain(table_sample_file, handle)
 
         try:
-            dialect = csv.Sniffer().sniff(table_sample, valid_delimiters)
+            # Note: this sort of duplicates _get_delimiter(), but it's easier if
+            # this is separate since it handles non-seekable buffers.
+            dialect = csv.Sniffer().sniff(table_sample, VALID_DELIMITERS)
         except csv.Error as err:
             raise AugurError(
                 f"Could not determine the delimiter of {table!r}. "
@@ -426,3 +431,16 @@ def write_records_to_tsv(records, output_file):
 
         for record in records:
             tsv_writer.writerow(record)
+
+
+def _get_delimiter(path: str):
+    """Get the delimiter of a file."""
+    with open_file(path) as file:
+        try:
+            # Infer the delimiter from the first line.
+            return csv.Sniffer().sniff(file.readline(), VALID_DELIMITERS).delimiter
+        except csv.Error as err:
+            raise AugurError(
+                f"Could not determine the delimiter of {path!r}. "
+                "File must be a CSV or TSV."
+            ) from err
