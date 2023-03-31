@@ -1,35 +1,34 @@
 Integration tests for augur frequencies.
 
-  $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="${AUGUR:-../../bin/augur}"
+  $ export AUGUR="${AUGUR:-$TESTDIR/../../bin/augur}"
 
 Calculate KDE-based tip frequencies from a refined tree.
 Timepoints used to estimate frequencies (i.e., "pivots") get calculated from the range of dates in the given metadata.
 
   $ ${AUGUR} frequencies \
   >  --method kde \
-  >  --tree "frequencies/tree.nwk" \
-  >  --metadata "frequencies/metadata.tsv" \
+  >  --tree "$TESTDIR/frequencies/tree.nwk" \
+  >  --metadata "$TESTDIR/frequencies/metadata.tsv" \
   >  --pivot-interval 3 \
-  >  --output "$TMP/tip-frequencies.json" > /dev/null
+  >  --output tip-frequencies.json > /dev/null
 
-  $ diff -u --ignore-matching-lines version "frequencies/zika_tip-frequencies.json" "$TMP/tip-frequencies.json"
-  $ rm -f "$TMP/tip-frequencies.json"
+  $ diff -u --ignore-matching-lines version "$TESTDIR/frequencies/zika_tip-frequencies.json" tip-frequencies.json
+  $ rm -f tip-frequencies.json
 
 Calculate KDE-based tip frequencies for a time period with fixed dates.
 Pivots get calculated from the requested date range.
 
   $ ${AUGUR} frequencies \
   >  --method kde \
-  >  --tree "frequencies/tree.nwk" \
-  >  --metadata "frequencies/metadata.tsv" \
+  >  --tree "$TESTDIR/frequencies/tree.nwk" \
+  >  --metadata "$TESTDIR/frequencies/metadata.tsv" \
   >  --pivot-interval 3 \
   >  --min-date 2015-01-01 \
   >  --max-date 2016-01-01 \
-  >  --output "$TMP/tip-frequencies.json" > /dev/null
+  >  --output tip-frequencies.json > /dev/null
 
-  $ diff -u --ignore-matching-lines version "frequencies/zika_tip-frequencies_with_fixed_dates.json" "$TMP/tip-frequencies.json"
-  $ rm -f "$TMP/tip-frequencies.json"
+  $ diff -u --ignore-matching-lines version "$TESTDIR/frequencies/zika_tip-frequencies_with_fixed_dates.json" tip-frequencies.json
+  $ rm -f tip-frequencies.json
 
 Calculate KDE-based tip frequencies for a time period with relative dates.
 Testing relative dates deterministically from the shell is tricky.
@@ -40,18 +39,16 @@ As long as we always calculate 3 pivots with frequencies of 0 for all strains, w
 
   $ ${AUGUR} frequencies \
   >  --method kde \
-  >  --tree "frequencies/tree.nwk" \
-  >  --metadata "frequencies/metadata.tsv" \
+  >  --tree "$TESTDIR/frequencies/tree.nwk" \
+  >  --metadata "$TESTDIR/frequencies/metadata.tsv" \
   >  --pivot-interval 3 \
   >  --min-date 12M \
   >  --max-date 6M \
-  >  --output "$TMP/tip-frequencies.json" > /dev/null
+  >  --output tip-frequencies.json > /dev/null
 
   $ python3 "$TESTDIR/../../scripts/diff_jsons.py" \
   >  --exclude-paths "root['generated_by']['version']" "root['pivots']" -- \
-  >  "frequencies/zika_tip-frequencies_with_relative_dates.json" \
-  >  "$TMP/tip-frequencies.json"
+  >  "$TESTDIR/frequencies/zika_tip-frequencies_with_relative_dates.json" \
+  >  tip-frequencies.json
   {}
-  $ rm -f "$TMP/tip-frequencies.json"
-
-  $ popd > /dev/null
+  $ rm -f tip-frequencies.json
