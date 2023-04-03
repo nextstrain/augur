@@ -12,6 +12,11 @@ from .io.file import open_file
 from .io.sequences import read_sequences
 from .io.vcf import is_vcf, read_vcf
 
+
+DELIMITER = '\t'
+ID_COLUMN = 'strain'
+
+
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("index", help=__doc__)
     parser.add_argument('--sequences', '-s', required=True, help="sequences in FASTA or VCF formats. Augur will summarize the content of FASTA sequences and only report the names of strains found in a given VCF.")
@@ -42,10 +47,10 @@ def index_vcf(vcf_path, index_path):
     num_of_seqs = 0
 
     with open_file(index_path, 'wt') as out_file:
-        tsv_writer = csv.writer(out_file, delimiter = '\t')
+        tsv_writer = csv.writer(out_file, delimiter = DELIMITER)
 
         #write header i output file
-        header = ['strain']
+        header = [ID_COLUMN]
         tsv_writer.writerow(header)
 
         for record in strains:
@@ -183,7 +188,7 @@ def index_sequences(sequences_path, sequence_index_path):
         tsv_writer = csv.writer(out_file, delimiter = '\t', lineterminator='\n')
 
         #write header i output file
-        header = ['strain', 'length']+labels+['invalid_nucleotides']
+        header = [ID_COLUMN, 'length']+labels+['invalid_nucleotides']
         tsv_writer.writerow(header)
 
         for record in seqs:
