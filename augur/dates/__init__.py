@@ -76,7 +76,7 @@ def numeric_date_type(date):
     except InvalidDate as error:
         raise argparse.ArgumentTypeError(str(error)) from error
 
-def is_date_ambiguous(date, ambiguous_by="any"):
+def is_date_ambiguous(date, ambiguous_by):
     """
     Returns whether a given date string in the format of YYYY-MM-DD is ambiguous by a given part of the date (e.g., day, month, year, or any parts).
 
@@ -95,7 +95,7 @@ def is_date_ambiguous(date, ambiguous_by="any"):
         year, month = date_components
         day = "XX"
     else:
-        year = date_components[0]
+        year = date_components[0] if date_components[0] else 'X'
         month = "XX"
         day = "XX"
 

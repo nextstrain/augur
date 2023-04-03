@@ -20,6 +20,7 @@ from augur.io.sequences import read_sequences, write_sequences
 from augur.io.print import print_err
 from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
 from augur.types import EmptyOutputReportingMethod
+from . import include_exclude_rules
 from .io import cleanup_outputs, read_priority_scores
 from .include_exclude_rules import apply_filters, construct_filters
 from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, create_queues_by_group, get_groups_for_subsampling
@@ -216,20 +217,11 @@ def run(args):
             # If grouping, track the highest priority metadata records or
             # count the number of records per group. First, we need to get
             # the groups for the given records.
-            group_by_strain, skipped_strains = get_groups_for_subsampling(
+            group_by_strain = get_groups_for_subsampling(
                 seq_keep,
                 metadata,
                 group_by,
             )
-
-            # Track strains skipped during grouping, so users know why those
-            # strains were excluded from the analysis.
-            for skipped_strain in skipped_strains:
-                filter_counts[(skipped_strain["filter"], skipped_strain["kwargs"])] += 1
-                valid_strains.remove(skipped_strain["strain"])
-
-                if args.output_log:
-                    output_log_writer.writerow(skipped_strain)
 
             if args.subsample_max_sequences and records_per_group is not None:
                 # Count the number of records per group. We will use this
@@ -331,7 +323,7 @@ def run(args):
             # second pass, as in the first pass.
             seq_keep = seq_keep - all_sequences_to_include
 
-            group_by_strain, skipped_strains = get_groups_for_subsampling(
+            group_by_strain = get_groups_for_subsampling(
                 seq_keep,
                 metadata,
                 group_by,
@@ -459,21 +451,21 @@ def run(args):
         print(f"\t{num_excluded_by_lack_of_metadata} had no metadata")
 
     report_template_by_filter_name = {
-        "filter_by_sequence_index": "{count} had no sequence data",
-        "filter_by_exclude_all": "{count} of these were dropped by `--exclude-all`",
-        "filter_by_exclude": "{count} of these were dropped because they were in {exclude_file}",
-        "filter_by_exclude_where": "{count} of these were dropped because of '{exclude_where}'",
-        "filter_by_query": "{count} of these were filtered out by the query: \"{query}\"",
-        "filter_by_ambiguous_date": "{count} of these were dropped because of their ambiguous date in {ambiguity}",
-        "filter_by_min_date": "{count} of these were dropped because they were earlier than {min_date} or missing a date",
-        "filter_by_max_date": "{count} of these were dropped because they were later than {max_date} or missing a date",
-        "filter_by_sequence_length": "{count} of these were dropped because they were shorter than minimum length of {min_length}bp",
-        "filter_by_non_nucleotide": "{count} of these were dropped because they had non-nucleotide characters",
-        "skip_group_by_with_ambiguous_year": "{count} were dropped during grouping due to ambiguous year information",
-        "skip_group_by_with_ambiguous_month": "{count} were dropped during grouping due to ambiguous month information",
-        "skip_group_by_with_ambiguous_day": "{count} were dropped during grouping due to ambiguous day information",
-        "force_include_strains": "{count} strains were added back because they were in {include_file}",
-        "force_include_where": "{count} sequences were added back because of '{include_where}'",
+        include_exclude_rules.filter_by_sequence_index.__name__: "{count} had no sequence data",
+        include_exclude_rules.filter_by_exclude_all.__name__: "{count} of these were dropped by `--exclude-all`",
+        include_exclude_rules.filter_by_exclude.__name__: "{count} of these were dropped because they were in {exclude_file}",
+        include_exclude_rules.filter_by_exclude_where.__name__: "{count} of these were dropped because of '{exclude_where}'",
+        include_exclude_rules.filter_by_query.__name__: "{count} of these were filtered out by the query: \"{query}\"",
+        include_exclude_rules.filter_by_ambiguous_date.__name__: "{count} of these were dropped because of their ambiguous date in {ambiguity}",
+        include_exclude_rules.filter_by_min_date.__name__: "{count} of these were dropped because they were earlier than {min_date} or missing a date",
+        include_exclude_rules.filter_by_max_date.__name__: "{count} of these were dropped because they were later than {max_date} or missing a date",
+        include_exclude_rules.filter_by_sequence_length.__name__: "{count} of these were dropped because they were shorter than minimum length of {min_length}bp",
+        include_exclude_rules.filter_by_non_nucleotide.__name__: "{count} of these were dropped because they had non-nucleotide characters",
+        include_exclude_rules.skip_group_by_with_ambiguous_year.__name__: "{count} were dropped during grouping due to ambiguous year information",
+        include_exclude_rules.skip_group_by_with_ambiguous_month.__name__: "{count} were dropped during grouping due to ambiguous month information",
+        include_exclude_rules.skip_group_by_with_ambiguous_day.__name__: "{count} were dropped during grouping due to ambiguous day information",
+        include_exclude_rules.force_include_strains.__name__: "{count} strains were added back because they were in {include_file}",
+        include_exclude_rules.force_include_where.__name__: "{count} sequences were added back because of '{include_where}'",
     }
     for (filter_name, filter_kwargs), count in filter_counts.items():
         if filter_kwargs:

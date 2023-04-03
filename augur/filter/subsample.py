@@ -28,31 +28,27 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     -------
     dict :
         A mapping of strain names to tuples corresponding to the values of the strain's group.
-    list :
-        A list of dictionaries with strains that were skipped from grouping and the reason why (see also: `apply_filters` output).
 
     Examples
     --------
     >>> strains = ["strain1", "strain2"]
     >>> metadata = pd.DataFrame([{"strain": "strain1", "date": "2020-01-01", "region": "Africa"}, {"strain": "strain2", "date": "2020-02-01", "region": "Europe"}]).set_index("strain")
     >>> group_by = ["region"]
-    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by)
+    >>> group_by_strain = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
     {'strain1': ('Africa',), 'strain2': ('Europe',)}
-    >>> skipped_strains
-    []
 
     If we group by year or month, these groups are calculated from the date
     string.
 
     >>> group_by = ["year", "month"]
-    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by)
+    >>> group_by_strain = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
     {'strain1': (2020, (2020, 1)), 'strain2': (2020, (2020, 2))}
 
     If we omit the grouping columns, the result will group by a dummy column.
 
-    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata)
+    >>> group_by_strain = get_groups_for_subsampling(strains, metadata)
     >>> group_by_strain
     {'strain1': ('_dummy',), 'strain2': ('_dummy',)}
 
@@ -68,42 +64,19 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     grouping to continue and print a warning message to stderr.
 
     >>> group_by = ["year", "month", "missing_column"]
-    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, group_by)
+    >>> group_by_strain = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
     {'strain1': (2020, (2020, 1), 'unknown'), 'strain2': (2020, (2020, 2), 'unknown')}
-
-    If we group by year month and some records don't have that information in
-    their date fields, we should skip those records from the group output and
-    track which records were skipped for which reasons.
-
-    >>> metadata = pd.DataFrame([{"strain": "strain1", "date": "", "region": "Africa"}, {"strain": "strain2", "date": "2020-02-01", "region": "Europe"}]).set_index("strain")
-    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, ["year"])
-    >>> group_by_strain
-    {'strain2': (2020,)}
-    >>> skipped_strains
-    [{'strain': 'strain1', 'filter': 'skip_group_by_with_ambiguous_year', 'kwargs': ''}]
-
-    Similarly, if we group by month, we should skip records that don't have
-    month information in their date fields.
-
-    >>> metadata = pd.DataFrame([{"strain": "strain1", "date": "2020", "region": "Africa"}, {"strain": "strain2", "date": "2020-02-01", "region": "Europe"}]).set_index("strain")
-    >>> group_by_strain, skipped_strains = get_groups_for_subsampling(strains, metadata, ["month"])
-    >>> group_by_strain
-    {'strain2': ((2020, 2),)}
-    >>> skipped_strains
-    [{'strain': 'strain1', 'filter': 'skip_group_by_with_ambiguous_month', 'kwargs': ''}]
-
     """
     metadata = metadata.loc[list(strains)]
     group_by_strain = {}
-    skipped_strains = []
 
     if metadata.empty:
-        return group_by_strain, skipped_strains
+        return group_by_strain
 
     if not group_by or group_by == ('_dummy',):
         group_by_strain = {strain: ('_dummy',) for strain in strains}
-        return group_by_strain, skipped_strains
+        return group_by_strain
 
     group_by_set = set(group_by)
     generated_columns_requested = GROUP_BY_GENERATED_COLUMNS & group_by_set
@@ -155,17 +128,9 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             # Drop the 'date' column since it should not be used for grouping.
             metadata = pd.concat([metadata.drop('date', axis=1), df_dates], axis=1)
 
-            ambiguous_date_strains = list(_get_ambiguous_date_skipped_strains(
-                metadata,
-                temp_prefix,
-                generated_columns_requested
-            ))
-            metadata.drop([record['strain'] for record in ambiguous_date_strains], inplace=True)
-            skipped_strains.extend(ambiguous_date_strains)
-
             # Check again if metadata is empty after dropping ambiguous dates.
             if metadata.empty:
-                return group_by_strain, skipped_strains
+                return group_by_strain
 
             # Generate columns.
             if 'year' in generated_columns_requested:
@@ -199,55 +164,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     # Finally, determine groups.
     group_by_strain = dict(zip(metadata.index, metadata[group_by].apply(tuple, axis=1)))
-    return group_by_strain, skipped_strains
-
-
-def _get_ambiguous_date_skipped_strains(
-        metadata, temp_prefix, generated_columns_requested):
-    """Get strains skipped due to date ambiguity.
-
-    Each value is a dictionary with keys:
-    - `strain`: strain name
-    - `filter`: filter reason. Used for the final report output.
-    - `kwargs`: Empty string since filter reason does not represent a function.
-    """
-    # Don't yield the same strain twice.
-    already_skipped_strains = set()
-
-    if generated_columns_requested:
-        # Skip ambiguous years.
-        df_skip = metadata[metadata[f'{temp_prefix}year'].isnull()]
-        for strain in df_skip.index:
-            if strain not in already_skipped_strains:
-                yield {
-                    "strain": strain,
-                    "filter": "skip_group_by_with_ambiguous_year",
-                    "kwargs": "",
-                }
-        already_skipped_strains.update(df_skip.index)
-    if 'month' in generated_columns_requested or 'week' in generated_columns_requested:
-        # Skip ambiguous months.
-        df_skip = metadata[metadata[f'{temp_prefix}month'].isnull()]
-        for strain in df_skip.index:
-            if strain not in already_skipped_strains:
-                yield {
-                    "strain": strain,
-                    "filter": "skip_group_by_with_ambiguous_month",
-                    "kwargs": "",
-                }
-        already_skipped_strains.update(df_skip.index)
-    if 'week' in generated_columns_requested:
-        # Skip ambiguous days.
-        df_skip = metadata[metadata[f'{temp_prefix}day'].isnull()]
-        for strain in df_skip.index:
-            if strain not in already_skipped_strains:
-                yield {
-                    "strain": strain,
-                    "filter": "skip_group_by_with_ambiguous_day",
-                    "kwargs": "",
-                }
-        # TODO: uncomment if another filter reason is ever added.
-        # already_skipped_strains.update(df_skip.index)
+    return group_by_strain
 
 
 class PriorityQueue:
