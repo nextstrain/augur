@@ -12,11 +12,15 @@ from augur.types import DataErrorMethod
 from .file import open_file
 
 
-# List of valid delimiters when reading a metadata file.
+# Accept the following delimiters when reading a metadata file.
 VALID_DELIMITERS = (',', '\t')
 
+# Accept the following column names to represent a unique ID per row, in order
+# of preference.
+VALID_ID_COLUMNS = ("strain", "name")
 
-def read_metadata(metadata_file, id_columns=("strain", "name"), chunk_size=None):
+
+def read_metadata(metadata_file, id_columns=VALID_ID_COLUMNS, chunk_size=None):
     """Read metadata from a given filename and into a pandas `DataFrame` or
     `TextFileReader` object.
 
