@@ -12,7 +12,7 @@ from augur.types import DataErrorMethod
 from .file import open_file
 
 
-# List of valid delimiters when reading a metadata file.
+# Accept the following delimiters when reading a metadata file.
 VALID_DELIMITERS = (',', '\t')
 
 # Accept the following column names to represent a unique ID per row, in order
