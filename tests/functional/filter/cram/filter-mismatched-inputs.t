@@ -94,9 +94,6 @@ Use a sequence index that has an entry for 1 strain present in both the metadata
   > SEQ3	4
   > ~~
 
-Somehow, this doesn't have a warning that the sequence index is out of sync.
-TODO: fix this.
-
   $ ${AUGUR} filter \
   >  --sequences partial_sequences.fasta \
   >  --sequence-index dummy_index_2.tsv \
@@ -104,6 +101,7 @@ TODO: fix this.
   >  --output-strains filtered_strains.txt \
   >  --output-sequences filtered_sequences.fasta \
   >  --output-log filtered_log.txt
+  WARNING: The sequence index is out of sync with the provided sequences. Metadata and strain output may not match sequence output.
   4 strains were dropped during filtering
   	1 had no metadata
   	2 had no sequence data
