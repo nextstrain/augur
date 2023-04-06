@@ -6,7 +6,7 @@ import sys
 from Bio import Phylo
 from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
-from .io.metadata import read_metadata
+from .io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_metadata
 from .utils import read_tree, write_json, InvalidTreeError
 from .errors import AugurError
 from treetime.vcf_utils import read_vcf
@@ -98,7 +98,9 @@ def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("refine", help=__doc__)
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
-    parser.add_argument('--metadata', type=str, metavar="FILE", help="sequence metadata, as CSV or TSV")
+    parser.add_argument('--metadata', type=str, metavar="FILE", help="sequence metadata")
+    parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
+                        help="delimiters to accept when reading a metadata file")
     parser.add_argument('--output-tree', type=str, help='file name to write tree to')
     parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
     parser.add_argument('--use-fft', action="store_true", help="produce timetree using FFT for convolutions")
@@ -204,7 +206,14 @@ def run(args):
         if args.metadata is None:
             print("ERROR: meta data with dates is required for time tree reconstruction", file=sys.stderr)
             return 1
-        metadata = read_metadata(args.metadata)
+        try:
+            metadata = read_metadata(args.metadata, args.metadata_delimiters)
+        except InvalidDelimiter:
+            raise AugurError(
+                f"Could not determine the delimiter of {args.metadata!r}. "
+                f"Valid delimiters are: {args.metadata_delimiters!r}. "
+                "This can be changed with --metadata-delimiters."
+            )
         try:
             dates = get_numerical_dates(metadata, fmt=args.date_format,
                                         min_max_year=args.year_bounds)

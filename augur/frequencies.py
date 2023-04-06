@@ -7,10 +7,11 @@ from collections import defaultdict
 from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
 
+from .errors import AugurError
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
 from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
-from .io.metadata import read_metadata
+from .io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_metadata
 from .utils import read_node_data, write_json
 
 
@@ -20,7 +21,9 @@ def register_parser(parent_subparsers):
     parser.add_argument('--method', choices=["diffusion", "kde"], required=True,
                         help="method by which frequencies should be estimated")
     parser.add_argument('--metadata', type=str, required=True, metavar="FILE",
-                        help="metadata including dates for given samples, as CSV or TSV")
+                        help="metadata including dates for given samples")
+    parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
+                        help="delimiters to accept when reading a metadata file")
     parser.add_argument('--regions', type=str, nargs='+', default=['global'],
                         help="region to subsample to")
     parser.add_argument("--pivot-interval", type=int, default=3,
@@ -80,7 +83,14 @@ def format_frequencies(freq):
 
 
 def run(args):
-    metadata = read_metadata(args.metadata)
+    try:
+        metadata = read_metadata(args.metadata, args.metadata_delimiters)
+    except InvalidDelimiter:
+        raise AugurError(
+            f"Could not determine the delimiter of {args.metadata!r}. "
+            f"Valid delimiters are: {args.metadata_delimiters!r}. "
+            "This can be changed with --metadata-delimiters."
+        )
     dates = get_numerical_dates(metadata, fmt='%Y-%m-%d')
     stiffness = args.stiffness
     inertia = args.inertia
