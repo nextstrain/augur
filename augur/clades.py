@@ -303,11 +303,11 @@ def parse_nodes(tree_file, node_data_files):
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("clades", help=__doc__)
-    parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
-    parser.add_argument('--mutations', nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
+    parser.add_argument('--tree', required=True, help="prebuilt Newick -- no tree will be built if provided")
+    parser.add_argument('--mutations', required=True, metavar="NODE_DATA_JSON", nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
     parser.add_argument('--reference', nargs='+', help=SUPPRESS)
-    parser.add_argument('--clades', type=str, help='TSV file containing clade definitions by amino-acid')
-    parser.add_argument('--output-node-data', type=str, help='name of JSON file to save clade assignments to')
+    parser.add_argument('--clades', required=True, metavar="TSV", type=str, help='TSV file containing clade definitions by amino-acid')
+    parser.add_argument('--output-node-data', type=str,  metavar="NODE_DATA_JSON", help='name of JSON file to save clade assignments to')
     parser.add_argument('--membership-name', type=str, default="clade_membership", help='Key to store clade membership under; use "None" to not export this')
     parser.add_argument('--label-name', type=str, default="clade", help='Key to store clade labels under; use "None" to not export this')
     return parser
