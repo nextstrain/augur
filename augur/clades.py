@@ -18,6 +18,7 @@ import numpy as np
 from collections import defaultdict
 import networkx as nx
 from itertools import islice
+from .errors import AugurError
 from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json, get_json_name
 
 def read_in_clade_definitions(clade_file):
@@ -200,16 +201,16 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
             c.up=node
     tree.root.up = None
     tree.root.sequences = {'nuc':{}}
-    tree.root.sequences.update({gene:{} for gene in all_muts[tree.root.name]['aa_muts']})
+    tree.root.sequences.update({gene:{} for gene in all_muts.get(tree.root.name, {}).get('aa_muts', {})})
 
     # attach sequences to all nodes
     for node in tree.find_clades(order='preorder'):
         if node.up:
             node.sequences = {gene:muts.copy() for gene, muts in node.up.sequences.items()}
-        for mut in all_muts[node.name]['muts']:
+        for mut in all_muts.get(node.name, {}).get('muts', []):
             a, pos, d = mut[0], int(mut[1:-1])-1, mut[-1]
             node.sequences['nuc'][pos] = d
-        if 'aa_muts' in all_muts[node.name]:
+        if 'aa_muts' in all_muts.get(node.name, {}):
             for gene in all_muts[node.name]['aa_muts']:
                 for mut in all_muts[node.name]['aa_muts'][gene]:
                     a, pos, d = mut[0], int(mut[1:-1])-1, mut[-1]
@@ -251,7 +252,7 @@ def get_reference_sequence_from_root_node(all_muts, root_name):
     except:
         print("WARNING in augur.clades: nucleotide mutation json does not contain full sequences for the root node.")
 
-    if "aa_muts" in all_muts[root_name]:
+    if "aa_muts" in all_muts.get(root_name, {}):
         try:
             ref.update({gene:list(seq) for gene, seq in all_muts[root_name]["aa_sequences"].items()})
         except:
@@ -259,6 +260,18 @@ def get_reference_sequence_from_root_node(all_muts, root_name):
 
     return ref
 
+def parse_nodes(tree_file, node_data_files):
+    tree = Phylo.read(tree_file, 'newick')
+    # don't supply tree to read_node_data as we don't want to require that every node is present in the node_data JSONs
+    node_data = read_node_data(node_data_files)
+    # node_data files can be parsed without 'nodes' (if they have 'branches')
+    if "nodes" not in node_data or len(node_data['nodes'].keys())==0:
+        raise AugurError(f"No nodes found in the supplied node data files. Please check {', '.join(node_data_files)}")
+    json_nodes = set(node_data["nodes"].keys())
+    tree_nodes = set([clade.name for clade in tree.find_clades()])
+    if not json_nodes.issubset(tree_nodes):
+        raise AugurError(f"The following nodes in the node_data files ({', '.join(node_data_files)}) are not found in the tree ({tree_file}): {', '.join(json_nodes - tree_nodes)}")
+    return (tree, node_data['nodes'])
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("clades", help=__doc__)
@@ -273,13 +286,7 @@ def register_parser(parent_subparsers):
 
 
 def run(args):
-    ## read tree and data, if reading data fails, return with error code
-    tree = Phylo.read(args.tree, 'newick')
-    node_data = read_node_data(args.mutations, args.tree)
-    if node_data is None:
-        print("ERROR: could not read node data (incl sequences)")
-        return 1
-    all_muts = node_data['nodes']
+    (tree, all_muts) = parse_nodes(args.tree, args.mutations)
 
     if args.reference:
         # PLACE HOLDER FOR vcf WORKFLOW.
