@@ -124,7 +124,7 @@ def read_in_clade_definitions(clade_file):
     return clades
 
 
-def is_node_in_clade(clade_alleles, node, ref):
+def is_node_in_clade(clade_alleles, node, root_sequence):
     '''
     Determines whether a node matches the clade definition based on sequence
     For any condition, will first look in mutations stored in node.sequences,
@@ -133,11 +133,13 @@ def is_node_in_clade(clade_alleles, node, ref):
     Parameters
     ----------
     clade_alleles : list
-        list of clade defining alleles
+        list of clade defining alleles (typically supplied from the input TSV)
     node : Bio.Phylo.BaseTree.Clade
         node to check, assuming sequences (as mutations) are attached to node
-    ref : str or list
-        positions
+        node.sequences specifies nucleotides/codons which are newly observed on this node
+        i.e. they are the result of a mutation observed on the branch leading to this node
+    root_sequence : dict
+        {geneName: observed root sequence (list)}
 
     Returns
     -------
@@ -149,8 +151,8 @@ def is_node_in_clade(clade_alleles, node, ref):
     for gene, pos, clade_state in clade_alleles:
         if gene in node.sequences and pos in node.sequences[gene]:
             state = node.sequences[gene][pos]
-        elif ref and gene in ref:
-            state = ref[gene][pos]
+        elif root_sequence and gene in root_sequence:
+            state = root_sequence[gene][pos]
         else:
             state = ''
 
@@ -245,13 +247,18 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
 
 
 def get_reference_sequence_from_root_node(all_muts, root_name):
-    # attach sequences to root
+    """
+    Extracts the (nuc) sequence from the root node, if set, as well as
+    the (aa) sequences. Returns a dictionary of {geneName: rootSequence}
+    where rootSequence is a list and geneName may be 'nuc'.
+    """
     ref = {}
     try:
         ref['nuc'] = list(all_muts[root_name]["sequence"])
     except:
         print("WARNING in augur.clades: nucleotide mutation json does not contain full sequences for the root node.")
 
+    # note that we require "aa_muts" to be encoded on the root node, but we actually use the "aa_sequences" key.
     if "aa_muts" in all_muts.get(root_name, {}):
         try:
             ref.update({gene:list(seq) for gene, seq in all_muts[root_name]["aa_sequences"].items()})
