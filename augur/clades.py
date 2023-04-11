@@ -254,17 +254,33 @@ def get_reference_sequence_from_root_node(all_muts, root_name):
     where rootSequence is a list and geneName may be 'nuc'.
     """
     ref = {}
-    try:
-        ref['nuc'] = list(all_muts[root_name]["sequence"])
-    except:
-        print("WARNING in augur.clades: nucleotide mutation json does not contain full sequences for the root node.")
 
-    # note that we require "aa_muts" to be encoded on the root node, but we actually use the "aa_sequences" key.
-    if "aa_muts" in all_muts.get(root_name, {}):
+    # the presence of a single mutation will imply that the corresponding reference
+    # sequence should be present, and we will warn if it is not
+    nt_present = False
+    genes_present = set([])
+    missing = []
+    for d in all_muts.values():
+        if "muts" in d:
+            nt_present = True
+        genes_present.update(d.get('aa_muts', {}).keys())
+
+    if nt_present:
         try:
-            ref.update({gene:list(seq) for gene, seq in all_muts[root_name]["aa_sequences"].items()})
-        except:
-            print("WARNING in augur.clades: amino acid mutation json does not contain full sequences for the root node.")
+            ref['nuc'] = list(all_muts.get(root_name, {})["sequence"])
+        except KeyError:
+            missing.append("nuc")
+
+    for gene in genes_present:
+        try:
+            ref[gene] = list(all_muts.get(root_name, {}).get("aa_sequences", {})[gene])
+        except KeyError:
+            missing.append(gene)
+
+    if missing:            
+        print(f"WARNING in augur.clades: sequences at the root node have not been specified for {{{', '.join(missing)}}}, \
+even though mutations were observed. Clades which are annotated using bases/codons present at the root \
+of the tree may not be correctly inferred.")
 
     return ref
 
