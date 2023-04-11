@@ -83,3 +83,12 @@ if the (branch leading to the) root has the clade-defining mutation.
   $ python3 "$TESTDIR/../../scripts/diff_jsons.py" clades/toy_clades_2.json "$TMP/toy_clades_2b.json" \
   >   --exclude-paths "root['generated_by']"
   {}
+
+Multiple mutations at the same position on a single branch are a fatal error
+
+  $ ${AUGUR} clades \
+  >   --tree clades/toy_tree.nwk \
+  >   --mutations clades/toy_muts_multiple.json \
+  >   --clades clades/toy_clades_nuc.tsv
+  ERROR: Multiple mutations at the same position on a single branch were found: Node A (nuc), Node AB (geneName)
+  [2]

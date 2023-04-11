@@ -170,6 +170,20 @@ is beyond the bounds of the supplied root sequence for {gene} (length {len(root_
 
     return all(conditions)
 
+def ensure_no_multiple_mutations(all_muts):
+    multiples = []
+
+    for name,node in all_muts.items():
+        nt_positions = [int(mut[1:-1])-1  for mut in node.get('muts', [])]
+        if len(set(nt_positions))!=len(nt_positions):
+            multiples.append(f"Node {name} (nuc)")
+        for gene in node.get('aa_muts', {}):
+            aa_positions = [int(mut[1:-1])-1 for mut in node['aa_muts'][gene]]
+            if len(set(aa_positions))!=len(aa_positions):
+                multiples.append(f"Node {name} ({gene})")
+    
+    if multiples:
+        raise AugurError(f"Multiple mutations at the same position on a single branch were found: {', '.join(multiples)}")
 
 def assign_clades(clade_designations, all_muts, tree, ref=None):
     '''
@@ -314,6 +328,7 @@ def parse_nodes(tree_file, node_data_files):
     tree_nodes = set([clade.name for clade in tree.find_clades()])
     if not json_nodes.issubset(tree_nodes):
         raise AugurError(f"The following nodes in the node_data files ({', '.join(node_data_files)}) are not found in the tree ({tree_file}): {', '.join(json_nodes - tree_nodes)}")
+    ensure_no_multiple_mutations(node_data['nodes'])
     return (tree, node_data['nodes'])
 
 def register_parser(parent_subparsers):
