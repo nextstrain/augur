@@ -19,6 +19,7 @@ from collections import defaultdict
 import networkx as nx
 from itertools import islice
 from .errors import AugurError
+from argparse import SUPPRESS
 from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json, get_json_name
 
 def read_in_clade_definitions(clade_file):
@@ -284,7 +285,7 @@ def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("clades", help=__doc__)
     parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
     parser.add_argument('--mutations', nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
-    parser.add_argument('--reference', nargs='+', help='fasta files containing reference and tip nucleotide and/or amino-acid sequences ')
+    parser.add_argument('--reference', nargs='+', help=SUPPRESS)
     parser.add_argument('--clades', type=str, help='TSV file containing clade definitions by amino-acid')
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save clade assignments to')
     parser.add_argument('--membership-name', type=str, default="clade_membership", help='Key to store clade membership under; use "None" to not export this')
@@ -299,6 +300,7 @@ def run(args):
         # PLACE HOLDER FOR vcf WORKFLOW.
         # Works without a reference for now but can be added if clade defs contain positions
         # that are monomorphic across reference and sequence sample.
+        print(f"WARNING in augur.clades: You have provided a --reference file(s) ({args.reference}) however this is functionality is not yet supported.")
         ref = None
     else:
         # extract reference sequences from the root node entry in the mutation json
