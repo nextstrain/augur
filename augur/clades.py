@@ -22,6 +22,8 @@ from .errors import AugurError
 from argparse import SUPPRESS
 from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json, get_json_name
 
+UNASSIGNED = 'unassigned'
+
 def read_in_clade_definitions(clade_file):
     '''
     Reads in tab-seperated file that defines clades by amino acid or nucleotide mutations
@@ -122,6 +124,9 @@ def read_in_clade_definitions(clade_file):
         if clade != root
     }
 
+    if not len(clades.keys()):
+        raise AugurError(f"No clades were defined in {clade_file}")
+
     return clades
 
 
@@ -197,7 +202,7 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
 
     # first pass to set all nodes to unassigned as precaution to ensure attribute is set
     for node in tree.find_clades(order = 'preorder'):
-        clade_membership[node.name] = 'unassigned'
+        clade_membership[node.name] = UNASSIGNED
 
     # count leaves
     for node in tree.find_clades(order = 'postorder'):
@@ -249,6 +254,16 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
                 clade_membership[child.name] = clade_membership[node.name]
 
     return (clade_membership, clade_labels)
+
+def warn_if_clades_not_found(membership, clade_designations):
+    clades = set(clade_designations.keys())
+    found = set([clade for clade in membership.values() if clade!=UNASSIGNED])
+    if not(len(found)):
+        print(f"WARNING in augur.clades: no clades found in tree!")
+        return
+    for clade in clades-found:
+        # warn loudly - one line per unfound clade
+        print(f"WARNING in augur.clades: clade '{clade}' not found in tree!")
 
 
 def get_reference_sequence_from_root_node(all_muts, root_name):
@@ -330,6 +345,7 @@ def run(args):
     clade_designations = read_in_clade_definitions(args.clades)
 
     membership, labels = assign_clades(clade_designations, all_muts, tree, ref)
+    warn_if_clades_not_found(membership, clade_designations)
 
     membership_key= args.membership_name if args.membership_name.upper() != "NONE" else None
     label_key= args.label_name if args.label_name.upper() != "NONE" else None
