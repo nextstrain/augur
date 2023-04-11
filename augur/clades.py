@@ -153,7 +153,11 @@ def is_node_in_clade(clade_alleles, node, root_sequence):
         if gene in node.sequences and pos in node.sequences[gene]:
             state = node.sequences[gene][pos]
         elif root_sequence and gene in root_sequence:
-            state = root_sequence[gene][pos]
+            try:
+                state = root_sequence[gene][pos]
+            except IndexError:
+                raise AugurError(f"A clade definition specifies {{{gene},{pos+1},{clade_state}}} which \
+is beyond the bounds of the supplied root sequence for {gene} (length {len(root_sequence[gene])})")
         else:
             state = ''
 
