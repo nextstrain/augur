@@ -15,7 +15,7 @@ from augur.index import (
     DELIMITER as SEQUENCE_INDEX_DELIMITER,
 )
 from augur.io.file import open_file
-from augur.io.metadata import read_metadata
+from augur.io.metadata import InvalidDelimiter, read_metadata
 from augur.io.sequences import read_sequences, write_sequences
 from augur.io.print import print_err
 from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
@@ -163,11 +163,19 @@ def run(args):
     all_sequences_to_include = set()
     filter_counts = defaultdict(int)
 
-    metadata_reader = read_metadata(
-        args.metadata,
-        id_columns=args.metadata_id_columns,
-        chunk_size=args.metadata_chunk_size,
-    )
+    try:
+        metadata_reader = read_metadata(
+            args.metadata,
+            args.metadata_delimiters,
+            id_columns=args.metadata_id_columns,
+            chunk_size=args.metadata_chunk_size,
+        )
+    except InvalidDelimiter:
+        raise AugurError(
+            f"Could not determine the delimiter of {args.metadata!r}. "
+            f"Valid delimiters are: {args.metadata_delimiters!r}. "
+            "This can be changed with --metadata-delimiters."
+        )
     for metadata in metadata_reader:
         duplicate_strains = (
             set(metadata.index[metadata.index.duplicated()]) |
@@ -309,6 +317,7 @@ def run(args):
         # have passed filters.
         metadata_reader = read_metadata(
             args.metadata,
+            args.metadata_delimiters,
             id_columns=args.metadata_id_columns,
             chunk_size=args.metadata_chunk_size,
         )

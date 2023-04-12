@@ -4,12 +4,14 @@
 
 ### Major Changes
 
-* `augur.io.read_metadata` (used by export, filter, frequencies, refine, and traits): Previously, this supported any arbitrary delimiters for the metadata. It is now restricted to CSV and TSV, which are the officially supported formats for all Augur subcommands that use this function. [#812][] (@victorlin)
+* export, filter, frequencies, refine, traits: From versions 10.0.0 through 21.1.0, arbitrary delimiters for `--metadata` were supported due to internal implementation differences from the advertised CSV and TSV support. Starting with this version, non-CSV/TSV files will no longer be supported by default. To adjust for this breaking change, specify custom delimiters with the new `--metadata-delimiters` flag. [#1196][] (@victorlin)
+* `augur.io.read_metadata`: Previously, this supported any arbitrary delimiters for the metadata. It now requires a new argument, `valid_delimiters`. [#812][] (@victorlin)
 
 ### Features
 
 * Constrain `bcbio-gff` to >=0.7.0 and allow `Biopython` >=1.81 again. We had to introduce the `Biopython` constraint in v21.0.1 (see [#1152][]) due to `bcbio-gff` <0.7.0 relying on the removed `Biopython` feature `UnknownSeq`. [#1178][] (@corneliusroemer)
 * `augur.io.read_metadata` (used by export, filter, frequencies, refine, and traits): Previously, this used the Python parser engine for [`pandas.read_csv()`][]. Updated to use the C engine for faster reading of metadata. [#812][] (@victorlin)
+* curate: Allow custom metadata delimiters with the new `--metadata-delimiters` flag. [#1196][] (@victorlin)
 
 ### Bug fixes
 
@@ -21,6 +23,7 @@
 [#1152]: https://github.com/nextstrain/augur/pull/1152
 [#1171]: https://github.com/nextstrain/augur/issues/1171
 [#1178]: https://github.com/nextstrain/augur/pull/1178
+[#1196]: https://github.com/nextstrain/augur/pull/1196
 [`pandas.read_csv()`]: https://pandas.pydata.org/pandas-docs/version/1.5/reference/api/pandas.read_csv.html
 
 ## 21.1.0 (14 March 2023)

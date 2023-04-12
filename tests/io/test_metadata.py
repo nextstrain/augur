@@ -4,7 +4,7 @@ import sys
 from io import StringIO
 
 from augur.errors import AugurError
-from augur.io.metadata import read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
+from augur.io.metadata import InvalidDelimiter, read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
 from augur.types import DataErrorMethod
 
 
@@ -39,13 +39,13 @@ class TestReadMetadataToDict:
             fh.write('strain,date,country\n')
             fh.write('SEQ_A,2020-10-03,USA\n')
 
-        record = next(read_table_to_dict(path))
+        record = next(read_table_to_dict(path, (',')))
         assert record == expected_record
 
     def test_read_table_to_dict_with_csv_from_stdin(self, mp_context, expected_record):
         stdin = StringIO('strain,date,country\nSEQ_A,2020-10-03,USA\n')
         mp_context.setattr('sys.stdin', stdin)
-        record = next(read_table_to_dict(sys.stdin))
+        record = next(read_table_to_dict(sys.stdin, (',')))
         assert record == expected_record
 
     def test_read_table_to_dict_with_tsv(self, tmpdir, expected_record):
@@ -54,13 +54,13 @@ class TestReadMetadataToDict:
             fh.write('strain\tdate\tcountry\n')
             fh.write('SEQ_A\t2020-10-03\tUSA\n')
 
-        record = next(read_table_to_dict(path))
+        record = next(read_table_to_dict(path, ('\t')))
         assert record == expected_record
 
     def test_read_table_to_dict_with_tsv_from_stdin(self, mp_context, expected_record):
         stdin = StringIO('strain\tdate\tcountry\nSEQ_A\t2020-10-03\tUSA\n')
         mp_context.setattr('sys.stdin', stdin)
-        record = next(read_table_to_dict(sys.stdin))
+        record = next(read_table_to_dict(sys.stdin, ('\t')))
         assert record == expected_record
 
     def test_read_table_to_dict_with_bad_delimiter(self, tmpdir):
@@ -69,26 +69,24 @@ class TestReadMetadataToDict:
             fh.write('strain date country\n')
             fh.write('SEQ_A 2020-10-03 USA\n')
 
-        with pytest.raises(AugurError) as e_info:
-            next(read_table_to_dict(path))
-
-        assert str(e_info.value) == f"Could not determine the delimiter of {path!r}. File must be a CSV or TSV."
+        with pytest.raises(InvalidDelimiter):
+            next(read_table_to_dict(path, (',', '\t')))
 
     @pytest.mark.parametrize('id_column', ['strain', None])
     def test_read_table_to_dict_with_duplicates(self, metadata_with_duplicate, id_column):
         with pytest.raises(AugurError) as e_info:
-            list(read_table_to_dict(metadata_with_duplicate, id_column=id_column))
+            list(read_table_to_dict(metadata_with_duplicate, ('\t'), id_column=id_column))
         assert str(e_info.value) == f"Encountered record with duplicate id 'SEQ_A' in {metadata_with_duplicate!r}"
 
     @pytest.mark.parametrize('id_column', ['strain', None])
     def test_read_table_to_dict_with_duplicates_error_all(self, metadata_with_duplicate, id_column):
         with pytest.raises(AugurError) as e_info:
-            list(read_table_to_dict(metadata_with_duplicate, DataErrorMethod("error_all"), id_column=id_column))
+            list(read_table_to_dict(metadata_with_duplicate, ('\t'), DataErrorMethod("error_all"), id_column=id_column))
         assert str(e_info.value) == f"The following records are duplicated in {metadata_with_duplicate!r}:\n'SEQ_A'\n'SEQ_B'"
 
     @pytest.mark.parametrize('id_column', ['strain', None])
     def test_read_table_to_dict_with_duplicates_warning(self, capsys, metadata_with_duplicate, id_column):
-        list(read_table_to_dict(metadata_with_duplicate, DataErrorMethod('warn'), id_column=id_column))
+        list(read_table_to_dict(metadata_with_duplicate, ('\t'), DataErrorMethod('warn'), id_column=id_column))
         captured = capsys.readouterr()
         assert captured.err == (
             f"WARNING: Encountered record with duplicate id 'SEQ_A' in {metadata_with_duplicate!r}\n"
@@ -97,13 +95,13 @@ class TestReadMetadataToDict:
         )
 
     def test_read_table_to_dict_with_duplicates_silent(self, capsys, metadata_with_duplicate):
-        list(read_table_to_dict(metadata_with_duplicate, DataErrorMethod('silent')))
+        list(read_table_to_dict(metadata_with_duplicate, ('\t'), DataErrorMethod('silent')))
         assert "WARNING" not in capsys.readouterr().err
 
     def test_read_table_to_dict_with_duplicate_and_bad_id(self, metadata_with_duplicate):
         id_column = "bad_id"
         with pytest.raises(AugurError) as e_info:
-            list(read_table_to_dict(metadata_with_duplicate, id_column=id_column))
+            list(read_table_to_dict(metadata_with_duplicate, ('\t'), id_column=id_column))
         assert str(e_info.value) == f"The provided id column {id_column!r} does not exist in {metadata_with_duplicate!r}."
 
 
@@ -194,7 +192,7 @@ def metadata_with_unmatched_and_dup(tmpdir, metadata_file):
 
 class TestReadMetadataWithSequence:
     def test_read_metadata_with_sequence(self, metadata_file, fasta_file):
-        records = list(read_metadata_with_sequences(metadata_file, fasta_file, 'strain'))
+        records = list(read_metadata_with_sequences(metadata_file, ('\t',), fasta_file, 'strain'))
         assert len(records) == 4
         for record in records:
             seq_base = record['strain'].split("_")[-1].upper()
@@ -204,18 +202,19 @@ class TestReadMetadataWithSequence:
     def test_read_metadata_with_sequences_with_bad_id(self, metadata_file, fasta_file):
         id_field = "bad_id"
         with pytest.raises(AugurError) as e_info:
-            next(read_metadata_with_sequences(metadata_file, fasta_file, id_field))
+            next(read_metadata_with_sequences(metadata_file, ('\t',), fasta_file, id_field))
         assert str(e_info.value) == f"The provided sequence id column {id_field!r} does not exist in the metadata."
 
     def test_read_metadata_with_sequences_with_unmatched(self, metadata_with_unmatched, fasta_with_unmatched):
         with pytest.raises(AugurError) as e_info:
-            list(read_metadata_with_sequences(metadata_with_unmatched, fasta_with_unmatched, 'strain'))
+            list(read_metadata_with_sequences(metadata_with_unmatched, ('\t',), fasta_with_unmatched, 'strain'))
         assert str(e_info.value) == "Encountered metadata record 'EXTRA_METADATA_A' without a matching sequence."
 
     def test_read_metadata_with_sequences_with_unmatched_error_all(self, metadata_with_unmatched, fasta_with_unmatched):
         with pytest.raises(AugurError) as e_info:
             list(read_metadata_with_sequences(
                 metadata_with_unmatched,
+                ('\t',),
                 fasta_with_unmatched,
                 'strain',
                 unmatched_reporting=DataErrorMethod.ERROR_ALL))
@@ -231,6 +230,7 @@ class TestReadMetadataWithSequence:
     def test_read_metadata_with_sequences_with_unmatched_warning(self, capsys, metadata_with_unmatched, fasta_with_unmatched):
         records = list(read_metadata_with_sequences(
             metadata_with_unmatched,
+            ('\t',),
             fasta_with_unmatched,
             'strain',
             unmatched_reporting=DataErrorMethod.WARN))
@@ -251,6 +251,7 @@ class TestReadMetadataWithSequence:
     def test_read_metadata_with_sequences_with_unmatched_silent(self, capsys, metadata_with_unmatched, fasta_with_unmatched):
         records = list(read_metadata_with_sequences(
             metadata_with_unmatched,
+            ('\t',),
             fasta_with_unmatched,
             'strain',
             unmatched_reporting=DataErrorMethod.SILENT))
@@ -260,17 +261,17 @@ class TestReadMetadataWithSequence:
 
     def test_read_metadata_with_sequences_with_dup_metadata(self, metadata_with_dup, fasta_file):
         with pytest.raises(AugurError) as e_info:
-            list(read_metadata_with_sequences(metadata_with_dup, fasta_file, 'strain'))
+            list(read_metadata_with_sequences(metadata_with_dup, ('\t',), fasta_file, 'strain'))
         assert str(e_info.value) == "Encountered metadata record with duplicate id 'SEQ_C'."
 
     def test_read_metadata_with_sequences_with_dup_fasta(self, metadata_file, fasta_with_dup):
         with pytest.raises(AugurError) as e_info:
-            list(read_metadata_with_sequences(metadata_file, fasta_with_dup, 'strain'))
+            list(read_metadata_with_sequences(metadata_file, ('\t',), fasta_with_dup, 'strain'))
         assert str(e_info.value) == "Encountered sequence record with duplicate id 'SEQ_A'."
 
     def test_read_metadata_with_sequences_with_dup_both(self, metadata_with_dup, fasta_with_dup):
         with pytest.raises(AugurError) as e_info:
-            list(read_metadata_with_sequences(metadata_with_dup, fasta_with_dup, 'strain'))
+            list(read_metadata_with_sequences(metadata_with_dup, ('\t',), fasta_with_dup, 'strain'))
         # Expected to error on first duplicate sequence since we check sequences first
         assert str(e_info.value) == "Encountered sequence record with duplicate id 'SEQ_A'."
 
@@ -278,6 +279,7 @@ class TestReadMetadataWithSequence:
         with pytest.raises(AugurError) as e_info:
             list(read_metadata_with_sequences(
                 metadata_with_dup,
+                ('\t',),
                 fasta_with_dup,
                 'strain',
                 duplicate_reporting=DataErrorMethod.ERROR_ALL
@@ -294,6 +296,7 @@ class TestReadMetadataWithSequence:
     def test_read_metadata_with_sequences_with_dup_warn(self, capsys, metadata_with_dup, fasta_with_dup):
         records = list(read_metadata_with_sequences(
             metadata_with_dup,
+            ('\t',),
             fasta_with_dup,
             'strain',
             duplicate_reporting=DataErrorMethod.WARN
@@ -317,6 +320,7 @@ class TestReadMetadataWithSequence:
     def test_read_metadata_with_sequences_with_dup_silent(self, capsys, metadata_with_dup, fasta_with_dup):
         records = list(read_metadata_with_sequences(
             metadata_with_dup,
+            ('\t',),
             fasta_with_dup,
             'strain',
             duplicate_reporting=DataErrorMethod.SILENT
@@ -327,7 +331,7 @@ class TestReadMetadataWithSequence:
 
     def test_read_metadata_with_sequences_with_extra_and_dup(self, metadata_with_unmatched_and_dup, fasta_with_unmatched_and_dup):
         with pytest.raises(AugurError) as e_info:
-            list(read_metadata_with_sequences(metadata_with_unmatched_and_dup, fasta_with_unmatched_and_dup, 'strain'))
+            list(read_metadata_with_sequences(metadata_with_unmatched_and_dup, ('\t',), fasta_with_unmatched_and_dup, 'strain'))
         # Expected to error on first duplicate sequence since we check duplicate sequences first
         assert str(e_info.value) == "Encountered sequence record with duplicate id 'SEQ_A'."
 
@@ -335,6 +339,7 @@ class TestReadMetadataWithSequence:
         with pytest.raises(AugurError) as e_info:
             list(read_metadata_with_sequences(
                 metadata_with_unmatched_and_dup,
+                ('\t',),
                 fasta_with_unmatched_and_dup,
                 'strain',
                 unmatched_reporting=DataErrorMethod.ERROR_ALL,
@@ -358,6 +363,7 @@ class TestReadMetadataWithSequence:
         with pytest.raises(AugurError) as e_info:
             list(read_metadata_with_sequences(
                 metadata_with_unmatched_and_dup,
+                ('\t',),
                 fasta_with_unmatched_and_dup,
                 'strain',
                 unmatched_reporting=DataErrorMethod.WARN,
@@ -387,6 +393,7 @@ class TestReadMetadataWithSequence:
         with pytest.raises(AugurError) as e_info:
             list(read_metadata_with_sequences(
                 metadata_with_unmatched_and_dup,
+                ('\t',),
                 fasta_with_unmatched_and_dup,
                 'strain',
                 unmatched_reporting=DataErrorMethod.ERROR_ALL,
@@ -418,6 +425,7 @@ class TestReadMetadataWithSequence:
     def test_read_metadata_with_sequences_with_extra_and_dup_warn_both(self, capsys, metadata_with_unmatched_and_dup, fasta_with_unmatched_and_dup):
         records = list(read_metadata_with_sequences(
             metadata_with_unmatched_and_dup,
+            ('\t',),
             fasta_with_unmatched_and_dup,
             'strain',
             unmatched_reporting=DataErrorMethod.WARN,

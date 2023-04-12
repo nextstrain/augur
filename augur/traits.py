@@ -6,7 +6,8 @@ import numpy as np
 from collections import defaultdict
 import os, sys
 import pandas as pd
-from .io.metadata import read_metadata
+from .errors import AugurError
+from .io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_metadata
 from .utils import write_json, get_json_name
 TINY = 1e-12
 
@@ -100,7 +101,9 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("traits", help=__doc__)
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
-    parser.add_argument('--metadata', required=True, metavar="FILE", help="table with metadata, as CSV or TSV")
+    parser.add_argument('--metadata', required=True, metavar="FILE", help="table with metadata")
+    parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
+                        help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     parser.add_argument('--weights', required=False, help="tsv/csv table with equilibrium probabilities of discrete states")
     parser.add_argument('--columns', required=True, nargs='+',
                         help='metadata fields to perform discrete reconstruction on')
@@ -126,7 +129,14 @@ def run(args):
         command line arguments are parsed by argparse
     """
     tree_fname = args.tree
-    traits = read_metadata(args.metadata)
+    try:
+        traits = read_metadata(args.metadata, args.metadata_delimiters)
+    except InvalidDelimiter:
+        raise AugurError(
+                f"Could not determine the delimiter of {args.metadata!r}. "
+                f"Valid delimiters are: {args.metadata_delimiters!r}. "
+                "This can be changed with --metadata-delimiters."
+            )
 
     from Bio import Phylo
     T = Phylo.read(tree_fname, 'newick')

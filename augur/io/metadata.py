@@ -1,5 +1,6 @@
 import csv
 import os
+from typing import Iterable
 import pandas as pd
 import pyfastx
 import sys
@@ -12,24 +13,31 @@ from augur.types import DataErrorMethod
 from .file import open_file
 
 
-# Accept the following delimiters when reading a metadata file.
-VALID_DELIMITERS = (',', '\t')
+DEFAULT_DELIMITERS = (',', '\t')
 
 # Accept the following column names to represent a unique ID per row, in order
 # of preference.
 VALID_ID_COLUMNS = ("strain", "name")
 
 
-def read_metadata(metadata_file, id_columns=VALID_ID_COLUMNS, chunk_size=None):
-    """Read metadata from a given filename and into a pandas `DataFrame` or
+class InvalidDelimiter(Exception):
+    pass
+
+
+def read_metadata(metadata_file, delimiters, id_columns=VALID_ID_COLUMNS, chunk_size=None):
+    r"""Read metadata from a given filename and into a pandas `DataFrame` or
     `TextFileReader` object.
 
     Parameters
     ----------
     metadata_file : str
         Path to a metadata file to load.
+    delimiters : list of str
+        List of possible delimiters to check for between columns in the metadata.
+        Only one delimiter will be inferred.
     id_columns : list of str
         List of possible id column names to check for, ordered by priority.
+        Only one id column will be inferred.
     chunk_size : int
         Size of chunks to stream from disk with an iterator instead of loading the entire input file into memory.
 
@@ -47,19 +55,19 @@ def read_metadata(metadata_file, id_columns=VALID_ID_COLUMNS, chunk_size=None):
 
     For standard use, request a metadata file and get a pandas DataFrame.
 
-    >>> read_metadata("tests/functional/filter/data/metadata.tsv").index.values[0]
+    >>> read_metadata("tests/functional/filter/data/metadata.tsv", ("\t",)).index.values[0]
     'COL/FLR_00024/2015'
 
     Requesting an index column that doesn't exist should produce an error.
 
-    >>> read_metadata("tests/functional/filter/data/metadata.tsv", id_columns=("Virus name",))
+    >>> read_metadata("tests/functional/filter/data/metadata.tsv", ("\t",), id_columns=("Virus name",))
     Traceback (most recent call last):
       ...
     Exception: None of the possible id columns (('Virus name',)) were found in the metadata's columns ('strain', 'virus', 'accession', 'date', 'region', 'country', 'division', 'city', 'db', 'segment', 'authors', 'url', 'title', 'journal', 'paper_url')
 
     We also allow iterating through metadata in fixed chunk sizes.
 
-    >>> for chunk in read_metadata("tests/functional/filter/data/metadata.tsv", chunk_size=5):
+    >>> for chunk in read_metadata("tests/functional/filter/data/metadata.tsv", ("\t",), chunk_size=5):
     ...     print(chunk.shape)
     ...
     (5, 14)
@@ -68,7 +76,7 @@ def read_metadata(metadata_file, id_columns=VALID_ID_COLUMNS, chunk_size=None):
 
     """
     kwargs = {
-        "sep": _get_delimiter(metadata_file),
+        "sep": _get_delimiter(metadata_file, delimiters),
         "engine": "c",
         "skipinitialspace": True,
         "na_filter": False,
@@ -111,7 +119,7 @@ def read_metadata(metadata_file, id_columns=VALID_ID_COLUMNS, chunk_size=None):
     )
 
 
-def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, id_column=None):
+def read_table_to_dict(table, delimiters, duplicate_reporting=DataErrorMethod.ERROR_FIRST, id_column=None):
     """
     Read rows from *table* file and yield each row as a single dict.
 
@@ -122,6 +130,10 @@ def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, i
     ----------
     table: str
         Path to a CSV or TSV file or IO buffer
+
+    delimiters : list of str
+        List of possible delimiters to check for between columns in the metadata.
+        Only one delimiter will be inferred.
 
     duplicate_reporting: DataErrorMethod, optional
         How should duplicate records be reported
@@ -158,12 +170,11 @@ def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, i
         try:
             # Note: this sort of duplicates _get_delimiter(), but it's easier if
             # this is separate since it handles non-seekable buffers.
-            dialect = csv.Sniffer().sniff(table_sample, VALID_DELIMITERS)
-        except csv.Error as err:
-            raise AugurError(
-                f"Could not determine the delimiter of {table!r}. "
-                "File must be a CSV or TSV."
-            ) from err
+            dialect = csv.Sniffer().sniff(table_sample, delimiters)
+        except csv.Error as error:
+            # This assumes all csv.Errors imply a delimiter issue. That might
+            # change in a future Python version.
+            raise InvalidDelimiter from error
 
         metadata_reader = csv.DictReader(handle, dialect=dialect)
         if duplicate_reporting is DataErrorMethod.SILENT:
@@ -205,7 +216,7 @@ def read_table_to_dict(table, duplicate_reporting=DataErrorMethod.ERROR_FIRST, i
             raise ValueError(f"Encountered unhandled duplicate reporting method: {duplicate_reporting!r}")
 
 
-def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequence',
+def read_metadata_with_sequences(metadata, metadata_delimiters, fasta, seq_id_column, seq_field='sequence',
     unmatched_reporting=DataErrorMethod.ERROR_FIRST, duplicate_reporting=DataErrorMethod.ERROR_FIRST):
     """
     Read rows from *metadata* file and yield each row as a single dict that has
@@ -234,6 +245,9 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
     ----------
     metadata: str
         Path to a CSV or TSV metadata file
+
+    metadata_delimiters : list of str
+        List of possible delimiters to check for between columns in the metadata.
 
     fasta: str
         Path to a plain or gzipped FASTA file
@@ -297,7 +311,7 @@ def read_metadata_with_sequences(metadata, fasta, seq_id_column, seq_field='sequ
 
     # Silencing duplicate reporting here because we will need to handle duplicates
     # in both the metadata and FASTA files after processing all the records here.
-    for record in read_table_to_dict(metadata, duplicate_reporting=DataErrorMethod.SILENT):
+    for record in read_table_to_dict(metadata, metadata_delimiters, duplicate_reporting=DataErrorMethod.SILENT):
         seq_id = record.get(seq_id_column)
 
         if seq_id is None:
@@ -437,14 +451,13 @@ def write_records_to_tsv(records, output_file):
             tsv_writer.writerow(record)
 
 
-def _get_delimiter(path: str):
-    """Get the delimiter of a file."""
+def _get_delimiter(path: str, valid_delimiters: Iterable[str]):
+    """Get the delimiter of a file given a list of valid delimiters."""
     with open_file(path) as file:
         try:
             # Infer the delimiter from the first line.
-            return csv.Sniffer().sniff(file.readline(), VALID_DELIMITERS).delimiter
-        except csv.Error as err:
-            raise AugurError(
-                f"Could not determine the delimiter of {path!r}. "
-                "File must be a CSV or TSV."
-            ) from err
+            return csv.Sniffer().sniff(file.readline(), valid_delimiters).delimiter
+        except csv.Error as error:
+            # This assumes all csv.Errors imply a delimiter issue. That might
+            # change in a future Python version.
+            raise InvalidDelimiter from error

@@ -11,7 +11,8 @@ import re
 from Bio import Phylo
 
 from .argparse_ import ExtendAction
-from .io.metadata import read_metadata
+from .errors import AugurError
+from .io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_metadata
 from .types import ValidationMode
 from .utils import read_node_data, write_json, read_config, read_lat_longs, read_colors
 from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
@@ -867,7 +868,9 @@ def register_parser(parent_subparsers):
     optional_inputs = parser.add_argument_group(
         title="OPTIONAL INPUT FILES"
     )
-    optional_inputs.add_argument('--metadata', metavar="FILE", help="Additional metadata for strains in the tree, as CSV or TSV")
+    optional_inputs.add_argument('--metadata', metavar="FILE", help="Additional metadata for strains in the tree")
+    optional_inputs.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
+                                 help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     optional_inputs.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
     optional_inputs.add_argument('--lat-longs', metavar="TSV", help="Latitudes and longitudes for geography traits (overrides built in mappings)")
 
@@ -1039,13 +1042,19 @@ def run(args):
 
     if args.metadata is not None:
         try:
-            metadata_file = read_metadata(args.metadata).to_dict(orient="index")
+            metadata_file = read_metadata(args.metadata, args.metadata_delimiters).to_dict(orient="index")
             for strain in metadata_file.keys():
                 if "strain" not in metadata_file[strain]:
                     metadata_file[strain]["strain"] = strain
         except FileNotFoundError:
             print(f"ERROR: meta data file ({args.metadata}) does not exist", file=sys.stderr)
             sys.exit(2)
+        except InvalidDelimiter:
+            raise AugurError(
+                f"Could not determine the delimiter of {args.metadata!r}. "
+                f"Valid delimiters are: {args.metadata_delimiters!r}. "
+                "This can be changed with --metadata-delimiters."
+            )
         except Exception as error:
             print(f"ERROR: {error}", file=sys.stderr)
             sys.exit(1)

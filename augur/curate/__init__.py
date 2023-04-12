@@ -9,7 +9,7 @@ from textwrap import dedent
 from augur.argparse_ import add_command_subparsers
 from augur.errors import AugurError
 from augur.io.json import dump_ndjson, load_ndjson
-from augur.io.metadata import read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
+from augur.io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
 from augur.io.sequences import write_records_to_fasta
 from augur.types import DataErrorMethod
 from . import normalize_strings, passthru
@@ -46,11 +46,13 @@ def create_shared_parser():
             If no input options are provided, commands will try to read NDJSON records from stdin.
         """)
     shared_inputs.add_argument("--metadata",
-        help="Input metadata file, as CSV or TSV. Accepts '-' to read metadata from stdin.")
+        help="Input metadata file. Accepts '-' to read metadata from stdin.")
     shared_inputs.add_argument("--id-column",
         help="Name of the metadata column that contains the record identifier for reporting duplicate records. "
              "Uses the first column of the metadata file if not provided. "
              "Ignored if also providing a FASTA file input.")
+    shared_inputs.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+",
+        help="Delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
 
     shared_inputs.add_argument("--fasta",
         help="Plain or gzipped FASTA file. Headers can only contain the sequence id used to match a metadata record. " +
@@ -133,15 +135,30 @@ def run(args):
         args.metadata = sys.stdin
 
     if args.metadata and args.fasta:
-        records = read_metadata_with_sequences(
-            args.metadata,
-            args.fasta,
-            args.seq_id_column,
-            args.seq_field,
-            DataErrorMethod(args.unmatched_reporting),
-            DataErrorMethod(args.duplicate_reporting))
+        try:
+            records = read_metadata_with_sequences(
+                args.metadata,
+                args.metadata_delimiters,
+                args.fasta,
+                args.seq_id_column,
+                args.seq_field,
+                DataErrorMethod(args.unmatched_reporting),
+                DataErrorMethod(args.duplicate_reporting))
+        except InvalidDelimiter:
+            raise AugurError(
+                f"Could not determine the delimiter of {args.metadata!r}. "
+                f"Valid delimiters are: {args.metadata_delimiters!r}. "
+                "This can be changed with --metadata-delimiters."
+            )
     elif args.metadata:
-        records = read_table_to_dict(args.metadata, DataErrorMethod(args.duplicate_reporting), args.id_column)
+        try:
+            records = read_table_to_dict(args.metadata, args.metadata_delimiters, DataErrorMethod(args.duplicate_reporting), args.id_column)
+        except InvalidDelimiter:
+            raise AugurError(
+                f"Could not determine the delimiter of {args.metadata!r}. "
+                f"Valid delimiters are: {args.metadata_delimiters!r}. "
+                "This can be changed with --metadata-delimiters."
+            )
     elif not sys.stdin.isatty():
         records = load_ndjson(sys.stdin)
     else:
