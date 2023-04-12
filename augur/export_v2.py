@@ -870,7 +870,7 @@ def register_parser(parent_subparsers):
     )
     optional_inputs.add_argument('--metadata', metavar="FILE", help="Additional metadata for strains in the tree")
     optional_inputs.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
-                                 help="delimiters to accept when reading a metadata file")
+                                 help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     optional_inputs.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
     optional_inputs.add_argument('--lat-longs', metavar="TSV", help="Latitudes and longitudes for geography traits (overrides built in mappings)")
 

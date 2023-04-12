@@ -34,8 +34,10 @@ def read_metadata(metadata_file, delimiters, id_columns=VALID_ID_COLUMNS, chunk_
         Path to a metadata file to load.
     delimiters : list of str
         List of possible delimiters to check for between columns in the metadata.
+        Only one delimiter will be inferred.
     id_columns : list of str
         List of possible id column names to check for, ordered by priority.
+        Only one id column will be inferred.
     chunk_size : int
         Size of chunks to stream from disk with an iterator instead of loading the entire input file into memory.
 
@@ -131,6 +133,7 @@ def read_table_to_dict(table, delimiters, duplicate_reporting=DataErrorMethod.ER
 
     delimiters : list of str
         List of possible delimiters to check for between columns in the metadata.
+        Only one delimiter will be inferred.
 
     duplicate_reporting: DataErrorMethod, optional
         How should duplicate records be reported

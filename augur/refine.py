@@ -100,7 +100,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     parser.add_argument('--metadata', type=str, metavar="FILE", help="sequence metadata")
     parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
-                        help="delimiters to accept when reading a metadata file")
+                        help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     parser.add_argument('--output-tree', type=str, help='file name to write tree to')
     parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
     parser.add_argument('--use-fft', action="store_true", help="produce timetree using FFT for convolutions")

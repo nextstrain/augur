@@ -52,7 +52,7 @@ def create_shared_parser():
              "Uses the first column of the metadata file if not provided. "
              "Ignored if also providing a FASTA file input.")
     shared_inputs.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+",
-        help="Delimiters to accept when reading a metadata file.")
+        help="Delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
 
     shared_inputs.add_argument("--fasta",
         help="Plain or gzipped FASTA file. Headers can only contain the sequence id used to match a metadata record. " +

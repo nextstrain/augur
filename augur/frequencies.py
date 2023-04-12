@@ -23,7 +23,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--metadata', type=str, required=True, metavar="FILE",
                         help="metadata including dates for given samples")
     parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
-                        help="delimiters to accept when reading a metadata file")
+                        help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     parser.add_argument('--regions', type=str, nargs='+', default=['global'],
                         help="region to subsample to")
     parser.add_argument("--pivot-interval", type=int, default=3,
