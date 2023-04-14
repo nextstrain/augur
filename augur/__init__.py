@@ -15,9 +15,8 @@ from .errors import AugurError
 from .io.print import print_err
 from .argparse_ import add_command_subparsers, add_default_command
 
-recursion_limit = os.environ.get("AUGUR_RECURSION_LIMIT")
-if recursion_limit:
-    sys.setrecursionlimit(int(recursion_limit))
+DEFAULT_AUGUR_RECURSION_LIMIT = 10000
+sys.setrecursionlimit(int(os.environ.get("AUGUR_RECURSION_LIMIT") or DEFAULT_AUGUR_RECURSION_LIMIT))
 
 command_strings = [
     "parse",
