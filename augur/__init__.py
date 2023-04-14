@@ -77,7 +77,7 @@ def run(argv):
     except TreeTimeUnknownError as e:
         print_err(dedent("""\
             ERROR from TreeTime: An error occurred in TreeTime (see above). This may be due to an issue with TreeTime or Augur.
-            Please report you are calling TreeTime via Augur. 
+            Please report you are calling TreeTime via Augur.
             """))
         sys.exit(2)
     except TreeTimeError as e:
