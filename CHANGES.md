@@ -12,6 +12,7 @@
 * Constrain `bcbio-gff` to >=0.7.0 and allow `Biopython` >=1.81 again. We had to introduce the `Biopython` constraint in v21.0.1 (see [#1152][]) due to `bcbio-gff` <0.7.0 relying on the removed `Biopython` feature `UnknownSeq`. [#1178][] (@corneliusroemer)
 * `augur.io.read_metadata` (used by export, filter, frequencies, refine, and traits): Previously, this used the Python parser engine for [`pandas.read_csv()`][]. Updated to use the C engine for faster reading of metadata. [#812][] (@victorlin)
 * curate: Allow custom metadata delimiters with the new `--metadata-delimiters` flag. [#1196][] (@victorlin)
+* Bump the default recursion limit to 10,000. Users can continue to override this limit with the environment variable `AUGUR_RECURSION_LIMIT`. [#1200][] (@joverlee521)
 
 ### Bug fixes
 
@@ -24,6 +25,7 @@
 [#1171]: https://github.com/nextstrain/augur/issues/1171
 [#1178]: https://github.com/nextstrain/augur/pull/1178
 [#1196]: https://github.com/nextstrain/augur/pull/1196
+[#1200]: https://github.com/nextstrain/augur/pull/1200
 [`pandas.read_csv()`]: https://pandas.pydata.org/pandas-docs/version/1.5/reference/api/pandas.read_csv.html
 
 ## 21.1.0 (14 March 2023)
