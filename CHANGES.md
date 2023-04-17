@@ -5,7 +5,7 @@
 ### Major Changes
 
 * export, filter, frequencies, refine, traits: From versions 10.0.0 through 21.1.0, arbitrary delimiters for `--metadata` were supported due to internal implementation differences from the advertised CSV and TSV support. Starting with this version, non-CSV/TSV files will no longer be supported by default. To adjust for this breaking change, specify custom delimiters with the new `--metadata-delimiters` flag. [#1196][] (@victorlin)
-* `augur.io.read_metadata`: Previously, this supported any arbitrary delimiters for the metadata. It now requires a new argument, `valid_delimiters`. [#812][] (@victorlin)
+* `augur.io.read_metadata`: Previously, this supported any arbitrary delimiters for the metadata. Now, it only supports a list of possible delimiters represented by the new `delimiters` keyword argument, which defaults to `,` and `\t`. [#812][] (@victorlin)
 
 ### Features
 
