@@ -15,16 +15,14 @@ from .file import open_file
 
 DEFAULT_DELIMITERS = (',', '\t')
 
-# Accept the following column names to represent a unique ID per row, in order
-# of preference.
-VALID_ID_COLUMNS = ("strain", "name")
+DEFAULT_ID_COLUMNS = ("strain", "name")
 
 
 class InvalidDelimiter(Exception):
     pass
 
 
-def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=VALID_ID_COLUMNS, chunk_size=None):
+def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAULT_ID_COLUMNS, chunk_size=None):
     r"""Read metadata from a given filename and into a pandas `DataFrame` or
     `TextFileReader` object.
 
