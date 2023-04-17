@@ -24,7 +24,7 @@ class InvalidDelimiter(Exception):
     pass
 
 
-def read_metadata(metadata_file, delimiters, id_columns=VALID_ID_COLUMNS, chunk_size=None):
+def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=VALID_ID_COLUMNS, chunk_size=None):
     r"""Read metadata from a given filename and into a pandas `DataFrame` or
     `TextFileReader` object.
 
@@ -55,19 +55,19 @@ def read_metadata(metadata_file, delimiters, id_columns=VALID_ID_COLUMNS, chunk_
 
     For standard use, request a metadata file and get a pandas DataFrame.
 
-    >>> read_metadata("tests/functional/filter/data/metadata.tsv", ("\t",)).index.values[0]
+    >>> read_metadata("tests/functional/filter/data/metadata.tsv").index.values[0]
     'COL/FLR_00024/2015'
 
     Requesting an index column that doesn't exist should produce an error.
 
-    >>> read_metadata("tests/functional/filter/data/metadata.tsv", ("\t",), id_columns=("Virus name",))
+    >>> read_metadata("tests/functional/filter/data/metadata.tsv", id_columns=("Virus name",))
     Traceback (most recent call last):
       ...
     Exception: None of the possible id columns (('Virus name',)) were found in the metadata's columns ('strain', 'virus', 'accession', 'date', 'region', 'country', 'division', 'city', 'db', 'segment', 'authors', 'url', 'title', 'journal', 'paper_url')
 
     We also allow iterating through metadata in fixed chunk sizes.
 
-    >>> for chunk in read_metadata("tests/functional/filter/data/metadata.tsv", ("\t",), chunk_size=5):
+    >>> for chunk in read_metadata("tests/functional/filter/data/metadata.tsv", chunk_size=5):
     ...     print(chunk.shape)
     ...
     (5, 14)
