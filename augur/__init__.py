@@ -15,9 +15,8 @@ from .errors import AugurError
 from .io.print import print_err
 from .argparse_ import add_command_subparsers, add_default_command
 
-recursion_limit = os.environ.get("AUGUR_RECURSION_LIMIT")
-if recursion_limit:
-    sys.setrecursionlimit(int(recursion_limit))
+DEFAULT_AUGUR_RECURSION_LIMIT = 10000
+sys.setrecursionlimit(int(os.environ.get("AUGUR_RECURSION_LIMIT") or DEFAULT_AUGUR_RECURSION_LIMIT))
 
 command_strings = [
     "parse",
@@ -77,7 +76,7 @@ def run(argv):
     except TreeTimeUnknownError as e:
         print_err(dedent("""\
             ERROR from TreeTime: An error occurred in TreeTime (see above). This may be due to an issue with TreeTime or Augur.
-            Please report you are calling TreeTime via Augur. 
+            Please report you are calling TreeTime via Augur.
             """))
         sys.exit(2)
     except TreeTimeError as e:
