@@ -27,3 +27,35 @@ Test output with abbreviations
   $ echo '{"city": "Washington DC, USA"}' \
   >   | ${AUGUR} curate titlecase --titlecase-fields "city" --abbreviations "USA" "DC"
   {"city": "Washington DC, USA"}
+
+Test output with numbers
+
+  $ echo '{"title": "2021 SARS-CoV"}' \
+  >   | ${AUGUR} curate titlecase --titlecase-fields "title" --abbreviations "SARS"
+  {"title": "2021 SARS-Cov"}
+
+Test output with only numbers
+
+  $ echo '{"int": "2021", "float": "2021.10", "address": "2021.20.30" }' \
+  >   | ${AUGUR} curate titlecase --titlecase-fields "int" "float" "address"
+  {"int": "2021", "float": "2021.10", "address": "2021.20.30"}
+
+Test case that passes on empty or null values
+
+  $ echo '{"empty": "", "null_entry":null  }' \
+  >   | ${AUGUR} curate titlecase --titlecase-fields "empty" "null_entry"
+  {"empty": "", "null_entry": null}
+
+
+Test case that fails on a non-string int
+
+  $ echo '{"bare_int": 2021}' \
+  >   | ${AUGUR} curate titlecase --titlecase-fields "bare_int"
+  ERROR: Failed to titlecase 'bare_int':2021 in record 0
+  [2]
+
+Test cases when fields do not exist, decide if this should error out and may affect ingest pipelines
+
+  $ echo '{"region":"europe", "country":"france" }' \
+  >   | ${AUGUR} curate titlecase --titlecase-fields "region" "country" "division" "location" "not exist"
+  {"region": "Europe", "country": "France"}
