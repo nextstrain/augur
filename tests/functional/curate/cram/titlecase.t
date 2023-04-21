@@ -53,3 +53,9 @@ Test case that fails on a non-string int
   >   | ${AUGUR} curate titlecase --titlecase-fields "bare_int"
   ERROR: Failed to titlecase 'bare_int':2021 in record 0
   [2]
+
+Test cases when fields do not exist, decide if this should error out and may affect ingest pipelines
+
+  $ echo '{"region":"europe", "country":"france" }' \
+  >   | ${AUGUR} curate titlecase --titlecase-fields "region" "country" "division" "location" "not exist"
+  {"region": "Europe", "country": "France"}

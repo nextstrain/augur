@@ -90,7 +90,10 @@ def run(args, records):
         record_id = index
 
         for field in args.titlecase_fields:
-            titlecased_string = titlecase(record.get(field, ""), articles, abbreviations)
+            # Ignore non-existent fields but could change this to warnings if desired
+            if field not in record:
+                continue
+            titlecased_string = titlecase(record[field], articles, abbreviations)
         
             failure_message = f"Failed to titlecase {field!r}:{record.get(field)!r} in record {record_id!r}"
             if titlecased_string is None:
