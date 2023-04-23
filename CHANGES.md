@@ -6,6 +6,7 @@
 
 * export, filter, frequencies, refine, traits: From versions 10.0.0 through 21.1.0, arbitrary delimiters for `--metadata` were supported due to internal implementation differences from the advertised CSV and TSV support. Starting with this version, non-CSV/TSV files will no longer be supported by default. To adjust for this breaking change, specify custom delimiters with the new `--metadata-delimiters` flag. [#1196][] (@victorlin)
 * `augur.io.read_metadata`: Previously, this supported any arbitrary delimiters for the metadata. Now, it only supports a list of possible delimiters represented by the new `delimiters` keyword argument, which defaults to `,` and `\t`. [#812][] (@victorlin)
+* add flags `--max-iter` and `--stochastic-resolve` to `refine`. `--max-iter` controls the maximal number of iterations TreeTime uses to infer time trees. This was previously hard-coded to 2, which is now the default. `--stochastic-resolve` replicates the behavior of same flag in TreeTime that was introduced in version 0.9.6 (hence the requirements change). With this option, polytomies are resolved as random coalescent trees instead of greedily minimizing tree length.  [#1203][].
 
 ### Features
 
@@ -26,6 +27,7 @@
 [#1178]: https://github.com/nextstrain/augur/pull/1178
 [#1196]: https://github.com/nextstrain/augur/pull/1196
 [#1200]: https://github.com/nextstrain/augur/pull/1200
+[#1203]: https://github.com/nextstrain/augur/pull/1203
 [`pandas.read_csv()`]: https://pandas.pydata.org/pandas-docs/version/1.5/reference/api/pandas.read_csv.html
 
 ## 21.1.0 (14 March 2023)
