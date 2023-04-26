@@ -13,7 +13,7 @@ from treetime.vcf_utils import read_vcf
 from treetime.seq_utils import profile_maps
 
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
-             confidence=False, resolve_polytomies=True, max_iter=2, precision='auto',
+             confidence=False, resolve_polytomies=True, stochastic_resolve=False, max_iter=2, precision='auto',
              infer_gtr=True, Tc=0.01, reroot=None, use_marginal='always', fixed_pi=None, use_fft=True,
              clock_rate=None, clock_std=None, clock_filter_iqd=None, verbosity=1, covariance=True, **kwarks):
     from treetime import TreeTime
@@ -70,8 +70,9 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
 
     tt.run(infer_gtr=infer_gtr, root=reroot, Tc=Tc, time_marginal=marginal,
            branch_length_mode=branch_length_inference, resolve_polytomies=resolve_polytomies,
-           max_iter=max_iter, fixed_pi=fixed_pi, fixed_clock_rate=clock_rate,
-           vary_rate=vary_rate, use_covariation=covariance, raise_uncaught_exceptions=True, **kwarks)
+           stochastic_resolve=stochastic_resolve, max_iter=max_iter, fixed_pi=fixed_pi,
+           fixed_clock_rate=clock_rate, vary_rate=vary_rate, use_covariation=covariance,
+           raise_uncaught_exceptions=True, **kwarks)
 
     if confidence:
         for n in tt.tree.find_clades():
@@ -104,6 +105,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--output-tree', type=str, help='file name to write tree to')
     parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
     parser.add_argument('--use-fft', action="store_true", help="produce timetree using FFT for convolutions")
+    parser.add_argument('--max-iter', default=2, type=int, help="maximal number of iterations TreeTime uses for timetree inference")
     parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime, requires tree where branch length is in units of average number of nucleotide or protein substitutions per site (and branch lengths do not exceed 4)")
     parser.add_argument('--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
     parser.add_argument('--gen-per-year', default=50, type=float, help="number of generations per year, relevant for skyline output('skyline')")
@@ -119,6 +121,7 @@ def register_parser(parent_subparsers):
                                 "Use --no-covariance to turn off.")
     parser.add_argument('--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!
     parser.add_argument('--keep-polytomies', action='store_true', help='Do not attempt to resolve polytomies')
+    parser.add_argument('--stochastic-resolve', action='store_true', help='Resolve polytomies via stochastic subtree building rather than greedy optimization')
     parser.add_argument('--precision', type=int, choices=[0,1,2,3], help="precision used by TreeTime to determine the number of grid points that are used for the evaluation of the branch length interpolation objects. Values range from 0 (rough) to 3 (ultra fine) and default to 'auto'.")
     parser.add_argument('--date-format', default="%Y-%m-%d", help="date format")
     parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
@@ -237,9 +240,9 @@ def run(args):
                     branch_length_inference = args.branch_length_inference or 'auto',
                     precision = 'auto' if args.precision is None else args.precision,
                     clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
-                    clock_filter_iqd=args.clock_filter_iqd,
+                    clock_filter_iqd=args.clock_filter_iqd, max_iter=args.max_iter,
                     covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies),
-                    verbosity=args.verbosity)
+                    stochastic_resolve=args.stochastic_resolve, verbosity=args.verbosity)
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
