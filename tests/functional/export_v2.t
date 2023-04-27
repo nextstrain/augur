@@ -166,5 +166,21 @@ Run export with metadata and external colors TSV that contains zero values.
   {}
   $ rm -f "$TMP/dataset6.json"
 
+Run export with metadata and color by a metadata column ("custom_trait") in addition to colorings defined in the node data.
+
+  $ ${AUGUR} export v2 \
+  >  --tree export_v2/tree.nwk \
+  >  --metadata export_v2/dataset1_metadata_with_strain.tsv \
+  >  --node-data export_v2/div_node-data.json export_v2/location_node-data.json \
+  >  --auspice-config export_v2/auspice_config1.json \
+  >  --maintainers "Nextstrain Team" \
+  >  --color-by-metadata custom_trait \
+  >  --output "$TMP/dataset_with_color_from_metadata.json" > /dev/null
+  WARNING: [config file] Trait 'custom_trait' is missing type information. We've guessed 'categorical'.
+  \s{0} (re)
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" export_v2/dataset_with_color_from_metadata.json "$TMP/dataset_with_color_from_metadata.json" \
+  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']" --pretty
+  $ rm -f "$TMP/dataset1.json"
 
   $ popd > /dev/null

@@ -1,7 +1,7 @@
-strain	div	mutation_length
-tipA	1	1
-tipB	3	1
-tipC	3	1
-tipD	8	3
-tipE	9	4
-tipF	6	1
+strain	div	mutation_length	custom_trait
+tipA	1	1	A
+tipB	3	1	A
+tipC	3	1	B
+tipD	8	3	B
+tipE	9	4	C
+tipF	6	1	D
