@@ -169,7 +169,8 @@
                         "properties": {
                             "key": {
                                 "description": "They key used to access the value of this coloring on each node",
-                                "type": "string"
+                                "type": "string",
+                                "not": {"enum": ["none"]}
                             },
                             "title": {
                                 "description": "Text to be displayed in the \"color by\" dropdown and the tree legend",
@@ -498,7 +499,8 @@
                                     "$comment": "e.g. clade->3c3a",
                                     "$comment": "string is parsed unchanged by Auspice",
                                     "type": "string"
-                                }
+                                },
+                                "^none$": false
                             }
                         },
                         "mutations": {

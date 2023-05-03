@@ -166,5 +166,23 @@ Run export with metadata and external colors TSV that contains zero values.
   {}
   $ rm -f "$TMP/dataset6.json"
 
+Run export with metadata that contains "none" column and asked to use as coloring.
+This is expected to output a warning that "none" is an invalid coloring column and skip it in colorings.
+
+  $ ${AUGUR} export v2 \
+  >  --tree export_v2/tree.nwk \
+  >  --metadata export_v2/dataset1_metadata_with_none_column.tsv \
+  >  --node-data export_v2/div_node-data.json export_v2/location_node-data.json \
+  >  --auspice-config export_v2/auspice_config5.json \
+  >  --maintainers "Nextstrain Team" \
+  >  --output "$TMP/dataset7.json" > /dev/null
+  WARNING: You asked for a color-by for trait 'none', but this is an invalid coloring key. It has been ignored.
+  \s{0} (re)
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" export_v2/dataset1.json "$TMP/dataset7.json" \
+  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  {}
+  $ rm -f "$TMP/dataset1.json"
+
 
   $ popd > /dev/null

@@ -379,6 +379,9 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         if key != "gt" and not trait_values:
             warn("You asked for a color-by for trait '{}', but it has no values on the tree. It has been ignored.".format(key))
             return False
+        if key == "none":
+            warn(f"You asked for a color-by for trait {key!r}, but this is an invalid coloring key. It has been ignored.")
+            return False
         return True
 
     def _get_colorings():
