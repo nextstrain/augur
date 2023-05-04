@@ -53,6 +53,17 @@ Since the following custom arguments are incompatible with the default IQ-TREE a
   >  --override-default-args \
   >  --output "$TMP/tree_raw.nwk" > /dev/null
 
+Build a tree with an input file that doesn't end in .fasta, and ensure it's not overwritten.
+
+  $ ${AUGUR} tree \
+  >  --alignment tree/aligned.fa \
+  >  --method iqtree \
+  >  --output "$TMP/tree_raw.nwk" \
+  >  --nthreads 1 > /dev/null
+
+  $ sha256sum tree/aligned.fa
+  169a9f5f70b94e26a2c4ab2b3180d4b463112581438515557a9797adc834863d  tree/aligned.fa
+
 Clean up tree log files.
 
   $ rm -f tree/*.log
