@@ -22,6 +22,7 @@
 
 * filter, frequencies, refine, parse: Previously, ambiguous dates in the future had a limit of today's date imposed on the upper value but not the lower value. It is now imposed on the lower value as well. [#1171][] (@victorlin)
 * refine: `--year-bounds` was ignored in versions 9.0.0 through 20.0.0. It now works. [#1136][] (@victorlin)
+* tree: Input alignment filenames which do not end in `.fasta` are now properly handled when using IQ-TREE.  Previously their contents were overwritten first by `augur tree` itself (resulting in truncation) and then by the log output of IQ-TREE (resulting in an error).  Thanks to Jon Bråte for reporting this bug. [#1206][] (@tsibley)
 
 [#728]: https://github.com/nextstrain/augur/pull/728
 [#812]: https://github.com/nextstrain/augur/pull/812
@@ -32,6 +33,7 @@
 [#1196]: https://github.com/nextstrain/augur/pull/1196
 [#1200]: https://github.com/nextstrain/augur/pull/1200
 [#1203]: https://github.com/nextstrain/augur/pull/1203
+[#1206]: https://github.com/nextstrain/augur/pull/1206
 [`pandas.read_csv()`]: https://pandas.pydata.org/pandas-docs/version/1.5/reference/api/pandas.read_csv.html
 
 ## 21.1.0 (14 March 2023)
