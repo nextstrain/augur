@@ -264,7 +264,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
 
     if substitution_model.lower() != "auto":
         call = [iqtree, "-ntmax", str(nthreads), "-s", shquote(tmp_aln_file),
-                "-m", substitution_model, tree_builder_args, ">", log_file]
+                "-m", shquote(substitution_model), tree_builder_args, ">", shquote(log_file)]
     else:
         call = [iqtree, "-ntmax", str(nthreads), "-s", shquote(tmp_aln_file), tree_builder_args, ">", shquote(log_file)]
 
