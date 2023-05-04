@@ -246,8 +246,8 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
 
 
     # IQ-tree messes with taxon names. Hence remove offending characters, reinstaniate later
-    tmp_aln_file = aln_file.replace(".fasta", "-delim.fasta")
-    log_file = tmp_aln_file.replace(".fasta", ".iqtree.log")
+    tmp_aln_file = str(Path(aln_file).with_name(Path(aln_file).stem + "-delim.fasta"))
+    log_file = str(Path(tmp_aln_file).with_suffix(".iqtree.log"))
     num_seqs = 0
     with open(tmp_aln_file, 'w', encoding='utf-8') as ofile, open(aln_file, encoding='utf-8') as ifile:
         for line in ifile:
