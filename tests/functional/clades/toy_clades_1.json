@@ -1,0 +1,30 @@
+{
+  "branches": {
+    "A": {
+      "labels": {
+        "clade": "clade_2"
+      }
+    }
+  },
+  "generated_by": {
+    "program": "augur",
+    "version": "21.1.0"
+  },
+  "nodes": {
+    "A": {
+      "clade_membership": "clade_2"
+    },
+    "AB": {
+      "clade_membership": "unassigned"
+    },
+    "B": {
+      "clade_membership": "unassigned"
+    },
+    "C": {
+      "clade_membership": "unassigned"
+    },
+    "ROOT": {
+      "clade_membership": "unassigned"
+    }
+  }
+}
