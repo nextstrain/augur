@@ -1,0 +1,37 @@
+{
+  "nodes": {
+    "tipD": {
+      "clade_membership": "membership D",
+      "clade_annotation": "set via nodes→clade_annotation"
+    },
+    "tipC": {
+      "clade_membership": "membership C",
+      "clade_annotation": "this should be overwritten by custom clade label"
+    }
+  },
+  "branches": {
+    "ROOT": {
+      "labels": {
+        "fruit": "apple"
+      }
+    },
+    "tipA": {
+      "labels": {
+        "fruit": "orange"
+      }
+    },
+    "tipC": {
+      "labels": {
+        "clade": "clade C",
+        "none": "this will not be exported"
+      }
+    },
+    "internalBC": {
+      "labels": {
+        "fruit": "pomegranate",
+        "vegetable": "pumpkin",
+        "aa": "custom aa label"
+      }
+    }
+  }
+}

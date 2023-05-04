@@ -15,11 +15,15 @@
 * curate: Allow custom metadata delimiters with the new `--metadata-delimiters` flag. [#1196][] (@victorlin)
 * Bump the default recursion limit to 10,000. Users can continue to override this limit with the environment variable `AUGUR_RECURSION_LIMIT`. [#1200][] (@joverlee521)
 
+* clades, export v2: Clade labels + coloring keys are now definable via arguments to augur clades allowing pipelines to use multiple invocations of augur clades resulting in multiple sets of colors and branch labels. How labels are stored in the (intermediate) node-data JSON files has changed. This should be fully backwards compatible for pipelines using augur commands, however custom scripts may need updating. PR [#728][] (@jameshadfield)
+
+
 ### Bug fixes
 
 * filter, frequencies, refine, parse: Previously, ambiguous dates in the future had a limit of today's date imposed on the upper value but not the lower value. It is now imposed on the lower value as well. [#1171][] (@victorlin)
 * refine: `--year-bounds` was ignored in versions 9.0.0 through 20.0.0. It now works. [#1136][] (@victorlin)
 
+[#728]: https://github.com/nextstrain/augur/pull/728
 [#812]: https://github.com/nextstrain/augur/pull/812
 [#1136]: https://github.com/nextstrain/augur/issues/1136
 [#1152]: https://github.com/nextstrain/augur/pull/1152

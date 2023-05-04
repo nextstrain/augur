@@ -1,0 +1,21 @@
+{
+  "annotations": {
+    "nuc": {
+      "end": 500,
+      "start": 1,
+      "strand": "+"
+    }
+  },
+  "nodes": {
+    "internalDEF": {
+      "muts": [
+        "A400T"
+      ]
+    },
+    "not_in_tree": {
+      "muts": [
+        "A100T"
+      ]
+    }
+  }
+}

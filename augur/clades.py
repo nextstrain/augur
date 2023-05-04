@@ -1,5 +1,14 @@
 """
 Assign clades to nodes in a tree based on amino-acid or nucleotide signatures.
+
+Nodes which are members of a clade are stored via 
+<OUTPUT_NODE_DATA> → nodes → <node_name> → clade_membership
+and if this file is used in `augur export v2` these will automatically become a coloring.
+
+The basal nodes of each clade are also given a branch label which is stored via
+<OUTPUT_NODE_DATA> → branches → <node_name> → labels → clade.
+
+The keys "clade_membership" and "clade" are customisable via command line arguments.
 """
 
 import sys
@@ -9,7 +18,11 @@ import numpy as np
 from collections import defaultdict
 import networkx as nx
 from itertools import islice
+from .errors import AugurError
+from argparse import SUPPRESS
 from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json, get_json_name
+
+UNASSIGNED = 'unassigned'
 
 def read_in_clade_definitions(clade_file):
     '''
@@ -111,10 +124,13 @@ def read_in_clade_definitions(clade_file):
         if clade != root
     }
 
+    if not len(clades.keys()):
+        raise AugurError(f"No clades were defined in {clade_file}")
+
     return clades
 
 
-def is_node_in_clade(clade_alleles, node, ref):
+def is_node_in_clade(clade_alleles, node, root_sequence):
     '''
     Determines whether a node matches the clade definition based on sequence
     For any condition, will first look in mutations stored in node.sequences,
@@ -123,11 +139,13 @@ def is_node_in_clade(clade_alleles, node, ref):
     Parameters
     ----------
     clade_alleles : list
-        list of clade defining alleles
+        list of clade defining alleles (typically supplied from the input TSV)
     node : Bio.Phylo.BaseTree.Clade
         node to check, assuming sequences (as mutations) are attached to node
-    ref : str or list
-        positions
+        node.sequences specifies nucleotides/codons which are newly observed on this node
+        i.e. they are the result of a mutation observed on the branch leading to this node
+    root_sequence : dict
+        {geneName: observed root sequence (list)}
 
     Returns
     -------
@@ -139,8 +157,12 @@ def is_node_in_clade(clade_alleles, node, ref):
     for gene, pos, clade_state in clade_alleles:
         if gene in node.sequences and pos in node.sequences[gene]:
             state = node.sequences[gene][pos]
-        elif ref and gene in ref:
-            state = ref[gene][pos]
+        elif root_sequence and gene in root_sequence:
+            try:
+                state = root_sequence[gene][pos]
+            except IndexError:
+                raise AugurError(f"A clade definition specifies {{{gene},{pos+1},{clade_state}}} which \
+is beyond the bounds of the supplied root sequence for {gene} (length {len(root_sequence[gene])})")
         else:
             state = ''
 
@@ -148,12 +170,26 @@ def is_node_in_clade(clade_alleles, node, ref):
 
     return all(conditions)
 
+def ensure_no_multiple_mutations(all_muts):
+    multiples = []
+
+    for name,node in all_muts.items():
+        nt_positions = [int(mut[1:-1])-1  for mut in node.get('muts', [])]
+        if len(set(nt_positions))!=len(nt_positions):
+            multiples.append(f"Node {name} (nuc)")
+        for gene in node.get('aa_muts', {}):
+            aa_positions = [int(mut[1:-1])-1 for mut in node['aa_muts'][gene]]
+            if len(set(aa_positions))!=len(aa_positions):
+                multiples.append(f"Node {name} ({gene})")
+    
+    if multiples:
+        raise AugurError(f"Multiple mutations at the same position on a single branch were found: {', '.join(multiples)}")
 
 def assign_clades(clade_designations, all_muts, tree, ref=None):
     '''
     Ensures all nodes have an entry (or auspice doesn't display nicely), tests each node
-    to see if it's the first member of a clade (assigns 'clade_annotation'), and sets
-    all nodes's clade_membership to the value of their parent. This will change if later found to be
+    to see if it's the first member of a clade (this is the label), and sets the membership of each
+    node to the value of their parent. This will change if later found to be
     the first member of a clade.
 
     Parameters
@@ -169,16 +205,18 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
 
     Returns
     -------
-    dict
-        mapping of node to clades
+    (dict, dict)
+        [0]: mapping of node to clade membership (where applicable)
+        [1]: mapping of node to clade label (where applicable)
     '''
 
     clade_membership = {}
+    clade_labels = {}
     parents = get_parent_name_by_child_name_for_tree(tree)
 
     # first pass to set all nodes to unassigned as precaution to ensure attribute is set
     for node in tree.find_clades(order = 'preorder'):
-        clade_membership[node.name] = {'clade_membership': 'unassigned'}
+        clade_membership[node.name] = UNASSIGNED
 
     # count leaves
     for node in tree.find_clades(order = 'postorder'):
@@ -189,16 +227,16 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
             c.up=node
     tree.root.up = None
     tree.root.sequences = {'nuc':{}}
-    tree.root.sequences.update({gene:{} for gene in all_muts[tree.root.name]['aa_muts']})
+    tree.root.sequences.update({gene:{} for gene in all_muts.get(tree.root.name, {}).get('aa_muts', {})})
 
     # attach sequences to all nodes
     for node in tree.find_clades(order='preorder'):
         if node.up:
             node.sequences = {gene:muts.copy() for gene, muts in node.up.sequences.items()}
-        for mut in all_muts[node.name]['muts']:
+        for mut in all_muts.get(node.name, {}).get('muts', []):
             a, pos, d = mut[0], int(mut[1:-1])-1, mut[-1]
             node.sequences['nuc'][pos] = d
-        if 'aa_muts' in all_muts[node.name]:
+        if 'aa_muts' in all_muts.get(node.name, {}):
             for gene in all_muts[node.name]['aa_muts']:
                 for mut in all_muts[node.name]['aa_muts'][gene]:
                     a, pos, d = mut[0], int(mut[1:-1])-1, mut[-1]
@@ -208,7 +246,7 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
                     node.sequences[gene][pos] = d
 
 
-    # second pass to assign 'clade_annotation' to basal nodes within each clade
+    # second pass to assign basal nodes within each clade to the clade_labels dict
     # if multiple nodes match, assign annotation to largest
     # otherwise occasional unwanted cousin nodes get assigned the annotation
     for clade_name, clade_alleles in clade_designations.items():
@@ -219,58 +257,100 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
         sorted_nodes = sorted(node_counts, key=lambda x: x.leaf_count, reverse=True)
         if len(sorted_nodes) > 0:
             target_node = sorted_nodes[0]
-            clade_membership[target_node.name] = {'clade_annotation': clade_name, 'clade_membership': clade_name}
+            clade_membership[target_node.name] = clade_name
+            clade_labels[target_node.name] = clade_name
 
-    # third pass to propagate 'clade_membership'
-    # don't propagate if encountering 'clade_annotation'
+    # third pass to propagate clade_membership to descendant nodes
+    # (until we encounter a node with its own clade_membership)
     for node in tree.find_clades(order = 'preorder'):
         for child in node:
-            if 'clade_annotation' not in clade_membership[child.name]:
-                clade_membership[child.name]['clade_membership'] = clade_membership[node.name]['clade_membership']
+            if child.name not in clade_labels:
+                clade_membership[child.name] = clade_membership[node.name]
 
-    return clade_membership
+    return (clade_membership, clade_labels)
+
+def warn_if_clades_not_found(membership, clade_designations):
+    clades = set(clade_designations.keys())
+    found = set([clade for clade in membership.values() if clade!=UNASSIGNED])
+    if not(len(found)):
+        print(f"WARNING in augur.clades: no clades found in tree!")
+        return
+    for clade in clades-found:
+        # warn loudly - one line per unfound clade
+        print(f"WARNING in augur.clades: clade '{clade}' not found in tree!")
 
 
 def get_reference_sequence_from_root_node(all_muts, root_name):
-    # attach sequences to root
+    """
+    Extracts the (nuc) sequence from the root node, if set, as well as
+    the (aa) sequences. Returns a dictionary of {geneName: rootSequence}
+    where rootSequence is a list and geneName may be 'nuc'.
+    """
     ref = {}
-    try:
-        ref['nuc'] = list(all_muts[root_name]["sequence"])
-    except:
-        print("WARNING in augur.clades: nucleotide mutation json does not contain full sequences for the root node.")
 
-    if "aa_muts" in all_muts[root_name]:
+    # the presence of a single mutation will imply that the corresponding reference
+    # sequence should be present, and we will warn if it is not
+    nt_present = False
+    genes_present = set([])
+    missing = []
+    for d in all_muts.values():
+        if "muts" in d:
+            nt_present = True
+        genes_present.update(d.get('aa_muts', {}).keys())
+
+    if nt_present:
         try:
-            ref.update({gene:list(seq) for gene, seq in all_muts[root_name]["aa_sequences"].items()})
-        except:
-            print("WARNING in augur.clades: amino acid mutation json does not contain full sequences for the root node.")
+            ref['nuc'] = list(all_muts.get(root_name, {})["sequence"])
+        except KeyError:
+            missing.append("nuc")
+
+    for gene in genes_present:
+        try:
+            ref[gene] = list(all_muts.get(root_name, {}).get("aa_sequences", {})[gene])
+        except KeyError:
+            missing.append(gene)
+
+    if missing:            
+        print(f"WARNING in augur.clades: sequences at the root node have not been specified for {{{', '.join(missing)}}}, \
+even though mutations were observed. Clades which are annotated using bases/codons present at the root \
+of the tree may not be correctly inferred.")
 
     return ref
 
+def parse_nodes(tree_file, node_data_files):
+    tree = Phylo.read(tree_file, 'newick')
+    # don't supply tree to read_node_data as we don't want to require that every node is present in the node_data JSONs
+    node_data = read_node_data(node_data_files)
+    # node_data files can be parsed without 'nodes' (if they have 'branches')
+    if "nodes" not in node_data or len(node_data['nodes'].keys())==0:
+        raise AugurError(f"No nodes found in the supplied node data files. Please check {', '.join(node_data_files)}")
+    json_nodes = set(node_data["nodes"].keys())
+    tree_nodes = set([clade.name for clade in tree.find_clades()])
+    if not json_nodes.issubset(tree_nodes):
+        raise AugurError(f"The following nodes in the node_data files ({', '.join(node_data_files)}) are not found in the tree ({tree_file}): {', '.join(json_nodes - tree_nodes)}")
+    ensure_no_multiple_mutations(node_data['nodes'])
+    return (tree, node_data['nodes'])
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("clades", help=__doc__)
-    parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
-    parser.add_argument('--mutations', nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
-    parser.add_argument('--reference', nargs='+', help='fasta files containing reference and tip nucleotide and/or amino-acid sequences ')
-    parser.add_argument('--clades', type=str, help='TSV file containing clade definitions by amino-acid')
-    parser.add_argument('--output-node-data', type=str, help='name of JSON file to save clade assignments to')
+    parser.add_argument('--tree', required=True, help="prebuilt Newick -- no tree will be built if provided")
+    parser.add_argument('--mutations', required=True, metavar="NODE_DATA_JSON", nargs='+', help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
+    parser.add_argument('--reference', nargs='+', help=SUPPRESS)
+    parser.add_argument('--clades', required=True, metavar="TSV", type=str, help='TSV file containing clade definitions by amino-acid')
+    parser.add_argument('--output-node-data', type=str,  metavar="NODE_DATA_JSON", help='name of JSON file to save clade assignments to')
+    parser.add_argument('--membership-name', type=str, default="clade_membership", help='Key to store clade membership under; use "None" to not export this')
+    parser.add_argument('--label-name', type=str, default="clade", help='Key to store clade labels under; use "None" to not export this')
     return parser
 
 
 def run(args):
-    ## read tree and data, if reading data fails, return with error code
-    tree = Phylo.read(args.tree, 'newick')
-    node_data = read_node_data(args.mutations, args.tree)
-    if node_data is None:
-        print("ERROR: could not read node data (incl sequences)")
-        return 1
-    all_muts = node_data['nodes']
+    (tree, all_muts) = parse_nodes(args.tree, args.mutations)
 
     if args.reference:
         # PLACE HOLDER FOR vcf WORKFLOW.
         # Works without a reference for now but can be added if clade defs contain positions
         # that are monomorphic across reference and sequence sample.
+        print(f"WARNING in augur.clades: You have provided a --reference file(s) ({args.reference}) however this is functionality is not yet supported.")
         ref = None
     else:
         # extract reference sequences from the root node entry in the mutation json
@@ -279,8 +359,20 @@ def run(args):
 
     clade_designations = read_in_clade_definitions(args.clades)
 
-    clade_membership = assign_clades(clade_designations, all_muts, tree, ref)
+    membership, labels = assign_clades(clade_designations, all_muts, tree, ref)
+    warn_if_clades_not_found(membership, clade_designations)
+
+    membership_key= args.membership_name if args.membership_name.upper() != "NONE" else None
+    label_key= args.label_name if args.label_name.upper() != "NONE" else None
+
+    node_data_json = {}
+    if membership_key:
+        node_data_json['nodes'] = {node: {membership_key: clade} for node,clade in membership.items()}
+        print(f"Clade membership stored on nodes → <node_name> → {membership_key}", file=sys.stdout)
+    if label_key:
+        node_data_json['branches'] = {node: {'labels': {label_key: label}} for node,label in labels.items()}
+        print(f"Clade labels stored on branches → <node_name> → labels → {label_key}", file=sys.stdout)
 
     out_name = get_json_name(args)
-    write_json({'nodes': clade_membership}, out_name)
-    print("clades written to", out_name, file=sys.stdout)
+    write_json(node_data_json, out_name)
+    print(f"Clades written to {out_name}", file=sys.stdout)

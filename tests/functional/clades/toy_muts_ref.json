@@ -1,0 +1,10 @@
+{
+  "nodes": {
+    "ROOT": {
+      "sequence": "AAAAAAAAAA"
+    },
+    "A": {
+      "muts": ["A10T"]
+    }
+  }
+}

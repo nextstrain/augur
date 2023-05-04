@@ -27,7 +27,12 @@ class NodeDataFile:
 
     @property
     def nodes(self):
-        return self.attrs.get("nodes")
+        return self.attrs.get("nodes", {})
+
+    @property
+    def branches(self):
+        # these are optional, so we provide an empty dict as a default
+        return self.attrs.get("branches", {})
 
     @property
     def generated_by(self):
@@ -72,6 +77,15 @@ class NodeDataFile:
             raise AugurError(
                 f"`nodes` value in {self.fname} is not a dictionary. Please check the formatting of this JSON!"
             )
+
+        if not isinstance(self.branches, dict):
+            raise AugurError(
+                f"`branches` value in {self.fname} is not a dictionary. Please check the formatting of this JSON!"            )
+
+        if not self.nodes and not self.branches:
+            raise AugurError(
+                f"{self.fname} did not contain either `nodes` or `branches`. Please check the formatting of this JSON!"
+        )
 
         if self.validation_mode is not ValidationMode.SKIP and self.is_generated_by_incompatible_augur:
             msg = (

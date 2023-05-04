@@ -39,7 +39,7 @@ rule clades:
 As input, this command requires the tree, the output of the ancestral reconstruction steps and the translation step (assuming your clades are defined using translations), as well as the file with clade definitions.
 
 The output of this command is a json file in the common augur format that specifies `clade_membership` for each node in the tree.
-Nodes that didn't match any clade definition will be left `unassigned`.
-Internal nodes that form the root of clades will have an additional field `clade_annotation` that auspice uses to label branches in the tree.
+Nodes that didn't match any clade definition will be left unassigned.
+Internal nodes that form the root of each clade will also have a branch label assigned (you can prevent this by adding `--label-name none`).
 
 

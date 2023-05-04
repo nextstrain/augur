@@ -166,5 +166,16 @@ Run export with metadata and external colors TSV that contains zero values.
   {}
   $ rm -f "$TMP/dataset6.json"
 
+Test that attributes are correctly exported as branch_attrs. Currently this includes branch labels (node_data→branches),
+mutations (node_data→nodes) and a historical node_data→nodes→<name>→clade_annotation branch label.
+  $ ${AUGUR} export v2 \
+  >   --tree export_v2/tree.nwk \
+  >   --node-data export_v2/div_node-data.json export_v2/nt_muts_1.json export_v2/aa_muts_1.json export_v2/branch-labels.json \
+  >   --maintainers "Nextstrain Team" \
+  >   --output "$TMP/dataset-with-branch-labels.json" > /dev/null
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py"  export_v2/dataset-with-branch-labels.json "$TMP/dataset-with-branch-labels.json" \
+  >   --exclude-paths "root['meta']['updated']"
+  {}
 
   $ popd > /dev/null
