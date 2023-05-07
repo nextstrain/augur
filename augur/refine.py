@@ -15,7 +15,7 @@ from treetime.seq_utils import profile_maps
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
              confidence=False, resolve_polytomies=True, stochastic_resolve=False, max_iter=2, precision='auto',
              infer_gtr=True, Tc=0.01, reroot=None, use_marginal='always', fixed_pi=None, use_fft=True,
-             clock_rate=None, clock_std=None, clock_filter_iqd=None, verbosity=1, covariance=True, **kwarks):
+             clock_rate=None, clock_std=None, clock_filter_iqd=None, verbosity=1, covariance=True, rng_seed=None, **kwarks):
     from treetime import TreeTime
 
     try: #Tc could be a number or  'opt' or 'skyline'. TreeTime expects a float or int if a number.
@@ -38,7 +38,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
 
     #send ref, if is None, does no harm
     tt = TreeTime(tree=tree, aln=aln, ref=ref, dates=dates, use_fft=use_fft,
-                  verbose=verbosity, gtr='JC69', precision=precision)
+                  verbose=verbosity, gtr='JC69', precision=precision, rng_seed=rng_seed)
 
     # conditionally run clock-filter and remove bad tips
     if clock_filter_iqd:
@@ -142,8 +142,6 @@ def register_parser(parent_subparsers):
 
 
 def run(args):
-    if args.seed is not None:
-        np.random.seed(args.seed)
 
     # check alignment type, set flags, read in if VCF
     is_vcf = False
@@ -242,7 +240,7 @@ def run(args):
                     clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
                     clock_filter_iqd=args.clock_filter_iqd, max_iter=args.max_iter,
                     covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies),
-                    stochastic_resolve=args.stochastic_resolve, verbosity=args.verbosity)
+                    stochastic_resolve=args.stochastic_resolve, verbosity=args.verbosity, rng_seed=args.seed)
 
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
@@ -278,7 +276,7 @@ def run(args):
                 except ValueError as err:
                     raise ValueError(f"HINT: This error may be because your specified root with name '{args.root}' was not found in your alignment file") from err
 
-        tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=args.verbosity)
+        tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=args.verbosity, rng_seed=args.seed)
 
     node_data['nodes'] = collect_node_data(T, attributes)
     if args.divergence_units=='mutations-per-site': #default
