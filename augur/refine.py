@@ -120,8 +120,12 @@ def register_parser(parent_subparsers):
                                 "rates and/or rerooting. "
                                 "Use --no-covariance to turn off.")
     parser.add_argument('--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!
+
+    # the following three flags should be mutually exclusive
     parser.add_argument('--keep-polytomies', action='store_true', help='Do not attempt to resolve polytomies')
     parser.add_argument('--stochastic-resolve', action='store_true', help='Resolve polytomies via stochastic subtree building rather than greedy optimization')
+    parser.add_argument('--greedy-resolve', action='store_false', dest='stochastic_resolve') # inverse of `--stochastic-resolve` to facilitate changing defaults in the future
+
     parser.add_argument('--precision', type=int, choices=[0,1,2,3], help="precision used by TreeTime to determine the number of grid points that are used for the evaluation of the branch length interpolation objects. Values range from 0 (rough) to 3 (ultra fine) and default to 'auto'.")
     parser.add_argument('--date-format', default="%Y-%m-%d", help="date format")
     parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
