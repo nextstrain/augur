@@ -6,7 +6,7 @@
 
 * export, filter, frequencies, refine, traits: From versions 10.0.0 through 21.1.0, arbitrary delimiters for `--metadata` were supported due to internal implementation differences from the advertised CSV and TSV support. Starting with this version, non-CSV/TSV files will no longer be supported by default. To adjust for this breaking change, specify custom delimiters with the new `--metadata-delimiters` flag. [#1196][] (@victorlin)
 * `augur.io.read_metadata`: Previously, this supported any arbitrary delimiters for the metadata. Now, it only supports a list of possible delimiters represented by the new `delimiters` keyword argument, which defaults to `,` and `\t`. [#812][] (@victorlin)
-* add flags `--max-iter` and `--stochastic-resolve` to `refine`. `--max-iter` controls the maximal number of iterations TreeTime uses to infer time trees. This was previously hard-coded to 2, which is now the default. `--stochastic-resolve` replicates the behavior of same flag in TreeTime that was introduced in version 0.9.6 (hence the requirements change). With this option, polytomies are resolved as random coalescent trees instead of greedily minimizing tree length.  [#1203][].
+* refine: The seeding method for `--seed` has been updated. This affects usages that rely on the reproducibility of outputs with the same `--seed` value prior to this version. Outputs from this version onwards should be reproducible until the next implementation change, which we don't expect to happen any time soon. [#1207][] (@rneher)
 
 ### Features
 
@@ -14,17 +14,19 @@
 * `augur.io.read_metadata` (used by export, filter, frequencies, refine, and traits): Previously, this used the Python parser engine for [`pandas.read_csv()`][]. Updated to use the C engine for faster reading of metadata. [#812][] (@victorlin)
 * curate: Allow custom metadata delimiters with the new `--metadata-delimiters` flag. [#1196][] (@victorlin)
 * Bump the default recursion limit to 10,000. Users can continue to override this limit with the environment variable `AUGUR_RECURSION_LIMIT`. [#1200][] (@joverlee521)
-
 * clades, export v2: Clade labels + coloring keys are now definable via arguments to augur clades allowing pipelines to use multiple invocations of augur clades resulting in multiple sets of colors and branch labels. How labels are stored in the (intermediate) node-data JSON files has changed. This should be fully backwards compatible for pipelines using augur commands, however custom scripts may need updating. PR [#728][] (@jameshadfield)
-
- * Updated to use TreeTime 0.10.0, which changes the random seeding method used in `augur refine --seed`. [#1207][] (@rneher)
-
+* refine: add flag `--max-iter` to control the maximal number of iterations TreeTime uses to infer time trees. This was previously hard-coded to 2, which is now the default. [#1203][] (@rneher)
+* refine: add flags `--greedy-resolve` and `--stochastic-resolve` to customize polytomy resolution. [#1203][], [#1207][] (@rneher)
+  * `--greedy-resolve`: resolve polytomies by greedily minimizing tree length (default behavior, unchanged).
+  * `--stochastic-resolve`: resolve polytomies as random coalescent trees.
+  * These are mutually exclusive with the pre-existing `--keep-polytomies` flag.
 
 ### Bug fixes
 
 * filter, frequencies, refine, parse: Previously, ambiguous dates in the future had a limit of today's date imposed on the upper value but not the lower value. It is now imposed on the lower value as well. [#1171][] (@victorlin)
 * refine: `--year-bounds` was ignored in versions 9.0.0 through 20.0.0. It now works. [#1136][] (@victorlin)
 * tree: Input alignment filenames which do not end in `.fasta` are now properly handled when using IQ-TREE.  Previously their contents were overwritten first by `augur tree` itself (resulting in truncation) and then by the log output of IQ-TREE (resulting in an error).  Thanks to Jon Bråte for reporting this bug. [#1206][] (@tsibley)
+* clades: A number of small bug fixes, improvements to documentation, tests and improved error detection. [#1199][] (@jameshadfield)
 
 [#728]: https://github.com/nextstrain/augur/pull/728
 [#812]: https://github.com/nextstrain/augur/pull/812
@@ -33,6 +35,7 @@
 [#1171]: https://github.com/nextstrain/augur/issues/1171
 [#1178]: https://github.com/nextstrain/augur/pull/1178
 [#1196]: https://github.com/nextstrain/augur/pull/1196
+[#1199]: https://github.com/nextstrain/augur/pull/1199
 [#1200]: https://github.com/nextstrain/augur/pull/1200
 [#1203]: https://github.com/nextstrain/augur/pull/1203
 [#1206]: https://github.com/nextstrain/augur/pull/1206
