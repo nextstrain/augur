@@ -6,7 +6,7 @@
 
 * export, filter, frequencies, refine, traits: From versions 10.0.0 through 21.1.0, arbitrary delimiters for `--metadata` were supported due to internal implementation differences from the advertised CSV and TSV support. Starting with this version, non-CSV/TSV files will no longer be supported by default. To adjust for this breaking change, specify custom delimiters with the new `--metadata-delimiters` flag. [#1196][] (@victorlin)
 * `augur.io.read_metadata`: Previously, this supported any arbitrary delimiters for the metadata. Now, it only supports a list of possible delimiters represented by the new `delimiters` keyword argument, which defaults to `,` and `\t`. [#812][] (@victorlin)
-* add flags `--max-iter` and `--stochastic-resolve` to `refine`. `--max-iter` controls the maximal number of iterations TreeTime uses to infer time trees. This was previously hard-coded to 2, which is now the default. `--stochastic-resolve` replicates the behavior of same flag in TreeTime that was introduced in version 0.9.6 (hence the requirements change). With this option, polytomies are resolved as random coalescent trees instead of greedily minimizing tree length.  [#1203][].
+* add flags `--max-iter` and `--stochastic-resolve` to `refine`. `--max-iter` controls the maximal number of iterations TreeTime uses to infer time trees. This was previously hard-coded to 2, which is now the default. `--stochastic-resolve` replicates the behavior of same flag in TreeTime that was introduced in version 0.9.6 (hence the requirements change). With this option, polytomies are resolved as random coalescent trees instead of greedily minimizing tree length. [#1203][] (@rneher)
 
 ### Features
 
@@ -14,11 +14,8 @@
 * `augur.io.read_metadata` (used by export, filter, frequencies, refine, and traits): Previously, this used the Python parser engine for [`pandas.read_csv()`][]. Updated to use the C engine for faster reading of metadata. [#812][] (@victorlin)
 * curate: Allow custom metadata delimiters with the new `--metadata-delimiters` flag. [#1196][] (@victorlin)
 * Bump the default recursion limit to 10,000. Users can continue to override this limit with the environment variable `AUGUR_RECURSION_LIMIT`. [#1200][] (@joverlee521)
-
 * clades, export v2: Clade labels + coloring keys are now definable via arguments to augur clades allowing pipelines to use multiple invocations of augur clades resulting in multiple sets of colors and branch labels. How labels are stored in the (intermediate) node-data JSON files has changed. This should be fully backwards compatible for pipelines using augur commands, however custom scripts may need updating. PR [#728][] (@jameshadfield)
-
  * Updated to use TreeTime 0.10.0, which changes the random seeding method used in `augur refine --seed`. [#1207][] (@rneher)
-
 
 ### Bug fixes
 
