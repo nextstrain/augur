@@ -17,6 +17,8 @@
 
 * clades, export v2: Clade labels + coloring keys are now definable via arguments to augur clades allowing pipelines to use multiple invocations of augur clades resulting in multiple sets of colors and branch labels. How labels are stored in the (intermediate) node-data JSON files has changed. This should be fully backwards compatible for pipelines using augur commands, however custom scripts may need updating. PR [#728][] (@jameshadfield)
 
+ * Updated to use TreeTime 0.10.0, which changes the random seeding method used in `augur refine --seed`. [#1207][] (@rneher)
+
 
 ### Bug fixes
 
@@ -34,6 +36,7 @@
 [#1200]: https://github.com/nextstrain/augur/pull/1200
 [#1203]: https://github.com/nextstrain/augur/pull/1203
 [#1206]: https://github.com/nextstrain/augur/pull/1206
+[#1207]: https://github.com/nextstrain/augur/pull/1207
 [`pandas.read_csv()`]: https://pandas.pydata.org/pandas-docs/version/1.5/reference/api/pandas.read_csv.html
 
 ## 21.1.0 (14 March 2023)
