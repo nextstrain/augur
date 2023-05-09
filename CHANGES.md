@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 22.0.0 (9 May 2023)
+
 ### Major Changes
 
 * export, filter, frequencies, refine, traits: From versions 10.0.0 through 21.1.0, arbitrary delimiters for `--metadata` were supported due to internal implementation differences from the advertised CSV and TSV support. Starting with this version, non-CSV/TSV files will no longer be supported by default. To adjust for this breaking change, specify custom delimiters with the new `--metadata-delimiters` flag. [#1196][] (@victorlin)
