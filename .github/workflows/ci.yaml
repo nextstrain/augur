@@ -30,6 +30,7 @@ jobs:
           - '1.73' # first to support Python 3.7
           - '1.76' # first to support Python 3.8
           - '1.79' # first to support Python 3.9
+          - '1.80' # first to support Python 3.10
           - ''     # latest
         exclude:
           # some older Biopython versions are incompatible with later Python versions
@@ -38,6 +39,7 @@ jobs:
           - { biopython-version: '1.73', python-version: '3.10' }
           - { biopython-version: '1.76', python-version: '3.9' }
           - { biopython-version: '1.76', python-version: '3.10' }
+          - { biopython-version: '1.79', python-version: '3.10' }
     defaults:
       run:
         shell: bash -l {0}
