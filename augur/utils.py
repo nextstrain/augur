@@ -127,11 +127,14 @@ def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSO
         data["generated_by"] = {"program": "augur", "version": get_augur_version()}
     with open(file_name, 'w', encoding='utf-8') as handle:
         sort_keys = False if isinstance(data, OrderedDict) else True
-        json.dump(data, handle, indent=indent, sort_keys=sort_keys, cls=NumpyJSONEncoder)
+        json.dump(data, handle, indent=indent, sort_keys=sort_keys, cls=AugurJSONEncoder)
 
 
-class NumpyJSONEncoder(json.JSONEncoder):
-    """A custom JSONEncoder subclass to serialize additional numpy data types."""
+class AugurJSONEncoder(json.JSONEncoder):
+    """
+    A custom JSONEncoder subclass to serialize data types used for various data
+    stored in dictionary format.
+    """
     def default(self, obj):
         if isinstance(obj, np.integer):
             return int(obj)
