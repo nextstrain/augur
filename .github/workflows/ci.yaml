@@ -44,6 +44,8 @@ jobs:
           - { biopython-version: '1.76', python-version: '3.11' }
           - { biopython-version: '1.79', python-version: '3.10' }
           - { biopython-version: '1.79', python-version: '3.11' }
+          # Additionally, Bioconda does not support the following combinations
+          - { biopython-version: '1.80', python-version: '3.7' }
     defaults:
       run:
         shell: bash -l {0}
