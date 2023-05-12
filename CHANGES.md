@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* utils: Serialize pandas Series in `write_json`. [#1213][] (@victorlin)
+
+[#1213]: https://github.com/nextstrain/augur/pull/1213
 
 ## 22.0.0 (9 May 2023)
 

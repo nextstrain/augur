@@ -142,6 +142,8 @@ class AugurJSONEncoder(json.JSONEncoder):
             return float(obj)
         if isinstance(obj, np.ndarray):
             return obj.tolist()
+        if isinstance(obj, pd.Series):
+            return obj.tolist()
         return super().default(obj)
 
 
