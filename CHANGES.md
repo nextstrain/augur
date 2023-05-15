@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* export: In version 22.0.0, validation of `augur.utils.read_node_data` was changed to error when a node data JSON did not contain any actual data. This causes export to error when an empty node data JSON is passed, as for example in ncov's pathogen-ci. This is now fixed by warning instead. The bug was originally introduced in PR [#728][]. [#1214][] (@corneliusroemer)
+
+[#1214]: https://github.com/nextstrain/augur/pull/1214
 
 ## 22.0.0 (9 May 2023)
 

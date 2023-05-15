@@ -80,12 +80,13 @@ class NodeDataFile:
 
         if not isinstance(self.branches, dict):
             raise AugurError(
-                f"`branches` value in {self.fname} is not a dictionary. Please check the formatting of this JSON!"            )
+                f"`branches` value in {self.fname} is not a dictionary. Please check the formatting of this JSON!"
+            )
 
         if not self.nodes and not self.branches:
-            raise AugurError(
-                f"{self.fname} did not contain either `nodes` or `branches`. Please check the formatting of this JSON!"
-        )
+            print_err(
+                f"WARNING: {self.fname} has empty or nonexistent `nodes` and `branches`. Please check the formatting of this JSON!"
+            )
 
         if self.validation_mode is not ValidationMode.SKIP and self.is_generated_by_incompatible_augur:
             msg = (
