@@ -355,12 +355,14 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
             return False # a warning message will have been printed before `InvalidOption` is raised
         return coloring
 
-    def _create_coloring(key):
+    def _add_coloring(colorings, key):
         # handle deprecations
         if key == "authors":
             deprecated("[colorings] The 'authors' key is now called 'author'")
             key = "author"
-        return {"key": key}
+        # check if the key has already been added by another part of the color-creating logic
+        if key not in {x['key'] for x in colorings}:
+            colorings.append({"key": key})
 
     def _is_valid(coloring):
         key = coloring["key"]
@@ -389,18 +391,18 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         if command_line_colorings:
             # start with auto_colorings (already validated to be included)
             for x in auto_colorings:
-                colorings.append(_create_coloring(x))
+                _add_coloring(colorings, x)
             # then add in command line colorings
             for x in command_line_colorings:
-                colorings.append(_create_coloring(x))
+                _add_coloring(colorings, x)
         else:
             # if we have a config file, start with these (extra info, such as title&type, is added in later)
             if config:
                 for x in config.keys():
-                    colorings.append(_create_coloring(x))
+                    _add_coloring(colorings, x)
             # then add in any auto-colorings already validated to include
             for x in auto_colorings:
-                colorings.append(_create_coloring(x))
+                _add_coloring(colorings, x)
 
         explicitly_defined_colorings = [x["key"] for x in colorings]
         # add in genotype as a special case if (a) not already set and (b) the data supports it
@@ -794,8 +796,9 @@ def node_data_prop_is_normal_trait(name):
         "authors",          # authors are set as a node property, not a trait property
         "author",           # see above
         "vaccine",          # vaccine info is stored as a "special" node prop
+        'clade_membership', # explicitly set as a coloring if present
         'branch_length',
-        'num_date',
+        'num_date',         # explicitly set as a coloring if present
         'raw_date',
         'numdate',
         'clock_length',
