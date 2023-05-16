@@ -25,13 +25,13 @@
     },
     "colorings": [
       {
-        "key": "gt",
-        "title": "Genotype",
+        "key": "clade_membership",
+        "title": "Clade",
         "type": "categorical"
       },
       {
-        "key": "clade_membership",
-        "title": "Clade",
+        "key": "gt",
+        "title": "Genotype",
         "type": "categorical"
       }
     ],

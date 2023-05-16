@@ -361,10 +361,8 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
             deprecated("[colorings] The 'authors' key is now called 'author'")
             key = "author"
         # check if the key has already been added by another part of the color-creating logic
-        if key in {x['key'] for x in colorings}:
-            return False
-        colorings.append({"key": key})
-        return True
+        if key not in {x['key'] for x in colorings}:
+            colorings.append({"key": key})
 
     def _is_valid(coloring):
         key = coloring["key"]
@@ -798,8 +796,9 @@ def node_data_prop_is_normal_trait(name):
         "authors",          # authors are set as a node property, not a trait property
         "author",           # see above
         "vaccine",          # vaccine info is stored as a "special" node prop
+        'clade_membership', # explicitly set as a coloring if present
         'branch_length',
-        'num_date',
+        'num_date',         # explicitly set as a coloring if present
         'raw_date',
         'numdate',
         'clock_length',
