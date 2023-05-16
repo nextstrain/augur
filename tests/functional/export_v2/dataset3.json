@@ -82,30 +82,6 @@
             "#4042C7"
           ]
         ]
-      },
-      {
-        "key": "location",
-        "title": "Location",
-        "type": "categorical",
-        "scale": [
-          [
-            "beta",
-            "#bd0026"
-          ],
-          [
-            "gamma",
-            "#6a51a3"
-          ]
-        ],
-        "legend": [
-          {
-            "value": "alpha",
-            "display": "\u03b1"
-          },
-          {
-            "value": "beta"
-          }
-        ]
       }
     ],
     "filters": [

@@ -69,30 +69,6 @@
         ],
         "title": "Mutations per branch",
         "type": "continuous"
-      },
-      {
-        "key": "location",
-        "legend": [
-          {
-            "display": "\u03b1",
-            "value": "alpha"
-          },
-          {
-            "value": "beta"
-          }
-        ],
-        "scale": [
-          [
-            "beta",
-            "#bd0026"
-          ],
-          [
-            "gamma",
-            "#6a51a3"
-          ]
-        ],
-        "title": "Location",
-        "type": "categorical"
       }
     ],
     "filters": [
