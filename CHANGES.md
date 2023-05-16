@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 22.0.1 (16 May 2023)
+
 ### Bug fixes
 
 * export: No longer export duplicate entries in the colorings array, a bug which has been present in Augur since at least v12 [#719][]. [#1218][] (@jameshadfield)
