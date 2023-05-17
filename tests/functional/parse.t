@@ -3,6 +3,21 @@ Integration tests for augur parse.
   $ pushd "$TESTDIR" > /dev/null
   $ export AUGUR="${AUGUR:-../../bin/augur}"
 
+Try to parse Zika sequences without specifying fields.
+This should fail.
+
+  $ ${AUGUR} parse \
+  >   --sequences parse/zika.fasta \
+  >   --output-sequences "$TMP/sequences.fasta" \
+  >   --output-metadata "$TMP/metadata.tsv"
+  usage: .* (re)
+  .* (re)
+  .* (re)
+  .* (re)
+  .* (re)
+  augur parse: error: the following arguments are required: --fields
+  [2]
+
 Parse Zika sequences into sequences and metadata.
 
   $ ${AUGUR} parse \
