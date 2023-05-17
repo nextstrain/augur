@@ -1,4 +1,5 @@
 from augur.errors import AugurError
+from augur.io.print import print_err
 from augur.io.vcf import is_vcf as filename_is_vcf
 
 
@@ -42,3 +43,9 @@ def validate_arguments(args):
     # If user requested grouping, confirm that other required inputs are provided, too.
     if args.group_by and not any((args.sequences_per_group, args.subsample_max_sequences)):
         raise AugurError("You must specify a number of sequences per group or maximum sequences to subsample.")
+    
+    # If user passes same optional argument twice (e.g. --exclude and --exclude), raise warning
+    # sum(args.exclude,[]) flattens the list of lists, see https://stackoverflow.com/a/952946/7483211
+    if args.exclude_where and len(args.exclude_where) > 1:
+        print_err(f"WARNING: You passed `--exclude-where` {len(args.exclude_where)} times. Only the last argument {args.exclude_where[-1]} will be used.\n"
+                  f"The following arguments {set(sum(args.exclude_where,[])).difference(set(args.exclude_where[-1]))} will be ignored.")

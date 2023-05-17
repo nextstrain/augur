@@ -536,7 +536,9 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
 
     # Exclude strain my metadata field like 'host=camel'.
     if args.exclude_where:
-        for exclude_where in args.exclude_where:
+        # Use only last exclude_where argument for backward compatibility.
+        # User warned in validate_arguments.py
+        for exclude_where in args.exclude_where[-1]:
             exclude_by.append((
                 filter_by_exclude_where,
                 {"exclude_where": exclude_where}
