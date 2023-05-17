@@ -2,21 +2,20 @@
 
 ## __NEXT__
 
-### Internal
+### Bug fixes
 
 * CI: Add a Github action to test augur on 8 Nextstrain pathogen workflows using example data. [#1217][] (@corneliusroemer)
+* parse: Denote required arguments including `--fields`, `--output-sequences`, and `--output-metadata`. [#1228][] (@huddlej)
 
 [#1217]: https://github.com/nextstrain/augur/pull/1217
-
+[#1228]: https://github.com/nextstrain/augur/pull/1228
 
 ## 22.0.1 (16 May 2023)
 
 ### Bug fixes
 
 * export: No longer export duplicate entries in the colorings array, a bug which has been present in Augur since at least v12 [#719][]. [#1218][] (@jameshadfield)
-
 * export: In version 22.0.0, some configurations of export may have resulted in the clade coloring appearing last in the Auspice dropdown rather than first. This is now fixed. [#1218] (@jameshadfield)
-
 * export: In version 22.0.0, validation of `augur.utils.read_node_data` was changed to error when a node data JSON did not contain any actual data. This causes export to error when an empty node data JSON is passed, as for example in ncov's pathogen-ci. This is now fixed by warning instead. The bug was originally introduced in PR [#728][]. [#1214][] (@corneliusroemer)
 
 [#719]: https://github.com/nextstrain/augur/issues/719
