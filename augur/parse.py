@@ -141,9 +141,9 @@ def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettif
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("parse", help=__doc__)
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
-    parser.add_argument('--output-sequences', help="output sequences file")
-    parser.add_argument('--output-metadata', help="output metadata file")
-    parser.add_argument('--fields', nargs='+', help="fields in fasta header")
+    parser.add_argument('--output-sequences', required=True, help="output sequences file")
+    parser.add_argument('--output-metadata', required=True, help="output metadata file")
+    parser.add_argument('--fields', required=True, nargs='+', help="fields in fasta header")
     parser.add_argument('--prettify-fields', nargs='+', help="apply string prettifying operations (underscores to spaces, capitalization, etc) to specified metadata fields")
     parser.add_argument('--separator', default='|', help="separator of fasta header")
     parser.add_argument('--fix-dates', choices=['dayfirst', 'monthfirst'],
