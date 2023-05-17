@@ -2,6 +2,12 @@
 
 ## __NEXT__
 
+### Internal
+
+* CI: Add a Github action to test augur on 8 Nextstrain pathogen workflows using example data. [#1217][] (@corneliusroemer)
+
+[#1217]: https://github.com/nextstrain/augur/pull/1217
+
 
 ## 22.0.1 (16 May 2023)
 

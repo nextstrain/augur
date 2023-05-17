@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  pytest-cram:
     name: test (python=${{ matrix.python-version }} biopython=${{ matrix.biopython-version || 'latest' }})
     runs-on: ubuntu-latest
     strategy:
@@ -80,9 +80,70 @@ jobs:
         name: coverage
         path: "${{ env.COVERAGE_FILE }}"
 
+  pathogen-ci:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      repodata_use_zst: true
+    strategy:
+      matrix:
+        include:
+          - { pathogen: avian-flu, build-args: auspice/flu_avian_h5n1_ha.json }
+          - { pathogen: ebola }
+          - { pathogen: lassa }
+          - { pathogen: monkeypox }
+          - { pathogen: mumps }
+          - {
+              pathogen: ncov,
+              build-args: all_regions -j 2 --profile nextstrain_profiles/nextstrain-ci,
+            }
+          - {
+              pathogen: seasonal-flu,
+              build-args: --configfile profiles/ci/builds.yaml -p,
+            }
+          - { pathogen: zika }
+    name: test-pathogen-repo-ci (${{ matrix.pathogen }})
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: mamba-org/provision-with-micromamba@v15
+        with:
+          environment-file: false
+          environment-name: augur
+          extra-specs: nextstrain-base
+          channels: nextstrain,conda-forge,bioconda
+          cache-env: true
+      - run: pip install .
+      - run: mamba list
+
+      - uses: actions/checkout@v3
+        with:
+          repository: nextstrain/${{ matrix.pathogen }}
+      - name: Copy example data
+        run: |
+          if [[ -d example_data ]]; then
+            mkdir -p data/
+            cp -v example_data/* data/
+          else
+            echo No example data to copy.
+          fi
+      - run: snakemake -c all ${{ matrix.build-args }}
+      - if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: output-${{ matrix.pathogen }}
+          path: |
+            auspice/
+            results/
+            benchmarks/
+            logs/
+            .snakemake/log/
+
   codecov:
     if: github.repository == 'nextstrain/augur'
-    needs: [test]
+    needs: [pytest-cram]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
