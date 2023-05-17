@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  pytest-cram:
     name: test (python=${{ matrix.python-version }} biopython=${{ matrix.biopython-version || 'latest' }})
     runs-on: ubuntu-latest
     strategy:
@@ -86,7 +86,6 @@ jobs:
     env:
       repodata_use_zst: true
     strategy:
-      max-parallel: 4
       matrix:
         include:
           - { pathogen: avian-flu, build-args: auspice/flu_avian_h5n1_ha.json }
@@ -144,7 +143,7 @@ jobs:
 
   codecov:
     if: github.repository == 'nextstrain/augur'
-    needs: [test, pathogen-ci]
+    needs: [pytest-cram]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
