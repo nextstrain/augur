@@ -99,7 +99,7 @@ def _parse_filter_query(query):
     """
     split_query = re.split(r'!?=', query)
     if len(split_query) != 2:
-        raise AugurError(f"Invalid query `{query}`. Hint: Queries must follow the pattern of `property=value` or `property!=value`.")
+        raise AugurError(f"Invalid filter query `{query}`. Hint: Queries must follow the pattern of `property=value` or `property!=value`.")
     column, value = split_query
     op = operator.ne if "!=" in query else operator.eq
 
