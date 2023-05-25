@@ -4,7 +4,7 @@
       "end": 2134872,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2134273,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "PE13": {
@@ -18,7 +18,7 @@
       "end": 2618908,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2617667,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "PE_PGRS60": {
@@ -32,7 +32,7 @@
       "end": 978203,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 976872,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "PPE20": {
@@ -53,14 +53,14 @@
       "end": 13558,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 13133,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv0011c": {
       "end": 13995,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 13714,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv0026": {
@@ -74,7 +74,7 @@
       "end": 42351,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 42004,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv0147": {
@@ -88,7 +88,7 @@
       "end": 391251,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 390580,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv0401": {
@@ -109,14 +109,14 @@
       "end": 657470,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 656010,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv0600c": {
       "end": 698410,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 697904,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv0605": {
@@ -130,7 +130,7 @@
       "end": 834946,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 834440,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv0745": {
@@ -151,14 +151,14 @@
       "end": 978756,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 978481,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv0893c": {
       "end": 996295,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 995318,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv0909": {
@@ -172,7 +172,7 @@
       "end": 1026816,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1025497,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv0921": {
@@ -186,21 +186,21 @@
       "end": 1165499,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1165092,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv1043c": {
       "end": 1166806,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1165781,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv1081c": {
       "end": 1206418,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1205984,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv1096": {
@@ -221,7 +221,7 @@
       "end": 1254534,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1253074,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv1144": {
@@ -242,14 +242,14 @@
       "end": 1338513,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1337248,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv1218c": {
       "end": 1362733,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1361798,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv1303": {
@@ -263,7 +263,7 @@
       "end": 1569587,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1568109,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv1465": {
@@ -277,7 +277,7 @@
       "end": 1673299,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1672457,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv1520": {
@@ -312,7 +312,7 @@
       "end": 2334294,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2333323,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv2209": {
@@ -326,28 +326,28 @@
       "end": 2587290,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2585917,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv2417c": {
       "end": 2716314,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2715472,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv2729c": {
       "end": 3042475,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3041570,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv2733c": {
       "end": 3046524,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3044986,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv2734": {
@@ -361,7 +361,7 @@
       "end": 3066191,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3064515,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv2765": {
@@ -375,7 +375,7 @@
       "end": 3081033,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3080581,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv2807": {
@@ -389,7 +389,7 @@
       "end": 3195548,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3194166,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv3067": {
@@ -424,7 +424,7 @@
       "end": 3587539,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3586844,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "Rv3463": {
@@ -473,7 +473,7 @@
       "end": 2326809,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2325886,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "cinA": {
@@ -501,7 +501,7 @@
       "end": 1931456,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1929786,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "cyp141": {
@@ -529,14 +529,14 @@
       "end": 4156729,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4155740,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "eccC2": {
       "end": 4380452,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4376262,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "eccD1": {
@@ -550,14 +550,14 @@
       "end": 1195043,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1194270,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "eis": {
       "end": 2715332,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2714124,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "embA": {
@@ -585,14 +585,14 @@
       "end": 4361925,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4360543,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "espG2": {
       "end": 4373630,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4372800,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxA": {
@@ -613,28 +613,28 @@
       "end": 4374013,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4373726,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxD": {
       "end": 4374372,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4374049,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxE": {
       "end": 4390709,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4390437,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxF": {
       "end": 4391031,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4390720,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxG": {
@@ -655,14 +655,14 @@
       "end": 1160828,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1160544,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxJ": {
       "end": 1161151,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1160855,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxK": {
@@ -697,70 +697,70 @@
       "end": 2626172,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2625888,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxP": {
       "end": 2626519,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2626223,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxQ": {
       "end": 3376852,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3376490,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxR": {
       "end": 3379001,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3378711,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxS": {
       "end": 3379329,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3379036,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxT": {
       "end": 3862926,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3862624,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxU": {
       "end": 3863264,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3862947,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxV": {
       "end": 4060268,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4059984,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "esxW": {
       "end": 4060591,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4060295,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "ethA": {
       "end": 4327473,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4326004,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "fabG1": {
@@ -781,7 +781,7 @@
       "end": 1199373,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1198156,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "fadA4": {
@@ -802,7 +802,7 @@
       "end": 3996964,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3995804,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "fadD14": {
@@ -837,7 +837,7 @@
       "end": 295633,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 293798,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "fbiA": {
@@ -851,35 +851,35 @@
       "end": 317503,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 316511,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "folC": {
       "end": 2747598,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2746135,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "furA": {
       "end": 2156592,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2156149,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "gid": {
       "end": 4408202,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4407528,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "greA": {
       "end": 1205798,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1205304,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "gyrA": {
@@ -900,7 +900,7 @@
       "end": 3072640,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3071546,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "icl1": {
@@ -914,7 +914,7 @@
       "end": 3880653,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3880432,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "inhA": {
@@ -942,28 +942,28 @@
       "end": 2156111,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2153889,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "lipG": {
       "end": 741139,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 740234,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "lipJ": {
       "end": 2147633,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2146245,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "lldD2": {
       "end": 2123151,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2121907,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "lppJ": {
@@ -984,28 +984,28 @@
       "end": 210812,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 209703,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "mazF8": {
       "end": 2546805,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2546488,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "mbtK": {
       "end": 1512605,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1511973,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "mce1R": {
       "end": 194815,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 194144,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "mce3D": {
@@ -1019,35 +1019,35 @@
       "end": 483231,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 480355,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "mtrB": {
       "end": 3626613,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3624910,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "murD": {
       "end": 2416394,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2414934,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "narX": {
       "end": 1964186,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1962228,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "ndh": {
       "end": 2103042,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2101651,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "nuc": {
@@ -1061,7 +1061,7 @@
       "end": 1625365,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1624454,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "pabC": {
@@ -1075,7 +1075,7 @@
       "end": 937317,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 936457,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "pknF": {
@@ -1089,14 +1089,14 @@
       "end": 2306986,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2294531,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "pks15": {
       "end": 3297840,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3296350,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "pks17": {
@@ -1110,7 +1110,7 @@
       "end": 4299605,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4293225,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "pks3": {
@@ -1131,7 +1131,7 @@
       "end": 2289241,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2288681,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "ponA1": {
@@ -1152,14 +1152,14 @@
       "end": 2725477,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2724230,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "proZ": {
       "end": 4202613,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4201894,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "pyrB": {
@@ -1243,21 +1243,21 @@
       "end": 4211784,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4211080,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "thyA": {
       "end": 3074471,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3073680,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "thyX": {
       "end": 3067945,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3067193,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "tlyA": {
@@ -1271,7 +1271,7 @@
       "end": 4269833,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4268925,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "vapB28": {
@@ -1292,21 +1292,21 @@
       "end": 2854686,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 2854267,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "whiB2": {
       "end": 3640141,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 3639872,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "whiB6": {
       "end": 4338521,
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 4338171,
-      "strand": "+",
+      "strand": "-",
       "type": "gene"
     },
     "yjcE": {
@@ -1319,7 +1319,7 @@
   },
   "generated_by": {
     "program": "augur",
-    "version": "17.0.0"
+    "version": "22.0.0"
   },
   "nodes": {
     "G22574": {

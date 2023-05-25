@@ -176,7 +176,7 @@ def process_annotations(node_data):
         annotations[name] = {
             "start": info["start"]-1,
             "end": info["end"],
-            "strand": 0 if info["strand"] == "-" else 1
+            "strand": -1 if info["strand"] == "-" else 1
         }
     return annotations
 
