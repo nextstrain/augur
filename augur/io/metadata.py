@@ -17,6 +17,8 @@ DEFAULT_DELIMITERS = (',', '\t')
 
 DEFAULT_ID_COLUMNS = ("strain", "name")
 
+METADATA_DATE_COLUMN = 'date'
+
 
 class InvalidDelimiter(Exception):
     pass
