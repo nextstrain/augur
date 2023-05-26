@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 22.0.2 (26 May 2023)
+
 ### Bug fixes
 
 * CI: Add a Github action to test augur on 8 Nextstrain pathogen workflows using example data. [#1217][] (@corneliusroemer)
