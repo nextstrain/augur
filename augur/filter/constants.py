@@ -1,5 +1,3 @@
-METADATA_DATE_COLUMN = 'date'
-
 # Generated date columns.
 DATE_YEAR_COLUMN = 'year'
 DATE_MONTH_COLUMN = 'month'

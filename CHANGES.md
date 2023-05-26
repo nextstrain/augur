@@ -7,10 +7,12 @@
 * CI: Add a Github action to test augur on 8 Nextstrain pathogen workflows using example data. [#1217][] (@corneliusroemer)
 * parse: Denote required arguments including `--fields`, `--output-sequences`, and `--output-metadata`. [#1228][] (@huddlej)
 * Fix export of the `strand` attribute of gene annotations. Previously, features on the negative strand were not annotated as such since the code assumed that the `strand` attribute was boolean instead of `[-1, +1]`. [#1211] @rneher and @j23414.
+* augur.io.read_metadata: explicitly set `date` column as `string` type to prevent year only dates from being inferred as integers. [#1235][] (@joverlee521)
 
 [#1211]: https://github.com/nextstrain/augur/pull/1211
 [#1217]: https://github.com/nextstrain/augur/pull/1217
 [#1228]: https://github.com/nextstrain/augur/pull/1228
+[#1235]: https://github.com/nextstrain/augur/pull/1235
 
 ## 22.0.1 (16 May 2023)
 

@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, List, Set, Tuple
 
 from augur.dates import numeric_date, is_date_ambiguous, get_numerical_dates
 from augur.errors import AugurError
+from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err
 from augur.io.vcf import is_vcf as filename_is_vcf
 from augur.utils import read_strains
@@ -554,7 +555,7 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
         exclude_by.append((
             filter_by_ambiguous_date,
             {
-                "date_column": constants.METADATA_DATE_COLUMN,
+                "date_column": METADATA_DATE_COLUMN,
                 "ambiguity": args.exclude_ambiguous_dates_by,
             }
         ))
@@ -565,7 +566,7 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
             filter_by_min_date,
             {
                 "min_date": args.min_date,
-                "date_column": constants.METADATA_DATE_COLUMN,
+                "date_column": METADATA_DATE_COLUMN,
             }
         ))
     if args.max_date:
@@ -573,7 +574,7 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
             filter_by_max_date,
             {
                 "max_date": args.max_date,
-                "date_column": constants.METADATA_DATE_COLUMN,
+                "date_column": METADATA_DATE_COLUMN,
             }
         ))
 
@@ -610,17 +611,17 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
         if {constants.DATE_YEAR_COLUMN, constants.DATE_MONTH_COLUMN, constants.DATE_WEEK_COLUMN} & set(args.group_by):
             exclude_by.append((
                 skip_group_by_with_ambiguous_year,
-                {"date_column": constants.METADATA_DATE_COLUMN}
+                {"date_column": METADATA_DATE_COLUMN}
             ))
         if {constants.DATE_MONTH_COLUMN, constants.DATE_WEEK_COLUMN} & set(args.group_by):
             exclude_by.append((
                 skip_group_by_with_ambiguous_month,
-                {"date_column": constants.METADATA_DATE_COLUMN}
+                {"date_column": METADATA_DATE_COLUMN}
             ))
         if constants.DATE_WEEK_COLUMN in args.group_by:
             exclude_by.append((
                 skip_group_by_with_ambiguous_day,
-                {"date_column": constants.METADATA_DATE_COLUMN}
+                {"date_column": METADATA_DATE_COLUMN}
             ))
 
     return exclude_by, include_by

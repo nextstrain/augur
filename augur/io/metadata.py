@@ -17,6 +17,8 @@ DEFAULT_DELIMITERS = (',', '\t')
 
 DEFAULT_ID_COLUMNS = ("strain", "name")
 
+METADATA_DATE_COLUMN = 'date'
+
 
 class InvalidDelimiter(Exception):
     pass
@@ -109,7 +111,10 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAU
     # of having its type inferred. This latter argument allows users to provide
     # numerical ids that don't get converted to numbers by pandas.
     kwargs["index_col"] = index_col
-    kwargs["dtype"] = {index_col: "string"}
+    kwargs["dtype"] = {
+        index_col: "string",
+        METADATA_DATE_COLUMN: "string"
+    }
 
     return pd.read_csv(
         metadata_file,
