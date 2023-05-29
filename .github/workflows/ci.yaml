@@ -108,7 +108,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v3
-      - uses: mamba-org/provision-with-micromamba@v15
+      - uses: mamba-org/provision-with-micromamba@v16
         with:
           environment-file: false
           environment-name: augur
