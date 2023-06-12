@@ -24,7 +24,7 @@ def register_parser(parent_subparsers):
         help="Expected date formats that are currently in the provided date fields, " +
              "defined by standard format codes as listed at " +
              "https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes. " +
-             "If a date string matches multiple formats, it will be parsed as the first format in the list.")
+             "If a date string matches multiple formats, it will be parsed as the first matched format in the provided order.")
 
     optional = parser.add_argument_group(title="OPTIONAL")
     optional.add_argument("--failure-reporting",
