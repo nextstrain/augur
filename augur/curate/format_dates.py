@@ -4,6 +4,7 @@ are masked with 'XX' (e.g. 2023 -> 2023-XX-XX).
 """
 from datetime import datetime
 from augur.io.print import print_err
+from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEAR_MONTH_DAY_DIRECTIVES
 
 
 def register_parser(parent_subparsers):
@@ -98,34 +99,6 @@ def format_date(date_string, expected_formats):
     >>> format_date("2020-01-15T00:00:00Z", expected_formats)
     '2020-01-15'
     """
-    # Set of directives that can be converted to complete date with year, month, and day
-    year_month_day_directives = {
-        # Locale's full date representation
-        ('%c',),('%x',),
-        # Dates with ISO 8601 week dates for year ('%G' is NOT interchangeable with '%Y'), ISO 8601 week ('%V'), and weekdays
-        ('%G', '%V', '%A'),('%G', '%V', '%a'),('%G', '%V', '%w'),('%G', '%V', '%u'),
-        # Dates with year, week, and weekday
-        ('%y', '%U', '%A'), ('%y', '%U', '%a'), ('%y', '%U', '%w'), ('%y', '%U', '%u'),
-        ('%y', '%W', '%A'), ('%y', '%W', '%a'), ('%y', '%W', '%w'), ('%y', '%W', '%u'),
-        ('%Y', '%U', '%A'), ('%Y', '%U', '%a'), ('%Y', '%U', '%w'), ('%Y', '%U', '%u'),
-        ('%Y', '%W', '%A'), ('%Y', '%W', '%a'), ('%Y', '%W', '%w'), ('%Y', '%W', '%u'),
-        # Dates with year and day of the year
-        ('%y', '%j'), ('%Y', '%j'),
-        # Dates with year, month, and day
-        ('%y', '%b', '%d'), ('%y', '%B', '%d'), ('%y', '%m', '%d'),
-        ('%Y', '%b', '%d'), ('%Y', '%B', '%d'), ('%Y', '%m', '%d'),
-    }
-
-    # Set of directives that can be converted to incomplete dates, missing the day
-    year_month_directives = {
-        ('%y', '%b'), ('%y', '%B'), ('%y', '%m'),
-        ('%Y', '%b'), ('%Y', '%B'), ('%Y', '%m'),
-    }
-
-    # Set of directives that can be converted to incomplete dates, missing the month and day
-    year_directives = {
-        ('%y',), ('%Y',)
-    }
 
     for date_format in expected_formats:
         try:
@@ -143,20 +116,20 @@ def format_date(date_string, expected_formats):
 
         # If directives for all year,month,day fields are included in date_format,
         # then use all of the parsed field strings
-        if directive_is_included(year_month_day_directives, date_format):
+        if directive_is_included(YEAR_MONTH_DAY_DIRECTIVES, date_format):
             year_string = parsed_year_string
             month_string = parsed_month_string
             day_string = parsed_day_string
 
         # If directives only include year and month are included in date_format,
         # then only use the parsed year and month field strings
-        elif directive_is_included(year_month_directives, date_format):
+        elif directive_is_included(YEAR_MONTH_DIRECTIVES, date_format):
             year_string = parsed_year_string
             month_string = parsed_month_string
 
         # If directives only include year in date_format, the only use the
         # parsed year field string
-        elif directive_is_included(year_directives, date_format):
+        elif directive_is_included(YEAR_DIRECTIVES, date_format):
             year_string = parsed_year_string
 
         return f"{year_string}-{month_string}-{day_string}"
