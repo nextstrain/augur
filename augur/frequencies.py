@@ -11,7 +11,7 @@ from .errors import AugurError
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
 from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
-from .io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_metadata
+from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .utils import read_node_data, write_json
 
 
@@ -24,6 +24,8 @@ def register_parser(parent_subparsers):
                         help="metadata including dates for given samples")
     parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
                         help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
+    parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
+                        help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     parser.add_argument('--regions', type=str, nargs='+', default=['global'],
                         help="region to subsample to")
     parser.add_argument("--pivot-interval", type=int, default=3,
@@ -84,7 +86,7 @@ def format_frequencies(freq):
 
 def run(args):
     try:
-        metadata = read_metadata(args.metadata, args.metadata_delimiters)
+        metadata = read_metadata(args.metadata, delimiters=args.metadata_delimiters, id_columns=args.metadata_id_columns)
     except InvalidDelimiter:
         raise AugurError(
             f"Could not determine the delimiter of {args.metadata!r}. "

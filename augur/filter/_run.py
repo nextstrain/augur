@@ -166,7 +166,7 @@ def run(args):
     try:
         metadata_reader = read_metadata(
             args.metadata,
-            args.metadata_delimiters,
+            delimiters=args.metadata_delimiters,
             id_columns=args.metadata_id_columns,
             chunk_size=args.metadata_chunk_size,
         )
@@ -317,7 +317,7 @@ def run(args):
         # have passed filters.
         metadata_reader = read_metadata(
             args.metadata,
-            args.metadata_delimiters,
+            delimiters=args.metadata_delimiters,
             id_columns=args.metadata_id_columns,
             chunk_size=args.metadata_chunk_size,
         )

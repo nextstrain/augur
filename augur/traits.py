@@ -7,7 +7,7 @@ from collections import defaultdict
 import os, sys
 import pandas as pd
 from .errors import AugurError
-from .io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_metadata
+from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .utils import write_json, get_json_name
 TINY = 1e-12
 
@@ -104,6 +104,8 @@ def register_parser(parent_subparsers):
     parser.add_argument('--metadata', required=True, metavar="FILE", help="table with metadata")
     parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
                         help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
+    parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
+                        help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     parser.add_argument('--weights', required=False, help="tsv/csv table with equilibrium probabilities of discrete states")
     parser.add_argument('--columns', required=True, nargs='+',
                         help='metadata fields to perform discrete reconstruction on')
@@ -130,7 +132,10 @@ def run(args):
     """
     tree_fname = args.tree
     try:
-        traits = read_metadata(args.metadata, args.metadata_delimiters)
+        traits = read_metadata(
+            args.metadata,
+            delimiters=args.metadata_delimiters,
+            id_columns=args.metadata_id_columns)
     except InvalidDelimiter:
         raise AugurError(
                 f"Could not determine the delimiter of {args.metadata!r}. "

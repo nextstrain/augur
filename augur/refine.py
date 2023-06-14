@@ -6,7 +6,7 @@ import sys
 from Bio import Phylo
 from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
-from .io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_metadata
+from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .utils import read_tree, write_json, InvalidTreeError
 from .errors import AugurError
 from treetime.vcf_utils import read_vcf
@@ -102,6 +102,8 @@ def register_parser(parent_subparsers):
     parser.add_argument('--metadata', type=str, metavar="FILE", help="sequence metadata")
     parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
                         help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
+    parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
+                        help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     parser.add_argument('--output-tree', type=str, help='file name to write tree to')
     parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
     parser.add_argument('--use-fft', action="store_true", help="produce timetree using FFT for convolutions")
@@ -212,7 +214,10 @@ def run(args):
             print("ERROR: meta data with dates is required for time tree reconstruction", file=sys.stderr)
             return 1
         try:
-            metadata = read_metadata(args.metadata, args.metadata_delimiters)
+            metadata = read_metadata(
+                args.metadata,
+                delimiters=args.metadata_delimiters,
+                id_columns=args.metadata_id_columns)
         except InvalidDelimiter:
             raise AugurError(
                 f"Could not determine the delimiter of {args.metadata!r}. "
