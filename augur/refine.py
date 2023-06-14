@@ -212,7 +212,7 @@ def run(args):
             print("ERROR: meta data with dates is required for time tree reconstruction", file=sys.stderr)
             return 1
         try:
-            metadata = read_metadata(args.metadata, args.metadata_delimiters)
+            metadata = read_metadata(args.metadata, delimiters=args.metadata_delimiters)
         except InvalidDelimiter:
             raise AugurError(
                 f"Could not determine the delimiter of {args.metadata!r}. "

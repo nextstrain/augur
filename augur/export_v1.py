@@ -368,7 +368,7 @@ def run(args):
     meta_json = read_config(args.auspice_config)
     ensure_config_is_v1(meta_json)
     try:
-        meta_tsv = read_metadata(args.metadata, args.metadata_delimiters)
+        meta_tsv = read_metadata(args.metadata, delimiters=args.metadata_delimiters)
     except InvalidDelimiter:
         raise AugurError(
             f"Could not determine the delimiter of {args.metadata!r}. "

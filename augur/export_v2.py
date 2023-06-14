@@ -1072,7 +1072,7 @@ def run(args):
 
     if args.metadata is not None:
         try:
-            metadata_file = read_metadata(args.metadata, args.metadata_delimiters).to_dict(orient="index")
+            metadata_file = read_metadata(args.metadata, delimiters=args.metadata_delimiters).to_dict(orient="index")
             for strain in metadata_file.keys():
                 if "strain" not in metadata_file[strain]:
                     metadata_file[strain]["strain"] = strain

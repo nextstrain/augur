@@ -130,7 +130,7 @@ def run(args):
     """
     tree_fname = args.tree
     try:
-        traits = read_metadata(args.metadata, args.metadata_delimiters)
+        traits = read_metadata(args.metadata, delimiters=args.metadata_delimiters)
     except InvalidDelimiter:
         raise AugurError(
                 f"Could not determine the delimiter of {args.metadata!r}. "

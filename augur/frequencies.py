@@ -84,7 +84,7 @@ def format_frequencies(freq):
 
 def run(args):
     try:
-        metadata = read_metadata(args.metadata, args.metadata_delimiters)
+        metadata = read_metadata(args.metadata, delimiters=args.metadata_delimiters)
     except InvalidDelimiter:
         raise AugurError(
             f"Could not determine the delimiter of {args.metadata!r}. "
