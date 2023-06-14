@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 22.0.3 (14 June 2023)
+
 ### Bug fixes
 
 * utils: Serialize pandas Series in `write_json`. [#1213][] (@victorlin)
