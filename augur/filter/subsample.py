@@ -23,7 +23,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     metadata : pandas.DataFrame
         Metadata to inspect for the given strains.
     group_by : list
-        A list of metadata (or calculated) columns to group records by.
+        A list of metadata (or generated) columns to group records by.
 
     Returns
     -------
@@ -39,7 +39,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> group_by_strain
     {'strain1': ('Africa',), 'strain2': ('Europe',)}
 
-    If we group by year or month, these groups are calculated from the date
+    If we group by year or month, these groups are generated from the date
     string.
 
     >>> group_by = ["year", "month"]

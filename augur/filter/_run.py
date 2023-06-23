@@ -71,7 +71,6 @@ def run(args):
         if build_sequence_index:
             os.unlink(sequence_index_path)
 
-        # Calculate summary statistics needed for filtering.
         sequence_strains = set(sequence_index.index.values)
 
     #####################################
