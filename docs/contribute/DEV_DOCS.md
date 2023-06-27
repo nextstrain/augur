@@ -1,18 +1,6 @@
 # Augur Development Docs for Contributors
 
-Thank you for helping us to improve Augur! This document describes:
-
-- Getting Started
-- Contributing code
-  - Running local code changes
-  - Testing
-  - Releasing
-  - Maintaining Bioconda package
-  - Continuous integration
-- Contributing documentation
-  - Formats (Markdown and reStructuredText)
-  - Documentation structure
-  - Building documentation
+Thank you for helping us to improve Augur! Use the GitHub markdown preview sidebar to navigate the sections in this document.
 
 ## Getting started
 
@@ -23,7 +11,7 @@ for useful information about how to pick an issue, submit your contributions, an
 This project strictly adheres to the
 [Contributor Covenant Code of Conduct](https://github.com/nextstrain/.github/blob/master/CODE_OF_CONDUCT.md).
 
-Please see the [project board](https://github.com/orgs/nextstrain/projects/6) for currently available issues.
+Please see the [open issues list](https://github.com/nextstrain/augur/issues) for currently available issues.
 
 ## Contributing code
 
@@ -58,15 +46,7 @@ output of `augur` installed with pip and `./bin/augur` from your local source co
 
 Writing good tests and running tests helps maintain code quality and eases future refactoring.
 We use [pytest](https://docs.pytest.org) and [Cram](https://bitheap.org/cram/) to test augur.
-This section will describe briefly:
-
-- Writing tests
-  - Unit tests
-  - Doctests
-  - Functional tests
-- Running tests
-  - Locally
-  - Continuous Integration
+This section will describe how to write and run tests, and when they are run automatically.
 
 #### Writing Tests
 
