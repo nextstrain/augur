@@ -11,7 +11,7 @@ for useful information about how to pick an issue, submit your contributions, an
 This project strictly adheres to the
 [Contributor Covenant Code of Conduct](https://github.com/nextstrain/.github/blob/master/CODE_OF_CONDUCT.md).
 
-Please see the [project board](https://github.com/orgs/nextstrain/projects/6) for currently available issues.
+Please see the [open issues list](https://github.com/nextstrain/augur/issues) for currently available issues.
 
 ## Contributing code
 
