@@ -140,6 +140,19 @@ Troubleshooting tip: As tests run on the development code in the augur repositor
 We use continuous integration with GitHub Actions to run tests on every pull request submitted to the project.
 We use [codecov](https://codecov.io/) to automatically produce test coverage for new contributions and the project as a whole.
 
+### Type annotations
+
+Our goal is to gradually add [type annotations][] to our code so that we can catch errors earlier and be explicit about the interfaces expected and provided.  Annotation pairs well with the functional approach taken by the package.
+
+During development you can run static type checks using [mypy][]:
+
+    $ mypy
+    # No output is good!
+
+There are also many [editor integrations for mypy][].
+
+[editor integrations for mypy]: https://github.com/python/mypy#integrations
+
 ### Releasing
 
 Versions for this project, Augur, from 3.0.0 onwards aim to follow the
