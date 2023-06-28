@@ -1,0 +1,28 @@
+{
+  "pythonVersion": "3.8",
+  "include": ["augur/"],
+
+
+  // These are rules that are enabled by default and currently have violations.
+
+  // TODO: go through these exceptions and determine if they should be kept or
+  // removed and violations addressed.
+
+  // TODO: consider aligning this with the same file in nextstrain/cli:
+  // <https://github.com/nextstrain/cli/blob/-/pyrightconfig.json>
+  "reportArgumentType": false,
+  "reportAttributeAccessIssue": false,
+  "reportCallIssue": false,
+  "reportGeneralTypeIssues": false,
+  "reportIncompatibleMethodOverride": false,
+  "reportMissingModuleSource": false,
+  "reportOperatorIssue": false,
+  "reportOptionalIterable": false,
+  "reportOptionalMemberAccess": false,
+  "reportOptionalOperand": false,
+  "reportOptionalSubscript": false,
+  "reportPossiblyUnboundVariable": false,
+  "reportSelfClsParameterName": false,
+  "reportUndefinedVariable": false,
+  "reportUnusedExpression": false,
+}
