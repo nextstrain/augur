@@ -680,7 +680,7 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
     strains_to_keep = set(metadata.index.values)
     strains_to_filter = []
     strains_to_force_include = []
-    distinct_strains_to_force_include = set()
+    distinct_strains_to_force_include: Set = set()
 
     # Track strains that should be included regardless of filters.
     for include_function, include_kwargs in include_by:

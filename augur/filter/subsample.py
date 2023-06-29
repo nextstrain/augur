@@ -475,7 +475,7 @@ def _calculate_fractional_sequences_per_group(
     0.4844
     """
     lo = 1e-5
-    hi = target_max_value
+    hi = float(target_max_value)
 
     while (hi / lo) > 1.1:
         mid = (lo + hi) / 2
