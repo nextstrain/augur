@@ -66,8 +66,7 @@ Error on the first duplicate.
   ERROR: Duplicate found for 'SEQ1'.
   [2]
 
-Run without --fix-dates. The date is changed as if --fix-dates=monthfirst was
-specified. This is a bug.
+Run without --fix-dates. The date is left unchanged.
 
   $ cat >$TMP/data.fasta <<~~
   > >SEQ1|05/01/2020
@@ -81,7 +80,7 @@ specified. This is a bug.
 
   $ cat "$TMP/metadata.tsv"
   strain	date
-  SEQ1	2020-05-01
+  SEQ1	05/01/2020
   $ rm -f "$TMP/metadata.tsv"
 
   $ popd > /dev/null
