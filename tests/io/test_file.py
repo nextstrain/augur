@@ -112,7 +112,6 @@ class TestFile:
         """Try reading from an unsupported type."""
         path_or_buffer = len("bogus")
 
-        # TODO: Raise a more informative error.
-        with pytest.raises(AttributeError, match="'int' object has no attribute 'read'"):
+        with pytest.raises(TypeError, match="Type <class 'int'> is not supported."):
             with augur.io.file.open_file(path_or_buffer, 'r') as f:
                 f.read()

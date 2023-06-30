@@ -1,5 +1,7 @@
+import os
 from contextlib import contextmanager
-from xopen import xopen
+from io import IOBase
+from xopen import PipedCompressionReader, PipedCompressionWriter, xopen
 
 
 @contextmanager
@@ -10,7 +12,7 @@ def open_file(path_or_buffer, mode="r", **kwargs):
 
     Parameters
     ----------
-    path_or_buffer : str or `os.PathLike` or any I/O class
+    path_or_buffer
         Name of the file to open or an existing IO buffer
 
     mode : str
@@ -22,8 +24,12 @@ def open_file(path_or_buffer, mode="r", **kwargs):
         File handle object
 
     """
-    try:
+    if isinstance(path_or_buffer, (str, os.PathLike)):
         with xopen(path_or_buffer, mode, **kwargs) as handle:
             yield handle
-    except TypeError:
+
+    elif isinstance(path_or_buffer, (IOBase, PipedCompressionReader, PipedCompressionWriter)):
         yield path_or_buffer
+
+    else:
+        raise TypeError(f"Type {type(path_or_buffer)} is not supported.")
