@@ -127,7 +127,7 @@ def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettif
                                             etal='lower' if field.startswith('author') else None)
 
     # parse dates and convert to a canonical format
-    if fix_dates and 'date' in metadata:
+    if fix_dates_format and 'date' in metadata:
         metadata['date'] = fix_dates(
             metadata['date'],
             dayfirst=fix_dates_format=='dayfirst'

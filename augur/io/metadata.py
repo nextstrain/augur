@@ -456,10 +456,15 @@ def write_records_to_tsv(records, output_file):
 
 def _get_delimiter(path: str, valid_delimiters: Iterable[str]):
     """Get the delimiter of a file given a list of valid delimiters."""
+
+    for delimiter in valid_delimiters:
+        if len(delimiter) != 1:
+            raise AugurError(f"Delimiters must be single-character strings. {delimiter!r} does not satisfy that condition.")
+
     with open_file(path) as file:
         try:
             # Infer the delimiter from the first line.
-            return csv.Sniffer().sniff(file.readline(), valid_delimiters).delimiter
+            return csv.Sniffer().sniff(file.readline(), "".join(valid_delimiters)).delimiter
         except csv.Error as error:
             # This assumes all csv.Errors imply a delimiter issue. That might
             # change in a future Python version.

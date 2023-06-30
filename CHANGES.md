@@ -6,7 +6,12 @@
 
 * export, frequencies, refine, traits: Add a new flag `--metadata-id-columns` to customize the possible metadata ID columns. Previously, this was only available in `augur filter`. [#1240][] (@victorlin)
 
+### Bug fixes
+
+* parse: Fix a bug where `--fix-dates` was always applied, with a default of `--fix-dates=monthfirst`. Now, running without `--fix-dates` will leave dates as-is. [#1247][] (@victorlin)
+
 [#1240]: https://github.com/nextstrain/augur/pull/1240
+[#1247]: https://github.com/nextstrain/augur/issues/1247
 
 ## 22.0.3 (14 June 2023)
 

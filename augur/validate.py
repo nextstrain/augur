@@ -137,7 +137,7 @@ def format_path(path: Iterable[Union[str, int]]) -> str:
     '.x.y[42].z'
     """
     def valid_identifier(x) -> bool:
-        return isinstance(x, str) and re.search(r'^[a-zA-Z$_][a-zA-Z0-9_$]*$', x)
+        return isinstance(x, str) and re.search(r'^[a-zA-Z$_][a-zA-Z0-9_$]*$', x) is not None
 
     def fmt(x) -> str:
         return (f"[{x}]"  if isinstance(x, int)  else

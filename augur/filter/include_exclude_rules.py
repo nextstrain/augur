@@ -680,7 +680,7 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
     strains_to_keep = set(metadata.index.values)
     strains_to_filter = []
     strains_to_force_include = []
-    distinct_strains_to_force_include = set()
+    distinct_strains_to_force_include: Set = set()
 
     # Track strains that should be included regardless of filters.
     for include_function, include_kwargs in include_by:
@@ -713,9 +713,9 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
             if filter_function is filter_by_query:
                 try:
                     # pandas ≥1.5.0 only
-                    UndefinedVariableError = pd.errors.UndefinedVariableError
+                    UndefinedVariableError = pd.errors.UndefinedVariableError  # type: ignore
                 except AttributeError:
-                    UndefinedVariableError = pd.core.computation.ops.UndefinedVariableError
+                    UndefinedVariableError = pd.core.computation.ops.UndefinedVariableError  # type: ignore
                 if isinstance(e, UndefinedVariableError):
                     raise AugurError(f"Query contains a column that does not exist in metadata.") from e
                 raise AugurError(f"Error when applying query. Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.") from e

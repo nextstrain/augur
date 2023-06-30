@@ -66,4 +66,21 @@ Error on the first duplicate.
   ERROR: Duplicate found for 'SEQ1'.
   [2]
 
+Run without --fix-dates. The date is left unchanged.
+
+  $ cat >$TMP/data.fasta <<~~
+  > >SEQ1|05/01/2020
+  > AAA
+  > ~~
+  $ ${AUGUR} parse \
+  >   --sequences $TMP/data.fasta \
+  >   --output-sequences "$TMP/sequences.fasta" \
+  >   --output-metadata "$TMP/metadata.tsv" \
+  >   --fields strain date
+
+  $ cat "$TMP/metadata.tsv"
+  strain	date
+  SEQ1	05/01/2020
+  $ rm -f "$TMP/metadata.tsv"
+
   $ popd > /dev/null

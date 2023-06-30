@@ -1,3 +1,6 @@
+# Prevent mypy from erroring on "flu" not being defined.
+# mypy: disable-error-code="name-defined"
+
 import os
 import logging
 import numpy as np
