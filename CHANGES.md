@@ -9,9 +9,11 @@
 ### Bug fixes
 
 * parse: Fix a bug where `--fix-dates` was always applied, with a default of `--fix-dates=monthfirst`. Now, running without `--fix-dates` will leave dates as-is. [#1247][] (@victorlin)
+* `augur.io.open_file`: Previously, the docs described a type restriction on `path_or_buffer` but it was not enforced. It has been updated to allow all I/O classes, and is enforced at run-time. [#1250][] (@victorlin)
 
 [#1240]: https://github.com/nextstrain/augur/pull/1240
 [#1247]: https://github.com/nextstrain/augur/issues/1247
+[#1250]: https://github.com/nextstrain/augur/pull/1250
 
 ## 22.0.3 (14 June 2023)
 
