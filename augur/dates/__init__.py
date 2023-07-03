@@ -125,7 +125,8 @@ def get_numerical_date_from_value(value, fmt: str = None, min_max_year = None) -
             ambig_date = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
         except InvalidDate as error:
             raise AugurError(str(error)) from error
-        return [treetime.utils.numeric_date(d) for d in ambig_date]
+        return (treetime.utils.numeric_date(ambig_date[0]),
+                treetime.utils.numeric_date(ambig_date[1]))
     try:
         return treetime.utils.numeric_date(datetime.datetime.strptime(value, fmt))
     except:
