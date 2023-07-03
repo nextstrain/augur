@@ -7,6 +7,7 @@ import re
 import treetime.utils
 from augur.errors import AugurError
 from .errors import InvalidDate
+from .types import NumericDate
 
 from .ambiguous_date import AmbiguousDate
 
@@ -107,11 +108,15 @@ def is_date_ambiguous(date, ambiguous_by):
         "X" in day and ambiguous_by in ("any", "day")
     ))
 
-def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
+def get_numerical_date_from_value(value, fmt: str = None, min_max_year = None) -> NumericDate:
     value = str(value)
     if re.match(r'^-*\d+\.\d+$', value):
         # numeric date which can be negative
         return float(value)
+
+    # All other dates should follow some expected format.
+    assert fmt is not None
+
     if value.isnumeric():
         # year-only date is ambiguous
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
