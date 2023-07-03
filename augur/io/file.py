@@ -10,7 +10,7 @@ def open_file(path_or_buffer, mode="r", **kwargs):
 
     Parameters
     ----------
-    path_or_buffer : str or `os.PathLike` or `io.StringIO`
+    path_or_buffer : str or `os.PathLike` or any I/O class
         Name of the file to open or an existing IO buffer
 
     mode : str
