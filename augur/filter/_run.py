@@ -119,6 +119,7 @@ def run(args):
     # for each group. When no priorities are provided, they will be randomly
     # generated.
     queues_by_group = None
+    priorities = None
     if group_by:
         # Use user-defined priorities, if possible. Otherwise, setup a
         # corresponding dictionary that returns a random float for each strain.
@@ -135,6 +136,7 @@ def run(args):
     metadata_mode = "w"
 
     # Setup strain output.
+    output_strains = None
     if args.output_strains:
         output_strains = open(args.output_strains, "w")
 
@@ -214,6 +216,7 @@ def run(args):
             # those that were initially filtered for one reason and then
             # included again for another reason).
             if args.output_log:
+                assert output_log_writer is not None
                 output_log_writer.writerow(filtered_strain)
 
         if group_by:
@@ -252,6 +255,8 @@ def run(args):
                             max_size=sequences_per_group,
                         )
 
+                    assert priorities is not None
+
                     queues_by_group[group].add(
                         metadata.loc[strain],
                         priorities[strain],
@@ -279,6 +284,7 @@ def run(args):
             # TODO: Output strains will no longer be ordered. This is a
             # small breaking change.
             for strain in force_included_strains_to_write:
+                assert output_strains is not None
                 output_strains.write(f"{strain}\n")
 
     # In the worst case, we need to calculate sequences per group from the
@@ -337,6 +343,8 @@ def run(args):
                 group_by,
             )
 
+            assert priorities is not None
+
             for strain in sorted(group_by_strain.keys()):
                 group = group_by_strain[strain]
                 queues_by_group[group].add(
@@ -363,6 +371,7 @@ def run(args):
                 if args.output_strains:
                     # TODO: Output strains will no longer be ordered. This is a
                     # small breaking change.
+                    assert output_strains is not None
                     output_strains.write(f"{record.name}\n")
 
             # Write records to metadata output, if requested.
@@ -402,6 +411,7 @@ def run(args):
     if is_vcf:
         if args.output:
             # Get the samples to be deleted, not to keep, for VCF
+            assert sequence_strains is not None
             dropped_samps = list(sequence_strains - valid_strains)
             write_vcf(args.sequences, args.output, dropped_samps)
     elif args.sequences:
@@ -447,6 +457,7 @@ def run(args):
         num_excluded_by_lack_of_metadata = len(sequence_strains - metadata_strains)
 
     if args.output_strains:
+        assert output_strains is not None
         output_strains.close()
 
     # Calculate the number of strains passed and filtered.
