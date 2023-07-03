@@ -142,7 +142,11 @@ def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date',
                 date,
                 fmt,
                 min_max_year
-            )
+            )  # type: ignore
+            # The currently installed version of pandas type stubs assumes that
+            # the func here should never return a None value, therefore it
+            # thinks this is an issue. However, None values are known to be
+            # allowed here.
         ).values
     else:
         strains = metadata.index.values
