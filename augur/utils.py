@@ -289,6 +289,7 @@ def available_cpu_cores(fallback: int = 1) -> int:
         # 24 total cores may only allow our process to use 12.  If we tried to
         # naively use all 24, we'd end up with two threads across the 12 cores.
         # This would degrade performance rather than improve it!
+        assert hasattr(os, "sched_getaffinity")
         return len(os.sched_getaffinity(0))
     except:
         # cpu_count() returns None if the value is indeterminable.
