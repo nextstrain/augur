@@ -1,3 +1,4 @@
+import pytest
 import augur.io.file
 
 
@@ -71,3 +72,46 @@ class TestFile:
             f_write.write('foo\nbar\n')
         with zstd.open(path, 'rt') as f_read:
             assert f_read.read() == 'foo\nbar\n'
+
+    def test_open_file_nested_read(self, tmpdir):
+        """Open a text file as a path then buffer for reading."""
+        path = str(tmpdir / 'test.txt')
+        with open(path, 'wt') as f_write:
+            f_write.write('foo\nbar\n')
+
+        with augur.io.file.open_file(path) as f_read:
+            with augur.io.file.open_file(f_read) as f_read:
+                assert f_read.read() == 'foo\nbar\n'
+
+    def test_open_file_nested_read_zstd(self, tmpdir):
+        """Open a zstd-compressed text file as a path then buffer for reading."""
+        import zstandard as zstd
+        path = str(tmpdir / 'test.txt.zst')
+        with zstd.open(path, 'wt') as f_write:
+            f_write.write('foo\nbar\n')
+
+        with augur.io.file.open_file(path) as f_read:
+            with augur.io.file.open_file(f_read) as f_read:
+                assert f_read.read() == 'foo\nbar\n'
+
+    def test_open_file_nested_write(self, tmpdir):
+        """Open a text file as a path then buffer for writing."""
+        path = str(tmpdir / 'test.txt')
+        with augur.io.file.open_file(path, 'w') as f_write:
+            with augur.io.file.open_file(f_write, 'w') as f_write:
+                f_write.write('foo\nbar\n')
+
+    def test_open_file_nested_write_zstd(self, tmpdir):
+        """Open a zstd-compressed text file as a path then buffer for writing."""
+        path = str(tmpdir / 'test.txt.zst')
+        with augur.io.file.open_file(path, 'w') as f_write:
+            with augur.io.file.open_file(f_write, 'w') as f_write:
+                f_write.write('foo\nbar\n')
+
+    def test_open_file_read_error(self):
+        """Try reading from an unsupported type."""
+        path_or_buffer = len("bogus")
+
+        with pytest.raises(TypeError, match="Type <class 'int'> is not supported."):
+            with augur.io.file.open_file(path_or_buffer, 'r') as f:
+                f.read()
