@@ -169,6 +169,7 @@ def run(args):
             delimiters=args.metadata_delimiters,
             id_columns=args.metadata_id_columns,
             chunk_size=args.metadata_chunk_size,
+            dtype="string",
         )
     except InvalidDelimiter:
         raise AugurError(
@@ -320,6 +321,7 @@ def run(args):
             delimiters=args.metadata_delimiters,
             id_columns=args.metadata_id_columns,
             chunk_size=args.metadata_chunk_size,
+            dtype="string",
         )
         for metadata in metadata_reader:
             # Recalculate groups for subsampling as we loop through the
