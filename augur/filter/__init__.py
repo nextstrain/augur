@@ -107,6 +107,7 @@ def register_arguments(parser):
     output_group.add_argument('--output-strains', help="list of strains that passed filters (no header)")
     output_group.add_argument('--output-log', help="tab-delimited file with one row for each filtered strain and the reason it was filtered. Keyword arguments used for a given filter are reported in JSON format in a `kwargs` column.")
     output_group.add_argument('--output-group-by-sizes', help="tab-delimited file one row per group with target size.")
+    output_group.add_argument('--debug', action='store_true', help="Run in debug mode.")
     output_group.add_argument(
         '--empty-output-reporting',
         type=EmptyOutputReportingMethod.argtype,

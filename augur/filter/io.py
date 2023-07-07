@@ -23,6 +23,7 @@ from augur.io.sqlite3 import DuplicateError, Sqlite3Database, sanitize_identifie
 from augur.io.tabular_file import InvalidDelimiter, TabularFile
 from augur.io.vcf import is_vcf, write_vcf
 from . import constants
+from .debug import print_debug
 from .include_exclude_rules import extract_variables, parse_filter_query
 
 
@@ -497,3 +498,37 @@ def _get_strains_to_drop_from_vcf():
             )
         """)
         return {str(row[SEQUENCE_INDEX_ID_COLUMN]) for row in result}
+
+
+def print_db_report():
+    if not constants.RUNTIME_DEBUG:
+        return
+
+    with Sqlite3Database(constants.RUNTIME_DB_FILE) as db:
+        result = db.connection.execute(f"""
+            SELECT
+                name,
+                SUM(pgsize) AS size
+            FROM dbstat
+            GROUP BY name;
+        """)
+        rows = result.fetchall()
+
+    print_debug(f'The total size of the database was {_human_readable_size(sum(int(row["size"]) for row in rows))}. Breakdown:')
+
+    for row in sorted(rows, key=lambda row: int(row["size"]), reverse=True):
+        print_debug(f'{_human_readable_size(row["size"]): >10}  {row["name"]}')
+
+
+def _human_readable_size(bytes: int, decimal_places=1):
+    """Return size in bytes as a human-readable string using larger units.
+
+    Adapted from https://stackoverflow.com/a/43690506
+    """
+    size = float(bytes)
+    units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB']
+    for unit in units:
+        if size < 1024.0 or unit == units[-1]:
+            break
+        size /= 1024.0
+    return f"{size:.{decimal_places}f} {unit}"

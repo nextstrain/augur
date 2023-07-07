@@ -14,6 +14,7 @@ Submodules
 
    augur.filter.constants
    augur.filter.dates
+   augur.filter.debug
    augur.filter.include_exclude_rules
    augur.filter.io
    augur.filter.report

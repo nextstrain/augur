@@ -8,7 +8,8 @@ from augur.io.print import print_err
 from augur.io.tabular_file import InvalidDelimiter
 from . import constants
 from .dates import parse_dates
-from .io import get_useful_metadata_columns, initialize_input_source_table, import_metadata, import_sequence_index, write_outputs
+from .debug import print_debug
+from .io import get_useful_metadata_columns, initialize_input_source_table, import_metadata, import_sequence_index, print_db_report, write_outputs
 from .include_exclude_rules import apply_filters, construct_filters
 from .report import print_report
 from .subsample import apply_subsampling
@@ -21,6 +22,9 @@ def run(args: Namespace):
         # but that would be tedious and makes it harder to trace references back
         # to the source.
         constants.RUNTIME_DB_FILE = file.name
+        constants.RUNTIME_DEBUG = args.debug
+
+        print_debug(f"Temporary database file: {constants.RUNTIME_DB_FILE!r}")
 
         initialize_input_source_table()
 
@@ -48,6 +52,8 @@ def run(args: Namespace):
         write_outputs(args)
 
         print_report(args)
+
+        print_db_report()
 
     # TODO: The current implementation assumes the database file is hidden from
     # the user. If this ever changes, clean the database of any
