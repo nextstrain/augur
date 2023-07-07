@@ -22,7 +22,7 @@ from augur.io.sqlite3 import DuplicateError, Sqlite3Database, sanitize_identifie
 from augur.io.tabular_file import InvalidDelimiter, TabularFile
 from augur.io.vcf import is_vcf, write_vcf
 from . import constants
-from .debug import print_debug
+from .debug import print_debug, add_debugging
 from .include_exclude_rules import extract_variables, parse_filter_query
 
 
@@ -113,6 +113,7 @@ def _validate_priorities_table():
                 raise ValueError(f"Priority score for strain '{row[constants.ID_COLUMN]}' ('{row[constants.PRIORITY_COLUMN]}') is not a valid number.")
 
 
+@add_debugging
 def _write_metadata_based_outputs(input_metadata_path: str, delimiters: Sequence[str],
                                  id_columns: Sequence[str], output_metadata_path: str,
                                  output_strains_path: str):
@@ -219,6 +220,7 @@ def _import_tabular_file(file: TabularFile, db: Sqlite3Database, table: str, col
     db.insert(table, columns, file.rows())
 
 
+@add_debugging
 def import_metadata(metadata: Metadata, columns):
     """Import metadata into the database."""
     with Sqlite3Database(constants.RUNTIME_DB_FILE, mode="rw") as db:
@@ -356,6 +358,7 @@ def write_outputs(args):
         _output_log(args.output_log)
 
 
+@add_debugging
 def _read_and_output_sequences(args):
     """Read sequences and output all that passed filtering.
     """
