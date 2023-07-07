@@ -3,11 +3,13 @@ import treetime.utils
 from augur.dates import get_numerical_date_from_value
 from augur.dates.errors import InvalidDate
 from augur.errors import AugurError
+from augur.filter.debug import add_debugging
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.sqlite3 import Sqlite3Database, sanitize_identifier
 from . import constants
 
 
+@add_debugging
 def parse_dates():
     """Validate dates and create a date table."""
     # First, determine if there is a date column.

@@ -6,6 +6,7 @@ from textwrap import dedent
 from typing import Collection, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 from augur.errors import AugurError
+from augur.filter.debug import add_debugging
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err
 from augur.io.sqlite3 import Sqlite3Database, sanitize_identifier
@@ -448,6 +449,7 @@ def _calculate_sequences_per_group(
         return int(lo)
 
 
+@add_debugging
 def apply_subsampling(args):
     """Apply subsampling to update the filter reason table.
 

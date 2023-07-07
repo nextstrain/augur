@@ -12,6 +12,7 @@ from augur.io.strains import read_strains
 from augur.io.sqlite3 import Sqlite3Database, sanitize_identifier
 from augur.io.vcf import is_vcf as filename_is_vcf
 from . import constants
+from .debug import add_debugging
 
 try:
     # pandas ≥1.5.0 only
@@ -667,6 +668,7 @@ def construct_filters(args) -> Tuple[List[FilterOption], List[FilterOption]]:
     return exclude_by, include_by
 
 
+@add_debugging
 def apply_filters(exclude_by: List[FilterOption], include_by: List[FilterOption]):
     """Apply exclusion and force-inclusion rules to filter strains from the metadata."""
     init_filter_reason_table()
