@@ -80,6 +80,7 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAU
         "engine": "c",
         "skipinitialspace": True,
         "na_filter": False,
+        "low_memory": False,
     }
 
     if chunk_size:
