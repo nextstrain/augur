@@ -5,12 +5,14 @@
 ### Features
 
 * export, frequencies, refine, traits: Add a new flag `--metadata-id-columns` to customize the possible metadata ID columns. Previously, this was only available in `augur filter`. [#1240][] (@victorlin)
+* Add new sub-subcommand augur curate format-dates. The format-dates command is intended to be used to format date fields to ISO 8601 date format (YYYY-MM-DD), where incomplete dates are masked with `XX` (e.g. 2023 -> 2023-XX-XX). [#1146][] (@joverlee521)
 
 ### Bug fixes
 
 * parse: Fix a bug where `--fix-dates` was always applied, with a default of `--fix-dates=monthfirst`. Now, running without `--fix-dates` will leave dates as-is. [#1247][] (@victorlin)
 * `augur.io.open_file`: Previously, the docs described a type restriction on `path_or_buffer` but it was not enforced. It has been updated to allow all I/O classes, and is enforced at run-time. [#1250][] (@victorlin)
 
+[#1146]: https://github.com/nextstrain/augur/pull/1146
 [#1240]: https://github.com/nextstrain/augur/pull/1240
 [#1247]: https://github.com/nextstrain/augur/issues/1247
 [#1250]: https://github.com/nextstrain/augur/pull/1250
