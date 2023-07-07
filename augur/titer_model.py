@@ -1,6 +1,3 @@
-# Prevent mypy from erroring on "flu" not being defined.
-# mypy: disable-error-code="name-defined"
-
 import os
 import logging
 import numpy as np
@@ -1159,16 +1156,3 @@ class SubstitutionModel(TiterModel):
                 child.cTiterSub = node.cTiterSub + child.dTiterSub
 
         return tree
-
-
-if __name__=="__main__":
-    # test tree model (assumes there is a tree called flu in memory...)
-    ttm = TreeModel(flu.tree.tree, flu.titers)
-    ttm.prepare(training_fraction=0.8)
-    ttm.train(method='nnl1reg')
-    ttm.validate(plot=True)
-
-    tsm = SubstitutionModel(flu.tree.tree, flu.titers)
-    tsm.prepare(training_fraction=0.8)
-    tsm.train(method='nnl1reg')
-    tsm.validate(plot=True)
