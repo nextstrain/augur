@@ -12,13 +12,14 @@ from augur.io.json import dump_ndjson, load_ndjson
 from augur.io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
 from augur.io.sequences import write_records_to_fasta
 from augur.types import DataErrorMethod
-from . import normalize_strings, passthru
+from . import format_dates, normalize_strings, passthru
 
 
 SUBCOMMAND_ATTRIBUTE = '_curate_subcommand'
 SUBCOMMANDS = [
     passthru,
     normalize_strings,
+    format_dates,
 ]
 
 
@@ -63,12 +64,14 @@ def create_shared_parser():
         help="The name to use for the sequence field when joining sequences from a FASTA file.")
 
     shared_inputs.add_argument("--unmatched-reporting",
-        choices=[ method.value for method in DataErrorMethod ],
-        default=DataErrorMethod.ERROR_FIRST.value,
+        type=DataErrorMethod.argtype,
+        choices=list(DataErrorMethod),
+        default=DataErrorMethod.ERROR_FIRST,
         help="How unmatched records from combined metadata/FASTA input should be reported.")
     shared_inputs.add_argument("--duplicate-reporting",
-        choices=[ method.value for method in DataErrorMethod ],
-        default=DataErrorMethod.ERROR_FIRST.value,
+        type=DataErrorMethod.argtype,
+        choices=list(DataErrorMethod),
+        default=DataErrorMethod.ERROR_FIRST,
         help="How should duplicate records be reported.")
 
     shared_outputs = shared_parser.add_argument_group(
@@ -142,8 +145,8 @@ def run(args):
                 args.fasta,
                 args.seq_id_column,
                 args.seq_field,
-                DataErrorMethod(args.unmatched_reporting),
-                DataErrorMethod(args.duplicate_reporting))
+                args.unmatched_reporting,
+                args.duplicate_reporting)
         except InvalidDelimiter:
             raise AugurError(
                 f"Could not determine the delimiter of {args.metadata!r}. "
@@ -152,7 +155,7 @@ def run(args):
             )
     elif args.metadata:
         try:
-            records = read_table_to_dict(args.metadata, args.metadata_delimiters, DataErrorMethod(args.duplicate_reporting), args.id_column)
+            records = read_table_to_dict(args.metadata, args.metadata_delimiters, args.duplicate_reporting, args.id_column)
         except InvalidDelimiter:
             raise AugurError(
                 f"Could not determine the delimiter of {args.metadata!r}. "
