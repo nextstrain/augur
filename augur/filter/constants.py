@@ -1,5 +1,6 @@
 # Constants set at run time.
 RUNTIME_DB_FILE: str = None
+RUNTIME_DEBUG: bool = False
 
 
 # ID column used for all tables defined internally.
