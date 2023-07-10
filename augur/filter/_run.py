@@ -65,6 +65,7 @@ def run(args):
             sequence_index_path,
             sep=SEQUENCE_INDEX_DELIMITER,
             index_col=SEQUENCE_INDEX_ID_COLUMN,
+            dtype={SEQUENCE_INDEX_ID_COLUMN: "string"},
         )
 
         # Remove temporary index file, if it exists.
