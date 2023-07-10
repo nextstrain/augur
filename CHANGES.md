@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 22.1.0 (10 July 2023)
+
 ### Features
 
 * export, frequencies, refine, traits: Add a new flag `--metadata-id-columns` to customize the possible metadata ID columns. Previously, this was only available in `augur filter`. [#1240][] (@victorlin)
