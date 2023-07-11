@@ -78,8 +78,10 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAU
     (2, 14)
 
     """
+    metadata = Metadata(metadata_file, delimiters=delimiters, id_columns=id_columns)
+
     kwargs = {
-        "sep": _get_delimiter(metadata_file, delimiters),
+        "sep": metadata.delimiter,
         "engine": "c",
         "skipinitialspace": True,
         "na_filter": False,
@@ -92,34 +94,13 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAU
     if usecols:
         kwargs["usecols"] = usecols
 
-    # Inspect the first chunk of the metadata, to find any valid index columns.
-    metadata = pd.read_csv(
-        metadata_file,
-        iterator=True,
-        **kwargs,
-    )
-    chunk = metadata.read(nrows=1)
-    metadata.close()
-
-    id_columns_present = [
-        id_column
-        for id_column in id_columns
-        if id_column in chunk.columns
-    ]
-
-    # If we couldn't find a valid index column in the metadata, alert the user.
-    if not id_columns_present:
-        raise Exception(f"None of the possible id columns ({id_columns!r}) were found in the metadata's columns {tuple(chunk.columns)!r}")
-    else:
-        index_col = id_columns_present[0]
-
     # If we found a valid column to index the DataFrame, specify that column and
     # also tell pandas that the column should be treated like a string instead
     # of having its type inferred. This latter argument allows users to provide
     # numerical ids that don't get converted to numbers by pandas.
-    kwargs["index_col"] = index_col
+    kwargs["index_col"] = metadata.id_column
     kwargs["dtype"] = {
-        index_col: "string",
+        metadata.id_column: "string",
         METADATA_DATE_COLUMN: "string"
     }
 
