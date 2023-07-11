@@ -1,6 +1,6 @@
 import csv
 import os
-from typing import Iterable
+from typing import Sequence
 import pandas as pd
 import pyfastx
 import sys
@@ -9,6 +9,7 @@ from itertools import chain
 
 from augur.errors import AugurError
 from augur.io.print import print_err
+from augur.io.tabular_file import TabularFile
 from augur.types import DataErrorMethod
 from .file import open_file
 
@@ -460,18 +461,30 @@ def write_records_to_tsv(records, output_file):
             tsv_writer.writerow(record)
 
 
-def _get_delimiter(path: str, valid_delimiters: Iterable[str]):
-    """Get the delimiter of a file given a list of valid delimiters."""
+class Metadata(TabularFile):
+    """Represents a metadata file."""
 
-    for delimiter in valid_delimiters:
-        if len(delimiter) != 1:
-            raise AugurError(f"Delimiters must be single-character strings. {delimiter!r} does not satisfy that condition.")
+    id_column: str
+    """Strain ID column."""
 
-    with open_file(path) as file:
-        try:
-            # Infer the delimiter from the first line.
-            return csv.Sniffer().sniff(file.readline(), "".join(valid_delimiters)).delimiter
-        except csv.Error as error:
-            # This assumes all csv.Errors imply a delimiter issue. That might
-            # change in a future Python version.
-            raise InvalidDelimiter from error
+    def __init__(self, path: str, id_columns: Sequence[str], **kwargs):
+        """
+        Parameters
+        ----------
+        path
+            Path of the metadata file.
+        id_columns
+            Possible ID columns.
+        **kwargs
+            See TabularFile.__init__() for more parameters.
+        """
+        super().__init__(path, header=True, **kwargs)
+        self.id_column = self._find_first(id_columns)
+
+    def _find_first(self, columns: Sequence[str]):
+        """Return the first column in `columns` that is present in the metadata.
+        """
+        for column in columns:
+            if column in self.columns:
+                return column
+        raise AugurError(f"{self.path}: None of ({columns!r}) are in the columns {tuple(self.columns)!r}.")
