@@ -88,9 +88,9 @@ assert-version-is-new() {
 version-is-gt() {
     python3 /dev/stdin "$1" "$2" <<<"$(cut -c 9- <<<'
         from sys import argv, exit
-        from pkg_resources import parse_version
+        from packaging.version import Version
 
-        version = list(map(parse_version, argv[1:3]))
+        version = list(map(Version, argv[1:3]))
 
         gt = version[1] > version[0]
 
