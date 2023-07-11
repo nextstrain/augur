@@ -24,7 +24,7 @@ class InvalidDelimiter(Exception):
     pass
 
 
-def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAULT_ID_COLUMNS, chunk_size=None):
+def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAULT_ID_COLUMNS, usecols=None, chunk_size=None):
     r"""Read metadata from a given filename and into a pandas `DataFrame` or
     `TextFileReader` object.
 
@@ -35,6 +35,8 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAU
     delimiters : list of str
         List of possible delimiters to check for between columns in the metadata.
         Only one delimiter will be inferred.
+    usecols : list of str
+        List of columns to read.
     id_columns : list of str
         List of possible id column names to check for, ordered by priority.
         Only one id column will be inferred.
@@ -85,6 +87,9 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAU
 
     if chunk_size:
         kwargs["chunksize"] = chunk_size
+
+    if usecols:
+        kwargs["usecols"] = usecols
 
     # Inspect the first chunk of the metadata, to find any valid index columns.
     metadata = pd.read_csv(
