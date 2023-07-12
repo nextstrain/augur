@@ -21,7 +21,7 @@ from augur.io.print import print_err
 from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
 from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
-from .io import cleanup_outputs, read_priority_scores
+from .io import cleanup_outputs, copy_subset_of_metadata, get_desired_metadata_columns, read_priority_scores
 from .include_exclude_rules import apply_filters, construct_filters
 from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, create_queues_by_group, get_groups_for_subsampling
 
@@ -163,11 +163,14 @@ def run(args):
     all_sequences_to_include = set()
     filter_counts = defaultdict(int)
 
+    desired_columns = get_desired_metadata_columns(args)
+
     try:
         metadata_reader = read_metadata(
             args.metadata,
             delimiters=args.metadata_delimiters,
             id_columns=args.metadata_id_columns,
+            usecols=desired_columns,
             chunk_size=args.metadata_chunk_size,
         )
     except InvalidDelimiter:
@@ -265,17 +268,6 @@ def run(args):
         if not group_by:
             force_included_strains_to_write = force_included_strains_to_write | seq_keep
 
-        if args.output_metadata:
-            # TODO: wrap logic to write metadata into its own function
-            metadata.loc[list(force_included_strains_to_write)].to_csv(
-                args.output_metadata,
-                sep="\t",
-                header=metadata_header,
-                mode=metadata_mode,
-            )
-            metadata_header = False
-            metadata_mode = "a"
-
         if args.output_strains:
             # TODO: Output strains will no longer be ordered. This is a
             # small breaking change.
@@ -319,6 +311,7 @@ def run(args):
             args.metadata,
             delimiters=args.metadata_delimiters,
             id_columns=args.metadata_id_columns,
+            usecols=desired_columns,
             chunk_size=args.metadata_chunk_size,
         )
         for metadata in metadata_reader:
@@ -366,18 +359,6 @@ def run(args):
                     # small breaking change.
                     output_strains.write(f"{record.name}\n")
 
-            # Write records to metadata output, if requested.
-            if args.output_metadata and len(records) > 0:
-                records = pd.DataFrame(records)
-                records.to_csv(
-                    args.output_metadata,
-                    sep="\t",
-                    header=metadata_header,
-                    mode=metadata_mode,
-                )
-                metadata_header = False
-                metadata_mode = "a"
-
         # Count and optionally log strains that were not included due to
         # subsampling.
         strains_filtered_by_subsampling = valid_strains - subsampled_strains
@@ -394,6 +375,9 @@ def run(args):
 
     # Force inclusion of specific strains after filtering and subsampling.
     valid_strains = valid_strains | all_sequences_to_include
+
+    if args.output_metadata:
+        copy_subset_of_metadata(args.metadata, args.output_metadata, delimiters=args.metadata_delimiters, id_columns=args.metadata_id_columns, strains=valid_strains)
 
     # Write output starting with sequences, if they've been requested. It is
     # possible for the input sequences and sequence index to be out of sync
