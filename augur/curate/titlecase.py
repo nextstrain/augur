@@ -31,7 +31,7 @@ def register_parser(parent_subparsers):
     return parser
 
 
-def titlecase(text: Union[str, None], articles: Set[str] = {}, abbreviations: Set[str] = {}) -> Optional[str]:
+def titlecase(text: Union[str, None], articles: Set[str] = set(), abbreviations: Set[str] = set()) -> Optional[str]:
     """
     Originally from nextstrain/ncov-ingest
 
