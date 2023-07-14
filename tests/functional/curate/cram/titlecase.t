@@ -40,12 +40,12 @@ Test output with only numbers
   >   | ${AUGUR} curate titlecase --titlecase-fields "int" "float" "address"
   {"int": "2021", "float": "2021.10", "address": "2021.20.30"}
 
-Test case that fails on null
+Test case that passes on empty or null values
 
   $ echo '{"empty": "", "null_entry":null  }' \
   >   | ${AUGUR} curate titlecase --titlecase-fields "empty" "null_entry"
-  ERROR: Failed to titlecase 'null_entry':None in record 0
-  [2]
+  {"empty": "", "null_entry": null}
+
 
 Test case that fails on a non-string int
 
