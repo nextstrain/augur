@@ -98,7 +98,7 @@ def run(args, records):
 
             titlecased_string = titlecase(record[field], articles, abbreviations)
         
-            failure_message = f"Failed to titlecase {field!r}:{record.get(field)!r} in record {record_id!r}"
+            failure_message = f"Failed to titlecase {field!r}:{record.get(field)!r} in record {record_id!r} because the value is a {type(record.get(field)).__name__!r} and is not a string."
             if titlecased_string is None:
                 if failure_reporting is DataErrorMethod.ERROR_FIRST:
                     raise AugurError(failure_message)
