@@ -51,7 +51,14 @@ Test case that fails on a non-string int
 
   $ echo '{"bare_int": 2021}' \
   >   | ${AUGUR} curate titlecase --titlecase-fields "bare_int"
-  ERROR: Failed to titlecase 'bare_int':2021 in record 0
+  ERROR: Failed to titlecase 'bare_int':2021 in record 0 because the value is a <class 'int'> and is not a string.
+  [2]
+
+Test case that fails on complext types (e.g. arrays)
+
+  $ echo '{"an_array": ["hello", "world"]}' \
+  >   | ${AUGUR} curate titlecase --titlecase-fields "an_array"
+  ERROR: Failed to titlecase 'an_array':['hello', 'world'] in record 0 because the value is a <class 'list'> and is not a string.
   [2]
 
 Test cases when fields do not exist, decide if this should error out and may affect ingest pipelines
