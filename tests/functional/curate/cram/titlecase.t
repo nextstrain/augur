@@ -66,3 +66,34 @@ Test cases when fields do not exist, decide if this should error out and may aff
   $ echo '{"region":"europe", "country":"france" }' \
   >   | ${AUGUR} curate titlecase --titlecase-fields "region" "country" "division" "location" "not exist"
   {"region": "Europe", "country": "France"}
+
+Test output with non-string value input with `ERROR_ALL` failure reporting.
+This reports a collection of all titlecase failures which is especially beneficial for automated pipelines.
+
+  $ echo '{"bare_int": 2021, "bare_float": 1.2}' \
+  >   | ${AUGUR} curate titlecase --titlecase-fields "bare_int" "bare_float" \
+  >   --failure-reporting "error_all" 1> /dev/null
+  ERROR: Failed to titlecase 'bare_int':2021 in record 0 because the value is a 'int' and is not a string.
+  ERROR: Failed to titlecase 'bare_float':1.2 in record 0 because the value is a 'float' and is not a string.
+  ERROR: Unable to change to titlecase for the following (record, field, field value):
+  (0, 'bare_int', 2021)
+  (0, 'bare_float', 1.2)
+  [2]
+
+Test warning on failures such as when encountering a non-string value.
+
+  $ echo '{"bare_int": 2021}' \
+  >   | ${AUGUR} curate titlecase --titlecase-fields "bare_int" \
+  >   --failure-reporting "warn"
+  WARNING: Failed to titlecase 'bare_int':2021 in record 0 because the value is a 'int' and is not a string.
+  WARNING: Unable to change to titlecase for the following (record, field, field value):
+  (0, 'bare_int', 2021)
+  {"bare_int": 2021}
+
+Test silencing on failures such as when encountering a non-string value
+
+  $ echo '{"bare_int": 2021}' \
+  >   | ${AUGUR} curate titlecase --titlecase-fields "bare_int" \
+  >   --failure-reporting "silent"
+  {"bare_int": 2021}
+

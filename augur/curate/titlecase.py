@@ -102,12 +102,13 @@ def run(args, records):
             if titlecased_string is None:
                 if failure_reporting is DataErrorMethod.ERROR_FIRST:
                     raise AugurError(failure_message)
-    
+                if failure_reporting is DataErrorMethod.ERROR_ALL:
+                    print_err(f"ERROR: {failure_message}")
                 if failure_reporting is DataErrorMethod.WARN:
                     print_err(f"WARNING: {failure_message}")
-    
-                    # Keep track of failures for final summary
-                    failures.append((record_id, field, record.get(field)))
+
+                # Keep track of failures for final summary
+                failures.append((record_id, field, record.get(field)))
             else:
                 record[field] = titlecased_string
     
