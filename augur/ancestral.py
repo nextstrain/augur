@@ -70,10 +70,6 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
     tt.infer_ancestral_sequences(infer_gtr=infer_gtr, marginal=bool_marginal,
                                  reconstruct_tip_states=infer_tips)
 
-    print("\nInferred ancestral sequence states using TreeTime:"
-          "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
-          "\n\tVirus Evolution, vol 4, https://academic.oup.com/ve/article/4/1/vex042/4794731\n")
-
     return tt
 
 def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, character_map=None,
@@ -163,7 +159,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     # FIXME: these three arguments should either be all there or none
-    parser.add_argument('--reference-sequence', required=True,
+    parser.add_argument('--annotation', required=True,
                         help='GenBank or GFF file containing the annotation')
     parser.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
     parser.add_argument('--translations', type=str, help="reconstruct translated alignments for each CDS/Gene. "
@@ -220,6 +216,10 @@ def run(args):
     # Enforce treetime 0.7 or later
     from distutils.version import StrictVersion
     import treetime
+    print("\nInferred ancestral sequence states using TreeTime:"
+          "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
+          "\n\tVirus Evolution, vol 4, https://academic.oup.com/ve/article/4/1/vex042/4794731\n")
+
     print(f"augur ancestral is using TreeTime version {treetime.version}")
     if StrictVersion(treetime.version) < StrictVersion('0.7.0'):
         print("ERROR: this version of augur requires TreeTime 0.7 or later.", file=sys.stderr)
@@ -244,7 +244,7 @@ def run(args):
     if not is_vcf and args.genes:
         from .utils import load_features
         ## load features; only requested features if genes given
-        features = load_features(args.reference_sequence, args.genes)
+        features = load_features(args.annotation, args.genes)
         if features is None:
             print("ERROR: could not read features of reference sequence file")
             return 1
