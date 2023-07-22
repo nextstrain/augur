@@ -247,7 +247,7 @@ def run(args):
     # explicitly or by default) and the user has not explicitly requested that
     # we keep them.
     infer_ambiguous = args.infer_ambiguous and not args.keep_ambiguous
-    full_sequences = args.output_sequences is not None
+    full_sequences = not is_vcf
     nuc_result = run_ancestral(T, aln, root_sequence=str(ref.seq) if ref else None, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
                                full_sequences=full_sequences, marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='nuc')
     anc_seqs = nuc_result['mutations']
