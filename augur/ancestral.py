@@ -128,8 +128,9 @@ def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, 
 
     return {"nodes": data, "mask": mask}
 
-def run_ancestral(T, aln, ref, is_vcf=False, fill_overhangs=False, infer_ambiguous=False, marginal=False, alphabet='nuc'):
-    tt = ancestral_sequence_inference(tree=T, aln=aln, ref=ref, marginal=marginal,
+def run_ancestral(T, aln, root_sequence=None, is_vcf=False, full_sequences=False, fill_overhangs=False,
+                  infer_ambiguous=False, marginal=False, alphabet='nuc'):
+    tt = ancestral_sequence_inference(tree=T, aln=aln, ref=root_sequence if is_vcf else None, marginal=marginal,
                                       fill_overhangs = fill_overhangs, alphabet=alphabet,
                                       infer_tips = infer_ambiguous)
 
@@ -143,15 +144,21 @@ def run_ancestral(T, aln, ref, is_vcf=False, fill_overhangs=False, infer_ambiguo
             character_map[x] = x
     # add reference sequence to json structure. This is the sequence with
     # respect to which mutations on the tree are defined.
-    if is_vcf:
-        root_seq = {"nuc":ref}
+    if root_sequence:
+        root_seq = root_sequence
     else:
         root_seq = tt.sequence(T.root, as_string=True)
 
+    mutations = collect_mutations_and_sequences(tt, full_sequences=full_sequences,
+                          infer_tips=infer_ambiguous, character_map=character_map)
+    if root_sequence:
+        for pos, (root_state, tree_state) in enumerate(zip(root_sequence, tt.sequence(tt.tree.root, reconstructed=infer_ambiguous, as_string=True))):
+            if root_state != tree_state:
+                mutations['nodes'][tt.tree.root.name]['muts'].append(f"{root_state}{pos+1}{tree_state}")
+
     return {'tt': tt,
             'root_seq': root_seq,
-            'mutations': collect_mutations_and_sequences(tt, full_sequences=not is_vcf,
-                          infer_tips=infer_ambiguous, character_map=character_map)}
+            'mutations': mutations}
 
 
 def register_parser(parent_subparsers):
@@ -159,7 +166,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     # FIXME: these three arguments should either be all there or none
-    parser.add_argument('--annotation', required=True,
+    parser.add_argument('--annotation',
                         help='GenBank or GFF file containing the annotation')
     parser.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
     parser.add_argument('--translations', type=str, help="reconstruct translated alignments for each CDS/Gene. "
@@ -171,6 +178,8 @@ def register_parser(parent_subparsers):
     parser.add_argument('--inference', default='joint', choices=["joint", "marginal"],
                                     help="calculate joint or marginal maximum likelihood ancestral sequence states")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to (only used if a VCF is provided as the alignment)')
+    parser.add_argument('--root-sequence', type=str, help='fasta/genbank file of the sequence that is used as root for mutation calling.'
+                        ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
     parser.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
     ambiguous = parser.add_mutually_exclusive_group()
     ambiguous.add_argument('--keep-ambiguous', action="store_true",
@@ -212,6 +221,17 @@ def run(args):
         ref = compress_seq['reference']
     else:
         aln = args.alignment
+        ref = None
+        if args.root_sequence:
+            for fmt in ['fasta', 'genbank']:
+                try:
+                    ref = SeqIO.read(args.root_sequence, fmt)
+                    break
+                except:
+                    pass
+            if ref is None:
+                print(f"ERROR: could not read root sequence from {args.root_sequence}", file=sys.stderr)
+                return 1
 
     # Enforce treetime 0.7 or later
     from distutils.version import StrictVersion
@@ -230,7 +250,7 @@ def run(args):
     # we keep them.
     infer_ambiguous = args.infer_ambiguous and not args.keep_ambiguous
 
-    nuc_result = run_ancestral(T, aln, ref, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
+    nuc_result = run_ancestral(T, aln, root_sequence=str(ref.seq) if ref else None, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
                                marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='nuc')
     anc_seqs = nuc_result['mutations']
     anc_seqs['reference'] = {'nuc': nuc_result['root_seq']}
@@ -253,7 +273,9 @@ def run(args):
             print(f"Processing gene: {gene}")
             feat = features[gene]
             fname = args.translations.replace('%GENE', gene)
-            aa_result = run_ancestral(T, fname, ref, is_vcf=False, fill_overhangs=not args.keep_overhangs,
+            root_seq = str(feat.extract(ref).translate().seq) if ref else None
+
+            aa_result = run_ancestral(T, fname, root_sequence=root_seq, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
                                         marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='aa')
             for key, node in anc_seqs['nodes'].items():
                 if 'aa_muts' not in node: node['aa_muts'] = {}
