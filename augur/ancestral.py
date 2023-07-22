@@ -250,7 +250,7 @@ def run(args):
             return 1
         print("Read in {} features from reference sequence file".format(len(features)))
         for gene in args.genes:
-            print(f"Processing {gene=}")
+            print(f"Processing gene: {gene}")
             feat = features[gene]
             fname = args.translations.replace('%GENE', gene)
             aa_result = run_ancestral(T, fname, ref, is_vcf=False, fill_overhangs=not args.keep_overhangs,
@@ -259,7 +259,7 @@ def run(args):
                 if 'aa_muts' not in node: node['aa_muts'] = {}
                 node['aa_muts'][gene] = aa_result['mutations']['nodes'][key]['muts']
             anc_seqs['reference'][gene] = aa_result['root_seq']
-            anc_seqs['annotations'][gene] = {'seqid':args.reference_sequence,
+            anc_seqs['annotations'][gene] = {'seqid':args.annotation,
                                              'type':feat.type,
                                              'start': int(feat.location.start)+1,
                                              'end': int(feat.location.start) + 3*len(anc_seqs['reference'][gene]),
