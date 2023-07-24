@@ -2,6 +2,13 @@
 
 ## __NEXT__
 
+### Features
+
+* Adds a new sub-command augur curate titlecase. The titlecase command is intended to apply titlecase to string fields in a metadata record (e.g. BRAINE-LE-COMTE, FRANCE -> Braine-le-Comte, France). Previously, this was available in the transform-string-fields script within the monkeypox repo.
+ [#1197][] (@j23414 and @joverlee521)
+
+[#1197]: https://github.com/nextstrain/augur/pull/1197
+
 ### Bug fixes
 
 * export v2: Previously, when `strain` was not used as the metadata ID column, node attributes might have gone missing from the final Auspice JSON. This has been fixed. [#1260][], [#1262][] (@victorlin, @joverlee521)
