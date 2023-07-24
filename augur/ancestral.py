@@ -279,6 +279,9 @@ def run(args):
                 if 'aa_muts' not in node: node['aa_muts'] = {}
                 node['aa_muts'][gene] = aa_result['mutations']['nodes'][key]['muts']
             anc_seqs['reference'][gene] = aa_result['root_seq']
+            # FIXME: Note that this is calculating the end of the CDS as 3*length of translation
+            # this is equivalent to the annotation for single segment CDS, but not for cds
+            # with splicing and slippage. But auspice can't handle the latter at the moment.
             anc_seqs['annotations'][gene] = {'seqid':args.annotation,
                                              'type':feat.type,
                                              'start': int(feat.location.start)+1,
