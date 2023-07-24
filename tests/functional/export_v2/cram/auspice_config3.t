@@ -10,7 +10,7 @@ Setup
   >   --tree "$TESTDIR/../data/tree.nwk" \
   >   --node-data "$TESTDIR/../data/div_node-data.json" "$TESTDIR/../data/location_node-data.json" \
   >   --auspice-config "$TESTDIR/../data/auspice_config3.json" \
-  >   --output dataset2.json &>/dev/null
+  >   --output dataset.json &>/dev/null
   [2]
 
 # Skipping validation gives us the same results as `auspice_config2.json`
@@ -19,9 +19,9 @@ Setup
   >   --tree "$TESTDIR/../data/tree.nwk" \
   >   --node-data "$TESTDIR/../data/div_node-data.json" "$TESTDIR/../data/location_node-data.json" \
   >   --auspice-config "$TESTDIR/../data/auspice_config3.json" \
-  >   --output dataset3.json \
+  >   --output dataset.json \
   >   --skip-validation &>/dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/dataset2.json" dataset3.json \
+  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/dataset2.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']"
   {}

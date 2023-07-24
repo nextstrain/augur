@@ -8,9 +8,9 @@ Export with auspice config JSON which defines scale & legend settings
   >   --tree "$TESTDIR/../data/tree.nwk" \
   >   --node-data "$TESTDIR/../data/div_node-data.json" "$TESTDIR/../data/location_node-data.json" \
   >   --auspice-config "$TESTDIR/../data/auspice_config1.json" \
-  >   --output dataset1.json &>/dev/null
+  >   --output dataset.json &>/dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/dataset1.json" dataset1.json \
+  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/dataset1.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']"
   {}
 
@@ -21,8 +21,8 @@ Export with auspice config JSON which defines scale & legend settings
   >   --node-data "$TESTDIR/../data/div_node-data.json" \
   >   --node-data "$TESTDIR/../data/location_node-data.json" \
   >   --auspice-config "$TESTDIR/../data/auspice_config1.json" \
-  >   --output dataset1.json &>/dev/null
+  >   --output dataset.json &>/dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/dataset1.json" dataset1.json \
+  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/dataset1.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']"
   {}
