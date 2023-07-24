@@ -1,0 +1,211 @@
+{
+  "version": "v2",
+  "meta": {
+    "updated": "2023-07-24",
+    "maintainers": [
+      {
+        "name": "Nextstrain Team"
+      }
+    ],
+    "colorings": [
+      {
+        "key": "location",
+        "title": "Location",
+        "type": "categorical",
+        "scale": [
+          [
+            "beta",
+            "#bd0026"
+          ],
+          [
+            "gamma",
+            "#6a51a3"
+          ]
+        ],
+        "legend": [
+          {
+            "value": "alpha",
+            "display": "\u03b1"
+          },
+          {
+            "value": "beta"
+          }
+        ]
+      },
+      {
+        "key": "mutation_length",
+        "title": "Mutations per branch",
+        "type": "continuous",
+        "scale": [
+          [
+            1,
+            "#081d58"
+          ],
+          [
+            3,
+            "#1d91c0"
+          ],
+          [
+            5,
+            "#c7e9b4"
+          ]
+        ],
+        "legend": [
+          {
+            "value": 1,
+            "display": "0-2",
+            "bounds": [
+              -1,
+              2
+            ]
+          },
+          {
+            "value": 3,
+            "display": "3-5",
+            "bounds": [
+              2,
+              5
+            ]
+          },
+          {
+            "value": 5,
+            "display": ">5",
+            "bounds": [
+              5,
+              10
+            ]
+          }
+        ]
+      }
+    ],
+    "filters": [
+      "location"
+    ],
+    "panels": [
+      "tree"
+    ]
+  },
+  "tree": {
+    "name": "ROOT",
+    "node_attrs": {
+      "div": 0,
+      "mutation_length": {
+        "value": 0
+      }
+    },
+    "branch_attrs": {},
+    "children": [
+      {
+        "name": "accessionA",
+        "node_attrs": {
+          "div": 1,
+          "accession": "accessionA",
+          "location": {
+            "value": "delta"
+          },
+          "mutation_length": {
+            "value": 1
+          }
+        },
+        "branch_attrs": {}
+      },
+      {
+        "name": "internalBC",
+        "node_attrs": {
+          "div": 2,
+          "mutation_length": {
+            "value": 2
+          }
+        },
+        "branch_attrs": {},
+        "children": [
+          {
+            "name": "accessionB",
+            "node_attrs": {
+              "div": 3,
+              "accession": "accessionB",
+              "location": {
+                "value": "gamma"
+              },
+              "mutation_length": {
+                "value": 1
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "accessionC",
+            "node_attrs": {
+              "div": 3,
+              "accession": "accessionC",
+              "location": {
+                "value": "gamma"
+              },
+              "mutation_length": {
+                "value": 1
+              }
+            },
+            "branch_attrs": {}
+          }
+        ]
+      },
+      {
+        "name": "internalDEF",
+        "node_attrs": {
+          "div": 5,
+          "location": {
+            "value": "alpha"
+          },
+          "mutation_length": {
+            "value": 5
+          }
+        },
+        "branch_attrs": {},
+        "children": [
+          {
+            "name": "accessionD",
+            "node_attrs": {
+              "div": 8,
+              "accession": "accessionD",
+              "location": {
+                "value": "alpha"
+              },
+              "mutation_length": {
+                "value": 3
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "accessionE",
+            "node_attrs": {
+              "div": 9,
+              "accession": "accessionE",
+              "location": {
+                "value": "alpha"
+              },
+              "mutation_length": {
+                "value": 4
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "accessionF",
+            "node_attrs": {
+              "div": 6,
+              "accession": "accessionF",
+              "location": {
+                "value": "beta"
+              },
+              "mutation_length": {
+                "value": 1
+              }
+            },
+            "branch_attrs": {}
+          }
+        ]
+      }
+    ]
+  }
+}

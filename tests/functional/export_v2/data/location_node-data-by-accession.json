@@ -1,0 +1,25 @@
+{
+  "nodes": {
+    "accessionA": {
+      "location": "delta"
+    },
+    "accessionB": {
+      "location": "gamma"
+    },
+    "accessionC": {
+      "location": "gamma"
+    },
+    "internalDEF": {
+      "location": "alpha"
+    },
+    "accessionD": {
+      "location": "alpha"
+    },
+    "accessionE": {
+      "location": "alpha"
+    },
+    "accessionF": {
+      "location": "beta"
+    }
+  }
+} 
