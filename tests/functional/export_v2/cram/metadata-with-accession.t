@@ -17,7 +17,6 @@ Run export with metadata that contains "accession".
   {}
 
 Run export with metadata that contains "accession", and use "accession" as the ID column.
-Currently, this results in losing the accession from the node attributes.
 
   $ ${AUGUR} export v2 \
   >  --tree "$TESTDIR/../data/tree-by-accession.nwk" \
@@ -30,4 +29,4 @@ Currently, this results in losing the accession from the node attributes.
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-accession-by-accession.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
-  {'dictionary_item_removed': [root['tree']['children'][0]['node_attrs']['accession'], root['tree']['children'][1]['children'][0]['node_attrs']['accession'], root['tree']['children'][1]['children'][1]['node_attrs']['accession'], root['tree']['children'][2]['children'][0]['node_attrs']['accession'], root['tree']['children'][2]['children'][1]['node_attrs']['accession'], root['tree']['children'][2]['children'][2]['node_attrs']['accession']]}
+  {}

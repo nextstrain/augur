@@ -1016,11 +1016,11 @@ def parse_node_data_and_metadata(T, node_data, metadata):
     node_attrs = {clade.name: {} for clade in T.root.find_clades()}
 
     # first pass: metadata
-    for node in metadata.values():
-        if node["strain"] in node_attrs: # i.e. this node name is in the tree
+    for metadata_id, node in metadata.items():
+        if metadata_id in node_attrs: # i.e. this node name is in the tree
             for key, value in node.items():
                 corrected_key = update_deprecated_names(key)
-                node_attrs[node["strain"]][corrected_key] = value
+                node_attrs[metadata_id][corrected_key] = value
                 metadata_names.add(corrected_key)
 
     # second pass: node data JSONs (overwrites keys of same name found in metadata)
@@ -1074,13 +1074,15 @@ def run(args):
 
     if args.metadata is not None:
         try:
-            metadata_file = read_metadata(
+            metadata_df = read_metadata(
                 args.metadata,
                 delimiters=args.metadata_delimiters,
-                id_columns=args.metadata_id_columns).to_dict(orient="index")
-            for strain in metadata_file.keys():
-                if "strain" not in metadata_file[strain]:
-                    metadata_file[strain]["strain"] = strain
+                id_columns=args.metadata_id_columns)
+
+            # Add the index as a column.
+            metadata_df[metadata_df.index.name] = metadata_df.index
+
+            metadata_file = metadata_df.to_dict(orient="index")
         except FileNotFoundError:
             print(f"ERROR: meta data file ({args.metadata}) does not exist", file=sys.stderr)
             sys.exit(2)
