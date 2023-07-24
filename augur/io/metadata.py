@@ -86,24 +86,22 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAU
     if chunk_size:
         kwargs["chunksize"] = chunk_size
 
-    # Inspect the first chunk of the metadata, to find any valid index columns.
-    metadata = pd.read_csv(
+    # Inspect the first row of the metadata, to find any valid index columns.
+    one_row = pd.read_csv(
         metadata_file,
-        iterator=True,
+        nrows=1,
         **kwargs,
     )
-    chunk = metadata.read(nrows=1)
-    metadata.close()
 
     id_columns_present = [
         id_column
         for id_column in id_columns
-        if id_column in chunk.columns
+        if id_column in one_row.columns
     ]
 
     # If we couldn't find a valid index column in the metadata, alert the user.
     if not id_columns_present:
-        raise Exception(f"None of the possible id columns ({id_columns!r}) were found in the metadata's columns {tuple(chunk.columns)!r}")
+        raise Exception(f"None of the possible id columns ({id_columns!r}) were found in the metadata's columns {tuple(one_row.columns)!r}")
     else:
         index_col = id_columns_present[0]
 
