@@ -2,6 +2,12 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* export v2: Previously, when `strain` was not used as the metadata ID column, node attributes might have gone missing from the final Auspice JSON. This has been fixed. [#1260][], [#1262][] (@victorlin, @joverlee521)
+
+[#1260]: https://github.com/nextstrain/augur/issues/1260
+[#1262]: https://github.com/nextstrain/augur/issues/1262
 
 ## 22.1.0 (10 July 2023)
 
