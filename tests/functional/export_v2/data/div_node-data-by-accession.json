@@ -1,0 +1,31 @@
+{
+  "nodes": {
+    "ROOT": {
+      "mutation_length": 0
+    },
+    "accessionA": {
+      "mutation_length": 1
+    },
+    "internalBC": {
+      "mutation_length": 2
+    },
+    "accessionB": {
+      "mutation_length": 1
+    },
+    "accessionC": {
+      "mutation_length": 1
+    },
+    "internalDEF": {
+      "mutation_length": 5
+    },
+    "accessionD": {
+      "mutation_length": 3
+    },
+    "accessionE": {
+      "mutation_length": 4
+    },
+    "accessionF": {
+      "mutation_length": 1
+    }
+  }
+} 
