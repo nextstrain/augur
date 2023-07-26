@@ -167,9 +167,8 @@ def register_parser(parent_subparsers):
     parser.add_argument('--annotation',
                         help='GenBank or GFF file containing the annotation')
     parser.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
-    parser.add_argument('--translations', type=str, help="reconstruct translated alignments for each CDS/Gene. "
-                           "Currently only supported for fasta-input, specify the file name "
-                            "like so: 'my_alignment_%%GENE.fasta', where '%%GENE' will be replaced by the name of the gene")
+    parser.add_argument('--translations', type=str, nargs='+', help="translated alignments for each CDS/Gene. "
+                           "Currently only supported for fasta-input")
     ###
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save mutations and ancestral sequences to')
     parser.add_argument('--output-sequences', type=str, help='name of FASTA file to save ancestral sequences to (FASTA alignments only)')
@@ -267,14 +266,19 @@ def run(args):
             print("ERROR: could not read features of reference sequence file")
             return 1
         print("Read in {} features from reference sequence file".format(len(features)))
-        for gene in args.genes:
+        for gene, fname in zip(args.genes, args.translations):
             print(f"Processing gene: {gene}")
             feat = features[gene]
-            fname = args.translations.replace('%GENE', gene)
             root_seq = str(feat.extract(ref).translate().seq) if ref else None
 
             aa_result = run_ancestral(T, fname, root_sequence=root_seq, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
                                         marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='aa')
+            if aa_result['tt'].data.full_length*3 != len(feat):
+                print(f"ERROR: length of translated alignment for {gene} does not match length of reference feature."
+                       " Please make sure the order of files in --translations matches the order of genes in --genes"
+                       " and that the annotation matches the translations.")
+                return 1
+
             for key, node in anc_seqs['nodes'].items():
                 if 'aa_muts' not in node: node['aa_muts'] = {}
                 node['aa_muts'][gene] = aa_result['mutations']['nodes'][key]['muts']
