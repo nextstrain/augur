@@ -165,7 +165,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     # FIXME: these three arguments should either be all there or none
     parser.add_argument('--annotation',
-                        help='GenBank or GFF file containing the annotation')
+                        help='GenBank, GFF, nextclade annotation json file containing the annotation')
     parser.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
     parser.add_argument('--translations', type=str, nargs='+', help="translated alignments for each CDS/Gene. "
                            "Currently only supported for fasta-input")
