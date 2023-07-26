@@ -4,6 +4,7 @@ Export version 1 JSON schema (separate meta and tree JSONs) for visualization wi
 
 import os, sys
 import re
+from textwrap import dedent
 import time
 import numpy as np
 from Bio import Phylo
@@ -345,6 +346,10 @@ def register_parser(parent_subparsers):
 
 
 def run(args):
+    print(dedent("""\
+        DEPRECATION WARNING: augur export v1 is no longer maintained and will be removed in a future release.
+        Read more on how to migrate to export v2: <https://docs.nextstrain.org/projects/augur/en/stable/releases/migrating-v5-v6.html>"""),file=sys.stderr)
+
     T = Phylo.read(args.tree, 'newick')
     node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
     nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
