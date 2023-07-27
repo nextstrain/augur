@@ -3,7 +3,8 @@
     "nuc": {
       "end": 10769,
       "start": 1,
-      "strand": "+"
+      "strand": "+",
+      "type": "source"
     }
   },
   "generated_by": {

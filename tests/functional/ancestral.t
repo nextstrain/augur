@@ -21,9 +21,9 @@ Check that the reference length was correctly exported as the nuc annotation
       "nuc": {
         "end": 10769,
         "start": 1,
-        "strand": "+"
+        "strand": "+",
+        "type": "source"
       }
-    },
 
 Infer ancestral sequences for the given tree and alignment, explicitly requesting that ambiguous bases are inferred.
 There should not be N bases in the inferred output sequences.
