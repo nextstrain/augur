@@ -12,7 +12,7 @@ from augur.io.json import dump_ndjson, load_ndjson
 from augur.io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
 from augur.io.sequences import write_records_to_fasta
 from augur.types import DataErrorMethod
-from . import format_dates, normalize_strings, passthru
+from . import format_dates, normalize_strings, passthru, titlecase
 
 
 SUBCOMMAND_ATTRIBUTE = '_curate_subcommand'
@@ -20,6 +20,7 @@ SUBCOMMANDS = [
     passthru,
     normalize_strings,
     format_dates,
+    titlecase,
 ]
 
 
