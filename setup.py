@@ -87,6 +87,7 @@ setuptools.setup(
             "sphinx-autodoc-typehints >=1.21.4",
             "types-jsonschema >=3.0.0, ==3.*",
             "types-setuptools",
+            "typing_extensions; python_version <'3.8'",
             "wheel >=0.32.3",
             "ipdb >=0.10.1"
         ]
