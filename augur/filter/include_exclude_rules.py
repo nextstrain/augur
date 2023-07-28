@@ -718,7 +718,7 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
                     UndefinedVariableError = pd.core.computation.ops.UndefinedVariableError  # type: ignore
                 if isinstance(e, UndefinedVariableError):
                     raise AugurError(f"Query contains a column that does not exist in metadata.") from e
-                raise AugurError(f"Error when applying query. Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.") from e
+                raise AugurError(f"Internal Pandas error when applying query:\n\t{e}\nEnsure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.") from e
             else:
                 raise
 

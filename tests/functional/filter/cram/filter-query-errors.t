@@ -12,22 +12,35 @@ Using a pandas query with a nonexistent column results in a specific error.
   [2]
 
 
-Using pandas queries with bad syntax results in a generic errors.
+Using pandas queries with bad syntax results in meaningful errors.
 
-This raises a ValueError internally (https://github.com/nextstrain/augur/issues/940):
+Some error messages from Pandas may be useful, so they are exposed:
+
+  $ ${AUGUR} filter \
+  >  --metadata "$TESTDIR/../data/metadata.tsv" \
+  >  --query "region >= 0.50" \
+  >  --output-strains filtered_strains.txt > /dev/null
+  ERROR: Internal Pandas error when applying query:
+  	'>=' not supported between instances of 'str' and 'float'
+  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
+  [2]
+
+However, other Pandas errors are not so helpful, so a link is provided for users to learn more about query syntax.
 
   $ ${AUGUR} filter \
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
   >  --query "invalid = 'value'" \
   >  --output-strains filtered_strains.txt > /dev/null
-  ERROR: Error when applying query. Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
+  ERROR: Internal Pandas error when applying query:
+  	cannot assign without a target object
+  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
   [2]
-
-This raises a SyntaxError internally (https://github.com/nextstrain/augur/issues/941):
 
   $ ${AUGUR} filter \
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
   >  --query "some bad syntax" \
   >  --output-strains filtered_strains.txt > /dev/null
-  ERROR: Error when applying query. Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
+  ERROR: Internal Pandas error when applying query:
+  	invalid syntax (<unknown>, line 1)
+  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
   [2]
