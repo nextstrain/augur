@@ -7,10 +7,12 @@
 * export v2: Previously, when `strain` was not used as the metadata ID column, node attributes might have gone missing from the final Auspice JSON. This has been fixed. [#1260][], [#1262][] (@victorlin, @joverlee521)
 * export v1: Added a deprecation warning for this command. [#1265][] (@victorlin)
 * export v1: The recently introduced flag `--metadata-id-columns` did not work properly due to the same `export v2` bug that was fixed in this release. Instead of fixing it in `export v1`, drop the broken feature since this command is no longer being maintained. [#1265][] (@victorlin)
+* filter: Expose internal Pandas errors from `--query` which may be useful to users. [#1267][] (@victorlin)
 
 [#1260]: https://github.com/nextstrain/augur/issues/1260
 [#1262]: https://github.com/nextstrain/augur/issues/1262
 [#1265]: https://github.com/nextstrain/augur/pull/1265
+[#1267]: https://github.com/nextstrain/augur/pull/1267
 
 ## 22.1.0 (10 July 2023)
 
