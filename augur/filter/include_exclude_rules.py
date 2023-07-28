@@ -19,6 +19,12 @@ try:
 except ImportError:
     from typing_extensions import Literal  # type: ignore
 
+try:
+    # pandas ≥1.5.0 only
+    PandasUndefinedVariableError = pd.errors.UndefinedVariableError  # type: ignore
+except AttributeError:
+    PandasUndefinedVariableError = pd.core.computation.ops.UndefinedVariableError  # type: ignore
+
 
 # The strains to keep as a result of applying a filter function.
 FilterFunctionReturn = Set[str]
@@ -721,12 +727,7 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
             )
         except Exception as e:
             if filter_function is filter_by_query:
-                try:
-                    # pandas ≥1.5.0 only
-                    UndefinedVariableError = pd.errors.UndefinedVariableError  # type: ignore
-                except AttributeError:
-                    UndefinedVariableError = pd.core.computation.ops.UndefinedVariableError  # type: ignore
-                if isinstance(e, UndefinedVariableError):
+                if isinstance(e, PandasUndefinedVariableError):
                     raise AugurError(f"Query contains a column that does not exist in metadata.") from e
                 raise AugurError(f"Internal Pandas error when applying query:\n\t{e}\nEnsure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.") from e
             else:
@@ -827,7 +828,7 @@ def extract_variables(pandas_query: str):
 
             # Exit the loop when evaluation is successful.
             break
-        except pd.errors.UndefinedVariableError as e:
+        except PandasUndefinedVariableError as e:
             # This relies on the format defined here: https://github.com/pandas-dev/pandas/blob/965ceca9fd796940050d6fc817707bba1c4f9bff/pandas/errors/__init__.py#L401
             name = re.findall("name '(.+?)' is not defined", str(e))[0]
 
