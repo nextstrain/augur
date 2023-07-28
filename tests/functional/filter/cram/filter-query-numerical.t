@@ -12,15 +12,13 @@ Create metadata file for testing.
   > SEQ_4	
   > ~~
 
-Ideally, the 'coverage' column should be query-able by numerical comparisons.
-This does not currently work since the empty string is causing that column to be
-parsed as a non-numerical type.
+The 'coverage' column should be query-able by numerical comparisons.
 
   $ ${AUGUR} filter \
   >  --metadata metadata.tsv \
   >  --query "coverage >= 0.95" \
   >  --output-strains filtered_strains.txt > /dev/null
-  ERROR: Internal Pandas error when applying query:
-  	'>=' not supported between instances of 'str' and 'float'
-  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
-  [2]
+
+  $ sort filtered_strains.txt
+  SEQ_2
+  SEQ_3

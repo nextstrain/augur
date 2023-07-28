@@ -178,6 +178,10 @@ def filter_by_query(metadata, query) -> FilterFunctionReturn:
     set()
 
     """
+    # Try converting all columns to numeric.
+    for column in metadata.columns:
+        metadata[column] = pd.to_numeric(metadata[column], errors='ignore')
+
     return set(metadata.query(query).index.values)
 
 
