@@ -4,6 +4,7 @@ Export version 1 JSON schema (separate meta and tree JSONs) for visualization wi
 
 import os, sys
 import re
+from textwrap import dedent
 import time
 import numpy as np
 from Bio import Phylo
@@ -11,7 +12,7 @@ from argparse import SUPPRESS
 from collections import defaultdict
 from .errors import AugurError
 from .argparse_ import ExtendAction
-from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
+from .io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_metadata
 from .utils import read_node_data, write_json, read_config, read_lat_longs, read_colors
 
 def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
@@ -315,8 +316,6 @@ def add_core_args(parser):
     core.add_argument('--metadata', required=True, metavar="FILE", help="sequence metadata")
     core.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
                       help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
-    core.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
-                                 help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     core.add_argument('--node-data', required=True, nargs='+', action=ExtendAction, help="JSON files with meta data for each node")
     core.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json).")
     core.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json).")
@@ -345,6 +344,10 @@ def register_parser(parent_subparsers):
 
 
 def run(args):
+    print(dedent("""\
+        DEPRECATION WARNING: augur export v1 is no longer maintained and will be removed in a future release.
+        Read more on how to migrate to export v2: <https://docs.nextstrain.org/projects/augur/en/stable/releases/migrating-v5-v6.html>"""),file=sys.stderr)
+
     T = Phylo.read(args.tree, 'newick')
     node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
     nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
@@ -372,8 +375,7 @@ def run(args):
     try:
         meta_tsv = read_metadata(
             args.metadata,
-            delimiters=args.metadata_delimiters,
-            id_columns=args.metadata_id_columns)
+            delimiters=args.metadata_delimiters)
     except InvalidDelimiter:
         raise AugurError(
             f"Could not determine the delimiter of {args.metadata!r}. "

@@ -164,6 +164,8 @@ Export JSON files as v1 auspice outputs.
   >  --output-tree "$TMP/out/v1_zika_tree.json" \
   >  --output-meta "$TMP/out/v1_zika_meta.json" \
   >  --output-sequence "$TMP/out/v1_zika_seq.json" > /dev/null
+  DEPRECATION WARNING: augur export v1 is no longer maintained and will be removed in a future release.
+  Read more on how to migrate to export v2: <https://docs.nextstrain.org/projects/augur/en/stable/releases/migrating-v5-v6.html>
 
   $ ${AUGUR} validate export-v1 "$TMP/out/v1_zika_meta.json" "$TMP/out/v1_zika_tree.json" > /dev/null
 
