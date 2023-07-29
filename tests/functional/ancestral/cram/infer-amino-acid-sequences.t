@@ -9,8 +9,7 @@ Infer ancestral nucleotide and amino acid sequences.
   >  --alignment $TESTDIR/../data/aligned.fasta \
   >  --annotation $TESTDIR/../data/zika_outgroup.gb \
   >  --genes ENV PRO \
-  >  --translations $TESTDIR/../data/aa_sequences_ENV.fasta \
-  >                 $TESTDIR/../data/aa_sequences_PRO.fasta \
+  >  --translations $TESTDIR/../data/aa_sequences_%GENE.fasta \
   >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations.json" \
   >  --output-sequences "$CRAMTMP/$TESTFILE/ancestral_sequences.fasta" > /dev/null
 
