@@ -13,6 +13,18 @@ from augur.io.vcf import is_vcf as filename_is_vcf
 from augur.utils import read_strains
 from . import constants
 
+try:
+    # python ≥3.8 only
+    from typing import Literal  # type: ignore
+except ImportError:
+    from typing_extensions import Literal  # type: ignore
+
+try:
+    # pandas ≥1.5.0 only
+    PandasUndefinedVariableError = pd.errors.UndefinedVariableError  # type: ignore
+except AttributeError:
+    PandasUndefinedVariableError = pd.core.computation.ops.UndefinedVariableError  # type: ignore
+
 
 # The strains to keep as a result of applying a filter function.
 FilterFunctionReturn = Set[str]
@@ -178,6 +190,10 @@ def filter_by_query(metadata, query) -> FilterFunctionReturn:
     set()
 
     """
+    # Try converting all queried columns to numeric.
+    for column in extract_variables(query).intersection(metadata.columns):
+        metadata[column] = pd.to_numeric(metadata[column], errors='ignore')
+
     return set(metadata.query(query).index.values)
 
 
@@ -711,12 +727,7 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
             )
         except Exception as e:
             if filter_function is filter_by_query:
-                try:
-                    # pandas ≥1.5.0 only
-                    UndefinedVariableError = pd.errors.UndefinedVariableError  # type: ignore
-                except AttributeError:
-                    UndefinedVariableError = pd.core.computation.ops.UndefinedVariableError  # type: ignore
-                if isinstance(e, UndefinedVariableError):
+                if isinstance(e, PandasUndefinedVariableError):
                     raise AugurError(f"Query contains a column that does not exist in metadata.") from e
                 raise AugurError(f"Internal Pandas error when applying query:\n\t{e}\nEnsure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.") from e
             else:
@@ -799,3 +810,29 @@ def _filter_kwargs_to_str(kwargs: FilterFunctionKwargs):
         kwarg_list.append((key, value))
 
     return json.dumps(kwarg_list)
+
+
+# From https://stackoverflow.com/a/76536356
+def extract_variables(pandas_query: str):
+    """Extract variable names used in a pandas query string."""
+
+    # Track variables in a dictionary to be used as a dictionary of globals.
+    variables: Dict[str, Literal[None]] = {}
+
+    while True:
+        try:
+            # Try creating a Expr object with the query string and dictionary of globals.
+            # This will raise an error as long as the dictionary of globals is incomplete.
+            env = pd.core.computation.scope.ensure_scope(level=0, global_dict=variables)
+            pd.core.computation.expr.Expr(pandas_query, env=env)
+
+            # Exit the loop when evaluation is successful.
+            break
+        except PandasUndefinedVariableError as e:
+            # This relies on the format defined here: https://github.com/pandas-dev/pandas/blob/965ceca9fd796940050d6fc817707bba1c4f9bff/pandas/errors/__init__.py#L401
+            name = re.findall("name '(.+?)' is not defined", str(e))[0]
+
+            # Add the name to the globals dictionary with a dummy value.
+            variables[name] = None
+
+    return set(variables.keys())
