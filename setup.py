@@ -63,6 +63,7 @@ setuptools.setup(
         "phylo-treetime >=0.10.0, ==0.10.*",
         "pyfastx >=0.8.4, ==0.8.*",
         "scipy ==1.*",
+        "typing_extensions; python_version <'3.8'",
         "xopen[zstd] >=1.7.0, ==1.*"
     ],
     extras_require = {
@@ -87,7 +88,6 @@ setuptools.setup(
             "sphinx-autodoc-typehints >=1.21.4",
             "types-jsonschema >=3.0.0, ==3.*",
             "types-setuptools",
-            "typing_extensions; python_version <'3.8'",
             "wheel >=0.32.3",
             "ipdb >=0.10.1"
         ]
