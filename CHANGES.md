@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 22.2.0 (31 July 2023)
+
 ### Features
 
 * Adds a new sub-command augur curate titlecase. The titlecase command is intended to apply titlecase to string fields in a metadata record (e.g. BRAINE-LE-COMTE, FRANCE -> Braine-le-Comte, France). Previously, this was available in the transform-string-fields script within the monkeypox repo.
