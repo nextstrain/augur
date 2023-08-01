@@ -227,7 +227,7 @@ def parse_nextclade_annotation_json(fname):
             for segment in cds['segments']:
                 strands.add(segment['strand'])
                 location.append(FeatureLocation(segment['range']['begin'], segment['range']['end']))
-                if segment['landmark']['id'] not in landmarks:
+                if segment['landmark'] and segment['landmark']['id'] not in landmarks:
                     landmarks[segment['landmark']['id']] = segment['landmark']
             if len(location) > 1:
                 feat.location = CompoundLocation(location)
@@ -244,7 +244,7 @@ def parse_nextclade_annotation_json(fname):
 
     if len(landmarks)>1:
         ValueError("More than one landmark in nextclade annotation: {}".format(landmarks.keys()))
-    else:
+    elif len(landmarks)==1:
         lm_id, lm = landmarks.popitem()
         features['nuc'] = SeqFeature(id=lm['id'], location=FeatureLocation(lm['range']['begin'], lm['range']['end']), type='source')
 
