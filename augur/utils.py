@@ -148,8 +148,8 @@ class AugurJSONEncoder(json.JSONEncoder):
 
 
 def load_features(reference, feature_names=None):
-    #read in appropriately whether GFF or Genbank
-    #checks explicitly for GFF otherwise assumes Genbank
+    #read in appropriately whether GFF, nextclade-annotation-json, or Genbank
+    #checks explicitly for GFF or json otherwise assumes Genbank
     if not os.path.isfile(reference):
         print("ERROR: reference sequence not found. looking for", reference)
         return None
@@ -193,7 +193,8 @@ def load_features(reference, feature_names=None):
                 for fe in feature_names:
                     if fe not in features:
                         print("Couldn't find gene {} in GFF or GenBank file".format(fe))
-
+    elif 'json' in reference.lower():
+        features = parse_nextclade_annotation_json(reference)
     else:
         from Bio import SeqIO
         for feat in SeqIO.read(reference, 'genbank').features:
@@ -210,6 +211,45 @@ def load_features(reference, feature_names=None):
                 features['nuc'] = feat
 
     return features
+
+def parse_nextclade_annotation_json(fname):
+    from Bio.SeqFeature import SeqFeature, FeatureLocation, CompoundLocation
+    with open(fname) as fh:
+        nextclade = json.load(fh)
+
+    landmarks = {}
+    features = {}
+    for gene in nextclade['genes'].values():
+        for cds in gene['cdses']:
+            feat = SeqFeature(id=cds['id'], type='CDS')
+            strands = set()
+            location = []
+            for segment in cds['segments']:
+                strands.add(segment['strand'])
+                location.append(FeatureLocation(segment['range']['begin'], segment['range']['end']))
+                if segment['landmark'] and segment['landmark']['id'] not in landmarks:
+                    landmarks[segment['landmark']['id']] = segment['landmark']
+            if len(location) > 1:
+                feat.location = CompoundLocation(location)
+            else:
+                feat.location = location[0]
+
+            if len(strands) > 1:
+                ValueError("CDS {} has multiple strands: {}".format(cds['id'], strands))
+            else:
+                feat.strand = {'+':1, '-':-1, '0':0}.get(strands.pop(), None)
+            feat.name = cds['name']
+            feat.qualifiers = cds['attributes']
+            features[cds['name']] = feat
+
+    if len(landmarks)>1:
+        ValueError("More than one landmark in nextclade annotation: {}".format(landmarks.keys()))
+    elif len(landmarks)==1:
+        lm_id, lm = landmarks.popitem()
+        features['nuc'] = SeqFeature(id=lm['id'], location=FeatureLocation(lm['range']['begin'], lm['range']['end']), type='source')
+
+    return features
+
 
 def read_config(fname):
     if not (fname and os.path.isfile(fname)):
