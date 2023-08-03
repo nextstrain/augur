@@ -173,7 +173,10 @@ def register_parser(parent_subparsers):
                            "by the gene name.")
     ###
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save mutations and ancestral sequences to')
-    parser.add_argument('--output-sequences', type=str, help='name of FASTA file to save ancestral sequences to (FASTA alignments only)')
+    parser.add_argument('--output-sequences', type=str, help='name of FASTA file to save ancestral nucleotide sequences to (FASTA alignments only)')
+    parser.add_argument('--output-translations', type=str, help="name of the FASTA file(s) to save ancestral amino acid sequences to. "
+                        "Specify the file name via a template like 'ancestral_aa_sequences_%GENE.fasta' where %GENE will be replaced by"
+                        "the gene name.")
     parser.add_argument('--inference', default='joint', choices=["joint", "marginal"],
                                     help="calculate joint or marginal maximum likelihood ancestral sequence states")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to (only used if a VCF is provided as the alignment)')
