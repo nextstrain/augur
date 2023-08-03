@@ -297,6 +297,12 @@ def run(args):
                                              'end': int(feat.location.start) + 3*len(anc_seqs['reference'][gene]),
                                              'strand': {+1:'+', -1:'-', 0:'?', None:None}[feat.location.strand]}
 
+            # Save ancestral amino acid sequences to FASTA.
+            if args.output_translations:
+                with open(args.output_translations.replace("%GENE", gene), "w", encoding="utf-8") as oh:
+                    for node in aa_result["tt"].tree.find_clades():
+                        oh.write(f">{node.name}\n{aa_result['tt'].sequence(node, as_string=True, reconstructed=True)}\n")
+
     out_name = get_json_name(args, '.'.join(args.alignment.split('.')[:-1]) + '_mutations.json')
     write_json(anc_seqs, out_name)
     print("ancestral mutations written to", out_name, file=sys.stdout)
