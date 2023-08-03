@@ -309,6 +309,9 @@ def run(args):
 
     if args.output_sequences:
         if args.output_vcf:
+            # TODO: This should be an error and we should check for this
+            # unsupported combination of arguments at the beginning of the
+            # script to avoid wasting time for users.
             print("WARNING: augur only supports sequence output for FASTA alignments and not for VCFs.", file=sys.stderr)
         else:
             records = [
