@@ -11,7 +11,8 @@ Infer ancestral nucleotide and amino acid sequences.
   >  --genes ENV PRO \
   >  --translations $TESTDIR/../data/aa_sequences_%GENE.fasta \
   >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations.json" \
-  >  --output-sequences "$CRAMTMP/$TESTFILE/ancestral_sequences.fasta" > /dev/null
+  >  --output-sequences "$CRAMTMP/$TESTFILE/ancestral_sequences.fasta" \
+  >  --output-translations "$CRAMTMP/$TESTFILE/ancestral_aa_sequences_%GENE.fasta" > /dev/null
 
 Check that the reference length was correctly exported as the nuc annotation
 
@@ -19,3 +20,8 @@ Check that the reference length was correctly exported as the nuc annotation
       "ENV": {
       "PRO": {
       "nuc": {
+
+Check that internal nodes have ancestral amino acid sequences.
+
+  $ grep "NODE" "$CRAMTMP/$TESTFILE/ancestral_aa_sequences_ENV.fasta" | wc -l
+  \s*0 .* (re)
