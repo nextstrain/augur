@@ -24,4 +24,4 @@ Check that the reference length was correctly exported as the nuc annotation
 Check that internal nodes have ancestral amino acid sequences.
 
   $ grep "NODE" "$CRAMTMP/$TESTFILE/ancestral_aa_sequences_ENV.fasta" | wc -l
-  \s*0 .* (re)
+  \s*8 (re)
