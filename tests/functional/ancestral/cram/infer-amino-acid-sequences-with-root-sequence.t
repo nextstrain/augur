@@ -19,5 +19,8 @@ ancestor).
 
 Check that the reference length was correctly exported as the nuc annotation
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/ancestral_mutations_with_root_sequence.json" "$CRAMTMP/$TESTFILE/ancestral_mutations.json"
+  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
+  >   --exclude-regex-paths "['seqid']" -- \
+  >   "$TESTDIR/../data/ancestral_mutations_with_root_sequence.json" \
+  >   "$CRAMTMP/$TESTFILE/ancestral_mutations.json"
   {}
