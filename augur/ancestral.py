@@ -12,7 +12,7 @@ The node sequences and mutations are output to a node-data JSON file.
 
     The mutation positions in the node-data JSON are one-based.
 """
-
+from augur.errors import AugurError
 import os, shutil, time, json, sys
 import numpy as np
 from Bio import Phylo, SeqIO
@@ -163,38 +163,67 @@ def run_ancestral(T, aln, root_sequence=None, is_vcf=False, full_sequences=False
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("ancestral", help=__doc__)
-    parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
-    parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
-    # FIXME: these three arguments should either be all there or none
-    parser.add_argument('--annotation',
-                        help='GenBank or GFF file containing the annotation')
-    parser.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
-    parser.add_argument('--translations', type=str, help="translated alignments for each CDS/Gene. "
-                           "Currently only supported for fasta-input. Specify the file name via a "
-                           "template like 'my_alignment_%%GENE.fasta' where %%GENE will be replaced "
-                           "by the gene name.")
-    ###
-    parser.add_argument('--output-node-data', type=str, help='name of JSON file to save mutations and ancestral sequences to')
-    parser.add_argument('--output-sequences', type=str, help='name of FASTA file to save ancestral nucleotide sequences to (FASTA alignments only)')
-    parser.add_argument('--output-translations', type=str, help="name of the FASTA file(s) to save ancestral amino acid sequences to. "
-                        "Specify the file name via a template like 'ancestral_aa_sequences_%GENE.fasta' where %GENE will be replaced by"
-                        "the gene name.")
-    parser.add_argument('--inference', default='joint', choices=["joint", "marginal"],
-                                    help="calculate joint or marginal maximum likelihood ancestral sequence states")
-    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to (only used if a VCF is provided as the alignment)')
-    parser.add_argument('--root-sequence', type=str, help='fasta/genbank file of the sequence that is used as root for mutation calling.'
+
+    input_group = parser.add_argument_group(
+        "inputs",
+        "Tree and sequences to use for ancestral reconstruction"
+    )
+    input_group.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
+    input_group.add_argument('--alignment', '-a', help="alignment in FASTA or VCF format")
+    input_group.add_argument('--vcf-reference', type=str, help='FASTA file of the sequence the VCF was mapped to (only used if a VCF is provided as the alignment)')
+    input_group.add_argument('--root-sequence', type=str, help='FASTA/genbank file of the sequence that is used as root for mutation calling.'
                         ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
-    parser.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
-    ambiguous = parser.add_mutually_exclusive_group()
+
+    global_options_group = parser.add_argument_group(
+        "global options",
+        "Options to configure reconstruction of both nucleotide and amino acid sequences"
+    )
+    global_options_group.add_argument('--inference', default='joint', choices=["joint", "marginal"],
+                                    help="calculate joint or marginal maximum likelihood ancestral sequence states")
+
+    nucleotide_options_group = parser.add_argument_group(
+        "nucleotide options",
+        "Options to configure reconstruction of ancestral nucleotide sequences"
+    )
+    ambiguous = nucleotide_options_group.add_mutually_exclusive_group()
     ambiguous.add_argument('--keep-ambiguous', action="store_true",
                                 help='do not infer nucleotides at ambiguous (N) sites on tip sequences (leave as N).')
     ambiguous.add_argument('--infer-ambiguous', action="store_true", default=True,
                                 help='infer nucleotides at ambiguous (N,W,R,..) sites on tip sequences and replace with most likely state.')
-    parser.add_argument('--keep-overhangs', action="store_true", default=False,
+    nucleotide_options_group.add_argument('--keep-overhangs', action="store_true", default=False,
                                 help='do not infer nucleotides for gaps (-) on either side of the alignment')
+
+    amino_acid_options_group = parser.add_argument_group(
+        "amino acid options",
+        "Options to configure reconstruction of ancestral amino acid sequences. All arguments are required for ancestral amino acid sequence reconstruction."
+    )
+    amino_acid_options_group.add_argument('--annotation',
+                        help='GenBank or GFF file containing the annotation')
+    amino_acid_options_group.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
+    amino_acid_options_group.add_argument('--translations', type=str, help="translated alignments for each CDS/Gene. "
+                           "Currently only supported for FASTA-input. Specify the file name via a "
+                           "template like 'aa_sequences_%%GENE.fasta' where %%GENE will be replaced "
+                           "by the gene name.")
+
+    output_group = parser.add_argument_group(
+        "outputs",
+        "Outputs supported for reconstructed ancestral sequences"
+    )
+    output_group.add_argument('--output-node-data', type=str, help='name of JSON file to save mutations and ancestral sequences to')
+    output_group.add_argument('--output-sequences', type=str, help='name of FASTA file to save ancestral nucleotide sequences to (FASTA alignments only)')
+    output_group.add_argument('--output-translations', type=str, help="name of the FASTA file(s) to save ancestral amino acid sequences to. "
+                        "Specify the file name via a template like 'ancestral_aa_sequences_%%GENE.fasta' where %%GENE will be replaced by"
+                        "the gene name.")
+    output_group.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
+
     return parser
 
 def run(args):
+    # Validate arguments.
+    aa_arguments = (args.annotation, args.genes, args.translations)
+    if any(aa_arguments) and not all(aa_arguments):
+        raise AugurError("For amino acid sequence reconstruction, you must provide an annotation file, a list of genes, and a template path to amino acid sequences.")
+
     # check alignment type, set flags, read in if VCF
     is_vcf = any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])
     ref = None
