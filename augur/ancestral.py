@@ -33,6 +33,8 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
         tree or filename of tree
     aln : Bio.Align.MultipleSeqAlignment or str
         alignment or filename of alignment
+    ref : str, optional
+        reference sequence to pass to TreeTime's TreeAnc class
     infer_gtr : bool, optional
         Description
     marginal : bool, optional
@@ -227,7 +229,7 @@ def run(args):
         if args.root_sequence:
             for fmt in ['fasta', 'genbank']:
                 try:
-                    ref = SeqIO.read(args.root_sequence, fmt)
+                    ref = str(SeqIO.read(args.root_sequence, fmt).seq)
                     break
                 except:
                     pass
@@ -252,7 +254,7 @@ def run(args):
     # we keep them.
     infer_ambiguous = args.infer_ambiguous and not args.keep_ambiguous
     full_sequences = not is_vcf
-    nuc_result = run_ancestral(T, aln, root_sequence=str(ref.seq) if ref else None, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
+    nuc_result = run_ancestral(T, aln, root_sequence=ref if ref else None, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
                                full_sequences=full_sequences, marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='nuc')
     anc_seqs = nuc_result['mutations']
     anc_seqs['reference'] = {'nuc': nuc_result['root_seq']}
