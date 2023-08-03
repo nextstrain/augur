@@ -277,7 +277,7 @@ def run(args):
             print(f"Processing gene: {gene}")
             fname = args.translations.replace("%GENE", gene)
             feat = features[gene]
-            root_seq = str(feat.extract(ref).translate().seq) if ref else None
+            root_seq = str(feat.extract(Seq(ref)).translate()) if ref else None
 
             aa_result = run_ancestral(T, fname, root_sequence=root_seq, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
                                         marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='aa')
