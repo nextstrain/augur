@@ -180,13 +180,6 @@ def run(args):
     else:
         aln = args.alignment
 
-    # Enforce treetime 0.7 or later
-    from distutils.version import StrictVersion
-    import treetime
-    if StrictVersion(treetime.version) < StrictVersion('0.7.0'):
-        print("ERROR: this version of augur requires TreeTime 0.7 or later.", file=sys.stderr)
-        return 1
-
     # Infer ambiguous bases if the user has requested that we infer them (either
     # explicitly or by default) and the user has not explicitly requested that
     # we keep them.
