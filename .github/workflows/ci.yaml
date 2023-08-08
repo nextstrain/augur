@@ -108,6 +108,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v3
+
       - uses: mamba-org/provision-with-micromamba@v15
         with:
           environment-file: false
@@ -115,11 +116,13 @@ jobs:
           extra-specs: nextstrain-base
           channels: nextstrain,conda-forge,bioconda
           cache-env: true
+
       - run: pip install .
 
       - uses: actions/checkout@v3
         with:
           repository: nextstrain/${{ matrix.pathogen }}
+
       - name: Copy example data
         run: |
           if [[ -d example_data ]]; then
@@ -128,7 +131,9 @@ jobs:
           else
             echo No example data to copy.
           fi
+
       - run: snakemake -c all ${{ matrix.build-args }}
+
       - if: always()
         uses: actions/upload-artifact@v3
         with:
