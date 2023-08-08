@@ -80,7 +80,7 @@ jobs:
         name: coverage
         path: "${{ env.COVERAGE_FILE }}"
 
-  pathogen-ci:
+  pathogen-repo-ci:
     runs-on: ubuntu-latest
     continue-on-error: true
     env:
@@ -102,7 +102,7 @@ jobs:
               build-args: --configfile profiles/ci/builds.yaml -p,
             }
           - { pathogen: zika }
-    name: test-pathogen-repo-ci (${{ matrix.pathogen }})
+    name: pathogen-repo-ci (${{ matrix.pathogen }})
     defaults:
       run:
         shell: bash -l {0}
