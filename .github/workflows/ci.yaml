@@ -135,7 +135,7 @@ jobs:
             echo No example data to copy.
           fi
 
-      - run: snakemake -c all ${{ matrix.build-args }}
+      - run: nextstrain build --ambient . ${{ matrix.build-args }}
 
       - if: always()
         uses: actions/upload-artifact@v3
