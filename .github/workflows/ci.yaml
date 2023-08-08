@@ -80,6 +80,9 @@ jobs:
         name: coverage
         path: "${{ env.COVERAGE_FILE }}"
 
+  # TODO: Use the central pathogen-repo-ci workflow¹. Currently, this is not
+  # possible because it only supports "stock" docker and conda runtimes.
+  # ¹ https://github.com/nextstrain/.github/blob/-/.github/workflows/pathogen-repo-ci.yaml
   pathogen-repo-ci:
     runs-on: ubuntu-latest
     continue-on-error: true
