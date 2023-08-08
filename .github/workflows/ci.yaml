@@ -116,7 +116,6 @@ jobs:
           channels: nextstrain,conda-forge,bioconda
           cache-env: true
       - run: pip install .
-      - run: mamba list
 
       - uses: actions/checkout@v3
         with:
