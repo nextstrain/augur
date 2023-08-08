@@ -130,7 +130,7 @@ jobs:
         run: |
           if [[ -d example_data ]]; then
             mkdir -p data/
-            cp -v example_data/* data/
+            cp -r -v example_data/* data/
           else
             echo No example data to copy.
           fi
