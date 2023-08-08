@@ -114,13 +114,17 @@ jobs:
         with:
           path: ./augur
 
-      - uses: mamba-org/provision-with-micromamba@v15
+      - uses: mamba-org/setup-micromamba@v1
         with:
-          environment-file: false
+          create-args: nextstrain-base
+          condarc: |
+            channels:
+              - nextstrain
+              - conda-forge
+              - bioconda
+            channel_priority: strict
+          cache-environment: true
           environment-name: augur
-          extra-specs: nextstrain-base
-          channels: nextstrain,conda-forge,bioconda
-          cache-env: true
 
       - run: pip install ./augur
 
