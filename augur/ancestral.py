@@ -266,17 +266,12 @@ def run(args):
                 print(f"ERROR: could not read root sequence from {args.root_sequence}", file=sys.stderr)
                 return 1
 
-    # Enforce treetime 0.7 or later
-    from distutils.version import StrictVersion
     import treetime
     print("\nInferred ancestral sequence states using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
           "\n\tVirus Evolution, vol 4, https://academic.oup.com/ve/article/4/1/vex042/4794731\n")
 
     print(f"augur ancestral is using TreeTime version {treetime.version}")
-    if StrictVersion(treetime.version) < StrictVersion('0.7.0'):
-        print("ERROR: this version of augur requires TreeTime 0.7 or later.", file=sys.stderr)
-        return 1
 
     # Infer ambiguous bases if the user has requested that we infer them (either
     # explicitly or by default) and the user has not explicitly requested that
