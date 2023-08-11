@@ -6,7 +6,9 @@
 
 * ancestral: add functionality to reconstruct ancestral amino acid sequences and add inferred mutations to the `node_data_json` with output equivalent to `augur translate`. `ancestral` now takes an annotation (`--annotation`), a list of genes (`--genes`), and a file name pattern for amino acid alignments (`--translations`). Mutations for each of these genes will be inferred and added to the output JSON to each node as a list at `['aa_muts'][gene]`. The annotations will be added to the `annotation` field in the output JSON. Inferred amino acids sequences can be saved with the new `--output-translations` argument. [#1258][] (@rneher, @huddlej)
 * ancestral: add the ability to report mutations relative to a sequence other than the inferred root of the tree. This sequence can be specified via `--root-sequence` and difference between this sequence and the inferred root of the tree will be added as mutations to the root node for nucleotides and amino acids. All differences between the specified `root-sequence` and the inferred sequence of the root node of the tree will be added as mutations to the root node. This was previously already possible for `vcf` input via `--vcf-reference`. [#1258][] (@rneher)
+* refine: add `mid_point` as rooting option to `refine`. [#1257][] (@rneher)
 
+[#1257]: https://github.com/nextstrain/augur/pull/1257
 [#1258]: https://github.com/nextstrain/augur/pull/1258
 
 ## 22.2.0 (31 July 2023)
