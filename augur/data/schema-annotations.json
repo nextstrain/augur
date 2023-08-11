@@ -28,7 +28,7 @@
                 "strand": {
                     "description": "Positive or negative strand",
                     "type": "string",
-                    "enum": ["-","+"]
+                    "enum": ["-","+","?",null]
                 }
             }
         }
