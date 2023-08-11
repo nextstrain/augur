@@ -8,8 +8,13 @@
 * ancestral: add the ability to report mutations relative to a sequence other than the inferred root of the tree. This sequence can be specified via `--root-sequence` and difference between this sequence and the inferred root of the tree will be added as mutations to the root node for nucleotides and amino acids. All differences between the specified `root-sequence` and the inferred sequence of the root node of the tree will be added as mutations to the root node. This was previously already possible for `vcf` input via `--vcf-reference`. [#1258][] (@rneher)
 * refine: add `mid_point` as rooting option to `refine`. [#1257][] (@rneher)
 
+### Bug fixes
+
+* filter: In version 22.2.0, `--query` would fail when the `.str` accessor was used on a column. This has been fixed. [#1277][] (@victorlin)
+
 [#1257]: https://github.com/nextstrain/augur/pull/1257
 [#1258]: https://github.com/nextstrain/augur/pull/1258
+[#1277]: https://github.com/nextstrain/augur/issues/1277
 
 ## 22.2.0 (31 July 2023)
 
