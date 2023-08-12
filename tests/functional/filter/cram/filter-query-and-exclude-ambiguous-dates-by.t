@@ -13,12 +13,14 @@ Create metadata TSV file for testing.
   > ~~
 
 Confirm that `--exclude-ambiguous-dates-by` works for all year only ambiguous dates.
-This currently fails because the metadata DataFrame is modified in-place.
 
   $ ${AUGUR} filter \
   >  --metadata metadata.tsv \
   >  --query 'region=="Asia"' \
   >  --exclude-ambiguous-dates-by any \
   >  --empty-output-reporting silent \
-  >  --output-strains filtered_strains.txt > /dev/null 2>&1
-  [2]
+  >  --output-strains filtered_strains.txt
+  4 strains were dropped during filtering
+  \t1 of these were filtered out by the query: "region=="Asia"" (esc)
+  \t3 of these were dropped because of their ambiguous date in any (esc)
+  0 strains passed all filters

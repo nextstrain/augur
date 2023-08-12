@@ -184,11 +184,14 @@ def filter_by_query(metadata, query) -> FilterFunctionReturn:
     set()
 
     """
-    # Try converting all columns to numeric.
-    for column in metadata.columns:
-        metadata[column] = pd.to_numeric(metadata[column], errors='ignore')
+    # Create a copy to prevent modification of the original DataFrame.
+    metadata_copy = metadata.copy()
 
-    return set(metadata.query(query).index.values)
+    # Try converting all columns to numeric.
+    for column in metadata_copy.columns:
+        metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='ignore')
+
+    return set(metadata_copy.query(query).index.values)
 
 
 def filter_by_ambiguous_date(metadata, date_column, ambiguity) -> FilterFunctionReturn:
