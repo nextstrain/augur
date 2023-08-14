@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 22.3.0 (14 August 2023)
+
 ### Features
 
 * ancestral: add functionality to reconstruct ancestral amino acid sequences and add inferred mutations to the `node_data_json` with output equivalent to `augur translate`. `ancestral` now takes an annotation (`--annotation`), a list of genes (`--genes`), and a file name pattern for amino acid alignments (`--translations`). Mutations for each of these genes will be inferred and added to the output JSON to each node as a list at `['aa_muts'][gene]`. The annotations will be added to the `annotation` field in the output JSON. Inferred amino acids sequences can be saved with the new `--output-translations` argument. [#1258][] (@rneher, @huddlej)
