@@ -1,34 +1,44 @@
 {
     "type" : "object",
     "$schema": "http://json-schema.org/draft-06/schema#",
-    "title": "JSON object for the `annotations` key, typically produced by `augur translate`",
-    "description": "Coordinates etc of genes / genome",
+    "title": "Schema for the 'annotations' property (node-data JSON) or the 'genome_annotations' property (auspice JSON)",
+    "properties": {
+        "nuc": {
+            "type": "object",
+            "allOf": [{ "$ref": "#/$defs/startend" }],
+            "additionalProperties": true,
+            "$comment": "All other properties are unused by Auspice. Strand is always considered to be positive."
+        }
+    },
+    "required": ["nuc"],
     "patternProperties": {
         "^[a-zA-Z0-9*_-]+$": {
             "type": "object",
+            "allOf": [{ "$ref": "#/$defs/startend" }],
+            "additionalProperties": true,
             "properties": {
-                "seqid":{
-                    "description": "Sequence on which the coordinates below are valid. Could be viral segment, bacterial contig, etc",
-                    "$comment": "Unused by Auspice 2.0",
+                "strand": {
+                    "description": "Is the gene on the positive ('+') or negative ('-') strand.",
+                    "$comment": "Auspice assumes positive strand unless strand is '-'",
                     "type": "string"
-                },
-                "type": {
-                    "description": "Type of the feature. could be mRNA, CDS, or similar",
-                    "$comment": "Unused by Auspice 2.0",
-                    "type": "string"
-                },
+                }
+            }
+        }
+    },
+    "$defs": {
+        "startend": {
+            "type": "object",
+            "required": ["start", "end"],
+            "properties": {
                 "start": {
-                    "description": "Gene start position (one-based, following GFF format)",
-                    "type": "number"
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Start position (one-based, following GFF format)"
                 },
                 "end": {
-                    "description": "Gene end position (one-based closed, last position of feature, following GFF format)",
-                    "type": "number"
-                },
-                "strand": {
-                    "description": "Positive or negative strand",
-                    "type": "string",
-                    "enum": ["-","+"]
+                    "type": "integer",
+                    "minimum": 2,
+                    "description": "End position (one-based, following GFF format). This value _must_ be greater than the start."
                 }
             }
         }
