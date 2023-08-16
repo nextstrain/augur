@@ -259,6 +259,12 @@ def run(args):
         node_data['clock'] = {'rate': tt.date2dist.clock_rate,
                               'intercept': tt.date2dist.intercept,
                               'rtt_Tmrca': -tt.date2dist.intercept/tt.date2dist.clock_rate}
+        # Include the standard deviation of the clock rate, if the covariance
+        # matrix is available.
+        if hasattr(tt.date2dist, "cov") and tt.date2dist.cov is not None:
+            node_data["clock"]["cov"] = tt.date2dist.cov
+            node_data["clock"]["rate_std"] = np.sqrt(tt.date2dist.cov[0, 0])
+
         if args.coalescent=='skyline':
             try:
                 skyline, conf = tt.merger_model.skyline_inferred(gen=args.gen_per_year, confidence=2)
