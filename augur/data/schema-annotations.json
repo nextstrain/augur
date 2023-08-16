@@ -7,21 +7,52 @@
         "nuc": {
             "type": "object",
             "allOf": [{ "$ref": "#/$defs/startend" }],
+            "properties": {
+                "start": {
+                    "enum": [1],
+                    "$comment": "nuc must begin at 1"
+                },
+                "strand": {
+                    "type": "string",
+                    "enum":["+"],
+                    "description": "Strand is optional for nuc, as it should be +ve for all genomes (-ve strand genomes are reverse complemented)",
+                    "$comment": "Auspice will not proceed if the JSON has strand='-'"
+                }
+            },
             "additionalProperties": true,
-            "$comment": "All other properties are unused by Auspice. Strand is always considered to be positive."
+            "$comment": "All other properties are unused by Auspice."
         }
     },
     "required": ["nuc"],
     "patternProperties": {
-        "^[a-zA-Z0-9*_-]+$": {
+        "^(?!nuc)[a-zA-Z0-9*_-]+$": {
+            "$comment": "Each object here defines a single CDS",
             "type": "object",
-            "allOf": [{ "$ref": "#/$defs/startend" }],
+            "oneOf": [{ "$ref": "#/$defs/startend" }, { "$ref": "#/$defs/segments" }],
             "additionalProperties": true,
+            "required": ["strand"],
             "properties": {
+                "gene": {
+                    "type": "string",
+                    "description": "The name of the gene the CDS is from. Optional.",
+                    "$comment": "Shown in on-hover infobox & influences default CDS colors"
+                },
                 "strand": {
-                    "description": "Is the gene on the positive ('+') or negative ('-') strand.",
-                    "$comment": "Auspice assumes positive strand unless strand is '-'",
-                    "type": "string"
+                    "description": "Strand of the CDS",
+                    "type": "string",
+                    "enum": ["-", "+"]
+                },
+                "color": {
+                    "type": "string",
+                    "description": "A CSS color or a color hex code. Optional."
+                },
+                "display_name": {
+                    "type": "string",
+                    "$comment": "Shown in the on-hover info box"
+                },
+                "description": {
+                    "type": "string",
+                    "$comment": "Shown in the on-hover info box"
                 }
             }
         }
@@ -40,6 +71,20 @@
                     "type": "integer",
                     "minimum": 2,
                     "description": "End position (one-based, following GFF format). This value _must_ be greater than the start."
+                }
+            }
+        },
+        "segments": {
+            "type": "object",
+            "required": ["segments"],
+            "properties": {
+                "segments": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "allOf": [{ "$ref": "#/$defs/startend" }]
+                    }
                 }
             }
         }

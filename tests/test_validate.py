@@ -4,7 +4,10 @@ import random
 from augur.validate import (
     validate_collection_config_fields,
     validate_collection_display_defaults,
-    validate_measurements_config
+    validate_measurements_config,
+    load_json_schema,
+    validate_json,
+    ValidateError
 )
 
 
@@ -88,3 +91,71 @@ class TestValidateMeasurements():
         }
         assert not validate_measurements_config(measurements)
         assert capsys.readouterr().err == "ERROR: The default collection key 'invalid_collection' does not match any of the collections' keys.\n"
+
+
+@pytest.fixture
+def genome_annotation_schema():
+    return load_json_schema("schema-annotations.json")
+
+class TestValidateGenomeAnnotations():
+    def test_negative_strand_nuc(self, capsys, genome_annotation_schema):
+        d = {"nuc": {"start": 1, "end": 200, "strand": "-"}}
+        with pytest.raises(ValidateError):
+            validate_json(d, genome_annotation_schema, "<test-json>")
+        capsys.readouterr() # suppress validation error printing
+
+    def test_nuc_not_starting_at_one(self, capsys, genome_annotation_schema):
+        d = {"nuc": {"start": 100, "end": 200, "strand": "+"}}
+        with pytest.raises(ValidateError):
+            validate_json(d, genome_annotation_schema, "<test-json>")
+        capsys.readouterr() # suppress validation error printing
+
+    def test_missing_nuc(self, capsys, genome_annotation_schema):
+        d = {"cds": {"start": 100, "end": 200, "strand": "+"}}
+        with pytest.raises(ValidateError):
+            validate_json(d, genome_annotation_schema, "<test-json>")
+        capsys.readouterr() # suppress validation error printing
+
+    def test_missing_properties(self, capsys, genome_annotation_schema):
+        d = {"nuc": {"start": 1, "end": 100}, "cds": {"start": 20, "strand": "+"}}
+        with pytest.raises(ValidateError):
+            validate_json(d, genome_annotation_schema, "<test-json>")
+        capsys.readouterr() # suppress validation error printing
+
+    def test_not_stranded_cds(self, capsys, genome_annotation_schema):
+        # Strand . is for features that are not stranded (as per GFF spec), and thus they're not CDSs
+        d = {"nuc": {"start": 1, "end": 100}, "cds": {"start": 18, "end": 20, "strand": "."}}
+        with pytest.raises(ValidateError):
+            validate_json(d, genome_annotation_schema, "<test-json>")
+        capsys.readouterr() # suppress validation error printing
+
+    def test_negative_coordinates(self, capsys, genome_annotation_schema):
+        d = {"nuc": {"start": 1, "end": 100}, "cds": {"start": -2, "end": 10, "strand": "+"}}
+        with pytest.raises(ValidateError):
+            validate_json(d, genome_annotation_schema, "<test-json>")
+        capsys.readouterr() # suppress validation error printing
+
+    def test_valid_genome(self, capsys, genome_annotation_schema):
+        d = {"nuc": {"start": 1, "end": 100}, "cds": {"start": 20,  "end": 28, "strand": "+"}}
+        validate_json(d, genome_annotation_schema, "<test-json>")
+        capsys.readouterr() # suppress validation error printing
+
+    def test_valid_segmented_genome(self, capsys, genome_annotation_schema):
+        d = {"nuc": {"start": 1, "end": 100},
+             "cds": {"segments": [{"start": 20,  "end": 28}], "strand": "+"}}
+        validate_json(d, genome_annotation_schema, "<test-json>")
+        capsys.readouterr() # suppress validation error printing
+
+    def test_invalid_segmented_genome(self, capsys, genome_annotation_schema):
+        d = {"nuc": {"start": 1, "end": 100},
+             "cds": {"segments": [{"start": 20,  "end": 28}, {"start": 27}], "strand": "+"}}
+        with pytest.raises(ValidateError):
+            validate_json(d, genome_annotation_schema, "<test-json>")
+        capsys.readouterr() # suppress validation error printing
+
+    def test_string_coordinates(self, capsys, genome_annotation_schema):
+        d = {"nuc": {"start": 1, "end": 100},
+             "cds": {"segments": [{"start": 20,  "end": 28}, {"start": "27", "end": "29"}], "strand": "+"}}
+        with pytest.raises(ValidateError):
+            validate_json(d, genome_annotation_schema, "<test-json>")
+        capsys.readouterr() # suppress validation error printing
