@@ -25,7 +25,7 @@ class ValidateError(Exception):
     pass
 
 
-def load_json_schema(path):
+def load_json_schema(path, refs=None):
     '''
     Load a JSON schema from the augur included set of schemas
     (located in augur/data)
@@ -40,7 +40,28 @@ def load_json_schema(path):
         Validator.check_schema(schema)
     except jsonschema.exceptions.SchemaError as err:
         raise ValidateError(f"Schema {path} is not a valid JSON Schema ({Validator.META_SCHEMA['$schema']}). Error: {err}")
-    return Validator(schema)
+    
+    if refs:
+        # Make the validator aware of additional schemas
+        schema_store = {k: json.loads(resource_string(__package__, os.path.join("data", v))) for k,v in refs.items()}
+        resolver = jsonschema.RefResolver.from_schema(schema,store=schema_store)
+        schema_validator = Validator(schema, resolver=resolver)
+    else:
+        schema_validator = Validator(schema)
+
+    # By default $ref URLs which we don't define in a schema_store are fetched
+    # by jsonschema. This often indicates a typo (the $ref doesn't match the key
+    # of the schema_store) or we forgot to add a local mapping for a new $ref.
+    # Either way, Augur should not be accessing the network. 
+    def resolve_remote(url):
+        # The exception type is not important as jsonschema will catch & re-raise as a RefResolutionError
+        raise Exception(f"The schema used for validation attempted to fetch the remote URL '{url!r}'. " +
+                        "Augur should resolve schema references to local files, please check the schema used " +
+                        "and update the appropriate schema_store as needed." )
+    schema_validator.resolver.resolve_remote = resolve_remote
+
+    return schema_validator
+
 
 def load_json(path):
     with open(path, 'rb') as fh:
@@ -163,7 +184,15 @@ def auspice_config_v2(config_json, **kwargs):
     validate(config, schema, config_json)
 
 def export_v2(main_json, **kwargs):
-    main_schema = load_json_schema("schema-export-v2.json")
+    # The main_schema uses references to other schemas, and the suggested use is
+    # to define these refs as valid URLs. Augur itself should not access schemas
+    # over the wire so we provide a mapping between URLs and filepaths here. The
+    # filepath is specified relative to ./augur/data (where all the schemas
+    # live).
+    refs = {
+        'https://nextstrain.org/schemas/augur/annotations': "schema-annotations.json"
+    }
+    main_schema = load_json_schema("schema-export-v2.json", refs)
 
     if main_json.endswith("frequencies.json") or main_json.endswith("entropy.json") or main_json.endswith("sequences.json"):
         raise ValidateError("This validation subfunction is for the main `augur export v2` JSON only.")
