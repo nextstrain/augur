@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* distance: Improve documentation by describing how gaps get treated as indels and how users can ignore specific characters in distance calculations. [#1285][] (@huddlej)
+
+[#1285]: https://github.com/nextstrain/augur/pull/1285
 
 ## 22.3.0 (14 August 2023)
 
