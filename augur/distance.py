@@ -31,6 +31,12 @@ tips sampled from previous seasons prior to the given date. These two date
 parameters allow users to specify a fixed time interval for pairwise
 calculations, limiting the computationally complexity of the comparisons.
 
+For all distance calculations, a consecutive series of gap characters (`-`)
+counts as a single difference between any pair of sequences. This behavior
+reflects the assumption that there was an underlying biological process that
+produced the insertion or deletion as a single event as opposed to multiple
+independent insertion/deletion events.
+
 **Distance maps**
 
 Distance maps are defined in JSON format with two required top-level keys.
@@ -44,6 +50,19 @@ The simplest possible distance map calculates Hamming distance between sequences
     {
         "name": "Hamming distance",
         "default": 1,
+        "map": {}
+    }
+
+To ignore specific characters such as gaps or ambiguous nucleotides from the
+distance calculation, define a top-level `ignored_characters` key with a list of
+characters to ignore.
+
+.. code-block:: json
+
+    {
+        "name": "Hamming distance",
+        "default": 1,
+        "ignored_characters": ["-", "N"],
         "map": {}
     }
 
