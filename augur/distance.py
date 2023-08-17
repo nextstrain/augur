@@ -47,6 +47,19 @@ The simplest possible distance map calculates Hamming distance between sequences
         "map": {}
     }
 
+To ignore specific characters such as gaps or ambiguous nucleotides from the
+distance calculation, define a top-level `ignored_characters` key with a list of
+characters to ignore.
+
+.. code-block:: json
+
+    {
+        "name": "Hamming distance",
+        "default": 1,
+        "ignored_characters": ["-", "N"],
+        "map": {}
+    }
+
 By default, distances are floating point values whose precision can be controlled with the `precision` key that defines the number of decimal places to retain for each distance.
 The following example shows how to specify a precision of two decimal places in the final output:
 
