@@ -164,7 +164,7 @@ def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
     return filtered
 
 
-def filter_by_query(metadata, query) -> FilterFunctionReturn:
+def filter_by_query(metadata: pd.DataFrame, query: str) -> FilterFunctionReturn:
     """Filter metadata in the given pandas DataFrame with a query string and return
     the strain names that pass the filter.
 
