@@ -1,3 +1,4 @@
+import ast
 import json
 import operator
 import re
@@ -820,3 +821,31 @@ def _filter_kwargs_to_str(kwargs: FilterFunctionKwargs):
         kwarg_list.append((key, value))
 
     return json.dumps(kwarg_list)
+
+
+def extract_variables(pandas_query: str):
+    """Try extracting all variable names used in a pandas query string.
+
+    If successful, return the variable names as a set. Otherwise, nothing is returned.
+
+    Examples
+    --------
+    >>> extract_variables("var1 == 'value'")
+    {'var1'}
+    >>> sorted(extract_variables("var1 == 'value' & var2 == 10"))
+    ['var1', 'var2']
+    >>> extract_variables("var1.str.startswith('prefix')")
+    {'var1'}
+    >>> extract_variables("this query is invalid")
+    """
+    # Since Pandas' query grammar should be a subset of Python's, which uses the
+    # ast stdlib under the hood, we can try to parse queries with that as well.
+    # Errors may arise from invalid query syntax or any Pandas syntax not
+    # covered by Python (unlikely, but I'm not sure). In those cases, don't
+    # return anything.
+    try:
+        return set(node.id
+                   for node in ast.walk(ast.parse(pandas_query))
+                   if isinstance(node, ast.Name))
+    except:
+        return None
