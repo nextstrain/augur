@@ -188,6 +188,14 @@ def filter_by_query(metadata: pd.DataFrame, query: str) -> FilterFunctionReturn:
     # Create a copy to prevent modification of the original DataFrame.
     metadata_copy = metadata.copy()
 
+    # Set columns for type conversion.
+    variables = extract_variables(query)
+    if variables is not None:
+        columns = variables.intersection(metadata_copy.columns)
+    else:
+        # Column extraction failed. Apply type conversion to all columns.
+        columns = metadata_copy.columns
+
     # Support numeric comparisons in query strings.
     #
     # The built-in data type inference when loading the DataFrame does not
@@ -195,14 +203,8 @@ def filter_by_query(metadata: pd.DataFrame, query: str) -> FilterFunctionReturn:
     # those columns. pd.to_numeric does proper conversion on those columns, and
     # will not make any changes to columns with other values.
     #
-    # TODO: Parse the query string and apply conversion only to columns used for
-    # numeric comparison. Pandas does not expose the API used to parse the query
-    # string internally, so this is non-trivial and requires a bit of
-    # reverse-engineering. Commit 2ead5b3e3306dc1100b49eb774287496018122d9 got
-    # halfway there but had issues so it was reverted.
-    #
     # TODO: Try boolean conversion?
-    for column in metadata_copy.columns:
+    for column in columns:
         metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='ignore')
 
     try:
