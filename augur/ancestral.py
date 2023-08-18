@@ -8,6 +8,16 @@ Each node then gets assigned a list of nucleotide mutations for any position
 that has a mismatch between its own sequence and its parent's sequence.
 The node sequences and mutations are output to a node-data JSON file.
 
+If amino acid options are provided, the ancestral amino acid sequences for each
+requested gene are inferred with the same method as the nucleotide sequences described above.
+The inferred amino acid mutations will be included in the output node-data JSON
+file, with the format equivalent to the output of `augur translate`.
+
+The nucleotide and amino acid sequences are inferred separately in this command,
+which can potentially result in mismatches between the nucleotide and amino
+acid mutations. If you want amino acid mutations based on the inferred
+nucleotide sequences, please use `augur translate`.
+
 .. note::
 
     The mutation positions in the node-data JSON are one-based.
