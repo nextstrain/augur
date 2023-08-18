@@ -2,6 +2,7 @@
 Filter and subsample a sequence set.
 """
 from augur.dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT
+from augur.filter.io import ACCEPTED_TYPES, column_type_pair
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN
 from augur.types import EmptyOutputReportingMethod
 from . import constants
@@ -28,6 +29,11 @@ def register_arguments(parser):
         Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.
         (e.g., --query "country == 'Colombia'" or --query "(country == 'USA' & (division == 'Washington'))")"""
     )
+    metadata_filter_group.add_argument('--query-columns', type=column_type_pair, nargs="+", help=f"""
+        Use alongside --query to specify columns and data types in the format 'column:type', where type is one of ({','.join(ACCEPTED_TYPES)}).
+        Automatic type inference will be attempted on all unspecified columns used in the query.
+        Example: region:str coverage:float.
+    """)
     metadata_filter_group.add_argument('--min-date', type=numeric_date_type, help=f"minimal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
     metadata_filter_group.add_argument('--max-date', type=numeric_date_type, help=f"maximal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
     metadata_filter_group.add_argument('--exclude-ambiguous-dates-by', choices=['any', 'day', 'month', 'year'],

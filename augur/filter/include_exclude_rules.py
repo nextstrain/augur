@@ -4,7 +4,7 @@ import operator
 import re
 import numpy as np
 import pandas as pd
-from typing import Any, Callable, Dict, List, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from augur.dates import is_date_ambiguous, get_numerical_dates
 from augur.errors import AugurError
@@ -165,7 +165,7 @@ def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
     return filtered
 
 
-def filter_by_query(metadata: pd.DataFrame, query: str) -> FilterFunctionReturn:
+def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[Dict[str, str]] = None) -> FilterFunctionReturn:
     """Filter metadata in the given pandas DataFrame with a query string and return
     the strain names that pass the filter.
 
@@ -175,6 +175,8 @@ def filter_by_query(metadata: pd.DataFrame, query: str) -> FilterFunctionReturn:
         Metadata indexed by strain name
     query : str
         Query string for the dataframe.
+    column_types : str
+        Dict mapping of data type
 
     Examples
     --------
@@ -188,6 +190,9 @@ def filter_by_query(metadata: pd.DataFrame, query: str) -> FilterFunctionReturn:
     # Create a copy to prevent modification of the original DataFrame.
     metadata_copy = metadata.copy()
 
+    if column_types is None:
+        column_types = {}
+
     # Set columns for type conversion.
     variables = extract_variables(query)
     if variables is not None:
@@ -196,16 +201,31 @@ def filter_by_query(metadata: pd.DataFrame, query: str) -> FilterFunctionReturn:
         # Column extraction failed. Apply type conversion to all columns.
         columns = metadata_copy.columns
 
-    # Support numeric comparisons in query strings.
-    #
-    # The built-in data type inference when loading the DataFrame does not
+    # If a type is not explicitly provided, try converting the column to numeric.
+    # This should cover most use cases, since one common problem is that the
+    # built-in data type inference when loading the DataFrame does not
     # support nullable numeric columns, so numeric comparisons won't work on
-    # those columns. pd.to_numeric does proper conversion on those columns, and
-    # will not make any changes to columns with other values.
-    #
-    # TODO: Try boolean conversion?
+    # those columns. pd.to_numeric does proper conversion on those columns,
+    # and will not make any changes to columns with other values.
     for column in columns:
-        metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='ignore')
+        column_types.setdefault(column, 'numeric')
+
+    # Convert data types before applying the query.
+    for column, dtype in column_types.items():
+        if dtype == 'numeric':
+            metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='ignore')
+        elif dtype == 'int':
+            try:
+                metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='raise', downcast='integer')
+            except ValueError as e:
+                raise AugurError(f"Failed to convert value in column {column!r} to int. {e}")
+        elif dtype == 'float':
+            try:
+                metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='raise', downcast='float')
+            except ValueError as e:
+                raise AugurError(f"Failed to convert value in column {column!r} to float. {e}")
+        elif dtype == 'str':
+            metadata_copy[column] = metadata_copy[column].astype('str', errors='ignore')
 
     try:
         return set(metadata_copy.query(query).index.values)
@@ -581,9 +601,13 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
 
     # Exclude strains by metadata, using pandas querying.
     if args.query:
+        kwargs = {"query": args.query}
+        if args.query_columns:
+            kwargs["column_types"] = {column: dtype for column, dtype in args.query_columns}
+
         exclude_by.append((
             filter_by_query,
-            {"query": args.query}
+            kwargs
         ))
 
     # Filter by ambiguous dates.

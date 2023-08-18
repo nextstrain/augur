@@ -1,5 +1,7 @@
+import argparse
 import csv
 import os
+import re
 from typing import Sequence, Set
 import numpy as np
 from collections import defaultdict
@@ -63,6 +65,26 @@ def write_metadata_based_outputs(input_metadata_path: str, delimiters: Sequence[
         output_metadata_handle.close()
     if output_strains:
         output_strains.close()
+
+
+# These are the types accepted in the following function.
+ACCEPTED_TYPES = {'int', 'float', 'str'}
+
+def column_type_pair(input: str):
+    """Get a 2-tuple for column name to type.
+
+    Intended to be used as the argument type converter for argparse options that
+    take type maps in a 'column:type' format.
+    """
+
+    match = re.match(f"^(.+?):({'|'.join(ACCEPTED_TYPES)})$", input)
+    if not match:
+        raise argparse.ArgumentTypeError(f"Column data types must be in the format 'column:type', where type is one of ({','.join(ACCEPTED_TYPES)}).")
+
+    column = match[1]
+    dtype = match[2]
+
+    return (column, dtype)
 
 
 def cleanup_outputs(args):
