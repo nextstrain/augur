@@ -5,9 +5,6 @@ import os
 import sys
 from shutil import copyfile
 
-import numpy as np
-import pandas as pd
-from Bio import SeqIO
 from Bio.Seq import MutableSeq
 
 from .io.file import open_file

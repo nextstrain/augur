@@ -3,7 +3,6 @@ import sys
 sys.path.append('..') # this is an assumption and is probably wrong
 import argparse
 import json
-from pdb import set_trace
 
 
 def verify_defaults(defaults):

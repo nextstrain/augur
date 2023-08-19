@@ -25,7 +25,7 @@ nucleotide sequences, please use `augur translate`.
 from augur.errors import AugurError
 import sys
 import numpy as np
-from Bio import Phylo, SeqIO
+from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from .utils import read_tree, InvalidTreeError, write_json, get_json_name

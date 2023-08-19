@@ -1,10 +1,7 @@
 """Count occurrence of bases in a set of sequences.
 """
 
-from Bio import SeqIO
 from itertools import combinations
-import Bio.Seq
-import Bio.SeqRecord
 import sys
 import csv
 
@@ -81,6 +78,7 @@ def index_sequence(sequence, values):
 
     Examples
     --------
+    >>> import Bio
     >>> other_IUPAC = {'r', 'y', 's', 'w', 'k', 'm', 'd', 'h', 'b', 'v'}
     >>> values = [{'a'},{'c'},{'g'},{'t'},{'n'}, other_IUPAC, {'-'}, {'?'}]
     >>> sequence_a = Bio.SeqRecord.SeqRecord(seq=Bio.Seq.Seq("ACTGN-?XWN"), id="seq_A")
