@@ -94,8 +94,8 @@ def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask
         Number of sites to mask from the end of each sequence (default 0)
     mask_invalid: bool
         Mask invalid nucleotides (default False)
-    mask_gaps: "all" or "terminals" or None
-        Mask terminal gaps or all gaps (default None)
+    mask_gaps: str
+        Mask terminal gaps ("terminals") or all gaps ("all") (default None)
 
     Returns
     -------
@@ -157,8 +157,8 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
        Number of sites to mask from the end of each sequence (default 0)
     mask_invalid: bool
         Mask invalid nucleotides (default False)
-    mask_gaps: "all" or "terminals" or None
-        Mask terminal gaps or all gaps (default None)
+    mask_gaps: str
+        Mask terminal gaps ("terminals") or all gaps ("all") (default None)
     """
     # Load alignment as FASTA generator to prevent loading the whole alignment
     # into memory.
