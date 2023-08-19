@@ -231,8 +231,7 @@ def run(args):
             print("ERROR: File {} does not exist!".format(args.mask_file))
             sys.exit(1)
         if os.path.getsize(args.mask_file) == 0:
-            print("ERROR: {} is an empty file.".format(args.mask_file))
-            sys.exit(1)
+            print(f"WARN: The mask file {args.mask_file} is an empty file.")
     if not any((args.mask_file, args.mask_gaps, args.mask_from_beginning, args.mask_from_end, args.mask_sites, args.mask_invalid)):
         print("No masking sites provided. Must include one of --mask, --mask-gaps, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites")
         sys.exit(1)

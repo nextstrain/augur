@@ -5,6 +5,7 @@
 ### Features
 
 * mask: Add `--mask-gaps` option to `augur mask` to allow masking of gaps at terminals via `--mask-gaps terminals` or all gaps via `--mask-gaps all`. [#1286][] (@corneliusroemer)
+* mask: Warn on empty mask file instead of error. Introduced to allow empty stub files when setting up builds and to prevent necessary workflow changes when all mask sites are removed. [#1287][] (@corneliusroemer)
 
 ### Bug fixes
 
@@ -12,6 +13,7 @@
 
 [#1285]: https://github.com/nextstrain/augur/pull/1285
 [#1286]: https://github.com/nextstrain/augur/pull/1286
+[#1287]: https://github.com/nextstrain/augur/pull/1286
 
 ## 22.3.0 (14 August 2023)
 
