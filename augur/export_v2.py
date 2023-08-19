@@ -2,7 +2,7 @@
 Export version 2 JSON schema for visualization with Auspice
 """
 from pathlib import Path
-import os, sys
+import sys
 import time
 from collections import defaultdict, deque, OrderedDict
 import warnings

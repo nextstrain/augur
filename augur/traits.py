@@ -4,7 +4,7 @@ Infer ancestral traits based on a tree.
 
 import numpy as np
 from collections import defaultdict
-import os, sys
+import sys
 import pandas as pd
 from .errors import AugurError
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata

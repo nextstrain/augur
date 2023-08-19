@@ -7,7 +7,6 @@ import numpy as np
 from pathlib import Path
 import pytest
 import sys
-import os
 
 # we assume (and assert) that this script is running from the tests/ directory
 sys.path.append(str(Path(__file__).parent.parent.parent))

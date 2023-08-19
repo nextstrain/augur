@@ -1,11 +1,10 @@
 from __future__ import print_function
-import os, sys
+import sys
 sys.path.append('..')
 import json
 from base.io_util import json_to_tree
 from base.utils import save_as_nexus
 import Bio.Phylo
-from pdb import set_trace
 import argparse
 
 def collect_args():

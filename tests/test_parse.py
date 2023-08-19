@@ -2,7 +2,6 @@ import Bio.SeqIO
 import Bio.Seq
 import pytest
 from pathlib import Path
-import unittest
 import sys
 
 # make sure we get the local version of parse

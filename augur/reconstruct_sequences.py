@@ -2,9 +2,7 @@
 Reconstruct alignments from mutations inferred on the tree
 """
 
-import os, sys
 import numpy as np
-from collections import defaultdict
 from Bio import SeqIO, Seq, SeqRecord, Phylo
 from .utils import read_node_data, write_json
 from treetime.vcf_utils import read_vcf

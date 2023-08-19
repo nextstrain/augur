@@ -2,9 +2,8 @@
 Annotate a tree with actual and inferred titer measurements.
 """
 
-import json, os, sys
+import sys
 import numpy as np
-from collections import defaultdict
 from Bio import Phylo
 
 from .reconstruct_sequences import load_alignments

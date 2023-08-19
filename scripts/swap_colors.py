@@ -2,7 +2,6 @@ import json
 from re import split
 import argparse
 from glob import glob
-from pprint import pprint
 
 parser = argparse.ArgumentParser(description ="Update color ramps in processed meta.JSON files")
 parser.add_argument('--jsons', '--json', default=None, nargs='+', type=str, help="Path to prepared JSON(s) to edit. If none, will update all files like ./*meta.json")

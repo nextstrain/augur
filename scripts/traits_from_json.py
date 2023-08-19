@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, sys
+import sys
 sys.path.append('..') # this is an assumption and is probably wrong
 from base.utils import parse_date
 import argparse

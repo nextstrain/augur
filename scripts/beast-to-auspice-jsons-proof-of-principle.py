@@ -1,7 +1,6 @@
 from __future__ import print_function
 from Bio import Phylo
 import imp
-from pdb import set_trace
 from StringIO import StringIO
 import json
 

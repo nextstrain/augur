@@ -23,7 +23,7 @@ nucleotide sequences, please use `augur translate`.
     The mutation positions in the node-data JSON are one-based.
 """
 from augur.errors import AugurError
-import os, shutil, time, json, sys
+import sys
 import numpy as np
 from Bio import Phylo, SeqIO
 from Bio.Seq import Seq

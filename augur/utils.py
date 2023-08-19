@@ -1,13 +1,9 @@
 import argparse
 import Bio
 import Bio.Phylo
-import gzip
 import numpy as np
 import os, json, sys
 import pandas as pd
-import subprocess
-import shlex
-from contextlib import contextmanager
 from collections import defaultdict, OrderedDict
 from pkg_resources import resource_stream
 from io import TextIOWrapper

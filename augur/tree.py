@@ -498,7 +498,6 @@ def run(args):
     print("\nBuilding original tree took {} seconds".format(str(end-start)))
 
     if T:
-        import json
         tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
     else:
         return 1

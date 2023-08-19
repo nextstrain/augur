@@ -3,7 +3,6 @@ infer frequencies of mutations or clades
 """
 import json, os, sys
 import numpy as np
-from collections import defaultdict
 from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
 

@@ -1,12 +1,10 @@
 """
 Unit tests for nucleotide to acid translation
 """
-import json
 import numpy as np
 from pathlib import Path
 import pytest
 import sys
-import os
 
 from Bio.Seq import Seq
 from Bio.SeqFeature import SeqFeature, FeatureLocation
