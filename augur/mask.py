@@ -78,7 +78,7 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
                 pass
 
 
-def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask_invalid):
+def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask_invalid, mask_gaps):
     """Mask characters at the given sites in a single sequence record, modifying the
     record in place.
 
@@ -94,6 +94,8 @@ def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask
         Number of sites to mask from the end of each sequence (default 0)
     mask_invalid: bool
         Mask invalid nucleotides (default False)
+    mask_gaps: "all" or "terminals" or None
+        Mask terminal gaps or all gaps (default None)
 
     Returns
     -------
@@ -105,6 +107,14 @@ def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask
     sequence_length = len(sequence.seq)
     beginning, end = mask_from_beginning, mask_from_end
 
+    if mask_gaps == "terminals":
+        # Count leading and trailing gaps
+        leading_gaps = len(sequence.seq) - len(sequence.seq.lstrip('-'))
+        trailing_gaps = len(sequence.seq) - len(sequence.seq.rstrip('-'))
+        # Update beginning and end to account for leading and trailing gaps
+        beginning = max(beginning, leading_gaps)
+        end = max(end, trailing_gaps)
+
     if beginning + end > sequence_length:
         beginning, end = sequence_length, 0
 
@@ -112,6 +122,9 @@ def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask
 
     if mask_invalid:
         seq = "".join(nuc if nuc in VALID_NUCLEOTIDES else "N" for nuc in seq)
+    
+    if mask_gaps == "all":
+        seq = "".join(nuc if nuc != "-" else "N" for nuc in seq)
 
     masked_sequence = MutableSeq("N" * beginning + seq + "N" * end)
 
@@ -125,7 +138,7 @@ def mask_sequence(sequence, mask_sites, mask_from_beginning, mask_from_end, mask
     return sequence
 
 
-def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_end=0, mask_invalid=False):
+def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_end=0, mask_invalid=False, mask_gaps=None):
     """Mask the provided site list from a FASTA file and write to a new file.
 
     Masked sites are overwritten as "N"s.
@@ -144,6 +157,8 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
        Number of sites to mask from the end of each sequence (default 0)
     mask_invalid: bool
         Mask invalid nucleotides (default False)
+    mask_gaps: "all" or "terminals" or None
+        Mask terminal gaps or all gaps (default None)
     """
     # Load alignment as FASTA generator to prevent loading the whole alignment
     # into memory.
@@ -159,6 +174,7 @@ def mask_fasta(mask_sites, in_file, out_file, mask_from_beginning=0, mask_from_e
             mask_from_beginning,
             mask_from_end,
             mask_invalid,
+            mask_gaps,
         )
         for sequence in alignment
     )
@@ -176,6 +192,7 @@ def register_arguments(parser):
     """
     parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF or FASTA format")
     parser.add_argument('--mask', dest="mask_file", required=False, help="locations to be masked in either BED file format, DRM format, or one 1-indexed site per line.")
+    parser.add_argument('--mask-gaps', choices=['all', 'terminals'], help="FASTA Only: Mask terminal gaps or all gaps, default is to not mask gaps")
     parser.add_argument('--mask-from-beginning', type=int, default=0, help="FASTA Only: Number of sites to mask from beginning")
     parser.add_argument('--mask-from-end', type=int, default=0, help="FASTA Only: Number of sites to mask from end")
     parser.add_argument('--mask-invalid', action='store_true', help="FASTA Only: Mask invalid nucleotides")
@@ -216,8 +233,8 @@ def run(args):
         if os.path.getsize(args.mask_file) == 0:
             print("ERROR: {} is an empty file.".format(args.mask_file))
             sys.exit(1)
-    if not any((args.mask_file, args.mask_from_beginning, args.mask_from_end, args.mask_sites, args.mask_invalid)):
-        print("No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites")
+    if not any((args.mask_file, args.mask_gaps, args.mask_from_beginning, args.mask_from_end, args.mask_sites, args.mask_invalid)):
+        print("No masking sites provided. Must include one of --mask, --mask-gaps, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites")
         sys.exit(1)
 
     mask_sites = set()
@@ -236,12 +253,13 @@ def run(args):
                                 "masked_" + os.path.basename(args.sequences))
 
     if is_vcf(args.sequences):
-        if args.mask_from_beginning or args.mask_from_end or args.mask_invalid:
-            print("Cannot use --mask-from-beginning, --mask-from-end, or --mask-invalid with VCF files!")
+        if args.mask_gaps or args.mask_from_beginning or args.mask_from_end or args.mask_invalid:
+            print("Cannot use --mask-gaps, --mask-from-beginning, --mask-from-end, or --mask-invalid with VCF files!")
             sys.exit(1)
         mask_vcf(mask_sites, args.sequences, out_file, args.cleanup)
     else:
         mask_fasta(mask_sites, args.sequences, out_file,
+                   mask_gaps=args.mask_gaps,
                    mask_from_beginning=args.mask_from_beginning,
                    mask_from_end=args.mask_from_end,
                    mask_invalid=args.mask_invalid)
