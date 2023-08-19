@@ -6,7 +6,7 @@ Integration tests for augur mask.
 Try masking a VCF without any specified mask.
 
   $ ${AUGUR} mask --sequences mask/variants.vcf.gz
-  No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites
+  No masking sites provided. Must include one of --mask, --mask-gaps, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites
   [1]
 
 Mask a VCF with a BED file and no specified output file.
@@ -32,7 +32,7 @@ Mask a VCF with a BED file and a specified output file.
 Try masking sequences without any specified mask.
 
   $ ${AUGUR} mask --sequences mask/sequences.fasta
-  No masking sites provided. Must include one of --mask, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites
+  No masking sites provided. Must include one of --mask, --mask-gaps, --mask-from-beginning, --mask-from-end, --mask-invalid, or --mask-sites
   [1]
 
 Mask sequences with a BED file and no specified output file.
@@ -45,7 +45,7 @@ Since no output is provided, the input file is overridden with the masked sequen
 
   $ cat "$TMP/sequences.fasta"
   >sequence_1
-  NNGCNG
+  NN-ANGCT--G
   $ rm -f "$TMP/sequences.fasta"
 
 Mask sequences with a BED file and a specified output file.
@@ -59,7 +59,7 @@ Mask sequences with a BED file and a specified output file.
 
   $ cat "$TMP/masked.fasta"
   >sequence_1
-  NNGCNG
+  NN-ANGCT--G
   $ rm -f "$TMP/masked.fasta"
 
 Mask one base from the beginning and the end.
@@ -73,7 +73,7 @@ Mask one base from the beginning and the end.
 
   $ cat "$TMP/masked.fasta"
   >sequence_1
-  NTGCTN
+  N--ATGCT--N
   $ rm -f "$TMP/masked.fasta"
 
 Mask a specific list of sites and also mask one base from the beginning and the end.
@@ -88,7 +88,7 @@ Mask a specific list of sites and also mask one base from the beginning and the 
 
   $ cat "$TMP/masked.fasta"
   >sequence_1
-  NTNNTN
+  N-NNTGCT--N
   $ rm -f "$TMP/masked.fasta"
 
 Mask invalid nucleotides
@@ -103,5 +103,32 @@ Mask invalid nucleotides
   >sequence_1
   ATCGNNNN
   $ rm -f "$TMP/masked.fasta"
+
+Mask all gaps
+  $ ${AUGUR} mask \
+  >  --sequences mask/sequences.fasta \
+  >  --mask-gaps all \
+  >  --output "$TMP/masked.fasta"
+  Removing masked sites from FASTA file.
+
+  $ cat "$TMP/masked.fasta"
+  >sequence_1
+  NNNATGCTNNG
+
+Mask terminal gaps as well as one character from beginning and end
+
+  $ ${AUGUR} mask \
+  >  --sequences mask/sequences.fasta \
+  >  --mask-gaps terminals \
+  >  --mask-from-beginning 1 \
+  >  --mask-from-end 1 \
+  >  --output "$TMP/masked.fasta"
+  Removing masked sites from FASTA file.
+
+  $ cat "$TMP/masked.fasta"
+  >sequence_1
+  NNNATGCT--N
+
+Go back to the original directory.
 
   $ popd > /dev/null
