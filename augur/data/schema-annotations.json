@@ -1,34 +1,90 @@
 {
     "type" : "object",
     "$schema": "http://json-schema.org/draft-06/schema#",
-    "title": "JSON object for the `annotations` key, typically produced by `augur translate`",
-    "description": "Coordinates etc of genes / genome",
-    "patternProperties": {
-        "^[a-zA-Z0-9*_-]+$": {
+    "$id": "https://nextstrain.org/schemas/augur/annotations",
+    "title": "Schema for the 'annotations' property (node-data JSON) or the 'genome_annotations' property (auspice JSON)",
+    "properties": {
+        "nuc": {
             "type": "object",
+            "allOf": [{ "$ref": "#/$defs/startend" }],
             "properties": {
-                "seqid":{
-                    "description": "Sequence on which the coordinates below are valid. Could be viral segment, bacterial contig, etc",
-                    "$comment": "Unused by Auspice 2.0",
-                    "type": "string"
-                },
-                "type": {
-                    "description": "Type of the feature. could be mRNA, CDS, or similar",
-                    "$comment": "Unused by Auspice 2.0",
-                    "type": "string"
-                },
                 "start": {
-                    "description": "Gene start position (one-based, following GFF format)",
-                    "type": "number"
-                },
-                "end": {
-                    "description": "Gene end position (one-based closed, last position of feature, following GFF format)",
-                    "type": "number"
+                    "enum": [1],
+                    "$comment": "nuc must begin at 1"
                 },
                 "strand": {
-                    "description": "Positive or negative strand",
                     "type": "string",
-                    "enum": ["-","+"]
+                    "enum":["+"],
+                    "description": "Strand is optional for nuc, as it should be +ve for all genomes (-ve strand genomes are reverse complemented)",
+                    "$comment": "Auspice will not proceed if the JSON has strand='-'"
+                }
+            },
+            "additionalProperties": true,
+            "$comment": "All other properties are unused by Auspice."
+        }
+    },
+    "required": ["nuc"],
+    "patternProperties": {
+        "^(?!nuc)[a-zA-Z0-9*_-]+$": {
+            "$comment": "Each object here defines a single CDS",
+            "type": "object",
+            "oneOf": [{ "$ref": "#/$defs/startend" }, { "$ref": "#/$defs/segments" }],
+            "additionalProperties": true,
+            "required": ["strand"],
+            "properties": {
+                "gene": {
+                    "type": "string",
+                    "description": "The name of the gene the CDS is from. Optional.",
+                    "$comment": "Shown in on-hover infobox & influences default CDS colors"
+                },
+                "strand": {
+                    "description": "Strand of the CDS",
+                    "type": "string",
+                    "enum": ["-", "+"]
+                },
+                "color": {
+                    "type": "string",
+                    "description": "A CSS color or a color hex code. Optional."
+                },
+                "display_name": {
+                    "type": "string",
+                    "$comment": "Shown in the on-hover info box"
+                },
+                "description": {
+                    "type": "string",
+                    "$comment": "Shown in the on-hover info box"
+                }
+            }
+        }
+    },
+    "$defs": {
+        "startend": {
+            "type": "object",
+            "required": ["start", "end"],
+            "properties": {
+                "start": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Start position (one-based, following GFF format)"
+                },
+                "end": {
+                    "type": "integer",
+                    "minimum": 2,
+                    "description": "End position (one-based, following GFF format). This value _must_ be greater than the start."
+                }
+            }
+        },
+        "segments": {
+            "type": "object",
+            "required": ["segments"],
+            "properties": {
+                "segments": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "allOf": [{ "$ref": "#/$defs/startend" }]
+                    }
                 }
             }
         }

@@ -38,7 +38,7 @@ class TestNodeDataFile:
         build_node_data_file(
             f"""
             {{
-                "annotations": {{ "a": {{ "start": 5 }} }},
+                "annotations": {{ "nuc": {{ "start": 1, "end": 100 }} }},
                 "generated_by": {{ "program": "augur", "version": "{__version__}" }},
                 "nodes": {{ "a": 5 }}
             }}
