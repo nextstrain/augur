@@ -55,7 +55,7 @@ def load_json_schema(path, refs=None):
     # Either way, Augur should not be accessing the network. 
     def resolve_remote(url):
         # The exception type is not important as jsonschema will catch & re-raise as a RefResolutionError
-        raise Exception(f"The schema used for validation attempted to fetch the remote URL '{url!r}'. " +
+        raise Exception(f"The schema used for validation attempted to fetch the remote URL {url!r}. " +
                         "Augur should resolve schema references to local files, please check the schema used " +
                         "and update the appropriate schema_store as needed." )
     schema_validator.resolver.resolve_remote = resolve_remote
