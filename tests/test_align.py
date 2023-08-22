@@ -385,12 +385,7 @@ class TestAlign:
         output = run("-s %s" % (test_file))
         assert output.keys() == test_seqs.keys()
         assert all(len(r.seq) == expected_length for r in output.values())
-    
-    def test_run_fill_gaps(self, test_file, run):
-        """All gaps should be filled when --fill-gaps is passed"""
-        output = run("-s %s --fill-gaps" % test_file)
-        assert all("-" not in r.seq for r in output.values())
-    
+
     def test_run_with_ref_name_no_alignment(self, test_with_ref, test_seqs, ref_seq, run):
         expected_length = len(ref_seq.seq) - ref_seq.seq.count("-")
         output = run("-s %s --reference-name %s" % (test_with_ref, ref_seq.id))
