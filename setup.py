@@ -70,6 +70,7 @@ setuptools.setup(
         'dev': [
             "cram >=0.7",
             "deepdiff >=4.3.2",
+            "flake8",
             "freezegun >=0.3.15",
             "mypy",
             "nextstrain-sphinx-theme >=2022.5",
