@@ -639,7 +639,7 @@ class alignment_frequencies(object):
         self.counts = count_observations(self.pivots, self.tps)
 
 
-    def estimate_genotype_frequency(self, gt):
+    def estimate_genotype_frequency(self, aln, gt, **kwargs):
         '''
         slice an alignment at possibly multiple positions and calculate the
         frequency trajectory of this multi-locus genotype
