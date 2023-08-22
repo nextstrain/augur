@@ -8,7 +8,6 @@ import pandas as pd
 from scipy.interpolate import interp1d
 from scipy.stats import norm
 import sys
-import time
 
 from .dates import numeric_date
 
