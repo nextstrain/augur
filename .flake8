@@ -25,6 +25,3 @@ extend-ignore =
 
     # allow undefined variables
     F821,
-
-    # allow redefining unused variables
-    F811,
