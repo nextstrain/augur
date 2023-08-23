@@ -34,7 +34,7 @@ with readme_file.open(encoding = "utf-8") as f:
 
 setuptools.setup(
     name = "nextstrain-augur",
-    version = __version__,
+    version = __version__,  # noqa: F821; This is imported from version_file.
     author = "Nextstrain developers",
     author_email = "trevor@bedford.io, richard.neher@unibas.ch",
     description = "A bioinformatics toolkit for phylogenetic analysis",

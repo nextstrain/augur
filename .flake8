@@ -22,6 +22,3 @@ extend-ignore =
 
     # allow unused imports
     F401,
-
-    # allow undefined variables
-    F821,
