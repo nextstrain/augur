@@ -19,6 +19,3 @@ extend-ignore =
 
     # allow unused variables
     F841,
-
-    # allow unused imports
-    F401,
