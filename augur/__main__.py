@@ -8,9 +8,18 @@ from sys import argv, exit
 
 # Entry point for setuptools-installed script and bin/augur dev wrapper.
 def main():
-    # Support non-Unicode encodings by replacing Unicode characters instead of erroring.
-    sys.stdout.reconfigure(errors="backslashreplace")
-    sys.stderr.reconfigure(errors="backslashreplace")
+    sys.stdout.reconfigure(
+        # Support non-Unicode encodings by replacing Unicode characters instead of erroring.
+        errors="backslashreplace",
+
+        # Explicitly enable universal newlines mode so we do the right thing.
+        newline=None,
+    )
+    # Apply the above to stderr as well.
+    sys.stderr.reconfigure(
+        errors="backslashreplace",
+        newline=None,
+    )
 
     return augur.run( argv[1:] )
 
