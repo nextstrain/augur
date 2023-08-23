@@ -2,11 +2,16 @@
 
 ## __NEXT__
 
+### Features
+
+* mask: Add `--mask-gaps` option to `augur mask` to allow masking of gaps at terminals via `--mask-gaps terminals` or all gaps via `--mask-gaps all`. [#1286][] (@corneliusroemer)
+
 ### Bug fixes
 
 * distance: Improve documentation by describing how gaps get treated as indels and how users can ignore specific characters in distance calculations. [#1285][] (@huddlej)
 
 [#1285]: https://github.com/nextstrain/augur/pull/1285
+[#1286]: https://github.com/nextstrain/augur/pull/1286
 
 ## 22.3.0 (14 August 2023)
 
