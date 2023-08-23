@@ -5,8 +5,10 @@
 ### Bug fixes
 
 * distance: Improve documentation by describing how gaps get treated as indels and how users can ignore specific characters in distance calculations. [#1285][] (@huddlej)
+* Fix help output compatibility with non-Unicode streams. [#1290][] (@victorlin)
 
 [#1285]: https://github.com/nextstrain/augur/pull/1285
+[#1290]: https://github.com/nextstrain/augur/pull/1290
 
 ## 22.3.0 (14 August 2023)
 
