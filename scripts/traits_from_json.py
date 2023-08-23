@@ -1,10 +1,9 @@
 from __future__ import print_function
-import os, sys
+import sys
 sys.path.append('..') # this is an assumption and is probably wrong
 from base.utils import parse_date
 import argparse
 import json
-from pdb import set_trace
 from numpy import ndarray
 
 def get_trait(attributes, trait, dateFormat):

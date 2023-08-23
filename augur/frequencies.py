@@ -3,7 +3,6 @@ infer frequencies of mutations or clades
 """
 import json, os, sys
 import numpy as np
-from collections import defaultdict
 from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
 
@@ -12,7 +11,7 @@ from .frequency_estimators import get_pivots, alignment_frequencies, tree_freque
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
 from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
-from .utils import read_node_data, write_json
+from .utils import write_json
 
 
 def register_parser(parent_subparsers):

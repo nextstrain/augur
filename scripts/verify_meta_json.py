@@ -1,9 +1,8 @@
 from __future__ import print_function
-import os, sys
+import sys
 sys.path.append('..') # this is an assumption and is probably wrong
 import argparse
 import json
-from pdb import set_trace
 
 
 def verify_defaults(defaults):

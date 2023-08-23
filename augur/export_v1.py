@@ -2,8 +2,7 @@
 Export version 1 JSON schema (separate meta and tree JSONs) for visualization with Auspice
 """
 
-import os, sys
-import re
+import sys
 from textwrap import dedent
 import time
 import numpy as np

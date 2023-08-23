@@ -4,8 +4,7 @@ Infer ancestral traits based on a tree.
 
 import numpy as np
 from collections import defaultdict
-import os, sys
-import pandas as pd
+import sys
 from .errors import AugurError
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .utils import write_json, get_json_name
@@ -43,9 +42,6 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
         mapping of character states to
     """
     from treetime.wrappers import reconstruct_discrete_traits
-    from Bio.Align import MultipleSeqAlignment
-    from Bio.SeqRecord import SeqRecord
-    from Bio.Seq import Seq
     from Bio import Phylo
 
     T = Phylo.read(tree, 'newick')

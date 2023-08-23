@@ -1,16 +1,11 @@
 """
 Unit tests for nucleotide to acid translation
 """
-import json
-import numpy as np
 from pathlib import Path
-import pytest
 import sys
-import os
 
 from Bio.Seq import Seq
 from Bio.SeqFeature import SeqFeature, FeatureLocation
-import treetime
 
 # we assume (and assert) that this script is running from the tests/ directory
 sys.path.append(str(Path(__file__).parent.parent.parent))

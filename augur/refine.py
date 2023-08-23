@@ -336,7 +336,6 @@ def run(args):
         return 1
 
     # Export refined tree and node data
-    import json
     tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f', branch_length_only=True)
     print("updated tree written to",tree_fname, file=sys.stdout)
 

@@ -1,7 +1,6 @@
 """Count occurrence of bases in a set of sequences.
 """
 
-from Bio import SeqIO
 from itertools import combinations
 import sys
 import csv
