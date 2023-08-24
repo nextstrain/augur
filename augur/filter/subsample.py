@@ -69,16 +69,16 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> group_by_strain
     {'strain1': (2020, (2020, 1), 'unknown'), 'strain2': (2020, (2020, 2), 'unknown')}
 
-    If we try to group metadata that doesn't have any non-ID columns, we get nothing. This is a bug.
+    We can group metadata without any non-ID columns.
 
     >>> metadata = pd.DataFrame([{"strain": "strain1"}, {"strain": "strain2"}]).set_index("strain")
     >>> get_groups_for_subsampling(strains, metadata, group_by=('_dummy',))
-    {}
+    {'strain1': ('_dummy',), 'strain2': ('_dummy',)}
     """
     metadata = metadata.loc[list(strains)]
     group_by_strain = {}
 
-    if metadata.empty:
+    if len(metadata) == 0:
         return group_by_strain
 
     if not group_by or group_by == ('_dummy',):
