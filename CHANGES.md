@@ -2,11 +2,16 @@
 
 ## __NEXT__
 
+### Features
+
+* refine: Export covariance matrix and standard deviation for clock rate regression in the node data JSON output when these values are calculated by TreeTime. These new values appear in the `clock` data structure of the JSON output as `cov` and `rate_std` keys, respectively. [#1284][] (@huddlej)
+
 ### Bug fixes
 
 * distance: Improve documentation by describing how gaps get treated as indels and how users can ignore specific characters in distance calculations. [#1285][] (@huddlej)
 * Fix help output compatibility with non-Unicode streams. [#1290][] (@victorlin)
 
+[#1284]: https://github.com/nextstrain/augur/pull/1284
 [#1285]: https://github.com/nextstrain/augur/pull/1285
 [#1290]: https://github.com/nextstrain/augur/pull/1290
 
