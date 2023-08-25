@@ -84,9 +84,13 @@ def read_in_clade_definitions(clade_file):
     # Use integer 0 as root so as not to conflict with any string clade names
     # String '0' can still be used this way
     root = 0
+
+    # Skip rows that are missing a clade name.
+    defined_clades = (clade for clade in df.clade.unique() if clade != '')
+
     # For every clade, add edge from root as default
     # This way all clades can be reached by traversal
-    for clade in df.clade.unique():
+    for clade in defined_clades:
         G.add_edge(root, clade)
 
     # Build inheritance graph
