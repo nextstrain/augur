@@ -2,12 +2,21 @@
 
 ## __NEXT__
 
+### Features
+
+* filter: Added a new option `--query-columns` that allows specifying what columns are used in `--query` along with the expected data types. If unspecified, automatic detection of columns and types is attempted. [#1294][] (@victorlin)
+* `augur.io.read_metadata`: A new optional `columns` argument allows specifying a subset of columns to load. The default behavior still loads all columns, so this is not a breaking change. [#1294][] (@victorlin)
+
 ### Bug Fixes
 
+* filter: The order of rows in `--output-metadata` and `--output-strains` now reflects the order in the original `--metadata`. [#1294][] (@victorlin)
+* filter, frequencies, refine: Performance improvements to reading the input metadata file. [#1294][] (@victorlin)
+    * For filter, this comes with increased writing times for `--output-metadata` and `--output-strains`. However, net I/O speed still decreased during testing of this change.
 * filter: Updated the help text of `--include` and `--include-where` to explicitly state that this can add strains that are missing an entry from `--sequences`. [#1389][] (@victorlin)
 * filter: Fixed the summary messages to properly reflect force-inclusion of strains that are missing an entry from `--sequences`. [#1389][] (@victorlin)
 * filter: Updated wording of summary messages. [#1389][] (@victorlin)
 
+[#1294]: https://github.com/nextstrain/augur/pull/1294
 [#1389]: https://github.com/nextstrain/augur/pull/1389
 
 ## 24.1.0 (30 January 2024)
