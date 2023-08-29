@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 22.4.0 (29 August 2023)
+
 ### Features
 
 * refine: Export covariance matrix and standard deviation for clock rate regression in the node data JSON output when these values are calculated by TreeTime. These new values appear in the `clock` data structure of the JSON output as `cov` and `rate_std` keys, respectively. [#1284][] (@huddlej)
