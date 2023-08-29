@@ -190,7 +190,8 @@ def export_v2(main_json, **kwargs):
     # filepath is specified relative to ./augur/data (where all the schemas
     # live).
     refs = {
-        'https://nextstrain.org/schemas/augur/annotations': "schema-annotations.json"
+        'https://nextstrain.org/schemas/augur/annotations': "schema-annotations.json",
+        'https://nextstrain.org/schemas/dataset/root-sequence': "schema-export-root-sequence.json",
     }
     main_schema = load_json_schema("schema-export-v2.json", refs)
 

@@ -296,6 +296,9 @@
                     "items": {"$ref": "#/$defs/tree"}
                 }
             ]
+        },
+        "root_sequence": {
+            "$ref": "https://nextstrain.org/schemas/dataset/root-sequence"
         }
     },
     "$defs": {
