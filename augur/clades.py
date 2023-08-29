@@ -62,7 +62,8 @@ def read_in_clade_definitions(clade_file):
     df = pd.read_csv(
         clade_file,
         sep='\t' if clade_file.endswith('.tsv') else ',',
-        comment='#'
+        comment='#',
+        na_filter=False,
     )
 
     clade_inheritance_rows = df[df['gene'] == 'clade']
