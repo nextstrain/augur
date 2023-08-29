@@ -1,7 +1,7 @@
 """
 Assign clades to nodes in a tree based on amino-acid or nucleotide signatures.
 
-Nodes which are members of a clade are stored via 
+Nodes which are members of a clade are stored via
 <OUTPUT_NODE_DATA> → nodes → <node_name> → clade_membership
 and if this file is used in `augur export v2` these will automatically become a coloring.
 
@@ -62,7 +62,8 @@ def read_in_clade_definitions(clade_file):
     df = pd.read_csv(
         clade_file,
         sep='\t' if clade_file.endswith('.tsv') else ',',
-        comment='#'
+        comment='#',
+        na_filter=False,
     )
 
     clade_inheritance_rows = df[df['gene'] == 'clade']
@@ -83,9 +84,13 @@ def read_in_clade_definitions(clade_file):
     # Use integer 0 as root so as not to conflict with any string clade names
     # String '0' can still be used this way
     root = 0
+
+    # Skip rows that are missing a clade name.
+    defined_clades = (clade for clade in df.clade.unique() if clade != '')
+
     # For every clade, add edge from root as default
     # This way all clades can be reached by traversal
-    for clade in df.clade.unique():
+    for clade in defined_clades:
         G.add_edge(root, clade)
 
     # Build inheritance graph
@@ -181,7 +186,7 @@ def ensure_no_multiple_mutations(all_muts):
             aa_positions = [int(mut[1:-1])-1 for mut in node['aa_muts'][gene]]
             if len(set(aa_positions))!=len(aa_positions):
                 multiples.append(f"Node {name} ({gene})")
-    
+
     if multiples:
         raise AugurError(f"Multiple mutations at the same position on a single branch were found: {', '.join(multiples)}")
 
@@ -310,7 +315,7 @@ def get_reference_sequence_from_root_node(all_muts, root_name):
         except KeyError:
             missing.append(gene)
 
-    if missing:            
+    if missing:
         print(f"WARNING in augur.clades: sequences at the root node have not been specified for {{{', '.join(missing)}}}, \
 even though mutations were observed. Clades which are annotated using bases/codons present at the root \
 of the tree may not be correctly inferred.")
@@ -358,7 +363,6 @@ def run(args):
         ref = get_reference_sequence_from_root_node(all_muts, tree.root.name)
 
     clade_designations = read_in_clade_definitions(args.clades)
-
     membership, labels = assign_clades(clade_designations, all_muts, tree, ref)
     warn_if_clades_not_found(membership, clade_designations)
 

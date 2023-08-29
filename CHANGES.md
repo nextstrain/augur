@@ -8,12 +8,14 @@
 
 ### Bug fixes
 
+* clades: Fix outputs for genes named `NA` (previously the value was replaced by `nan`). [#1293][] (@rneher)
 * distance: Improve documentation by describing how gaps get treated as indels and how users can ignore specific characters in distance calculations. [#1285][] (@huddlej)
 * Fix help output compatibility with non-Unicode streams. [#1290][] (@victorlin)
 
 [#1284]: https://github.com/nextstrain/augur/pull/1284
 [#1285]: https://github.com/nextstrain/augur/pull/1285
 [#1290]: https://github.com/nextstrain/augur/pull/1290
+[#1293]: https://github.com/nextstrain/augur/pull/1293
 
 ## 22.3.0 (14 August 2023)
 
