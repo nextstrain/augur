@@ -185,6 +185,11 @@
                     "type": "string",
                     "pattern": "^(none|[a-zA-Z0-9]+)$"
                 },
+                "tip_label": {
+                  "description": "What tip label should be displayed by default, or 'none' to hide labels by default.",
+                  "$comment": "Should be a key present in (at least some) node_attrs",
+                  "type": "string"
+              },
                 "transmission_lines": {
                     "$comment": "Transmission lines depend on the geo_resolution being defined for internal nodes",
                     "type": "boolean"
