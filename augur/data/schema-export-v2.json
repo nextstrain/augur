@@ -292,27 +292,22 @@
                             }
                         },
                         "mutations": {
-                            "description": "Mutations occuring between the parent and this node",
-                            "$comment": "same numbering scheme as used by the meta.JSON -> annotations",
-                            "$comment": "combining nuc + AAs parallels the metadata -> annotations structure",
+                            "description": "Mutations on the branch leading to this node. 1-based numbering (same as genome_annotations)",
                             "type": "object",
                             "additionalProperties": false,
                             "properties":  {
                                 "nuc": {
-                                    "description": "nucelotide mutations",
+                                    "description": "nucleotide mutations",
                                     "type": "array",
                                     "items": {
-                                      "oneOf": [
-                                        {"type": "string", "pattern": "^[ATCGNYRWSKMDVHB-][0-9]+[ATCGNYRWSKMDVHB-]$"},
-                                        {"type": "string", "pattern": "^insertion [0-9]+-[0-9]+$", "$comment": "TODO unused by auspice"},
-                                        {"type": "string", "pattern": "^deletion [0-9]+-[0-9]+$", "$comment": "TODO unused by auspice"}
-                                      ]
+                                      "type": "string",
+                                      "pattern": "^[ATCGNYRWSKMDVHB-][0-9]+[ATCGNYRWSKMDVHB-]$"
                                     }
                                 }
                             },
                             "patternProperties": {
-                                "^[a-zA-Z0-9_-]+$": {
-                                    "description": "Amino acid mutations for this gene (or annotated region)",
+                                "^(?!nuc)[a-zA-Z0-9*_-]+$": {
+                                    "description": "Amino acid mutations for this CDS",
                                     "$comment": "properties must exist in the meta.JSON -> annotation object",
                                     "type": "array",
                                     "items": {
