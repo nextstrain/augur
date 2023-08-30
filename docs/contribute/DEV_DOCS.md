@@ -15,7 +15,7 @@ Please see the [open issues list](https://github.com/nextstrain/augur/issues) fo
 
 ## Contributing code
 
-We currently target compatibility with Python 3.7 and higher. As Python releases new versions,
+We currently target compatibility with Python 3.8 and higher. As Python releases new versions,
 the minimum target compatibility may be increased in the future.
 
 ### Running local changes
