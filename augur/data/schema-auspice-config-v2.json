@@ -12,12 +12,12 @@
             "type" : "string"
         },
         "colorings": {
-            "description": "Set traits to be available as color-dropdown options",
+            "description": "Traits available as color-by options",
             "type": "array",
             "minItems": 1,
             "items": {
                 "type": "object",
-                "description": "An indiviual color-by for auspice",
+                "description": "Each object here is an individual coloring, which will populate the sidebar dropdown in auspice",
                 "additionalProperties": false,
                 "required": ["key"],
                 "properties": {
@@ -32,19 +32,20 @@
                     },
                     "type": {
                         "description": "Defines how the color scale should be constructed",
+                        "$comment": "[augur export v2] will (try to) infer the type if this is not present",
                         "type": "string",
                         "enum": ["continuous", "temporal", "ordinal", "categorical", "boolean"]
                     },
                     "scale": {
-                        "description": "Provided mapping between trait values & hex values",
-                        "$comment": "NOTE: if supplied here, we will not use information supplied to `augur export` via `--colors` for this coloring.",
+                        "description": "Provided mapping between trait values & hex values. For continuous scales at least 2 items must be specified",
+                        "$comment": "[auspice export v2] preferentially uses this over colors TSV",
                         "type": "array",
                         "items": {
                             "type": "array",
                             "items": [
                                 {
                                     "type": ["string", "number"],
-                                    "description": "For categorical/ordinal scales, this is the (string) value of the trait to associate with the colour. For continuous scales this is the (numeric) value to associate to with the colour, and interpolation will be used to span the domain"
+                                    "description": "For categorical/ordinal scales, this is the (string) value of the trait to associate with the colour. For continuous scales this is the (numeric) value to associate with the colour, and interpolation will be used to span the domain"
                                 },
                                 {"type": "string", "description": "color hex value", "pattern": "^#[0-9A-Fa-f]{6}$"}
                             ]
@@ -143,18 +144,19 @@
         },
         "build_url": {
           "description": "URL with instructions to reproduce build, usually expected to be a GitHub repo URL",
-          "$comment": "optional",
+          "$comment": "Auspice displays this at the top of the page as part of a byline",
           "type": "string"
         },
         "filters": {
-            "type": "array",
-            "uniqueItems": true,
-            "minItems": 0,
-            "items": {
-                "type": "string"
-            }
+          "description": "These appear as filters in the footer of Auspice (which populates the displayed values based upon the tree)",
+          "$comment": "These values must be present as keys on a tree node -> trait",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string"}
         },
         "display_defaults": {
+            "description": "Set the defaults for certain display options in Auspice. All are optional.",
+            "$comment": "Anything able to be encoded in the auspice URL should eventually be an option here, so this will expand over time",
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -162,9 +164,11 @@
                     "type": "boolean"
                 },
                 "geo_resolution": {
+                    "$comment": "The value here must be present in geo_resolutions (see above)",
                     "type": "string"
                 },
                 "color_by": {
+                    "$comment": "The value here must be present in the colorings (see above)",
                     "type": "string"
                 },
                 "distance_measure": {
@@ -182,6 +186,7 @@
                     "pattern": "^(none|[a-zA-Z0-9]+)$"
                 },
                 "transmission_lines": {
+                    "$comment": "Transmission lines depend on the geo_resolution being defined for internal nodes",
                     "type": "boolean"
                 },
                 "language": {
@@ -195,8 +200,7 @@
                 },
                 "panels": {
                     "type": "array",
-                    "description": "The panels to display by default.",
-                    "$comment": "optional, but if present must not be empty",
+                    "description": "Panels which start toggled on (default is for all available to be shown)",
                     "minItems": 1,
                     "items": {
                         "type": "string",
@@ -217,9 +221,9 @@
             "type": "string"
         },
         "panels": {
+            "description": "The panels available for display",
+            "$comment": "The frequencies & measurements panel will only be available if defined here (and if their sidecar files are available)",
             "type": "array",
-            "description": "The panels available for display.",
-            "$comment": "optional",
             "minItems": 1,
             "items": {
                 "type": "string",

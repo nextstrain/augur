@@ -27,8 +27,7 @@
                     "pattern": "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$"
                 },
                 "build_url" : {
-                    "description": "Auspice displays this at the top of the page as part of a byline",
-                    "type" : "string"
+                    "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/build_url"
                 },
                 "description" : {
                     "description": "Auspice displays this currently in the footer.",
@@ -36,44 +35,19 @@
                     "type": "string"
                 },
                 "maintainers": {
-                    "description": "Who maintains this dataset?",
-                    "$comment": "order similar to a publication",
-                    "type": "array",
-                    "uniqueItems": true,
-                    "minItems": 1,
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {"type": "string"},
-                            "url": {"type": "string"}
-                        },
-                        "required": ["name"]
-                    }
+                    "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/maintainers"
                 },
                 "genome_annotations": {
                     "$ref": "https://nextstrain.org/schemas/augur/annotations"
                 },
                 "filters": {
-                    "description": "These appear as filters in the footer of Auspice (which populates the displayed values based upon the tree)",
-                    "$comment": "These values must be present as keys on a tree node -> trait",
-                    "type": "array",
-                    "uniqueItems": true,
-                    "items": {"type": "string"}
+                    "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/filters"
                 },
                 "panels": {
-                    "description": "Which panels should Auspice display?",
-                    "$comment": "If additional JSONs are required (e.g. for frequencies), they will be fetched after parsing this array",
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "enum": ["tree", "map", "frequencies", "entropy", "measurements"]
-                    },
-                    "uniqueItems": true,
-                    "minItems": 1
+                    "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/panels"
                 },
                 "extensions": {
-                    "description": "Data to be passed through to the the resulting dataset JSON",
-                    "$comment": "Any type is accepted"
+                    "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/extensions"
                 },
                 "geo_resolutions": {
                     "description": "The available options for the geographic resolution dropdown, and their lat/long information",
@@ -81,7 +55,7 @@
                     "minItems": 1,
                     "items": {
                         "type": "object",
-                        "description": "Each object here is an indiviual geo resolution",
+                        "description": "Each object here is an individual geo resolution",
                         "additionalProperties": false,
                         "required": ["key", "demes"],
                         "properties": {
@@ -95,12 +69,10 @@
                             },
                             "demes": {
                                 "type": "object",
-                                "description": "The deme names & lat/long info for this geographic resolution",
+                                "description": "Mapping from deme (trait values) to lat/long",
                                 "$comment": "Each value defined across the tree needs to be present here, else Auspice cannot display the deme appropriately",
                                 "patternProperties": {
                                     "^[a-z_]+$": {
-                                        "description": "Lat/long info for this deme",
-                                        "$comment": "one day this may define a shape / polygon",
                                         "type": "object",
                                         "additionalProperties": false,
                                         "properties": {
@@ -122,155 +94,20 @@
                     }
                 },
                 "colorings": {
-                    "description": "Available colorBys for Auspice",
                     "type": "array",
                     "minItems": 1,
                     "items": {
-                        "type": "object",
-                        "description": "Each object here is an individual coloring, which will populate the sidebar dropdown in auspice",
-                        "required": ["key", "type"],
-                        "properties": {
-                            "key": {
-                                "description": "They key used to access the value of this coloring on each node",
-                                "type": "string"
-                            },
-                            "title": {
-                                "description": "Text to be displayed in the \"color by\" dropdown and the tree legend",
-                                "$comment": "string is parsed unchanged by Auspice",
-                                "type": "string"
-                            },
-                            "type": {
-                                "description": "Dictates how the color scale should be constructed",
-                                "$comment": "The trait values (defined on tree nodes) must be numeric for continuous types, True / False for boolean, string or numeric for ordinal / categorical",
-                                "type": "string",
-                                "enum": ["continuous", "temporal", "ordinal", "categorical", "boolean"]
-                            },
-                            "scale": {
-                                "description": "Provided mapping between trait values & hex values",
-                                "$comment": "For continuous scales at least 2 items must be specified",
-                                "type": "array",
-                                "items": {
-                                    "type": "array",
-                                    "items": [
-                                        {
-                                            "type": ["string", "number"],
-                                            "description": "For categorical/ordinal scales, this is the (string) value of the trait to associate with the colour. For continuous scales this is the (numeric) value to associate to with the colour, and interpolation will be used to span the domain"
-                                        },
-                                        {"type": "string", "description": "color hex value", "pattern": "^#[0-9A-Fa-f]{6}$"}
-                                    ]
-                                }
-                            },
-                            "legend": {
-                                "description": "Specify the entries displayed in the legend. This can be used to restrict the entries in the legend for display without otherwise affecting the data viz",
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "required": ["value"],
-                                    "properties": {
-                                        "value": {
-                                            "description": "value to associate with this legend entry. Used to determine colour. For non-continuous scales this also determines the matching between legend items and data.",
-                                            "type": ["string", "number"],
-                                            "$comment": "Continuous scales must use a numeric value. Other scales can use either."
-                                        },
-                                        "display": {
-                                            "description": "Label to display in the legend. Optional - `value` will be used if this is not provided.",
-                                            "type": ["string", "number"]
-                                        },
-                                        "bounds": {
-                                            "description": "(for continuous scales only) provide the lower & upper bounds to match data to this legend entry. Bounds from different legend entries must not overlap. Matching is (a, b] - exclusive of the lower bound, inclusive of the upper.",
-                                            "type": "array",
-                                            "items": [
-                                                {"type": "number", "description": "lower bound"},
-                                                {"type": "number", "description": "upper bound"}
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        "allOf": [
+                            {"$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/colorings/items"}
+                        ],
+                        "required": ["key", "type"]
                     }
                 },
                 "display_defaults": {
-                    "description": "Set the defaults for certain display options in Auspice. All are optional.",
-                    "$comment": "Anything able to be encoded in the auspice URL should be an option here, so this will expand over time",
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "geo_resolution": {
-                            "description": "Default geographic resolution",
-                            "$comment": "The value here must be present in the geo object (see above)",
-                            "type": "string"
-                        },
-                        "color_by": {
-                            "description": "Default color by",
-                            "$comment": "The value here must be present in the colorings object (see above)",
-                            "type": "string"
-                        },
-                        "distance_measure": {
-                            "description": "Default tree metric",
-                            "type": "string",
-                            "enum": ["div", "num_date"]
-                        },
-                        "layout": {
-                          "description": "Default tree layout",
-                          "type": "string",
-                          "enum": ["rect", "radial", "unrooted", "clock"]
-                        },
-                        "map_triplicate": {
-                            "description": "Should the map be extended / wrapped around. Useful if transmissions are worldwide.",
-                            "type": "boolean"
-                        },
-                        "branch_label": {
-                            "description": "What branch label should be displayed by default, or 'none' to hide labels by default.",
-                            "$comment": "Should be a key present in the per-node branch_attrs.labels object of the exported JSON; pattern is from the schema for that object",
-                            "type": "string",
-                            "pattern": "^(none|[a-zA-Z0-9]+)$"
-                        },
-                        "transmission_lines": {
-                            "description": "Should transmission lines (if available) be displaye by default",
-                            "type": "boolean"
-                        },
-                        "language": {
-                            "type": "string",
-                            "minLength": 1,
-                            "description": "A BCP 47 language tag specifying the default language in which to display Auspice's interface (if supported)"
-                        },
-                        "sidebar": {
-                            "type": "string",
-                            "enum": ["open", "closed"]
-                        },
-                        "panels": {
-                            "type": "array",
-                            "description": "The panels to display by default.",
-                            "$comment": "optional, but if present must not be empty",
-                            "minItems": 1,
-                            "items": {
-                                "type": "string",
-                                "enum": ["tree", "map", "frequencies", "entropy"]
-                            }
-                        }
-                    }
+                    "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/display_defaults"
                 },
                 "data_provenance": {
-                    "description": "Specify provenance of data included in this analysis",
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "type": "object",
-                        "description": "An individual data source",
-                        "additionalProperties": false,
-                        "required": ["name"],
-                        "properties": {
-                            "name": {
-                                "description": "Name of the data source",
-                                "type": "string"
-                            },
-                            "url": {
-                                "description": "URL to use in link to data source",
-                                "type": "string"
-                            }
-                        }
-                    }
+                    "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/data_provenance"
                 }
             }
         },
