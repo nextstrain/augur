@@ -1,17 +1,29 @@
-### Description of proposed changes
-What is the goal of this pull request? What does this pull request change?
+## Description of proposed changes
 
-### Related issue(s)
-<!-- Start typing the name of a related issue and GitHub will auto-suggest the issue number for you.  -->
-Fixes #
-Related to #
+<!-- What is the goal of this pull request? What does this pull request change? -->
 
-### Testing
-What steps should be taken to test the changes you've proposed?
-If you added or changed behavior in the codebase, did you update the tests, or do you need help with this?
+## Related issue(s)
+
+<!--
+Link any related issues here. Use GitHub's special keywords if appropriate¹.
+Type `#` followed the name of an issue and GitHub will auto-suggest the issue number for you.
+
+¹ https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/using-keywords-in-issues-and-pull-requests
+-->
+
+## Checklist
+
+<!--
+Make sure checks are successful at the bottom of the PR.
+
+If applicable, add:
+- any changes to existing tests
+- any additional manual testing to confirm changes
+
+Please add a note if you need help with adding tests.
+-->
+
+- [ ] Checks pass
+- [ ] Add a message in [CHANGES.md](https://github.com/nextstrain/augur/blob/HEAD/CHANGES.md) summarizing the changes in this PR that are end user focused. Keep headers and formatting consistent with the rest of the file.
 
 <!-- 🙌 Thank you for contributing to Nextstrain! ✨ -->
-
-### Checklist
-
-- [ ] Add a message in [CHANGES.md](https://github.com/nextstrain/augur/blob/HEAD/CHANGES.md) summarizing the changes in this PR that are end user focused. Keep headers and formatting consistent with the rest of the file.
