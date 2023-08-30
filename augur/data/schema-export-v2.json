@@ -251,18 +251,6 @@
                         }
                     }
                 },
-                "tree_name" : {
-                  "description": "The name of the tree (e.g. segment name), if applicable",
-                  "$comment": "This is required if you want to view two trees side-by-side",
-                  "$comment": "It should match a field in the JSON filename after splitting on '_'",
-                  "$comment": "e.g. `flu_h3n2_ha_3y` has a tree name of `ha`",
-                  "type": "string"
-                },
-                "frequencies": {
-                    "$comment": "Frequencies could be specified here if desired",
-                    "$comment": "If not specified, and frequencies are asked for in #/panels, then Auspice will attempt to fetch a seperate JSON",
-                    "$comment": "cc John / Trevor"
-                },
                 "data_provenance": {
                     "description": "Specify provenance of data included in this analysis",
                     "type": "array",
