@@ -14,7 +14,6 @@
         "colorings": {
             "description": "Traits available as color-by options",
             "type": "array",
-            "minItems": 1,
             "items": {
                 "type": "object",
                 "description": "Each object here is an individual coloring, which will populate the sidebar dropdown in auspice",
