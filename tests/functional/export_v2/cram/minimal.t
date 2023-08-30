@@ -7,8 +7,14 @@ Minimal export
   $ ${AUGUR} export v2 \
   >   --tree "$TESTDIR/../data/tree.nwk" \
   >   --node-data "$TESTDIR/../data/div_node-data.json" \
-  >   --output minimal.json &>/dev/null
-  [2]
+  >   --output minimal.json
+  WARNING: You didn't provide information on who is maintaining this analysis.
+  
+  Validating produced JSON
+  Validating schema of 'minimal.json'...
+  Validating that the JSON is internally consistent...
+  Validation of 'minimal.json' succeeded.
+  
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/minimal.json" minimal.json \
   >   --exclude-paths "root['meta']['updated']"

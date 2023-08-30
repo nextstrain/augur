@@ -95,7 +95,6 @@
                 },
                 "colorings": {
                     "type": "array",
-                    "minItems": 1,
                     "items": {
                         "allOf": [
                             {"$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/colorings/items"}
