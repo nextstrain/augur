@@ -10,7 +10,6 @@ import numbers
 import re
 from Bio import Phylo
 
-from .argparse_ import ExtendAction
 from .errors import AugurError
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .types import ValidationMode
@@ -828,7 +827,7 @@ def register_parser(parent_subparsers):
         title="REQUIRED"
     )
     required.add_argument('--tree','-t', metavar="newick", required=True, help="Phylogenetic tree, usually output from `augur refine`")
-    required.add_argument('--node-data', metavar="JSON", required=True, nargs='+', action=ExtendAction, help="JSON files containing metadata for nodes in the tree")
+    required.add_argument('--node-data', metavar="JSON", required=True, nargs='+', action="extend", help="JSON files containing metadata for nodes in the tree")
     required.add_argument('--output', metavar="JSON", required=True, help="Ouput file (typically for visualisation in auspice)")
 
     config = parser.add_argument_group(

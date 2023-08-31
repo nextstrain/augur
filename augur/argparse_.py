@@ -76,22 +76,3 @@ class HideAsFalseAction(Action):
     """
     def __call__(self, parser, namespace, values, option_string=None):
         setattr(namespace, self.dest, option_string[2:6] != 'hide')
-
-
-# XXX TODO: Drop this when we drop support for 3.7 and use builtin "extend"
-# action.
-class ExtendAction(Action):
-    """
-    Loosely backported version of builtin "extend" action
-    (argparse._ExtendAction) in CPython v3.10.5-172-gf118661a18.  Some of the
-    ceremony we don't need has been ditched.
-
-    >>> import argparse
-    >>> p = argparse.ArgumentParser()
-    >>> a = p.add_argument("-x", action=ExtendAction, nargs="+")
-    >>> p.parse_args(["-x", "a", "b", "-x", "c", "-x", "d"]).x
-    ['a', 'b', 'c', 'd']
-    """
-    def __call__(self, parser, namespace, values, option_string=None):
-        current = getattr(namespace, self.dest, None) or []
-        setattr(namespace, self.dest, [*current, *values])
