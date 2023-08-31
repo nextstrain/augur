@@ -130,7 +130,7 @@
             "type" : "object",
             "$comment": "The phylogeny in a nested JSON structure",
             "additionalProperties": false,
-            "required": ["name"],
+            "required": ["name", "node_attrs"],
             "properties": {
                 "name": {
                     "description": "Strain name. Must be unique. No spaces",
@@ -139,6 +139,10 @@
                 "node_attrs": {
                     "description": "attributes associated with the node (sequence, date, location) as opposed to changes from one node to another.",
                     "type": "object",
+                    "anyOf": [
+                      {"required": ["div"]},
+                      {"required": ["num_date"]}
+                    ],
                     "properties": {
                         "div": {
                             "description": "Node (phylogenetic) divergence",
