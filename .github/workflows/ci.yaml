@@ -97,6 +97,7 @@ jobs:
               pathogen: seasonal-flu,
               build-args: --configfile profiles/ci/builds.yaml -p,
             }
+          - { pathogen: tb }
           - { pathogen: zika }
     name: pathogen-repo-ci (${{ matrix.pathogen }})
     defaults:
