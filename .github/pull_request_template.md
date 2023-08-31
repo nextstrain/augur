@@ -24,6 +24,6 @@ Please add a note if you need help with adding tests.
 -->
 
 - [ ] Checks pass
-- [ ] Add a message in [CHANGES.md](https://github.com/nextstrain/augur/blob/HEAD/CHANGES.md) summarizing the changes in this PR that are end user focused. Keep headers and formatting consistent with the rest of the file.
+- [ ] If making user-facing changes, add a message in [CHANGES.md](https://github.com/nextstrain/augur/blob/HEAD/CHANGES.md) summarizing the changes in this PR
 
 <!-- 🙌 Thank you for contributing to Nextstrain! ✨ -->
