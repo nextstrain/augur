@@ -123,7 +123,8 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
         return [treetime.utils.numeric_date(d) for d in ambig_date]
     try:
         return treetime.utils.numeric_date(datetime.datetime.strptime(value, fmt))
-    except:
+    except ValueError:
+        print(f"WARNING: Could not parse date {value} with format {fmt}.")
         return None
 
 def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date', fmt=None, min_max_year=None):
