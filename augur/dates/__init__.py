@@ -121,6 +121,12 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
         except InvalidDate as error:
             raise AugurError(str(error)) from error
         return [treetime.utils.numeric_date(d) for d in ambig_date]
+    if value.startswith('[') and value.endswith(']') and len(value[1:-1].split(':'))==2:
+        # Treetime ambiguous date format, e.g. [2019.5:2020.5]
+        try:
+            return [float(x) for x in value[1:-1].split(':')]
+        except ValueError as error:
+            raise AugurError(str(error)) from error
     try:
         return treetime.utils.numeric_date(datetime.datetime.strptime(value, fmt))
     except ValueError:
