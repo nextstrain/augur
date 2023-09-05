@@ -65,7 +65,7 @@ If you encounter environment solving errors or want a faster installation proces
 Using pip from PyPi
 -------------------
 
-Augur is written in Python 3 and requires at least Python 3.7. It's published on `PyPi <https://pypi.org>`__ as `nextstrain-augur <https://pypi.org/project/nextstrain-augur>`__, so you can install it with ``pip`` like so:
+Augur is written in Python 3 and requires at least Python 3.8. It's published on `PyPi <https://pypi.org>`__ as `nextstrain-augur <https://pypi.org/project/nextstrain-augur>`__, so you can install it with ``pip`` like so:
 
 .. code:: bash
 

@@ -2,11 +2,16 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* Drop support for Python 3.7. [#1296][] (@victorlin)
+
 ### Features
 
 * export v2: Allow the root-sequence data to be included (inlined) in the main dataset JSON file, avoiding the need for a sidecar `_root-sequence.json` file. [#1295][] (@jameshadfield)
 
 [#1295]: https://github.com/nextstrain/augur/pull/1295
+[#1296]: https://github.com/nextstrain/augur/pull/1296
 
 ## 22.4.0 (29 August 2023)
 
