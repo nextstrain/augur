@@ -2,14 +2,12 @@
 Annotate a tree with actual and inferred titer measurements.
 """
 
-import json, os, sys
-import numpy as np
-from collections import defaultdict
+import sys
 from Bio import Phylo
 
 from .reconstruct_sequences import load_alignments
 from .titer_model import InsufficientDataException
-from .utils import read_node_data, write_json
+from .utils import write_json
 from .argparse_ import add_default_command
 
 

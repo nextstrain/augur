@@ -34,7 +34,7 @@ with readme_file.open(encoding = "utf-8") as f:
 
 setuptools.setup(
     name = "nextstrain-augur",
-    version = __version__,
+    version = __version__,  # noqa: F821; This is imported from version_file.
     author = "Nextstrain developers",
     author_email = "trevor@bedford.io, richard.neher@unibas.ch",
     description = "A bioinformatics toolkit for phylogenetic analysis",
@@ -70,6 +70,7 @@ setuptools.setup(
         'dev': [
             "cram >=0.7",
             "deepdiff >=4.3.2",
+            "flake8",
             "freezegun >=0.3.15",
             "mypy",
             "nextstrain-sphinx-theme >=2022.5",

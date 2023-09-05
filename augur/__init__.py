@@ -109,7 +109,7 @@ def add_version_alias(parser):
     class run_version_command(argparse.Action):
         def __call__(self, *args, **kwargs):
             opts = SimpleNamespace()
-            sys.exit( version.run(opts) )
+            sys.exit( version.run(opts) )  # noqa: F821; This is imported from version_file.
 
     return parser.add_argument(
         "--version",

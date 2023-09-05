@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from typing import Any, Callable, Dict, List, Set, Tuple
 
-from augur.dates import numeric_date, is_date_ambiguous, get_numerical_dates
+from augur.dates import is_date_ambiguous, get_numerical_dates
 from augur.errors import AugurError
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err
@@ -274,6 +274,7 @@ def filter_by_min_date(metadata, date_column, min_date) -> FilterFunctionReturn:
 
     Examples
     --------
+    >>> from augur.dates import numeric_date
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
     >>> filter_by_min_date(metadata, date_column="date", min_date=numeric_date("2020-01-02"))
     {'strain2'}
@@ -314,6 +315,7 @@ def filter_by_max_date(metadata, date_column, max_date) -> FilterFunctionReturn:
 
     Examples
     --------
+    >>> from augur.dates import numeric_date
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
     >>> filter_by_max_date(metadata, date_column="date", max_date=numeric_date("2020-01-01"))
     {'strain1'}
@@ -677,6 +679,7 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
 
     Examples
     --------
+    >>> from augur.dates import numeric_date
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-10-02"}, {"region": "North America", "date": "2020-01-01"}], index=["strain1", "strain2", "strain3"])
     >>> exclude_by = [(filter_by_min_date, {"date_column": "date", "min_date": numeric_date("2020-04-01")})]
     >>> include_by = [(force_include_where, {"include_where": "region=Africa"})]

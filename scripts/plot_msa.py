@@ -1,5 +1,4 @@
 import argparse
-import Bio
 from Bio import AlignIO
 from Bio.Align import AlignInfo
 import matplotlib as mpl

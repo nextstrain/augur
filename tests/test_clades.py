@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 import pytest
-import pathlib
-import networkx as nx
 
 from augur.clades import read_in_clade_definitions
 

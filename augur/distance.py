@@ -182,7 +182,6 @@ from collections import defaultdict
 import copy
 from itertools import chain
 import json
-import numpy as np
 import pandas as pd
 import sys
 

@@ -6,7 +6,6 @@ for any function in mask.py, check that it is correctly updated in this file.
 import argparse
 import os
 import pytest
-import random
 import string
 
 from Bio import SeqIO

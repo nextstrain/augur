@@ -1,0 +1,21 @@
+# Right now we use Flake8 only for a few static checks focusing on runtime
+# safety and correctness.  We don't use it for style checks.
+
+[flake8]
+select =
+    # syntax errors
+    E9,
+
+    # all pyflakes correctness issues
+    F,
+
+# This option requires flake8 >=3.6.0, but if the pin is defined in setup.py, a
+# proper Snakemake version can't be resolved. I'm not sure why, so I've left
+# flake8 unpinned with a note here describing why (on the off chance that an
+# incompatible version of flake8 is installed).
+extend-ignore =
+    # allow f-strings without any placeholders
+    F541,
+
+    # allow unused variables
+    F841,

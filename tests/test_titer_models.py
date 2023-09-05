@@ -1,4 +1,3 @@
-import pytest
 
 from augur.titer_model import TiterCollection
 

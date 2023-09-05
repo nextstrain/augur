@@ -1,14 +1,12 @@
 # estimates clade frequencies
 from __future__ import division, print_function
-from collections import defaultdict, deque
+from collections import deque
 import datetime
 import isodate
 import numpy as np
-import pandas as pd
 from scipy.interpolate import interp1d
 from scipy.stats import norm
 import sys
-import time
 
 from .dates import numeric_date
 
@@ -640,7 +638,7 @@ class alignment_frequencies(object):
         self.counts = count_observations(self.pivots, self.tps)
 
 
-    def estimate_genotype_frequency(self, gt):
+    def estimate_genotype_frequency(self, aln, gt, **kwargs):
         '''
         slice an alignment at possibly multiple positions and calculate the
         frequency trajectory of this multi-locus genotype

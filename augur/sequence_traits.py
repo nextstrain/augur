@@ -3,6 +3,7 @@ Annotate sequences based on amino-acid or nucleotide signatures.
 """
 
 import sys
+import gzip
 import numpy as np
 from treetime.vcf_utils import read_vcf
 from collections import defaultdict
@@ -50,8 +51,13 @@ def read_in_translate_vcf(vcf_file, ref_file):
     opn = gzip.open if vcf_file.endswith(('.gz', '.GZ')) else open
 
     with opn(vcf_file, mode='rt') as f:
+        samps = []
+
         for line in f:
             if line[0] != '#':
+                # Sample names should have been extracted from '#' lines.
+                assert len(samps) != 0
+
                 #actual data
                 dat = line.strip().split('\t')
                 POS = int(dat[posLoc])
