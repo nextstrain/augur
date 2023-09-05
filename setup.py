@@ -63,7 +63,6 @@ setuptools.setup(
         "phylo-treetime >=0.10.0, ==0.10.*",
         "pyfastx >=0.8.4, ==0.8.*",
         "scipy ==1.*",
-        "typing_extensions; python_version <'3.8'",
         "xopen[zstd] >=1.7.0, ==1.*"
     ],
     extras_require = {
