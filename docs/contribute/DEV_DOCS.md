@@ -191,18 +191,17 @@ Versions for this project, Augur, from 3.0.0 onwards aim to follow the
 
 ##### 4. Update on Bioconda
 
-First, check if the dependency list in [setup.py](https://github.com/nextstrain/augur/blob/HEAD/setup.py) had any changes since the previous version.
+First, check if the Python version or dependency list in [setup.py](https://github.com/nextstrain/augur/blob/HEAD/setup.py) had any changes since the previous Augur version.
 
-For versions without dependency changes:
+If there are no such changes:
 
 1. Wait for an auto-bump PR in [bioconda-recipes][].
 2. Add a comment `@BiocondaBot please add label`.
 3. Wait for a bioconda maintainer to approve and merge.
 
-For versions with dependency changes:
+If there are changes to the Python version or dependency list:
 
-1. Create a new PR in [bioconda-recipes][] following instructions at [nextstrain/bioconda-recipes/README.md](https://github.com/nextstrain/bioconda-recipes/blob/readme/README.md).
-    - [Example](https://github.com/bioconda/bioconda-recipes/pull/34344)
+1. Create a PR in [bioconda-recipes][] translating the changes in `setup.py` to Conda [package match specifications](https://docs.conda.io/projects/conda-build/en/stable/resources/package-spec.html#package-match-specifications). Follow instructions at [nextstrain/bioconda-recipes/README.md](https://github.com/nextstrain/bioconda-recipes/blob/readme/README.md) ([example](https://github.com/bioconda/bioconda-recipes/pull/34344)).
 2. Add a comment `@BiocondaBot please add label`.
 3. Wait for a bioconda maintainer to approve and merge.
 4. Wait for an auto-bump PR in [bioconda-recipes][].
