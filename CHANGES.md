@@ -4,9 +4,9 @@
 
 ### Features
 
-* Support treetime 0.11.* (@corneliusroemer)
+* Support treetime 0.11.* [#1310][] (@corneliusroemer)
 
-[TKTK]: https://github.com/nextstrain/augur/pull/TKTK
+[#1310]: https://github.com/nextstrain/augur/pull/1310
 
 ## 23.0.0 (5 September 2023)
 
