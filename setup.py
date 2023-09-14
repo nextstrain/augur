@@ -60,7 +60,7 @@ setuptools.setup(
         "numpy ==1.*",
         "packaging >=19.2",
         "pandas >=1.0.0, ==1.*",
-        "phylo-treetime >=0.10.0, ==0.10.*",
+        "phylo-treetime >=0.10.0, <0.12",
         "pyfastx >=0.8.4, ==0.8.*",
         "scipy ==1.*",
         "xopen[zstd] >=1.7.0, ==1.*"

@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* Support treetime 0.11.* [#1310][] (@corneliusroemer)
+
+[#1310]: https://github.com/nextstrain/augur/pull/1310
 
 ## 23.0.0 (5 September 2023)
 
