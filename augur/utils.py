@@ -5,8 +5,7 @@ import numpy as np
 import os, json, sys
 import pandas as pd
 from collections import defaultdict, OrderedDict
-from pkg_resources import resource_stream
-from io import TextIOWrapper
+from importlib.resources import open_text
 from .__version__ import __version__
 
 from augur.io.file import open_file
@@ -243,10 +242,9 @@ def read_lat_longs(overrides=None, use_defaults=True):
         else:
             print("WARNING: geo-coordinate file contains invalid line. Please make sure not to mix tabs and spaces as delimiters (use only tabs):",line)
     if use_defaults:
-        with resource_stream(__package__, "data/lat_longs.tsv") as stream:
-            with TextIOWrapper(stream, "utf-8") as defaults:
-                for line in defaults:
-                    add_line_to_coordinates(line)
+        with open_text("augur.data", "lat_longs.tsv") as defaults:
+            for line in defaults:
+                add_line_to_coordinates(line)
     if overrides:
         if os.path.isfile(overrides):
             with open(overrides, encoding='utf-8') as ifile:
