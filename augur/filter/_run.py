@@ -37,7 +37,11 @@ def run(args):
     build_sequence_index = False
     is_vcf = filename_is_vcf(args.sequences)
 
-    if sequence_index_path is None and args.sequences and not args.exclude_all:
+    # FIXME: Build the sequence index even when --exclude-all is specified,
+    # because force-inclusions should not be applied for samples that are
+    # missing from the sequence file.
+
+    if sequence_index_path is None and args.sequences:
         build_sequence_index = True
 
     if build_sequence_index:
@@ -443,7 +447,9 @@ def run(args):
         # Update strains to keep based on available sequence data. This prevents
         # writing out strain lists or metadata for strains that have no
         # sequences.
-        valid_strains = valid_strains & sequence_strains
+        if len(valid_strains - sequence_strains) != 0:
+            print_err("WARNING: There are samples that have metadata but no sequence data. These will be dropped.")
+            valid_strains = valid_strains & sequence_strains
 
         num_excluded_by_lack_of_metadata = len(sequence_strains - metadata_strains)
 

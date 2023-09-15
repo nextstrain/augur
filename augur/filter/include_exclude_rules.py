@@ -710,6 +710,7 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
     strains_to_filter = []
     strains_to_force_include = []
     distinct_strains_to_force_include: Set = set()
+    strains_to_force_exclude = []
 
     # Track strains that should be included regardless of filters.
     for include_function, include_kwargs in include_by:
@@ -764,6 +765,9 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
                     "filter": filter_name,
                     "kwargs": filter_kwargs_str,
                 })
+
+        # FIXME: Currently, filter_by_sequence_index does not behave properly with --exclude-all and force-inclusions.
+        # Strains should not be force-included if they are missing from the sequence index.
 
         # Stop applying filters if no strains remain.
         if len(strains_to_keep) == 0:
