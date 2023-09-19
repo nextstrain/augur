@@ -16,12 +16,10 @@ Minimal export -- single input (tree) and single output (dataset JSON)
   
 
 The above minimal.json takes divergence from the newick file. This converts newick divergences of (e.g.) '1' to `1.0`
-because BioPython uses floats (which is perfectly reasonable). Remove the decimal to diff the JSON.
+because BioPython uses floats (which is perfectly reasonable). Ignore this type change in the JSON diff.
 (Note that Auspice won't behave any differently)
-  $ sed 's/\.0//' minimal.json > minimal.no-decimal.json
 
-
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/minimal.json" minimal.no-decimal.json \
+  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" --ignore-numeric-type-changes "$TESTDIR/../data/minimal.json" minimal.json \
   >   --exclude-paths "root['meta']['updated']"
   {}
 
