@@ -75,7 +75,7 @@ def lzma_fasta_filename(tmpdir, sequences):
 
 @pytest.fixture
 def genbank_reference():
-    return "tests/builds/zika/config/zika_outgroup.gb"
+    return "tests/data/zika_outgroup.gb"
 
 
 class TestReadSequences:

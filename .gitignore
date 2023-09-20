@@ -12,7 +12,6 @@ scratch/
 s3/
 build/
 dist/
-.snakemake
 *stderr
 /docs/_build/
 

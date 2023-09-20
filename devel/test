@@ -28,7 +28,6 @@ python3 -m pip install .[dev]
 # Run unit and functional tests.
 echo Running tests
 ./run_tests.sh || true
-bash tests/builds/runner.sh || true
 
 # Clean up the temporary environment.
 echo Cleaning up

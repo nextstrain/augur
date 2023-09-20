@@ -66,7 +66,6 @@ jobs:
     - run: cram tests/
       env:
         AUGUR: coverage run -a ${{ github.workspace }}/bin/augur
-    - run: bash tests/builds/runner.sh
     - uses: actions/upload-artifact@v3
       with:
         name: coverage
@@ -97,6 +96,7 @@ jobs:
               pathogen: seasonal-flu,
               build-args: --configfile profiles/ci/builds.yaml -p,
             }
+          - { pathogen: tb }
           - { pathogen: zika }
     name: pathogen-repo-ci (${{ matrix.pathogen }})
     defaults:
