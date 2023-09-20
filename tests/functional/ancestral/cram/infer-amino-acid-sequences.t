@@ -21,6 +21,13 @@ Check that the reference length was correctly exported as the nuc annotation
       "PRO": {
       "nuc": {
 
+Check that amino acid sequences exist for the root node of the tree.
+
+  $ grep -A 2 "aa_sequences" "$CRAMTMP/$TESTFILE/ancestral_mutations.json"
+        "aa_sequences": {
+          "ENV": .* (re)
+          "PRO": .* (re)
+
 Check that internal nodes have ancestral amino acid sequences.
 
   $ grep "NODE" "$CRAMTMP/$TESTFILE/ancestral_aa_sequences_ENV.fasta" | wc -l

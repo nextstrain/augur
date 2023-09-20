@@ -323,6 +323,14 @@ def run(args):
             for key, node in anc_seqs['nodes'].items():
                 if 'aa_muts' not in node: node['aa_muts'] = {}
                 node['aa_muts'][gene] = aa_result['mutations']['nodes'][key]['muts']
+
+                # Add amino acid sequences to the root node of the tree.
+                if key == T.root.name:
+                    if "aa_sequences" not in node:
+                        node["aa_sequences"] = {}
+
+                    node["aa_sequences"][gene] = aa_result['tt'].sequence(T.root, as_string=True, reconstructed=True)
+
             anc_seqs['reference'][gene] = aa_result['root_seq']
             # FIXME: Note that this is calculating the end of the CDS as 3*length of translation
             # this is equivalent to the annotation for single segment CDS, but not for cds
