@@ -192,6 +192,7 @@ def export_v2(main_json, **kwargs):
     refs = {
         'https://nextstrain.org/schemas/augur/annotations': "schema-annotations.json",
         'https://nextstrain.org/schemas/dataset/root-sequence': "schema-export-root-sequence.json",
+        'https://nextstrain.org/schemas/auspice/config/v2': "schema-auspice-config-v2.json",
     }
     main_schema = load_json_schema("schema-export-v2.json", refs)
 

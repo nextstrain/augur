@@ -5,8 +5,15 @@
 ### Features
 
 * Support treetime 0.11.* [#1310][] (@corneliusroemer)
+* Allow minimal export using only a (newick) tree in `augur export v2`. [#1299][] (@jameshadfield)
+* A number of schema updates and improvements [#1299][] (@jameshadfield)
+    * We now require all nodes to have `node_attrs` on them with one of `div` or `num_date` present
+    * Some never-used properties are removed from the schemas, including a pattern for defining nucleotide INDELs which was never used by augur or auspice.
+    * Tip label defaults are now settable within the auspice-config JSON
+    * Empty colorings definitions are allowed (the tree will be grey in Auspice)
 
 [#1310]: https://github.com/nextstrain/augur/pull/1310
+[#1299]: https://github.com/nextstrain/augur/pull/1299
 
 ## 23.0.0 (5 September 2023)
 

@@ -110,44 +110,63 @@ def orderKeys(data):
         order_nodes(od['tree'])
     return od
 
-def convert_tree_to_json_structure(node, metadata, div=0):
+
+def node_div(T, node_attrs):
+    """
+    Scans the provided tree & metadata to see if divergence is defined, and if so returns
+    a function which gets it from individual nodes. Divergence may be defined via a number
+    of sources, and we pick them in the following order:
+    * metadata.mutation_length (typically via `augur refine`)
+    * metadata.branch_length (typically via `augur refine`)
+    * Branch lengths encoded in the Newick tree
+
+    Returns either:
+    * function with arguments: (node, metadata_for_node) which returns the node divergence
+    * None (indicates that divergence is not available for this dataset)
+    """
+    if all(('mutation_length' in node_attrs[n.name] for n in T.root.find_clades())):
+        return lambda node, metadata: metadata['mutation_length']
+    if all(('branch_length' in node_attrs[n.name] for n in T.root.find_clades())):
+        return lambda node, metadata: metadata['branch_length']
+    if T.root.branch_length is not None:
+        return lambda node, metadata: node.branch_length
+    return None
+
+def convert_tree_to_json_structure(node, metadata, get_div, div=0):
     """
     converts the Biopython tree structure to a dictionary that can
     be written to file as a json. This is called recursively.
-    Creates the name property & divergence on each node
 
-    input
-        node -- node for which top level dict is produced.
-        div  -- cumulative divergence (root = 0). False → divergence won't be exported.
+    Parameters
+    ----------
+    node : Bio.Phylo.Newick.Clade
+    metadata : dict
+        Per-node metadata, with keys matching `node.name`
+    get_div :
+        (None or function)
+        Function returns divergence for this node. Arguments: (node, metadata_for_node)
+        If None then divergence is not defined for this dataset and so 'div' is not set on returned nodes.
+    div : int
+        cumulative divergence leading to the current node (root = 0)
 
-    returns
-        tree in JSON structure
-        list of strains
+    Returns
+    -------
+    dict:
+        See schema-export-v2.json#/$defs/tree for full details. 
+        Node names are always set, and divergence is set if applicable
     """
-
-    # Does the tree have divergence? (BEAST trees may not)
-    # only calculate this for the root node!
-    if div == 0 and 'mutation_length' not in metadata[node.name] and 'branch_length' not in metadata[node.name]:
-        div = False
-
     node_struct = {'name': node.name, 'node_attrs': {}, 'branch_attrs': {}}
-    if div is not False: # div=0 is ok
+
+    if get_div is not None: # Store the (cumulative) observed divergence prior to this node
         node_struct["node_attrs"]["div"] = div
 
     if node.clades:
         node_struct["children"] = []
         for child in node.clades:
-            if div is False:
-                cdiv=False
-            else:
-                if 'mutation_length' in metadata[child.name]:
-                    cdiv = div + metadata[child.name]['mutation_length']
-                elif 'branch_length' in metadata[child.name]:
-                    cdiv = div + metadata[child.name]['branch_length']
-                else:
-                    print("ERROR: Cannot find branch length information for %s"%(child.name))
-
-            node_struct["children"].append(convert_tree_to_json_structure(child, metadata, div=cdiv))
+            cdiv = div
+            if get_div:
+                cdiv += get_div(child, metadata[child.name])
+            node_struct["children"].append(convert_tree_to_json_structure(child, metadata, get_div, div=cdiv))
 
     return node_struct
 
@@ -827,10 +846,9 @@ def register_parser(parent_subparsers):
         title="REQUIRED"
     )
     required.add_argument('--tree','-t', metavar="newick", required=True, help="Phylogenetic tree, usually output from `augur refine`")
-    required.add_argument('--node-data', metavar="JSON", required=True, nargs='+', action="extend", help="JSON files containing metadata for nodes in the tree")
-    required.add_argument('--output', metavar="JSON", required=True, help="Ouput file (typically for visualisation in auspice)")
+    required.add_argument('--output', metavar="JSON", required=True, help="Output file (typically for visualisation in auspice)")
 
-    config = parser.add_argument_group(
+    config = parser.add_argument_group(                                                                                                                              
         title="DISPLAY CONFIGURATION",
         description="These control the display settings for auspice. \
             You can supply a config JSON (which has all available options) or command line arguments (which are more limited but great to get started). \
@@ -848,6 +866,7 @@ def register_parser(parent_subparsers):
     optional_inputs = parser.add_argument_group(
         title="OPTIONAL INPUT FILES"
     )
+    optional_inputs.add_argument('--node-data', metavar="JSON", nargs='+', action="extend", help="JSON files containing metadata for nodes in the tree")
     optional_inputs.add_argument('--metadata', metavar="FILE", help="Additional metadata for strains in the tree")
     optional_inputs.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
                                  help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
@@ -1067,11 +1086,14 @@ def run(args):
     data_json = {"version": "v2", "meta": {"updated": time.strftime('%Y-%m-%d')}}
 
     #load input files
-    try:
-        node_data_file = read_node_data(args.node_data, validation_mode=args.validation_mode) # node_data_files is an array of multiple files (or a single file)
-    except FileNotFoundError:
-        print(f"ERROR: node data file ({args.node_data}) does not exist")
-        sys.exit(2)
+    if args.node_data is not None:
+      try:
+          node_data_file = read_node_data(args.node_data, validation_mode=args.validation_mode) # node_data_files is an array of multiple files (or a single file)
+      except FileNotFoundError:
+          print(f"ERROR: node data file ({args.node_data}) does not exist")
+          sys.exit(2)
+    else:
+        node_data_file = {'nodes': {}}
 
     if args.metadata is not None:
         try:
@@ -1131,7 +1153,7 @@ def run(args):
     set_filters(data_json, config)
 
     # set tree structure
-    data_json["tree"] = convert_tree_to_json_structure(T.root, node_attrs)
+    data_json["tree"] = convert_tree_to_json_structure(T.root, node_attrs, node_div(T, node_attrs))
     set_node_attrs_on_tree(data_json, node_attrs)
     set_branch_attrs_on_tree(data_json, branch_attrs)
 
