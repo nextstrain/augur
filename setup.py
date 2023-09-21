@@ -54,6 +54,7 @@ setuptools.setup(
         "bcbio-gff >=0.7.0, ==0.7.*",
         "biopython >=1.67, !=1.77, !=1.78",
         "cvxopt >=1.1.9, ==1.*",
+        "importlib_resources >=5.3.0; python_version < '3.11'",
         "isodate ==0.6.*",
         "jsonschema >=3.0.0, ==3.*",
         "networkx >= 2.5, ==2.*",
