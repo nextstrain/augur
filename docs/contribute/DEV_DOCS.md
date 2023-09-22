@@ -212,7 +212,7 @@ If there are changes to the Python version or dependency list:
 ##### 5. Build/Release Nextstrain/conda-base
 
 1. Wait for the bioconda-recipe PR to be merged.
-2. Wait for the new version of Augur to be available in on bioconda.
+2. Wait for the new version of Augur to be available [on bioconda](https://anaconda.org/bioconda/augur).
 3. Manually run the [conda-base CI workflow](https://github.com/nextstrain/conda-base/actions/workflows/ci.yaml) on the `main` branch.
 4. Ensure workflow runs successfully.
 
