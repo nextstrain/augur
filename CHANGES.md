@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 23.1.0 (22 September 2023)
+
 ### Features
 
 * Support treetime 0.11.* [#1310][] (@corneliusroemer)
