@@ -45,7 +45,7 @@ jobs:
       COVERAGE_FILE: ${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}
       COVERAGE_RCFILE: ${{ github.workspace }}/.coveragerc
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: conda-incubator/setup-miniconda@v2
       with:
         python-version: ${{ matrix.python-version }}
@@ -103,7 +103,7 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: ./augur
 
@@ -121,7 +121,7 @@ jobs:
 
       - run: pip install ./augur
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: nextstrain/${{ matrix.pathogen }}
           path: ./pathogen-repo
@@ -154,7 +154,7 @@ jobs:
     needs: [pytest-cram]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
       - run: pip install coverage
 
