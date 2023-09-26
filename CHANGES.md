@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* ancestral: treat lowercase and upper case nucleotides in `--root-sequence` identically [#1323][] (@rneher and @corneliusroemer)
+
+[#1323]: https://github.com/nextstrain/augur/pull/1323
 
 ## 23.1.0 (22 September 2023)
 
