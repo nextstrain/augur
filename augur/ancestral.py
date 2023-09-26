@@ -231,8 +231,19 @@ def register_parser(parent_subparsers):
 def run(args):
     # Validate arguments.
     aa_arguments = (args.annotation, args.genes, args.translations)
-    if any(aa_arguments) and not all(aa_arguments):
-        raise AugurError("For amino acid sequence reconstruction, you must provide an annotation file, a list of genes, and a template path to amino acid sequences.")
+    if any(aa_arguments):
+        if not all(aa_arguments):
+            # Find missing arguments.
+            missing = []
+            if not args.annotation:
+                missing.append("annotation file (--annotation)")
+            if not args.genes:
+                missing.append("gene list (--genes)")
+            if not args.translations:
+                missing.append("template path to amino acid sequences (--translations)")
+            raise AugurError("For amino acid sequence reconstruction, you must also provide the following arguments: " + ", ".join(missing))
+        if "%GENE" not in args.translations:
+            raise AugurError(f"The template string for translations must contain the substring %GENE. You provided: {args.translations}")
 
     # check alignment type, set flags, read in if VCF
     is_vcf = any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])
