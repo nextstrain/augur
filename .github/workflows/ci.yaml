@@ -85,7 +85,9 @@ jobs:
           - { pathogen: avian-flu, build-args: auspice/flu_avian_h5n1_ha.json }
           - { pathogen: ebola }
           - { pathogen: lassa }
-          - { pathogen: monkeypox }
+          # Disable monkeypox CI until pathogen-repo-ci supports custom build directories
+          # See issue https://github.com/nextstrain/.github/issues/63
+          # - { pathogen: monkeypox }
           - { pathogen: mumps }
           - {
               pathogen: ncov,
