@@ -19,9 +19,6 @@ It provides a collection of commands which are designed to be composable into la
 Augur originated as part of `Nextstrain <https://nextstrain.org>`__, an open-source project to harness the scientific and public health potential of pathogen genome data.
 All source code is available on `GitHub <https://github.com/nextstrain/augur>`__.
 
-.. note:: We have just released version 6 of augur -- `check our upgrading guide <releases/migrating-v5-v6.html>`__
-
-
 Augur is composed of a series of modules and different workflows will use different parts of the pipeline.
 A selection of augur modules and different possible entry points are illustrated below.
 
