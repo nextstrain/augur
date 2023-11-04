@@ -153,7 +153,7 @@ def load_features(reference, feature_names=None):
     if '.gff' in reference.lower():
         #looks for 'gene' and 'gene' as best for TB
         from BCBio import GFF
-        limit_info = dict( gff_type = ['gene', 'source'] )
+        limit_info = dict( gff_type = ['gene', 'source', 'CDS'] )
 
         with open(reference, encoding='utf-8') as in_handle:
             for rec in GFF.parse(in_handle, limit_info=limit_info):
