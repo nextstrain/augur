@@ -2,6 +2,13 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* Fix Python 3.11 installation for Conda environments. [#1334][] (@victorlin)
+* Bump `pyfastx` dependency to major versions 1 and 2. [#1335][] (@victorlin)
+
+[#1334]: https://github.com/nextstrain/augur/issues/1334
+[#1335]: https://github.com/nextstrain/augur/pull/1335
 
 ## 23.1.0 (22 September 2023)
 

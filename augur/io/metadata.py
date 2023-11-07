@@ -336,10 +336,11 @@ def read_metadata_with_sequences(metadata, metadata_delimiters, fasta, seq_id_co
         else:
             processed_metadata_ids.add(seq_id)
 
-        # Skip records that do not have a matching sequence
-        # TODO: change this to try/except to fetch sequences and catch
-        # KeyError for non-existing sequences when https://github.com/lmdu/pyfastx/issues/50 is resolved
-        if seq_id not in sequence_ids:
+        try:
+            sequence_record = sequences[seq_id]
+        except KeyError:
+            # Skip records that do not have a matching sequence
+
             # Immediately raise an error if requested to error on the first unmatched record
             if unmatched_reporting is DataErrorMethod.ERROR_FIRST:
                 raise AugurError(f"Encountered metadata record {seq_id!r} without a matching sequence.")
