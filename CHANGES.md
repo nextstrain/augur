@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 23.1.1 (7 November 2023)
+
 ### Bug Fixes
 
 * Fix Python 3.11 installation for Conda environments. [#1334][] (@victorlin)
