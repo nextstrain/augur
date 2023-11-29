@@ -377,13 +377,10 @@ def run(args):
         SeqIO.write(records, args.output_sequences, "fasta")
         print("ancestral sequences FASTA written to", args.output_sequences, file=sys.stdout)
 
-    # If VCF, output VCF including new ancestral seqs
-    if is_vcf:
-        if args.output_vcf:
-            vcf_fname = args.output_vcf
-        else:
-            vcf_fname = '.'.join(args.alignment.split('.')[:-1]) + '.vcf'
-        write_vcf(nuc_result['tt'].get_tree_dict(keep_var_ambigs=True), vcf_fname)
-        print("ancestral sequences as vcf-file written to",vcf_fname, file=sys.stdout)
+    # output VCF including new ancestral seqs
+    if args.output_vcf:
+        assert is_vcf
+        write_vcf(nuc_result['tt'].get_tree_dict(keep_var_ambigs=True), args.output_vcf)
+        print("Mutations, including for ancestral nodes, exported as VCF to", args.output_vcf, file=sys.stdout)
 
     return 0
