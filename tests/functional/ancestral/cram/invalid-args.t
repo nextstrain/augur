@@ -42,3 +42,12 @@ This should fail.
   >  --output-node-data "ancestral_mutations.json" > /dev/null
   ERROR: For amino acid sequence reconstruction, you must provide an annotation file, a list of genes, and a template path to amino acid sequences.
   [2]
+
+Missing tree file 
+
+  $ ${AUGUR} ancestral \
+  >  --tree $TESTDIR/../data/tree-doesnt-exist.nwk \
+  >  --alignment $TESTDIR/../data/aligned.fasta \
+  >  --output-sequences "output.fasta" > /dev/null
+  ERROR: The provided tree file .* doesn't exist (re)
+  [2]

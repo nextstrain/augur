@@ -257,9 +257,11 @@ def run(args):
 
     try:
         T = read_tree(args.tree)
-    except (FileNotFoundError, InvalidTreeError) as error:
-        print("ERROR: %s" % error, file=sys.stderr)
-        return 1
+    except FileNotFoundError:
+        raise AugurError(f"The provided tree file {args.tree!r} doesn't exist")
+    except InvalidTreeError as error:
+        raise AugurError(error)
+    # Note that a number of other errors may be thrown by `read_tree` such as Bio.Phylo.NewickIO.NewickError
 
     import numpy as np
     missing_internal_node_names = [n.name is None for n in T.get_nonterminals()]
@@ -273,9 +275,7 @@ def run(args):
 
     if is_vcf:
         if not args.vcf_reference:
-            print("ERROR: a reference Fasta is required with VCF-format alignments", file=sys.stderr)
-            return 1
-
+            raise AugurError("a reference Fasta is required with VCF-format alignments")
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
         aln = compress_seq['sequences']
         ref = compress_seq['reference']
@@ -290,8 +290,7 @@ def run(args):
                 except:
                     pass
             if ref is None:
-                print(f"ERROR: could not read root sequence from {args.root_sequence}", file=sys.stderr)
-                return 1
+                raise AugurError(f"could not read root sequence from {args.root_sequence}")
 
     import treetime
     print("\nInferred ancestral sequence states using TreeTime:"
@@ -321,8 +320,7 @@ def run(args):
         ## load features; only requested features if genes given
         features = load_features(args.annotation, args.genes)
         if features is None:
-            print("ERROR: could not read features of reference sequence file")
-            return 1
+            raise AugurError("could not read features of reference sequence file")
         print("Read in {} features from reference sequence file".format(len(features)))
         for gene in args.genes:
             print(f"Processing gene: {gene}")
@@ -333,9 +331,8 @@ def run(args):
             aa_result = run_ancestral(T, fname, root_sequence=root_seq, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
                                         marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='aa')
             if aa_result['tt'].data.full_length*3 != len(feat):
-                print(f"ERROR: length of translated alignment for {gene} does not match length of reference feature."
+                raise AugurError(f"length of translated alignment for {gene} does not match length of reference feature."
                        " Please make sure that the annotation matches the translations.")
-                return 1
 
             for key, node in anc_seqs['nodes'].items():
                 if 'aa_muts' not in node: node['aa_muts'] = {}
