@@ -228,15 +228,32 @@ def register_parser(parent_subparsers):
 
     return parser
 
-def run(args):
-    # Validate arguments.
+def validate_arguments(args, is_vcf):
+    """
+    Check that provided arguments are compatible.
+    Where possible we use argparse built-ins, but they don't cover everything we want to check.
+    This checking shouldn't be used by downstream code to assume arguments exist, however by checking for
+    invalid combinations up-front we can exit quickly.
+    """
     aa_arguments = (args.annotation, args.genes, args.translations)
     if any(aa_arguments) and not all(aa_arguments):
         raise AugurError("For amino acid sequence reconstruction, you must provide an annotation file, a list of genes, and a template path to amino acid sequences.")
 
+    if args.output_sequences and args.output_vcf:
+        raise AugurError("Both sequence (fasta) and VCF output have been requested, but these are incompatible.")
+
+    if is_vcf and args.output_sequences:
+        raise AugurError("Sequence (fasta) output has been requested but the input alignment is VCF.")
+
+    if not is_vcf and args.output_vcf:
+        raise AugurError("VCF output has been requested but the input alignment is not VCF.")
+
+
+def run(args):
     # check alignment type, set flags, read in if VCF
     is_vcf = any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])
     ref = None
+    validate_arguments(args, is_vcf)
 
     try:
         T = read_tree(args.tree)
@@ -352,18 +369,13 @@ def run(args):
     print("ancestral mutations written to", out_name, file=sys.stdout)
 
     if args.output_sequences:
-        if args.output_vcf:
-            # TODO: This should be an error and we should check for this
-            # unsupported combination of arguments at the beginning of the
-            # script to avoid wasting time for users.
-            print("WARNING: augur only supports sequence output for FASTA alignments and not for VCFs.", file=sys.stderr)
-        else:
-            records = [
-                SeqRecord(Seq(node_data["sequence"]), id=node_name, description="")
-                for node_name, node_data in anc_seqs["nodes"].items()
-            ]
-            SeqIO.write(records, args.output_sequences, "fasta")
-            print("ancestral sequences FASTA written to", args.output_sequences, file=sys.stdout)
+        assert not is_vcf
+        records = [
+            SeqRecord(Seq(node_data["sequence"]), id=node_name, description="")
+            for node_name, node_data in anc_seqs["nodes"].items()
+        ]
+        SeqIO.write(records, args.output_sequences, "fasta")
+        print("ancestral sequences FASTA written to", args.output_sequences, file=sys.stdout)
 
     # If VCF, output VCF including new ancestral seqs
     if is_vcf:
