@@ -315,6 +315,34 @@ def get_genes_from_file(fname):
 
     return unique_genes
 
+def sequences_vcf(reference_fasta, vcf):
+    """
+    Extract the nucleotide variation in the VCF
+    Returns a tuple
+    [0] The sequences as a dict of dicts. sequences → <NODE_NAME> → <POS> → <ALT_NUC> where <POS> is a 0-based int
+    [1] The sequence of the provided `reference_fasta` (string)
+    """
+    if not reference_fasta:
+        raise AugurError("A reference Fasta is required with VCF-format input")
+    compress_seq = read_vcf(vcf, reference_fasta)
+    sequences = compress_seq['sequences']
+    ref = compress_seq['reference']
+    return (sequences, ref)
+
+def sequences_json(node_data_json, tree):
+    """
+    Extract the full nuc sequence for each node in the provided node-data JSON.
+    Returns a dict, keys are node names and values are a string of the genome sequence (nuc)
+    """
+    node_data = read_node_data(node_data_json, tree)
+    if node_data is None:
+        raise AugurError("could not read node data (incl sequences)")
+    # extract sequences from node meta data
+    sequences = {}
+    for k,v in node_data['nodes'].items():
+        if 'sequence' in v:
+            sequences[k] = v['sequence']
+    return sequences
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("translate", help=__doc__)
@@ -358,27 +386,14 @@ def run(args):
         genes = args.genes
 
     ## check file format and read in sequences
-    is_vcf = False
-    if any([args.ancestral_sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
-        if not args.vcf_reference:
-            print("ERROR: a reference Fasta is required with VCF-format input")
-            return 1
-        compress_seq = read_vcf(args.ancestral_sequences, args.vcf_reference)
-        sequences = compress_seq['sequences']
-        ref = compress_seq['reference']
-        is_vcf = True
-    else:
-        node_data = read_node_data(args.ancestral_sequences, args.tree)
-        if node_data is None:
-            print("ERROR: could not read node data (incl sequences)")
-            return 1
-        # extract sequences from node meta data
-        sequences = {}
-        for k,v in node_data['nodes'].items():
-            if 'sequence' in v:
-                sequences[k] = v['sequence']
-
+    is_vcf = any([args.ancestral_sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])
     check_arg_combinations(args, is_vcf)
+
+    if is_vcf:
+        (sequences, ref) = sequences_vcf(args.vcf_reference, args.ancestral_sequences)
+    else:
+        sequences = sequences_json(args.ancestral_sequences, args.tree)
+
 
     ## load features; only requested features if genes given
     features = load_features(args.reference_sequence, genes)
