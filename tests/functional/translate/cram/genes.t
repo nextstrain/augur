@@ -15,9 +15,9 @@ as a feature ('nuc' in this case)
   >  --reference-sequence "$DATA/reference.source.gff" \
   >  --genes gene2 gene3 \
   >  --output-node-data "aa_muts.genes-args.json"
-  Validating schema of .+ (re)
   Couldn't find gene gene3 in GFF or GenBank file
   Read in 2 features from reference sequence file
+  Validating schema of .+ (re)
   amino acid mutations written to .+ (re)
 
   $ python3 "$SCRIPTS/diff_jsons.py" \
@@ -37,9 +37,9 @@ Using a text file rather than command line arguments
   >  --genes "genes.txt" \
   >  --output-node-data "aa_muts.genes-txt.json"
   Read in 2 specified genes to translate.
-  Validating schema of .+ (re)
   Couldn't find gene gene3 in GFF or GenBank file
   Read in 2 features from reference sequence file
+  Validating schema of .+ (re)
   amino acid mutations written to .+ (re)
 
   $ python3 "$SCRIPTS/diff_jsons.py" \

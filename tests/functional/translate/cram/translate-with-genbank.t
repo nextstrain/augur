@@ -12,8 +12,8 @@ Translate amino acids for genes using a GenBank file.
   >   --reference-sequence "$DATA/zika/zika_outgroup.gb" \
   >   --genes CA PRO \
   >   --output-node-data aa_muts.json
-  Validating schema of '.+nt_muts.json'... (re)
   Read in 3 features from reference sequence file
+  Validating schema of '.+nt_muts.json'... (re)
   amino acid mutations written to .* (re)
 
   $ python3 "$SCRIPTS/diff_jsons.py" $DATA/zika/aa_muts_genbank.json aa_muts.json \
