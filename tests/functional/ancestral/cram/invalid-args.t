@@ -51,3 +51,18 @@ Missing tree file
   >  --output-sequences "output.fasta" > /dev/null
   ERROR: The provided tree file .* doesn't exist (re)
   [2]
+
+
+Attempting to use FASTA-input reference and VCF-input reference args
+(The files here don't exist, but we exit before they're checked) 
+
+  $ ${AUGUR} ancestral \
+  >  --tree $TESTDIR/../data/tree-doesnt-exist.nwk \
+  >  --alignment $TESTDIR/../data/aligned.fasta \
+  >  --root-sequence $TESTDIR/../data/reference.fasta \
+  >  --vcf-reference $TESTDIR/../data/reference.fasta \
+  >  --output-sequences "output.fasta" > /dev/null 2>"err-args.txt"
+  [2]
+
+  $ grep "augur ancestral: error: argument --vcf-reference: not allowed with argument --root-sequence" "err-args.txt"
+  augur ancestral: error: argument --vcf-reference: not allowed with argument --root-sequence

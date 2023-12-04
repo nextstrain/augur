@@ -180,9 +180,13 @@ def register_parser(parent_subparsers):
     )
     input_group.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     input_group.add_argument('--alignment', '-a', help="alignment in FASTA or VCF format")
-    input_group.add_argument('--vcf-reference', type=str, help='FASTA file of the sequence the VCF was mapped to (only used if a VCF is provided as the alignment)')
-    input_group.add_argument('--root-sequence', type=str, help='FASTA/genbank file of the sequence that is used as root for mutation calling.'
-                        ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
+    input_group_ref = input_group.add_mutually_exclusive_group()
+    input_group_ref.add_argument('--vcf-reference', type=str, metavar='FASTA',
+                                 help='[VCF alignment only] file of the sequence the VCF was mapped to.'
+                                      ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
+    input_group_ref.add_argument('--root-sequence', type=str,metavar='FASTA/GenBank',
+                                 help='[FASTA alignment only] file of the sequence that is used as root for mutation calling.'
+                                      ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
 
     global_options_group = parser.add_argument_group(
         "global options",
