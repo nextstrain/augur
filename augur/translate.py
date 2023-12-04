@@ -19,6 +19,7 @@ from Bio import SeqIO, Seq, SeqRecord, Phylo
 from .io.vcf import write_VCF_translation
 from .utils import read_node_data, load_features, write_json, get_json_name
 from treetime.vcf_utils import read_vcf
+from augur.errors import AugurError
 
 class MissingNodeError(Exception):
     pass
@@ -326,9 +327,24 @@ def register_parser(parent_subparsers):
     parser.add_argument('--alignment-output', type=str, help="write out translated gene alignments. "
                                    "If a VCF-input, a .vcf or .vcf.gz will be output here (depending on file ending). If fasta-input, specify the file name "
                                    "like so: 'my_alignment_%%GENE.fasta', where '%%GENE' will be replaced by the name of the gene")
-    parser.add_argument('--vcf-reference-output', type=str, help="fasta file where reference sequence translations for VCF input will be written")
-    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    vcf_only = parser.add_argument_group(
+        title="VCF specific",
+        description="These arguments are only applicable if the input (--ancestral-sequences) is in VCF format."
+    )
+    vcf_only.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    vcf_only.add_argument('--vcf-reference-output', type=str, help="fasta file where reference sequence translations for VCF input will be written")
+
     return parser
+
+def check_arg_combinations(args, is_vcf):
+    """
+    Check that provided arguments are compatible.
+    Where possible we use argparse built-ins, but they don't cover everything we want to check.
+    This checking shouldn't be used by downstream code to assume arguments exist, however by checking for
+    invalid combinations up-front we can exit quickly.
+    """
+    if not is_vcf and (args.vcf_reference or args.vcf_reference_output):
+        raise AugurError("Arguments '--vcf-reference' and/or '--vcf-reference-output' are only applicable if the input ('--ancestral-sequences') is VCF")
 
 
 def run(args):
@@ -361,6 +377,8 @@ def run(args):
         for k,v in node_data['nodes'].items():
             if 'sequence' in v:
                 sequences[k] = v['sequence']
+
+    check_arg_combinations(args, is_vcf)
 
     ## load features; only requested features if genes given
     features = load_features(args.reference_sequence, genes)

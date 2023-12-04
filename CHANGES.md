@@ -14,6 +14,7 @@
 
 * translate: Improvements to command line arguments.  [#1348][] (@jameshadfield)
     * `--tree` and `--ancestral-sequences` are now required arguments.
+    * separate VCF-only arguments into their own group
 
 [#1344]: https://github.com/nextstrain/augur/pull/1344
 [#1348]: https://github.com/nextstrain/augur/pull/1348
