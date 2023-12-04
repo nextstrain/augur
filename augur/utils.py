@@ -143,67 +143,129 @@ class AugurJSONEncoder(json.JSONEncoder):
 
 
 def load_features(reference, feature_names=None):
-    #read in appropriately whether GFF or Genbank
+    """
+    Parse a GFF/GenBank reference file. See the docstrings for _read_gff and
+    _read_genbank for details.
+
+    Parameters
+    ----------
+    reference : str
+        File path to GFF or GenBank (.gb) reference
+    feature_names : None or set or list (optional)
+        Restrict the genes we read to those in the set/list
+
+    Returns
+    -------
+    features : dict or None
+        keys: feature names, values: <class 'Bio.SeqFeature.SeqFeature'> Note
+        that feature names may not equivalent to GenBank feature keys None is
+        returned if the reference is not a valid file path
+    """
     #checks explicitly for GFF otherwise assumes Genbank
     if not os.path.isfile(reference):
         print("ERROR: reference sequence not found. looking for", reference)
         return None
 
-    features = {}
     if '.gff' in reference.lower():
-        #looks for 'gene' and 'gene' as best for TB
-        from BCBio import GFF
-        limit_info = dict( gff_type = ['gene', 'source'] )
-
-        with open(reference, encoding='utf-8') as in_handle:
-            for rec in GFF.parse(in_handle, limit_info=limit_info):
-                for feat in rec.features:
-                    # Check for gene names stored in qualifiers commonly used by
-                    # virus-specific gene maps first (e.g., 'gene',
-                    # 'gene_name'). Then, check for qualifiers used by non-viral
-                    # pathogens (e.g., 'locus_tag').
-                    if feature_names is not None:
-                        if "gene" in feat.qualifiers and feat.qualifiers["gene"][0] in feature_names:
-                            fname = feat.qualifiers["gene"][0]
-                        elif "gene_name" in feat.qualifiers and feat.qualifiers["gene_name"][0] in feature_names:
-                            fname = feat.qualifiers["gene_name"][0]
-                        elif "locus_tag" in feat.qualifiers and feat.qualifiers["locus_tag"][0] in feature_names:
-                            fname = feat.qualifiers["locus_tag"][0]
-                        else:
-                            fname = None
-                    else:
-                        if "gene" in feat.qualifiers:
-                            fname = feat.qualifiers["gene"][0]
-                        elif "gene_name" in feat.qualifiers:
-                            fname = feat.qualifiers["gene_name"][0]
-                        else:
-                            fname = feat.qualifiers["locus_tag"][0]
-                    if feat.type == "source":
-                        fname = "nuc"
-
-                    if fname:
-                        features[fname] = feat
-
-            if feature_names is not None:
-                for fe in feature_names:
-                    if fe not in features:
-                        print("Couldn't find gene {} in GFF or GenBank file".format(fe))
-
+        return _read_gff(reference, feature_names)
     else:
-        from Bio import SeqIO
-        for feat in SeqIO.read(reference, 'genbank').features:
-            if feat.type=='CDS':
-                if "locus_tag" in feat.qualifiers:
-                    fname = feat.qualifiers["locus_tag"][0]
-                    if feature_names is None or fname in feature_names:
-                        features[fname] = feat
-                elif "gene" in feat.qualifiers:
-                    fname = feat.qualifiers["gene"][0]
-                    if feature_names is None or fname in feature_names:
-                        features[fname] = feat
-            elif feat.type=='source': #read 'nuc' as well for annotations - need start/end of whole!
-                features['nuc'] = feat
+        return _read_genbank(reference, feature_names)
 
+def _read_gff(reference, feature_names):
+    """
+    Read a GFF file. We only read GFF IDs 'gene' or 'source' (the latter may not technically
+    be a valid GFF field, but is used widely within the Nextstrain ecosystem).
+    Only the first entry in the GFF file is parsed.
+    We create a "feature name" via:
+    - for 'source' IDs use 'nuc'
+    - for 'gene' IDs use the 'gene', 'gene_name' or 'locus_tag'.
+      If none are specified, the intention is to silently ignore but there are bugs here.
+
+    Parameters
+    ----------
+    reference : string
+        File path to GFF reference
+    feature_names : None or set or list
+        Restrict the genes we read to those in the set/list
+
+    Returns
+    -------
+    features : dict
+        keys: feature names, values: <class 'Bio.SeqFeature.SeqFeature'>
+        Note that feature names may not equivalent to GenBank feature keys
+    """
+    from BCBio import GFF
+    valid_types = ['gene', 'source']
+    features = {}
+    with open(reference, encoding='utf-8') as in_handle:
+        for rec in GFF.parse(in_handle, limit_info={"gff_type": valid_types}):
+            for feat in rec.features:
+                # Check for gene names stored in qualifiers commonly used by
+                # virus-specific gene maps first (e.g., 'gene',
+                # 'gene_name'). Then, check for qualifiers used by non-viral
+                # pathogens (e.g., 'locus_tag').
+                if feature_names is not None:
+                    if "gene" in feat.qualifiers and feat.qualifiers["gene"][0] in feature_names:
+                        fname = feat.qualifiers["gene"][0]
+                    elif "gene_name" in feat.qualifiers and feat.qualifiers["gene_name"][0] in feature_names:
+                        fname = feat.qualifiers["gene_name"][0]
+                    elif "locus_tag" in feat.qualifiers and feat.qualifiers["locus_tag"][0] in feature_names:
+                        fname = feat.qualifiers["locus_tag"][0]
+                    else:
+                        fname = None
+                else:
+                    if "gene" in feat.qualifiers:
+                        fname = feat.qualifiers["gene"][0]
+                    elif "gene_name" in feat.qualifiers:
+                        fname = feat.qualifiers["gene_name"][0]
+                    else:
+                        fname = feat.qualifiers["locus_tag"][0]
+                if feat.type == "source":
+                    fname = "nuc"
+
+                if fname:
+                    features[fname] = feat
+
+        if feature_names is not None:
+            for fe in feature_names:
+                if fe not in features:
+                    print("Couldn't find gene {} in GFF or GenBank file".format(fe))
+    return features
+
+def _read_genbank(reference, feature_names):
+    """
+    Read a GenBank file. We only read GenBank feature keys 'CDS' or 'source'.
+    We create a "feature name" via:
+    - for 'source' features use 'nuc'
+    - for 'CDS' features use the locus_tag or the gene. If neither, then silently ignore. 
+
+    Parameters
+    ----------
+    reference : string
+        File path to GenBank reference
+    feature_names : None or set or list
+        Restrict the CDSs we read to those in the set/list
+
+    Returns
+    -------
+    features : dict
+        keys: feature names, values: <class 'Bio.SeqFeature.SeqFeature'>
+        Note that feature names may not equivalent to GenBank feature keys
+    """
+    features = {}
+    from Bio import SeqIO
+    for feat in SeqIO.read(reference, 'genbank').features:
+        if feat.type=='CDS':
+            if "locus_tag" in feat.qualifiers:
+                fname = feat.qualifiers["locus_tag"][0]
+                if feature_names is None or fname in feature_names:
+                    features[fname] = feat
+            elif "gene" in feat.qualifiers:
+                fname = feat.qualifiers["gene"][0]
+                if feature_names is None or fname in feature_names:
+                    features[fname] = feat
+        elif feat.type=='source': #read 'nuc' as well for annotations - need start/end of whole!
+            features['nuc'] = feat
     return features
 
 def read_config(fname):
