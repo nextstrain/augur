@@ -1,0 +1,54 @@
+{
+  "annotations": {
+    "nuc": {
+      "end": 50,
+      "start": 1,
+      "strand": "+",
+      "type": "source"
+    }
+  },
+  "generated_by": {
+    "program": "augur",
+    "version": "23.1.1"
+  },
+  "mask": "00000000000000000000000000000000000000000000000000",
+  "nodes": {
+    "node_AB": {
+      "muts": [
+        "A7G",
+        "C14T",
+        "T18C",
+        "A33G",
+        "A43T"
+      ],
+      "sequence": "AAAACAGAAATGCTCTGCGGGTAAAAAAAAAAGAACTACTTGTCCATAAA"
+    },
+    "node_root": {
+      "muts": [
+        "A5C",
+        "C18T"
+      ],
+      "sequence": "AAAACAAAAATGCCCTGTGGGTAAAAAAAAAAAAACTACTTGACCATAAA"
+    },
+    "sample_A": {
+      "muts": [
+        "G33C",
+        "C39T"
+      ],
+      "sequence": "AAAACAGAAATGCTCTGCGGGTAAAAAAAAAACAACTATTTGTCCATAAA"
+    },
+    "sample_B": {
+      "muts": [
+        "G42A"
+      ],
+      "sequence": "AAAACAGAAATGCTCTGCGGGTAAAAAAAAAAGAACTACTTATCCATAAA"
+    },
+    "sample_C": {
+      "muts": [],
+      "sequence": "AAAACAAAAATGCCCTGTGGGTAAAAAAAAAAAAACTACTTGACCATAAA"
+    }
+  },
+  "reference": {
+    "nuc": "AAAAAAAAAATGCCCTGCGGGTAAAAAAAAAAAAACTACTTGACCATAAA"
+  }
+}
