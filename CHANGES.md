@@ -9,7 +9,14 @@
      * Incompatible arguments are now checked, especially related to VCF vs FASTA inputs. 
      * `--vcf-reference` and `--root-sequence` are now mutually exclusive.
 
+
+### Bug Fixes
+
+* translate: Improvements to command line arguments.  [#1348][] (@jameshadfield)
+    * `--tree` and `--ancestral-sequences` are now required arguments.
+
 [#1344]: https://github.com/nextstrain/augur/pull/1344
+[#1348]: https://github.com/nextstrain/augur/pull/1348
 
 ## 23.1.1 (7 November 2023)
 

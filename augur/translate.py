@@ -317,8 +317,8 @@ def get_genes_from_file(fname):
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("translate", help=__doc__)
-    parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
-    parser.add_argument('--ancestral-sequences', type=str, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
+    parser.add_argument('--tree', required=True, help="prebuilt Newick -- no tree will be built if provided")
+    parser.add_argument('--ancestral-sequences', required=True, type=str, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
     parser.add_argument('--reference-sequence', required=True,
                         help='GenBank or GFF file containing the annotation')
     parser.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
