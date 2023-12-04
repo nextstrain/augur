@@ -46,7 +46,7 @@ jobs:
       COVERAGE_RCFILE: ${{ github.workspace }}/.coveragerc
     steps:
     - uses: actions/checkout@v4
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: conda-incubator/setup-miniconda@v3
       with:
         python-version: ${{ matrix.python-version }}
         miniforge-variant: Mambaforge
