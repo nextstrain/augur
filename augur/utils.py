@@ -323,6 +323,39 @@ def _read_gff(reference, feature_names):
 
     return features
 
+def _read_nuc_annotation_from_genbank(record, reference):
+    """
+    Extracts the mandatory 'source' feature. If the sequence is present we check
+    the length agrees with the source. (The 'ORIGIN' may be left blank,
+    according to <https://www.ncbi.nlm.nih.gov/Sitemap/samplerecord.html>.)
+
+    See <https://www.insdc.org/submitting-standards/feature-table/> for more.
+    
+    Parameters
+    ----------
+    record : <class 'Bio.SeqRecord.SeqRecord'> reference: string
+
+    Returns
+    -------
+    <class 'Bio.SeqFeature.SeqFeature'>
+
+    Raises
+    ------
+    AugurError
+        If 'source' not defined or if coords contradict.
+    """
+    nuc = None
+    for feat in record.features:
+        if feat.type=='source':
+            nuc = feat
+    if not nuc:
+        raise AugurError(f"Reference {reference!r} did not define the mandatory source feature.")
+    if nuc.location.start!=0: # this is a '1' in the GenBank file
+        raise AugurError(f"Reference {reference!r} source feature did not start at 1.")
+    if record.seq and len(record.seq)!=nuc.location.end:
+        raise AugurError(f"Reference {reference!r} source feature was length {nuc.location.end} but the included sequence was length {len(record.seq)}.")
+    return nuc
+
 def _read_genbank(reference, feature_names):
     """
     Read a GenBank file. We only read GenBank feature keys 'CDS' or 'source'.
@@ -342,10 +375,19 @@ def _read_genbank(reference, feature_names):
     features : dict
         keys: feature names, values: <class 'Bio.SeqFeature.SeqFeature'>
         Note that feature names may not equivalent to GenBank feature keys
+
+    Raises
+    ------
+    AugurError
+        If 'nuc' annotation not parsed
     """
-    features = {}
     from Bio import SeqIO
-    for feat in SeqIO.read(reference, 'genbank').features:
+    gb = SeqIO.read(reference, 'genbank')
+    features = {
+        'nuc': _read_nuc_annotation_from_genbank(gb, reference)
+    }
+
+    for feat in gb.features:
         if feat.type=='CDS':
             if "locus_tag" in feat.qualifiers:
                 fname = feat.qualifiers["locus_tag"][0]
@@ -355,8 +397,6 @@ def _read_genbank(reference, feature_names):
                 fname = feat.qualifiers["gene"][0]
                 if feature_names is None or fname in feature_names:
                     features[fname] = feat
-        elif feat.type=='source': #read 'nuc' as well for annotations - need start/end of whole!
-            features['nuc'] = feat
     return features
 
 def read_config(fname):
