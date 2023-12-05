@@ -18,7 +18,7 @@ Translate amino acids for genes using a GFF3 file where the gene names are store
   >   --ancestral-sequences "${DATA}/zika/nt_muts.json" \
   >   --reference-sequence genemap.gff \
   >   --output-node-data aa_muts.json
-  Read in 2 features from reference sequence file
+  Read in 3 features from reference sequence file
   Validating schema of '.+/nt_muts.json'... (re)
   amino acid mutations written to .* (re)
 

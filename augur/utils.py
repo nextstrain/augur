@@ -175,6 +175,68 @@ def load_features(reference, feature_names=None):
     else:
         return _read_genbank(reference, feature_names)
 
+def _read_nuc_annotation_from_gff(record, reference):
+    """
+    Looks for the ##sequence-region pragma as well as 'region' & 'source' GFF
+    types. Note that 'source' isn't really a GFF feature type, but is used
+    widely in the Nextstrain ecosystem. If there are multiple we check that the
+    coordinates agree.
+    
+    Parameters
+    ----------
+    record : <class 'Bio.SeqRecord.SeqRecord'>
+    reference: string
+        File path to GFF reference
+
+    Returns
+    -------
+    <class 'Bio.SeqFeature.SeqFeature'>
+
+    Raises
+    ------
+    AugurError
+        If no information on the genome / seqid length is available or if the
+        information is contradictory
+    """
+    nuc = {}
+    # Attempt to parse the sequence-region pragma to learn the genome
+    # length (in the absence of record/source we'll use this for 'nuc')
+    sequence_regions = record.annotations.get('sequence-region', [])
+    if len(sequence_regions)>1:
+        raise AugurError(f"Reference {reference!r} contains multiple ##sequence-region pragma lines. Augur can only handle GFF files with a single one.")
+    elif sequence_regions:
+        from Bio.SeqFeature import SeqFeature, FeatureLocation
+        (name, start, stop) = sequence_regions[0]
+        nuc['pragma'] = SeqFeature(
+            FeatureLocation(start, stop),
+            strand=1,
+            type='##sequence-region pragma',
+            id=name,
+        )
+    for feat in record.features:
+        if feat.type == "region":
+            nuc['region'] = feat
+        elif feat.type == "source":
+            nuc['source'] = feat
+
+    # ensure they all agree on coordinates, if there are multiple
+    if len(nuc.values())>1:
+        coords = [(name, int(feat.location.start), int(feat.location.end)) for name,feat in nuc.items()]
+        if not all(el[1]==coords[0][1] and el[2]==coords[0][2] for el in coords):
+            raise AugurError(f"Reference {reference!r} contained contradictory coordinates for the seqid/genome. We parsed the following coordinates: " + 
+                             ', '.join([f"{el[0]}: [{el[1]+1}, {el[2]}]" for el in coords]) # +1 on the first coord to shift to one-based GFF representation
+                             )
+
+    if 'pragma' in nuc: ## the pragma is GFF's preferred way to define nuc coords
+        return nuc['pragma']
+    elif 'region' in nuc:
+        return nuc['region']
+    elif 'source' in nuc:
+        return nuc['source']
+    else:
+        raise AugurError(f"Reference {reference!r} didn't define any information we can use to create the 'nuc' annotation. You can use a line with a 'record' or 'source' GFF type or a ##sequence-region pragma.")
+
+
 def _read_gff(reference, feature_names):
     """
     Read a GFF file. We only read GFF IDs 'gene' or 'source' (the latter may not technically
@@ -204,7 +266,7 @@ def _read_gff(reference, feature_names):
         If the reference file contains no IDs or multiple different seqids
     """
     from BCBio import GFF
-    valid_types = ['gene', 'source']
+    valid_types = ['gene', 'source', 'region']
     features = {}
 
     with open(reference, encoding='utf-8') as in_handle:
@@ -219,13 +281,10 @@ def _read_gff(reference, feature_names):
         else:
             rec = gff_entries[0]
 
+        features['nuc'] = _read_nuc_annotation_from_gff(rec, reference)
+
         for feat in rec.features:
-            if feat.type == "source":
-                # For 'source' we don't ned to interrogate the GFF
-                # attributes as we automatically set the (nextstrain)
-                # feature name to 'nuc'
-                fname = "nuc"
-            else:
+            if feat.type == "gene":
                 # Check for gene names stored in qualifiers commonly used by
                 # virus-specific gene maps first (e.g., 'gene',
                 # 'gene_name'). Then, check for qualifiers used by non-viral
@@ -253,8 +312,9 @@ def _read_gff(reference, feature_names):
                 if feature_names is not None and fname not in feature_names:
                     # Skip (don't store) this feature
                     continue
-            if fname:
-                features[fname] = feat
+
+                if fname:
+                    features[fname] = feat
 
         if feature_names is not None:
             for fe in feature_names:

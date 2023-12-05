@@ -2,24 +2,24 @@
   "annotations": {
     "gene1": {
       "end": 24,
-      "seqid": "data/reference.source.gff",
+      "seqid": "data/reference.gff",
       "start": 10,
       "strand": "+",
       "type": "gene"
     },
     "gene2": {
       "end": 47,
-      "seqid": "data/reference.source.gff",
+      "seqid": "data/reference.gff",
       "start": 36,
       "strand": "-",
       "type": "gene"
     },
     "nuc": {
       "end": 50,
-      "seqid": "data/reference.source.gff",
+      "seqid": "data/reference.gff",
       "start": 1,
       "strand": "+",
-      "type": "source"
+      "type": "##sequence-region pragma"
     }
   },
   "generated_by": {

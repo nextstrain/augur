@@ -17,7 +17,7 @@ Translate amino acids for genes using a GFF3 file where the gene names are store
   >   --vcf-reference-output translations_reference.fasta
   Gene length of 'rrs' is not a multiple of 3. will pad with N
   Read in 187 specified genes to translate.
-  Read in 187 features from reference sequence file
+  Read in 188 features from reference sequence file
   162 genes had no mutations and so have been be excluded.
   amino acid mutations written to .* (re)
 
