@@ -429,19 +429,19 @@ def run(args):
     # Note that BioPython FeatureLocations use
     # "Pythonic" coordinates: [zero-origin, half-open)
     # Starting with augur v6 we use GFF coordinates: [one-origin, inclusive]
-    annotations = {}
+    annotations = {
+        'nuc': {'start': features['nuc'].location.start+1,
+                'end':   features['nuc'].location.end,
+                'strand': '+',
+                'type':  features['nuc'].type,     # (unused by auspice)
+                'seqid': args.reference_sequence}  # (unused by auspice)
+    }
     for fname, feat in features.items():
         annotations[fname] = {'seqid':args.reference_sequence,
                               'type':feat.type,
                               'start':int(feat.location.start)+1,
                               'end':int(feat.location.end),
                               'strand': {+1:'+', -1:'-', 0:'?', None:None}[feat.location.strand]}
-    if is_vcf: #need to add our own nuc
-        annotations['nuc'] = {'seqid':args.reference_sequence,
-                              'type':feat.type,
-                              'start': 1,
-                              'end': len(ref),
-                              'strand': '+'}
 
     ## determine amino acid mutations for each node
     try:
