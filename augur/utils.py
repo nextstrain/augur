@@ -164,7 +164,7 @@ def load_features(reference, feature_names=None):
     Raises
     ------
     AugurError
-        If the reference file doesn't exist
+        If the reference file doesn't exist, or is malformed / empty
     """
     #checks explicitly for GFF otherwise assumes Genbank
     if not os.path.isfile(reference):
@@ -197,43 +197,60 @@ def _read_gff(reference, feature_names):
     features : dict
         keys: feature names, values: <class 'Bio.SeqFeature.SeqFeature'>
         Note that feature names may not equivalent to GenBank feature keys
+
+    Raises
+    ------
+    AugurError
+        If the reference file contains no IDs or multiple different seqids
     """
     from BCBio import GFF
     valid_types = ['gene', 'source']
     features = {}
-    with open(reference, encoding='utf-8') as in_handle:
-        for rec in GFF.parse(in_handle, limit_info={"gff_type": valid_types}):
-            for feat in rec.features:
-                # Check for gene names stored in qualifiers commonly used by
-                # virus-specific gene maps first (e.g., 'gene',
-                # 'gene_name'). Then, check for qualifiers used by non-viral
-                # pathogens (e.g., 'locus_tag').
-                if feature_names is not None:
-                    if "gene" in feat.qualifiers and feat.qualifiers["gene"][0] in feature_names:
-                        fname = feat.qualifiers["gene"][0]
-                    elif "gene_name" in feat.qualifiers and feat.qualifiers["gene_name"][0] in feature_names:
-                        fname = feat.qualifiers["gene_name"][0]
-                    elif "locus_tag" in feat.qualifiers and feat.qualifiers["locus_tag"][0] in feature_names:
-                        fname = feat.qualifiers["locus_tag"][0]
-                    else:
-                        fname = None
-                else:
-                    if "gene" in feat.qualifiers:
-                        fname = feat.qualifiers["gene"][0]
-                    elif "gene_name" in feat.qualifiers:
-                        fname = feat.qualifiers["gene_name"][0]
-                    else:
-                        fname = feat.qualifiers["locus_tag"][0]
-                if feat.type == "source":
-                    fname = "nuc"
 
-                if fname:
-                    features[fname] = feat
+    with open(reference, encoding='utf-8') as in_handle:
+        # Note that `GFF.parse` doesn't always yield GFF records in the order
+        # one may expect, but since we raise AugurError if there are multiple
+        # this doesn't matter.
+        gff_entries = list(GFF.parse(in_handle, limit_info={'gff_type': valid_types}))
+        if len(gff_entries) == 0:
+            raise AugurError(f"Reference {reference!r} contains no valid data rows. Valid GFF types (3rd column) are {', '.join(valid_types)}.")
+        elif len(gff_entries) > 1:
+            raise AugurError(f"Reference {reference!r} contains multiple seqids (first column). Augur can only handle GFF files with a single seqid.")
+        else:
+            rec = gff_entries[0]
+
+        for feat in rec.features:
+            # Check for gene names stored in qualifiers commonly used by
+            # virus-specific gene maps first (e.g., 'gene',
+            # 'gene_name'). Then, check for qualifiers used by non-viral
+            # pathogens (e.g., 'locus_tag').
+            if feature_names is not None:
+                if "gene" in feat.qualifiers and feat.qualifiers["gene"][0] in feature_names:
+                    fname = feat.qualifiers["gene"][0]
+                elif "gene_name" in feat.qualifiers and feat.qualifiers["gene_name"][0] in feature_names:
+                    fname = feat.qualifiers["gene_name"][0]
+                elif "locus_tag" in feat.qualifiers and feat.qualifiers["locus_tag"][0] in feature_names:
+                    fname = feat.qualifiers["locus_tag"][0]
+                else:
+                    fname = None
+            else:
+                if "gene" in feat.qualifiers:
+                    fname = feat.qualifiers["gene"][0]
+                elif "gene_name" in feat.qualifiers:
+                    fname = feat.qualifiers["gene_name"][0]
+                else:
+                    fname = feat.qualifiers["locus_tag"][0]
+            if feat.type == "source":
+                fname = "nuc"
+
+            if fname:
+                features[fname] = feat
 
         if feature_names is not None:
             for fe in feature_names:
                 if fe not in features:
                     print("Couldn't find gene {} in GFF or GenBank file".format(fe))
+
     return features
 
 def _read_genbank(reference, feature_names):
