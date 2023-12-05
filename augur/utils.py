@@ -264,6 +264,7 @@ def _read_gff(reference, feature_names):
     ------
     AugurError
         If the reference file contains no IDs or multiple different seqids
+        If a gene is found with the name 'nuc'
     """
     from BCBio import GFF
     valid_types = ['gene', 'source', 'region']
@@ -308,6 +309,9 @@ def _read_gff(reference, feature_names):
                     # P.S. The corresponding behaviour for GenBank files is
                     # to silently ignore the gene/CDS.
                     fname = None
+
+                if fname == 'nuc':
+                    raise AugurError(f"Reference {reference!r} contains a gene with the name 'nuc'. This is not allowed.")
 
                 if feature_names is not None and fname not in feature_names:
                     # Skip (don't store) this feature
@@ -380,6 +384,7 @@ def _read_genbank(reference, feature_names):
     ------
     AugurError
         If 'nuc' annotation not parsed
+        If a CDS feature is given the name 'nuc'
     """
     from Bio import SeqIO
     gb = SeqIO.read(reference, 'genbank')
@@ -389,14 +394,18 @@ def _read_genbank(reference, feature_names):
 
     for feat in gb.features:
         if feat.type=='CDS':
+            fname = None
             if "locus_tag" in feat.qualifiers:
                 fname = feat.qualifiers["locus_tag"][0]
-                if feature_names is None or fname in feature_names:
-                    features[fname] = feat
             elif "gene" in feat.qualifiers:
                 fname = feat.qualifiers["gene"][0]
-                if feature_names is None or fname in feature_names:
-                    features[fname] = feat
+
+            if fname == 'nuc':
+                raise AugurError(f"Reference {reference!r} contains a CDS with the name 'nuc'. This is not allowed.")
+
+            if fname and (feature_names is None or fname in feature_names):
+                features[fname] = feat
+
     return features
 
 def read_config(fname):
