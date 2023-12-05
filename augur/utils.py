@@ -283,6 +283,7 @@ def _read_gff(reference, feature_names):
             rec = gff_entries[0]
 
         features['nuc'] = _read_nuc_annotation_from_gff(rec, reference)
+        features_skipped = 0
 
         for feat in rec.features:
             if feat.type == "gene":
@@ -297,17 +298,7 @@ def _read_gff(reference, feature_names):
                 elif "locus_tag" in feat.qualifiers:
                     fname = feat.qualifiers["locus_tag"][0]
                 else:
-                    # augur 23.1.1 (and earlier) had strange behaviour here:
-                    # if --genes were provided we silently skipped genes
-                    # which didn't have any of the
-                    # {gene,gene_name,locus_tag} attributes. However if
-                    # `--genes` was not provided we would raise an
-                    # unexpected error: `KeyError: 'locus_tag'`. The
-                    # behaviour is now to silently skip the gene, but this
-                    # should be addressed in a future commit with a warning
-                    # at least.
-                    # P.S. The corresponding behaviour for GenBank files is
-                    # to silently ignore the gene/CDS.
+                    features_skipped+=1
                     fname = None
 
                 if fname == 'nuc':
@@ -324,6 +315,9 @@ def _read_gff(reference, feature_names):
             for fe in feature_names:
                 if fe not in features:
                     print("Couldn't find gene {} in GFF or GenBank file".format(fe))
+
+        if features_skipped:
+            print(f"WARNING: {features_skipped} GFF rows of type=gene skipped as they didn't have a gene, gene_name or locus_tag attribute.")
 
     return features
 
@@ -392,6 +386,7 @@ def _read_genbank(reference, feature_names):
         'nuc': _read_nuc_annotation_from_genbank(gb, reference)
     }
 
+    features_skipped = 0
     for feat in gb.features:
         if feat.type=='CDS':
             fname = None
@@ -399,12 +394,17 @@ def _read_genbank(reference, feature_names):
                 fname = feat.qualifiers["locus_tag"][0]
             elif "gene" in feat.qualifiers:
                 fname = feat.qualifiers["gene"][0]
+            else:
+                features_skipped+=1
 
             if fname == 'nuc':
                 raise AugurError(f"Reference {reference!r} contains a CDS with the name 'nuc'. This is not allowed.")
 
             if fname and (feature_names is None or fname in feature_names):
                 features[fname] = feat
+
+    if features_skipped:
+        print(f"WARNING: {features_skipped} CDS features skipped as they didn't have a locus_tag or gene qualifier.")
 
     return features
 

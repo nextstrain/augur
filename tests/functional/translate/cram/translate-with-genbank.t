@@ -12,6 +12,7 @@ Translate amino acids for genes using a GenBank file.
   >   --reference-sequence "$DATA/zika/zika_outgroup.gb" \
   >   --genes CA PRO \
   >   --output-node-data aa_muts.json
+  WARNING: 1 CDS features skipped as they didn't have a locus_tag or gene qualifier.
   Read in 3 features from reference sequence file
   Validating schema of '.+nt_muts.json'... (re)
   amino acid mutations written to .* (re)
