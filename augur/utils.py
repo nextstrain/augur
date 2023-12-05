@@ -220,29 +220,39 @@ def _read_gff(reference, feature_names):
             rec = gff_entries[0]
 
         for feat in rec.features:
-            # Check for gene names stored in qualifiers commonly used by
-            # virus-specific gene maps first (e.g., 'gene',
-            # 'gene_name'). Then, check for qualifiers used by non-viral
-            # pathogens (e.g., 'locus_tag').
-            if feature_names is not None:
-                if "gene" in feat.qualifiers and feat.qualifiers["gene"][0] in feature_names:
-                    fname = feat.qualifiers["gene"][0]
-                elif "gene_name" in feat.qualifiers and feat.qualifiers["gene_name"][0] in feature_names:
-                    fname = feat.qualifiers["gene_name"][0]
-                elif "locus_tag" in feat.qualifiers and feat.qualifiers["locus_tag"][0] in feature_names:
-                    fname = feat.qualifiers["locus_tag"][0]
-                else:
-                    fname = None
+            if feat.type == "source":
+                # For 'source' we don't ned to interrogate the GFF
+                # attributes as we automatically set the (nextstrain)
+                # feature name to 'nuc'
+                fname = "nuc"
             else:
+                # Check for gene names stored in qualifiers commonly used by
+                # virus-specific gene maps first (e.g., 'gene',
+                # 'gene_name'). Then, check for qualifiers used by non-viral
+                # pathogens (e.g., 'locus_tag').
                 if "gene" in feat.qualifiers:
                     fname = feat.qualifiers["gene"][0]
                 elif "gene_name" in feat.qualifiers:
                     fname = feat.qualifiers["gene_name"][0]
-                else:
+                elif "locus_tag" in feat.qualifiers:
                     fname = feat.qualifiers["locus_tag"][0]
-            if feat.type == "source":
-                fname = "nuc"
+                else:
+                    # augur 23.1.1 (and earlier) had strange behaviour here:
+                    # if --genes were provided we silently skipped genes
+                    # which didn't have any of the
+                    # {gene,gene_name,locus_tag} attributes. However if
+                    # `--genes` was not provided we would raise an
+                    # unexpected error: `KeyError: 'locus_tag'`. The
+                    # behaviour is now to silently skip the gene, but this
+                    # should be addressed in a future commit with a warning
+                    # at least.
+                    # P.S. The corresponding behaviour for GenBank files is
+                    # to silently ignore the gene/CDS.
+                    fname = None
 
+                if feature_names is not None and fname not in feature_names:
+                    # Skip (don't store) this feature
+                    continue
             if fname:
                 features[fname] = feat
 
