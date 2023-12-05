@@ -323,8 +323,6 @@ def run(args):
         from .utils import load_features
         ## load features; only requested features if genes given
         features = load_features(args.annotation, args.genes)
-        if features is None:
-            raise AugurError("could not read features of reference sequence file")
         print("Read in {} features from reference sequence file".format(len(features)))
         for gene in args.genes:
             print(f"Processing gene: {gene}")

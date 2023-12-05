@@ -11,6 +11,7 @@ from augur.data import as_file
 from augur.io.file import open_file
 
 from augur.types import ValidationMode
+from augur.errors import AugurError
 
 from augur.util_support.color_parser import ColorParser
 from augur.util_support.node_data_reader import NodeDataReader
@@ -156,15 +157,18 @@ def load_features(reference, feature_names=None):
 
     Returns
     -------
-    features : dict or None
+    features : dict
         keys: feature names, values: <class 'Bio.SeqFeature.SeqFeature'> Note
-        that feature names may not equivalent to GenBank feature keys None is
-        returned if the reference is not a valid file path
+        that feature names may not equivalent to GenBank feature keys
+
+    Raises
+    ------
+    AugurError
+        If the reference file doesn't exist
     """
     #checks explicitly for GFF otherwise assumes Genbank
     if not os.path.isfile(reference):
-        print("ERROR: reference sequence not found. looking for", reference)
-        return None
+        raise AugurError(f"reference sequence file {reference!r} not found")
 
     if '.gff' in reference.lower():
         return _read_gff(reference, feature_names)
