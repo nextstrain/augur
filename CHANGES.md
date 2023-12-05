@@ -2,8 +2,18 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* ancestral, translate: GenBank files now require the (GFF mandatory) source feature to be present.[#1351][] (@jameshadfield)
+* ancestral, translate: For GFF files, we extract the genome/sequence coordinates by inspecting the sequence-region pragma, region type and/or source type. This information is now required. [#1351][] (@jameshadfield)
+
 ### Features
 
+* ancestral, translate: A range of improvements to how we parse GFF and GenBank reference files. [#1351][] (@jameshadfield)
+    * translate will now always export a 'nuc' annotation in the output JSON, allowing it to pass validation
+    * Gene/CDS names of 'nuc' are now forbidden.
+    * If a Gene/CDS in the GFF/GenBank file is unparsed we now print a warning.
+* utils::load_features: This function may now raise `AugurError`. [#1351][] (@jameshadfield)
 * ancestral: For VCF alignments, a VCF output file is now only created when requested via `--output-vcf`. [#1344][] (@jameshadfield)
 * ancestral: Improvements to command line arguments. [#1344][] (@jameshadfield)
      * Incompatible arguments are now checked, especially related to VCF vs FASTA inputs. 
@@ -16,9 +26,13 @@
 * translate: Improvements to command line arguments.  [#1348][] (@jameshadfield)
     * `--tree` and `--ancestral-sequences` are now required arguments.
     * separate VCF-only arguments into their own group
+* translate: Fixes a bug in the parsing behaviour of GFF files whereby the presence of the `--genes` command line argument would change how we read individual GFF lines. Issue [#1349][], PR [#1351][] (@jameshadfield)
+
 
 [#1344]: https://github.com/nextstrain/augur/pull/1344
 [#1348]: https://github.com/nextstrain/augur/pull/1348
+[#1351]: https://github.com/nextstrain/augur/pull/1351
+[#1349]: https://github.com/nextstrain/augur/issues/1349
 
 ## 23.1.1 (7 November 2023)
 
