@@ -303,6 +303,18 @@ def assign_aa_fasta(tree, translations):
 
     return aa_muts
 
+def parse_genes_argument(input):
+    if input is None:
+        return None
+
+    # If input is a file, read in the genes to translate
+    if len(input) == 1 and os.path.isfile(input[0]):
+        return get_genes_from_file(input[0])
+
+    # Otherwise, the input itself is assumed to be a list of genes
+    return input
+
+
 def get_genes_from_file(fname):
     if os.path.isfile(fname):
         genes = read_entries(fname)
@@ -391,11 +403,7 @@ def run(args):
     is_vcf = any([args.ancestral_sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])
     check_arg_combinations(args, is_vcf)
 
-    # If genes is a file, read in the genes to translate
-    if args.genes and len(args.genes) == 1 and os.path.isfile(args.genes[0]):
-        genes = get_genes_from_file(args.genes[0])
-    else:
-        genes = args.genes
+    genes = parse_genes_argument(args.genes)
 
     ## load features; only requested features if genes given
     features = load_features(args.reference_sequence, genes)
