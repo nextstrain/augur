@@ -749,11 +749,14 @@ VALID_NUCLEOTIDES = { # http://reverse-complement.com/ambiguity.html
 
 
 def read_strains(*files, comment_char="#"):
-    """Reads strain names from one or more plain text files and returns the
-    set of distinct strains.
+    return set(read_entries(*files, comment_char=comment_char))
 
-    Strain names can be commented with full-line or inline comments. For
-    example, the following is a valid strain names file::
+
+def read_entries(*files, comment_char="#"):
+    """Reads entries (one per line) from one or more plain text files.
+
+    Entries can be commented with full-line or inline comments. For example, the
+    following is a valid file::
 
         # this is a comment at the top of the file
         strain1  # exclude strain1 because it isn't sequenced properly
@@ -763,21 +766,21 @@ def read_strains(*files, comment_char="#"):
     Parameters
     ----------
     files : iterable of str
-        one or more names of text files with one strain name per line
+        one or more names of text files with one entry per line
 
     Returns
     -------
     set :
-        strain names from the given input files
+        lines from the given input files
 
     """
-    strains = set()
+    entries = list()
     for input_file in files:
         with open_file(input_file, 'r') as ifile:
             for line in ifile:
                 # Allow comments anywhere in a given line.
-                strain_name = line.split(comment_char)[0].strip()
-                if len(strain_name) > 0:
-                    strains.add(strain_name)
+                entry = line.split(comment_char)[0].strip()
+                if len(entry) > 0:
+                    entries.append(entry)
 
-    return strains
+    return entries
