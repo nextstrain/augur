@@ -17,7 +17,7 @@ import os, sys
 import numpy as np
 from Bio import SeqIO, Seq, SeqRecord, Phylo
 from .io.vcf import write_VCF_translation
-from .utils import read_node_data, load_features, write_json, get_json_name
+from .utils import read_entries, read_node_data, load_features, write_json, get_json_name
 from treetime.vcf_utils import read_vcf
 from augur.errors import AugurError
 from textwrap import dedent
@@ -304,15 +304,11 @@ def assign_aa_fasta(tree, translations):
     return aa_muts
 
 def get_genes_from_file(fname):
-    genes = []
     if os.path.isfile(fname):
-        with open(fname, encoding='utf-8') as ifile:
-            for line in ifile:
-                fields = line.strip().split('#')
-                if fields[0].strip():
-                    genes.append(fields[0].strip())
+        genes = read_entries(fname)
     else:
         print("File with genes not found. Looking for", fname)
+        genes = []
 
     unique_genes = np.unique(np.array(genes))
     if len(unique_genes) != len(genes):
