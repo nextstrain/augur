@@ -784,3 +784,30 @@ def read_entries(*files, comment_char="#"):
                     entries.append(entry)
 
     return entries
+
+
+def parse_genes_argument(input):
+    if input is None:
+        return None
+
+    # If input is a file, read in the genes to translate
+    if len(input) == 1 and os.path.isfile(input[0]):
+        return _get_genes_from_file(input[0])
+
+    # Otherwise, the input itself is assumed to be a list of genes
+    return input
+
+
+def _get_genes_from_file(fname):
+    if os.path.isfile(fname):
+        genes = read_entries(fname)
+    else:
+        print("File with genes not found. Looking for", fname)
+        genes = []
+
+    unique_genes = np.unique(np.array(genes))
+    if len(unique_genes) != len(genes):
+        print("You have duplicates in your genes file. They are being ignored.")
+    print("Read in {} specified genes to translate.".format(len(unique_genes)))
+
+    return unique_genes

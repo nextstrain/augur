@@ -13,11 +13,11 @@ mutations are output to a node-data JSON file.
     The mutation positions in the node-data JSON are one-based.
 """
 
-import os, sys
+import sys
 import numpy as np
 from Bio import SeqIO, Seq, SeqRecord, Phylo
 from .io.vcf import write_VCF_translation
-from .utils import read_entries, read_node_data, load_features, write_json, get_json_name
+from .utils import parse_genes_argument, read_node_data, load_features, write_json, get_json_name
 from treetime.vcf_utils import read_vcf
 from augur.errors import AugurError
 from textwrap import dedent
@@ -302,32 +302,6 @@ def assign_aa_fasta(tree, translations):
                     aa_muts[n.name]["aa_sequences"][fname] = "".join(aln[n.name])
 
     return aa_muts
-
-def parse_genes_argument(input):
-    if input is None:
-        return None
-
-    # If input is a file, read in the genes to translate
-    if len(input) == 1 and os.path.isfile(input[0]):
-        return get_genes_from_file(input[0])
-
-    # Otherwise, the input itself is assumed to be a list of genes
-    return input
-
-
-def get_genes_from_file(fname):
-    if os.path.isfile(fname):
-        genes = read_entries(fname)
-    else:
-        print("File with genes not found. Looking for", fname)
-        genes = []
-
-    unique_genes = np.unique(np.array(genes))
-    if len(unique_genes) != len(genes):
-        print("You have duplicates in your genes file. They are being ignored.")
-    print("Read in {} specified genes to translate.".format(len(unique_genes)))
-
-    return unique_genes
 
 def sequences_vcf(reference_fasta, vcf):
     """
