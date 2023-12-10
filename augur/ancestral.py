@@ -180,9 +180,13 @@ def register_parser(parent_subparsers):
     )
     input_group.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     input_group.add_argument('--alignment', '-a', help="alignment in FASTA or VCF format")
-    input_group.add_argument('--vcf-reference', type=str, help='FASTA file of the sequence the VCF was mapped to (only used if a VCF is provided as the alignment)')
-    input_group.add_argument('--root-sequence', type=str, help='FASTA/genbank file of the sequence that is used as root for mutation calling.'
-                        ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
+    input_group_ref = input_group.add_mutually_exclusive_group()
+    input_group_ref.add_argument('--vcf-reference', type=str, metavar='FASTA',
+                                 help='[VCF alignment only] file of the sequence the VCF was mapped to.'
+                                      ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
+    input_group_ref.add_argument('--root-sequence', type=str,metavar='FASTA/GenBank',
+                                 help='[FASTA alignment only] file of the sequence that is used as root for mutation calling.'
+                                      ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
 
     global_options_group = parser.add_argument_group(
         "global options",
@@ -228,21 +232,40 @@ def register_parser(parent_subparsers):
 
     return parser
 
-def run(args):
-    # Validate arguments.
+def validate_arguments(args, is_vcf):
+    """
+    Check that provided arguments are compatible.
+    Where possible we use argparse built-ins, but they don't cover everything we want to check.
+    This checking shouldn't be used by downstream code to assume arguments exist, however by checking for
+    invalid combinations up-front we can exit quickly.
+    """
     aa_arguments = (args.annotation, args.genes, args.translations)
     if any(aa_arguments) and not all(aa_arguments):
         raise AugurError("For amino acid sequence reconstruction, you must provide an annotation file, a list of genes, and a template path to amino acid sequences.")
 
+    if args.output_sequences and args.output_vcf:
+        raise AugurError("Both sequence (fasta) and VCF output have been requested, but these are incompatible.")
+
+    if is_vcf and args.output_sequences:
+        raise AugurError("Sequence (fasta) output has been requested but the input alignment is VCF.")
+
+    if not is_vcf and args.output_vcf:
+        raise AugurError("VCF output has been requested but the input alignment is not VCF.")
+
+
+def run(args):
     # check alignment type, set flags, read in if VCF
     is_vcf = any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])
     ref = None
+    validate_arguments(args, is_vcf)
 
     try:
         T = read_tree(args.tree)
-    except (FileNotFoundError, InvalidTreeError) as error:
-        print("ERROR: %s" % error, file=sys.stderr)
-        return 1
+    except FileNotFoundError:
+        raise AugurError(f"The provided tree file {args.tree!r} doesn't exist")
+    except InvalidTreeError as error:
+        raise AugurError(error)
+    # Note that a number of other errors may be thrown by `read_tree` such as Bio.Phylo.NewickIO.NewickError
 
     import numpy as np
     missing_internal_node_names = [n.name is None for n in T.get_nonterminals()]
@@ -256,9 +279,7 @@ def run(args):
 
     if is_vcf:
         if not args.vcf_reference:
-            print("ERROR: a reference Fasta is required with VCF-format alignments", file=sys.stderr)
-            return 1
-
+            raise AugurError("a reference Fasta is required with VCF-format alignments")
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
         aln = compress_seq['sequences']
         ref = compress_seq['reference']
@@ -273,8 +294,7 @@ def run(args):
                 except:
                     pass
             if ref is None:
-                print(f"ERROR: could not read root sequence from {args.root_sequence}", file=sys.stderr)
-                return 1
+                raise AugurError(f"could not read root sequence from {args.root_sequence}")
 
     import treetime
     print("\nInferred ancestral sequence states using TreeTime:"
@@ -304,8 +324,7 @@ def run(args):
         ## load features; only requested features if genes given
         features = load_features(args.annotation, args.genes)
         if features is None:
-            print("ERROR: could not read features of reference sequence file")
-            return 1
+            raise AugurError("could not read features of reference sequence file")
         print("Read in {} features from reference sequence file".format(len(features)))
         for gene in args.genes:
             print(f"Processing gene: {gene}")
@@ -316,9 +335,8 @@ def run(args):
             aa_result = run_ancestral(T, fname, root_sequence=root_seq, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
                                         marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='aa')
             if aa_result['tt'].data.full_length*3 != len(feat):
-                print(f"ERROR: length of translated alignment for {gene} does not match length of reference feature."
+                raise AugurError(f"length of translated alignment for {gene} does not match length of reference feature."
                        " Please make sure that the annotation matches the translations.")
-                return 1
 
             for key, node in anc_seqs['nodes'].items():
                 if 'aa_muts' not in node: node['aa_muts'] = {}
@@ -352,26 +370,18 @@ def run(args):
     print("ancestral mutations written to", out_name, file=sys.stdout)
 
     if args.output_sequences:
-        if args.output_vcf:
-            # TODO: This should be an error and we should check for this
-            # unsupported combination of arguments at the beginning of the
-            # script to avoid wasting time for users.
-            print("WARNING: augur only supports sequence output for FASTA alignments and not for VCFs.", file=sys.stderr)
-        else:
-            records = [
-                SeqRecord(Seq(node_data["sequence"]), id=node_name, description="")
-                for node_name, node_data in anc_seqs["nodes"].items()
-            ]
-            SeqIO.write(records, args.output_sequences, "fasta")
-            print("ancestral sequences FASTA written to", args.output_sequences, file=sys.stdout)
+        assert not is_vcf
+        records = [
+            SeqRecord(Seq(node_data["sequence"]), id=node_name, description="")
+            for node_name, node_data in anc_seqs["nodes"].items()
+        ]
+        SeqIO.write(records, args.output_sequences, "fasta")
+        print("ancestral sequences FASTA written to", args.output_sequences, file=sys.stdout)
 
-    # If VCF, output VCF including new ancestral seqs
-    if is_vcf:
-        if args.output_vcf:
-            vcf_fname = args.output_vcf
-        else:
-            vcf_fname = '.'.join(args.alignment.split('.')[:-1]) + '.vcf'
-        write_vcf(nuc_result['tt'].get_tree_dict(keep_var_ambigs=True), vcf_fname)
-        print("ancestral sequences as vcf-file written to",vcf_fname, file=sys.stdout)
+    # output VCF including new ancestral seqs
+    if args.output_vcf:
+        assert is_vcf
+        write_vcf(nuc_result['tt'].get_tree_dict(keep_var_ambigs=True), args.output_vcf)
+        print("Mutations, including for ancestral nodes, exported as VCF to", args.output_vcf, file=sys.stdout)
 
     return 0

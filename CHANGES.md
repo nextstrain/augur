@@ -2,6 +2,14 @@
 
 ## __NEXT__
 
+### Features
+
+* ancestral: For VCF alignments, a VCF output file is now only created when requested via `--output-vcf`. [#1344][] (@jameshadfield)
+* ancestral: Improvements to command line arguments. [#1344][] (@jameshadfield)
+     * Incompatible arguments are now checked, especially related to VCF vs FASTA inputs. 
+     * `--vcf-reference` and `--root-sequence` are now mutually exclusive.
+
+[#1344]: https://github.com/nextstrain/augur/pull/1344
 
 ## 23.1.1 (7 November 2023)
 
