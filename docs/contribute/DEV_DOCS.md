@@ -172,6 +172,9 @@ Versions for this project, Augur, from 3.0.0 onwards aim to follow the
       ```
 2. Define a new version number `X.X.X` based on changes and Semantic Versioning rules.
 
+    > [!NOTE]
+    > If releasing a major version, consider removing a [deprecated feature](../../DEPRECATED.md).
+
 ##### 2. Curate [CHANGES.md](../../CHANGES.md)
 
 1. Go through each PR and note the PRs that didn't provide an update to [CHANGES.md](../../CHANGES.md).
