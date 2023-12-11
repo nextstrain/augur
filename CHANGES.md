@@ -20,6 +20,7 @@
      * Incompatible arguments are now checked, especially related to VCF vs FASTA inputs. 
      * `--vcf-reference` and `--root-sequence` are now mutually exclusive.
 * translate: Tree nodes are checked against the node-data JSON input to ensure sequences are present. [#1348][] (@jameshadfield)
+* export v2: Automatically minify large outputs. Use `--no-minify-json` to disable this default behavior. [#1352][] (@victorlin)
 
 ### Bug Fixes
 
@@ -41,6 +42,7 @@
 [#1371]: https://github.com/nextstrain/augur/pull/1371
 [#1374]: https://github.com/nextstrain/augur/pull/1374
 [#1379]: https://github.com/nextstrain/augur/pull/1379
+[#1352]: https://github.com/nextstrain/augur/pull/1352
 
 ## 23.1.1 (7 November 2023)
 
