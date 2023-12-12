@@ -283,6 +283,7 @@ def run(args):
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
         aln = compress_seq['sequences']
         ref = compress_seq['reference']
+        vcf_metadata = compress_seq['metadata']
     else:
         aln = args.alignment
         ref = None
@@ -387,7 +388,9 @@ def run(args):
     # output VCF including new ancestral seqs
     if args.output_vcf:
         assert is_vcf
-        write_vcf(nuc_result['tt'].get_tree_dict(keep_var_ambigs=True), args.output_vcf)
+        tree_dict = nuc_result['tt'].get_tree_dict(keep_var_ambigs=True)
+        tree_dict['metadata'] = vcf_metadata
+        write_vcf(tree_dict, args.output_vcf)
         print("Mutations, including for ancestral nodes, exported as VCF to", args.output_vcf, file=sys.stdout)
 
     return 0
