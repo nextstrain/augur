@@ -268,6 +268,14 @@ def assign_aa_vcf(tree, translations):
 
                 aa_muts[c.name]["aa_muts"][fname] = tmp
 
+    aa_muts[root.name]['aa_sequences'] = {}
+    for gene_name, gene_data in translations.items():
+        root_seq = list(gene_data['reference'])
+        for pos,alt in gene_data['sequences'][root.name].items():
+            # pos is 0-based, <class 'numpy.int64'>
+            root_seq[pos] = alt
+        aa_muts[root.name]['aa_sequences'][gene_name] = "".join(root_seq)
+
     return aa_muts
 
 def assign_aa_fasta(tree, translations, reference_translations):
