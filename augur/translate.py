@@ -310,8 +310,7 @@ def sequences_vcf(reference_fasta, vcf):
     [0] The sequences as a dict of dicts. sequences → <NODE_NAME> → <POS> → <ALT_NUC> where <POS> is a 0-based int
     [1] The sequence of the provided `reference_fasta` (string)
     """
-    if not reference_fasta:
-        raise AugurError("A reference Fasta is required with VCF-format input")
+    assert reference_fasta is not None
     compress_seq = read_vcf(vcf, reference_fasta)
     sequences = compress_seq['sequences']
     ref = compress_seq['reference']
@@ -367,8 +366,25 @@ def check_arg_combinations(args, is_vcf):
     This checking shouldn't be used by downstream code to assume arguments exist, however by checking for
     invalid combinations up-front we can exit quickly.
     """
-    if not is_vcf and (args.vcf_reference or args.vcf_reference_output):
-        raise AugurError("Arguments '--vcf-reference' and/or '--vcf-reference-output' are only applicable if the input ('--ancestral-sequences') is VCF")
+
+    if is_vcf:
+        if not args.vcf_reference:
+            raise AugurError("A reference FASTA (--vcf-reference) is required with VCF-format input")
+    else:
+        if args.vcf_reference or args.vcf_reference_output:
+            raise AugurError("Arguments '--vcf-reference' and/or '--vcf-reference-output' are only applicable if the input ('--ancestral-sequences') is VCF")
+    
+    if args.alignment_output:
+        if is_vcf:
+            if not is_filename_vcf(args.alignment_output):
+                raise AugurError("When using a VCF input the --alignment-output filename must also be a VCF file")
+            if not args.vcf_reference_output:
+                raise AugurError("When using a VCF input and --alignment-output, we now require you to specify the --vcf-reference-output as well")
+        else:
+            if is_filename_vcf(args.alignment_output):
+                raise AugurError("When using a non-VCF input the --alignment-output filename must not be a VCF file")
+    if args.vcf_reference_output and not args.alignment_output:
+        raise AugurError("The VCF reference output (--vcf-reference-output) needs --alignment-output")
 
 
 def run(args):
@@ -452,15 +468,12 @@ def run(args):
     write_json(output_data, out_name)
     print("amino acid mutations written to", out_name, file=sys.stdout)
 
-    ## write alignments to file is requested
+    ## write alignments to file if requested
     if args.alignment_output:
         if is_vcf:
-            ## write VCF-style output if requested
-            fileEndings = -1
-            if args.alignment_output.lower().endswith('.gz'):
-                fileEndings = -2
-            vcf_out_ref = args.vcf_reference_output or '.'.join(args.alignment_output.split('.')[:fileEndings]) + '_reference.fasta'
-            write_VCF_translation(translations, args.alignment_output, vcf_out_ref)
+            assert is_filename_vcf(args.alignment_output)
+            assert args.vcf_reference_output is not None
+            write_VCF_translation(translations, args.alignment_output, args.vcf_reference_output)
         else:
             ## write fasta-style output if requested
             if '%GENE' in args.alignment_output:
