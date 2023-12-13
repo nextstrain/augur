@@ -29,6 +29,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from .utils import parse_genes_argument, read_tree, InvalidTreeError, write_json, get_json_name
+from .io.vcf import is_vcf as is_filename_vcf
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
 
@@ -255,7 +256,7 @@ def validate_arguments(args, is_vcf):
 
 def run(args):
     # check alignment type, set flags, read in if VCF
-    is_vcf = any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])
+    is_vcf = is_filename_vcf(args.alignment)
     ref = None
     validate_arguments(args, is_vcf)
 

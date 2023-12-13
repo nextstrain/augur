@@ -16,7 +16,7 @@ mutations are output to a node-data JSON file.
 import sys
 import numpy as np
 from Bio import SeqIO, Seq, SeqRecord, Phylo
-from .io.vcf import write_VCF_translation
+from .io.vcf import write_VCF_translation, is_vcf as is_filename_vcf
 from .utils import parse_genes_argument, read_node_data, load_features, write_json, get_json_name
 from treetime.vcf_utils import read_vcf
 from augur.errors import AugurError
@@ -374,7 +374,7 @@ def check_arg_combinations(args, is_vcf):
 def run(args):
     ## read tree and data, if reading data fails, return with error code
     tree = Phylo.read(args.tree, 'newick')
-    is_vcf = any([args.ancestral_sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])
+    is_vcf = is_filename_vcf(args.ancestral_sequences)
     check_arg_combinations(args, is_vcf)
 
     genes = parse_genes_argument(args.genes)
