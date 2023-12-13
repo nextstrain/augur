@@ -1,0 +1,13 @@
+##fileformat=VCFv4.3
+##source="Manually created (james) to match the mutations in ancestral/data/simple-genome/nt_muts.ref-seq.json"
+##contig=<ID=1,length=50>
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	node_root	node_AB	sample_A	sample_B	sample_C
+1	5	.	A	C	.	.	.	GT	1	1	1	1	1
+1	7	.	A	G	.	.	.	GT	0	1	1	1	0
+1	14	.	C	T	.	.	.	GT	0	1	1	1	0
+1	18	.	C	T	.	.	.	GT	1	0	0	0	1
+1	33	.	A	G,C	.	.	.	GT	0	1	2	1	0
+1	39	.	C	T	.	.	.	GT	0	0	1	0	0
+1	42	.	G	A	.	.	.	GT	0	0	0	1	0
+1	43	.	A	T	.	.	.	GT	0	1	1	1	0
