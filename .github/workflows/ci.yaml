@@ -66,7 +66,7 @@ jobs:
     - run: cram tests/
       env:
         AUGUR: coverage run -a ${{ github.workspace }}/bin/augur
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: coverage
         path: "${{ env.COVERAGE_FILE }}"
@@ -141,7 +141,7 @@ jobs:
       - run: nextstrain build --ambient ./pathogen-repo ${{ matrix.build-args }}
 
       - if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: output-${{ matrix.pathogen }}
           path: |
