@@ -68,7 +68,7 @@ jobs:
         AUGUR: coverage run -a ${{ github.workspace }}/bin/augur
     # Only upload coverage for one job
     - if: matrix.python-version == '3.11' && matrix.biopython-version == ''
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage
         path: "${{ env.COVERAGE_FILE }}"
@@ -143,7 +143,7 @@ jobs:
       - run: nextstrain build --ambient ./pathogen-repo ${{ matrix.build-args }}
 
       - if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: output-${{ matrix.pathogen }}
           path: |
