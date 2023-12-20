@@ -153,6 +153,12 @@ There are also many [editor integrations for mypy][].
 
 [editor integrations for mypy]: https://github.com/python/mypy#integrations
 
+### Removing features
+
+Instead of removing a feature from one release to the next, consider first deprecating the feature
+by adding a warning output and a [deprecation entry](../../DEPRECATED.md). This allows a period of
+transition time where both the deprecated feature and a suggested alternative can be adopted.
+
 ### Releasing
 
 Versions for this project, Augur, from 3.0.0 onwards aim to follow the
