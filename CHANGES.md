@@ -8,8 +8,17 @@
 * ancestral: Improvements to command line arguments. [#1344][] (@jameshadfield)
      * Incompatible arguments are now checked, especially related to VCF vs FASTA inputs. 
      * `--vcf-reference` and `--root-sequence` are now mutually exclusive.
+* translate: Tree nodes are checked against the node-data JSON input to ensure sequences are present. [#1348][] (@jameshadfield)
+
+### Bug Fixes
+
+* translate: The 'source' ID for GFF files is now ignored as a potential gene feature (it is still used for overall nuc coords). [#1348][] (@jameshadfield)
+* translate: Improvements to command line arguments.  [#1348][] (@jameshadfield)
+    * `--tree` and `--ancestral-sequences` are now required arguments.
+    * separate VCF-only arguments into their own group
 
 [#1344]: https://github.com/nextstrain/augur/pull/1344
+[#1348]: https://github.com/nextstrain/augur/pull/1348
 
 ## 23.1.1 (7 November 2023)
 

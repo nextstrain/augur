@@ -19,11 +19,16 @@ from Bio import SeqIO, Seq, SeqRecord, Phylo
 from .io.vcf import write_VCF_translation
 from .utils import read_node_data, load_features, write_json, get_json_name
 from treetime.vcf_utils import read_vcf
+from augur.errors import AugurError
+from textwrap import dedent
 
 class MissingNodeError(Exception):
     pass
 
 class MismatchNodeError(Exception):
+    pass
+
+class NoVariationError(Exception):
     pass
 
 def safe_translate(sequence, report_exceptions=False):
@@ -124,7 +129,7 @@ def translate_feature(aln, feature):
     return translations
 
 
-def translate_vcf_feature(sequences, ref, feature):
+def translate_vcf_feature(sequences, ref, feature, feature_name):
     '''Translates a subsequence of input nucleotide sequences.
 
     Parameters
@@ -144,6 +149,9 @@ def translate_vcf_feature(sequences, ref, feature):
         translated reference gene, positions of AA differences, and AA
         differences indexed by node name
 
+    Raises
+    ------
+    NoVariationError : if no variable sites within this feature (across all sequences)
     '''
     def str_reverse_comp(str_seq):
         #gets reverse-compliment of a string and returns it as a string
@@ -160,7 +168,7 @@ def translate_vcf_feature(sequences, ref, feature):
     # Need to get ref translation to store. check if multiple of 3 for sanity.
     # will be padded in safe_translate if not
     if len(refNuc)%3:
-        print("Gene length of {} is not a multiple of 3. will pad with N".format(feature.qualifiers['Name'][0]), file=sys.stderr)
+        print(f"Gene length of {feature_name!r} is not a multiple of 3. will pad with N", file=sys.stderr)
 
     ref_aa_seq = safe_translate(refNuc)
     prot['reference'] = ref_aa_seq
@@ -204,11 +212,10 @@ def translate_vcf_feature(sequences, ref, feature):
 
     prot['positions'].sort()
 
-    #if no variable sites, exclude this gene
+    # raise an error if no variable sites observed
     if len(prot['positions']) == 0:
-        return None
-    else:
-        return prot
+        raise NoVariationError()
+    return prot
 
 def construct_mut(start, pos, end):
     return str(start) + str(pos) + str(end)
@@ -314,11 +321,47 @@ def get_genes_from_file(fname):
 
     return unique_genes
 
+def sequences_vcf(reference_fasta, vcf):
+    """
+    Extract the nucleotide variation in the VCF
+    Returns a tuple
+    [0] The sequences as a dict of dicts. sequences → <NODE_NAME> → <POS> → <ALT_NUC> where <POS> is a 0-based int
+    [1] The sequence of the provided `reference_fasta` (string)
+    """
+    if not reference_fasta:
+        raise AugurError("A reference Fasta is required with VCF-format input")
+    compress_seq = read_vcf(vcf, reference_fasta)
+    sequences = compress_seq['sequences']
+    ref = compress_seq['reference']
+    return (sequences, ref)
+
+def sequences_json(node_data_json, tree):
+    """
+    Extract the full nuc sequence for each node in the provided node-data JSON.
+    Returns a dict, keys are node names and values are a string of the genome sequence (nuc)
+    """
+    node_data = read_node_data(node_data_json)
+    if node_data is None:
+        raise AugurError("could not read node data (incl sequences)")
+    # extract sequences from node meta data
+    sequences = {}
+    for k,v in node_data['nodes'].items():
+        if 'sequence' in v:
+            sequences[k] = v['sequence']
+    tree_nodes = {c.name for c in tree.find_clades()}
+    tree_nodes_missing_sequences = tree_nodes - set(sequences.keys())
+    if len(tree_nodes_missing_sequences):
+        raise AugurError(dedent(f"""\
+            {len(tree_nodes_missing_sequences)} nodes on the tree are missing nucleotide sequences in the node-data JSON.
+            These must be present under 'nodes' → <node_name> → 'sequence'.
+            This error may originate from using 'augur ancestral' with VCF input; in this case try using VCF output from that command here.
+            """))
+    return sequences
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("translate", help=__doc__)
-    parser.add_argument('--tree', help="prebuilt Newick -- no tree will be built if provided")
-    parser.add_argument('--ancestral-sequences', type=str, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
+    parser.add_argument('--tree', required=True, help="prebuilt Newick -- no tree will be built if provided")
+    parser.add_argument('--ancestral-sequences', required=True, type=str, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
     parser.add_argument('--reference-sequence', required=True,
                         help='GenBank or GFF file containing the annotation')
     parser.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
@@ -326,41 +369,37 @@ def register_parser(parent_subparsers):
     parser.add_argument('--alignment-output', type=str, help="write out translated gene alignments. "
                                    "If a VCF-input, a .vcf or .vcf.gz will be output here (depending on file ending). If fasta-input, specify the file name "
                                    "like so: 'my_alignment_%%GENE.fasta', where '%%GENE' will be replaced by the name of the gene")
-    parser.add_argument('--vcf-reference-output', type=str, help="fasta file where reference sequence translations for VCF input will be written")
-    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    vcf_only = parser.add_argument_group(
+        title="VCF specific",
+        description="These arguments are only applicable if the input (--ancestral-sequences) is in VCF format."
+    )
+    vcf_only.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    vcf_only.add_argument('--vcf-reference-output', type=str, help="fasta file where reference sequence translations for VCF input will be written")
+
     return parser
+
+def check_arg_combinations(args, is_vcf):
+    """
+    Check that provided arguments are compatible.
+    Where possible we use argparse built-ins, but they don't cover everything we want to check.
+    This checking shouldn't be used by downstream code to assume arguments exist, however by checking for
+    invalid combinations up-front we can exit quickly.
+    """
+    if not is_vcf and (args.vcf_reference or args.vcf_reference_output):
+        raise AugurError("Arguments '--vcf-reference' and/or '--vcf-reference-output' are only applicable if the input ('--ancestral-sequences') is VCF")
 
 
 def run(args):
     ## read tree and data, if reading data fails, return with error code
     tree = Phylo.read(args.tree, 'newick')
+    is_vcf = any([args.ancestral_sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])
+    check_arg_combinations(args, is_vcf)
 
     # If genes is a file, read in the genes to translate
     if args.genes and len(args.genes) == 1 and os.path.isfile(args.genes[0]):
         genes = get_genes_from_file(args.genes[0])
     else:
         genes = args.genes
-
-    ## check file format and read in sequences
-    is_vcf = False
-    if any([args.ancestral_sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
-        if not args.vcf_reference:
-            print("ERROR: a reference Fasta is required with VCF-format input")
-            return 1
-        compress_seq = read_vcf(args.ancestral_sequences, args.vcf_reference)
-        sequences = compress_seq['sequences']
-        ref = compress_seq['reference']
-        is_vcf = True
-    else:
-        node_data = read_node_data(args.ancestral_sequences, args.tree)
-        if node_data is None:
-            print("ERROR: could not read node data (incl sequences)")
-            return 1
-        # extract sequences from node meta data
-        sequences = {}
-        for k,v in node_data['nodes'].items():
-            if 'sequence' in v:
-                sequences[k] = v['sequence']
 
     ## load features; only requested features if genes given
     features = load_features(args.reference_sequence, genes)
@@ -369,22 +408,24 @@ def run(args):
         return 1
     print("Read in {} features from reference sequence file".format(len(features)))
 
-    ### translate every feature - but not 'nuc'!
+    ## Read in sequences & for each sequence translate each feature _except for_ the source (nuc) feature
+    ## Note that `load_features` _only_ extracts {'gene', 'source'} for GFF files, {'CDS', 'source'} for GenBank.
     translations = {}
-    deleted = []
-    for fname, feat in features.items():
-        if is_vcf:
-            trans = translate_vcf_feature(sequences, ref, feat)
-            if trans:
-                translations[fname] = trans
-            else:
-                deleted.append(fname)
-        else:
-            if feat.type != 'source':
-                translations[fname] = translate_feature(sequences, feat)
-
-    if len(deleted) != 0:
-        print("{} genes had no mutations and so have been be excluded.".format(len(deleted)))
+    if is_vcf:
+        (sequences, ref) = sequences_vcf(args.vcf_reference, args.ancestral_sequences)
+        features_without_variation = []
+        for fname, feat in features.items():
+            if feat.type=='source':
+                continue
+            try:
+                translations[fname] = translate_vcf_feature(sequences, ref, feat, fname)
+            except NoVariationError:
+                features_without_variation.append(fname)
+        if len(features_without_variation):
+            print("{} genes had no mutations and so have been be excluded.".format(len(features_without_variation)))  
+    else:
+        sequences = sequences_json(args.ancestral_sequences, tree)
+        translations = {fname: translate_feature(sequences, feat) for fname, feat in features.items() if feat.type != 'source'}
 
     ## glob the annotations for later auspice export
     #
