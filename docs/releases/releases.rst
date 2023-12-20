@@ -15,7 +15,7 @@ and learning what you need to change should be as pain-free as possible.
    :glob:
 
    Changelog <changelog>
+   Deprecated features <DEPRECATED>
    v6
    migrating-v5-v6
-   breaking
    auspice-compatibility
