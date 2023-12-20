@@ -17,5 +17,5 @@ the [official guide](https://docs.nextstrain.org/projects/augur/page/releases/mi
 *Deprecated in version 5.2.0 (December 2019). Removed in version 7.0.0 (April
 2020).*
 
-`--output` was been replaced by `--output-node-data` to accommodate the addition
-of `--output-sequences`.
+`--output` was replaced by `--output-node-data` to accommodate the addition of
+`--output-sequences`.
