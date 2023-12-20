@@ -9,6 +9,7 @@
 
 ### Features
 
+* Added a new file [DEPRECATED.md](./DEPRECATED.md) to document timelines and progress of deprecated features in the Augur CLI and Python API. [#1371][] (@victorlin)
 * ancestral, translate: A range of improvements to how we parse GFF and GenBank reference files. [#1351][] (@jameshadfield)
     * translate will now always export a 'nuc' annotation in the output JSON, allowing it to pass validation
     * Gene/CDS names of 'nuc' are now forbidden.
@@ -35,6 +36,7 @@
 [#1351]: https://github.com/nextstrain/augur/pull/1351
 [#1349]: https://github.com/nextstrain/augur/issues/1349
 [#1367]: https://github.com/nextstrain/augur/pull/1367
+[#1371]: https://github.com/nextstrain/augur/pull/1371
 
 ## 23.1.1 (7 November 2023)
 
