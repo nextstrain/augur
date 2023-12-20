@@ -27,12 +27,14 @@
     * `--tree` and `--ancestral-sequences` are now required arguments.
     * separate VCF-only arguments into their own group
 * translate: Fixes a bug in the parsing behaviour of GFF files whereby the presence of the `--genes` command line argument would change how we read individual GFF lines. Issue [#1349][], PR [#1351][] (@jameshadfield)
+* If `TreeTimeError` is encountered Augur now exits with code 2 rather than 0. (This restores the original behaviour.) [#1367][] (@jameshadfield)
 
 
 [#1344]: https://github.com/nextstrain/augur/pull/1344
 [#1348]: https://github.com/nextstrain/augur/pull/1348
 [#1351]: https://github.com/nextstrain/augur/pull/1351
 [#1349]: https://github.com/nextstrain/augur/issues/1349
+[#1367]: https://github.com/nextstrain/augur/pull/1367
 
 ## 23.1.1 (7 November 2023)
 

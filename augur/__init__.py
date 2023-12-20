@@ -87,6 +87,7 @@ def run(argv):
             Please check your input data and try again. If you continue to have problems, please open a new issue including
             the original command and the error above:  <https://github.com/nextstrain/augur/issues/new/choose>
             """))
+        sys.exit(2)
     except Exception:
         traceback.print_exc(file=sys.stderr)
         print_err("\n")
