@@ -11,6 +11,7 @@ from augur.data import as_file
 from augur.io.file import open_file
 
 from augur.types import ValidationMode
+from augur.errors import AugurError
 
 from augur.util_support.color_parser import ColorParser
 from augur.util_support.node_data_reader import NodeDataReader
@@ -143,66 +144,267 @@ class AugurJSONEncoder(json.JSONEncoder):
 
 
 def load_features(reference, feature_names=None):
-    #read in appropriately whether GFF or Genbank
+    """
+    Parse a GFF/GenBank reference file. See the docstrings for _read_gff and
+    _read_genbank for details.
+
+    Parameters
+    ----------
+    reference : str
+        File path to GFF or GenBank (.gb) reference
+    feature_names : None or set or list (optional)
+        Restrict the genes we read to those in the set/list
+
+    Returns
+    -------
+    features : dict
+        keys: feature names, values: <class 'Bio.SeqFeature.SeqFeature'> Note
+        that feature names may not equivalent to GenBank feature keys
+
+    Raises
+    ------
+    AugurError
+        If the reference file doesn't exist, or is malformed / empty
+    """
     #checks explicitly for GFF otherwise assumes Genbank
     if not os.path.isfile(reference):
-        print("ERROR: reference sequence not found. looking for", reference)
-        return None
+        raise AugurError(f"reference sequence file {reference!r} not found")
 
-    features = {}
     if '.gff' in reference.lower():
-        #looks for 'gene' and 'gene' as best for TB
-        from BCBio import GFF
-        limit_info = dict( gff_type = ['gene', 'source'] )
-
-        with open(reference, encoding='utf-8') as in_handle:
-            for rec in GFF.parse(in_handle, limit_info=limit_info):
-                for feat in rec.features:
-                    # Check for gene names stored in qualifiers commonly used by
-                    # virus-specific gene maps first (e.g., 'gene',
-                    # 'gene_name'). Then, check for qualifiers used by non-viral
-                    # pathogens (e.g., 'locus_tag').
-                    if feature_names is not None:
-                        if "gene" in feat.qualifiers and feat.qualifiers["gene"][0] in feature_names:
-                            fname = feat.qualifiers["gene"][0]
-                        elif "gene_name" in feat.qualifiers and feat.qualifiers["gene_name"][0] in feature_names:
-                            fname = feat.qualifiers["gene_name"][0]
-                        elif "locus_tag" in feat.qualifiers and feat.qualifiers["locus_tag"][0] in feature_names:
-                            fname = feat.qualifiers["locus_tag"][0]
-                        else:
-                            fname = None
-                    else:
-                        if "gene" in feat.qualifiers:
-                            fname = feat.qualifiers["gene"][0]
-                        elif "gene_name" in feat.qualifiers:
-                            fname = feat.qualifiers["gene_name"][0]
-                        else:
-                            fname = feat.qualifiers["locus_tag"][0]
-                    if feat.type == "source":
-                        fname = "nuc"
-
-                    if fname:
-                        features[fname] = feat
-
-            if feature_names is not None:
-                for fe in feature_names:
-                    if fe not in features:
-                        print("Couldn't find gene {} in GFF or GenBank file".format(fe))
-
+        return _read_gff(reference, feature_names)
     else:
-        from Bio import SeqIO
-        for feat in SeqIO.read(reference, 'genbank').features:
-            if feat.type=='CDS':
-                if "locus_tag" in feat.qualifiers:
-                    fname = feat.qualifiers["locus_tag"][0]
-                    if feature_names is None or fname in feature_names:
-                        features[fname] = feat
-                elif "gene" in feat.qualifiers:
+        return _read_genbank(reference, feature_names)
+
+def _read_nuc_annotation_from_gff(record, reference):
+    """
+    Looks for the ##sequence-region pragma as well as 'region' & 'source' GFF
+    types. Note that 'source' isn't really a GFF feature type, but is used
+    widely in the Nextstrain ecosystem. If there are multiple we check that the
+    coordinates agree.
+    
+    Parameters
+    ----------
+    record : <class 'Bio.SeqRecord.SeqRecord'>
+    reference: string
+        File path to GFF reference
+
+    Returns
+    -------
+    <class 'Bio.SeqFeature.SeqFeature'>
+
+    Raises
+    ------
+    AugurError
+        If no information on the genome / seqid length is available or if the
+        information is contradictory
+    """
+    nuc = {}
+    # Attempt to parse the sequence-region pragma to learn the genome
+    # length (in the absence of record/source we'll use this for 'nuc')
+    sequence_regions = record.annotations.get('sequence-region', [])
+    if len(sequence_regions)>1:
+        raise AugurError(f"Reference {reference!r} contains multiple ##sequence-region pragma lines. Augur can only handle GFF files with a single one.")
+    elif sequence_regions:
+        from Bio.SeqFeature import SeqFeature, FeatureLocation
+        (name, start, stop) = sequence_regions[0]
+        nuc['pragma'] = SeqFeature(
+            FeatureLocation(start, stop),
+            strand=1,
+            type='##sequence-region pragma',
+            id=name,
+        )
+    for feat in record.features:
+        if feat.type == "region":
+            nuc['region'] = feat
+        elif feat.type == "source":
+            nuc['source'] = feat
+
+    # ensure they all agree on coordinates, if there are multiple
+    if len(nuc.values())>1:
+        coords = [(name, int(feat.location.start), int(feat.location.end)) for name,feat in nuc.items()]
+        if not all(el[1]==coords[0][1] and el[2]==coords[0][2] for el in coords):
+            raise AugurError(f"Reference {reference!r} contained contradictory coordinates for the seqid/genome. We parsed the following coordinates: " + 
+                             ', '.join([f"{el[0]}: [{el[1]+1}, {el[2]}]" for el in coords]) # +1 on the first coord to shift to one-based GFF representation
+                             )
+
+    if 'pragma' in nuc: ## the pragma is GFF's preferred way to define nuc coords
+        return nuc['pragma']
+    elif 'region' in nuc:
+        return nuc['region']
+    elif 'source' in nuc:
+        return nuc['source']
+    else:
+        raise AugurError(f"Reference {reference!r} didn't define any information we can use to create the 'nuc' annotation. You can use a line with a 'record' or 'source' GFF type or a ##sequence-region pragma.")
+
+
+def _read_gff(reference, feature_names):
+    """
+    Read a GFF file. We only read GFF IDs 'gene' or 'source' (the latter may not technically
+    be a valid GFF field, but is used widely within the Nextstrain ecosystem).
+    Only the first entry in the GFF file is parsed.
+    We create a "feature name" via:
+    - for 'source' IDs use 'nuc'
+    - for 'gene' IDs use the 'gene', 'gene_name' or 'locus_tag'.
+      If none are specified, the intention is to silently ignore but there are bugs here.
+
+    Parameters
+    ----------
+    reference : string
+        File path to GFF reference
+    feature_names : None or set or list
+        Restrict the genes we read to those in the set/list
+
+    Returns
+    -------
+    features : dict
+        keys: feature names, values: <class 'Bio.SeqFeature.SeqFeature'>
+        Note that feature names may not equivalent to GenBank feature keys
+
+    Raises
+    ------
+    AugurError
+        If the reference file contains no IDs or multiple different seqids
+        If a gene is found with the name 'nuc'
+    """
+    from BCBio import GFF
+    valid_types = ['gene', 'source', 'region']
+    features = {}
+
+    with open(reference, encoding='utf-8') as in_handle:
+        # Note that `GFF.parse` doesn't always yield GFF records in the order
+        # one may expect, but since we raise AugurError if there are multiple
+        # this doesn't matter.
+        gff_entries = list(GFF.parse(in_handle, limit_info={'gff_type': valid_types}))
+        if len(gff_entries) == 0:
+            raise AugurError(f"Reference {reference!r} contains no valid data rows. Valid GFF types (3rd column) are {', '.join(valid_types)}.")
+        elif len(gff_entries) > 1:
+            raise AugurError(f"Reference {reference!r} contains multiple seqids (first column). Augur can only handle GFF files with a single seqid.")
+        else:
+            rec = gff_entries[0]
+
+        features['nuc'] = _read_nuc_annotation_from_gff(rec, reference)
+        features_skipped = 0
+
+        for feat in rec.features:
+            if feat.type == "gene":
+                # Check for gene names stored in qualifiers commonly used by
+                # virus-specific gene maps first (e.g., 'gene',
+                # 'gene_name'). Then, check for qualifiers used by non-viral
+                # pathogens (e.g., 'locus_tag').
+                if "gene" in feat.qualifiers:
                     fname = feat.qualifiers["gene"][0]
-                    if feature_names is None or fname in feature_names:
-                        features[fname] = feat
-            elif feat.type=='source': #read 'nuc' as well for annotations - need start/end of whole!
-                features['nuc'] = feat
+                elif "gene_name" in feat.qualifiers:
+                    fname = feat.qualifiers["gene_name"][0]
+                elif "locus_tag" in feat.qualifiers:
+                    fname = feat.qualifiers["locus_tag"][0]
+                else:
+                    features_skipped+=1
+                    fname = None
+
+                if fname == 'nuc':
+                    raise AugurError(f"Reference {reference!r} contains a gene with the name 'nuc'. This is not allowed.")
+
+                if feature_names is not None and fname not in feature_names:
+                    # Skip (don't store) this feature
+                    continue
+
+                if fname:
+                    features[fname] = feat
+
+        if feature_names is not None:
+            for fe in feature_names:
+                if fe not in features:
+                    print("Couldn't find gene {} in GFF or GenBank file".format(fe))
+
+        if features_skipped:
+            print(f"WARNING: {features_skipped} GFF rows of type=gene skipped as they didn't have a gene, gene_name or locus_tag attribute.")
+
+    return features
+
+def _read_nuc_annotation_from_genbank(record, reference):
+    """
+    Extracts the mandatory 'source' feature. If the sequence is present we check
+    the length agrees with the source. (The 'ORIGIN' may be left blank,
+    according to <https://www.ncbi.nlm.nih.gov/Sitemap/samplerecord.html>.)
+
+    See <https://www.insdc.org/submitting-standards/feature-table/> for more.
+    
+    Parameters
+    ----------
+    record : <class 'Bio.SeqRecord.SeqRecord'> reference: string
+
+    Returns
+    -------
+    <class 'Bio.SeqFeature.SeqFeature'>
+
+    Raises
+    ------
+    AugurError
+        If 'source' not defined or if coords contradict.
+    """
+    nuc = None
+    for feat in record.features:
+        if feat.type=='source':
+            nuc = feat
+    if not nuc:
+        raise AugurError(f"Reference {reference!r} did not define the mandatory source feature.")
+    if nuc.location.start!=0: # this is a '1' in the GenBank file
+        raise AugurError(f"Reference {reference!r} source feature did not start at 1.")
+    if record.seq and len(record.seq)!=nuc.location.end:
+        raise AugurError(f"Reference {reference!r} source feature was length {nuc.location.end} but the included sequence was length {len(record.seq)}.")
+    return nuc
+
+def _read_genbank(reference, feature_names):
+    """
+    Read a GenBank file. We only read GenBank feature keys 'CDS' or 'source'.
+    We create a "feature name" via:
+    - for 'source' features use 'nuc'
+    - for 'CDS' features use the locus_tag or the gene. If neither, then silently ignore. 
+
+    Parameters
+    ----------
+    reference : string
+        File path to GenBank reference
+    feature_names : None or set or list
+        Restrict the CDSs we read to those in the set/list
+
+    Returns
+    -------
+    features : dict
+        keys: feature names, values: <class 'Bio.SeqFeature.SeqFeature'>
+        Note that feature names may not equivalent to GenBank feature keys
+
+    Raises
+    ------
+    AugurError
+        If 'nuc' annotation not parsed
+        If a CDS feature is given the name 'nuc'
+    """
+    from Bio import SeqIO
+    gb = SeqIO.read(reference, 'genbank')
+    features = {
+        'nuc': _read_nuc_annotation_from_genbank(gb, reference)
+    }
+
+    features_skipped = 0
+    for feat in gb.features:
+        if feat.type=='CDS':
+            fname = None
+            if "locus_tag" in feat.qualifiers:
+                fname = feat.qualifiers["locus_tag"][0]
+            elif "gene" in feat.qualifiers:
+                fname = feat.qualifiers["gene"][0]
+            else:
+                features_skipped+=1
+
+            if fname == 'nuc':
+                raise AugurError(f"Reference {reference!r} contains a CDS with the name 'nuc'. This is not allowed.")
+
+            if fname and (feature_names is None or fname in feature_names):
+                features[fname] = feat
+
+    if features_skipped:
+        print(f"WARNING: {features_skipped} CDS features skipped as they didn't have a locus_tag or gene qualifier.")
 
     return features
 

@@ -2,6 +2,5 @@
 ##created by james hadfield for testing NextStrain (December 2023)
 ##sequence-region reference_name 1 50
 reference_name	RefSeq	region	1	50	.	+	.	ID=reference_name
-reference_name	RefSeq	source	1	50	.	+	.	ID=reference_name;locus_tag="https://github.com/nextstrain/augur/issues/1349";Note1="Source isn't really a GFF ID, but is required for Nextstrain to function correctly"
 reference_name	RefSeq	gene	10	24	.	+	.	Name=gene1;gene=gene1
 reference_name	RefSeq	gene	36	47	.	-	.	Name=gene2;gene=gene2

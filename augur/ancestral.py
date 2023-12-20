@@ -323,8 +323,12 @@ def run(args):
         from .utils import load_features
         ## load features; only requested features if genes given
         features = load_features(args.annotation, args.genes)
-        if features is None:
-            raise AugurError("could not read features of reference sequence file")
+        # Ensure the already-created nuc annotation coordinates match those parsed from the reference file
+        if (features['nuc'].location.start+1 != anc_seqs['annotations']['nuc']['start'] or
+            features['nuc'].location.end != anc_seqs['annotations']['nuc']['end']):
+            raise AugurError(f"The 'nuc' annotation coordinates parsed from {args.annotation!r} ({features['nuc'].location.start+1}..{features['nuc'].location.end})"
+                f" don't match the provided sequence data coordinates ({anc_seqs['annotations']['nuc']['start']}..{anc_seqs['annotations']['nuc']['end']}).")
+        
         print("Read in {} features from reference sequence file".format(len(features)))
         for gene in args.genes:
             print(f"Processing gene: {gene}")

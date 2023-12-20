@@ -12,7 +12,7 @@ as a feature ('nuc' in this case)
   $ ${AUGUR} translate \
   >  --tree "$ANC_DATA/tree.nwk" \
   >  --ancestral-sequences "$ANC_DATA/nt_muts.ref-seq.json" \
-  >  --reference-sequence "$DATA/reference.source.gff" \
+  >  --reference-sequence "$DATA/reference.gff" \
   >  --genes gene2 gene3 \
   >  --output-node-data "aa_muts.genes-args.json"
   Couldn't find gene gene3 in GFF or GenBank file
@@ -33,7 +33,7 @@ Using a text file rather than command line arguments
   $ ${AUGUR} translate \
   >  --tree "$ANC_DATA/tree.nwk" \
   >  --ancestral-sequences "$ANC_DATA/nt_muts.ref-seq.json" \
-  >  --reference-sequence "$DATA/reference.source.gff" \
+  >  --reference-sequence "$DATA/reference.gff" \
   >  --genes "genes.txt" \
   >  --output-node-data "aa_muts.genes-txt.json"
   Read in 2 specified genes to translate.

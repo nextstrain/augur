@@ -13,7 +13,7 @@ which validate the output will fail as it's missing a 'nuc' annotation.
   $ ${AUGUR} translate \
   >  --tree "$ANC_DATA/tree.nwk" \
   >  --ancestral-sequences "$ANC_DATA/nt_muts.ref-seq.json" \
-  >  --reference-sequence "$DATA/reference.source.gff" \
+  >  --reference-sequence "$DATA/reference.gff" \
   >  --output-node-data "aa_muts.json" > /dev/null
 
   $ python3 "$SCRIPTS/diff_jsons.py" \

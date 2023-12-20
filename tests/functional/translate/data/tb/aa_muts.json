@@ -1055,7 +1055,7 @@
       "seqid": "translate/data/tb/Mtb_H37Rv_NCBI_Annot.gff",
       "start": 1,
       "strand": "+",
-      "type": "gene"
+      "type": "##sequence-region pragma"
     },
     "opcA": {
       "end": 1625365,

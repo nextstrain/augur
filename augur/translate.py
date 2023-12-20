@@ -403,19 +403,16 @@ def run(args):
 
     ## load features; only requested features if genes given
     features = load_features(args.reference_sequence, genes)
-    if features is None:
-        print("ERROR: could not read features of reference sequence file")
-        return 1
     print("Read in {} features from reference sequence file".format(len(features)))
 
-    ## Read in sequences & for each sequence translate each feature _except for_ the source (nuc) feature
-    ## Note that `load_features` _only_ extracts {'gene', 'source'} for GFF files, {'CDS', 'source'} for GenBank.
+    ## Read in sequences & for each sequence translate each feature _except for_ the 'nuc' feature name
+    ## Note that except for the 'nuc' annotation, `load_features` _only_ looks for 'gene' (GFF files) or 'CDS' (GenBank files)
     translations = {}
     if is_vcf:
         (sequences, ref) = sequences_vcf(args.vcf_reference, args.ancestral_sequences)
         features_without_variation = []
         for fname, feat in features.items():
-            if feat.type=='source':
+            if fname=='nuc':
                 continue
             try:
                 translations[fname] = translate_vcf_feature(sequences, ref, feat, fname)
@@ -425,26 +422,26 @@ def run(args):
             print("{} genes had no mutations and so have been be excluded.".format(len(features_without_variation)))  
     else:
         sequences = sequences_json(args.ancestral_sequences, tree)
-        translations = {fname: translate_feature(sequences, feat) for fname, feat in features.items() if feat.type != 'source'}
+        translations = {fname: translate_feature(sequences, feat) for fname, feat in features.items() if fname!='nuc'}
 
     ## glob the annotations for later auspice export
     #
     # Note that BioPython FeatureLocations use
     # "Pythonic" coordinates: [zero-origin, half-open)
     # Starting with augur v6 we use GFF coordinates: [one-origin, inclusive]
-    annotations = {}
+    annotations = {
+        'nuc': {'start': features['nuc'].location.start+1,
+                'end':   features['nuc'].location.end,
+                'strand': '+',
+                'type':  features['nuc'].type,     # (unused by auspice)
+                'seqid': args.reference_sequence}  # (unused by auspice)
+    }
     for fname, feat in features.items():
         annotations[fname] = {'seqid':args.reference_sequence,
                               'type':feat.type,
                               'start':int(feat.location.start)+1,
                               'end':int(feat.location.end),
                               'strand': {+1:'+', -1:'-', 0:'?', None:None}[feat.location.strand]}
-    if is_vcf: #need to add our own nuc
-        annotations['nuc'] = {'seqid':args.reference_sequence,
-                              'type':feat.type,
-                              'start': 1,
-                              'end': len(ref),
-                              'strand': '+'}
 
     ## determine amino acid mutations for each node
     try:
