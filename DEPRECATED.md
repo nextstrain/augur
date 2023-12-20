@@ -11,3 +11,11 @@ January 2024 or after.*
 
 `augur export v2` was introduced in Augur version 6.0.0. Migrate by following
 the [official guide](https://docs.nextstrain.org/projects/augur/page/releases/migrating-v5-v6.html).
+
+## `augur ancestral --output`
+
+*Deprecated in version 5.2.0 (December 2019). Removed in version 7.0.0 (April
+2020).*
+
+`--output` was been replaced by `--output-node-data` to accommodate the addition
+of `--output-sequences`.
