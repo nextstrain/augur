@@ -5,7 +5,7 @@
 ### Features
 
 * `augur.io.read_metadata`: A new optional `dtype` argument allows custom data types for all columns. Automatic type inference still happens by default, so this is not a breaking change. [#1252][] (@victorlin)
-
+* `augur.io.read_vcf` has been removed and usage replaced with TreeTime's function of the same name which has improved validation of the VCF file.
 
 ### Bug Fixes
 

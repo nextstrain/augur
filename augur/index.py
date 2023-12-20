@@ -7,7 +7,9 @@ import csv
 
 from .io.file import open_file
 from .io.sequences import read_sequences
-from .io.vcf import is_vcf, read_vcf
+from .io.vcf import is_vcf
+from treetime.vcf_utils import read_vcf
+
 
 
 DELIMITER = '\t'
@@ -40,7 +42,8 @@ def index_vcf(vcf_path, index_path):
         number of strains indexed
 
     """
-    strains, _ = read_vcf(vcf_path)
+    strains = list(read_vcf(vcf_path)['sequences'].keys())
+
     num_of_seqs = 0
 
     with open_file(index_path, 'wt') as out_file:
