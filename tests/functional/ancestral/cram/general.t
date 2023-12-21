@@ -22,8 +22,12 @@ node-data JSON we diff against.
   >   "nt_muts.ref-seq.json"
   {}
 
-Same as above but without a root-sequence so no mutations inferred on the root node
-(and thus the inferred reference will be different)
+Same as above but without providing a `--root-sequence`. The effect of this on behaviour is:
+- The JSON['reference']['nuc'] is not actually the "reference", because we
+don't know what this is! Instead it's the inferred root-node sequence.
+See <https://github.com/nextstrain/augur/issues/1362> for more.
+- An array of 'muts' is still present on the root node, but it will never contain any
+mutations (as there's nothing to compare the root node to)
 
   $ ${AUGUR} ancestral \
   >  --tree "$TESTDIR/../data/simple-genome/tree.nwk" \
@@ -33,7 +37,6 @@ Same as above but without a root-sequence so no mutations inferred on the root n
 
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
-  >   "$TESTDIR/../data/simple-genome/nt_muts.ref-seq.json" \
-  >   "nt_muts.no-ref-seq.json" \
-  >   --exclude-paths "root['reference']['nuc']" "root['nodes']['node_root']['muts']"
+  >   "$TESTDIR/../data/simple-genome/nt_muts.no-ref-seq.json" \
+  >   "nt_muts.no-ref-seq.json"
   {}
