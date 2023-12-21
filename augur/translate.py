@@ -270,12 +270,15 @@ def assign_aa_vcf(tree, translations):
 
     return aa_muts
 
-def assign_aa_fasta(tree, translations):
+def assign_aa_fasta(tree, translations, reference_translations):
     aa_muts = {}
 
-    #fasta input shouldn't have mutations on root, so give empty entry
+    # Depending on how `augur ancestral` was run, the input JSON (nt_muts.json)
+    # may or may not have mutations defined on the root node. Note that the 'muts'
+    # array will always be present, but it can only contain mutations if a
+    # --root-sequence was provided to augur ancestral.
+
     root = tree.get_nonterminals()[0]
-    aa_muts[root.name]={"aa_muts":{}}
 
     for n in tree.get_nonterminals():
         if n.name is None:
@@ -296,10 +299,17 @@ def assign_aa_fasta(tree, translations):
                     print("no sequence pair for nodes %s-%s"%(c.name, n.name))
 
         if n==tree.root:
-            aa_muts[n.name]={"aa_muts":{}, "aa_sequences":{}}
+            # The aa_sequences at the root are simply the translation from the root-node input data
+            aa_muts[n.name]={"aa_sequences":{}}
             for fname, aln in translations.items():
                 if n.name in aln:
                     aa_muts[n.name]["aa_sequences"][fname] = "".join(aln[n.name])
+            # The aa_muts are found by comparing the aa_sequence with the reference sequence
+            aa_muts[n.name]['aa_muts'] = {}
+            for fname, aln in translations.items():
+                ref = reference_translations[fname]
+                muts = [construct_mut(a, int(pos+1), d) for pos, (a,d) in enumerate(zip(ref, aln[n.name])) if a!=d]
+                aa_muts[n.name]["aa_muts"][fname] = muts
 
     return aa_muts
 
@@ -337,7 +347,8 @@ def sequences_json(node_data_json, tree):
             These must be present under 'nodes' → <node_name> → 'sequence'.
             This error may originate from using 'augur ancestral' with VCF input; in this case try using VCF output from that command here.
             """))
-    return sequences
+    reference = node_data['reference']['nuc']
+    return (reference, sequences)
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("translate", help=__doc__)
@@ -401,7 +412,11 @@ def run(args):
 
     ## Read in sequences & for each sequence translate each feature _except for_ the 'nuc' feature name
     ## Note that except for the 'nuc' annotation, `load_features` _only_ looks for 'gene' (GFF files) or 'CDS' (GenBank files)
+    ## The reference translations are straight translations of the "reference.nuc" sequence in the JSON
+    ## (see <https://github.com/nextstrain/augur/issues/1362> for more details here), _or_ for VCF input a translation
+    ## from the provided FASTA reference
     translations = {}
+    reference_translations = {}
     if is_vcf:
         (sequences, ref) = sequences_vcf(args.vcf_reference, args.ancestral_sequences)
         features_without_variation = []
@@ -410,13 +425,18 @@ def run(args):
                 continue
             try:
                 translations[fname] = translate_vcf_feature(sequences, ref, feat, fname)
+                reference_translations[fname] = translations[fname]['reference']
             except NoVariationError:
                 features_without_variation.append(fname)
         if len(features_without_variation):
             print("{} genes had no mutations and so have been be excluded.".format(len(features_without_variation)))  
     else:
-        sequences = sequences_json(args.ancestral_sequences, tree)
+        (reference, sequences) = sequences_json(args.ancestral_sequences, tree)
         translations = {fname: translate_feature(sequences, feat) for fname, feat in features.items() if fname!='nuc'}
+        for fname, feat in features.items():
+            if fname=='nuc':
+                continue
+            reference_translations[fname] = safe_translate(str(feat.extract(reference)))
 
     ## glob the annotations for later auspice export
     #
@@ -442,7 +462,7 @@ def run(args):
         if is_vcf:
             aa_muts = assign_aa_vcf(tree, translations)
         else:
-            aa_muts = assign_aa_fasta(tree, translations)
+            aa_muts = assign_aa_fasta(tree, translations, reference_translations)
     except MissingNodeError as err:
         print("\n*** ERROR: Some/all nodes have no node names!")
         print("*** Please check you are providing the tree output by 'augur refine'.")
@@ -456,14 +476,7 @@ def run(args):
         print("*** Or, re-run 'ancestral' using %s, then use the new %s as input here."%(args.tree, args.ancestral_sequences))
         return 1
 
-    output_data = {'annotations':annotations, 'nodes':aa_muts}
-    if is_vcf:
-        output_data['reference'] = {}
-        for fname in translations:
-            output_data['reference'][fname] = translations[fname]['reference']
-    else:
-        output_data['reference'] = aa_muts[tree.root.name]['aa_sequences']
-
+    output_data = {'annotations':annotations, 'nodes':aa_muts, 'reference': reference_translations}
     out_name = get_json_name(args, '.'.join(args.tree.split('.')[:-1]) + '_aa-mutations.json')
     write_json(output_data, out_name)
     print("amino acid mutations written to", out_name, file=sys.stdout)

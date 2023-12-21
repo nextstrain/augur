@@ -38,7 +38,10 @@
       }
     },
     "node_root": {
-      "aa_muts": {},
+      "aa_muts": {
+        "gene1": [],
+        "gene2": []
+      },
       "aa_sequences": {
         "gene1": "MPCG*",
         "gene2": "MVK*"
