@@ -95,9 +95,7 @@ jobs:
               pathogen: ncov,
               build-args: all_regions -j 2 --profile nextstrain_profiles/nextstrain-ci,
             }
-          # Disable rsv CI until Nextclade v3 is available on Conda.
-          # See issue https://github.com/nextstrain/private/issues/97
-          # - { pathogen: rsv }
+          - { pathogen: rsv }
           - {
               pathogen: seasonal-flu,
               build-args: --configfile profiles/ci/builds.yaml -p,
