@@ -111,6 +111,10 @@ jobs:
         with:
           path: ./augur
 
+      - name: Set cache key
+        id: cache-key
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
+
       - uses: mamba-org/setup-micromamba@v1
         with:
           create-args: nextstrain-base
@@ -121,6 +125,7 @@ jobs:
               - bioconda
             channel_priority: strict
           cache-environment: true
+          cache-environment-key: ${{ env.DATE }}
           environment-name: augur
 
       - run: pip install ./augur
