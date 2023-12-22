@@ -846,7 +846,7 @@ def register_parser(parent_subparsers):
         title="REQUIRED"
     )
     required.add_argument('--tree','-t', metavar="newick", required=True, help="Phylogenetic tree, usually output from `augur refine`")
-    required.add_argument('--output', metavar="JSON", required=True, help="Output file (typically for visualisation in auspice)")
+    required.add_argument('--output', metavar="JSON", required=True, help="Primary/main Auspice JSON file")
 
     config = parser.add_argument_group(
         title="DISPLAY CONFIGURATION",
