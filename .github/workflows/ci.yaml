@@ -95,9 +95,7 @@ jobs:
               pathogen: ncov,
               build-args: all_regions -j 2 --profile nextstrain_profiles/nextstrain-ci,
             }
-          # Disable rsv CI until Nextclade v3 is available on Conda.
-          # See issue https://github.com/nextstrain/private/issues/97
-          # - { pathogen: rsv }
+          - { pathogen: rsv }
           - {
               pathogen: seasonal-flu,
               build-args: --configfile profiles/ci/builds.yaml -p,
@@ -113,6 +111,10 @@ jobs:
         with:
           path: ./augur
 
+      - name: Set cache key
+        id: cache-key
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
+
       - uses: mamba-org/setup-micromamba@v1
         with:
           create-args: nextstrain-base
@@ -123,6 +125,7 @@ jobs:
               - bioconda
             channel_priority: strict
           cache-environment: true
+          cache-environment-key: ${{ env.DATE }}
           environment-name: augur
 
       - run: pip install ./augur
