@@ -848,7 +848,7 @@ def register_parser(parent_subparsers):
     required.add_argument('--tree','-t', metavar="newick", required=True, help="Phylogenetic tree, usually output from `augur refine`")
     required.add_argument('--output', metavar="JSON", required=True, help="Output file (typically for visualisation in auspice)")
 
-    config = parser.add_argument_group(                                                                                                                              
+    config = parser.add_argument_group(
         title="DISPLAY CONFIGURATION",
         description="These control the display settings for auspice. \
             You can supply a config JSON (which has all available options) or command line arguments (which are more limited but great to get started). \
