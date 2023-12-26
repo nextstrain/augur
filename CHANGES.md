@@ -30,6 +30,7 @@
 * translate: Fixes a bug in the parsing behaviour of GFF files whereby the presence of the `--genes` command line argument would change how we read individual GFF lines. Issue [#1349][], PR [#1351][] (@jameshadfield)
 * If `TreeTimeError` is encountered Augur now exits with code 2 rather than 0. (This restores the original behaviour.) [#1367][] (@jameshadfield)
 * ancestral, translate: Avoid incompatibilities with Biopython 1.82. [#1374][] (@victorlin)
+* ancestral, translate: Address Biopython deprecation warnings. [#1379][] (@victorlin)
 
 
 [#1344]: https://github.com/nextstrain/augur/pull/1344
@@ -39,6 +40,7 @@
 [#1367]: https://github.com/nextstrain/augur/pull/1367
 [#1371]: https://github.com/nextstrain/augur/pull/1371
 [#1374]: https://github.com/nextstrain/augur/pull/1374
+[#1379]: https://github.com/nextstrain/augur/pull/1379
 
 ## 23.1.1 (7 November 2023)
 
