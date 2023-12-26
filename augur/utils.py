@@ -208,8 +208,7 @@ def _read_nuc_annotation_from_gff(record, reference):
         from Bio.SeqFeature import SeqFeature, FeatureLocation
         (name, start, stop) = sequence_regions[0]
         nuc['pragma'] = SeqFeature(
-            FeatureLocation(start, stop),
-            strand=1,
+            FeatureLocation(start, stop, strand=1),
             type='##sequence-region pragma',
             id=name,
         )
