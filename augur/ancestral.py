@@ -291,7 +291,7 @@ def run(args):
         if args.root_sequence:
             for fmt in ['fasta', 'genbank']:
                 try:
-                    ref = str(SeqIO.read(args.root_sequence, fmt).seq)
+                    ref = str(SeqIO.read(args.root_sequence, fmt).seq).upper()
                     break
                 except:
                     pass
