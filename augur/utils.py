@@ -275,6 +275,13 @@ def _read_gff(reference, feature_names):
         # one may expect, but since we raise AugurError if there are multiple
         # this doesn't matter.
         gff_entries = list(GFF.parse(in_handle, limit_info={'gff_type': valid_types}))
+
+        # TODO: Remove warning filter reversal after it's addressed upstream:
+        # <https://github.com/chapmanb/bcbb/issues/140>
+        import warnings
+        from Bio import BiopythonDeprecationWarning
+        warnings.simplefilter("default", BiopythonDeprecationWarning)
+
         if len(gff_entries) == 0:
             raise AugurError(f"Reference {reference!r} contains no valid data rows. Valid GFF types (3rd column) are {', '.join(valid_types)}.")
         elif len(gff_entries) > 1:
