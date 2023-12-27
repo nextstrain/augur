@@ -1,7 +1,9 @@
 import os
 from contextlib import contextmanager
 from io import IOBase
+from textwrap import dedent
 from xopen import PipedCompressionReader, PipedCompressionWriter, xopen
+from augur.errors import AugurError
 
 
 ENCODING = "utf-8"
@@ -32,8 +34,14 @@ def open_file(path_or_buffer, mode="r", **kwargs):
     kwargs['encoding'] = ENCODING
 
     if isinstance(path_or_buffer, (str, os.PathLike)):
-        with xopen(path_or_buffer, mode, **kwargs) as handle:
-            yield handle
+        try:
+            with xopen(path_or_buffer, mode, **kwargs) as handle:
+                yield handle
+        except UnicodeDecodeError as e:
+            raise AugurError(dedent(f"""\
+                File '{path_or_buffer}' contains {e.object[e.start:e.end]} which is not encoded as '{e.encoding}'.
+                Try saving the file using '{e.encoding}' encoding."""))
+
 
     elif isinstance(path_or_buffer, (IOBase, PipedCompressionReader, PipedCompressionWriter)):
         yield path_or_buffer
