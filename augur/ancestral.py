@@ -389,7 +389,7 @@ def run(args):
     # output VCF including new ancestral seqs
     if args.output_vcf:
         assert is_vcf
-        tree_dict = nuc_result['tt'].get_tree_dict(keep_var_ambigs=True)
+        tree_dict = nuc_result['tt'].get_tree_dict(keep_var_ambigs=not infer_ambiguous)
         tree_dict['metadata'] = vcf_metadata
         write_vcf(tree_dict, args.output_vcf)
         print("Mutations, including for ancestral nodes, exported as VCF to", args.output_vcf, file=sys.stdout)
