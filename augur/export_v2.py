@@ -1,6 +1,7 @@
 """
 Export version 2 JSON schema for visualization with Auspice
 """
+import os
 from pathlib import Path
 import sys
 import time
@@ -13,8 +14,12 @@ from Bio import Phylo
 from .errors import AugurError
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .types import ValidationMode
-from .utils import read_node_data, write_json, read_config, read_lat_longs, read_colors
+from .utils import read_node_data, write_json, json_size, read_config, read_lat_longs, read_colors
 from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
+
+
+MINIFY_THRESHOLD_MB = 5
+
 
 # Set up warnings & exceptions
 warn = warnings.warn
@@ -875,10 +880,20 @@ def register_parser(parent_subparsers):
     optional_inputs.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
     optional_inputs.add_argument('--lat-longs', metavar="TSV", help="Latitudes and longitudes for geography traits (overrides built in mappings)")
 
+    minify_group = parser.add_argument_group(
+            title="OPTIONAL MINIFY SETTINGS",
+            description=f"""
+                By default, output JSON files (both main and sidecar) are automatically minimized if
+                the size of the un-minified main JSON file exceeds {MINIFY_THRESHOLD_MB} MB. Use
+                these options to override that behavior.
+                """
+        ).add_mutually_exclusive_group()
+    minify_group.add_argument('--minify-json', action="store_true", help="always export JSONs without indentation or line returns.")
+    minify_group.add_argument('--no-minify-json', action="store_true", help="always export JSONs to be human readable.")
+
     optional_settings = parser.add_argument_group(
-        title="OPTIONAL SETTINGS"
+        title="OTHER OPTIONAL SETTINGS"
     )
-    optional_settings.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
     root_sequence = optional_settings.add_mutually_exclusive_group()
     root_sequence.add_argument('--include-root-sequence', action="store_true", help="Export an additional JSON containing the root sequence (reference sequence for vcf) used to identify mutations. The filename will follow the pattern of <OUTPUT>_root-sequence.json for a main auspice JSON of <OUTPUT>.json")
     root_sequence.add_argument('--include-root-sequence-inline', action="store_true", help="Export the root sequence (reference sequence for vcf) used to identify mutations as part of the main dataset JSON. This should only be used for small genomes for file size reasons.")
@@ -1165,8 +1180,21 @@ def run(args):
     if config.get("extensions"):
         data_json["meta"]["extensions"] = config["extensions"]
 
+    # Should output be minified?
+    # User-specified arguments take precedence before determining behavior based
+    # on the size of the tree.
+    if args.minify_json or os.environ.get("AUGUR_MINIFY_JSON"):
+        minify = True
+    elif args.no_minify_json:
+        minify = False
+    else:
+        if json_size(data_json) > MINIFY_THRESHOLD_MB * 10**6:
+            minify = True
+        else:
+            minify = False
+
     # Write outputs - the (unified) dataset JSON intended for auspice & perhaps the ref root-sequence JSON
-    indent = {"indent": None} if args.minify_json else {}
+    indent = {"indent": None} if minify else {}
     if args.include_root_sequence or args.include_root_sequence_inline:
         # Note - argparse enforces that only one of these args will be true
         if 'reference' in node_data:

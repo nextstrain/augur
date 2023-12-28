@@ -126,6 +126,11 @@ def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSO
         json.dump(data, handle, indent=indent, sort_keys=sort_keys, cls=AugurJSONEncoder)
 
 
+def json_size(data, indent=2):
+    """Return size in bytes of a Python object in JSON string form."""
+    return len(json.dumps(data, indent=indent, cls=AugurJSONEncoder).encode("utf-8"))
+
+
 class AugurJSONEncoder(json.JSONEncoder):
     """
     A custom JSONEncoder subclass to serialize data types used for various data
