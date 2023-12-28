@@ -85,37 +85,22 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
 
     return tt
 
-def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, character_map=None, is_vcf=False):
-    """iterates of the tree and produces dictionaries with
-    mutations and sequences for each node.
+def create_mask(is_vcf, tt):
+    """Create a mask for the provided sequence.
+    The mask is True if the position had no information, i.e. every
+    sample had 'N'.
+    NOTE: VCF inputs currently produce as mask where every value is False
 
     Parameters
     ----------
+    is_vcf : bool
     tt : treetime.TreeTime
         instance of treetime with valid ancestral reconstruction
-    infer_tips : bool, optional
-        if true, request the reconstructed tip sequences from treetime, otherwise retain input ambiguities
-    full_sequences : bool, optional
-        if true, add the full sequences
-    character_map : None, optional
-        optional dictionary to map characters to a custom set.
 
     Returns
     -------
-    dict
-        dictionary of mutations and sequences
+    numpy.ndarray(bool)
     """
-    if character_map is None:
-        cm = lambda x:x
-    else:
-        cm = lambda x: character_map.get(x, x)
-
-    data = defaultdict(dict)
-    inc = 1 # convert python numbering to start-at-1
-    for n in tt.tree.find_clades():
-        data[n.name]['muts'] = [a+str(int(pos)+inc)+cm(d)
-                                for a,pos,d in n.mutations]
-
     if is_vcf:
         mask = np.zeros(tt.sequence_length, dtype=bool)
     else:
@@ -127,20 +112,81 @@ def collect_mutations_and_sequences(tt, infer_tips=False, full_sequences=False, 
         for n in tt.tree.get_terminals():
             ambiguous_count += np.array(tt.sequence(n,reconstructed=False, as_string=False)==tt.gtr.ambiguous, dtype=int)
         mask = ambiguous_count==len(tt.tree.get_terminals())
+    return mask
 
-    if full_sequences:
-        for n in tt.tree.find_clades():
-            try:
-                tmp = tt.sequence(n,reconstructed=infer_tips, as_string=False)
-                tmp[mask] = tt.gtr.ambiguous
-                data[n.name]['sequence'] = "".join(tmp)
-            except:
-                print("No sequence available for node ",n.name)
+def collect_mutations(tt, character_map=None, root_sequence=None, infer_ambiguous=False):
+    """iterates of the tree and produces dictionaries with
+    mutations and sequences for each node.
 
-    return {"nodes": data, "mask": mask}
+    Parameters
+    ----------
+    tt : treetime.TreeTime
+        instance of treetime with valid ancestral reconstruction
+    character_map : None, optional
+        optional dictionary to map characters to a custom set.
+    root_sequence : str
+        optional reference sequence, used to collect mutations on the root node
+
+    Returns
+    -------
+    dict
+        dict -> <node_name> -> [mut, mut, ...]
+        where mut is a string in the form <from><1-based-pos><to>
+    """
+
+    if character_map is None:
+        cm = lambda x:x
+    else:
+        cm = lambda x: character_map.get(x, x)
+
+    data = {}
+    inc = 1 # convert python numbering to start-at-1
+    for n in tt.tree.find_clades():
+        data[n.name] = [a+str(int(pos)+inc)+cm(d)
+                        for a,pos,d in n.mutations]
+        
+    if root_sequence:
+        data[tt.tree.root.name] = []
+        for pos, (root_state, tree_state) in enumerate(zip(root_sequence, tt.sequence(tt.tree.root, reconstructed=infer_ambiguous, as_string=True))):
+            if root_state != tree_state:
+                data[tt.tree.root.name].append(f"{root_state}{pos+1}{tree_state}")
+
+    return data
+        
+def collect_sequences(tt, mask, infer_ambiguous=False):
+    """
+    Create a full sequence for every node on the tree
+
+    Parameters
+    ----------
+    tt : treetime.TreeTime
+        instance of treetime with valid ancestral reconstruction
+    mask : numpy.ndarray(bool)
+        Mask these positions by changing them to the ambiguous nucleotide
+    infer_ambiguous : bool, optional
+        if true, request the reconstructed sequences from treetime, otherwise retain input ambiguities
+
+    Returns
+    -------
+    dict
+        dict -> <node_name> -> sequence_string
+    """
+    sequences = {}
+    for n in tt.tree.find_clades():
+        try:
+            tmp = tt.sequence(n,reconstructed=infer_ambiguous, as_string=False)
+            tmp[mask] = tt.gtr.ambiguous
+            sequences[n.name] = "".join(tmp)
+        except:
+            print("No sequence available for node ",n.name)
+    return sequences
 
 def run_ancestral(T, aln, root_sequence=None, is_vcf=False, full_sequences=False, fill_overhangs=False,
                   infer_ambiguous=False, marginal=False, alphabet='nuc'):
+    """
+    ancestral nucleotide reconstruction using TreeTime
+    """
+
     tt = ancestral_sequence_inference(tree=T, aln=aln, ref=root_sequence if is_vcf else None, marginal=marginal,
                                       fill_overhangs = fill_overhangs, alphabet=alphabet,
                                       infer_tips = infer_ambiguous)
@@ -160,16 +206,25 @@ def run_ancestral(T, aln, root_sequence=None, is_vcf=False, full_sequences=False
     else:
         root_seq = tt.sequence(T.root, as_string=True)
 
-    mutations = collect_mutations_and_sequences(tt, full_sequences=full_sequences,
-                          infer_tips=infer_ambiguous, character_map=character_map, is_vcf=is_vcf)
-    if root_sequence:
-        for pos, (root_state, tree_state) in enumerate(zip(root_sequence, tt.sequence(tt.tree.root, reconstructed=infer_ambiguous, as_string=True))):
-            if root_state != tree_state:
-                mutations['nodes'][tt.tree.root.name]['muts'].append(f"{root_state}{pos+1}{tree_state}")
+    mutations = collect_mutations(tt, character_map, root_sequence, infer_ambiguous)
+    mask = create_mask(is_vcf, tt)
+    sequences = {}
+    if full_sequences:
+        sequences = collect_sequences(tt, mask, infer_ambiguous)
+
+    # Combine the mutations & sequences into a single dict which downstream code
+    # expects
+    nodes = defaultdict(dict)
+    for n in tt.tree.find_clades():
+        name = n.name
+        if name in mutations:
+            nodes[name]['muts'] = mutations[name]
+        if name in sequences:
+            nodes[name]['sequence'] = sequences[name]
 
     return {'tt': tt,
             'root_seq': root_seq,
-            'mutations': mutations}
+            'mutations': {"nodes": nodes, "mask": mask}}
 
 
 def register_parser(parent_subparsers):
