@@ -85,33 +85,50 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
 
     return tt
 
-def create_mask(is_vcf, tt):
-    """Create a mask for the provided sequence.
-    The mask is True if the position had no information, i.e. every
-    sample had 'N'.
-    NOTE: VCF inputs currently produce as mask where every value is False
+def create_mask(is_vcf, tt, reference_sequence, aln):
+    """
+    Identify sites for which every terminal sequence is ambiguous. These sites
+    will be masked to prevent rounding errors in the maximum likelihood
+    inference from assigning an arbitrary nucleotide to sites at internal nodes.
 
     Parameters
     ----------
     is_vcf : bool
     tt : treetime.TreeTime
-        instance of treetime with valid ancestral reconstruction
-
+        instance of treetime with valid ancestral reconstruction. Unused if is_vcf.
+    reference_sequence : str
+        only used if is_vcf
+    aln : dict
+        describes variation (relative to reference) per sample. Only used if is_vcf.
+        
     Returns
     -------
     numpy.ndarray(bool)
     """
+    num_tips = len(tt.tree.get_terminals())
+    ambiguous_count = np.zeros(tt.sequence_length, dtype=int)
     if is_vcf:
-        mask = np.zeros(tt.sequence_length, dtype=bool)
+        variable_sites = set()
+        # VCF ambiguous positions come in two forms:
+        # Firstly, if VCF defines a "N" ALT and assigns it to every sample:
+        for sample_data in aln.values():
+            ambig_positions = []
+            for pos, alt in sample_data.items():
+                variable_sites.add(pos)
+                if alt=='N':
+                    ambig_positions.append(pos)
+            # ambig_positions = [pos for pos, alt in sample_data.items() if alt=='N']
+            np.add.at(ambiguous_count, ambig_positions, 1)       
+        # Secondly, if the VCF defines no mutations but the ref is "N":
+        no_info_sites = np.array(list(reference_sequence)) == 'N'
+        no_info_sites[list(variable_sites)] = False
+        # and the mask is the union of these two forms
+        mask = ambiguous_count==num_tips
+        mask[no_info_sites] = True
     else:
-        # Identify sites for which every terminal sequence is ambiguous.
-        # These sites will be masked to prevent rounding errors in the
-        # maximum likelihood inference from assigning an arbitrary
-        # nucleotide to sites at internal nodes.
-        ambiguous_count = np.zeros(tt.sequence_length, dtype=int)
         for n in tt.tree.get_terminals():
             ambiguous_count += np.array(tt.sequence(n,reconstructed=False, as_string=False)==tt.gtr.ambiguous, dtype=int)
-        mask = ambiguous_count==len(tt.tree.get_terminals())
+        mask = ambiguous_count==num_tips
     return mask
 
 def collect_mutations(tt, mask, character_map=None, reference_sequence=None, infer_ambiguous=False):
@@ -230,7 +247,7 @@ def run_ancestral(T, aln, reference_sequence=None, is_vcf=False, full_sequences=
     else:
         root_seq = tt.sequence(T.root, as_string=True)
 
-    mask = create_mask(is_vcf, tt)
+    mask = create_mask(is_vcf, tt, reference_sequence, aln)
     mutations = collect_mutations(tt, mask, character_map, reference_sequence, infer_ambiguous)
     sequences = {}
     if full_sequences:
@@ -470,7 +487,7 @@ def run(args):
         assert is_vcf
         tree_dict = nuc_result['tt'].get_tree_dict(keep_var_ambigs=not infer_ambiguous)
         tree_dict['metadata'] = vcf_metadata
-        write_vcf(tree_dict, args.output_vcf)
+        write_vcf(tree_dict, args.output_vcf, anc_seqs['mask'])
         print("Mutations, including for ancestral nodes, exported as VCF to", args.output_vcf, file=sys.stdout)
 
     return 0
