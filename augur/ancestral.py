@@ -114,24 +114,30 @@ def create_mask(is_vcf, tt):
         mask = ambiguous_count==len(tt.tree.get_terminals())
     return mask
 
-def collect_mutations(tt, character_map=None, root_sequence=None, infer_ambiguous=False):
+def collect_mutations(tt, mask, character_map=None, reference_sequence=None, infer_ambiguous=False):
     """iterates of the tree and produces dictionaries with
     mutations and sequences for each node.
+
+    If a reference sequence is provided then mutations can be collected for the
+    root node. Masked positions at the root-node will be treated specially: if
+    we infer ambiguity, then we report no mutations (i.e. we assume the
+    reference base holds), otherwise we'll report a mutation from the <ref> to
+    "N".
 
     Parameters
     ----------
     tt : treetime.TreeTime
         instance of treetime with valid ancestral reconstruction
+    mask : numpy.ndarray(bool)
     character_map : None, optional
         optional dictionary to map characters to a custom set.
-    root_sequence : str
-        optional reference sequence, used to collect mutations on the root node
+    reference_sequence : str, optional
 
     Returns
     -------
     dict
-        dict -> <node_name> -> [mut, mut, ...]
-        where mut is a string in the form <from><1-based-pos><to>
+        dict -> <node_name> -> [mut, mut, ...] where mut is a string in the form
+        <from><1-based-pos><to>
     """
 
     if character_map is None:
@@ -141,21 +147,29 @@ def collect_mutations(tt, character_map=None, root_sequence=None, infer_ambiguou
 
     data = {}
     inc = 1 # convert python numbering to start-at-1
+
+    # Note that for mutations reported across the tree we don't have to consider
+    # the mask, because while sites which are all Ns may have an inferred base,
+    # there will be no variablity and thus no mutations.  
     for n in tt.tree.find_clades():
         data[n.name] = [a+str(int(pos)+inc)+cm(d)
                         for a,pos,d in n.mutations]
-        
-    if root_sequence:
+
+    if reference_sequence:
         data[tt.tree.root.name] = []
-        for pos, (root_state, tree_state) in enumerate(zip(root_sequence, tt.sequence(tt.tree.root, reconstructed=infer_ambiguous, as_string=True))):
+        for pos, (root_state, tree_state) in enumerate(zip(reference_sequence, tt.sequence(tt.tree.root, reconstructed=infer_ambiguous, as_string=True))):
+            if mask[pos] and infer_ambiguous:
+                continue
             if root_state != tree_state:
                 data[tt.tree.root.name].append(f"{root_state}{pos+1}{tree_state}")
 
     return data
         
-def collect_sequences(tt, mask, infer_ambiguous=False):
+def collect_sequences(tt, mask, reference_sequence=None, infer_ambiguous=False):
     """
-    Create a full sequence for every node on the tree
+    Create a full sequence for every node on the tree. Masked positions will
+    have the reference base if we are inferring ambiguity, or the ambiguous
+    character 'N'.
 
     Parameters
     ----------
@@ -163,6 +177,7 @@ def collect_sequences(tt, mask, infer_ambiguous=False):
         instance of treetime with valid ancestral reconstruction
     mask : numpy.ndarray(bool)
         Mask these positions by changing them to the ambiguous nucleotide
+    reference_sequence : str or None 
     infer_ambiguous : bool, optional
         if true, request the reconstructed sequences from treetime, otherwise retain input ambiguities
 
@@ -172,22 +187,31 @@ def collect_sequences(tt, mask, infer_ambiguous=False):
         dict -> <node_name> -> sequence_string
     """
     sequences = {}
+
+    ref_mask = None
+
+    if reference_sequence and infer_ambiguous:
+        ref_mask = np.array(list(reference_sequence))[mask]
+
     for n in tt.tree.find_clades():
         try:
             tmp = tt.sequence(n,reconstructed=infer_ambiguous, as_string=False)
-            tmp[mask] = tt.gtr.ambiguous
+            if ref_mask is not None:
+                tmp[mask] = ref_mask
+            else:
+                tmp[mask] = tt.gtr.ambiguous
             sequences[n.name] = "".join(tmp)
         except:
             print("No sequence available for node ",n.name)
     return sequences
 
-def run_ancestral(T, aln, root_sequence=None, is_vcf=False, full_sequences=False, fill_overhangs=False,
+def run_ancestral(T, aln, reference_sequence=None, is_vcf=False, full_sequences=False, fill_overhangs=False,
                   infer_ambiguous=False, marginal=False, alphabet='nuc'):
     """
     ancestral nucleotide reconstruction using TreeTime
     """
 
-    tt = ancestral_sequence_inference(tree=T, aln=aln, ref=root_sequence if is_vcf else None, marginal=marginal,
+    tt = ancestral_sequence_inference(tree=T, aln=aln, ref=reference_sequence if is_vcf else None, marginal=marginal,
                                       fill_overhangs = fill_overhangs, alphabet=alphabet,
                                       infer_tips = infer_ambiguous)
 
@@ -201,16 +225,16 @@ def run_ancestral(T, aln, root_sequence=None, is_vcf=False, full_sequences=False
             character_map[x] = x
     # add reference sequence to json structure. This is the sequence with
     # respect to which mutations on the tree are defined.
-    if root_sequence:
-        root_seq = root_sequence
+    if reference_sequence:
+        root_seq = reference_sequence
     else:
         root_seq = tt.sequence(T.root, as_string=True)
 
-    mutations = collect_mutations(tt, character_map, root_sequence, infer_ambiguous)
     mask = create_mask(is_vcf, tt)
+    mutations = collect_mutations(tt, mask, character_map, reference_sequence, infer_ambiguous)
     sequences = {}
     if full_sequences:
-        sequences = collect_sequences(tt, mask, infer_ambiguous)
+        sequences = collect_sequences(tt, mask, reference_sequence, infer_ambiguous)
 
     # Combine the mutations & sequences into a single dict which downstream code
     # expects
@@ -365,7 +389,7 @@ def run(args):
     # we keep them.
     infer_ambiguous = args.infer_ambiguous and not args.keep_ambiguous
     full_sequences = not is_vcf
-    nuc_result = run_ancestral(T, aln, root_sequence=ref if ref else None, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
+    nuc_result = run_ancestral(T, aln, reference_sequence=ref if ref else None, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
                                full_sequences=full_sequences, marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='nuc')
     anc_seqs = nuc_result['mutations']
     anc_seqs['reference'] = {'nuc': nuc_result['root_seq']}
@@ -393,9 +417,9 @@ def run(args):
             print(f"Processing gene: {gene}")
             fname = args.translations.replace("%GENE", gene)
             feat = features[gene]
-            root_seq = str(feat.extract(Seq(ref)).translate()) if ref else None
+            reference_sequence = str(feat.extract(Seq(ref)).translate()) if ref else None
 
-            aa_result = run_ancestral(T, fname, root_sequence=root_seq, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
+            aa_result = run_ancestral(T, fname, reference_sequence=reference_sequence, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
                                         marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='aa')
             if aa_result['tt'].data.full_length*3 != len(feat):
                 raise AugurError(f"length of translated alignment for {gene} does not match length of reference feature."
