@@ -28,7 +28,7 @@ import numpy as np
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from .utils import read_tree, InvalidTreeError, write_json, get_json_name
+from .utils import parse_genes_argument, read_tree, InvalidTreeError, write_json, get_json_name
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
 
@@ -320,9 +320,11 @@ def run(args):
                                        'strand': '+', 'type': 'source'}}
 
     if not is_vcf and args.genes:
+        genes = parse_genes_argument(args.genes)
+
         from .utils import load_features
         ## load features; only requested features if genes given
-        features = load_features(args.annotation, args.genes)
+        features = load_features(args.annotation, genes)
         # Ensure the already-created nuc annotation coordinates match those parsed from the reference file
         if (features['nuc'].location.start+1 != anc_seqs['annotations']['nuc']['start'] or
             features['nuc'].location.end != anc_seqs['annotations']['nuc']['end']):
@@ -330,7 +332,7 @@ def run(args):
                 f" don't match the provided sequence data coordinates ({anc_seqs['annotations']['nuc']['start']}..{anc_seqs['annotations']['nuc']['end']}).")
         
         print("Read in {} features from reference sequence file".format(len(features)))
-        for gene in args.genes:
+        for gene in genes:
             print(f"Processing gene: {gene}")
             fname = args.translations.replace("%GENE", gene)
             feat = features[gene]

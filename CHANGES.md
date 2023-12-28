@@ -32,6 +32,8 @@
 * If `TreeTimeError` is encountered Augur now exits with code 2 rather than 0. (This restores the original behaviour.) [#1367][] (@jameshadfield)
 * ancestral, translate: Avoid incompatibilities with Biopython 1.82. [#1374][] (@victorlin)
 * ancestral, translate: Address Biopython deprecation warnings. [#1379][] (@victorlin)
+* ancestral: Previously, the help text for `--genes` falsely claimed that it could accept a file. Now, it can truly claim that. [#1353][] (@victorlin)
+* Deprecate `read_strains` from `augur.utils` and add it to the public API under `augur.io`. [#1353][] (@victorlin)
 
 
 [#1344]: https://github.com/nextstrain/augur/pull/1344
@@ -43,6 +45,7 @@
 [#1374]: https://github.com/nextstrain/augur/pull/1374
 [#1379]: https://github.com/nextstrain/augur/pull/1379
 [#1352]: https://github.com/nextstrain/augur/pull/1352
+[#1353]: https://github.com/nextstrain/augur/pull/1353
 
 ## 23.1.1 (7 November 2023)
 

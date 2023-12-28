@@ -5,10 +5,12 @@ import numpy as np
 import os, json, sys
 import pandas as pd
 from collections import defaultdict, OrderedDict
+from textwrap import dedent
 from .__version__ import __version__
 
 from augur.data import as_file
 from augur.io.file import open_file
+from augur.io.print import print_err
 
 from augur.types import ValidationMode
 from augur.errors import AugurError
@@ -749,11 +751,17 @@ VALID_NUCLEOTIDES = { # http://reverse-complement.com/ambiguity.html
 
 
 def read_strains(*files, comment_char="#"):
-    """Reads strain names from one or more plain text files and returns the
-    set of distinct strains.
+    print_err(dedent("""
+        DEPRECATION WARNING: augur.utils.read_strains is no longer maintained and will be removed in the future.
+        Please use augur.io.read_strains instead."""))
+    return set(read_entries(*files, comment_char=comment_char))
 
-    Strain names can be commented with full-line or inline comments. For
-    example, the following is a valid strain names file::
+
+def read_entries(*files, comment_char="#"):
+    """Reads entries (one per line) from one or more plain text files.
+
+    Entries can be commented with full-line or inline comments. For example, the
+    following is a valid file::
 
         # this is a comment at the top of the file
         strain1  # exclude strain1 because it isn't sequenced properly
@@ -763,21 +771,48 @@ def read_strains(*files, comment_char="#"):
     Parameters
     ----------
     files : iterable of str
-        one or more names of text files with one strain name per line
+        one or more names of text files with one entry per line
 
     Returns
     -------
     set :
-        strain names from the given input files
+        lines from the given input files
 
     """
-    strains = set()
+    entries = list()
     for input_file in files:
         with open_file(input_file, 'r') as ifile:
             for line in ifile:
                 # Allow comments anywhere in a given line.
-                strain_name = line.split(comment_char)[0].strip()
-                if len(strain_name) > 0:
-                    strains.add(strain_name)
+                entry = line.split(comment_char)[0].strip()
+                if len(entry) > 0:
+                    entries.append(entry)
 
-    return strains
+    return entries
+
+
+def parse_genes_argument(input):
+    if input is None:
+        return None
+
+    # If input is a file, read in the genes to translate
+    if len(input) == 1 and os.path.isfile(input[0]):
+        return _get_genes_from_file(input[0])
+
+    # Otherwise, the input itself is assumed to be a list of genes
+    return input
+
+
+def _get_genes_from_file(fname):
+    if os.path.isfile(fname):
+        genes = read_entries(fname)
+    else:
+        print("File with genes not found. Looking for", fname)
+        genes = []
+
+    unique_genes = np.unique(np.array(genes))
+    if len(unique_genes) != len(genes):
+        print("You have duplicates in your genes file. They are being ignored.")
+    print("Read in {} specified genes to translate.".format(len(unique_genes)))
+
+    return unique_genes

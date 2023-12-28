@@ -13,11 +13,11 @@ mutations are output to a node-data JSON file.
     The mutation positions in the node-data JSON are one-based.
 """
 
-import os, sys
+import sys
 import numpy as np
 from Bio import SeqIO, Seq, SeqRecord, Phylo
 from .io.vcf import write_VCF_translation
-from .utils import read_node_data, load_features, write_json, get_json_name
+from .utils import parse_genes_argument, read_node_data, load_features, write_json, get_json_name
 from treetime.vcf_utils import read_vcf
 from augur.errors import AugurError
 from textwrap import dedent
@@ -303,24 +303,6 @@ def assign_aa_fasta(tree, translations):
 
     return aa_muts
 
-def get_genes_from_file(fname):
-    genes = []
-    if os.path.isfile(fname):
-        with open(fname, encoding='utf-8') as ifile:
-            for line in ifile:
-                fields = line.strip().split('#')
-                if fields[0].strip():
-                    genes.append(fields[0].strip())
-    else:
-        print("File with genes not found. Looking for", fname)
-
-    unique_genes = np.unique(np.array(genes))
-    if len(unique_genes) != len(genes):
-        print("You have duplicates in your genes file. They are being ignored.")
-    print("Read in {} specified genes to translate.".format(len(unique_genes)))
-
-    return unique_genes
-
 def sequences_vcf(reference_fasta, vcf):
     """
     Extract the nucleotide variation in the VCF
@@ -395,11 +377,7 @@ def run(args):
     is_vcf = any([args.ancestral_sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])
     check_arg_combinations(args, is_vcf)
 
-    # If genes is a file, read in the genes to translate
-    if args.genes and len(args.genes) == 1 and os.path.isfile(args.genes[0]):
-        genes = get_genes_from_file(args.genes[0])
-    else:
-        genes = args.genes
+    genes = parse_genes_argument(args.genes)
 
     ## load features; only requested features if genes given
     features = load_features(args.reference_sequence, genes)
