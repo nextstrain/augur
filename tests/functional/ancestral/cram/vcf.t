@@ -21,7 +21,7 @@ but it will have the reference sequence attached.
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
   >   "$DATA/nt_muts.ref-seq.json" \
   >   "nt_muts.vcf-input.ref-seq.json" \
-  >   --exclude-regex-paths "root\['nodes'\]\['.+'\]\['sequence'\]"
+  >   --exclude-regex-paths "root\['nodes'\]\['.+'\]\['sequence'\]" "root['meta']['updated']"
   {}
 
 Here's the same mutations as in $DATA/nt_muts.ref-seq.json,
