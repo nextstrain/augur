@@ -734,7 +734,7 @@ def set_branch_attrs_on_tree(data_json, branch_attrs):
     _recursively_set_data(data_json["tree"])
 
 
-def set_node_attrs_on_tree(data_json, node_attrs):
+def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
     '''
     Assign desired colorings, metadata etc to the `node_attrs` of nodes in the tree
 
@@ -743,9 +743,16 @@ def set_node_attrs_on_tree(data_json, node_attrs):
     data_json : dict
     node_attrs: dict
         keys: strain names. values: dict with keys -> all available metadata (even "excluded" keys), values -> data (string / numeric / bool)
+    additional_metadata_columns: list
+        Requested additional metadata columns to export
     '''
 
     author_data = create_author_data(node_attrs)
+
+    def _transfer_additional_metadata_columns(node, raw_data):
+        for col in additional_metadata_columns:
+            if is_valid(raw_data.get(col, None)):
+                node["node_attrs"][col] = {"value": raw_data[col]}
 
     def _transfer_vaccine_info(node, raw_data):
         if raw_data.get("vaccine"):
@@ -798,6 +805,9 @@ def set_node_attrs_on_tree(data_json, node_attrs):
     def _recursively_set_data(node):
         # get all the available information for this particular node
         raw_data = node_attrs[node["name"]]
+        # transfer requested metadata columns first so that the "special cases"
+        # below can overwrite them as necessary
+        _transfer_additional_metadata_columns(node, raw_data)
         # transfer "special cases"
         _transfer_vaccine_info(node, raw_data)
         _transfer_hidden_flag(node, raw_data)
@@ -877,6 +887,9 @@ def register_parser(parent_subparsers):
                                  help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     optional_inputs.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
                                  help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
+    optional_inputs.add_argument('--metadata-columns', nargs="+",
+                                 help="Metadata columns to export in addition to columns provided by --color-by-metadata or --auspice-config. " +
+                                      "These columns will not be used as coloring options in Auspice but will be visible in the tree.")
     optional_inputs.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
     optional_inputs.add_argument('--lat-longs', metavar="TSV", help="Latitudes and longitudes for geography traits (overrides built in mappings)")
 
@@ -1142,6 +1155,17 @@ def run(args):
             parse_node_data_and_metadata(T, node_data_file, metadata_file)
     config = get_config(args)
 
+    # Check additional metadata columns requested exist
+    additional_metadata_columns = []
+    if args.metadata_columns:
+        for col in args.metadata_columns:
+            # Match the column names corrected within parse_node_data_and_metadata
+            corrected_col = update_deprecated_names(col)
+            if corrected_col not in metadata_names:
+                print(f"WARNING: Requested metadata column {col!r} does not exist and will not be exported")
+                continue
+            additional_metadata_columns.append(corrected_col)
+
     # set metadata data structures
     set_title(data_json, config, args.title)
     set_display_defaults(data_json, config)
@@ -1169,7 +1193,7 @@ def run(args):
 
     # set tree structure
     data_json["tree"] = convert_tree_to_json_structure(T.root, node_attrs, node_div(T, node_attrs))
-    set_node_attrs_on_tree(data_json, node_attrs)
+    set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns)
     set_branch_attrs_on_tree(data_json, branch_attrs)
 
     set_geo_resolutions(data_json, config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_attrs)

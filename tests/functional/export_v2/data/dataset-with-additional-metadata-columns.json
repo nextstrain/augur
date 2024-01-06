@@ -1,0 +1,121 @@
+{
+  "version": "v2",
+  "meta": {
+    "updated": "2024-01-05",
+    "maintainers": [
+      {
+        "name": "Nextstrain Team"
+      }
+    ],
+    "colorings": [],
+    "filters": [],
+    "panels": [
+      "tree"
+    ]
+  },
+  "tree": {
+    "name": "ROOT",
+    "node_attrs": {
+      "div": 0
+    },
+    "branch_attrs": {},
+    "children": [
+      {
+        "name": "tipA",
+        "node_attrs": {
+          "div": 1.0,
+          "field_A": {
+            "value": "AA"
+          },
+          "field_B": {
+            "value": "AAA"
+          }
+        },
+        "branch_attrs": {}
+      },
+      {
+        "name": "internalBC",
+        "node_attrs": {
+          "div": 2.0
+        },
+        "branch_attrs": {},
+        "children": [
+          {
+            "name": "tipB",
+            "node_attrs": {
+              "div": 3.0,
+              "field_A": {
+                "value": "BB"
+              },
+              "field_B": {
+                "value": "BBB"
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipC",
+            "node_attrs": {
+              "div": 3.0,
+              "field_A": {
+                "value": "CC"
+              },
+              "field_B": {
+                "value": "CCC"
+              }
+            },
+            "branch_attrs": {}
+          }
+        ]
+      },
+      {
+        "name": "internalDEF",
+        "node_attrs": {
+          "div": 5.0
+        },
+        "branch_attrs": {},
+        "children": [
+          {
+            "name": "tipD",
+            "node_attrs": {
+              "div": 8.0,
+              "field_A": {
+                "value": "DD"
+              },
+              "field_B": {
+                "value": "DDD"
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipE",
+            "node_attrs": {
+              "div": 9.0,
+              "field_A": {
+                "value": "EE"
+              },
+              "field_B": {
+                "value": "EEE"
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipF",
+            "node_attrs": {
+              "div": 6.0,
+              "field_A": {
+                "value": "FF"
+              },
+              "field_B": {
+                "value": "FFF"
+              }
+            },
+            "branch_attrs": {}
+          }
+        ]
+      }
+    ]
+  }
+}
