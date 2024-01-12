@@ -1207,10 +1207,10 @@ def run(args):
                 # "auspice/zika_root-sequence.json".
                 output_path = Path(args.output)
                 root_sequence_path = output_path.parent / Path(output_path.stem + "_root-sequence" + output_path.suffix)
-                write_json(data=node_data['reference'], file_name=root_sequence_path, include_version=False, **indent)
+                write_json(data=node_data['reference'], file=root_sequence_path, include_version=False, **indent)
         else:
             fatal("Root sequence output was requested, but the node data provided is missing a 'reference' key.")
-    write_json(data=orderKeys(data_json), file_name=args.output, include_version=False, **indent)
+    write_json(data=orderKeys(data_json), file=args.output, include_version=False, **indent)
 
     # validate outputs
     validate_data_json(args.output, args.validation_mode)

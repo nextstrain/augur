@@ -91,17 +91,17 @@ def read_node_data(fnames, tree=None, validation_mode=ValidationMode.ERROR):
     return NodeDataReader(fnames, tree, validation_mode).read()
 
 
-def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 2), include_version=True):
+def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 2), include_version=True):
     """
-    Write ``data`` as JSON to the given ``file_name``, creating parent directories
+    Write ``data`` as JSON to the given ``file``, creating parent directories
     if necessary. The augur version is included as a top-level key "augur_version".
 
     Parameters
     ----------
     data : dict
         data to write out to JSON
-    file_name : str
-        file name to write to
+    file
+        file path or handle to write to
     indent : int or None, optional
         JSON indentation level. Default is `None` if the environment variable `AUGUR_MINIFY_JSON`
         is truthy, else 1
@@ -112,20 +112,22 @@ def write_json(data, file_name, indent=(None if os.environ.get("AUGUR_MINIFY_JSO
     ------
     OSError
     """
-    #in case parent folder does not exist yet
-    parent_directory = os.path.dirname(file_name)
-    if parent_directory and not os.path.exists(parent_directory):
-        try:
-            os.makedirs(parent_directory)
-        except OSError: #Guard against race condition
-            if not os.path.isdir(parent_directory):
-                raise
+    if isinstance(file, (str, os.PathLike)):
+        #in case parent folder does not exist yet
+        parent_directory = os.path.dirname(file)
+        if parent_directory and not os.path.exists(parent_directory):
+            try:
+                os.makedirs(parent_directory)
+            except OSError: #Guard against race condition
+                if not os.path.isdir(parent_directory):
+                    raise
 
     if include_version:
         data["generated_by"] = {"program": "augur", "version": get_augur_version()}
-    with open(file_name, 'w', encoding='utf-8') as handle:
+    with open_file(file, 'w', encoding='utf-8') as handle:
         sort_keys = False if isinstance(data, OrderedDict) else True
         json.dump(data, handle, indent=indent, sort_keys=sort_keys, cls=AugurJSONEncoder)
+
 
 
 def json_size(data, indent=2):
