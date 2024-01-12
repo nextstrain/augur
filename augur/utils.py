@@ -5,6 +5,7 @@ import numpy as np
 import os, json, sys
 import pandas as pd
 from collections import defaultdict, OrderedDict
+from io import RawIOBase
 from textwrap import dedent
 from .__version__ import __version__
 
@@ -129,10 +130,23 @@ def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") e
         json.dump(data, handle, indent=indent, sort_keys=sort_keys, cls=AugurJSONEncoder)
 
 
+class BytesWrittenCounterIO(RawIOBase):
+    """Binary stream to count the number of bytes sent via write()."""
+    def __init__(self):
+        self.written = 0
+        """Number of bytes written."""
 
-def json_size(data, indent=2):
+    def write(self, b):
+        n = len(b)
+        self.written += n
+        return n
+
+
+def json_size(data):
     """Return size in bytes of a Python object in JSON string form."""
-    return len(json.dumps(data, indent=indent, cls=AugurJSONEncoder).encode("utf-8"))
+    with BytesWrittenCounterIO() as counter:
+        write_json(data, counter, include_version=False)
+    return counter.written
 
 
 class AugurJSONEncoder(json.JSONEncoder):
