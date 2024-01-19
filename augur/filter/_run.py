@@ -442,11 +442,6 @@ def run(args):
     # sequences.
     num_excluded_by_lack_of_metadata = 0
     if sequence_strains:
-        # Update strains to keep based on available sequence data. This prevents
-        # writing out strain lists or metadata for strains that have no
-        # sequences.
-        valid_strains = valid_strains & sequence_strains
-
         num_excluded_by_lack_of_metadata = len(sequence_strains - metadata_strains)
 
     if args.output_strains:

@@ -24,10 +24,8 @@ Create a strains file to with all strains from metadata.
 
   $ cat metadata.tsv | cut -f 1 | tail -n +2 > metadata-ids.txt
 
-Run filter. This output makes no sense, but it exists as such because:
-
-- filter_by_sequence_index is not run with --exclude-all.¹
-- There is an extra check for valid strains that only applies to this final report, not the actual outputs.
+Run filter. sequence_C is still output even though it is not in sequences
+because filter_by_sequence_index is not run with --exclude-all.¹
 
 ¹ <https://github.com/nextstrain/augur/commit/c256131f93e94eabb91187e33eda2c5736c2bcef>
 
@@ -37,10 +35,10 @@ Run filter. This output makes no sense, but it exists as such because:
   >  --exclude-all \
   >  --include metadata-ids.txt \
   >  --output-strains filtered_strains.txt
-  1 strains were dropped during filtering
+  0 strains were dropped during filtering
   	3 were dropped by `--exclude-all`
   	3 were added back because they were in metadata-ids.txt
-  2 strains passed all filters
+  3 strains passed all filters
 
   $ wc -l filtered_strains.txt
   \s*3 .* (re)
