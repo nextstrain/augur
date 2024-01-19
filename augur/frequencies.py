@@ -85,7 +85,14 @@ def format_frequencies(freq):
 
 def run(args):
     try:
-        metadata = read_metadata(args.metadata, delimiters=args.metadata_delimiters, id_columns=args.metadata_id_columns)
+        # TODO: load only the ID, date, and --weights-attribute columns when
+        # read_metadata supports loading a subset of all columns.
+        metadata = read_metadata(
+            args.metadata,
+            delimiters=args.metadata_delimiters,
+            id_columns=args.metadata_id_columns,
+            dtype="string",
+        )
     except InvalidDelimiter:
         raise AugurError(
             f"Could not determine the delimiter of {args.metadata!r}. "
