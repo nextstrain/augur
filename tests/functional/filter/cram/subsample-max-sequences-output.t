@@ -23,7 +23,7 @@ Request a maximum of 9 strains. All 6 strains should be used, even though this m
   >  --output-strains filtered_strains.txt
   Sampling at 9 per group.
   0 strains were dropped during filtering
-  \t0 were dropped because of subsampling criteria (esc)
+  	0 were dropped because of subsampling criteria
   6 strains passed all filters
   $ sort filtered_strains.txt
   SEQ1-A
@@ -42,7 +42,7 @@ Request a maximum of 6 strains. All 6 strains should be used, even though this m
   >  --output-strains filtered_strains.txt
   Sampling at 6 per group.
   0 strains were dropped during filtering
-  \t0 were dropped because of subsampling criteria (esc)
+  	0 were dropped because of subsampling criteria
   6 strains passed all filters
   $ sort filtered_strains.txt
   SEQ1-A
@@ -62,7 +62,7 @@ Request a maximum of 5 strains. 4 strains should pass, even though this means gr
   >  --output-strains filtered_strains.txt
   Sampling at 3 per group.
   2 strains were dropped during filtering
-  \t2 were dropped because of subsampling criteria (esc)
+  	2 were dropped because of subsampling criteria
   4 strains passed all filters
   $ sort filtered_strains.txt
   SEQ1-A
@@ -80,7 +80,7 @@ Request a maximum of 3 strains. 2 strains should pass, one from each group.
   >  --output-strains filtered_strains.txt
   Sampling at 1 per group.
   4 strains were dropped during filtering
-  \t4 were dropped because of subsampling criteria (esc)
+  	4 were dropped because of subsampling criteria
   2 strains passed all filters
   $ sort filtered_strains.txt
   SEQ1-A

@@ -21,6 +21,6 @@ Confirm that `--exclude-ambiguous-dates-by` works for all year only ambiguous da
   >  --empty-output-reporting silent \
   >  --output-strains filtered_strains.txt
   4 strains were dropped during filtering
-  \t1 were filtered out by the query: "region=="Asia"" (esc)
-  \t3 were dropped because of their ambiguous date in any (esc)
+  	1 were filtered out by the query: "region=="Asia""
+  	3 were dropped because of their ambiguous date in any
   0 strains passed all filters

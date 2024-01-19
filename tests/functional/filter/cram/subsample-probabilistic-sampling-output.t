@@ -14,7 +14,7 @@ Check output of probabilistic sampling.
   WARNING: Asked to provide at most 3 sequences, but there are 8 groups.
   Sampling probabilistically at 0.3633 sequences per group, meaning it is possible to have more than the requested maximum of 3 sequences after filtering.
   10 strains were dropped during filtering
-  \t1 were dropped during grouping due to ambiguous year information (esc)
-  \t1 were dropped during grouping due to ambiguous month information (esc)
-  \t8 were dropped because of subsampling criteria, using seed 314159 (esc)
+  	1 were dropped during grouping due to ambiguous year information
+  	1 were dropped during grouping due to ambiguous month information
+  	8 were dropped because of subsampling criteria, using seed 314159
   2 strains passed all filters

@@ -21,7 +21,7 @@ These should be in separate groups.
   >   --subsample-seed 0 \
   >   --output-metadata metadata-filtered.tsv
   2 strains were dropped during filtering
-  \t2 were dropped because of subsampling criteria (esc)
+  	2 were dropped because of subsampling criteria
   2 strains passed all filters
   $ cat metadata-filtered.tsv
   strain	date
@@ -46,7 +46,7 @@ ISO year from 'week' takes precedence over 'year'.
   >   --output-metadata metadata-filtered.tsv
   WARNING: 'year' grouping will be ignored since 'week' includes ISO year.
   3 strains were dropped during filtering
-  \t3 were dropped because of subsampling criteria (esc)
+  	3 were dropped because of subsampling criteria
   1 strains passed all filters
   $ cat metadata-filtered.tsv
   strain	date

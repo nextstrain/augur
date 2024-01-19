@@ -13,7 +13,7 @@ Ensure probabilistic sampling is not used when unnecessary.
   >  --output-metadata filtered_metadata.tsv
   Sampling at 10 per group.
   2 strains were dropped during filtering
-  \t1 were dropped during grouping due to ambiguous year information (esc)
-  \t1 were dropped during grouping due to ambiguous month information (esc)
-  \t0 were dropped because of subsampling criteria, using seed 314159 (esc)
+  	1 were dropped during grouping due to ambiguous year information
+  	1 were dropped during grouping due to ambiguous month information
+  	0 were dropped because of subsampling criteria, using seed 314159
   10 strains passed all filters

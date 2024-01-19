@@ -18,9 +18,9 @@ The query initially filters 3 strains from Colombia, one of which is added back 
   >  --output-strains filtered_strains.txt \
   >  --output-log filtered_log.tsv
   4 strains were dropped during filtering
-  \t1 had no metadata (esc)
-  \t1 had no sequence data (esc)
-  \t3 were filtered out by the query: "country != 'Colombia'" (esc)
+  	1 had no metadata
+  	1 had no sequence data
+  	3 were filtered out by the query: "country != 'Colombia'"
   \\t1 were added back because they were in .*include\.txt.* (re)
   9 strains passed all filters
 
