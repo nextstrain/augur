@@ -19,5 +19,5 @@ Confirm that `--exclude-ambiguous-dates-by` works for all year only ambiguous da
   >  --empty-output-reporting silent \
   >  --output-strains filtered_strains.txt
   3 strains were dropped during filtering
-  \t3 of these were dropped because of their ambiguous date in any (esc)
+  \t3 were dropped because of their ambiguous date in any (esc)
   0 strains passed all filters

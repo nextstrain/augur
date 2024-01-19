@@ -16,5 +16,5 @@ Check output of probabilistic sampling.
   10 strains were dropped during filtering
   \t1 were dropped during grouping due to ambiguous year information (esc)
   \t1 were dropped during grouping due to ambiguous month information (esc)
-  \t8 of these were dropped because of subsampling criteria, using seed 314159 (esc)
+  \t8 were dropped because of subsampling criteria, using seed 314159 (esc)
   2 strains passed all filters
