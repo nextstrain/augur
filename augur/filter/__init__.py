@@ -36,9 +36,13 @@ def register_arguments(parser):
     metadata_filter_group.add_argument('--exclude-where', nargs='+',
                                 help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
     metadata_filter_group.add_argument('--exclude-all', action="store_true", help="exclude all strains by default. Use this with the include arguments to select a specific subset of strains.")
-    metadata_filter_group.add_argument('--include', type=str, nargs="+", help="file(s) with list of strains to include regardless of priorities or subsampling")
-    metadata_filter_group.add_argument('--include-where', nargs='+',
-                                help="Include samples with these values. ex: host=rat. Multiple values are processed as OR (having any of those specified will be included), not AND. This rule is applied last and ensures any sequences matching these rules will be included.")
+    metadata_filter_group.add_argument('--include', type=str, nargs="+", help="file(s) with list of strains to include regardless of priorities, subsampling, or absence of an entry in --sequences.")
+    metadata_filter_group.add_argument('--include-where', nargs='+', help="""
+        Include samples with these values. ex: host=rat. Multiple values are
+        processed as OR (having any of those specified will be included), not
+        AND. This rule is applied last and ensures any strains matching these
+        rules will be included regardless of priorities, subsampling, or absence
+        of an entry in --sequences.""")
 
     sequence_filter_group = parser.add_argument_group("sequence filters", "filters to apply to sequence data")
     sequence_filter_group.add_argument('--min-length', type=int, help="minimal length of the sequences")

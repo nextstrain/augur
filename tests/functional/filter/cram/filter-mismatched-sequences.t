@@ -25,9 +25,7 @@ Create a strains file to with all strains from metadata.
   $ cat metadata.tsv | cut -f 1 | tail -n +2 > metadata-ids.txt
 
 Run filter. sequence_C is still output even though it is not in sequences
-because filter_by_sequence_index is not run with --exclude-all.¹
-
-¹ <https://github.com/nextstrain/augur/commit/c256131f93e94eabb91187e33eda2c5736c2bcef>
+because --include takes precedence.
 
   $ ${AUGUR} filter \
   >  --sequences sequences.fasta \

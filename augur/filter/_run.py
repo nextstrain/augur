@@ -37,6 +37,10 @@ def run(args):
     build_sequence_index = False
     is_vcf = filename_is_vcf(args.sequences)
 
+    # Don't build sequence index with --exclude-all since the only way to add
+    # strains back in with this flag are the `--include` or `--include-where`
+    # options, so we know we don't need a sequence index to apply any additional
+    # filters.
     if sequence_index_path is None and args.sequences and not args.exclude_all:
         build_sequence_index = True
 
