@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 24.0.0 (22 January 2024)
+
 ### Major Changes
 
 * ancestral, translate: For VCF inputs please ensure you are using TreeTime 0.11.2 or later. A large number of bugfixes and improvements have been added in both Augur and TreeTime. [#1355][] and [TreeTime #263][] (@jameshadfield) 
