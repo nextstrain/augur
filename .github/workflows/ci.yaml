@@ -46,19 +46,25 @@ jobs:
       COVERAGE_RCFILE: ${{ github.workspace }}/.coveragerc
     steps:
     - uses: actions/checkout@v4
-    - uses: conda-incubator/setup-miniconda@v3
+
+    - name: Set cache key
+      id: cache-key
+      run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
+
+    - name: Install dependencies from Conda
+      uses: mamba-org/setup-micromamba@v1
       with:
-        python-version: ${{ matrix.python-version }}
-        miniforge-variant: Mambaforge
-        channels: conda-forge,bioconda
-    - run: |
-        mamba install \
-          mafft \
-          raxml \
-          fasttree \
-          iqtree \
-          vcftools \
-          biopython=${{ matrix.biopython-version }}
+        create-args: mafft raxml fasttree iqtree vcftools biopython=${{ matrix.biopython-version }} python=${{ matrix.python-version }}
+        condarc: |
+          channels:
+            - conda-forge
+            - bioconda
+          channel_priority: strict
+        cache-environment: true
+        cache-environment-key: ${{ env.DATE }}
+        environment-name: augur
+
+    # Replace the Conda Augur installation with the local version.
     - run: pip install .[dev]
     - run: conda info
     - run: conda list
