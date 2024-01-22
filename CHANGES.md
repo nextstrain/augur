@@ -4,11 +4,17 @@
 
 ### Major Changes
 
-* ancestral, translate: GenBank files now require the (GFF mandatory) source feature to be present.[#1351][] (@jameshadfield)
+* ancestral, translate: For VCF inputs please ensure you are using TreeTime 0.11.2 or later. A large number of bugfixes and improvements have been added in both Augur and TreeTime. [#1355][] and [TreeTime #263][] (@jameshadfield) 
+* ancestral, translate: GenBank files now require the (GFF mandatory) source feature to be present. [#1351][] (@jameshadfield)
 * ancestral, translate: For GFF files, we extract the genome/sequence coordinates by inspecting the sequence-region pragma, region type and/or source type. This information is now required. [#1351][] (@jameshadfield)
 
 ### Features
 
+* ancestral, translate: Improvements to VCF inputs / outputs. [#1355][] and [TreeTime #263][] (@jameshadfield)
+    * Output VCF will better match the input VCF, including CHROM name and ploidy encoding.
+    * VCF inputs now require `--vcf-reference-output`
+    * AA sequences are now exported for the tree root
+    * VCF writing is now 3 orders of magnitude faster (dataset dependent)
 * Added a new file [DEPRECATED.md](./DEPRECATED.md) to document timelines and progress of deprecated features in the Augur CLI and Python API. [#1371][] (@victorlin)
 * ancestral, translate: A range of improvements to how we parse GFF and GenBank reference files. [#1351][] (@jameshadfield)
     * translate will now always export a 'nuc' annotation in the output JSON, allowing it to pass validation
@@ -24,6 +30,19 @@
 
 ### Bug Fixes
 
+* ancestral, translate: Various fixes to VCF inputs / outputs. [#1355][] and [TreeTime #263][] (@jameshadfield)
+    * Fix incorrect (but passing) tests
+    * Fix case-sensitive sequence comparisons between the root and reference sequences.
+    * Fix a bug where ambiguous alleles are not inferred (see [#1380][] for full details).
+    * Fix a bug where positions with no sequence information were assigned a base because the mask was not being computed (see [#1382][] for full details).
+    * More than one ALT allele is now correctly parsed
+    * Mutations followed by an insertion are now parsed
+    * Unchanged ref genotypes are now encoded as '0' rather than '.'
+    * ALT alleles "*" are now valid (introduced in VCF spec 4.2, but observed in VCF 4.1 files)
+    * Positions with no variation are no longer exported
+* ancestral, translate: Fixes for JSON (non-VCF) inputs. [#1355][] (@jameshadfield)
+    * The "reference" translations are now from the provided reference sequence, not from the root of the tree.  [#1355][] (@jameshadfield)
+    * Fix a bug where positions with no sequence information were assigned a base because the mask was not applied (see [#1382][] for full details)
 * translate: The 'source' ID for GFF files is now ignored as a potential gene feature (it is still used for overall nuc coords). [#1348][] (@jameshadfield)
 * translate: Improvements to command line arguments.  [#1348][] (@jameshadfield)
     * `--tree` and `--ancestral-sequences` are now required arguments.
@@ -46,7 +65,11 @@
 [#1379]: https://github.com/nextstrain/augur/pull/1379
 [#1352]: https://github.com/nextstrain/augur/pull/1352
 [#1353]: https://github.com/nextstrain/augur/pull/1353
+[#1355]: https://github.com/nextstrain/augur/pull/1355
+[#1380]: https://github.com/nextstrain/augur/issues/1380
+[#1382]: https://github.com/nextstrain/augur/issues/1382
 [#1387]: https://github.com/nextstrain/augur/pull/1387
+[TreeTime #263]: https://github.com/neherlab/treetime/pull/263
 
 ## 23.1.1 (7 November 2023)
 
