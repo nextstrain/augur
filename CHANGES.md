@@ -15,18 +15,18 @@
     * VCF inputs now require `--vcf-reference-output`
     * AA sequences are now exported for the tree root
     * VCF writing is now 3 orders of magnitude faster (dataset dependent)
-* Added a new file [DEPRECATED.md](./DEPRECATED.md) to document timelines and progress of deprecated features in the Augur CLI and Python API. [#1371][] (@victorlin)
 * ancestral, translate: A range of improvements to how we parse GFF and GenBank reference files. [#1351][] (@jameshadfield)
     * translate will now always export a 'nuc' annotation in the output JSON, allowing it to pass validation
     * Gene/CDS names of 'nuc' are now forbidden.
     * If a Gene/CDS in the GFF/GenBank file is unparsed we now print a warning.
-* utils::load_features: This function may now raise `AugurError`. [#1351][] (@jameshadfield)
 * ancestral: For VCF alignments, a VCF output file is now only created when requested via `--output-vcf`. [#1344][] (@jameshadfield)
 * ancestral: Improvements to command line arguments. [#1344][] (@jameshadfield)
      * Incompatible arguments are now checked, especially related to VCF vs FASTA inputs. 
      * `--vcf-reference` and `--root-sequence` are now mutually exclusive.
 * translate: Tree nodes are checked against the node-data JSON input to ensure sequences are present. [#1348][] (@jameshadfield)
+* utils::load_features: This function may now raise `AugurError`. [#1351][] (@jameshadfield)
 * export v2: Automatically minify large outputs. Use `--no-minify-json` to disable this default behavior. [#1352][] (@victorlin)
+* Added a new file [DEPRECATED.md](./DEPRECATED.md) to document timelines and progress of deprecated features in the Augur CLI and Python API. [#1371][] (@victorlin)
 
 ### Bug Fixes
 
@@ -43,15 +43,15 @@
 * ancestral, translate: Fixes for JSON (non-VCF) inputs. [#1355][] (@jameshadfield)
     * The "reference" translations are now from the provided reference sequence, not from the root of the tree.  [#1355][] (@jameshadfield)
     * Fix a bug where positions with no sequence information were assigned a base because the mask was not applied (see [#1382][] for full details)
+* ancestral, translate: Avoid incompatibilities with Biopython >=1.82. [#1374][], [#1387][] (@victorlin)
+* ancestral, translate: Address Biopython deprecation warnings. [#1379][] (@victorlin)
+* ancestral: Previously, the help text for `--genes` falsely claimed that it could accept a file. Now, it can truly claim that. [#1353][] (@victorlin)
 * translate: The 'source' ID for GFF files is now ignored as a potential gene feature (it is still used for overall nuc coords). [#1348][] (@jameshadfield)
 * translate: Improvements to command line arguments.  [#1348][] (@jameshadfield)
     * `--tree` and `--ancestral-sequences` are now required arguments.
     * separate VCF-only arguments into their own group
 * translate: Fixes a bug in the parsing behaviour of GFF files whereby the presence of the `--genes` command line argument would change how we read individual GFF lines. Issue [#1349][], PR [#1351][] (@jameshadfield)
 * If `TreeTimeError` is encountered Augur now exits with code 2 rather than 0. (This restores the original behaviour.) [#1367][] (@jameshadfield)
-* ancestral, translate: Avoid incompatibilities with Biopython >=1.82. [#1374][], [#1387][] (@victorlin)
-* ancestral, translate: Address Biopython deprecation warnings. [#1379][] (@victorlin)
-* ancestral: Previously, the help text for `--genes` falsely claimed that it could accept a file. Now, it can truly claim that. [#1353][] (@victorlin)
 * Deprecate `read_strains` from `augur.utils` and add it to the public API under `augur.io`. [#1353][] (@victorlin)
 
 
