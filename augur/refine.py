@@ -6,7 +6,7 @@ import sys
 from Bio import Phylo
 from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
-from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
+from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, read_metadata
 from .utils import read_tree, write_json, InvalidTreeError
 from .errors import AugurError
 from treetime.vcf_utils import read_vcf
@@ -236,8 +236,8 @@ def run(args):
 
         # save input state string for later export
         for n in T.get_terminals():
-            if n.name in metadata.index and 'date' in metadata.columns:
-                n.raw_date = metadata.at[n.name, 'date']
+            if n.name in metadata.index and METADATA_DATE_COLUMN in metadata.columns:
+                n.raw_date = metadata.at[n.name, METADATA_DATE_COLUMN]
 
         if args.date_confidence:
             time_inference_mode = 'always' if args.date_inference=='marginal' else 'only-final'
