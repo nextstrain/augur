@@ -78,7 +78,7 @@ GFF file with 'region' removed, so the only genome information is the ##sequence
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
   >   "$DATA/aa_muts.json" \
   >   "aa_muts.pragma-only.json" \
-  >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]"
+  >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]" "root['meta']['updated']"
   {}
 
 GFF file with no genome coordinate information

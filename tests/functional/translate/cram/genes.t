@@ -23,9 +23,8 @@ as a feature ('nuc' in this case)
   $ python3 "$SCRIPTS/diff_jsons.py" \
   >   "$DATA/aa_muts.json" \
   >   "aa_muts.genes-args.json" \
-  >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]"
-  {'dictionary_item_removed': [root['annotations']['gene1'], root['nodes']['node_AB']['aa_muts']['gene1'], root['nodes']['node_root']['aa_sequences']['gene1'], root['nodes']['sample_A']['aa_muts']['gene1'], root['nodes']['sample_B']['aa_muts']['gene1'], root['nodes']['sample_C']['aa_muts']['gene1'], root['reference']['gene1']]}
-
+  >   --exclude-regex-paths "seqid" "gene1" "root['meta']['updated']"
+  {}
 Using a text file rather than command line arguments
 
   $ echo -e "#comment\ngene2\ngene3"> "genes.txt"
@@ -44,5 +43,6 @@ Using a text file rather than command line arguments
 
   $ python3 "$SCRIPTS/diff_jsons.py" \
   >   "aa_muts.genes-args.json" \
-  >   "aa_muts.genes-txt.json"
+  >   "aa_muts.genes-txt.json" \
+  > --exclude-paths "root['meta']['updated']"
   {}
