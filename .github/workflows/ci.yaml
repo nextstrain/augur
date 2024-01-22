@@ -117,7 +117,9 @@ jobs:
         id: cache-key
         run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
 
-      - uses: mamba-org/setup-micromamba@v1
+      # Set up a Conda environment that replicates Nextstrain's Conda runtime.
+      - name: Install nextstrain-base from Conda
+        uses: mamba-org/setup-micromamba@v1
         with:
           create-args: nextstrain-base
           condarc: |
@@ -130,6 +132,7 @@ jobs:
           cache-environment-key: ${{ env.DATE }}
           environment-name: augur
 
+      # Replace the Conda Augur installation with the local version.
       - run: pip install ./augur
 
       - uses: actions/checkout@v4
