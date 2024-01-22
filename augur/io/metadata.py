@@ -24,7 +24,7 @@ class InvalidDelimiter(Exception):
     pass
 
 
-def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAULT_ID_COLUMNS, chunk_size=None, dtype=None):
+def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, columns=None, id_columns=DEFAULT_ID_COLUMNS, chunk_size=None, dtype=None):
     r"""Read metadata from a given filename and into a pandas `DataFrame` or
     `TextFileReader` object.
 
@@ -35,6 +35,8 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAU
     delimiters : list of str
         List of possible delimiters to check for between columns in the metadata.
         Only one delimiter will be inferred.
+    columns : list of str
+        List of columns to read. If unspecified, read all columns.
     id_columns : list of str
         List of possible id column names to check for, ordered by priority.
         Only one id column will be inferred.
@@ -111,6 +113,20 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAU
 
     # If we found a valid column to index the DataFrame, specify that column.
     kwargs["index_col"] = index_col
+
+    if columns is not None:
+        # Load a subset of the columns.
+        for requested_column in list(columns):
+            if requested_column not in chunk.columns:
+                # Ignore missing columns. Don't error since augur filter's
+                # --exclude-where allows invalid columns to be specified (they
+                # are just ignored).
+                print_err(f"WARNING: Column '{requested_column}' does not exist in the metadata file. Ignoring it.")
+                columns.remove(requested_column)
+                # NOTE: list()+remove() is not very efficient, but (1) it's easy
+                # to understand and (2) this is unlikely to be used with large
+                # lists.
+        kwargs["usecols"] = columns
 
     if dtype is None:
         dtype = {}
