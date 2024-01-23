@@ -138,6 +138,7 @@ nitpick_ignore = [
 intersphinx_mapping = {
     'Bio': ('https://biopython.org/docs/latest/api/', None),
     'docs.nextstrain.org': ('https://docs.nextstrain.org/en/latest/', None),
+    'cli': ('https://docs.nextstrain.org/projects/cli/en/stable', None),
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://numpy.org/doc/stable', None),
     'pandas': ('https://pandas.pydata.org/docs', None),

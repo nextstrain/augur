@@ -15,6 +15,14 @@ There are several ways to install Augur, ordered from least to most complex.
 
 .. tabs::
 
+   .. group-tab:: Nextstrain
+
+      Augur is part of the Nextstrain project and is available in all :term:`Nextstrain runtimes <docs.nextstrain.org:runtime>`.
+
+      Continue by following the :doc:`Nextstrain installation guide <docs.nextstrain.org:install>`.
+
+      Once installed, you can use :doc:`cli:commands/shell` to run ``augur`` directly.
+
    .. group-tab:: Conda
 
       Augur can be installed using Conda or another variant. This assumes you are familiar with how to `manage Conda environments <https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`__.
