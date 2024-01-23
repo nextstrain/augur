@@ -334,12 +334,12 @@ def sequences_vcf(reference_fasta, vcf):
     ref = compress_seq['reference']
     return (sequences, ref)
 
-def sequences_json(node_data_json, tree):
+def sequences_json(node_data_json, validation_mode, tree):
     """
     Extract the full nuc sequence for each node in the provided node-data JSON.
     Returns a dict, keys are node names and values are a string of the genome sequence (nuc)
     """
-    node_data = read_node_data(node_data_json)
+    node_data = read_node_data(node_data_json, validation_mode=validation_mode)
     if node_data is None:
         raise AugurError("could not read node data (incl sequences)")
     # extract sequences from node meta data
@@ -439,7 +439,7 @@ def run(args):
         if len(features_without_variation):
             print("{} genes had no mutations and so have been be excluded.".format(len(features_without_variation)))  
     else:
-        (reference, sequences) = sequences_json(args.ancestral_sequences, tree)
+        (reference, sequences) = sequences_json(args.ancestral_sequences, args.validation_mode, tree)
         translations = {fname: translate_feature(sequences, feat) for fname, feat in features.items() if fname!='nuc'}
         for fname, feat in features.items():
             if fname=='nuc':
