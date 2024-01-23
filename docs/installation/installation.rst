@@ -47,20 +47,14 @@ Other Linux distributions will likely have the same packages available, although
 Install Augur as a user
 =======================
 
-Using Mamba
+Using Conda
 -----------
 
-This assumes you have Conda installed and an environment active. If not, refer to instructions for ambient runtime setup on `the Nextstrain installation guide <https://docs.nextstrain.org/en/latest/install.html>`__.
+Augur can be installed using Conda or another variant. This assumes you are familiar with how to `manage Conda environments <https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`__.
 
 .. code:: bash
 
    conda install -c conda-forge -c bioconda augur
-
-If you encounter environment solving errors or want a faster installation process, use `mamba <https://github.com/TheSnakePit/mamba>`__ as a drop-in replacement for conda:
-
-.. code:: bash
-
-   mamba install -c conda-forge -c bioconda augur
 
 Using pip from PyPi
 -------------------
