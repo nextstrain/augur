@@ -48,7 +48,6 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set cache key
-      id: cache-key
       run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
 
     # While it may be tempting to install Augur using Conda to avoid hardcoding
@@ -124,7 +123,6 @@ jobs:
           path: ./augur
 
       - name: Set cache key
-        id: cache-key
         run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
 
       # Set up a Conda environment that replicates Nextstrain's Conda runtime.
