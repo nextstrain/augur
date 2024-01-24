@@ -44,6 +44,7 @@ jobs:
     env:
       COVERAGE_FILE: ${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}
       COVERAGE_RCFILE: ${{ github.workspace }}/.coveragerc
+      PYTHONWARNDEFAULTENCODING: 1
     steps:
     - uses: actions/checkout@v4
 
