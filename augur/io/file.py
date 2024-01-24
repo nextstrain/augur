@@ -4,6 +4,9 @@ from io import IOBase
 from xopen import PipedCompressionReader, PipedCompressionWriter, xopen
 
 
+ENCODING = "utf-8"
+
+
 @contextmanager
 def open_file(path_or_buffer, mode="r", **kwargs):
     """Opens a given file path and returns the handle.
@@ -24,6 +27,10 @@ def open_file(path_or_buffer, mode="r", **kwargs):
         File handle object
 
     """
+
+    # Read all files using a specific encoding.
+    kwargs['encoding'] = ENCODING
+
     if isinstance(path_or_buffer, (str, os.PathLike)):
         with xopen(path_or_buffer, mode, **kwargs) as handle:
             yield handle
