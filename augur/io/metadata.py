@@ -10,7 +10,7 @@ from itertools import chain
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
-from .file import open_file
+from .file import ENCODING, open_file
 
 
 DEFAULT_DELIMITERS = (',', '\t')
@@ -83,6 +83,7 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAU
         "skipinitialspace": True,
         "na_filter": False,
         "low_memory": False,
+        "encoding": ENCODING,
     }
 
     if chunk_size:
