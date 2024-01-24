@@ -87,6 +87,7 @@ setuptools.setup(
             "sphinx-markdown-tables >= 0.0.9",
             "sphinx-rtd-theme >=0.4.3",
             "sphinx-autodoc-typehints >=1.21.4",
+            "sphinx-tabs",
             "types-jsonschema >=3.0.0, ==3.*",
             "types-setuptools",
             "wheel >=0.32.3",
