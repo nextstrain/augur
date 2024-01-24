@@ -46,19 +46,28 @@ jobs:
       COVERAGE_RCFILE: ${{ github.workspace }}/.coveragerc
     steps:
     - uses: actions/checkout@v4
-    - uses: conda-incubator/setup-miniconda@v3
+
+    - name: Set cache key
+      run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
+
+    # While it may be tempting to install Augur using Conda to avoid hardcoding
+    # the list of dependencies here, installing just the dependencies not
+    # available on PyPI allows us to test against dependencies installed by pip,
+    # which may have slightly different versions compared to Conda counterparts.
+    - name: Install dependencies from Conda
+      uses: mamba-org/setup-micromamba@v1
       with:
-        python-version: ${{ matrix.python-version }}
-        miniforge-variant: Mambaforge
-        channels: conda-forge,bioconda
-    - run: |
-        mamba install \
-          mafft \
-          raxml \
-          fasttree \
-          iqtree \
-          vcftools \
-          biopython=${{ matrix.biopython-version }}
+        create-args: mafft raxml fasttree iqtree vcftools biopython=${{ matrix.biopython-version }} python=${{ matrix.python-version }}
+        condarc: |
+          channels:
+            - conda-forge
+            - bioconda
+          channel_priority: strict
+        cache-environment: true
+        cache-environment-key: ${{ env.DATE }}
+        environment-name: augur
+
+    # Replace the Conda Augur installation with the local version.
     - run: pip install .[dev]
     - run: conda info
     - run: conda list
@@ -114,10 +123,11 @@ jobs:
           path: ./augur
 
       - name: Set cache key
-        id: cache-key
         run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
 
-      - uses: mamba-org/setup-micromamba@v1
+      # Set up a Conda environment that replicates Nextstrain's Conda runtime.
+      - name: Install nextstrain-base from Conda
+        uses: mamba-org/setup-micromamba@v1
         with:
           create-args: nextstrain-base
           condarc: |
@@ -130,6 +140,7 @@ jobs:
           cache-environment-key: ${{ env.DATE }}
           environment-name: augur
 
+      # Replace the Conda Augur installation with the local version.
       - run: pip install ./augur
 
       - uses: actions/checkout@v4
