@@ -214,10 +214,14 @@ def run(args):
             print("ERROR: meta data with dates is required for time tree reconstruction", file=sys.stderr)
             return 1
         try:
+            # TODO: load only the ID and date columns when read_metadata
+            # supports loading a subset of all columns.
             metadata = read_metadata(
                 args.metadata,
                 delimiters=args.metadata_delimiters,
-                id_columns=args.metadata_id_columns)
+                id_columns=args.metadata_id_columns,
+                dtype="string",
+            )
         except InvalidDelimiter:
             raise AugurError(
                 f"Could not determine the delimiter of {args.metadata!r}. "

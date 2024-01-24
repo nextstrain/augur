@@ -131,7 +131,11 @@ def run(args):
         traits = read_metadata(
             args.metadata,
             delimiters=args.metadata_delimiters,
-            id_columns=args.metadata_id_columns)
+            id_columns=args.metadata_id_columns,
+
+            # Read all columns as string for discrete trait analysis
+            dtype="string",
+        )
     except InvalidDelimiter:
         raise AugurError(
                 f"Could not determine the delimiter of {args.metadata!r}. "

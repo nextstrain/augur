@@ -24,7 +24,7 @@ class InvalidDelimiter(Exception):
     pass
 
 
-def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAULT_ID_COLUMNS, chunk_size=None):
+def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAULT_ID_COLUMNS, chunk_size=None, dtype=None):
     r"""Read metadata from a given filename and into a pandas `DataFrame` or
     `TextFileReader` object.
 
@@ -40,7 +40,9 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAU
         Only one id column will be inferred.
     chunk_size : int
         Size of chunks to stream from disk with an iterator instead of loading the entire input file into memory.
-
+    dtype : dict or str
+        Data types to apply to columns in metadata. If unspecified, pandas data type inference will be used.
+        See documentation for an argument of the same name to `pandas.read_csv()`.
     Returns
     -------
     pandas.DataFrame or `pandas.io.parsers.TextFileReader`
@@ -107,15 +109,31 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAU
     else:
         index_col = id_columns_present[0]
 
-    # If we found a valid column to index the DataFrame, specify that column and
-    # also tell pandas that the column should be treated like a string instead
-    # of having its type inferred. This latter argument allows users to provide
-    # numerical ids that don't get converted to numbers by pandas.
+    # If we found a valid column to index the DataFrame, specify that column.
     kwargs["index_col"] = index_col
-    kwargs["dtype"] = {
-        index_col: "string",
-        METADATA_DATE_COLUMN: "string"
-    }
+
+    if dtype is None:
+        dtype = {}
+
+    if isinstance(dtype, dict):
+        # Avoid reading numerical IDs as integers.
+        dtype["index_col"] = "string"
+
+        # Avoid reading year-only dates as integers.
+        dtype[METADATA_DATE_COLUMN] = "string"
+
+    elif isinstance(dtype, str):
+        if dtype != "string":
+            raise AugurError(f"""
+                dtype='{dtype}' converts values in all columns to be of type
+                '{dtype}'. However, values in columns '{index_col}' and
+                '{METADATA_DATE_COLUMN}' must be treated as strings in Augur.
+                Specify dtype as a dict per column instead.
+            """)
+    else:
+        raise AugurError(f"Unsupported value for dtype: '{dtype}'")
+
+    kwargs["dtype"] = dtype
 
     return pd.read_csv(
         metadata_file,

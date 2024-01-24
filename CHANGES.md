@@ -2,6 +2,17 @@
 
 ## __NEXT__
 
+### Features
+
+* `augur.io.read_metadata`: A new optional `dtype` argument allows custom data types for all columns. Automatic type inference still happens by default, so this is not a breaking change. [#1252][] (@victorlin)
+
+
+### Bug Fixes
+
+* filter, frequencies, refine: Speed up reading of the metadata file. [#1252][] (@victorlin)
+* traits: Previously, columns with only numeric values were treated as numerical data. These are now treated as categorical data for discrete trait analysis. [#1252][] (@victorlin)
+
+[#1252]: https://github.com/nextstrain/augur/pull/1252
 
 ## 24.0.0 (22 January 2024)
 
