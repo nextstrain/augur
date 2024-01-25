@@ -2,6 +2,13 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* filter: Updated the help text of `--include` and `--include-where` to explicitly state that this can add strains that are missing an entry from `--sequences`. [#1389][] (@victorlin)
+* filter: Fixed the summary messages to properly reflect force-inclusion of strains that are missing an entry from `--sequences`. [#1389][] (@victorlin)
+* filter: Updated wording of summary messages. [#1389][] (@victorlin)
+
+[#1389]: https://github.com/nextstrain/augur/pull/1389
 
 ## 24.1.0 (30 January 2024)
 
