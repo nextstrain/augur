@@ -9,6 +9,7 @@
 * `augur parse`: A new optional `--output-id-field` argument allows the user to select any ID field for the produced FASTA file (e.g. 'accession' instead of 'name' or 'strain'). [#1403][] (@j23414)
   * When no `--output-id-field` is given and the data has both `name` and `strain` fields, continue to preferentially use `name` over `strain` as the sequence ID field; but, throw a deprecation warning that the order will be switched to prefer `strain` over `name` in the future to be consistent with the rest of Augur.
   * Added entry to [DEPRECATED.md](./DEPRECATED.md).
+* Compression should now be supported for all input and output files. Please [open an issue](https://github.com/nextstrain/augur/issues) if you find one that doesn't! [#1381][] (@victorlin)
 
 ### Bug Fixes
 
@@ -19,8 +20,10 @@
 * filter: Updated the help text of `--include` and `--include-where` to explicitly state that this can add strains that are missing an entry from `--sequences`. [#1389][] (@victorlin)
 * filter: Fixed the summary messages to properly reflect force-inclusion of strains that are missing an entry from `--sequences`. [#1389][] (@victorlin)
 * filter: Updated wording of summary messages. [#1389][] (@victorlin)
+* Enforce UTF-8 encoding when reading and writing files. Improve error messages when a non-UTF-8 file is used. [#1381][] (@victorlin)
 
 [#1294]: https://github.com/nextstrain/augur/pull/1294
+[#1381]: https://github.com/nextstrain/augur/pull/1381
 [#1389]: https://github.com/nextstrain/augur/pull/1389
 [#1410]: https://github.com/nextstrain/augur/pull/1410
 [#1403]: https://github.com/nextstrain/augur/pull/1403
