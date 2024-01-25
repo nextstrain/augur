@@ -24,22 +24,6 @@ def is_vcf(filename):
     return bool(filename) and any(filename.lower().endswith(x) for x in ('.vcf', '.vcf.gz'))
 
 
-def read_vcf(filename):
-    if filename.lower().endswith(".gz"):
-        import gzip
-        file = gzip.open(filename, mode="rt", encoding='utf-8')
-    else:
-        file = open(filename, encoding='utf-8')
-
-    chrom_line = next(line for line in file if line.startswith("#C"))
-    file.close()
-    headers = chrom_line.strip().split("\t")
-    sequences = headers[headers.index("FORMAT") + 1:]
-
-    # because we need 'seqs to remove' for VCF
-    return sequences, sequences.copy()
-
-
 def write_vcf(input_filename, output_filename, dropped_samps):
     if _filename_gz(input_filename):
         input_arg = "--gzvcf"
