@@ -29,6 +29,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from .utils import parse_genes_argument, read_tree, InvalidTreeError, write_json, get_json_name
+from .io.file import open_file
 from .io.vcf import is_vcf as is_filename_vcf
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
@@ -465,7 +466,7 @@ def run(args):
 
             # Save ancestral amino acid sequences to FASTA.
             if args.output_translations:
-                with open(args.output_translations.replace("%GENE", gene), "w", encoding="utf-8") as oh:
+                with open_file(args.output_translations.replace("%GENE", gene), "w") as oh:
                     for node in aa_result["tt"].tree.find_clades():
                         oh.write(f">{node.name}\n{aa_result['tt'].sequence(node, as_string=True, reconstructed=True)}\n")
 

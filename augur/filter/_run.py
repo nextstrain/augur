@@ -137,7 +137,7 @@ def run(args):
 
     # Setup strain output.
     if args.output_strains:
-        output_strains = open(args.output_strains, "w")
+        output_strains = open_file(args.output_strains, "w")
 
     # Setup logging.
     output_log_writer = None
@@ -146,7 +146,7 @@ def run(args):
         # can properly account for each strain (e.g., including those that were
         # initially filtered for one reason and then included again for another
         # reason).
-        output_log = open(args.output_log, "w", newline='')
+        output_log = open_file(args.output_log, "w", newline='')
         output_log_header = ("strain", "filter", "kwargs")
         output_log_writer = csv.DictWriter(
             output_log,

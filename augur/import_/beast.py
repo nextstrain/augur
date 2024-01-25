@@ -11,6 +11,7 @@ from collections import defaultdict
 import numpy as np
 from Bio import Phylo
 from treetime import TreeAnc
+from augur.io.file import open_file
 from augur.utils import write_json
 
 def register_parser(parent_subparsers):
@@ -234,7 +235,7 @@ def parse_nexus(tree_path, treestring_regex=r'tree [A-Za-z\_]+([0-9]+)', verbose
 
     if isinstance(tree_path,str): ## determine if path or handle was provided to function
         try:
-            handle=open(tree_path,'r', encoding='utf-8')
+            handle=open_file(tree_path,'r')
         except FileNotFoundError:
             print("FATAL: No such file {}".format(tree_path))
             sys.exit(2)

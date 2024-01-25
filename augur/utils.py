@@ -292,7 +292,7 @@ def _read_gff(reference, feature_names):
     valid_types = ['gene', 'source', 'region']
     features = {}
 
-    with open(reference, encoding='utf-8') as in_handle:
+    with open_file(reference) as in_handle:
         # Note that `GFF.parse` doesn't always yield GFF records in the order
         # one may expect, but since we raise AugurError if there are multiple
         # this doesn't matter.
@@ -443,7 +443,7 @@ def read_config(fname):
         return defaultdict(dict)
 
     try:
-        with open(fname, 'rb') as ifile:
+        with open_file(fname, 'rb') as ifile:
             config = json.load(ifile)
     except json.decoder.JSONDecodeError as err:
         print("FATAL ERROR:")
@@ -474,12 +474,12 @@ def read_lat_longs(overrides=None, use_defaults=True):
             print("WARNING: geo-coordinate file contains invalid line. Please make sure not to mix tabs and spaces as delimiters (use only tabs):",line)
     if use_defaults:
         with as_file("lat_longs.tsv") as file:
-            with open(file, encoding="utf-8") as defaults:
+            with open_file(file) as defaults:
                 for line in defaults:
                     add_line_to_coordinates(line)
     if overrides:
         if os.path.isfile(overrides):
-            with open(overrides, encoding='utf-8') as ifile:
+            with open_file(overrides) as ifile:
                 for line in ifile:
                     add_line_to_coordinates(line)
         else:
@@ -728,7 +728,7 @@ def read_mask_file(mask_file):
         Sorted list of unique zero-indexed sites
     """
     mask_sites = []
-    with open(mask_file, encoding='utf-8') as mf:
+    with open_file(mask_file) as mf:
         for idx, line in enumerate(l.strip() for l in mf.readlines()):
             if "\t" in line:
                 line = line.split("\t")[1]
