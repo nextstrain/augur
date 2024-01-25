@@ -134,13 +134,14 @@ def run(args):
             priorities = defaultdict(random_generator.random)
 
     # Setup logging.
+    output_log_context_manager = open_file(args.output_log, "w", newline='')
     output_log_writer = None
     if args.output_log:
         # Log the names of strains that were filtered or force-included, so we
         # can properly account for each strain (e.g., including those that were
         # initially filtered for one reason and then included again for another
         # reason).
-        output_log = open(args.output_log, "w", newline='')
+        output_log = output_log_context_manager.__enter__()
         output_log_header = ("strain", "filter", "kwargs")
         output_log_writer = csv.DictWriter(
             output_log,

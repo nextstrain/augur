@@ -12,6 +12,7 @@ from itertools import groupby
 from textwrap import indent
 from typing import Iterable, Union
 from augur.data import as_file
+from augur.io.file import open_file
 from augur.io.print import print_err
 from augur.io.json import shorten_as_json
 from .validate_export import verifyMainJSONIsInternallyConsistent, verifyMetaAndOrTreeJSONsAreInternallyConsistent
@@ -30,7 +31,7 @@ def load_json_schema(path, refs=None):
     (located in augur/data)
     '''
     try:
-        with as_file(path) as file, open(file, "r", encoding = "utf-8") as fh:
+        with as_file(path) as file, open_file(file, "r") as fh:
             schema = json.load(fh)
     except json.JSONDecodeError as err:
         raise ValidateError("Schema {} is not a valid JSON file. Error: {}".format(path, err))
@@ -45,7 +46,7 @@ def load_json_schema(path, refs=None):
         # Make the validator aware of additional schemas
         schema_store = dict()
         for k, v in refs.items():
-            with as_file(v) as file, open(file, "r", encoding = "utf-8") as fh:
+            with as_file(v) as file, open_file(file, "r") as fh:
                 schema_store[k] = json.load(fh)
         resolver = jsonschema.RefResolver.from_schema(schema,store=schema_store)
         schema_validator = Validator(schema, resolver=resolver)
@@ -67,7 +68,7 @@ def load_json_schema(path, refs=None):
 
 
 def load_json(path):
-    with open(path, 'rb') as fh:
+    with open_file(path, 'rb') as fh:
         try:
             jsonToValidate = json.load(fh)
         except json.JSONDecodeError:

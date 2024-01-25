@@ -3,10 +3,10 @@ Annotate sequences based on amino-acid or nucleotide signatures.
 """
 
 import sys
-import gzip
 import numpy as np
 from treetime.vcf_utils import read_vcf
 from collections import defaultdict
+from .io.file import open_file
 from .utils import write_json, get_json_name
 
 def read_in_translate_vcf(vcf_file, ref_file):
@@ -47,10 +47,7 @@ def read_in_translate_vcf(vcf_file, ref_file):
     altLoc = 0
     sampLoc = 9
 
-    #Use different openers depending on whether compressed
-    opn = gzip.open if vcf_file.endswith(('.gz', '.GZ')) else open
-
-    with opn(vcf_file, mode='rt') as f:
+    with open_file(vcf_file, mode='rt') as f:
         samps = []
 
         for line in f:
