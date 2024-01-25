@@ -6,13 +6,14 @@ Setup
   $ export DATA="$TESTDIR/../data/simple-genome"
 
 This is the same as the "general.t" test, but we are modifying the input data
-such that the reference sequence contains "G" at pos 20 (1-based), and
-include a compensating mutation G20A on the root node.
-This results in the reference translation of gene1 to be MPCE* not MPCG*.
-(Note that the compensating nuc mutation doesn't actually need to be present
-in the JSON, `augur translate` just looks at the sequence attached to each node.)
+such that the reference sequence contains "G" at pos 20 (1-based), and include a
+compensating mutation G20A on the root node. (This manipulation would be much
+nicer using `jq` but it's not (yet) available in all nextstrain environments.)
+This results in the reference translation of gene1 to be MPCE* not MPCG*. (Note
+that the compensating nuc mutation doesn't actually need to be present in the
+JSON, `augur translate` just looks at the sequence attached to each node.)
 
-  $ sed '29s/^/        "G20A",\n/' "$ANC_DATA/nt_muts.ref-seq.json" | 
+  $ sed '24s/^/        "G20A",\n/' "$ANC_DATA/nt_muts.ref-seq.json" | 
   > sed 's/"nuc": "AAAAAAAAAATGCCCTGCGGG/"nuc": "AAAAAAAAAATGCCCTGCGAG/' > nt_muts.json
 
   $ ${AUGUR} translate \

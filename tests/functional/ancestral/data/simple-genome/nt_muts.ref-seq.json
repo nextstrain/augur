@@ -7,10 +7,6 @@
       "type": "source"
     }
   },
-  "generated_by": {
-    "program": "augur",
-    "version": "23.1.1"
-  },
   "mask": "00000000000000000000000000000000000000000000000000",
   "nodes": {
     "node_AB": {

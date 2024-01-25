@@ -20,7 +20,7 @@ node-data JSON we diff against.
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
   >   "$TESTDIR/../data/simple-genome/nt_muts.ref-seq.json" \
   >   "nt_muts.ref-seq.json" \
-  >   --exclude-paths "root['meta']['updated']" 
+  >   --exclude-paths "root['generated_by']"
   {}
 
 Same as above but without providing a `--root-sequence`. The effect of this on behaviour is:
@@ -40,5 +40,5 @@ mutations (as there's nothing to compare the root node to)
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
   >   "$TESTDIR/../data/simple-genome/nt_muts.no-ref-seq.json" \
   >   "nt_muts.no-ref-seq.json" \
-  >   --exclude-paths "root['meta']['updated']" 
+  >   --exclude-paths "root['generated_by']"
   {}
