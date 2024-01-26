@@ -121,10 +121,9 @@ def run(args):
             tip.attr = {"num_date": np.mean(dates[tip.name])}
             tps.append(tip.attr["num_date"])
 
-            # Annotate tips with metadata to enable filtering and weighting of
-            # frequencies by metadata attributes.
-            for key, value in metadata.loc[tip.name].items():
-                tip.attr[key] = value
+            if weights_attribute:
+                # Annotate tip with weight attribute.
+                tip.attr[weights_attribute] = metadata.loc[tip.name, weights_attribute]
 
         if args.method == "diffusion":
             # estimate tree frequencies
