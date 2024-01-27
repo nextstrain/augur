@@ -394,7 +394,7 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
             warn("[colorings] You asked for mutations (\"gt\"), but none are defined on the tree. They cannot be used as a coloring.")
             return False
         if key != "gt" and not trait_values:
-            warn("You asked for a color-by for trait '{}', but it has no values on the tree. It has been ignored.".format(key))
+            warn(f"Requested color-by field {key!r} does not exist and will not be used as a coloring or exported.")
             return False
         return True
 
@@ -1162,7 +1162,7 @@ def run(args):
             # Match the column names corrected within parse_node_data_and_metadata
             corrected_col = update_deprecated_names(col)
             if corrected_col not in metadata_names:
-                print(f"WARNING: Requested metadata column {col!r} does not exist and will not be exported")
+                warn(f"Requested metadata column {col!r} does not exist and will not be exported")
                 continue
             additional_metadata_columns.append(corrected_col)
 

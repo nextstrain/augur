@@ -38,12 +38,8 @@ Missing columns are skipped with a warning.
   >  --metadata metadata.tsv \
   >  --metadata-columns "field_A" "field_B" "missing_field" \
   >  --maintainers "Nextstrain Team" \
-  >  --output dataset.json
+  >  --output dataset.json > /dev/null
   WARNING: Requested metadata column 'missing_field' does not exist and will not be exported
-  Validating produced JSON
-  Validating schema of 'dataset.json'...
-  Validating that the JSON is internally consistent...
-  Validation of 'dataset.json' succeeded.
   \s{0} (re)
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
@@ -63,3 +59,21 @@ Specifying a fields with both --metadata-columns and --colory-by-metadata should
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
   {'iterable_item_added': {"root['meta']['colorings'][0]": {'key': 'field_B', 'title': 'field_B', 'type': 'categorical'}, "root['meta']['filters'][0]": 'field_B'}}
+
+Missing columns are skipped with a warning when specified by both --metadata-columns and --color-by-metadata.
+
+  $ ${AUGUR} export v2 \
+  >  --tree tree.nwk \
+  >  --metadata metadata.tsv \
+  >  --metadata-columns "field_A" "field_B" "missing_field" \
+  >  --color-by-metadata "missing_field" \
+  >  --maintainers "Nextstrain Team" \
+  >  --output dataset.json > /dev/null
+  WARNING: Requested metadata column 'missing_field' does not exist and will not be exported
+  \s{0} (re)
+  WARNING: Requested color-by field 'missing_field' does not exist and will not be used as a coloring or exported.
+  \s{0} (re)
+
+  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  {}
