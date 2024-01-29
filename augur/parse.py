@@ -134,8 +134,6 @@ def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettif
             dayfirst=fix_dates_format=='dayfirst'
         )
 
-    metadata["strain"] = sequence.id
-
     return sequence, metadata
 
 
@@ -144,6 +142,8 @@ def register_parser(parent_subparsers):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
     parser.add_argument('--output-sequences', required=True, help="output sequences file")
     parser.add_argument('--output-metadata', required=True, help="output metadata file")
+    parser.add_argument('--output-id-field', required=False,
+                        help=f"The record field to use as the sequence identifier in the FASTA output. If not provided, this will use the first available of {DEFAULT_ID_COLUMNS}. If none of those are available, this will use the first field in the fasta header.")
     parser.add_argument('--fields', required=True, nargs='+', help="fields in fasta header")
     parser.add_argument('--prettify-fields', nargs='+', help="apply string prettifying operations (underscores to spaces, capitalization, etc) to specified metadata fields")
     parser.add_argument('--separator', default='|', help="separator of fasta header")
@@ -164,12 +164,17 @@ def run(args):
     meta_data = {}
 
     strain_key = None
-    for possible_id in DEFAULT_ID_COLUMNS:
-        if possible_id in args.fields:
-            strain_key = possible_id
-            break
-    if not strain_key:
-        strain_key = args.fields[0]
+    if args.output_id_field:
+        if args.output_id_field not in args.fields:
+            raise AugurError(f"Output id field '{args.output_id_field}' not found in fields {args.fields}.")
+        strain_key = args.output_id_field
+    else:
+        for possible_id in DEFAULT_ID_COLUMNS:
+            if possible_id in args.fields:
+                strain_key = possible_id
+                break
+        if not strain_key:
+            strain_key = args.fields[0]
 
     # loop over sequences, parse fasta header of each sequence
     with open_file(args.output_sequences, "wt") as handle:
