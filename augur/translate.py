@@ -185,7 +185,7 @@ def translate_vcf_feature(sequences, ref, feature, feature_name):
 
         #Translate just the codon this nuc diff is in, and find out which AA loc
         #But need numbering to be w/in protin, not whole genome
-        if feature.strand == -1:
+        if feature.location.strand == -1:
             aaRepLocs = {(end-start-i-1)//3:safe_translate( str_reverse_comp( "".join([sequences[seqk][key+start]
                                     if key+start in sequences[seqk].keys() else ref[key+start]
                                 for key in range(i-i%3,i+3-i%3)]) ))
