@@ -27,17 +27,8 @@ jobs:
         biopython-version:
           # list of Biopython versions with support for a new Python version
           # from https://github.com/biopython/biopython/blob/master/NEWS.rst
-          - '1.76' # first to support Python 3.8
-          - '1.79' # first to support Python 3.9
           - '1.80' # first to support Python 3.10 and 3.11
           - ''     # latest
-        exclude:
-          # some older Biopython versions are incompatible with later Python versions
-          - { biopython-version: '1.76', python-version: '3.9' }
-          - { biopython-version: '1.76', python-version: '3.10' }
-          - { biopython-version: '1.76', python-version: '3.11' }
-          - { biopython-version: '1.79', python-version: '3.10' }
-          - { biopython-version: '1.79', python-version: '3.11' }
     defaults:
       run:
         shell: bash -l {0}
