@@ -296,12 +296,12 @@ def _read_gff(reference, feature_names):
         # Note that `GFF.parse` doesn't always yield GFF records in the order
         # one may expect, but since we raise AugurError if there are multiple
         # this doesn't matter.
-        gff_entries = list(GFF.parse(in_handle, limit_info={'gff_type': valid_types}))
-
-        # TODO: Remove warning filter reversal after it's addressed upstream:
-        # <https://github.com/chapmanb/bcbb/issues/140>
+        # TODO: Remove warning suppression after it's addressed upstream:
+        # <https://github.com/chapmanb/bcbb/issues/143>
         import warnings
         from Bio import BiopythonDeprecationWarning
+        warnings.simplefilter("ignore", BiopythonDeprecationWarning)
+        gff_entries = list(GFF.parse(in_handle, limit_info={'gff_type': valid_types}))
         warnings.simplefilter("default", BiopythonDeprecationWarning)
 
         if len(gff_entries) == 0:

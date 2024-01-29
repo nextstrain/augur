@@ -51,9 +51,9 @@ setuptools.setup(
     package_data = {'augur': ['data/*']},
     python_requires = '>={}'.format('.'.join(str(n) for n in py_min_version)),
     install_requires = [
-        "bcbio-gff >=0.7.0, ==0.7.*",
-        # Skip Biopython >=1.82: https://github.com/nextstrain/augur/issues/1373
-        "biopython >=1.67, !=1.77, !=1.78, <1.82",
+        "bcbio-gff >=0.7.1, ==0.7.*",
+        # TODO: Remove biopython >= 1.80 pin if it is added to bcbio-gff: https://github.com/chapmanb/bcbb/issues/142
+        "biopython >=1.80, ==1.*",
         "cvxopt >=1.1.9, ==1.*",
         "importlib_resources >=5.3.0; python_version < '3.11'",
         "isodate ==0.6.*",
