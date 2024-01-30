@@ -204,7 +204,12 @@ def filter_by_query(metadata, query) -> FilterFunctionReturn:
     for column in metadata_copy.columns:
         metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='ignore')
 
-    return set(metadata_copy.query(query).index.values)
+    try:
+        return set(metadata_copy.query(query).index.values)
+    except Exception as e:
+        if isinstance(e, PandasUndefinedVariableError):
+            raise AugurError(f"Query contains a column that does not exist in metadata.") from e
+        raise AugurError(f"Internal Pandas error when applying query:\n\t{e}\nEnsure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.") from e
 
 
 def filter_by_ambiguous_date(metadata, date_column, ambiguity) -> FilterFunctionReturn:
@@ -733,18 +738,10 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
     for filter_function, filter_kwargs in exclude_by:
         # Apply the current function with its given arguments. Each function
         # returns a set of strains that passed the corresponding filter.
-        try:
-            passed = metadata.pipe(
-                filter_function,
-                **filter_kwargs,
-            )
-        except Exception as e:
-            if filter_function is filter_by_query:
-                if isinstance(e, PandasUndefinedVariableError):
-                    raise AugurError(f"Query contains a column that does not exist in metadata.") from e
-                raise AugurError(f"Internal Pandas error when applying query:\n\t{e}\nEnsure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.") from e
-            else:
-                raise
+        passed = metadata.pipe(
+            filter_function,
+            **filter_kwargs,
+        )
 
         # Track the strains that failed this filter, so we can explain why later
         # on and update the list of strains to keep to intersect with the
