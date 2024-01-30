@@ -286,8 +286,7 @@ def create_queues_by_group(groups, max_size, max_attempts=100, random_seed=None)
     total_max_size = 0
     attempts = 0
 
-    if max_size < 1.0:
-        random_generator = np.random.default_rng(random_seed)
+    random_generator = None
 
     # For small fractional maximum sizes, it is possible to randomly select
     # maximum queue sizes that all equal zero. When this happens, filtering
@@ -296,6 +295,8 @@ def create_queues_by_group(groups, max_size, max_attempts=100, random_seed=None)
     while total_max_size == 0 and attempts < max_attempts:
         for group in sorted(groups):
             if max_size < 1.0:
+                if not random_generator:
+                    random_generator = np.random.default_rng(random_seed)
                 queue_max_size = random_generator.poisson(max_size)
             else:
                 queue_max_size = max_size

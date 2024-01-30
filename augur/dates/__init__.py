@@ -7,6 +7,7 @@ import re
 import treetime.utils
 from augur.errors import AugurError
 from .errors import InvalidDate
+from .types import NumericDate
 
 from .ambiguous_date import AmbiguousDate
 
@@ -107,11 +108,15 @@ def is_date_ambiguous(date, ambiguous_by):
         "X" in day and ambiguous_by in ("any", "day")
     ))
 
-def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
+def get_numerical_date_from_value(value, fmt: str = None, min_max_year = None) -> NumericDate:
     value = str(value)
     if re.match(r'^-*\d+\.\d+$', value):
         # numeric date which can be negative
         return float(value)
+
+    # All other dates should follow some expected format.
+    assert fmt is not None
+
     if value.isnumeric():
         # year-only date is ambiguous
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
@@ -120,7 +125,8 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
             ambig_date = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
         except InvalidDate as error:
             raise AugurError(str(error)) from error
-        return [treetime.utils.numeric_date(d) for d in ambig_date]
+        return (treetime.utils.numeric_date(ambig_date[0]),
+                treetime.utils.numeric_date(ambig_date[1]))
     try:
         return treetime.utils.numeric_date(datetime.datetime.strptime(value, fmt))
     except:
@@ -136,7 +142,11 @@ def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date',
                 date,
                 fmt,
                 min_max_year
-            )
+            )  # type: ignore
+            # The currently installed version of pandas type stubs assumes that
+            # the func here should never return a None value, therefore it
+            # thinks this is an issue. However, None values are known to be
+            # allowed here.
         ).values
     else:
         strains = metadata.index.values

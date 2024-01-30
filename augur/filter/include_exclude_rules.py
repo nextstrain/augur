@@ -293,10 +293,17 @@ def filter_by_min_date(metadata, date_column, min_date) -> FilterFunctionReturn:
 
     dates = get_numerical_dates(metadata, date_col=date_column, fmt="%Y-%m-%d")
 
-    filtered = {s for s in strains
-                if (dates[s] is not None
-                    and (np.isscalar(dates[s]) or all(dates[s]))
-                    and np.max(dates[s]) >= min_date)}
+    filtered = set()
+
+    for s in strains:
+        date = dates[s]
+        if date:
+            if type(date) is float:
+                if date >= min_date:
+                    filtered.add(s)
+            elif type(date) is Tuple:
+                if date[0] >= min_date and date[1] >= min_date:
+                    filtered.add(s)
 
     return filtered
 
@@ -334,10 +341,17 @@ def filter_by_max_date(metadata, date_column, max_date) -> FilterFunctionReturn:
 
     dates = get_numerical_dates(metadata, date_col=date_column, fmt="%Y-%m-%d")
 
-    filtered = {s for s in strains
-                if (dates[s] is not None
-                    and (np.isscalar(dates[s]) or all(dates[s]))
-                    and np.min(dates[s]) <= max_date)}
+    filtered = set()
+
+    for s in strains:
+        date = dates[s]
+        if date:
+            if type(date) is float:
+                if date >= max_date:
+                    filtered.add(s)
+            elif type(date) is Tuple:
+                if date[0] <= max_date and date[1] <= max_date:
+                    filtered.add(s)
 
     return filtered
 
