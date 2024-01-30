@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* sequence-traits: Validate columns in `--features` to prevent unhandled exceptions related to missing columns. [#1078][] (@victorlin)
+
+[#1078]: https://github.com/nextstrain/augur/pull/1078
 
 ## 24.1.0 (30 January 2024)
 

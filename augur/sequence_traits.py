@@ -7,6 +7,7 @@ import gzip
 import numpy as np
 from treetime.vcf_utils import read_vcf
 from collections import defaultdict
+from .errors import AugurError
 from .utils import write_json, get_json_name
 
 def read_in_translate_vcf(vcf_file, ref_file):
@@ -169,7 +170,15 @@ def read_in_features(drm_file):
 
     mutPositions = defaultdict(list)
 
-    df = pd.read_csv(drm_file, sep='\t' if drm_file.endswith('.tsv') else ',')
+    df = pd.read_csv(drm_file, sep=None)
+
+    # Validate column names.
+    observed_columns = set(df.columns)
+    required_columns = {"GENE", "SITE", "ALT", "FEATURE"}
+    optional_columns = {"DISPLAY_NAME"}
+    if observed_columns - optional_columns != required_columns:
+        raise AugurError(f"{drm_file} has columns {sorted(observed_columns)}, but expected {sorted(required_columns)} with optional {sorted(optional_columns)}.")
+
     for mi, m in df.iterrows():
         pos = m.SITE-1 #put in python numbering
         gene = m.GENE if hasattr(m, 'GENE') else 'nuc'
