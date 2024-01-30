@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 24.1.0 (30 January 2024)
+
 ### Features
 
 * `augur.io.read_metadata`: A new optional `dtype` argument allows custom data types for all columns. Automatic type inference still happens by default, so this is not a breaking change. [#1252][] (@victorlin)
