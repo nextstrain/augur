@@ -11,7 +11,7 @@
 
 * filter, frequencies, refine: Speed up reading of the metadata file. [#1252][] (@victorlin)
 * traits: Previously, columns with only numeric values were treated as numerical data. These are now treated as categorical data for discrete trait analysis. [#1252][] (@victorlin)
-* Support Biopython ≥1.82 by requiring bcbio-gff ≥0.71. [#1400][] (@victorlin)
+* Support Biopython `≥1.82` by requiring bcbio-gff `≥0.7.1`. [#1400][] (@victorlin)
 
 [#1252]: https://github.com/nextstrain/augur/pull/1252
 [#1400]: https://github.com/nextstrain/augur/pull/1400
