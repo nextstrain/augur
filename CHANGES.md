@@ -5,7 +5,7 @@
 ### Features
 
 * `augur.io.read_metadata`: A new optional `dtype` argument allows custom data types for all columns. Automatic type inference still happens by default, so this is not a breaking change. [#1252][] (@victorlin)
-* `augur.io.read_vcf` has been removed and usage replaced with TreeTime's function of the same name which has improved validation of the VCF file.
+* `augur.io.read_vcf` has been removed and usage replaced with TreeTime's function of the same name which has improved validation of the VCF file. [#1366][] (@jameshadfield)
 
 ### Bug Fixes
 
@@ -14,6 +14,7 @@
 * Support Biopython `≥1.82` by requiring bcbio-gff `≥0.7.1`. [#1400][] (@victorlin)
 
 [#1252]: https://github.com/nextstrain/augur/pull/1252
+[#1366]: https://github.com/nextstrain/augur/pull/1366
 [#1400]: https://github.com/nextstrain/augur/pull/1400
 
 ## 24.0.0 (22 January 2024)
