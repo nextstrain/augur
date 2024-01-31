@@ -20,4 +20,5 @@ Submodules
    augur.io.shell_command_runner
    augur.io.sqlite3
    augur.io.strains
+   augur.io.tabular_file
    augur.io.vcf

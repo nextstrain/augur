@@ -68,3 +68,17 @@ def open_file(path_or_buffer, mode="r", **kwargs):
 
     else:
         raise TypeError(f"Type {type(path_or_buffer)} is not supported.")
+
+
+class File:
+    """Represents a file."""
+
+    path: str
+    """Path to the file on disk."""
+
+    def __init__(self, path: str):
+        self.path = path
+
+    def open(self, **kwargs):
+        """Open the file with auto-compression/decompression."""
+        return open_file(self.path, **kwargs)

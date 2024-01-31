@@ -1,6 +1,6 @@
 import csv
 import os
-from typing import Iterable, Sequence
+from typing import Sequence
 import pandas as pd
 import pyfastx
 import python_calamine as calamine
@@ -13,17 +13,12 @@ from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
 from .file import PANDAS_READ_CSV_OPTIONS, open_file
+from .tabular_file import DEFAULT_DELIMITERS, InvalidDelimiter, TabularFile, get_delimiter
 
-
-DEFAULT_DELIMITERS = (',', '\t')
 
 DEFAULT_ID_COLUMNS = ("strain", "name")
 
 METADATA_DATE_COLUMN = 'date'
-
-
-class InvalidDelimiter(Exception):
-    pass
 
 
 def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, columns=None, id_columns=DEFAULT_ID_COLUMNS, chunk_size=None, dtype=None):
@@ -82,7 +77,7 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, columns=None, id
 
     """
     kwargs = {
-        "sep": _get_delimiter(metadata_file, delimiters),
+        "sep": get_delimiter(metadata_file, delimiters),
         "engine": "c",
         "skipinitialspace": True,
         "na_filter": False,
@@ -265,7 +260,7 @@ def read_table_to_dict(table, delimiters, duplicate_reporting=DataErrorMethod.ER
                 handle = chain(table_sample_file, handle)
 
             try:
-                # Note: this sort of duplicates _get_delimiter(), but it's easier if
+                # Note: this sort of duplicates get_delimiter(), but it's easier if
                 # this is separate since it handles non-seekable buffers.
                 dialect = csv.Sniffer().sniff(table_sample, delimiters)
             except csv.Error as error:
@@ -559,46 +554,24 @@ def write_records_to_tsv(records, output_file):
             tsv_writer.writerow(record)
 
 
-class Metadata:
+class Metadata(TabularFile):
     """Represents a metadata file."""
-
-    path: str
-    """Path to the file on disk."""
-
-    delimiter: str
-    """Inferred delimiter of metadata."""
-
-    columns: Sequence[str]
-    """Columns extracted from the first row in the metadata file."""
 
     id_column: str
     """Inferred ID column."""
 
-    def __init__(self, path: str, delimiters: Sequence[str], id_columns: Sequence[str]):
+    def __init__(self, path: str, id_columns: Sequence[str], **kwargs):
         """
         Parameters
         ----------
         path
             Path of the metadata file.
-        delimiters
-            Possible delimiters to use, in order of precedence.
         id_columns
-            Possible ID columns to use, in order of precedence.
+            Possible ID columns, in order of precedence.
+        **kwargs
+            See TabularFile.__init__() for more parameters.
         """
-        self.path = path
-
-        # Infer the dialect.
-        self.delimiter = _get_delimiter(self.path, delimiters)
-
-        # Infer the column names.
-        with self.open() as f:
-            reader = csv.reader(f, delimiter=self.delimiter)
-            try:
-                self.columns = next(reader)
-            except StopIteration:
-                raise AugurError(f"{self.path}: Expected a header row but it is empty.")
-
-        # Infer the ID column.
+        super().__init__(path, **kwargs)
         self.id_column = self._find_id_column(id_columns)
 
     def open(self, **kwargs):
@@ -637,20 +610,3 @@ class Metadata:
                         # This is distinct from a blank value (empty string).
                         raise AugurError(f"{self.path}: Line {reader.line_num} is missing at least one column. The inferred delimiter is {self.delimiter!r}.")
                 yield row
-
-
-def _get_delimiter(path: str, valid_delimiters: Iterable[str]):
-    """Get the delimiter of a file given a list of valid delimiters."""
-
-    for delimiter in valid_delimiters:
-        if len(delimiter) != 1:
-            raise AugurError(f"Delimiters must be single-character strings. {delimiter!r} does not satisfy that condition.")
-
-    with open_file(path, newline='') as file:
-        try:
-            # Infer the delimiter from the first line.
-            return csv.Sniffer().sniff(file.readline(), "".join(valid_delimiters)).delimiter
-        except csv.Error as error:
-            # This assumes all csv.Errors imply a delimiter issue. That might
-            # change in a future Python version.
-            raise InvalidDelimiter from error
