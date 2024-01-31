@@ -106,11 +106,6 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     if generated_columns_requested:
 
-        for col in sorted(generated_columns_requested):
-            if col in metadata.columns:
-                print_err(f"WARNING: `--group-by {col}` uses a generated {col} value from the {METADATA_DATE_COLUMN!r} column. The custom '{col}' column in the metadata is ignored for grouping purposes.")
-                metadata.drop(col, axis=1, inplace=True)
-
         if METADATA_DATE_COLUMN not in metadata:
             # Set generated columns to 'unknown'.
             print_err(f"WARNING: A {METADATA_DATE_COLUMN!r} column could not be found to group-by {sorted(generated_columns_requested)}.")

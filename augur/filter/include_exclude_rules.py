@@ -79,7 +79,7 @@ def filter_by_exclude(metadata, exclude_file) -> FilterFunctionReturn:
     return set(metadata.index.values) - excluded_strains
 
 
-def _parse_filter_query(query):
+def parse_filter_query(query):
     """Parse an augur filter-style query and return the corresponding column,
     operator, and value for the query.
 
@@ -99,9 +99,9 @@ def _parse_filter_query(query):
 
     Examples
     --------
-    >>> _parse_filter_query("property=value")
+    >>> parse_filter_query("property=value")
     ('property', <built-in function eq>, 'value')
-    >>> _parse_filter_query("property!=value")
+    >>> parse_filter_query("property!=value")
     ('property', <built-in function ne>, 'value')
 
     """
@@ -144,7 +144,7 @@ def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
     ['strain1', 'strain2']
 
     """
-    column, op, value = _parse_filter_query(exclude_where)
+    column, op, value = parse_filter_query(exclude_where)
     if column in metadata.columns:
         # Apply a test operator (equality or inequality) to values from the
         # column in the given query. This produces an array of boolean values we
@@ -515,7 +515,7 @@ def force_include_where(metadata, include_where) -> FilterFunctionReturn:
     set()
 
     """
-    column, op, value = _parse_filter_query(include_where)
+    column, op, value = parse_filter_query(include_where)
 
     if column in metadata.columns:
         # Apply a test operator (equality or inequality) to values from the

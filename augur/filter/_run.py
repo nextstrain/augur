@@ -15,13 +15,13 @@ from augur.index import (
     DELIMITER as SEQUENCE_INDEX_DELIMITER,
 )
 from augur.io.file import open_file
-from augur.io.metadata import InvalidDelimiter, read_metadata
+from augur.io.metadata import InvalidDelimiter, Metadata, read_metadata
 from augur.io.sequences import read_sequences, write_sequences
 from augur.io.print import print_err
 from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
 from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
-from .io import cleanup_outputs, read_priority_scores, write_metadata_based_outputs
+from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_metadata_based_outputs
 from .include_exclude_rules import apply_filters, construct_filters
 from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, create_queues_by_group, get_groups_for_subsampling
 
@@ -158,19 +158,23 @@ def run(args):
     filter_counts = defaultdict(int)
 
     try:
-        metadata_reader = read_metadata(
-            args.metadata,
-            delimiters=args.metadata_delimiters,
-            id_columns=args.metadata_id_columns,
-            chunk_size=args.metadata_chunk_size,
-            dtype="string",
-        )
+        metadata_object = Metadata(args.metadata, args.metadata_delimiters, args.metadata_id_columns)
     except InvalidDelimiter:
         raise AugurError(
             f"Could not determine the delimiter of {args.metadata!r}. "
             f"Valid delimiters are: {args.metadata_delimiters!r}. "
             "This can be changed with --metadata-delimiters."
         )
+    useful_metadata_columns = get_useful_metadata_columns(args, metadata_object.id_column, metadata_object.columns)
+
+    metadata_reader = read_metadata(
+        args.metadata,
+        delimiters=[metadata_object.delimiter],
+        columns=useful_metadata_columns,
+        id_columns=[metadata_object.id_column],
+        chunk_size=args.metadata_chunk_size,
+        dtype="string",
+    )
     for metadata in metadata_reader:
         duplicate_strains = (
             set(metadata.index[metadata.index.duplicated()]) |
@@ -289,6 +293,7 @@ def run(args):
         metadata_reader = read_metadata(
             args.metadata,
             delimiters=args.metadata_delimiters,
+            columns=useful_metadata_columns,
             id_columns=args.metadata_id_columns,
             chunk_size=args.metadata_chunk_size,
             dtype="string",

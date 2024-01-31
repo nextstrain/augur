@@ -1,5 +1,6 @@
 import argparse
 import csv
+from argparse import Namespace
 import os
 import re
 from typing import Sequence, Set
@@ -8,7 +9,66 @@ from collections import defaultdict
 from xopen import xopen
 
 from augur.errors import AugurError
-from augur.io.metadata import Metadata
+from augur.io.metadata import Metadata, METADATA_DATE_COLUMN
+from augur.io.print import print_err
+from .constants import GROUP_BY_GENERATED_COLUMNS
+from .include_exclude_rules import extract_variables, parse_filter_query
+
+
+def get_useful_metadata_columns(args: Namespace, id_column: str, all_columns: Sequence[str]):
+    """Return a list of column names that are used in augur filter.
+    This allows reading only the necessary columns.
+    """
+
+    # Start with just the ID column.
+    columns = {id_column}
+
+    # Add the date column if it is used.
+    if (args.exclude_ambiguous_dates_by
+        or args.min_date
+        or args.max_date
+        or (args.group_by and GROUP_BY_GENERATED_COLUMNS.intersection(args.group_by))):
+        columns.add(METADATA_DATE_COLUMN)
+
+    if args.group_by:
+        group_by_set = set(args.group_by)
+        requested_generated_columns = group_by_set & GROUP_BY_GENERATED_COLUMNS
+
+        # Add columns used for grouping.
+        columns.update(group_by_set - requested_generated_columns)
+
+        # Show warning for ignored columns.
+        ignored_columns = requested_generated_columns.intersection(set(all_columns))
+        for col in sorted(ignored_columns):
+            print_err(f"WARNING: `--group-by {col}` uses a generated {col} value from the {METADATA_DATE_COLUMN!r} column. The custom '{col}' column in the metadata is ignored for grouping purposes.")
+
+    # Add columns used in exclude queries.
+    if args.exclude_where:
+        for query in args.exclude_where:
+            column, op, value = parse_filter_query(query)
+            columns.add(column)
+
+    # Add columns used in include queries.
+    if args.include_where:
+        for query in args.include_where:
+            column, op, value = parse_filter_query(query)
+            columns.add(column)
+
+    # Add columns used in Pandas queries.
+    if args.query:
+        if args.query_columns:
+            # Use column names explicitly specified by the user.
+            for column, dtype in args.query_columns:
+                columns.add(column)
+
+        # Attempt to automatically extract columns from the query.
+        variables = extract_variables(args.query)
+        if variables is None and not args.query_columns:
+            raise AugurError("Could not infer columns from the pandas query. If the query is valid, please specify columns using --query-columns.")
+        else:
+            columns.update(variables)
+
+    return list(columns)
 
 
 def read_priority_scores(fname):
@@ -68,7 +128,7 @@ def write_metadata_based_outputs(input_metadata_path: str, delimiters: Sequence[
 
 
 # These are the types accepted in the following function.
-ACCEPTED_TYPES = {'int', 'float', 'str'}
+ACCEPTED_TYPES = {'numeric', 'int', 'float', 'str'}
 
 def column_type_pair(input: str):
     """Get a 2-tuple for column name to type.
