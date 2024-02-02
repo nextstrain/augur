@@ -22,5 +22,5 @@ Confirm that `--exclude-ambiguous-dates-by` works for all year only ambiguous da
   >  --output-strains filtered_strains.txt
   4 strains were dropped during filtering
   	3 were dropped because of their ambiguous date in any
-  	1 was filtered out by the query: "region=="Asia""
+  	1 was filtered out by the Pandas query: "region=="Asia""
   0 strains passed all filters

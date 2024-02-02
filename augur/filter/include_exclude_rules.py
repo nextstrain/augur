@@ -3,6 +3,7 @@ import json
 import re
 import pandas as pd
 import sqlite3
+import sqlparse
 from typing import Any, Callable, Dict, List, Optional, Tuple
 from augur.errors import AugurError
 from augur.index import ID_COLUMN as SEQUENCE_INDEX_ID_COLUMN
@@ -148,8 +149,65 @@ def filter_by_exclude_where(exclude_where) -> FilterFunctionReturn:
     return expression, parameters
 
 
-def filter_by_query(query: str, chunksize: int, column_types: Optional[Dict[str, str]] = None) -> FilterFunctionReturn:
+def filter_by_sqlite_query(query: str, column_types: Optional[Dict[str, str]] = None) -> FilterFunctionReturn:
+    """Filter by any valid SQLite expression on the metadata.
+
+    Strains that do *not* match the query will be excluded.
+
+    Parameters
+    ----------
+    query : str
+        SQL expression used to exclude strains
+    column_types : str
+        Dict mapping of data type
+    """
+    with Sqlite3Database(constants.RUNTIME_DB_FILE) as db:
+        metadata_id_column = db.get_primary_index(constants.METADATA_TABLE)
+        metadata_columns = set(db.columns(constants.METADATA_TABLE))
+
+    if column_types is None:
+        column_types = {}
+
+    # Set columns for type conversion.
+    variables = extract_potential_sqlite_variables(query)
+    if variables is not None:
+        columns = variables.intersection(metadata_columns)
+    else:
+        # Column extraction failed. Apply type conversion to all columns.
+        columns = metadata_columns
+
+    # If a type is not explicitly provided, try converting the column to numeric.
+    # This should cover most use cases, since one common problem is that the
+    # built-in data type inference when loading the DataFrame does not
+    # support nullable numeric columns, so numeric comparisons won't work on
+    # those columns. pd.to_numeric does proper conversion on those columns,
+    # and will not make any changes to columns with other values.
+    for column in columns:
+        column_types.setdefault(column, 'numeric')
+
+    # FIXME: Apply column_types.
+    # It's not easy to change the type on the table schema.¹
+    # Maybe using CAST? But that always takes place even if the conversion is lossy
+    # and irreversible (i.e. no error handling options like pd.to_numeric).
+    # ¹ <https://www.sqlite.org/lang_altertable.html#making_other_kinds_of_table_schema_changes>
+    # ² <https://www.sqlite.org/lang_expr.html#castexpr>
+
+    expression = f"""
+        {constants.ID_COLUMN} IN (
+            SELECT {sanitize_identifier(metadata_id_column)}
+            FROM {constants.METADATA_TABLE}
+            WHERE NOT ({query})
+        )
+    """
+    parameters: SqlParameters = {}
+    return expression, parameters
+
+
+def filter_by_pandas_query(query: str, chunksize: int, column_types: Optional[Dict[str, str]] = None) -> FilterFunctionReturn:
     """Filter by a Pandas expression on the metadata.
+
+    Note that this is inefficient compared to native SQLite queries, and is in place
+    for backwards compatibility.
 
     Parameters
     ----------
@@ -175,7 +233,7 @@ def filter_by_query(query: str, chunksize: int, column_types: Optional[Dict[str,
         column_types = {}
 
     # Set columns for type conversion.
-    variables = extract_variables(query)
+    variables = extract_pandas_query_variables(query)
     if variables is not None:
         columns = variables.intersection(metadata_columns)
     else:
@@ -574,17 +632,26 @@ def construct_filters(args) -> Tuple[List[FilterOption], List[FilterOption]]:
                 {"exclude_where": exclude_where}
             ))
 
-    # Exclude strains by metadata, using pandas querying.
-    if args.query:
+    # Exclude strains by metadata.
+    if args.query_pandas:
         kwargs = {
-            "query": args.query,
+            "query": args.query_pandas,
             "chunksize": args.metadata_chunk_size,
         }
         if args.query_columns:
             kwargs["column_types"] = {column: dtype for column, dtype in args.query_columns}
 
         exclude_by.append((
-            filter_by_query,
+            filter_by_pandas_query,
+            kwargs
+        ))
+    if args.query_sqlite:
+        kwargs = {"query": args.query_sqlite}
+        if args.query_columns:
+            kwargs["column_types"] = {column: dtype for column, dtype in args.query_columns}
+
+        exclude_by.append((
+            filter_by_sqlite_query,
             kwargs
         ))
 
@@ -816,20 +883,20 @@ def filter_kwargs_to_str(kwargs: FilterFunctionKwargs):
     return json.dumps(kwarg_list)
 
 
-def extract_variables(pandas_query: str):
+def extract_pandas_query_variables(pandas_query: str):
     """Try extracting all variable names used in a pandas query string.
 
     If successful, return the variable names as a set. Otherwise, nothing is returned.
 
     Examples
     --------
-    >>> extract_variables("var1 == 'value'")
+    >>> extract_pandas_query_variables("var1 == 'value'")
     {'var1'}
-    >>> sorted(extract_variables("var1 == 'value' & var2 == 10"))
+    >>> sorted(extract_pandas_query_variables("var1 == 'value' & var2 == 10"))
     ['var1', 'var2']
-    >>> extract_variables("var1.str.startswith('prefix')")
+    >>> extract_pandas_query_variables("var1.str.startswith('prefix')")
     {'var1'}
-    >>> extract_variables("this query is invalid")
+    >>> extract_pandas_query_variables("this query is invalid")
 
     Backtick quoting is also supported.
 
@@ -882,3 +949,59 @@ def _replace_backtick_quoting(pandas_query: str):
 
     modified_query = re.sub(pattern, replace, pandas_query)
     return modified_query, replacements
+
+
+def extract_potential_sqlite_variables(sqlite_expression: str):
+    """Try extracting all variable names used in a SQLite expression.
+
+    If successful, return the variable names as a set. Otherwise, nothing is returned.
+
+    Examples
+    --------
+    >>> extract_potential_sqlite_variables("var1 = 'value'")
+    {'var1'}
+    >>> sorted(extract_potential_sqlite_variables("var1 = 'value' AND var2 = 10"))
+    ['var1', 'var2']
+    >>> extract_potential_sqlite_variables("var1 LIKE 'prefix%'")
+    {'var1'}
+    >>> sorted(extract_potential_sqlite_variables("this query is invalid"))
+    ['invalid', 'this query']
+    """
+    # This seems to be more difficult than Pandas query parsing.
+    # <https://stackoverflow.com/q/35624662>
+    try:
+        query = f"SELECT * FROM table WHERE {sqlite_expression}"
+        where = [x for x in sqlparse.parse(query)[0] if isinstance(x, sqlparse.sql.Where)][0]
+        variables = set(_get_identifiers(where)) or None
+        return variables
+    except:
+        return None
+
+
+def _get_identifiers(token: sqlparse.sql.Token):
+    """Yield identifiers from a token's children.
+    
+    Inspired by ast.walk.
+    """
+    from collections import deque
+    todo = deque([token])
+    while todo:
+        node = todo.popleft()
+
+        # Limit to comparisons to avoid false positives.
+        # I chose not to use this because it also comes with false negatives.
+        #
+        # if isinstance(node, sqlparse.sql.Comparison):
+        #     if isinstance(node.left, sqlparse.sql.Identifier):
+        #         yield str(node.left)
+        #     elif hasattr(node.left, 'tokens'):
+        #         todo.extend(node.left.tokens)
+        #     if isinstance(node.right, sqlparse.sql.Identifier):
+        #         yield str(node.right)
+        #     elif hasattr(node.right, 'tokens'):
+        #         todo.extend(node.right.tokens)
+
+        if isinstance(node, sqlparse.sql.Identifier):
+            yield str(node)
+        elif hasattr(node, 'tokens'):
+            todo.extend(node.tokens)
