@@ -9,6 +9,7 @@ augur.filter
 .. toctree::
 
    augur.filter._run
+   augur.filter.dates
    augur.filter.include_exclude_rules
    augur.filter.io
    augur.filter.report

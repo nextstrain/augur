@@ -150,6 +150,3 @@ def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date',
         strains = metadata.index.values
         dates = metadata[date_col].astype(float)
     return dict(zip(strains, dates))
-
-def get_iso_year_week(year, month, day):
-    return datetime.date(year, month, day).isocalendar()[:2]
