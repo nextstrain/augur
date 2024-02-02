@@ -32,7 +32,7 @@ Parse Zika sequences into sequences and metadata.
   $ diff -u "parse/metadata.tsv" "$TMP/metadata.tsv"
   $ rm -f "$TMP/sequences.fasta" "$TMP/metadata.tsv"
 
-Parse Zika sequences into sequences and metadata, preferred default ids is 'name', then 'strain', then first field.
+Parse Zika sequences into sequences and metadata, preferred default ids is 'strain', then 'name', then first field.
 
   $ ${AUGUR} parse \
   >   --sequences parse/zika.fasta \
@@ -42,7 +42,7 @@ Parse Zika sequences into sequences and metadata, preferred default ids is 'name
   >   --prettify-fields region country division city \
   >   --fix-dates monthfirst
 
-  $ diff -u "parse/sequences_other.fasta" "$TMP/sequences.fasta"
+  $ diff -u "parse/sequences.fasta" "$TMP/sequences.fasta"
   $ rm -f "$TMP/sequences.fasta" "$TMP/metadata.tsv"
 
 Parse compressed Zika sequences into sequences and metadata.

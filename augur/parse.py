@@ -6,6 +6,7 @@ import sys
 
 from .io.file import open_file
 from .io.sequences import read_sequences, write_sequences
+from .io.metadata import DEFAULT_ID_COLUMNS
 from .dates import get_numerical_date_from_value
 from .errors import AugurError
 
@@ -162,11 +163,12 @@ def run(args):
     # field to index the dictionary and the data frame
     meta_data = {}
 
-    if 'name' in args.fields:
-        strain_key = 'name'
-    elif 'strain' in args.fields:
-        strain_key = 'strain'
-    else:
+    strain_key = None
+    for possible_id in DEFAULT_ID_COLUMNS:
+        if possible_id in args.fields:
+            strain_key = possible_id
+            break
+    if not strain_key:
         strain_key = args.fields[0]
 
     # loop over sequences, parse fasta header of each sequence
