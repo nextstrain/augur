@@ -13,6 +13,7 @@ Submodules
    :maxdepth: 4
 
    augur.filter.constants
+   augur.filter.dates
    augur.filter.include_exclude_rules
    augur.filter.io
    augur.filter.report

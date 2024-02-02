@@ -1,103 +1,46 @@
 from collections import defaultdict
-import heapq
 import itertools
-import uuid
 import numpy as np
 import pandas as pd
 from textwrap import dedent
-from typing import Collection, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import Collection, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
-from augur.dates import get_year_month, get_year_week
 from augur.errors import AugurError
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err
+from augur.io.sqlite3 import Sqlite3Database, sanitize_identifier
 from . import constants
 from .weights_file import WEIGHTS_COLUMN, COLUMN_VALUE_FOR_DEFAULT_WEIGHT, get_default_weight, get_weighted_columns, read_weights_file
 
 Group = Tuple[str, ...]
 """Combination of grouping column values in tuple form."""
+from .io import import_priorities_table
 
 
-def get_groups_for_subsampling(strains, metadata, group_by=None):
-    """Return a list of groups for each given strain based on the corresponding
-    metadata and group by column.
+def get_valid_group_by_columns(metadata_columns: Set[str], group_by: List[str]):
+    """Perform validation on requested group-by columns and return the valid subset.
 
     Parameters
     ----------
-    strains : list
-        A list of strains to get groups for.
-    metadata : pandas.DataFrame
-        Metadata to inspect for the given strains.
-    group_by : list
+    metadata_columns
+        All column names in metadata.
+    group_by
         A list of metadata (or generated) columns to group records by.
 
     Returns
     -------
-    dict :
-        A mapping of strain names to tuples corresponding to the values of the strain's group.
-
-    Examples
-    --------
-    >>> strains = ["strain1", "strain2"]
-    >>> metadata = pd.DataFrame([{"strain": "strain1", "date": "2020-01-01", "region": "Africa"}, {"strain": "strain2", "date": "2020-02-01", "region": "Europe"}]).set_index("strain")
-    >>> group_by = ["region"]
-    >>> group_by_strain = get_groups_for_subsampling(strains, metadata, group_by)
-    >>> group_by_strain
-    {'strain1': ('Africa',), 'strain2': ('Europe',)}
-
-    If we group by year or month, these groups are generated from the date
-    string.
-
-    >>> group_by = ["year", "month"]
-    >>> group_by_strain = get_groups_for_subsampling(strains, metadata, group_by)
-    >>> group_by_strain
-    {'strain1': (2020, '2020-01'), 'strain2': (2020, '2020-02')}
-
-    If we omit the grouping columns, the result will group by a dummy column.
-
-    >>> group_by_strain = get_groups_for_subsampling(strains, metadata)
-    >>> group_by_strain
-    {'strain1': ('_dummy',), 'strain2': ('_dummy',)}
-
-    If we try to group by columns that don't exist, we get an error.
-
-    >>> group_by = ["missing_column"]
-    >>> get_groups_for_subsampling(strains, metadata, group_by)
-    Traceback (most recent call last):
-      ...
-    augur.errors.AugurError: The specified group-by categories (['missing_column']) were not found.
-
-    If we try to group by some columns that exist and some that don't, we allow
-    grouping to continue and print a warning message to stderr.
-
-    >>> group_by = ["year", "month", "missing_column"]
-    >>> group_by_strain = get_groups_for_subsampling(strains, metadata, group_by)
-    >>> group_by_strain
-    {'strain1': (2020, '2020-01', 'unknown'), 'strain2': (2020, '2020-02', 'unknown')}
-
-    We can group metadata without any non-ID columns.
-
-    >>> metadata = pd.DataFrame([{"strain": "strain1"}, {"strain": "strain2"}]).set_index("strain")
-    >>> get_groups_for_subsampling(strains, metadata, group_by=('_dummy',))
-    {'strain1': ('_dummy',), 'strain2': ('_dummy',)}
+    list of str:
+        Valid group-by columns.
     """
-    metadata = metadata.loc[list(strains)]
-    group_by_strain = {}
-
-    if len(metadata) == 0:
-        return group_by_strain
-
-    if not group_by or group_by == ('_dummy',):
-        group_by_strain = {strain: ('_dummy',) for strain in strains}
-        return group_by_strain
-
+    # Create a set copy for faster existence checks.
     group_by_set = set(group_by)
+
     generated_columns_requested = constants.GROUP_BY_GENERATED_COLUMNS & group_by_set
 
     # If we could not find any requested categories, we cannot complete subsampling.
-    if METADATA_DATE_COLUMN not in metadata and group_by_set <= constants.GROUP_BY_GENERATED_COLUMNS:
+    if METADATA_DATE_COLUMN not in metadata_columns and group_by_set <= constants.GROUP_BY_GENERATED_COLUMNS:
         raise AugurError(f"The specified group-by categories ({group_by}) were not found. Note that using any of {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} requires a column called {METADATA_DATE_COLUMN!r}.")
-    if not group_by_set & (set(metadata.columns) | constants.GROUP_BY_GENERATED_COLUMNS):
+    if not group_by_set & (set(metadata_columns) | constants.GROUP_BY_GENERATED_COLUMNS):
         raise AugurError(f"The specified group-by categories ({group_by}) were not found.")
 
     # Warn/error based on other columns grouped with week.
@@ -112,148 +55,17 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     if generated_columns_requested:
 
-        if METADATA_DATE_COLUMN not in metadata:
-            # Set generated columns to 'unknown'.
+        if METADATA_DATE_COLUMN not in metadata_columns:
             print_err(f"WARNING: A {METADATA_DATE_COLUMN!r} column could not be found to group-by {sorted(generated_columns_requested)}.")
             print_err(f"Filtering by group may behave differently than expected!")
-            df_dates = pd.DataFrame({col: 'unknown' for col in constants.GROUP_BY_GENERATED_COLUMNS}, index=metadata.index)
-            metadata = pd.concat([metadata, df_dates], axis=1)
-        else:
-            # Create a DataFrame with year/month/day columns as nullable ints.
-            # These columns are prefixed to note temporary usage. They are used
-            # to generate other columns, and will be discarded at the end.
-            temp_prefix = str(uuid.uuid4())
-            temp_date_cols = [f'{temp_prefix}year', f'{temp_prefix}month', f'{temp_prefix}day']
-            df_dates = metadata[METADATA_DATE_COLUMN].str.split('-', n=2, expand=True)
-            df_dates = df_dates.set_axis(temp_date_cols[:len(df_dates.columns)], axis=1)
-            missing_date_cols = set(temp_date_cols) - set(df_dates.columns)
-            for col in missing_date_cols:
-                df_dates[col] = pd.NA
-            for col in temp_date_cols:
-                df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
 
-            # Extend metadata with generated date columns
-            # Drop the date column since it should not be used for grouping.
-            metadata = pd.concat([metadata.drop(METADATA_DATE_COLUMN, axis=1), df_dates], axis=1)
-
-            # Check again if metadata is empty after dropping ambiguous dates.
-            if metadata.empty:
-                return group_by_strain
-
-            # Generate columns.
-            if constants.DATE_YEAR_COLUMN in generated_columns_requested:
-                metadata[constants.DATE_YEAR_COLUMN] = metadata[f'{temp_prefix}year']
-            if constants.DATE_MONTH_COLUMN in generated_columns_requested:
-                metadata[constants.DATE_MONTH_COLUMN] = metadata.apply(lambda row: get_year_month(
-                    row[f'{temp_prefix}year'],
-                    row[f'{temp_prefix}month']
-                    ), axis=1
-                )
-            if constants.DATE_WEEK_COLUMN in generated_columns_requested:
-                # Note that week = (year, week) from the date.isocalendar().
-                # Do not combine the raw year with the ISO week number alone,
-                # since raw year ≠ ISO year.
-                metadata[constants.DATE_WEEK_COLUMN] = metadata.apply(lambda row: get_year_week(
-                    row[f'{temp_prefix}year'],
-                    row[f'{temp_prefix}month'],
-                    row[f'{temp_prefix}day']
-                    ), axis=1
-                )
-
-            # Drop the internally used columns.
-            for col in temp_date_cols:
-                metadata.drop(col, axis=1, inplace=True)
-
-    unknown_groups = group_by_set - set(metadata.columns)
+    unknown_groups = group_by_set - metadata_columns - constants.GROUP_BY_GENERATED_COLUMNS
     if unknown_groups:
         print_err(f"WARNING: Some of the specified group-by categories couldn't be found: {', '.join(unknown_groups)}")
         print_err("Filtering by group may behave differently than expected!")
         for group in unknown_groups:
-            metadata[group] = 'unknown'
-
-    # Finally, determine groups.
-    group_by_strain = dict(zip(metadata.index, metadata[group_by].apply(tuple, axis=1)))
-    return group_by_strain
-
-
-class PriorityQueue:
-    """A priority queue implementation that automatically replaces lower priority
-    items in the heap with incoming higher priority items.
-
-    Examples
-    --------
-
-    Add a single record to a heap with a maximum of 2 records.
-
-    >>> queue = PriorityQueue(max_size=2)
-    >>> queue.add({"strain": "strain1"}, 0.5)
-    1
-
-    Add another record with a higher priority. The queue should be at its maximum
-    size.
-
-    >>> queue.add({"strain": "strain2"}, 1.0)
-    2
-    >>> queue.heap
-    [(0.5, 0, {'strain': 'strain1'}), (1.0, 1, {'strain': 'strain2'})]
-    >>> list(queue.get_items())
-    [{'strain': 'strain1'}, {'strain': 'strain2'}]
-
-    Add a higher priority record that causes the queue to exceed its maximum
-    size. The resulting queue should contain the two highest priority records
-    after the lowest priority record is removed.
-
-    >>> queue.add({"strain": "strain3"}, 2.0)
-    2
-    >>> list(queue.get_items())
-    [{'strain': 'strain2'}, {'strain': 'strain3'}]
-
-    Add a record with the same priority as another record, forcing the duplicate
-    to be resolved by removing the oldest entry.
-
-    >>> queue.add({"strain": "strain4"}, 1.0)
-    2
-    >>> list(queue.get_items())
-    [{'strain': 'strain4'}, {'strain': 'strain3'}]
-
-    """
-    def __init__(self, max_size):
-        """Create a fixed size heap (priority queue)
-
-        """
-        self.max_size = max_size
-        self.heap = []
-        self.counter = itertools.count()
-
-    def add(self, item, priority):
-        """Add an item to the queue with a given priority.
-
-        If adding the item causes the queue to exceed its maximum size, replace
-        the lowest priority item with the given item. The queue stores items
-        with an additional heap id value (a count) to resolve ties between items
-        with equal priority (favoring the most recently added item).
-
-        """
-        heap_id = next(self.counter)
-
-        if len(self.heap) >= self.max_size:
-            heapq.heappushpop(self.heap, (priority, heap_id, item))
-        else:
-            heapq.heappush(self.heap, (priority, heap_id, item))
-
-        return len(self.heap)
-
-    def get_items(self):
-        """Return each item in the queue in order.
-
-        Yields
-        ------
-        Any
-            Item stored in the queue.
-
-        """
-        for priority, heap_id, item in self.heap:
-            yield item
+            group_by.remove(group)
+    return group_by
 
 
 def get_probabilistic_group_sizes(groups, target_group_size, random_seed=None):
@@ -303,6 +115,8 @@ def get_probabilistic_group_sizes(groups, target_group_size, random_seed=None):
 
     return max_sizes_per_group
 
+
+# FIXME: read weighs file into sql table?
 
 TARGET_SIZE_COLUMN = '_augur_filter_target_size'
 INPUT_SIZE_COLUMN = '_augur_filter_input_size'
@@ -358,6 +172,7 @@ def get_weighted_group_sizes(
             print_err(f"WARNING: Targeted {row[TARGET_SIZE_COLUMN]} {sequences} for group {group} but only {row[INPUT_SIZE_COLUMN]} {are} available.")
 
     if output_sizes_file:
+        # FIXME: make the order of rows deterministic
         weights.to_csv(output_sizes_file, index=False, sep='\t')
 
     return dict(zip(weights[group_by].apply(tuple, axis=1), weights[TARGET_SIZE_COLUMN]))
@@ -631,3 +446,285 @@ def _calculate_sequences_per_group(
         return int(hi)
     else:
         return int(lo)
+
+
+def apply_subsampling(args):
+    """Apply subsampling to update the filter reason table.
+
+    We handle the following major use cases:
+
+    1. group by and sequences per group defined -> use the given values by the
+    user to identify the highest priority records from each group.
+
+    2. group by and maximum sequences defined -> count the group sizes, calculate the
+    sequences per group that satisfies the requested maximum, and select that many sequences per group.
+
+    3. group by not defined but maximum sequences defined -> use a "dummy"
+    group such that we select at most the requested maximum number of
+    sequences.
+    """
+
+    # Each strain has a score to determine priority during subsampling.
+    # When no priorities are provided, they will be randomly generated.
+    create_priorities_table(args)
+
+    with Sqlite3Database(constants.RUNTIME_DB_FILE) as db:
+        metadata_columns = set(db.columns(constants.METADATA_TABLE))
+
+    # FIXME: optimize conditions
+
+    valid_group_by_columns = []
+    if args.group_by:
+        valid_group_by_columns = get_valid_group_by_columns(metadata_columns, args.group_by)
+        
+    create_grouping_table(valid_group_by_columns, metadata_columns)
+
+    if not args.group_by:
+        valid_group_by_columns = [constants.GROUP_BY_DUMMY_COLUMN]
+        target_group_sizes = {(constants.GROUP_BY_DUMMY_VALUE, ): _get_filtered_strains_count()}
+
+    records_per_group = get_records_per_group(valid_group_by_columns)
+
+    if args.subsample_max_sequences:
+            if args.group_by_weights:
+                print_err(f"Sampling with weights defined by {args.group_by_weights}.")
+                target_group_sizes = get_weighted_group_sizes(
+                    records_per_group,
+                    args.group_by,
+                    args.group_by_weights,
+                    args.subsample_max_sequences,
+                    args.output_group_by_sizes,
+                    args.subsample_seed,
+                )
+            else:
+                # Calculate sequences per group. If there are more groups than maximum
+                # sequences requested, sequences per group will be a floating point
+                # value and subsampling will be probabilistic.
+                try:
+                    sequences_per_group, probabilistic_used = calculate_sequences_per_group(
+                        args.subsample_max_sequences,
+                        records_per_group.values(),
+                        args.probabilistic_sampling,
+                    )
+                except TooManyGroupsError as error:
+                    raise AugurError(error)
+
+                if (probabilistic_used):
+                    print_err(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
+                    target_group_sizes = get_probabilistic_group_sizes(
+                        records_per_group.keys(),
+                        sequences_per_group,
+                        random_seed=args.subsample_seed,
+                    )
+                else:
+                    print_err(f"Sampling at {sequences_per_group} per group.")
+                    assert type(sequences_per_group) is int
+                    target_group_sizes = {group: sequences_per_group for group in records_per_group.keys()}
+    else:
+        assert args.sequences_per_group
+        target_group_sizes = {group: args.sequences_per_group for group in records_per_group.keys()}
+
+    create_group_size_limits_table(valid_group_by_columns, target_group_sizes)
+    update_filter_reason_table(valid_group_by_columns)
+
+
+def create_priorities_table(args):
+    """Import or generate the priorities table."""
+    if args.priority:
+        import_priorities_table(args.priority)
+    else:
+        generate_priorities_table(args.subsample_seed)
+
+    with Sqlite3Database(constants.RUNTIME_DB_FILE, mode="rw") as db:
+        db.create_primary_index(constants.PRIORITIES_TABLE, constants.ID_COLUMN)
+
+
+def generate_priorities_table(random_seed: int = None):
+    """Generate a priorities table with random priorities.
+
+    It is not possible to seed the SQLite built-in RANDOM(). As an alternative,
+    use a Python function registered as a user-defined function.
+
+    The generated priorities are random floats in the half-open interval [0.0, 1.0).
+    """
+    rng = np.random.default_rng(random_seed)
+
+    with Sqlite3Database(constants.RUNTIME_DB_FILE, mode="rw") as db:
+        # Register SQLite3 user-defined function.
+        db.connection.create_function(rng.random.__name__, 0, rng.random)
+
+        db.connection.execute(f"""CREATE TABLE {constants.PRIORITIES_TABLE} AS
+            SELECT
+                {constants.ID_COLUMN},
+                {rng.random.__name__}() AS {constants.PRIORITY_COLUMN}
+            FROM {constants.FILTER_REASON_TABLE}
+            WHERE NOT {constants.EXCLUDE_COLUMN} OR {constants.INCLUDE_COLUMN}
+        """)
+
+        # Remove user-defined function.
+        db.connection.create_function(rng.random.__name__, 0, None)
+
+
+def create_grouping_table(group_by_columns: Iterable[str], metadata_columns: Set[str]):
+    """Create a table with columns for grouping."""
+
+    # For both of these, start with an empty string in case it isn't needed.
+    generated_group_by_columns_sql = ''
+    metadata_group_by_columns_sql = ''
+
+    if group_by_columns:
+        group_by_columns_set = set(group_by_columns)
+
+        generated_group_by_columns = constants.GROUP_BY_GENERATED_COLUMNS & group_by_columns_set
+
+        if generated_group_by_columns:
+            generated_group_by_columns_sql = (
+                # Prefix columns with the table alias defined in the SQL query further down.
+                ','.join(f'd.{column}' for column in generated_group_by_columns)
+                # Add an extra comma for valid SQL.
+                + ',')
+
+        metadata_group_by_columns = group_by_columns_set - generated_group_by_columns
+
+        if metadata_group_by_columns:
+            metadata_group_by_columns_sql = (
+                # Prefix columns with the table alias defined in the SQL query further down.
+                ','.join(f'm.{sanitize_identifier(column)}' for column in metadata_group_by_columns)
+                # Add an extra comma for valid SQL.
+                + ',')
+
+    with Sqlite3Database(constants.RUNTIME_DB_FILE) as db:
+        metadata_id_column = db.get_primary_index(constants.METADATA_TABLE)
+
+    # Create a new table with rows as filtered metadata, with the following columns:
+    # - Metadata ID column
+    # - Group-by columns
+    # - Generated date columns
+    # - Priority score column
+    # - Placeholder column
+    with Sqlite3Database(constants.RUNTIME_DB_FILE, mode="rw") as db:
+        db.connection.execute(f"""CREATE TABLE {constants.GROUPING_TABLE} AS
+            SELECT
+                f.{constants.ID_COLUMN},
+                {metadata_group_by_columns_sql}
+                {generated_group_by_columns_sql}
+                p.{constants.PRIORITY_COLUMN},
+                {constants.GROUP_BY_DUMMY_VALUE} AS {constants.GROUP_BY_DUMMY_COLUMN}
+            FROM {constants.FILTER_REASON_TABLE} AS f
+            JOIN {constants.METADATA_TABLE} AS m
+                ON (f.{constants.ID_COLUMN} = m.{sanitize_identifier(metadata_id_column)})
+            JOIN {constants.DATE_TABLE} AS d
+                USING ({constants.ID_COLUMN})
+            LEFT OUTER JOIN {constants.PRIORITIES_TABLE} AS p
+                USING ({constants.ID_COLUMN})
+            WHERE
+                NOT f.{constants.EXCLUDE_COLUMN} OR f.{constants.INCLUDE_COLUMN}
+        """)
+    # Note: The last JOIN is a LEFT OUTER JOIN since a default INNER JOIN would
+    # drop strains without a priority.
+
+
+def get_records_per_group(group_by_columns: Sequence[str]) -> Dict[Group, int]:
+    group_by_columns_sql = ','.join(sanitize_identifier(column) for column in group_by_columns)
+    with Sqlite3Database(constants.RUNTIME_DB_FILE) as db:
+        result = db.connection.execute(f"""
+            SELECT
+                COUNT(*) AS count,
+                {group_by_columns_sql}
+            FROM {constants.GROUPING_TABLE}
+            GROUP BY {group_by_columns_sql}
+        """)
+        return {tuple(row[c] for c in group_by_columns) : int(row['count']) for row in result}
+
+
+# FIXME: use group_sizes instead of iterator
+def create_group_size_limits_table(group_by_columns: Sequence[str], target_group_sizes: Dict[Group, float]):
+    """Create a table for group size limits."""
+
+    # Create a function to return target group size for a given group
+    def group_size(*group):
+        return target_group_sizes[group]
+
+    group_by_columns_sql = ','.join(sanitize_identifier(column) for column in group_by_columns)
+
+    with Sqlite3Database(constants.RUNTIME_DB_FILE, mode="rw") as db:
+        # Register SQLite3 user-defined function.
+        db.connection.create_function(group_size.__name__, -1, group_size)
+
+        db.connection.execute(f"""CREATE TABLE {constants.GROUP_SIZE_LIMITS_TABLE} AS
+            SELECT
+                {group_by_columns_sql},
+                {group_size.__name__}({group_by_columns_sql}) AS {constants.GROUP_SIZE_LIMIT_COLUMN}
+            FROM {constants.GROUPING_TABLE}
+            GROUP BY {group_by_columns_sql}
+        """)
+
+        # Remove user-defined function.
+        db.connection.create_function(group_size.__name__, 0, None)
+
+
+def update_filter_reason_table(group_by_columns: Iterable[str]):
+    """Subsample filtered metadata and update the filter reason table."""
+    group_by_columns_sql = ','.join(sanitize_identifier(column) for column in group_by_columns)
+
+    # First, select the strain column, group-by columns, and a `group_rank`
+    # variable from the grouping table. `group_rank` represents an incremental
+    # number ordered by priority within each group (i.e. the highest priority
+    # strain per group gets group_rank=0).
+    strains_with_group_rank = f"""
+        SELECT
+            {constants.ID_COLUMN},
+            {group_by_columns_sql},
+            ROW_NUMBER() OVER (
+                PARTITION BY {group_by_columns_sql}
+                ORDER BY
+                    (CASE WHEN {constants.PRIORITY_COLUMN} IS NULL THEN 1 ELSE 0 END),
+                    CAST({constants.PRIORITY_COLUMN} AS REAL)
+                    DESC
+            ) AS group_rank
+        FROM {constants.GROUPING_TABLE}
+    """
+    # Notes:
+    # 1. Although the name is similar to --group-by, the GROUP BY clause does not
+    #    apply here. That command is used for aggregation commands such as getting
+    #    the sizes of each group, which is done elsewhere.
+    # 2. To treat rows without priorities as lowest priority, `ORDER BY … NULLS LAST`
+    #    would be ideal. However, that syntax is unsupported on SQLite <3.30.0¹ so
+    #    `CASE … IS NULL …` is a more widely compatible equivalent.
+    #    ¹ https://www.sqlite.org/changes.html
+
+    # Combine the above with the group size limits table to select the highest
+    # priority strains.
+    query_for_subsampled_strains = f"""
+        SELECT {constants.ID_COLUMN}
+        FROM ({strains_with_group_rank})
+        JOIN {constants.GROUP_SIZE_LIMITS_TABLE} USING ({group_by_columns_sql})
+        WHERE group_rank <= {constants.GROUP_SIZE_LIMIT_COLUMN}
+    """
+
+    # Exclude strains that didn't pass subsampling.
+    # Note that the exclude column was already considered when creating the
+    # grouping table earlier. The condition here is only in place to not
+    # overwrite any existing reason for exclusion.
+    with Sqlite3Database(constants.RUNTIME_DB_FILE, mode="rw") as db:
+        db.connection.execute(f"""
+            UPDATE {constants.FILTER_REASON_TABLE}
+            SET
+                {constants.EXCLUDE_COLUMN} = TRUE,
+                {constants.FILTER_REASON_COLUMN} = '{constants.SUBSAMPLE_FILTER_REASON}'
+            WHERE (
+                NOT {constants.EXCLUDE_COLUMN}
+                AND {constants.ID_COLUMN} NOT IN ({query_for_subsampled_strains})
+            )
+        """)
+
+
+def _get_filtered_strains_count():
+    """Returns the number of metadata strains that pass all filter rules."""
+    with Sqlite3Database(constants.RUNTIME_DB_FILE) as db:
+        result = db.connection.execute(f"""
+            SELECT COUNT(*) AS count
+            FROM {constants.FILTER_REASON_TABLE}
+            WHERE NOT {constants.EXCLUDE_COLUMN} OR {constants.INCLUDE_COLUMN}
+        """)
+        return int(result.fetchone()["count"])

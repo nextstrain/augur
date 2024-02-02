@@ -18,8 +18,8 @@ Explicitly use probabilistic subsampling to handle the case when there are more 
   Sampling probabilistically at 0.6250 sequences per group, meaning it is possible to have more than the requested maximum of 5 sequences after filtering.
   10 strains were dropped during filtering
   	1 had no metadata
-  	1 had no sequence data
   	1 was dropped because it was earlier than 2012.0 or missing a date
+  	1 had no sequence data
   	1 was dropped during grouping due to ambiguous month information
   	6 were dropped because of subsampling criteria, using seed 314159
   3 strains passed all filters
@@ -39,8 +39,8 @@ Using the default probabilistic subsampling, should work the same as the previou
   Sampling probabilistically at 0.6250 sequences per group, meaning it is possible to have more than the requested maximum of 5 sequences after filtering.
   10 strains were dropped during filtering
   	1 had no metadata
-  	1 had no sequence data
-  	1 was dropped because it was earlier than 2012.0 or missing a date
+  \t1 was dropped because it was earlier than 2012.0 or missing a date (esc)
+  \t1 had no sequence data (esc)
   	1 was dropped during grouping due to ambiguous month information
   	6 were dropped because of subsampling criteria, using seed 314159
   3 strains passed all filters
