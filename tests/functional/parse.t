@@ -32,6 +32,19 @@ Parse Zika sequences into sequences and metadata.
   $ diff -u "parse/metadata.tsv" "$TMP/metadata.tsv"
   $ rm -f "$TMP/sequences.fasta" "$TMP/metadata.tsv"
 
+Parse Zika sequences into sequences and metadata, preferred default ids is 'name', then 'strain', then first field.
+
+  $ ${AUGUR} parse \
+  >   --sequences parse/zika.fasta \
+  >   --output-sequences "$TMP/sequences.fasta" \
+  >   --output-metadata "$TMP/metadata.tsv" \
+  >   --fields strain virus name date region country division city db segment authors url title journal paper_url \
+  >   --prettify-fields region country division city \
+  >   --fix-dates monthfirst
+
+  $ diff -u "parse/sequences_other.fasta" "$TMP/sequences.fasta"
+  $ rm -f "$TMP/sequences.fasta" "$TMP/metadata.tsv"
+
 Parse compressed Zika sequences into sequences and metadata.
 
   $ ${AUGUR} parse \
