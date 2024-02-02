@@ -19,7 +19,7 @@ Automatic inference works.
   >  --query "coverage >= 0.95 & category == 'B'" \
   >  --output-strains filtered_strains.txt
   3 strains were dropped during filtering
-  	3 were filtered out by the query: "coverage >= 0.95 & category == 'B'"
+  	3 were filtered out by the Pandas query: "coverage >= 0.95 & category == 'B'"
   1 strain passed all filters
 
 Specifying coverage:float explicitly also works.
@@ -30,7 +30,7 @@ Specifying coverage:float explicitly also works.
   >  --query-columns coverage:float \
   >  --output-strains filtered_strains.txt
   3 strains were dropped during filtering
-  	3 were filtered out by the query: "coverage >= 0.95 & category == 'B'"
+  	3 were filtered out by the Pandas query: "coverage >= 0.95 & category == 'B'"
   1 strain passed all filters
 
 Specifying coverage:float category:str also works.
@@ -41,7 +41,7 @@ Specifying coverage:float category:str also works.
   >  --query-columns coverage:float category:str \
   >  --output-strains filtered_strains.txt
   3 strains were dropped during filtering
-  \t3 were filtered out by the query: "coverage >= 0.95 & category == 'B'" (esc)
+  \t3 were filtered out by the Pandas query: "coverage >= 0.95 & category == 'B'" (esc)
   1 strain passed all filters
 
 Specifying category:float does not work.

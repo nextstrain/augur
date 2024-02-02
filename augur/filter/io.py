@@ -23,7 +23,7 @@ from augur.io.tabular_file import InvalidDelimiter, TabularFile
 from augur.io.vcf import is_vcf, write_vcf
 from . import constants
 from .debug import print_debug, add_debugging
-from .include_exclude_rules import extract_variables, parse_filter_query
+from .include_exclude_rules import extract_pandas_query_variables, extract_potential_sqlite_variables, parse_filter_query
 
 
 def get_useful_metadata_columns(args: Namespace, id_column: str, all_columns: Sequence[str]):
@@ -66,16 +66,29 @@ def get_useful_metadata_columns(args: Namespace, id_column: str, all_columns: Se
             columns.add(column)
 
     # Add columns used in Pandas queries.
-    if args.query:
+    if args.query_pandas:
         if args.query_columns:
             # Use column names explicitly specified by the user.
             for column, dtype in args.query_columns:
                 columns.add(column)
 
         # Attempt to automatically extract columns from the query.
-        variables = extract_variables(args.query)
+        variables = extract_pandas_query_variables(args.query_pandas)
         if variables is None and not args.query_columns:
             raise AugurError("Could not infer columns from the pandas query. If the query is valid, please specify columns using --query-columns.")
+        else:
+            columns.update(variables)
+    
+    if args.query_sqlite:
+        if args.query_columns:
+            # Use column names explicitly specified by the user.
+            for column, dtype in args.query_columns:
+                columns.add(column)
+
+        # Attempt to automatically extract columns from the query.
+        variables = extract_potential_sqlite_variables(args.query_sqlite)
+        if variables is None and not args.query_columns:
+            raise AugurError("Could not infer columns from the SQLite query. If the query is valid, please specify columns using --query-columns.")
         else:
             columns.update(variables)
 
