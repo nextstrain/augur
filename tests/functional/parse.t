@@ -62,7 +62,7 @@ This should fail.
   ERROR: Output id field 'notexist' not found in fields ['strain', 'virus', 'accession', 'date', 'region', 'country', 'division', 'city', 'db', 'segment', 'authors', 'url', 'title', 'journal', 'paper_url'].
   [2]
 
-Parse Zika sequences into sequences and metadata, preferred default ids is 'strain', then 'name', then first field.
+Parse Zika sequences into sequences and metadata, preferred default ids is 'name', then 'strain', then first field.
 
   $ ${AUGUR} parse \
   >   --sequences parse/zika.fasta \
@@ -71,18 +71,20 @@ Parse Zika sequences into sequences and metadata, preferred default ids is 'stra
   >   --fields strain virus name date region country division city db segment authors url title journal paper_url \
   >   --prettify-fields region country division city \
   >   --fix-dates monthfirst
+  DEPRECATED: The default search order for the ID field will be changing from ('name', 'strain') to ('strain', 'name').
+  Users who prefer to keep using 'name' instead of 'strain' should use the parameter: --output-id-field 'name'
 
-  $ diff -u "parse/sequences.fasta" "$TMP/sequences.fasta"
+  $ diff -u "parse/sequences_other.fasta" "$TMP/sequences.fasta"
   $ rm -f "$TMP/sequences.fasta" "$TMP/metadata.tsv"
 
-Parse Zika sequences into sequences and metadata when there is no 'strain' field.
-This should use the 2nd entry in DEFAULT_ID_COLUMNS ('strain', 'name') instead.
+Parse Zika sequences into sequences and metadata when there is no 'name' field.
+This should use the 2nd entry in DEFAULT_ID_COLUMNS ('name', 'strain') instead.
 
   $ ${AUGUR} parse \
   >   --sequences parse/zika.fasta \
   >   --output-sequences "$TMP/sequences.fasta" \
   >   --output-metadata "$TMP/metadata.tsv" \
-  >   --fields col1 virus name date region country division city db segment authors url title journal paper_url \
+  >   --fields col1 virus strain date region country division city db segment authors url title journal paper_url \
   >   --prettify-fields region country division city \
   >   --fix-dates monthfirst
 
