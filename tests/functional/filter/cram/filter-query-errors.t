@@ -29,7 +29,7 @@ However, other Pandas errors are not so helpful, so a link is provided for users
 
   $ ${AUGUR} filter \
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
-  >  --query "invalid = 'value'" \
+  >  --query "country = 'value'" \
   >  --output-strains filtered_strains.txt > /dev/null
   ERROR: Internal Pandas error when applying query:
   	cannot assign without a target object
