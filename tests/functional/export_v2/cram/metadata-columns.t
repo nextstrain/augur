@@ -18,6 +18,14 @@ Create files for testing.
   > (tipA:1,(tipB:1,tipC:1)internalBC:2,(tipD:3,tipE:4,tipF:1)internalDEF:5)ROOT:0;
   > ~~
 
+  $ cat >auspice-config.json <<~~
+  > {"metadata_columns": ["field_A", "field_B"]}
+  > ~~
+
+  $ cat >auspice-config-overridden.json <<~~
+  > {"metadata_columns": ["overridden_field"]}
+  > ~~
+
 Run export with tree and metadata with additional columns.
 
   $ ${AUGUR} export v2 \
@@ -73,6 +81,33 @@ Missing columns are skipped with a warning when specified by both --metadata-col
   \s{0} (re)
   WARNING: Requested color-by field 'missing_field' does not exist and will not be used as a coloring or exported.
   \s{0} (re)
+
+  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  {}
+
+Specifying additional metadata columns via the Auspice configuration file.
+
+  $ ${AUGUR} export v2 \
+  >  --tree tree.nwk \
+  >  --metadata metadata.tsv \
+  >  --auspice-config auspice-config.json \
+  >  --maintainers "Nextstrain Team" \
+  >  --output dataset.json > /dev/null
+
+  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  {}
+
+Specifying additional metadata columns via command line overrides the Auspice configuration file.
+
+  $ ${AUGUR} export v2 \
+  >  --tree tree.nwk \
+  >  --metadata metadata.tsv \
+  >  --auspice-config auspice-config-overridden.json \
+  >  --metadata-columns "field_A" "field_B" \
+  >  --maintainers "Nextstrain Team" \
+  >  --output dataset.json > /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"

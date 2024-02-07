@@ -876,6 +876,9 @@ def register_parser(parent_subparsers):
     config.add_argument('--description', metavar="description.md", help="Markdown file with description of build and/or acknowledgements to be displayed by Auspice")
     config.add_argument('--geo-resolutions', metavar="trait", nargs='+', help="Geographic traits to be displayed on map")
     config.add_argument('--color-by-metadata', metavar="trait", nargs='+', help="Metadata columns to include as coloring options")
+    config.add_argument('--metadata-columns', nargs="+",
+                                 help="Metadata columns to export in addition to columns provided by --color-by-metadata or colorings in the Auspice configuration file. " +
+                                      "These columns will not be used as coloring options in Auspice but will be visible in the tree.")
     config.add_argument('--panels', metavar="panels", nargs='+', choices=['tree', 'map', 'entropy', 'frequencies', 'measurements'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
 
     optional_inputs = parser.add_argument_group(
@@ -887,9 +890,6 @@ def register_parser(parent_subparsers):
                                  help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     optional_inputs.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
                                  help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
-    optional_inputs.add_argument('--metadata-columns', nargs="+",
-                                 help="Metadata columns to export in addition to columns provided by --color-by-metadata or --auspice-config. " +
-                                      "These columns will not be used as coloring options in Auspice but will be visible in the tree.")
     optional_inputs.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
     optional_inputs.add_argument('--lat-longs', metavar="TSV", help="Latitudes and longitudes for geography traits (overrides built in mappings)")
 
@@ -1109,6 +1109,26 @@ def get_config(args):
         del config["vaccine_choices"]
     return config
 
+
+def get_additional_metadata_columns(config, command_line_metadata_columns, metadata_names):
+    # Command line args override what is set in the config file
+    if command_line_metadata_columns:
+        potential_metadata_columns = command_line_metadata_columns
+    else:
+        potential_metadata_columns = config.get("metadata_columns", [])
+
+    additional_metadata_columns = []
+    for col in potential_metadata_columns:
+        # Match the column names corrected within parse_node_data_and_metadata
+        corrected_col = update_deprecated_names(col)
+        if corrected_col not in metadata_names:
+            warn(f"Requested metadata column {col!r} does not exist and will not be exported")
+            continue
+        additional_metadata_columns.append(corrected_col)
+
+    return additional_metadata_columns
+
+
 def run(args):
     configure_warnings()
     data_json = {"version": "v2", "meta": {"updated": time.strftime('%Y-%m-%d')}}
@@ -1154,17 +1174,7 @@ def run(args):
     node_data, node_attrs, node_data_names, metadata_names, branch_attrs = \
             parse_node_data_and_metadata(T, node_data_file, metadata_file)
     config = get_config(args)
-
-    # Check additional metadata columns requested exist
-    additional_metadata_columns = []
-    if args.metadata_columns:
-        for col in args.metadata_columns:
-            # Match the column names corrected within parse_node_data_and_metadata
-            corrected_col = update_deprecated_names(col)
-            if corrected_col not in metadata_names:
-                warn(f"Requested metadata column {col!r} does not exist and will not be exported")
-                continue
-            additional_metadata_columns.append(corrected_col)
+    additional_metadata_columns = get_additional_metadata_columns(config, args.metadata_columns, metadata_names)
 
     # set metadata data structures
     set_title(data_json, config, args.title)
