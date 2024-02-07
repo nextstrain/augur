@@ -9,6 +9,7 @@
 
 * `augur.io.read_metadata`: A new optional `dtype` argument allows custom data types for all columns. Automatic type inference still happens by default, so this is not a breaking change. [#1252][] (@victorlin)
 * `augur.io.read_vcf` has been removed and usage replaced with TreeTime's function of the same name which has improved validation of the VCF file. [#1366][] (@jameshadfield)
+* export v2: Add support to specify metadata columns to export without using them as colorings. This can be done with the `metadata_columns` property in the Auspice config JSON or via the `--metadata-columns` flag in the command line. [#1384][] (@joverlee521)
 
 ### Bug Fixes
 
@@ -18,13 +19,14 @@
 
 [#1252]: https://github.com/nextstrain/augur/pull/1252
 [#1366]: https://github.com/nextstrain/augur/pull/1366
+[#1384]: https://github.com/nextstrain/augur/pull/1384
 [#1400]: https://github.com/nextstrain/augur/pull/1400
 
 ## 24.0.0 (22 January 2024)
 
 ### Major Changes
 
-* ancestral, translate: For VCF inputs please ensure you are using TreeTime 0.11.2 or later. A large number of bugfixes and improvements have been added in both Augur and TreeTime. [#1355][] and [TreeTime #263][] (@jameshadfield) 
+* ancestral, translate: For VCF inputs please ensure you are using TreeTime 0.11.2 or later. A large number of bugfixes and improvements have been added in both Augur and TreeTime. [#1355][] and [TreeTime #263][] (@jameshadfield)
 * ancestral, translate: GenBank files now require the (GFF mandatory) source feature to be present. [#1351][] (@jameshadfield)
 * ancestral, translate: For GFF files, we extract the genome/sequence coordinates by inspecting the sequence-region pragma, region type and/or source type. This information is now required. [#1351][] (@jameshadfield)
 
@@ -41,7 +43,7 @@
     * If a Gene/CDS in the GFF/GenBank file is unparsed we now print a warning.
 * ancestral: For VCF alignments, a VCF output file is now only created when requested via `--output-vcf`. [#1344][] (@jameshadfield)
 * ancestral: Improvements to command line arguments. [#1344][] (@jameshadfield)
-     * Incompatible arguments are now checked, especially related to VCF vs FASTA inputs. 
+     * Incompatible arguments are now checked, especially related to VCF vs FASTA inputs.
      * `--vcf-reference` and `--root-sequence` are now mutually exclusive.
 * translate: Tree nodes are checked against the node-data JSON input to ensure sequences are present. [#1348][] (@jameshadfield)
 * utils::load_features: This function may now raise `AugurError`. [#1351][] (@jameshadfield)
