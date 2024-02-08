@@ -21,7 +21,7 @@ The query initially filters 3 strains from Colombia, one of which is added back 
   	1 had no metadata
   	1 had no sequence data
   	3 were filtered out by the query: "country != 'Colombia'"
-  \\t1 were added back because they were in .*include\.txt.* (re)
+  \\t1 was added back because it was in .*include\.txt.* (re)
   9 strains passed all filters
 
   $ head -n 1 filtered_log.tsv; tail -n +2 filtered_log.tsv | sort -k 1,1

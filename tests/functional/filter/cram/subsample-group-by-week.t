@@ -47,7 +47,7 @@ ISO year from 'week' takes precedence over 'year'.
   WARNING: 'year' grouping will be ignored since 'week' includes ISO year.
   3 strains were dropped during filtering
   	3 were dropped because of subsampling criteria
-  1 strains passed all filters
+  1 strain passed all filters
   $ cat metadata-filtered.tsv
   strain	date
   SEQ1	2003-12-30
