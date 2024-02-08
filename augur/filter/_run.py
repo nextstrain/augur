@@ -488,7 +488,7 @@ def run(args):
 
     if (group_by and args.sequences_per_group) or args.subsample_max_sequences:
         seed_txt = ", using seed {}".format(args.subsample_seed) if args.subsample_seed else ""
-        print("\t%i were dropped because of subsampling criteria%s" % (num_excluded_subsamp, seed_txt))
+        print(f"\t{num_excluded_subsamp} were dropped because of subsampling criteria{seed_txt}")
 
     if total_strains_passed == 0:
         empty_results_message = "All samples have been dropped! Check filter rules and metadata file format."
