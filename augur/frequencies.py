@@ -10,7 +10,7 @@ from .errors import AugurError
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
 from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
-from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
+from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
 from .utils import write_json
 
 
@@ -85,20 +85,24 @@ def format_frequencies(freq):
 
 def run(args):
     try:
-        # TODO: load only the ID, date, and --weights-attribute columns when
-        # read_metadata supports loading a subset of all columns.
-        metadata = read_metadata(
-            args.metadata,
-            delimiters=args.metadata_delimiters,
-            id_columns=args.metadata_id_columns,
-            dtype="string",
-        )
+        metadata_object = Metadata(args.metadata, args.metadata_delimiters, args.metadata_id_columns)
     except InvalidDelimiter:
         raise AugurError(
             f"Could not determine the delimiter of {args.metadata!r}. "
             f"Valid delimiters are: {args.metadata_delimiters!r}. "
             "This can be changed with --metadata-delimiters."
         )
+
+    columns_to_load = [metadata_object.id_column, METADATA_DATE_COLUMN]
+    if args.weights_attribute:
+        columns_to_load.append(args.weights_attribute)
+    metadata = read_metadata(
+        args.metadata,
+        delimiters=[metadata_object.delimiter],
+        columns=columns_to_load,
+        id_columns=[metadata_object.id_column],
+        dtype="string",
+    )
     dates = get_numerical_dates(metadata, fmt='%Y-%m-%d')
     stiffness = args.stiffness
     inertia = args.inertia

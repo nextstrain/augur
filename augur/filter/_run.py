@@ -15,13 +15,13 @@ from augur.index import (
     DELIMITER as SEQUENCE_INDEX_DELIMITER,
 )
 from augur.io.file import open_file
-from augur.io.metadata import InvalidDelimiter, read_metadata
+from augur.io.metadata import InvalidDelimiter, Metadata, read_metadata
 from augur.io.sequences import read_sequences, write_sequences
 from augur.io.print import print_err
 from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
 from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
-from .io import cleanup_outputs, read_priority_scores
+from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_metadata_based_outputs
 from .include_exclude_rules import apply_filters, construct_filters
 from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, create_queues_by_group, get_groups_for_subsampling
 
@@ -133,16 +133,6 @@ def run(args):
             random_generator = np.random.default_rng(args.subsample_seed)
             priorities = defaultdict(random_generator.random)
 
-    # Setup metadata output. We track whether any records have been written to
-    # disk yet through the following variables, to control whether we write the
-    # metadata's header and open a new file for writing.
-    metadata_header = True
-    metadata_mode = "w"
-
-    # Setup strain output.
-    if args.output_strains:
-        output_strains = open(args.output_strains, "w")
-
     # Setup logging.
     output_log_writer = None
     if args.output_log:
@@ -168,19 +158,23 @@ def run(args):
     filter_counts = defaultdict(int)
 
     try:
-        metadata_reader = read_metadata(
-            args.metadata,
-            delimiters=args.metadata_delimiters,
-            id_columns=args.metadata_id_columns,
-            chunk_size=args.metadata_chunk_size,
-            dtype="string",
-        )
+        metadata_object = Metadata(args.metadata, args.metadata_delimiters, args.metadata_id_columns)
     except InvalidDelimiter:
         raise AugurError(
             f"Could not determine the delimiter of {args.metadata!r}. "
             f"Valid delimiters are: {args.metadata_delimiters!r}. "
             "This can be changed with --metadata-delimiters."
         )
+    useful_metadata_columns = get_useful_metadata_columns(args, metadata_object.id_column, metadata_object.columns)
+
+    metadata_reader = read_metadata(
+        args.metadata,
+        delimiters=[metadata_object.delimiter],
+        columns=useful_metadata_columns,
+        id_columns=[metadata_object.id_column],
+        chunk_size=args.metadata_chunk_size,
+        dtype="string",
+    )
     for metadata in metadata_reader:
         duplicate_strains = (
             set(metadata.index[metadata.index.duplicated()]) |
@@ -263,30 +257,6 @@ def run(args):
                         priorities[strain],
                     )
 
-        # Always write out strains that are force-included. Additionally, if
-        # we are not grouping, write out metadata and strains that passed
-        # filters so far.
-        force_included_strains_to_write = distinct_force_included_strains
-        if not group_by:
-            force_included_strains_to_write = force_included_strains_to_write | seq_keep
-
-        if args.output_metadata:
-            # TODO: wrap logic to write metadata into its own function
-            metadata.loc[list(force_included_strains_to_write)].to_csv(
-                args.output_metadata,
-                sep="\t",
-                header=metadata_header,
-                mode=metadata_mode,
-            )
-            metadata_header = False
-            metadata_mode = "a"
-
-        if args.output_strains:
-            # TODO: Output strains will no longer be ordered. This is a
-            # small breaking change.
-            for strain in force_included_strains_to_write:
-                output_strains.write(f"{strain}\n")
-
     # In the worst case, we need to calculate sequences per group from the
     # requested maximum number of sequences and the number of sequences per
     # group. Then, we need to make a second pass through the metadata to find
@@ -323,6 +293,7 @@ def run(args):
         metadata_reader = read_metadata(
             args.metadata,
             delimiters=args.metadata_delimiters,
+            columns=useful_metadata_columns,
             id_columns=args.metadata_id_columns,
             chunk_size=args.metadata_chunk_size,
             dtype="string",
@@ -366,23 +337,6 @@ def run(args):
 
                 # Construct a data frame of records to simplify metadata output.
                 records.append(record)
-
-                if args.output_strains:
-                    # TODO: Output strains will no longer be ordered. This is a
-                    # small breaking change.
-                    output_strains.write(f"{record.name}\n")
-
-            # Write records to metadata output, if requested.
-            if args.output_metadata and len(records) > 0:
-                records = pd.DataFrame(records)
-                records.to_csv(
-                    args.output_metadata,
-                    sep="\t",
-                    header=metadata_header,
-                    mode=metadata_mode,
-                )
-                metadata_header = False
-                metadata_mode = "a"
 
         # Count and optionally log strains that were not included due to
         # subsampling.
@@ -442,14 +396,17 @@ def run(args):
             # Update the set of available sequence strains.
             sequence_strains = observed_sequence_strains
 
+    if args.output_metadata or args.output_strains:
+        write_metadata_based_outputs(args.metadata, args.metadata_delimiters,
+                                     args.metadata_id_columns, args.output_metadata,
+                                     args.output_strains, valid_strains)
+
     # Calculate the number of strains that don't exist in either metadata or
     # sequences.
     num_excluded_by_lack_of_metadata = 0
     if sequence_strains:
         num_excluded_by_lack_of_metadata = len(sequence_strains - metadata_strains)
 
-    if args.output_strains:
-        output_strains.close()
 
     # Calculate the number of strains passed and filtered.
     total_strains_passed = len(valid_strains)

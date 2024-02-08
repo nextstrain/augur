@@ -4,7 +4,7 @@ import sys
 from io import StringIO
 
 from augur.errors import AugurError
-from augur.io.metadata import InvalidDelimiter, read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
+from augur.io.metadata import InvalidDelimiter, read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv, Metadata
 from augur.types import DataErrorMethod
 
 
@@ -513,3 +513,100 @@ class TestWriteRecordsToTsv:
             write_records_to_tsv(iter([]), output_file)
 
         assert str(e_info.value) == f"Unable to write records to {output_file} because provided records were empty."
+
+
+def write_lines(tmpdir, lines):
+    path = str(tmpdir / "tmp")
+    with open(path, 'w') as f:
+        f.writelines(lines)
+    return path
+
+
+class TestMetadataClass:
+    def test_attributes(self, metadata_file):
+        """All attributes are populated."""
+        m = Metadata(metadata_file, delimiters=[',', '\t'], id_columns=['invalid', 'strain'])
+        assert m.path == metadata_file
+        assert m.delimiter == '\t'
+        assert m.columns == ['strain', 'country', 'date']
+        assert m.id_column == 'strain'
+
+    def test_invalid_delimiter(self, metadata_file):
+        """Failure to detect delimiter raises an error."""
+        with pytest.raises(InvalidDelimiter):
+            Metadata(metadata_file, delimiters=[':'], id_columns=['strain'])
+
+    def test_invalid_id_column(self, metadata_file):
+        """Failure to detect an ID column raises an error."""
+        with pytest.raises(AugurError):
+            Metadata(metadata_file, delimiters=['\t'], id_columns=['strains'])
+
+    def test_rows(self, metadata_file):
+        """Check Metadata.rows() output format."""
+        m = Metadata(metadata_file, delimiters=['\t'], id_columns=['strain'])
+        assert list(m.rows()) == [
+            {'country': 'USA', 'date': '2020-10-01', 'strain': 'SEQ_A'},
+            {'country': 'USA', 'date': '2020-10-02', 'strain': 'SEQ_T'},
+            {'country': 'USA', 'date': '2020-10-03', 'strain': 'SEQ_C'},
+            {'country': 'USA', 'date': '2020-10-04', 'strain': 'SEQ_G'},
+        ]
+
+    def test_blank_lines(self, tmpdir):
+        """Check behavior of lines that are blank and have empty values.
+
+        Blank lines are skipped. Lines with delimiters but empty values are still included when reading.
+        """
+        path = write_lines(tmpdir, [
+            'a,b,c\n',
+            '1,2,3\n',
+            '\n',
+            '3,2,3\n',
+            ',,\n',
+            '5,2,3\n',
+        ])
+        
+        m = Metadata(path, delimiters=',', id_columns=['a'])
+        assert list(m.rows()) == [
+            {'a': '1', 'b': '2', 'c': '3'},
+            {'a': '3', 'b': '2', 'c': '3'},
+            {'a': '' , 'b': '' , 'c': '' },
+            {'a': '5', 'b': '2', 'c': '3'}
+        ]
+
+    def test_rows_strict_extra(self, tmpdir):
+        """Test behavior when reading rows with extra entries or delimiters."""
+        path = write_lines(tmpdir, [
+            'a,b,c\n',
+            '1,2,3\n',
+            '2,2,3,4\n',
+            '3,2,3,\n',
+        ])
+
+        m = Metadata(path, delimiters=',', id_columns=['a'])
+        with pytest.raises(AugurError):
+            list(m.rows(strict=True))
+
+        assert list(m.rows(strict=False)) == [
+            {'a': '1', 'b': '2', 'c': '3'},
+            {'a': '2', 'b': '2', 'c': '3', None: ['4']},
+            {'a': '3', 'b': '2', 'c': '3', None: ['']},
+        ]
+
+    def test_rows_strict_missing(self, tmpdir):
+        """Test behavior when reading rows with missing entries or delimiters."""
+        path = write_lines(tmpdir, [
+            'a,b,c\n',
+            '1,2,3\n',
+            '2,2,\n',
+            '3,2\n',
+        ])
+
+        m = Metadata(path, delimiters=',', id_columns=['a'])
+        with pytest.raises(AugurError):
+            list(m.rows(strict=True))
+
+        assert list(m.rows(strict=False)) == [
+            {'a': '1', 'b': '2', 'c': '3'},
+            {'a': '2', 'b': '2', 'c': ''},
+            {'a': '3', 'b': '2', 'c': None},
+        ]

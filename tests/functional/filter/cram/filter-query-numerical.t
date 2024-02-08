@@ -34,6 +34,29 @@ The 'category' column will fail when used with a numerical comparison.
   Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
   [2]
 
+With automatic type inference, the 'coverage' column isn't query-able with
+string comparisons:
+
+  $ ${AUGUR} filter \
+  >  --metadata metadata.tsv \
+  >  --query "coverage.str.endswith('.95')" \
+  >  --output-strains filtered_strains.txt > /dev/null
+  ERROR: Internal Pandas error when applying query:
+  	Can only use .str accessor with string values!
+  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
+  [2]
+
+However, that is still possible by explicitly specifying that it is a string column.
+
+  $ ${AUGUR} filter \
+  >  --metadata metadata.tsv \
+  >  --query "coverage.str.endswith('.95')" \
+  >  --query-columns coverage:str \
+  >  --output-strains filtered_strains.txt > /dev/null
+
+  $ sort filtered_strains.txt
+  SEQ_2
+
 Create another metadata file for testing.
 
   $ cat >metadata.tsv <<~~

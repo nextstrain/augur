@@ -8,6 +8,7 @@ Using a pandas query with a nonexistent column results in a specific error.
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
   >  --query "invalid == 'value'" \
   >  --output-strains filtered_strains.txt > /dev/null
+  WARNING: Column 'invalid' does not exist in the metadata file. Ignoring it.
   ERROR: Query contains a column that does not exist in metadata.
   [2]
 
@@ -40,7 +41,5 @@ However, other Pandas errors are not so helpful, so a link is provided for users
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
   >  --query "some bad syntax" \
   >  --output-strains filtered_strains.txt > /dev/null
-  ERROR: Internal Pandas error when applying query:
-  	invalid syntax (<unknown>, line 1)
-  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
+  ERROR: Could not infer columns from the pandas query. If the query is valid, please specify columns using --query-columns.
   [2]

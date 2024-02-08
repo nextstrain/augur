@@ -6,7 +6,7 @@ import sys
 from Bio import Phylo
 from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
-from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, read_metadata
+from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
 from .utils import read_tree, write_json, InvalidTreeError
 from .errors import AugurError
 from treetime.vcf_utils import read_vcf
@@ -213,21 +213,24 @@ def run(args):
         if args.metadata is None:
             print("ERROR: meta data with dates is required for time tree reconstruction", file=sys.stderr)
             return 1
+
         try:
-            # TODO: load only the ID and date columns when read_metadata
-            # supports loading a subset of all columns.
-            metadata = read_metadata(
-                args.metadata,
-                delimiters=args.metadata_delimiters,
-                id_columns=args.metadata_id_columns,
-                dtype="string",
-            )
+            metadata_object = Metadata(args.metadata, args.metadata_delimiters, args.metadata_id_columns)
         except InvalidDelimiter:
             raise AugurError(
                 f"Could not determine the delimiter of {args.metadata!r}. "
                 f"Valid delimiters are: {args.metadata_delimiters!r}. "
                 "This can be changed with --metadata-delimiters."
             )
+
+        metadata = read_metadata(
+            args.metadata,
+            delimiters=[metadata_object.delimiter],
+            columns=[metadata_object.id_column, METADATA_DATE_COLUMN],
+            id_columns=[metadata_object.id_column],
+            dtype="string",
+        )
+
         try:
             dates = get_numerical_dates(metadata, fmt=args.date_format,
                                         min_max_year=args.year_bounds)

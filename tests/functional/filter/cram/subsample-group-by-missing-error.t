@@ -15,6 +15,7 @@ Error on missing group-by columns.
   >   --group-by year \
   >   --sequences-per-group 1 \
   >   --output-metadata metadata-filtered.tsv > /dev/null
+  WARNING: Column 'date' does not exist in the metadata file. Ignoring it.
   ERROR: The specified group-by categories (['year']) were not found. Note that using any of ['month', 'week', 'year'] requires a column called 'date'.
   [2]
   $ cat metadata-filtered.tsv
@@ -26,6 +27,7 @@ Error on missing group-by columns.
   >   --group-by invalid \
   >   --sequences-per-group 1 \
   >   --output-metadata metadata-filtered.tsv > /dev/null
+  WARNING: Column 'invalid' does not exist in the metadata file. Ignoring it.
   ERROR: The specified group-by categories (['invalid']) were not found.
   [2]
   $ cat metadata-filtered.tsv

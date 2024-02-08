@@ -1,9 +1,10 @@
+import ast
 import json
 import operator
 import re
 import numpy as np
 import pandas as pd
-from typing import Any, Callable, Dict, List, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from augur.dates import is_date_ambiguous, get_numerical_dates
 from augur.errors import AugurError
@@ -78,7 +79,7 @@ def filter_by_exclude(metadata, exclude_file) -> FilterFunctionReturn:
     return set(metadata.index.values) - excluded_strains
 
 
-def _parse_filter_query(query):
+def parse_filter_query(query):
     """Parse an augur filter-style query and return the corresponding column,
     operator, and value for the query.
 
@@ -98,9 +99,9 @@ def _parse_filter_query(query):
 
     Examples
     --------
-    >>> _parse_filter_query("property=value")
+    >>> parse_filter_query("property=value")
     ('property', <built-in function eq>, 'value')
-    >>> _parse_filter_query("property!=value")
+    >>> parse_filter_query("property!=value")
     ('property', <built-in function ne>, 'value')
 
     """
@@ -143,7 +144,7 @@ def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
     ['strain1', 'strain2']
 
     """
-    column, op, value = _parse_filter_query(exclude_where)
+    column, op, value = parse_filter_query(exclude_where)
     if column in metadata.columns:
         # Apply a test operator (equality or inequality) to values from the
         # column in the given query. This produces an array of boolean values we
@@ -164,7 +165,7 @@ def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
     return filtered
 
 
-def filter_by_query(metadata: pd.DataFrame, query: str) -> FilterFunctionReturn:
+def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[Dict[str, str]] = None) -> FilterFunctionReturn:
     """Filter metadata in the given pandas DataFrame with a query string and return
     the strain names that pass the filter.
 
@@ -174,6 +175,8 @@ def filter_by_query(metadata: pd.DataFrame, query: str) -> FilterFunctionReturn:
         Metadata indexed by strain name
     query : str
         Query string for the dataframe.
+    column_types : str
+        Dict mapping of data type
 
     Examples
     --------
@@ -187,22 +190,42 @@ def filter_by_query(metadata: pd.DataFrame, query: str) -> FilterFunctionReturn:
     # Create a copy to prevent modification of the original DataFrame.
     metadata_copy = metadata.copy()
 
-    # Support numeric comparisons in query strings.
-    #
-    # The built-in data type inference when loading the DataFrame does not
+    if column_types is None:
+        column_types = {}
+
+    # Set columns for type conversion.
+    variables = extract_variables(query)
+    if variables is not None:
+        columns = variables.intersection(metadata_copy.columns)
+    else:
+        # Column extraction failed. Apply type conversion to all columns.
+        columns = metadata_copy.columns
+
+    # If a type is not explicitly provided, try converting the column to numeric.
+    # This should cover most use cases, since one common problem is that the
+    # built-in data type inference when loading the DataFrame does not
     # support nullable numeric columns, so numeric comparisons won't work on
-    # those columns. pd.to_numeric does proper conversion on those columns, and
-    # will not make any changes to columns with other values.
-    #
-    # TODO: Parse the query string and apply conversion only to columns used for
-    # numeric comparison. Pandas does not expose the API used to parse the query
-    # string internally, so this is non-trivial and requires a bit of
-    # reverse-engineering. Commit 2ead5b3e3306dc1100b49eb774287496018122d9 got
-    # halfway there but had issues so it was reverted.
-    #
-    # TODO: Try boolean conversion?
-    for column in metadata_copy.columns:
-        metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='ignore')
+    # those columns. pd.to_numeric does proper conversion on those columns,
+    # and will not make any changes to columns with other values.
+    for column in columns:
+        column_types.setdefault(column, 'numeric')
+
+    # Convert data types before applying the query.
+    for column, dtype in column_types.items():
+        if dtype == 'numeric':
+            metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='ignore')
+        elif dtype == 'int':
+            try:
+                metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='raise', downcast='integer')
+            except ValueError as e:
+                raise AugurError(f"Failed to convert value in column {column!r} to int. {e}")
+        elif dtype == 'float':
+            try:
+                metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='raise', downcast='float')
+            except ValueError as e:
+                raise AugurError(f"Failed to convert value in column {column!r} to float. {e}")
+        elif dtype == 'str':
+            metadata_copy[column] = metadata_copy[column].astype('str', errors='ignore')
 
     try:
         return set(metadata_copy.query(query).index.values)
@@ -492,7 +515,7 @@ def force_include_where(metadata, include_where) -> FilterFunctionReturn:
     set()
 
     """
-    column, op, value = _parse_filter_query(include_where)
+    column, op, value = parse_filter_query(include_where)
 
     if column in metadata.columns:
         # Apply a test operator (equality or inequality) to values from the
@@ -578,9 +601,13 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
 
     # Exclude strains by metadata, using pandas querying.
     if args.query:
+        kwargs = {"query": args.query}
+        if args.query_columns:
+            kwargs["column_types"] = {column: dtype for column, dtype in args.query_columns}
+
         exclude_by.append((
             filter_by_query,
-            {"query": args.query}
+            kwargs
         ))
 
     # Filter by ambiguous dates.
@@ -820,3 +847,31 @@ def _filter_kwargs_to_str(kwargs: FilterFunctionKwargs):
         kwarg_list.append((key, value))
 
     return json.dumps(kwarg_list)
+
+
+def extract_variables(pandas_query: str):
+    """Try extracting all variable names used in a pandas query string.
+
+    If successful, return the variable names as a set. Otherwise, nothing is returned.
+
+    Examples
+    --------
+    >>> extract_variables("var1 == 'value'")
+    {'var1'}
+    >>> sorted(extract_variables("var1 == 'value' & var2 == 10"))
+    ['var1', 'var2']
+    >>> extract_variables("var1.str.startswith('prefix')")
+    {'var1'}
+    >>> extract_variables("this query is invalid")
+    """
+    # Since Pandas' query grammar should be a subset of Python's, which uses the
+    # ast stdlib under the hood, we can try to parse queries with that as well.
+    # Errors may arise from invalid query syntax or any Pandas syntax not
+    # covered by Python (unlikely, but I'm not sure). In those cases, don't
+    # return anything.
+    try:
+        return set(node.id
+                   for node in ast.walk(ast.parse(pandas_query))
+                   if isinstance(node, ast.Name))
+    except:
+        return None

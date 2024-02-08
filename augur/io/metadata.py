@@ -1,6 +1,6 @@
 import csv
 import os
-from typing import Iterable
+from typing import Iterable, Sequence
 import pandas as pd
 import pyfastx
 import sys
@@ -24,7 +24,7 @@ class InvalidDelimiter(Exception):
     pass
 
 
-def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAULT_ID_COLUMNS, chunk_size=None, dtype=None):
+def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, columns=None, id_columns=DEFAULT_ID_COLUMNS, chunk_size=None, dtype=None):
     r"""Read metadata from a given filename and into a pandas `DataFrame` or
     `TextFileReader` object.
 
@@ -35,6 +35,8 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAU
     delimiters : list of str
         List of possible delimiters to check for between columns in the metadata.
         Only one delimiter will be inferred.
+    columns : list of str
+        List of columns to read. If unspecified, read all columns.
     id_columns : list of str
         List of possible id column names to check for, ordered by priority.
         Only one id column will be inferred.
@@ -111,6 +113,20 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, id_columns=DEFAU
 
     # If we found a valid column to index the DataFrame, specify that column.
     kwargs["index_col"] = index_col
+
+    if columns is not None:
+        # Load a subset of the columns.
+        for requested_column in list(columns):
+            if requested_column not in chunk.columns:
+                # Ignore missing columns. Don't error since augur filter's
+                # --exclude-where allows invalid columns to be specified (they
+                # are just ignored).
+                print_err(f"WARNING: Column '{requested_column}' does not exist in the metadata file. Ignoring it.")
+                columns.remove(requested_column)
+                # NOTE: list()+remove() is not very efficient, but (1) it's easy
+                # to understand and (2) this is unlikely to be used with large
+                # lists.
+        kwargs["usecols"] = columns
 
     if dtype is None:
         dtype = {}
@@ -472,6 +488,86 @@ def write_records_to_tsv(records, output_file):
 
         for record in records:
             tsv_writer.writerow(record)
+
+
+class Metadata:
+    """Represents a metadata file."""
+
+    path: str
+    """Path to the file on disk."""
+
+    delimiter: str
+    """Inferred delimiter of metadata."""
+
+    columns: Sequence[str]
+    """Columns extracted from the first row in the metadata file."""
+
+    id_column: str
+    """Inferred ID column."""
+
+    def __init__(self, path: str, delimiters: Sequence[str], id_columns: Sequence[str]):
+        """
+        Parameters
+        ----------
+        path
+            Path of the metadata file.
+        delimiters
+            Possible delimiters to use, in order of precedence.
+        id_columns
+            Possible ID columns to use, in order of precedence.
+        """
+        self.path = path
+
+        # Infer the dialect.
+        self.delimiter = _get_delimiter(self.path, delimiters)
+
+        # Infer the column names.
+        with self.open() as f:
+            reader = csv.reader(f, delimiter=self.delimiter)
+            try:
+                self.columns = next(reader)
+            except StopIteration:
+                raise AugurError(f"{self.path}: Expected a header row but it is empty.")
+
+        # Infer the ID column.
+        self.id_column = self._find_first(id_columns)
+
+    def open(self, **kwargs):
+        """Open the file with auto-compression/decompression."""
+        return open_file(self.path, **kwargs)
+
+    def _find_first(self, columns: Sequence[str]):
+        """Return the first column in `columns` that is present in the metadata.
+        """
+        for column in columns:
+            if column in self.columns:
+                return column
+        raise AugurError(f"{self.path}: None of ({columns!r}) are in the columns {tuple(self.columns)!r}.")
+
+    def rows(self, strict: bool = True):
+        """Yield rows in a dictionary format. Empty lines are ignored.
+
+        Parameters
+        ----------
+        strict
+            If True, raise an error when a row contains more or less than the number of expected columns.
+        """
+        with self.open() as f:
+            reader = csv.DictReader(f, delimiter=self.delimiter, fieldnames=self.columns, restkey=None, restval=None)
+
+            # Skip the header row.
+            next(reader)
+
+            # NOTE: Empty lines are ignored by csv.DictReader.
+            # <https://github.com/python/cpython/blob/647b6cc7f16c03535cede7e1748a58ab884135b2/Lib/csv.py#L181-L185>
+            for row in reader:
+                if strict:
+                    if None in row.keys():
+                        raise AugurError(f"{self.path}: Line {reader.line_num} contains at least one extra column. The inferred delimiter is {self.delimiter!r}.")
+                    if None in row.values():
+                        # This is distinct from a blank value (empty string).
+                        raise AugurError(f"{self.path}: Line {reader.line_num} is missing at least one column. The inferred delimiter is {self.delimiter!r}.")
+                yield row
 
 
 def _get_delimiter(path: str, valid_delimiters: Iterable[str]):
