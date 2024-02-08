@@ -260,6 +260,13 @@
                 }
             }
         },
+        "metadata_columns": {
+            "description": "Metadata TSV columns to export in addition to columns provided as colorings.",
+            "$comment": "These columns will not be used as coloring options in Auspice but will be visible in the tree.",
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string"}
+        },
         "extensions": {
             "description": "Data to be passed through to the the resulting dataset JSON",
             "$comment": "Any type is accepted"

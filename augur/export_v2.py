@@ -157,7 +157,7 @@ def convert_tree_to_json_structure(node, metadata, get_div, div=0):
     Returns
     -------
     dict:
-        See schema-export-v2.json#/$defs/tree for full details. 
+        See schema-export-v2.json#/$defs/tree for full details.
         Node names are always set, and divergence is set if applicable
     """
     node_struct = {'name': node.name, 'node_attrs': {}, 'branch_attrs': {}}
@@ -394,7 +394,7 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
             warn("[colorings] You asked for mutations (\"gt\"), but none are defined on the tree. They cannot be used as a coloring.")
             return False
         if key != "gt" and not trait_values:
-            warn("You asked for a color-by for trait '{}', but it has no values on the tree. It has been ignored.".format(key))
+            warn(f"Requested color-by field {key!r} does not exist and will not be used as a coloring or exported.")
             return False
         return True
 
@@ -734,7 +734,7 @@ def set_branch_attrs_on_tree(data_json, branch_attrs):
     _recursively_set_data(data_json["tree"])
 
 
-def set_node_attrs_on_tree(data_json, node_attrs):
+def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
     '''
     Assign desired colorings, metadata etc to the `node_attrs` of nodes in the tree
 
@@ -743,9 +743,16 @@ def set_node_attrs_on_tree(data_json, node_attrs):
     data_json : dict
     node_attrs: dict
         keys: strain names. values: dict with keys -> all available metadata (even "excluded" keys), values -> data (string / numeric / bool)
+    additional_metadata_columns: list
+        Requested additional metadata columns to export
     '''
 
     author_data = create_author_data(node_attrs)
+
+    def _transfer_additional_metadata_columns(node, raw_data):
+        for col in additional_metadata_columns:
+            if is_valid(raw_data.get(col, None)):
+                node["node_attrs"][col] = {"value": raw_data[col]}
 
     def _transfer_vaccine_info(node, raw_data):
         if raw_data.get("vaccine"):
@@ -798,6 +805,9 @@ def set_node_attrs_on_tree(data_json, node_attrs):
     def _recursively_set_data(node):
         # get all the available information for this particular node
         raw_data = node_attrs[node["name"]]
+        # transfer requested metadata columns first so that the "special cases"
+        # below can overwrite them as necessary
+        _transfer_additional_metadata_columns(node, raw_data)
         # transfer "special cases"
         _transfer_vaccine_info(node, raw_data)
         _transfer_hidden_flag(node, raw_data)
@@ -853,7 +863,7 @@ def register_parser(parent_subparsers):
     required.add_argument('--tree','-t', metavar="newick", required=True, help="Phylogenetic tree, usually output from `augur refine`")
     required.add_argument('--output', metavar="JSON", required=True, help="Output file (typically for visualisation in auspice)")
 
-    config = parser.add_argument_group(                                                                                                                              
+    config = parser.add_argument_group(
         title="DISPLAY CONFIGURATION",
         description="These control the display settings for auspice. \
             You can supply a config JSON (which has all available options) or command line arguments (which are more limited but great to get started). \
@@ -866,6 +876,9 @@ def register_parser(parent_subparsers):
     config.add_argument('--description', metavar="description.md", help="Markdown file with description of build and/or acknowledgements to be displayed by Auspice")
     config.add_argument('--geo-resolutions', metavar="trait", nargs='+', help="Geographic traits to be displayed on map")
     config.add_argument('--color-by-metadata', metavar="trait", nargs='+', help="Metadata columns to include as coloring options")
+    config.add_argument('--metadata-columns', nargs="+",
+                                 help="Metadata columns to export in addition to columns provided by --color-by-metadata or colorings in the Auspice configuration file. " +
+                                      "These columns will not be used as coloring options in Auspice but will be visible in the tree.")
     config.add_argument('--panels', metavar="panels", nargs='+', choices=['tree', 'map', 'entropy', 'frequencies', 'measurements'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
 
     optional_inputs = parser.add_argument_group(
@@ -1096,6 +1109,26 @@ def get_config(args):
         del config["vaccine_choices"]
     return config
 
+
+def get_additional_metadata_columns(config, command_line_metadata_columns, metadata_names):
+    # Command line args override what is set in the config file
+    if command_line_metadata_columns:
+        potential_metadata_columns = command_line_metadata_columns
+    else:
+        potential_metadata_columns = config.get("metadata_columns", [])
+
+    additional_metadata_columns = []
+    for col in potential_metadata_columns:
+        # Match the column names corrected within parse_node_data_and_metadata
+        corrected_col = update_deprecated_names(col)
+        if corrected_col not in metadata_names:
+            warn(f"Requested metadata column {col!r} does not exist and will not be exported")
+            continue
+        additional_metadata_columns.append(corrected_col)
+
+    return additional_metadata_columns
+
+
 def run(args):
     configure_warnings()
     data_json = {"version": "v2", "meta": {"updated": time.strftime('%Y-%m-%d')}}
@@ -1141,6 +1174,7 @@ def run(args):
     node_data, node_attrs, node_data_names, metadata_names, branch_attrs = \
             parse_node_data_and_metadata(T, node_data_file, metadata_file)
     config = get_config(args)
+    additional_metadata_columns = get_additional_metadata_columns(config, args.metadata_columns, metadata_names)
 
     # set metadata data structures
     set_title(data_json, config, args.title)
@@ -1169,7 +1203,7 @@ def run(args):
 
     # set tree structure
     data_json["tree"] = convert_tree_to_json_structure(T.root, node_attrs, node_div(T, node_attrs))
-    set_node_attrs_on_tree(data_json, node_attrs)
+    set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns)
     set_branch_attrs_on_tree(data_json, branch_attrs)
 
     set_geo_resolutions(data_json, config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_attrs)
