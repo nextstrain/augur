@@ -6,6 +6,9 @@
 
 * filter: Added a new option `--query-columns` that allows specifying what columns are used in `--query` along with the expected data types. If unspecified, automatic detection of columns and types is attempted. [#1294][] (@victorlin)
 * `augur.io.read_metadata`: A new optional `columns` argument allows specifying a subset of columns to load. The default behavior still loads all columns, so this is not a breaking change. [#1294][] (@victorlin)
+* `augur parse`: A new optional `--output-id-field` argument allows the user to select any ID field for the produced FASTA file (e.g. 'accession' instead of 'name' or 'strain'). [#1403][] (@j23414)
+  * When no `--output-id-field` is given and the data has both `name` and `strain` fields, continue to preferentially use `name` over `strain` as the sequence ID field; but, throw a deprecation warning that the order will be switched to prefer `strain` over `name` in the future to be consistent with the rest of Augur.
+  * Added entry to [DEPRECATED.md](./DEPRECATED.md).
 
 ### Bug Fixes
 
@@ -20,6 +23,7 @@
 [#1294]: https://github.com/nextstrain/augur/pull/1294
 [#1389]: https://github.com/nextstrain/augur/pull/1389
 [#1410]: https://github.com/nextstrain/augur/pull/1410
+[#1403]: https://github.com/nextstrain/augur/pull/1403
 
 ## 24.1.0 (30 January 2024)
 
