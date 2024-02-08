@@ -51,8 +51,8 @@ comparing strings, it's likely that SEQ3 will be dropped or errors arise.
   >  --metadata metadata.tsv \
   >  --query "metric1 > 4 & metric1 < metric2" \
   >  --output-strains filtered_strains.txt
-  1 strains were dropped during filtering
-  \t1 of these were filtered out by the query: "metric1 > 4 & metric1 < metric2" (esc)
+  1 strain was dropped during filtering
+  	1 was filtered out by the query: "metric1 > 4 & metric1 < metric2"
   2 strains passed all filters
 
   $ sort filtered_strains.txt
