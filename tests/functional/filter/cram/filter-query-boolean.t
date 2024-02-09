@@ -2,8 +2,7 @@ Setup
 
   $ source "$TESTDIR"/_setup.sh
 
-Ideally, A column with True and False values should be query-able by boolean comparisons.
-This does not currently work because all dtypes are strings.
+A column with True and False values is query-able by boolean comparisons.
 
   $ cat >metadata.tsv <<~~
   > strain	column
@@ -16,9 +15,10 @@ This does not currently work because all dtypes are strings.
   >  --metadata metadata.tsv \
   >  --query "column == True" \
   >  --output-strains filtered_strains.txt
-  ERROR: All samples have been dropped! Check filter rules and metadata file format.
-  3 strains were dropped during filtering
-  \t3 were filtered out by the query: "column == True" (esc)
-  [2]
+  1 strain was dropped during filtering
+  	1 was filtered out by the query: "column == True"
+  2 strains passed all filters
 
   $ sort filtered_strains.txt
+  SEQ_1
+  SEQ_2

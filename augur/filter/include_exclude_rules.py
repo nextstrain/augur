@@ -201,18 +201,27 @@ def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[D
         # Column extraction failed. Apply type conversion to all columns.
         columns = metadata_copy.columns
 
-    # If a type is not explicitly provided, try converting the column to numeric.
-    # pd.to_numeric supports nullable numeric columns unlike pd.read_csv's
-    # built-in data type inference.
+    # If a type is not explicitly provided, try automatic conversion.
     for column in columns:
-        column_types.setdefault(column, 'numeric')
+        column_types.setdefault(column, 'auto')
 
     # Convert data types before applying the query.
     # NOTE: This can behave differently between different chunks of metadata,
     # but it's the best we can do.
     for column, dtype in column_types.items():
-        if dtype == 'numeric':
-            metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='ignore')
+        if dtype == 'auto':
+            # Try numeric conversion followed by boolean conversion.
+            try:
+                # pd.to_numeric supports nullable numeric columns unlike pd.read_csv's
+                # built-in data type inference.
+                metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='raise')
+            except:
+                try:
+                    metadata_copy[column] = metadata_copy[column].map(_string_to_boolean)
+                except ValueError:
+                    # If both conversions fail, column values are preserved as strings.
+                    pass
+
         elif dtype == 'int':
             try:
                 metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='raise', downcast='integer')
@@ -232,6 +241,19 @@ def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[D
         if isinstance(e, PandasUndefinedVariableError):
             raise AugurError(f"Query contains a column that does not exist in metadata.") from e
         raise AugurError(f"Internal Pandas error when applying query:\n\t{e}\nEnsure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.") from e
+
+
+def _string_to_boolean(s: str):
+    """Convert a string to a boolean value.
+
+    Raises ValueError if it cannot be converted.
+    """
+    if s.lower() == 'true':
+        return True
+    elif s.lower() == 'false':
+        return False
+
+    raise ValueError(f"Unable to convert {s!r} to a boolean value.")
 
 
 def filter_by_ambiguous_date(metadata, date_column, ambiguity) -> FilterFunctionReturn:
