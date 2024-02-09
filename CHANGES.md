@@ -9,6 +9,7 @@
 
 ### Bug Fixes
 
+* filter: In version 24.1.0, automatic conversion of boolean columns was accidentally removed. It has been restored with additional support for empty values evaluated as `None`. [#1410][] (@victorlin)
 * filter: The order of rows in `--output-metadata` and `--output-strains` now reflects the order in the original `--metadata`. [#1294][] (@victorlin)
 * filter, frequencies, refine: Performance improvements to reading the input metadata file. [#1294][] (@victorlin)
     * For filter, this comes with increased writing times for `--output-metadata` and `--output-strains`. However, net I/O speed still decreased during testing of this change.
@@ -18,6 +19,7 @@
 
 [#1294]: https://github.com/nextstrain/augur/pull/1294
 [#1389]: https://github.com/nextstrain/augur/pull/1389
+[#1410]: https://github.com/nextstrain/augur/pull/1410
 
 ## 24.1.0 (30 January 2024)
 
