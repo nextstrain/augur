@@ -208,6 +208,8 @@ def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[D
         column_types.setdefault(column, 'numeric')
 
     # Convert data types before applying the query.
+    # NOTE: This can behave differently between different chunks of metadata,
+    # but it's the best we can do.
     for column, dtype in column_types.items():
         if dtype == 'numeric':
             metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='ignore')
