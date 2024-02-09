@@ -19,6 +19,7 @@ from collections import defaultdict
 import networkx as nx
 from itertools import islice
 from .errors import AugurError
+from .io.file import PANDAS_READ_CSV_OPTIONS
 from argparse import SUPPRESS
 from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json, get_json_name
 
@@ -64,6 +65,7 @@ def read_in_clade_definitions(clade_file):
         sep='\t' if clade_file.endswith('.tsv') else ',',
         comment='#',
         na_filter=False,
+        **PANDAS_READ_CSV_OPTIONS,
     )
 
     clade_inheritance_rows = df[df['gene'] == 'clade']

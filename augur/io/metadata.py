@@ -10,7 +10,7 @@ from itertools import chain
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
-from .file import open_file
+from .file import PANDAS_READ_CSV_OPTIONS, open_file
 
 
 DEFAULT_DELIMITERS = (',', '\t')
@@ -95,6 +95,7 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, columns=None, id
         metadata_file,
         iterator=True,
         **kwargs,
+        **PANDAS_READ_CSV_OPTIONS,
     )
     chunk = metadata.read(nrows=1)
     metadata.close()
@@ -153,7 +154,8 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, columns=None, id
 
     return pd.read_csv(
         metadata_file,
-        **kwargs
+        **kwargs,
+        **PANDAS_READ_CSV_OPTIONS,
     )
 
 

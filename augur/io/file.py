@@ -8,6 +8,10 @@ from augur.errors import AugurError
 
 ENCODING = "utf-8"
 
+PANDAS_READ_CSV_OPTIONS = {
+    'encoding': ENCODING,
+}
+
 
 @contextmanager
 def open_file(path_or_buffer, mode="r", **kwargs):

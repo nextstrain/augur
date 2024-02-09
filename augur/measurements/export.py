@@ -6,6 +6,7 @@ import pandas as pd
 import sys
 
 from augur.argparse_ import HideAsFalseAction
+from augur.io.file import PANDAS_READ_CSV_OPTIONS
 from augur.utils import first_line, write_json
 from augur.validate import (
     measurements as read_measurements_json,
@@ -106,7 +107,7 @@ def run(args):
 
     # Load input collection TSV file
     try:
-        collection_df = pd.read_csv(args.collection, sep="\t", usecols=columns_to_include)
+        collection_df = pd.read_csv(args.collection, sep="\t", usecols=columns_to_include, **PANDAS_READ_CSV_OPTIONS)
     except FileNotFoundError:
         print(
             f"ERROR: collection TSV file {args.collection!r} does not exist",

@@ -10,7 +10,7 @@ from textwrap import dedent
 from .__version__ import __version__
 
 from augur.data import as_file
-from augur.io.file import open_file
+from augur.io.file import PANDAS_READ_CSV_OPTIONS, open_file
 from augur.io.print import print_err
 
 from augur.types import ValidationMode
@@ -699,11 +699,11 @@ def read_bed_file(bed_file):
     mask_sites = []
     try:
         bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1,2],
-                          dtype={1:int,2:int})
+                          dtype={1:int,2:int}, **PANDAS_READ_CSV_OPTIONS)
     except ValueError:
         # Check if we have a header row. Otherwise, just fail.
         bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1,2],
-                          dtype={1:int,2:int}, skiprows=1)
+                          dtype={1:int,2:int}, skiprows=1, **PANDAS_READ_CSV_OPTIONS)
         print("Skipped row 1 of %s, assuming it is a header." % bed_file)
     for _, row in bed.iterrows():
         mask_sites.extend(range(row[1], row[2]))

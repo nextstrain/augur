@@ -14,7 +14,7 @@ from augur.index import (
     ID_COLUMN as SEQUENCE_INDEX_ID_COLUMN,
     DELIMITER as SEQUENCE_INDEX_DELIMITER,
 )
-from augur.io.file import open_file
+from augur.io.file import PANDAS_READ_CSV_OPTIONS, open_file
 from augur.io.metadata import InvalidDelimiter, Metadata, read_metadata
 from augur.io.sequences import read_sequences, write_sequences
 from augur.io.print import print_err
@@ -70,6 +70,7 @@ def run(args):
             sep=SEQUENCE_INDEX_DELIMITER,
             index_col=SEQUENCE_INDEX_ID_COLUMN,
             dtype={SEQUENCE_INDEX_ID_COLUMN: "string"},
+            **PANDAS_READ_CSV_OPTIONS,
         )
 
         # Remove temporary index file, if it exists.
