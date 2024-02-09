@@ -202,11 +202,8 @@ def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[D
         columns = metadata_copy.columns
 
     # If a type is not explicitly provided, try converting the column to numeric.
-    # This should cover most use cases, since one common problem is that the
-    # built-in data type inference when loading the DataFrame does not
-    # support nullable numeric columns, so numeric comparisons won't work on
-    # those columns. pd.to_numeric does proper conversion on those columns,
-    # and will not make any changes to columns with other values.
+    # pd.to_numeric supports nullable numeric columns unlike pd.read_csv's
+    # built-in data type inference.
     for column in columns:
         column_types.setdefault(column, 'numeric')
 
