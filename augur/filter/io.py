@@ -128,7 +128,7 @@ def write_metadata_based_outputs(input_metadata_path: str, delimiters: Sequence[
 
 
 # These are the types accepted in the following function.
-ACCEPTED_TYPES = {'numeric', 'int', 'float', 'str'}
+ACCEPTED_TYPES = {'int', 'float', 'str'}
 
 def column_type_pair(input: str):
     """Get a 2-tuple for column name to type.
