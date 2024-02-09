@@ -2,7 +2,8 @@ Setup
 
   $ source "$TESTDIR"/_setup.sh
 
-Create metadata file for testing.
+Ideally, A column with True and False values should be query-able by boolean comparisons.
+This does not currently work because all dtypes are strings.
 
   $ cat >metadata.tsv <<~~
   > strain	column
@@ -10,9 +11,6 @@ Create metadata file for testing.
   > SEQ_2	True
   > SEQ_3	False
   > ~~
-
-Ideally, the column should be query-able by boolean comparisons.
-This does not currently work because all dtypes are strings.
 
   $ ${AUGUR} filter \
   >  --metadata metadata.tsv \
