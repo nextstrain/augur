@@ -244,7 +244,7 @@ def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[D
 
 
 def _string_to_boolean(s: str):
-    """Convert a string to a boolean value.
+    """Convert a string to an optional boolean value.
 
     Raises ValueError if it cannot be converted.
     """
@@ -252,6 +252,8 @@ def _string_to_boolean(s: str):
         return True
     elif s.lower() == 'false':
         return False
+    elif s == '':
+        return None
 
     raise ValueError(f"Unable to convert {s!r} to a boolean value.")
 

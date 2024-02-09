@@ -56,3 +56,23 @@ Note that 1/0 can also be compared to boolean literals.
   1 strain was dropped during filtering
   	1 was filtered out by the query: "column == True"
   2 strains passed all filters
+
+Empty values are ignored.
+
+  $ cat >metadata.tsv <<~~
+  > strain	column
+  > SEQ_1	True
+  > SEQ_2	False
+  > SEQ_3	
+  > ~~
+
+  $ ${AUGUR} filter \
+  >  --metadata metadata.tsv \
+  >  --query "column == True" \
+  >  --output-strains filtered_strains.txt
+  2 strains were dropped during filtering
+  	2 were filtered out by the query: "column == True"
+  1 strain passed all filters
+
+  $ sort filtered_strains.txt
+  SEQ_1
