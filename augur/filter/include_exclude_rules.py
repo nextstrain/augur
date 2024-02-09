@@ -232,6 +232,11 @@ def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[D
                 metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='raise', downcast='float')
             except ValueError as e:
                 raise AugurError(f"Failed to convert value in column {column!r} to float. {e}")
+        elif dtype == 'bool':
+            try:
+                metadata_copy[column] = metadata_copy[column].map(_string_to_boolean)
+            except ValueError as e:
+                raise AugurError(f"Failed to convert value in column {column!r} to bool. {e}")
         elif dtype == 'str':
             metadata_copy[column] = metadata_copy[column].astype('str', errors='ignore')
 

@@ -53,3 +53,13 @@ Specifying category:float does not work.
   >  --output-strains filtered_strains.txt
   ERROR: Failed to convert value in column 'category' to float. Unable to parse string "A" at position 0
   [2]
+
+Specifying category:bool also does not work.
+
+  $ ${AUGUR} filter \
+  >  --metadata metadata.tsv \
+  >  --query "coverage >= 0.95 & category == 'B'" \
+  >  --query-columns category:bool \
+  >  --output-strains filtered_strains.txt
+  ERROR: Failed to convert value in column 'category' to bool. Unable to convert 'A' to a boolean value.
+  [2]
