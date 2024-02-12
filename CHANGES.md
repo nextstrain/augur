@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 24.2.0 (12 February 2024)
+
 ### Features
 
 * filter: Added a new option `--query-columns` that allows specifying what columns are used in `--query` along with the expected data types. If unspecified, automatic detection of columns and types is attempted. [#1294][] (@victorlin)
