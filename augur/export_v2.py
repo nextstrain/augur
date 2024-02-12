@@ -12,6 +12,7 @@ import re
 from Bio import Phylo
 
 from .errors import AugurError
+from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .types import ValidationMode
 from .utils import read_node_data, write_json, json_size, read_config, read_lat_longs, read_colors
@@ -1011,7 +1012,7 @@ def set_description(data_json, cmd_line_description_file):
     `meta.description` in *data_json* to the text provided.
     """
     try:
-        with open(cmd_line_description_file, encoding='utf-8') as description_file:
+        with open_file(cmd_line_description_file) as description_file:
             markdown_text = description_file.read()
             data_json['meta']['description'] = markdown_text
     except FileNotFoundError:

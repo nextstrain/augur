@@ -9,6 +9,7 @@ from collections import defaultdict
 from xopen import xopen
 
 from augur.errors import AugurError
+from augur.io.file import open_file
 from augur.io.metadata import Metadata, METADATA_DATE_COLUMN
 from augur.io.print import print_err
 from .constants import GROUP_BY_GENERATED_COLUMNS
@@ -76,7 +77,7 @@ def read_priority_scores(fname):
         return lambda: value
 
     try:
-        with open(fname, encoding='utf-8') as pfile:
+        with open_file(fname) as pfile:
             return defaultdict(constant_factory(-np.inf), {
                 elems[0]: float(elems[1])
                 for elems in (line.strip().split('\t') if '\t' in line else line.strip().split() for line in pfile.readlines())

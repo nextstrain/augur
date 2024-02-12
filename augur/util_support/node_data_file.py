@@ -3,6 +3,7 @@ import json
 from augur.__version__ import __version__
 from augur.__version__ import is_augur_version_compatible
 from augur.errors import AugurError
+from augur.io.file import open_file
 from augur.io.print import print_err
 from augur.types import ValidationMode
 from augur.validate import validate_json, ValidateError, load_json_schema
@@ -16,7 +17,7 @@ class NodeDataFile:
         self.fname = fname
         self.validation_mode = validation_mode
 
-        with open(fname, encoding="utf-8") as jfile:
+        with open_file(fname) as jfile:
             self.attrs = json.load(jfile)
 
         self.validate()

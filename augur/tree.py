@@ -16,6 +16,7 @@ from treetime.vcf_utils import read_vcf
 from pathlib import Path
 
 from .errors import AugurError
+from .io.file import open_file
 from .io.sequences import read_sequences
 from .io.shell_command_runner import run_shell_command
 from .io.vcf import shquote
@@ -249,7 +250,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     tmp_aln_file = str(Path(aln_file).with_name(Path(aln_file).stem + "-delim.fasta"))
     log_file = str(Path(tmp_aln_file).with_suffix(".iqtree.log"))
     num_seqs = 0
-    with open(tmp_aln_file, 'w', encoding='utf-8') as ofile, open(aln_file, encoding='utf-8') as ifile:
+    with open_file(tmp_aln_file, 'w') as ofile, open_file(aln_file) as ifile:
         for line in ifile:
             tmp_line = line
             if line.startswith(">"):
@@ -358,7 +359,7 @@ def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
 
     #If want a position map, print:
     if printPositionMap:
-        with open(fasta_file+".positions.txt", 'w', encoding='utf-8') as the_file:
+        with open_file(fasta_file+".positions.txt", 'w') as the_file:
             the_file.write("\n".join(pos))
 
     return fasta_file
@@ -396,7 +397,7 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
     # Write the masked alignment to disk one record at a time.
     alignment_file_path = Path(alignment_file)
     masked_alignment_file = str(alignment_file_path.parent / ("masked_%s" % alignment_file_path.name))
-    with open(masked_alignment_file, "w", encoding='utf-8') as oh:
+    with open_file(masked_alignment_file, "w") as oh:
         for record in alignment:
             # Convert to a mutable sequence to enable masking with Ns.
             sequence = MutableSeq(str(record.seq))

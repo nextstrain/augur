@@ -10,6 +10,7 @@ from .errors import AugurError
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
 from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
+from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
 from .utils import write_json
 
@@ -110,7 +111,7 @@ def run(args):
     if args.method == "kde":
         # Load weights if they have been provided.
         if args.weights:
-            with open(args.weights, "r", encoding='utf-8') as fh:
+            with open_file(args.weights, "r") as fh:
                 weights = json.load(fh)
 
             weights_attribute = args.weights_attribute

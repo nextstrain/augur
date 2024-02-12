@@ -1,7 +1,16 @@
 import os
 from contextlib import contextmanager
 from io import IOBase
+from textwrap import dedent
 from xopen import PipedCompressionReader, PipedCompressionWriter, xopen
+from augur.errors import AugurError
+
+
+ENCODING = "utf-8"
+
+PANDAS_READ_CSV_OPTIONS = {
+    'encoding': ENCODING,
+}
 
 
 @contextmanager
@@ -24,9 +33,23 @@ def open_file(path_or_buffer, mode="r", **kwargs):
         File handle object
 
     """
+
+    # Read all files using a specific encoding.
+    kwargs['encoding'] = ENCODING
+
     if isinstance(path_or_buffer, (str, os.PathLike)):
-        with xopen(path_or_buffer, mode, **kwargs) as handle:
-            yield handle
+        try:
+            with xopen(path_or_buffer, mode, **kwargs) as handle:
+                yield handle
+        except UnicodeDecodeError as e:
+            # TODO: Consider moving this to the top-level error handler to
+            # handle errors from other I/O functions such as pandas.read_csv.
+            # This is not trivial since the filepath is useful to include in the
+            # message, but is not available through UnicodeDecodeError alone.
+            raise AugurError(dedent(f"""\
+                File {path_or_buffer!r} contains {e.object[e.start:e.end]!r} which is not valid in the expected {e.encoding!r} encoding.
+                Try re-saving the file using the {e.encoding!r} encoding."""))
+
 
     elif isinstance(path_or_buffer, (IOBase, PipedCompressionReader, PipedCompressionWriter)):
         yield path_or_buffer

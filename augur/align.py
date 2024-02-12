@@ -6,6 +6,7 @@ import os
 from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
+from .io.file import open_file
 from .io.shell_command_runner import run_shell_command
 from .io.vcf import shquote
 from .utils import nthreads_value
@@ -369,7 +370,7 @@ def analyse_insertions(aln, ungapped, insertion_csv):
         for insertion_seq, strains in i_data.items():
             for strain in strains:
                 strain_data[strain][idx] = insertion_seq
-    with open(insertion_csv, 'w', encoding='utf-8') as fh:
+    with open_file(insertion_csv, 'w') as fh:
         print(",".join(header), file=fh)
         for strain in strain_data:
             print("{},{}".format(strain, ",".join(strain_data[strain])), file=fh)

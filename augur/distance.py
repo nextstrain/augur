@@ -186,6 +186,7 @@ import pandas as pd
 import sys
 
 from .frequency_estimators import timestamp_to_float
+from .io.file import open_file
 from .reconstruct_sequences import load_alignments
 from .utils import annotate_parents_for_tree, first_line, read_node_data, write_json
 
@@ -213,7 +214,7 @@ def read_distance_map(map_file):
     [('default', 0.0), ('map', {'SigPep': {0: {('W', 'P'): -8.3}}})]
     """
     # Load the JSON.
-    with open(map_file, "r", encoding='utf-8') as fh:
+    with open_file(map_file, "r") as fh:
         json_distance_map = json.load(fh)
 
     # Confirm that all required fields are present.

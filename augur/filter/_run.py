@@ -14,7 +14,7 @@ from augur.index import (
     ID_COLUMN as SEQUENCE_INDEX_ID_COLUMN,
     DELIMITER as SEQUENCE_INDEX_DELIMITER,
 )
-from augur.io.file import open_file
+from augur.io.file import PANDAS_READ_CSV_OPTIONS, open_file
 from augur.io.metadata import InvalidDelimiter, Metadata, read_metadata
 from augur.io.sequences import read_sequences, write_sequences
 from augur.io.print import print_err
@@ -70,6 +70,7 @@ def run(args):
             sep=SEQUENCE_INDEX_DELIMITER,
             index_col=SEQUENCE_INDEX_ID_COLUMN,
             dtype={SEQUENCE_INDEX_ID_COLUMN: "string"},
+            **PANDAS_READ_CSV_OPTIONS,
         )
 
         # Remove temporary index file, if it exists.
@@ -134,13 +135,14 @@ def run(args):
             priorities = defaultdict(random_generator.random)
 
     # Setup logging.
+    output_log_context_manager = open_file(args.output_log, "w", newline='')
     output_log_writer = None
     if args.output_log:
         # Log the names of strains that were filtered or force-included, so we
         # can properly account for each strain (e.g., including those that were
         # initially filtered for one reason and then included again for another
         # reason).
-        output_log = open(args.output_log, "w", newline='')
+        output_log = output_log_context_manager.__enter__()
         output_log_header = ("strain", "filter", "kwargs")
         output_log_writer = csv.DictWriter(
             output_log,
