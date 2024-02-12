@@ -9,6 +9,8 @@ from .io.sequences import read_sequences, write_sequences
 from .dates import get_numerical_date_from_value
 from .errors import AugurError
 
+PARSE_DEFAULT_ID_COLUMNS = ("name", "strain")
+
 forbidden_characters = str.maketrans(
     {' ': None,
      '(': '_',
@@ -133,8 +135,6 @@ def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettif
             dayfirst=fix_dates_format=='dayfirst'
         )
 
-    metadata["strain"] = sequence.id
-
     return sequence, metadata
 
 
@@ -143,6 +143,8 @@ def register_parser(parent_subparsers):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
     parser.add_argument('--output-sequences', required=True, help="output sequences file")
     parser.add_argument('--output-metadata', required=True, help="output metadata file")
+    parser.add_argument('--output-id-field', required=False,
+                        help=f"The record field to use as the sequence identifier in the FASTA output. If not provided, this will use the first available of {PARSE_DEFAULT_ID_COLUMNS}. If none of those are available, this will use the first field in the fasta header.")
     parser.add_argument('--fields', required=True, nargs='+', help="fields in fasta header")
     parser.add_argument('--prettify-fields', nargs='+', help="apply string prettifying operations (underscores to spaces, capitalization, etc) to specified metadata fields")
     parser.add_argument('--separator', default='|', help="separator of fasta header")
@@ -162,12 +164,20 @@ def run(args):
     # field to index the dictionary and the data frame
     meta_data = {}
 
-    if 'name' in args.fields:
-        strain_key = 'name'
-    elif 'strain' in args.fields:
-        strain_key = 'strain'
+    strain_key = None
+    if args.output_id_field:
+        if args.output_id_field not in args.fields:
+            raise AugurError(f"Output id field '{args.output_id_field}' not found in fields {args.fields}.")
+        strain_key = args.output_id_field
     else:
-        strain_key = args.fields[0]
+        for possible_id in PARSE_DEFAULT_ID_COLUMNS:
+            if possible_id in args.fields:
+                strain_key = possible_id
+                if possible_id == "name" and "strain" in args.fields:
+                    print("DEPRECATED: The default search order for the ID field will be changing from ('name', 'strain') to ('strain', 'name').\nUsers who prefer to keep using 'name' instead of 'strain' should use the parameter: --output-id-field 'name'", file=sys.stderr)
+                break
+        if not strain_key:
+            strain_key = args.fields[0]
 
     # loop over sequences, parse fasta header of each sequence
     with open_file(args.output_sequences, "wt") as handle:

@@ -4,6 +4,14 @@ These features are deprecated, which means they are no longer maintained and
 will go away in a future major version of Augur. They are currently still
 available for backwards compatibility, but should not be used in new code.
 
+## `augur parse` preference of `name` over `strain` as the sequence ID field
+
+*Deprecated in February 2024. Planned to be reordered June 2024 or after.*
+
+Currently, `augur parse` checks for a 'name' field and then a 'strain' field to use as a sequence ID. This order will be changed in favor of searching for a 'strain' and then a 'name' field to be more consistent with the rest of Augur.
+
+Users who have both 'name' and 'strain' fields in their data, and want to favor using the 'name' field should add the following `augur parse` parameter `--output-id-field 'name'`.
+
 ## `augur.utils.read_strains`
 
 *Deprecated in December 2023. Planned for removal March 2024 or after.*
