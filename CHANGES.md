@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* frequencies: Fixed a bug introduced in 24.2.0 that prevented `--method diffusion` from working alongside `--tree`. [#1412][] (@victorlin)
+
+[#1412]: https://github.com/nextstrain/augur/issues/1412
 
 ## 24.2.0 (12 February 2024)
 

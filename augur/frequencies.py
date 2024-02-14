@@ -108,16 +108,16 @@ def run(args):
     stiffness = args.stiffness
     inertia = args.inertia
 
-    if args.method == "kde":
-        # Load weights if they have been provided.
-        if args.weights:
-            with open_file(args.weights, "r") as fh:
-                weights = json.load(fh)
+    # For KDE
+    weights = None
+    weights_attribute = None
 
-            weights_attribute = args.weights_attribute
-        else:
-            weights = None
-            weights_attribute = None
+    if args.method == "kde" and args.weights:
+        # Load weights if they have been provided.
+        with open_file(args.weights, "r") as fh:
+            weights = json.load(fh)
+
+        weights_attribute = args.weights_attribute
 
     if args.tree:
         tree = Phylo.read(args.tree, 'newick')
