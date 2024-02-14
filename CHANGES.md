@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 24.2.1 (14 February 2024)
+
 ### Bug Fixes
 
 * frequencies: Fixed a bug introduced in 24.2.0 that prevented `--method diffusion` from working alongside `--tree`. [#1412][] (@victorlin)
