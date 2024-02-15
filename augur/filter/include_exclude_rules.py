@@ -891,15 +891,55 @@ def extract_variables(pandas_query: str):
     >>> extract_variables("var1.str.startswith('prefix')")
     {'var1'}
     >>> extract_variables("this query is invalid")
+
+    Backtick quoting is also supported.
+
+    >>> extract_variables("`include me` == 'but not `me`'")
+    {'include me'}
+    >>> extract_variables("`include me once` == 'a' or `include me once` == 'b'")
+    {'include me once'}
     """
-    # Since Pandas' query grammar should be a subset of Python's, which uses the
+    # Since Pandas's query grammar is mostly a subset of Python's, which uses the
     # ast stdlib under the hood, we can try to parse queries with that as well.
-    # Errors may arise from invalid query syntax or any Pandas syntax not
-    # covered by Python (unlikely, but I'm not sure). In those cases, don't
-    # return anything.
+    # Errors may arise from invalid query syntax or any unhandled Pandas-specific
+    # syntax. In those cases, don't return anything.
     try:
-        return set(node.id
-                   for node in ast.walk(ast.parse(pandas_query))
-                   if isinstance(node, ast.Name))
+        # Replace the backtick quoting that is Pandas-specific syntax.
+        modified_query, replacements = _replace_backtick_quoting(pandas_query)
+        variables = set(node.id
+                        for node in ast.walk(ast.parse(modified_query))
+                        if isinstance(node, ast.Name))
+        for original_name, generated_name in replacements.items():
+            if generated_name in variables:
+                variables.remove(generated_name)
+                variables.add(original_name)
+        return variables
     except:
         return None
+
+
+def _replace_backtick_quoting(pandas_query: str):
+    """Replace backtick-quoted values with a generated value.
+
+    The generated value can be translated as a valid name (i.e. no spaces or
+    special characters).
+
+    Return the modified query and a dict mapping from the original to generated
+    value.
+    """
+    pattern = r"`([^`]+)`"
+    replacements: Dict[str, str] = {}
+    name_counter = 1
+
+    def replace(match: re.Match):
+        nonlocal replacements
+        nonlocal name_counter
+        original_value = match.group(1)
+
+        if original_value not in replacements:
+            replacements[original_value] = f'__augur_filter_{name_counter}'
+            name_counter += 1
+        return replacements[original_value]
+
+    modified_query = re.sub(pattern, replace, pandas_query)
+    return modified_query, replacements
