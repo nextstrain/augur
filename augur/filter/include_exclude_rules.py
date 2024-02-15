@@ -1,9 +1,9 @@
-import ast
 import json
 import operator
 import re
 import numpy as np
 import pandas as pd
+from pandas.core.computation.parsing import tokenize_string, BACKTICK_QUOTED_STRING
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from augur.dates import is_date_ambiguous, get_numerical_dates
@@ -194,7 +194,7 @@ def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[D
         column_types = {}
 
     # Set columns for type conversion.
-    variables = extract_variables(query)
+    variables = extract_names(query)
     if variables is not None:
         columns = variables.intersection(metadata_copy.columns)
     else:
@@ -877,29 +877,38 @@ def _filter_kwargs_to_str(kwargs: FilterFunctionKwargs):
     return json.dumps(kwarg_list)
 
 
-def extract_variables(pandas_query: str):
-    """Try extracting all variable names used in a pandas query string.
+def extract_names(pandas_query: str):
+    """Try extracting all names used in a pandas query string.
 
-    If successful, return the variable names as a set. Otherwise, nothing is returned.
+    If successful, return the names as a set. Otherwise, nothing is returned.
+
+    Note that this extracts not just variable names but also keywords and
+    properties. Use this in conjunction with other information such as known
+    metadata columns to determine the column names used in a query.
 
     Examples
     --------
-    >>> extract_variables("var1 == 'value'")
+    >>> extract_names("var1 == 'value'")
     {'var1'}
-    >>> sorted(extract_variables("var1 == 'value' & var2 == 10"))
+    >>> sorted(extract_names("var1 == 'value' & var2 == 10"))
     ['var1', 'var2']
-    >>> extract_variables("var1.str.startswith('prefix')")
-    {'var1'}
-    >>> extract_variables("this query is invalid")
+    >>> sorted(extract_names("var1.str.startswith('prefix')"))
+    ['startswith', 'str', 'var1']
+    >>> sorted(extract_names("this query is invalid"))
+    ['invalid', 'is', 'query', 'this']
     """
-    # Since Pandas' query grammar should be a subset of Python's, which uses the
-    # ast stdlib under the hood, we can try to parse queries with that as well.
-    # Errors may arise from invalid query syntax or any Pandas syntax not
-    # covered by Python (unlikely, but I'm not sure). In those cases, don't
-    # return anything.
     try:
-        return set(node.id
-                   for node in ast.walk(ast.parse(pandas_query))
-                   if isinstance(node, ast.Name))
+        # A token number of 1 corresponds to NAME.¹
+        # Ideally, this function would return just variable names, but
+        # tokenize_string() lacks the context to distinguish variable names from
+        # other names such as keywords and properties. keyword.iskeyword() can
+        # be used to filter out keywords, but that isn't useful for current
+        # intents without the ability to filter out properties as well.
+        # ¹ <https://www.asmeurer.com/brown-water-python/tokens.html#name>
+        return set(tokval for toknum, tokval in tokenize_string(pandas_query)
+                   if toknum == BACKTICK_QUOTED_STRING
+                   or toknum == 1)
     except:
+        # Errors may arise from invalid syntax. In those cases, don't return
+        # anything.
         return None

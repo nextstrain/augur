@@ -14,7 +14,7 @@ from augur.io.file import open_file
 from augur.io.metadata import Metadata, METADATA_DATE_COLUMN
 from augur.io.print import print_err
 from .constants import GROUP_BY_GENERATED_COLUMNS
-from .include_exclude_rules import extract_variables, parse_filter_query
+from .include_exclude_rules import extract_names, parse_filter_query
 
 
 def get_useful_metadata_columns(args: Namespace, id_column: str, all_columns: Sequence[str]):
@@ -64,8 +64,9 @@ def get_useful_metadata_columns(args: Namespace, id_column: str, all_columns: Se
                 columns.add(column)
 
         # Attempt to automatically extract columns from the query.
-        variables = extract_variables(args.query)
-        if variables is None and not args.query_columns:
+        variables = extract_names(args.query)
+        columns_in_query = variables.intersection(set(all_columns))
+        if columns_in_query is None and not args.query_columns:
             print_err(dedent(f"""\
                 WARNING: Could not infer columns from the pandas query. Reading all metadata columns,
                 which may impact execution time. If the query is valid, please open a new issue:
@@ -77,7 +78,7 @@ def get_useful_metadata_columns(args: Namespace, id_column: str, all_columns: Se
                     {args.query}"""))
             columns.update(all_columns)
         else:
-            columns.update(variables)
+            columns.update(columns_in_query)
 
     return list(columns)
 
