@@ -41,5 +41,15 @@ However, other Pandas errors are not so helpful, so a link is provided for users
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
   >  --query "some bad syntax" \
   >  --output-strains filtered_strains.txt > /dev/null
-  ERROR: Could not infer columns from the pandas query. If the query is valid, please specify columns using --query-columns.
+  WARNING: Could not infer columns from the pandas query. Reading all metadata columns,
+  which may impact execution time. If the query is valid, please open a new issue:
+  
+      <https://github.com/nextstrain/augur/issues/new/choose>
+  
+  and add the query to the description:
+  
+      some bad syntax
+  ERROR: Internal Pandas error when applying query:
+  	invalid syntax (<unknown>, line 1)
+  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
   [2]

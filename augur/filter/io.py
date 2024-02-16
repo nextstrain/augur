@@ -3,6 +3,7 @@ import csv
 from argparse import Namespace
 import os
 import re
+from textwrap import dedent
 from typing import Sequence, Set
 import numpy as np
 from collections import defaultdict
@@ -65,7 +66,16 @@ def get_useful_metadata_columns(args: Namespace, id_column: str, all_columns: Se
         # Attempt to automatically extract columns from the query.
         variables = extract_variables(args.query)
         if variables is None and not args.query_columns:
-            raise AugurError("Could not infer columns from the pandas query. If the query is valid, please specify columns using --query-columns.")
+            print_err(dedent(f"""\
+                WARNING: Could not infer columns from the pandas query. Reading all metadata columns,
+                which may impact execution time. If the query is valid, please open a new issue:
+
+                    <https://github.com/nextstrain/augur/issues/new/choose>
+
+                and add the query to the description:
+
+                    {args.query}"""))
+            columns.update(all_columns)
         else:
             columns.update(variables)
 
