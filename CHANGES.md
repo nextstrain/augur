@@ -5,7 +5,9 @@
 ### Bug Fixes
 
 * filter: In versions 24.2.0 and 24.2.1, `--query` stopped working in cases where internal optimizations added in version 24.2.0 failed to parse the columns from the query. It now falls back to non-optimized behavior that allows queries to work. [#1418][] (@victorlin)
+* filter: Handle backtick quoting in internal optimizations of `--query`. [#1417][] (@victorlin)
 
+[#1417]: https://github.com/nextstrain/augur/pull/1417
 [#1418]: https://github.com/nextstrain/augur/pull/1418
 
 ## 24.2.1 (14 February 2024)
