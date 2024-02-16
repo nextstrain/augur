@@ -1,3 +1,4 @@
+name: Release
 run-name: Release ${{ inputs.version }}
 
 on:
