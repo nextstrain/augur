@@ -4,26 +4,12 @@
 # straightforward to set up for Cram tests¹).
 # ¹ https://github.com/nextstrain/augur/pull/1183#discussion_r1142687476
 
-import argparse
 from freezegun import freeze_time
 import pytest
-import shlex
 
-from augur.filter import register_arguments
 from augur.filter._run import run
 
-
-def parse_args(args):
-    parser = argparse.ArgumentParser()
-    register_arguments(parser)
-    return parser.parse_args(shlex.split(args))
-
-
-def write_metadata(tmpdir, metadata):
-    fn = str(tmpdir / "metadata.tsv")
-    with open(fn, "w") as fh:
-        fh.write("\n".join(("\t".join(md) for md in metadata)))
-    return fn
+from . import parse_args, write_metadata
 
 
 @freeze_time("2020-03-25")

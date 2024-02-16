@@ -34,8 +34,7 @@ because --include takes precedence.
   >  --include metadata-ids.txt \
   >  --output-strains filtered_strains.txt
   0 strains were dropped during filtering
-  	3 were dropped by `--exclude-all`
-  	3 were added back because they were in metadata-ids.txt
+  	3 were force-included because they were in metadata-ids.txt
   3 strains passed all filters
 
   $ wc -l filtered_strains.txt
