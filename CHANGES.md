@@ -21,6 +21,7 @@
   * When no `--output-id-field` is given and the data has both `name` and `strain` fields, continue to preferentially use `name` over `strain` as the sequence ID field; but, throw a deprecation warning that the order will be switched to prefer `strain` over `name` in the future to be consistent with the rest of Augur.
   * Added entry to [DEPRECATED.md](./DEPRECATED.md).
 * Compression should now be supported for all input and output files. Please [open an issue](https://github.com/nextstrain/augur/issues) if you find one that doesn't! [#1381][] (@victorlin)
+* export v2: Add support to specify metadata columns to export without using them as colorings. This can be done with the `metadata_columns` property in the Auspice config JSON or via the `--metadata-columns` flag in the command line. [#1384][] (@joverlee521)
 
 ### Bug Fixes
 
@@ -35,6 +36,7 @@
 
 [#1294]: https://github.com/nextstrain/augur/pull/1294
 [#1381]: https://github.com/nextstrain/augur/pull/1381
+[#1384]: https://github.com/nextstrain/augur/pull/1384
 [#1389]: https://github.com/nextstrain/augur/pull/1389
 [#1410]: https://github.com/nextstrain/augur/pull/1410
 [#1403]: https://github.com/nextstrain/augur/pull/1403
@@ -45,7 +47,6 @@
 
 * `augur.io.read_metadata`: A new optional `dtype` argument allows custom data types for all columns. Automatic type inference still happens by default, so this is not a breaking change. [#1252][] (@victorlin)
 * `augur.io.read_vcf` has been removed and usage replaced with TreeTime's function of the same name which has improved validation of the VCF file. [#1366][] (@jameshadfield)
-* export v2: Add support to specify metadata columns to export without using them as colorings. This can be done with the `metadata_columns` property in the Auspice config JSON or via the `--metadata-columns` flag in the command line. [#1384][] (@joverlee521)
 
 ### Bug Fixes
 
@@ -55,7 +56,6 @@
 
 [#1252]: https://github.com/nextstrain/augur/pull/1252
 [#1366]: https://github.com/nextstrain/augur/pull/1366
-[#1384]: https://github.com/nextstrain/augur/pull/1384
 [#1400]: https://github.com/nextstrain/augur/pull/1400
 
 ## 24.0.0 (22 January 2024)
