@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* filter: Updated the help and report text of `--min-length` to explicitly state that the minimum length filter only counts standard nucleotide characters A, C, G, or T (case-insensitive). This has been the behavior since version 3.0.3.dev1, but has never been explicitly documented. [#1422][] (@joverlee521)
+
+[#1422]: https://github.com/nextstrain/augur/pull/1422
 
 ## 24.2.2 (16 February 2024)
 
