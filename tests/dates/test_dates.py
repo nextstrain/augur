@@ -99,3 +99,7 @@ class TestDates:
         }
         with pytest.raises(AugurError):
             dates.get_numerical_dates(metadata)
+
+    def test_get_numerical_date_from_value_treetime_ambiguous_date_format(self):
+        assert dates.get_numerical_date_from_value("[2019.5:2020.5]") == [2019.5, 2020.5]
+        assert dates.get_numerical_date_from_value("[2013.543:2013.544]") == [2013.543, 2013.544]
