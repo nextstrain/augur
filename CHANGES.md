@@ -5,8 +5,10 @@
 ### Bug Fixes
 
 * filter: Updated the help and report text of `--min-length` to explicitly state that the minimum length filter only counts standard nucleotide characters A, C, G, or T (case-insensitive). This has been the behavior since version 3.0.3.dev1, but has never been explicitly documented. [#1422][] (@joverlee521)
+* frequencies: Fixed a bug introduced in 24.2.0 and 24.1.0 that prevented `--regions` from working when providing regions other than the default "global" region. [#1424]
 
 [#1422]: https://github.com/nextstrain/augur/pull/1422
+[#1424]: https://github.com/nextstrain/augur/pull/1424
 
 ## 24.2.2 (16 February 2024)
 
