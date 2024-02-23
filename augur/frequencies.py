@@ -14,6 +14,7 @@ from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
 from .utils import write_json
 
+REGION_COLUMN = 'region'
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("frequencies", help=__doc__)
@@ -97,6 +98,10 @@ def run(args):
     columns_to_load = [metadata_object.id_column, METADATA_DATE_COLUMN]
     if args.weights_attribute:
         columns_to_load.append(args.weights_attribute)
+
+    if args.regions:
+        columns_to_load.append(REGION_COLUMN)
+
     metadata = read_metadata(
         args.metadata,
         delimiters=[metadata_object.delimiter],
@@ -130,6 +135,9 @@ def run(args):
                 # Annotate tip with weight attribute.
                 tip.attr[weights_attribute] = metadata.loc[tip.name, weights_attribute]
 
+            if args.regions:
+                tip.attr[REGION_COLUMN] = metadata.loc[tip.name, REGION_COLUMN]
+
         if args.method == "diffusion":
             # estimate tree frequencies
             pivots = get_pivots(tps, args.pivot_interval, args.min_date, args.max_date, args.pivot_interval_units)
@@ -142,7 +150,7 @@ def run(args):
                 if region=='global':
                     node_filter_func = lambda node: node.attr["num_date"] >= pivots[0]
                 else:
-                    node_filter_func = lambda node: (node.attr["region"] == region
+                    node_filter_func = lambda node: (node.attr[REGION_COLUMN] == region
                                                     and node.attr["num_date"] >= pivots[0])
 
                 tree_freqs = tree_frequencies(tree, pivots, method='SLSQP',
