@@ -14,6 +14,8 @@ from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
 from .utils import write_json
 
+REGION_COLUMN = 'region'
+DEFAULT_REGION = 'global'
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("frequencies", help=__doc__)
@@ -26,8 +28,10 @@ def register_parser(parent_subparsers):
                         help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
                         help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
-    parser.add_argument('--regions', type=str, nargs='+', default=['global'],
-                        help="region to subsample to")
+    parser.add_argument('--regions', type=str, nargs='+', default=[DEFAULT_REGION],
+                        help="region to filter to. " \
+                            f"Regions should match values in the {REGION_COLUMN!r} column of the metadata file " \
+                            f"if specifying values other than the default {DEFAULT_REGION!r} region.")
     parser.add_argument("--pivot-interval", type=int, default=3,
                         help="number of units between pivots")
     parser.add_argument("--pivot-interval-units", type=str, default="months", choices=['months', 'weeks'],
@@ -97,6 +101,11 @@ def run(args):
     columns_to_load = [metadata_object.id_column, METADATA_DATE_COLUMN]
     if args.weights_attribute:
         columns_to_load.append(args.weights_attribute)
+
+    filter_to_region = any(region != DEFAULT_REGION for region in args.regions)
+    if filter_to_region:
+        columns_to_load.append(REGION_COLUMN)
+
     metadata = read_metadata(
         args.metadata,
         delimiters=[metadata_object.delimiter],
@@ -130,6 +139,9 @@ def run(args):
                 # Annotate tip with weight attribute.
                 tip.attr[weights_attribute] = metadata.loc[tip.name, weights_attribute]
 
+            if filter_to_region:
+                tip.attr[REGION_COLUMN] = metadata.loc[tip.name, REGION_COLUMN]
+
         if args.method == "diffusion":
             # estimate tree frequencies
             pivots = get_pivots(tps, args.pivot_interval, args.min_date, args.max_date, args.pivot_interval_units)
@@ -139,10 +151,10 @@ def run(args):
             for region in args.regions:
                 # Omit strains sampled prior to the first pivot from frequency calculations.
                 # (these tend to be reference strains included for phylogenetic context)
-                if region=='global':
+                if region==DEFAULT_REGION:
                     node_filter_func = lambda node: node.attr["num_date"] >= pivots[0]
                 else:
-                    node_filter_func = lambda node: (node.attr["region"] == region
+                    node_filter_func = lambda node: (node.attr[REGION_COLUMN] == region
                                                     and node.attr["num_date"] >= pivots[0])
 
                 tree_freqs = tree_frequencies(tree, pivots, method='SLSQP',
