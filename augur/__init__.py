@@ -42,6 +42,7 @@ command_strings = [
     "version",
     "import_",
     "measurements",
+    "subsample", ## TODO - suppress this from `augur --help` usage etc.
 ]
 
 COMMANDS = [importlib.import_module('augur.' + c) for c in command_strings]
