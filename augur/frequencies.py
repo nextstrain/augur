@@ -29,7 +29,9 @@ def register_parser(parent_subparsers):
     parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
                         help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     parser.add_argument('--regions', type=str, nargs='+', default=[DEFAULT_REGION],
-                        help="region to subsample to")
+                        help="region to filter to. " \
+                            f"Regions should match values in the {REGION_COLUMN!r} column of the metadata file " \
+                            f"if specifying values other than the default {DEFAULT_REGION!r} region.")
     parser.add_argument("--pivot-interval", type=int, default=3,
                         help="number of units between pivots")
     parser.add_argument("--pivot-interval-units", type=str, default="months", choices=['months', 'weeks'],
