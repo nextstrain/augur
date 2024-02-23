@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+### Features
+
+* Add `clades2` command that infers clades at internal and external nodes based on a tree and metadata. Currently a stripped down version of `traits` but that is an implementation detail.  (@corneliusroemer)
 
 ## 24.2.2 (16 February 2024)
 
