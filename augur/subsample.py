@@ -6,6 +6,8 @@ It does not conform to the semver release standards used by Augur.
 """
 
 from .errors import AugurError
+from os import path, mkdir
+import subprocess
 
 INCOMPLETE = 'incomplete'
 COMPLETE = 'complete'
@@ -14,7 +16,18 @@ def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("subsample", help=__doc__)
     parser.add_argument('--config', required=True, metavar="YAML", help="subsampling config file") # TODO: allow a string representation
     parser.add_argument('--metadata', required=True, metavar="TSV", help="sequence metadata")
-    parser.add_argument('--sequences', metavar="FASTA", help="sequences in FASTA format") # TODO XXX VCF ?
+    parser.add_argument('--sequences', required=True, metavar="FASTA", help="sequences in FASTA format") # TODO XXX VCF ?
+    parser.add_argument('--output-metadata', required=True, metavar="TSV", help="output metadata")
+    parser.add_argument('--output-sequences', required=True, metavar="FASTA", help="output sequences in FASTA format") # TODO XXX VCF ?
+    ## TODO XXX - programmatically create & remove tmp directory. But this is simpler for dev.
+    parser.add_argument('--tmpdir', required=True, help="temporary directory for intermediate files")
+
+    optionals = parser.add_argument_group(
+        title="Optional arguments",
+    )
+    optionals.add_argument('--dry-run', action="store_true")
+    optionals.add_argument('--metadata-id-columns', metavar="NAME", nargs="+",
+        help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     return parser
 
 def parse_config(filename):
@@ -29,19 +42,57 @@ def parse_config(filename):
     return data
 
 class Filter():
-    def __init__(self, name, filter, depends_on):
+    def __init__(self, name, params, data_in, data_out, optional_args, depends_on, log_fname):
         self.name = name
-        self.params = filter
+        self.params = params
+        self.data_in = data_in
+        self.data_out = data_out
         self.depends_on = depends_on
+        self.optional_args = optional_args
+        self.log_fname = log_fname
         self.status = INCOMPLETE
 
     def __str__(self):
-        if len(self.depends_on):
-            return self.name + " depends on " + ", ".join(self.depends_on)
-        return self.name + " (no dependencies)"
+        deps = (" depends on " + ", ".join(self.depends_on)) if len(self.depends_on) else " (no dependencies)"
+        return f"Augur filter for intermediate sample {self.name!r}" + deps
 
-    def exec(self):
-        print("RUN", self.__str__())
+    def cmd(self):
+        # Arg splitting would be better, but is complicated by quoting. TODO.
+        cmd = f"augur filter {self.params} --metadata {self.data_in['metadata']} --sequences {self.data_in['sequences']}"
+        if "metadata" in self.data_out:
+            cmd += f" --output-metadata {self.data_out['metadata']}"
+        if "sequences" in self.data_out:
+            cmd += f" --output-sequences {self.data_out['sequences']}"
+        if "strains" in self.data_out:
+            cmd += f" --output-strains {self.data_out['strains']}"
+        if 'metadata_id_columns' in self.optional_args:
+            cmd += f" --metadata-id-columns {' '.join(self.optional_args.metadata_id_columns)}"
+        return cmd
+
+    def exec(self, dry_run=False):
+        """
+        Instead of running an `augur filter` command in a subprocess like we do
+        here, a nicer way would be to refactor `augur filter` to expose
+        functions which can be called here so that we can get a list of returned
+        strains. Doing so would provide a HUGE speedup if we could load the
+        sequences+metadata into memory a single time and then use that in-memory
+        data for all filtering calls which subsampling performs. This is
+        analogous to having an in-memory database running in a separate process
+        we can query - not as fast, but much easier implementation. Using
+        subprocess does make parallelisation trivial, but the above speed up
+        would be preferable.
+        """
+        print("\n" + self.__str__())
+        cmd = self.cmd()
+        print("RUNNING " + cmd)
+        if not dry_run:
+            try:
+                with open(self.log_fname, 'w') as fh:
+                    subprocess.run(cmd, shell=True, check=True, text=True, stdout=fh, stderr=fh)
+            except subprocess.CalledProcessError as e:
+                print(e)
+                raise AugurError("Check the logfile: "+self.log_fname)
+
         self.status = COMPLETE
 
 
@@ -57,32 +108,44 @@ class Proximity():
     def __str__(self):
         return f"calculate proximity for {self.name} by computing weights for {self.source_seqs} compared with {self.focal_samples}"
 
-    def exec(self):
+    def exec(self, dry_run=False):
         print("RUN", self.__str__())
         self.status = COMPLETE
 
 
 
 
-def generate_calls(config, seq_fname, meta_fname):
+def generate_calls(config, args):
     """
-    Produce an (unordered) dictionary of calls to be made to accomplish the desired subsampling.
-    Each call is either (i) a use of augur filter or (ii) a proximity calculation
-    The names given to calls are config-defined, but there is guaranteed to be one call
-    with the name "output"
+    Produce an (unordered) dictionary of calls to be made to accomplish the
+    desired subsampling. Each call is either (i) a use of augur filter or (ii) a
+    proximity calculation The names given to calls are config-defined, but there
+    is guaranteed to be one call with the name "output".
+
+    The separation between this function and the Filter (etc) classes is not
+    quite right, but it's a WIP.
     """
     calls = {}
 
     if 'output' not in config:
         raise AugurError('Config must define an "output" key')
 
+    tmpdir = args.tmpdir
+    if not path.isdir(args.tmpdir):
+        if path.exists(args.tmpdir):
+            raise AugurError(f'Provided --tmpdir {args.tmpdir!r} must be a directory')
+        mkdir(args.tmpdir)
+
     for sample_name, sample_config in config.items():
-        if sample_name == 'output':
-            # output is special cased
-            include = ' '.join([f"{name}.samples.txt" for name in sample_config])
+        if sample_name == 'output':  # output is special cased
+            depends_on = sample_config
             calls['output'] = Filter('output',
-                f"--exclude-all --include {include} --metadata {meta_fname} --sequences {seq_fname}",
-                sample_config
+                '--exclude-all --include ' + ' '.join([path.join(tmpdir, f"{name}.samples.txt") for name in sample_config]),
+                {'metadata': args.metadata, 'sequences': args.sequences},
+                {'metadata': args.output_metadata, 'sequences': args.output_sequences},
+                args,
+                depends_on,
+                path.join(tmpdir, "output.log.txt")
             )
             continue
 
@@ -106,12 +169,15 @@ def generate_calls(config, seq_fname, meta_fname):
                 f"{seq_fname}",                                         
                 [focus_name]
             )
-            
             depends_on.append("__priorities__"+focus_name)
 
         calls[sample_name] = Filter(sample_name,
-            f"{sample_config['filter']} --metadata {meta_fname} --sequences {seq_fname}",
-            depends_on
+            sample_config['filter'],
+            {'metadata': args.metadata, 'sequences': args.sequences},
+            {'strains': path.join(tmpdir, sample_name+'.samples.txt')},
+            args,
+            depends_on,
+            path.join(tmpdir, f"{sample_name}.log.txt")
         )
 
     # TODO XXX check acyclic
@@ -138,7 +204,7 @@ def get_runnable_call(calls):
             return name
     return None
 
-def loop(calls):
+def loop(calls, dry_run):
     """
     Execute the required calls in an approprate order (i.e. taking into account
     necessary dependencies). There are plenty of ways to do this, such as making
@@ -146,11 +212,9 @@ def loop(calls):
     solution however.
     """
     while name:=get_runnable_call(calls):
-        calls[name].exec()
-
-
+        calls[name].exec(dry_run)
 
 def run(args):
     config = parse_config(args.config)
-    calls = generate_calls(config, args.metadata, args.sequences)
-    loop(calls)
+    calls = generate_calls(config, args)
+    loop(calls, args.dry_run)
