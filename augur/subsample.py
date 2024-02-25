@@ -28,6 +28,8 @@ def register_parser(parent_subparsers):
     optionals.add_argument('--dry-run', action="store_true")
     optionals.add_argument('--metadata-id-columns', metavar="NAME", nargs="+",
         help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
+    optionals.add_argument('--reference', metavar="FASTA", help="needed for priority calculation (but it shouldn't be!)")
+
     return parser
 
 def parse_config(filename):
@@ -98,21 +100,44 @@ class Filter():
 
 
 class Proximity():
-    def __init__(self, name, focal_samples, source_seqs, depends_on):
+    def __init__(self, name, focal_data, contextual_data, num_per_focal, output, depends_on, args, logfile):
         self.name = name
-        self.focal_samples = focal_samples
-        self.source_seqs = source_seqs
+        self.focal_data = focal_data
+        self.contextual_data = contextual_data
+        self.num_per_focal = num_per_focal
+        self.output = output
         self.depends_on = depends_on
+        self.args = args
+        self.logfile = logfile
         self.status = INCOMPLETE
 
+    def get_closest_sequences(self):
+        """
+        The function we call here (originally written for ncov) computes the minimum
+        hamming distance for every sample in the (background) dataset against
+        all focal strains, and then returns the _n_ closest for each strain
+        """
+        from augur.subsample_.get_distance_to_focal_set import get_distance_to_focal_set 
+        print("Computing hamming distances & choosing closest contextual strains...")
+        # the sequences are assumed to be aligned, an error will be thrown if the lengths vary
+        return get_distance_to_focal_set(
+            self.contextual_data['sequences'],
+            self.args.reference,
+            self.focal_data['sequences'],
+            self.num_per_focal
+        )
+
     def __str__(self):
-        return f"calculate proximity for {self.name} by computing weights for {self.source_seqs} compared with {self.focal_samples}"
+        return f"Calculate proximity for {self.name} by computing weights for {self.focal_data['sequences']} against {self.contextual_data['sequences']}"
 
     def exec(self, dry_run=False):
-        print("RUN", self.__str__())
+        print("\n" + self.__str__())
+        if not dry_run:
+            closest = self.get_closest_sequences()
+            with open(self.output, 'w') as fh:
+                print("\n".join(list(closest)), file=fh)
+            print(f"\tClosest strains written to {self.output} (n={len(closest)})")
         self.status = COMPLETE
-
-
 
 
 def generate_calls(config, args):
@@ -152,6 +177,7 @@ def generate_calls(config, args):
         ## TODO XXX
         ## I designed this to have a 'include' parameter whereby the starting meta/seqs for this filter call could
         ## be the (joined) output of previous samples. To be implemented.
+        ## Similarly, the "exclude" YAML parameter is also not implemented
 
         if 'include' in sample_config:
             raise AugurError("'include' subsampling functionality not yet implemented")
@@ -163,12 +189,19 @@ def generate_calls(config, args):
             focus_name = sample_config['priorities']['focus']
             if priority_type != 'proximity':
                 raise AugurError(f"Priorities must be proximity, not {priority_type!r}")
-            
+            if sample_config.get('filter', '') != '':
+                raise AugurError(f"Priorities must not be used in conjunction with filtering queries.")
+            priority_fname = path.join(tmpdir, f"{focus_name}.priorities.txt")
             calls["__priorities__"+focus_name] = Proximity(focus_name,
-                f"{focus_name}.samples.txt",
-                f"{seq_fname}",                                         
-                [focus_name]
+                {'sequences': path.join(tmpdir, f"{focus_name}.fasta")},    # input (focal seqs)
+                {'metadata': args.metadata, 'sequences': args.sequences},   # input (contextual seqs)
+                sample_config['priorities']['num_per_focal'],
+                priority_fname,                                             # output         
+                [focus_name],                                               # depends on
+                args,
+                path.join(tmpdir, f"{sample_name}.priorities.log.txt")      # logfile
             )
+            sample_config['filter'] = f"--exclude-all --include {priority_fname}"
             depends_on.append("__priorities__"+focus_name)
 
         calls[sample_name] = Filter(sample_name,
@@ -179,6 +212,14 @@ def generate_calls(config, args):
             depends_on,
             path.join(tmpdir, f"{sample_name}.log.txt")
         )
+
+
+    # Any intermediate sample a priority calculation depends on requires FASTA input, not samples.txt
+    # (This is required by distance-to-focal-set, but we could change this)
+    for priority_call in [c for c in calls.values() if isinstance(c, Proximity)]:
+        for dep in priority_call.depends_on:
+            print("Priority calc", priority_call.name, "depends on ", dep)
+            calls[dep].data_out['sequences'] = calls[dep].data_out['strains'].replace('.samples.txt', ".fasta")
 
     # TODO XXX check acyclic
         
