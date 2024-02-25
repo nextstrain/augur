@@ -3,13 +3,9 @@ Calculate minimal distances between sequences in an alignment and a set of focal
 """
 import argparse
 from augur.io import read_sequences
-from random import shuffle
 from collections import defaultdict
-import Bio
 import numpy as np
-from Bio.SeqIO.FastaIO import SimpleFastaParser
-from Bio.Seq import Seq
-from Bio import AlignIO, SeqIO
+from Bio import SeqIO
 from scipy import sparse
 import sys
 
@@ -135,7 +131,7 @@ def calculate_distance_matrix(sparse_matrix_A, sparse_matrix_B, consensus):
     return d
 
 
-def get_distance_to_focal_set(alignment, reference, focal_alignment, output, ignore_seqs=[], chunk_size=10000):
+def get_distance_to_focal_set(alignment, reference, focal_alignment, num_closest, ignore_seqs=[], chunk_size=10000):
     """
     Calculate minimal distances between sequences in an alignment and a set of focal sequences
     Parameters
@@ -175,10 +171,7 @@ def get_distance_to_focal_set(alignment, reference, focal_alignment, output, ign
 
     seqs = read_sequences(alignment)
 
-    # export priorities
-    fh_out = open(output, 'w')
-    fh_out.write('strain\tclosest strain\tdistance\n')
-
+    store = {name:[] for name in focal_seqs_dict["names"]}
     chunk_count = 0
     while True:
         context_seqs_dict = calculate_snp_matrix(seqs, consensus=ref, chunk_size=chunk_size)
@@ -189,27 +182,43 @@ def get_distance_to_focal_set(alignment, reference, focal_alignment, output, ign
 
         # calculate number of masked sites in either set
         mask_count_focal = np.array([len(x) for x in focal_seqs_dict['filled_positions']])
-        mask_count_context = {s: len(x) for s,x in zip(context_seqs_dict['names'], context_seqs_dict['filled_positions'])}
 
         # for each context sequence, calculate minimal distance to focal set, weigh with number of N/- to pick best sequence
+        # d[i][j] : i is context seqs index, j is focal index
         d = np.array(calculate_distance_matrix(context_seqs_dict['snps'], focal_seqs_dict['snps'], consensus = context_seqs_dict['consensus']))
-        closest_match = np.argmin(d+mask_count_focal/alignment_length, axis=1)
-        print("Done finding closest matches.")
+        d+=mask_count_focal/alignment_length
 
-        minimal_distance_to_focal_set = {}
-        for context_index, focal_index in enumerate(closest_match):
-            minimal_distance_to_focal_set[context_seqs_dict['names'][context_index]] = (d[context_index, focal_index], focal_seqs_dict["names"][focal_index])
-
-        for seqid in minimal_distance_to_focal_set:
-            fh_out.write(f"{seqid}\t{minimal_distance_to_focal_set[seqid][1]}\t{minimal_distance_to_focal_set[seqid][0]}\n")
+        # store results per-focal-seq. TODO XXX - use more space efficient approach, as we know very poor matches will never be used
+        for context_index in range(0, d.shape[0]):
+            context_name = context_seqs_dict['names'][context_index]
+            for focal_index in range(0, d.shape[1]):
+                store[ focal_seqs_dict["names"][focal_index] ].append( (context_name, d[context_index][focal_index]) )
 
         chunk_count += 1
 
-    fh_out.close()
+    # Find the _n_ closest strains for each focal sequence. Don't double-count, so (e.g.) in the case that a close strain
+    # has already been taken then we actually take n+1 strains for this focal seq. The end result is that we will take
+    # precisely n * len(focal) sequences
+    closest = set()
+    focal_seqs = set(focal_seqs_dict["names"])
+    for comparisons in store.values():
+        comparisons.sort(key=lambda x: x[1])
+        to_take = num_closest
+        for el in comparisons:
+            if el[0] in closest or el[0] in focal_seqs:
+                continue
+            closest.add(el[0])
+            to_take -= 1
+            if to_take==0:
+                break
+    
+    print(f"Identified {len(closest)} strains (closest {num_closest} for each {len(focal_seqs)} focal sequences)")
+    return closest
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description="generate priorities files based on genetic proximity to focal sample",
+        description="Find the most genetically similar sequences for a focal set against a contextual set",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("--alignment", type=str, required=True, help="FASTA file of alignment")
@@ -217,13 +226,17 @@ if __name__ == '__main__':
     parser.add_argument("--ignore-seqs", type = str, nargs='+', help="sequences to ignore in distance calculation")
     parser.add_argument("--focal-alignment", type = str, required=True, help="focal sample of sequences")
     parser.add_argument("--chunk-size", type=int, default=10000, help="number of samples in the global alignment to process at once. Reduce this number to reduce memory usage at the cost of increased run-time.")
-    parser.add_argument("--output", type=str, required=True, help="FASTA file of output alignment")
+    parser.add_argument("-n", type=int, required=True, help="Number of closest strains (per focal seq) to report")
+    parser.add_argument("--output", type=str, required=True, help="List of closest strains")
     args = parser.parse_args()
-    get_distance_to_focal_set(
+    closest = get_distance_to_focal_set(
         args.alignment,
         args.reference,
         args.focal_alignment,
-        args.output,
+        args.n,
         args.ignore_seqs,
         args.chunk_size
     )
+
+    with open(args.output, 'w') as fh:
+        print("\n".join(list(closest)), file=fh)
