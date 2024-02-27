@@ -56,8 +56,8 @@ To drop such strains, you can pass the filename to ``--exclude``:
     --output-sequences filtered_sequences.fasta \
     --output-metadata filtered_metadata.tsv
 
-Subsampling
------------
+Subsampling within ``augur filter``
+-----------------------------------
 
 Another common filtering operation is subsetting of data to a achieve a more even spatio-temporal distribution or to cut-down data set size to more manageable numbers.
 The filter command allows you to select a specific number of sequences from specific groups, for example one sequence per month from each country:
@@ -74,8 +74,8 @@ The filter command allows you to select a specific number of sequences from spec
     --output-sequences subsampled_sequences.fasta \
     --output-metadata subsampled_metadata.tsv
 
-Subsampling beyond the capabilities of ``augur filter``
--------------------------------------------------------
+Subsampling using multiple ``augur filter`` commands
+----------------------------------------------------
 
 There are some subsampling strategies in which a single call to ``augur filter``
 does not suffice. One such strategy is "tiered subsampling". In this strategy,
