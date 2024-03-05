@@ -70,10 +70,10 @@ Show help text
     --query-columns QUERY_COLUMNS [QUERY_COLUMNS ...]
                           Use alongside --query to specify columns and data
                           types in the format 'column:type', where type is one
-                          of (int,bool,str,float). Automatic type inference will
-                          be attempted on all unspecified columns used in the
-                          query. Example: region:str coverage:float. (default:
-                          None)
+                          of ['bool', 'float', 'int', 'str']. Automatic type
+                          inference will be attempted on all unspecified columns
+                          used in the query. Example: region:str coverage:float.
+                          (default: None)
     --min-date MIN_DATE   minimal cutoff for date, the cutoff date is inclusive;
                           may be specified as: 1. an Augur-style numeric date
                           with the year as the integer part (e.g. 2020.42) or 2.
