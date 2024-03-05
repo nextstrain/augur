@@ -459,6 +459,34 @@ def filter_by_min_length(metadata, sequence_index, min_length) -> FilterFunction
     return set(filtered_sequence_index[filtered_sequence_index["ACGT"] >= min_length].index.values)
 
 
+def filter_by_max_length(metadata, sequence_index, max_length) -> FilterFunctionReturn:
+    """Filter metadata by sequence length from a given sequence index.
+
+    Parameters
+    ----------
+    metadata : pandas.DataFrame
+        Metadata indexed by strain name
+    sequence_index : pandas.DataFrame
+        Sequence index
+    max_length : int
+        Maximum number of standard nucleotide characters (A, C, G, or T) in each sequence
+
+    Examples
+    --------
+    >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
+    >>> filter_by_max_length(metadata, sequence_index, max_length=27000)
+    {'strain2'}
+    """
+    strains = set(metadata.index.values)
+    filtered_sequence_index = sequence_index.loc[
+        sequence_index.index.intersection(strains)
+    ]
+    filtered_sequence_index["ACGT"] = filtered_sequence_index.loc[:, ["A", "C", "G", "T"]].sum(axis=1)
+
+    return set(filtered_sequence_index[filtered_sequence_index["ACGT"] <= max_length].index.values)
+
+
 def filter_by_non_nucleotide(metadata, sequence_index) -> FilterFunctionReturn:
     """Filter metadata for strains with invalid nucleotide content.
 
@@ -667,12 +695,11 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
         ))
 
     # Filter by sequence length.
+    # Skip VCF files and warn the user that length filters do not
+    # make sense for VCFs.
+    is_vcf = filename_is_vcf(args.sequences)
     if args.min_length:
-        # Skip VCF files and warn the user that the min length filter does not
-        # make sense for VCFs.
-        is_vcf = filename_is_vcf(args.sequences)
-
-        if is_vcf: #doesn't make sense for VCF, ignore.
+        if is_vcf:
             print_err("WARNING: Cannot use min_length for VCF files. Ignoring...")
         else:
             exclude_by.append((
@@ -680,6 +707,17 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
                 {
                     "sequence_index": sequence_index,
                     "min_length": args.min_length,
+                }
+            ))
+    if args.max_length:
+        if is_vcf:
+            print_err("WARNING: Cannot use max_length for VCF files. Ignoring...")
+        else:
+            exclude_by.append((
+                filter_by_max_length,
+                {
+                    "sequence_index": sequence_index,
+                    "max_length": args.max_length,
                 }
             ))
 
