@@ -2,11 +2,16 @@
 
 ## __NEXT__
 
+### Features
+
+* filter: Added a new option `--max-length` to filter out sequences that are longer than a certain amount of base pairs. [#1429][] (@victorlin)
+
 ### Bug Fixes
 
 * filter: Updated docs with an example of tiered subsampling. [#1425][] (@victorlin)
 
 [#1425]: https://github.com/nextstrain/augur/pull/1425
+[#1429]: https://github.com/nextstrain/augur/pull/1429
 
 ## 24.2.3 (23 February 2024)
 
