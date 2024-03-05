@@ -92,7 +92,8 @@ Show help text
                           "201X-10-01"). Similarly, an ambiguous month makes the
                           corresponding day ambiguous (e.g., "2010-XX-01").
     --exclude FILE [FILE ...]
-                          File(s) with list of strains to exclude.
+                          File(s) with list of strain IDs to exclude. The ID
+                          column is determined by --metadata-id-columns.
     --exclude-where CONDITION [CONDITION ...]
                           Exclude strains matching these conditions. Ex:
                           "host=rat" or "host!=rat". Multiple values are
@@ -102,9 +103,10 @@ Show help text
                           include arguments to select a specific subset of
                           strains.
     --include FILE [FILE ...]
-                          File(s) with list of strains to include regardless of
-                          priorities, subsampling, or absence of an entry in
-                          --sequences.
+                          File(s) with list of strain IDs to include regardless
+                          of priorities, subsampling, or absence of an entry in
+                          --sequences. The ID column is determined by
+                          --metadata-id-columns.
     --include-where CONDITION [CONDITION ...]
                           Include strains with these values. ex: host=rat.
                           Multiple values are processed as OR (having any of
@@ -151,15 +153,16 @@ Show help text
                           max-sequences` is provided. (default: True)
     --no-probabilistic-sampling
     --priority FILE       Tab-delimited file with list of priority scores for
-                          strains (e.g., "<strain>\t<priority>") and no header.
-                          When scores are provided, Augur converts scores to
-                          floating point values, sorts strains within each
-                          subsampling group from highest to lowest priority, and
-                          selects the top N strains per group where N is the
-                          calculated or requested number of strains per group.
-                          Higher numbers indicate higher priority. Since
-                          priorities represent relative values between strains,
-                          these values can be arbitrary.
+                          strains (e.g., "<strain ID>\t<priority>") and no
+                          header. When scores are provided, Augur converts
+                          scores to floating point values, sorts strains within
+                          each subsampling group from highest to lowest
+                          priority, and selects the top N strains per group
+                          where N is the calculated or requested number of
+                          strains per group. Higher numbers indicate higher
+                          priority. Since priorities represent relative values
+                          between strains, these values can be arbitrary. The ID
+                          column is determined by --metadata-id-columns.
     --subsample-seed N    Random number generator seed to allow reproducible
                           subsampling (with same input data).
   
@@ -173,7 +176,8 @@ Show help text
     --output-metadata FILE
                           Metadata for strains that passed filters.
     --output-strains FILE
-                          List of strains that passed filters (no header).
+                          List of strain IDs that passed filters (no header).
+                          The ID column is determined by --metadata-id-columns.
     --output-log FILE     Tab-delimited file with one row for each filtered
                           strain and the reason it was filtered. Keyword
                           arguments used for a given filter are reported in JSON

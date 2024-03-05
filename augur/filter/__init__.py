@@ -71,8 +71,9 @@ def register_arguments(parser):
               corresponding day ambiguous (e.g., "2010-XX-01").
               {SKIP_AUTO_DEFAULT_IN_HELP}""")
     metadata_filter_group.add_argument('--exclude', type=str, nargs="+", metavar="FILE",
-        help=f"""File(s) with list of strains to exclude.
-              {SKIP_AUTO_DEFAULT_IN_HELP}""")
+        help=f"""File(s) with list of strain IDs to exclude. The ID column is
+             determined by --metadata-id-columns.
+             {SKIP_AUTO_DEFAULT_IN_HELP}""")
     metadata_filter_group.add_argument('--exclude-where', nargs='+', metavar="CONDITION",
         help=f"""Exclude strains matching these conditions. Ex: \"host=rat\" or
               \"host!=rat\". Multiple values are processed as OR (matching any of
@@ -82,8 +83,9 @@ def register_arguments(parser):
               arguments to select a specific subset of strains.
               {SKIP_AUTO_DEFAULT_IN_HELP}""")
     metadata_filter_group.add_argument('--include', type=str, nargs="+", metavar="FILE",
-        help=f"""File(s) with list of strains to include regardless of
+        help=f"""File(s) with list of strain IDs to include regardless of
               priorities, subsampling, or absence of an entry in --sequences.
+              The ID column is determined by --metadata-id-columns.
               {SKIP_AUTO_DEFAULT_IN_HELP}""")
     metadata_filter_group.add_argument('--include-where', nargs='+', metavar="CONDITION",
         help=f"""Include strains with these values. ex: host=rat. Multiple
@@ -141,13 +143,14 @@ def register_arguments(parser):
 
     subsample_group.add_argument('--priority', type=str, metavar="FILE",
         help=f"""Tab-delimited file with list of priority scores for strains
-              (e.g., "<strain>\\t<priority>") and no header. When scores are
+              (e.g., "<strain ID>\\t<priority>") and no header. When scores are
               provided, Augur converts scores to floating point values, sorts
               strains within each subsampling group from highest to lowest
               priority, and selects the top N strains per group where N is the
               calculated or requested number of strains per group. Higher
               numbers indicate higher priority. Since priorities represent
               relative values between strains, these values can be arbitrary.
+              The ID column is determined by --metadata-id-columns.
               {SKIP_AUTO_DEFAULT_IN_HELP}""")
     subsample_group.add_argument('--subsample-seed', type=int, metavar="N",
         help=f"""Random number generator seed to allow reproducible subsampling
@@ -165,7 +168,8 @@ def register_arguments(parser):
         help=f"""Metadata for strains that passed filters.
               {SKIP_AUTO_DEFAULT_IN_HELP}""")
     output_group.add_argument('--output-strains', metavar="FILE",
-        help=f"""List of strains that passed filters (no header).
+        help=f"""List of strain IDs that passed filters (no header). The ID
+              column is determined by --metadata-id-columns.
               {SKIP_AUTO_DEFAULT_IN_HELP}""")
     output_group.add_argument('--output-log', metavar="FILE",
         help=f"""Tab-delimited file with one row for each filtered strain and
