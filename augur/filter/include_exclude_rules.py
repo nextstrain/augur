@@ -424,7 +424,7 @@ def filter_by_sequence_index(metadata, sequence_index) -> FilterFunctionReturn:
     return metadata_strains & sequence_index_strains
 
 
-def filter_by_sequence_length(metadata, sequence_index, min_length) -> FilterFunctionReturn:
+def filter_by_min_length(metadata, sequence_index, min_length) -> FilterFunctionReturn:
     """Filter metadata by sequence length from a given sequence index.
 
     Parameters
@@ -440,13 +440,13 @@ def filter_by_sequence_length(metadata, sequence_index, min_length) -> FilterFun
     --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
     >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
-    >>> filter_by_sequence_length(metadata, sequence_index, min_length=27000)
+    >>> filter_by_min_length(metadata, sequence_index, min_length=27000)
     {'strain1'}
 
     It is possible for the sequence index to be missing strains present in the metadata.
 
     >>> sequence_index = pd.DataFrame([{"strain": "strain3", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
-    >>> filter_by_sequence_length(metadata, sequence_index, min_length=27000)
+    >>> filter_by_min_length(metadata, sequence_index, min_length=27000)
     set()
 
     """
@@ -676,7 +676,7 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
             print_err("WARNING: Cannot use min_length for VCF files. Ignoring...")
         else:
             exclude_by.append((
-                filter_by_sequence_length,
+                filter_by_min_length,
                 {
                     "sequence_index": sequence_index,
                     "min_length": args.min_length,
@@ -755,13 +755,13 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
     annotated in a sequence index.
 
     >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}, {"strain": "strain3", "A": 1250, "C": 1250, "G": 1250, "T": 1250}]).set_index("strain")
-    >>> exclude_by = [(filter_by_sequence_length, {"sequence_index": sequence_index, "min_length": 27000})]
+    >>> exclude_by = [(filter_by_min_length, {"sequence_index": sequence_index, "min_length": 27000})]
     >>> include_by = [(force_include_where, {"include_where": "region=Europe"})]
     >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
     >>> strains_to_keep
     {'strain1'}
     >>> sorted(strains_to_exclude, key=lambda record: record["strain"])
-    [{'strain': 'strain2', 'filter': 'filter_by_sequence_length', 'kwargs': '[["min_length", 27000]]'}, {'strain': 'strain3', 'filter': 'filter_by_sequence_length', 'kwargs': '[["min_length", 27000]]'}]
+    [{'strain': 'strain2', 'filter': 'filter_by_min_length', 'kwargs': '[["min_length", 27000]]'}, {'strain': 'strain3', 'filter': 'filter_by_min_length', 'kwargs': '[["min_length", 27000]]'}]
     >>> strains_to_include
     [{'strain': 'strain2', 'filter': 'force_include_where', 'kwargs': '[["include_where", "region=Europe"]]'}]
 
@@ -847,9 +847,9 @@ def _filter_kwargs_to_str(kwargs: FilterFunctionKwargs):
     Examples
     --------
     >>> from augur.dates import numeric_date
-    >>> from augur.filter.include_exclude_rules import filter_by_sequence_length, filter_by_min_date
+    >>> from augur.filter.include_exclude_rules import filter_by_min_length, filter_by_min_date
     >>> sequence_index = pd.DataFrame([{"strain": "strain1", "ACGT": 28000}, {"strain": "strain2", "ACGT": 26000}, {"strain": "strain3", "ACGT": 5000}]).set_index("strain")
-    >>> exclude_by = [(filter_by_sequence_length, {"sequence_index": sequence_index, "min_length": 27000})]
+    >>> exclude_by = [(filter_by_min_length, {"sequence_index": sequence_index, "min_length": 27000})]
     >>> _filter_kwargs_to_str(exclude_by[0][1])
     '[["min_length", 27000]]'
     >>> exclude_by = [(filter_by_min_date, {"date_column": "date", "min_date": numeric_date("2020-03-01")})]
