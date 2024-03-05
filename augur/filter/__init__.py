@@ -31,7 +31,7 @@ def register_arguments(parser):
              time. Increasing this number can speed up filtering at the cost of
              more memory used.""")
     input_group.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", metavar="COLUMN",
-        help="""Names of possible metadata columns containing identifier
+        help="""Names of possible metadata columns containing strain identifier
              information, ordered by priority. Only one ID column will be
              inferred.""")
     input_group.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", metavar="DELIMITER",
@@ -42,7 +42,7 @@ def register_arguments(parser):
         title="Metadata filters",
         description="Filters to apply to metadata.")
     metadata_filter_group.add_argument('--query', metavar="QUERY",
-        help=f"""Filter samples by attribute. Uses Pandas DataFrame querying, see
+        help=f"""Filter strains by attribute. Uses Pandas DataFrame querying, see
               https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query
               for syntax. (e.g., --query "country == 'Colombia'" or --query
               "(country == 'USA' & (division == 'Washington'))")
@@ -74,7 +74,7 @@ def register_arguments(parser):
         help=f"""File(s) with list of strains to exclude.
               {SKIP_AUTO_DEFAULT_IN_HELP}""")
     metadata_filter_group.add_argument('--exclude-where', nargs='+', metavar="CONDITION",
-        help=f"""Exclude samples matching these conditions. Ex: \"host=rat\" or
+        help=f"""Exclude strains matching these conditions. Ex: \"host=rat\" or
               \"host!=rat\". Multiple values are processed as OR (matching any of
               those specified will be excluded), not AND. {SKIP_AUTO_DEFAULT_IN_HELP}""")
     metadata_filter_group.add_argument('--exclude-all', action="store_true",
@@ -86,7 +86,7 @@ def register_arguments(parser):
               priorities, subsampling, or absence of an entry in --sequences.
               {SKIP_AUTO_DEFAULT_IN_HELP}""")
     metadata_filter_group.add_argument('--include-where', nargs='+', metavar="CONDITION",
-        help=f"""Include samples with these values. ex: host=rat. Multiple
+        help=f"""Include strains with these values. ex: host=rat. Multiple
               values are processed as OR (having any of those specified will be
               included), not AND. This rule is applied last and ensures any
               strains matching these rules will be included regardless of
@@ -126,17 +126,17 @@ def register_arguments(parser):
 
     subsample_limits_group = subsample_group.add_mutually_exclusive_group()
     subsample_limits_group.add_argument('--sequences-per-group', type=int, metavar="N",
-        help=f"""Subsample to no more than this number of sequences per
+        help=f"""Subsample to no more than this number of strains per
               category. {SKIP_AUTO_DEFAULT_IN_HELP}""")
     subsample_limits_group.add_argument('--subsample-max-sequences', type=int, metavar="N",
-        help=f"""Subsample to no more than this number of sequences; can be used
+        help=f"""Subsample to no more than this number of strains; can be used
               without --group-by. {SKIP_AUTO_DEFAULT_IN_HELP}""")
 
     probabilistic_sampling_group = subsample_group.add_mutually_exclusive_group()
     probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true',
         help="""Allow probabilistic sampling during subsampling. This is useful
-             when there are more groups than requested sequences. This option
-             only applies when `--subsample-max-sequences` is provided.""")
+             when there are more groups than requested strains. This option only
+             applies when `--subsample-max-sequences` is provided.""")
     probabilistic_sampling_group.add_argument('--no-probabilistic-sampling', action='store_false', dest='probabilistic_sampling')
 
     subsample_group.add_argument('--priority', type=str, metavar="FILE",

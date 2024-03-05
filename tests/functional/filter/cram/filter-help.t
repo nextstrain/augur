@@ -45,7 +45,7 @@ Show help text
                           filtering at the cost of more memory used. (default:
                           100000)
     --metadata-id-columns COLUMN [COLUMN ...]
-                          Names of possible metadata columns containing
+                          Names of possible metadata columns containing strain
                           identifier information, ordered by priority. Only one
                           ID column will be inferred. (default: ('strain',
                           'name'))
@@ -57,7 +57,7 @@ Show help text
   Metadata filters:
     Filters to apply to metadata.
   
-    --query QUERY         Filter samples by attribute. Uses Pandas DataFrame
+    --query QUERY         Filter strains by attribute. Uses Pandas DataFrame
                           querying, see https://pandas.pydata.org/pandas-
                           docs/stable/user_guide/indexing.html#indexing-query
                           for syntax. (e.g., --query "country == 'Colombia'" or
@@ -94,7 +94,7 @@ Show help text
     --exclude FILE [FILE ...]
                           File(s) with list of strains to exclude.
     --exclude-where CONDITION [CONDITION ...]
-                          Exclude samples matching these conditions. Ex:
+                          Exclude strains matching these conditions. Ex:
                           "host=rat" or "host!=rat". Multiple values are
                           processed as OR (matching any of those specified will
                           be excluded), not AND.
@@ -106,7 +106,7 @@ Show help text
                           priorities, subsampling, or absence of an entry in
                           --sequences.
     --include-where CONDITION [CONDITION ...]
-                          Include samples with these values. ex: host=rat.
+                          Include strains with these values. ex: host=rat.
                           Multiple values are processed as OR (having any of
                           those specified will be included), not AND. This rule
                           is applied last and ensures any strains matching these
@@ -139,15 +139,15 @@ Show help text
                           rename them if you want to use their values for
                           grouping.
     --sequences-per-group N
-                          Subsample to no more than this number of sequences per
+                          Subsample to no more than this number of strains per
                           category.
     --subsample-max-sequences N
-                          Subsample to no more than this number of sequences;
-                          can be used without --group-by.
+                          Subsample to no more than this number of strains; can
+                          be used without --group-by.
     --probabilistic-sampling
                           Allow probabilistic sampling during subsampling. This
                           is useful when there are more groups than requested
-                          sequences. This option only applies when `--subsample-
+                          strains. This option only applies when `--subsample-
                           max-sequences` is provided. (default: True)
     --no-probabilistic-sampling
     --priority FILE       Tab-delimited file with list of priority scores for
