@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* filter: Updated docs with an example of tiered subsampling. [#1425][] (@victorlin)
+
+[#1425]: https://github.com/nextstrain/augur/pull/1425
 
 ## 24.2.3 (23 February 2024)
 
