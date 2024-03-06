@@ -175,7 +175,7 @@ def run(args):
         columns=useful_metadata_columns,
         id_columns=[metadata_object.id_column],
         chunk_size=args.metadata_chunk_size,
-        dtype="string",
+        dtype={col: 'category' for col in useful_metadata_columns},
     )
     for metadata in metadata_reader:
         duplicate_strains = (
@@ -297,7 +297,7 @@ def run(args):
             columns=useful_metadata_columns,
             id_columns=args.metadata_id_columns,
             chunk_size=args.metadata_chunk_size,
-            dtype="string",
+            dtype={col: 'category' for col in useful_metadata_columns},
         )
         for metadata in metadata_reader:
             # Recalculate groups for subsampling as we loop through the

@@ -22,7 +22,7 @@ Some error messages from Pandas may be useful, so they are exposed:
   >  --query "region >= 0.50" \
   >  --output-strains filtered_strains.txt > /dev/null
   ERROR: Internal Pandas error when applying query:
-  	'>=' not supported between instances of 'str' and 'float'
+  	Unordered Categoricals can only compare equality or not
   Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
   [2]
 
