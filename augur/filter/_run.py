@@ -21,7 +21,7 @@ from augur.io.print import print_err
 from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
 from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
-from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_metadata_based_outputs
+from .io import get_useful_metadata_columns, read_priority_scores, write_metadata_based_outputs
 from .include_exclude_rules import apply_filters, construct_filters
 from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, create_queues_by_group, get_groups_for_subsampling
 
@@ -183,7 +183,6 @@ def run(args):
             set(metadata.index[metadata.index.isin(metadata_strains)])
         )
         if len(duplicate_strains) > 0:
-            cleanup_outputs(args)
             raise AugurError(f"The following strains are duplicated in '{args.metadata}':\n" + "\n".join(sorted(duplicate_strains)))
 
         # Maintain list of all strains seen.

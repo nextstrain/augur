@@ -2,7 +2,7 @@
 Filter and subsample a sequence set.
 """
 from augur.dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT
-from augur.filter.io import ACCEPTED_TYPES, column_type_pair
+from augur.filter.io import ACCEPTED_TYPES, cleanup_outputs, column_type_pair
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN
 from augur.types import EmptyOutputReportingMethod
 from . import constants
@@ -104,4 +104,8 @@ def run(args):
     validate_arguments(args)
 
     from ._run import run as _run
-    return _run(args)
+    try:
+        return _run(args)
+    except:
+        cleanup_outputs(args)
+        raise

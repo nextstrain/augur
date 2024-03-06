@@ -13,7 +13,8 @@ Test the default behavior for empty results is an error.
   ERROR: All samples have been dropped! Check filter rules and metadata file format.
   [2]
   $ wc -l filtered_strains.txt
-  \s*0 .* (re)
+  wc: filtered_strains.txt: open: No such file or directory
+  [1]
 
 Repeat with the --empty-output-reporting=warn option.
 This whould output a warning message but no error.

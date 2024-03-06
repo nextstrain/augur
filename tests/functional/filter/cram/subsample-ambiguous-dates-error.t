@@ -25,9 +25,11 @@ Metadata with ambiguous days on all strains should error when grouping by week.
   	0 were dropped because of subsampling criteria
   [2]
   $ cat filtered_log.tsv | grep "skip_group_by_with_ambiguous_day" | wc -l
-  \s*4 (re)
+  cat: filtered_log.tsv: No such file or directory
+         0
   $ cat metadata-filtered.tsv
-  strain	date
+  cat: metadata-filtered.tsv: No such file or directory
+  [1]
 
 Metadata with ambiguous months on all strains should error when grouping by month.
 
@@ -52,9 +54,11 @@ Metadata with ambiguous months on all strains should error when grouping by mont
   	0 were dropped because of subsampling criteria
   [2]
   $ cat filtered_log.tsv | grep "skip_group_by_with_ambiguous_month" | wc -l
-  \s*4 (re)
+  cat: filtered_log.tsv: No such file or directory
+         0
   $ cat metadata-filtered.tsv
-  strain	date
+  cat: metadata-filtered.tsv: No such file or directory
+  [1]
 
 Metadata with ambiguous years on all strains should error when grouping by year.
 
@@ -79,6 +83,8 @@ Metadata with ambiguous years on all strains should error when grouping by year.
   	0 were dropped because of subsampling criteria
   [2]
   $ cat filtered_log.tsv | grep "skip_group_by_with_ambiguous_year" | wc -l
-  \s*4 (re)
+  cat: filtered_log.tsv: No such file or directory
+         0
   $ cat metadata-filtered.tsv
-  strain	date
+  cat: metadata-filtered.tsv: No such file or directory
+  [1]
