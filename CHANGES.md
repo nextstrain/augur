@@ -5,8 +5,10 @@
 ### Bug Fixes
 
 * filter: Updated docs with an example of tiered subsampling. [#1425][] (@victorlin)
+* export: Fixes bug #1433 introduced in v23.1.0, that causes validation to fail when gene names start with `nuc`, e.g. `nucleocapsid`. [#1434][] (@corneliusroemer)
 
 [#1425]: https://github.com/nextstrain/augur/pull/1425
+[#1434]: https://github.com/nextstrain/augur/pull/1434
 
 ## 24.2.3 (23 February 2024)
 
