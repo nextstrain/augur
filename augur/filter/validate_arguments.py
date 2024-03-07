@@ -1,4 +1,5 @@
 from augur.errors import AugurError
+from augur.io.print import print_err
 from augur.io.vcf import is_vcf as filename_is_vcf
 
 
@@ -16,6 +17,9 @@ def validate_arguments(args):
     args : argparse.Namespace
         Parsed arguments from argparse
     """
+    if args.metadata_chunk_size:
+        print_err("WARNING: --metadata-chunk-size is no longer necessary and will be removed in a future version.")
+
     # Don't allow sequence output when no sequence input is provided.
     if args.output and not args.sequences:
         raise AugurError("You need to provide sequences to output sequences.")
