@@ -4,6 +4,7 @@ from augur.io.vcf import is_vcf as filename_is_vcf
 
 SEQUENCE_ONLY_FILTERS = (
     "min_length",
+    "max_length",
     "non_nucleotide",
 )
 

@@ -52,6 +52,7 @@ def register_arguments(parser):
 
     sequence_filter_group = parser.add_argument_group("sequence filters", "filters to apply to sequence data")
     sequence_filter_group.add_argument('--min-length', type=int, help="minimal length of the sequences, only counting standard nucleotide characters A, C, G, or T (case-insensitive)")
+    sequence_filter_group.add_argument('--max-length', type=int, help="maximum length of the sequences, only counting standard nucleotide characters A, C, G, or T (case-insensitive)")
     sequence_filter_group.add_argument('--non-nucleotide', action='store_true', help="exclude sequences that contain illegal characters")
 
     subsample_group = parser.add_argument_group("subsampling", "options to subsample filtered data")
