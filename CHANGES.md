@@ -9,9 +9,11 @@
 ### Bug Fixes
 
 * filter: Updated docs with an example of tiered subsampling. [#1425][] (@victorlin)
+* filter: Added clarity to help text shown when running `augur filter --help` and rendered on the docs page. [#1430][] (@victorlin)
 
 [#1425]: https://github.com/nextstrain/augur/pull/1425
 [#1429]: https://github.com/nextstrain/augur/pull/1429
+[#1430]: https://github.com/nextstrain/augur/pull/1430
 
 ## 24.2.3 (23 February 2024)
 
