@@ -385,17 +385,18 @@ def _read_nuc_annotation_from_genbank(record, reference):
 
 def _read_genbank(reference, feature_names):
     """
-    Read a GenBank file. We only read GenBank feature keys 'CDS' or 'source'.
+    Read a GenBank file. We only read GenBank feature keys 'source', 'CDS', or 'gene'.
     We create a "feature name" via:
     - for 'source' features use 'nuc'
     - for 'CDS' features use the locus_tag or the gene. If neither, then silently ignore. 
+    - for 'gene' feature use the locus_tag or the gene. If neither, then silently ignore.
 
     Parameters
     ----------
     reference : string
         File path to GenBank reference
     feature_names : None or set or list
-        Restrict the CDSs we read to those in the set/list
+        Restrict the CDSs or genes we read to those in the set/list
 
     Returns
     -------
@@ -408,6 +409,7 @@ def _read_genbank(reference, feature_names):
     AugurError
         If 'nuc' annotation not parsed
         If a CDS feature is given the name 'nuc'
+        If a 'gene' feature is given the name 'nuc'
     """
     from Bio import SeqIO
     gb = SeqIO.read(reference, 'genbank')
@@ -428,6 +430,21 @@ def _read_genbank(reference, feature_names):
 
             if fname == 'nuc':
                 raise AugurError(f"Reference {reference!r} contains a CDS with the name 'nuc'. This is not allowed.")
+
+            if fname and (feature_names is None or fname in feature_names):
+                features[fname] = feat
+
+        if feat.type=='gene':
+            fname = None
+            if "locus_tag" in feat.qualifiers:
+                fname = feat.qualifiers["locus_tag"][0]
+            elif "gene" in feat.qualifiers:
+                fname = feat.qualifiers["gene"][0]
+            else:
+                features_skipped+=1
+
+            if fname == 'nuc':
+                raise AugurError(f"Reference {reference!r} contains a 'gene' feature with the name 'nuc'. This is not allowed.")
 
             if fname and (feature_names is None or fname in feature_names):
                 features[fname] = feat
