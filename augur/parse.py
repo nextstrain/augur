@@ -32,7 +32,7 @@ def fix_dates(d, dayfirst=True):
     '''
     try:
         from pandas.core.tools.datetimes import parsing
-        results = parsing.parse_time_string(d, dayfirst=dayfirst)
+        results = parsing.parse_datetime_string_with_reso(d, dayfirst=dayfirst)
         if len(results) == 2:
             dto, res = results
         else:
