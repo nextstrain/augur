@@ -5,6 +5,7 @@
 ### Features
 
 * filter: Added a new option `--max-length` to filter out sequences that are longer than a certain amount of base pairs. [#1429][] (@victorlin)
+* parse: Added support for environments that use pandas 2.x. [#1436][] (@emollier, @victorlin)
 
 ### Bug Fixes
 
@@ -12,6 +13,7 @@
 
 [#1425]: https://github.com/nextstrain/augur/pull/1425
 [#1429]: https://github.com/nextstrain/augur/pull/1429
+[#1436]: https://github.com/nextstrain/augur/pull/1436
 
 ## 24.2.3 (23 February 2024)
 
