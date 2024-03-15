@@ -233,45 +233,37 @@ def parse_nexus(tree_path, treestring_regex=r'tree [A-Za-z\_]+([0-9]+)', verbose
     tipNum=0
     tree=None
 
-    if isinstance(tree_path,str): ## determine if path or handle was provided to function
-        try:
-            handle=open_file(tree_path,'r')
-        except FileNotFoundError:
-            print("FATAL: No such file {}".format(tree_path))
-            sys.exit(2)
-    else:
-        handle=tree_path
+    with open_file(tree_path,'r') as handle: ## open tree_path as file, or consume directly if already a file handle
+        for line in handle: ## iterate over lines
+            l=line.strip('\n')
 
-    for line in handle: ## iterate over lines
-        l=line.strip('\n')
+            nTaxa=re.search(r'dimensions ntax=([0-9]+);',l.lower()) ## get number of tips that should be in tree
+            if nTaxa is not None:
+                tipNum=int(nTaxa.group(1))
+                if verbose:
+                    print('File should contain %d taxa'%(tipNum))
 
-        nTaxa=re.search(r'dimensions ntax=([0-9]+);',l.lower()) ## get number of tips that should be in tree
-        if nTaxa is not None:
-            tipNum=int(nTaxa.group(1))
-            if verbose:
-                print('File should contain %d taxa'%(tipNum))
+            treeString=re.search(treestring_regex,l) ## search for line with the tree
+            if treeString is not None:
+                treeString_start=l.index('(') ## find index of where tree string starts
+                tree=parse_beast_tree(l[treeString_start:], tipMap=tips, verbose=verbose) ## parse tree string
 
-        treeString=re.search(treestring_regex,l) ## search for line with the tree
-        if treeString is not None:
-            treeString_start=l.index('(') ## find index of where tree string starts
-            tree=parse_beast_tree(l[treeString_start:], tipMap=tips, verbose=verbose) ## parse tree string
+                if verbose:
+                    print('Identified tree string')
 
-            if verbose:
-                print('Identified tree string')
+            if tipFlag==True: ## going through tip encoding block
+                tipEncoding=re.search(r'([0-9]+) ([A-Za-z\-\_\/\.\'0-9 \|?]+)',l) ## search for key:value pairs
+                if tipEncoding is not None:
+                    tips[tipEncoding.group(1)]=tipEncoding.group(2).strip('"').strip("'") ## add to tips dict
+                    if verbose==True:
+                        print('Identified tip translation %s: %s'%(tipEncoding.group(1),tips[tipEncoding.group(1)]))
+                elif ';' not in l:
+                    print('tip not captured by regex:',l.replace('\t',''))
 
-        if tipFlag==True: ## going through tip encoding block
-            tipEncoding=re.search(r'([0-9]+) ([A-Za-z\-\_\/\.\'0-9 \|?]+)',l) ## search for key:value pairs
-            if tipEncoding is not None:
-                tips[tipEncoding.group(1)]=tipEncoding.group(2).strip('"').strip("'") ## add to tips dict
-                if verbose==True:
-                    print('Identified tip translation %s: %s'%(tipEncoding.group(1),tips[tipEncoding.group(1)]))
-            elif ';' not in l:
-                print('tip not captured by regex:',l.replace('\t',''))
-
-        if 'translate' in l.lower(): ## tip encoding starts on next line
-            tipFlag=True
-        if ';' in l:
-            tipFlag=False
+            if 'translate' in l.lower(): ## tip encoding starts on next line
+                tipFlag=True
+            if ';' in l:
+                tipFlag=False
 
     assert tree,'Tree not captured by regex'
     assert tree.count_terminals()==tipNum,'Not all tips have been parsed.'
