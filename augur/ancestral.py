@@ -28,7 +28,8 @@ import numpy as np
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from .utils import parse_genes_argument, read_tree, InvalidTreeError, write_json, get_json_name
+from .utils import parse_genes_argument, read_tree, InvalidTreeError, write_json, get_json_name, \
+    genome_features_to_auspice_annotation
 from .io.file import open_file
 from .io.vcf import is_vcf as is_filename_vcf
 from treetime.vcf_utils import read_vcf, write_vcf
@@ -455,14 +456,7 @@ def run(args):
                     node["aa_sequences"][gene] = aa_result['tt'].sequence(T.root, as_string=True, reconstructed=True)
 
             anc_seqs['reference'][gene] = aa_result['root_seq']
-            # FIXME: Note that this is calculating the end of the CDS as 3*length of translation
-            # this is equivalent to the annotation for single segment CDS, but not for cds
-            # with splicing and slippage. But auspice can't handle the latter at the moment.
-            anc_seqs['annotations'][gene] = {'seqid':args.annotation,
-                                             'type':feat.type,
-                                             'start': int(feat.location.start)+1,
-                                             'end': int(feat.location.start) + 3*len(anc_seqs['reference'][gene]),
-                                             'strand': {+1:'+', -1:'-', 0:'?', None:None}[feat.location.strand]}
+            anc_seqs['annotations'].update(genome_features_to_auspice_annotation({gene: feat}, args.annotation))
 
             # Save ancestral amino acid sequences to FASTA.
             if args.output_translations:
