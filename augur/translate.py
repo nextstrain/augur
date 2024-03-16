@@ -17,7 +17,8 @@ import sys
 import numpy as np
 from Bio import SeqIO, Seq, SeqRecord, Phylo
 from .io.vcf import write_VCF_translation, is_vcf as is_filename_vcf
-from .utils import parse_genes_argument, read_node_data, load_features, write_json, get_json_name
+from .utils import parse_genes_argument, read_node_data, load_features, \
+    write_json, get_json_name, genome_features_to_auspice_annotation
 from treetime.vcf_utils import read_vcf
 from augur.errors import AugurError
 from textwrap import dedent
@@ -446,24 +447,7 @@ def run(args):
                 continue
             reference_translations[fname] = safe_translate(str(feat.extract(reference)))
 
-    ## glob the annotations for later auspice export
-    #
-    # Note that BioPython FeatureLocations use
-    # "Pythonic" coordinates: [zero-origin, half-open)
-    # Starting with augur v6 we use GFF coordinates: [one-origin, inclusive]
-    annotations = {
-        'nuc': {'start': features['nuc'].location.start+1,
-                'end':   features['nuc'].location.end,
-                'strand': '+',
-                'type':  features['nuc'].type,     # (unused by auspice)
-                'seqid': args.reference_sequence}  # (unused by auspice)
-    }
-    for fname, feat in features.items():
-        annotations[fname] = {'seqid':args.reference_sequence,
-                              'type':feat.type,
-                              'start':int(feat.location.start)+1,
-                              'end':int(feat.location.end),
-                              'strand': {+1:'+', -1:'-', 0:'?', None:None}[feat.location.strand]}
+    annotations = genome_features_to_auspice_annotation(features, args.reference_sequence, assert_nuc=True)
 
     ## determine amino acid mutations for each node
     try:

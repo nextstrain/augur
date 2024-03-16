@@ -832,3 +832,57 @@ def _get_genes_from_file(fname):
     print("Read in {} specified genes to translate.".format(len(unique_genes)))
 
     return unique_genes
+
+
+
+def genome_features_to_auspice_annotation(features, ref_seq_name=None, assert_nuc=False):
+    """
+    Parameters
+    ----------
+    features : dict
+        keys: feature names, values: Bio.SeqFeature.SeqFeature objects
+    ref_seq_name : str (optional)
+        Exported as the `seqid` for each feature. Note this is unused by Auspice
+    assert_nuc : bool (optional)
+        If true, one of the feature key names must be "nuc"
+
+    Returns
+    -------
+    annotations: dict
+        See schema-annotations.json for the schema this conforms to
+
+    """
+    from Bio.SeqFeature import SimpleLocation, CompoundLocation
+
+    if assert_nuc and 'nuc' not in features:
+        raise AugurError("Genome features must include a feature for 'nuc'")
+
+    def _parse(feat):
+        a = {}
+        # Note that BioPython locations use "Pythonic" coordinates: [zero-origin, half-open)
+        # Starting with augur v6 we use GFF coordinates: [one-origin, inclusive]
+        if type(feat.location)==SimpleLocation:
+            a['start'] = int(feat.location.start)+1
+            a['end'] = int(feat.location.end)
+        elif type(feat.location)==CompoundLocation:
+            a['segments'] = [
+                {'start':int(segment.start)+1, 'end':int(segment.end)}
+                for segment in feat.location.parts # segment: SimpleLocation
+            ]
+        else:
+            raise AugurError(f"Encountered a genome feature with an unknown location type {type(feat.location):q}")
+        a['strand'] = {+1:'+', -1:'-', 0:'?', None:None}[feat.location.strand]
+        a['type'] = feat.type  # (unused by auspice)
+        if ref_seq_name:
+            a['seqid'] = ref_seq_name # (unused by auspice)
+        return a
+
+    annotations = {}
+    for fname, feat in features.items():
+        annotations[fname] = _parse(feat)
+        if fname=='nuc':
+            assert annotations['nuc']['strand'] == '+', "Nuc feature must be +ve strand"
+        elif annotations[fname]['strand'] not in ['+', '-']:
+            print("WARNING: Feature {fname:q} uses a strand which auspice cannot display")
+
+    return annotations
