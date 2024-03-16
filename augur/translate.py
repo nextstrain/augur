@@ -22,6 +22,9 @@ from .utils import parse_genes_argument, read_node_data, load_features, \
 from treetime.vcf_utils import read_vcf
 from augur.errors import AugurError
 from textwrap import dedent
+from .types import ValidationMode
+from .util_support.node_data_file import NodeDataObject
+from .export_v2 import validation_mode_help_message
 
 class MissingNodeError(Exception):
     pass
@@ -335,12 +338,12 @@ def sequences_vcf(reference_fasta, vcf):
     ref = compress_seq['reference']
     return (sequences, ref)
 
-def sequences_json(node_data_json, tree):
+def sequences_json(node_data_json, tree, validation_mode):
     """
     Extract the full nuc sequence for each node in the provided node-data JSON.
     Returns a dict, keys are node names and values are a string of the genome sequence (nuc)
     """
-    node_data = read_node_data(node_data_json)
+    node_data = read_node_data(node_data_json, validation_mode=validation_mode)
     if node_data is None:
         raise AugurError("could not read node data (incl sequences)")
     # extract sequences from node meta data
@@ -370,6 +373,8 @@ def register_parser(parent_subparsers):
     parser.add_argument('--alignment-output', type=str, help="write out translated gene alignments. "
                                    "If a VCF-input, a .vcf or .vcf.gz will be output here (depending on file ending). If fasta-input, specify the file name "
                                    "like so: 'my_alignment_%%GENE.fasta', where '%%GENE' will be replaced by the name of the gene")
+    parser.add_argument('--validation-mode', type=ValidationMode, choices=[mode for mode in ValidationMode], default=ValidationMode.ERROR, help=validation_mode_help_message)
+
     vcf_only = parser.add_argument_group(
         title="VCF specific",
         description="These arguments are only applicable if the input (--ancestral-sequences) is in VCF format."
@@ -440,7 +445,7 @@ def run(args):
         if len(features_without_variation):
             print("{} genes had no mutations and so have been be excluded.".format(len(features_without_variation)))  
     else:
-        (reference, sequences) = sequences_json(args.ancestral_sequences, tree)
+        (reference, sequences) = sequences_json(args.ancestral_sequences, tree, args.validation_mode)
         translations = {fname: translate_feature(sequences, feat) for fname, feat in features.items() if fname!='nuc'}
         for fname, feat in features.items():
             if fname=='nuc':
@@ -470,6 +475,9 @@ def run(args):
 
     output_data = {'annotations':annotations, 'nodes':aa_muts, 'reference': reference_translations}
     out_name = get_json_name(args, '.'.join(args.tree.split('.')[:-1]) + '_aa-mutations.json')
+    # use NodeDataObject to perform validation on the file before it's written
+    NodeDataObject(output_data, out_name, args.validation_mode)
+
     write_json(output_data, out_name)
     print("amino acid mutations written to", out_name, file=sys.stdout)
 

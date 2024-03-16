@@ -20,6 +20,7 @@ This is an identical test setup as `translate-with-gff-and-gene.t` but using loc
   >   --output-node-data aa_muts.json
   Read in 3 features from reference sequence file
   Validating schema of '.+/nt_muts.json'... (re)
+  Validating schema of .* (re)
   amino acid mutations written to .* (re)
 
   $ python3 "${SCRIPTS}/diff_jsons.py" \

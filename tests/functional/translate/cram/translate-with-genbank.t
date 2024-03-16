@@ -15,6 +15,7 @@ Translate amino acids for genes using a GenBank file.
   WARNING: 1 CDS features skipped as they didn't have a locus_tag or gene qualifier.
   Read in 3 features from reference sequence file
   Validating schema of '.+nt_muts.json'... (re)
+  Validating schema of .* (re)
   amino acid mutations written to .* (re)
 
   $ python3 "$SCRIPTS/diff_jsons.py" $DATA/zika/aa_muts_genbank.json aa_muts.json \

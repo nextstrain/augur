@@ -105,3 +105,16 @@ class NodeDataFile:
                 print_err(f"WARNING: {msg}")
             else:
                 raise ValueError(f"unknown validation mode: {self.validation_mode!r}")
+
+
+
+class NodeDataObject(NodeDataFile):
+    """
+    NodeDataObject is identical to NodeDataFile except it takes a node-data dict
+    rather than loading the node data from a file
+    """
+    def __init__(self, node_data_json, fname, validation_mode=ValidationMode.ERROR):
+        self.fname = fname
+        self.validation_mode = validation_mode
+        self.attrs = node_data_json
+        self.validate()
