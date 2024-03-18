@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 24.3.0 (18 March 2024)
+
 ### Features
 
 * filter: Added a new option `--max-length` to filter out sequences that are longer than a certain amount of base pairs. [#1429][] (@victorlin)
