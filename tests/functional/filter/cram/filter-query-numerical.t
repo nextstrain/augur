@@ -30,7 +30,7 @@ The 'category' column will fail when used with a numerical comparison.
   >  --query "category >= 0.95" \
   >  --output-strains filtered_strains.txt
   ERROR: Internal Pandas error when applying query:
-  	'>=' not supported between instances of 'str' and 'float'
+  	Unordered Categoricals can only compare equality or not
   Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
   [2]
 
