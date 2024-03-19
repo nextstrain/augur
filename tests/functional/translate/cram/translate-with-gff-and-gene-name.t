@@ -20,6 +20,7 @@ Translate amino acids for genes using a GFF3 file where the gene names are store
   >   --output-node-data aa_muts.json
   Read in 3 features from reference sequence file
   Validating schema of '.+/nt_muts.json'... (re)
+  Validating schema of .* (re)
   amino acid mutations written to .* (re)
 
 Other than the sequence ids which will include a temporary path, the JSONs

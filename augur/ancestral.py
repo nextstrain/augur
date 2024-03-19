@@ -34,6 +34,9 @@ from .io.file import open_file
 from .io.vcf import is_vcf as is_filename_vcf
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
+from .types import ValidationMode
+from .util_support.node_data_file import NodeDataObject
+from .export_v2 import validation_mode_help_message
 
 def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
                                  marginal=False, fill_overhangs=True, infer_tips=False,
@@ -329,6 +332,12 @@ def register_parser(parent_subparsers):
                         "the gene name.")
     output_group.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
 
+    general_group = parser.add_argument_group(
+        "general",
+    )
+    general_group.add_argument('--validation-mode', type=ValidationMode, choices=[mode for mode in ValidationMode], default=ValidationMode.ERROR,
+                               help=validation_mode_help_message)
+
     return parser
 
 def validate_arguments(args, is_vcf):
@@ -465,6 +474,9 @@ def run(args):
                         oh.write(f">{node.name}\n{aa_result['tt'].sequence(node, as_string=True, reconstructed=True)}\n")
 
     out_name = get_json_name(args, '.'.join(args.alignment.split('.')[:-1]) + '_mutations.json')
+    # use NodeDataObject to perform validation on the file before it's written
+    NodeDataObject(anc_seqs, out_name, args.validation_mode)
+
     write_json(anc_seqs, out_name)
     print("ancestral mutations written to", out_name, file=sys.stdout)
 

@@ -870,7 +870,7 @@ def genome_features_to_auspice_annotation(features, ref_seq_name=None, assert_nu
                 for segment in feat.location.parts # segment: SimpleLocation
             ]
         else:
-            raise AugurError(f"Encountered a genome feature with an unknown location type {type(feat.location):q}")
+            raise AugurError(f"Encountered a genome feature with an unknown location type '{type(feat.location)}'")
         a['strand'] = {+1:'+', -1:'-', 0:'?', None:None}[feat.location.strand]
         a['type'] = feat.type  # (unused by auspice)
         if ref_seq_name:
@@ -883,6 +883,6 @@ def genome_features_to_auspice_annotation(features, ref_seq_name=None, assert_nu
         if fname=='nuc':
             assert annotations['nuc']['strand'] == '+', "Nuc feature must be +ve strand"
         elif annotations[fname]['strand'] not in ['+', '-']:
-            print("WARNING: Feature {fname:q} uses a strand which auspice cannot display")
+            print(f"WARNING: Feature '{fname}' uses a strand which auspice cannot display")
 
     return annotations

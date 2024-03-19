@@ -854,6 +854,20 @@ def node_data_prop_is_normal_trait(name):
 
     return True
 
+validation_mode_help_message = """
+    Control if optional validation checks are performed and what
+    happens if they fail.
+
+    'error' and 'warn' modes perform validation and emit messages about
+    failed validation checks.  'error' mode causes a non-zero exit
+    status if any validation checks failed, while 'warn' does not.
+
+    'skip' mode performs no validation.
+
+    Note that some validation checks are non-optional and as such are
+    not affected by this setting.
+"""
+
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("v2", help=__doc__)
@@ -917,19 +931,7 @@ def register_parser(parent_subparsers):
         type=ValidationMode,
         choices=[mode for mode in ValidationMode],
         default=ValidationMode.ERROR,
-        help="""
-            Control if optional validation checks are performed and what
-            happens if they fail.
-
-            'error' and 'warn' modes perform validation and emit messages about
-            failed validation checks.  'error' mode causes a non-zero exit
-            status if any validation checks failed, while 'warn' does not.
-
-            'skip' mode performs no validation.
-
-            Note that some validation checks are non-optional and as such are
-            not affected by this setting.
-        """)
+        help=validation_mode_help_message)
     optional_settings.add_argument(
         '--skip-validation',
         dest="validation_mode",
