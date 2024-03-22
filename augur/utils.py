@@ -447,7 +447,10 @@ def _read_genbank(reference, feature_names):
                 raise AugurError(f"Reference {reference!r} contains a 'gene' feature with the name 'nuc'. This is not allowed.")
 
             if fname and (feature_names is None or fname in feature_names):
-                features[fname] = feat
+                if fname not in features:
+                    features[fname] = feat
+                else:
+                    print(f"WARNING: gene: '{fname}' already exists as a CDS: '{fname}'. Skipping this feature.")
 
     if features_skipped:
         print(f"WARNING: {features_skipped} CDS features skipped as they didn't have a locus_tag or gene qualifier.")
