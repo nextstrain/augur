@@ -67,7 +67,7 @@ class Filter():
             cmd += f" --output-sequences {self.data_out['sequences']}"
         if "strains" in self.data_out:
             cmd += f" --output-strains {self.data_out['strains']}"
-        if 'metadata_id_columns' in self.optional_args:
+        if self.optional_args.metadata_id_columns is not None:
             cmd += f" --metadata-id-columns {' '.join(self.optional_args.metadata_id_columns)}"
         return cmd
 
