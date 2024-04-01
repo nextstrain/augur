@@ -28,6 +28,8 @@ def register_parser(parent_subparsers):
     optionals.add_argument('--dry-run', action="store_true")
     optionals.add_argument('--metadata-id-columns', metavar="NAME", nargs="+",
         help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
+    optionals.add_argument('--subsample-seed', type=int, metavar="N",
+        help="random number generator seed to allow reproducible subsampling (with same input data).")
     optionals.add_argument('--reference', metavar="FASTA", help="needed for priority calculation (but it shouldn't be!)")
 
     return parser
@@ -69,6 +71,8 @@ class Filter():
             cmd += f" --output-strains {self.data_out['strains']}"
         if self.optional_args.metadata_id_columns is not None:
             cmd += f" --metadata-id-columns {' '.join(self.optional_args.metadata_id_columns)}"
+        if self.optional_args.subsample_seed is not None:
+            cmd += f" --subsample-seed {self.optional_args.subsample_seed}"
         return cmd
 
     def exec(self, dry_run=False):
