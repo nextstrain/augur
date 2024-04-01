@@ -6,8 +6,9 @@ It does not conform to the semver release standards used by Augur.
 """
 
 from .errors import AugurError
-from os import path, mkdir
+from os import path
 import subprocess
+import tempfile
 
 INCOMPLETE = 'incomplete'
 COMPLETE = 'complete'
@@ -19,8 +20,6 @@ def register_parser(parent_subparsers):
     parser.add_argument('--sequences', required=True, metavar="FASTA", help="sequences in FASTA format") # TODO XXX VCF ?
     parser.add_argument('--output-metadata', required=True, metavar="TSV", help="output metadata")
     parser.add_argument('--output-sequences', required=True, metavar="FASTA", help="output sequences in FASTA format") # TODO XXX VCF ?
-    ## TODO XXX - programmatically create & remove tmp directory. But this is simpler for dev.
-    parser.add_argument('--tmpdir', required=True, help="temporary directory for intermediate files")
 
     optionals = parser.add_argument_group(
         title="Optional arguments",
@@ -148,7 +147,7 @@ class Proximity():
         self.status = COMPLETE
 
 
-def generate_calls(config, args):
+def generate_calls(config, args, tmpdir):
     """
     Produce an (unordered) dictionary of calls to be made to accomplish the
     desired subsampling. Each call is either (i) a use of augur filter or (ii) a
@@ -159,12 +158,6 @@ def generate_calls(config, args):
     quite right, but it's a WIP.
     """
     calls = {}
-
-    tmpdir = args.tmpdir
-    if not path.isdir(args.tmpdir):
-        if path.exists(args.tmpdir):
-            raise AugurError(f'Provided --tmpdir {args.tmpdir!r} must be a directory')
-        mkdir(args.tmpdir)
 
     output_config = config['output']
     calls['output'] = Filter('output',
@@ -260,5 +253,6 @@ def loop(calls, dry_run):
 
 def run(args):
     config = parse_config(args.config)
-    calls = generate_calls(config, args)
-    loop(calls, args.dry_run)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calls = generate_calls(config, args, tmpdir)
+        loop(calls, args.dry_run)
