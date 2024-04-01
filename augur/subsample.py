@@ -49,14 +49,13 @@ def parse_config(filename):
     return data
 
 class Filter():
-    def __init__(self, name, params, data_in, data_out, optional_args, depends_on, log_fname):
+    def __init__(self, name, params, data_in, data_out, optional_args, depends_on):
         self.name = name
         self.params = params
         self.data_in = data_in
         self.data_out = data_out
         self.depends_on = depends_on
         self.optional_args = optional_args
-        self.log_fname = log_fname
         self.status = INCOMPLETE
 
     def __str__(self):
@@ -96,11 +95,9 @@ class Filter():
         print("RUNNING " + cmd)
         if not dry_run:
             try:
-                with open(self.log_fname, 'w') as fh:
-                    subprocess.run(cmd, shell=True, check=True, text=True, stdout=fh, stderr=fh)
+                subprocess.run(cmd, shell=True, check=True, text=True)
             except subprocess.CalledProcessError as e:
-                print(e)
-                raise AugurError("Check the logfile: "+self.log_fname)
+                raise AugurError(e)
 
         self.status = COMPLETE
 
@@ -166,7 +163,6 @@ def generate_calls(config, args, tmpdir):
         {'metadata': args.output_metadata, 'sequences': args.output_sequences},
         args,
         output_config,
-        path.join(tmpdir, "output.log.txt")
     )
 
     for sample_name, sample_config in config['samples'].items():
@@ -206,7 +202,6 @@ def generate_calls(config, args, tmpdir):
             {'strains': path.join(tmpdir, sample_name+'.samples.txt')},
             args,
             depends_on,
-            path.join(tmpdir, f"{sample_name}.log.txt")
         )
 
 

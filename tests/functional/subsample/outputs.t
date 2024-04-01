@@ -52,6 +52,21 @@ Apply subsampling.
   >  --output-metadata subsampled-metadata.tsv \
   >  --output-sequences subsampled-sequences.fasta \
   >  --subsample-seed 0
+  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
+  4 strains were dropped during filtering
+  \t3 were filtered out by the query: "region=='A'" (esc)
+  \t1 was dropped because of subsampling criteria (esc)
+  1 strain passed all filters
+  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
+  3 strains were dropped during filtering
+  \t2 were filtered out by the query: "region=='B'" (esc)
+  \t1 was dropped because of subsampling criteria (esc)
+  2 strains passed all filters
+  2 strains were dropped during filtering
+  \t5 were dropped by `--exclude-all` (esc)
+  \t1 was added back because it was in /var/folders/rk/s2p6nv1d13lcf0dynjkvxyl80000gp/T/cramtests-gum5cd6e/tmp/tmp6seok2rr/focal.samples.txt (esc)
+  \t2 were added back because they were in /var/folders/rk/s2p6nv1d13lcf0dynjkvxyl80000gp/T/cramtests-gum5cd6e/tmp/tmp6seok2rr/context.samples.txt (esc)
+  3 strains passed all filters
   
   Augur filter for intermediate sample 'focal' (no dependencies)
   RUNNING augur filter .* (re)
