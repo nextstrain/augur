@@ -29,14 +29,15 @@ Write data files.
 Subsampling configuration:
 
   $ cat >config.yaml <<~~
-  > focal:
-  >   filter: >-
-  >     --query "region=='A'"
-  >     --subsample-max-sequences 1
-  > context:
-  >   filter: >-
-  >     --query "region=='B'"
-  >     --subsample-max-sequences 2
+  > samples:
+  >   focal:
+  >     filter: >-
+  >       --query "region=='A'"
+  >       --subsample-max-sequences 1
+  >   context:
+  >     filter: >-
+  >       --query "region=='B'"
+  >       --subsample-max-sequences 2
   > output:
   >   - focal
   >   - context

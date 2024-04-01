@@ -43,6 +43,8 @@ def parse_config(filename):
             print(e)
             raise AugurError(f"Error parsing subsampling scheme {filename}")
     # TODO XXX - write a schema and validate against this
+    if 'samples' not in data:
+        raise AugurError('Config must define a "samples" key')
     if 'output' not in data:
         raise AugurError('Config must define an "output" key')
     return data
@@ -164,19 +166,17 @@ def generate_calls(config, args):
             raise AugurError(f'Provided --tmpdir {args.tmpdir!r} must be a directory')
         mkdir(args.tmpdir)
 
-    for sample_name, sample_config in config.items():
-        if sample_name == 'output':  # output is special cased
-            depends_on = sample_config
-            calls['output'] = Filter('output',
-                '--exclude-all --include ' + ' '.join([path.join(tmpdir, f"{name}.samples.txt") for name in sample_config]),
-                {'metadata': args.metadata, 'sequences': args.sequences},
-                {'metadata': args.output_metadata, 'sequences': args.output_sequences},
-                args,
-                depends_on,
-                path.join(tmpdir, "output.log.txt")
-            )
-            continue
+    output_config = config['output']
+    calls['output'] = Filter('output',
+        '--exclude-all --include ' + ' '.join([path.join(tmpdir, f"{name}.samples.txt") for name in output_config]),
+        {'metadata': args.metadata, 'sequences': args.sequences},
+        {'metadata': args.output_metadata, 'sequences': args.output_sequences},
+        args,
+        output_config,
+        path.join(tmpdir, "output.log.txt")
+    )
 
+    for sample_name, sample_config in config['samples'].items():
         ## TODO XXX
         ## I designed this to have a 'include' parameter whereby the starting meta/seqs for this filter call could
         ## be the (joined) output of previous samples. To be implemented.
