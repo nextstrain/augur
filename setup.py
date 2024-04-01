@@ -64,6 +64,7 @@ setuptools.setup(
         "pandas >=1.0.0, ==1.*",
         "phylo-treetime >=0.11.2, <0.12",
         "pyfastx >=1.0.0, <3.0",
+        "pyyaml",
         "scipy ==1.*",
         "xopen[zstd] >=1.7.0, ==1.*"
     ],
