@@ -9,7 +9,7 @@ Augur: A bioinformatics toolkit for phylogenetic analysis
    The documentation you are viewing is Augur's reference guide, which means it is information-oriented and targeted at users who just need info about how Augur works.
 
    * If you have a question about how to achieve a specific goal with Augur, check out our :doc:`Augur-focused How-to Guides section <docs.nextstrain.org:guides/bioinformatics/index>` in the main Nextstrain documentation.
-   * If you want to learn the basics of how to use Augur from scratch, check out :doc:`docs.nextstrain.org:tutorials/creating-a-workflow` in the main Nextstrain documentation.
+   * If you want to learn the basics of how to use Augur from scratch, check out :doc:`docs.nextstrain.org:tutorials/creating-a-phylogenetic-workflow` in the main Nextstrain documentation.
    * If you want to understand how Augur fits together with Auspice to visualize results, check out our :doc:`Data Formats section <docs.nextstrain.org:reference/data-formats>` in the main Nextstrain documentation.
 
 
