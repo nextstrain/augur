@@ -5,6 +5,7 @@ This augur functionality is _alpha_ and may change at any time.
 It does not conform to the semver release standards used by Augur.
 """
 
+from typing import List, Optional
 from .errors import AugurError
 from os import path
 import subprocess
@@ -48,34 +49,100 @@ def parse_config(filename):
         raise AugurError('Config must define an "output" key')
     return data
 
+# TODO: Move these classes closer to code for augur filter?
+PandasQuery = str
+Date = str
+File = str
+EqualityFilterQuery = str
+
+
 class Filter():
-    def __init__(self, name, params, data_in, data_out, optional_args, depends_on):
+
+    # This is not optional but marking it as such for easier implementation.
+    metadata: Optional[File]
+    sequences: Optional[File]
+    metadata_id_columns: Optional[List[str]]
+
+    output_metadata: Optional[File]
+    output_sequences: Optional[File]
+    output_strains: Optional[File]
+
+    query: Optional[PandasQuery]
+    min_date: Optional[Date]
+    max_date: Optional[Date]
+    exclude: Optional[List[File]]
+    exclude_where: Optional[List[EqualityFilterQuery]]
+    exclude_all: Optional[bool]
+    include: Optional[List[File]]
+    include_where: Optional[List[EqualityFilterQuery]]
+
+    subsample_seed: Optional[int]
+    subsample_max_sequences: Optional[int]
+
+    def __init__(self, name, depends_on):
+        # TODO: move these to a Call class?
         self.name = name
-        self.params = params
-        self.data_in = data_in
-        self.data_out = data_out
         self.depends_on = depends_on
-        self.optional_args = optional_args
         self.status = INCOMPLETE
 
-    def __str__(self):
-        deps = (" depends on " + ", ".join(self.depends_on)) if len(self.depends_on) else " (no dependencies)"
-        return f"Augur filter for intermediate sample {self.name!r}" + deps
+        # Initialize instance attributes.
+        for option in self.__annotations__.keys():
+            self.__setattr__(option, None)
 
-    def cmd(self):
-        # Arg splitting would be better, but is complicated by quoting. TODO.
-        cmd = f"augur filter {self.params} --metadata {self.data_in['metadata']} --sequences {self.data_in['sequences']}"
-        if "metadata" in self.data_out:
-            cmd += f" --output-metadata {self.data_out['metadata']}"
-        if "sequences" in self.data_out:
-            cmd += f" --output-sequences {self.data_out['sequences']}"
-        if "strains" in self.data_out:
-            cmd += f" --output-strains {self.data_out['strains']}"
-        if self.optional_args.metadata_id_columns is not None:
-            cmd += f" --metadata-id-columns {' '.join(self.optional_args.metadata_id_columns)}"
-        if self.optional_args.subsample_seed is not None:
-            cmd += f" --subsample-seed {self.optional_args.subsample_seed}"
-        return cmd
+    def add_options(self, **kwargs):
+        for option, value in kwargs.items():
+            if option not in self.__annotations__:
+                raise AugurError(f'Option {option!r} not allowed.')
+            # TODO: Check types
+            self.__setattr__(option, value)
+
+    def args(self):
+        args = ['augur', 'filter']
+
+        if self.metadata is not None:
+            args.extend(['--metadata', self.metadata])
+
+        if self.sequences is not None:
+            args.extend(['--sequences', self.sequences])
+
+        if self.metadata_id_columns is not None:
+            args.append('--metadata-id-columns')
+            args.extend(self.metadata_id_columns)
+
+
+        if self.output_metadata is not None:
+            args.extend(['--output-metadata', self.output_metadata])
+
+        if self.output_sequences is not None:
+            args.extend(['--output-sequences', self.output_sequences])
+
+        if self.output_strains is not None:
+            args.extend(['--output-strains', self.output_strains])
+
+
+        if self.query is not None:
+            args.extend(['--query', self.query])
+
+        if self.min_date is not None:
+            args.extend(['--min-date', self.min_date])
+
+        if self.exclude_all is not None and self.exclude_all:
+            args.append('--exclude-all')
+
+        if self.include is not None:
+            args.append('--include')
+            args.extend(self.include)
+
+        # FIXME: Add other options
+
+
+        if self.subsample_max_sequences is not None:
+            args.extend(['--subsample-max-sequences', self.subsample_max_sequences])
+
+        if self.subsample_seed is not None:
+            args.extend(['--subsample-seed', self.subsample_seed])
+
+        return args
 
     def exec(self, dry_run=False):
         """
@@ -90,12 +157,16 @@ class Filter():
         subprocess does make parallelisation trivial, but the above speed up
         would be preferable.
         """
-        print("\n" + self.__str__())
-        cmd = self.cmd()
-        print("RUNNING " + cmd)
+        deps = ("depends on " + ", ".join(self.depends_on)) if len(self.depends_on) else "(no dependencies)"
+        print(f"RUNNING augur filter with name {self.name!r} {deps}")
+        for option in self.__annotations__:
+            if self.__getattribute__(option):
+                print(f'\t{option}: {self.__getattribute__(option)}')
+        print()
+
         if not dry_run:
             try:
-                subprocess.run(cmd, shell=True, check=True, text=True)
+                subprocess.run([str(arg) for arg in self.args()])
             except subprocess.CalledProcessError as e:
                 raise AugurError(e)
 
@@ -157,13 +228,16 @@ def generate_calls(config, args, tmpdir):
     calls = {}
 
     output_config = config['output']
-    calls['output'] = Filter('output',
-        '--exclude-all --include ' + ' '.join([path.join(tmpdir, f"{name}.samples.txt") for name in output_config]),
-        {'metadata': args.metadata, 'sequences': args.sequences},
-        {'metadata': args.output_metadata, 'sequences': args.output_sequences},
-        args,
-        output_config,
+    output_call = Filter('output', output_config)
+    output_call.add_options(
+        metadata=args.metadata,
+        sequences=args.sequences,
+        exclude_all=True,
+        include=[path.join(tmpdir, f"{name}.samples.txt") for name in output_config],
+        output_metadata=args.output_metadata,
+        output_sequences=args.output_sequences,
     )
+    calls['output'] = output_call
 
     for sample_name, sample_config in config['samples'].items():
         ## TODO XXX
@@ -193,17 +267,32 @@ def generate_calls(config, args, tmpdir):
                 args,
                 path.join(tmpdir, f"{sample_name}.priorities.log.txt")      # logfile
             )
+            # FIXME: move command line option names to Filter class
             sample_config['filter'] = f"--exclude-all --include {priority_fname}"
             depends_on.append("__priorities__"+focus_name)
 
-        calls[sample_name] = Filter(sample_name,
-            sample_config['filter'],
-            {'metadata': args.metadata, 'sequences': args.sequences},
-            {'strains': path.join(tmpdir, sample_name+'.samples.txt')},
-            args,
-            depends_on,
+        call = Filter(sample_name, depends_on)
+        call.add_options(
+            metadata=args.metadata,
+            output_strains=path.join(tmpdir, sample_name+'.samples.txt'),
+            # This works when YAML config keys are the same name as the
+            # corresponding option class attribute.
+            **sample_config['filter'],
         )
 
+        if args.subsample_seed is not None:
+            call.add_options(
+                subsample_seed=args.subsample_seed,
+            )
+
+        # Add sequences only if sequence filters are used.
+        if ('min_length' in sample_config['filter'] or
+            'non_nucleotide' in sample_config['filter']):
+            call.add_options(
+                sequences=args.sequences,
+            )
+
+        calls[sample_name] = call
 
     # Any intermediate sample a priority calculation depends on requires FASTA input, not samples.txt
     # (This is required by distance-to-focal-set, but we could change this)
