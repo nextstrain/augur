@@ -43,6 +43,8 @@ def parse_config(filename):
             print(e)
             raise AugurError(f"Error parsing subsampling scheme {filename}")
     # TODO XXX - write a schema and validate against this
+    if 'output' not in data:
+        raise AugurError('Config must define an "output" key')
     return data
 
 class Filter():
@@ -155,9 +157,6 @@ def generate_calls(config, args):
     quite right, but it's a WIP.
     """
     calls = {}
-
-    if 'output' not in config:
-        raise AugurError('Config must define an "output" key')
 
     tmpdir = args.tmpdir
     if not path.isdir(args.tmpdir):
