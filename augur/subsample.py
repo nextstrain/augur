@@ -227,18 +227,6 @@ def generate_calls(config, args, tmpdir):
     """
     calls = {}
 
-    output_config = config['output']
-    output_call = Filter('output', output_config)
-    output_call.add_options(
-        metadata=args.metadata,
-        sequences=args.sequences,
-        exclude_all=True,
-        include=[path.join(tmpdir, f"{name}.samples.txt") for name in output_config],
-        output_metadata=args.output_metadata,
-        output_sequences=args.output_sequences,
-    )
-    calls['output'] = output_call
-
     for sample_name, sample_config in config['samples'].items():
         ## TODO XXX
         ## I designed this to have a 'include' parameter whereby the starting meta/seqs for this filter call could
@@ -300,6 +288,18 @@ def generate_calls(config, args, tmpdir):
         for dep in priority_call.depends_on:
             print("Priority calc", priority_call.name, "depends on ", dep)
             calls[dep].data_out['sequences'] = calls[dep].data_out['strains'].replace('.samples.txt', ".fasta")
+
+    output_config = config['output']
+    output_call = Filter('output', output_config)
+    output_call.add_options(
+        metadata=args.metadata,
+        sequences=args.sequences,
+        exclude_all=True,
+        include=[path.join(tmpdir, f"{name}.samples.txt") for name in output_config],
+        output_metadata=args.output_metadata,
+        output_sequences=args.output_sequences,
+    )
+    calls['output'] = output_call
 
     # TODO XXX check acyclic
         
