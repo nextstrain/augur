@@ -71,6 +71,8 @@ def register_arguments(parser):
     subsample_limits_group = subsample_group.add_mutually_exclusive_group()
     subsample_limits_group.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     subsample_limits_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences; can be used without the group_by argument")
+    # TODO: figure out mutual exclusiveness
+    subsample_group.add_argument('--weights', type=str, help="weights file")
     probabilistic_sampling_group = subsample_group.add_mutually_exclusive_group()
     probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true', help="Allow probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.")
     probabilistic_sampling_group.add_argument('--no-probabilistic-sampling', action='store_false', dest='probabilistic_sampling')

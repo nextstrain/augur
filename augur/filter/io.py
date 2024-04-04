@@ -34,11 +34,18 @@ def get_useful_metadata_columns(args: Namespace, id_column: str, all_columns: Se
     # Start with just the ID column.
     columns = {id_column}
 
+    weighted_columns = None
+    if args.weights:
+        weighted_columns = list(TabularFile(args.weights, delimiter='\t').columns)
+        weighted_columns.remove('weight')
+        columns.update(weighted_columns)
+
     # Add the date column if it is used.
     if (args.exclude_ambiguous_dates_by
         or args.min_date
         or args.max_date
-        or (args.group_by and constants.GROUP_BY_GENERATED_COLUMNS.intersection(args.group_by))):
+        or (args.group_by and constants.GROUP_BY_GENERATED_COLUMNS.intersection(args.group_by))
+        or (weighted_columns and constants.GROUP_BY_GENERATED_COLUMNS.intersection(weighted_columns))):
         columns.add(METADATA_DATE_COLUMN)
 
     if args.group_by:

@@ -5,6 +5,7 @@ from augur.filter.debug import add_debugging
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err
 from augur.io.sqlite3 import Sqlite3Database, sanitize_identifier
+from augur.io.tabular_file import TabularFile
 from . import constants
 from .io import import_priorities_table
 
@@ -304,38 +305,51 @@ def apply_subsampling(args):
     with Sqlite3Database(constants.RUNTIME_DB_FILE) as db:
         metadata_columns = set(db.columns(constants.METADATA_TABLE))
 
-    valid_group_by_columns = []
-    if args.group_by:
-        valid_group_by_columns = get_valid_group_by_columns(metadata_columns, args.group_by)
-    create_grouping_table(valid_group_by_columns)
 
-    if args.subsample_max_sequences:
-        if args.group_by:
-            group_sizes = get_group_sizes(valid_group_by_columns)
-        else:
-            valid_group_by_columns = [constants.GROUP_BY_DUMMY_COLUMN]
-            group_sizes = [_get_filtered_strains_count()]
+    if args.weights:
+        assert args.subsample_max_sequences is not None
 
-        try:
-            # Calculate sequences per group. If there are more groups than maximum
-            # sequences requested, sequences per group will be a floating point
-            # value and subsampling will be probabilistic.
-            sequences_per_group, probabilistic_used = calculate_sequences_per_group(
-                args.subsample_max_sequences,
-                group_sizes,
-                allow_probabilistic=args.probabilistic_sampling
-            )
-        except TooManyGroupsError as error:
-            raise AugurError(str(error)) from error
+        group_by_columns = list(TabularFile(args.weights, delimiter='\t').columns)
+        group_by_columns.remove('weight')
 
-        if (probabilistic_used):
-            print(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
-        else:
-            print(f"Sampling at {sequences_per_group} per group.")
+        valid_group_by_columns = get_valid_group_by_columns(metadata_columns, group_by_columns)
+        create_grouping_table(valid_group_by_columns)
+        create_group_size_limits_table_weighted(args.weights, args.subsample_max_sequences)
+
     else:
-        sequences_per_group = args.sequences_per_group
+        valid_group_by_columns = []
+        if args.group_by:
+            valid_group_by_columns = get_valid_group_by_columns(metadata_columns, args.group_by)
+        create_grouping_table(valid_group_by_columns)
 
-    create_group_size_limits_table(valid_group_by_columns, sequences_per_group, args.subsample_seed)
+        if args.subsample_max_sequences:
+            if args.group_by:
+                group_sizes = get_group_sizes(valid_group_by_columns)
+            else:
+                valid_group_by_columns = [constants.GROUP_BY_DUMMY_COLUMN]
+                group_sizes = [_get_filtered_strains_count()]
+
+            try:
+                # Calculate sequences per group. If there are more groups than maximum
+                # sequences requested, sequences per group will be a floating point
+                # value and subsampling will be probabilistic.
+                sequences_per_group, probabilistic_used = calculate_sequences_per_group(
+                    args.subsample_max_sequences,
+                    group_sizes,
+                    allow_probabilistic=args.probabilistic_sampling
+                )
+            except TooManyGroupsError as error:
+                raise AugurError(str(error)) from error
+
+            if (probabilistic_used):
+                print(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
+            else:
+                print(f"Sampling at {sequences_per_group} per group.")
+        else:
+            sequences_per_group = args.sequences_per_group
+
+        create_group_size_limits_table(valid_group_by_columns, sequences_per_group, args.subsample_seed)
+
     update_filter_reason_table(valid_group_by_columns)
 
 
@@ -490,6 +504,42 @@ def create_group_size_limits_table(group_by_columns: Sequence[str], sequences_pe
         # Remove user-defined function.
         db.connection.create_function(group_size_limit_iterator.__name__, 0, None)
 
+
+def create_group_size_limits_table_weighted(weights_file: str, total_size: int):
+    import pandas as pd
+    weights = pd.read_csv(weights_file, delimiter='\t')
+    total_weights = weights['weight'].sum()
+    weights['__augur_size'] = total_size * weights['weight'] / total_weights
+    group_by_columns = weights.columns.to_list()
+    group_by_columns.remove('weight')
+    group_by_columns.remove('__augur_size')
+    group_by_columns_sql = ','.join(sanitize_identifier(column) for column in group_by_columns)
+
+    # FIXME: load weights into a table and JOIN instead
+    def get_size(*values):
+        weights2 = weights.copy()
+        for column, value in zip(group_by_columns, values):
+            # FIXME: work with generated date columns
+            # if column == 'month':
+            #     value = lambda x: return ()
+            weights2 = weights2[weights2[column] == value]
+        if len(weights2) == 0:
+            # No weights defined for this combination. Use a weight of 0.
+            return 0
+        return weights2['__augur_size']
+
+    with Sqlite3Database(constants.RUNTIME_DB_FILE, mode="rw") as db:
+        # Register SQLite3 user-defined function.
+        db.connection.create_function(get_size.__name__, len(group_by_columns), get_size)
+
+        db.connection.execute(f"""CREATE TABLE {constants.GROUP_SIZE_LIMITS_TABLE} AS
+            SELECT
+                {group_by_columns_sql},
+                {get_size.__name__}({group_by_columns_sql}) AS {constants.GROUP_SIZE_LIMIT_COLUMN}
+            FROM {constants.GROUPING_TABLE}
+            GROUP BY {group_by_columns_sql}
+        """)
+    
 
 def update_filter_reason_table(group_by_columns: Iterable[str]):
     """Subsample filtered metadata and update the filter reason table."""
