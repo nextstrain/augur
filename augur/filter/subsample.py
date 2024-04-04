@@ -307,7 +307,7 @@ def apply_subsampling(args):
     valid_group_by_columns = []
     if args.group_by:
         valid_group_by_columns = get_valid_group_by_columns(metadata_columns, args.group_by)
-    create_grouping_table(valid_group_by_columns, metadata_columns)
+    create_grouping_table(valid_group_by_columns)
 
     if args.subsample_max_sequences:
         if args.group_by:
@@ -376,7 +376,7 @@ def generate_priorities_table(random_seed: int = None):
         db.connection.create_function(rng.random.__name__, 0, None)
 
 
-def create_grouping_table(group_by_columns: Iterable[str], metadata_columns: Set[str]):
+def create_grouping_table(group_by_columns: Iterable[str]):
     """Create a table with columns for grouping."""
 
     # For both of these, start with an empty string in case it isn't needed.
