@@ -29,61 +29,57 @@ Write data files.
 Subsampling configuration:
 
   $ cat >config.yaml <<~~
+  > size: 3
   > samples:
   >   focal:
-  >     filter:
-  >       query: region=='A'
-  >       subsample_max_sequences: 1
+  >     query: region=='A'
+  >     weight: 1
   >   context:
-  >     filter:
-  >       query: region=='B'
-  >       subsample_max_sequences: 2
-  > output:
-  >   - focal
-  >   - context
+  >     query: region=='B'
+  >     weight: 2
   > ~~
 
 Apply subsampling.
 
   $ ${AUGUR} subsample \
-  >  --config config.yaml \
   >  --metadata metadata.tsv \
   >  --sequences sequences.fasta \
+  >  --config config.yaml \
   >  --output-metadata subsampled-metadata.tsv \
   >  --output-sequences subsampled-sequences.fasta \
-  >  --subsample-seed 0
+  >  --random-seed 0
+  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   4 strains were dropped during filtering
   	3 were filtered out by the query: "region=='A'"
   	1 was dropped because of subsampling criteria
   1 strain passed all filters
+  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   3 strains were dropped during filtering
   	2 were filtered out by the query: "region=='B'"
   	1 was dropped because of subsampling criteria
   2 strains passed all filters
   2 strains were dropped during filtering
   	5 were dropped by `--exclude-all`
-  .* (re)
-  .* (re)
+  .*1 was added back because it was in .*focal.samples.* (re)
+  .*2 were added back because they were in .*context.samples.* (re)
   3 strains passed all filters
-  RUNNING augur filter with name 'focal' (no dependencies)
-  	metadata: metadata.tsv
-  .* (re)
+  Sampling for 'focal' (no dependencies)
   	query: region=='A'
-  	subsample_max_sequences: 1
+  	max_sequences: 1
   
-  RUNNING augur filter with name 'context' (no dependencies)
-  	metadata: metadata.tsv
-  .* (re)
+  augur filter .* (re)
+  
+  Sampling for 'context' (no dependencies)
   	query: region=='B'
-  	subsample_max_sequences: 2
+  	max_sequences: 2
   
-  RUNNING augur filter with name 'output' depends on focal, context
-  	metadata: metadata.tsv
-  	sequences: sequences.fasta
-  	output_metadata: subsampled-metadata.tsv
-  	output_sequences: subsampled-sequences.fasta
+  augur filter .* (re)
+  
+  Sampling for 'output' (depends on focal, context)
   	exclude_all: True
-  .* (re)
+  .*include:.* (re)
+  
+  augur filter .* (re)
   
 
   $ cat subsampled-metadata.tsv

@@ -5,7 +5,8 @@ This augur functionality is _alpha_ and may change at any time.
 It does not conform to the semver release standards used by Augur.
 """
 
-from typing import List, Optional
+import argparse
+from typing import Dict, List, Optional
 from .errors import AugurError
 from os import path
 import subprocess
@@ -28,9 +29,11 @@ def register_parser(parent_subparsers):
     optionals.add_argument('--dry-run', action="store_true")
     optionals.add_argument('--metadata-id-columns', metavar="NAME", nargs="+",
         help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
-    optionals.add_argument('--subsample-seed', type=int, metavar="N",
+    optionals.add_argument('--random-seed', type=int, metavar="N",
         help="random number generator seed to allow reproducible subsampling (with same input data).")
     optionals.add_argument('--reference', metavar="FASTA", help="needed for priority calculation (but it shouldn't be!)")
+    optionals.add_argument('--exclude', type=str, nargs="+", help="file(s) with list of strains to exclude")
+    optionals.add_argument('--include', type=str, nargs="+", help="file(s) with list of strains to include regardless of priorities, subsampling, or absence of an entry in --sequences.")
 
     return parser
 
@@ -38,35 +41,47 @@ def parse_config(filename):
     import yaml
     with open(filename) as fh:
         try:
-            data = yaml.safe_load(fh)
+            config = yaml.safe_load(fh)
         except yaml.YAMLError as e:
             print(e)
             raise AugurError(f"Error parsing subsampling scheme {filename}")
     # TODO XXX - write a schema and validate against this
-    if 'samples' not in data:
+    if 'samples' not in config:
         raise AugurError('Config must define a "samples" key')
-    if 'output' not in data:
-        raise AugurError('Config must define an "output" key')
-    return data
+    return config
+
+
+File = str
+
+class Sample:
+    output_strains: Optional[File]
+
+    def __init__(self, name, dependencies):
+        self.name = name
+        self.dependencies = dependencies
+        self.status = INCOMPLETE
+
 
 # TODO: Move these classes closer to code for augur filter?
 PandasQuery = str
 Date = str
-File = str
 EqualityFilterQuery = str
 
 
-class Filter():
+class FilterSample(Sample):
 
+    # Inputs
     # This is not optional but marking it as such for easier implementation.
     metadata: Optional[File]
     sequences: Optional[File]
     metadata_id_columns: Optional[List[str]]
 
+    # Outputs
     output_metadata: Optional[File]
     output_sequences: Optional[File]
-    output_strains: Optional[File]
+    output_strains: Optional[File]  # FIXME: this is redundant
 
+    # Filters
     query: Optional[PandasQuery]
     min_date: Optional[Date]
     max_date: Optional[Date]
@@ -75,21 +90,23 @@ class Filter():
     exclude_all: Optional[bool]
     include: Optional[List[File]]
     include_where: Optional[List[EqualityFilterQuery]]
+    min_length: Optional[str]
+    non_nucleotide: Optional[bool]
 
-    subsample_seed: Optional[int]
-    subsample_max_sequences: Optional[int]
+    # Sampling options
+    group_by: Optional[List[str]]
+    max_sequences: Optional[int]
+    disable_probabilistic_sampling: Optional[bool]
+    random_seed: Optional[int]
 
-    def __init__(self, name, depends_on):
-        # TODO: move these to a Call class?
-        self.name = name
-        self.depends_on = depends_on
-        self.status = INCOMPLETE
+    def __init__(self, name=None, dependencies=None, **kwargs):
+        super().__init__(name=name, dependencies=dependencies)
 
-        # Initialize instance attributes.
+        # Initialize instance attributes
         for option in self.__annotations__.keys():
             self.__setattr__(option, None)
 
-    def add_options(self, **kwargs):
+        # Populate instance attributes
         for option, value in kwargs.items():
             if option not in self.__annotations__:
                 raise AugurError(f'Option {option!r} not allowed.')
@@ -99,16 +116,19 @@ class Filter():
     def args(self):
         args = ['augur', 'filter']
 
+        # Inputs
+
         if self.metadata is not None:
             args.extend(['--metadata', self.metadata])
 
         if self.sequences is not None:
             args.extend(['--sequences', self.sequences])
 
-        if self.metadata_id_columns is not None:
+        if self.metadata_id_columns is not None and len(self.metadata_id_columns) > 0:
             args.append('--metadata-id-columns')
             args.extend(self.metadata_id_columns)
 
+        # Outputs
 
         if self.output_metadata is not None:
             args.extend(['--output-metadata', self.output_metadata])
@@ -119,6 +139,7 @@ class Filter():
         if self.output_strains is not None:
             args.extend(['--output-strains', self.output_strains])
 
+        # Filters
 
         if self.query is not None:
             args.extend(['--query', self.query])
@@ -126,21 +147,39 @@ class Filter():
         if self.min_date is not None:
             args.extend(['--min-date', self.min_date])
 
+        if self.exclude is not None and len(self.exclude) > 0:
+            args.append('--exclude')
+            args.extend(self.exclude)
+
+        if self.exclude_where is not None and len(self.exclude_where) > 0:
+            args.append('--exclude-where')
+            args.extend(self.exclude_where)
+
         if self.exclude_all is not None and self.exclude_all:
             args.append('--exclude-all')
 
-        if self.include is not None:
+        if self.include is not None and len(self.include) > 0:
             args.append('--include')
             args.extend(self.include)
 
-        # FIXME: Add other options
+        if self.include_where is not None and len(self.include_where) > 0:
+            args.append('--include-where')
+            args.extend(self.include_where)
 
+        # Sampling options
 
-        if self.subsample_max_sequences is not None:
-            args.extend(['--subsample-max-sequences', self.subsample_max_sequences])
+        if self.group_by is not None:
+            args.append('--group-by')
+            args.extend(self.group_by)
 
-        if self.subsample_seed is not None:
-            args.extend(['--subsample-seed', self.subsample_seed])
+        if self.max_sequences is not None:
+            args.extend(['--subsample-max-sequences', str(self.max_sequences)])
+
+        if self.disable_probabilistic_sampling:
+            args.append('--no-probabilistic-sampling')
+
+        if self.random_seed is not None:
+            args.extend(['--subsample-seed', str(self.random_seed)])
 
         return args
 
@@ -149,19 +188,20 @@ class Filter():
         Instead of running an `augur filter` command in a subprocess like we do
         here, a nicer way would be to refactor `augur filter` to expose
         functions which can be called here so that we can get a list of returned
-        strains. Doing so would provide a HUGE speedup if we could load the
-        sequences+metadata into memory a single time and then use that in-memory
-        data for all filtering calls which subsampling performs. This is
-        analogous to having an in-memory database running in a separate process
-        we can query - not as fast, but much easier implementation. Using
-        subprocess does make parallelisation trivial, but the above speed up
-        would be preferable.
+        strains. Doing so would provide a HUGE speedup if we could index the
+        sequences+metadata on disk a single time and then use that for all
+        filtering calls which subsampling performs. This is analogous to having
+        an in-memory database running in a separate process we can query - not
+        as fast, but much easier implementation. Using subprocess does make
+        parallelisation trivial, but the above speed up would be preferable.
         """
-        deps = ("depends on " + ", ".join(self.depends_on)) if len(self.depends_on) else "(no dependencies)"
-        print(f"RUNNING augur filter with name {self.name!r} {deps}")
+        deps = (f"depends on {', '.join(self.dependencies)}") if self.dependencies else "no dependencies"
+        print(f"Sampling for {self.name!r} ({deps})")
         for option in self.__annotations__:
-            if self.__getattribute__(option):
+            if self.__getattribute__(option) and option not in {'metadata', 'sequences', 'metadata_id_columns', 'output_metadata', 'output_sequences', 'output_strains'}:
                 print(f'\t{option}: {self.__getattribute__(option)}')
+        print()
+        print(' '.join(str(arg) for arg in self.args()))
         print()
 
         if not dry_run:
@@ -173,18 +213,26 @@ class Filter():
         self.status = COMPLETE
 
 
+class ProximitySample(Sample):
+    reference: File
+    focal_sequences: File
+    context_sequences: File
+    output_strains: File
+    num_per_focal: int
 
-class Proximity():
-    def __init__(self, name, focal_data, contextual_data, num_per_focal, output, depends_on, args, logfile):
-        self.name = name
-        self.focal_data = focal_data
-        self.contextual_data = contextual_data
-        self.num_per_focal = num_per_focal
-        self.output = output
-        self.depends_on = depends_on
-        self.args = args
-        self.logfile = logfile
-        self.status = INCOMPLETE
+    def __init__(self, name=None, dependencies=None, **kwargs):
+        super().__init__(name=name, dependencies=dependencies)
+
+        # Initialize instance attributes
+        for option in self.__annotations__.keys():
+            self.__setattr__(option, None)
+
+        # Populate instance attributes
+        for option, value in kwargs.items():
+            if option not in self.__annotations__:
+                raise AugurError(f'Option {option!r} not allowed.')
+            # TODO: Check types
+            self.__setattr__(option, value)
 
     def get_closest_sequences(self):
         """
@@ -196,26 +244,31 @@ class Proximity():
         print("Computing hamming distances & choosing closest contextual strains...")
         # the sequences are assumed to be aligned, an error will be thrown if the lengths vary
         return get_distance_to_focal_set(
-            self.contextual_data['sequences'],
-            self.args.reference,
-            self.focal_data['sequences'],
+            self.context_sequences,
+            self.reference,
+            self.focal_sequences,
             self.num_per_focal
         )
 
-    def __str__(self):
-        return f"Calculate proximity for {self.name} by computing weights for {self.focal_data['sequences']} against {self.contextual_data['sequences']}"
-
     def exec(self, dry_run=False):
-        print("\n" + self.__str__())
+        print()
+        print(f"Calculate proximity for {self.name} by computing weights for {self.focal_data['sequences']} against {self.contextual_data['sequences']}")
+
         if not dry_run:
             closest = self.get_closest_sequences()
-            with open(self.output, 'w') as fh:
+            with open(self.output_strains, 'w') as fh:
                 print("\n".join(list(closest)), file=fh)
-            print(f"\tClosest strains written to {self.output} (n={len(closest)})")
+            print(f"\tClosest strains written to {self.output_strains} (n={len(closest)})")
+
         self.status = COMPLETE
 
 
-def generate_calls(config, args, tmpdir):
+# FIXME: Determine whether/where to name samples as "calls" internally. The
+# concept of calls shouldn't be exposed in the config, but it's key to
+# understanding the implementation. Allowing recursive samples would make the
+# split more clear since samples and calls will no longer be synonymous.
+
+def generate_calls(config: dict, args: argparse.Namespace, tmpdir):
     """
     Produce an (unordered) dictionary of calls to be made to accomplish the
     desired subsampling. Each call is either (i) a use of augur filter or (ii) a
@@ -225,81 +278,81 @@ def generate_calls(config, args, tmpdir):
     The separation between this function and the Filter (etc) classes is not
     quite right, but it's a WIP.
     """
-    calls = {}
+    samples: Dict[str, Sample] = dict()
 
-    for sample_name, sample_config in config['samples'].items():
-        ## TODO XXX
-        ## I designed this to have a 'include' parameter whereby the starting meta/seqs for this filter call could
-        ## be the (joined) output of previous samples. To be implemented.
-        ## Similarly, the "exclude" YAML parameter is also not implemented
+    total_weights = sum(sample_config['weight']
+                        for name, sample_config in config['samples'].items()
+                        if 'weight' in sample_config)
 
-        if 'include' in sample_config:
-            raise AugurError("'include' subsampling functionality not yet implemented")
-
-        depends_on = []
-
+    for name, sample_config in config['samples'].items():
+        sample: Sample = ...
         if 'priorities' in sample_config:
-            priority_type = sample_config['priorities'].get('type', '')
-            focus_name = sample_config['priorities']['focus']
-            if priority_type != 'proximity':
-                raise AugurError(f"Priorities must be proximity, not {priority_type!r}")
-            if sample_config.get('filter', '') != '':
-                raise AugurError(f"Priorities must not be used in conjunction with filtering queries.")
-            priority_fname = path.join(tmpdir, f"{focus_name}.priorities.txt")
-            calls["__priorities__"+focus_name] = Proximity(focus_name,
-                {'sequences': path.join(tmpdir, f"{focus_name}.fasta")},    # input (focal seqs)
-                {'metadata': args.metadata, 'sequences': args.sequences},   # input (contextual seqs)
-                sample_config['priorities']['num_per_focal'],
-                priority_fname,                                             # output         
-                [focus_name],                                               # depends on
-                args,
-                path.join(tmpdir, f"{sample_name}.priorities.log.txt")      # logfile
-            )
-            # FIXME: move command line option names to Filter class
-            sample_config['filter'] = f"--exclude-all --include {priority_fname}"
-            depends_on.append("__priorities__"+focus_name)
-
-        call = Filter(sample_name, depends_on)
-        call.add_options(
-            metadata=args.metadata,
-            output_strains=path.join(tmpdir, sample_name+'.samples.txt'),
-            # This works when YAML config keys are the same name as the
-            # corresponding option class attribute.
-            **sample_config['filter'],
-        )
-
-        if args.subsample_seed is not None:
-            call.add_options(
-                subsample_seed=args.subsample_seed,
-            )
-
-        # Add sequences only if sequence filters are used.
-        if ('min_length' in sample_config['filter'] or
-            'non_nucleotide' in sample_config['filter']):
-            call.add_options(
+            # Assume all priority samples are proximity
+            assert sample_config['priorities']['type'] == 'proximity'
+            sample = ProximitySample(
+                name=name,
+                dependencies=sample_config['focal'],
                 sequences=args.sequences,
+                output_strains=path.join(tmpdir, f"{name}.samples.txt"),
+                **sample_config,
+            )
+            samples[sample.name] = sample
+        else:
+            # Assume all non-priority samples are filter samples
+
+            # Determine intermediate sample size
+            if 'weight' in sample_config:
+                max_sequences = int(config['size'] * (sample_config['weight'] / total_weights))
+                del sample_config['weight']
+            else:
+                max_sequences = sample_config['max_sequences']
+                del sample_config['max_sequences']
+
+            # Remapping keys
+            if 'exclude' in sample_config:
+                sample_config['exclude_where'] = sample_config['exclude']
+                del sample_config['exclude']
+
+            # Apply global exclusions at every intermediate sample
+            exclude = []
+            if args.exclude:
+                exclude.extend(args.exclude)
+
+            # output_strains is only necessary for inclusion in final output sample
+            # output_sequences is only necessary for any downstream proximity samples
+            # TODO: add these conditionally?
+            sample = FilterSample(
+                name=name,
+                dependencies=[],
+                metadata=args.metadata,
+                sequences=args.sequences,
+                max_sequences=max_sequences,
+                output_strains=path.join(tmpdir, f"{name}.samples.txt"),
+                output_sequences=path.join(tmpdir, f"{name}.samples.fasta"),
+                random_seed=args.random_seed,
+                exclude=exclude,
+                **sample_config,
             )
 
-        calls[sample_name] = call
+            # TODO: augur filter optimizations, such as not including sequences if unused
 
-    # Any intermediate sample a priority calculation depends on requires FASTA input, not samples.txt
-    # (This is required by distance-to-focal-set, but we could change this)
-    for priority_call in [c for c in calls.values() if isinstance(c, Proximity)]:
-        for dep in priority_call.depends_on:
-            print("Priority calc", priority_call.name, "depends on ", dep)
-            calls[dep].data_out['sequences'] = calls[dep].data_out['strains'].replace('.samples.txt', ".fasta")
+            samples[sample.name] = sample
 
-    output_config = config['output']
-    output_call = Filter('output', output_config)
-    output_call.add_options(
+    include = [sample.output_strains for sample in samples.values()]
+    if args.include:
+        include.extend(args.include)
+
+    output_sample = FilterSample(
+        name='output',
+        dependencies=[sample for sample in samples],
         metadata=args.metadata,
         sequences=args.sequences,
         exclude_all=True,
-        include=[path.join(tmpdir, f"{name}.samples.txt") for name in output_config],
+        include=include,
         output_metadata=args.output_metadata,
         output_sequences=args.output_sequences,
     )
-    calls['output'] = output_call
+    samples[output_sample.name] = output_sample
 
     # TODO XXX check acyclic
         
@@ -307,7 +360,7 @@ def generate_calls(config, args, tmpdir):
         
     # TODO XXX prune any calls which are not themselves used in 'output' or as a dependency of another call
 
-    return calls
+    return samples
 
 
 def get_runnable_call(calls):
@@ -317,11 +370,11 @@ def get_runnable_call(calls):
     computed
     """
     for name, call in calls.items():
-        if call.status==COMPLETE:
+        if call.status == COMPLETE:
             continue
-        if len(call.depends_on)==0:
+        if len(call.dependencies) == 0:
             return name
-        if all([calls[name].status==COMPLETE for name in call.depends_on]):
+        if all([calls[name].status == COMPLETE for name in call.dependencies]):
             return name
     return None
 
