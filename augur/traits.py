@@ -5,6 +5,7 @@ Infer ancestral traits based on a tree.
 import numpy as np
 from collections import defaultdict
 import sys
+from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
 from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
@@ -99,12 +100,12 @@ def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("traits", help=__doc__)
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
     parser.add_argument('--metadata', required=True, metavar="FILE", help="table with metadata")
-    parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
+    parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                         help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
-    parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
+    parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
                         help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     parser.add_argument('--weights', required=False, help="tsv/csv table with equilibrium probabilities of discrete states")
-    parser.add_argument('--columns', required=True, nargs='+',
+    parser.add_argument('--columns', required=True, nargs='+', action='extend',
                         help='metadata fields to perform discrete reconstruction on')
     parser.add_argument('--confidence',action="store_true",
                         help='record the distribution of subleading mugration states')

@@ -271,14 +271,14 @@ if __name__ == "__main__":
 
     parser_pull = subparsers.add_parser("pull")
     parser_pull.add_argument("--bucket", "-b", type=str, help="S3 bucket to pull files from")
-    parser_pull.add_argument("--prefixes", "-p", nargs="+", help="One or more file prefixes to match in the given bucket")
+    parser_pull.add_argument("--prefixes", "-p", nargs="+", action="extend", help="One or more file prefixes to match in the given bucket")
     parser_pull.add_argument("--local_dir", "--to", "-t", help="Local directory to download files into")
     parser_pull.set_defaults(func=pull)
 
     parser_sync = subparsers.add_parser("sync")
     parser_sync.add_argument("--source_bucket", "--from", type=str, help="Source S3 bucket")
     parser_sync.add_argument("--destination_bucket", "--to", type=str, help="Destination S3 bucket")
-    parser_sync.add_argument("--prefixes", "-p", nargs="+", help="One or more prefixes for files to sync between buckets")
+    parser_sync.add_argument("--prefixes", "-p", nargs="+", action="extend", help="One or more prefixes for files to sync between buckets")
     parser_sync.set_defaults(func=sync)
 
     args = parser.parse_args()

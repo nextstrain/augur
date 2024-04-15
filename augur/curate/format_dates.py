@@ -18,9 +18,9 @@ def register_parser(parent_subparsers):
         help=__doc__)
 
     required = parser.add_argument_group(title="REQUIRED")
-    required.add_argument("--date-fields", nargs="+",
+    required.add_argument("--date-fields", nargs="+", action="extend",
         help="List of date field names in the record that need to be standardized.")
-    required.add_argument("--expected-date-formats", nargs="+",
+    required.add_argument("--expected-date-formats", nargs="+", action="extend",
         help="Expected date formats that are currently in the provided date fields, " +
              "defined by standard format codes as listed at " +
              "https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes. " +

@@ -16,7 +16,7 @@ def register_parser(parent_subparsers):
     required = parser.add_argument_group(
         title="REQUIRED"
     )
-    required.add_argument("--jsons", required=True, type=str, nargs="+", metavar="JSONs",
+    required.add_argument("--jsons", required=True, type=str, nargs="+", action="extend", metavar="JSONs",
         help="Measurement JSON files to concatenate.")
     required.add_argument("--output-json", required=True, metavar="JSON", type=str,
         help="Output JSON file")

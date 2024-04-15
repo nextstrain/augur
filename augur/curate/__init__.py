@@ -6,7 +6,7 @@ import sys
 from collections import deque
 from textwrap import dedent
 
-from augur.argparse_ import add_command_subparsers
+from augur.argparse_ import ExtendOverwriteDefault, add_command_subparsers
 from augur.errors import AugurError
 from augur.io.json import dump_ndjson, load_ndjson
 from augur.io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
@@ -53,7 +53,7 @@ def create_shared_parser():
         help="Name of the metadata column that contains the record identifier for reporting duplicate records. "
              "Uses the first column of the metadata file if not provided. "
              "Ignored if also providing a FASTA file input.")
-    shared_inputs.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+",
+    shared_inputs.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
         help="Delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
 
     shared_inputs.add_argument("--fasta",

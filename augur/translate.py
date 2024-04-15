@@ -368,7 +368,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--ancestral-sequences', required=True, type=str, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
     parser.add_argument('--reference-sequence', required=True,
                         help='GenBank or GFF file containing the annotation')
-    parser.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
+    parser.add_argument('--genes', nargs='+', action='extend', help="genes to translate (list or file containing list)")
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save aa-mutations to')
     parser.add_argument('--alignment-output', type=str, help="write out translated gene alignments. "
                                    "If a VCF-input, a .vcf or .vcf.gz will be output here (depending on file ending). If fasta-input, specify the file name "

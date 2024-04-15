@@ -315,7 +315,7 @@ def register_parser(parent_subparsers):
     )
     amino_acid_options_group.add_argument('--annotation',
                         help='GenBank or GFF file containing the annotation')
-    amino_acid_options_group.add_argument('--genes', nargs='+', help="genes to translate (list or file containing list)")
+    amino_acid_options_group.add_argument('--genes', nargs='+', action='extend', help="genes to translate (list or file containing list)")
     amino_acid_options_group.add_argument('--translations', type=str, help="translated alignments for each CDS/Gene. "
                            "Currently only supported for FASTA-input. Specify the file name via a "
                            "template like 'aa_sequences_%%GENE.fasta' where %%GENE will be replaced "

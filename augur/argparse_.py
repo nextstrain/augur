@@ -76,3 +76,20 @@ class HideAsFalseAction(Action):
     """
     def __call__(self, parser, namespace, values, option_string=None):
         setattr(namespace, self.dest, option_string[2:6] != 'hide')
+
+
+class ExtendOverwriteDefault(Action):
+    """
+    Similar to the core argparse ``extend`` action, but overwrites the argument
+    ``default``, if any, instead of appending to it.
+
+    Thus, the ``default`` value is not included when the option is given and
+    may be a non-list value if desired.
+    """
+    def __call__(self, parser, namespace, value, option_string = None):
+        current = getattr(namespace, self.dest, None)
+
+        if current is parser.get_default(self.dest) or current is None:
+            current = []
+
+        setattr(namespace, self.dest, [*current, *value])

@@ -32,8 +32,7 @@ Scenario 2: Run command with two --exclude-where flags
   >  --exclude-where "region=B" \
   >  --output-strains filtered_strains.txt > /dev/null
 
-Only the last exclusion is applied.
+Both exclusions are applied.
 
   $ cat filtered_strains.txt
-  SEQ_1
   SEQ_3
