@@ -96,6 +96,7 @@ class FilterSample(Sample):
     # Sampling options
     group_by: Optional[List[str]]
     max_sequences: Optional[int]
+    sequences_per_group: Optional[int]
     disable_probabilistic_sampling: Optional[bool]
     random_seed: Optional[int]
 
@@ -174,6 +175,9 @@ class FilterSample(Sample):
 
         if self.max_sequences is not None:
             args.extend(['--subsample-max-sequences', str(self.max_sequences)])
+
+        if self.sequences_per_group is not None:
+            args.extend(['--sequences-per-group', str(self.sequences_per_group)])
 
         if self.disable_probabilistic_sampling:
             args.append('--no-probabilistic-sampling')
@@ -304,9 +308,11 @@ def generate_calls(config: dict, args: argparse.Namespace, tmpdir):
             if 'weight' in sample_config:
                 max_sequences = int(config['size'] * (sample_config['weight'] / total_weights))
                 del sample_config['weight']
-            else:
+            elif 'max_sequences' in sample_config:
                 max_sequences = sample_config['max_sequences']
                 del sample_config['max_sequences']
+            else:
+                max_sequences = None
 
             # Remapping keys
             if 'exclude' in sample_config:
