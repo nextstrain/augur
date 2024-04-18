@@ -61,7 +61,8 @@ setuptools.setup(
         "networkx >= 2.5, ==2.*",
         "numpy ==1.*",
         "packaging >=19.2",
-        "pandas >=1.0.0, ==1.*",
+        # FIXME: consider pinning pandas==2.* if we can't support both v1 and v2 at the same time
+        "pandas >=1.0.0",
         "phylo-treetime >=0.11.2, <0.12",
         "pyfastx >=1.0.0, <3.0",
         "scipy ==1.*",
