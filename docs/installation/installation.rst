@@ -14,8 +14,8 @@ Install Augur
 .. warning::
    There are some package managers that have entries with a similar name.
 
-   * `Augur on PyPI <https://pypi.org/project/Augur/>`_. This is a different project. Use `nextstrain-augur <https://pypi.org/project/nextstrain-augur/>`_ instead.
-   * `augur on Debian <https://tracker.debian.org/pkg/augur>`_. This is an unofficial version **not** maintained by the Nextstrain core team. Use at your own risk.
+   * `Augur on PyPI <https://pypi.org/project/Augur/>`__. This is a different project. Use `nextstrain-augur <https://pypi.org/project/nextstrain-augur/>`__ instead.
+   * `augur on Debian <https://tracker.debian.org/pkg/augur>`__. This is an unofficial version not maintained by the Nextstrain core team. It may lag behind official Augur releases. We do not generally recommend its use.
 
 
 There are several ways to install Augur, ordered from least to most complex.
