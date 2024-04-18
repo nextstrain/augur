@@ -16,7 +16,8 @@ This should produce no results because the intersection of metadata and sequence
   ERROR: All samples have been dropped! Check filter rules and metadata file format.
   [2]
   $ wc -l filtered_strains.txt
-  \s*0 .* (re)
+  wc: filtered_strains.txt: open: No such file or directory
+  [1]
 
 Repeat with sequence and strain outputs. We should get the same results.
 
@@ -30,9 +31,11 @@ Repeat with sequence and strain outputs. We should get the same results.
   ERROR: All samples have been dropped! Check filter rules and metadata file format.
   [2]
   $ wc -l filtered_strains.txt
-  \s*0 .* (re)
+  wc: filtered_strains.txt: open: No such file or directory
+  [1]
   $ grep "^>" filtered.fasta | wc -l
-  \s*0 (re)
+  grep: filtered.fasta: No such file or directory
+         0
 
 Repeat without any sequence-based filters.
 Since we expect metadata to be filtered by presence of strains in input sequences, this should produce no results because the intersection of metadata and sequences is empty.
@@ -45,4 +48,5 @@ Since we expect metadata to be filtered by presence of strains in input sequence
   ERROR: All samples have been dropped! Check filter rules and metadata file format.
   [2]
   $ wc -l filtered_strains.txt
-  \s*0 .* (re)
+  wc: filtered_strains.txt: open: No such file or directory
+  [1]

@@ -1,25 +1,79 @@
-import heapq
-import itertools
 import uuid
 import numpy as np
 import pandas as pd
+from collections import defaultdict
 from typing import Collection
 
 from augur.dates import get_iso_year_week
 from augur.errors import AugurError
+from augur.filter.io import read_priority_scores
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err
 from . import constants
 
 
-def get_groups_for_subsampling(strains, metadata, group_by=None):
-    """Return a list of groups for each given strain based on the corresponding
-    metadata and group by column.
+def subsample(metadata, args, group_by):
+
+    # Use user-defined priorities, if possible. Otherwise, setup a
+    # corresponding dictionary that returns a random float for each strain.
+    if args.priority:
+        priorities = read_priority_scores(args.priority)
+    else:
+        random_generator = np.random.default_rng(args.subsample_seed)
+        priorities = defaultdict(random_generator.random)
+
+    # Generate columns for grouping.
+    grouping_metadata = enrich_metadata(
+        metadata,
+        group_by,
+    )
+
+    # Enrich with priorities.
+    grouping_metadata['priority'] = [priorities[strain] for strain in grouping_metadata.index]
+
+    pandas_groupby = grouping_metadata.groupby(list(group_by), group_keys=False)
+
+    n_groups = len(pandas_groupby.groups)
+
+    # Determine sequences per group.
+    if args.sequences_per_group:
+        sequences_per_group = args.sequences_per_group
+    elif args.subsample_max_sequences:
+        group_sizes = [len(strains) for strains in pandas_groupby.groups.values()]
+
+        try:
+            # Calculate sequences per group. If there are more groups than maximum
+            # sequences requested, sequences per group will be a floating point
+            # value and subsampling will be probabilistic.
+            sequences_per_group, probabilistic_used = calculate_sequences_per_group(
+                args.subsample_max_sequences,
+                group_sizes,
+                allow_probabilistic=args.probabilistic_sampling
+            )
+        except TooManyGroupsError as error:
+            raise AugurError(str(error)) from error
+
+        if (probabilistic_used):
+            print(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
+        else:
+            print(f"Sampling at {sequences_per_group} per group.")
+    else:
+        pass
+        # FIXME: what to do when no subsampling is requested?
+
+    group_size_limits = (size for size in get_group_size_limits(n_groups, sequences_per_group, random_seed=args.subsample_seed))
+
+    def row_sampler(group):
+        n = next(group_size_limits)
+        return group.nlargest(n, 'priority')
+
+    return {strain for strain in pandas_groupby.apply(row_sampler).index}
+
+def enrich_metadata(metadata, group_by=None):
+    """Enrich metadata with generated columns.
 
     Parameters
     ----------
-    strains : list
-        A list of strains to get groups for.
     metadata : pandas.DataFrame
         Metadata to inspect for the given strains.
     group_by : list
@@ -27,8 +81,8 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
     Returns
     -------
-    dict :
-        A mapping of strain names to tuples corresponding to the values of the strain's group.
+    metadata : pandas.DataFrame
+        Metadata with generated columns.
 
     Examples
     --------
@@ -75,15 +129,12 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> get_groups_for_subsampling(strains, metadata, group_by=('_dummy',))
     {'strain1': ('_dummy',), 'strain2': ('_dummy',)}
     """
-    metadata = metadata.loc[list(strains)]
-    group_by_strain = {}
-
     if len(metadata) == 0:
-        return group_by_strain
+        return metadata
 
     if not group_by or group_by == ('_dummy',):
-        group_by_strain = {strain: ('_dummy',) for strain in strains}
-        return group_by_strain
+        metadata['_dummy'] = '_dummy'
+        return metadata
 
     group_by_set = set(group_by)
     generated_columns_requested = constants.GROUP_BY_GENERATED_COLUMNS & group_by_set
@@ -130,9 +181,10 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             # Drop the date column since it should not be used for grouping.
             metadata = pd.concat([metadata.drop(METADATA_DATE_COLUMN, axis=1), df_dates], axis=1)
 
+            # FIXME: I think this is useless - drop it in another commit
             # Check again if metadata is empty after dropping ambiguous dates.
-            if metadata.empty:
-                return group_by_strain
+            # if metadata.empty:
+            #     return group_by_strain
 
             # Generate columns.
             if constants.DATE_YEAR_COLUMN in generated_columns_requested:
@@ -164,149 +216,48 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
         for group in unknown_groups:
             metadata[group] = 'unknown'
 
-    # Finally, determine groups.
-    group_by_strain = dict(zip(metadata.index, metadata[group_by].apply(tuple, axis=1)))
-    return group_by_strain
+    return metadata
 
 
-class PriorityQueue:
-    """A priority queue implementation that automatically replaces lower priority
-    items in the heap with incoming higher priority items.
-
-    Examples
-    --------
-
-    Add a single record to a heap with a maximum of 2 records.
-
-    >>> queue = PriorityQueue(max_size=2)
-    >>> queue.add({"strain": "strain1"}, 0.5)
-    1
-
-    Add another record with a higher priority. The queue should be at its maximum
-    size.
-
-    >>> queue.add({"strain": "strain2"}, 1.0)
-    2
-    >>> queue.heap
-    [(0.5, 0, {'strain': 'strain1'}), (1.0, 1, {'strain': 'strain2'})]
-    >>> list(queue.get_items())
-    [{'strain': 'strain1'}, {'strain': 'strain2'}]
-
-    Add a higher priority record that causes the queue to exceed its maximum
-    size. The resulting queue should contain the two highest priority records
-    after the lowest priority record is removed.
-
-    >>> queue.add({"strain": "strain3"}, 2.0)
-    2
-    >>> list(queue.get_items())
-    [{'strain': 'strain2'}, {'strain': 'strain3'}]
-
-    Add a record with the same priority as another record, forcing the duplicate
-    to be resolved by removing the oldest entry.
-
-    >>> queue.add({"strain": "strain4"}, 1.0)
-    2
-    >>> list(queue.get_items())
-    [{'strain': 'strain4'}, {'strain': 'strain3'}]
-
-    """
-    def __init__(self, max_size):
-        """Create a fixed size heap (priority queue)
-
-        """
-        self.max_size = max_size
-        self.heap = []
-        self.counter = itertools.count()
-
-    def add(self, item, priority):
-        """Add an item to the queue with a given priority.
-
-        If adding the item causes the queue to exceed its maximum size, replace
-        the lowest priority item with the given item. The queue stores items
-        with an additional heap id value (a count) to resolve ties between items
-        with equal priority (favoring the most recently added item).
-
-        """
-        heap_id = next(self.counter)
-
-        if len(self.heap) >= self.max_size:
-            heapq.heappushpop(self.heap, (priority, heap_id, item))
-        else:
-            heapq.heappush(self.heap, (priority, heap_id, item))
-
-        return len(self.heap)
-
-    def get_items(self):
-        """Return each item in the queue in order.
-
-        Yields
-        ------
-        Any
-            Item stored in the queue.
-
-        """
-        for priority, heap_id, item in self.heap:
-            yield item
-
-
-def create_queues_by_group(groups, max_size, max_attempts=100, random_seed=None):
-    """Create a dictionary of priority queues per group for the given maximum size.
+def get_group_size_limits(number_of_groups: int, max_size, max_attempts = 100, random_seed = None):
+    """Return a list of group size limits.
 
     When the maximum size is fractional, probabilistically sample the maximum
     size from a Poisson distribution. Make at least the given number of maximum
-    attempts to create queues for which the sum of their maximum sizes is
+    attempts to create groups for which the sum of their maximum sizes is
     greater than zero.
 
-    Examples
-    --------
-
-    Create queues for two groups with a fixed maximum size.
-
-    >>> groups = ("2015", "2016")
-    >>> queues = create_queues_by_group(groups, 2)
-    >>> sum(queue.max_size for queue in queues.values())
-    4
-
-    Create queues for two groups with a fractional maximum size. Their total max
-    size should still be an integer value greater than zero.
-
-    >>> seed = 314159
-    >>> queues = create_queues_by_group(groups, 0.1, random_seed=seed)
-    >>> int(sum(queue.max_size for queue in queues.values())) > 0
-    True
-
-    A subsequent run of this function with the same groups and random seed
-    should produce the same queues and queue sizes.
-
-    >>> more_queues = create_queues_by_group(groups, 0.1, random_seed=seed)
-    >>> [queue.max_size for queue in queues.values()] == [queue.max_size for queue in more_queues.values()]
-    True
-
+    Parameters
+    ----------
+    number_of_groups : int
+        The number of groups.
+    max_size : int | float
+        Maximum size of a group.
+    max_attempts : int
+        Maximum number of attempts for creating group sizes.
+    random_seed
+        Seed value for np.random.default_rng for reproducible randomness.
     """
-    queues_by_group = {}
+    sizes = None
     total_max_size = 0
     attempts = 0
 
-    if max_size < 1.0:
-        random_generator = np.random.default_rng(random_seed)
+    # If max_size is not fractional, use it as the limit for all groups.
+    if int(max_size) == max_size:
+        return np.full(number_of_groups, max_size)
 
     # For small fractional maximum sizes, it is possible to randomly select
-    # maximum queue sizes that all equal zero. When this happens, filtering
-    # fails unexpectedly. We make multiple attempts to create queues with
-    # maximum sizes greater than zero for at least one queue.
+    # maximum sizes that all equal zero. When this happens, filtering
+    # fails unexpectedly. We make multiple attempts to create sizes with
+    # maximum sizes greater than zero for at least one group.
     while total_max_size == 0 and attempts < max_attempts:
-        for group in sorted(groups):
-            if max_size < 1.0:
-                queue_max_size = random_generator.poisson(max_size)
-            else:
-                queue_max_size = max_size
-
-            queues_by_group[group] = PriorityQueue(queue_max_size)
-
-        total_max_size = sum(queue.max_size for queue in queues_by_group.values())
+        sizes = np.random.default_rng(random_seed).poisson(max_size, size=number_of_groups)
+        total_max_size = sum(sizes)
         attempts += 1
 
-    return queues_by_group
+    assert sizes is not None
+
+    return sizes
 
 
 def calculate_sequences_per_group(target_max_value, group_sizes, allow_probabilistic=True):

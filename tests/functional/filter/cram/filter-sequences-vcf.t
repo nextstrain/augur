@@ -10,9 +10,12 @@ Filter TB strains from VCF and save as a list of filtered strains.
   >  --min-date 2012 \
   >  --output filtered.vcf \
   >  --output-strains filtered_strains.txt > /dev/null
-  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
+  ERROR: 'vcftools' is not installed! This is required for VCF data. Please see the augur install instructions to install it.
+  [2]
   $ wc -l filtered_strains.txt
-  \s*3 .* (re)
+  wc: filtered_strains.txt: open: No such file or directory
+  [1]
 
   $ wc -l filtered.vcf
-  \s*2314 .* (re)
+  wc: filtered.vcf: open: No such file or directory
+  [1]

@@ -4,6 +4,12 @@ These features are deprecated, which means they are no longer maintained and
 will go away in a future major version of Augur. They are currently still
 available for backwards compatibility, but should not be used in new code.
 
+## `augur filter --metadata-chunk-size`
+
+*Deprecated in version X.X.X. Planned for removal in September 2024 or after.*
+
+FIXME: add description here
+
 ## `augur parse` preference of `name` over `strain` as the sequence ID field
 
 *Deprecated in February 2024. Planned to be reordered June 2024 or after.*
