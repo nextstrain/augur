@@ -8,7 +8,7 @@ parser.add_argument('--jsons', '--json', default=None, nargs='+', type=str, help
 parser.add_argument('--custom_colors', default=None, type=str, help="Path to .tsv or .csv with custom color ramps; will fall back to nextstrain default colors if not provided.")
 args = parser.parse_args().__dict__
 
-if args['jsons'] == None:
+if args['jsons'] is None:
     try:
         jsons = glob('./*meta.json')
         assert len(jsons) > 0
