@@ -117,13 +117,13 @@ def orderKeys(data):
     return od
 
 
-def read_tree(fname):
-    tree = Phylo.read(fname, 'newick')
+def read_trees(filenames):
+    trees = [Phylo.read(fname, 'newick') for fname in filenames]
     # augur export requires unique node names (both terminal and external) as these
     # are used to associate metadata/node-data with nodes. Any duplication is fatal.
     # The exception to this is unlabelled node names, which auspice will handle but
     # won't be associated with any metadata within export.
-    node_names = [clade.name for clade in tree.root.find_clades()]
+    node_names = [clade.name for tree in trees for clade in tree.root.find_clades()]
     if None in node_names:
         raise AugurError(f"Tree contains unnamed nodes. If these are internal nodes you may wish to run "+
                          "`augur refine --tree <newick> --output-tree <newick>` to name them.")
@@ -132,7 +132,7 @@ def read_tree(fname):
         dups = [name for name, count in Counter(node_names).items() if count>1]
         raise AugurError(f"{len(dups)} node names occur multiple times in the tree: " +
                          ", ".join([f"'{v}'" for v in dups[0:5]]) + ("..." if len(dups)>5 else ""))
-    return (tree, node_names)
+    return (trees, node_names)
 
 
 def node_div(T, node_attrs):
@@ -750,7 +750,12 @@ def set_branch_attrs_on_tree(data_json, branch_attrs):
             node['branch_attrs'] = branch_attrs[node['name']]
         for child in node.get("children", []):
             _recursively_set_data(child)
-    _recursively_set_data(data_json["tree"])
+
+    if isinstance(data_json["tree"], list):
+        for subtree in data_json['tree']:
+            _recursively_set_data(subtree)
+    else:
+        _recursively_set_data(data_json["tree"])
 
 
 def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
@@ -839,7 +844,11 @@ def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
         for child in node.get("children", []):
             _recursively_set_data(child)
 
-    _recursively_set_data(data_json["tree"])
+    if isinstance(data_json["tree"], list):
+        for subtree in data_json['tree']:
+            _recursively_set_data(subtree)
+    else:
+        _recursively_set_data(data_json["tree"])
 
 def node_data_prop_is_normal_trait(name):
     # those traits / keys / attrs which are not "special" and can be exported
@@ -893,7 +902,7 @@ def register_parser(parent_subparsers):
     required = parser.add_argument_group(
         title="REQUIRED"
     )
-    required.add_argument('--tree','-t', metavar="newick", required=True, help="Phylogenetic tree, usually output from `augur refine`")
+    required.add_argument('--tree','-t', metavar="newick", nargs='+', required=True, help="Phylogenetic tree(s), usually output from `augur refine`")
     required.add_argument('--output', metavar="JSON", required=True, help="Output file (typically for visualisation in auspice)")
 
     config = parser.add_argument_group(
@@ -1191,7 +1200,7 @@ def run(args):
         metadata_file = {}
 
     # parse input files
-    (T, node_names) = read_tree(args.tree)
+    (trees, node_names) = read_trees(args.tree)
     node_data, node_attrs, node_data_names, metadata_names, branch_attrs = \
             parse_node_data_and_metadata(node_names, node_data_file, metadata_file)
     config = get_config(args)
@@ -1223,7 +1232,8 @@ def run(args):
     set_filters(data_json, config)
 
     # set tree structure
-    data_json["tree"] = convert_tree_to_json_structure(T.root, node_attrs, node_div(T, node_attrs))
+    trees_json = [convert_tree_to_json_structure(tree.root, node_attrs, node_div(tree, node_attrs)) for tree in trees]
+    data_json["tree"] = trees_json[0] if len(trees_json)==1 else trees_json
     set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns)
     set_branch_attrs_on_tree(data_json, branch_attrs)
 
