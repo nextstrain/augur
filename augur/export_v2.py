@@ -117,6 +117,24 @@ def orderKeys(data):
     return od
 
 
+def read_tree(fname):
+    tree = Phylo.read(fname, 'newick')
+    # augur export requires unique node names (both terminal and external) as these
+    # are used to associate metadata/node-data with nodes. Any duplication is fatal.
+    # The exception to this is unlabelled node names, which auspice will handle but
+    # won't be associated with any metadata within export.
+    node_names = [clade.name for clade in tree.root.find_clades()]
+    if None in node_names:
+        raise AugurError(f"Tree contains unnamed nodes. If these are internal nodes you may wish to run "+
+                         "`augur refine --tree <newick> --output-tree <newick>` to name them.")
+    if len(set(node_names))!=len(node_names):
+        from collections import Counter
+        dups = [name for name, count in Counter(node_names).items() if count>1]
+        raise AugurError(f"{len(dups)} node names occur multiple times in the tree: " +
+                         ", ".join([f"'{v}'" for v in dups[0:5]]) + ("..." if len(dups)>5 else ""))
+    return (tree, node_names)
+
+
 def node_div(T, node_attrs):
     """
     Scans the provided tree & metadata to see if divergence is defined, and if so returns
@@ -1059,12 +1077,12 @@ def create_branch_labels(branch_attrs, node_data, branch_data):
                 continue
             branch_attrs[node_name]["labels"][label_key] = label_value
 
-def parse_node_data_and_metadata(T, node_data, metadata):
+def parse_node_data_and_metadata(node_names, node_data, metadata):
     node_data_names = set()
     metadata_names = set()
 
     # assign everything to node_attrs, exclusions considered later
-    node_attrs = {clade.name: {} for clade in T.root.find_clades()}
+    node_attrs = {name: {} for name in node_names}
 
     # first pass: metadata
     for metadata_id, node in metadata.items():
@@ -1088,7 +1106,7 @@ def parse_node_data_and_metadata(T, node_data, metadata):
     # third pass: create `branch_attrs`. The data comes from
     # (a) some keys within `node_data['nodes']` (for legacy reasons)
     # (b) the `node_data['branches']` dictionary, which currently only defines labels
-    branch_attrs = {clade.name: defaultdict(dict) for clade in T.root.find_clades()}
+    branch_attrs = {name: defaultdict(dict) for name in node_names}
     create_branch_mutations(branch_attrs, node_data)
     create_branch_labels(branch_attrs, node_data['nodes'], node_data.get('branches', {}))
 
@@ -1173,9 +1191,9 @@ def run(args):
         metadata_file = {}
 
     # parse input files
-    T = Phylo.read(args.tree, 'newick')
+    (T, node_names) = read_tree(args.tree)
     node_data, node_attrs, node_data_names, metadata_names, branch_attrs = \
-            parse_node_data_and_metadata(T, node_data_file, metadata_file)
+            parse_node_data_and_metadata(node_names, node_data_file, metadata_file)
     config = get_config(args)
     additional_metadata_columns = get_additional_metadata_columns(config, args.metadata_columns, metadata_names)
 
