@@ -143,6 +143,7 @@ def register_parser(parent_subparsers):
                         default='mutations-per-site', help='Units in which sequence divergences is exported.')
     parser.add_argument('--seed', type=int, help='seed for random number generation')
     parser.add_argument('--verbosity', type=int, default=1, help='treetime verbosity, between 0 and 6 (higher values more output)')
+    parser.add_argument('--content-aware-internal-node-names', action="store_true")
     parser.set_defaults(covariance=True)
     return parser
 
@@ -341,6 +342,21 @@ def run(args):
     else:
         print("ERROR: divergence unit",args.divergence_units,"not supported!", file=sys.stderr)
         return 1
+
+    if args.content_aware_internal_node_names:
+        terminals = [n.name for n in T.find_clades() if n.is_terminal()]
+        terminals.sort()
+        internals = {n.name for n in T.find_clades() if not n.is_terminal()}
+        assert all(n.startswith('NODE_') for n in internals)
+        # compute hash similar to git short commit hash
+        import hashlib
+        id = hashlib.sha256("".join(terminals).encode('utf-8')).hexdigest()[0:7]
+        def rename(name):
+            if name not in internals: return name
+            return f"NODE_{id}_{name.split('_')[1]}"
+        for n in T.find_clades():
+            n.name = rename(n.name)
+        node_data['nodes'] = {rename(name):data for name,data in node_data['nodes'].items()}
 
     # Export refined tree and node data
     tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f', branch_length_only=True)
