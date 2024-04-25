@@ -249,7 +249,7 @@ class PriorityQueue:
             yield item
 
 
-def create_queues_by_group(groups, max_size, max_attempts=100, random_seed=None):
+def create_queues_by_group(groups, max_size, random_seed=None):
     """Create a dictionary of priority queues per group for the given maximum size.
 
     When the maximum size is fractional, probabilistically sample the maximum
@@ -286,6 +286,7 @@ def create_queues_by_group(groups, max_size, max_attempts=100, random_seed=None)
     queues_by_group = {}
     total_max_size = 0
     attempts = 0
+    max_attempts = 100
 
     if max_size < 1.0:
         random_generator = np.random.default_rng(random_seed)
