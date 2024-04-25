@@ -23,7 +23,7 @@ from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
 from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_metadata_based_outputs
 from .include_exclude_rules import apply_filters, construct_filters
-from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, create_queues_by_group, get_groups_for_subsampling
+from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, get_group_sizes, create_queues_by_group, get_groups_for_subsampling
 
 
 def run(args):
@@ -284,11 +284,12 @@ def run(args):
         if queues_by_group is None:
             # We know all of the possible groups now from the first pass through
             # the metadata, so we can create queues for all groups at once.
-            queues_by_group = create_queues_by_group(
+            group_sizes = get_group_sizes(
                 records_per_group.keys(),
                 sequences_per_group,
                 random_seed=args.subsample_seed,
             )
+            queues_by_group = create_queues_by_group(group_sizes)
 
         # Make a second pass through the metadata, only considering records that
         # have passed filters.
