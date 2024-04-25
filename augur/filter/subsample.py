@@ -249,65 +249,52 @@ class PriorityQueue:
             yield item
 
 
-def get_group_sizes(groups, target_group_size, random_seed=None):
+def get_probabilistic_group_sizes(groups, target_group_size, random_seed=None):
     """Create a dictionary of maximum sizes per group.
 
-    When the target maximum size is fractional, probabilistically generate
-    varying sizes from a Poisson distribution. Make at least the given number of
-    maximum attempts to generate sizes for which the total of all sizes is
-    greater than zero.
-
-    Otherwise, each group's size is simply the target maximum size.
+    Probabilistically generate varying sizes from a Poisson distribution. Make
+    at least the given number of maximum attempts to generate sizes for which
+    the total of all sizes is greater than zero.
 
     Examples
     --------
-
-    Get sizes for two groups with a fixed maximum size.
-
-    >>> groups = ("2015", "2016")
-    >>> group_sizes = get_group_sizes(groups, 2)
-    >>> sum(group_sizes.values())
-    4
-
     Get sizes for two groups with a fractional maximum size. Their total
     size should still be an integer value greater than zero.
 
+    >>> groups = ("2015", "2016")
     >>> seed = 314159
-    >>> group_sizes = get_group_sizes(groups, 0.1, random_seed=seed)
+    >>> group_sizes = get_probabilistic_group_sizes(groups, 0.1, random_seed=seed)
     >>> int(sum(group_sizes.values())) > 0
     True
 
     A subsequent run of this function with the same groups and random seed
     should produce the same group sizes.
 
-    >>> more_group_sizes = get_group_sizes(groups, 0.1, random_seed=seed)
+    >>> more_group_sizes = get_probabilistic_group_sizes(groups, 0.1, random_seed=seed)
     >>> list(group_sizes.values()) == list(more_group_sizes.values())
     True
 
     """
-    if target_group_size < 1.0:
-        # For small fractional maximum sizes, it is possible to randomly select
-        # maximum queue sizes that all equal zero. When this happens, filtering
-        # fails unexpectedly. We make multiple attempts to create queues with
-        # maximum sizes greater than zero for at least one queue.
-        random_generator = np.random.default_rng(random_seed)
-        total_max_size = 0
-        attempts = 0
-        max_attempts = 100
-        max_sizes_per_group = {}
+    assert target_group_size < 1.0
 
-        while total_max_size == 0 and attempts < max_attempts:
-            for group in sorted(groups):
-                max_sizes_per_group[group] = random_generator.poisson(target_group_size)
+    # For small fractional maximum sizes, it is possible to randomly select
+    # maximum queue sizes that all equal zero. When this happens, filtering
+    # fails unexpectedly. We make multiple attempts to create queues with
+    # maximum sizes greater than zero for at least one queue.
+    random_generator = np.random.default_rng(random_seed)
+    total_max_size = 0
+    attempts = 0
+    max_attempts = 100
+    max_sizes_per_group = {}
 
-            total_max_size = sum(max_sizes_per_group.values())
-            attempts += 1
+    while total_max_size == 0 and attempts < max_attempts:
+        for group in sorted(groups):
+            max_sizes_per_group[group] = random_generator.poisson(target_group_size)
 
-        return max_sizes_per_group
-    else:
-        assert type(target_group_size) is int
+        total_max_size = sum(max_sizes_per_group.values())
+        attempts += 1
 
-        return {group: target_group_size for group in groups}
+    return max_sizes_per_group
 
 
 def create_queues_by_group(max_sizes_per_group):
