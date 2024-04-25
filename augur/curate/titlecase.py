@@ -14,13 +14,13 @@ def register_parser(parent_subparsers):
     help = __doc__)
     
     required = parser.add_argument_group(title="REQUIRED")
-    required.add_argument("--titlecase-fields", nargs="*",
+    required.add_argument("--titlecase-fields", nargs="*", action="extend",
         help="List of fields to convert to titlecase.", required=True)
 
     optional = parser.add_argument_group(title="OPTIONAL")
-    optional.add_argument("--articles", nargs="*",
+    optional.add_argument("--articles", nargs="*", action="extend",
         help="List of articles that should not be converted to titlecase.")
-    optional.add_argument("--abbreviations", nargs="*",
+    optional.add_argument("--abbreviations", nargs="*", action="extend",
         help="List of abbreviations that should not be converted to titlecase, keeps uppercase.")
 
     optional.add_argument("--failure-reporting",

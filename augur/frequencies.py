@@ -6,6 +6,7 @@ import numpy as np
 from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
 
+from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
@@ -24,11 +25,11 @@ def register_parser(parent_subparsers):
                         help="method by which frequencies should be estimated")
     parser.add_argument('--metadata', type=str, required=True, metavar="FILE",
                         help="metadata including dates for given samples")
-    parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
+    parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                         help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
-    parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
+    parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
                         help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
-    parser.add_argument('--regions', type=str, nargs='+', default=[DEFAULT_REGION],
+    parser.add_argument('--regions', type=str, nargs='+', action=ExtendOverwriteDefault, default=[DEFAULT_REGION],
                         help="region to filter to. " \
                             f"Regions should match values in the {REGION_COLUMN!r} column of the metadata file " \
                             f"if specifying values other than the default {DEFAULT_REGION!r} region.")
@@ -48,9 +49,9 @@ def register_parser(parent_subparsers):
                         help="calculate frequencies for internal nodes as well as tips")
 
     # Alignment-specific arguments
-    parser.add_argument('--alignments', type=str, nargs='+',
+    parser.add_argument('--alignments', type=str, nargs='+', action='extend',
                         help="alignments to estimate mutations frequencies for")
-    parser.add_argument('--gene-names', nargs='+', type=str,
+    parser.add_argument('--gene-names', nargs='+', action='extend', type=str,
                         help="names of the sequences in the alignment, same order assumed")
     parser.add_argument('--ignore-char', type=str, default='',
                         help="character to be ignored in frequency calculations")

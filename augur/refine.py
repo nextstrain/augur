@@ -4,6 +4,7 @@ Refine an initial tree using sequence metadata.
 import numpy as np
 import sys
 from Bio import Phylo
+from .argparse_ import ExtendOverwriteDefault
 from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
@@ -100,9 +101,9 @@ def register_parser(parent_subparsers):
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
     parser.add_argument('--metadata', type=str, metavar="FILE", help="sequence metadata")
-    parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
+    parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                         help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
-    parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
+    parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
                         help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     parser.add_argument('--output-tree', type=str, help='file name to write tree to')
     parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
@@ -113,7 +114,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--gen-per-year', default=50, type=float, help="number of generations per year, relevant for skyline output('skyline')")
     parser.add_argument('--clock-rate', type=float, help="fixed clock rate")
     parser.add_argument('--clock-std-dev', type=float, help="standard deviation of the fixed clock_rate estimate")
-    parser.add_argument('--root', nargs="+", default='best', help="rooting mechanism ('best', least-squares', 'min_dev', 'oldest', 'mid_point') "
+    parser.add_argument('--root', nargs="+", action=ExtendOverwriteDefault, default='best', help="rooting mechanism ('best', least-squares', 'min_dev', 'oldest', 'mid_point') "
                                 "OR node to root by OR two nodes indicating a monophyletic group to root by. "
                                 "Run treetime -h for definitions of rooting methods.")
     parser.add_argument('--keep-root', action="store_true", help="do not reroot the tree; use it as-is. "
@@ -138,7 +139,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--clock-filter-iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
                                 'interquartile ranges from the root-to-tip vs time regression')
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    parser.add_argument('--year-bounds', type=int, nargs='+', help='specify min or max & min prediction bounds for samples with XX in year')
+    parser.add_argument('--year-bounds', type=int, nargs='+', action='extend', help='specify min or max & min prediction bounds for samples with XX in year')
     parser.add_argument('--divergence-units', type=str, choices=['mutations', 'mutations-per-site'],
                         default='mutations-per-site', help='Units in which sequence divergences is exported.')
     parser.add_argument('--seed', type=int, help='seed for random number generation')

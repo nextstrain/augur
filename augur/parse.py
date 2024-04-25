@@ -150,8 +150,8 @@ def register_parser(parent_subparsers):
     parser.add_argument('--output-metadata', required=True, help="output metadata file")
     parser.add_argument('--output-id-field', required=False,
                         help=f"The record field to use as the sequence identifier in the FASTA output. If not provided, this will use the first available of {PARSE_DEFAULT_ID_COLUMNS}. If none of those are available, this will use the first field in the fasta header.")
-    parser.add_argument('--fields', required=True, nargs='+', help="fields in fasta header")
-    parser.add_argument('--prettify-fields', nargs='+', help="apply string prettifying operations (underscores to spaces, capitalization, etc) to specified metadata fields")
+    parser.add_argument('--fields', required=True, nargs='+', action='extend', help="fields in fasta header")
+    parser.add_argument('--prettify-fields', nargs='+', action='extend', help="apply string prettifying operations (underscores to spaces, capitalization, etc) to specified metadata fields")
     parser.add_argument('--separator', default='|', help="separator of fasta header")
     parser.add_argument('--fix-dates', choices=['dayfirst', 'monthfirst'],
                                 help="attempt to parse non-standard dates and output them in standard YYYY-MM-DD format")

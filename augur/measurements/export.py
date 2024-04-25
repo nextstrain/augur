@@ -55,7 +55,7 @@ def register_parser(parent_subparsers):
     )
     config.add_argument("--collection-config", metavar="JSON",
         help="Collection configuration file for advanced configurations. ")
-    config.add_argument("--grouping-column", nargs="+",
+    config.add_argument("--grouping-column", nargs="+", action="extend",
         help="Name of the column(s) that should be used as grouping(s) for measurements. " +
              "Note that if groupings are provided via command line args, the default group-by " +
              "field in the config JSON will be dropped.")
@@ -69,9 +69,9 @@ def register_parser(parent_subparsers):
         help="The short label to display for the x-axis that describles the value of the measurements. " +
              "If not provided via config or command line option, the panel's default " +
              f"x-axis label is {DEFAULT_ARGS['x_axis_label']!r}.")
-    config.add_argument("--thresholds", type=float, nargs="+",
+    config.add_argument("--thresholds", type=float, nargs="+", action="extend",
         help="Measurements value threshold(s) to be displayed in the measurements panel.")
-    config.add_argument("--filters", nargs="+",
+    config.add_argument("--filters", nargs="+", action="extend",
         help="The columns that are to be used a filters for measurements. " +
              "If not provided, all columns will be available as filters.")
     config.add_argument("--group-by", type=str,
@@ -89,7 +89,7 @@ def register_parser(parent_subparsers):
     optional = parser.add_argument_group(
         title="OPTIONAL SETTINGS"
     )
-    optional.add_argument("--include-columns", nargs="+",
+    optional.add_argument("--include-columns", nargs="+", action="extend",
         help="The columns to include from the collection TSV in the measurements JSON. " +
              "Be sure to list columns that are used as groupings and/or filters. " +
              "If no columns are provided, then all columns will be included by default.")

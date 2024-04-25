@@ -11,6 +11,7 @@ import numbers
 import re
 from Bio import Phylo
 
+from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
 from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
@@ -889,21 +890,21 @@ def register_parser(parent_subparsers):
     config.add_argument('--maintainers', metavar="name", action="append", nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
     config.add_argument('--build-url', type=str, metavar="url", help="Build URL/repository to be displayed by Auspice")
     config.add_argument('--description', metavar="description.md", help="Markdown file with description of build and/or acknowledgements to be displayed by Auspice")
-    config.add_argument('--geo-resolutions', metavar="trait", nargs='+', help="Geographic traits to be displayed on map")
-    config.add_argument('--color-by-metadata', metavar="trait", nargs='+', help="Metadata columns to include as coloring options")
-    config.add_argument('--metadata-columns', nargs="+",
+    config.add_argument('--geo-resolutions', metavar="trait", nargs='+', action='extend', help="Geographic traits to be displayed on map")
+    config.add_argument('--color-by-metadata', metavar="trait", nargs='+', action='extend', help="Metadata columns to include as coloring options")
+    config.add_argument('--metadata-columns', nargs="+", action="extend",
                                  help="Metadata columns to export in addition to columns provided by --color-by-metadata or colorings in the Auspice configuration file. " +
                                       "These columns will not be used as coloring options in Auspice but will be visible in the tree.")
-    config.add_argument('--panels', metavar="panels", nargs='+', choices=['tree', 'map', 'entropy', 'frequencies', 'measurements'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
+    config.add_argument('--panels', metavar="panels", nargs='+', action='extend', choices=['tree', 'map', 'entropy', 'frequencies', 'measurements'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
 
     optional_inputs = parser.add_argument_group(
         title="OPTIONAL INPUT FILES"
     )
     optional_inputs.add_argument('--node-data', metavar="JSON", nargs='+', action="extend", help="JSON files containing metadata for nodes in the tree")
     optional_inputs.add_argument('--metadata', metavar="FILE", help="Additional metadata for strains in the tree")
-    optional_inputs.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
+    optional_inputs.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                                  help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
-    optional_inputs.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
+    optional_inputs.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
                                  help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     optional_inputs.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
     optional_inputs.add_argument('--lat-longs', metavar="TSV", help="Latitudes and longitudes for geography traits (overrides built in mappings)")

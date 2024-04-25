@@ -2,6 +2,8 @@ import argparse
 import Bio.Phylo
 import deepdiff
 
+from augur.argparse_ import ExtendOverwriteDefault
+
 
 def clade_to_items(clade, attrs=("name", "branch_length")):
     """Recursively convert a clade of a tree to a list of nested lists according to
@@ -31,7 +33,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("first_tree", help="first Newick tree to compare")
     parser.add_argument("second_tree", help="second Newick tree to compare")
-    parser.add_argument("--attributes", nargs="+", default=["name", "branch_length"], help="node attributes to include in comparison")
+    parser.add_argument("--attributes", nargs="+", action=ExtendOverwriteDefault, default=["name", "branch_length"], help="node attributes to include in comparison")
     parser.add_argument("--significant-digits", type=int, default=5, help="number of significant digits to use when comparing branch lengths")
 
     args = parser.parse_args()
