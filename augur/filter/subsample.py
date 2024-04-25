@@ -284,28 +284,27 @@ def create_queues_by_group(groups, max_size, random_seed=None):
 
     """
     queues_by_group = {}
-    total_max_size = 0
-    attempts = 0
-    max_attempts = 100
 
     if max_size < 1.0:
+        # For small fractional maximum sizes, it is possible to randomly select
+        # maximum queue sizes that all equal zero. When this happens, filtering
+        # fails unexpectedly. We make multiple attempts to create queues with
+        # maximum sizes greater than zero for at least one queue.
         random_generator = np.random.default_rng(random_seed)
+        total_max_size = 0
+        attempts = 0
+        max_attempts = 100
 
-    # For small fractional maximum sizes, it is possible to randomly select
-    # maximum queue sizes that all equal zero. When this happens, filtering
-    # fails unexpectedly. We make multiple attempts to create queues with
-    # maximum sizes greater than zero for at least one queue.
-    while total_max_size == 0 and attempts < max_attempts:
-        for group in sorted(groups):
-            if max_size < 1.0:
+        while total_max_size == 0 and attempts < max_attempts:
+            for group in sorted(groups):
                 queue_max_size = random_generator.poisson(max_size)
-            else:
-                queue_max_size = max_size
+                queues_by_group[group] = PriorityQueue(queue_max_size)
 
-            queues_by_group[group] = PriorityQueue(queue_max_size)
-
-        total_max_size = sum(queue.max_size for queue in queues_by_group.values())
-        attempts += 1
+            total_max_size = sum(queue.max_size for queue in queues_by_group.values())
+            attempts += 1
+    else:
+        for group in groups:
+            queues_by_group[group] = PriorityQueue(max_size)
 
     return queues_by_group
 
