@@ -249,43 +249,43 @@ class PriorityQueue:
             yield item
 
 
-def create_queues_by_group(groups, max_size, random_seed=None):
-    """Create a dictionary of priority queues per group for the given maximum size.
+def get_group_sizes(groups, target_group_size, random_seed=None):
+    """Create a dictionary of maximum sizes per group.
 
-    When the maximum size is fractional, probabilistically sample the maximum
-    size from a Poisson distribution. Make at least the given number of maximum
-    attempts to create queues for which the sum of their maximum sizes is
+    When the target maximum size is fractional, probabilistically generate
+    varying sizes from a Poisson distribution. Make at least the given number of
+    maximum attempts to generate sizes for which the total of all sizes is
     greater than zero.
+
+    Otherwise, each group's size is simply the target maximum size.
 
     Examples
     --------
 
-    Create queues for two groups with a fixed maximum size.
+    Get sizes for two groups with a fixed maximum size.
 
     >>> groups = ("2015", "2016")
-    >>> queues = create_queues_by_group(groups, 2)
-    >>> sum(queue.max_size for queue in queues.values())
+    >>> group_sizes = get_group_sizes(groups, 2)
+    >>> sum(group_sizes.values())
     4
 
-    Create queues for two groups with a fractional maximum size. Their total max
+    Get sizes for two groups with a fractional maximum size. Their total
     size should still be an integer value greater than zero.
 
     >>> seed = 314159
-    >>> queues = create_queues_by_group(groups, 0.1, random_seed=seed)
-    >>> int(sum(queue.max_size for queue in queues.values())) > 0
+    >>> group_sizes = get_group_sizes(groups, 0.1, random_seed=seed)
+    >>> int(sum(group_sizes.values())) > 0
     True
 
     A subsequent run of this function with the same groups and random seed
-    should produce the same queues and queue sizes.
+    should produce the same group sizes.
 
-    >>> more_queues = create_queues_by_group(groups, 0.1, random_seed=seed)
-    >>> [queue.max_size for queue in queues.values()] == [queue.max_size for queue in more_queues.values()]
+    >>> more_group_sizes = get_group_sizes(groups, 0.1, random_seed=seed)
+    >>> list(group_sizes.values()) == list(more_group_sizes.values())
     True
 
     """
-    queues_by_group = {}
-
-    if max_size < 1.0:
+    if target_group_size < 1.0:
         # For small fractional maximum sizes, it is possible to randomly select
         # maximum queue sizes that all equal zero. When this happens, filtering
         # fails unexpectedly. We make multiple attempts to create queues with
@@ -294,19 +294,25 @@ def create_queues_by_group(groups, max_size, random_seed=None):
         total_max_size = 0
         attempts = 0
         max_attempts = 100
+        max_sizes_per_group = {}
 
         while total_max_size == 0 and attempts < max_attempts:
             for group in sorted(groups):
-                queue_max_size = random_generator.poisson(max_size)
-                queues_by_group[group] = PriorityQueue(queue_max_size)
+                max_sizes_per_group[group] = random_generator.poisson(target_group_size)
 
-            total_max_size = sum(queue.max_size for queue in queues_by_group.values())
+            total_max_size = sum(max_sizes_per_group.values())
             attempts += 1
-    else:
-        for group in groups:
-            queues_by_group[group] = PriorityQueue(max_size)
 
-    return queues_by_group
+        return max_sizes_per_group
+    else:
+        assert type(target_group_size) is int
+
+        return {group: target_group_size for group in groups}
+
+
+def create_queues_by_group(max_sizes_per_group):
+    return {group: PriorityQueue(max_size)
+            for group, max_size in max_sizes_per_group.items()}
 
 
 def calculate_sequences_per_group(target_max_value, group_sizes, allow_probabilistic=True):
