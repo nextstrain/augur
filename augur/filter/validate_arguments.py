@@ -1,4 +1,5 @@
 from augur.errors import AugurError
+from augur.filter.io import get_weighted_columns
 from augur.io.vcf import is_vcf as filename_is_vcf
 
 
@@ -43,3 +44,9 @@ def validate_arguments(args):
     # If user requested grouping, confirm that other required inputs are provided, too.
     if args.group_by and not any((args.sequences_per_group, args.subsample_max_sequences)):
         raise AugurError("You must specify a number of sequences per group or maximum sequences to subsample.")
+    
+    # Weighted columns must be specified explicitly.
+    if args.group_by_weights:
+        weighted_columns = get_weighted_columns(args.group_by_weights)
+        if (not set(weighted_columns) <= set(args.group_by)):
+            raise AugurError("Columns in --group-by-weights must be a subset of columns provided in --group-by.")

@@ -23,7 +23,7 @@ from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
 from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_metadata_based_outputs
 from .include_exclude_rules import apply_filters, construct_filters
-from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, get_probabilistic_group_sizes, create_queues_by_group, get_groups_for_subsampling
+from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, get_probabilistic_group_sizes, create_queues_by_group, get_groups_for_subsampling, get_weighted_group_sizes
 
 
 def run(args):
@@ -285,6 +285,14 @@ def run(args):
                     records_per_group.keys(),
                     sequences_per_group,
                     random_seed=args.subsample_seed,
+                )
+            elif args.group_by_weights:
+                print_err(f"Sampling with weights defined by {args.group_by_weights}.")
+                group_sizes = get_weighted_group_sizes(
+                    records_per_group.keys(),
+                    group_by,
+                    args.group_by_weights,
+                    args.subsample_max_sequences
                 )
             else:
                 print_err(f"Sampling at {sequences_per_group} per group.")

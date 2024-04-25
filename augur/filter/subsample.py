@@ -1,3 +1,4 @@
+from collections import defaultdict
 import heapq
 import itertools
 import uuid
@@ -7,6 +8,7 @@ from typing import Collection
 
 from augur.dates import get_iso_year_week
 from augur.errors import AugurError
+from augur.filter.io import WEIGHTS_COLUMN, get_weighted_columns
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err
 from . import constants
@@ -295,6 +297,69 @@ def get_probabilistic_group_sizes(groups, target_group_size, random_seed=None):
         attempts += 1
 
     return max_sizes_per_group
+
+
+def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size):
+    """Return group sizes based on weights defined in ``weights_file``.
+
+    Returns
+    -------
+    dict :
+        Mapping between groups (combinations of grouping column values in tuple
+        form) to group sizes
+    """
+    weights = pd.read_csv(weights_file, delimiter='\t')
+
+    weighted_columns = get_weighted_columns(weights_file)
+
+    # Allow other columns in group_by to be equally weighted (uniform sampling)
+    unweighted_columns = list(set(group_by) - set(weighted_columns))
+
+    if unweighted_columns:
+        # Augment the weights DataFrame with equal weighting for unweighted columns
+
+        # 1. Get unique values for each unweighted column
+        values_for_unweighted_columns = defaultdict(set)
+        for group in groups:
+            # NOTE: The ordering of entries in `groups` corresponds to the column
+            # names in `group_by`. but only because `get_groups_for_subsampling`
+            # conveniently retains the order. This could be more tightly coupled,
+            # but it works.
+            column_to_value_map = dict(zip(group_by, group))
+            for column in unweighted_columns:
+                values_for_unweighted_columns[column].add(column_to_value_map[column])
+
+        # 2. Create a DataFrame for all permutations of values in unweighted columns
+        lists = [list(values_for_unweighted_columns[column]) for column in unweighted_columns]
+        unweighted_permutations = pd.DataFrame(list(itertools.product(*lists)), columns=unweighted_columns)
+
+        # 3. Merge with the weights DataFrame so it has all grouping columns
+        weights = pd.merge(unweighted_permutations, weights, how='cross')
+
+    # Drop any groups that don't appear in metadata
+    weights.set_index(group_by, inplace=True)
+    valid_index = set(groups) if len(group_by) > 1 else set(group[0] for group in groups)
+    extra_groups = set(weights.index) - valid_index
+    if extra_groups:
+        count = len(extra_groups)
+        unit = "group" if count == 1 else "groups"
+        print_err(f"Skipping {count} {unit} due to lack of entries in metadata.")
+        weights = weights[weights.index.isin(valid_index)]
+    weights.reset_index(inplace=True)
+
+    missing_groups = set(groups) - set(weights[group_by].apply(tuple, axis=1))
+    if missing_groups:
+        error = "The following groups appear in the metadata but are missing from the weights file:"
+        for group in sorted(missing_groups):
+            column_value_pairs = [f"{column}={value!r}" for column, value in zip(group_by, group)]
+            error += f"\n\t{', '.join(column_value_pairs)}"
+        raise AugurError(error)
+
+    # Calculate maximum group sizes based on weights
+    SIZE_COLUMN = '_augur_filter_target_size'
+    weights[SIZE_COLUMN] = weights[WEIGHTS_COLUMN] / weights[WEIGHTS_COLUMN].sum() * target_total_size
+
+    return dict(zip(weights[group_by].apply(tuple, axis=1), weights[SIZE_COLUMN]))
 
 
 def create_queues_by_group(max_sizes_per_group):
