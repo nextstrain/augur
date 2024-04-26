@@ -13,5 +13,5 @@ common questions and problems users run into.
    what-is-a-build
    metadata
    clades
-   Specifying `refine` rates <refine>
+   refine
    Creating a tree using your own tree builder <skip_augur_tree>
