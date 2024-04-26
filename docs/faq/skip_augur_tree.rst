@@ -1,6 +1,6 @@
-===========================================
-Creating a tree using your own tree builder
-===========================================
+=================================
+How do I use my own tree builder?
+=================================
 
 The `augur tree` command is a light wrapper around tree building programs such as IQ-TREE, RAxML and FastTree.
 It's possible that the functionality you want isn't available in those programs, or that it is available but that `augur tree` doesn't expose the functionality you need.

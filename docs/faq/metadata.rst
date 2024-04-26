@@ -1,5 +1,5 @@
-Preparing Your Metadata
-=======================
+How do I prepare metadata?
+==========================
 
 Analyses are vastly more interesting if the sequences or samples
 analyzed have rich 'meta data' wherever possible. This metadata could

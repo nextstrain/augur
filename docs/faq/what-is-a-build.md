@@ -1,4 +1,4 @@
-# The concept of a 'build'
+# What is a "build"?
 
 Nextstrain's focus on providing a _real-time_ snapshot of evolving pathogen populations necessitates a reproducible analysis that can be rerun when new sequences are available.
 The individual steps necessary to repeat analysis together comprise a "build".
