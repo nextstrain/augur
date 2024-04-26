@@ -1,6 +1,6 @@
 # How do I label `clades`?
 
-Clades in phylogenetic trees are often named to facilitate discussion of genetic diversity, see for example [seasonal influenza on nextstrain](https://nextstrain.org/flu).
+Clades in phylogenetic trees are often named to facilitate discussion of genetic diversity, see for example [seasonal influenza on nextstrain](https://nextstrain.org/seasonal-flu).
 Augur has a command to determine the position of such clade labels and assign sequences to clades.
 The definition of these clades are provided in a tab-delimited file (tsv) using the following format:
 ```
