@@ -57,7 +57,7 @@ def register_arguments(parser):
     sequence_filter_group.add_argument('--non-nucleotide', action='store_true', help="exclude sequences that contain illegal characters")
 
     subsample_group = parser.add_argument_group("subsampling", "options to subsample filtered data")
-    subsample_group.add_argument('--group-by', nargs='+', action='extend', help=f"""
+    subsample_group.add_argument('--group-by', nargs='+', action='extend', default=[], help=f"""
         categories with respect to subsample.
         Notes:
         (1) Grouping by {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} is only supported when there is a {METADATA_DATE_COLUMN!r} column in the metadata.
