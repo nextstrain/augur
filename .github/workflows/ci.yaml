@@ -84,7 +84,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - { pathogen: avian-flu, build-args: auspice/avian-flu_h5n1_ha.json }
+          - { pathogen: avian-flu, build-args: test_target }
           - { pathogen: ebola }
           - { pathogen: lassa }
           - { pathogen: mumps }
