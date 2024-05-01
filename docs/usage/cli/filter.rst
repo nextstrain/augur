@@ -16,6 +16,4 @@ augur filter
 Guides
 ======
 
-Below are some examples of using ``augur filter`` to sample data.
-
-.. include:: snippets/filtering-and-subsampling.rst
+See :doc:`docs.nextstrain.org:guides/bioinformatics/filtering-and-subsampling`.
