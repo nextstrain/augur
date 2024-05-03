@@ -11,9 +11,11 @@
 
 * validation: we no longer exit with a non-zero exit code when the requested validation mode is "warn" [#1440][] (@jameshadfield)
 * validation: we no longer perform any validation when the requested validation mode is "skip" [#1440][] (@jameshadfield)
+* filter: Send all log messages to `stderr`. This allows output to be written to `stdout` (e.g. `--output-strains /dev/stdout`). [#1459][] (@victorlin)
 
 [#1440]: https://github.com/nextstrain/augur/pull/1440
 [#1445]: https://github.com/nextstrain/augur/pull/1445
+[#1459]: https://github.com/nextstrain/augur/pull/1459
 
 ## 24.3.0 (18 March 2024)
 
