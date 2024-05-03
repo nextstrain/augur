@@ -16,7 +16,7 @@ Test the default behavior for empty results is an error.
   \s*0 .* (re)
 
 Repeat with the --empty-output-reporting=warn option.
-This whould output a warning message but no error.
+This should output a warning message but no error.
 
   $ ${AUGUR} filter \
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
