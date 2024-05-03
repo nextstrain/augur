@@ -13,6 +13,9 @@ This should produce no results because the intersection of metadata and sequence
   >  --max-date 2020-01-30 \
   >  --output-strains filtered_strains.txt > /dev/null
   Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
+  13 strains were dropped during filtering
+  	1 had no metadata
+  	12 had no sequence data
   ERROR: All samples have been dropped! Check filter rules and metadata file format.
   [2]
   $ wc -l filtered_strains.txt
@@ -27,6 +30,9 @@ Repeat with sequence and strain outputs. We should get the same results.
   >  --output-strains filtered_strains.txt \
   >  --output-sequences filtered.fasta > /dev/null
   Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
+  13 strains were dropped during filtering
+  	1 had no metadata
+  	12 had no sequence data
   ERROR: All samples have been dropped! Check filter rules and metadata file format.
   [2]
   $ wc -l filtered_strains.txt
@@ -42,6 +48,9 @@ Since we expect metadata to be filtered by presence of strains in input sequence
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
   >  --output-strains filtered_strains.txt > /dev/null
   Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
+  13 strains were dropped during filtering
+  	1 had no metadata
+  	12 had no sequence data
   ERROR: All samples have been dropped! Check filter rules and metadata file format.
   [2]
   $ wc -l filtered_strains.txt

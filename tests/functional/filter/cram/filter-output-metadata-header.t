@@ -14,7 +14,7 @@ Quoted columns containing the tab delimiter are left unchanged.
 
   $ ${AUGUR} filter \
   >  --metadata metadata.tsv \
-  >  --output-metadata filtered_metadata.tsv > /dev/null
+  >  --output-metadata filtered_metadata.tsv 2>/dev/null
 
   $ head -n 1 filtered_metadata.tsv
   strain	"col	1"
@@ -28,7 +28,7 @@ Quoted columns without the tab delimiter are stripped of the quotes.
 
   $ ${AUGUR} filter \
   >  --metadata metadata.tsv \
-  >  --output-metadata filtered_metadata.tsv > /dev/null
+  >  --output-metadata filtered_metadata.tsv 2>/dev/null
 
   $ head -n 1 filtered_metadata.tsv
   strain	col1
@@ -42,7 +42,7 @@ Any other columns with quotes are quoted, and pre-existing quotes are escsaped b
 
   $ ${AUGUR} filter \
   >  --metadata metadata.tsv \
-  >  --output-metadata filtered_metadata.tsv > /dev/null
+  >  --output-metadata filtered_metadata.tsv 2>/dev/null
 
   $ head -n 1 filtered_metadata.tsv
   strain	"col""1"	"col2"""

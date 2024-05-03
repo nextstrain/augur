@@ -20,6 +20,10 @@ track which records were skipped for which reasons.
   >  --subsample-seed 0 \
   >  --output-log log.txt \
   >  --output-strains filtered_strains.txt > /dev/null
+  2 strains were dropped during filtering
+  	1 was dropped during grouping due to ambiguous year information
+  	1 was dropped because of subsampling criteria
+  1 strain passed all filters
   $ cat log.txt
   strain\tfilter\tkwargs (esc)
   SEQ_1\tskip_group_by_with_ambiguous_year\t"[[""date_column"", ""date""]]" (esc)
@@ -37,6 +41,11 @@ month information in their date fields.
   >  --subsample-seed 0 \
   >  --output-log log.txt \
   >  --output-strains filtered_strains.txt > /dev/null
+  2 strains were dropped during filtering
+  	1 was dropped during grouping due to ambiguous year information
+  	1 was dropped during grouping due to ambiguous month information
+  	0 were dropped because of subsampling criteria
+  1 strain passed all filters
   $ cat log.txt
   strain\tfilter\tkwargs (esc)
   SEQ_1\tskip_group_by_with_ambiguous_year\t"[[""date_column"", ""date""]]" (esc)

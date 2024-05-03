@@ -14,6 +14,6 @@ With 8 groups to subsample from (after filtering), this should produce one seque
   >  --subsample-max-sequences 8 \
   >  --subsample-seed 314159 \
   >  --no-probabilistic-sampling \
-  >  --output filtered.fasta > /dev/null
+  >  --output filtered.fasta 2>/dev/null
   $ grep ">" filtered.fasta | wc -l
   \s*8 (re)

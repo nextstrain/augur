@@ -277,9 +277,9 @@ def run(args):
             raise AugurError(error)
 
         if (probabilistic_used):
-            print(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
+            print_err(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
         else:
-            print(f"Sampling at {sequences_per_group} per group.")
+            print_err(f"Sampling at {sequences_per_group} per group.")
 
         if queues_by_group is None:
             # We know all of the possible groups now from the first pass through
@@ -414,10 +414,10 @@ def run(args):
     total_strains_passed = len(valid_strains)
     total_strains_filtered = len(metadata_strains) + num_excluded_by_lack_of_metadata - total_strains_passed
 
-    print(f"{total_strains_filtered} {'strain was' if total_strains_filtered == 1 else 'strains were'} dropped during filtering")
+    print_err(f"{total_strains_filtered} {'strain was' if total_strains_filtered == 1 else 'strains were'} dropped during filtering")
 
     if num_excluded_by_lack_of_metadata:
-        print(f"\t{num_excluded_by_lack_of_metadata} had no metadata")
+        print_err(f"\t{num_excluded_by_lack_of_metadata} had no metadata")
 
     report_template_by_filter_name = {
         include_exclude_rules.filter_by_sequence_index.__name__: "{count} had no sequence data",
@@ -446,11 +446,11 @@ def run(args):
         parameters["count"] = count
         parameters["were"] = "was" if count == 1 else "were"
         parameters["they"] = "it"  if count == 1 else "they"
-        print("\t" + report_template_by_filter_name[filter_name].format(**parameters))
+        print_err("\t" + report_template_by_filter_name[filter_name].format(**parameters))
 
     if (group_by and args.sequences_per_group) or args.subsample_max_sequences:
         seed_txt = ", using seed {}".format(args.subsample_seed) if args.subsample_seed else ""
-        print(f"\t{num_excluded_subsamp} {'was' if num_excluded_subsamp == 1 else 'were'} dropped because of subsampling criteria{seed_txt}")
+        print_err(f"\t{num_excluded_subsamp} {'was' if num_excluded_subsamp == 1 else 'were'} dropped because of subsampling criteria{seed_txt}")
 
     if total_strains_passed == 0:
         empty_results_message = "All samples have been dropped! Check filter rules and metadata file format."
@@ -463,4 +463,4 @@ def run(args):
         else:
             raise ValueError(f"Encountered unhandled --empty-output-reporting method {args.empty_output_reporting!r}")
 
-    print(f"{total_strains_passed} {'strain' if total_strains_passed == 1 else 'strains'} passed all filters")
+    print_err(f"{total_strains_passed} {'strain' if total_strains_passed == 1 else 'strains'} passed all filters")

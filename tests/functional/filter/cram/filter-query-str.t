@@ -16,7 +16,7 @@ Create metadata file for testing.
   $ ${AUGUR} filter \
   >  --metadata metadata.tsv \
   >  --query "column.str.startswith('value')" \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
 
   $ sort filtered_strains.txt
   SEQ_1

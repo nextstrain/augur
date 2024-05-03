@@ -17,7 +17,7 @@ The 'region name' column is query-able by backtick quoting.
   $ ${AUGUR} filter \
   >  --metadata metadata.tsv \
   >  --query '(`region name` == "A")' \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
 
   $ sort filtered_strains.txt
   SEQ_1

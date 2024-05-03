@@ -16,4 +16,4 @@ We don't filter these strains, so they could be considered for subsampling, but 
   >   --include include_old_strains.txt \
   >   --group-by month year \
   >   --subsample-max-sequences 10 \
-  >   --output-metadata metadata-filtered.tsv > /dev/null
+  >   --output-metadata metadata-filtered.tsv 2>/dev/null

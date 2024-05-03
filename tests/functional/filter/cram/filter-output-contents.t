@@ -15,7 +15,7 @@ The purpose of this test file is to check format and consistency among the
   >  --no-probabilistic-sampling \
   >  --output-metadata filtered_metadata.tsv \
   >  --output-strains filtered_strains.txt \
-  >  --output filtered.fasta > /dev/null
+  >  --output filtered.fasta 2>/dev/null
 
 Check that the header row is identical between input and output metadata.
 

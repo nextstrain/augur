@@ -16,7 +16,7 @@ Scenario 1: Run command with one --exclude-where flag and multiple values
   $ ${AUGUR} filter \
   >   --metadata metadata.tsv \
   >  --exclude-where "region=A" "region=B" \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
 
 Both exclusions are applied.
 
@@ -30,7 +30,7 @@ Scenario 2: Run command with two --exclude-where flags
   >   --metadata metadata.tsv \
   >  --exclude-where "region=A" \
   >  --exclude-where "region=B" \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
 
 Both exclusions are applied.
 

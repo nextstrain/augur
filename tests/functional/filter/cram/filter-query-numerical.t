@@ -17,7 +17,7 @@ The 'coverage' column should be query-able by numerical comparisons.
   $ ${AUGUR} filter \
   >  --metadata metadata.tsv \
   >  --query "coverage >= 0.95" \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
 
   $ sort filtered_strains.txt
   SEQ_2
@@ -52,7 +52,7 @@ However, that is still possible by explicitly specifying that it is a string col
   >  --metadata metadata.tsv \
   >  --query "coverage.str.endswith('.95')" \
   >  --query-columns coverage:str \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
 
   $ sort filtered_strains.txt
   SEQ_2

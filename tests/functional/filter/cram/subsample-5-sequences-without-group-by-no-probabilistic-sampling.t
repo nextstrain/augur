@@ -13,6 +13,6 @@ This generates a dummy category and subsamples from there. With no-probabilistic
   >  --subsample-max-sequences 5 \
   >  --subsample-seed 314159 \
   >  --no-probabilistic-sampling \
-  >  --output filtered.fasta > /dev/null
+  >  --output filtered.fasta 2>/dev/null
   $ grep ">" filtered.fasta | wc -l
   \s*5 (re)

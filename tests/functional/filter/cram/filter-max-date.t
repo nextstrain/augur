@@ -16,7 +16,7 @@ Test that --max-date is inclusive.
   $ ${AUGUR} filter \
   >  --metadata metadata.tsv \
   >  --max-date 2020-03-01 \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
   $ sort filtered_strains.txt
   SEQ_1
   SEQ_2

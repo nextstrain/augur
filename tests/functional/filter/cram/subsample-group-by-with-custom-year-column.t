@@ -22,6 +22,9 @@ Group by generated year column, and ensure all original columns are still in the
   >  --subsample-seed 0 \
   >  --output-metadata filtered_metadata.tsv > /dev/null
   WARNING: `--group-by year` uses a generated year value from the 'date' column. The custom 'year' column in the metadata is ignored for grouping purposes.
+  3 strains were dropped during filtering
+  	3 were dropped because of subsampling criteria
+  2 strains passed all filters
   $ cat filtered_metadata.tsv
   strain\tdate\tyear\tmonth (esc)
   SEQ1\t2021-01-01\todd\tJanuary (esc)
@@ -37,6 +40,9 @@ Group by generated year and month columns, and ensure all original columns are s
   >  --output-metadata filtered_metadata.tsv > /dev/null
   WARNING: `--group-by month` uses a generated month value from the 'date' column. The custom 'month' column in the metadata is ignored for grouping purposes.
   WARNING: `--group-by year` uses a generated year value from the 'date' column. The custom 'year' column in the metadata is ignored for grouping purposes.
+  2 strains were dropped during filtering
+  	2 were dropped because of subsampling criteria
+  3 strains passed all filters
   $ cat filtered_metadata.tsv
   strain\tdate\tyear\tmonth (esc)
   SEQ1\t2021-01-01\todd\tJanuary (esc)
