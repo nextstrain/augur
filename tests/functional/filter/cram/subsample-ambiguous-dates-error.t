@@ -19,10 +19,10 @@ Metadata with ambiguous days on all strains should error when grouping by week.
   >   --subsample-seed 0 \
   >   --output-metadata metadata-filtered.tsv \
   >   --output-log filtered_log.tsv
-  ERROR: All samples have been dropped! Check filter rules and metadata file format.
   4 strains were dropped during filtering
   	4 were dropped during grouping due to ambiguous day information
   	0 were dropped because of subsampling criteria
+  ERROR: All samples have been dropped! Check filter rules and metadata file format.
   [2]
   $ cat filtered_log.tsv | grep "skip_group_by_with_ambiguous_day" | wc -l
   \s*4 (re)
@@ -46,10 +46,10 @@ Metadata with ambiguous months on all strains should error when grouping by mont
   >   --subsample-seed 0 \
   >   --output-metadata metadata-filtered.tsv \
   >   --output-log filtered_log.tsv
-  ERROR: All samples have been dropped! Check filter rules and metadata file format.
   4 strains were dropped during filtering
   	4 were dropped during grouping due to ambiguous month information
   	0 were dropped because of subsampling criteria
+  ERROR: All samples have been dropped! Check filter rules and metadata file format.
   [2]
   $ cat filtered_log.tsv | grep "skip_group_by_with_ambiguous_month" | wc -l
   \s*4 (re)
@@ -73,10 +73,10 @@ Metadata with ambiguous years on all strains should error when grouping by year.
   >   --subsample-seed 0 \
   >   --output-metadata metadata-filtered.tsv \
   >   --output-log filtered_log.tsv
-  ERROR: All samples have been dropped! Check filter rules and metadata file format.
   4 strains were dropped during filtering
   	4 were dropped during grouping due to ambiguous year information
   	0 were dropped because of subsampling criteria
+  ERROR: All samples have been dropped! Check filter rules and metadata file format.
   [2]
   $ cat filtered_log.tsv | grep "skip_group_by_with_ambiguous_year" | wc -l
   \s*4 (re)

@@ -22,7 +22,7 @@ I.e. the groups here are:
   >   --sequences-per-group 1 \
   >   --subsample-seed 0 \
   >   --output-log filtered-log.tsv \
-  >   --output-strains filtered-strains.txt > /dev/null
+  >   --output-strains filtered-strains.txt 2>/dev/null
   $ cat filtered-strains.txt
   SEQ1
   SEQ3
