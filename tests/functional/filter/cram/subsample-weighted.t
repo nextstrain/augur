@@ -117,3 +117,24 @@ When --group-by-weights is specified, all columns must be provided in
   >   --output-strains strains.txt
   ERROR: Columns in --group-by-weights must be a subset of columns provided in --group-by.
   [2]
+
+Negative weights are not allowed.
+
+  $ cat >weights.tsv <<~~
+  > location	weight
+  > A	2
+  > B	1
+  > C	-1
+  > ~~
+
+  $ ${AUGUR} filter \
+  >   --metadata metadata.tsv \
+  >   --group-by location \
+  >   --group-by-weights weights.tsv \
+  >   --subsample-max-sequences 6 \
+  >   --subsample-seed 0 \
+  >   --output-strains strains.txt
+  Sampling with weights defined by weights.tsv.
+  ERROR: Weights must be non-negative, but found negative weights:   location  weight
+  2        C      -1
+  [2]
