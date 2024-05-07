@@ -299,7 +299,7 @@ def get_probabilistic_group_sizes(groups, target_group_size, random_seed=None):
     return max_sizes_per_group
 
 
-def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size):
+def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size, random_seed):
     """Return group sizes based on weights defined in ``weights_file``.
 
     Returns
@@ -359,8 +359,14 @@ def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size):
         raise AugurError(error)
 
     # Calculate maximum group sizes based on weights
+    FRACTIONAL_SIZE_COLUMN = '_augur_filter_target_size_fraction'
     SIZE_COLUMN = '_augur_filter_target_size'
-    weights[SIZE_COLUMN] = weights[WEIGHTS_COLUMN] / weights[WEIGHTS_COLUMN].sum() * target_total_size
+    weights[FRACTIONAL_SIZE_COLUMN] = weights[WEIGHTS_COLUMN] / weights[WEIGHTS_COLUMN].sum() * target_total_size
+
+    # Group sizes need to be whole numbers. Round probabilistically by adding
+    # a random number between [0,1) and truncating the decimal part.
+    rng = np.random.default_rng(random_seed)
+    weights[SIZE_COLUMN] = (weights[FRACTIONAL_SIZE_COLUMN].add(rng.random(len(weights)))).astype(int)
 
     return dict(zip(weights[group_by].apply(tuple, axis=1), weights[SIZE_COLUMN]))
 

@@ -292,7 +292,8 @@ def run(args):
                     records_per_group.keys(),
                     group_by,
                     args.group_by_weights,
-                    args.subsample_max_sequences
+                    args.subsample_max_sequences,
+                    args.subsample_seed,
                 )
             else:
                 print_err(f"Sampling at {sequences_per_group} per group.")
