@@ -368,6 +368,12 @@ def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size, 
     rng = np.random.default_rng(random_seed)
     weights[SIZE_COLUMN] = (weights[FRACTIONAL_SIZE_COLUMN].add(rng.random(len(weights)))).astype(int)
 
+    # TODO: consider adding an option to output the computed sizes since that
+    # may be useful information to the user. --output-group-by-sizes?
+    # It'd be important to clarify that these are *target* sizes, not actual
+    # sizes (which is attainable but only after PriorityQueues have been
+    # populated)
+
     return dict(zip(weights[group_by].apply(tuple, axis=1), weights[SIZE_COLUMN]))
 
 
