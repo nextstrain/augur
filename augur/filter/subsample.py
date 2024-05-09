@@ -353,20 +353,12 @@ def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size, 
     missing_groups = set(groups) - set(weights[group_by].apply(tuple, axis=1))
     if missing_groups:
         n_missing = len(missing_groups)
-        error = f"{n_missing} groups appear in the metadata but are missing from the weights file"
+        print_err(f"WARNING: {n_missing} groups appear in the metadata but are missing from the weights file. Sequences from these groups will be dropped.")
         missing_weights = pd.DataFrame(sorted(missing_groups), columns=group_by)
         missing_weights['weight'] = ''
         missing_weights_file = 'missing_weights.tsv'
         missing_weights.to_csv(missing_weights_file, index=False, sep='\t')
-        if n_missing > 5:
-            error += '. Here are 5:'
-        else:
-            error += ':'
-        for group in sorted(missing_groups)[:5]:
-            column_value_pairs = [f"{column}={value!r}" for column, value in zip(group_by, group)]
-            error += f"\n\t{', '.join(column_value_pairs)}"
-        error += f"\nAll missing groups added to a file {missing_weights_file!r}."
-        raise AugurError(error)
+        print_err(f"All missing groups added to a file {missing_weights_file!r}.")
 
     # Calculate maximum group sizes based on weights
     FRACTIONAL_SIZE_COLUMN = '_augur_filter_target_size_fraction'
@@ -377,6 +369,13 @@ def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size, 
     # a random number between [0,1) and truncating the decimal part.
     rng = np.random.default_rng(random_seed)
     weights[SIZE_COLUMN] = (weights[FRACTIONAL_SIZE_COLUMN].add(rng.random(len(weights)))).astype(int)
+
+    if missing_groups:
+        missing_weights = pd.DataFrame(sorted(missing_groups), columns=group_by)
+        # FIXME: Make this customizable. Lack of case count + presence of sequences is weird.
+        # Drop these for now but consider other options.
+        missing_weights[SIZE_COLUMN] = 0
+        weights = pd.merge(weights, missing_weights, on=[*group_by, SIZE_COLUMN], how='outer')
 
     # TODO: consider adding an option to output the computed sizes since that
     # may be useful information to the user. --output-group-by-sizes?

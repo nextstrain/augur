@@ -71,7 +71,7 @@ month) should work.
   	2 were dropped because of subsampling criteria
   6 strains passed all filters
 
-Sampling with incomplete weights should raise an error.
+Sampling with incomplete weights should show a warning.
 
   $ cat >weights.tsv <<~~
   > location	weight
@@ -86,10 +86,11 @@ Sampling with incomplete weights should raise an error.
   >   --subsample-seed 0 \
   >   --output-strains strains.txt
   Sampling with weights defined by weights.tsv.
-  ERROR: 1 groups appear in the metadata but are missing from the weights file:
-  	location='B'
+  WARNING: 1 groups appear in the metadata but are missing from the weights file. Sequences from these groups will be dropped.
   All missing groups added to a file 'missing_weights.tsv'.
-  [2]
+  4 strains were dropped during filtering
+  	4 were dropped because of subsampling criteria
+  4 strains passed all filters
 
   $ cat missing_weights.tsv
   location	weight
