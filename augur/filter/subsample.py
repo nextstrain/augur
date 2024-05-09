@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from typing import Collection
 
-from augur.dates import get_iso_year_week
+from augur.dates import get_year_month, get_year_week
 from augur.errors import AugurError
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err
@@ -45,7 +45,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> group_by = ["year", "month"]
     >>> group_by_strain = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
-    {'strain1': (2020, (2020, 1)), 'strain2': (2020, (2020, 2))}
+    {'strain1': (2020, '2020-01'), 'strain2': (2020, '2020-02')}
 
     If we omit the grouping columns, the result will group by a dummy column.
 
@@ -67,7 +67,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> group_by = ["year", "month", "missing_column"]
     >>> group_by_strain = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
-    {'strain1': (2020, (2020, 1), 'unknown'), 'strain2': (2020, (2020, 2), 'unknown')}
+    {'strain1': (2020, '2020-01', 'unknown'), 'strain2': (2020, '2020-02', 'unknown')}
 
     We can group metadata without any non-ID columns.
 
@@ -138,15 +138,16 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             if constants.DATE_YEAR_COLUMN in generated_columns_requested:
                 metadata[constants.DATE_YEAR_COLUMN] = metadata[f'{temp_prefix}year']
             if constants.DATE_MONTH_COLUMN in generated_columns_requested:
-                metadata[constants.DATE_MONTH_COLUMN] = list(zip(
-                    metadata[f'{temp_prefix}year'],
-                    metadata[f'{temp_prefix}month']
-                ))
+                metadata[constants.DATE_MONTH_COLUMN] = metadata.apply(lambda row: get_year_month(
+                    row[f'{temp_prefix}year'],
+                    row[f'{temp_prefix}month']
+                    ), axis=1
+                )
             if constants.DATE_WEEK_COLUMN in generated_columns_requested:
                 # Note that week = (year, week) from the date.isocalendar().
                 # Do not combine the raw year with the ISO week number alone,
                 # since raw year ≠ ISO year.
-                metadata[constants.DATE_WEEK_COLUMN] = metadata.apply(lambda row: get_iso_year_week(
+                metadata[constants.DATE_WEEK_COLUMN] = metadata.apply(lambda row: get_year_week(
                     row[f'{temp_prefix}year'],
                     row[f'{temp_prefix}month'],
                     row[f'{temp_prefix}day']
