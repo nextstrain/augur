@@ -279,14 +279,7 @@ def run(args):
         if queues_by_group is None:
             # We know all of the possible groups now from the first pass through
             # the metadata, so we can create queues for all groups at once.
-            if (probabilistic_used):
-                print_err(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
-                group_sizes = get_probabilistic_group_sizes(
-                    records_per_group.keys(),
-                    sequences_per_group,
-                    random_seed=args.subsample_seed,
-                )
-            elif args.group_by_weights:
+            if args.group_by_weights:
                 print_err(f"Sampling with weights defined by {args.group_by_weights}.")
                 group_sizes = get_weighted_group_sizes(
                     records_per_group.keys(),
@@ -294,6 +287,13 @@ def run(args):
                     args.group_by_weights,
                     args.subsample_max_sequences,
                     args.subsample_seed,
+                )
+            elif (probabilistic_used):
+                print_err(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
+                group_sizes = get_probabilistic_group_sizes(
+                    records_per_group.keys(),
+                    sequences_per_group,
+                    random_seed=args.subsample_seed,
                 )
             else:
                 print_err(f"Sampling at {sequences_per_group} per group.")
