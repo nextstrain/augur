@@ -86,9 +86,14 @@ Sampling with incomplete weights should raise an error.
   >   --subsample-seed 0 \
   >   --output-strains strains.txt
   Sampling with weights defined by weights.tsv.
-  ERROR: The following groups appear in the metadata but are missing from the weights file:
+  ERROR: 1 groups appear in the metadata but are missing from the weights file:
   	location='B'
+  All missing groups added to a file 'missing_weights.tsv'.
   [2]
+
+  $ cat missing_weights.tsv
+  location	weight
+  B	
 
 When --group-by-weights is specified, all columns must be provided in
 --group-by.

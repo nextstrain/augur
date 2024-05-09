@@ -352,10 +352,20 @@ def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size, 
 
     missing_groups = set(groups) - set(weights[group_by].apply(tuple, axis=1))
     if missing_groups:
-        error = "The following groups appear in the metadata but are missing from the weights file:"
-        for group in sorted(missing_groups):
+        n_missing = len(missing_groups)
+        error = f"{n_missing} groups appear in the metadata but are missing from the weights file"
+        missing_weights = pd.DataFrame(sorted(missing_groups), columns=group_by)
+        missing_weights['weight'] = ''
+        missing_weights_file = 'missing_weights.tsv'
+        missing_weights.to_csv(missing_weights_file, index=False, sep='\t')
+        if n_missing > 5:
+            error += '. Here are 5:'
+        else:
+            error += ':'
+        for group in sorted(missing_groups)[:5]:
             column_value_pairs = [f"{column}={value!r}" for column, value in zip(group_by, group)]
             error += f"\n\t{', '.join(column_value_pairs)}"
+        error += f"\nAll missing groups added to a file {missing_weights_file!r}."
         raise AugurError(error)
 
     # Calculate maximum group sizes based on weights
