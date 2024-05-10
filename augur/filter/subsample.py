@@ -299,7 +299,7 @@ def get_probabilistic_group_sizes(groups, target_group_size, random_seed=None):
     return max_sizes_per_group
 
 
-def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size, random_seed):
+def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size, output_sizes_file, random_seed):
     """Return group sizes based on weights defined in ``weights_file``.
 
     Returns
@@ -362,7 +362,7 @@ def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size, 
 
     # Calculate maximum group sizes based on weights
     FRACTIONAL_SIZE_COLUMN = '_augur_filter_target_size_fraction'
-    SIZE_COLUMN = '_augur_filter_target_size'
+    SIZE_COLUMN = 'target_size'
     weights[FRACTIONAL_SIZE_COLUMN] = weights[WEIGHTS_COLUMN] / weights[WEIGHTS_COLUMN].sum() * target_total_size
 
     # Group sizes need to be whole numbers. Round probabilistically by adding
@@ -377,11 +377,10 @@ def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size, 
         missing_weights[SIZE_COLUMN] = 0
         weights = pd.merge(weights, missing_weights, on=[*group_by, SIZE_COLUMN], how='outer')
 
-    # TODO: consider adding an option to output the computed sizes since that
-    # may be useful information to the user. --output-group-by-sizes?
-    # It'd be important to clarify that these are *target* sizes, not actual
-    # sizes (which is attainable but only after PriorityQueues have been
-    # populated)
+    # FIXME: add actual sizes to this file - attainable but only after
+    # PriorityQueues have been populated
+    if output_sizes_file:
+        weights[[*group_by, WEIGHTS_COLUMN, SIZE_COLUMN]].to_csv(output_sizes_file, index=False, sep='\t')
 
     return dict(zip(weights[group_by].apply(tuple, axis=1), weights[SIZE_COLUMN]))
 

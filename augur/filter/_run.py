@@ -286,6 +286,7 @@ def run(args):
                     group_by,
                     args.group_by_weights,
                     args.subsample_max_sequences,
+                    args.output_group_by_sizes,
                     args.subsample_seed,
                 )
             elif (probabilistic_used):

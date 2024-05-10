@@ -92,6 +92,10 @@ def register_arguments(parser):
     output_group.add_argument('--output-metadata', help="metadata for strains that passed filters")
     output_group.add_argument('--output-strains', help="list of strains that passed filters (no header)")
     output_group.add_argument('--output-log', help="tab-delimited file with one row for each filtered strain and the reason it was filtered. Keyword arguments used for a given filter are reported in JSON format in a `kwargs` column.")
+    # FIXME: 2 options:
+    # (1) add validation to ensure this is only added with --group-by-weights
+    # (2) implement this for all sampling methods
+    output_group.add_argument('--output-group-by-sizes', help="tab-delimited file one row per group with target size.")
     output_group.add_argument(
         '--empty-output-reporting',
         type=EmptyOutputReportingMethod.argtype,
