@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 24.4.0 (15 May 2024)
+
 ### Features
 
 * All commands: Allow repeating an option that takes multiple values. Previously, if multiple option flags were specified (e.g. `--exclude-where 'region=A' --exclude-where 'region=B'`), only the last one was used. Now, all values are used. [#1445][] (@victorlin)
