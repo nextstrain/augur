@@ -31,9 +31,9 @@ Weight locations A:B as 2:1. This is reflected in target_group_sizes.tsv below.
   >   --output-strains strains.txt 2>/dev/null
 
   $ cat target_group_sizes.tsv
-  location	target_size
-  A	67
-  B	33
+  location	weight	target_size
+  A	2	67
+  B	1	33
 
 Using 1:1 weights is similarly straightforward, with 50 sequences from each location.
 
@@ -53,9 +53,9 @@ Using 1:1 weights is similarly straightforward, with 50 sequences from each loca
   >   --output-strains strains.txt 2>/dev/null
 
   $ cat target_group_sizes.tsv
-  location	target_size
-  A	50
-  B	50
+  location	weight	target_size
+  A	1	50
+  B	1	50
 
 Keep the 1:1 location weighting, but add uniform sampling on year.
 Since there are no available sequences in the group (2002,A), we end up with
@@ -71,12 +71,12 @@ more sequences from location B relative to A.
   >   --output-strains strains.txt 2>/dev/null
 
   $ cat target_group_sizes.tsv
-  year	location	target_size
-  2000	A	20
-  2000	B	20
-  2001	A	20
-  2001	B	20
-  2002	B	20
+  year	location	weight	target_size
+  2000	A	1	20
+  2000	B	1	20
+  2001	A	1	20
+  2001	B	1	20
+  2002	B	1	20
 
 If a single sequence is added for group (2002,A), the weighting now appears
 "equal" among all years and locations.
@@ -96,13 +96,13 @@ requested 17, so the total number of sequences outputted is lower than requested
   >   --output-strains strains.txt 2>/dev/null
 
   $ cat target_group_sizes.tsv
-  year	location	target_size
-  2000	A	17
-  2000	B	16
-  2001	A	16
-  2001	B	16
-  2002	A	17
-  2002	B	17
+  year	location	weight	target_size
+  2000	A	1	17
+  2000	B	1	16
+  2001	A	1	16
+  2001	B	1	16
+  2002	A	1	17
+  2002	B	1	17
 
   $ wc -l strains.txt
   \s*83 .* (re)
