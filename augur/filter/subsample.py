@@ -319,6 +319,9 @@ def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size, 
     unweighted_columns = list(set(group_by) - set(weighted_columns))
 
     if unweighted_columns:
+        columns = 'column' if len(unweighted_columns) == 1 else 'columns'
+        those = 'that' if len(unweighted_columns) == 1 else 'those'
+        print_err(f"Weights were not provided for the {columns} {', '.join(repr(col) for col in unweighted_columns)}. Using equal weights across values in {those} {columns}.")
         # Augment the weights DataFrame with equal weighting for unweighted columns
 
         # 1. Get unique values for each unweighted column

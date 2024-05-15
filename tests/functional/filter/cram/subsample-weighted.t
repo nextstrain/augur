@@ -66,6 +66,7 @@ month) should work.
   >   --subsample-seed 0 \
   >   --output-strains strains.txt
   Sampling with weights defined by weights.tsv.
+  Weights were not provided for the column 'month'. Using equal weights across values in that column.
   Skipping 2 groups due to lack of entries in metadata.
   2 strains were dropped during filtering
   	2 were dropped because of subsampling criteria
