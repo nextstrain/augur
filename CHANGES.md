@@ -6,6 +6,7 @@
 
 * All commands: Allow repeating an option that takes multiple values. Previously, if multiple option flags were specified (e.g. `--exclude-where 'region=A' --exclude-where 'region=B'`), only the last one was used. Now, all values are used. [#1445][] (@victorlin)
 * ancestral, translate: output node data files are now validated. The argument `--validation-mode` is added which controls this behaviour (default: error). This argument also controls validation of the input node-data file (ancestral only). [#1440][] (@jameshadfield)
+* export: Updated default latitudes and longitudes for geography traits. This only applies if you are **not** using `--lat-longs` to override the built in mappings. [#1449][] (@trvrb)
 
 ### Bug Fixes
 
@@ -15,6 +16,7 @@
 
 [#1440]: https://github.com/nextstrain/augur/pull/1440
 [#1445]: https://github.com/nextstrain/augur/pull/1445
+[#1449]: https://github.com/nextstrain/augur/pull/1449
 [#1459]: https://github.com/nextstrain/augur/pull/1459
 
 ## 24.3.0 (18 March 2024)
