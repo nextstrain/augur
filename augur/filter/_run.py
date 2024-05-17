@@ -180,7 +180,7 @@ def run(args):
     for metadata in metadata_reader:
         duplicate_strains = (
             set(metadata.index[metadata.index.duplicated()]) |
-            set(metadata.index[metadata.index.isin(metadata_strains)])
+            (set(metadata.index) & metadata_strains)
         )
         if len(duplicate_strains) > 0:
             cleanup_outputs(args)
