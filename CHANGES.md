@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* filter: Improve speed of checking duplicates in metadata, especially for large files. [#1466][] (@victorlin)
+
+[#1466]: https://github.com/nextstrain/augur/pull/1466
 
 ## 24.4.0 (15 May 2024)
 
