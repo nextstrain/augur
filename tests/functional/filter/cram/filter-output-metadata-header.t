@@ -7,6 +7,8 @@ the default quotechar, any column names with that character may be altered.
 
 Quoted columns containing the tab delimiter are left unchanged.
 
+# FIXME: tsv-join has different behavior here. Test both?
+
   $ cat >metadata.tsv <<~~
   > strain	"col	1"
   > SEQ_1	a

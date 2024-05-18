@@ -1,18 +1,20 @@
 import argparse
-import csv
 from argparse import Namespace
 import os
 import re
+from shlex import quote as shquote
+from shutil import which
 from textwrap import dedent
-from typing import Sequence, Set
+from typing import Sequence
 import numpy as np
 from collections import defaultdict
-from xopen import xopen
 
 from augur.errors import AugurError
 from augur.io.file import open_file
-from augur.io.metadata import Metadata, METADATA_DATE_COLUMN
+from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err
+from augur.io.shell_command_runner import run_shell_command
+from augur.utils import augur
 from .constants import GROUP_BY_GENERATED_COLUMNS
 from .include_exclude_rules import extract_variables, parse_filter_query
 
@@ -96,25 +98,29 @@ def read_priority_scores(fname):
         raise AugurError(f"missing or malformed priority scores file {fname}")
 
 
-def write_output_metadata(input_metadata_path: str, delimiters: Sequence[str],
-                          id_columns: Sequence[str], output_metadata_path: str,
-                          ids_to_write: Set[str]):
+def write_output_metadata(input_filename: str, id_column: str, output_filename: str, ids_file: str):
     """
-    Write output metadata file given input metadata information and a set of IDs
-    to write.
+    Write output metadata file given input metadata information and a file
+    containing ids to write.
     """
-    input_metadata = Metadata(input_metadata_path, delimiters, id_columns)
+    # FIXME: make this a function like augur() and seqkit()
+    tsv_join = which("tsv-join")
 
-    with xopen(output_metadata_path, "w", newline="") as output_metadata_handle:
-        output_metadata = csv.DictWriter(output_metadata_handle, fieldnames=input_metadata.columns,
-                                         delimiter="\t", lineterminator=os.linesep)
-        output_metadata.writeheader()
+    command = f"""
+        {augur()} read-file {shquote(input_filename)} |
+        {tsv_join} -H --filter-file {ids_file} --key-fields {id_column} |
+        {augur()} write-file {shquote(output_filename)}
+    """
 
-        # Write outputs based on rows in the original metadata.
-        for row in input_metadata.rows():
-            row_id = row[input_metadata.id_column]
-            if row_id in ids_to_write:
-                output_metadata.writerow(row)
+    try:
+        run_shell_command(command, raise_errors=True)
+    except Exception:
+        if os.path.isfile(output_filename):
+            # Remove the partial output file.
+            os.remove(output_filename)
+            raise AugurError(f"Metadata output failed, see error(s) above.")
+        else:
+            raise AugurError(f"Metadata output failed, see error(s) above. The command may have already written data to stdout. You may want to clean up any partial outputs.")
 
 
 # These are the types accepted in the following function.
