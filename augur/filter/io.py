@@ -3,6 +3,9 @@ import csv
 from argparse import Namespace
 import os
 import re
+from shutil import which
+from subprocess import Popen, PIPE
+from tempfile import NamedTemporaryFile
 from textwrap import dedent
 from typing import Iterable, Sequence, Set
 import numpy as np
@@ -96,6 +99,15 @@ def read_priority_scores(fname):
         raise AugurError(f"missing or malformed priority scores file {fname}")
 
 
+def get_cat(file):
+    if file.endswith(".gz"):
+        return which("gzcat")
+    if file.endswith(".xz"):
+        return which("xzcat")
+    else:
+        return which("cat")
+
+
 def write_metadata(input_metadata_path: str, delimiters: Sequence[str],
                    id_columns: Sequence[str], output_metadata_path: str,
                    ids_to_write: Set[str]):
@@ -105,16 +117,48 @@ def write_metadata(input_metadata_path: str, delimiters: Sequence[str],
     """
     input_metadata = Metadata(input_metadata_path, delimiters, id_columns)
 
-    with xopen(output_metadata_path, "w") as output_metadata_handle:
-        output_metadata = csv.DictWriter(output_metadata_handle, fieldnames=input_metadata.columns,
-                                         delimiter="\t", lineterminator=os.linesep)
-        output_metadata.writeheader()
+    tsv_join = which("tsv-join")
+    cat = get_cat(input_metadata_path)
 
-        # Write outputs based on rows in the original metadata.
-        for row in input_metadata.rows():
-            row_id = row[input_metadata.id_column]
-            if row_id in ids_to_write:
-                output_metadata.writerow(row)
+    # FIXME: use better checks here
+    # Maybe opt-in on the level of augur filter CLI with --use-tsv-utils?
+    if tsv_join and cat:
+        # FIXME: cleanup this temp file
+        with NamedTemporaryFile(delete=False) as include_file:
+            # 1. Write the IDs to a single-column TSV file for tsv-join
+            with open(include_file.name, "w") as f:
+                f.write(input_metadata.id_column + '\n')
+                for strain in ids_to_write:
+                    f.write(strain + '\n')
+
+            # 2. Open a process to stream the input metadata as text (handling compression)
+            cat_args = [cat, input_metadata_path]
+            cat_process = Popen(cat_args, stdout=PIPE)
+
+            # 3. Use tsv-join to subset the input metadata by the IDs in the file created in (1)
+            tsv_join_args = [
+                tsv_join,
+                '-H',
+                '--filter-file', include_file.name,
+                '--key-fields', input_metadata.id_column,
+            ]
+
+            with xopen(output_metadata_path, "w") as output_metadata_handle:
+                Popen(tsv_join_args, stdin=cat_process.stdout, stdout=output_metadata_handle)
+                if cat_process.stdout:
+                    cat_process.stdout.close()  # Allow cat_process to receive a SIGPIPE if tsv-join exits.
+                # FIXME: check for errors from subprocesses
+    else:
+        with xopen(output_metadata_path, "w") as output_metadata_handle:
+            output_metadata = csv.DictWriter(output_metadata_handle, fieldnames=input_metadata.columns,
+                                             delimiter="\t", lineterminator=os.linesep)
+            output_metadata.writeheader()
+
+            # Write outputs based on rows in the original metadata.
+            for row in input_metadata.rows():
+                row_id = row[input_metadata.id_column]
+                if row_id in ids_to_write:
+                    output_metadata.writerow(row)
 
 
 def write_strains(output_strains_path: str, ids_to_write: Iterable[str]):
