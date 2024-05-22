@@ -149,9 +149,19 @@ During development you can run static type checks using [mypy][]:
     $ mypy
     # No output is good!
 
-There are also many [editor integrations for mypy][].
+and [pyright][]:
+
+    $ npx pyright
+    ...
+    Found 40 source files
+    0 errors, 0 warnings, 0 infos
+    Completed in 2sec
+
+There are also many [editor integrations for mypy][], and Pyright can be
+[configured for VS Code][].
 
 [editor integrations for mypy]: https://github.com/python/mypy#integrations
+[configured for VS Code]: https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance#settings-and-customization
 
 ### Removing features
 
