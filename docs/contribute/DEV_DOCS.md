@@ -45,22 +45,33 @@ output of `augur` installed with pip and `./bin/augur` from your local source co
 ### Testing
 
 Writing good tests and running tests helps maintain code quality and eases future refactoring.
-We use [pytest](https://docs.pytest.org) and [Cram](https://bitheap.org/cram/) to test augur.
-This section will describe how to write and run tests, and when they are run automatically.
+This section describes the different types of tests, how to write them, how to run them, and when they are run automatically.
 
-#### Writing Tests
+#### Overview
 
-It's good practice to write **unit tests** for any code contribution.
-The [pytest documentation](https://docs.pytest.org) and [Python documentation](https://docs.python.org) are good references for unit tests.
-Augur's unit tests are located in the `tests` directory and there is generally one test file for each code file.
+We encourage keeping tests up to date and covered for **any** code contribution.
 
-On the other hand, [**doctests**](https://docs.python.org/3/library/doctest.html) are a type of tests that are written within a module's docstrings.
-They can be helpful for testing a real-world example and determining if a regression is introduced in a particular module.
+Tests consist of:
 
-A pull request that contributes new code **should always contain unit tests**.
-Optionally, a pull request may also contain doctests if the contributor believes a doctest would improve the documentation and execution of a real world example.
+1. Unit tests
+2. Doctests
+3. Functional tests
 
-We test augur's command line interface with functional tests implemented with the [Cram framework](https://bitheap.org/cram/).
+The combined test coverage is currently [![codecov coverage badge showing % coverage - select for details](https://codecov.io/gh/nextstrain/augur/graph/badge.svg?token=n3ZS7rMRhY)](https://codecov.io/gh/nextstrain/augur). We realize that this number is not 100%, so the automated CI GitHub Actions workflow is augmented with external testing via running pathogen repo workflows using CI-specific input data.
+
+#### 1. Unit tests
+
+Unit tests are written using [pytest](https://docs.pytest.org).
+Augur's unit tests are located in the `tests` directory and prefixed with `test_`. There is generally one test file for each code file.
+
+#### 2. Doctests
+
+[Doctests](https://docs.python.org/3/library/doctest.html) are a type of test that are written within a module's docstrings.
+They can be helpful for testing a real-world example and determining if a regression is introduced in a particular module. They are run via `pytest`.
+
+#### 3. Functional tests
+
+Augur's command line interface is tested by functional tests implemented with the [Cram framework](https://bitheap.org/cram/).
 These tests complement existing unit tests of individual augur Python functions by running augur commands on the shell and confirming that these commands:
 
 1. execute without any errors
@@ -68,17 +79,14 @@ These tests complement existing unit tests of individual augur Python functions 
 
 These tests can reveal bugs resulting from untested internal functions or untested combinations fo internal functions.
 
-Functional tests should suitably test a single augur command with an eponymously named Cram file in `tests/functional/` (e.g., `mask.t` for augur mask)
+Over time, we have changed the way we design and organize Augur's Cram tests. You might find older practices in existing tests that haven't been updated yet, but these are the latest guidelines that we've discovered to be helpful.
 
-##### Functional tests of specific commands
-
-Functional tests of specific commands consist of a single Cram file per test and a corresponding directory of expected inputs and outputs to use for comparison of test results.
-
-The Cram file should test most reasonable combinations of command arguments and flags.
+1. Keep cram files modular. This makes it easier to see which command is failing.
+2. Create files in the initial working directory, as it is a temporary working directory unique to the test. Note that the name of the `$TMP` directory is misleading - although it is temporary, it is shared across all tests so you'll have to explicitly remove files at the end of each test to avoid affecting other tests. The initial directory of each test is a unique directory within `$TMP`.
 
 ##### Comparing outputs of augur commands
 
-Compare deterministic outputs of augur commands with a `diff` between the expected and observed output files.
+Compare deterministic outputs of augur commands in a functional test with a `diff` between the expected and observed output files.
 For extremely simple deterministic outputs, use the expected text written to standard output instead of creating a separate expected output file.
 
 To compare trees with stochastic branch lengths:
@@ -90,12 +98,11 @@ To compare JSON outputs with stochastic numerical values, use `scripts/diff_json
 
 Both tree and JSON comparison scripts rely on [deepdiff](https://deepdiff.readthedocs.io/en/latest/) for underlying comparisons.
 
-##### Tips for writing Cram tests
+#### When to use which type of test
 
-Cram is a simple testing framework that is also very versatile. Over time, we have changed the way we design and organize Augur's Cram tests. You might find older practices in existing tests that haven't been updated yet, but these are the latest guidelines that we've discovered to be helpful.
-
-1. Keep cram files modular. This makes it easier to see which command is failing.
-2. Create files in the initial working directory, as it is a temporary working directory unique to the test. Note that the name of the `$TMP` directory is misleading - although it is temporary, it is shared across all tests so you'll have to explicitly remove files at the end of each test to avoid affecting other tests. The initial directory of each test is a unique directory within `$TMP`.
+1. Unit tests should be used for the [public API](https://docs.nextstrain.org/projects/augur/en/stable/api/public/index.html).
+2. Unit tests should be used if you want to test specific behavior of a class or function.
+3. Doctests or functional tests should be used if you believe it would improve the documentation and execution of a real world example.
 
 #### Running Tests
 
