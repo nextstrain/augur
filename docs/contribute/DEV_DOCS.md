@@ -68,28 +68,13 @@ These tests complement existing unit tests of individual augur Python functions 
 
 These tests can reveal bugs resulting from untested internal functions or untested combinations fo internal functions.
 
-Functional tests should either:
-
-* suitably test a single augur command with an eponymously named Cram file in `tests/functional/` (e.g., `mask.t` for augur mask)
-
-OR
-
-* test a complete build with augur commands with an appropriately named Cram file in `tests/builds/` (e.g., `zika.t` for the example Zika build)
+Functional tests should suitably test a single augur command with an eponymously named Cram file in `tests/functional/` (e.g., `mask.t` for augur mask)
 
 ##### Functional tests of specific commands
 
 Functional tests of specific commands consist of a single Cram file per test and a corresponding directory of expected inputs and outputs to use for comparison of test results.
 
 The Cram file should test most reasonable combinations of command arguments and flags.
-
-##### Functional tests of example builds
-
-Functional tests of example builds use output from a real Snakemake workflow as expected inputs and outputs.
-These tests should confirm that all steps of a workflow can execute and produce the expected output.
-These tests reflect actual augur usage in workflows and are not intended to comprehensively test interfaces for specific augur commands.
-
-The Cram file should replicate the example workflow from start to end.
-These tests should use the output of the Snakemake workflow (e.g., files in `zika/results/` for the Zika build test) as the expected inputs and outputs.
 
 ##### Comparing outputs of augur commands
 
