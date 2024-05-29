@@ -72,7 +72,7 @@ They can be helpful for testing a real-world example and determining if a regres
 #### 3. Functional tests
 
 Augur's command line interface is tested by functional tests implemented with the [Cram framework](https://bitheap.org/cram/).
-These tests complement existing unit tests of individual augur Python functions by running augur commands on the shell and confirming that these commands:
+These tests complement existing unit tests of individual augur Python functions by running augur commands in the shell and confirming that these commands:
 
 1. execute without any errors
 2. produce exactly the expected outputs for the given inputs
