@@ -920,12 +920,22 @@ def register_parser(parent_subparsers):
     minify_group.add_argument('--minify-json', action="store_true", help="always export JSONs without indentation or line returns.")
     minify_group.add_argument('--no-minify-json', action="store_true", help="always export JSONs to be human readable.")
 
+    root_sequence_group = parser.add_argument_group(
+            title="OPTIONAL ROOT-SEQUENCE SETTINGS",
+            description=f"""
+                The root-sequences describe the sequences (nuc + aa) for the parent of the tree's root-node. They may represent a
+                reference sequence or the inferred sequence at the root node, depending on how they were generated.
+                The data is taken directly from the `reference` key within the provided node-data JSONs.
+                These arguments are mutually exclusive.
+                """
+        ).add_mutually_exclusive_group()
+    root_sequence = root_sequence_group.add_mutually_exclusive_group()
+    root_sequence.add_argument('--include-root-sequence', action="store_true", help="Export as an additional JSON. The filename will follow the pattern of <OUTPUT>_root-sequence.json for a main auspice JSON of <OUTPUT>.json")
+    root_sequence.add_argument('--include-root-sequence-inline', action="store_true", help="Export the root sequence within the dataset JSON. This should only be used for small genomes for file size reasons.")
+
     optional_settings = parser.add_argument_group(
         title="OTHER OPTIONAL SETTINGS"
     )
-    root_sequence = optional_settings.add_mutually_exclusive_group()
-    root_sequence.add_argument('--include-root-sequence', action="store_true", help="Export an additional JSON containing the root sequence (reference sequence for vcf) used to identify mutations. The filename will follow the pattern of <OUTPUT>_root-sequence.json for a main auspice JSON of <OUTPUT>.json")
-    root_sequence.add_argument('--include-root-sequence-inline', action="store_true", help="Export the root sequence (reference sequence for vcf) used to identify mutations as part of the main dataset JSON. This should only be used for small genomes for file size reasons.")
     optional_settings.add_argument(
         '--validation-mode',
         dest="validation_mode",
