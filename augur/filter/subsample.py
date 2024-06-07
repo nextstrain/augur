@@ -309,6 +309,7 @@ def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size, 
         form) to group sizes
     """
     weights = pd.read_csv(weights_file, delimiter='\t')
+    # FIXME: check that weights column is numeric to prevent TypeError
     if any(weights[WEIGHTS_COLUMN] < 0):
         # FIXME: better formatting here
         raise AugurError(f"Weights must be non-negative, but found negative weights: {weights[weights[WEIGHTS_COLUMN] < 0]}")
