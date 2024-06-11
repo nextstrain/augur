@@ -31,7 +31,12 @@ def fix_dates(d, dayfirst=True):
     On failure to parse the date, the function will return the input.
     '''
     try:
-        from pandas.core.tools.datetimes import parsing
+        try:
+            # pandas <= 2.1
+            from pandas.core.tools.datetimes import parsing
+        except ImportError:
+            # pandas >= 2.2
+            from pandas._libs.tslibs import parsing
         try:
             # pandas 2.x
             results = parsing.parse_datetime_string_with_reso(d, dayfirst=dayfirst)
