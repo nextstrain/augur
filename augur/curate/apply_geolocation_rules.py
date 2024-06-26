@@ -2,11 +2,12 @@
 Applies user curated geolocation rules to the geolocation fields.
 """
 from collections import defaultdict
-from sys import exit, stderr
+from augur.errors import AugurError
+from augur.io.print import print_err
 from augur.utils import first_line
 
 
-class CyclicGeolocationRulesError(Exception):
+class CyclicGeolocationRulesError(AugurError):
     pass
 
 
@@ -34,11 +35,10 @@ def load_geolocation_rules(geolocation_rules_file):
             row = line.strip('\n').split('\t')
             # Skip lines that cannot be split into raw and annotated geolocations
             if len(row) != 2:
-                print(
+                print_err(
                     f"WARNING: Could not decode geolocation rule {line!r}.",
                     "Please make sure rules are formatted as",
-                    "'region/country/division/location<tab>region/country/division/location'.",
-                    file=stderr)
+                    "'region/country/division/location<tab>region/country/division/location'.")
                 continue
 
             # remove trailing comments
@@ -47,19 +47,15 @@ def load_geolocation_rules(geolocation_rules_file):
 
             # Skip lines where raw or annotated geolocations cannot be split into 4 fields
             if len(raw) != 4:
-                print(
+                print_err(
                     f"WARNING: Could not decode the raw geolocation {row[0]!r}.",
-                    "Please make sure it is formatted as 'region/country/division/location'.",
-                    file=stderr
-                )
+                    "Please make sure it is formatted as 'region/country/division/location'.")
                 continue
 
             if len(annot) != 4:
-                print(
+                print_err(
                     f"WARNING: Could not decode the annotated geolocation {row[1]!r}.",
-                    "Please make sure it is formatted as 'region/country/division/location'.",
-                    file=stderr
-                )
+                    "Please make sure it is formatted as 'region/country/division/location'.")
                 continue
 
 
@@ -167,7 +163,7 @@ def transform_geolocations(geolocation_rules, geolocation):
 
             if rules_applied > 1000:
                 raise CyclicGeolocationRulesError(
-                    "ERROR: More than 1000 geolocation rules applied on the same entry {geolocation!r}."
+                    "More than 1000 geolocation rules applied on the same entry {geolocation!r}."
                 )
 
             # Create a new list of values for comparison to previous values
@@ -218,11 +214,7 @@ def run(args, records):
 
     for record in records:
 
-        try:
-            annotated_values = transform_geolocations(geolocation_rules, [record.get(field, '') for field in location_fields])
-        except CyclicGeolocationRulesError as e:
-            print(e, file=stderr)
-            exit(1)
+        annotated_values = transform_geolocations(geolocation_rules, [record.get(field, '') for field in location_fields])
 
         for index, field in enumerate(location_fields):
             record[field] = annotated_values[index]
