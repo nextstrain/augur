@@ -1,12 +1,9 @@
 """
-Applies user curated geolocation rules to the geolocation fields in the NDJSON
-records from stdin. The modified records are output to stdout. This does not do
-any additional transformations on top of the user curations.
+Applies user curated geolocation rules to the geolocation fields.
 """
-import argparse
-import json
 from collections import defaultdict
-from sys import exit, stderr, stdin, stdout
+from sys import exit, stderr
+from augur.utils import first_line
 
 
 class CyclicGeolocationRulesError(Exception):
@@ -190,11 +187,11 @@ def transform_geolocations(geolocation_rules, geolocation):
     return transformed_values
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("apply-geolocation-rules",
+        parents=[parent_subparsers.shared_parser],
+        help=first_line(__doc__))
+
     parser.add_argument("--region-field", default="region",
         help="Field that contains regions in NDJSON records.")
     parser.add_argument("--country-field", default="country",
@@ -211,14 +208,15 @@ if __name__ == '__main__':
              "Lines starting with '#' will be ignored as comments." +
              "Trailing '#' will be ignored as comments.")
 
-    args = parser.parse_args()
+    return parser
 
+
+def run(args, records):
     location_fields = [args.region_field, args.country_field, args.division_field, args.location_field]
 
     geolocation_rules = load_geolocation_rules(args.geolocation_rules)
 
-    for record in stdin:
-        record = json.loads(record)
+    for record in records:
 
         try:
             annotated_values = transform_geolocations(geolocation_rules, [record.get(field, '') for field in location_fields])
@@ -229,5 +227,4 @@ if __name__ == '__main__':
         for index, field in enumerate(location_fields):
             record[field] = annotated_values[index]
 
-        json.dump(record, stdout, allow_nan=False, indent=None, separators=',:')
-        print()
+        yield record
