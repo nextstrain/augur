@@ -359,7 +359,7 @@ def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size, 
         n_missing = len(missing_groups)
         print_err(f"WARNING: {n_missing} groups appear in the metadata but are missing from the weights file. Sequences from these groups will be dropped.")
         missing_weights = pd.DataFrame(sorted(missing_groups), columns=group_by)
-        missing_weights['weight'] = ''
+        missing_weights[WEIGHTS_COLUMN] = ''
         missing_weights_file = 'missing_weights.tsv'
         missing_weights.to_csv(missing_weights_file, index=False, sep='\t')
         print_err(f"All missing groups added to a file {missing_weights_file!r}.")
