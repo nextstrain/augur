@@ -52,8 +52,7 @@ spaces, or ``()[]{}|#><``.
 Dates should be formated according as ``YYYY-MM-DD``. You can specify
 unknown dates or month by replacing the respected values by ``XX`` (ex:
 ``2013-01-XX`` or ``2011-XX-XX``) and completely unknown dates can be
-shown with ``20XX-XX-XX`` (which does not restrict the sequence to being
-in the 21st century - they could be earlier).
+shown with ``XXXX-XX-XX``.
 
 **Geography**
 
