@@ -58,8 +58,9 @@ Using 1:1 weights is similarly straightforward, with 50 sequences from each loca
   B	1	50
 
 Keep the 1:1 location weighting, but add uniform sampling on year.
-Since there are no available sequences in the group (2002,A), we end up with
-more sequences from location B relative to A.
+The uniform sampling happens "within" each weighted column value, so the 1:1
+location weighting is reflected even though there is an imbalance in years
+available per location.
 
   $ ${AUGUR} filter \
   >   --metadata metadata.tsv \
@@ -72,11 +73,11 @@ more sequences from location B relative to A.
 
   $ cat target_group_sizes.tsv
   year	location	weight	target_size
-  2000	A	1	20
-  2000	B	1	20
-  2001	A	1	20
-  2001	B	1	20
-  2002	B	1	20
+  2000	A	0.5	25
+  2000	B	0.3333333333333333	16
+  2001	A	0.5	25
+  2001	B	0.3333333333333333	16
+  2002	B	0.3333333333333333	17
 
 If a single sequence is added for group (2002,A), the weighting now appears
 "equal" among all years and locations.
@@ -97,12 +98,12 @@ requested 17, so the total number of sequences outputted is lower than requested
 
   $ cat target_group_sizes.tsv
   year	location	weight	target_size
-  2000	A	1	17
-  2000	B	1	16
-  2001	A	1	16
-  2001	B	1	16
-  2002	A	1	17
-  2002	B	1	17
+  2000	A	0.3333333333333333	17
+  2000	B	0.3333333333333333	16
+  2001	A	0.3333333333333333	16
+  2001	B	0.3333333333333333	16
+  2002	A	0.3333333333333333	17
+  2002	B	0.3333333333333333	17
 
   $ wc -l strains.txt
   \s*83 .* (re)

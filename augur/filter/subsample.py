@@ -354,6 +354,12 @@ def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size, 
         weights = weights[weights.index.isin(valid_index)]
     weights.reset_index(inplace=True)
 
+    # Ensure unweighted columns are used to partition the data within the
+    # existing weighted columns.
+    if unweighted_columns:
+        weights_grouped = weights.groupby(weighted_columns)
+        weights[WEIGHTS_COLUMN] = weights_grouped[WEIGHTS_COLUMN].transform(lambda x: x / len(x))
+
     missing_groups = set(groups) - set(weights[group_by].apply(tuple, axis=1))
     if missing_groups:
         n_missing = len(missing_groups)
