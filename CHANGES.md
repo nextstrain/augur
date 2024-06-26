@@ -2,11 +2,16 @@
 
 ## __NEXT__
 
+### Features
+
+* Added a new sub-command `augur curate apply-geolocation-rules` to apply user curated geolocation rules to the geolocation fields in a metadata file. Previously, this was available as a script script within the nextstrain/ingest repo. [#1491][] (@victorlin)
+
 ### Bug Fixes
 
 * filter: Improve speed of checking duplicates in metadata, especially for large files. [#1466][] (@victorlin)
 
 [#1466]: https://github.com/nextstrain/augur/pull/1466
+[#1491]: https://github.com/nextstrain/augur/pull/1491
 
 ## 24.4.0 (15 May 2024)
 
