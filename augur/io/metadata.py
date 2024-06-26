@@ -483,7 +483,9 @@ def write_records_to_tsv(records, output_file):
             output_columns,
             extrasaction='ignore',
             delimiter='\t',
-            lineterminator='\n'
+            lineterminator='\n',
+            quoting=csv.QUOTE_NONE,
+            quotechar=None,
         )
         tsv_writer.writeheader()
         tsv_writer.writerow(first_record)
