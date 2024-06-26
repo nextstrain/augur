@@ -21,5 +21,5 @@ Attempting to use the rules with a match results in an error.
   $ echo '{"region": "r_old", "country": "c_old", "division": "d_old", "location": "l_old"}' \
   >   |  ${AUGUR} curate apply-geolocation-rules \
   >       --geolocation-rules rules.tsv
-  ERROR: More than 1000 geolocation rules applied on the same entry {geolocation!r}.
+  ERROR: More than 1000 geolocation rules applied on the same entry ['r_old', 'c_old', 'd_old', 'l_old'].
   [2]

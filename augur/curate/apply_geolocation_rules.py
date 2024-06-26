@@ -163,7 +163,7 @@ def transform_geolocations(geolocation_rules, geolocation):
 
             if rules_applied > 1000:
                 raise CyclicGeolocationRulesError(
-                    "More than 1000 geolocation rules applied on the same entry {geolocation!r}."
+                    f"More than 1000 geolocation rules applied on the same entry {geolocation!r}."
                 )
 
             # Create a new list of values for comparison to previous values
