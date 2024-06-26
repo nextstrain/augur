@@ -176,3 +176,16 @@ def _try_remove(filepath):
         os.remove(filepath)
     except FileNotFoundError:
         pass
+
+
+# TODO: Make a class WeightsFile similar to class Metadata that stores the
+# following constant and function.
+
+WEIGHTS_COLUMN = 'weight'
+
+
+def get_weighted_columns(weights_file):
+    with open(weights_file) as f:
+        weighted_columns = next(csv.reader(f, delimiter='\t'))
+    weighted_columns.remove('weight')
+    return weighted_columns

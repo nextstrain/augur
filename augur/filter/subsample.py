@@ -1,3 +1,4 @@
+from collections import defaultdict
 import heapq
 import itertools
 import uuid
@@ -7,6 +8,7 @@ from typing import Collection
 
 from augur.dates import get_iso_year_week
 from augur.errors import AugurError
+from augur.filter.io import WEIGHTS_COLUMN, get_weighted_columns
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err
 from . import constants
@@ -295,6 +297,102 @@ def get_probabilistic_group_sizes(groups, target_group_size, random_seed=None):
         attempts += 1
 
     return max_sizes_per_group
+
+
+def get_weighted_group_sizes(groups, group_by, weights_file, target_total_size, output_sizes_file, random_seed):
+    """Return group sizes based on weights defined in ``weights_file``.
+
+    Returns
+    -------
+    dict :
+        Mapping between groups (combinations of grouping column values in tuple
+        form) to group sizes
+    """
+    weights = pd.read_csv(weights_file, delimiter='\t')
+    # FIXME: check that weights column is numeric to prevent TypeError
+    if any(weights[WEIGHTS_COLUMN] < 0):
+        # FIXME: better formatting here
+        raise AugurError(f"Weights must be non-negative, but found negative weights: {weights[weights[WEIGHTS_COLUMN] < 0]}")
+
+    weighted_columns = get_weighted_columns(weights_file)
+
+    # Allow other columns in group_by to be equally weighted (uniform sampling)
+    unweighted_columns = list(set(group_by) - set(weighted_columns))
+
+    if unweighted_columns:
+        columns = 'column' if len(unweighted_columns) == 1 else 'columns'
+        those = 'that' if len(unweighted_columns) == 1 else 'those'
+        print_err(f"Weights were not provided for the {columns} {', '.join(repr(col) for col in unweighted_columns)}. Using equal weights across values in {those} {columns}.")
+        # Augment the weights DataFrame with equal weighting for unweighted columns
+
+        # 1. Get unique values for each unweighted column
+        values_for_unweighted_columns = defaultdict(set)
+        for group in groups:
+            # NOTE: The ordering of entries in `groups` corresponds to the column
+            # names in `group_by`. but only because `get_groups_for_subsampling`
+            # conveniently retains the order. This could be more tightly coupled,
+            # but it works.
+            column_to_value_map = dict(zip(group_by, group))
+            for column in unweighted_columns:
+                values_for_unweighted_columns[column].add(column_to_value_map[column])
+
+        # 2. Create a DataFrame for all permutations of values in unweighted columns
+        lists = [list(values_for_unweighted_columns[column]) for column in unweighted_columns]
+        unweighted_permutations = pd.DataFrame(list(itertools.product(*lists)), columns=unweighted_columns)
+
+        # 3. Merge with the weights DataFrame so it has all grouping columns
+        weights = pd.merge(unweighted_permutations, weights, how='cross')
+
+    # Drop any groups that don't appear in metadata
+    weights.set_index(group_by, inplace=True)
+    valid_index = set(groups) if len(group_by) > 1 else set(group[0] for group in groups)
+    extra_groups = set(weights.index) - valid_index
+    if extra_groups:
+        count = len(extra_groups)
+        unit = "group" if count == 1 else "groups"
+        print_err(f"Skipping {count} {unit} due to lack of entries in metadata.")
+        weights = weights[weights.index.isin(valid_index)]
+    weights.reset_index(inplace=True)
+
+    # Ensure unweighted columns are used to partition the data within the
+    # existing weighted columns.
+    if unweighted_columns:
+        weights_grouped = weights.groupby(weighted_columns)
+        weights[WEIGHTS_COLUMN] = weights_grouped[WEIGHTS_COLUMN].transform(lambda x: x / len(x))
+
+    missing_groups = set(groups) - set(weights[group_by].apply(tuple, axis=1))
+    if missing_groups:
+        n_missing = len(missing_groups)
+        print_err(f"WARNING: {n_missing} groups appear in the metadata but are missing from the weights file. Sequences from these groups will be dropped.")
+        missing_weights = pd.DataFrame(sorted(missing_groups), columns=group_by)
+        missing_weights[WEIGHTS_COLUMN] = ''
+        missing_weights_file = 'missing_weights.tsv'
+        missing_weights.to_csv(missing_weights_file, index=False, sep='\t')
+        print_err(f"All missing groups added to a file {missing_weights_file!r}.")
+
+    # Calculate maximum group sizes based on weights
+    FRACTIONAL_SIZE_COLUMN = '_augur_filter_target_size_fraction'
+    SIZE_COLUMN = 'target_size'
+    weights[FRACTIONAL_SIZE_COLUMN] = weights[WEIGHTS_COLUMN] / weights[WEIGHTS_COLUMN].sum() * target_total_size
+
+    # Group sizes need to be whole numbers. Round probabilistically by adding
+    # a random number between [0,1) and truncating the decimal part.
+    rng = np.random.default_rng(random_seed)
+    weights[SIZE_COLUMN] = (weights[FRACTIONAL_SIZE_COLUMN].add(rng.random(len(weights)))).astype(int)
+
+    if missing_groups:
+        missing_weights = pd.DataFrame(sorted(missing_groups), columns=group_by)
+        # FIXME: Make this customizable. Lack of case count + presence of sequences is weird.
+        # Drop these for now but consider other options.
+        missing_weights[SIZE_COLUMN] = 0
+        weights = pd.merge(weights, missing_weights, on=[*group_by, SIZE_COLUMN], how='outer')
+
+    # FIXME: add actual sizes to this file - attainable but only after
+    # PriorityQueues have been populated
+    if output_sizes_file:
+        weights[[*group_by, WEIGHTS_COLUMN, SIZE_COLUMN]].to_csv(output_sizes_file, index=False, sep='\t')
+
+    return dict(zip(weights[group_by].apply(tuple, axis=1), weights[SIZE_COLUMN]))
 
 
 def create_queues_by_group(max_sizes_per_group):
