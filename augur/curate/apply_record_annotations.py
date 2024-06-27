@@ -1,22 +1,19 @@
-#!/usr/bin/env python3
 """
-Merges user curated annotations with the NDJSON records from stdin, with the user
-curations overwriting the existing fields. The modified records are output
-to stdout. This does not do any additional transformations on top of the user
-curations.
+Applies record annotations to overwrite field values.
+This does not do any additional transformations on top of the annotations.
 """
-import argparse
 import csv
-import json
 from collections import defaultdict
-from sys import exit, stdin, stderr, stdout
+from augur.errors import AugurError
+from augur.io.print import print_err
+from augur.utils import first_line
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+def register_parser(parent_subparsers):
+    parser = parent_subparsers.add_parser("apply-record-annotations",
+        parents=[parent_subparsers.shared_parser],
+        help=first_line(__doc__))
+
     parser.add_argument("--annotations", metavar="TSV", required=True,
         help="Manually curated annotations TSV file. " +
              "The TSV should not have a header and should have exactly three columns: " +
@@ -27,8 +24,10 @@ if __name__ == '__main__':
     parser.add_argument("--id-field", default="accession",
         help="The ID field in the metadata to use to merge with the annotations.")
 
-    args = parser.parse_args()
+    return parser
 
+
+def run(args, records):
     annotations = defaultdict(dict)
     with open(args.annotations, 'r') as annotations_fh:
         csv_reader = csv.reader(annotations_fh, delimiter='\t')
@@ -36,20 +35,16 @@ if __name__ == '__main__':
             if not row or row[0].lstrip()[0] == '#':
                     continue
             elif len(row) != 3:
-                print("WARNING: Could not decode annotation line " + "\t".join(row), file=stderr)
+                print_err("WARNING: Could not decode annotation line " + "\t".join(row))
                 continue
             id, field, value = row
             annotations[id][field] = value.partition('#')[0].rstrip()
 
-    for record in stdin:
-        record = json.loads(record)
-
+    for record in records:
         record_id = record.get(args.id_field)
         if record_id is None:
-            print(f"ERROR: ID field {args.id_field!r} does not exist in record", file=stderr)
-            exit(1)
+            raise AugurError(f"ID field {args.id_field!r} does not exist in record")
 
         record.update(annotations.get(record_id, {}))
 
-        json.dump(record, stdout, allow_nan=False, indent=None, separators=',:')
-        print()
+        yield record
