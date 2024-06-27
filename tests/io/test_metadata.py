@@ -13,7 +13,8 @@ def expected_record():
     return {
         'strain': 'SEQ_A',
         'date': '2020-10-03',
-        'country': 'USA'
+        'country': 'USA',
+        'lab': 'A Virology Lab "Vector"'
     }
 
 @pytest.fixture
@@ -36,14 +37,14 @@ class TestReadMetadataToDict:
     def test_read_table_to_dict_with_csv(self, tmpdir, expected_record):
         path = str(tmpdir / 'metadata.csv')
         with open(path, 'w') as fh:
-            fh.write('strain,date,country\n')
-            fh.write('SEQ_A,2020-10-03,USA\n')
+            fh.write('strain,date,country,lab\n')
+            fh.write('SEQ_A,2020-10-03,USA,A Virology Lab "Vector"\n')
 
         record = next(read_table_to_dict(path, (',')))
         assert record == expected_record
 
     def test_read_table_to_dict_with_csv_from_stdin(self, mp_context, expected_record):
-        stdin = StringIO('strain,date,country\nSEQ_A,2020-10-03,USA\n')
+        stdin = StringIO('strain,date,country,lab\nSEQ_A,2020-10-03,USA,A Virology Lab "Vector"\n')
         mp_context.setattr('sys.stdin', stdin)
         record = next(read_table_to_dict(sys.stdin, (',')))
         assert record == expected_record
@@ -51,14 +52,14 @@ class TestReadMetadataToDict:
     def test_read_table_to_dict_with_tsv(self, tmpdir, expected_record):
         path = str(tmpdir / 'metadata.tsv')
         with open(path, 'w') as fh:
-            fh.write('strain\tdate\tcountry\n')
-            fh.write('SEQ_A\t2020-10-03\tUSA\n')
+            fh.write('strain\tdate\tcountry\tlab\n')
+            fh.write('SEQ_A\t2020-10-03\tUSA\tA Virology Lab "Vector"\n')
 
         record = next(read_table_to_dict(path, ('\t')))
         assert record == expected_record
 
     def test_read_table_to_dict_with_tsv_from_stdin(self, mp_context, expected_record):
-        stdin = StringIO('strain\tdate\tcountry\nSEQ_A\t2020-10-03\tUSA\n')
+        stdin = StringIO('strain\tdate\tcountry\tlab\nSEQ_A\t2020-10-03\tUSA\tA Virology Lab "Vector"\n')
         mp_context.setattr('sys.stdin', stdin)
         record = next(read_table_to_dict(sys.stdin, ('\t')))
         assert record == expected_record
@@ -457,7 +458,7 @@ class TestReadMetadataWithSequence:
 @pytest.fixture
 def output_records():
     return iter([
-        {"strain": "SEQ_A", "country": "USA", "date": "2020-10-01"},
+        {"strain": "SEQ_A", "country": "\"USA\"", "date": "2020-10-01"},
         {"strain": "SEQ_T", "country": "USA", "date": "2020-10-02"}
     ])
 
@@ -465,7 +466,7 @@ def output_records():
 def expected_output_tsv():
     return (
         "strain\tcountry\tdate\n"
-        "SEQ_A\tUSA\t2020-10-01\n"
+        'SEQ_A\t"USA"\t2020-10-01\n'
         "SEQ_T\tUSA\t2020-10-02\n"
     )
 
@@ -564,7 +565,7 @@ class TestMetadataClass:
             ',,\n',
             '5,2,3\n',
         ])
-        
+
         m = Metadata(path, delimiters=',', id_columns=['a'])
         assert list(m.rows()) == [
             {'a': '1', 'b': '2', 'c': '3'},

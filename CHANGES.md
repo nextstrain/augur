@@ -10,10 +10,12 @@
 ### Bug Fixes
 
 * filter: Improve speed of checking duplicates in metadata, especially for large files. [#1466][] (@victorlin)
+* curate: Stop adding double quotes to the metadata TSV output when field values have internal quotes. [#1493][] (@joverlee521)
 
 [#1466]: https://github.com/nextstrain/augur/pull/1466
 [#1490]: https://github.com/nextstrain/augur/pull/1490
 [#1491]: https://github.com/nextstrain/augur/pull/1491
+[#1493]: https://github.com/nextstrain/augur/pull/1493
 
 ## 24.4.0 (15 May 2024)
 
