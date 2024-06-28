@@ -5,3 +5,7 @@ augur.import
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. toctree::
+
+   augur.import.beast
