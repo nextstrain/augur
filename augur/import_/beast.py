@@ -16,7 +16,7 @@ from augur.utils import write_json
 
 def register_parser(parent_subparsers):
     """
-    Arguments available to `augur import beast`
+    Arguments available to ``augur import beast``
     """
     beast_parser = parent_subparsers.add_parser('beast', help="Import beast analysis")
     beast_parser.add_argument("--beast", help=SUPPRESS, default=True) # used to disambiguate subcommands
@@ -42,7 +42,7 @@ def parse_beast_tree(data, tipMap, verbose=False):
         The (really long) line in the NEXUS file beginning with "tree", pruned
         to start at the first "(" character.
     tipMap : dict
-        Mapping of tips (as encoded in `data`) to their names
+        Mapping of tips (as encoded in ``data``) to their names
     verbose : bool
         Should output be printed?
 
@@ -350,7 +350,7 @@ def find_most_recent_tip(tree, tip_date_regex, tip_date_format, tip_date_delimet
         The format of the extracted date.
         (e.g. "%Y-%m-%d" goes with "2012-10-30")
     tip_date_delimeter : str
-        The delimeter in `tip_date_format`
+        The delimeter in ``tip_date_format``
 
     Raises
     ------
@@ -514,8 +514,8 @@ def compute_entropies_for_discrete_traits(tree):
 
 def print_what_to_do_next(nodes, mcc_path, tree_path, node_data_path):
     """
-    Print a suggested `auspice_config.json` file, which the user will have to configure
-    and provide to `augur export`. There is not enough information in a MCC tree to do
+    Print a suggested ``auspice_config.json`` file, which the user will have to configure
+    and provide to ``augur export``. There is not enough information in a MCC tree to do
     this automatically.
     """
 
