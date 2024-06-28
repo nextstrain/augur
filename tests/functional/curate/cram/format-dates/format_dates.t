@@ -1,6 +1,6 @@
 Setup
 
-  $ source "$TESTDIR"/_setup.sh
+  $ export AUGUR="${AUGUR:-$TESTDIR/../../../../../bin/augur}"
 
 Create NDJSON file for testing format_dates with different forms
 
