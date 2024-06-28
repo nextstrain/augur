@@ -181,7 +181,7 @@ def load_features(reference, feature_names=None):
     Returns
     -------
     features : dict
-        keys: feature names, values: <class 'Bio.SeqFeature.SeqFeature'> Note
+        keys: feature names, values: :py:class:`Bio.SeqFeature.SeqFeature` Note
         that feature names may not equivalent to GenBank feature keys
 
     Raises
@@ -207,13 +207,13 @@ def _read_nuc_annotation_from_gff(record, reference):
     
     Parameters
     ----------
-    record : <class 'Bio.SeqRecord.SeqRecord'>
+    record : :py:class:`Bio.SeqRecord.SeqRecord`
     reference: string
         File path to GFF reference
 
     Returns
     -------
-    <class 'Bio.SeqFeature.SeqFeature'>
+    :py:class:`Bio.SeqFeature.SeqFeature`
 
     Raises
     ------
@@ -279,7 +279,7 @@ def _read_gff(reference, feature_names):
     Returns
     -------
     features : dict
-        keys: feature names, values: <class 'Bio.SeqFeature.SeqFeature'>
+        keys: feature names, values: :py:class:`Bio.SeqFeature.SeqFeature`
         Note that feature names may not equivalent to GenBank feature keys
 
     Raises
@@ -360,11 +360,11 @@ def _read_nuc_annotation_from_genbank(record, reference):
     
     Parameters
     ----------
-    record : <class 'Bio.SeqRecord.SeqRecord'> reference: string
+    record : :py:class:`Bio.SeqRecord.SeqRecord` reference: string
 
     Returns
     -------
-    <class 'Bio.SeqFeature.SeqFeature'>
+    :py:class:`Bio.SeqFeature.SeqFeature`
 
     Raises
     ------
@@ -400,7 +400,7 @@ def _read_genbank(reference, feature_names):
     Returns
     -------
     features : dict
-        keys: feature names, values: <class 'Bio.SeqFeature.SeqFeature'>
+        keys: feature names, values: :py:class:`Bio.SeqFeature.SeqFeature`
         Note that feature names may not equivalent to GenBank feature keys
 
     Raises

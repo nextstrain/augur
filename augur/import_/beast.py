@@ -48,7 +48,7 @@ def parse_beast_tree(data, tipMap, verbose=False):
 
     Returns
     -------
-    <class 'Bio.Phylo.Newick.Clade'>
+    :py:class:`Bio.Phylo.Newick.Clade`
 
     Author: Gytis Dudas
     """
@@ -222,7 +222,7 @@ def parse_nexus(tree_path, treestring_regex=r'tree [A-Za-z\_]+([0-9]+)', verbose
 
     Returns
     -------
-    <class 'Bio.Phylo.BaseTree.Tree'>
+    :py:class:`Bio.Phylo.BaseTree.Tree`
         A tree with BEAST attrs set on each node (as applicable)
 
     Author: Gytis Dudas
@@ -283,7 +283,7 @@ def summarise_parsed_traits(tree):
     """
     Parameters
     ----------
-    tree : <class 'Bio.Phylo.BaseTree.Tree'>
+    tree : :py:class:`Bio.Phylo.BaseTree.Tree`
     """
     traits = {}
     for node in tree.find_clades():
@@ -310,11 +310,11 @@ def fake_alignment(T):
 
     Parameters
     -------
-    T : <class 'Bio.Phylo.BaseTree.Tree'>
+    T : :py:class:`Bio.Phylo.BaseTree.Tree`
 
     Returns
     -------
-    <class 'Bio.Align.MultipleSeqAlignment'>
+    :py:class:`Bio.Align.MultipleSeqAlignment`
     """
     from Bio import SeqRecord, Seq, Align
     seqs = []
@@ -343,7 +343,7 @@ def find_most_recent_tip(tree, tip_date_regex, tip_date_format, tip_date_delimet
 
     Parameters
     --------
-    tree : <class 'Bio.Phylo.BaseTree.Tree'>
+    tree : :py:class:`Bio.Phylo.BaseTree.Tree`
     tip_date_regex : string
         The regex used to extract the date (e.g. isolate collection date
         from each tip in the string.
@@ -399,7 +399,7 @@ def calc_tree_dates(tree, most_recent_tip_date, tip_date_regex, tip_date_format,
 
     Parameters
     --------
-    tree : <class 'Bio.Phylo.BaseTree.Tree'>
+    tree : :py:class:`Bio.Phylo.BaseTree.Tree`
     # time_units : string
     # tip_date : null | string
     # most_recent_tip_data_fmt : string {"regex" | "decimal"}
@@ -442,7 +442,7 @@ def collect_node_data(tree, root_date_offset, most_recent_tip_date):
 
     Parameters
     --------
-    tree : <class 'Bio.Phylo.BaseTree.Tree'>
+    tree : :py:class:`Bio.Phylo.BaseTree.Tree`
     root_date_offset : float
     most_recent_tip_date : float
 
@@ -497,7 +497,7 @@ def compute_entropies_for_discrete_traits(tree):
 
     Properties
     ----------
-    tree : <class 'Bio.Phylo.BaseTree.Tree'>
+    tree : :py:class:`Bio.Phylo.BaseTree.Tree`
         BEAST traits are set as key-value pairs on node.attrs
 
     Author: James Hadfield
