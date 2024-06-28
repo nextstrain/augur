@@ -12,6 +12,16 @@ from augur.types import DataErrorMethod
 from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEAR_MONTH_DAY_DIRECTIVES
 
 
+# Default date formats that this command should parse
+# without additional input from the user.
+DEFAULT_EXPECTED_DATE_FORMATS = [
+    '%Y-%m-%d',
+    '%Y-%m-XX',
+    '%Y-XX-XX',
+    'XXXX-XX-XX',
+]
+
+
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("format-dates",
         parents=[parent_subparsers.shared_parser],
@@ -21,6 +31,7 @@ def register_parser(parent_subparsers):
     required.add_argument("--date-fields", nargs="+", action="extend",
         help="List of date field names in the record that need to be standardized.")
     required.add_argument("--expected-date-formats", nargs="+", action="extend",
+        default=DEFAULT_EXPECTED_DATE_FORMATS,
         help="Expected date formats that are currently in the provided date fields, " +
              "defined by standard format codes as listed at " +
              "https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes. " +

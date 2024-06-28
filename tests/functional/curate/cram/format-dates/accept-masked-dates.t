@@ -17,14 +17,12 @@ Test input with masked dates works as expected if the masked format is provided.
   {"record": 1, "masked-date": "2020-XX-XX", "date": "2020"}
 
 Test mutliple passes through format-dates where the first pass masks dates.
-This is expected to fail without the masked format
+This is expected to work without providing additional date formats.
 
   $ cat records.ndjson \
   >   | ${AUGUR} curate format-dates \
   >     --date-fields "date" \
   >     --expected-date-formats "%Y" \
   >   | ${AUGUR} curate format-dates \
-  >     --date-fields "date" \
-  >     --expected-date-formats "%Y-%m-%d"
-  ERROR: Unable to format date string '2020-XX-XX' in field 'date' of record 0.
-  [2]
+  >     --date-fields "date"
+  {"record": 1, "masked-date": "2020-XX-XX", "date": "2020-XX-XX"}
