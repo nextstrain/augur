@@ -12,7 +12,7 @@ from augur.io.json import dump_ndjson, load_ndjson
 from augur.io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
 from augur.io.sequences import write_records_to_fasta
 from augur.types import DataErrorMethod
-from . import format_dates, normalize_strings, passthru, titlecase, apply_geolocation_rules, apply_record_annotations
+from . import format_dates, normalize_strings, passthru, titlecase, apply_geolocation_rules, apply_record_annotations, abbreviate_authors
 
 
 SUBCOMMAND_ATTRIBUTE = '_curate_subcommand'
@@ -23,6 +23,7 @@ SUBCOMMANDS = [
     titlecase,
     apply_geolocation_rules,
     apply_record_annotations,
+    abbreviate_authors,
 ]
 
 

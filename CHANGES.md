@@ -7,6 +7,7 @@
 * Added a new sub-command `augur curate apply-geolocation-rules` to apply user curated geolocation rules to the geolocation fields in a metadata file. Previously, this was available as a script within the nextstrain/ingest repo. [#1491][] (@victorlin)
 * Added a default color for the "Asia" region that will be used in `augur export` is no custom colors are provided. [#1490][] (@joverlee521)
 * Added a new sub-command `augur curate apply-record-annotations` to apply user curated annotations to existing fields in a metadata file. Previously, this was available as a `merge-user-metadata` in the nextstrain/ingest repo. [#1495][] (@joverlee521)
+* Added a new sub-command `augur curate abbreviate-authors` to abbreviate lists of authors to "<first author> et al." Previously, this was avaliable as the `transform-authors` script within the nextstrain/ingest repo. [#1483][] (@genehack)
 
 ### Bug Fixes
 
