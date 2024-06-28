@@ -412,9 +412,8 @@ def calc_tree_dates(tree, most_recent_tip_date, tip_date_regex, tip_date_format,
             The root date offset
         [1] : float
             The date of the most recent tip in the tree
-
-    TODO: Time units are taken as years, but days are also common for BEAST analysis
     """
+    # TODO: Time units are taken as years, but days are also common for BEAST analysis
 
     if most_recent_tip_date:
         most_recent_tip = float(most_recent_tip_date)
