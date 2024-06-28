@@ -38,12 +38,12 @@ def parse_beast_tree(data, tipMap, verbose=False):
 
     Parameters
     ----------
-    data : string
+    data : str
         The (really long) line in the NEXUS file beginning with "tree", pruned
         to start at the first "(" character.
     tipMap : dict
         Mapping of tips (as encoded in `data`) to their names
-    verbose : bool, optional (default: false)
+    verbose : bool
         Should output be printed?
 
     Returns
@@ -207,12 +207,12 @@ def parse_nexus(tree_path, treestring_regex=r'tree [A-Za-z\_]+([0-9]+)', verbose
 
     Parameters
     ----------
-    tree_path : string or file handle open for reading
+    tree_path
         The nexus tree file
-    treestring_regex : string
+    treestring_regex : str
         The regex to match the tree string in the nexus file (the really long
         string which typically starts with "tree" and looks similar to a newick tree)
-    verbose : bool, optional (default: False)
+    verbose : bool
         Should output be printed?
 
     Raises
@@ -344,14 +344,14 @@ def find_most_recent_tip(tree, tip_date_regex, tip_date_format, tip_date_delimet
     Parameters
     --------
     tree : :py:class:`Bio.Phylo.BaseTree.Tree`
-    tip_date_regex : string
+    tip_date_regex : str
         The regex used to extract the date (e.g. isolate collection date
         from each tip in the string.
         default: hyphen delimited numbers at the end of tip name
-    tip_date_format : string
+    tip_date_format : str
         The format of the extracted date.
         (e.g. "%Y-%m-%d" goes with "2012-10-30")
-    tip_date_delimeter : string
+    tip_date_delimeter : str
         The delimeter in `tip_date_format`
 
     Raises
@@ -400,13 +400,10 @@ def calc_tree_dates(tree, most_recent_tip_date, tip_date_regex, tip_date_format,
     Parameters
     --------
     tree : :py:class:`Bio.Phylo.BaseTree.Tree`
-    # time_units : string
-    # tip_date : null | string
-    # most_recent_tip_data_fmt : string {"regex" | "decimal"}
-    most_recent_tip_date: numeric
-    tip_date_regex: string
-    tip_date_format: string
-    tip_date_delimeter: string
+    most_recent_tip_date: float
+    tip_date_regex: str
+    tip_date_format: str
+    tip_date_delimeter: str
 
     Returns
     --------
