@@ -4,7 +4,7 @@
 
 ### Features
 
-* Added a new sub-command `augur curate apply-geolocation-rules` to apply user curated geolocation rules to the geolocation fields in a metadata file. Previously, this was available as a script script within the nextstrain/ingest repo. [#1491][] (@victorlin)
+* Added a new sub-command `augur curate apply-geolocation-rules` to apply user curated geolocation rules to the geolocation fields in a metadata file. Previously, this was available as a script within the nextstrain/ingest repo. [#1491][] (@victorlin)
 * Added a default color for the "Asia" region that will be used in `augur export` is no custom colors are provided. [#1490][] (@joverlee521)
 
 ### Bug Fixes
