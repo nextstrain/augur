@@ -49,9 +49,8 @@ def parse_beast_tree(data, tipMap, verbose=False):
     Returns
     -------
     :py:class:`Bio.Phylo.Newick.Clade`
-
-    Author: Gytis Dudas
     """
+    # Author: Gytis Dudas
 
     i=0 ## is an adjustable index along the tree string, it is incremented to advance through the string
     stored_i=None ## store the i at the end of the loop, to make sure we haven't gotten stuck somewhere in an infinite loop
@@ -224,9 +223,8 @@ def parse_nexus(tree_path, treestring_regex=r'tree [A-Za-z\_]+([0-9]+)', verbose
     -------
     :py:class:`Bio.Phylo.BaseTree.Tree`
         A tree with BEAST attrs set on each node (as applicable)
-
-    Author: Gytis Dudas
     """
+    # Author: Gytis Dudas
 
     tipFlag=False
     tips={}
@@ -363,9 +361,8 @@ def find_most_recent_tip(tree, tip_date_regex, tip_date_format, tip_date_delimet
     -------
     float
         The date of the most recent tip in the tree in decimal format
-
-    Author: Gytis Dudas
     """
+    # Author: Gytis Dudas
 
     def decimalDate(date, date_fmt, variable=False):
         """ Converts calendar dates in specified format to decimal date. """
@@ -495,9 +492,9 @@ def compute_entropies_for_discrete_traits(tree):
     ----------
     tree : :py:class:`Bio.Phylo.BaseTree.Tree`
         BEAST traits are set as key-value pairs on node.attrs
-
-    Author: James Hadfield
     """
+    # Author: James Hadfield
+
     alphabets = defaultdict(list) ## store alphabets
     for clade in tree.find_clades(): ## iterate over branches
         for attr in [key for key in clade.attrs if isinstance(clade.attrs[key], dict)]: ## iterate over branch attributes
