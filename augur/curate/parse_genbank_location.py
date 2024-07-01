@@ -1,59 +1,86 @@
-#!/usr/bin/env python3
 """
-Parses GenBank's 'location' field of the NDJSON record from stdin to 3 separate
-fields: 'country', 'division', and 'location'. Checks that a record is from
-GenBank by verifying that the 'database' field has a value of "GenBank" or "RefSeq".
+Parses GenBank's 'location' field of the NDJSON record to 3 separate
+fields: 'country', 'division', and 'location'.
 
-Outputs the modified record to stdout.
+Checks that a record is from GenBank by verifying that the 'database'
+field has a value of "GenBank" or "RefSeq".
 """
-import json
-from sys import stdin, stderr, stdout
+
+import argparse
+from typing import Generator, List
+from augur.io.print import print_err
+from augur.utils import first_line
 
 
-def parse_location(record: dict) -> dict:
-    # Expected pattern for the location field is "<country_value>[:<region>][, <locality>]"
+def parse_location(
+    record: dict,
+    location_field_name: str,
+) -> dict:
+    # Expected pattern for the location field is
+    # "<country_value>[:<region>][, <locality>]"
+    #
     # See GenBank docs for their "country" field:
     # https://www.ncbi.nlm.nih.gov/genbank/collab/country/
-    location_field = record.get("location", "")
+    location_field = record.get(location_field_name, "")
     if not location_field:
-        print(
-            "`transform-genbank-location` requires a `location` field; this record does not have one.",
-            file=stderr,
+        print_err(
+            f"`parse-genbank-location` requires a `{location_field_name}` field; this record does not have one.",
         )
         # bail early because we're not gonna make any changes
         return record
 
-    geographic_data = location_field.split(':')
+    geographic_data = location_field.split(":")
 
     country = geographic_data[0]
-    division = ''
-    location = ''
+    division = ""
+    location = ""
 
     if len(geographic_data) == 2:
-        division , _ , location = geographic_data[1].partition(',')
+        division, _, location = geographic_data[1].partition(",")
 
-    record['country'] = country.strip()
-    record['division'] = division.strip()
-    record['location'] = location.strip()
+    record["country"] = country.strip()
+    record["division"] = division.strip()
+    record["location"] = location.strip()
 
     return record
 
 
-if __name__ == '__main__':
+def register_parser(
+    parent_subparsers: argparse._SubParsersAction,
+) -> argparse._SubParsersAction:
+    parser = parent_subparsers.add_parser(
+        "parse-genbank-location",
+        parents=[parent_subparsers.shared_parser],  # type: ignore
+        help=first_line(__doc__),
+    )
 
-    for record in stdin:
-        record = json.loads(record)
+    parser.add_argument(
+        "--location-field",
+        default="geo_loc_name",
+        help="The field containing the location, "
+        + "in the format `<geo_loc_name>[:<region>][, <locality>]`",
+    )
 
-        database = record.get('database', '')
-        if database in {'GenBank', 'RefSeq'}:
-            parse_location(record)
+    return parser
+
+
+def run(
+    args: argparse.Namespace,
+    records: List[dict],
+) -> Generator[dict, None, None]:
+    for record in records:
+        database = record.get("database", "")
+        if database in {"GenBank", "RefSeq"}:
+            parse_location(
+                record,
+                args.location_field,
+            )
         else:
             if database:
                 error_msg = f"""Database value of {database} not supported for `transform-genbank-location`; must be "GenBank" or "RefSeq"."""
             else:
                 error_msg = "Record must contain `database` field to use `transform-genbank-location.`"
 
-            print(error_msg, file=stderr)
+            print_err(error_msg)
 
-        json.dump(record, stdout, allow_nan=False, indent=None, separators=',:')
-        print()
+        yield record
