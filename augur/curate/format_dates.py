@@ -117,6 +117,10 @@ def format_date(date_string, expected_formats):
 
 
     >>> expected_formats = ['%Y', '%Y-%m', '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ', '%m-%d']
+    >>> format_date("", expected_formats)
+    'XXXX-XX-XX'
+    >>> format_date("  ", expected_formats)
+    'XXXX-XX-XX'
     >>> format_date("01-01", expected_formats)
     'XXXX-XX-XX'
     >>> format_date("2020", expected_formats)
@@ -132,6 +136,10 @@ def format_date(date_string, expected_formats):
     >>> format_date("2020-01-15T00:00:00Z", expected_formats)
     '2020-01-15'
     """
+
+    date_string = date_string.strip()
+    if date_string == '':
+        return 'XXXX-XX-XX'
 
     for date_format in expected_formats:
         try:
@@ -180,7 +188,9 @@ def run(args, records):
         for field in args.date_fields:
             date_string = record.get(field)
 
-            if not date_string:
+            # TODO: This should raise an error if the expected date field does
+            # not exist in the the record
+            if date_string is None:
                 continue
 
             formatted_date_string = format_date(date_string, args.expected_date_formats)

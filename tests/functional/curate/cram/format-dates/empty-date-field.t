@@ -2,19 +2,16 @@ Setup
 
   $ export AUGUR="${AUGUR:-$TESTDIR/../../../../../bin/augur}"
 
-Test empty date value.
-This currently has the unexpected behavior of returning the empty string.
+Test empty date value, which should be returned as a fully masked date.
 
   $ echo '{"record": 1, "date": ""}' \
   >   | ${AUGUR} curate format-dates \
   >     --date-fields "date"
-  {"record": 1, "date": ""}
+  {"record": 1, "date": "XXXX-XX-XX"}
 
-Test whitespace only date value.
-This currently raises an error.
+Test whitespace only date value, which should be returned as a fully masked date.
 
   $ echo '{"record": 1, "date": "  "}' \
   >   | ${AUGUR} curate format-dates \
   >     --date-fields "date"
-  ERROR: Unable to format date string '  ' in field 'date' of record 0.
-  [2]
+  {"record": 1, "date": "XXXX-XX-XX"}
