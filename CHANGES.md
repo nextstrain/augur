@@ -9,6 +9,8 @@
 * Added a new sub-command `augur curate apply-record-annotations` to apply user curated annotations to existing fields in a metadata file. Previously, this was available as a `merge-user-metadata` in the nextstrain/ingest repo. [#1495][] (@joverlee521)
 * Added a new sub-command `augur curate abbreviate-authors` to abbreviate lists of authors to "<first author> et al." Previously, this was avaliable as the `transform-authors` script within the nextstrain/ingest repo. [#1483][] (@genehack)
 * Added a new sub-command `augur curate parse-genbank-location` to parse the `geo_loc_name` field from GenBank reconds. Previously, this was available as the `translate-genbank-location` script within the nextstrain/ingest repo. [#1485][] (@genehack)
+* curate format-dates: Added defaults to `--expected-date-formats` so that ISO 8601 dates (`%Y-%m-%d`) and its various masked forms (e.g. `%Y-XX-XX`) are automatically parsed by the command. [#1501][] (@joverlee521)
+
 ### Bug Fixes
 
 * filter: Improve speed of checking duplicates in metadata, especially for large files. [#1466][] (@victorlin)
@@ -19,6 +21,7 @@
 [#1491]: https://github.com/nextstrain/augur/pull/1491
 [#1493]: https://github.com/nextstrain/augur/pull/1493
 [#1495]: https://github.com/nextstrain/augur/pull/1495
+[#1501]: https://github.com/nextstrain/augur/pull/1501
 
 ## 24.4.0 (15 May 2024)
 
