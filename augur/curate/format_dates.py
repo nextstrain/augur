@@ -188,10 +188,8 @@ def run(args, records):
         for field in args.date_fields:
             date_string = record.get(field)
 
-            # TODO: This should raise an error if the expected date field does
-            # not exist in the the record
             if date_string is None:
-                continue
+                raise AugurError(f"Expected date field {field!r} not found in record {record_id!r}.")
 
             formatted_date_string = format_date(date_string, args.expected_date_formats)
             if formatted_date_string is None:
