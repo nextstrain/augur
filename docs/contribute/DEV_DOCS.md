@@ -49,7 +49,7 @@ This section describes the different types of tests, how to write them, how to r
 
 #### Overview
 
-We encourage keeping tests up to date and covered for **any** code contribution.
+We encourage keeping tests up to date and covered for **any** code contribution. Please add a note in your PR if you need help with adding tests.
 
 Tests consist of:
 
