@@ -69,18 +69,8 @@ def run(
     records: List[dict],
 ) -> Generator[dict, None, None]:
     for record in records:
-        database = record.get("database", "")
-        if database in {"GenBank", "RefSeq"}:
-            parse_location(
-                record,
-                args.location_field,
-            )
-        else:
-            if database:
-                error_msg = f"""Database value of {database} not supported for `transform-genbank-location`; must be "GenBank" or "RefSeq"."""
-            else:
-                error_msg = "Record must contain `database` field to use `transform-genbank-location.`"
-
-            print_err(error_msg)
-
+        parse_location(
+            record,
+            args.location_field,
+        )
         yield record
