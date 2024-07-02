@@ -167,7 +167,7 @@ def convert_tree_to_json_structure(node, metadata, get_div, div=0):
     node_struct = {'name': node.name, 'node_attrs': {}, 'branch_attrs': {}}
 
     if get_div is not None: # Store the (cumulative) observed divergence prior to this node
-        node_struct["node_attrs"]["div"] = div
+        node_struct["node_attrs"]["div"] = format_number(div)
 
     if node.clades:
         node_struct["children"] = []
@@ -848,7 +848,7 @@ def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
             raw_data["num_date"] = raw_data["numdate"]
             del raw_data["numdate"]
         if is_valid(raw_data.get("num_date", None)): # it's ok not to have temporal information
-            node["node_attrs"]["num_date"] = {"value": raw_data["num_date"]}
+            node["node_attrs"]["num_date"] = {"value": format_number(raw_data["num_date"])}
             node["node_attrs"]["num_date"].update(attr_confidence(node["name"], raw_data, "num_date"))
 
     def _transfer_url_accession(node, raw_data):
@@ -865,8 +865,9 @@ def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
         exclude_list = ["gt", "num_date", "author"] # exclude special cases already taken care of
         trait_keys = trait_keys.difference(exclude_list)
         for key in trait_keys:
-            if is_valid(raw_data.get(key, None)):
-                node["node_attrs"][key] = {"value": raw_data[key]}
+            value = raw_data.get(key, None)
+            if is_valid(value):
+                node["node_attrs"][key] = {"value": format_number(value) if is_numeric(value) else value}
                 node["node_attrs"][key].update(attr_confidence(node["name"], raw_data, key))
 
     def _transfer_author_data(node):
