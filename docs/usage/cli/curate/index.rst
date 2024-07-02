@@ -16,8 +16,8 @@ We will continue to add more subcommands as we identify other common data curati
 .. toctree::
     :maxdepth: 1
 
-    normalize-strings
-    titlecase
-    format-dates
     passthru
+    normalize-strings
+    format-dates
+    titlecase
 
