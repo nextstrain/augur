@@ -23,7 +23,9 @@ If applicable, add:
 Please add a note if you need help with adding tests.
 -->
 
-- [ ] Checks pass
-- [ ] If making user-facing changes, add a message in [CHANGES.md](https://github.com/nextstrain/augur/blob/HEAD/CHANGES.md) summarizing the changes in this PR
+- [ ] Automated checks pass
+- [ ] [Check][1] if you need to add a changelog message
+
+[1]: https://github.com/nextstrain/augur/blob/-/docs/contribute/DEV_DOCS.md#updating-the-changelog
 
 <!-- 🙌 Thank you for contributing to Nextstrain! ✨ -->
