@@ -314,6 +314,19 @@ The documentation source-files are located in `./docs`, with `./docs/index.rst` 
 Each subsection of the documentation is a subdirectory inside `./docs`.
 For instance, the tutorials are all found in `./docs/tutorials` and are included in the documentation website via the directive in `./docs/index.rst`.
 
+### When to update
+
+Docs should be updated any time a new Python file is added or updated. Docs are
+largely generated from the Python file contents such as docstrings, but each
+Python file must be accompanied by at least one corresponding reStructuredText
+file in order to render the pages.
+
+- If a new Python file is added, a new reStructuredText file should be added
+  under `docs/api/`.
+- If the new Python file represents a subcommand of `augur`, a new
+  reStructuredText file should be added under `docs/usage/cli/` in addition to
+  the new file under `docs/api/`.
+
 ### Building documentation
 
 Building the documentation locally is useful to test changes.
