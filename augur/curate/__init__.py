@@ -5,6 +5,7 @@ import argparse
 import sys
 from collections import deque
 from textwrap import dedent
+from typing import Iterable, Set
 
 from augur.argparse_ import ExtendOverwriteDefault, add_command_subparsers
 from augur.errors import AugurError
@@ -120,6 +121,40 @@ def register_parser(parent_subparsers):
     return parser
 
 
+def validate_records(records: Iterable[dict], is_input: bool) -> Iterable[dict]:
+    """
+    Validate that the provided *records* all have the same fields.
+    Uses the keys of the first record to check against all other records.
+
+    Parameters
+    ----------
+    records: iterable of dict
+
+    is_input: bool
+        Whether the provided records come directly from user provided input
+    """
+    error_message = "Records do not have the same fields! "
+    if is_input:
+        error_message += "Please check your input data has the same fields."
+    else:
+        # Hopefully users should not run into this error as it means we are
+        # not uniformly adding/removing fields from records
+        error_message += dedent("""\
+            Something unexpected happened during the augur curate command.
+            To report this, please open a new issue including the original command:
+                <https://github.com/nextstrain/augur/issues/new/choose>
+            """)
+
+    first_record_keys: Set[str] = set()
+    for idx, record in enumerate(records):
+        if idx == 0:
+            first_record_keys.update(record.keys())
+        else:
+            if set(record.keys()) != first_record_keys:
+                raise AugurError(error_message)
+        yield record
+
+
 def run(args):
     # Print help if no subcommands are used
     if not getattr(args, SUBCOMMAND_ATTRIBUTE, None):
@@ -177,25 +212,31 @@ def run(args):
             input files can be provided via the command line options `--metadata` and `--fasta`.
             See the command's help message for more details."""))
 
+    # Validate records have the same input fields
+    validated_input_records = validate_records(records, True)
+
     # Run subcommand to get modified records
-    modified_records = getattr(args, SUBCOMMAND_ATTRIBUTE).run(args, records)
+    modified_records = getattr(args, SUBCOMMAND_ATTRIBUTE).run(args, validated_input_records)
+
+    # Validate modified records have the same output fields
+    validated_output_records = validate_records(modified_records, False)
 
     # Output modified records
     # First output FASTA, since the write fasta function yields the records again
     # and removes the sequences from the records
     if args.output_fasta:
-        modified_records = write_records_to_fasta(
-            modified_records,
+        validated_output_records = write_records_to_fasta(
+            validated_output_records,
             args.output_fasta,
             args.output_id_field,
             args.output_seq_field)
 
     if args.output_metadata:
-        write_records_to_tsv(modified_records, args.output_metadata)
+        write_records_to_tsv(validated_output_records, args.output_metadata)
 
     if not (args.output_fasta or args.output_metadata):
-        dump_ndjson(modified_records)
+        dump_ndjson(validated_output_records)
     else:
         # Exhaust generator to ensure we run through all records
         # when only a FASTA output is requested but not a metadata output
-        deque(modified_records, maxlen=0)
+        deque(validated_output_records, maxlen=0)
