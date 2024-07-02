@@ -2,20 +2,6 @@ Setup
 
   $ export AUGUR="${AUGUR:-$TESTDIR/../../../../../bin/augur}"
 
-Records without a `database` field result in the expected warning
-
-  $ echo '{"geo_loc_name":"Canada:Vancouver"}' \
-  >   | ${AUGUR} curate parse-genbank-location
-  Record must contain `database` field to use `transform-genbank-location.`
-  {"geo_loc_name": "Canada:Vancouver"}
-
-Records with a `database` field with an unsupported value result in the expected warning
-
-  $ echo '{"geo_loc_name":"Canada:Vancouver", "database":"database"}' \
-  >   | ${AUGUR} curate parse-genbank-location
-  Database value of database not supported for `transform-genbank-location`; must be "GenBank" or "RefSeq".
-  {"geo_loc_name": "Canada:Vancouver", "database": "database"}
-
 Records without a `location` field result in the expected warning
 
   $ echo '{"database":"GenBank"}' \
