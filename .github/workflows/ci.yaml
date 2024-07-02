@@ -33,7 +33,7 @@ jobs:
         # Sync this with pythonVersion in pyrightconfig.json
         python-version: '3.8'
     - uses: actions/checkout@v4
-    - run: npx pyright
+    - run: npx pyright --stats
 
   pytest-cram:
     name: test (python=${{ matrix.python-version }} biopython=${{ matrix.biopython-version || 'latest' }})
