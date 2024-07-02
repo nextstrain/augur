@@ -14,6 +14,17 @@ on:
   workflow_dispatch:
 
 jobs:
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-python@v5
+      with:
+        # Types must be written for the lowest compatible Python version
+        python-version: '3.8'
+    - uses: actions/checkout@v4
+    - run: pip install .[dev]
+    - run: mypy
+
   pytest-cram:
     name: test (python=${{ matrix.python-version }} biopython=${{ matrix.biopython-version || 'latest' }})
     runs-on: ubuntu-latest
