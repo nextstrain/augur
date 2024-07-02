@@ -25,6 +25,16 @@ jobs:
     - run: pip install .[dev]
     - run: mypy
 
+  pyright:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-python@v5
+      with:
+        # Sync this with pythonVersion in pyrightconfig.json
+        python-version: '3.8'
+    - uses: actions/checkout@v4
+    - run: npx pyright
+
   pytest-cram:
     name: test (python=${{ matrix.python-version }} biopython=${{ matrix.biopython-version || 'latest' }})
     runs-on: ubuntu-latest
