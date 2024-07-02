@@ -25,7 +25,9 @@ Please add a note if you need help with adding tests.
 
 - [ ] Automated checks pass
 - [ ] [Check][1] if you need to add a changelog message
+- [ ] [Check][2] if you need to add tests
 
 [1]: https://github.com/nextstrain/augur/blob/-/docs/contribute/DEV_DOCS.md#updating-the-changelog
+[2]: https://github.com/nextstrain/augur/blob/-/docs/contribute/DEV_DOCS.md#testing
 
 <!-- 🙌 Thank you for contributing to Nextstrain! ✨ -->
