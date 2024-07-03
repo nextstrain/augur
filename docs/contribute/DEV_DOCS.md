@@ -337,7 +337,7 @@ To update the developer API documentation after adding or removing an augur subm
 autogenerate a new API file as follows.
 
 ```bash
-sphinx-apidoc -T -f -MeT -o docs/api/developer augur
+sphinx-apidoc -fMeT -o docs/api/developer augur
 ```
 
 To make doc rebuilds faster, Sphinx caches built documentation by default,
