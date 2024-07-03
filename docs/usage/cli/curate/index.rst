@@ -20,4 +20,5 @@ We will continue to add more subcommands as we identify other common data curati
     normalize-strings
     format-dates
     titlecase
+    apply-geolocation-rules
 
