@@ -188,3 +188,23 @@ jobs:
     with:
       docs-directory: docs/
       pip-install-target: .[dev]
+
+  check-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+
+      - uses: actions/checkout@v4
+
+      - run: pip install .[dev]
+
+      - run: ./devel/generate-developer-api-docs
+
+      - name: Check for changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            git add .
+            git diff --staged >&2
+            echo "There are changes to the developer API docs. Please regenerate, commit, and push the changes." >&2
+            exit 1
+          fi
