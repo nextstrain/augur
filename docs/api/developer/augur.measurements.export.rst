@@ -1,5 +1,5 @@
-augur.measurements.export
-=========================
+augur.measurements.export module
+================================
 
 .. automodule:: augur.measurements.export
    :members:

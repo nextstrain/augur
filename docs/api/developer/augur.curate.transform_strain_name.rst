@@ -1,7 +1,7 @@
-augur.util\_support.node\_data\_file module
+augur.curate.transform\_strain\_name module
 ===========================================
 
-.. automodule:: augur.util_support.node_data_file
+.. automodule:: augur.curate.transform_strain_name
    :members:
    :undoc-members:
    :show-inheritance:

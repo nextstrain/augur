@@ -1,5 +1,5 @@
-augur.utils
-===========
+augur.utils module
+==================
 
 .. automodule:: augur.utils
    :members:

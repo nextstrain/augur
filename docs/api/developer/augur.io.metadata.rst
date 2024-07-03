@@ -1,5 +1,5 @@
-augur.io.metadata
-=================
+augur.io.metadata module
+========================
 
 .. automodule:: augur.io.metadata
    :members:

@@ -1,7 +1,7 @@
-augur.export\_v1 module
+augur.io.strains module
 =======================
 
-.. automodule:: augur.export_v1
+.. automodule:: augur.io.strains
    :members:
    :undoc-members:
    :show-inheritance:

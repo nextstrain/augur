@@ -1,7 +1,7 @@
-augur.export\_v1 module
+augur.argparse\_ module
 =======================
 
-.. automodule:: augur.export_v1
+.. automodule:: augur.argparse_
    :members:
    :undoc-members:
    :show-inheritance:

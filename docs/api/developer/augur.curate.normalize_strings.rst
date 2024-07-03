@@ -1,7 +1,7 @@
-augur.io.shell\_command\_runner module
+augur.curate.normalize\_strings module
 ======================================
 
-.. automodule:: augur.io.shell_command_runner
+.. automodule:: augur.curate.normalize_strings
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,7 +1,7 @@
-augur.util\_support.node\_data\_reader module
+augur.curate.apply\_geolocation\_rules module
 =============================================
 
-.. automodule:: augur.util_support.node_data_reader
+.. automodule:: augur.curate.apply_geolocation_rules
    :members:
    :undoc-members:
    :show-inheritance:

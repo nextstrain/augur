@@ -1,7 +1,7 @@
-augur.filter.validate\_arguments module
+augur.curate.abbreviate\_authors module
 =======================================
 
-.. automodule:: augur.filter.validate_arguments
+.. automodule:: augur.curate.abbreviate_authors
    :members:
    :undoc-members:
    :show-inheritance:

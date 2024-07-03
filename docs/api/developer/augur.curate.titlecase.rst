@@ -1,7 +1,7 @@
-augur.sequence\_traits module
+augur.curate.titlecase module
 =============================
 
-.. automodule:: augur.sequence_traits
+.. automodule:: augur.curate.titlecase
    :members:
    :undoc-members:
    :show-inheritance:

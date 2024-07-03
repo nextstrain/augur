@@ -1,7 +1,7 @@
-augur.sequence\_traits module
+augur.filter.constants module
 =============================
 
-.. automodule:: augur.sequence_traits
+.. automodule:: augur.filter.constants
    :members:
    :undoc-members:
    :show-inheritance:

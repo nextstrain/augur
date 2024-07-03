@@ -1,5 +1,5 @@
-augur.translate
-===============
+augur.translate module
+======================
 
 .. automodule:: augur.translate
    :members:

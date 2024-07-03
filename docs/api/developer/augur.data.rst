@@ -1,7 +1,7 @@
-augur.align module
+augur.data package
 ==================
 
-.. automodule:: augur.align
+.. automodule:: augur.data
    :members:
    :undoc-members:
    :show-inheritance:

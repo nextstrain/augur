@@ -1,5 +1,5 @@
-augur.io.sequences
-==================
+augur.io.sequences module
+=========================
 
 .. automodule:: augur.io.sequences
    :members:

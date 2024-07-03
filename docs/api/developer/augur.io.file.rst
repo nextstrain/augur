@@ -1,5 +1,5 @@
-augur.io.file
-=============
+augur.io.file module
+====================
 
 .. automodule:: augur.io.file
    :members:
