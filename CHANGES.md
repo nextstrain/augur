@@ -5,6 +5,7 @@
 ### Major changes
 
 * curate format-dates: Raises an error if provided date field does not exist in records. [#1509][] (@joverlee521)
+* All curate subcommands: Verifies all input records have the same fields and raises an error if a record does not have matching fields. [#1518][] (@joverlee521)
 
 ### Features
 
@@ -29,6 +30,7 @@
 [#1495]: https://github.com/nextstrain/augur/pull/1495
 [#1501]: https://github.com/nextstrain/augur/pull/1501
 [#1509]: https://github.com/nextstrain/augur/pull/1509
+[#1518]: https://github.com/nextstrain/augur/pull/1518
 
 ## 24.4.0 (15 May 2024)
 
