@@ -21,4 +21,5 @@ We will continue to add more subcommands as we identify other common data curati
     format-dates
     titlecase
     apply-geolocation-rules
+    apply-record-annotations
 
