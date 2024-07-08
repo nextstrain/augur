@@ -24,4 +24,5 @@ We will continue to add more subcommands as we identify other common data curati
     apply-record-annotations
     abbreviate-authors
     parse-genbank-location
+    transform-strain-name
 
