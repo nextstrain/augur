@@ -226,6 +226,7 @@ jobs:
           if [[ -n $(git status --porcelain) ]]; then
             git add .
             git diff --staged >&2
-            echo "There are changes to the developer API docs. Please regenerate, commit, and push the changes." >&2
+            echo "There are changes that affect the developer API docs. Please update: <https://github.com/nextstrain/augur/blob/-/docs/contribute/DEV_DOCS.md#regenerating-developer-api-docs>" >&2
+            echo "If there are changes to the Augur CLI, please manually adjust files under 'docs/usage/cli/'." >&2
             exit 1
           fi
