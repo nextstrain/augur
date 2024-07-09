@@ -37,7 +37,7 @@ def create_shared_parser():
     that are intended to be shared across the subcommands.
 
     Note that any options strings used here cannot be used in individual subcommand
-    subparsers unless the subparser specifically sets `conflict_handler='resolve'`²,
+    subparsers unless the subparser specifically sets `conflict_handler='resolve'` ²,
     then the subparser option will override the option defined here.
 
     Based on https://stackoverflow.com/questions/23296695/permit-argparse-global-flags-after-subcommand/23296874#23296874

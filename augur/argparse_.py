@@ -40,7 +40,7 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
         The special subparsers action object created by the parent parser
         via `parser.add_subparsers()`.
 
-    commands: list[ModuleType]
+    commands: list[types.ModuleType]
         A list of modules that are commands that require their own subparser.
         Each module is required to have a `register_parser` function to add its own
         subparser and arguments.

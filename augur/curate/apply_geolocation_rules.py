@@ -15,6 +15,9 @@ def load_geolocation_rules(geolocation_rules_file):
     """
     Loads the geolocation rules from the provided *geolocation_rules_file*.
     Returns the rules as a dict:
+
+.. code-block:: text
+
     {
         regions: {
             countries: {

@@ -1,5 +1,5 @@
-augur.sequence\_traits
-======================
+augur.sequence\_traits module
+=============================
 
 .. automodule:: augur.sequence_traits
    :members:

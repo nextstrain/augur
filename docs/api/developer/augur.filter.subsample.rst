@@ -1,5 +1,5 @@
-augur.filter.subsample
-======================
+augur.filter.subsample module
+=============================
 
 .. automodule:: augur.filter.subsample
    :members:

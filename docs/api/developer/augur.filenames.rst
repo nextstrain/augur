@@ -1,5 +1,5 @@
-augur.filenames
-===============
+augur.filenames module
+======================
 
 .. automodule:: augur.filenames
    :members:

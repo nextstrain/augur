@@ -357,11 +357,11 @@ Sphinx can build other formats, such as epub. To see other available formats, ru
 make -C docs help
 ```
 
-To update the API documentation after adding or removing an augur submodule,
+To update the developer API documentation after adding or removing an augur submodule,
 autogenerate a new API file as follows.
 
 ```bash
-sphinx-apidoc -T -f -MeT -o docs/api augur
+./devel/generate-developer-api-docs
 ```
 
 To make doc rebuilds faster, Sphinx caches built documentation by default,

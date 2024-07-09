@@ -1,7 +1,7 @@
-augur.import.beast
+augur.data package
 ==================
 
-.. automodule:: augur.import_.beast
+.. automodule:: augur.data
    :members:
    :undoc-members:
    :show-inheritance:

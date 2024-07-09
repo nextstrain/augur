@@ -1,12 +1,16 @@
-augur.util\_support
-===================
+augur.util\_support package
+===========================
 
 .. automodule:: augur.util_support
    :members:
    :undoc-members:
    :show-inheritance:
 
+Submodules
+----------
+
 .. toctree::
+   :maxdepth: 4
 
    augur.util_support.color_parser
    augur.util_support.color_parser_line

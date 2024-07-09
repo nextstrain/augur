@@ -1,5 +1,5 @@
-augur.types
-===========
+augur.types module
+==================
 
 .. automodule:: augur.types
    :members:

@@ -1,5 +1,5 @@
-augur.dates.errors
-==================
+augur.dates.errors module
+=========================
 
 .. automodule:: augur.dates.errors
    :members:

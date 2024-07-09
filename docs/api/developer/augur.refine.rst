@@ -1,5 +1,5 @@
-augur.refine
-============
+augur.refine module
+===================
 
 .. automodule:: augur.refine
    :members:

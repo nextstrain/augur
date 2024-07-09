@@ -1,5 +1,5 @@
-augur.titers
-============
+augur.titers module
+===================
 
 .. automodule:: augur.titers
    :members:

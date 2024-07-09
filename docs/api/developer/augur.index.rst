@@ -1,5 +1,5 @@
-augur.index
-===========
+augur.index module
+==================
 
 .. automodule:: augur.index
    :members:
