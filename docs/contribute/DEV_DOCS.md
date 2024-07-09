@@ -49,7 +49,7 @@ This section describes the different types of tests, how to write them, how to r
 
 #### Overview
 
-We encourage keeping tests up to date and covered for **any** code contribution.
+We encourage keeping tests up to date and covered for **any** code contribution. Please add a note in your PR if you need help with adding tests.
 
 Tests consist of:
 
@@ -158,6 +158,20 @@ Instead of removing a feature from one release to the next, consider first depre
 by adding a warning output and a [deprecation entry](../../DEPRECATED.md). This allows a period of
 transition time where both the deprecated feature and a suggested alternative can be adopted.
 
+### Updating the changelog
+
+The [changelog](../../CHANGES.md) should be updated in every pull request that
+makes a functional change to the behavior of a command or improves
+documentation. Changelog entries are separated into three categories to define
+the upcoming release number:
+
+1. Major Changes
+2. Features
+3. Bug Fixes
+
+Documentation changes can be listed under "bug fixes" since they do not impact
+functionality but are still good note for users.
+
 ### Releasing
 
 Versions for this project, Augur, from 3.0.0 onwards aim to follow the
@@ -180,9 +194,9 @@ Versions for this project, Augur, from 3.0.0 onwards aim to follow the
     > [!NOTE]
     > If releasing a major version, consider removing a [deprecated feature](../../DEPRECATED.md).
 
-##### 2. Curate [CHANGES.md](../../CHANGES.md)
+##### 2. Curate changelog entries
 
-1. Go through each PR and note the PRs that didn't provide an update to [CHANGES.md](../../CHANGES.md).
+1. Go through each PR and note the PRs that didn't provide a [changelog update](#updating-the-changelog).
 2. For the PRs missing a changelog update, add an entry summarizing the changes in the PR.
     - Keep headers and formatting consistent with the rest of the file.
 3. Open a PR with these changes. If changes are clear and you feel confident in the release notes, merge without PR approval. Otherwise, or if unsure, add [nextstrain/core](https://github.com/orgs/nextstrain/teams/core) as a reviewer and wait for approval before proceeding with the release.
@@ -296,6 +310,19 @@ Human-readable augur and augur subcommand documentation is written using a Sphin
 The documentation source-files are located in `./docs`, with `./docs/index.rst` being the main entry point.
 Each subsection of the documentation is a subdirectory inside `./docs`.
 For instance, the tutorials are all found in `./docs/tutorials` and are included in the documentation website via the directive in `./docs/index.rst`.
+
+### When to update
+
+Docs should be updated any time a new Python file is added or updated. Docs are
+largely generated from the Python file contents such as docstrings, but each
+Python file must be accompanied by at least one corresponding reStructuredText
+file in order to render the pages.
+
+- If a new Python file is added, a new reStructuredText file should be added
+  under `docs/api/`.
+- If the new Python file represents a subcommand of `augur`, a new
+  reStructuredText file should be added under `docs/usage/cli/` in addition to
+  the new file under `docs/api/`.
 
 ### Building documentation
 
