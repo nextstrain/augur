@@ -11,7 +11,7 @@ import numbers
 import math
 import re
 from Bio import Phylo
-from typing import Dict, List, Union, TypedDict, Any
+from typing import Dict, Union, TypedDict, Any, Tuple
 
 from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
@@ -756,7 +756,8 @@ def format_number(n: Union[int, float]) -> Union[int, float]:
 
 
 class ConfidenceNumeric(TypedDict):
-    confidence: List[Union[int,float]]
+    # the python type is a tuple, but when serialised to JSON this is an array
+    confidence: Tuple[Union[int,float], Union[int,float]]
 
 class ConfidenceCategorical(TypedDict):
     confidence: Dict[str,Union[int,float]]
@@ -784,7 +785,7 @@ def attr_confidence(
         if len(conf)!=2:
             warn(f"[confidence] node {node_name!r} specifies {conf_key!r} as a list of {len(conf)} values, not 2. Skipping confidence export.")
             return {}
-        return {"confidence": [format_number(v) for v in conf]}
+        return {"confidence": (format_number(conf[0]), format_number(conf[1]))}
 
     if isinstance(conf, dict):
         entropy = attrs.get(f"{key}_entropy", None)

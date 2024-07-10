@@ -57,14 +57,15 @@ class TestConfidenceExtraction():
 
     @mock.patch("augur.export_v2.warn", no_op)
     def test_confidence_but_no_entropy(self):
-        # array confidences don't need entropy
-        assert {'confidence': [1,2]} == attr_confidence("name", {"key": 1.5, "key_confidence": [1,2]}, "key")
+        # array confidences don't need entropy (and are represented internally as tuples)
+        assert {'confidence': (1,2)} == attr_confidence("name", {"key": 1.5, "key_confidence": [1,2]}, "key")
         # but dict confidences do...
         assert {} == attr_confidence("name", {"key": "foo", "key_confidence": {"foo": 0.99}}, "key")
 
     @mock.patch("augur.export_v2.warn", no_op)
     def test_array_confidence(self):
-        assert {'confidence': [1,2]} == attr_confidence("name", {"key": 1.5, "key_confidence": [1,2]}, "key")
+        # Input JSON array -> python tuple -> exported as JSON Array
+        assert {'confidence': (1,2)} == attr_confidence("name", {"key": 1.5, "key_confidence": [1,2]}, "key")
         # invalid confidence. Warnings suppressed.
         assert {} == attr_confidence("name", {"key": 1.5, "key_confidence": [1,2,3]}, "key")
 
