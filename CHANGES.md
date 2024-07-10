@@ -15,8 +15,8 @@
 * Added a new sub-command `augur curate abbreviate-authors` to abbreviate lists of authors to "<first author> et al." Previously, this was avaliable as the `transform-authors` script within the nextstrain/ingest repo. [#1483][] (@genehack)
 * Added a new sub-command `augur curate parse-genbank-location` to parse the `geo_loc_name` field from GenBank reconds. Previously, this was available as the `translate-genbank-location` script within the nextstrain/ingest repo. [#1485][] (@genehack)
 * curate format-dates: Added defaults to `--expected-date-formats` so that ISO 8601 dates (`%Y-%m-%d`) and its various masked forms (e.g. `%Y-XX-XX`) are automatically parsed by the command. [#1501][] (@joverlee521)
-* Added a new sub-command `augur curate translate-strain-name` to filter strain names based on matching a regular expression. Previously, this was available as the `translate-strain-names` script within the nextstrain/ingest repo. [#1514][] (@genehack)
-* Added a new sub-command `augur curate rename` to rename field / column names. Previously, a similar version was available as the `translate-field-names` script within the nextstrain/ingest repo however the behaviour is slightly changed here. [#1506][] (@jameshadfield)
+* Added a new sub-command `augur curate transform-strain-name` to filter strain names based on matching a regular expression. Previously, this was available as the `transform-strain-names` script within the nextstrain/ingest repo. [#1514][] (@genehack)
+* Added a new sub-command `augur curate rename` to rename field / column names. Previously, a similar version was available as the `transform-field-names` script within the nextstrain/ingest repo however the behaviour is slightly changed here. [#1506][] (@jameshadfield)
 
 ### Bug Fixes
 
