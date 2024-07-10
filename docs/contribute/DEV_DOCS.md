@@ -324,6 +324,15 @@ file in order to render the pages.
   reStructuredText file should be added under `docs/usage/cli/` in addition to
   the new file under `docs/api/`.
 
+### Automatically updating developer API docs
+
+To update the developer API documentation after adding or removing an augur submodule,
+autogenerate a new API file as follows.
+
+```bash
+./devel/generate-developer-api-docs
+```
+
 ### Building documentation
 
 Building the documentation locally is useful to test changes.
@@ -355,13 +364,6 @@ Sphinx can build other formats, such as epub. To see other available formats, ru
 
 ```bash
 make -C docs help
-```
-
-To update the developer API documentation after adding or removing an augur submodule,
-autogenerate a new API file as follows.
-
-```bash
-./devel/generate-developer-api-docs
 ```
 
 To make doc rebuilds faster, Sphinx caches built documentation by default,
