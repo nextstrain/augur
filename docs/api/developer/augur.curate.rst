@@ -20,5 +20,6 @@ Submodules
    augur.curate.normalize_strings
    augur.curate.parse_genbank_location
    augur.curate.passthru
+   augur.curate.rename
    augur.curate.titlecase
    augur.curate.transform_strain_name
