@@ -219,7 +219,7 @@ jobs:
 
       - run: pip install .[dev]
 
-      - run: ./devel/generate-developer-api-docs
+      - run: ./devel/regenerate-developer-api-docs
 
       - name: Check for changes
         run: |

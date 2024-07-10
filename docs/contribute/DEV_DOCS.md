@@ -324,13 +324,13 @@ file in order to render the pages.
   reStructuredText file should be added under `docs/usage/cli/` in addition to
   the new file under `docs/api/`.
 
-### Automatically updating developer API docs
+### Regenerating developer API docs
 
-To update the developer API documentation after adding or removing an augur submodule,
-autogenerate a new API file as follows.
+To regenerate the developer API documentation after adding, renaming, or removing an augur
+submodule, autogenerate a new API file as follows.
 
 ```bash
-./devel/generate-developer-api-docs
+./devel/regenerate-developer-api-docs
 ```
 
 ### Building documentation
