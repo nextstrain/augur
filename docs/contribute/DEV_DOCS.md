@@ -319,10 +319,11 @@ Python file must be accompanied by at least one corresponding reStructuredText
 file in order to render the pages.
 
 - If a new Python file is added, a new reStructuredText file should be added
-  under `docs/api/`.
+  under `docs/api/developer`. This can be done
+  [using a script](#regenerating-developer-api-docs).
 - If the new Python file represents a subcommand of `augur`, a new
   reStructuredText file should be added under `docs/usage/cli/` in addition to
-  the new file under `docs/api/`.
+  the new file under `docs/api/developer`.
 
 ### Regenerating developer API docs
 
