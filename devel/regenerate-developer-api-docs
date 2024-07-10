@@ -1,5 +1,7 @@
 #!/bin/bash
 
+rm -f docs/api/developer/augur.*
+
 sphinx-apidoc \
   --force \
   --module-first \
