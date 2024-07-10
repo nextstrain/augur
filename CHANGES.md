@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 25.0.0 (10 July 2024)
+
 ### Major changes
 
 * curate format-dates: Raises an error if provided date field does not exist in records. [#1509][] (@joverlee521)
