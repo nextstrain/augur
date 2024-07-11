@@ -58,7 +58,7 @@ setuptools.setup(
         "importlib_resources >=5.3.0; python_version < '3.11'",
         "isodate ==0.6.*",
         "jsonschema >=3.0.0, ==3.*",
-        "networkx >= 2.5, ==2.*",
+        "networkx >= 2.5, <4",
         "numpy ==1.*",
         "packaging >=19.2",
         "pandas >=1.0.0, ==1.*",

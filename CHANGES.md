@@ -5,8 +5,10 @@
 ### Features
 
 * Support xopen major version 2. Deprecate v1. Schedule for removal around November 2024. [#1532][] (@corneliusroemer)
+* Support networkx major version 3. [#1534][] (@corneliusroemer)
 
 [#1532]: https://github.com/nextstrain/augur/pull/1532
+[#1534]: https://github.com/nextstrain/augur/pull/1534
 
 ## 25.0.0 (10 July 2024)
 
