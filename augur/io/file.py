@@ -2,9 +2,23 @@ import os
 from contextlib import contextmanager
 from io import IOBase
 from textwrap import dedent
-from xopen import PipedCompressionReader, PipedCompressionWriter, xopen
+
+from xopen import xopen
+
 from augur.errors import AugurError
 
+# Workaround to maintain compatibility with both xopen v1 and v2
+# In some time, we can drop support for xopen v1
+# by removing the try-except block and using
+# _PipedCompressionProgram directly
+try:
+    from xopen import _PipedCompressionProgram as PipedCompressionReader
+    from xopen import _PipedCompressionProgram as PipedCompressionWriter
+except ImportError:
+    from xopen import (  # type: ignore[attr-defined, no-redef]  
+        PipedCompressionReader,
+        PipedCompressionWriter,
+    )
 
 ENCODING = "utf-8"
 
