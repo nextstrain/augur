@@ -8,7 +8,7 @@ from xopen import xopen
 from augur.errors import AugurError
 
 # Workaround to maintain compatibility with both xopen v1 and v2
-# In some time, we can drop support for xopen v1
+# Around November 2024, we shall drop support for xopen v1
 # by removing the try-except block and using
 # _PipedCompressionProgram directly
 try:
