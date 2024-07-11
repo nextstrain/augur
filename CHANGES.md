@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+### Features
+
+* Allow numpy major version 2.*
 
 ## 25.0.0 (10 July 2024)
 
