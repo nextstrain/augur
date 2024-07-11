@@ -2,9 +2,7 @@ import os
 from contextlib import contextmanager
 from io import IOBase
 from textwrap import dedent
-
 from xopen import xopen
-
 from augur.errors import AugurError
 
 # Workaround to maintain compatibility with both xopen v1 and v2
