@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* Support xopen major version 2. Deprecate v1. Schedule for removal around November 2024. [#1532][] (@corneliusroemer)
+
+[#1532]: https://github.com/nextstrain/augur/pull/1532
 
 ## 25.0.0 (10 July 2024)
 
