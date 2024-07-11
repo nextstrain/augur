@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 25.1.0 (11 July 2024)
+
 ### Features
 
 * Support xopen major version 2. Deprecate v1. Schedule for removal around November 2024. [#1532][] (@corneliusroemer)
