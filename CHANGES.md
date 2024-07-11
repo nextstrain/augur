@@ -2,11 +2,16 @@
 
 ## __NEXT__
 
+### Features
+
+* Two new commands, `augur read-file` and `augur write-file`, now allow external programs to do i/o like Augur by piping from/to these new commands.  They provide handling of compression formats and newlines consistent with the rest of Augur. [#1562][] (@tsibley)
+
 ### Bug Fixes
 
 * Embedded newlines in quoted field values of metadata files are now properly handled. [#1561][] (@tsibley)
 
 [#1561]: https://github.com/nextstrain/augur/pull/1561
+[#1562]: https://github.com/nextstrain/augur/pull/1562
 
 
 

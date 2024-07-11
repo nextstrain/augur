@@ -42,6 +42,8 @@ command_strings = [
     "version",
     "import_",
     "measurements",
+    "read_file",
+    "write_file",
 ]
 
 COMMANDS = [importlib.import_module('augur.' + c) for c in command_strings]
