@@ -2,6 +2,12 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* curate parse-genbank-location: Fix a bug where a mix of empty and populated location-field values would result in inconsistent fields in the output NDJSON [#1531][](@genehack)
+
+[#1531]: https://github.com/nextstrain/augur/pull/1531
+
 
 ## 25.1.0 (11 July 2024)
 
@@ -1370,9 +1376,9 @@
 ### Features
 
 * improve testing by
-	* adding a simple shell script to run tests and improving pytest configuration and output [#463][]
-	* adding code coverage reports ([#486][], [#491][]) and integration with codecov.io [#508][]
-	* adding unit tests for align ([#477][]), filter ([#478][], [#479][], [#487][]), utils ([#501][])
+    * adding a simple shell script to run tests and improving pytest configuration and output [#463][]
+    * adding code coverage reports ([#486][], [#491][]) and integration with codecov.io [#508][]
+    * adding unit tests for align ([#477][]), filter ([#478][], [#479][], [#487][]), utils ([#501][])
 * align: reverse complement sequences when necessary using mafft’s autodirection flag [#467][]
 * align: speed up replacement of gaps with “ambiguous” bases [#474][]
 * mask: add support for FASTA input files [#493][]
@@ -1534,9 +1540,9 @@
   [Also part of PR 431](https://github.com/nextstrain/augur/pull/431)
 * traits: Allow input of `--weights` which references a `.tsv` file in the following format:
   ```
-  division	Hubei	10.0
-  division	Jiangxi	1.0
-  division	Chongqing	1.0
+  division  Hubei   10.0
+  division  Jiangxi 1.0
+  division  Chongqing   1.0
   ```
   where these weights represent equilibrium frequencies in the CTMC transition model. We imagine the
   primary use of user-specified weights to correct for strong sampling biases in available data.

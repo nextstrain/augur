@@ -21,8 +21,8 @@ def parse_location(
     #
     # See GenBank docs for their "country" field:
     # https://www.ncbi.nlm.nih.gov/genbank/collab/country/
-    location_field = record.get(location_field_name, "")
-    if not location_field:
+    location_field = record.get(location_field_name, None)
+    if location_field is None:
         print_err(
             f"`parse-genbank-location` requires a `{location_field_name}` field; this record does not have one.",
         )
