@@ -122,7 +122,7 @@ def register_parser(parent_subparsers):
     return parser
 
 
-def validate_records(records: Iterable[dict], is_input: bool) -> Iterable[dict]:
+def validate_records(records: Iterable[dict], subcmd_name: str, is_input: bool) -> Iterable[dict]:
     """
     Validate that the provided *records* all have the same fields.
     Uses the keys of the first record to check against all other records.
@@ -130,6 +130,10 @@ def validate_records(records: Iterable[dict], is_input: bool) -> Iterable[dict]:
     Parameters
     ----------
     records: iterable of dict
+
+    subcmd_name: str
+        The name of the subcommand whose output is being validated; used in
+        error messages displayed to the user.
 
     is_input: bool
         Whether the provided records come directly from user provided input
@@ -140,8 +144,8 @@ def validate_records(records: Iterable[dict], is_input: bool) -> Iterable[dict]:
     else:
         # Hopefully users should not run into this error as it means we are
         # not uniformly adding/removing fields from records
-        error_message += dedent("""\
-            Something unexpected happened during the augur curate command.
+        error_message += dedent(f"""\
+            Something unexpected happened during the augur curate {subcmd_name} command.
             To report this, please open a new issue including the original command:
                 <https://github.com/nextstrain/augur/issues/new/choose>
             """)
@@ -213,14 +217,17 @@ def run(args):
             input files can be provided via the command line options `--metadata` and `--fasta`.
             See the command's help message for more details."""))
 
+    # Get the name of the subcmd being run
+    subcmd_name = args.subcommand
+
     # Validate records have the same input fields
-    validated_input_records = validate_records(records, True)
+    validated_input_records = validate_records(records, subcmd_name, True)
 
     # Run subcommand to get modified records
     modified_records = getattr(args, SUBCOMMAND_ATTRIBUTE).run(args, validated_input_records)
 
     # Validate modified records have the same output fields
-    validated_output_records = validate_records(modified_records, False)
+    validated_output_records = validate_records(modified_records, subcmd_name, False)
 
     # Output modified records
     # First output FASTA, since the write fasta function yields the records again
