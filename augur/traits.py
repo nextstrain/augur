@@ -88,7 +88,8 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
 
             marginal = [(letter_to_state[tt.gtr.alphabet[i]], pdis[i]) for i in range(len(tt.gtr.alphabet))]
             marginal.sort(key=lambda x: x[1], reverse=True) # sort on likelihoods
-            marginal = [(a, b) for a, b in marginal if b > 0.001][:4] #only take stuff over .1% and the top 4 elements
+            # Values are defined for all demes, although many/most will be 0, so only take those over 0.1%
+            marginal = [(a, b) for a, b in marginal if b > 0.001]
             conf = {a:b for a,b in marginal}
             node.__setattr__(field + "_entropy", S)
             node.__setattr__(field + "_confidence", conf)

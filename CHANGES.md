@@ -2,6 +2,13 @@
 
 ## __NEXT__
 
+### Features
+
+* export v2: we now limit numerical precision on floats in the JSON. This should not change how a dataset is displayed / interpreted in Auspice but allows the gzipped & minimised JSON filesize to be reduced by around 30% (dataset-dependent). [#1512][] (@jameshadfield)
+* traits, export v2: `augur traits` now reports all confidence values above 0.1% rather than limiting them to the top 4 results. There is no change in the eventual Auspice dataset as `augur export v2` will still only consider the top 4. [#1512][] (@jameshadfield)
+
+[#1512]: https://github.com/nextstrain/augur/pull/1512
+
 
 ## 25.1.1 (15 July 2024)
 

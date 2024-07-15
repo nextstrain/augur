@@ -8,8 +8,10 @@ import time
 from collections import defaultdict, deque, OrderedDict
 import warnings
 import numbers
+import math
 import re
 from Bio import Phylo
+from typing import Dict, Union, TypedDict, Any, Tuple
 
 from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
@@ -165,7 +167,7 @@ def convert_tree_to_json_structure(node, metadata, get_div, div=0):
     node_struct = {'name': node.name, 'node_attrs': {}, 'branch_attrs': {}}
 
     if get_div is not None: # Store the (cumulative) observed divergence prior to this node
-        node_struct["node_attrs"]["div"] = div
+        node_struct["node_attrs"]["div"] = format_number(div)
 
     if node.clades:
         node_struct["children"] = []
@@ -735,6 +737,78 @@ def set_branch_attrs_on_tree(data_json, branch_attrs):
             _recursively_set_data(child)
     _recursively_set_data(data_json["tree"])
 
+def is_numeric(n:Any) -> bool:
+    # Typing a number is surprisingly hard in python, and `number.Number`
+    # doesn't work nicely with type hints. See <https://stackoverflow.com/a/73186301>
+    return isinstance(n, (int, float))
+
+def format_number(n: Union[int, float]) -> Union[int, float]:
+    if isinstance(n, int) or n==0:
+        return n
+    # We want to use three sig figs for the fractional part of the float, while
+    # preserving all the data in the integral (integer) part. We leverage the
+    # fact that python floats (incl scientific notation) storing the shortest
+    # decimal string that’s guaranteed to round back to x. Note that this means we
+    # drop trailing zeros, so it's not _quite_ sig figs.
+    integral = int(abs(n))
+    significand = math.floor(math.log10(integral))+1 if integral!=0 else 0
+    return float(f"{n:.{significand+3}g}")
+
+
+class ConfidenceNumeric(TypedDict):
+    # the python type is a tuple, but when serialised to JSON this is an array
+    confidence: Tuple[Union[int,float], Union[int,float]]
+
+class ConfidenceCategorical(TypedDict):
+    confidence: Dict[str,Union[int,float]]
+    entropy: float
+
+class EmptyDict(TypedDict):
+    """Empty dict for typing."""
+
+def attr_confidence(
+    node_name: str,
+    attrs: dict,
+    key: str,
+) -> Union[EmptyDict, ConfidenceNumeric, ConfidenceCategorical]:
+    """
+    Extracts and formats the confidence & entropy keys from the provided node-data attrs
+    If there is no confidence-related information an empty dict is returned.
+    If the information appears incorrect / incomplete, a warning is printed and an empty dict returned.
+    """
+    conf_key = f"{key}_confidence"
+    conf = attrs.get(conf_key, None)
+    if conf is None:
+        return {}
+
+    if isinstance(conf, list):
+        if len(conf)!=2:
+            warn(f"[confidence] node {node_name!r} specifies {conf_key!r} as a list of {len(conf)} values, not 2. Skipping confidence export.")
+            return {}
+        return {"confidence": (format_number(conf[0]), format_number(conf[1]))}
+
+    if isinstance(conf, dict):
+        entropy = attrs.get(f"{key}_entropy", None)
+        if not entropy or not is_numeric(entropy):
+            warn(f"[confidence] node {node_name!r} includes a mapping of confidence values but not an associated numeric entropy value. Skipping confidence export.")
+            return {}
+        if not all([is_numeric(v) for v in conf.values()]):
+            warn(f"[confidence] node {node_name!r} includes a mapping of confidence values but they are not all numeric. Skipping confidence export.")
+            return {}
+        # While most of the time confidences come from `augur traits` which already sorts the values, we sort them (again) here
+        # and only take confidence values over .1% and the top 4 elements.
+        # To minimise the JSON size we only print values to 3 s.f. which is enough for Auspice
+        conf = {
+            key:format_number(conf[key]) for key in
+            sorted(list(conf.keys()), key=lambda x: conf[x], reverse=True)
+            if conf[key]>0.001
+        }
+        return {"confidence": conf, "entropy": format_number(entropy)}
+
+    warn(f"[confidence] {key+'_confidence'!r} is of an unknown format. Skipping.")
+    return {}
+
+
 
 def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
     '''
@@ -775,9 +849,8 @@ def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
             raw_data["num_date"] = raw_data["numdate"]
             del raw_data["numdate"]
         if is_valid(raw_data.get("num_date", None)): # it's ok not to have temporal information
-            node["node_attrs"]["num_date"] = {"value": raw_data["num_date"]}
-            if is_valid(raw_data.get("num_date_confidence", None)):
-                node["node_attrs"]["num_date"]["confidence"] = raw_data["num_date_confidence"]
+            node["node_attrs"]["num_date"] = {"value": format_number(raw_data["num_date"])}
+            node["node_attrs"]["num_date"].update(attr_confidence(node["name"], raw_data, "num_date"))
 
     def _transfer_url_accession(node, raw_data):
         for prop in ["url", "accession"]:
@@ -793,12 +866,10 @@ def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
         exclude_list = ["gt", "num_date", "author"] # exclude special cases already taken care of
         trait_keys = trait_keys.difference(exclude_list)
         for key in trait_keys:
-            if is_valid(raw_data.get(key, None)):
-                node["node_attrs"][key] = {"value": raw_data[key]}
-                if is_valid(raw_data.get(key+"_confidence", None)):
-                    node["node_attrs"][key]["confidence"] = raw_data[key+"_confidence"]
-                if is_valid(raw_data.get(key+"_entropy", None)):
-                    node["node_attrs"][key]["entropy"] = raw_data[key+"_entropy"]
+            value = raw_data.get(key, None)
+            if is_valid(value):
+                node["node_attrs"][key] = {"value": format_number(value) if is_numeric(value) else value}
+                node["node_attrs"][key].update(attr_confidence(node["name"], raw_data, key))
 
     def _transfer_author_data(node):
         if node["name"] in author_data:
