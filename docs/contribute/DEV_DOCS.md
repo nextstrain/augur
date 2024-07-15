@@ -117,6 +117,14 @@ To run a specific integration test with cram, you can use the following command:
 cram tests/functional/clades.t
 ```
 
+To run cram tests locally and capture test coverage data, you can use this invocation:
+
+```bash
+AUGUR="coverage run --data-file="$PWD/.coverage" $PWD/bin/augur" cram
+```
+
+You can provide one or more cram test file names to get coverage for just those tests, or omit file names to run the entire cram test suite.
+
 Troubleshooting tip: As tests run on the development code in the augur repository, your environment should not have an existing augur installation that could cause a conflict in pytest.
 
 We use continuous integration with GitHub Actions to run tests on every pull request submitted to the project.
