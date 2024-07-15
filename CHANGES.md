@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 25.1.1 (15 July 2024)
+
 ### Bug Fixes
 
 * curate parse-genbank-location: Fix a bug where a mix of empty and populated location-field values would result in inconsistent fields in the output NDJSON [#1531][](@genehack)
