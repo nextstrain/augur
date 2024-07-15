@@ -8,6 +8,8 @@ To be an effective, productive contributor, please start by reading the
 [**Nextstrain contributing guide**](https://github.com/nextstrain/.github/blob/master/CONTRIBUTING.md)
 for useful information about how to pick an issue, submit your contributions, and so on.
 
+Please see the "Source" tab in [Augur's installation instructions](https://docs.nextstrain.org/projects/augur/en/stable/installation/installation.html) for details on how to install Augur for development.
+
 This project strictly adheres to the
 [Contributor Covenant Code of Conduct](https://github.com/nextstrain/.github/blob/master/CODE_OF_CONDUCT.md).
 
@@ -29,18 +31,6 @@ To to test your local changes (without installing them to your system), run the 
 ```
 
 Note that the `./bin/augur` convenience script is not installing `augur` system-wide with pip.
-
-As an alternative to using the convenience script and to install the dev dependencies, you can install augur from source
-as an **editable package** so that your global `augur` command always uses your
-local source code copy:
-
-```bash
-pip install -e '.[dev]'
-```
-
-Using an "editable package" is not recommended if you want to be able to compare output
-from a stable, released version of augur with your development version (e.g. comparing
-output of `augur` installed with pip and `./bin/augur` from your local source code).
 
 ### Testing
 
