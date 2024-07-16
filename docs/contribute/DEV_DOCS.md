@@ -8,6 +8,8 @@ To be an effective, productive contributor, please start by reading the
 [**Nextstrain contributing guide**](https://github.com/nextstrain/.github/blob/master/CONTRIBUTING.md)
 for useful information about how to pick an issue, submit your contributions, and so on.
 
+Please see the "Source" tab in [Augur's installation instructions](https://docs.nextstrain.org/projects/augur/en/stable/installation/installation.html) for details on how to install Augur for development.
+
 This project strictly adheres to the
 [Contributor Covenant Code of Conduct](https://github.com/nextstrain/.github/blob/master/CODE_OF_CONDUCT.md).
 
@@ -29,18 +31,6 @@ To to test your local changes (without installing them to your system), run the 
 ```
 
 Note that the `./bin/augur` convenience script is not installing `augur` system-wide with pip.
-
-As an alternative to using the convenience script and to install the dev dependencies, you can install augur from source
-as an **editable package** so that your global `augur` command always uses your
-local source code copy:
-
-```bash
-pip install -e '.[dev]'
-```
-
-Using an "editable package" is not recommended if you want to be able to compare output
-from a stable, released version of augur with your development version (e.g. comparing
-output of `augur` installed with pip and `./bin/augur` from your local source code).
 
 ### Testing
 
@@ -126,6 +116,14 @@ To run a specific integration test with cram, you can use the following command:
 ```bash
 cram tests/functional/clades.t
 ```
+
+To run cram tests locally and capture test coverage data, you can use this invocation:
+
+```bash
+AUGUR="coverage run --data-file="$PWD/.coverage" $PWD/bin/augur" cram
+```
+
+You can provide one or more cram test file names to get coverage for just those tests, or omit file names to run the entire cram test suite.
 
 Troubleshooting tip: As tests run on the development code in the augur repository, your environment should not have an existing augur installation that could cause a conflict in pytest.
 
@@ -236,7 +234,7 @@ If there are changes to the Python version or dependency list:
 1. Wait for the bioconda-recipe PR to be merged.
 2. Wait for the new version of Augur to be available [on bioconda](https://anaconda.org/bioconda/augur).
 3. Manually run the [conda-base CI workflow](https://github.com/nextstrain/conda-base/actions/workflows/ci.yaml) on the `main` branch.
-4. Ensure workflow runs successfully.
+4. Ensure workflow runs successfully and that the summary outputs for Ubuntu and MacOS builds include `augur` with the appropriate version in the list of changed packages.
 
 #### Notes
 
