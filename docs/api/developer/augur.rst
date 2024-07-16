@@ -36,7 +36,6 @@ Submodules
    augur.export
    augur.export_v1
    augur.export_v2
-   augur.filenames
    augur.frequencies
    augur.frequency_estimators
    augur.index
