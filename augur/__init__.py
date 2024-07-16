@@ -22,6 +22,7 @@ sys.setrecursionlimit(int(os.environ.get("AUGUR_RECURSION_LIMIT") or DEFAULT_AUG
 command_strings = [
     "parse",
     "curate",
+    "merge",
     "index",
     "filter",
     "mask",

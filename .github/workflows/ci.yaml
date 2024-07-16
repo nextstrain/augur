@@ -63,7 +63,7 @@ jobs:
     - name: Install dependencies from Conda
       uses: mamba-org/setup-micromamba@v1
       with:
-        create-args: mafft raxml fasttree iqtree vcftools biopython=${{ matrix.biopython-version }} python=${{ matrix.python-version }}
+        create-args: mafft raxml fasttree iqtree vcftools sqlite tsv-utils biopython=${{ matrix.biopython-version }} python=${{ matrix.python-version }}
         condarc: |
           channels:
             - conda-forge

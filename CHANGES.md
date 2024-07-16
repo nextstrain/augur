@@ -4,6 +4,7 @@
 
 ### Features
 
+* A new command, `augur merge`, now allows for generalized merging of two or more metadata tables. [#1563][] (@tsibley)
 * Two new commands, `augur read-file` and `augur write-file`, now allow external programs to do i/o like Augur by piping from/to these new commands.  They provide handling of compression formats and newlines consistent with the rest of Augur. [#1562][] (@tsibley)
 * A new debugging mode can be enabled by setting the `AUGUR_DEBUG` environment variable to `1` (or another truthy value).  Currently the only effect is to print more information about handled (i.e. anticipated) errors.  For example, stack traces and parent exceptions in an exception chain are normally omitted for handled errors, but setting this env var includes them.  Future debugging and troubleshooting features, like verbose operation logging, will likely also condition on this new debugging mode. [#1577][] (@tsibley)
 
@@ -13,6 +14,7 @@
 
 [#1561]: https://github.com/nextstrain/augur/pull/1561
 [#1562]: https://github.com/nextstrain/augur/pull/1562
+[#1563]: https://github.com/nextstrain/augur/pull/1563
 [#1564]: https://github.com/nextstrain/augur/pull/1564
 [#1577]: https://github.com/nextstrain/augur/pull/1577
 
