@@ -36,10 +36,10 @@ DEFAULT_ARGS = {
     # with -fast, although there's probably no particular reason we have to.
     # Refer to the handling of -fast in utils/tools.cpp:
     #   https://github.com/Cibiv/IQ-TREE/blob/44753aba/utils/tools.cpp#L2926-L2936
-    # Increasing threads (nt) can cause IQtree to run longer, hence use AUTO by default
-    # Auto makes IQtree chose the optimal number of threads
-    # Redo prevents IQtree errors when a run was aborted and restarted
-    "iqtree": "-ninit 2 -n 2 -me 0.05 -nt AUTO -redo",
+    # Increasing threads (-T) can cause IQtree to run longer, hence use AUTO by default
+    # -T AUTO makes IQtree chose the optimal number of threads
+    # -redo prevents IQtree errors when a run was aborted and restarted
+    "iqtree": "-ninit 2 -n 2 -me 0.05 -T AUTO -redo",
 }
 
 # IQ-TREE only; see usage below
@@ -71,12 +71,12 @@ def check_conflicting_args(tree_builder_args, defaults):
 
     Examples
     --------
-    >>> defaults = ("-ntmax", "-m", "-s")
-    >>> check_conflicting_args("-czb -n 2", defaults)
-    >>> check_conflicting_args("-czb -ntmax 2", defaults)
+    >>> defaults = ("--threads-max", "-m", "-s")
+    >>> check_conflicting_args("--polytomy -n 2", defaults)
+    >>> check_conflicting_args("--polytomy --threads-max 2", defaults)
     Traceback (most recent call last):
         ...
-    augur.tree.ConflictingArgumentsException: The following tree builder arguments conflict with hardcoded defaults. Remove these arguments and try again: -ntmax
+    augur.tree.ConflictingArgumentsException: The following tree builder arguments conflict with hardcoded defaults. Remove these arguments and try again: --threads-max
 
     """
     # Parse tree builder argument string into a list of shell arguments. This
@@ -261,13 +261,27 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
             ofile.write(tmp_line)
 
     # Check tree builder arguments for conflicts with hardcoded defaults.
-    check_conflicting_args(tree_builder_args, ("-ntmax", "-s", "-m"))
+    check_conflicting_args(tree_builder_args, (
+        # -ntmax/--threads-max are synonyms
+        # see https://github.com/iqtree/iqtree2/blob/74da454bbd98d6ecb8cb955975a50de59785fbde/utils/tools.cpp#L4882-L4883
+        "-ntmax",
+        "--threads-max",
+        # -s/--aln/--msa are synonyms
+        # see https://github.com/iqtree/iqtree2/blob/74da454bbd98d6ecb8cb955975a50de59785fbde/utils/tools.cpp#L2370-L2371
+        "-s",
+        "--aln",
+        "--msa",
+        # --model/-m are synonyms
+        # see https://github.com/iqtree/iqtree2/blob/74da454bbd98d6ecb8cb955975a50de59785fbde/utils/tools.cpp#L3232-L3233
+        "-m",
+        "--model",
+    ))
 
     if substitution_model.lower() != "auto":
-        call = [iqtree, "-ntmax", str(nthreads), "-s", shquote(tmp_aln_file),
+        call = [iqtree, "--threads-max", str(nthreads), "-s", shquote(tmp_aln_file),
                 "-m", shquote(substitution_model), tree_builder_args, ">", shquote(log_file)]
     else:
-        call = [iqtree, "-ntmax", str(nthreads), "-s", shquote(tmp_aln_file), tree_builder_args, ">", shquote(log_file)]
+        call = [iqtree, "--threads-max", str(nthreads), "-s", shquote(tmp_aln_file), tree_builder_args, ">", shquote(log_file)]
 
     cmd = " ".join(call)
 
@@ -425,7 +439,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--exclude-sites', type=str, help='file name of one-based sites to exclude for raw tree building (BED format in .bed files, second column in tab-delimited files, or one position per line)')
     parser.add_argument('--tree-builder-args', type=str, help=f"""arguments to pass to the tree builder either augmenting or overriding the default arguments (except for input alignment path, number of threads, and substitution model).
-    Use the assignment operator (e.g., --tree-builder-args="-czb" for IQ-TREE) to avoid unexpected errors.
+    Use the assignment operator (e.g., --tree-builder-args="--polytomy" for IQ-TREE) to avoid unexpected errors.
     FastTree defaults: "{DEFAULT_ARGS['fasttree']}".
     RAxML defaults: "{DEFAULT_ARGS['raxml']}".
     IQ-TREE defaults: "{DEFAULT_ARGS['iqtree']}".
