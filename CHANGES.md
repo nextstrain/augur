@@ -5,6 +5,7 @@
 ### Features
 
 * Two new commands, `augur read-file` and `augur write-file`, now allow external programs to do i/o like Augur by piping from/to these new commands.  They provide handling of compression formats and newlines consistent with the rest of Augur. [#1562][] (@tsibley)
+* filter: Added the ability to use weights in subsampling. See help text of `--group-by-weights` for more information. [#1454][] (@victorlin)
 
 ### Bug Fixes
 
@@ -13,6 +14,7 @@
 [#1561]: https://github.com/nextstrain/augur/pull/1561
 [#1562]: https://github.com/nextstrain/augur/pull/1562
 [#1564]: https://github.com/nextstrain/augur/pull/1564
+[#1454]: https://github.com/nextstrain/augur/pull/1454
 
 
 
