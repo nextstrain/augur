@@ -89,10 +89,6 @@
   to_url: /api/developer/augur.export_v2.html
 
 - type: page
-  from_url: /api/augur.filenames.html
-  to_url: /api/developer/augur.filenames.html
-
-- type: page
   from_url: /api/augur.filter.html
   to_url: /api/developer/augur.filter.html
 
