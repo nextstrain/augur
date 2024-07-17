@@ -57,6 +57,29 @@ Test CSV metadata input from stdin
   {"strain": "sequence_B", "country": "USA", "date": "2020-10-02"}
   {"strain": "sequence_C", "country": "USA", "date": "2020-10-03"}
 
+Test Excel (.xls) metadata input
+
+  $ ${AUGUR} curate passthru \
+  > --metadata "$TESTDIR/../data/metadata.xls"
+  {"strain": "sequence_A", "country": "USA", "date": "2020-10-01", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
+  {"strain": "sequence_B", "country": "USA", "date": "2020-10-02", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
+  {"strain": "sequence_C", "country": "USA", "date": "2020-10-03", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
+
+Test Excel (.xlsx) metadata input
+
+  $ ${AUGUR} curate passthru \
+  > --metadata "$TESTDIR/../data/metadata.xlsx"
+  {"strain": "sequence_A", "country": "USA", "date": "2020-10-01", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
+  {"strain": "sequence_B", "country": "USA", "date": "2020-10-02", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
+  {"strain": "sequence_C", "country": "USA", "date": "2020-10-03", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
+
+Test OpenOffice (.ods) metadata input
+
+  $ ${AUGUR} curate passthru \
+  > --metadata "$TESTDIR/../data/metadata.ods"
+  {"strain": "sequence_A", "country": "USA", "date": "2020-10-01", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
+  {"strain": "sequence_B", "country": "USA", "date": "2020-10-02", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
+  {"strain": "sequence_C", "country": "USA", "date": "2020-10-03", "authors": "A,B,C,D,E,F,G,H,I,J,K"}
 
 Create a metadata TSV file with duplicate records
 

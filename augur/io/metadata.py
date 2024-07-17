@@ -3,9 +3,10 @@ import os
 from typing import Iterable, Sequence
 import pandas as pd
 import pyfastx
+import python_calamine as calamine
 import sys
-from io import StringIO
-from itertools import chain
+from io import StringIO, TextIOWrapper
+from itertools import chain, zip_longest
 
 from augur.errors import AugurError
 from augur.io.print import print_err
@@ -166,14 +167,18 @@ def read_table_to_dict(table, delimiters, duplicate_reporting=DataErrorMethod.ER
     Will report duplicate records based on the *id_column* if requested via
     *duplicate_reporting* after the generator has been exhausted.
 
+    When the *table* file is an Excel or OpenOffice workbook, only the first
+    sheet will be read.
+
     Parameters
     ----------
     table: str
-        Path to a CSV or TSV file or IO buffer
+        Path to a CSV, TSV, Excel, or OpenOffice file or binary IO buffer
 
     delimiters : list of str
         List of possible delimiters to check for between columns in the metadata.
         Only one delimiter will be inferred.
+        Ignored if *table* is an Excel or OpenOffice file.
 
     duplicate_reporting: DataErrorMethod, optional
         How should duplicate records be reported
@@ -197,34 +202,64 @@ def read_table_to_dict(table, delimiters, duplicate_reporting=DataErrorMethod.ER
     """
     seen_ids = set()
     duplicate_ids = set()
-    with open_file(table) as handle:
-        # Get sample to determine delimiter
-        table_sample = handle.readline()
+    with open_file(table, "rb") as handle:
+        # open_file(x, "rb") will return x as-is if it's already a file handle,
+        # and in that case the handle might be text mode even though we asked
+        # for bytes.  This assertion guards against usage errors in our caller.
+        assert isinstance(handle.read(0), bytes)
 
+        columns = None
+        records = None
+
+        # Try binary handle as Excel/OpenOffice, as long as it's seekable so we
+        # can reset to the start on failure.
         if handle.seekable():
-            handle.seek(0)
-        else:
-            table_sample_file = StringIO(table_sample)
-            handle = chain(table_sample_file, handle)
+            try:
+                workbook = calamine.load_workbook(handle)
+            except calamine.CalamineError:
+                handle.seek(0)
+            else:
+                rows = workbook.get_sheet_by_index(0).to_python()
+                columns = rows[0]
+                records = (
+                    dict(zip_longest(columns, row[:len(columns)]))
+                        for row
+                         in rows[1:])
 
-        try:
-            # Note: this sort of duplicates _get_delimiter(), but it's easier if
-            # this is separate since it handles non-seekable buffers.
-            dialect = csv.Sniffer().sniff(table_sample, delimiters)
-        except csv.Error as error:
-            # This assumes all csv.Errors imply a delimiter issue. That might
-            # change in a future Python version.
-            raise InvalidDelimiter from error
+        # Not Excel/OpenOffice, so convert handle to text and sniff the delimiter.
+        if records is None:
+            handle = TextIOWrapper(handle, encoding="utf-8", newline="")
 
-        metadata_reader = csv.DictReader(handle, dialect=dialect)
+            # Get sample to determine delimiter
+            table_sample = handle.readline()
+
+            if handle.seekable():
+                handle.seek(0)
+            else:
+                table_sample_file = StringIO(table_sample)
+                handle = chain(table_sample_file, handle)
+
+            try:
+                # Note: this sort of duplicates _get_delimiter(), but it's easier if
+                # this is separate since it handles non-seekable buffers.
+                dialect = csv.Sniffer().sniff(table_sample, delimiters)
+            except csv.Error as error:
+                # This assumes all csv.Errors imply a delimiter issue. That might
+                # change in a future Python version.
+                raise InvalidDelimiter from error
+
+            metadata_reader = csv.DictReader(handle, dialect=dialect)
+
+            columns, records = metadata_reader.fieldnames, iter(metadata_reader)
+
         if duplicate_reporting is DataErrorMethod.SILENT:
             # Directly yield from metadata reader since we do not need to check for duplicate ids
-            yield from metadata_reader
+            yield from records
         else:
             if id_column is None:
-                id_column = metadata_reader.fieldnames[0]
+                id_column = columns[0]
 
-            for record in metadata_reader:
+            for record in records:
                 record_id = record.get(id_column)
                 if record_id is None:
                     raise AugurError(f"The provided id column {id_column!r} does not exist in {table!r}.")
@@ -281,13 +316,17 @@ def read_metadata_with_sequences(metadata, metadata_delimiters, fasta, seq_id_co
     See pyfastx docs for more details:
     https://pyfastx.readthedocs.io/en/latest/usage.html#fasta
 
+    When the *metadata* file is an Excel or OpenOffice workbook, only the first
+    sheet will be read.
+
     Parameters
     ----------
     metadata: str
-        Path to a CSV or TSV metadata file
+        Path to a CSV, TSV, Excel, or OpenOffice metadata file or binary IO buffer
 
     metadata_delimiters : list of str
         List of possible delimiters to check for between columns in the metadata.
+        Ignored if *metadata* is an Excel or OpenOffice file.
 
     fasta: str
         Path to a plain or gzipped FASTA file

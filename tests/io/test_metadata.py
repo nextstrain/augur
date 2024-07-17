@@ -1,6 +1,6 @@
 import pytest
 import shutil
-from io import StringIO
+from io import BytesIO
 
 from augur.errors import AugurError
 from augur.io.metadata import InvalidDelimiter, read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv, Metadata
@@ -38,7 +38,7 @@ class TestReadMetadataToDict:
         assert record == expected_record
 
     def test_read_table_to_dict_with_csv_from_handle(self, expected_record):
-        handle = StringIO('strain,date,country,lab\nSEQ_A,2020-10-03,USA,A Virology Lab "Vector"\n')
+        handle = BytesIO(b'strain,date,country,lab\nSEQ_A,2020-10-03,USA,A Virology Lab "Vector"\n')
         record = next(read_table_to_dict(handle, (',')))
         assert record == expected_record
 
@@ -52,7 +52,7 @@ class TestReadMetadataToDict:
         assert record == expected_record
 
     def test_read_table_to_dict_with_tsv_from_handle(self, expected_record):
-        handle = StringIO('strain\tdate\tcountry\tlab\nSEQ_A\t2020-10-03\tUSA\tA Virology Lab "Vector"\n')
+        handle = BytesIO(b'strain\tdate\tcountry\tlab\nSEQ_A\t2020-10-03\tUSA\tA Virology Lab "Vector"\n')
         record = next(read_table_to_dict(handle, ('\t')))
         assert record == expected_record
 
