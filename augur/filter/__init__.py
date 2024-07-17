@@ -70,6 +70,31 @@ def register_arguments(parser):
     probabilistic_sampling_group = subsample_group.add_mutually_exclusive_group()
     probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true', help="Allow probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.")
     probabilistic_sampling_group.add_argument('--no-probabilistic-sampling', action='store_false', dest='probabilistic_sampling')
+    subsample_group.add_argument('--group-by-weights', type=str, metavar="FILE", help="""
+        TSV file defining weights for grouping. Requirements:
+
+        (1) Lines starting with '#' are treated as comment lines.
+        (2) The first non-comment line must be a header row.
+        (3) There must be a numeric ``weight`` column (weights can take on any
+            non-negative values).
+        (4) Other columns must be a subset of columns used in ``--group-by``,
+            with combinations of values covering all combinations present in the
+            metadata.
+        (5) This option only applies when ``--group-by`` and
+            ``--subsample-max-sequences`` are provided.
+        (6) This option cannot be used with ``--no-probabilistic-sampling``.
+
+        Notes:
+
+        (1) Any ``--group-by`` columns absent from this file will be given equal
+            weighting across all values *within* groups defined by the other
+            weighted columns.
+        (2) An entry with the value ``default`` under all columns will be
+            treated as the default weight for specific groups present in the
+            metadata but missing from the weights file. If there is no default
+            weight and the metadata contains rows that are not covered by the
+            given weights, augur filter will exit with an error.
+    """)
     subsample_group.add_argument('--priority', type=str, help="""tab-delimited file with list of priority scores for strains (e.g., "<strain>\\t<priority>") and no header.
     When scores are provided, Augur converts scores to floating point values, sorts strains within each subsampling group from highest to lowest priority, and selects the top N strains per group where N is the calculated or requested number of strains per group.
     Higher numbers indicate higher priority.
@@ -81,6 +106,7 @@ def register_arguments(parser):
     output_group.add_argument('--output-metadata', help="metadata for strains that passed filters")
     output_group.add_argument('--output-strains', help="list of strains that passed filters (no header)")
     output_group.add_argument('--output-log', help="tab-delimited file with one row for each filtered strain and the reason it was filtered. Keyword arguments used for a given filter are reported in JSON format in a `kwargs` column.")
+    output_group.add_argument('--output-group-by-sizes', help="tab-delimited file one row per group with target size.")
     output_group.add_argument(
         '--empty-output-reporting',
         type=EmptyOutputReportingMethod.argtype,
