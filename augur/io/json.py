@@ -40,6 +40,16 @@ from uuid import UUID
 def as_json(value):
     """
     Converts *value* to a JSON string using our custom :class:`JsonEncoder`.
+
+    The custom encoder supports serialization of :class:`~datetime.datetime` objects:
+
+    >>> as_json(datetime(year=2024, month=7, day=17, hour=11, minute=38))
+    '"2024-07-17T11:38:00"'
+
+    and :class:`~uuid.UUID` objects:
+
+    >>> as_json(UUID(int=147952133113722764103424939352979237618))
+    '"6f4e8b5a-8500-4928-b7ae-dc098a256af2"'
     """
     return json.dumps(value, allow_nan = False, cls = JsonEncoder)
 
