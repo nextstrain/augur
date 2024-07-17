@@ -28,9 +28,9 @@ DEFAULT_ARGS = {
     # For compat with older versions of iqtree, we avoid the newish -fast
     # option alias and instead spell out its component parts:
     #
-    #     -ninit 2
+    #     --ninit 2
     #     -n 2
-    #     -me 0.05
+    #     --epsilon 0.05
     #
     # This may need to be updated in the future if we want to stay in lock-step
     # with -fast, although there's probably no particular reason we have to.
@@ -38,8 +38,8 @@ DEFAULT_ARGS = {
     #   https://github.com/Cibiv/IQ-TREE/blob/44753aba/utils/tools.cpp#L2926-L2936
     # Increasing threads (-T) can cause IQtree to run longer, hence use AUTO by default
     # -T AUTO makes IQtree chose the optimal number of threads
-    # -redo prevents IQtree errors when a run was aborted and restarted
-    "iqtree": "-ninit 2 -n 2 -me 0.05 -T AUTO -redo",
+    # --redo prevents IQtree errors when a run was aborted and restarted
+    "iqtree": "--ninit 2 -n 2 --epsilon 0.05 -T AUTO --redo",
 }
 
 # IQ-TREE only; see usage below
