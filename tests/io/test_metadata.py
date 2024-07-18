@@ -1,6 +1,5 @@
 import pytest
 import shutil
-import sys
 from io import StringIO
 
 from augur.errors import AugurError
@@ -28,11 +27,6 @@ def metadata_with_duplicate(tmpdir):
         fh.write('SEQ_B\t2020-10-03\tUSA\n')
     return path
 
-@pytest.fixture
-def mp_context(monkeypatch):
-    with monkeypatch.context() as mp:
-        yield mp
-
 class TestReadMetadataToDict:
     def test_read_table_to_dict_with_csv(self, tmpdir, expected_record):
         path = str(tmpdir / 'metadata.csv')
@@ -43,10 +37,9 @@ class TestReadMetadataToDict:
         record = next(read_table_to_dict(path, (',')))
         assert record == expected_record
 
-    def test_read_table_to_dict_with_csv_from_stdin(self, mp_context, expected_record):
-        stdin = StringIO('strain,date,country,lab\nSEQ_A,2020-10-03,USA,A Virology Lab "Vector"\n')
-        mp_context.setattr('sys.stdin', stdin)
-        record = next(read_table_to_dict(sys.stdin, (',')))
+    def test_read_table_to_dict_with_csv_from_handle(self, expected_record):
+        handle = StringIO('strain,date,country,lab\nSEQ_A,2020-10-03,USA,A Virology Lab "Vector"\n')
+        record = next(read_table_to_dict(handle, (',')))
         assert record == expected_record
 
     def test_read_table_to_dict_with_tsv(self, tmpdir, expected_record):
@@ -58,10 +51,9 @@ class TestReadMetadataToDict:
         record = next(read_table_to_dict(path, ('\t')))
         assert record == expected_record
 
-    def test_read_table_to_dict_with_tsv_from_stdin(self, mp_context, expected_record):
-        stdin = StringIO('strain\tdate\tcountry\tlab\nSEQ_A\t2020-10-03\tUSA\tA Virology Lab "Vector"\n')
-        mp_context.setattr('sys.stdin', stdin)
-        record = next(read_table_to_dict(sys.stdin, ('\t')))
+    def test_read_table_to_dict_with_tsv_from_handle(self, expected_record):
+        handle = StringIO('strain\tdate\tcountry\tlab\nSEQ_A\t2020-10-03\tUSA\tA Virology Lab "Vector"\n')
+        record = next(read_table_to_dict(handle, ('\t')))
         assert record == expected_record
 
     def test_read_table_to_dict_with_bad_delimiter(self, tmpdir):
