@@ -83,9 +83,7 @@ setuptools.setup(
             "recommonmark >=0.5.0",
             "Sphinx >=2.0.1",
             "sphinx-autobuild >=2021.3.14",
-            # TODO: Remove sphinx-argparse <0.5.0 pin once upstream build issue is fixed
-            # <https://github.com/sphinx-doc/sphinx-argparse/issues/56>
-            "sphinx-argparse >=0.2.5, <0.5.0",
+            "sphinx-argparse >=0.2.5, !=0.5.0",
             "sphinx-markdown-tables >= 0.0.9",
             "sphinx-rtd-theme >=0.4.3",
             "sphinx-autodoc-typehints >=1.21.4",
