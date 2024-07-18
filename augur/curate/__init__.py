@@ -55,7 +55,7 @@ def create_shared_parser():
             If no input options are provided, commands will try to read NDJSON records from stdin.
         """)
     shared_inputs.add_argument("--metadata",
-        help="Input metadata file. May be plain text (TSV, CSV) or an Excel or OpenOffice spreadsheet. Accepts '-' to read plain text from stdin.")
+        help="Input metadata file. May be plain text (TSV, CSV) or an Excel or OpenOffice spreadsheet workbook file. When an Excel or OpenOffice workbook, only the first visible worksheet will be read and initial empty rows/columns will be ignored. Accepts '-' to read plain text from stdin.")
     shared_inputs.add_argument("--id-column",
         help="Name of the metadata column that contains the record identifier for reporting duplicate records. "
              "Uses the first column of the metadata file if not provided. "

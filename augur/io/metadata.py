@@ -7,6 +7,7 @@ import python_calamine as calamine
 import sys
 from io import StringIO, TextIOWrapper
 from itertools import chain, zip_longest
+from textwrap import dedent
 
 from augur.errors import AugurError
 from augur.io.print import print_err
@@ -168,7 +169,8 @@ def read_table_to_dict(table, delimiters, duplicate_reporting=DataErrorMethod.ER
     *duplicate_reporting* after the generator has been exhausted.
 
     When the *table* file is an Excel or OpenOffice workbook, only the first
-    sheet will be read.
+    visible worksheet will be read and initial empty rows/columns will be
+    ignored.
 
     Parameters
     ----------
@@ -219,7 +221,30 @@ def read_table_to_dict(table, delimiters, duplicate_reporting=DataErrorMethod.ER
             except calamine.CalamineError:
                 handle.seek(0)
             else:
-                rows = workbook.get_sheet_by_index(0).to_python()
+                def visible_worksheet(s: calamine.SheetMetadata) -> bool:
+                    # Normally one would use "is" to compare to an enum, but
+                    # these aren't actual Python enum.Enum classes.
+                    return s.visible == calamine.SheetVisibleEnum.Visible \
+                       and s.typ == calamine.SheetTypeEnum.WorkSheet
+
+                if not (sheet := next(filter(visible_worksheet, workbook.sheets_metadata), None)):
+                    if not workbook.sheets_metadata:
+                        error_msg = f"Excel/OpenOffice workbook {table!r} contains no sheets."
+                    else:
+                        error_msg = dedent(f"""\
+                            Excel/OpenOffice workbook {table!r} contains no visible worksheets.
+
+                            {len(workbook.sheets_metadata)} other sheets found:
+                            """)
+
+                        for sheet in workbook.sheets_metadata:
+                            type = str(sheet.typ).replace('SheetTypeEnum.', '').lower()
+                            visibility = str(sheet.visible).replace('SheetVisibleEnum.', '').lower()
+                            error_msg += f"  - {sheet.name!r} ({type=!s}, {visibility=!s})\n"
+
+                    raise AugurError(error_msg)
+
+                rows = workbook.get_sheet_by_name(sheet.name).to_python(skip_empty_area=True)
                 columns = rows[0]
                 records = (
                     dict(zip_longest(columns, row[:len(columns)]))
@@ -317,7 +342,8 @@ def read_metadata_with_sequences(metadata, metadata_delimiters, fasta, seq_id_co
     https://pyfastx.readthedocs.io/en/latest/usage.html#fasta
 
     When the *metadata* file is an Excel or OpenOffice workbook, only the first
-    sheet will be read.
+    visible worksheet will be read and initial empty rows/columns will be
+    ignored.
 
     Parameters
     ----------
