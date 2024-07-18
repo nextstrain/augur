@@ -40,7 +40,7 @@ Build a tree, augmenting existing default arguments with custom arguments.
   $ ${AUGUR} tree \
   >  --method iqtree \
   >  --alignment tree/aligned.fasta \
-  >  --tree-builder-args="-czb" \
+  >  --tree-builder-args="--polytomy" \
   >  --output "$TMP/tree_raw.nwk" > /dev/null
 
 Build a tree, replacing existing default arguments with custom arguments.
@@ -49,9 +49,20 @@ Since the following custom arguments are incompatible with the default IQ-TREE a
   $ ${AUGUR} tree \
   >  --method iqtree \
   >  --alignment tree/full_aligned.fasta \
-  >  --tree-builder-args="-czb -bb 1000 -bnni" \
+  >  --tree-builder-args="--polytomy -bb 1000 -bnni --redo" \
   >  --override-default-args \
   >  --output "$TMP/tree_raw.nwk" > /dev/null
+
+Build a tree with conflicting default arguments.
+Expect error message.
+
+  $ ${AUGUR} tree \
+  >  --method iqtree \
+  >  --alignment tree/aligned.fasta \
+  >  --tree-builder-args="--threads-max 1 --msa tree/aligned.fasta" \
+  >  --output "$TMP/tree_raw.nwk"
+  ERROR: The following tree builder arguments conflict with hardcoded defaults. Remove these arguments and try again: --threads-max, --msa
+  [1]
 
 Build a tree with an input file that doesn't end in .fasta, and ensure it's not overwritten.
 
