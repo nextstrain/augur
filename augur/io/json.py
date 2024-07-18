@@ -32,7 +32,8 @@ The LICENSE file included in ID3C's repo is copied below verbatim::
     SOFTWARE.
 """
 import json
-from datetime import date, datetime
+from datetime import date, datetime, time, timedelta
+from isodate import duration_isoformat
 from typing import Iterable
 from uuid import UUID
 
@@ -50,6 +51,16 @@ def as_json(value):
 
     >>> as_json(datetime(year=2024, month=7, day=17, hour=11, minute=38))
     '"2024-07-17T11:38:00"'
+
+    :class:`~datetime.time` objects:
+
+    >>> as_json(time(hour=11, minute=38))
+    '"11:38:00"'
+
+    :class:`~datetime.timedelta` objects:
+
+    >>> as_json(timedelta(days=42))
+    '"P42D"'
 
     and :class:`~uuid.UUID` objects:
 
@@ -113,10 +124,15 @@ class JsonEncoder(json.JSONEncoder):
         Serializes:
         * :class:`~datetime.date` using :meth:`~datetime.date.isoformat()`
         * :class:`~datetime.datetime` using :meth:`~datetime.datetime.isoformat()`
+        * :class:`~datetime.time` using :meth:`~datetime.time.isoformat()`
+        * :class:`~datetime.timedelta` using ``isodate.duration_isoformat()``
         * :class:`~uuid.UUID` using ``str()``
         """
-        if isinstance(value, (date, datetime)):
+        if isinstance(value, (date, datetime, time)):
             return value.isoformat()
+
+        elif isinstance(value, timedelta):
+            return duration_isoformat(value)
 
         elif isinstance(value, UUID):
             return str(value)
