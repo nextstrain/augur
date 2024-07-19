@@ -110,14 +110,19 @@ jobs:
       matrix:
         include:
           - { pathogen: avian-flu, build-args: test_target }
+          - { pathogen: ebola }
+          - { pathogen: lassa }
+          - { pathogen: mumps }
           - {
               pathogen: ncov,
               build-args: all_regions -j 2 --profile nextstrain_profiles/nextstrain-ci,
             }
+          - { pathogen: rsv }
           - {
               pathogen: seasonal-flu,
               build-args: --configfile profiles/ci/builds.yaml -p,
             }
+          - { pathogen: tb }
 
     name: pathogen-repo-ci-v0 (${{ matrix.pathogen }})
     defaults:
@@ -188,7 +193,6 @@ jobs:
     strategy:
       matrix:
         pathogen:
-          # XXX TODO: Restore pathogens after they've been updated (ebola, lassa, mumps, rsv, tb)
           - dengue
           - measles
           - mpox
