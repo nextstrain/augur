@@ -55,13 +55,13 @@ def create_shared_parser():
             If no input options are provided, commands will try to read NDJSON records from stdin.
         """)
     shared_inputs.add_argument("--metadata",
-        help="Input metadata file. Accepts '-' to read metadata from stdin.")
+        help="Input metadata file. May be plain text (TSV, CSV) or an Excel or OpenOffice spreadsheet workbook file. When an Excel or OpenOffice workbook, only the first visible worksheet will be read and initial empty rows/columns will be ignored. Accepts '-' to read plain text from stdin.")
     shared_inputs.add_argument("--id-column",
         help="Name of the metadata column that contains the record identifier for reporting duplicate records. "
              "Uses the first column of the metadata file if not provided. "
              "Ignored if also providing a FASTA file input.")
     shared_inputs.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
-        help="Delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
+        help="Delimiters to accept when reading a plain text metadata file. Only one delimiter will be inferred.")
 
     shared_inputs.add_argument("--fasta",
         help="Plain or gzipped FASTA file. Headers can only contain the sequence id used to match a metadata record. " +
@@ -181,7 +181,7 @@ def run(args):
     # Read inputs
     # Special case single hyphen as stdin
     if args.metadata == '-':
-        args.metadata = sys.stdin
+        args.metadata = sys.stdin.buffer
 
     if args.metadata and args.fasta:
         try:

@@ -64,6 +64,7 @@ setuptools.setup(
         "pandas >=1.0.0, ==1.*",
         "phylo-treetime >=0.11.2, <0.12",
         "pyfastx >=1.0.0, <3.0",
+        "python_calamine >=0.2.0",
         "scipy ==1.*",
         "xopen[zstd] >=1.7.0, <3" # TODO: Deprecated, remove v1 support around November 2024
     ],
