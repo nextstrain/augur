@@ -94,10 +94,138 @@ jobs:
         name: coverage
         path: "${{ env.COVERAGE_FILE }}"
 
-  # TODO: Use the central pathogen-repo-ci workflow¹. Currently, this is not
-  # possible because it only supports "stock" docker and conda runtimes.
-  # ¹ https://github.com/nextstrain/.github/blob/-/.github/workflows/pathogen-repo-ci.yaml
+  # Replicating pathogen-repo-ci workflow because we decided not to support
+  # local versions of Augur in the centralized workflow
+  # <https://github.com/nextstrain/.github/issues/66>
+  # This job is for pathogen repos _do_ follow standard pathogen repo structure
+  # and new pathogens should be added here.
   pathogen-repo-ci:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        pathogen:
+          - dengue
+          - measles
+          - mpox
+          - seasonal-cov
+          - zika
+
+    name: pathogen-repo-ci (${{ matrix.pathogen }})
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ./augur
+
+      - name: Set cache key
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
+
+      # Set up a Conda environment that replicates Nextstrain's Conda runtime.
+      - name: Install nextstrain-base from Conda
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          create-args: nextstrain-base
+          condarc: |
+            channels:
+              - nextstrain
+              - conda-forge
+              - bioconda
+            channel_priority: strict
+          cache-environment: true
+          cache-environment-key: ${{ env.DATE }}
+          environment-name: augur
+
+      # Replace the Conda Augur installation with the local version.
+      - run: pip install ./augur
+
+      - uses: actions/checkout@v4
+        with:
+          repository: nextstrain/${{ matrix.pathogen }}
+          path: ./pathogen-repo
+
+      - name: Verify nextstrain-pathogen.yaml file
+        run: >
+          if [[ ! -f './pathogen-repo/nextstrain-pathogen.yaml' ]]; then
+
+            echo "To use this workflow, there must be a 'nextstrain-pathogen.yaml' file present in the repository root";
+            exit 1;
+          fi
+
+      - name: Run ingest
+        if: hashFiles('./pathogen-repo/ingest/Snakefile') && hashFiles('./pathogen-repo/ingest/build-configs/ci/config.yaml')
+        id: ingest
+        run: nextstrain build --ambient ./pathogen-repo/ingest --configfile build-configs/ci/config.yaml
+
+      - name: Run phylogenetic
+        if: hashFiles('./pathogen-repo/phylogenetic/Snakefile') && hashFiles('./pathogen-repo/phylogenetic/build-configs/ci/config.yaml') && !cancelled()
+        id: phylogenetic
+        run: nextstrain build --ambient ./pathogen-repo/phylogenetic --configfile build-configs/ci/config.yaml
+
+      - name: Run nextclade
+        if: hashFiles('./pathogen-repo/nextclade/Snakefile') && hashFiles('./pathogen-repo/nextclade/build-configs/ci/config.yaml') && !cancelled()
+        id: nextclade
+        run: nextstrain build --ambient ./pathogen-repo/nextclade --configfile build-configs/ci/config.yaml
+
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: output-${{ matrix.pathogen }}
+          if-no-files-found: ignore
+          path: |
+            ./pathogen-repo/ingest/.snakemake/log/
+            ./pathogen-repo/ingest/auspice/
+            ./pathogen-repo/ingest/benchmarks/
+            ./pathogen-repo/ingest/logs/
+            ./pathogen-repo/ingest/results/
+
+            ./pathogen-repo/phylogenetic/.snakemake/log/
+            ./pathogen-repo/phylogenetic/auspice/
+            ./pathogen-repo/phylogenetic/benchmarks/
+            ./pathogen-repo/phylogenetic/logs/
+            ./pathogen-repo/phylogenetic/results/
+
+            ./pathogen-repo/nextclade/.snakemake/log/
+            ./pathogen-repo/nextclade/auspice/
+            ./pathogen-repo/nextclade/benchmarks/
+            ./pathogen-repo/nextclade/logs/
+            ./pathogen-repo/nextclade/results/
+
+      - if: always()
+        name: Verify a workflow ran
+        env:
+          # "outcome" is success/failure/cancelled/skipped _before_
+          # "continue-on-error" is applied to calculate "conclusion"; we no
+          # longer use continue-on-error for these steps, but even so,
+          # conceptually here what we want is outcome not conclusion.
+          ingest: ${{ steps.ingest.outcome }}
+          phylogenetic: ${{ steps.phylogenetic.outcome }}
+          nextclade: ${{ steps.nextclade.outcome }}
+        run: |
+          # Show step outcomes in job logs…
+          echo "ingest        $ingest" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "phylogenetic  $phylogenetic" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "nextclade     $nextclade"| tee -a "$GITHUB_STEP_SUMMARY"
+
+          # Assert status; we're good if we see at least one success and the
+          # rest are success or skipped.
+          [[
+               ($ingest == success || $phylogenetic == success || $nextclade == success)
+            && ($ingest       == success || $ingest       == skipped)
+            && ($phylogenetic == success || $phylogenetic == skipped)
+            && ($nextclade    == success || $nextclade    == skipped)
+          ]]
+
+  # Replicating pathogen-repo-ci-v0 workflow because we decided not to support
+  # local versions of Augur in the centralized workflow
+  # <https://github.com/nextstrain/.github/issues/66>
+  # This particular jobs is for pathogen repos that do not follow the standard
+  # pathogen repo structure and is not expected to be updated.
+  # Any new pathogen repos should be added to the job replicating the latest version
+  # of the pathogen-repo-ci above.
+  pathogen-repo-ci-v0:
     runs-on: ubuntu-latest
     continue-on-error: true
     env:
@@ -120,12 +248,7 @@ jobs:
             }
           - { pathogen: tb }
 
-          # Disable some pathogens until pathogen-repo-ci supports custom build directories
-          # See issue https://github.com/nextstrain/.github/issues/63
-          # - { pathogen: mpox }
-          # - { pathogen: zika }
-
-    name: pathogen-repo-ci (${{ matrix.pathogen }})
+    name: pathogen-repo-ci-v0 (${{ matrix.pathogen }})
     defaults:
       run:
         shell: bash -l {0}
