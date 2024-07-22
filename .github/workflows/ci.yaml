@@ -94,94 +94,6 @@ jobs:
         name: coverage
         path: "${{ env.COVERAGE_FILE }}"
 
-  # Replicating pathogen-repo-ci-v0 workflow because we decided not to support
-  # local versions of Augur in the centralized workflow
-  # <https://github.com/nextstrain/.github/issues/66>
-  # This particular jobs is for pathogen repos that do not follow the standard
-  # pathogen repo structure and is not expected to be updated.
-  # Any new pathogen repos should be added to the job replicating the latest version
-  # of the pathogen-repo-ci below.
-  pathogen-repo-ci-v0:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    env:
-      repodata_use_zst: true
-    strategy:
-      matrix:
-        include:
-          - { pathogen: avian-flu, build-args: test_target }
-          - { pathogen: ebola }
-          - { pathogen: lassa }
-          - { pathogen: mumps }
-          - {
-              pathogen: ncov,
-              build-args: all_regions -j 2 --profile nextstrain_profiles/nextstrain-ci,
-            }
-          - { pathogen: rsv }
-          - {
-              pathogen: seasonal-flu,
-              build-args: --configfile profiles/ci/builds.yaml -p,
-            }
-          - { pathogen: tb }
-
-    name: pathogen-repo-ci-v0 (${{ matrix.pathogen }})
-    defaults:
-      run:
-        shell: bash -l {0}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          path: ./augur
-
-      - name: Set cache key
-        run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
-
-      # Set up a Conda environment that replicates Nextstrain's Conda runtime.
-      - name: Install nextstrain-base from Conda
-        uses: mamba-org/setup-micromamba@v1
-        with:
-          create-args: nextstrain-base
-          condarc: |
-            channels:
-              - nextstrain
-              - conda-forge
-              - bioconda
-            channel_priority: strict
-          cache-environment: true
-          cache-environment-key: ${{ env.DATE }}
-          environment-name: augur
-
-      # Replace the Conda Augur installation with the local version.
-      - run: pip install ./augur
-
-      - uses: actions/checkout@v4
-        with:
-          repository: nextstrain/${{ matrix.pathogen }}
-          path: ./pathogen-repo
-
-      - name: Copy example data
-        working-directory: ./pathogen-repo
-        run: |
-          if [[ -d example_data ]]; then
-            mkdir -p data/
-            cp -r -v example_data/* data/
-          else
-            echo No example data to copy.
-          fi
-
-      - run: nextstrain build --ambient ./pathogen-repo ${{ matrix.build-args }}
-
-      - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: output-${{ matrix.pathogen }}
-          path: |
-            ./pathogen-repo/auspice/
-            ./pathogen-repo/results/
-            ./pathogen-repo/benchmarks/
-            ./pathogen-repo/logs/
-            ./pathogen-repo/.snakemake/log/
-
   # Replicating pathogen-repo-ci workflow because we decided not to support
   # local versions of Augur in the centralized workflow
   # <https://github.com/nextstrain/.github/issues/66>
@@ -305,6 +217,94 @@ jobs:
             && ($phylogenetic == success || $phylogenetic == skipped)
             && ($nextclade    == success || $nextclade    == skipped)
           ]]
+
+  # Replicating pathogen-repo-ci-v0 workflow because we decided not to support
+  # local versions of Augur in the centralized workflow
+  # <https://github.com/nextstrain/.github/issues/66>
+  # This particular jobs is for pathogen repos that do not follow the standard
+  # pathogen repo structure and is not expected to be updated.
+  # Any new pathogen repos should be added to the job replicating the latest version
+  # of the pathogen-repo-ci above.
+  pathogen-repo-ci-v0:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      repodata_use_zst: true
+    strategy:
+      matrix:
+        include:
+          - { pathogen: avian-flu, build-args: test_target }
+          - { pathogen: ebola }
+          - { pathogen: lassa }
+          - { pathogen: mumps }
+          - {
+              pathogen: ncov,
+              build-args: all_regions -j 2 --profile nextstrain_profiles/nextstrain-ci,
+            }
+          - { pathogen: rsv }
+          - {
+              pathogen: seasonal-flu,
+              build-args: --configfile profiles/ci/builds.yaml -p,
+            }
+          - { pathogen: tb }
+
+    name: pathogen-repo-ci-v0 (${{ matrix.pathogen }})
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ./augur
+
+      - name: Set cache key
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
+
+      # Set up a Conda environment that replicates Nextstrain's Conda runtime.
+      - name: Install nextstrain-base from Conda
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          create-args: nextstrain-base
+          condarc: |
+            channels:
+              - nextstrain
+              - conda-forge
+              - bioconda
+            channel_priority: strict
+          cache-environment: true
+          cache-environment-key: ${{ env.DATE }}
+          environment-name: augur
+
+      # Replace the Conda Augur installation with the local version.
+      - run: pip install ./augur
+
+      - uses: actions/checkout@v4
+        with:
+          repository: nextstrain/${{ matrix.pathogen }}
+          path: ./pathogen-repo
+
+      - name: Copy example data
+        working-directory: ./pathogen-repo
+        run: |
+          if [[ -d example_data ]]; then
+            mkdir -p data/
+            cp -r -v example_data/* data/
+          else
+            echo No example data to copy.
+          fi
+
+      - run: nextstrain build --ambient ./pathogen-repo ${{ matrix.build-args }}
+
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: output-${{ matrix.pathogen }}
+          path: |
+            ./pathogen-repo/auspice/
+            ./pathogen-repo/results/
+            ./pathogen-repo/benchmarks/
+            ./pathogen-repo/logs/
+            ./pathogen-repo/.snakemake/log/
 
   codecov:
     if: github.repository == 'nextstrain/augur'
