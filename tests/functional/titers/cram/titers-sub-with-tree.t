@@ -23,5 +23,5 @@ In this example, we know that the HA1 amino acid sequence for A/Fujian/445/2003 
 The titer model assigns a higher weight of 1.22 to the opposite substitution N193S.
 When we search for that sequence's per-branch titer drop, we should get the smaller value below.
 
-  $ grep -A 3 '"A/Fujian/445/2003": {' $TMP/titers-sub.json | grep dTiterSub
-  \s*"dTiterSub": 0.60.* (re)
+  $ python3 -c 'import json, sys; print(json.load(sys.stdin)["nodes"]["A/Fujian/445/2003"]["dTiterSub"])' < $TMP/titers-sub.json
+  0.60* (glob)
