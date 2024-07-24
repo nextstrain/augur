@@ -603,7 +603,7 @@ class Metadata:
 
     def open(self, **kwargs):
         """Open the file with auto-compression/decompression."""
-        return open_file(self.path, **kwargs)
+        return open_file(self.path, newline='', **kwargs)
 
     def _find_first(self, columns: Sequence[str]):
         """Return the first column in `columns` that is present in the metadata.
@@ -646,7 +646,7 @@ def _get_delimiter(path: str, valid_delimiters: Iterable[str]):
         if len(delimiter) != 1:
             raise AugurError(f"Delimiters must be single-character strings. {delimiter!r} does not satisfy that condition.")
 
-    with open_file(path) as file:
+    with open_file(path, newline='') as file:
         try:
             # Infer the delimiter from the first line.
             return csv.Sniffer().sniff(file.readline(), "".join(valid_delimiters)).delimiter
