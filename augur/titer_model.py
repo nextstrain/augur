@@ -1142,7 +1142,7 @@ class SubstitutionModel(TiterModel):
         for node in tree.find_clades():
             for child in node.clades:
                 # Get mutations between the current node and its parent.
-                mutations = self.get_mutations(child.name, node.name)
+                mutations = self.get_mutations(node.name, child.name)
 
                 # Calculate titer drop on the branch to the current node.
                 child.dTiterSub = 0
