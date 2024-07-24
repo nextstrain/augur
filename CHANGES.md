@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 25.2.0 (24 July 2024)
+
 ### Features
 
 * export v2: we now limit numerical precision on floats in the JSON. This should not change how a dataset is displayed / interpreted in Auspice but allows the gzipped & minimised JSON filesize to be reduced by around 30% (dataset-dependent). [#1512][] (@jameshadfield)
