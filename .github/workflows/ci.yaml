@@ -83,7 +83,7 @@ jobs:
     - run: pip install .[dev]
     - run: conda info
     - run: conda list
-    - run: pytest -c pytest.python3.ini --cov=augur
+    - run: pytest --cov=augur
     - run: cram tests/
       env:
         AUGUR: coverage run -a ${{ github.workspace }}/bin/augur
