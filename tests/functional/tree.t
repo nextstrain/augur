@@ -64,7 +64,6 @@ Build a tree with an input file that doesn't end in .fasta, and ensure it's not 
   $ sha256sum tree/aligned.fa
   169a9f5f70b94e26a2c4ab2b3180d4b463112581438515557a9797adc834863d  tree/aligned.fa
 
-Clean up tree log files.
+Switch back to the original directory where testing started.
 
-  $ rm -f tree/*.log
   $ popd > /dev/null
