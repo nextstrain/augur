@@ -2,6 +2,13 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* Embedded newlines in quoted field values of metadata files are now properly handled. [#1561][] (@tsibley)
+
+[#1561]: https://github.com/nextstrain/augur/pull/1561
+
+
 
 ## 25.2.0 (24 July 2024)
 
