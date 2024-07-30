@@ -510,7 +510,7 @@ class TestWriteRecordsToTsv:
 
 def write_lines(tmpdir, lines):
     path = str(tmpdir / "tmp")
-    with open(path, 'w') as f:
+    with open(path, 'w', newline='') as f:
         f.writelines(lines)
     return path
 
@@ -602,4 +602,21 @@ class TestMetadataClass:
             {'a': '1', 'b': '2', 'c': '3'},
             {'a': '2', 'b': '2', 'c': ''},
             {'a': '3', 'b': '2', 'c': None},
+        ]
+
+    def test_rows_embedded_newline(self, tmpdir):
+        """Test behavior when reading rows with an embedded newline."""
+        path = write_lines(tmpdir, [
+            'a,b,c\n',
+            '1,2,3\n',
+            '4,"5\r\n6",7\n',
+            '8,9,10\n',
+        ])
+
+        m = Metadata(path, delimiters=',', id_columns=['a'])
+
+        assert list(m.rows()) == [
+            {'a': '1', 'b': '2', 'c': '3'},
+            {'a': '4', 'b': '5\r\n6', 'c': '7'},
+            {'a': '8', 'b': '9', 'c': '10'},
         ]
