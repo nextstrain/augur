@@ -29,7 +29,7 @@ def register_parser(parent_subparsers):
 
 def run(args, records):
     annotations = defaultdict(dict)
-    with open(args.annotations, 'r') as annotations_fh:
+    with open(args.annotations, 'r', newline='') as annotations_fh:
         csv_reader = csv.reader(annotations_fh, delimiter='\t')
         for row in csv_reader:
             if not row or row[0].lstrip()[0] == '#':

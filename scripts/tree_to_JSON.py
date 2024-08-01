@@ -285,7 +285,7 @@ if __name__=="__main__":
 
     if args.strain_csv:
         meta = {}
-        with open(args.strain_csv, 'rb') as fh:
+        with open(args.strain_csv, 'r', newline='') as fh:
             csvdata = csv.reader(fh, delimiter=',', quotechar='"')
             header = removeBOM(csvdata.next())
             assert(header[0] == "strain")
@@ -306,7 +306,7 @@ if __name__=="__main__":
 
     if args.geo:
         geo = defaultdict(lambda: defaultdict(dict))
-        with open(args.geo, 'rb') as fh:
+        with open(args.geo, 'r', newline='') as fh:
             csvdata = csv.reader(fh, delimiter=',', quotechar='"')
             header = removeBOM(csvdata.next())
             assert(len(header) == 4)

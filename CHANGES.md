@@ -8,10 +8,11 @@
 
 ### Bug Fixes
 
-* Embedded newlines in quoted field values of metadata files are now properly handled. [#1561][] (@tsibley)
+* Embedded newlines in quoted field values of metadata files read/written by many commands, annotation files read by `augur curate apply-record-annotations`, and index files written by `augur index` are now properly handled. [#1561][] [#1564][] (@tsibley)
 
 [#1561]: https://github.com/nextstrain/augur/pull/1561
 [#1562]: https://github.com/nextstrain/augur/pull/1562
+[#1564]: https://github.com/nextstrain/augur/pull/1564
 
 
 
