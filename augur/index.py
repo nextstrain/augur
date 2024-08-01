@@ -46,7 +46,7 @@ def index_vcf(vcf_path, index_path):
 
     num_of_seqs = 0
 
-    with open_file(index_path, 'wt') as out_file:
+    with open_file(index_path, 'wt', newline='') as out_file:
         tsv_writer = csv.writer(out_file, delimiter = DELIMITER)
 
         #write header i output file
@@ -185,7 +185,7 @@ def index_sequences(sequences_path, sequence_index_path):
     tot_length = 0
     num_of_seqs = 0
 
-    with open_file(sequence_index_path, 'wt') as out_file:
+    with open_file(sequence_index_path, 'wt', newline='') as out_file:
         tsv_writer = csv.writer(out_file, delimiter = '\t', lineterminator='\n')
 
         #write header i output file

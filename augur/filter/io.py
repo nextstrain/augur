@@ -115,7 +115,7 @@ def write_metadata_based_outputs(input_metadata_path: str, delimiters: Sequence[
 
     # Set up output streams.
     if output_metadata_path:
-        output_metadata_handle = xopen(output_metadata_path, "w")
+        output_metadata_handle = xopen(output_metadata_path, "w", newline="")
         output_metadata = csv.DictWriter(output_metadata_handle, fieldnames=input_metadata.columns,
                                          delimiter="\t", lineterminator=os.linesep)
         output_metadata.writeheader()
