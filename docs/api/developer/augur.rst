@@ -42,6 +42,7 @@ Submodules
    augur.lbi
    augur.mask
    augur.parse
+   augur.read_file
    augur.reconstruct_sequences
    augur.refine
    augur.sequence_traits
@@ -55,3 +56,4 @@ Submodules
    augur.validate
    augur.validate_export
    augur.version
+   augur.write_file
