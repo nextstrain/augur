@@ -273,7 +273,8 @@ def read_table_to_dict(table, delimiters, duplicate_reporting=DataErrorMethod.ER
                 # change in a future Python version.
                 raise InvalidDelimiter from error
 
-            metadata_reader = csv.DictReader(handle, dialect=dialect)
+            # Only use the dialect delimiter and keep all other default format params
+            metadata_reader = csv.DictReader(handle, delimiter=dialect.delimiter)
 
             columns, records = metadata_reader.fieldnames, iter(metadata_reader)
 
