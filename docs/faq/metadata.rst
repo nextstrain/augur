@@ -61,7 +61,7 @@ Geographic locations can be broken down, for example, into ``region``,
 geographic information as you wish. For ``region``, ``country``, and
 some ``division``\ s augur already knows many lat-long coordinates (see
 which ones it already knows by checking the list
-`here <https://github.com/nextstrain/augur/blob/master/augur/data/lat_longs.tsv>`__).
+`here <https://github.com/nextstrain/augur/blob/-/augur/data/lat_longs.tsv>`__).
 
 It is important that these are spelled consistently.
 
