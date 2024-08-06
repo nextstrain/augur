@@ -261,7 +261,7 @@ The config file is a JSON file, and as such it's important that everything in yo
 These can be on a separate line at the very top and very bottom of your file.
 Syntax is important - if you are getting errors, ensure all your brackets and quotation marks match up, and that commas separate items in the same pair of brackets.
 
-Export v2 config files are generally very similar to export v1, _but there are a few changes_. They are explained in detail below, or you can see [an example of converting a v1 config to v2](#updating-your-config-file). For more details, see [the complete JSON schema for v2 config files](https://github.com/nextstrain/augur/blob/master/augur/data/schema-auspice-config-v2.json).
+Export v2 config files are generally very similar to export v1, _but there are a few changes_. They are explained in detail below, or you can see [an example of converting a v1 config to v2](#updating-your-config-file). For more details, see [the complete JSON schema for v2 config files](https://github.com/nextstrain/augur/blob/-/augur/data/schema-auspice-config-v2.json).
 
 Here are the top-level keys of the config JSON in plain English:
 

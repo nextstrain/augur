@@ -44,7 +44,7 @@ setuptools.setup(
     url = "https://github.com/nextstrain/augur",
     project_urls = {
         "Bug Reports": "https://github.com/nextstrain/augur/issues",
-        "Change Log": "https://github.com/nextstrain/augur/blob/master/CHANGES.md#next",
+        "Change Log": "https://github.com/nextstrain/augur/blob/-/CHANGES.md#next",
         "Source": "https://github.com/nextstrain/augur",
     },
     packages = setuptools.find_packages(),

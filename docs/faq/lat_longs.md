@@ -1,6 +1,6 @@
 # Adding Custom Lat-Long Data
 
-To place sequences on a map, auspice needs to know where the locations you specify are on the globe. These coordinates are provided by augur and augur has preset coordinates for many places. For example, for `region`, `country`, and some `division`s augur already knows many lat-long coordinates (see which ones it already knows by checking the list [here](https://github.com/nextstrain/augur/blob/master/augur/data/lat_longs.tsv)).
+To place sequences on a map, auspice needs to know where the locations you specify are on the globe. These coordinates are provided by augur and augur has preset coordinates for many places. For example, for `region`, `country`, and some `division`s augur already knows many lat-long coordinates (see which ones it already knows by checking the list [here](https://github.com/nextstrain/augur/blob/-/augur/data/lat_longs.tsv)).
 
 Some places, however, are inevitably missing and you need to tell augur the latitudes and longitude of all locations not covered by defaults. The file for latitude and longitude needs to be a tab-delimited table with four columns:
 

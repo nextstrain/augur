@@ -20,7 +20,7 @@ country	american samoa	#3F50CC
 country	fiji	#3F5ED0
 ```
 
-The hexadecimal notation starts with a #, followed by two letters coding for red, green, blue values. If you need advice or inspiration for colors, have a look at [colorbrewer](http://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3).
+The hexadecimal notation starts with a #, followed by two letters coding for red, green, blue values. If you need advice or inspiration for colors, have a look at [colorbrewer](https://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3).
 Pay particular not to mix tabs and spaces for column separation.
 The line
 ```
