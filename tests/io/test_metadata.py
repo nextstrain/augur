@@ -458,7 +458,7 @@ def output_records():
 def expected_output_tsv():
     return (
         "strain\tcountry\tdate\n"
-        'SEQ_A\t"USA"\t2020-10-01\n'
+        'SEQ_A\t"""USA"""\t2020-10-01\n'
         "SEQ_T\tUSA\t2020-10-02\n"
     )
 

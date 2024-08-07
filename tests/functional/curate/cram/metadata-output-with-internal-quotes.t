@@ -12,7 +12,7 @@ Create NDJSON with internal quotes
   > ~~
 
 Test passthru with output to TSV.
-This should not add any quotes around the field with internal quotes.
+This should add double quotes around the internal quotes to match CSV-like quoting.
 
   $ cat records.ndjson \
   >   | ${AUGUR} curate passthru \
@@ -20,10 +20,10 @@ This should not add any quotes around the field with internal quotes.
 
   $ cat output-metadata.tsv
   strain\tsubmitting_lab (esc)
-  sequence_A\tSRC VB "Vector", Molecular Biology of Genomes (esc)
+  sequence_A\t"SRC VB ""Vector"", Molecular Biology of Genomes" (esc)
 
 Run the output TSV through augur curate passthru again.
-The new output should still be identical to the first output.
+The new output should still be identical to the first output because it is already double quoted.
 
   $ ${AUGUR} curate passthru \
   > --metadata output-metadata.tsv \
