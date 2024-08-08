@@ -148,3 +148,14 @@ intersphinx_mapping = {
     'pandas': ('https://pandas.pydata.org/docs', None),
     'treetime': ('https://treetime.readthedocs.io/en/stable/', None),
 }
+
+# -- Linkchecking ------------------------------------------------------------
+
+linkcheck_ignore = [
+]
+linkcheck_anchors_ignore_for_url = [
+     # Github uses anchor-looking links for highlighting lines but
+     # handles the actual resolution with Javascript, so skip anchor
+     # checks for Github URLs:
+     r'https://github.com',
+]

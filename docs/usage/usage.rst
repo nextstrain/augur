@@ -14,7 +14,7 @@ Each command requires at least one input file and will produce one or more outpu
 
 Most commands admit additional arguments to modify how the analysis is run.
 Each command is documented below, and we are continually adding more examples to each command and providing real-life examples of their usage.
-For instance, the documentation for `augur filter <./cli/filter.html>`__ shows how we use this to subsample the `nextstrain zika analysis <https://nextstrain.org/zika>`__.
+For instance, the documentation for :doc:`augur filter <./cli/filter>` shows how we use this to subsample the `nextstrain zika analysis <https://nextstrain.org/zika>`__.
 
 
 `Note that you can also run each command with the` ``--help`` `option, for example` ``augur tree --help``, `for more information at the command-line.`
