@@ -81,8 +81,7 @@ locations ('new_zealand' became 'New Zealand').
 
 Auspice will still do this if you are exporting 'V1' type JSON files
 (from augur v5 or augur v6 using ``export v1``), but will not do this if
-you are using ``export v2`` (`read
-more <../releases/migrating-v5-v6.html#prettifying-metadata-fields>`__).
+you are using ``export v2`` (:ref:`read more <prettifying-metadata-fields>`).
 Instead, you should update your metadata files so that traits look the
 same as you'd like them to display in Auspice (change 'new_zealand' to
 'New Zealand' in your metadata, and in any additional latitude-longitude
