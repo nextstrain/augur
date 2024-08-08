@@ -51,7 +51,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> group_by = ["year", "month"]
     >>> group_by_strain = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
-    {'strain1': (2020, '2020-1'), 'strain2': (2020, '2020-2')}
+    {'strain1': (2020, '2020-01'), 'strain2': (2020, '2020-02')}
 
     If we omit the grouping columns, the result will group by a dummy column.
 
@@ -73,7 +73,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> group_by = ["year", "month", "missing_column"]
     >>> group_by_strain = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
-    {'strain1': (2020, '2020-1', 'unknown'), 'strain2': (2020, '2020-2', 'unknown')}
+    {'strain1': (2020, '2020-01', 'unknown'), 'strain2': (2020, '2020-02', 'unknown')}
 
     We can group metadata without any non-ID columns.
 
