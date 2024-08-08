@@ -68,8 +68,31 @@ def register_arguments(parser):
     subsample_limits_group.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
     subsample_limits_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences; can be used without the group_by argument")
     group_size_options = subsample_group.add_mutually_exclusive_group()
-    group_size_options.add_argument('--probabilistic-sampling', action='store_true', help="Allow probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.")
+    group_size_options.add_argument('--probabilistic-sampling', action='store_true', help="Allow probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided. Cannot be used with `--group-by-weights`.")
     group_size_options.add_argument('--no-probabilistic-sampling', action='store_false', dest='probabilistic_sampling')
+    group_size_options.add_argument('--group-by-weights', type=str, metavar="FILE", help="""
+        TSV file defining weights for grouping. Requirements:
+
+        (1) The first row must be a header.
+        (2) There must be a numeric ``weight`` column (weights can take on any
+            non-negative values).
+        (3) Other columns must be a subset of columns used in ``--group-by``,
+            with combinations of values covering all combinations present in the
+            metadata.
+        (4) This option only applies when ``--group-by`` and
+            ``--subsample-max-sequences`` are provided.
+        (5) This option cannot be used with ``--probabilistic-sampling``.
+
+        Notes:
+
+        (1) Any ``--group-by`` columns absent from this file will be given equal
+            weighting across all values *within* groups defined by the other
+            weighted columns.
+        (2) All combinations of weighted column values that are present in the
+            metadata must be included in this file. Absence from this file will
+            cause augur filter to exit with an error describing how to add the
+            weights explicitly.
+    """)
     subsample_group.add_argument('--priority', type=str, help="""tab-delimited file with list of priority scores for strains (e.g., "<strain>\\t<priority>") and no header.
     When scores are provided, Augur converts scores to floating point values, sorts strains within each subsampling group from highest to lowest priority, and selects the top N strains per group where N is the calculated or requested number of strains per group.
     Higher numbers indicate higher priority.
@@ -81,6 +104,12 @@ def register_arguments(parser):
     output_group.add_argument('--output-metadata', help="metadata for strains that passed filters")
     output_group.add_argument('--output-strains', help="list of strains that passed filters (no header)")
     output_group.add_argument('--output-log', help="tab-delimited file with one row for each filtered strain and the reason it was filtered. Keyword arguments used for a given filter are reported in JSON format in a `kwargs` column.")
+    output_group.add_argument('--output-group-by-missing-weights', type=str, metavar="FILE", help="""
+        TSV file formatted for --group-by-weights with an empty weight column.
+        Represents groups with entries in --metadata but absent from
+        --group-by-weights.
+    """)
+    output_group.add_argument('--output-group-by-sizes', help="tab-delimited file one row per group with target size.")
     output_group.add_argument(
         '--empty-output-reporting',
         type=EmptyOutputReportingMethod.argtype,
