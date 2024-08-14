@@ -11,6 +11,7 @@ from textwrap import dedent
 from types import SimpleNamespace
 from treetime import TreeTimeError, TreeTimeUnknownError
 
+from .debug import DEBUGGING
 from .errors import AugurError
 from .io.print import print_err
 from .argparse_ import add_command_subparsers, add_default_command
@@ -67,21 +68,35 @@ def run(argv):
     try:
         return args.__command__.run(args)
     except AugurError as e:
+        if DEBUGGING:
+            traceback.print_exc(file=sys.stderr)
         print_err(f"ERROR: {e}")
         sys.exit(2)
     except RecursionError:
+        if DEBUGGING:
+            traceback.print_exc(file=sys.stderr)
         print_err("FATAL: Maximum recursion depth reached. You can set the env variable AUGUR_RECURSION_LIMIT to adjust this (current limit: {})".format(sys.getrecursionlimit()))
         sys.exit(2)
     except FileNotFoundError as e:
+        if DEBUGGING:
+            traceback.print_exc(file=sys.stderr)
         print_err(f"ERROR: {e.strerror}: '{e.filename}'")
         sys.exit(2)
     except TreeTimeUnknownError as e:
+        # TreeTime already prints the traceback (and some other verbiage) in
+        # TreeTime.run()¹, so don't duplicate it.  This is also why the "(see
+        # above)" in our message below makes sense.
+        #   -trs, 14 Aug 2024
+        #
+        # ¹ <https://github.com/neherlab/treetime/blob/531f776bcad3b8b11fd470a403a9c06c78b07e36/treetime/treetime.py#L54-L73>
         print_err(dedent("""\
             ERROR from TreeTime: An error occurred in TreeTime (see above). This may be due to an issue with TreeTime or Augur.
             Please report you are calling TreeTime via Augur.
             """))
         sys.exit(2)
     except TreeTimeError as e:
+        if DEBUGGING:
+            traceback.print_exc(file=sys.stderr)
         print_err(f"ERROR: {e}")
         print_err("\n")
         print_err(dedent("""\
