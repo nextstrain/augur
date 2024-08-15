@@ -80,14 +80,14 @@ def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("merge", help=first_line(__doc__))
 
     input_group = parser.add_argument_group("inputs", "options related to input")
-    input_group.add_argument("--metadata", nargs="+", action="extend", required=True, metavar="NAME=FILE", help="metadata files with assigned names")
+    input_group.add_argument("--metadata", nargs="+", action="extend", required=True, metavar="NAME=FILE", help="Required. Metadata table names and file paths. Names are arbitrary monikers used solely for referring to the associated input file in other arguments and in output column names. Paths must be to seekable files, not unseekable streams. Compressed files are supported.")
 
-    input_group.add_argument("--metadata-id-columns", default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault, metavar="COLUMN", help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
-    input_group.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault, metavar="CHARACTER", help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
+    input_group.add_argument("--metadata-id-columns", default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault, metavar="COLUMN", help="Possible metadata column names containing identifiers, considered in the order given. Columns will be considered for all metadata tables. Only one ID column will be inferred for each table.")
+    input_group.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault, metavar="CHARACTER", help="Possible field delimiters to use for reading metadata tables, considered in the order given. Delimiters will be considered for all metadata tables. Only one delimiter will be inferred for each table.")
 
     output_group = parser.add_argument_group("outputs", "options related to output")
-    output_group.add_argument('--output-metadata', required=True, metavar="FILE", help="merged metadata as TSV")
-    output_group.add_argument('--quiet', action="store_true", default=False, help="suppress informational messages on stderr")
+    output_group.add_argument('--output-metadata', required=True, metavar="FILE", help="Required. Merged metadata as TSV. Compressed files are supported.")
+    output_group.add_argument('--quiet', action="store_true", default=False, help="Suppress informational and warning messages normally written to stderr.")
 
     return parser
 
