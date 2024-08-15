@@ -42,6 +42,7 @@ Submodules
    augur.index
    augur.lbi
    augur.mask
+   augur.merge
    augur.parse
    augur.read_file
    augur.reconstruct_sequences
