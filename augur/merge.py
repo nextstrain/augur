@@ -34,6 +34,7 @@ environment variable to path of the desired sqlite3 executable.
 """
 import gettext
 import os
+import re
 import subprocess
 import sys
 from functools import reduce
@@ -44,7 +45,7 @@ from tempfile import mkstemp
 from textwrap import dedent
 from typing import Iterable, Tuple, TypeVar
 
-from augur.argparse_ import ExtendOverwriteDefault
+from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, Metadata
 from augur.io.print import print_err, print_debug
@@ -80,14 +81,14 @@ def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("merge", help=first_line(__doc__))
 
     input_group = parser.add_argument_group("inputs", "options related to input")
-    input_group.add_argument("--metadata", nargs="+", action="extend", required=True, metavar="NAME=FILE", help="Required. Metadata table names and file paths. Names are arbitrary monikers used solely for referring to the associated input file in other arguments and in output column names. Paths must be to seekable files, not unseekable streams. Compressed files are supported.")
+    input_group.add_argument("--metadata", nargs="+", action="extend", required=True, metavar="NAME=FILE", help="Required. Metadata table names and file paths. Names are arbitrary monikers used solely for referring to the associated input file in other arguments and in output column names. Paths must be to seekable files, not unseekable streams. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
 
-    input_group.add_argument("--metadata-id-columns", default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault, metavar="COLUMN", help="Possible metadata column names containing identifiers, considered in the order given. Columns will be considered for all metadata tables. Only one ID column will be inferred for each table.")
-    input_group.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault, metavar="CHARACTER", help="Possible field delimiters to use for reading metadata tables, considered in the order given. Delimiters will be considered for all metadata tables. Only one delimiter will be inferred for each table.")
+    input_group.add_argument("--metadata-id-columns", default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault, metavar="COLUMN", help=f"Possible metadata column names containing identifiers, considered in the order given. Columns will be considered for all metadata tables. Only one ID column will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_ID_COLUMNS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
+    input_group.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault, metavar="CHARACTER", help=f"Possible field delimiters to use for reading metadata tables, considered in the order given. Delimiters will be considered for all metadata tables. Only one delimiter will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_DELIMITERS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
 
     output_group = parser.add_argument_group("outputs", "options related to output")
-    output_group.add_argument('--output-metadata', required=True, metavar="FILE", help="Required. Merged metadata as TSV. Compressed files are supported.")
-    output_group.add_argument('--quiet', action="store_true", default=False, help="Suppress informational and warning messages normally written to stderr.")
+    output_group.add_argument('--output-metadata', required=True, metavar="FILE", help="Required. Merged metadata as TSV. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+    output_group.add_argument('--quiet', action="store_true", default=False, help="Suppress informational and warning messages normally written to stderr. (default: disabled)" + SKIP_AUTO_DEFAULT_IN_HELP)
 
     return parser
 
@@ -322,3 +323,52 @@ def count_unique(xs: Iterable[T]) -> Iterable[Tuple[T, int]]:
 
 def indented_list(xs, prefix):
     return f"\n{prefix}".join(xs)
+
+
+def shquote_humanized(x):
+    r"""
+    shquote for humans.
+
+    Use C-style escapes supported by shells (specifically, Bash) for characters
+    that humans would typically use C-style escapes for instead of quoted
+    literals.
+
+    <https://www.gnu.org/software/bash/manual/bash.html#ANSI_002dC-Quoting>
+
+    >>> shquote_humanized("abc")
+    'abc'
+
+    >>> shquote_humanized("\t")
+    "$'\\t'"
+
+    >>> shquote_humanized("abc def")
+    "'abc def'"
+
+    >>> shquote_humanized("abc\tdef")
+    "abc$'\\t'def"
+    """
+    escapes = {
+        '\a': r'\a',
+        '\b': r'\b',
+        '\f': r'\f',
+        '\n': r'\n',
+        '\r': r'\r',
+        '\t': r'\t',
+        '\v': r'\v',
+    }
+
+    def quote(s):
+        if s in escapes:
+            return f"$'{escapes[s]}'"
+        else:
+            # split leaves leading and trailing empty strings when its input is
+            # entirely (captured) separator.  Avoid quoting every empty string
+            # *part* here…
+            return shquote(s) if s else ''
+
+    parts = re.split('([' + ''.join(escapes.values()) + '])', x)
+    quoted = ''.join(map(quote, parts))
+
+    # …and instead quote a final empty string down here if we're still empty
+    # after joining all our parts together.
+    return quoted if quoted else shquote('')
