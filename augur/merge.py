@@ -32,6 +32,7 @@ future.  The SQLite 3 CLI, sqlite3, must be available.  If it's not on PATH (or
 you want to use a version different from what's on PATH), set the SQLITE3
 environment variable to path of the desired sqlite3 executable.
 """
+import gettext
 import os
 import subprocess
 import sys
@@ -51,6 +52,12 @@ from augur.utils import first_line
 
 
 T = TypeVar('T')
+
+
+# Use ngettext() without a message catalog for its singular/plural handling so
+# we can make proper error messages.  gettext() (no "n") is conventionally
+# aliased as "_", so alias ngettext() as "_n".
+_n = gettext.NullTranslations().ngettext
 
 
 class NamedMetadata(Metadata):
@@ -96,7 +103,7 @@ def run(args):
         raise AugurError(dedent(f"""\
             All metadata inputs must be assigned a name, e.g. with NAME=FILE.
 
-            The following inputs were missing a name:
+            The following {_n("input was", "inputs were", len(unnamed))} missing a name:
 
               {indented_list(unnamed, '            ' + '  ')}
             """))
@@ -109,7 +116,7 @@ def run(args):
         raise AugurError(dedent(f"""\
             Metadata input names must be unique.
 
-            The following names were used more than once:
+            The following {_n("name was", "names were", len(duplicate_names))} used more than once:
 
               {indented_list(duplicate_names, '            ' + '  ')}
             """))
