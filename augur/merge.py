@@ -83,8 +83,8 @@ def register_parser(parent_subparsers):
     input_group = parser.add_argument_group("inputs", "options related to input")
     input_group.add_argument("--metadata", nargs="+", action="extend", required=True, metavar="NAME=FILE", help="Required. Metadata table names and file paths. Names are arbitrary monikers used solely for referring to the associated input file in other arguments and in output column names. Paths must be to seekable files, not unseekable streams. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
 
-    input_group.add_argument("--metadata-id-columns", default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault, metavar="COLUMN", help=f"Possible metadata column names containing identifiers, considered in the order given. Columns will be considered for all metadata tables. Only one ID column will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_ID_COLUMNS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
-    input_group.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault, metavar="CHARACTER", help=f"Possible field delimiters to use for reading metadata tables, considered in the order given. Delimiters will be considered for all metadata tables. Only one delimiter will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_DELIMITERS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
+    input_group.add_argument("--metadata-id-columns", default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault, metavar="[TABLE=]COLUMN", help=f"Possible metadata column names containing identifiers, considered in the order given. Columns will be considered for all metadata tables by default. Table-specific column names may be given using the same names assigned in --metadata. Only one ID column will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_ID_COLUMNS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
+    input_group.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault, metavar="[TABLE=]CHARACTER", help=f"Possible field delimiters to use for reading metadata tables, considered in the order given. Delimiters will be considered for all metadata tables by default. Table-specific delimiters may be given using the same names assigned in --metadata. Only one delimiter will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_DELIMITERS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
 
     output_group = parser.add_argument_group("outputs", "options related to output")
     output_group.add_argument('--output-metadata', required=True, metavar="FILE", help="Required. Merged metadata as TSV. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
@@ -109,7 +109,7 @@ def run(args):
               {indented_list(unnamed, '            ' + '  ')}
             """))
 
-    metadata = [name_path.split("=", 1) for name_path in args.metadata]
+    metadata = pairs(args.metadata)
 
     if duplicate_names := [repr(name) for name, count
                                        in count_unique(name for name, _ in metadata)
@@ -123,9 +123,35 @@ def run(args):
             """))
 
 
+    # Parse --metadata-id-columns and --metadata-delimiters
+    metadata_names = set(name for name, _ in metadata)
+
+    metadata_id_columns = pairs(args.metadata_id_columns)
+    metadata_delimiters = pairs(args.metadata_delimiters)
+
+    if unknown_names := [repr(name) for name, _ in metadata_id_columns if name and name not in metadata_names]:
+        raise AugurError(dedent(f"""\
+            Unknown metadata table {_n("name", "names", len(unknown_names))} in --metadata-id-columns:
+
+              {indented_list(unknown_names, '            ' + '  ')}
+
+            {_n("This name does", "These names do", len(unknown_names))} not appear in the NAME=FILE pairs given to --metadata.
+            """))
+
+    if unknown_names := [repr(name) for name, _ in metadata_delimiters if name and name not in metadata_names]:
+        raise AugurError(dedent(f"""\
+            Unknown metadata table {_n("name", "names", len(unknown_names))} in --metadata-delimiters:
+
+              {indented_list(unknown_names, '            ' + '  ')}
+
+            {_n("This name does", "These names do", len(unknown_names))} not appear in the NAME=FILE pairs given to --metadata.
+            """))
+
+
     # Infer delimiters and id columns
     metadata = [
-        NamedMetadata(name, path, args.metadata_delimiters, args.metadata_id_columns)
+        NamedMetadata(name, path, [delim  for name_, delim  in metadata_delimiters if not name_ or name_ == name],
+                                  [column for name_, column in metadata_id_columns if not name_ or name_ == name])
             for name, path in metadata]
 
 
@@ -311,6 +337,26 @@ def sqlite_quote_string(x):
     <https://www.sqlite.org/lang_expr.html#literal_values_constants_>
     """
     return "'" + x.replace("'", "''") + "'"
+
+
+def pairs(xs: Iterable[str]) -> Iterable[Tuple[str, str]]:
+    """
+    Split an iterable of ``k=v`` strings into an iterable of ``(k,v)`` tuples.
+
+    >>> pairs(["abc=123", "eight nine ten=el em en"])
+    [('abc', '123'), ('eight nine ten', 'el em en')]
+
+    Strings missing a ``k`` and/or a ``v`` part get an empty string.
+
+    >>> pairs(["v", "=v", "k=", "=", ""])
+    [('', 'v'), ('', 'v'), ('k', ''), ('', ''), ('', '')]
+
+    ``k`` ends at the first ``=``.
+
+    >>> pairs(["abc=123=xyz", "=v=v"])
+    [('abc', '123=xyz'), ('', 'v=v')]
+    """
+    return [tuple(x.split("=", 1)) if "=" in x else ("", x) for x in xs]
 
 
 def count_unique(xs: Iterable[T]) -> Iterable[Tuple[T, int]]:
