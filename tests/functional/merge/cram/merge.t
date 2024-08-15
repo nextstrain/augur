@@ -175,7 +175,7 @@ Metadata names must be unique.
   >   --output-metadata -
   ERROR: Metadata input names must be unique.
   
-  The following names were used more than once:
+  The following name was used more than once:
   
     'data'
   
